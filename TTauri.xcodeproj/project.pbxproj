@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
+		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
+		68DFA8DD2203374E005D9413 /* cube.c in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8DC2203374E005D9413 /* cube.c */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -17,25 +20,27 @@
 		68F2629722030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2629522030EA70078E5E4 /* Main.storyboard */; };
 		68F2629A22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2629922030EA70078E5E4 /* main.m */; };
 		68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A222030EA70078E5E4 /* AppDelegate.m */; };
-		68F262A622030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A522030EA70078E5E4 /* GameViewController.m */; };
+		68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */; };
 		68F262A922030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F262A722030EA70078E5E4 /* Main.storyboard */; };
 		68F262AC22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262AB22030EA70078E5E4 /* main.m */; };
-		68F262AD22030EA70078E5E4 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2626F22030EA30078E5E4 /* Renderer.m */; };
-		68F262AE22030EA70078E5E4 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2626F22030EA30078E5E4 /* Renderer.m */; };
-		68F262AF22030EA70078E5E4 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2626F22030EA30078E5E4 /* Renderer.m */; };
-		68F262B022030EA70078E5E4 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627122030EA30078E5E4 /* Shaders.metal */; };
-		68F262B122030EA70078E5E4 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627122030EA30078E5E4 /* Shaders.metal */; };
-		68F262B222030EA70078E5E4 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627122030EA30078E5E4 /* Shaders.metal */; };
 		68F262B322030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
 		68F262B422030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
 		68F262B522030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		68F2626E22030EA30078E5E4 /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
-		68F2626F22030EA30078E5E4 /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
+		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
+		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
+		68DFA8DA2203317E005D9413 /* MoltenVKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKView.h; sourceTree = "<group>"; };
+		68DFA8DB2203374E005D9413 /* cube.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cube.h; sourceTree = "<group>"; };
+		68DFA8DC2203374E005D9413 /* cube.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = cube.c; sourceTree = "<group>"; };
+		68DFA8DE22033827005D9413 /* linmath.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = linmath.h; sourceTree = "<group>"; };
+		68DFA8DF22033875005D9413 /* object_type_string_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = object_type_string_helper.h; sourceTree = "<group>"; };
+		68DFA8E0220338A8005D9413 /* gettime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = gettime.h; sourceTree = "<group>"; };
+		68DFA8E1220338E4005D9413 /* lunarg.ppm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lunarg.ppm.h; sourceTree = "<group>"; };
+		68DFA8E222033940005D9413 /* cube.frag.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = cube.frag.inc; sourceTree = "<group>"; };
+		68DFA8E322033940005D9413 /* cube.vert.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = cube.vert.inc; sourceTree = "<group>"; };
 		68F2627022030EA30078E5E4 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
-		68F2627122030EA30078E5E4 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		68F2627222030EA70078E5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68F2627722030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F2627A22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -57,8 +62,8 @@
 		68F2629F22030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F262A122030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		68F262A222030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		68F262A422030EA70078E5E4 /* GameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameViewController.h; sourceTree = "<group>"; };
-		68F262A522030EA70078E5E4 /* GameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameViewController.m; sourceTree = "<group>"; };
+		68F262A422030EA70078E5E4 /* MoltenVKViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKViewController.h; sourceTree = "<group>"; };
+		68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKViewController.mm; sourceTree = "<group>"; };
 		68F262A822030EA70078E5E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		68F262AA22030EA70078E5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		68F262AB22030EA70078E5E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -83,12 +88,21 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		68DFA8D522032B8A005D9413 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				68DFA8D622032B8A005D9413 /* MoltenVK.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		68F2626822030EA30078E5E4 = {
 			isa = PBXGroup;
 			children = (
@@ -97,17 +111,23 @@
 				68F2628E22030EA70078E5E4 /* TTauri tvOS */,
 				68F262A022030EA70078E5E4 /* TTauri macOS */,
 				68F2627822030EA70078E5E4 /* Products */,
+				68DFA8D522032B8A005D9413 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 		68F2626D22030EA30078E5E4 /* TTauri Shared */ = {
 			isa = PBXGroup;
 			children = (
-				68F2626E22030EA30078E5E4 /* Renderer.h */,
-				68F2626F22030EA30078E5E4 /* Renderer.m */,
+				68DFA8E222033940005D9413 /* cube.frag.inc */,
+				68DFA8E322033940005D9413 /* cube.vert.inc */,
+				68DFA8E1220338E4005D9413 /* lunarg.ppm.h */,
+				68DFA8E0220338A8005D9413 /* gettime.h */,
+				68DFA8DF22033875005D9413 /* object_type_string_helper.h */,
+				68DFA8DE22033827005D9413 /* linmath.h */,
 				68F2627022030EA30078E5E4 /* ShaderTypes.h */,
-				68F2627122030EA30078E5E4 /* Shaders.metal */,
 				68F2627222030EA70078E5E4 /* Assets.xcassets */,
+				68DFA8DB2203374E005D9413 /* cube.h */,
+				68DFA8DC2203374E005D9413 /* cube.c */,
 			);
 			path = "TTauri Shared";
 			sourceTree = "<group>";
@@ -156,11 +176,13 @@
 			children = (
 				68F262A122030EA70078E5E4 /* AppDelegate.h */,
 				68F262A222030EA70078E5E4 /* AppDelegate.m */,
-				68F262A422030EA70078E5E4 /* GameViewController.h */,
-				68F262A522030EA70078E5E4 /* GameViewController.m */,
+				68F262A422030EA70078E5E4 /* MoltenVKViewController.h */,
+				68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */,
 				68F262A722030EA70078E5E4 /* Main.storyboard */,
 				68F262AA22030EA70078E5E4 /* Info.plist */,
 				68F262AB22030EA70078E5E4 /* main.m */,
+				68DFA8D82203315C005D9413 /* MoltenVKView.mm */,
+				68DFA8DA2203317E005D9413 /* MoltenVKView.h */,
 			);
 			path = "TTauri macOS";
 			sourceTree = "<group>";
@@ -295,11 +317,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68F262AD22030EA70078E5E4 /* Renderer.m in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
 				68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */,
-				68F262B022030EA70078E5E4 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,11 +327,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68F262AE22030EA70078E5E4 /* Renderer.m in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
 				68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */,
-				68F262B122030EA70078E5E4 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,11 +337,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68F262AF22030EA70078E5E4 /* Renderer.m in Sources */,
-				68F262A622030EA70078E5E4 /* GameViewController.m in Sources */,
+				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
+				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
+				68DFA8DD2203374E005D9413 /* cube.c in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
 				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,
-				68F262B222030EA70078E5E4 /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -415,6 +433,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -465,6 +484,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/include;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 			};
@@ -556,10 +576,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 8N564K3STX;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"VK_USE_PLATFORM_MACOS_MVK=1",
+					"DEBUG=1",
+				);
 				INFOPLIST_FILE = "TTauri macOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -568,6 +596,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
 				PRODUCT_NAME = TTauri;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -576,10 +605,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 8N564K3STX;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"VK_USE_PLATFORM_MACOS_MVK=1",
+					"NDEBUG=1",
+				);
 				INFOPLIST_FILE = "TTauri macOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -588,6 +625,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
 				PRODUCT_NAME = TTauri;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Release;
