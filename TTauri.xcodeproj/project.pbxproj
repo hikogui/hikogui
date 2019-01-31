@@ -1,0 +1,637 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
+		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
+		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
+		68F2628522030EA70078E5E4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628322030EA70078E5E4 /* LaunchScreen.storyboard */; };
+		68F2628822030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2628722030EA70078E5E4 /* main.m */; };
+		68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2629022030EA70078E5E4 /* AppDelegate.m */; };
+		68F2629422030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2629322030EA70078E5E4 /* GameViewController.m */; };
+		68F2629722030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2629522030EA70078E5E4 /* Main.storyboard */; };
+		68F2629A22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2629922030EA70078E5E4 /* main.m */; };
+		68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A222030EA70078E5E4 /* AppDelegate.m */; };
+		68F262A622030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A522030EA70078E5E4 /* GameViewController.m */; };
+		68F262A922030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F262A722030EA70078E5E4 /* Main.storyboard */; };
+		68F262AC22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262AB22030EA70078E5E4 /* main.m */; };
+		68F262AD22030EA70078E5E4 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2626F22030EA30078E5E4 /* Renderer.m */; };
+		68F262AE22030EA70078E5E4 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2626F22030EA30078E5E4 /* Renderer.m */; };
+		68F262AF22030EA70078E5E4 /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2626F22030EA30078E5E4 /* Renderer.m */; };
+		68F262B022030EA70078E5E4 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627122030EA30078E5E4 /* Shaders.metal */; };
+		68F262B122030EA70078E5E4 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627122030EA30078E5E4 /* Shaders.metal */; };
+		68F262B222030EA70078E5E4 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627122030EA30078E5E4 /* Shaders.metal */; };
+		68F262B322030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
+		68F262B422030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
+		68F262B522030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		68F2626E22030EA30078E5E4 /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
+		68F2626F22030EA30078E5E4 /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
+		68F2627022030EA30078E5E4 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
+		68F2627122030EA30078E5E4 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		68F2627222030EA70078E5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		68F2627722030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		68F2627A22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		68F2627B22030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		68F2627D22030EA70078E5E4 /* GameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameViewController.h; sourceTree = "<group>"; };
+		68F2627E22030EA70078E5E4 /* GameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameViewController.m; sourceTree = "<group>"; };
+		68F2628122030EA70078E5E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		68F2628422030EA70078E5E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		68F2628622030EA70078E5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		68F2628722030EA70078E5E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		68F2628D22030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		68F2628F22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		68F2629022030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		68F2629222030EA70078E5E4 /* GameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameViewController.h; sourceTree = "<group>"; };
+		68F2629322030EA70078E5E4 /* GameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameViewController.m; sourceTree = "<group>"; };
+		68F2629622030EA70078E5E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		68F2629822030EA70078E5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		68F2629922030EA70078E5E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		68F2629F22030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		68F262A122030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		68F262A222030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		68F262A422030EA70078E5E4 /* GameViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GameViewController.h; sourceTree = "<group>"; };
+		68F262A522030EA70078E5E4 /* GameViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameViewController.m; sourceTree = "<group>"; };
+		68F262A822030EA70078E5E4 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		68F262AA22030EA70078E5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		68F262AB22030EA70078E5E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		68F2627422030EA70078E5E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68F2628A22030EA70078E5E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68F2629C22030EA70078E5E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		68F2626822030EA30078E5E4 = {
+			isa = PBXGroup;
+			children = (
+				68F2626D22030EA30078E5E4 /* TTauri Shared */,
+				68F2627922030EA70078E5E4 /* TTauri iOS */,
+				68F2628E22030EA70078E5E4 /* TTauri tvOS */,
+				68F262A022030EA70078E5E4 /* TTauri macOS */,
+				68F2627822030EA70078E5E4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		68F2626D22030EA30078E5E4 /* TTauri Shared */ = {
+			isa = PBXGroup;
+			children = (
+				68F2626E22030EA30078E5E4 /* Renderer.h */,
+				68F2626F22030EA30078E5E4 /* Renderer.m */,
+				68F2627022030EA30078E5E4 /* ShaderTypes.h */,
+				68F2627122030EA30078E5E4 /* Shaders.metal */,
+				68F2627222030EA70078E5E4 /* Assets.xcassets */,
+			);
+			path = "TTauri Shared";
+			sourceTree = "<group>";
+		};
+		68F2627822030EA70078E5E4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				68F2627722030EA70078E5E4 /* TTauri.app */,
+				68F2628D22030EA70078E5E4 /* TTauri.app */,
+				68F2629F22030EA70078E5E4 /* TTauri.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		68F2627922030EA70078E5E4 /* TTauri iOS */ = {
+			isa = PBXGroup;
+			children = (
+				68F2627A22030EA70078E5E4 /* AppDelegate.h */,
+				68F2627B22030EA70078E5E4 /* AppDelegate.m */,
+				68F2627D22030EA70078E5E4 /* GameViewController.h */,
+				68F2627E22030EA70078E5E4 /* GameViewController.m */,
+				68F2628022030EA70078E5E4 /* Main.storyboard */,
+				68F2628322030EA70078E5E4 /* LaunchScreen.storyboard */,
+				68F2628622030EA70078E5E4 /* Info.plist */,
+				68F2628722030EA70078E5E4 /* main.m */,
+			);
+			path = "TTauri iOS";
+			sourceTree = "<group>";
+		};
+		68F2628E22030EA70078E5E4 /* TTauri tvOS */ = {
+			isa = PBXGroup;
+			children = (
+				68F2628F22030EA70078E5E4 /* AppDelegate.h */,
+				68F2629022030EA70078E5E4 /* AppDelegate.m */,
+				68F2629222030EA70078E5E4 /* GameViewController.h */,
+				68F2629322030EA70078E5E4 /* GameViewController.m */,
+				68F2629522030EA70078E5E4 /* Main.storyboard */,
+				68F2629822030EA70078E5E4 /* Info.plist */,
+				68F2629922030EA70078E5E4 /* main.m */,
+			);
+			path = "TTauri tvOS";
+			sourceTree = "<group>";
+		};
+		68F262A022030EA70078E5E4 /* TTauri macOS */ = {
+			isa = PBXGroup;
+			children = (
+				68F262A122030EA70078E5E4 /* AppDelegate.h */,
+				68F262A222030EA70078E5E4 /* AppDelegate.m */,
+				68F262A422030EA70078E5E4 /* GameViewController.h */,
+				68F262A522030EA70078E5E4 /* GameViewController.m */,
+				68F262A722030EA70078E5E4 /* Main.storyboard */,
+				68F262AA22030EA70078E5E4 /* Info.plist */,
+				68F262AB22030EA70078E5E4 /* main.m */,
+			);
+			path = "TTauri macOS";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		68F2627622030EA70078E5E4 /* TTauri iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 68F262B822030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri iOS" */;
+			buildPhases = (
+				68F2627322030EA70078E5E4 /* Sources */,
+				68F2627422030EA70078E5E4 /* Frameworks */,
+				68F2627522030EA70078E5E4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "TTauri iOS";
+			productName = "TTauri iOS";
+			productReference = 68F2627722030EA70078E5E4 /* TTauri.app */;
+			productType = "com.apple.product-type.application";
+		};
+		68F2628C22030EA70078E5E4 /* TTauri tvOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 68F262BB22030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri tvOS" */;
+			buildPhases = (
+				68F2628922030EA70078E5E4 /* Sources */,
+				68F2628A22030EA70078E5E4 /* Frameworks */,
+				68F2628B22030EA70078E5E4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "TTauri tvOS";
+			productName = "TTauri tvOS";
+			productReference = 68F2628D22030EA70078E5E4 /* TTauri.app */;
+			productType = "com.apple.product-type.application";
+		};
+		68F2629E22030EA70078E5E4 /* TTauri macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 68F262BE22030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri macOS" */;
+			buildPhases = (
+				68F2629B22030EA70078E5E4 /* Sources */,
+				68F2629C22030EA70078E5E4 /* Frameworks */,
+				68F2629D22030EA70078E5E4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "TTauri macOS";
+			productName = "TTauri macOS";
+			productReference = 68F2629F22030EA70078E5E4 /* TTauri.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		68F2626922030EA30078E5E4 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = Pokitec;
+				TargetAttributes = {
+					68F2627622030EA70078E5E4 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+					68F2628C22030EA70078E5E4 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+					68F2629E22030EA70078E5E4 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 68F2626C22030EA30078E5E4 /* Build configuration list for PBXProject "TTauri" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 68F2626822030EA30078E5E4;
+			productRefGroup = 68F2627822030EA70078E5E4 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				68F2627622030EA70078E5E4 /* TTauri iOS */,
+				68F2628C22030EA70078E5E4 /* TTauri tvOS */,
+				68F2629E22030EA70078E5E4 /* TTauri macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		68F2627522030EA70078E5E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F2628222030EA70078E5E4 /* Main.storyboard in Resources */,
+				68F262B322030EA70078E5E4 /* Assets.xcassets in Resources */,
+				68F2628522030EA70078E5E4 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68F2628B22030EA70078E5E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F262B422030EA70078E5E4 /* Assets.xcassets in Resources */,
+				68F2629722030EA70078E5E4 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68F2629D22030EA70078E5E4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F262B522030EA70078E5E4 /* Assets.xcassets in Resources */,
+				68F262A922030EA70078E5E4 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		68F2627322030EA70078E5E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F262AD22030EA70078E5E4 /* Renderer.m in Sources */,
+				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
+				68F2628822030EA70078E5E4 /* main.m in Sources */,
+				68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */,
+				68F262B022030EA70078E5E4 /* Shaders.metal in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68F2628922030EA70078E5E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F262AE22030EA70078E5E4 /* Renderer.m in Sources */,
+				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
+				68F2629A22030EA70078E5E4 /* main.m in Sources */,
+				68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */,
+				68F262B122030EA70078E5E4 /* Shaders.metal in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		68F2629B22030EA70078E5E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				68F262AF22030EA70078E5E4 /* Renderer.m in Sources */,
+				68F262A622030EA70078E5E4 /* GameViewController.m in Sources */,
+				68F262AC22030EA70078E5E4 /* main.m in Sources */,
+				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,
+				68F262B222030EA70078E5E4 /* Shaders.metal in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		68F2628022030EA70078E5E4 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				68F2628122030EA70078E5E4 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		68F2628322030EA70078E5E4 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				68F2628422030EA70078E5E4 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		68F2629522030EA70078E5E4 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				68F2629622030EA70078E5E4 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		68F262A722030EA70078E5E4 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				68F262A822030EA70078E5E4 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		68F262B622030EA70078E5E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+			};
+			name = Debug;
+		};
+		68F262B722030EA70078E5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+			};
+			name = Release;
+		};
+		68F262B922030EA70078E5E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8N564K3STX;
+				INFOPLIST_FILE = "TTauri iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
+				PRODUCT_NAME = TTauri;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		68F262BA22030EA70078E5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8N564K3STX;
+				INFOPLIST_FILE = "TTauri iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
+				PRODUCT_NAME = TTauri;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		68F262BC22030EA70078E5E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "tvOS App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "tvOS LaunchImage";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8N564K3STX;
+				INFOPLIST_FILE = "TTauri tvOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
+				PRODUCT_NAME = TTauri;
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.1;
+			};
+			name = Debug;
+		};
+		68F262BD22030EA70078E5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "tvOS App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "tvOS LaunchImage";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 8N564K3STX;
+				INFOPLIST_FILE = "TTauri tvOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
+				PRODUCT_NAME = TTauri;
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 12.1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		68F262BF22030EA70078E5E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 8N564K3STX;
+				INFOPLIST_FILE = "TTauri macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
+				PRODUCT_NAME = TTauri;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		68F262C022030EA70078E5E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 8N564K3STX;
+				INFOPLIST_FILE = "TTauri macOS/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				PRODUCT_BUNDLE_IDENTIFIER = nl.pokitec.TTauri;
+				PRODUCT_NAME = TTauri;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		68F2626C22030EA30078E5E4 /* Build configuration list for PBXProject "TTauri" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68F262B622030EA70078E5E4 /* Debug */,
+				68F262B722030EA70078E5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		68F262B822030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68F262B922030EA70078E5E4 /* Debug */,
+				68F262BA22030EA70078E5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		68F262BB22030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri tvOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68F262BC22030EA70078E5E4 /* Debug */,
+				68F262BD22030EA70078E5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		68F262BE22030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				68F262BF22030EA70078E5E4 /* Debug */,
+				68F262C022030EA70078E5E4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 68F2626922030EA30078E5E4 /* Project object */;
+}
