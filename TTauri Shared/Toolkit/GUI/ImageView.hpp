@@ -18,9 +18,9 @@ namespace GUI {
 
 class ImageView : View {
 public:
-    boost::filesystem::path path;
+    const boost::filesystem::path path;
 
-    ImageView(std::weak_ptr<View> view, boost::filesystem::path path);
+    ImageView(std::weak_ptr<View> view, const boost::filesystem::path &path);
     ~ImageView();
 };
 

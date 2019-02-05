@@ -20,16 +20,21 @@ namespace GUI {
 class Window;
 class Device;
 
+/*! View of a widget.
+ * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
+ * which contains that static data of an Widget and the drawing code. Backings are shared
+ * between Views.
+ */
 class View {
 public:
-    //! Convenient reference to the GUI.
+    //! Convenient reference to the Device.
     std::weak_ptr<Device> device;
 
-    //! Convenient reference to the GUI.
+    //! Convenient reference to the Window.
     std::weak_ptr<Window> window;
 
     std::weak_ptr<View> parent;
-    
+
     std::vector<std::shared_ptr<View>> children;
 
     //! Location of the frame compared to the parent-frame.

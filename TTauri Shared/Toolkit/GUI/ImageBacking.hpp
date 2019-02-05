@@ -38,7 +38,7 @@ public:
         }
     }
 
-    ImageBacking(std::weak_ptr<Window> window, float2 size, boost::filesystem::path path);
+    ImageBacking(std::weak_ptr<Window> window, float2 size, const boost::filesystem::path &path);
     virtual ~ImageBacking();
 };
 

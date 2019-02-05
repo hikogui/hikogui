@@ -11,6 +11,8 @@
 #include <memory>
 #include <functional>
 #include <cmath>
+#include <typeinfo>
+#include <typeindex>
 #include <boost/functional/hash.hpp>
 #include "Vector.hpp"
 
@@ -21,8 +23,13 @@ namespace GUI {
 class Window;
 class Device;
 
-/** Shared backing of a View.
- * Non modifiable, can be used in a std::set.
+/** Backing of a Windget.
+ * The Backing contains static data and drawing code. Backings are shared by a View.
+ *
+ * All static data that is needed to render images of a Widget needs to be initialized
+ * in the constructor and are const. The hash() and operator==() need to include all
+ * static data of a Backing. This allows sharing between Views and caching of image
+ * rendering.
  */
 class Backing {
 public:
@@ -49,10 +56,16 @@ public:
     }
 
     virtual bool operator==(const Backing &other) const {
-        bool result = true;
-        result &= size.x == other.size.x;
-        result &= size.y == other.size.y;
-        return result;
+        auto &this_type_id = typeid(*this);
+        auto &other_type_id = typeid(other);
+        auto this_type_index = std::type_index(this_type_id);
+        auto other_type_index = std::type_index(other_type_id);
+
+        return (
+            (this_type_index == other_type_index) and
+            (size.x != other.size.x) and
+            (size.y != other.size.y)
+        );
     }
 
 };

@@ -9,6 +9,7 @@
 #pragma once
 #include <memory>
 #include <unordered_set>
+#include <vulkan/vulkan.hpp>
 #include "Rectangle.hpp"
 #include "View.hpp"
 #include "BackingCache.hpp"
@@ -42,6 +43,8 @@ class Window {
 public:
     //! GUI which manages this Window
     std::weak_ptr<Device> device;
+
+    vk::SurfaceKHR surface;
 
     //! Location of the window on the screen.
     Rectangle location;
@@ -79,8 +82,8 @@ public:
      */
     BackingCache backings;
 
-    Window(std::weak_ptr<Device> device) :
-        device(device)
+    Window(std::weak_ptr<Device> device, vk::SurfaceKHR surface) :
+        device(device), surface(surface)
     {
 
     }

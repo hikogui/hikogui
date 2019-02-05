@@ -12,7 +12,7 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
-ImageView::ImageView(std::weak_ptr<View> view, boost::filesystem::path path) :
+ImageView::ImageView(std::weak_ptr<View> view, const boost::filesystem::path &path) :
     View(view), path(path)
 {
 }

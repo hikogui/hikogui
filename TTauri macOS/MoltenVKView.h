@@ -7,6 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#include <vulkan/vulkan.hpp>
 
 @interface MoltenVKView : NSView
+-(vk::SurfaceKHR)makeVulkanLayer:(vk::Instance)instance;
 @end

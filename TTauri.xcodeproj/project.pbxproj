@@ -39,9 +39,11 @@
 		686AD25F2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
 		68A9A0622208FC3600457876 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0612208FC3600457876 /* libboost_system.a */; };
 		68A9A0642208FC4100457876 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0632208FC4100457876 /* libboost_filesystem.a */; };
+		68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
+		68A9A0682209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
+		68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
-		68DFA8DD2203374E005D9413 /* cube.c in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8DC2203374E005D9413 /* cube.c */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -83,6 +85,8 @@
 		686AD25C2208B34900AC826C /* ImageBacking.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageBacking.hpp; sourceTree = "<group>"; };
 		68A9A0612208FC3600457876 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
+		68A9A0652209F98300457876 /* vulkan_utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
+		68A9A0662209F98300457876 /* vulkan_utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vulkan_utils.hpp; sourceTree = "<group>"; };
 		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
 		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
 		68DFA8DA2203317E005D9413 /* MoltenVKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKView.h; sourceTree = "<group>"; };
@@ -182,6 +186,8 @@
 				686AD2572208B2BB00AC826C /* ImageView.hpp */,
 				686AD25B2208B34900AC826C /* ImageBacking.cpp */,
 				686AD25C2208B34900AC826C /* ImageBacking.hpp */,
+				68A9A0652209F98300457876 /* vulkan_utils.cpp */,
+				68A9A0662209F98300457876 /* vulkan_utils.hpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -419,6 +425,7 @@
 				686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686AD23A22086E8E00AC826C /* Vector.cpp in Sources */,
 				68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */,
+				68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */,
 				686AD23F220878AA00AC826C /* View.cpp in Sources */,
 				686AD2582208B2BB00AC826C /* ImageView.cpp in Sources */,
 				686AD24422088A4900AC826C /* GUI.cpp in Sources */,
@@ -439,6 +446,7 @@
 				686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686AD23B22086E8E00AC826C /* Vector.cpp in Sources */,
 				68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */,
+				68A9A0682209F98300457876 /* vulkan_utils.cpp in Sources */,
 				686AD240220878AA00AC826C /* View.cpp in Sources */,
 				686AD2592208B2BB00AC826C /* ImageView.cpp in Sources */,
 				686AD24522088A4900AC826C /* GUI.cpp in Sources */,
@@ -453,11 +461,11 @@
 			files = (
 				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
 				686AD2322208647900AC826C /* Window.cpp in Sources */,
+				68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
 				686AD25022089F3800AC826C /* Backing.cpp in Sources */,
 				686AD24622088A4900AC826C /* GUI.cpp in Sources */,
 				686AD241220878AA00AC826C /* View.cpp in Sources */,
-				68DFA8DD2203374E005D9413 /* cube.c in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
 				686AD2372208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD24B220893D300AC826C /* Device.cpp in Sources */,

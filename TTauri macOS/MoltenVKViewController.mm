@@ -7,29 +7,43 @@
 //
 
 #import "MoltenVKViewController.h"
-#include "cube.h"
+#import "MoltenVKView.h"
+#include "GUI.hpp"
+
+using namespace std;
+using namespace TTauri::Toolkit::GUI;
 
 @implementation MoltenVKViewController
 {
-    CVDisplayLinkRef    _displayLink;
-    struct demo demo;
+    CVDisplayLinkRef                _displayLink;
+    shared_ptr<Device>              device;
 }
 
 -(void) dealloc {
-    demo_cleanup(&demo);
+    CVDisplayLinkStop(_displayLink);
     CVDisplayLinkRelease(_displayLink);
+    device = nullptr;
 }
 
 /** Since this is a single-view app, initialize Vulkan during view loading. */
 -(void) viewDidLoad {
     [super viewDidLoad];
 
-    self.view.wantsLayer = YES;        // Back the view with a layer created by the makeBackingLayer method.
-    const char* arg = "cube";
-    demo_main(&demo, (__bridge void *)self.view, 1, &arg);
+    auto extensions = vector<const char *>{
+        VK_MVK_MACOS_SURFACE_EXTENSION_NAME
+    };
+    device = make_shared<Device>(extensions);
 
+    self.view.wantsLayer = YES;        // Back the view with a layer created by the makeBackingLayer method.
+
+    auto surface = [(MoltenVKView *)self.view makeVulkanLayer:device->instance];
+    auto window = make_shared<Window>(device, surface);
+    device->add(window);
+
+    // Creates  a high performance frame refresh thread with CoreVideo, synchronized with the vertical retrace of
+    // all active displays.
     CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
-    CVDisplayLinkSetOutputCallback(_displayLink, &DisplayLinkCallback, &demo);
+    CVDisplayLinkSetOutputCallback(_displayLink, &DisplayLinkCallback, NULL);
     CVDisplayLinkStart(_displayLink);
 }
 
@@ -43,7 +57,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
                                     CVOptionFlags flagsIn,
                                     CVOptionFlags* flagsOut,
                                     void* target) {
-    demo_draw((struct demo*)target);
+    //demo_draw((struct demo*)target);
     return kCVReturnSuccess;
 }
 
