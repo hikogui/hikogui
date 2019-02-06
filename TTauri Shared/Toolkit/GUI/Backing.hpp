@@ -21,7 +21,7 @@ namespace Toolkit {
 namespace GUI {
 
 class Window;
-class Device;
+class Instance;
 
 /** Backing of a Windget.
  * The Backing contains static data and drawing code. Backings are shared by a View.
@@ -36,15 +36,15 @@ public:
     const float2 size;
 
      //! Convenient reference to the GUI.
-    std::weak_ptr<Device> device;
+    Instance *instance;
 
     //! Convenient reference to the GUI.
-    std::weak_ptr<Window> window;
+    Window *window;
 
     /** Construct a backing of a certain size.
      * \param size Size of the backing image, will be rounded to nearest integer.
      */
-    Backing(std::weak_ptr<Window> window, float2 size);
+    Backing(Window *window, float2 size);
 
     virtual ~Backing();
 

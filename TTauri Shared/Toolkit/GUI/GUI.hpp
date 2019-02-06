@@ -9,6 +9,6 @@
 #pragma once
 
 #include "Rectangle.hpp"
-#include "Device.hpp"
+#include "Instance.hpp"
 #include "Window.hpp"
 #include "View.hpp"

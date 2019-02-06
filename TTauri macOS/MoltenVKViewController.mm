@@ -16,13 +16,13 @@ using namespace TTauri::Toolkit::GUI;
 @implementation MoltenVKViewController
 {
     CVDisplayLinkRef                _displayLink;
-    shared_ptr<Device>              device;
+    shared_ptr<Instance>            instance;
 }
 
 -(void) dealloc {
     CVDisplayLinkStop(_displayLink);
     CVDisplayLinkRelease(_displayLink);
-    device = nullptr;
+    instance = nullptr;
 }
 
 /** Since this is a single-view app, initialize Vulkan during view loading. */
@@ -32,13 +32,14 @@ using namespace TTauri::Toolkit::GUI;
     auto extensions = vector<const char *>{
         VK_MVK_MACOS_SURFACE_EXTENSION_NAME
     };
-    device = make_shared<Device>(extensions);
+    instance = make_shared<Instance>(extensions);
+    instance->setPreferedDeviceUUID({});
 
     self.view.wantsLayer = YES;        // Back the view with a layer created by the makeBackingLayer method.
 
-    auto surface = [(MoltenVKView *)self.view makeVulkanLayer:device->instance];
-    auto window = make_shared<Window>(device, surface);
-    device->add(window);
+    auto surface = [(MoltenVKView *)self.view makeVulkanLayer:instance->intrinsic];
+    auto window = make_shared<Window>(instance.get(), surface);
+    instance->add(window);
 
     // Creates  a high performance frame refresh thread with CoreVideo, synchronized with the vertical retrace of
     // all active displays.

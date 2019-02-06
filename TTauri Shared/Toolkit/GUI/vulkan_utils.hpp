@@ -28,13 +28,30 @@ static inline void setExtensionNames(vk::InstanceCreateInfo &instanceCreateInfo,
     instanceCreateInfo.setPpEnabledExtensionNames(extensions.data());
 }
 
+static inline void setExtensionNames(vk::DeviceCreateInfo &deviceCreateInfo, const std::vector<const char *> &extensions)
+{
+    deviceCreateInfo.setEnabledExtensionCount(boost::numeric_cast<uint32_t>(extensions.size()));
+    deviceCreateInfo.setPpEnabledExtensionNames(extensions.data());
+}
+
+static inline void setLayerNames(vk::InstanceCreateInfo &instanceCreateInfo, const std::vector<const char *> &layers)
+{
+    instanceCreateInfo.setEnabledLayerCount(boost::numeric_cast<uint32_t>(layers.size()));
+    instanceCreateInfo.setPpEnabledLayerNames(layers.data());
+}
+
+static inline void setLayerNames(vk::DeviceCreateInfo &deviceCreateInfo, const std::vector<const char *> &layers)
+{
+    deviceCreateInfo.setEnabledLayerCount(boost::numeric_cast<uint32_t>(layers.size()));
+    deviceCreateInfo.setPpEnabledLayerNames(layers.data());
+}
+
+bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits);
+
+bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures);
+
 /*! Check if the Vulkan driver includes all required extensions.
  */
 void checkRequiredExtensions(const std::vector<const char *> &requiredExtensions);
-
-/*! Create a list of PhysicalDevices sorted best to worst.
- * All devices in the resulting list will have all the required features and meet all the required limits.
- */
-std::vector<vk::PhysicalDevice> findBestPhysicalDevices(const vk::Instance instance, const vk::PhysicalDeviceFeatures &requiredFeatures, const vk::PhysicalDeviceLimits &requiredLimits, const vk::QueueFlags &requiredQueueFlags);
 
 }}}

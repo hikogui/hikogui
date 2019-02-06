@@ -26,26 +26,14 @@ void checkRequiredExtensions(const std::vector<const char *> &requiredExtensions
     }
 }
 
-static bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits)
+bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits)
 {
     auto meetsLimits = true;
 
     return meetsLimits;
 }
 
-static bool hasRequiredQueues(const vk::PhysicalDevice &physicalDevice, const vk::QueueFlags &requiredQueueFlags)
-{
-    auto queues = physicalDevice.getQueueFamilyProperties();
-
-    auto allQueueFlags = vk::QueueFlags();
-    for (auto queue: queues) {
-        allQueueFlags |= queue.queueFlags;
-    }
-
-    return (requiredQueueFlags & allQueueFlags) == requiredQueueFlags;
-}
-
-static bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures)
+bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures)
 {
     auto availableFeatures = physicalDevice.getFeatures();
     auto meetsRequirements = true;
@@ -107,57 +95,6 @@ static bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const 
     meetsRequirements &= requiredFeatures.inheritedQueries ? availableFeatures.inheritedQueries : true;
 
     return meetsRequirements;
-}
-
-
-static bool findBestPhysicalDevices_compare(std::pair<vk::PhysicalDevice, int> a, std::pair<vk::PhysicalDevice, int> b)
-{
-    // Sort in descending order.
-    return a.second > b.second;
-}
-
-std::vector<vk::PhysicalDevice> findBestPhysicalDevices(const vk::Instance instance, const vk::PhysicalDeviceFeatures &requiredFeatures, const vk::PhysicalDeviceLimits &requiredLimits, const vk::QueueFlags &requiredQueueFlags)
-{
-    std::vector<std::pair<vk::PhysicalDevice, int>> scoredDevices;
-
-    for (auto physicalDevice: instance.enumeratePhysicalDevices()) {
-        auto properties = physicalDevice.getProperties();
-
-        if (!hasRequiredFeatures(physicalDevice, requiredFeatures)) {
-            fprintf(stderr, "Device %s does not have the required features.\n", properties.deviceName);
-            continue;
-        }
-
-        if (!hasRequiredQueues(physicalDevice, requiredQueueFlags)) {
-            fprintf(stderr, "Device %s does not have the required queues.\n", properties.deviceName);
-            continue;
-        }
-
-        if (!meetsRequiredLimits(physicalDevice, requiredLimits)) {
-            fprintf(stderr, "Device %s does not have the required limits.\n", properties.deviceName);
-            continue;
-        }
-
-        int score = 0;
-        switch (properties.deviceType) {
-        case vk::PhysicalDeviceType::eCpu: score += 0; break;
-        case vk::PhysicalDeviceType::eOther: score += 1; break;
-        case vk::PhysicalDeviceType::eVirtualGpu: score += 1; break;
-        case vk::PhysicalDeviceType::eIntegratedGpu: score += 2; break;
-        case vk::PhysicalDeviceType::eDiscreteGpu: score += 3; break;
-        }
-
-        scoredDevices.push_back({physicalDevice, score});
-    }
-
-    std::sort(scoredDevices.begin(), scoredDevices.end(), findBestPhysicalDevices_compare);
-
-    std::vector<vk::PhysicalDevice> sortedDevices;
-    for (auto scoredDevice: scoredDevices) {
-        sortedDevices.push_back(scoredDevice.first);
-    }
-
-    return sortedDevices;
 }
 
 }}}

@@ -12,7 +12,7 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
-ImageBacking::ImageBacking(std::weak_ptr<Window> window, const float2 size, const boost::filesystem::path &path) :
+ImageBacking::ImageBacking(Window *window, const float2 size, const boost::filesystem::path &path) :
     Backing(window, size), path(path)
 {
 }

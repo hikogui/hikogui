@@ -20,7 +20,7 @@ class ImageView : View {
 public:
     const boost::filesystem::path path;
 
-    ImageView(std::weak_ptr<View> view, const boost::filesystem::path &path);
+    ImageView(View *view, const boost::filesystem::path &path);
     ~ImageView();
 };
 

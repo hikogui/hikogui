@@ -13,19 +13,17 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
-View::View(std::weak_ptr<Window> window) :
+View::View(Window *window) :
     window(window)
 {
-    const auto _window = window.lock();
-    device = _window->device;
+    instance = window->instance;
 }
 
-View::View(std::weak_ptr<View> parent) :
+View::View(View *parent) :
     parent(parent)
 {
-    const auto _parent = parent.lock();
-    window = _parent->window;
-    device = _parent->device;
+    window = parent->window;
+    instance = parent->instance;
 }
 
 View::~View()

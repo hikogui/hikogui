@@ -22,9 +22,9 @@
 		686AD24422088A4900AC826C /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24222088A4900AC826C /* GUI.cpp */; };
 		686AD24522088A4900AC826C /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24222088A4900AC826C /* GUI.cpp */; };
 		686AD24622088A4900AC826C /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24222088A4900AC826C /* GUI.cpp */; };
-		686AD249220893D300AC826C /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Device.cpp */; };
-		686AD24A220893D300AC826C /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Device.cpp */; };
-		686AD24B220893D300AC826C /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Device.cpp */; };
+		686AD249220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
+		686AD24A220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
+		686AD24B220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
 		686AD24E22089F3800AC826C /* Backing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24C22089F3800AC826C /* Backing.cpp */; };
 		686AD24F22089F3800AC826C /* Backing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24C22089F3800AC826C /* Backing.cpp */; };
 		686AD25022089F3800AC826C /* Backing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24C22089F3800AC826C /* Backing.cpp */; };
@@ -42,6 +42,13 @@
 		68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
 		68A9A0682209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
 		68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
+		68A9A06C220B0FEA00457876 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A06A220B0FEA00457876 /* Device.cpp */; };
+		68A9A06D220B0FEA00457876 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A06A220B0FEA00457876 /* Device.cpp */; };
+		68A9A06E220B0FEA00457876 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A06A220B0FEA00457876 /* Device.cpp */; };
+		68A9A07A220B2F9500457876 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A079220B2F9500457876 /* libboost_thread.a */; };
+		68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
+		68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
+		68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
@@ -73,8 +80,8 @@
 		686AD23E220878AA00AC826C /* View.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = View.hpp; sourceTree = "<group>"; };
 		686AD24222088A4900AC826C /* GUI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GUI.cpp; sourceTree = "<group>"; };
 		686AD24322088A4900AC826C /* GUI.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GUI.hpp; sourceTree = "<group>"; };
-		686AD247220893D300AC826C /* Device.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
-		686AD248220893D300AC826C /* Device.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Device.hpp; sourceTree = "<group>"; };
+		686AD247220893D300AC826C /* Instance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
+		686AD248220893D300AC826C /* Instance.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Instance.hpp; sourceTree = "<group>"; };
 		686AD24C22089F3800AC826C /* Backing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Backing.cpp; sourceTree = "<group>"; };
 		686AD24D22089F3800AC826C /* Backing.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Backing.hpp; sourceTree = "<group>"; };
 		686AD2512208A90400AC826C /* BackingCache.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BackingCache.cpp; sourceTree = "<group>"; };
@@ -87,6 +94,11 @@
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
 		68A9A0652209F98300457876 /* vulkan_utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
 		68A9A0662209F98300457876 /* vulkan_utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vulkan_utils.hpp; sourceTree = "<group>"; };
+		68A9A06A220B0FEA00457876 /* Device.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
+		68A9A06B220B0FEA00457876 /* Device.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Device.hpp; sourceTree = "<group>"; };
+		68A9A079220B2F9500457876 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_thread.a; sourceTree = "<group>"; };
+		68A9A07B220B3DDC00457876 /* Queue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Queue.cpp; sourceTree = "<group>"; };
+		68A9A07C220B3DDC00457876 /* Queue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Queue.hpp; sourceTree = "<group>"; };
 		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
 		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
 		68DFA8DA2203317E005D9413 /* MoltenVKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKView.h; sourceTree = "<group>"; };
@@ -149,6 +161,7 @@
 				68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */,
 				68A9A0622208FC3600457876 /* libboost_system.a in Frameworks */,
 				68A9A0642208FC4100457876 /* libboost_filesystem.a in Frameworks */,
+				68A9A07A220B2F9500457876 /* libboost_thread.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,6 +179,8 @@
 		686AD22D2208645600AC826C /* GUI */ = {
 			isa = PBXGroup;
 			children = (
+				68A9A0652209F98300457876 /* vulkan_utils.cpp */,
+				68A9A0662209F98300457876 /* vulkan_utils.hpp */,
 				686AD24222088A4900AC826C /* GUI.cpp */,
 				686AD24322088A4900AC826C /* GUI.hpp */,
 				686AD2332208693500AC826C /* Rectangle.cpp */,
@@ -176,8 +191,8 @@
 				686AD22F2208647900AC826C /* Window.hpp */,
 				686AD23D220878AA00AC826C /* View.cpp */,
 				686AD23E220878AA00AC826C /* View.hpp */,
-				686AD247220893D300AC826C /* Device.cpp */,
-				686AD248220893D300AC826C /* Device.hpp */,
+				686AD247220893D300AC826C /* Instance.cpp */,
+				686AD248220893D300AC826C /* Instance.hpp */,
 				686AD24C22089F3800AC826C /* Backing.cpp */,
 				686AD24D22089F3800AC826C /* Backing.hpp */,
 				686AD2512208A90400AC826C /* BackingCache.cpp */,
@@ -186,8 +201,10 @@
 				686AD2572208B2BB00AC826C /* ImageView.hpp */,
 				686AD25B2208B34900AC826C /* ImageBacking.cpp */,
 				686AD25C2208B34900AC826C /* ImageBacking.hpp */,
-				68A9A0652209F98300457876 /* vulkan_utils.cpp */,
-				68A9A0662209F98300457876 /* vulkan_utils.hpp */,
+				68A9A06A220B0FEA00457876 /* Device.cpp */,
+				68A9A06B220B0FEA00457876 /* Device.hpp */,
+				68A9A07B220B3DDC00457876 /* Queue.cpp */,
+				68A9A07C220B3DDC00457876 /* Queue.hpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -195,6 +212,7 @@
 		68DFA8D522032B8A005D9413 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				68A9A079220B2F9500457876 /* libboost_thread.a */,
 				68A9A0632208FC4100457876 /* libboost_filesystem.a */,
 				68A9A0612208FC3600457876 /* libboost_system.a */,
 				68DFA8D622032B8A005D9413 /* MoltenVK.framework */,
@@ -418,8 +436,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				686AD2532208A90400AC826C /* BackingCache.cpp in Sources */,
+				68A9A06C220B0FEA00457876 /* Device.cpp in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
-				686AD249220893D300AC826C /* Device.cpp in Sources */,
+				686AD249220893D300AC826C /* Instance.cpp in Sources */,
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
 				686AD24E22089F3800AC826C /* Backing.cpp in Sources */,
 				686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */,
@@ -431,6 +450,7 @@
 				686AD24422088A4900AC826C /* GUI.cpp in Sources */,
 				686AD2352208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD2302208647900AC826C /* Window.cpp in Sources */,
+				68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,8 +459,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				686AD2542208A90400AC826C /* BackingCache.cpp in Sources */,
+				68A9A06D220B0FEA00457876 /* Device.cpp in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
-				686AD24A220893D300AC826C /* Device.cpp in Sources */,
+				686AD24A220893D300AC826C /* Instance.cpp in Sources */,
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
 				686AD24F22089F3800AC826C /* Backing.cpp in Sources */,
 				686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */,
@@ -452,6 +473,7 @@
 				686AD24522088A4900AC826C /* GUI.cpp in Sources */,
 				686AD2362208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD2312208647900AC826C /* Window.cpp in Sources */,
+				68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,8 +490,10 @@
 				686AD241220878AA00AC826C /* View.cpp in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
 				686AD2372208693500AC826C /* Rectangle.cpp in Sources */,
-				686AD24B220893D300AC826C /* Device.cpp in Sources */,
+				686AD24B220893D300AC826C /* Instance.cpp in Sources */,
+				68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */,
 				686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */,
+				68A9A06E220B0FEA00457876 /* Device.cpp in Sources */,
 				686AD2552208A90400AC826C /* BackingCache.cpp in Sources */,
 				686AD25F2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686AD23C22086E8E00AC826C /* Vector.cpp in Sources */,

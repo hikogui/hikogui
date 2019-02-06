@@ -9,6 +9,7 @@
 #pragma once
 #include <memory>
 #include <unordered_set>
+#include <boost/thread.hpp>
 #include <vulkan/vulkan.hpp>
 #include "Rectangle.hpp"
 #include "View.hpp"
@@ -18,7 +19,9 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
+class Instance;
 class Device;
+
 
 enum class WindowType {
     WINDOW,
@@ -34,17 +37,29 @@ enum class SubpixelLayout {
     RGB_BOTTOM_TO_TOP,
 };
 
+enum class WindowState {
+    NO_DEVICE,
+    LINKED_TO_DEVICE,
+    READY_TO_DRAW,
+};
+
+struct WindowStateError: virtual boost::exception, virtual std::exception {};
+
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
  * The Window should not have any decorations, which are to be drawn by the GUI Toolkit, because
  * modern design requires drawing of user interface elements in the border.
  */
 class Window {
-public:
-    //! GUI which manages this Window
-    std::weak_ptr<Device> device;
+private:
+    boost::shared_mutex m;
+    WindowState state;
 
-    vk::SurfaceKHR surface;
+public:
+    vk::SurfaceKHR intrinsic;
+
+    Instance *instance;
+    Device *device;
 
     //! Location of the window on the screen.
     Rectangle location;
@@ -82,11 +97,30 @@ public:
      */
     BackingCache backings;
 
-    Window(std::weak_ptr<Device> device, vk::SurfaceKHR surface) :
-        device(device), surface(surface)
+    void buildSwapChainAndPipeline(void);
+
+    void teardownSwapChainAndPipeline(void);
+
+    void rebuildSwapChainAndPipeline(void) {
+        teardownSwapChainAndPipeline();
+        buildSwapChainAndPipeline();
+    }
+
+    void setDevice(Device *device);
+
+    /*! Draw the complete window.
+     * This method may be called from another thread.
+     */
+    void draw(void);
+
+    Window(Instance *instance, vk::SurfaceKHR surface) :
+        state(WindowState::NO_DEVICE), instance(instance), intrinsic(surface)
     {
 
     }
+
+
+
 };
 
 }}}

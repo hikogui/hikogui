@@ -18,7 +18,7 @@ namespace Toolkit {
 namespace GUI {
 
 class Window;
-class Device;
+class Instance;
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -27,13 +27,13 @@ class Device;
  */
 class View {
 public:
-    //! Convenient reference to the Device.
-    std::weak_ptr<Device> device;
+    //! Convenient reference to the Instance.
+    Instance *instance;
 
     //! Convenient reference to the Window.
-    std::weak_ptr<Window> window;
+    Window *window;
 
-    std::weak_ptr<View> parent;
+    View *parent;
 
     std::vector<std::shared_ptr<View>> children;
 
@@ -51,11 +51,11 @@ public:
 
     /*! Constructor for creating subviews.
      */
-    View(std::weak_ptr<View> parent);
+    View(View *parent);
 
     /*! Constructor for creating the main view of a window.
      */
-    View(std::weak_ptr<Window> window);
+    View(Window *window);
 
     virtual ~View();
 };

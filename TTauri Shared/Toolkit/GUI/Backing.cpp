@@ -13,11 +13,10 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
-Backing::Backing(std::weak_ptr<Window> window, float2 size) :
+Backing::Backing(Window *window, float2 size) :
     window(window), size(size.round())
 {
-    auto _window = window.lock();
-    device = _window->device;
+    instance = window->instance;
 }
 
 Backing::~Backing()
