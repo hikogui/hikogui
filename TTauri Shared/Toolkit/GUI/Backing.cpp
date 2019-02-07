@@ -13,8 +13,8 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
-Backing::Backing(Window *window, float2 size) :
-    window(window), size(size.round())
+Backing::Backing(Window *window, VkExtent2D size) :
+    window(window), size(size)
 {
     instance = window->instance;
 }

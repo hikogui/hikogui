@@ -38,7 +38,7 @@ public:
         }
     }
 
-    ImageBacking(Window *window, float2 size, const boost::filesystem::path &path);
+    ImageBacking(Window *window, VkExtent2D size, const boost::filesystem::path &path);
     virtual ~ImageBacking();
 };
 

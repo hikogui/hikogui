@@ -52,7 +52,7 @@ struct WindowStateError: virtual boost::exception, virtual std::exception {};
  */
 class Window {
 private:
-    boost::shared_mutex m;
+    boost::shared_mutex stateMutex;
     WindowState state;
 
 public:
@@ -108,10 +108,12 @@ public:
 
     void setDevice(Device *device);
 
-    /*! Draw the complete window.
-     * This method may be called from another thread.
+    /*! Refresh Display.
+     *
+     * \outTimestamp Number of nanoseconds since system start.
+     * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      */
-    void draw(void);
+    void frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp);
 
     Window(Instance *instance, vk::SurfaceKHR surface) :
         state(WindowState::NO_DEVICE), instance(instance), intrinsic(surface)

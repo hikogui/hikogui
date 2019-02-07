@@ -46,12 +46,18 @@ static inline void setLayerNames(vk::DeviceCreateInfo &deviceCreateInfo, const s
     deviceCreateInfo.setPpEnabledLayerNames(layers.data());
 }
 
+static inline void setQueueCreateInfos(vk::DeviceCreateInfo &deviceCreateInfo, const std::vector<vk::DeviceQueueCreateInfo> &createInfos)
+{
+    deviceCreateInfo.setQueueCreateInfoCount(boost::numeric_cast<uint32_t>(createInfos.size()));
+    deviceCreateInfo.setPQueueCreateInfos(createInfos.data());
+}
+
 bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits);
 
 bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures);
 
-/*! Check if the Vulkan driver includes all required extensions.
- */
-void checkRequiredExtensions(const std::vector<const char *> &requiredExtensions);
+bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions);
+
+bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, const std::vector<const char *> &requiredExtensions);
 
 }}}

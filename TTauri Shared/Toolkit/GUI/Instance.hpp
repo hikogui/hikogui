@@ -20,6 +20,8 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
+struct InstanceError: virtual boost::exception, virtual std::exception {};
+
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
  */
@@ -46,14 +48,19 @@ public:
     //! List of all devices.
     std::vector<std::shared_ptr<Device>> physicalDevices;
 
-    void add(std::shared_ptr<Window> window) {
-        // XXX Find a correct device to add the window to.
-    }
+    void add(std::shared_ptr<Window> window);
 
     void setPreferedDeviceUUID(boost::uuids::uuid deviceUUID) {
 
         // XXX Move Windows to new prefered device.
     }
+
+    /*! Refresh Display.
+     *
+     * \outTimestamp Number of nanoseconds since system start.
+     * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     */
+    void frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp);
 
     /*! Create an instance of a Device.
      * After the constructor is completed it may be used to get a

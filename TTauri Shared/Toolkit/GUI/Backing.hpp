@@ -14,6 +14,7 @@
 #include <typeinfo>
 #include <typeindex>
 #include <boost/functional/hash.hpp>
+#include <vulkan/vulkan.hpp>
 #include "Vector.hpp"
 
 namespace TTauri {
@@ -33,7 +34,7 @@ class Instance;
  */
 class Backing {
 public:
-    const float2 size;
+    const VkExtent2D size;
 
      //! Convenient reference to the GUI.
     Instance *instance;
@@ -44,14 +45,14 @@ public:
     /** Construct a backing of a certain size.
      * \param size Size of the backing image, will be rounded to nearest integer.
      */
-    Backing(Window *window, float2 size);
+    Backing(Window *window, VkExtent2D size);
 
     virtual ~Backing();
 
     virtual size_t hash(void) const {
         size_t seed = 0;
-        boost::hash_combine(seed, boost::hash_value(size.x));
-        boost::hash_combine(seed, boost::hash_value(size.y));
+        boost::hash_combine(seed, boost::hash_value(size.width));
+        boost::hash_combine(seed, boost::hash_value(size.height));
         return seed;
     }
 
@@ -63,8 +64,8 @@ public:
 
         return (
             (this_type_index == other_type_index) and
-            (size.x != other.size.x) and
-            (size.y != other.size.y)
+            (size.width != other.size.width) and
+            (size.height != other.size.height)
         );
     }
 

@@ -49,6 +49,23 @@
 		68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
 		68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
 		68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
+		68A9A081220BB1BF00457876 /* vulkan_utils.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A0662209F98300457876 /* vulkan_utils.hpp */; };
+		68A9A082220BB1BF00457876 /* GUI.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD24322088A4900AC826C /* GUI.hpp */; };
+		68A9A083220BB1BF00457876 /* Rectangle.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2342208693500AC826C /* Rectangle.hpp */; };
+		68A9A084220BB1BF00457876 /* Vector.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD23922086E8E00AC826C /* Vector.hpp */; };
+		68A9A085220BB1BF00457876 /* Window.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD22F2208647900AC826C /* Window.hpp */; };
+		68A9A086220BB1BF00457876 /* View.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD23E220878AA00AC826C /* View.hpp */; };
+		68A9A087220BB1BF00457876 /* Instance.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD248220893D300AC826C /* Instance.hpp */; };
+		68A9A088220BB1BF00457876 /* Backing.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD24D22089F3800AC826C /* Backing.hpp */; };
+		68A9A089220BB1BF00457876 /* BackingCache.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2522208A90400AC826C /* BackingCache.hpp */; };
+		68A9A08A220BB1BF00457876 /* ImageView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2572208B2BB00AC826C /* ImageView.hpp */; };
+		68A9A08B220BB1BF00457876 /* ImageBacking.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD25C2208B34900AC826C /* ImageBacking.hpp */; };
+		68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A06B220B0FEA00457876 /* Device.hpp */; };
+		68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A07C220B3DDC00457876 /* Queue.hpp */; };
+		68A9A090220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
+		68A9A091220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
+		68A9A092220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
+		68A9A093220C7E9C00457876 /* QueueCapabilities.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
@@ -68,6 +85,32 @@
 		68F262B422030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
 		68F262B522030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		68A9A080220BB12C00457876 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = include/TTauri/Toolkit/GUI;
+			dstSubfolderSpec = 16;
+			files = (
+				68A9A081220BB1BF00457876 /* vulkan_utils.hpp in CopyFiles */,
+				68A9A082220BB1BF00457876 /* GUI.hpp in CopyFiles */,
+				68A9A083220BB1BF00457876 /* Rectangle.hpp in CopyFiles */,
+				68A9A084220BB1BF00457876 /* Vector.hpp in CopyFiles */,
+				68A9A085220BB1BF00457876 /* Window.hpp in CopyFiles */,
+				68A9A086220BB1BF00457876 /* View.hpp in CopyFiles */,
+				68A9A087220BB1BF00457876 /* Instance.hpp in CopyFiles */,
+				68A9A088220BB1BF00457876 /* Backing.hpp in CopyFiles */,
+				68A9A089220BB1BF00457876 /* BackingCache.hpp in CopyFiles */,
+				68A9A08A220BB1BF00457876 /* ImageView.hpp in CopyFiles */,
+				68A9A08B220BB1BF00457876 /* ImageBacking.hpp in CopyFiles */,
+				68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */,
+				68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */,
+				68A9A093220C7E9C00457876 /* QueueCapabilities.hpp in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		686AD22E2208647900AC826C /* Window.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Window.cpp; sourceTree = "<group>"; };
@@ -99,6 +142,8 @@
 		68A9A079220B2F9500457876 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_thread.a; sourceTree = "<group>"; };
 		68A9A07B220B3DDC00457876 /* Queue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Queue.cpp; sourceTree = "<group>"; };
 		68A9A07C220B3DDC00457876 /* Queue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Queue.hpp; sourceTree = "<group>"; };
+		68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QueueCapabilities.cpp; sourceTree = "<group>"; };
+		68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QueueCapabilities.hpp; sourceTree = "<group>"; };
 		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
 		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
 		68DFA8DA2203317E005D9413 /* MoltenVKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKView.h; sourceTree = "<group>"; };
@@ -205,6 +250,8 @@
 				68A9A06B220B0FEA00457876 /* Device.hpp */,
 				68A9A07B220B3DDC00457876 /* Queue.cpp */,
 				68A9A07C220B3DDC00457876 /* Queue.hpp */,
+				68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */,
+				68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -346,6 +393,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 68F262BE22030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri macOS" */;
 			buildPhases = (
+				68A9A080220BB12C00457876 /* CopyFiles */,
 				68F2629B22030EA70078E5E4 /* Sources */,
 				68F2629C22030EA70078E5E4 /* Frameworks */,
 				68F2629D22030EA70078E5E4 /* Resources */,
@@ -451,6 +499,7 @@
 				686AD2352208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD2302208647900AC826C /* Window.cpp in Sources */,
 				68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */,
+				68A9A090220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -474,6 +523,7 @@
 				686AD2362208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD2312208647900AC826C /* Window.cpp in Sources */,
 				68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */,
+				68A9A091220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,6 +540,7 @@
 				686AD241220878AA00AC826C /* View.cpp in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
 				686AD2372208693500AC826C /* Rectangle.cpp in Sources */,
+				68A9A092220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
 				686AD24B220893D300AC826C /* Instance.cpp in Sources */,
 				68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */,
 				686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */,
@@ -556,7 +607,7 @@
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
@@ -594,6 +645,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				USE_HEADERMAP = NO;
 			};
 			name = Debug;
 		};
@@ -614,7 +666,7 @@
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
@@ -649,6 +701,7 @@
 				LIBRARY_SEARCH_PATHS = /opt/boost_1_69_0/stage/lib;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				USE_HEADERMAP = NO;
 			};
 			name = Release;
 		};
@@ -738,6 +791,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -768,6 +822,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

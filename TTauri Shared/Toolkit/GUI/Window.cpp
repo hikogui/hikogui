@@ -13,12 +13,11 @@ namespace Toolkit {
 namespace GUI {
 
 using namespace std;
-using namespace boost;
 
 void Window::buildSwapChainAndPipeline(void)
 {
-    upgrade_lock<shared_mutex> lock(m);
-    upgrade_to_unique_lock<shared_mutex> uniqueLock(lock);
+    boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
+    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
     if (state == WindowState::LINKED_TO_DEVICE) {
         // XXX setup swap chain.
@@ -30,8 +29,8 @@ void Window::buildSwapChainAndPipeline(void)
 
 void Window::teardownSwapChainAndPipeline(void)
 {
-    upgrade_lock<shared_mutex> lock(m);
-    upgrade_to_unique_lock<shared_mutex> uniqueLock(lock);
+    boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
+    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
     if (state == WindowState::READY_TO_DRAW) {
         // XXX teardown swap chain.
@@ -46,8 +45,8 @@ void Window::setDevice(Device *device) {
         teardownSwapChainAndPipeline();
 
         {
-            upgrade_lock<shared_mutex> lock(m);
-            upgrade_to_unique_lock<shared_mutex> uniqueLock(lock);
+            boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
+            boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
             if (state == WindowState::LINKED_TO_DEVICE) {
                 this->device = nullptr;
                 state = WindowState::NO_DEVICE;
@@ -58,8 +57,8 @@ void Window::setDevice(Device *device) {
 
     } else {
         {
-            upgrade_lock<shared_mutex> lock(m);
-            upgrade_to_unique_lock<shared_mutex> uniqueLock(lock);
+            boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
+            boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
             if (state == WindowState::NO_DEVICE) {
                 this->device = device;
                 state = WindowState::LINKED_TO_DEVICE;
@@ -72,11 +71,13 @@ void Window::setDevice(Device *device) {
     }
 }
 
-void Window::draw(void)
+void Window::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)
 {
-    shared_lock<shared_mutex> lock(m);
-    if (state == WindowState::READY_TO_DRAW) {
+    if (stateMutex.try_lock_shared()) {
+        if (state == WindowState::READY_TO_DRAW) {
 
+        }
+        stateMutex.unlock_shared();
     }
 }
 

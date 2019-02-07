@@ -31,7 +31,9 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
     requiredExtensions.push_back(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
-    checkRequiredExtensions(requiredExtensions);
+    if (!hasRequiredExtensions(requiredExtensions)) {
+        BOOST_THROW_EXCEPTION(InstanceError());
+    }
 
     auto instanceCreateInfo = vk::InstanceCreateInfo(
         vk::InstanceCreateFlags(),
@@ -46,13 +48,42 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
         auto physicalDevice = make_shared<Device>(this, _physicalDevice);
         physicalDevices.push_back(physicalDevice);
     }
+}
 
+void Instance::add(std::shared_ptr<Window> window)
+{
+    int bestScore = -1;
+    shared_ptr<Device> bestDevice;
+    for (auto physicalDevice: physicalDevices) {
+        auto score = physicalDevice->score(window);
+        if (score > bestScore) {
+            bestScore = score;
+            bestDevice = physicalDevice;
+        }
+    }
 
+    switch (bestScore) {
+    case -1:
+        BOOST_THROW_EXCEPTION(InstanceError());
+    case 0:
+        fprintf(stderr, "Could not really find a device that can present this window.");
+        /* FALLTHROUGH */
+    default:
+        bestDevice->add(window);
+    }
 }
 
 Instance::~Instance()
 {
     intrinsic.destroy();
+}
+
+
+void Instance::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)
+{
+    for (auto physicalDevice: physicalDevices) {
+        physicalDevice->frameUpdate(nowTimestamp, outputTimestamp);
+    }
 }
 
 }}}

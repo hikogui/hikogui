@@ -8,21 +8,26 @@
 
 #import "MoltenVKViewController.h"
 #import "MoltenVKView.h"
-#include "GUI.hpp"
+#include "TTauri/Toolkit/GUI/GUI.hpp"
 
 using namespace std;
 using namespace TTauri::Toolkit::GUI;
 
+struct CallbackData {
+    shared_ptr<Instance> instance;
+    uint64_t hostFrequency;
+};
+
 @implementation MoltenVKViewController
 {
-    CVDisplayLinkRef                _displayLink;
-    shared_ptr<Instance>            instance;
+    CVDisplayLinkRef _displayLink;
+    CallbackData callbackData;
 }
 
 -(void) dealloc {
     CVDisplayLinkStop(_displayLink);
     CVDisplayLinkRelease(_displayLink);
-    instance = nullptr;
+    callbackData.instance = nullptr;
 }
 
 /** Since this is a single-view app, initialize Vulkan during view loading. */
@@ -32,19 +37,22 @@ using namespace TTauri::Toolkit::GUI;
     auto extensions = vector<const char *>{
         VK_MVK_MACOS_SURFACE_EXTENSION_NAME
     };
-    instance = make_shared<Instance>(extensions);
-    instance->setPreferedDeviceUUID({});
+    callbackData.instance = make_shared<Instance>(extensions);
+    callbackData.instance->setPreferedDeviceUUID({});
 
     self.view.wantsLayer = YES;        // Back the view with a layer created by the makeBackingLayer method.
 
-    auto surface = [(MoltenVKView *)self.view makeVulkanLayer:instance->intrinsic];
-    auto window = make_shared<Window>(instance.get(), surface);
-    instance->add(window);
+    auto surface = [(MoltenVKView *)self.view makeVulkanLayer:callbackData.instance->intrinsic];
+    auto window = make_shared<Window>(callbackData.instance.get(), surface);
+    callbackData.instance->add(window);
 
     // Creates  a high performance frame refresh thread with CoreVideo, synchronized with the vertical retrace of
     // all active displays.
+
+    callbackData.hostFrequency = boost::numeric_cast<uint64_t>(CVGetHostClockFrequency());
+
     CVDisplayLinkCreateWithActiveCGDisplays(&_displayLink);
-    CVDisplayLinkSetOutputCallback(_displayLink, &DisplayLinkCallback, NULL);
+    CVDisplayLinkSetOutputCallback(_displayLink, &DisplayLinkCallback, static_cast<void *>(&callbackData));
     CVDisplayLinkStart(_displayLink);
 }
 
@@ -58,6 +66,20 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
                                     CVOptionFlags flagsIn,
                                     CVOptionFlags* flagsOut,
                                     void* target) {
+
+    auto callbackData = static_cast<CallbackData *>(target);
+
+    auto currentHostTime = static_cast<__uint128_t>(now->hostTime);
+    currentHostTime *= 1000000000;
+    currentHostTime /= callbackData->hostFrequency;
+
+    auto outputHostTime = static_cast<__uint128_t>(outputTime->hostTime) * 1000000ULL;
+    outputHostTime *= 1000000000;
+    outputHostTime /= callbackData->hostFrequency;
+
+    callbackData->instance->frameUpdate(boost::numeric_cast<uint64_t>(currentHostTime), boost::numeric_cast<uint64_t>(outputHostTime));
+
+
     //demo_draw((struct demo*)target);
     return kCVReturnSuccess;
 }

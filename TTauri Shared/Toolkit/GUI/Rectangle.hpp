@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Vector.hpp"
+#include <vulkan/vulkan.hpp>
 
 namespace TTauri {
 namespace Toolkit {
@@ -33,7 +34,7 @@ struct Rectangle {
     float2 offset;
 
     //! Size of this `Rectangle`.
-    float2 size;
+    VkExtent2D size;
 
     //! Origin within this `Rectangle`, in reference to the center of the non-rotated left-top pixel of this `Rectangle`.
     float2 origin;
@@ -49,7 +50,7 @@ struct Rectangle {
 
     Rectangle(void) {
         offset = {0.0, 0.0};
-        size = {0.0, 0.0};
+        size = {0, 0};
         origin = {0.0, 0.0};
         rotation = 0.0;
         scale = 0.0;
