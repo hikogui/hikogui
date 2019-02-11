@@ -44,7 +44,19 @@ struct CallbackData {
 
     auto surface = [(MoltenVKView *)self.view makeVulkanLayer:callbackData.instance->intrinsic];
     auto window = make_shared<Window>(callbackData.instance.get(), surface);
-    callbackData.instance->add(window);
+
+    window->displayRectangle.offset.x = self.view.frame.origin.x;
+    window->displayRectangle.offset.y = self.view.frame.origin.y;
+    window->displayRectangle.extent.width = self.view.frame.size.width;
+    window->displayRectangle.extent.height = self.view.frame.size.height;
+
+    if (!callbackData.instance->add(window)) {
+        auto alert = [[NSAlert alloc] init];
+        [alert setMessageText:@"Could not open window."];
+        [alert setInformativeText:@"Window is not supported on any Metal/Vulkan device."];
+        [alert addButtonWithTitle:@"Ok"];
+        [alert runModal];
+    }
 
     // Creates  a high performance frame refresh thread with CoreVideo, synchronized with the vertical retrace of
     // all active displays.
@@ -73,12 +85,11 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
     currentHostTime *= 1000000000;
     currentHostTime /= callbackData->hostFrequency;
 
-    auto outputHostTime = static_cast<__uint128_t>(outputTime->hostTime) * 1000000ULL;
+    auto outputHostTime = static_cast<__uint128_t>(outputTime->hostTime);
     outputHostTime *= 1000000000;
     outputHostTime /= callbackData->hostFrequency;
 
     callbackData->instance->frameUpdate(boost::numeric_cast<uint64_t>(currentHostTime), boost::numeric_cast<uint64_t>(outputHostTime));
-
 
     //demo_draw((struct demo*)target);
     return kCVReturnSuccess;

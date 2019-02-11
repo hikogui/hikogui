@@ -8,6 +8,14 @@
 
 #pragma once
 
+#include <string>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#pragma clang diagnostic ignored "-Wcomma"
+#include <boost/format.hpp>
+#pragma clang diagnostic pop
+
 namespace TTauri {
 namespace Toolkit {
 namespace GUI {
@@ -16,6 +24,9 @@ struct QueueCapabilities {
     bool handlesGraphics;
     bool handlesCompute;
     bool handlesPresent;
+
+    QueueCapabilities() :
+        handlesGraphics(false), handlesCompute(false), handlesPresent(false) {}
 
     bool handlesEverything() const {
         return handlesGraphics and handlesCompute and handlesPresent;
@@ -27,6 +38,14 @@ struct QueueCapabilities {
 
     bool handlesGraphicsAndCompute() const {
         return handlesGraphics and handlesCompute;
+    }
+
+    std::string str(void) const {
+        return (boost::format("%c%c%c") %
+            (handlesGraphics ? "G" : ".") %
+            (handlesCompute ? "C" : ".") %
+            (handlesPresent ? "P" : ".")
+        ).str();
     }
 
     bool handlesAllOff(const QueueCapabilities &other) const {
@@ -62,8 +81,6 @@ struct QueueCapabilities {
         return result;
     }
 
-    QueueCapabilities() :
-        handlesGraphics(false), handlesCompute(false), handlesPresent(false) {}
 };
 
 }}}

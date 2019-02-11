@@ -22,6 +22,8 @@ class Instance;
 class Queue {
 public:
     vk::Queue intrinsic;
+    uint32_t queueFamilyIndex;
+    uint32_t queueIndex;
     const QueueCapabilities queueCapabilities;
 
     Device *device;

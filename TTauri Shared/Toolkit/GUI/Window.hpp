@@ -58,8 +58,15 @@ private:
 public:
     vk::SurfaceKHR intrinsic;
 
+    vk::SurfaceCapabilitiesKHR surfaceCapabilities;
+    vk::SwapchainCreateInfoKHR swapchainCreateInfo;
+
+    vk::SwapchainKHR swapchain;
+
     Instance *instance;
     Device *device;
+
+    vk::Rect2D displayRectangle;
 
     //! Location of the window on the screen.
     Rectangle location;
@@ -97,13 +104,13 @@ public:
      */
     BackingCache backings;
 
-    void buildSwapChainAndPipeline(void);
+    void buildSwapchainAndPipeline(void);
 
-    void teardownSwapChainAndPipeline(void);
+    void teardownSwapchainAndPipeline(void);
 
-    void rebuildSwapChainAndPipeline(void) {
-        teardownSwapChainAndPipeline();
-        buildSwapChainAndPipeline();
+    void rebuildSwapchainAndPipeline(void) {
+        teardownSwapchainAndPipeline();
+        buildSwapchainAndPipeline();
     }
 
     void setDevice(Device *device);
@@ -121,7 +128,9 @@ public:
 
     }
 
-
+private:
+    void buildSwapchain(void);
+    void teardownSwapchain(void);
 
 };
 

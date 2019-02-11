@@ -48,7 +48,7 @@ public:
     //! List of all devices.
     std::vector<std::shared_ptr<Device>> physicalDevices;
 
-    void add(std::shared_ptr<Window> window);
+    bool add(std::shared_ptr<Window> window);
 
     void setPreferedDeviceUUID(boost::uuids::uuid deviceUUID) {
 

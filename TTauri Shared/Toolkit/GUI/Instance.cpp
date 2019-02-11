@@ -8,6 +8,7 @@
 
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
+#include "TTauri/Toolkit/Logging.hpp"
 
 namespace TTauri {
 namespace Toolkit {
@@ -28,7 +29,7 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
     requiredExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    requiredExtensions.push_back(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME);
+    //requiredExtensions.push_back(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
     if (!hasRequiredExtensions(requiredExtensions)) {
@@ -50,13 +51,16 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
     }
 }
 
-void Instance::add(std::shared_ptr<Window> window)
+bool Instance::add(std::shared_ptr<Window> window)
 {
     int bestScore = -1;
     shared_ptr<Device> bestDevice;
+    
     for (auto physicalDevice: physicalDevices) {
         auto score = physicalDevice->score(window);
-        if (score > bestScore) {
+        LOG_INFO("Device has score=%i.") % score;
+
+        if (score >= bestScore) {
             bestScore = score;
             bestDevice = physicalDevice;
         }
@@ -64,13 +68,14 @@ void Instance::add(std::shared_ptr<Window> window)
 
     switch (bestScore) {
     case -1:
-        BOOST_THROW_EXCEPTION(InstanceError());
+        return false;
     case 0:
         fprintf(stderr, "Could not really find a device that can present this window.");
         /* FALLTHROUGH */
     default:
         bestDevice->add(window);
     }
+    return true;
 }
 
 Instance::~Instance()

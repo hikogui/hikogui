@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <tuple>
+#include <boost/uuid/uuid_io.hpp>
+#include "TTauri/Toolkit/Logging.hpp"
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
 
@@ -22,6 +24,15 @@ using namespace std;
 Device::Device(Instance *parent, vk::PhysicalDevice physicalDevice) :
     instance(parent), physicalIntrinsic(physicalDevice), state(DeviceState::NO_DEVICE)
 {
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>();
+
+    auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
+    auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
+
+    deviceID = resultDeviceProperties2.properties.deviceID;
+    vendorID = resultDeviceProperties2.properties.vendorID;
+    deviceName = std::string(resultDeviceProperties2.properties.deviceName);
+    memcpy(deviceUUID.data, resultDeviceIDProperties.deviceUUID, deviceUUID.size());
 }
 
 Device::~Device()
@@ -30,14 +41,19 @@ Device::~Device()
     intrinsic.destroy();
 }
 
+std::string Device::str(void) const
+{
+    return (boost::format("%04x:%04x %s %s") % vendorID % deviceID % deviceName % deviceUUID).str();
+}
+
+
 void Device::initializeDevice(std::shared_ptr<Window> window)
 {
     float defaultQueuePriority = 1.0;
-    auto queueFamilyIndicesAndQueueCapabilitiess = findBestQueueFamilyIndices(window);
 
     vector<vk::DeviceQueueCreateInfo> deviceQueueCreateInfos;
-    for (auto queueFamilyIndexAndQueueCapabilities: queueFamilyIndicesAndQueueCapabilitiess) {
-        auto index = queueFamilyIndexAndQueueCapabilities.first;
+    for (auto queueFamilyIndexAndCapabilities: queueFamilyIndicesAndCapabilities) {
+        auto index = queueFamilyIndexAndCapabilities.first;
 
         auto deviceQueueCreateInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), index, 1, &defaultQueuePriority);
         deviceQueueCreateInfos.push_back(deviceQueueCreateInfo);
@@ -51,9 +67,9 @@ void Device::initializeDevice(std::shared_ptr<Window> window)
 
     intrinsic = physicalIntrinsic.createDevice(deviceCreateInfo);
 
-    for (auto queueFamilyIndexAndQueueCapabilities: queueFamilyIndicesAndQueueCapabilitiess) {
-        auto index = queueFamilyIndexAndQueueCapabilities.first;
-        auto queueCapabilities = queueFamilyIndexAndQueueCapabilities.second;
+    for (auto queueFamilyIndexAndCapabilities: queueFamilyIndicesAndCapabilities) {
+        auto index = queueFamilyIndexAndCapabilities.first;
+        auto queueCapabilities = queueFamilyIndexAndCapabilities.second;
 
         auto queue = make_shared<Queue>(this, index, 0, queueCapabilities);
         if (queueCapabilities.handlesGraphics) {
@@ -98,6 +114,8 @@ static bool scoreIsGreater(const pair<uint32_t, QueueCapabilities> &a, const pai
 
 std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyIndices(std::shared_ptr<Window> window)
 {
+    LOG_INFO(" - Scoring QueueFamilies");
+
     uint32_t index = 0;
 
     // Create a sorted list of queueFamilies depending on the scoring.
@@ -120,6 +138,8 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyI
         score += capabilities.handlesGraphics ? 1 : 0;
         score += capabilities.handlesPresent ? 1 : 0;
         score += capabilities.handlesCompute ? 1 : 0;
+
+        LOG_INFO("    * %i: capabilities=%s, score=%i") % index % capabilities.str() % score;
 
         queueFamilieScores.push_back({index, capabilities});
         index++;
@@ -144,36 +164,117 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyI
 
 int Device::score(std::shared_ptr<Window> window)
 {
+    uint32_t score = 0;
+
+    LOG_INFO("Scoring device: %s") % str();
     if (!hasRequiredFeatures(physicalIntrinsic, instance->requiredFeatures)) {
+        LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
     if (!meetsRequiredLimits(physicalIntrinsic, instance->requiredLimits)) {
+        LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
 
     if (!hasRequiredExtensions(physicalIntrinsic, instance->requiredExtensions)) {
+        LOG_INFO(" - Does not have the required extensions.");
         return -1;
     }
 
-    QueueCapabilities queueCapabilities;
-    for (auto queueFamilyIndexAndQueueCapabilities: findBestQueueFamilyIndices(window)) {
-        queueCapabilities |= queueFamilyIndexAndQueueCapabilities.second;
+    queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(window);
+    QueueCapabilities deviceCapabilities;
+    for (auto queueFamilyIndexAndCapabilities: queueFamilyIndicesAndCapabilities) {
+        deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
     }
-    if (queueCapabilities.handlesGraphicsAndCompute()) {
-        return -1; // Both Graphics and Compute MUST be available.
-    } else if (queueCapabilities.handlesPresent) {
-        return 0; // Present SHOULD be available, but could still work, but penalise.
+    LOG_INFO(" - Capabilities=%s") % deviceCapabilities.str();
+
+    if (!deviceCapabilities.handlesGraphicsAndCompute()) {
+        LOG_INFO(" - Does not have both the graphics and compute queues.");
+        return -1;
+
+    } else if (!deviceCapabilities.handlesPresent) {
+        LOG_INFO(" - Does not have a present queue.");
+        return 0;
     }
 
-    auto properties = physicalIntrinsic.getProperties();
-    switch (properties.deviceType) {
-    case vk::PhysicalDeviceType::eCpu: return 1;
-    case vk::PhysicalDeviceType::eOther: return 2;
-    case vk::PhysicalDeviceType::eVirtualGpu: return 2;
-    case vk::PhysicalDeviceType::eIntegratedGpu: return 3;
-    case vk::PhysicalDeviceType::eDiscreteGpu: return 4;
+    //auto surfaceCapabilities = physicalIntrinsic.getSurfaceCapabilitiesKHR(window->intrinsic);
+
+
+    // Give score based on colour quality.
+    LOG_INFO(" - Surface formats:");
+    uint32_t bestSurfaceFormatScore = 0;
+    auto formats = physicalIntrinsic.getSurfaceFormatsKHR(window->intrinsic);
+    for (auto format: formats) {
+        uint32_t score = 0;
+
+        LOG_INFO("    * colorSpace=%s, format=%s") % vk::to_string(format.colorSpace) % vk::to_string(format.format);
+
+        switch (format.colorSpace) {
+        case vk::ColorSpaceKHR::eSrgbNonlinear: score += 1; break;
+        case vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT: score += 100; break;
+        default: continue;
+        }
+
+        switch (format.format) {
+        case vk::Format::eR8G8B8Unorm: score += 1; break;
+        case vk::Format::eR16G16B16A16Sfloat: score += 10; break;
+        case vk::Format::eUndefined: score += 2; break;
+        default: continue;
+        }
+
+        if (score > bestSurfaceFormatScore) {
+            bestSurfaceFormatScore = score;
+            bestSurfaceFormat = format;
+        }
     }
+    score += bestSurfaceFormatScore;
+
+    if (score < bestSurfaceFormatScore) {
+        LOG_INFO(" - Does not have a suitable surface format.");
+        return 0;
+    }
+
+    LOG_INFO(" - Surface present modes:");
+    uint32_t bestSurfacePresentModeScore = 0;
+    auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(window->intrinsic);
+    for (auto presentMode: presentModes) {
+        uint32_t score = 0;
+
+        LOG_INFO("    * presentMode=%s") % vk::to_string(presentMode);
+
+        switch (presentMode) {
+        case vk::PresentModeKHR::eImmediate: score += 1; break;
+        case vk::PresentModeKHR::eFifoRelaxed: score += 2; break;
+        case vk::PresentModeKHR::eFifo: score += 3; break;
+        case vk::PresentModeKHR::eMailbox: score += 10; break;
+        default: continue;
+        }
+
+        if (score > bestSurfacePresentModeScore) {
+            bestSurfacePresentModeScore = score;
+            bestSurfacePresentMode = presentMode;
+        }
+    }
+    score += bestSurfacePresentModeScore;
+
+    if (score < bestSurfacePresentModeScore) {
+        LOG_INFO(" - Does not have a suitable surface present mode.");
+        return 0;
+    }
+
+    // Give score based on the perfomance of the device.
+    auto properties = physicalIntrinsic.getProperties();
+    LOG_INFO(" - Type of device: %s") % vk::to_string(properties.deviceType);
+    switch (properties.deviceType) {
+    case vk::PhysicalDeviceType::eCpu: score += 1; break;
+    case vk::PhysicalDeviceType::eOther: score += 1; break;
+    case vk::PhysicalDeviceType::eVirtualGpu: score += 2; break;
+    case vk::PhysicalDeviceType::eIntegratedGpu: score += 3; break;
+    case vk::PhysicalDeviceType::eDiscreteGpu: score += 4; break;
+    }
+
+    return score;
 }
 
 void Device::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)

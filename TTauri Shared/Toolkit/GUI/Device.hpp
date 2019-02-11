@@ -10,6 +10,7 @@
 
 #include <unordered_set>
 #include <vulkan/vulkan.hpp>
+#include <boost/uuid/uuid.hpp>
 
 #include "Window.hpp"
 #include "Queue.hpp"
@@ -38,16 +39,53 @@ public:
 
     Instance *instance;
 
-    /*! A set of queues to send commands to.
+    std::string deviceName;
+    uint32_t vendorID;
+    uint32_t deviceID;
+    vk::PhysicalDeviceType deviceType;
+    boost::uuids::uuid deviceUUID;
+
+    /*! Sorted list of queueFamilies and their capabilities.
+     * score(window) must be called before initializeDevice(window);
+     */
+    std::vector<std::pair<uint32_t, QueueCapabilities>> queueFamilyIndicesAndCapabilities;
+
+    /*! Best surfae format.
+     * score(window) must be called before initializeDevice(window);
+     */
+    vk::SurfaceFormatKHR bestSurfaceFormat;
+
+    /*! Best surfae format.
+     * score(window) must be called before initializeDevice(window);
+     */
+    vk::PresentModeKHR bestSurfacePresentMode;
+
+    /*! A queue for sending graphics commands to.
      * These queue objects may be shared.
      *
      * ASSUMPTION: A single presentQueue can be used by all Windows on this Device.
      */
     std::shared_ptr<Queue> graphicQueue;
+
+    /*! A queue for sending compute commands to.
+     * These queue objects may be shared.
+     *
+     * ASSUMPTION: A single presentQueue can be used by all Windows on this Device.
+     */
     std::shared_ptr<Queue> computeQueue;
+
+    /*! A queue for sending present commands to.
+     * These queue objects may be shared.
+     *
+     * ASSUMPTION: A single presentQueue can be used by all Windows on this Device.
+     */
     std::shared_ptr<Queue> presentQueue;
 
+    /*! A list of windows managed by this device.
+     */
     std::unordered_set<std::shared_ptr<Window>> windows;
+
+    std::string str(void) const;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same
