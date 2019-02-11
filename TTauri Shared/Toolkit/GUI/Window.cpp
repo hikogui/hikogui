@@ -68,17 +68,51 @@ void Window::buildSwapchain(void)
         clipped
     );
 
-    LOG_INFO("Creating swap chain");
+    LOG_INFO("Building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
 
     swapchain = device->intrinsic.createSwapchainKHR(swapchainCreateInfo);
 
+    swapchainImages = device->intrinsic.getSwapchainImagesKHR(swapchain);
+    for (auto image: swapchainImages) {
+        uint32_t baseMipLlevel = 0;
+        uint32_t levelCount = 1;
+        uint32_t baseArrayLayer = 0;
+        uint32_t layerCount = 1;
+        auto imageSubresourceRange = vk::ImageSubresourceRange(
+                                                               vk::ImageAspectFlagBits::eColor,
+            baseMipLlevel,
+            levelCount,
+            baseArrayLayer,
+            layerCount
+        );
+
+        auto imageViewCreateInfo = vk::ImageViewCreateInfo(
+            vk::ImageViewCreateFlags(),
+            image,
+            vk::ImageViewType::e2D,
+            swapchainCreateInfo.imageFormat,
+            vk::ComponentMapping(),
+            imageSubresourceRange
+        );
+
+        auto imageView = device->intrinsic.createImageView(imageViewCreateInfo);
+        swapchainImageViews.push_back(imageView);
+    }
 }
 
 void Window::teardownSwapchain(void)
 {
+    LOG_INFO("Teardown swapchain");
+
+    for (auto imageView: swapchainImageViews) {
+        device->intrinsic.destroy(imageView);
+    }
+    swapchainImageViews.clear();
+
+    device->intrinsic.destroy(swapchain);
 }
 
 void Window::buildSwapchainAndPipeline(void)

@@ -63,6 +63,9 @@ public:
 
     vk::SwapchainKHR swapchain;
 
+    std::vector<vk::Image> swapchainImages;
+    std::vector<vk::ImageView> swapchainImageViews;
+
     Instance *instance;
     Device *device;
 
