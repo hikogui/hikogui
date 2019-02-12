@@ -6,11 +6,14 @@
 //  Copyright © 2019 Pokitec. All rights reserved.
 //
 
+#include <boost/filesystem.hpp>
 #import "MoltenVKViewController.h"
 #import "MoltenVKView.h"
+#include "TTauri/Toolkit/Application.hpp"
 #include "TTauri/Toolkit/GUI/GUI.hpp"
 
 using namespace std;
+using namespace TTauri::Toolkit;
 using namespace TTauri::Toolkit::GUI;
 
 struct CallbackData {
@@ -33,6 +36,13 @@ struct CallbackData {
 /** Since this is a single-view app, initialize Vulkan during view loading. */
 -(void) viewDidLoad {
     [super viewDidLoad];
+
+    // Get the main path the Resources folder of the bundle by requesting a known existing file.
+    auto _resourceFile = [[NSBundle mainBundle] pathForResource:@"BackingPipeline.frag" ofType:@"spv"];
+    auto resourceFile = boost::filesystem::path([_resourceFile UTF8String]);
+    auto resourceDir = resourceFile.parent_path();
+
+    app = make_shared<Application>(resourceDir);
 
     auto extensions = vector<const char *>{
         VK_MVK_MACOS_SURFACE_EXTENSION_NAME

@@ -37,6 +37,18 @@
 		686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
 		686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
 		686AD25F2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
+		686E3B9822127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
+		686E3B9922127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
+		686E3B9A22127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
+		686E3B9D2212FBFB002B56E5 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */; };
+		686E3B9E2212FBFB002B56E5 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */; };
+		686E3B9F2212FBFB002B56E5 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */; };
+		686E3BA02212FC0C002B56E5 /* Pipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686E3B9C2212FBFB002B56E5 /* Pipeline.hpp */; };
+		686E3BA12212FC12002B56E5 /* Time.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686E3B9722127A57002B56E5 /* Time.hpp */; };
+		686E3BA42213091F002B56E5 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3BA22213091F002B56E5 /* BackingPipeline.cpp */; };
+		686E3BA52213091F002B56E5 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3BA22213091F002B56E5 /* BackingPipeline.cpp */; };
+		686E3BA62213091F002B56E5 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3BA22213091F002B56E5 /* BackingPipeline.cpp */; };
+		686E3BA72213092C002B56E5 /* BackingPipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686E3BA32213091F002B56E5 /* BackingPipeline.hpp */; };
 		68A9A0622208FC3600457876 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0612208FC3600457876 /* libboost_system.a */; };
 		68A9A0642208FC4100457876 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0632208FC4100457876 /* libboost_filesystem.a */; };
 		68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
@@ -73,6 +85,10 @@
 		68D07C1F220CDF19005EFAB2 /* libboost_log.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D07C1E220CDF18005EFAB2 /* libboost_log.a */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
+		68E5D6E022131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
+		68E5D6E122131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
+		68E5D6E222131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
+		68E5D6E3221326DE00DA9792 /* Application.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68E5D6DF22131E9800DA9792 /* Application.hpp */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -112,6 +128,8 @@
 				68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */,
 				68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */,
 				68A9A093220C7E9C00457876 /* QueueCapabilities.hpp in CopyFiles */,
+				686E3BA02212FC0C002B56E5 /* Pipeline.hpp in CopyFiles */,
+				686E3BA72213092C002B56E5 /* BackingPipeline.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,6 +140,8 @@
 			dstSubfolderSpec = 16;
 			files = (
 				68C6C3B1220CCC8700B39337 /* Logging.hpp in CopyFiles */,
+				686E3BA12212FC12002B56E5 /* Time.hpp in CopyFiles */,
+				68E5D6E3221326DE00DA9792 /* Application.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +168,14 @@
 		686AD2572208B2BB00AC826C /* ImageView.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageView.hpp; sourceTree = "<group>"; };
 		686AD25B2208B34900AC826C /* ImageBacking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageBacking.cpp; sourceTree = "<group>"; };
 		686AD25C2208B34900AC826C /* ImageBacking.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageBacking.hpp; sourceTree = "<group>"; };
+		686E3B9622127A57002B56E5 /* Time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
+		686E3B9722127A57002B56E5 /* Time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
+		686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Pipeline.cpp; sourceTree = "<group>"; };
+		686E3B9C2212FBFB002B56E5 /* Pipeline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Pipeline.hpp; sourceTree = "<group>"; };
+		686E3BA22213091F002B56E5 /* BackingPipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BackingPipeline.cpp; sourceTree = "<group>"; };
+		686E3BA32213091F002B56E5 /* BackingPipeline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BackingPipeline.hpp; sourceTree = "<group>"; };
+		686E3BA822130AC7002B56E5 /* BackingPipeline.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = BackingPipeline.vert; sourceTree = "<group>"; };
+		686E3BAC22130AE6002B56E5 /* BackingPipeline.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = BackingPipeline.frag; sourceTree = "<group>"; };
 		68A9A0612208FC3600457876 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
 		68A9A0652209F98300457876 /* vulkan_utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
@@ -165,6 +193,9 @@
 		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
 		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
 		68DFA8DA2203317E005D9413 /* MoltenVKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKView.h; sourceTree = "<group>"; };
+		68E5D6DD221313DD00DA9792 /* XCodeCompileVulkanShaders.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = XCodeCompileVulkanShaders.sh; sourceTree = "<group>"; };
+		68E5D6DE22131E9800DA9792 /* Application.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Application.cpp; sourceTree = "<group>"; };
+		68E5D6DF22131E9800DA9792 /* Application.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Application.hpp; sourceTree = "<group>"; };
 		68F2627222030EA70078E5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68F2627722030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F2627A22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -226,8 +257,12 @@
 		686AD22C220861ED00AC826C /* Toolkit */ = {
 			isa = PBXGroup;
 			children = (
+				68E5D6DE22131E9800DA9792 /* Application.cpp */,
+				68E5D6DF22131E9800DA9792 /* Application.hpp */,
 				68C6C3AA220CCA3C00B39337 /* Logging.cpp */,
 				68C6C3AB220CCA3C00B39337 /* Logging.hpp */,
+				686E3B9622127A57002B56E5 /* Time.cpp */,
+				686E3B9722127A57002B56E5 /* Time.hpp */,
 				686AD22D2208645600AC826C /* GUI */,
 			);
 			path = Toolkit;
@@ -264,6 +299,12 @@
 				68A9A07C220B3DDC00457876 /* Queue.hpp */,
 				68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */,
 				68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */,
+				686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */,
+				686E3B9C2212FBFB002B56E5 /* Pipeline.hpp */,
+				686E3BA22213091F002B56E5 /* BackingPipeline.cpp */,
+				686E3BA32213091F002B56E5 /* BackingPipeline.hpp */,
+				686E3BA822130AC7002B56E5 /* BackingPipeline.vert */,
+				686E3BAC22130AE6002B56E5 /* BackingPipeline.frag */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -280,9 +321,18 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		68E5D6DC221313AB00DA9792 /* Build Scripts */ = {
+			isa = PBXGroup;
+			children = (
+				68E5D6DD221313DD00DA9792 /* XCodeCompileVulkanShaders.sh */,
+			);
+			path = "Build Scripts";
+			sourceTree = "<group>";
+		};
 		68F2626822030EA30078E5E4 = {
 			isa = PBXGroup;
 			children = (
+				68E5D6DC221313AB00DA9792 /* Build Scripts */,
 				68F2626D22030EA30078E5E4 /* TTauri Shared */,
 				68F2627922030EA70078E5E4 /* TTauri iOS */,
 				68F2628E22030EA70078E5E4 /* TTauri tvOS */,
@@ -401,6 +451,7 @@
 				68C6C3B0220CCC7100B39337 /* CopyFiles */,
 				68F2629B22030EA70078E5E4 /* Sources */,
 				68F2629C22030EA70078E5E4 /* Frameworks */,
+				686E3BB022130D13002B56E5 /* ShellScript */,
 				68F2629D22030EA70078E5E4 /* Resources */,
 			);
 			buildRules = (
@@ -483,6 +534,30 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		686E3BB022130D13002B56E5 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/TTauri Shared/Toolkit/GUI/BackingPipeline.vert",
+				"$(SRCROOT)/TTauri Shared/Toolkit/GUI/BackingPipeline.frag",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(METAL_LIBRARY_OUTPUT_DIR)/BackingPipeline.vert.spv",
+				"$(METAL_LIBRARY_OUTPUT_DIR)/BackingPipeline.frag.spv",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "#!/bin/bash\n\n#  XCodeCompileVulkanShaders.sh\n#  TTauri\n#\n#  Created by Tjienta Vara on 2019-02-12.\n#  Copyright © 2019 Pokitec. All rights reserved.\n\nGLSLANGVALIDATOR=/usr/local/bin/glslangValidator\n\nif [ ${SCRIPT_INPUT_FILE_COUNT} -ne ${SCRIPT_OUTPUT_FILE_COUNT} ]\nthen\n    echo \"Number of input files ${SCRIPT_INPUT_FILE_COUNT} does not equal number of output files ${SCRIPT_OUTPUT_FILE_COUNT}\"\n    exit 2\nfi\n\nfor i in `seq 0 $[${SCRIPT_INPUT_FILE_COUNT} - 1]`\ndo\n    INPUT_PATH_VARIABLE=\"SCRIPT_INPUT_FILE_${i}\"\n    OUTPUT_PATH_VARIABLE=\"SCRIPT_OUTPUT_FILE_${i}\"\n    INPUT_PATH=\"${!INPUT_PATH_VARIABLE}\"\n    OUTPUT_PATH=\"${!OUTPUT_PATH_VARIABLE}\"\n    INPUT_FILE=`basename \"${INPUT_PATH}\"`\n    OUTPUT_FILE=`basename \"${OUTPUT_PATH}\" .spv`\n\n    if [ \"${INPUT_FILE}\" != \"${OUTPUT_FILE}\" ]\n    then\n        echo \"Input file ${INPUT_PATH} does not match output file ${OUTPUT_PATH}\"\n        exit 2\n    fi\n\n    if [ ! -f \"${INPUT_PATH}\" ]\n    then\n        echo \"Could not find input file ${INPUT_PATH}\"\n        exit 2\n    fi\n\n    echo \"Compiling ${INPUT_FILE}\"\n    ${GLSLANGVALIDATOR} -V -o \"${OUTPUT_PATH}\" \"${INPUT_PATH}\"\n    RET=$?\n    if [ ${RET} -ne 0 ]\n    then\n        exit ${RET}\n    fi\ndone\nexit 0\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		68F2627322030EA70078E5E4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -490,18 +565,22 @@
 			files = (
 				686AD2532208A90400AC826C /* BackingCache.cpp in Sources */,
 				68A9A06C220B0FEA00457876 /* Device.cpp in Sources */,
+				68E5D6E022131E9800DA9792 /* Application.cpp in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
 				686AD249220893D300AC826C /* Instance.cpp in Sources */,
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
 				686AD24E22089F3800AC826C /* Backing.cpp in Sources */,
 				686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */,
+				686E3B9D2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
 				68C6C3AC220CCA3C00B39337 /* Logging.cpp in Sources */,
 				686AD23A22086E8E00AC826C /* Vector.cpp in Sources */,
 				68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */,
 				68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */,
+				686E3B9822127A57002B56E5 /* Time.cpp in Sources */,
 				686AD23F220878AA00AC826C /* View.cpp in Sources */,
 				686AD2582208B2BB00AC826C /* ImageView.cpp in Sources */,
 				686AD24422088A4900AC826C /* GUI.cpp in Sources */,
+				686E3BA42213091F002B56E5 /* BackingPipeline.cpp in Sources */,
 				686AD2352208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD2302208647900AC826C /* Window.cpp in Sources */,
 				68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */,
@@ -515,18 +594,22 @@
 			files = (
 				686AD2542208A90400AC826C /* BackingCache.cpp in Sources */,
 				68A9A06D220B0FEA00457876 /* Device.cpp in Sources */,
+				68E5D6E122131E9800DA9792 /* Application.cpp in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
 				686AD24A220893D300AC826C /* Instance.cpp in Sources */,
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
 				686AD24F22089F3800AC826C /* Backing.cpp in Sources */,
 				686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */,
+				686E3B9E2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
 				68C6C3AD220CCA3C00B39337 /* Logging.cpp in Sources */,
 				686AD23B22086E8E00AC826C /* Vector.cpp in Sources */,
 				68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */,
 				68A9A0682209F98300457876 /* vulkan_utils.cpp in Sources */,
+				686E3B9922127A57002B56E5 /* Time.cpp in Sources */,
 				686AD240220878AA00AC826C /* View.cpp in Sources */,
 				686AD2592208B2BB00AC826C /* ImageView.cpp in Sources */,
 				686AD24522088A4900AC826C /* GUI.cpp in Sources */,
+				686E3BA52213091F002B56E5 /* BackingPipeline.cpp in Sources */,
 				686AD2362208693500AC826C /* Rectangle.cpp in Sources */,
 				686AD2312208647900AC826C /* Window.cpp in Sources */,
 				68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */,
@@ -542,6 +625,7 @@
 				686AD2322208647900AC826C /* Window.cpp in Sources */,
 				68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
+				686E3B9A22127A57002B56E5 /* Time.cpp in Sources */,
 				68C6C3AE220CCA3C00B39337 /* Logging.cpp in Sources */,
 				686AD25022089F3800AC826C /* Backing.cpp in Sources */,
 				686AD24622088A4900AC826C /* GUI.cpp in Sources */,
@@ -549,6 +633,8 @@
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
 				686AD2372208693500AC826C /* Rectangle.cpp in Sources */,
 				68A9A092220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
+				68E5D6E222131E9800DA9792 /* Application.cpp in Sources */,
+				686E3B9F2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
 				686AD24B220893D300AC826C /* Instance.cpp in Sources */,
 				68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */,
 				686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */,
@@ -557,6 +643,7 @@
 				686AD25F2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686AD23C22086E8E00AC826C /* Vector.cpp in Sources */,
 				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,
+				686E3BA62213091F002B56E5 /* BackingPipeline.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

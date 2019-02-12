@@ -14,6 +14,7 @@
 #include "Rectangle.hpp"
 #include "View.hpp"
 #include "BackingCache.hpp"
+#include "BackingPipeline.hpp"
 
 namespace TTauri {
 namespace Toolkit {
@@ -107,6 +108,8 @@ public:
      */
     BackingCache backings;
 
+    std::shared_ptr<BackingPipeline> backingPipeline;
+
     void buildSwapchainAndPipeline(void);
 
     void teardownSwapchainAndPipeline(void);
@@ -134,7 +137,8 @@ public:
 private:
     void buildSwapchain(void);
     void teardownSwapchain(void);
-
+    void buildPipelines(void);
+    void teardownPipelines(void);
 };
 
 }}}

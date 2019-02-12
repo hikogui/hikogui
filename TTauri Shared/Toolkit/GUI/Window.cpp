@@ -115,14 +115,24 @@ void Window::teardownSwapchain(void)
     device->intrinsic.destroy(swapchain);
 }
 
+void Window::buildPipelines(void)
+{
+    backingPipeline = std::make_shared<BackingPipeline>(this);
+}
+
+void Window::teardownPipelines(void)
+{
+    backingPipeline = nullptr;
+}
+
 void Window::buildSwapchainAndPipeline(void)
 {
     boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
     boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
     if (state == WindowState::LINKED_TO_DEVICE) {
-        // XXX setup swap chain.
         buildSwapchain();
+        buildPipelines();
         state = WindowState::READY_TO_DRAW;
     } else {
         BOOST_THROW_EXCEPTION(WindowStateError());
@@ -135,7 +145,7 @@ void Window::teardownSwapchainAndPipeline(void)
     boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
     if (state == WindowState::READY_TO_DRAW) {
-        // XXX teardown swap chain.
+        teardownPipelines();
         teardownSwapchain();
         state = WindowState::LINKED_TO_DEVICE;
     } else {
