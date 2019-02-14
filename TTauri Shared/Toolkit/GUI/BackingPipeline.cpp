@@ -15,13 +15,29 @@ namespace GUI {
 
 using namespace TTauri::Toolkit;
 
-BackingPipeline::BackingPipeline(Window *window) :
-    Pipeline(window, app->getPathToResource("BackingPipeline.vert.spv"), app->getPathToResource("BackingPipeline.frag.spv"))
+BackingPipeline::BackingPipeline(Device *device) :
+    Pipeline(device)
 {
 }
 
 BackingPipeline::~BackingPipeline()
 {
+}
+
+std::vector<vk::ShaderModule> BackingPipeline::createShaderModules(void) const
+{
+    return {
+        loadShader(app->getPathToResource("BackingPipeline.vert.spv")),
+        loadShader(app->getPathToResource("BackingPipeline.frag.spv"))
+    };
+}
+
+std::vector<vk::PipelineShaderStageCreateInfo> BackingPipeline::createShaderStages(const std::vector<vk::ShaderModule> &shaders) const
+{
+    return {
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, shaders[0], "main"},
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, shaders[1], "main"}
+    };
 }
 
 

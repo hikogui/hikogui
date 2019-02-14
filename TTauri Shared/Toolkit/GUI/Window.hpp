@@ -66,6 +66,11 @@ public:
 
     std::vector<vk::Image> swapchainImages;
     std::vector<vk::ImageView> swapchainImageViews;
+    std::vector<vk::Framebuffer> swapchainFramebuffers;
+    std::vector<vk::CommandBuffer> swapchainCommandBuffers;
+
+    vk::RenderPass firstRenderPass;
+    vk::RenderPass followUpRenderPass;
 
     Instance *instance;
     Device *device;
@@ -111,7 +116,6 @@ public:
     std::shared_ptr<BackingPipeline> backingPipeline;
 
     void buildSwapchainAndPipeline(void);
-
     void teardownSwapchainAndPipeline(void);
 
     void rebuildSwapchainAndPipeline(void) {
@@ -134,9 +138,27 @@ public:
 
     }
 
+    // PipelineDestination
+
+    virtual Device *getPipelineDestinationDevice(void) const {
+        return device;
+    }
+
+    virtual vk::Extent2D getPipelineDestinationImageExtent(void) const {
+        return swapchainCreateInfo.imageExtent;
+    }
+
+    virtual vk::Format getPipelineDestinationImageFormat(void) const {
+        return swapchainCreateInfo.imageFormat;
+    }
+
 private:
     void buildSwapchain(void);
     void teardownSwapchain(void);
+    void buildRenderPasses(void);
+    void teardownRenderPasses(void);
+    void buildFramebuffers(void);
+    void teardownFramebuffers(void);
     void buildPipelines(void);
     void teardownPipelines(void);
 };

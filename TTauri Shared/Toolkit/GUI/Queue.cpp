@@ -19,10 +19,17 @@ Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, Que
     queueIndex(queueIndex), queueFamilyIndex(queueFamilyIndex),
     queueCapabilities(queueCapabilities)
 {
+    auto commandPoolCreateInfo = vk::CommandPoolCreateInfo(
+        vk::CommandPoolCreateFlags(),
+        queueFamilyIndex
+    );
+
+    commandPool = device->intrinsic.createCommandPool(commandPoolCreateInfo);
 }
 
 Queue::~Queue()
 {
+    device->intrinsic.destroy(commandPool);
 }
 
 }}}

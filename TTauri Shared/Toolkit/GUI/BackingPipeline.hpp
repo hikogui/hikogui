@@ -16,8 +16,13 @@ namespace GUI {
 
 class BackingPipeline : public Pipeline {
 public:
-    BackingPipeline(Window *window);
+    BackingPipeline(Device *device);
     virtual ~BackingPipeline();
+
+protected:
+    virtual std::vector<vk::ShaderModule> createShaderModules(void) const;
+    virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const;
+
 };
 
 }}}

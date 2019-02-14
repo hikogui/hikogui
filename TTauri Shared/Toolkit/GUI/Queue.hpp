@@ -29,6 +29,8 @@ public:
     Device *device;
     Instance *instance;
 
+    vk::CommandPool commandPool;
+
     /**
      */
     Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities);

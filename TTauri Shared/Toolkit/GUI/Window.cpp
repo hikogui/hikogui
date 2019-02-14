@@ -74,7 +74,17 @@ void Window::buildSwapchain(void)
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
 
     swapchain = device->intrinsic.createSwapchainKHR(swapchainCreateInfo);
+}
 
+void Window::teardownSwapchain(void)
+{
+    LOG_INFO("Teardown swapchain");
+
+    device->intrinsic.destroy(swapchain);
+}
+
+void Window::buildFramebuffers(void)
+{
     swapchainImages = device->intrinsic.getSwapchainImagesKHR(swapchain);
     for (auto image: swapchainImages) {
         uint32_t baseMipLlevel = 0;
@@ -82,7 +92,7 @@ void Window::buildSwapchain(void)
         uint32_t baseArrayLayer = 0;
         uint32_t layerCount = 1;
         auto imageSubresourceRange = vk::ImageSubresourceRange(
-                                                               vk::ImageAspectFlagBits::eColor,
+            vk::ImageAspectFlagBits::eColor,
             baseMipLlevel,
             levelCount,
             baseArrayLayer,
@@ -100,24 +110,92 @@ void Window::buildSwapchain(void)
 
         auto imageView = device->intrinsic.createImageView(imageViewCreateInfo);
         swapchainImageViews.push_back(imageView);
+
+        std::vector<vk::ImageView> attachments = {imageView};
+
+        auto framebufferCreateInfo = vk::FramebufferCreateInfo(
+            vk::FramebufferCreateFlags(),
+            firstRenderPass,
+            boost::numeric_cast<uint32_t>(attachments.size()), attachments.data(),
+            swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height,
+            1 // layers
+        );
+
+        auto framebuffer = device->intrinsic.createFramebuffer(framebufferCreateInfo);
+        swapchainFramebuffers.push_back(framebuffer);
     }
+
+    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
+        device->graphicQueue->commandPool,
+        vk::CommandBufferLevel::ePrimary,
+        boost::numeric_cast<uint32_t>(swapchainFramebuffers.size())
+    );
+
+    swapchainCommandBuffers = device->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
 }
 
-void Window::teardownSwapchain(void)
+void Window::teardownFramebuffers(void)
 {
-    LOG_INFO("Teardown swapchain");
+    device->intrinsic.freeCommandBuffers(device->graphicQueue->commandPool, swapchainCommandBuffers);
 
+    for (auto frameBuffer: swapchainFramebuffers) {
+        device->intrinsic.destroy(frameBuffer);
+    }
     for (auto imageView: swapchainImageViews) {
         device->intrinsic.destroy(imageView);
     }
     swapchainImageViews.clear();
+}
 
-    device->intrinsic.destroy(swapchain);
+void Window::buildRenderPasses(void)
+{
+    std::vector<vk::AttachmentDescription> attachmentDescriptions = {{
+        vk::AttachmentDescriptionFlags(),
+        swapchainCreateInfo.imageFormat,
+        vk::SampleCountFlagBits::e1,
+        vk::AttachmentLoadOp::eClear,
+        vk::AttachmentStoreOp::eStore,
+        vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+        vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+        vk::ImageLayout::eUndefined, // initialLayout
+        vk::ImageLayout::ePresentSrcKHR // finalLayout
+    }};
+
+    std::vector<vk::AttachmentReference> inputAttachmentReferences = {
+    };
+    
+    std::vector<vk::AttachmentReference> colorAttachmentReferences = {
+        {0, vk::ImageLayout::eColorAttachmentOptimal}
+    };
+
+    std::vector<vk::SubpassDescription> subpassDescriptions = {{
+        vk::SubpassDescriptionFlags(),
+        vk::PipelineBindPoint::eGraphics,
+        boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()), inputAttachmentReferences.data(),
+        boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()), colorAttachmentReferences.data()
+    }};
+
+    vk::RenderPassCreateInfo renderPassCreateInfo = {
+        vk::RenderPassCreateFlags(),
+        boost::numeric_cast<uint32_t>(attachmentDescriptions.size()), attachmentDescriptions.data(),
+        boost::numeric_cast<uint32_t>(subpassDescriptions.size()), subpassDescriptions.data()
+    };
+
+    firstRenderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
+    attachmentDescriptions[0].loadOp = vk::AttachmentLoadOp::eClear;
+    followUpRenderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
+}
+
+void Window::teardownRenderPasses(void)
+{
+    device->intrinsic.destroy(firstRenderPass);
+    device->intrinsic.destroy(followUpRenderPass);
 }
 
 void Window::buildPipelines(void)
 {
-    backingPipeline = std::make_shared<BackingPipeline>(this);
+    backingPipeline = std::make_shared<BackingPipeline>(device);
+    backingPipeline->initialize(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainCreateInfo.imageFormat);
 }
 
 void Window::teardownPipelines(void)
@@ -132,6 +210,8 @@ void Window::buildSwapchainAndPipeline(void)
 
     if (state == WindowState::LINKED_TO_DEVICE) {
         buildSwapchain();
+        buildRenderPasses();
+        buildFramebuffers();
         buildPipelines();
         state = WindowState::READY_TO_DRAW;
     } else {
@@ -146,6 +226,8 @@ void Window::teardownSwapchainAndPipeline(void)
 
     if (state == WindowState::READY_TO_DRAW) {
         teardownPipelines();
+        teardownFramebuffers();
+        teardownRenderPasses();
         teardownSwapchain();
         state = WindowState::LINKED_TO_DEVICE;
     } else {

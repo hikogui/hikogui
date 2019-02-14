@@ -8,13 +8,9 @@
 
 #include "Pipeline.hpp"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcomma"
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
-#pragma clang diagnostic pop
 
-#include "Window.hpp"
 #include "Device.hpp"
 #include "TTauri/Toolkit/Logging.hpp"
 
@@ -22,7 +18,7 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
-vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path)
+vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
 {
     LOG_INFO("Loading shader %s") % path.filename().generic_string();
 
@@ -38,61 +34,58 @@ vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path)
     return device->intrinsic.createShaderModule(shaderModuleCreateInfo);
 }
 
-Pipeline::Pipeline(Window *window, boost::filesystem::path vertexShaderPath, boost::filesystem::path fragmentShaderPath) :
-    window(window), device(window->device), vertexShaderPath(vertexShaderPath), fragmentShaderPath(fragmentShaderPath)
+vk::PipelineLayout Pipeline::createPipelineLayout(void) const
 {
-    auto vertexShader = loadShader(vertexShaderPath);
-    auto fragmentShader = loadShader(fragmentShaderPath);
+    auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo();
+    return device->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
+}
 
-    auto vertexShaderStageCreateInfo = vk::PipelineShaderStageCreateInfo(
-        vk::PipelineShaderStageCreateFlags(),
-        vk::ShaderStageFlagBits::eVertex,
-        vertexShader,
-        "main"
-    );
+vk::PipelineVertexInputStateCreateInfo Pipeline::createPipelineVertexInputStateCreateInfo(void) const
+{
+    return {};
+}
 
-    auto fragmentShaderStageCreateInfo = vk::PipelineShaderStageCreateInfo(
-        vk::PipelineShaderStageCreateFlags(),
-        vk::ShaderStageFlagBits::eFragment,
-        fragmentShader,
-        "main"
-    );
-
-    auto shaderStages = std::vector<vk::PipelineShaderStageCreateInfo>{
-        vertexShaderStageCreateInfo,
-        fragmentShaderStageCreateInfo
-    };
-
-    auto vertexInputStateCreateInfo = vk::PipelineVertexInputStateCreateInfo();
-    auto inputAssemblyStateCreateInfo = vk::PipelineInputAssemblyStateCreateInfo(
+vk::PipelineInputAssemblyStateCreateInfo Pipeline::createPipelineInputAssemblyStateCreateInfo(void) const
+{
+    return {
         vk::PipelineInputAssemblyStateCreateFlags(),
         vk::PrimitiveTopology::eTriangleList,
         VK_FALSE
-    );
+    };
+}
 
-    auto viewPort = vk::Viewport(
+std::vector<vk::Viewport> Pipeline::createViewports(vk::Extent2D extent) const
+{
+    return {{
         0.0f,
         0.0f,
-        boost::numeric_cast<float>(window->swapchainCreateInfo.imageExtent.width),
-        boost::numeric_cast<float>(window->swapchainCreateInfo.imageExtent.height),
+        boost::numeric_cast<float>(extent.width),
+        boost::numeric_cast<float>(extent.height),
         0.0f,
         1.0f
-    );
+    }};
+}
 
-    auto scissor = vk::Rect2D{
+std::vector<vk::Rect2D> Pipeline::createScissors(vk::Extent2D extent) const
+{
+    return {{
         {0, 0},
-        window->swapchainCreateInfo.imageExtent
-    };
+        extent
+    }};
+}
 
-    auto pipelineViewportStateCreateInfo = vk::PipelineViewportStateCreateInfo(
+vk::PipelineViewportStateCreateInfo Pipeline::createPipelineViewportStateCreateInfo(const std::vector<vk::Viewport> &viewports, std::vector<vk::Rect2D> &scissors) const
+{
+    return {
         vk::PipelineViewportStateCreateFlags(),
-        1,
-        &viewPort,
-        1,
-        &scissor
-    );
+        boost::numeric_cast<uint32_t>(viewports.size()), viewports.data(),
+        boost::numeric_cast<uint32_t>(scissors.size()), scissors.data()
+    };
+}
 
-    auto pipelineRasterizationStateCreateInfo = vk::PipelineRasterizationStateCreateInfo(
+vk::PipelineRasterizationStateCreateInfo Pipeline::createPipelineRasterizationStateCreateInfo(void) const
+{
+    return {
         vk::PipelineRasterizationStateCreateFlags(),
         VK_FALSE, // depthClampEnable
         VK_FALSE, // rasterizerDiscardEnable
@@ -100,9 +93,12 @@ Pipeline::Pipeline(Window *window, boost::filesystem::path vertexShaderPath, boo
         vk::CullModeFlagBits::eBack,
         vk::FrontFace::eClockwise,
         VK_FALSE // depthBiasEnable
-    );
+    };
+}
 
-    auto pipelineMultisampleStateCreateInfo = vk::PipelineMultisampleStateCreateInfo(
+vk::PipelineMultisampleStateCreateInfo Pipeline::createPipelineMultisampleStateCreateInfo(void) const
+{
+    return {
         vk::PipelineMultisampleStateCreateFlags(),
         vk::SampleCountFlagBits::e1,
         VK_FALSE, // sampleShadingEnable
@@ -110,9 +106,12 @@ Pipeline::Pipeline(Window *window, boost::filesystem::path vertexShaderPath, boo
         nullptr, // sampleMask
         VK_FALSE, // alphaToCoverageEnable
         VK_FALSE // alphaToOneEnable
-    );
+    };
+}
 
-    auto pipelineColorBlendAttachmentState = vk::PipelineColorBlendAttachmentState(
+std::vector<vk::PipelineColorBlendAttachmentState> Pipeline::createPipelineColorBlendAttachmentStates(void) const
+{
+    return {{
         VK_FALSE, // blendEnable
         vk::BlendFactor::eOne, // srcColorBlendFactor
         vk::BlendFactor::eZero, // dstColorBlendFactor
@@ -121,52 +120,65 @@ Pipeline::Pipeline(Window *window, boost::filesystem::path vertexShaderPath, boo
         vk::BlendFactor::eZero, // dstAlphaBlendFactor
         vk::BlendOp::eAdd, // aphaBlendOp
         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    );
+    }};
+}
 
-    auto pipelineColorBlendStateCreateInfo = vk::PipelineColorBlendStateCreateInfo(
+vk::PipelineColorBlendStateCreateInfo Pipeline::createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const
+{
+    return {
         vk::PipelineColorBlendStateCreateFlags(),
         VK_FALSE, // logicOpenable
         vk::LogicOp::eCopy,
-        1, &pipelineColorBlendAttachmentState
-    );
+        boost::numeric_cast<uint32_t>(attachements.size()), attachements.data()
+    };
+}
 
-    auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo();
-    auto pipelineLayout = device->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
+Pipeline::Pipeline(Device *device) :
+    device(device)
+{
 
-    auto colorAttachement = vk::AttachmentDescription(
-        vk::AttachmentDescriptionFlags(),
-        window->swapchainCreateInfo.imageFormat,
-        vk::SampleCountFlagBits::e1,
-        vk::AttachmentLoadOp::eClear,
-        vk::AttachmentStoreOp::eStore,
-        vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
-        vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-        vk::ImageLayout::eUndefined, // initialLayout
-        vk::ImageLayout::ePresentSrcKHR // finalLayout
-    );
+}
 
-    auto attachmentReference = vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal);
+Pipeline::~Pipeline()
+{
+    device->intrinsic.destroy(intrinsic);
+    device->intrinsic.destroy(pipelineLayout);
+    for (auto shaderModule: shaderModules) {
+        device->intrinsic.destroy(shaderModule);
+    }
+}
 
-    auto subpass = vk::SubpassDescription(
-        vk::SubpassDescriptionFlags(),
-        vk::PipelineBindPoint::eGraphics,
-        0, nullptr, // inputAttachments
-        1, &attachmentReference // colorAttachments
-    );
+void Pipeline::initialize(vk::RenderPass renderPass, vk::Extent2D extent, vk::Format format)
+{
+    shaderModules = createShaderModules();
 
-    auto renderPassCreateInfo = vk::RenderPassCreateInfo(
-        vk::RenderPassCreateFlags(),
-        1, &colorAttachement,
-        1, &subpass
-    );
+    shaderStages = createShaderStages(shaderModules);
 
-    auto renderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
+    pipelineLayout = createPipelineLayout();
 
-    auto graphicsPipelineCreateInfo = vk::GraphicsPipelineCreateInfo(
+    pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo();
+
+    pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
+
+    viewports = createViewports(extent);
+
+    scissors = createScissors(extent);
+
+    pipelineViewportStateCreateInfo = createPipelineViewportStateCreateInfo(viewports, scissors);
+
+    pipelineRasterizationStateCreateInfo = createPipelineRasterizationStateCreateInfo();
+
+    pipelineMultisampleStateCreateInfo = createPipelineMultisampleStateCreateInfo();
+
+    pipelineColorBlendAttachmentStates = createPipelineColorBlendAttachmentStates();
+
+    pipelineColorBlendStateCreateInfo = createPipelineColorBlendStateCreateInfo(pipelineColorBlendAttachmentStates);
+
+    graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
         boost::numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
-        &vertexInputStateCreateInfo,
-        &inputAssemblyStateCreateInfo,
+        &pipelineVertexInputStateCreateInfo,
+        &pipelineInputAssemblyStateCreateInfo,
         nullptr, // tesselationStateCreateInfo
         &pipelineViewportStateCreateInfo,
         &pipelineRasterizationStateCreateInfo,
@@ -179,19 +191,9 @@ Pipeline::Pipeline(Window *window, boost::filesystem::path vertexShaderPath, boo
         0, // subpass
         vk::Pipeline(), // basePipelineHandle
         -1 // basePipelineIndex
-    );
+    };
 
-    auto graphicsPipeline = device->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
-
-    device->intrinsic.destroy(graphicsPipeline);
-    device->intrinsic.destroy(renderPass);
-    device->intrinsic.destroy(pipelineLayout);
-    device->intrinsic.destroy(vertexShader);
-    device->intrinsic.destroy(fragmentShader);
-}
-
-Pipeline::~Pipeline()
-{
+    intrinsic = device->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
 }
 
 }}}

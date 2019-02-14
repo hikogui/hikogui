@@ -89,6 +89,10 @@
 		68E5D6E122131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
 		68E5D6E222131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
 		68E5D6E3221326DE00DA9792 /* Application.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68E5D6DF22131E9800DA9792 /* Application.hpp */; };
+		68E5D6E622141F0A00DA9792 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6E422141F0A00DA9792 /* Timestamp.cpp */; };
+		68E5D6E722141F0A00DA9792 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6E422141F0A00DA9792 /* Timestamp.cpp */; };
+		68E5D6E822141F0A00DA9792 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6E422141F0A00DA9792 /* Timestamp.cpp */; };
+		68E5D6EA22141F3500DA9792 /* Timestamp.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68E5D6E522141F0A00DA9792 /* Timestamp.hpp */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -140,6 +144,7 @@
 			dstSubfolderSpec = 16;
 			files = (
 				68C6C3B1220CCC8700B39337 /* Logging.hpp in CopyFiles */,
+				68E5D6EA22141F3500DA9792 /* Timestamp.hpp in CopyFiles */,
 				686E3BA12212FC12002B56E5 /* Time.hpp in CopyFiles */,
 				68E5D6E3221326DE00DA9792 /* Application.hpp in CopyFiles */,
 			);
@@ -196,6 +201,8 @@
 		68E5D6DD221313DD00DA9792 /* XCodeCompileVulkanShaders.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = XCodeCompileVulkanShaders.sh; sourceTree = "<group>"; };
 		68E5D6DE22131E9800DA9792 /* Application.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Application.cpp; sourceTree = "<group>"; };
 		68E5D6DF22131E9800DA9792 /* Application.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Application.hpp; sourceTree = "<group>"; };
+		68E5D6E422141F0A00DA9792 /* Timestamp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Timestamp.cpp; sourceTree = "<group>"; };
+		68E5D6E522141F0A00DA9792 /* Timestamp.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Timestamp.hpp; sourceTree = "<group>"; };
 		68F2627222030EA70078E5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68F2627722030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F2627A22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -261,6 +268,8 @@
 				68E5D6DF22131E9800DA9792 /* Application.hpp */,
 				68C6C3AA220CCA3C00B39337 /* Logging.cpp */,
 				68C6C3AB220CCA3C00B39337 /* Logging.hpp */,
+				68E5D6E422141F0A00DA9792 /* Timestamp.cpp */,
+				68E5D6E522141F0A00DA9792 /* Timestamp.hpp */,
 				686E3B9622127A57002B56E5 /* Time.cpp */,
 				686E3B9722127A57002B56E5 /* Time.hpp */,
 				686AD22D2208645600AC826C /* GUI */,
@@ -568,6 +577,7 @@
 				68E5D6E022131E9800DA9792 /* Application.cpp in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
 				686AD249220893D300AC826C /* Instance.cpp in Sources */,
+				68E5D6E622141F0A00DA9792 /* Timestamp.cpp in Sources */,
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
 				686AD24E22089F3800AC826C /* Backing.cpp in Sources */,
 				686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */,
@@ -597,6 +607,7 @@
 				68E5D6E122131E9800DA9792 /* Application.cpp in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
 				686AD24A220893D300AC826C /* Instance.cpp in Sources */,
+				68E5D6E722141F0A00DA9792 /* Timestamp.cpp in Sources */,
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
 				686AD24F22089F3800AC826C /* Backing.cpp in Sources */,
 				686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */,
@@ -623,6 +634,7 @@
 			files = (
 				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
 				686AD2322208647900AC826C /* Window.cpp in Sources */,
+				68E5D6E822141F0A00DA9792 /* Timestamp.cpp in Sources */,
 				68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
 				686E3B9A22127A57002B56E5 /* Time.cpp in Sources */,
@@ -887,6 +899,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_WARN_COMMA = NO;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -918,6 +931,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_WARN_COMMA = NO;
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
