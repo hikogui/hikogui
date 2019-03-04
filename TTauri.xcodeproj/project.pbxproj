@@ -25,18 +25,9 @@
 		686AD249220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
 		686AD24A220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
 		686AD24B220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
-		686AD24E22089F3800AC826C /* Backing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24C22089F3800AC826C /* Backing.cpp */; };
-		686AD24F22089F3800AC826C /* Backing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24C22089F3800AC826C /* Backing.cpp */; };
-		686AD25022089F3800AC826C /* Backing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24C22089F3800AC826C /* Backing.cpp */; };
-		686AD2532208A90400AC826C /* BackingCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2512208A90400AC826C /* BackingCache.cpp */; };
-		686AD2542208A90400AC826C /* BackingCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2512208A90400AC826C /* BackingCache.cpp */; };
-		686AD2552208A90400AC826C /* BackingCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2512208A90400AC826C /* BackingCache.cpp */; };
 		686AD2582208B2BB00AC826C /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2562208B2BB00AC826C /* ImageView.cpp */; };
 		686AD2592208B2BB00AC826C /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2562208B2BB00AC826C /* ImageView.cpp */; };
 		686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2562208B2BB00AC826C /* ImageView.cpp */; };
-		686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
-		686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
-		686AD25F2208B34900AC826C /* ImageBacking.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD25B2208B34900AC826C /* ImageBacking.cpp */; };
 		686E3B9822127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
 		686E3B9922127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
 		686E3B9A22127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
@@ -68,10 +59,7 @@
 		68A9A085220BB1BF00457876 /* Window.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD22F2208647900AC826C /* Window.hpp */; };
 		68A9A086220BB1BF00457876 /* View.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD23E220878AA00AC826C /* View.hpp */; };
 		68A9A087220BB1BF00457876 /* Instance.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD248220893D300AC826C /* Instance.hpp */; };
-		68A9A088220BB1BF00457876 /* Backing.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD24D22089F3800AC826C /* Backing.hpp */; };
-		68A9A089220BB1BF00457876 /* BackingCache.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2522208A90400AC826C /* BackingCache.hpp */; };
 		68A9A08A220BB1BF00457876 /* ImageView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2572208B2BB00AC826C /* ImageView.hpp */; };
-		68A9A08B220BB1BF00457876 /* ImageBacking.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD25C2208B34900AC826C /* ImageBacking.hpp */; };
 		68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A06B220B0FEA00457876 /* Device.hpp */; };
 		68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A07C220B3DDC00457876 /* Queue.hpp */; };
 		68A9A090220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
@@ -125,10 +113,7 @@
 				68A9A085220BB1BF00457876 /* Window.hpp in CopyFiles */,
 				68A9A086220BB1BF00457876 /* View.hpp in CopyFiles */,
 				68A9A087220BB1BF00457876 /* Instance.hpp in CopyFiles */,
-				68A9A088220BB1BF00457876 /* Backing.hpp in CopyFiles */,
-				68A9A089220BB1BF00457876 /* BackingCache.hpp in CopyFiles */,
 				68A9A08A220BB1BF00457876 /* ImageView.hpp in CopyFiles */,
-				68A9A08B220BB1BF00457876 /* ImageBacking.hpp in CopyFiles */,
 				68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */,
 				68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */,
 				68A9A093220C7E9C00457876 /* QueueCapabilities.hpp in CopyFiles */,
@@ -165,14 +150,8 @@
 		686AD24322088A4900AC826C /* GUI.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GUI.hpp; sourceTree = "<group>"; };
 		686AD247220893D300AC826C /* Instance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
 		686AD248220893D300AC826C /* Instance.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Instance.hpp; sourceTree = "<group>"; };
-		686AD24C22089F3800AC826C /* Backing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Backing.cpp; sourceTree = "<group>"; };
-		686AD24D22089F3800AC826C /* Backing.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Backing.hpp; sourceTree = "<group>"; };
-		686AD2512208A90400AC826C /* BackingCache.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BackingCache.cpp; sourceTree = "<group>"; };
-		686AD2522208A90400AC826C /* BackingCache.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BackingCache.hpp; sourceTree = "<group>"; };
 		686AD2562208B2BB00AC826C /* ImageView.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageView.cpp; sourceTree = "<group>"; };
 		686AD2572208B2BB00AC826C /* ImageView.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageView.hpp; sourceTree = "<group>"; };
-		686AD25B2208B34900AC826C /* ImageBacking.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageBacking.cpp; sourceTree = "<group>"; };
-		686AD25C2208B34900AC826C /* ImageBacking.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageBacking.hpp; sourceTree = "<group>"; };
 		686E3B9622127A57002B56E5 /* Time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
 		686E3B9722127A57002B56E5 /* Time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
 		686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Pipeline.cpp; sourceTree = "<group>"; };
@@ -294,14 +273,8 @@
 				686AD23E220878AA00AC826C /* View.hpp */,
 				686AD247220893D300AC826C /* Instance.cpp */,
 				686AD248220893D300AC826C /* Instance.hpp */,
-				686AD24C22089F3800AC826C /* Backing.cpp */,
-				686AD24D22089F3800AC826C /* Backing.hpp */,
-				686AD2512208A90400AC826C /* BackingCache.cpp */,
-				686AD2522208A90400AC826C /* BackingCache.hpp */,
 				686AD2562208B2BB00AC826C /* ImageView.cpp */,
 				686AD2572208B2BB00AC826C /* ImageView.hpp */,
-				686AD25B2208B34900AC826C /* ImageBacking.cpp */,
-				686AD25C2208B34900AC826C /* ImageBacking.hpp */,
 				68A9A06A220B0FEA00457876 /* Device.cpp */,
 				68A9A06B220B0FEA00457876 /* Device.hpp */,
 				68A9A07B220B3DDC00457876 /* Queue.cpp */,
@@ -572,15 +545,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				686AD2532208A90400AC826C /* BackingCache.cpp in Sources */,
 				68A9A06C220B0FEA00457876 /* Device.cpp in Sources */,
 				68E5D6E022131E9800DA9792 /* Application.cpp in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
 				686AD249220893D300AC826C /* Instance.cpp in Sources */,
 				68E5D6E622141F0A00DA9792 /* Timestamp.cpp in Sources */,
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
-				686AD24E22089F3800AC826C /* Backing.cpp in Sources */,
-				686AD25D2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686E3B9D2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
 				68C6C3AC220CCA3C00B39337 /* Logging.cpp in Sources */,
 				686AD23A22086E8E00AC826C /* Vector.cpp in Sources */,
@@ -602,15 +572,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				686AD2542208A90400AC826C /* BackingCache.cpp in Sources */,
 				68A9A06D220B0FEA00457876 /* Device.cpp in Sources */,
 				68E5D6E122131E9800DA9792 /* Application.cpp in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
 				686AD24A220893D300AC826C /* Instance.cpp in Sources */,
 				68E5D6E722141F0A00DA9792 /* Timestamp.cpp in Sources */,
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
-				686AD24F22089F3800AC826C /* Backing.cpp in Sources */,
-				686AD25E2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686E3B9E2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
 				68C6C3AD220CCA3C00B39337 /* Logging.cpp in Sources */,
 				686AD23B22086E8E00AC826C /* Vector.cpp in Sources */,
@@ -639,7 +606,6 @@
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
 				686E3B9A22127A57002B56E5 /* Time.cpp in Sources */,
 				68C6C3AE220CCA3C00B39337 /* Logging.cpp in Sources */,
-				686AD25022089F3800AC826C /* Backing.cpp in Sources */,
 				686AD24622088A4900AC826C /* GUI.cpp in Sources */,
 				686AD241220878AA00AC826C /* View.cpp in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
@@ -651,8 +617,6 @@
 				68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */,
 				686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */,
 				68A9A06E220B0FEA00457876 /* Device.cpp in Sources */,
-				686AD2552208A90400AC826C /* BackingCache.cpp in Sources */,
-				686AD25F2208B34900AC826C /* ImageBacking.cpp in Sources */,
 				686AD23C22086E8E00AC826C /* Vector.cpp in Sources */,
 				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,
 				686E3BA62213091F002B56E5 /* BackingPipeline.cpp in Sources */,

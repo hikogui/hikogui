@@ -9,8 +9,8 @@
 #pragma once
 
 #include <memory>
+#include <boost/filesystem.hpp>
 #include "View.hpp"
-#include "ImageBacking.hpp"
 
 namespace TTauri {
 namespace Toolkit {

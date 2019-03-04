@@ -13,7 +13,6 @@
 #include <vulkan/vulkan.hpp>
 #include "Rectangle.hpp"
 #include "View.hpp"
-#include "BackingCache.hpp"
 #include "BackingPipeline.hpp"
 
 namespace TTauri {
@@ -108,10 +107,6 @@ public:
      * for example switching to `FULLSCREEN` and back to `WINDOW`.
      */
     WindowType windowType;
-
-    /*! A set of backings.
-     */
-    BackingCache backings;
 
     std::shared_ptr<BackingPipeline> backingPipeline;
 
