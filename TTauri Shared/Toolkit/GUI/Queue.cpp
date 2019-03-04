@@ -20,7 +20,7 @@ Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, Que
     queueCapabilities(queueCapabilities)
 {
     auto commandPoolCreateInfo = vk::CommandPoolCreateInfo(
-        vk::CommandPoolCreateFlags(),
+        vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
         queueFamilyIndex
     );
 

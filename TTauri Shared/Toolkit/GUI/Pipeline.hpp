@@ -18,22 +18,48 @@ namespace Toolkit {
 namespace GUI {
 
 class Device;
+class Window;
 
 class Pipeline {
 public:
     vk::Pipeline intrinsic;
 
+    Window *window;
     Device *device;
-    
+
+    std::vector<vk::CommandBuffer> commandBuffers;
+    std::vector<bool> commandBuffersValid;
+
+    vk::Semaphore renderFinishedSemaphore;
+
     boost::filesystem::path vertexShaderPath;
     boost::filesystem::path fragmentShaderPath;
 
-    Pipeline(Device *device);
+    Pipeline(Window *window, vk::RenderPass renderPass);
     virtual ~Pipeline();
 
-    void initialize(vk::RenderPass renderPass, vk::Extent2D extent, vk::Format format);
+    /*! Initialize pipeline right after constructing it.
+     * initialize() is used for calling virtual functions in sub classes.
+     */
+    void initialize();
+    bool initialized = false;
+
+    /*! Invalidate all command buffers.
+     * This is used when the command buffer needs to be recreated due to changes in views.
+     */
+    void invalidateCommandBuffers();
+
+    /*! Validate/create a command buffer.
+     *
+     * \param imageIndex The index of the command buffer to validate.
+     */
+    void validateCommandBuffer(uint32_t imageIndex);
+
+    vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
 
 protected:
+    vk::RenderPass renderPass;
+    
     std::vector<vk::ShaderModule> shaderModules;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
     vk::PipelineLayout pipelineLayout;

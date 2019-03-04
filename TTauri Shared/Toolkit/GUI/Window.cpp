@@ -124,20 +124,10 @@ void Window::buildFramebuffers(void)
         auto framebuffer = device->intrinsic.createFramebuffer(framebufferCreateInfo);
         swapchainFramebuffers.push_back(framebuffer);
     }
-
-    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        device->graphicQueue->commandPool,
-        vk::CommandBufferLevel::ePrimary,
-        boost::numeric_cast<uint32_t>(swapchainFramebuffers.size())
-    );
-
-    swapchainCommandBuffers = device->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
 }
 
 void Window::teardownFramebuffers(void)
 {
-    device->intrinsic.freeCommandBuffers(device->graphicQueue->commandPool, swapchainCommandBuffers);
-
     for (auto frameBuffer: swapchainFramebuffers) {
         device->intrinsic.destroy(frameBuffer);
     }
@@ -175,10 +165,20 @@ void Window::buildRenderPasses(void)
         boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()), colorAttachmentReferences.data()
     }};
 
+    std::vector<vk::SubpassDependency> subpassDependency = {{
+        VK_SUBPASS_EXTERNAL,
+        0,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::AccessFlags(),
+        vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
+    }};
+
     vk::RenderPassCreateInfo renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),
         boost::numeric_cast<uint32_t>(attachmentDescriptions.size()), attachmentDescriptions.data(),
-        boost::numeric_cast<uint32_t>(subpassDescriptions.size()), subpassDescriptions.data()
+        boost::numeric_cast<uint32_t>(subpassDescriptions.size()), subpassDescriptions.data(),
+        boost::numeric_cast<uint32_t>(subpassDependency.size()), subpassDependency.data()
     };
 
     firstRenderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
@@ -194,13 +194,25 @@ void Window::teardownRenderPasses(void)
 
 void Window::buildPipelines(void)
 {
-    backingPipeline = std::make_shared<BackingPipeline>(device);
-    backingPipeline->initialize(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainCreateInfo.imageFormat);
+    backingPipeline = std::make_shared<BackingPipeline>(this, firstRenderPass);
+    backingPipeline->initialize();
 }
 
 void Window::teardownPipelines(void)
 {
     backingPipeline = nullptr;
+}
+
+void Window::buildSemaphores(void)
+{
+    auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
+
+    imageAvailableSemaphore = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+}
+
+void Window::teardownSemaphores(void)
+{
+    device->intrinsic.destroy(imageAvailableSemaphore);
 }
 
 void Window::buildSwapchainAndPipeline(void)
@@ -213,6 +225,7 @@ void Window::buildSwapchainAndPipeline(void)
         buildRenderPasses();
         buildFramebuffers();
         buildPipelines();
+        buildSemaphores();
         state = WindowState::READY_TO_DRAW;
     } else {
         BOOST_THROW_EXCEPTION(WindowStateError());
@@ -225,6 +238,7 @@ void Window::teardownSwapchainAndPipeline(void)
     boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
 
     if (state == WindowState::READY_TO_DRAW) {
+        teardownSemaphores();
         teardownPipelines();
         teardownFramebuffers();
         teardownRenderPasses();
@@ -268,11 +282,29 @@ void Window::setDevice(Device *device) {
     }
 }
 
+void Window::render(void)
+{
+    auto imageIndexValue = device->intrinsic.acquireNextImageKHR(swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, vk::Fence());
+    uint32_t imageIndex = imageIndexValue.value;
+
+    vk::Semaphore renderFinishedSemaphores[] = {
+        backingPipeline->render(imageIndex, imageAvailableSemaphore)
+    };
+
+    auto presentInfo = vk::PresentInfoKHR(
+        1, renderFinishedSemaphores,
+        1, &swapchain,
+        &imageIndex
+    );
+
+    device->presentQueue->intrinsic.presentKHR(presentInfo);
+}
+
 void Window::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)
 {
     if (stateMutex.try_lock_shared()) {
         if (state == WindowState::READY_TO_DRAW) {
-
+            render();
         }
         stateMutex.unlock_shared();
     }

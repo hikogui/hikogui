@@ -66,10 +66,11 @@ public:
     std::vector<vk::Image> swapchainImages;
     std::vector<vk::ImageView> swapchainImageViews;
     std::vector<vk::Framebuffer> swapchainFramebuffers;
-    std::vector<vk::CommandBuffer> swapchainCommandBuffers;
 
     vk::RenderPass firstRenderPass;
     vk::RenderPass followUpRenderPass;
+
+    vk::Semaphore imageAvailableSemaphore;
 
     Instance *instance;
     Device *device;
@@ -134,20 +135,27 @@ public:
     }
 
     // PipelineDestination
-
-    virtual Device *getPipelineDestinationDevice(void) const {
-        return device;
-    }
-
-    virtual vk::Extent2D getPipelineDestinationImageExtent(void) const {
+    virtual vk::Extent2D getCurrentExtent(void) const {
         return swapchainCreateInfo.imageExtent;
     }
 
-    virtual vk::Format getPipelineDestinationImageFormat(void) const {
+    virtual vk::Rect2D getCurrentRect(void) const {
+        vk::Rect2D r;
+
+        r.offset.x = 0;
+        r.offset.y = 0;
+        r.extent = getCurrentExtent();
+        return r;
+    }
+
+    virtual vk::Format getCurrentFormat(void) const {
         return swapchainCreateInfo.imageFormat;
     }
 
 private:
+    void render(void);
+    void buildSemaphores(void);
+    void teardownSemaphores(void);
     void buildSwapchain(void);
     void teardownSwapchain(void);
     void buildRenderPasses(void);

@@ -14,10 +14,15 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
+/*! Pipeline for rendering backings of widgets.
+ * Maintains texture map atlasses and sharing for all views.
+ */
 class BackingPipeline : public Pipeline {
 public:
-    BackingPipeline(Device *device);
+    BackingPipeline(Window *window, vk::RenderPass renderPass);
     virtual ~BackingPipeline();
+
+    std::vector<vk::CommandBuffer> commandBuffers;
 
 protected:
     virtual std::vector<vk::ShaderModule> createShaderModules(void) const;

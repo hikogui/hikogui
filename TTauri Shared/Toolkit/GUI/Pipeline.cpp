@@ -8,15 +8,162 @@
 
 #include "Pipeline.hpp"
 
+#include <boost/assert.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 
 #include "Device.hpp"
+#include "Window.hpp"
 #include "TTauri/Toolkit/Logging.hpp"
 
 namespace TTauri {
 namespace Toolkit {
 namespace GUI {
+
+
+Pipeline::Pipeline(Window *window, vk::RenderPass renderPass) :
+    window(window), device(window->device), renderPass(renderPass)
+{
+    // All initialization is done during initialize().
+}
+
+Pipeline::~Pipeline()
+{
+    BOOST_ASSERT(initialized);
+
+    device->intrinsic.destroy(renderFinishedSemaphore);
+
+    device->intrinsic.freeCommandBuffers(device->graphicQueue->commandPool, commandBuffers);
+
+    device->intrinsic.destroy(intrinsic);
+    device->intrinsic.destroy(pipelineLayout);
+    for (auto shaderModule: shaderModules) {
+        device->intrinsic.destroy(shaderModule);
+    }
+}
+
+void Pipeline::initialize()
+{
+    shaderModules = createShaderModules();
+
+    shaderStages = createShaderStages(shaderModules);
+
+    pipelineLayout = createPipelineLayout();
+
+    pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo();
+
+    pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
+
+    viewports = createViewports(window->getCurrentExtent());
+
+    scissors = createScissors(window->getCurrentExtent());
+
+    pipelineViewportStateCreateInfo = createPipelineViewportStateCreateInfo(viewports, scissors);
+
+    pipelineRasterizationStateCreateInfo = createPipelineRasterizationStateCreateInfo();
+
+    pipelineMultisampleStateCreateInfo = createPipelineMultisampleStateCreateInfo();
+
+    pipelineColorBlendAttachmentStates = createPipelineColorBlendAttachmentStates();
+
+    pipelineColorBlendStateCreateInfo = createPipelineColorBlendStateCreateInfo(pipelineColorBlendAttachmentStates);
+
+    graphicsPipelineCreateInfo = {
+        vk::PipelineCreateFlags(),
+        boost::numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
+        &pipelineVertexInputStateCreateInfo,
+        &pipelineInputAssemblyStateCreateInfo,
+        nullptr, // tesselationStateCreateInfo
+        &pipelineViewportStateCreateInfo,
+        &pipelineRasterizationStateCreateInfo,
+        &pipelineMultisampleStateCreateInfo,
+        nullptr, // pipelineDepthStencilCrateInfo
+        &pipelineColorBlendStateCreateInfo,
+        nullptr, // pipelineDynamicsStateCreateInfo
+        pipelineLayout,
+        renderPass,
+        0, // subpass
+        vk::Pipeline(), // basePipelineHandle
+        -1 // basePipelineIndex
+    };
+
+    intrinsic = device->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+
+    // Create a command buffer for each swapchain framebuffer, this way we can keep the same command in the command
+    // buffer as long as no widgets are being added or removed (same number of triangles being rendered).
+    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
+        device->graphicQueue->commandPool,
+        vk::CommandBufferLevel::ePrimary,
+        boost::numeric_cast<uint32_t>(window->swapchainFramebuffers.size())
+    );
+    commandBuffers = device->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
+
+    commandBuffersValid.resize(commandBuffers.size());
+    invalidateCommandBuffers();
+
+    auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
+    renderFinishedSemaphore = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+
+    initialized = true;
+}
+
+void Pipeline::invalidateCommandBuffers()
+{
+    for (size_t imageIndex = 0; imageIndex < commandBuffersValid.size(); imageIndex++) {
+        commandBuffersValid[imageIndex] = false;
+    }
+}
+
+void Pipeline::validateCommandBuffer(uint32_t imageIndex)
+{
+    if (commandBuffersValid[imageIndex]) {
+        return;
+    }
+
+    commandBuffers[imageIndex].reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+
+    auto commandBufferBeginInfo = vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
+    commandBuffers[imageIndex].begin(commandBufferBeginInfo);
+
+    std::array<float,4> blackColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    auto clearColor = vk::ClearValue(vk::ClearColorValue(blackColor));
+    auto renderPassBeginInfo = vk::RenderPassBeginInfo(
+        renderPass,
+        window->swapchainFramebuffers[imageIndex],
+        window->getCurrentRect(),
+        1,
+        &clearColor
+    );
+    commandBuffers[imageIndex].beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
+
+    commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
+
+    commandBuffers[imageIndex].draw(3, 1, 0, 0);
+
+    commandBuffers[imageIndex].endRenderPass();
+
+    commandBuffers[imageIndex].end();
+
+    commandBuffersValid[imageIndex] = true;
+}
+
+vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
+{
+    validateCommandBuffer(imageIndex);
+
+    vk::Semaphore waitSemaphores[] = {inputSemaphore};
+    vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+    vk::Semaphore signalSemaphores[] = {renderFinishedSemaphore};
+    vk::SubmitInfo submitInfo[] = {vk::SubmitInfo(
+        1, waitSemaphores, waitStages,
+        1, &commandBuffers[imageIndex],
+        1, signalSemaphores
+    )};
+
+    device->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
+
+    return renderFinishedSemaphore;
+}
 
 vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
 {
@@ -131,69 +278,6 @@ vk::PipelineColorBlendStateCreateInfo Pipeline::createPipelineColorBlendStateCre
         vk::LogicOp::eCopy,
         boost::numeric_cast<uint32_t>(attachements.size()), attachements.data()
     };
-}
-
-Pipeline::Pipeline(Device *device) :
-    device(device)
-{
-
-}
-
-Pipeline::~Pipeline()
-{
-    device->intrinsic.destroy(intrinsic);
-    device->intrinsic.destroy(pipelineLayout);
-    for (auto shaderModule: shaderModules) {
-        device->intrinsic.destroy(shaderModule);
-    }
-}
-
-void Pipeline::initialize(vk::RenderPass renderPass, vk::Extent2D extent, vk::Format format)
-{
-    shaderModules = createShaderModules();
-
-    shaderStages = createShaderStages(shaderModules);
-
-    pipelineLayout = createPipelineLayout();
-
-    pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo();
-
-    pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
-
-    viewports = createViewports(extent);
-
-    scissors = createScissors(extent);
-
-    pipelineViewportStateCreateInfo = createPipelineViewportStateCreateInfo(viewports, scissors);
-
-    pipelineRasterizationStateCreateInfo = createPipelineRasterizationStateCreateInfo();
-
-    pipelineMultisampleStateCreateInfo = createPipelineMultisampleStateCreateInfo();
-
-    pipelineColorBlendAttachmentStates = createPipelineColorBlendAttachmentStates();
-
-    pipelineColorBlendStateCreateInfo = createPipelineColorBlendStateCreateInfo(pipelineColorBlendAttachmentStates);
-
-    graphicsPipelineCreateInfo = {
-        vk::PipelineCreateFlags(),
-        boost::numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
-        &pipelineVertexInputStateCreateInfo,
-        &pipelineInputAssemblyStateCreateInfo,
-        nullptr, // tesselationStateCreateInfo
-        &pipelineViewportStateCreateInfo,
-        &pipelineRasterizationStateCreateInfo,
-        &pipelineMultisampleStateCreateInfo,
-        nullptr, // pipelineDepthStencilCrateInfo
-        &pipelineColorBlendStateCreateInfo,
-        nullptr, // pipelineDynamicsStateCreateInfo
-        pipelineLayout,
-        renderPass,
-        0, // subpass
-        vk::Pipeline(), // basePipelineHandle
-        -1 // basePipelineIndex
-    };
-
-    intrinsic = device->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
 }
 
 }}}
