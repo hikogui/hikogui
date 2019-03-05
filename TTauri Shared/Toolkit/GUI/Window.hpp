@@ -9,7 +9,7 @@
 #pragma once
 #include <memory>
 #include <unordered_set>
-#include <boost/thread.hpp>
+#include <mutex>
 #include <vulkan/vulkan.hpp>
 #include "Rectangle.hpp"
 #include "View.hpp"
@@ -40,10 +40,12 @@ enum class SubpixelLayout {
 enum class WindowState {
     NO_DEVICE,
     LINKED_TO_DEVICE,
+    SWAPCHAIN_OUT_OF_DATE,
     READY_TO_DRAW,
 };
 
 struct WindowStateError: virtual boost::exception, virtual std::exception {};
+struct WindowSwapChainError: virtual boost::exception, virtual std::exception {};
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -52,13 +54,12 @@ struct WindowStateError: virtual boost::exception, virtual std::exception {};
  */
 class Window {
 private:
-    boost::shared_mutex stateMutex;
+    std::recursive_mutex stateMutex;
     WindowState state;
 
 public:
     vk::SurfaceKHR intrinsic;
 
-    vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 
     vk::SwapchainKHR swapchain;
@@ -71,11 +72,10 @@ public:
     vk::RenderPass followUpRenderPass;
 
     vk::Semaphore imageAvailableSemaphore;
+    vk::Fence renderFinishedFence;
 
     Instance *instance;
     Device *device;
-
-    vk::Rect2D displayRectangle;
 
     //! Location of the window on the screen.
     Rectangle location;
@@ -111,49 +111,59 @@ public:
 
     std::shared_ptr<BackingPipeline> backingPipeline;
 
+    Window(Instance *instance, vk::SurfaceKHR surface);
+
+    ~Window();
+
+    /*! Build the swapchain, frame buffers and pipeline.
+     */
     void buildSwapchainAndPipeline(void);
+
+    /*! Teardown the swapchain, frame buffers and pipeline.
+     */
     void teardownSwapchainAndPipeline(void);
 
-    void rebuildSwapchainAndPipeline(void) {
-        teardownSwapchainAndPipeline();
-        buildSwapchainAndPipeline();
-    }
-
+    /*! Set GPU device to manage this window.
+     * Change of the device may be done at runtime.
+     */
     void setDevice(Device *device);
 
-    /*! Refresh Display.
+    /*! Update window.
+     * This will update animations and redraw all views managed by this window.
+     * This may be called on a low latency thread, it is careful to not block on operations.
      *
-     * \outTimestamp Number of nanoseconds since system start.
-     * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     * blockOnVSync should only be called on the first window in the system. This allows a
+     * non-vsync thread to call this method with minimal CPU usage.
+     *
+     * \param outTimestamp Number of nanoseconds since system start.
+     * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     * \param blockOnVSync May block on VSync.
      */
-    void frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp);
+    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
-    Window(Instance *instance, vk::SurfaceKHR surface) :
-        state(WindowState::NO_DEVICE), instance(instance), intrinsic(surface)
-    {
+    /*! Wait until everything has been drawn.
+     */
+    void waitIdle(void);
 
-    }
+    /*! Maintanance
+     * Maintain the window on a low performance thread.
+     *
+     * For example: rebuilding the swapchain on window size changes.
+     */
+    void maintenance(void);
 
-    // PipelineDestination
-    virtual vk::Extent2D getCurrentExtent(void) const {
-        return swapchainCreateInfo.imageExtent;
-    }
-
-    virtual vk::Rect2D getCurrentRect(void) const {
-        vk::Rect2D r;
-
-        r.offset.x = 0;
-        r.offset.y = 0;
-        r.extent = getCurrentExtent();
-        return r;
-    }
-
-    virtual vk::Format getCurrentFormat(void) const {
-        return swapchainCreateInfo.imageFormat;
+    void setWindowRectangle(vk::Rect2D rect) {
+        windowRectangle = rect;
     }
 
 private:
-    void render(void);
+    // The extent of the window rectangle should only be read when creating the swapchain.
+    vk::Rect2D windowRectangle;
+
+    /*! Render views.
+     * \returns false when swapchain is out of date.
+     */
+    bool render(bool blockOnVSync);
     void buildSemaphores(void);
     void teardownSemaphores(void);
     void buildSwapchain(void);

@@ -55,10 +55,12 @@ struct CallbackData {
     auto surface = [(MoltenVKView *)self.view makeVulkanLayer:callbackData.instance->intrinsic];
     auto window = make_shared<Window>(callbackData.instance.get(), surface);
 
-    window->displayRectangle.offset.x = self.view.frame.origin.x;
-    window->displayRectangle.offset.y = self.view.frame.origin.y;
-    window->displayRectangle.extent.width = self.view.frame.size.width;
-    window->displayRectangle.extent.height = self.view.frame.size.height;
+    vk::Rect2D rect;
+    rect.offset.x = self.view.frame.origin.x;
+    rect.offset.y = self.view.frame.origin.y;
+    rect.extent.width = self.view.frame.size.width;
+    rect.extent.height = self.view.frame.size.height;
+    window->setWindowRectangle(rect);
 
     if (!callbackData.instance->add(window)) {
         auto alert = [[NSAlert alloc] init];
@@ -99,7 +101,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink,
     outputHostTime *= 1000000000;
     outputHostTime /= callbackData->hostFrequency;
 
-    callbackData->instance->frameUpdate(boost::numeric_cast<uint64_t>(currentHostTime), boost::numeric_cast<uint64_t>(outputHostTime));
+    @autoreleasepool {
+        callbackData->instance->updateAndRender(boost::numeric_cast<uint64_t>(currentHostTime), boost::numeric_cast<uint64_t>(outputHostTime), false);
+    }
 
     //demo_draw((struct demo*)target);
     return kCVReturnSuccess;

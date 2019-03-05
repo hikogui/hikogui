@@ -15,8 +15,8 @@ namespace GUI {
 
 using namespace TTauri::Toolkit;
 
-BackingPipeline::BackingPipeline(Window *window, vk::RenderPass renderPass) :
-    Pipeline(window, renderPass)
+BackingPipeline::BackingPipeline(Window *window) :
+    Pipeline(window)
 {
 }
 

@@ -6,6 +6,8 @@
 //  Copyright © 2019 Pokitec. All rights reserved.
 //
 
+#include <boost/numeric/conversion/cast.hpp>
+
 #include "Window.hpp"
 #include "Device.hpp"
 #include "TTauri/Toolkit/Logging.hpp"
@@ -16,10 +18,125 @@ namespace GUI {
 
 using namespace std;
 
+#pragma mark "Public"
+// Public methods need to lock the instance.
+
+Window::Window(Instance *instance, vk::SurfaceKHR surface) :
+    state(WindowState::NO_DEVICE), instance(instance), intrinsic(surface)
+{
+    backingPipeline = std::make_shared<BackingPipeline>(this);
+}
+
+Window::~Window()
+{
+}
+
+void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
+{
+    if (stateMutex.try_lock()) {
+        if (state == WindowState::READY_TO_DRAW) {
+            if (!render(blockOnVSync)) {
+                LOG_INFO("Swapchain out of date.");
+                state = WindowState::SWAPCHAIN_OUT_OF_DATE;
+            }
+        }
+        stateMutex.unlock();
+    }
+}
+
+void Window::waitIdle(void)
+{
+    LOG_INFO("waitIdle");
+    device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    LOG_INFO("/waitIdle");
+}
+
+void Window::maintenance(void)
+{
+    std::scoped_lock lock(stateMutex);
+
+    if (state == WindowState::SWAPCHAIN_OUT_OF_DATE) {
+        LOG_INFO("Rebuilding swapchain 1. %i") % static_cast<int>(state);
+
+        teardownSwapchainAndPipeline();
+         LOG_INFO("Rebuilding swapchain 2. %i") % static_cast<int>(state);
+       buildSwapchainAndPipeline();
+         LOG_INFO("Rebuilding swapchain 3. %i") % static_cast<int>(state);
+   }
+}
+
+void Window::buildSwapchainAndPipeline(void)
+{
+    std::scoped_lock lock(stateMutex);
+
+    if (state == WindowState::LINKED_TO_DEVICE) {
+        buildSwapchain();
+        buildRenderPasses();
+        buildFramebuffers();
+        buildPipelines();
+        buildSemaphores();
+        state = WindowState::READY_TO_DRAW;
+    } else {
+        BOOST_THROW_EXCEPTION(WindowStateError());
+    }
+}
+
+void Window::teardownSwapchainAndPipeline(void)
+{
+    std::scoped_lock lock(stateMutex);
+
+    if (state == WindowState::READY_TO_DRAW || state == WindowState::SWAPCHAIN_OUT_OF_DATE) {
+        waitIdle();
+        teardownSemaphores();
+        teardownPipelines();
+        teardownFramebuffers();
+        teardownRenderPasses();
+        teardownSwapchain();
+        state = WindowState::LINKED_TO_DEVICE;
+    } else {
+        BOOST_THROW_EXCEPTION(WindowStateError());
+    }
+}
+
+void Window::setDevice(Device *device) {
+    if (device) {
+        {
+            std::scoped_lock lock(stateMutex);
+
+            if (state == WindowState::NO_DEVICE) {
+                this->device = device;
+                state = WindowState::LINKED_TO_DEVICE;
+
+            } else {
+                BOOST_THROW_EXCEPTION(WindowStateError());
+            }
+        }
+
+        buildSwapchainAndPipeline();
+
+    } else {
+        teardownSwapchainAndPipeline();
+
+        {
+            std::scoped_lock lock(stateMutex);
+
+            if (state == WindowState::LINKED_TO_DEVICE) {
+                this->device = nullptr;
+                state = WindowState::NO_DEVICE;
+
+            } else {
+                BOOST_THROW_EXCEPTION(WindowStateError());
+            }
+        }
+    }
+}
+
+#pragma mark "Private"
+// Private methods don't need to lock.
+
+
 void Window::buildSwapchain(void)
 {
-    surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
-
     // Figure out the best way of sharing data between the present and graphic queues.
     vk::SharingMode sharingMode;
     uint32_t sharingQueueFamilyCount;
@@ -39,41 +156,57 @@ void Window::buildSwapchain(void)
         sharingQueueFamilyIndicesPtr = sharingQueueFamilyIndices;
     }
 
-    auto imageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-
     uint32_t imageArrayLayers = 1;
     vk::Bool32 clipped = VK_TRUE;
 
-    vk::Extent2D imageExtent = surfaceCapabilities.currentExtent;
-    if (imageExtent.width == std::numeric_limits<uint32_t>::max() or imageExtent.height == std::numeric_limits<uint32_t>::max()) {
-        imageExtent.width = std::clamp(displayRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-        imageExtent.height = std::clamp(displayRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-    }
+    vk::Extent2D previousImageExtent;
+    for (uint64_t raceConditionRetry = 0; ; raceConditionRetry++) {
+        auto surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
-    swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
-        vk::SwapchainCreateFlagsKHR(),
-        intrinsic,
-        imageCount,
-        device->bestSurfaceFormat.format,
-        device->bestSurfaceFormat.colorSpace,
-        imageExtent,
-        imageArrayLayers,
-        vk::ImageUsageFlags(),
-        sharingMode,
-        sharingQueueFamilyCount,
-        sharingQueueFamilyIndicesPtr,
-        vk::SurfaceTransformFlagBitsKHR::eIdentity,
-        vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        device->bestSurfacePresentMode,
-        clipped
-    );
+        auto imageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+
+        vk::Extent2D imageExtent = surfaceCapabilities.currentExtent;
+        if (imageExtent.width == std::numeric_limits<uint32_t>::max() or imageExtent.height == std::numeric_limits<uint32_t>::max()) {
+            imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
+            imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
+        }
+
+        if (raceConditionRetry > 0) {
+            if (imageExtent == previousImageExtent) {
+                break;
+            } else {
+                LOG_ERROR("Race condition during resize of window and creating swapchain.");
+            }
+        }
+
+        swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
+            vk::SwapchainCreateFlagsKHR(),
+            intrinsic,
+            imageCount,
+            device->bestSurfaceFormat.format,
+            device->bestSurfaceFormat.colorSpace,
+            imageExtent,
+            imageArrayLayers,
+            vk::ImageUsageFlags(),
+            sharingMode,
+            sharingQueueFamilyCount,
+            sharingQueueFamilyIndicesPtr,
+            vk::SurfaceTransformFlagBitsKHR::eIdentity,
+            vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            device->bestSurfacePresentMode,
+            clipped
+        );
+
+        swapchain = device->intrinsic.createSwapchainKHR(swapchainCreateInfo);
+
+        previousImageExtent = imageExtent;
+    }
 
     LOG_INFO("Building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
 
-    swapchain = device->intrinsic.createSwapchainKHR(swapchainCreateInfo);
 }
 
 void Window::teardownSwapchain(void)
@@ -121,9 +254,14 @@ void Window::buildFramebuffers(void)
             1 // layers
         );
 
+        LOG_INFO("createFramebuffer (%i, %i)") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
+
         auto framebuffer = device->intrinsic.createFramebuffer(framebufferCreateInfo);
         swapchainFramebuffers.push_back(framebuffer);
     }
+
+    BOOST_ASSERT(swapchainImageViews.size() == swapchainImages.size());
+    BOOST_ASSERT(swapchainFramebuffers.size() == swapchainImages.size());
 }
 
 void Window::teardownFramebuffers(void)
@@ -131,6 +269,8 @@ void Window::teardownFramebuffers(void)
     for (auto frameBuffer: swapchainFramebuffers) {
         device->intrinsic.destroy(frameBuffer);
     }
+    swapchainFramebuffers.clear();
+
     for (auto imageView: swapchainImageViews) {
         device->intrinsic.destroy(imageView);
     }
@@ -194,102 +334,64 @@ void Window::teardownRenderPasses(void)
 
 void Window::buildPipelines(void)
 {
-    backingPipeline = std::make_shared<BackingPipeline>(this, firstRenderPass);
-    backingPipeline->initialize();
+    backingPipeline->buildPipeline(firstRenderPass, swapchainCreateInfo.imageExtent);
 }
 
 void Window::teardownPipelines(void)
 {
-    backingPipeline = nullptr;
+    backingPipeline->teardownPipeline();
 }
 
 void Window::buildSemaphores(void)
 {
     auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-
     imageAvailableSemaphore = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+
+    // This fence is used to wait for the Window and its Pipelines to be idle.
+    // It should therefor be signed at the start so that when no rendering has been
+    // done it is still idle.
+    auto fenceCreateInfo = vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled);
+    renderFinishedFence = device->intrinsic.createFence(fenceCreateInfo, nullptr);
 }
 
 void Window::teardownSemaphores(void)
 {
     device->intrinsic.destroy(imageAvailableSemaphore);
+    device->intrinsic.destroy(renderFinishedFence);
 }
 
-void Window::buildSwapchainAndPipeline(void)
+
+bool Window::render(bool blockOnVSync)
 {
-    boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
+    uint32_t imageIndex;
+    uint64_t timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
 
-    if (state == WindowState::LINKED_TO_DEVICE) {
-        buildSwapchain();
-        buildRenderPasses();
-        buildFramebuffers();
-        buildPipelines();
-        buildSemaphores();
-        state = WindowState::READY_TO_DRAW;
-    } else {
-        BOOST_THROW_EXCEPTION(WindowStateError());
+    LOG_INFO("Render.");
+
+    auto result = device->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+    switch (result) {
+    case vk::Result::eSuccess:
+        break;
+    case vk::Result::eSuboptimalKHR: /* FALLTHROUGH */
+    case vk::Result::eErrorOutOfDateKHR:
+        // SwapChain needs to be rebuild.
+        return false;
+    case vk::Result::eTimeout:
+        // Don't render, we didn't receive an image.
+        return true;
+    default:
+        BOOST_THROW_EXCEPTION(WindowSwapChainError());
     }
-}
-
-void Window::teardownSwapchainAndPipeline(void)
-{
-    boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-
-    if (state == WindowState::READY_TO_DRAW) {
-        teardownSemaphores();
-        teardownPipelines();
-        teardownFramebuffers();
-        teardownRenderPasses();
-        teardownSwapchain();
-        state = WindowState::LINKED_TO_DEVICE;
-    } else {
-        BOOST_THROW_EXCEPTION(WindowStateError());
-    }
-}
-
-void Window::setDevice(Device *device) {
-    if (device) {
-        {
-            boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
-            boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-            if (state == WindowState::NO_DEVICE) {
-                this->device = device;
-                state = WindowState::LINKED_TO_DEVICE;
-
-            } else {
-                BOOST_THROW_EXCEPTION(WindowStateError());
-            }
-        }
-
-        buildSwapchainAndPipeline();
-
-    } else {
-        teardownSwapchainAndPipeline();
-
-        {
-            boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
-            boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
-            if (state == WindowState::LINKED_TO_DEVICE) {
-                this->device = nullptr;
-                state = WindowState::NO_DEVICE;
-                
-            } else {
-                BOOST_THROW_EXCEPTION(WindowStateError());
-            }
-        }
-    }
-}
-
-void Window::render(void)
-{
-    auto imageIndexValue = device->intrinsic.acquireNextImageKHR(swapchain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphore, vk::Fence());
-    uint32_t imageIndex = imageIndexValue.value;
 
     vk::Semaphore renderFinishedSemaphores[] = {
         backingPipeline->render(imageIndex, imageAvailableSemaphore)
     };
+
+    // Make a fence that should be signaled when all drawing is finished.
+    device->intrinsic.waitIdle();
+    //device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    device->intrinsic.resetFences(1, &renderFinishedFence);
+    device->graphicQueue->intrinsic.submit(0, nullptr, renderFinishedFence);
 
     auto presentInfo = vk::PresentInfoKHR(
         1, renderFinishedSemaphores,
@@ -297,17 +399,20 @@ void Window::render(void)
         &imageIndex
     );
 
-    device->presentQueue->intrinsic.presentKHR(presentInfo);
+    // Pass present info as a pointer to get the non-throw version.
+    result = device->presentQueue->intrinsic.presentKHR(&presentInfo);
+    switch (result) {
+    case vk::Result::eSuccess:
+        break;
+    case vk::Result::eSuboptimalKHR: /* FALLTHROUGH */
+    case vk::Result::eErrorOutOfDateKHR:
+        // SwapChain needs to be rebuild.
+        return false;
+    default:
+        BOOST_THROW_EXCEPTION(WindowSwapChainError());
+    }
+    return true;
 }
 
-void Window::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)
-{
-    if (stateMutex.try_lock_shared()) {
-        if (state == WindowState::READY_TO_DRAW) {
-            render();
-        }
-        stateMutex.unlock_shared();
-    }
-}
 
 }}}

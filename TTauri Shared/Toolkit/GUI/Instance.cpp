@@ -6,6 +6,7 @@
 //  Copyright © 2019 Pokitec. All rights reserved.
 //
 
+#include <chrono>
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
 #include "TTauri/Toolkit/Logging.hpp"
@@ -49,6 +50,8 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
         auto physicalDevice = make_shared<Device>(this, _physicalDevice);
         physicalDevices.push_back(physicalDevice);
     }
+
+    maintanceThreadInstance = std::thread(Instance::maintanceThread, this);
 }
 
 bool Instance::add(std::shared_ptr<Window> window)
@@ -80,15 +83,38 @@ bool Instance::add(std::shared_ptr<Window> window)
 
 Instance::~Instance()
 {
+    state = InstanceState::STOPPING;
+    while (state != InstanceState::STOPPED) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(67));
+    };
+
     intrinsic.destroy();
 }
 
 
-void Instance::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)
+void Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
     for (auto physicalDevice: physicalDevices) {
-        physicalDevice->frameUpdate(nowTimestamp, outputTimestamp);
+        physicalDevice->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
     }
+}
+
+void Instance::maintance(void)
+{
+    for (auto device: physicalDevices) {
+        device->maintance();
+    }
+}
+
+void Instance::maintanceThread(Instance *self)
+{
+    self->state = InstanceState::RUNNING;
+
+    while (self->state == InstanceState::RUNNING) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(67));
+        self->maintance();
+    }
+    self->state = InstanceState::STOPPED;
 }
 
 }}}

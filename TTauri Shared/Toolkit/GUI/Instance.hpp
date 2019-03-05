@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <vector>
+#include <thread>
 #include <boost/uuid/uuid.hpp>
 #include <vulkan/vulkan.hpp>
 #include "vulkan_utils.hpp"
@@ -22,11 +23,21 @@ namespace GUI {
 
 struct InstanceError: virtual boost::exception, virtual std::exception {};
 
+
+enum class InstanceState {
+    IDLE,
+    RUNNING,
+    STOPPING,
+    STOPPED
+};
+
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
  */
 class Instance {
 public:
+    InstanceState state = InstanceState::IDLE;
+    
     //! Vulkan instance.
     vk::Instance intrinsic;
 
@@ -60,7 +71,7 @@ public:
      * \outTimestamp Number of nanoseconds since system start.
      * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      */
-    void frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp);
+    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     /*! Create an instance of a Device.
      * After the constructor is completed it may be used to get a
@@ -71,6 +82,16 @@ public:
      */
     Instance(const std::vector<const char *> &extensions);
     ~Instance();
+
+private:
+    std::thread maintanceThreadInstance;
+
+    /*! Called when maintance is needed.
+     * Run on seperate thread, 15 times per second.
+     */
+    void maintance(void);
+
+    static void maintanceThread(Instance *self);
 };
 
 }}}

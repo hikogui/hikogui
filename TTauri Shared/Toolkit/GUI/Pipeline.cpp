@@ -11,6 +11,7 @@
 #include <boost/assert.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 
 #include "Device.hpp"
 #include "Window.hpp"
@@ -20,30 +21,26 @@ namespace TTauri {
 namespace Toolkit {
 namespace GUI {
 
+// Device may change when the window is moved, therefor make this indirect.
+#define device (window->device)
 
-Pipeline::Pipeline(Window *window, vk::RenderPass renderPass) :
-    window(window), device(window->device), renderPass(renderPass)
+Pipeline::Pipeline(Window *window) :
+    window(window)
 {
-    // All initialization is done during initialize().
 }
 
 Pipeline::~Pipeline()
 {
-    BOOST_ASSERT(initialized);
-
-    device->intrinsic.destroy(renderFinishedSemaphore);
-
-    device->intrinsic.freeCommandBuffers(device->graphicQueue->commandPool, commandBuffers);
-
-    device->intrinsic.destroy(intrinsic);
-    device->intrinsic.destroy(pipelineLayout);
-    for (auto shaderModule: shaderModules) {
-        device->intrinsic.destroy(shaderModule);
-    }
 }
 
-void Pipeline::initialize()
+/*! Build the swapchain, frame buffers and pipeline.
+ */
+void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
 {
+    LOG_INFO("buildPipeline (%i, %i)") % extent.width % extent.height;
+
+    renderPass = _renderPass;
+
     shaderModules = createShaderModules();
 
     shaderStages = createShaderStages(shaderModules);
@@ -54,9 +51,9 @@ void Pipeline::initialize()
 
     pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
 
-    viewports = createViewports(window->getCurrentExtent());
+    viewports = createViewports(extent);
 
-    scissors = createScissors(window->getCurrentExtent());
+    scissors = createScissors(extent);
 
     pipelineViewportStateCreateInfo = createPipelineViewportStateCreateInfo(viewports, scissors);
 
@@ -102,9 +99,28 @@ void Pipeline::initialize()
     invalidateCommandBuffers();
 
     auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-    renderFinishedSemaphore = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+    renderFinishedSemaphores.resize(commandBuffers.size());
+    for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
+        renderFinishedSemaphores[i] = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+    }
+}
 
-    initialized = true;
+/*! Teardown the swapchain, frame buffers and pipeline.
+ */
+void Pipeline::teardownPipeline(void)
+{
+    for (size_t i = 0; i <  renderFinishedSemaphores.size(); i++) {
+        device->intrinsic.destroy(renderFinishedSemaphores[i]);
+    }
+
+    device->intrinsic.freeCommandBuffers(device->graphicQueue->commandPool, commandBuffers);
+    commandBuffers.clear();
+
+    device->intrinsic.destroy(intrinsic);
+    device->intrinsic.destroy(pipelineLayout);
+    for (auto shaderModule: shaderModules) {
+        device->intrinsic.destroy(shaderModule);
+    }
 }
 
 void Pipeline::invalidateCommandBuffers()
@@ -120,6 +136,8 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
         return;
     }
 
+    LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % scissors[0].extent.width % scissors[0].extent.height;
+
     commandBuffers[imageIndex].reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
     auto commandBufferBeginInfo = vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
@@ -130,7 +148,7 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
     auto renderPassBeginInfo = vk::RenderPassBeginInfo(
         renderPass,
         window->swapchainFramebuffers[imageIndex],
-        window->getCurrentRect(),
+        scissors[0],
         1,
         &clearColor
     );
@@ -149,11 +167,15 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
 
 vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
+    LOG_INFO("Render %i/%i") % imageIndex % renderFinishedSemaphores.size();
     validateCommandBuffer(imageIndex);
 
     vk::Semaphore waitSemaphores[] = {inputSemaphore};
+
     vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-    vk::Semaphore signalSemaphores[] = {renderFinishedSemaphore};
+
+    vk::Semaphore signalSemaphores[] = {renderFinishedSemaphores[imageIndex]};
+    
     vk::SubmitInfo submitInfo[] = {vk::SubmitInfo(
         1, waitSemaphores, waitStages,
         1, &commandBuffers[imageIndex],
@@ -162,7 +184,7 @@ vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore
 
     device->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
 
-    return renderFinishedSemaphore;
+    return renderFinishedSemaphores[imageIndex];
 }
 
 vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
@@ -171,6 +193,9 @@ vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
 
     auto mapped_file = boost::interprocess::file_mapping(path.c_str(), boost::interprocess::read_only);
     auto region = boost::interprocess::mapped_region(mapped_file, boost::interprocess::read_only);
+
+    // Check uint32_t alignment of pointer.
+    BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(region.get_address()) & 3) == 0);
 
     auto shaderModuleCreateInfo = vk::ShaderModuleCreateInfo(
         vk::ShaderModuleCreateFlags(),

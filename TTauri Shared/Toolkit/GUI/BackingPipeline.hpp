@@ -19,11 +19,9 @@ namespace GUI {
  */
 class BackingPipeline : public Pipeline {
 public:
-    BackingPipeline(Window *window, vk::RenderPass renderPass);
+    BackingPipeline(Window *window);
     virtual ~BackingPipeline();
-
-    std::vector<vk::CommandBuffer> commandBuffers;
-
+    
 protected:
     virtual std::vector<vk::ShaderModule> createShaderModules(void) const;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const;

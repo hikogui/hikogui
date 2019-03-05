@@ -9,6 +9,7 @@
 #pragma once
 
 #include <unordered_set>
+#include <mutex>
 #include <vulkan/vulkan.hpp>
 #include <boost/uuid/uuid.hpp>
 
@@ -30,7 +31,7 @@ enum class DeviceState {
  */
 class Device {
 private:
-    boost::shared_mutex stateMutex;
+    std::recursive_mutex stateMutex;
     DeviceState state;
 
 public:
@@ -120,8 +121,11 @@ public:
      * \outTimestamp Number of nanoseconds since system start.
      * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      */
-    void frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp);
+    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
+    /*! Maintanance work on low performance thread.
+     */
+    void maintance(void);
 
     Device(Instance *parent, vk::PhysicalDevice physicalDevice);
     ~Device();

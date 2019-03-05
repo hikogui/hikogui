@@ -25,24 +25,24 @@ public:
     vk::Pipeline intrinsic;
 
     Window *window;
-    Device *device;
 
     std::vector<vk::CommandBuffer> commandBuffers;
     std::vector<bool> commandBuffersValid;
-
-    vk::Semaphore renderFinishedSemaphore;
+    std::vector<vk::Semaphore> renderFinishedSemaphores;
 
     boost::filesystem::path vertexShaderPath;
     boost::filesystem::path fragmentShaderPath;
 
-    Pipeline(Window *window, vk::RenderPass renderPass);
+    Pipeline(Window *window);
     virtual ~Pipeline();
 
-    /*! Initialize pipeline right after constructing it.
-     * initialize() is used for calling virtual functions in sub classes.
+    /*! Build the swapchain, frame buffers and pipeline.
      */
-    void initialize();
-    bool initialized = false;
+    void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent);
+
+    /*! Teardown the swapchain, frame buffers and pipeline.
+     */
+    void teardownPipeline(void);
 
     /*! Invalidate all command buffers.
      * This is used when the command buffer needs to be recreated due to changes in views.

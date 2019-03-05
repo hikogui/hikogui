@@ -92,8 +92,7 @@ void Device::add(std::shared_ptr<Window> window)
         initializeDevice(window);
     }
 
-    boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
+    std::scoped_lock lock(stateMutex);
 
     windows.insert(window);
     window->setDevice(this);
@@ -101,8 +100,7 @@ void Device::add(std::shared_ptr<Window> window)
 
 void Device::remove(std::shared_ptr<Window> window)
 {
-    boost::upgrade_lock<boost::shared_mutex> lock(stateMutex);
-    boost::upgrade_to_unique_lock<boost::shared_mutex> uniqueLock(lock);
+    std::scoped_lock lock(stateMutex);
 
     window->setDevice(nullptr);
     windows.erase(window);
@@ -198,9 +196,6 @@ int Device::score(std::shared_ptr<Window> window)
         return 0;
     }
 
-    //auto surfaceCapabilities = physicalIntrinsic.getSurfaceCapabilitiesKHR(window->intrinsic);
-
-
     // Give score based on colour quality.
     LOG_INFO(" - Surface formats:");
     uint32_t bestSurfaceFormatScore = 0;
@@ -277,15 +272,23 @@ int Device::score(std::shared_ptr<Window> window)
     return score;
 }
 
-void Device::frameUpdate(uint64_t nowTimestamp, uint64_t outputTimestamp)
+void Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
-    if (stateMutex.try_lock_shared()) {
+    if (stateMutex.try_lock()) {
         if (state == DeviceState::READY_TO_DRAW) {
             for (auto window: windows) {
-                window->frameUpdate(nowTimestamp, outputTimestamp);
+                window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
+                blockOnVSync = false;
             }
         }
-        stateMutex.unlock_shared();
+        stateMutex.unlock();
+    }
+}
+
+void Device::maintance(void)
+{
+    for (auto window: windows) {
+        window->maintenance();
     }
 }
 
