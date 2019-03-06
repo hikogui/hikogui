@@ -97,6 +97,9 @@ public:
      */
     std::vector<std::pair<uint32_t, QueueCapabilities>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
 
+    Device(Instance *instance, vk::PhysicalDevice physicalDevice);
+    ~Device();
+
     /*! Check if this device is a good match for this window.
      *
      * It is possible for a window to be created that is not presentable, in case of a headless-virtual-display,
@@ -127,8 +130,6 @@ public:
      */
     void maintance(void);
 
-    Device(Instance *parent, vk::PhysicalDevice physicalDevice);
-    ~Device();
 };
 
 }}}

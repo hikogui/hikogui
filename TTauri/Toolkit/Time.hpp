@@ -10,6 +10,9 @@
 
 #include <cstdint>
 #include <time.h>
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 #include <boost/multiprecision/cpp_int.hpp>
 
 namespace TTauri {
@@ -24,6 +27,29 @@ class Timestamp {
 public:
     int64_t intrinsic;
 
+#ifdef _WIN32
+	/*! Get a timestamp based on a high resolution system clock.
+     */
+	static Timestamp now(void) {
+		FILETIME ts; 
+
+		GetSystemTimePreciseAsFileTime(&ts);
+
+		auto utc_ts = static_cast<int64_t>(ts.dwHighDateTime) << 32;
+		utc_ts |= static_cast<int64_t>(ts.dwLowDateTime);
+
+		// Convert to UNIX Epoch. Currently utc_ts is still in 100ns format.
+		// Convert  1601-01-1 00:00:00 -> 1970-01-01 00:00:00
+		utc_ts -= 116444736000000000;
+
+		// Convert to 1ns format.
+		utc_ts *= 100;
+
+		auto ptp_ts = utc_ts;
+		return { ptp_ts };
+	}
+
+#else
     /*! Get a timestamp based on a high resolution system clock.
      */
     static Timestamp now(void) {
@@ -38,6 +64,7 @@ public:
         auto ptp_ts = utc_ts;
         return {ptp_ts};
     }
+#endif
 };
 
 struct ClockCalibration {

@@ -41,6 +41,8 @@ public:
     //! Vulkan instance.
     vk::Instance intrinsic;
 
+    vk::DispatchLoaderDynamic loader;
+
     //! List of extension that where requested when the instance was created.
     std::vector<const char *> requiredExtensions;
 

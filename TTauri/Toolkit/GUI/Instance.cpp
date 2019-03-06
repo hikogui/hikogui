@@ -46,6 +46,7 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
 
     intrinsic = vk::createInstance(instanceCreateInfo);
 
+    loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
     for (auto _physicalDevice: intrinsic.enumeratePhysicalDevices()) {
         auto physicalDevice = make_shared<Device>(this, _physicalDevice);
         physicalDevices.push_back(physicalDevice);

@@ -191,7 +191,8 @@ vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
 {
     LOG_INFO("Loading shader %s") % path.filename().generic_string();
 
-    auto mapped_file = boost::interprocess::file_mapping(path.c_str(), boost::interprocess::read_only);
+	auto tmp_path = path.generic_string();
+	boost::interprocess::file_mapping mapped_file(tmp_path.c_str(), boost::interprocess::read_only);
     auto region = boost::interprocess::mapped_region(mapped_file, boost::interprocess::read_only);
 
     // Check uint32_t alignment of pointer.

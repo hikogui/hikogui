@@ -21,10 +21,10 @@ namespace GUI {
 
 using namespace std;
 
-Device::Device(Instance *parent, vk::PhysicalDevice physicalDevice) :
-    instance(parent), physicalIntrinsic(physicalDevice), state(DeviceState::NO_DEVICE)
+Device::Device(Instance *instance, vk::PhysicalDevice physicalDevice) :
+    instance(instance), physicalIntrinsic(physicalDevice), state(DeviceState::NO_DEVICE)
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>();
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(instance->loader);
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();

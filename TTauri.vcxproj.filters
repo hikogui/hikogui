@@ -1,17 +1,131 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Toolkit">
+      <UniqueIdentifier>{6d52174f-9a01-4919-9fcb-bb16de361ecd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    <Filter Include="Toolkit\GUI">
+      <UniqueIdentifier>{046d90fb-7883-4bfd-93d1-dc173e7680e3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    <Filter Include="TTauri Windows10">
+      <UniqueIdentifier>{831f2bd6-a519-4989-b701-2b01fde1a5e4}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="TTauri\Toolkit\Application.cpp">
+      <Filter>Toolkit</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\Logging.cpp">
+      <Filter>Toolkit</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\Time.cpp">
+      <Filter>Toolkit</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\Timestamp.cpp">
+      <Filter>Toolkit</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\BackingPipeline.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Device.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\GUI.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\ImageView.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Instance.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Pipeline.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Queue.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\QueueCapabilities.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Rectangle.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Vector.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\View.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\vulkan_utils.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Toolkit\GUI\Window.cpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri Windows10\main.cpp">
+      <Filter>TTauri Windows10</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TTauri\Toolkit\Application.hpp">
+      <Filter>Toolkit</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\Logging.hpp">
+      <Filter>Toolkit</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\Time.hpp">
+      <Filter>Toolkit</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\Timestamp.hpp">
+      <Filter>Toolkit</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\BackingPipeline.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Device.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\GUI.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\ImageView.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Instance.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Pipeline.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Queue.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\QueueCapabilities.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Rectangle.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Vector.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\View.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\vulkan_utils.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Toolkit\GUI\Window.hpp">
+      <Filter>Toolkit\GUI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TTauri\Toolkit\GUI\BackingPipeline.frag">
+      <Filter>Toolkit\GUI</Filter>
+    </None>
+    <None Include="TTauri\Toolkit\GUI\BackingPipeline.vert">
+      <Filter>Toolkit\GUI</Filter>
+    </None>
   </ItemGroup>
 </Project>

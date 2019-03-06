@@ -22,6 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{DDDBBD16-6C96-4B76-B7B4-E7BD65FE635A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -64,9 +65,17 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(VULKAN_SDK)\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(VULKAN_SDK)\Include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -75,11 +84,14 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib;$(VULKAN_SDK)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -88,6 +100,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -95,9 +108,70 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib;$(VULKAN_SDK)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib;$(VULKAN_SDK)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Link>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib;$(VULKAN_SDK)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="TTauri Windows10\main.cpp" />
+    <ClCompile Include="TTauri\Toolkit\Application.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\BackingPipeline.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Device.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\GUI.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\ImageView.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Instance.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Pipeline.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Queue.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\QueueCapabilities.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Rectangle.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Vector.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\View.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\vulkan_utils.cpp" />
+    <ClCompile Include="TTauri\Toolkit\GUI\Window.cpp" />
+    <ClCompile Include="TTauri\Toolkit\Logging.cpp" />
+    <ClCompile Include="TTauri\Toolkit\Time.cpp" />
+    <ClCompile Include="TTauri\Toolkit\Timestamp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TTauri\Toolkit\Application.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\BackingPipeline.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Device.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\GUI.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\ImageView.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Instance.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Pipeline.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Queue.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\QueueCapabilities.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Rectangle.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Vector.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\View.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\vulkan_utils.hpp" />
+    <ClInclude Include="TTauri\Toolkit\GUI\Window.hpp" />
+    <ClInclude Include="TTauri\Toolkit\Logging.hpp" />
+    <ClInclude Include="TTauri\Toolkit\Time.hpp" />
+    <ClInclude Include="TTauri\Toolkit\Timestamp.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TTauri\Toolkit\GUI\BackingPipeline.frag" />
+    <None Include="TTauri\Toolkit\GUI\BackingPipeline.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

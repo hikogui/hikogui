@@ -28,15 +28,15 @@ struct QueueCapabilities {
         handlesGraphics(false), handlesCompute(false), handlesPresent(false) {}
 
     bool handlesEverything() const {
-        return handlesGraphics and handlesCompute and handlesPresent;
+        return handlesGraphics && handlesCompute && handlesPresent;
     }
 
     bool handlesGraphicsAndPresent() const {
-        return handlesGraphics and handlesPresent;
+        return handlesGraphics && handlesPresent;
     }
 
     bool handlesGraphicsAndCompute() const {
-        return handlesGraphics and handlesCompute;
+        return handlesGraphics && handlesCompute;
     }
 
     std::string str(void) const {
@@ -48,10 +48,10 @@ struct QueueCapabilities {
     }
 
     bool handlesAllOff(const QueueCapabilities &other) const {
-        return not (
-            (other.handlesGraphics and not handlesGraphics) or
-            (other.handlesCompute and not handlesCompute) or
-            (other.handlesPresent and not handlesPresent)
+        return !(
+            (other.handlesGraphics && !handlesGraphics) ||
+            (other.handlesCompute && !handlesCompute) ||
+            (other.handlesPresent && !handlesPresent)
         );
     }
 
@@ -74,9 +74,9 @@ struct QueueCapabilities {
 
     QueueCapabilities operator-(const QueueCapabilities &other) const {
         QueueCapabilities result;
-        result.handlesGraphics = handlesGraphics and not other.handlesGraphics;
-        result.handlesCompute = handlesCompute and not other.handlesCompute;
-        result.handlesPresent = handlesPresent and not other.handlesPresent;
+        result.handlesGraphics = handlesGraphics && !other.handlesGraphics;
+        result.handlesCompute = handlesCompute && !other.handlesCompute;
+        result.handlesPresent = handlesPresent && !other.handlesPresent;
         return result;
     }
 

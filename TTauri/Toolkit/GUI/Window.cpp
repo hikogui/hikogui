@@ -166,7 +166,7 @@ void Window::buildSwapchain(void)
         auto imageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
         vk::Extent2D imageExtent = surfaceCapabilities.currentExtent;
-        if (imageExtent.width == std::numeric_limits<uint32_t>::max() or imageExtent.height == std::numeric_limits<uint32_t>::max()) {
+        if (imageExtent.width == std::numeric_limits<uint32_t>::max() || imageExtent.height == std::numeric_limits<uint32_t>::max()) {
             imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
             imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
         }
