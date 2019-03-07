@@ -60,7 +60,11 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
     LOG_INFO("Creating Vulkan instance.");
     intrinsic = vk::createInstance(instanceCreateInfo);
 
+#if (VK_HEADER_VERSION == 97)
+    loader = vk::DispatchLoaderDynamic(intrinsic);
+#else
     loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
+#endif
     for (auto _physicalDevice: intrinsic.enumeratePhysicalDevices()) {
         auto physicalDevice = make_shared<Device>(this, _physicalDevice);
         physicalDevices.push_back(physicalDevice);

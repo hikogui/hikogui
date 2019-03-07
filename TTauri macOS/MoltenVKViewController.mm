@@ -9,12 +9,12 @@
 #include <boost/filesystem.hpp>
 #import "MoltenVKViewController.h"
 #import "MoltenVKView.h"
-#include "TTauri/Toolkit/Application.hpp"
-#include "TTauri/Toolkit/GUI/GUI.hpp"
+#include "TTauri/Application.hpp"
+#include "TTauri/GUI/GUI.hpp"
 
 using namespace std;
-using namespace TTauri::Toolkit;
-using namespace TTauri::Toolkit::GUI;
+using namespace TTauri;
+using namespace TTauri::GUI;
 
 struct CallbackData {
     shared_ptr<Instance> instance;

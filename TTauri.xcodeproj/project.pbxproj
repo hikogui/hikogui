@@ -7,80 +7,86 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		686AD2302208647900AC826C /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD22E2208647900AC826C /* Window.cpp */; };
-		686AD2312208647900AC826C /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD22E2208647900AC826C /* Window.cpp */; };
-		686AD2322208647900AC826C /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD22E2208647900AC826C /* Window.cpp */; };
-		686AD2352208693500AC826C /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2332208693500AC826C /* Rectangle.cpp */; };
-		686AD2362208693500AC826C /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2332208693500AC826C /* Rectangle.cpp */; };
-		686AD2372208693500AC826C /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2332208693500AC826C /* Rectangle.cpp */; };
-		686AD23A22086E8E00AC826C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD23822086E8E00AC826C /* Vector.cpp */; };
-		686AD23B22086E8E00AC826C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD23822086E8E00AC826C /* Vector.cpp */; };
-		686AD23C22086E8E00AC826C /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD23822086E8E00AC826C /* Vector.cpp */; };
-		686AD23F220878AA00AC826C /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD23D220878AA00AC826C /* View.cpp */; };
-		686AD240220878AA00AC826C /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD23D220878AA00AC826C /* View.cpp */; };
-		686AD241220878AA00AC826C /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD23D220878AA00AC826C /* View.cpp */; };
-		686AD24422088A4900AC826C /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24222088A4900AC826C /* GUI.cpp */; };
-		686AD24522088A4900AC826C /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24222088A4900AC826C /* GUI.cpp */; };
-		686AD24622088A4900AC826C /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD24222088A4900AC826C /* GUI.cpp */; };
-		686AD249220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
-		686AD24A220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
-		686AD24B220893D300AC826C /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD247220893D300AC826C /* Instance.cpp */; };
-		686AD2582208B2BB00AC826C /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2562208B2BB00AC826C /* ImageView.cpp */; };
-		686AD2592208B2BB00AC826C /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2562208B2BB00AC826C /* ImageView.cpp */; };
-		686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686AD2562208B2BB00AC826C /* ImageView.cpp */; };
-		686E3B9822127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
-		686E3B9922127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
-		686E3B9A22127A57002B56E5 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9622127A57002B56E5 /* Time.cpp */; };
-		686E3B9D2212FBFB002B56E5 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */; };
-		686E3B9E2212FBFB002B56E5 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */; };
-		686E3B9F2212FBFB002B56E5 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */; };
-		686E3BA02212FC0C002B56E5 /* Pipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686E3B9C2212FBFB002B56E5 /* Pipeline.hpp */; };
-		686E3BA12212FC12002B56E5 /* Time.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686E3B9722127A57002B56E5 /* Time.hpp */; };
-		686E3BA42213091F002B56E5 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3BA22213091F002B56E5 /* BackingPipeline.cpp */; };
-		686E3BA52213091F002B56E5 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3BA22213091F002B56E5 /* BackingPipeline.cpp */; };
-		686E3BA62213091F002B56E5 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686E3BA22213091F002B56E5 /* BackingPipeline.cpp */; };
-		686E3BA72213092C002B56E5 /* BackingPipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686E3BA32213091F002B56E5 /* BackingPipeline.hpp */; };
+		686C02CE2231A8A4002F4063 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C62231A8A3002F4063 /* Application.cpp */; };
+		686C02CF2231A8A4002F4063 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C62231A8A3002F4063 /* Application.cpp */; };
+		686C02D02231A8A4002F4063 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C62231A8A3002F4063 /* Application.cpp */; };
+		686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C82231A8A3002F4063 /* Timestamp.cpp */; };
+		686C02D22231A8A4002F4063 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C82231A8A3002F4063 /* Timestamp.cpp */; };
+		686C02D32231A8A4002F4063 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C82231A8A3002F4063 /* Timestamp.cpp */; };
+		686C02D42231A8A4002F4063 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CA2231A8A4002F4063 /* Time.cpp */; };
+		686C02D52231A8A4002F4063 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CA2231A8A4002F4063 /* Time.cpp */; };
+		686C02D62231A8A4002F4063 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CA2231A8A4002F4063 /* Time.cpp */; };
+		686C02D72231A8A4002F4063 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CC2231A8A4002F4063 /* Logging.cpp */; };
+		686C02D82231A8A4002F4063 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CC2231A8A4002F4063 /* Logging.cpp */; };
+		686C02D92231A8A4002F4063 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CC2231A8A4002F4063 /* Logging.cpp */; };
+		686C02F62231A8D7002F4063 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DB2231A8D5002F4063 /* Pipeline.cpp */; };
+		686C02F72231A8D7002F4063 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DB2231A8D5002F4063 /* Pipeline.cpp */; };
+		686C02F82231A8D7002F4063 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DB2231A8D5002F4063 /* Pipeline.cpp */; };
+		686C02F92231A8D7002F4063 /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DC2231A8D6002F4063 /* View.cpp */; };
+		686C02FA2231A8D7002F4063 /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DC2231A8D6002F4063 /* View.cpp */; };
+		686C02FB2231A8D7002F4063 /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DC2231A8D6002F4063 /* View.cpp */; };
+		686C02FC2231A8D7002F4063 /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DE2231A8D6002F4063 /* Rectangle.cpp */; };
+		686C02FD2231A8D7002F4063 /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DE2231A8D6002F4063 /* Rectangle.cpp */; };
+		686C02FE2231A8D7002F4063 /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DE2231A8D6002F4063 /* Rectangle.cpp */; };
+		686C02FF2231A8D7002F4063 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E22231A8D6002F4063 /* Instance.cpp */; };
+		686C03002231A8D7002F4063 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E22231A8D6002F4063 /* Instance.cpp */; };
+		686C03012231A8D7002F4063 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E22231A8D6002F4063 /* Instance.cpp */; };
+		686C03022231A8D7002F4063 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E32231A8D6002F4063 /* BackingPipeline.cpp */; };
+		686C03032231A8D7002F4063 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E32231A8D6002F4063 /* BackingPipeline.cpp */; };
+		686C03042231A8D7002F4063 /* BackingPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E32231A8D6002F4063 /* BackingPipeline.cpp */; };
+		686C03052231A8D7002F4063 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E42231A8D6002F4063 /* Window.cpp */; };
+		686C03062231A8D7002F4063 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E42231A8D6002F4063 /* Window.cpp */; };
+		686C03072231A8D7002F4063 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E42231A8D6002F4063 /* Window.cpp */; };
+		686C03082231A8D7002F4063 /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E72231A8D6002F4063 /* Vector.cpp */; };
+		686C03092231A8D7002F4063 /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E72231A8D6002F4063 /* Vector.cpp */; };
+		686C030A2231A8D7002F4063 /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E72231A8D6002F4063 /* Vector.cpp */; };
+		686C030B2231A8D7002F4063 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EC2231A8D7002F4063 /* Queue.cpp */; };
+		686C030C2231A8D7002F4063 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EC2231A8D7002F4063 /* Queue.cpp */; };
+		686C030D2231A8D7002F4063 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EC2231A8D7002F4063 /* Queue.cpp */; };
+		686C030E2231A8D7002F4063 /* BackingPipeline.vert in Resources */ = {isa = PBXBuildFile; fileRef = 686C02ED2231A8D7002F4063 /* BackingPipeline.vert */; };
+		686C030F2231A8D7002F4063 /* BackingPipeline.vert in Resources */ = {isa = PBXBuildFile; fileRef = 686C02ED2231A8D7002F4063 /* BackingPipeline.vert */; };
+		686C03102231A8D7002F4063 /* BackingPipeline.vert in Resources */ = {isa = PBXBuildFile; fileRef = 686C02ED2231A8D7002F4063 /* BackingPipeline.vert */; };
+		686C03112231A8D7002F4063 /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EE2231A8D7002F4063 /* ImageView.cpp */; };
+		686C03122231A8D7002F4063 /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EE2231A8D7002F4063 /* ImageView.cpp */; };
+		686C03132231A8D7002F4063 /* ImageView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EE2231A8D7002F4063 /* ImageView.cpp */; };
+		686C03142231A8D7002F4063 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F02231A8D7002F4063 /* QueueCapabilities.cpp */; };
+		686C03152231A8D7002F4063 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F02231A8D7002F4063 /* QueueCapabilities.cpp */; };
+		686C03162231A8D7002F4063 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F02231A8D7002F4063 /* QueueCapabilities.cpp */; };
+		686C03172231A8D7002F4063 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F12231A8D7002F4063 /* vulkan_utils.cpp */; };
+		686C03182231A8D7002F4063 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F12231A8D7002F4063 /* vulkan_utils.cpp */; };
+		686C03192231A8D7002F4063 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F12231A8D7002F4063 /* vulkan_utils.cpp */; };
+		686C031A2231A8D7002F4063 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F22231A8D7002F4063 /* Device.cpp */; };
+		686C031B2231A8D7002F4063 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F22231A8D7002F4063 /* Device.cpp */; };
+		686C031C2231A8D7002F4063 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F22231A8D7002F4063 /* Device.cpp */; };
+		686C031D2231A8D7002F4063 /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F32231A8D7002F4063 /* GUI.cpp */; };
+		686C031E2231A8D7002F4063 /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F32231A8D7002F4063 /* GUI.cpp */; };
+		686C031F2231A8D7002F4063 /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02F32231A8D7002F4063 /* GUI.cpp */; };
+		686C03202231A8D7002F4063 /* BackingPipeline.frag in Resources */ = {isa = PBXBuildFile; fileRef = 686C02F52231A8D7002F4063 /* BackingPipeline.frag */; };
+		686C03212231A8D7002F4063 /* BackingPipeline.frag in Resources */ = {isa = PBXBuildFile; fileRef = 686C02F52231A8D7002F4063 /* BackingPipeline.frag */; };
+		686C03222231A8D7002F4063 /* BackingPipeline.frag in Resources */ = {isa = PBXBuildFile; fileRef = 686C02F52231A8D7002F4063 /* BackingPipeline.frag */; };
+		686C03232231A971002F4063 /* Application.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02CB2231A8A4002F4063 /* Application.hpp */; };
+		686C03242231A971002F4063 /* Logging.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02C92231A8A4002F4063 /* Logging.hpp */; };
+		686C03252231A971002F4063 /* Time.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02C72231A8A3002F4063 /* Time.hpp */; };
+		686C03262231A971002F4063 /* Timestamp.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02CD2231A8A4002F4063 /* Timestamp.hpp */; };
+		686C03272231A989002F4063 /* BackingPipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02EA2231A8D6002F4063 /* BackingPipeline.hpp */; };
+		686C03282231A989002F4063 /* Device.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02DD2231A8D6002F4063 /* Device.hpp */; };
+		686C03292231A989002F4063 /* GUI.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E82231A8D6002F4063 /* GUI.hpp */; };
+		686C032A2231A989002F4063 /* ImageView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E52231A8D6002F4063 /* ImageView.hpp */; };
+		686C032B2231A989002F4063 /* Instance.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02DA2231A8D5002F4063 /* Instance.hpp */; };
+		686C032C2231A989002F4063 /* Pipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E92231A8D6002F4063 /* Pipeline.hpp */; };
+		686C032D2231A989002F4063 /* Queue.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E02231A8D6002F4063 /* Queue.hpp */; };
+		686C032E2231A989002F4063 /* QueueCapabilities.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */; };
+		686C032F2231A989002F4063 /* Rectangle.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02DF2231A8D6002F4063 /* Rectangle.hpp */; };
+		686C03302231A989002F4063 /* Vector.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02F42231A8D7002F4063 /* Vector.hpp */; };
+		686C03312231A989002F4063 /* View.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E62231A8D6002F4063 /* View.hpp */; };
+		686C03322231A989002F4063 /* vulkan_utils.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02EF2231A8D7002F4063 /* vulkan_utils.hpp */; };
+		686C03332231A989002F4063 /* Window.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02EB2231A8D6002F4063 /* Window.hpp */; };
 		68A9A0622208FC3600457876 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0612208FC3600457876 /* libboost_system.a */; };
 		68A9A0642208FC4100457876 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0632208FC4100457876 /* libboost_filesystem.a */; };
-		68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
-		68A9A0682209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
-		68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A0652209F98300457876 /* vulkan_utils.cpp */; };
-		68A9A06C220B0FEA00457876 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A06A220B0FEA00457876 /* Device.cpp */; };
-		68A9A06D220B0FEA00457876 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A06A220B0FEA00457876 /* Device.cpp */; };
-		68A9A06E220B0FEA00457876 /* Device.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A06A220B0FEA00457876 /* Device.cpp */; };
 		68A9A07A220B2F9500457876 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A079220B2F9500457876 /* libboost_thread.a */; };
-		68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
-		68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
-		68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A07B220B3DDC00457876 /* Queue.cpp */; };
-		68A9A081220BB1BF00457876 /* vulkan_utils.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A0662209F98300457876 /* vulkan_utils.hpp */; };
-		68A9A082220BB1BF00457876 /* GUI.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD24322088A4900AC826C /* GUI.hpp */; };
-		68A9A083220BB1BF00457876 /* Rectangle.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2342208693500AC826C /* Rectangle.hpp */; };
-		68A9A084220BB1BF00457876 /* Vector.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD23922086E8E00AC826C /* Vector.hpp */; };
-		68A9A085220BB1BF00457876 /* Window.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD22F2208647900AC826C /* Window.hpp */; };
-		68A9A086220BB1BF00457876 /* View.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD23E220878AA00AC826C /* View.hpp */; };
-		68A9A087220BB1BF00457876 /* Instance.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD248220893D300AC826C /* Instance.hpp */; };
-		68A9A08A220BB1BF00457876 /* ImageView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686AD2572208B2BB00AC826C /* ImageView.hpp */; };
-		68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A06B220B0FEA00457876 /* Device.hpp */; };
-		68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A07C220B3DDC00457876 /* Queue.hpp */; };
-		68A9A090220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
-		68A9A091220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
-		68A9A092220C7E2A00457876 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */; };
-		68A9A093220C7E9C00457876 /* QueueCapabilities.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */; };
-		68C6C3AC220CCA3C00B39337 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68C6C3AA220CCA3C00B39337 /* Logging.cpp */; };
-		68C6C3AD220CCA3C00B39337 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68C6C3AA220CCA3C00B39337 /* Logging.cpp */; };
-		68C6C3AE220CCA3C00B39337 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68C6C3AA220CCA3C00B39337 /* Logging.cpp */; };
-		68C6C3B1220CCC8700B39337 /* Logging.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68C6C3AB220CCA3C00B39337 /* Logging.hpp */; };
 		68D07C1F220CDF19005EFAB2 /* libboost_log.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D07C1E220CDF18005EFAB2 /* libboost_log.a */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
-		68E5D6E022131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
-		68E5D6E122131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
-		68E5D6E222131E9800DA9792 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6DE22131E9800DA9792 /* Application.cpp */; };
-		68E5D6E3221326DE00DA9792 /* Application.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68E5D6DF22131E9800DA9792 /* Application.hpp */; };
-		68E5D6E622141F0A00DA9792 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6E422141F0A00DA9792 /* Timestamp.cpp */; };
-		68E5D6E722141F0A00DA9792 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6E422141F0A00DA9792 /* Timestamp.cpp */; };
-		68E5D6E822141F0A00DA9792 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68E5D6E422141F0A00DA9792 /* Timestamp.cpp */; };
-		68E5D6EA22141F3500DA9792 /* Timestamp.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68E5D6E522141F0A00DA9792 /* Timestamp.hpp */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -94,95 +100,91 @@
 		68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */; };
 		68F262A922030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F262A722030EA70078E5E4 /* Main.storyboard */; };
 		68F262AC22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262AB22030EA70078E5E4 /* main.m */; };
-		68F262B322030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
-		68F262B422030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
-		68F262B522030EA70078E5E4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 68F2627222030EA70078E5E4 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		68A9A080220BB12C00457876 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = include/TTauri/Toolkit/GUI;
+			dstPath = include/TTauri/GUI;
 			dstSubfolderSpec = 16;
 			files = (
-				68A9A081220BB1BF00457876 /* vulkan_utils.hpp in CopyFiles */,
-				68A9A082220BB1BF00457876 /* GUI.hpp in CopyFiles */,
-				68A9A083220BB1BF00457876 /* Rectangle.hpp in CopyFiles */,
-				68A9A084220BB1BF00457876 /* Vector.hpp in CopyFiles */,
-				68A9A085220BB1BF00457876 /* Window.hpp in CopyFiles */,
-				68A9A086220BB1BF00457876 /* View.hpp in CopyFiles */,
-				68A9A087220BB1BF00457876 /* Instance.hpp in CopyFiles */,
-				68A9A08A220BB1BF00457876 /* ImageView.hpp in CopyFiles */,
-				68A9A08C220BB1BF00457876 /* Device.hpp in CopyFiles */,
-				68A9A08D220BB1BF00457876 /* Queue.hpp in CopyFiles */,
-				68A9A093220C7E9C00457876 /* QueueCapabilities.hpp in CopyFiles */,
-				686E3BA02212FC0C002B56E5 /* Pipeline.hpp in CopyFiles */,
-				686E3BA72213092C002B56E5 /* BackingPipeline.hpp in CopyFiles */,
+				686C03272231A989002F4063 /* BackingPipeline.hpp in CopyFiles */,
+				686C03282231A989002F4063 /* Device.hpp in CopyFiles */,
+				686C03292231A989002F4063 /* GUI.hpp in CopyFiles */,
+				686C032A2231A989002F4063 /* ImageView.hpp in CopyFiles */,
+				686C032B2231A989002F4063 /* Instance.hpp in CopyFiles */,
+				686C032C2231A989002F4063 /* Pipeline.hpp in CopyFiles */,
+				686C032D2231A989002F4063 /* Queue.hpp in CopyFiles */,
+				686C032E2231A989002F4063 /* QueueCapabilities.hpp in CopyFiles */,
+				686C032F2231A989002F4063 /* Rectangle.hpp in CopyFiles */,
+				686C03302231A989002F4063 /* Vector.hpp in CopyFiles */,
+				686C03312231A989002F4063 /* View.hpp in CopyFiles */,
+				686C03322231A989002F4063 /* vulkan_utils.hpp in CopyFiles */,
+				686C03332231A989002F4063 /* Window.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		68C6C3B0220CCC7100B39337 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = include/TTauri/Toolkit;
+			dstPath = include/TTauri;
 			dstSubfolderSpec = 16;
 			files = (
-				68C6C3B1220CCC8700B39337 /* Logging.hpp in CopyFiles */,
-				68E5D6EA22141F3500DA9792 /* Timestamp.hpp in CopyFiles */,
-				686E3BA12212FC12002B56E5 /* Time.hpp in CopyFiles */,
-				68E5D6E3221326DE00DA9792 /* Application.hpp in CopyFiles */,
+				686C03232231A971002F4063 /* Application.hpp in CopyFiles */,
+				686C03242231A971002F4063 /* Logging.hpp in CopyFiles */,
+				686C03252231A971002F4063 /* Time.hpp in CopyFiles */,
+				686C03262231A971002F4063 /* Timestamp.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		686AD22E2208647900AC826C /* Window.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Window.cpp; sourceTree = "<group>"; };
-		686AD22F2208647900AC826C /* Window.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Window.hpp; sourceTree = "<group>"; };
-		686AD2332208693500AC826C /* Rectangle.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Rectangle.cpp; sourceTree = "<group>"; };
-		686AD2342208693500AC826C /* Rectangle.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Rectangle.hpp; sourceTree = "<group>"; };
-		686AD23822086E8E00AC826C /* Vector.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
-		686AD23922086E8E00AC826C /* Vector.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Vector.hpp; sourceTree = "<group>"; };
-		686AD23D220878AA00AC826C /* View.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = View.cpp; sourceTree = "<group>"; };
-		686AD23E220878AA00AC826C /* View.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = View.hpp; sourceTree = "<group>"; };
-		686AD24222088A4900AC826C /* GUI.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GUI.cpp; sourceTree = "<group>"; };
-		686AD24322088A4900AC826C /* GUI.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GUI.hpp; sourceTree = "<group>"; };
-		686AD247220893D300AC826C /* Instance.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
-		686AD248220893D300AC826C /* Instance.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Instance.hpp; sourceTree = "<group>"; };
-		686AD2562208B2BB00AC826C /* ImageView.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ImageView.cpp; sourceTree = "<group>"; };
-		686AD2572208B2BB00AC826C /* ImageView.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ImageView.hpp; sourceTree = "<group>"; };
-		686E3B9622127A57002B56E5 /* Time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
-		686E3B9722127A57002B56E5 /* Time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
-		686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Pipeline.cpp; sourceTree = "<group>"; };
-		686E3B9C2212FBFB002B56E5 /* Pipeline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Pipeline.hpp; sourceTree = "<group>"; };
-		686E3BA22213091F002B56E5 /* BackingPipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BackingPipeline.cpp; sourceTree = "<group>"; };
-		686E3BA32213091F002B56E5 /* BackingPipeline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BackingPipeline.hpp; sourceTree = "<group>"; };
-		686E3BA822130AC7002B56E5 /* BackingPipeline.vert */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = BackingPipeline.vert; sourceTree = "<group>"; };
-		686E3BAC22130AE6002B56E5 /* BackingPipeline.frag */ = {isa = PBXFileReference; explicitFileType = sourcecode.glsl; path = BackingPipeline.frag; sourceTree = "<group>"; };
+		686C02C62231A8A3002F4063 /* Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Application.cpp; sourceTree = "<group>"; };
+		686C02C72231A8A3002F4063 /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
+		686C02C82231A8A3002F4063 /* Timestamp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timestamp.cpp; sourceTree = "<group>"; };
+		686C02C92231A8A4002F4063 /* Logging.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Logging.hpp; sourceTree = "<group>"; };
+		686C02CA2231A8A4002F4063 /* Time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
+		686C02CB2231A8A4002F4063 /* Application.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Application.hpp; sourceTree = "<group>"; };
+		686C02CC2231A8A4002F4063 /* Logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logging.cpp; sourceTree = "<group>"; };
+		686C02CD2231A8A4002F4063 /* Timestamp.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Timestamp.hpp; sourceTree = "<group>"; };
+		686C02DA2231A8D5002F4063 /* Instance.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Instance.hpp; sourceTree = "<group>"; };
+		686C02DB2231A8D5002F4063 /* Pipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Pipeline.cpp; sourceTree = "<group>"; };
+		686C02DC2231A8D6002F4063 /* View.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = View.cpp; sourceTree = "<group>"; };
+		686C02DD2231A8D6002F4063 /* Device.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Device.hpp; sourceTree = "<group>"; };
+		686C02DE2231A8D6002F4063 /* Rectangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectangle.cpp; sourceTree = "<group>"; };
+		686C02DF2231A8D6002F4063 /* Rectangle.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Rectangle.hpp; sourceTree = "<group>"; };
+		686C02E02231A8D6002F4063 /* Queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Queue.hpp; sourceTree = "<group>"; };
+		686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = QueueCapabilities.hpp; sourceTree = "<group>"; };
+		686C02E22231A8D6002F4063 /* Instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
+		686C02E32231A8D6002F4063 /* BackingPipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BackingPipeline.cpp; sourceTree = "<group>"; };
+		686C02E42231A8D6002F4063 /* Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Window.cpp; sourceTree = "<group>"; };
+		686C02E52231A8D6002F4063 /* ImageView.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ImageView.hpp; sourceTree = "<group>"; };
+		686C02E62231A8D6002F4063 /* View.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = View.hpp; sourceTree = "<group>"; };
+		686C02E72231A8D6002F4063 /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
+		686C02E82231A8D6002F4063 /* GUI.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GUI.hpp; sourceTree = "<group>"; };
+		686C02E92231A8D6002F4063 /* Pipeline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Pipeline.hpp; sourceTree = "<group>"; };
+		686C02EA2231A8D6002F4063 /* BackingPipeline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BackingPipeline.hpp; sourceTree = "<group>"; };
+		686C02EB2231A8D6002F4063 /* Window.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Window.hpp; sourceTree = "<group>"; };
+		686C02EC2231A8D7002F4063 /* Queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Queue.cpp; sourceTree = "<group>"; };
+		686C02ED2231A8D7002F4063 /* BackingPipeline.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = BackingPipeline.vert; sourceTree = "<group>"; };
+		686C02EE2231A8D7002F4063 /* ImageView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ImageView.cpp; sourceTree = "<group>"; };
+		686C02EF2231A8D7002F4063 /* vulkan_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vulkan_utils.hpp; sourceTree = "<group>"; };
+		686C02F02231A8D7002F4063 /* QueueCapabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QueueCapabilities.cpp; sourceTree = "<group>"; };
+		686C02F12231A8D7002F4063 /* vulkan_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
+		686C02F22231A8D7002F4063 /* Device.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
+		686C02F32231A8D7002F4063 /* GUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI.cpp; sourceTree = "<group>"; };
+		686C02F42231A8D7002F4063 /* Vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Vector.hpp; sourceTree = "<group>"; };
+		686C02F52231A8D7002F4063 /* BackingPipeline.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = BackingPipeline.frag; sourceTree = "<group>"; };
 		68A9A0612208FC3600457876 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
-		68A9A0652209F98300457876 /* vulkan_utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
-		68A9A0662209F98300457876 /* vulkan_utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vulkan_utils.hpp; sourceTree = "<group>"; };
-		68A9A06A220B0FEA00457876 /* Device.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
-		68A9A06B220B0FEA00457876 /* Device.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Device.hpp; sourceTree = "<group>"; };
 		68A9A079220B2F9500457876 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_thread.a; sourceTree = "<group>"; };
-		68A9A07B220B3DDC00457876 /* Queue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Queue.cpp; sourceTree = "<group>"; };
-		68A9A07C220B3DDC00457876 /* Queue.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Queue.hpp; sourceTree = "<group>"; };
-		68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QueueCapabilities.cpp; sourceTree = "<group>"; };
-		68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QueueCapabilities.hpp; sourceTree = "<group>"; };
-		68C6C3AA220CCA3C00B39337 /* Logging.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Logging.cpp; sourceTree = "<group>"; };
-		68C6C3AB220CCA3C00B39337 /* Logging.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Logging.hpp; sourceTree = "<group>"; };
 		68D07C1E220CDF18005EFAB2 /* libboost_log.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_log.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_log.a; sourceTree = "<group>"; };
 		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
 		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
 		68DFA8DA2203317E005D9413 /* MoltenVKView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKView.h; sourceTree = "<group>"; };
 		68E5D6DD221313DD00DA9792 /* XCodeCompileVulkanShaders.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = XCodeCompileVulkanShaders.sh; sourceTree = "<group>"; };
-		68E5D6DE22131E9800DA9792 /* Application.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Application.cpp; sourceTree = "<group>"; };
-		68E5D6DF22131E9800DA9792 /* Application.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Application.hpp; sourceTree = "<group>"; };
-		68E5D6E422141F0A00DA9792 /* Timestamp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Timestamp.cpp; sourceTree = "<group>"; };
-		68E5D6E522141F0A00DA9792 /* Timestamp.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Timestamp.hpp; sourceTree = "<group>"; };
-		68F2627222030EA70078E5E4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		68F2627722030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F2627A22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		68F2627B22030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -240,55 +242,55 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		686AD22C220861ED00AC826C /* Toolkit */ = {
+		6838B93F2231A86E00FB8BD7 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
-				68E5D6DE22131E9800DA9792 /* Application.cpp */,
-				68E5D6DF22131E9800DA9792 /* Application.hpp */,
-				68C6C3AA220CCA3C00B39337 /* Logging.cpp */,
-				68C6C3AB220CCA3C00B39337 /* Logging.hpp */,
-				68E5D6E422141F0A00DA9792 /* Timestamp.cpp */,
-				68E5D6E522141F0A00DA9792 /* Timestamp.hpp */,
-				686E3B9622127A57002B56E5 /* Time.cpp */,
-				686E3B9722127A57002B56E5 /* Time.hpp */,
-				686AD22D2208645600AC826C /* GUI */,
-			);
-			path = Toolkit;
-			sourceTree = "<group>";
-		};
-		686AD22D2208645600AC826C /* GUI */ = {
-			isa = PBXGroup;
-			children = (
-				68A9A0652209F98300457876 /* vulkan_utils.cpp */,
-				68A9A0662209F98300457876 /* vulkan_utils.hpp */,
-				686AD24222088A4900AC826C /* GUI.cpp */,
-				686AD24322088A4900AC826C /* GUI.hpp */,
-				686AD2332208693500AC826C /* Rectangle.cpp */,
-				686AD2342208693500AC826C /* Rectangle.hpp */,
-				686AD23822086E8E00AC826C /* Vector.cpp */,
-				686AD23922086E8E00AC826C /* Vector.hpp */,
-				686AD22E2208647900AC826C /* Window.cpp */,
-				686AD22F2208647900AC826C /* Window.hpp */,
-				686AD23D220878AA00AC826C /* View.cpp */,
-				686AD23E220878AA00AC826C /* View.hpp */,
-				686AD247220893D300AC826C /* Instance.cpp */,
-				686AD248220893D300AC826C /* Instance.hpp */,
-				686AD2562208B2BB00AC826C /* ImageView.cpp */,
-				686AD2572208B2BB00AC826C /* ImageView.hpp */,
-				68A9A06A220B0FEA00457876 /* Device.cpp */,
-				68A9A06B220B0FEA00457876 /* Device.hpp */,
-				68A9A07B220B3DDC00457876 /* Queue.cpp */,
-				68A9A07C220B3DDC00457876 /* Queue.hpp */,
-				68A9A08E220C7E2A00457876 /* QueueCapabilities.cpp */,
-				68A9A08F220C7E2A00457876 /* QueueCapabilities.hpp */,
-				686E3B9B2212FBFB002B56E5 /* Pipeline.cpp */,
-				686E3B9C2212FBFB002B56E5 /* Pipeline.hpp */,
-				686E3BA22213091F002B56E5 /* BackingPipeline.cpp */,
-				686E3BA32213091F002B56E5 /* BackingPipeline.hpp */,
-				686E3BA822130AC7002B56E5 /* BackingPipeline.vert */,
-				686E3BAC22130AE6002B56E5 /* BackingPipeline.frag */,
+				686C02E32231A8D6002F4063 /* BackingPipeline.cpp */,
+				686C02F52231A8D7002F4063 /* BackingPipeline.frag */,
+				686C02EA2231A8D6002F4063 /* BackingPipeline.hpp */,
+				686C02ED2231A8D7002F4063 /* BackingPipeline.vert */,
+				686C02F22231A8D7002F4063 /* Device.cpp */,
+				686C02DD2231A8D6002F4063 /* Device.hpp */,
+				686C02F32231A8D7002F4063 /* GUI.cpp */,
+				686C02E82231A8D6002F4063 /* GUI.hpp */,
+				686C02EE2231A8D7002F4063 /* ImageView.cpp */,
+				686C02E52231A8D6002F4063 /* ImageView.hpp */,
+				686C02E22231A8D6002F4063 /* Instance.cpp */,
+				686C02DA2231A8D5002F4063 /* Instance.hpp */,
+				686C02DB2231A8D5002F4063 /* Pipeline.cpp */,
+				686C02E92231A8D6002F4063 /* Pipeline.hpp */,
+				686C02EC2231A8D7002F4063 /* Queue.cpp */,
+				686C02E02231A8D6002F4063 /* Queue.hpp */,
+				686C02F02231A8D7002F4063 /* QueueCapabilities.cpp */,
+				686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */,
+				686C02DE2231A8D6002F4063 /* Rectangle.cpp */,
+				686C02DF2231A8D6002F4063 /* Rectangle.hpp */,
+				686C02E72231A8D6002F4063 /* Vector.cpp */,
+				686C02F42231A8D7002F4063 /* Vector.hpp */,
+				686C02DC2231A8D6002F4063 /* View.cpp */,
+				686C02E62231A8D6002F4063 /* View.hpp */,
+				686C02F12231A8D7002F4063 /* vulkan_utils.cpp */,
+				686C02EF2231A8D7002F4063 /* vulkan_utils.hpp */,
+				686C02E42231A8D6002F4063 /* Window.cpp */,
+				686C02EB2231A8D6002F4063 /* Window.hpp */,
 			);
 			path = GUI;
+			sourceTree = "<group>";
+		};
+		68D16DDB2231A7E300702FC3 /* TTauri */ = {
+			isa = PBXGroup;
+			children = (
+				686C02C62231A8A3002F4063 /* Application.cpp */,
+				686C02CB2231A8A4002F4063 /* Application.hpp */,
+				686C02CC2231A8A4002F4063 /* Logging.cpp */,
+				686C02C92231A8A4002F4063 /* Logging.hpp */,
+				686C02CA2231A8A4002F4063 /* Time.cpp */,
+				686C02C72231A8A3002F4063 /* Time.hpp */,
+				686C02C82231A8A3002F4063 /* Timestamp.cpp */,
+				686C02CD2231A8A4002F4063 /* Timestamp.hpp */,
+				6838B93F2231A86E00FB8BD7 /* GUI */,
+			);
+			path = TTauri;
 			sourceTree = "<group>";
 		};
 		68DFA8D522032B8A005D9413 /* Frameworks */ = {
@@ -314,23 +316,14 @@
 		68F2626822030EA30078E5E4 = {
 			isa = PBXGroup;
 			children = (
+				68D16DDB2231A7E300702FC3 /* TTauri */,
 				68E5D6DC221313AB00DA9792 /* Build Scripts */,
-				68F2626D22030EA30078E5E4 /* TTauri Shared */,
 				68F2627922030EA70078E5E4 /* TTauri iOS */,
 				68F2628E22030EA70078E5E4 /* TTauri tvOS */,
 				68F262A022030EA70078E5E4 /* TTauri macOS */,
 				68F2627822030EA70078E5E4 /* Products */,
 				68DFA8D522032B8A005D9413 /* Frameworks */,
 			);
-			sourceTree = "<group>";
-		};
-		68F2626D22030EA30078E5E4 /* TTauri Shared */ = {
-			isa = PBXGroup;
-			children = (
-				686AD22C220861ED00AC826C /* Toolkit */,
-				68F2627222030EA70078E5E4 /* Assets.xcassets */,
-			);
-			path = "TTauri Shared";
 			sourceTree = "<group>";
 		};
 		68F2627822030EA70078E5E4 /* Products */ = {
@@ -491,8 +484,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				68F2628222030EA70078E5E4 /* Main.storyboard in Resources */,
-				68F262B322030EA70078E5E4 /* Assets.xcassets in Resources */,
+				686C030E2231A8D7002F4063 /* BackingPipeline.vert in Resources */,
 				68F2628522030EA70078E5E4 /* LaunchScreen.storyboard in Resources */,
+				686C03202231A8D7002F4063 /* BackingPipeline.frag in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,7 +494,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68F262B422030EA70078E5E4 /* Assets.xcassets in Resources */,
+				686C030F2231A8D7002F4063 /* BackingPipeline.vert in Resources */,
+				686C03212231A8D7002F4063 /* BackingPipeline.frag in Resources */,
 				68F2629722030EA70078E5E4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -509,7 +504,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68F262B522030EA70078E5E4 /* Assets.xcassets in Resources */,
+				686C03102231A8D7002F4063 /* BackingPipeline.vert in Resources */,
+				686C03222231A8D7002F4063 /* BackingPipeline.frag in Resources */,
 				68F262A922030EA70078E5E4 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -525,8 +521,8 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/TTauri Shared/Toolkit/GUI/BackingPipeline.vert",
-				"$(SRCROOT)/TTauri Shared/Toolkit/GUI/BackingPipeline.frag",
+				"$(SRCROOT)/TTauri/GUI/BackingPipeline.vert",
+				"$(SRCROOT)/TTauri/GUI/BackingPipeline.frag",
 			);
 			outputFileListPaths = (
 			);
@@ -545,26 +541,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68A9A06C220B0FEA00457876 /* Device.cpp in Sources */,
-				68E5D6E022131E9800DA9792 /* Application.cpp in Sources */,
+				686C03172231A8D7002F4063 /* vulkan_utils.cpp in Sources */,
+				686C02F92231A8D7002F4063 /* View.cpp in Sources */,
+				686C03022231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
+				686C02D42231A8A4002F4063 /* Time.cpp in Sources */,
+				686C030B2231A8D7002F4063 /* Queue.cpp in Sources */,
+				686C02FF2231A8D7002F4063 /* Instance.cpp in Sources */,
+				686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */,
+				686C031A2231A8D7002F4063 /* Device.cpp in Sources */,
+				686C03052231A8D7002F4063 /* Window.cpp in Sources */,
+				686C02FC2231A8D7002F4063 /* Rectangle.cpp in Sources */,
+				686C02CE2231A8A4002F4063 /* Application.cpp in Sources */,
+				686C03082231A8D7002F4063 /* Vector.cpp in Sources */,
+				686C02F62231A8D7002F4063 /* Pipeline.cpp in Sources */,
+				686C031D2231A8D7002F4063 /* GUI.cpp in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
-				686AD249220893D300AC826C /* Instance.cpp in Sources */,
-				68E5D6E622141F0A00DA9792 /* Timestamp.cpp in Sources */,
+				686C03112231A8D7002F4063 /* ImageView.cpp in Sources */,
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
-				686E3B9D2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
-				68C6C3AC220CCA3C00B39337 /* Logging.cpp in Sources */,
-				686AD23A22086E8E00AC826C /* Vector.cpp in Sources */,
+				686C02D72231A8A4002F4063 /* Logging.cpp in Sources */,
 				68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */,
-				68A9A0672209F98300457876 /* vulkan_utils.cpp in Sources */,
-				686E3B9822127A57002B56E5 /* Time.cpp in Sources */,
-				686AD23F220878AA00AC826C /* View.cpp in Sources */,
-				686AD2582208B2BB00AC826C /* ImageView.cpp in Sources */,
-				686AD24422088A4900AC826C /* GUI.cpp in Sources */,
-				686E3BA42213091F002B56E5 /* BackingPipeline.cpp in Sources */,
-				686AD2352208693500AC826C /* Rectangle.cpp in Sources */,
-				686AD2302208647900AC826C /* Window.cpp in Sources */,
-				68A9A07D220B3DDC00457876 /* Queue.cpp in Sources */,
-				68A9A090220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
+				686C03142231A8D7002F4063 /* QueueCapabilities.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -572,26 +568,26 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68A9A06D220B0FEA00457876 /* Device.cpp in Sources */,
-				68E5D6E122131E9800DA9792 /* Application.cpp in Sources */,
+				686C03182231A8D7002F4063 /* vulkan_utils.cpp in Sources */,
+				686C02FA2231A8D7002F4063 /* View.cpp in Sources */,
+				686C03032231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
+				686C02D52231A8A4002F4063 /* Time.cpp in Sources */,
+				686C030C2231A8D7002F4063 /* Queue.cpp in Sources */,
+				686C03002231A8D7002F4063 /* Instance.cpp in Sources */,
+				686C02D22231A8A4002F4063 /* Timestamp.cpp in Sources */,
+				686C031B2231A8D7002F4063 /* Device.cpp in Sources */,
+				686C03062231A8D7002F4063 /* Window.cpp in Sources */,
+				686C02FD2231A8D7002F4063 /* Rectangle.cpp in Sources */,
+				686C02CF2231A8A4002F4063 /* Application.cpp in Sources */,
+				686C03092231A8D7002F4063 /* Vector.cpp in Sources */,
+				686C02F72231A8D7002F4063 /* Pipeline.cpp in Sources */,
+				686C031E2231A8D7002F4063 /* GUI.cpp in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
-				686AD24A220893D300AC826C /* Instance.cpp in Sources */,
-				68E5D6E722141F0A00DA9792 /* Timestamp.cpp in Sources */,
+				686C03122231A8D7002F4063 /* ImageView.cpp in Sources */,
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
-				686E3B9E2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
-				68C6C3AD220CCA3C00B39337 /* Logging.cpp in Sources */,
-				686AD23B22086E8E00AC826C /* Vector.cpp in Sources */,
+				686C02D82231A8A4002F4063 /* Logging.cpp in Sources */,
 				68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */,
-				68A9A0682209F98300457876 /* vulkan_utils.cpp in Sources */,
-				686E3B9922127A57002B56E5 /* Time.cpp in Sources */,
-				686AD240220878AA00AC826C /* View.cpp in Sources */,
-				686AD2592208B2BB00AC826C /* ImageView.cpp in Sources */,
-				686AD24522088A4900AC826C /* GUI.cpp in Sources */,
-				686E3BA52213091F002B56E5 /* BackingPipeline.cpp in Sources */,
-				686AD2362208693500AC826C /* Rectangle.cpp in Sources */,
-				686AD2312208647900AC826C /* Window.cpp in Sources */,
-				68A9A07E220B3DDC00457876 /* Queue.cpp in Sources */,
-				68A9A091220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
+				686C03152231A8D7002F4063 /* QueueCapabilities.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -600,26 +596,26 @@
 			buildActionMask = 2147483647;
 			files = (
 				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
-				686AD2322208647900AC826C /* Window.cpp in Sources */,
-				68E5D6E822141F0A00DA9792 /* Timestamp.cpp in Sources */,
-				68A9A0692209F98300457876 /* vulkan_utils.cpp in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
-				686E3B9A22127A57002B56E5 /* Time.cpp in Sources */,
-				68C6C3AE220CCA3C00B39337 /* Logging.cpp in Sources */,
-				686AD24622088A4900AC826C /* GUI.cpp in Sources */,
-				686AD241220878AA00AC826C /* View.cpp in Sources */,
+				686C030A2231A8D7002F4063 /* Vector.cpp in Sources */,
+				686C02D32231A8A4002F4063 /* Timestamp.cpp in Sources */,
+				686C02F82231A8D7002F4063 /* Pipeline.cpp in Sources */,
+				686C02FE2231A8D7002F4063 /* Rectangle.cpp in Sources */,
+				686C02FB2231A8D7002F4063 /* View.cpp in Sources */,
+				686C03012231A8D7002F4063 /* Instance.cpp in Sources */,
+				686C03132231A8D7002F4063 /* ImageView.cpp in Sources */,
+				686C031F2231A8D7002F4063 /* GUI.cpp in Sources */,
+				686C03162231A8D7002F4063 /* QueueCapabilities.cpp in Sources */,
+				686C03072231A8D7002F4063 /* Window.cpp in Sources */,
+				686C031C2231A8D7002F4063 /* Device.cpp in Sources */,
+				686C03192231A8D7002F4063 /* vulkan_utils.cpp in Sources */,
+				686C02D92231A8A4002F4063 /* Logging.cpp in Sources */,
+				686C02D02231A8A4002F4063 /* Application.cpp in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
-				686AD2372208693500AC826C /* Rectangle.cpp in Sources */,
-				68A9A092220C7E2A00457876 /* QueueCapabilities.cpp in Sources */,
-				68E5D6E222131E9800DA9792 /* Application.cpp in Sources */,
-				686E3B9F2212FBFB002B56E5 /* Pipeline.cpp in Sources */,
-				686AD24B220893D300AC826C /* Instance.cpp in Sources */,
-				68A9A07F220B3DDC00457876 /* Queue.cpp in Sources */,
-				686AD25A2208B2BB00AC826C /* ImageView.cpp in Sources */,
-				68A9A06E220B0FEA00457876 /* Device.cpp in Sources */,
-				686AD23C22086E8E00AC826C /* Vector.cpp in Sources */,
+				686C03042231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
+				686C02D62231A8A4002F4063 /* Time.cpp in Sources */,
 				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,
-				686E3BA62213091F002B56E5 /* BackingPipeline.cpp in Sources */,
+				686C030D2231A8D7002F4063 /* Queue.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
