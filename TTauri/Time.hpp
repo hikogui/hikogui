@@ -8,15 +8,14 @@
 
 #pragma once
 
-#include <cstdint>
-#include <time.h>
 #ifdef _WIN32
 #include <Windows.h>
 #endif
+#include <time.h>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <cstdint>
 
 namespace TTauri {
-namespace Toolkit {
 
 /*! Timestamp
  * The timestamp is defined as the number of nanoseconds since 1970-01-01 00:00:00.000000000 on
@@ -112,4 +111,4 @@ public:
     }
 };
 
-}}
+}

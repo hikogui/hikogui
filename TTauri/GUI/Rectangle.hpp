@@ -12,7 +12,6 @@
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 /*! An description of a rectangle positioned somewhere on a parent rectangle.
@@ -58,4 +57,4 @@ struct Rectangle {
     }
 };
 
-}}}
+}}

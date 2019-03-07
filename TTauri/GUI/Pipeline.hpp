@@ -8,13 +8,12 @@
 
 #pragma once
 
+#include <vulkan/vulkan.hpp>
+#include <boost/filesystem.hpp>
 #include <string>
 #include <vector>
-#include <boost/filesystem.hpp>
-#include <vulkan/vulkan.hpp>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 class Device;
@@ -89,4 +88,4 @@ protected:
     virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
 };
 
-}}}
+}}

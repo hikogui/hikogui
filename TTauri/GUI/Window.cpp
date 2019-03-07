@@ -6,14 +6,12 @@
 //  Copyright © 2019 Pokitec. All rights reserved.
 //
 
-#include <boost/numeric/conversion/cast.hpp>
-
 #include "Window.hpp"
 #include "Device.hpp"
-#include "TTauri/Toolkit/Logging.hpp"
+#include "TTauri/Logging.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 using namespace std;
@@ -414,5 +412,4 @@ bool Window::render(bool blockOnVSync)
     return true;
 }
 
-
-}}}
+}}

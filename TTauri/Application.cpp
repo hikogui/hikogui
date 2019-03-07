@@ -9,7 +9,6 @@
 #include "Application.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 
 std::shared_ptr<Application> app;
 
@@ -22,4 +21,4 @@ Application::~Application()
 {
 }
 
-}}
+}

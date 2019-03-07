@@ -8,15 +8,13 @@
 
 #pragma once
 
-#include <string>
-
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #include <boost/format.hpp>
 #pragma clang diagnostic pop
+#include <string>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 struct QueueCapabilities {
@@ -82,4 +80,4 @@ struct QueueCapabilities {
 
 };
 
-}}}
+}}

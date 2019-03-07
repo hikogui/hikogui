@@ -85,6 +85,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -101,6 +102,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -119,6 +121,7 @@
     </Link>
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -128,50 +131,51 @@
     </Link>
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="TTauri Windows10\main.cpp" />
-    <ClCompile Include="TTauri\Toolkit\Application.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\BackingPipeline.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Device.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\GUI.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\ImageView.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Instance.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Pipeline.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Queue.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\QueueCapabilities.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Rectangle.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Vector.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\View.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\vulkan_utils.cpp" />
-    <ClCompile Include="TTauri\Toolkit\GUI\Window.cpp" />
-    <ClCompile Include="TTauri\Toolkit\Logging.cpp" />
-    <ClCompile Include="TTauri\Toolkit\Time.cpp" />
-    <ClCompile Include="TTauri\Toolkit\Timestamp.cpp" />
+    <ClCompile Include="TTauri\Application.cpp" />
+    <ClCompile Include="TTauri\GUI\BackingPipeline.cpp" />
+    <ClCompile Include="TTauri\GUI\Device.cpp" />
+    <ClCompile Include="TTauri\GUI\GUI.cpp" />
+    <ClCompile Include="TTauri\GUI\ImageView.cpp" />
+    <ClCompile Include="TTauri\GUI\Instance.cpp" />
+    <ClCompile Include="TTauri\GUI\Pipeline.cpp" />
+    <ClCompile Include="TTauri\GUI\Queue.cpp" />
+    <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp" />
+    <ClCompile Include="TTauri\GUI\Rectangle.cpp" />
+    <ClCompile Include="TTauri\GUI\Vector.cpp" />
+    <ClCompile Include="TTauri\GUI\View.cpp" />
+    <ClCompile Include="TTauri\GUI\vulkan_utils.cpp" />
+    <ClCompile Include="TTauri\GUI\Window.cpp" />
+    <ClCompile Include="TTauri\Logging.cpp" />
+    <ClCompile Include="TTauri\Time.cpp" />
+    <ClCompile Include="TTauri\Timestamp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TTauri\Toolkit\Application.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\BackingPipeline.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Device.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\GUI.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\ImageView.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Instance.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Pipeline.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Queue.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\QueueCapabilities.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Rectangle.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Vector.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\View.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\vulkan_utils.hpp" />
-    <ClInclude Include="TTauri\Toolkit\GUI\Window.hpp" />
-    <ClInclude Include="TTauri\Toolkit\Logging.hpp" />
-    <ClInclude Include="TTauri\Toolkit\Time.hpp" />
-    <ClInclude Include="TTauri\Toolkit\Timestamp.hpp" />
+    <ClInclude Include="TTauri\Application.hpp" />
+    <ClInclude Include="TTauri\GUI\BackingPipeline.hpp" />
+    <ClInclude Include="TTauri\GUI\Device.hpp" />
+    <ClInclude Include="TTauri\GUI\GUI.hpp" />
+    <ClInclude Include="TTauri\GUI\ImageView.hpp" />
+    <ClInclude Include="TTauri\GUI\Instance.hpp" />
+    <ClInclude Include="TTauri\GUI\Pipeline.hpp" />
+    <ClInclude Include="TTauri\GUI\Queue.hpp" />
+    <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp" />
+    <ClInclude Include="TTauri\GUI\Rectangle.hpp" />
+    <ClInclude Include="TTauri\GUI\Vector.hpp" />
+    <ClInclude Include="TTauri\GUI\View.hpp" />
+    <ClInclude Include="TTauri\GUI\vulkan_utils.hpp" />
+    <ClInclude Include="TTauri\GUI\Window.hpp" />
+    <ClInclude Include="TTauri\Logging.hpp" />
+    <ClInclude Include="TTauri\Time.hpp" />
+    <ClInclude Include="TTauri\Timestamp.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="TTauri\Toolkit\GUI\BackingPipeline.frag" />
-    <None Include="TTauri\Toolkit\GUI\BackingPipeline.vert" />
+    <None Include="TTauri\GUI\BackingPipeline.frag" />
+    <None Include="TTauri\GUI\BackingPipeline.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

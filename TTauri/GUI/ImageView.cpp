@@ -9,7 +9,6 @@
 #include "ImageView.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 ImageView::ImageView(View *view, const boost::filesystem::path &path) :
@@ -21,4 +20,4 @@ ImageView::~ImageView()
 {
 }
 
-}}}
+}}

@@ -10,16 +10,14 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
-
-#include <boost/log/trivial.hpp>
 #include <boost/format.hpp>
+#include <boost/log/trivial.hpp>
 #pragma clang diagnostic pop
 
 namespace TTauri {
-namespace Toolkit {
 
 
-}}
+}
 
 #define LOG_TRACE(fmt) BOOST_LOG_TRIVIAL(trace) << boost::format(fmt)
 #define LOG_DEBUG(fmt) BOOST_LOG_TRIVIAL(debug) << boost::format(fmt)

@@ -11,7 +11,6 @@
 #include "Instance.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities) :
@@ -32,4 +31,4 @@ Queue::~Queue()
     device->intrinsic.destroy(commandPool);
 }
 
-}}}
+}}

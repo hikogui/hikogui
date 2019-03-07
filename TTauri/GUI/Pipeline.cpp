@@ -7,18 +7,15 @@
 //
 
 #include "Pipeline.hpp"
-
+#include "Device.hpp"
+#include "Window.hpp"
+#include "TTauri/Logging.hpp"
 #include <boost/assert.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
-#include "Device.hpp"
-#include "Window.hpp"
-#include "TTauri/Toolkit/Logging.hpp"
-
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 // Device may change when the window is moved, therefor make this indirect.
@@ -306,4 +303,4 @@ vk::PipelineColorBlendStateCreateInfo Pipeline::createPipelineColorBlendStateCre
     };
 }
 
-}}}
+}}

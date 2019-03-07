@@ -8,11 +8,10 @@
 
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include "QueueCapabilities.hpp"
+#include <vulkan/vulkan.hpp>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 class Device;
@@ -37,4 +36,4 @@ public:
     ~Queue();
 };
 
-}}}
+}}

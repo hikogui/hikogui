@@ -8,17 +8,16 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <thread>
-#include <boost/uuid/uuid.hpp>
-#include <vulkan/vulkan.hpp>
+#include "Device.hpp"
 #include "vulkan_utils.hpp"
 #include "Window.hpp"
-#include "Device.hpp"
+#include <vulkan/vulkan.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <memory>
+#include <thread>
+#include <vector>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 struct InstanceError: virtual boost::exception, virtual std::exception {};
@@ -96,4 +95,4 @@ private:
     static void maintanceThread(Instance *self);
 };
 
-}}}
+}}

@@ -9,7 +9,6 @@
 #include "vulkan_utils.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions)
@@ -113,4 +112,4 @@ bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::Phy
     return meetsRequirements;
 }
 
-}}}
+}}

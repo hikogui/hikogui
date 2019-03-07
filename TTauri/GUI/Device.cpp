@@ -7,16 +7,14 @@
 //
 
 #include "Device.hpp"
-
-#include <vector>
-#include <tuple>
-#include <boost/uuid/uuid_io.hpp>
-#include "TTauri/Toolkit/Logging.hpp"
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
+#include "TTauri/Logging.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <vector>
+#include <tuple>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 using namespace std;
@@ -292,4 +290,4 @@ void Device::maintance(void)
     }
 }
 
-}}}
+}}

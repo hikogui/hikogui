@@ -11,7 +11,6 @@
 #include <cstdint>
 
 namespace TTauri {
-namespace Toolkit {
 
 /*! Timestamp
  * The timestamp is defined as the number of nanoseconds since 1970-01-01 00:00:00.000000000 on
@@ -27,4 +26,4 @@ public:
     static Timestamp now(void);
 };
 
-}}
+}

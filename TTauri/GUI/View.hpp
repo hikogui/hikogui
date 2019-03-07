@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <memory>
-#include <limits>
-#include <vector>
 #include "Rectangle.hpp"
+#include <limits>
+#include <memory>
+#include <vector>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 class Window;
@@ -60,4 +59,4 @@ public:
     virtual ~View();
 };
 
-}}}
+}}

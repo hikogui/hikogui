@@ -8,12 +8,11 @@
 
 #pragma once
 
-#include <memory>
-#include <boost/filesystem.hpp>
 #include <boost/exception/all.hpp>
+#include <boost/filesystem.hpp>
+#include <memory>
 
 namespace TTauri {
-namespace Toolkit {
 
 class Application {
 public:
@@ -31,4 +30,4 @@ public:
 
 extern std::shared_ptr<Application> app;
 
-}}
+}

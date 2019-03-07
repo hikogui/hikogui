@@ -10,7 +10,6 @@
 #include "Window.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 View::View(Window *window) :
@@ -30,4 +29,4 @@ View::~View()
 {
 }
 
-}}}
+}}

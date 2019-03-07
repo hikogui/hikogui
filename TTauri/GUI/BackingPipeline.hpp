@@ -11,7 +11,6 @@
 #include "Pipeline.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 /*! Pipeline for rendering backings of widgets.
@@ -28,4 +27,4 @@ protected:
 
 };
 
-}}}
+}}

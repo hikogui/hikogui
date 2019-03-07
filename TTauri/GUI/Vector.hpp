@@ -8,13 +8,12 @@
 
 #pragma once
 
+#include <boost/qvm/vec_access.hpp>
 #include <boost/qvm/vec_traits.hpp>
 #include <boost/qvm/vec_traits_defaults.hpp>
-#include <boost/qvm/vec_access.hpp>
 #include <cmath>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 struct float2 {
@@ -32,16 +31,16 @@ struct float3 {
     float z;
 };
 
-}}}
+}}
 
 #pragma mark Traits
 namespace boost {
 namespace qvm {
 
 template <>
-struct vec_traits<TTauri::Toolkit::GUI::float2>: vec_traits_defaults<TTauri::Toolkit::GUI::float2,float,2> {
+struct vec_traits<TTauri::GUI::float2>: vec_traits_defaults<TTauri::GUI::float2,float,2> {
     template <int I>
-    static inline scalar_type & write_element( TTauri::Toolkit::GUI::float2 & v ) {
+    static inline scalar_type & write_element( TTauri::GUI::float2 & v ) {
         switch (I) {
         case 0: return v.x;
         case 1: return v.y;
@@ -50,9 +49,9 @@ struct vec_traits<TTauri::Toolkit::GUI::float2>: vec_traits_defaults<TTauri::Too
 };
 
 template <>
-struct vec_traits<TTauri::Toolkit::GUI::float3>: vec_traits_defaults<TTauri::Toolkit::GUI::float3,float,3> {
+struct vec_traits<TTauri::GUI::float3>: vec_traits_defaults<TTauri::GUI::float3,float,3> {
     template <int I>
-    static inline scalar_type & write_element( TTauri::Toolkit::GUI::float3 & v ) {
+    static inline scalar_type & write_element( TTauri::GUI::float3 & v ) {
         switch (I) {
         case 0: return v.x;
         case 1: return v.y;

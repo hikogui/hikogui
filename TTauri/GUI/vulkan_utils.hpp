@@ -8,16 +8,15 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <unordered_set>
-#include <cstdint>
+#include <vulkan/vulkan.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/exception/all.hpp>
-#include <vulkan/vulkan.hpp>
+#include <cstdint>
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 struct VulkanError: virtual boost::exception, virtual std::exception {};
@@ -60,4 +59,4 @@ bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions);
 
 bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, const std::vector<const char *> &requiredExtensions);
 
-}}}
+}}

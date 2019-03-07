@@ -8,12 +8,11 @@
 
 #pragma once
 
-#include <memory>
-#include <boost/filesystem.hpp>
 #include "View.hpp"
+#include <boost/filesystem.hpp>
+#include <memory>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 class ImageView : View {
@@ -24,4 +23,4 @@ public:
     ~ImageView();
 };
 
-}}}
+}}

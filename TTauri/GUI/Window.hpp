@@ -7,16 +7,16 @@
 //
 
 #pragma once
-#include <memory>
-#include <unordered_set>
-#include <mutex>
-#include <vulkan/vulkan.hpp>
+
 #include "Rectangle.hpp"
-#include "View.hpp"
 #include "BackingPipeline.hpp"
+#include "View.hpp"
+#include <vulkan/vulkan.hpp>
+#include <memory>
+#include <mutex>
+#include <unordered_set>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 class Instance;
@@ -49,7 +49,7 @@ struct WindowSwapChainError: virtual boost::exception, virtual std::exception {}
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
- * The Window should not have any decorations, which are to be drawn by the GUI Toolkit, because
+ * The Window should not have any decorations, which are to be drawn by the GUI, because
  * modern design requires drawing of user interface elements in the border.
  */
 class Window {
@@ -176,4 +176,4 @@ private:
     void teardownPipelines(void);
 };
 
-}}}
+}}

@@ -10,7 +10,6 @@
 #include <time.h>
 
 namespace TTauri {
-namespace Toolkit {
 
 
-}}
+}

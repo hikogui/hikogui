@@ -7,13 +7,12 @@
 //
 
 #include "BackingPipeline.hpp"
-#include "TTauri/Toolkit/Application.hpp"
+#include "TTauri/Application.hpp"
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
-using namespace TTauri::Toolkit;
+using namespace TTauri;
 
 BackingPipeline::BackingPipeline(Window *window) :
     Pipeline(window)
@@ -41,4 +40,4 @@ std::vector<vk::PipelineShaderStageCreateInfo> BackingPipeline::createShaderStag
 }
 
 
-}}}
+}}

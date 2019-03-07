@@ -6,13 +6,12 @@
 //  Copyright © 2019 Pokitec. All rights reserved.
 //
 
-#include <chrono>
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
-#include "TTauri/Toolkit/Logging.hpp"
+#include "TTauri/Logging.hpp"
+#include <chrono>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 using namespace std;
@@ -118,4 +117,4 @@ void Instance::maintanceThread(Instance *self)
     self->state = InstanceState::STOPPED;
 }
 
-}}}
+}}

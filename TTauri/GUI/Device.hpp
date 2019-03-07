@@ -8,16 +8,14 @@
 
 #pragma once
 
-#include <unordered_set>
-#include <mutex>
+#include "Queue.hpp"
+#include "Window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <boost/uuid/uuid.hpp>
-
-#include "Window.hpp"
-#include "Queue.hpp"
+#include <mutex>
+#include <unordered_set>
 
 namespace TTauri {
-namespace Toolkit {
 namespace GUI {
 
 class Instance;
@@ -132,4 +130,4 @@ public:
 
 };
 
-}}}
+}}
