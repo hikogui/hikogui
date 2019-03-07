@@ -7,6 +7,7 @@
 //
 
 #include "Application.hpp"
+#include "Logging.hpp"
 
 namespace TTauri {
 
@@ -15,6 +16,7 @@ std::shared_ptr<Application> app;
 Application::Application(const boost::filesystem::path &resourceDir) :
     resourceDir(resourceDir)
 {
+    initializeLogging();
 }
 
 Application::~Application()

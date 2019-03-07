@@ -44,6 +44,10 @@ public:
     vk::PhysicalDeviceType deviceType;
     boost::uuids::uuid deviceUUID;
 
+    /*! List if extension required on this device.
+     */
+    std::vector<const char *> requiredExtensions;
+
     /*! Sorted list of queueFamilies and their capabilities.
      * score(window) must be called before initializeDevice(window);
      */

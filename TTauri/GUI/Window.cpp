@@ -158,46 +158,50 @@ void Window::buildSwapchain(void)
     vk::Bool32 clipped = VK_TRUE;
 
     vk::Extent2D previousImageExtent;
-    for (uint64_t raceConditionRetry = 0; ; raceConditionRetry++) {
-        auto surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
-        auto imageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+retry:
+    auto surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+    auto imageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+    vk::Extent2D imageExtent = surfaceCapabilities.currentExtent;
+    if (imageExtent.width == std::numeric_limits<uint32_t>::max() || imageExtent.height == std::numeric_limits<uint32_t>::max()) {
+        imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
+        imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
+    }
 
-        vk::Extent2D imageExtent = surfaceCapabilities.currentExtent;
-        if (imageExtent.width == std::numeric_limits<uint32_t>::max() || imageExtent.height == std::numeric_limits<uint32_t>::max()) {
-            imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-            imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-        }
+    swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
+        vk::SwapchainCreateFlagsKHR(),
+        intrinsic,
+        imageCount,
+        device->bestSurfaceFormat.format,
+        device->bestSurfaceFormat.colorSpace,
+        imageExtent,
+        imageArrayLayers,
+        vk::ImageUsageFlagBits::eColorAttachment,
+        sharingMode,
+        sharingQueueFamilyCount,
+        sharingQueueFamilyIndicesPtr,
+        vk::SurfaceTransformFlagBitsKHR::eIdentity,
+        vk::CompositeAlphaFlagBitsKHR::eOpaque,
+        device->bestSurfacePresentMode,
+        clipped
+    );
 
-        if (raceConditionRetry > 0) {
-            if (imageExtent == previousImageExtent) {
-                break;
-            } else {
-                LOG_ERROR("Race condition during resize of window and creating swapchain.");
-            }
-        }
+    vk::Result result = device->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
+    if (result != vk::Result::eSuccess) {
+        LOG_WARNING("Could not create swapchain, retrying.");
+        goto retry;
+    }
 
-        swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
-            vk::SwapchainCreateFlagsKHR(),
-            intrinsic,
-            imageCount,
-            device->bestSurfaceFormat.format,
-            device->bestSurfaceFormat.colorSpace,
-            imageExtent,
-            imageArrayLayers,
-            vk::ImageUsageFlags(),
-            sharingMode,
-            sharingQueueFamilyCount,
-            sharingQueueFamilyIndicesPtr,
-            vk::SurfaceTransformFlagBitsKHR::eIdentity,
-            vk::CompositeAlphaFlagBitsKHR::eOpaque,
-            device->bestSurfacePresentMode,
-            clipped
-        );
+    auto checkSurfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+    vk::Extent2D checkImageExtent = checkSurfaceCapabilities.currentExtent;
+    if (checkImageExtent.width == std::numeric_limits<uint32_t>::max() || checkImageExtent.height == std::numeric_limits<uint32_t>::max()) {
+        checkImageExtent.width = std::clamp(windowRectangle.extent.width, checkSurfaceCapabilities.minImageExtent.width, checkSurfaceCapabilities.maxImageExtent.width);
+        checkImageExtent.height = std::clamp(windowRectangle.extent.height, checkSurfaceCapabilities.minImageExtent.height, checkSurfaceCapabilities.maxImageExtent.height);
+    }
 
-        swapchain = device->intrinsic.createSwapchainKHR(swapchainCreateInfo);
-
-        previousImageExtent = imageExtent;
+    if (imageExtent != checkImageExtent) {
+        LOG_WARNING("Surface extent changed while creating swapchain, retrying.");
+        goto retry;
     }
 
     LOG_INFO("Building swap chain");

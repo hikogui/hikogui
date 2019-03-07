@@ -19,6 +19,21 @@ namespace GUI {
 
 using namespace std;
 
+static bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, const std::vector<const char *> &requiredExtensions)
+{
+    auto availableExtensions = std::unordered_set<std::string>();
+    for (auto availableExtensionProperties : physicalDevice.enumerateDeviceExtensionProperties()) {
+        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
+    }
+
+    for (auto requiredExtension : requiredExtensions) {
+        if (availableExtensions.count(requiredExtension) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Device::Device(Instance *instance, vk::PhysicalDevice physicalDevice) :
     instance(instance), physicalIntrinsic(physicalDevice), state(DeviceState::NO_DEVICE)
 {
@@ -26,6 +41,11 @@ Device::Device(Instance *instance, vk::PhysicalDevice physicalDevice) :
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
+
+    requiredExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
+    requiredExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+    requiredExtensions.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    requiredExtensions.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
 
     deviceID = resultDeviceProperties2.properties.deviceID;
     vendorID = resultDeviceProperties2.properties.vendorID;
@@ -60,7 +80,7 @@ void Device::initializeDevice(std::shared_ptr<Window> window)
     auto deviceCreateInfo = vk::DeviceCreateInfo();
     deviceCreateInfo.setPEnabledFeatures(&(instance->requiredFeatures));
     setQueueCreateInfos(deviceCreateInfo, deviceQueueCreateInfos);
-    setExtensionNames(deviceCreateInfo, instance->requiredExtensions);
+    setExtensionNames(deviceCreateInfo, requiredExtensions);
     setLayerNames(deviceCreateInfo, instance->requiredLayers);
 
     intrinsic = physicalIntrinsic.createDevice(deviceCreateInfo);
@@ -173,7 +193,7 @@ int Device::score(std::shared_ptr<Window> window)
         return -1;
     }
 
-    if (!hasRequiredExtensions(physicalIntrinsic, instance->requiredExtensions)) {
+    if (!hasRequiredExtensions(physicalIntrinsic, requiredExtensions)) {
         LOG_INFO(" - Does not have the required extensions.");
         return -1;
     }
@@ -210,8 +230,11 @@ int Device::score(std::shared_ptr<Window> window)
         }
 
         switch (format.format) {
+        case vk::Format::eR8G8B8A8Unorm: score += 2; break;
+        case vk::Format::eB8G8R8A8Unorm: score += 2; break;
+        case vk::Format::eR16G16B16A16Sfloat: score += 12; break;
         case vk::Format::eR8G8B8Unorm: score += 1; break;
-        case vk::Format::eR16G16B16A16Sfloat: score += 10; break;
+        case vk::Format::eR16G16B16Sfloat: score += 11; break;
         case vk::Format::eUndefined: score += 2; break;
         default: continue;
         }
@@ -223,7 +246,7 @@ int Device::score(std::shared_ptr<Window> window)
     }
     score += bestSurfaceFormatScore;
 
-    if (score < bestSurfaceFormatScore) {
+    if (bestSurfaceFormatScore == 0) {
         LOG_INFO(" - Does not have a suitable surface format.");
         return 0;
     }

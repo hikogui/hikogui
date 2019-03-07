@@ -11,36 +11,6 @@
 namespace TTauri {
 namespace GUI {
 
-bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions)
-{
-    auto availableExtensions = std::unordered_set<std::string>();
-    for (auto availableExtensionProperties: vk::enumerateInstanceExtensionProperties()) {
-        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
-    }
-
-    for (auto requiredExtension: requiredExtensions) {
-        if (availableExtensions.count(requiredExtension) == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, const std::vector<const char *> &requiredExtensions)
-{
-    auto availableExtensions = std::unordered_set<std::string>();
-    for (auto availableExtensionProperties: physicalDevice.enumerateDeviceExtensionProperties()   ) {
-        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
-    }
-
-    for (auto requiredExtension: requiredExtensions) {
-        if (availableExtensions.count(requiredExtension) == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
 bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits)
 {
     auto meetsLimits = true;

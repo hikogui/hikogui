@@ -16,6 +16,7 @@
 
 namespace TTauri {
 
+void initializeLogging(void);
 
 }
 
@@ -25,3 +26,4 @@ namespace TTauri {
 #define LOG_WARNING(fmt) BOOST_LOG_TRIVIAL(warning) << boost::format(fmt)
 #define LOG_ERROR(fmt) BOOST_LOG_TRIVIAL(error) << boost::format(fmt)
 #define LOG_FATAL(fmt) BOOST_LOG_TRIVIAL(fatal) << boost::format(fmt)
+

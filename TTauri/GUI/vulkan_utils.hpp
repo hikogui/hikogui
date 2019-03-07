@@ -55,8 +55,4 @@ bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::Phy
 
 bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures);
 
-bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions);
-
-bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, const std::vector<const char *> &requiredExtensions);
-
 }}

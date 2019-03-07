@@ -16,6 +16,21 @@ namespace GUI {
 
 using namespace std;
 
+static bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions)
+{
+    auto availableExtensions = std::unordered_set<std::string>();
+    for (auto availableExtensionProperties : vk::enumerateInstanceExtensionProperties()) {
+        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
+    }
+
+    for (auto requiredExtension : requiredExtensions) {
+        if (availableExtensions.count(requiredExtension) == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Instance::Instance(const std::vector<const char *> &extensionNames) :
     requiredExtensions(extensionNames), requiredLayers(), requiredFeatures(), requiredLimits()
 {
@@ -25,13 +40,8 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
         VK_API_VERSION_1_0
     );
 
-    requiredExtensions.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-    requiredExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-    //requiredExtensions.push_back(VK_KHR_SWAPCHAIN_MUTABLE_FORMAT_EXTENSION_NAME);
-    requiredExtensions.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
-    requiredExtensions.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
     if (!hasRequiredExtensions(requiredExtensions)) {
         BOOST_THROW_EXCEPTION(InstanceError());
     }
@@ -41,8 +51,13 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
         &applicationInfo
     );
     setExtensionNames(instanceCreateInfo, requiredExtensions);
+
+#if defined(_WIN32) && !defined(NDEBUG)
+    requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+#endif
     setLayerNames(instanceCreateInfo, requiredLayers);
 
+    LOG_INFO("Creating Vulkan instance.");
     intrinsic = vk::createInstance(instanceCreateInfo);
 
     loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
