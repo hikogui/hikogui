@@ -42,7 +42,9 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
 
     shaderStages = createShaderStages(shaderModules);
 
-    pipelineLayout = createPipelineLayout();
+    pushConstantRanges = createPushConstantRanges();
+
+    pipelineLayout = createPipelineLayout(pushConstantRanges);
 
     pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo();
 
@@ -153,6 +155,10 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
+    pushConstants.windowExtent = { scissors[0].extent.width , scissors[0].extent.height };
+    pushConstants.viewportScale = { 2.0 / scissors[0].extent.width, 2.0 / scissors[0].extent.height };
+    commandBuffers[imageIndex].pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants), static_cast<const void *>(&pushConstants));
+
     commandBuffers[imageIndex].draw(3, 1, 0, 0);
 
     commandBuffers[imageIndex].endRenderPass();
@@ -164,7 +170,6 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
 
 vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    LOG_INFO("Render %i/%i") % imageIndex % renderFinishedSemaphores.size();
     validateCommandBuffer(imageIndex);
 
     vk::Semaphore waitSemaphores[] = {inputSemaphore};
@@ -204,9 +209,20 @@ vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
     return device->intrinsic.createShaderModule(shaderModuleCreateInfo);
 }
 
-vk::PipelineLayout Pipeline::createPipelineLayout(void) const
+std::vector<vk::PushConstantRange> Pipeline::createPushConstantRanges(void) const
 {
-    auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo();
+    return {
+        {vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants)}
+    };
+}
+
+vk::PipelineLayout Pipeline::createPipelineLayout(const std::vector<vk::PushConstantRange> &pushConstantRanges) const
+{
+    auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo(
+        vk::PipelineLayoutCreateFlags(),
+        0, nullptr,
+        boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
+    );
     return device->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
 }
 
@@ -262,7 +278,11 @@ vk::PipelineRasterizationStateCreateInfo Pipeline::createPipelineRasterizationSt
         vk::PolygonMode::eFill,
         vk::CullModeFlagBits::eBack,
         vk::FrontFace::eClockwise,
-        VK_FALSE // depthBiasEnable
+        VK_FALSE, // depthBiasEnable
+        0.0, // depthBiasConstantFactor
+        0.0, // depthBiasClamp
+        0.0, // depthBiasSlopeFactor
+        1.0 // lineWidth
     };
 }
 

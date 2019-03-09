@@ -9,6 +9,7 @@
 #pragma once
 
 #include <vulkan/vulkan.hpp>
+#include <glm/glm.hpp>
 #include <boost/filesystem.hpp>
 #include <string>
 #include <vector>
@@ -20,6 +21,12 @@ class Device;
 class Window;
 
 class Pipeline {
+ 
+    struct PushConstants {
+        glm::vec2 windowExtent;
+        glm::vec2 viewportScale;
+    };
+
 public:
     vk::Pipeline intrinsic;
 
@@ -58,9 +65,11 @@ public:
 
 protected:
     vk::RenderPass renderPass;
+    PushConstants pushConstants;
     
     std::vector<vk::ShaderModule> shaderModules;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+    std::vector<vk::PushConstantRange> pushConstantRanges;
     vk::PipelineLayout pipelineLayout;
     vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo;
     vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo;
@@ -76,7 +85,8 @@ protected:
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
     virtual std::vector<vk::ShaderModule> createShaderModules(void) const = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const = 0;
-    virtual vk::PipelineLayout createPipelineLayout(void) const;
+    virtual std::vector<vk::PushConstantRange> createPushConstantRanges(void) const;
+    virtual vk::PipelineLayout createPipelineLayout(const std::vector<vk::PushConstantRange> &pushConstantRanges) const;
     virtual vk::PipelineVertexInputStateCreateInfo createPipelineVertexInputStateCreateInfo(void) const;
     virtual vk::PipelineInputAssemblyStateCreateInfo createPipelineInputAssemblyStateCreateInfo(void) const;
     virtual std::vector<vk::Viewport> createViewports(vk::Extent2D extent) const;

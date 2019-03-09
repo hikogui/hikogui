@@ -368,8 +368,6 @@ bool Window::render(bool blockOnVSync)
     uint32_t imageIndex;
     uint64_t timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
 
-    LOG_INFO("Render.");
-
     auto result = device->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
     switch (result) {
     case vk::Result::eSuccess:
