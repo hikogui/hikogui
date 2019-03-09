@@ -707,6 +707,7 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					/opt/boost_1_69_0,
+					"/opt/glm-0.9.9.3",
 				);
 				LIBRARY_SEARCH_PATHS = /opt/boost_1_69_0/stage/lib;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -764,6 +765,7 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					/opt/boost_1_69_0,
+					"/opt/glm-0.9.9.3",
 				);
 				LIBRARY_SEARCH_PATHS = /opt/boost_1_69_0/stage/lib;
 				MTL_ENABLE_DEBUG_INFO = NO;
