@@ -318,7 +318,7 @@ void Device::maintance()
 uint32_t Device::findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
 {
     for (uint32_t typeIndex = 0; typeIndex < memoryProperties.memoryTypeCount; typeIndex++) {
-        if ((validMemoryTypeMask & (typeIndex << typeIndex)) && ((memoryProperties.memoryTypes[typeIndex].propertyFlags & properties) == properties)) {
+        if ((validMemoryTypeMask & (1 << typeIndex)) && ((memoryProperties.memoryTypes[typeIndex].propertyFlags & properties) == properties)) {
             return typeIndex;
         }
     }

@@ -25,9 +25,6 @@
 		686C02F92231A8D7002F4063 /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DC2231A8D6002F4063 /* View.cpp */; };
 		686C02FA2231A8D7002F4063 /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DC2231A8D6002F4063 /* View.cpp */; };
 		686C02FB2231A8D7002F4063 /* View.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DC2231A8D6002F4063 /* View.cpp */; };
-		686C02FC2231A8D7002F4063 /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DE2231A8D6002F4063 /* Rectangle.cpp */; };
-		686C02FD2231A8D7002F4063 /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DE2231A8D6002F4063 /* Rectangle.cpp */; };
-		686C02FE2231A8D7002F4063 /* Rectangle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02DE2231A8D6002F4063 /* Rectangle.cpp */; };
 		686C02FF2231A8D7002F4063 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E22231A8D6002F4063 /* Instance.cpp */; };
 		686C03002231A8D7002F4063 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E22231A8D6002F4063 /* Instance.cpp */; };
 		686C03012231A8D7002F4063 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E22231A8D6002F4063 /* Instance.cpp */; };
@@ -37,9 +34,6 @@
 		686C03052231A8D7002F4063 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E42231A8D6002F4063 /* Window.cpp */; };
 		686C03062231A8D7002F4063 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E42231A8D6002F4063 /* Window.cpp */; };
 		686C03072231A8D7002F4063 /* Window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E42231A8D6002F4063 /* Window.cpp */; };
-		686C03082231A8D7002F4063 /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E72231A8D6002F4063 /* Vector.cpp */; };
-		686C03092231A8D7002F4063 /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E72231A8D6002F4063 /* Vector.cpp */; };
-		686C030A2231A8D7002F4063 /* Vector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02E72231A8D6002F4063 /* Vector.cpp */; };
 		686C030B2231A8D7002F4063 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EC2231A8D7002F4063 /* Queue.cpp */; };
 		686C030C2231A8D7002F4063 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EC2231A8D7002F4063 /* Queue.cpp */; };
 		686C030D2231A8D7002F4063 /* Queue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02EC2231A8D7002F4063 /* Queue.cpp */; };
@@ -76,14 +70,17 @@
 		686C032C2231A989002F4063 /* Pipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E92231A8D6002F4063 /* Pipeline.hpp */; };
 		686C032D2231A989002F4063 /* Queue.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E02231A8D6002F4063 /* Queue.hpp */; };
 		686C032E2231A989002F4063 /* QueueCapabilities.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */; };
-		686C032F2231A989002F4063 /* Rectangle.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02DF2231A8D6002F4063 /* Rectangle.hpp */; };
-		686C03302231A989002F4063 /* Vector.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02F42231A8D7002F4063 /* Vector.hpp */; };
 		686C03312231A989002F4063 /* View.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02E62231A8D6002F4063 /* View.hpp */; };
 		686C03322231A989002F4063 /* vulkan_utils.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02EF2231A8D7002F4063 /* vulkan_utils.hpp */; };
 		686C03332231A989002F4063 /* Window.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02EB2231A8D6002F4063 /* Window.hpp */; };
 		68A9A0622208FC3600457876 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0612208FC3600457876 /* libboost_system.a */; };
 		68A9A0642208FC4100457876 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0632208FC4100457876 /* libboost_filesystem.a */; };
 		68A9A07A220B2F9500457876 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A079220B2F9500457876 /* libboost_thread.a */; };
+		68BF1EE42236EBF10008955B /* WindowView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BF1EE32236EBF10008955B /* WindowView.cpp */; };
+		68BF1EE52236EBF10008955B /* WindowView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BF1EE32236EBF10008955B /* WindowView.cpp */; };
+		68BF1EE62236EBF10008955B /* WindowView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BF1EE32236EBF10008955B /* WindowView.cpp */; };
+		68BF1EE72236EC1E0008955B /* config.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68BF1EE22236EBF10008955B /* config.hpp */; };
+		68BF1EE82236EC240008955B /* WindowView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68BF1EE12236EBF10008955B /* WindowView.hpp */; };
 		68D07C1F220CDF19005EFAB2 /* libboost_log.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D07C1E220CDF18005EFAB2 /* libboost_log.a */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
@@ -117,11 +114,11 @@
 				686C032C2231A989002F4063 /* Pipeline.hpp in CopyFiles */,
 				686C032D2231A989002F4063 /* Queue.hpp in CopyFiles */,
 				686C032E2231A989002F4063 /* QueueCapabilities.hpp in CopyFiles */,
-				686C032F2231A989002F4063 /* Rectangle.hpp in CopyFiles */,
-				686C03302231A989002F4063 /* Vector.hpp in CopyFiles */,
 				686C03312231A989002F4063 /* View.hpp in CopyFiles */,
 				686C03322231A989002F4063 /* vulkan_utils.hpp in CopyFiles */,
 				686C03332231A989002F4063 /* Window.hpp in CopyFiles */,
+				68BF1EE72236EC1E0008955B /* config.hpp in CopyFiles */,
+				68BF1EE82236EC240008955B /* WindowView.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -153,8 +150,6 @@
 		686C02DB2231A8D5002F4063 /* Pipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Pipeline.cpp; sourceTree = "<group>"; };
 		686C02DC2231A8D6002F4063 /* View.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = View.cpp; sourceTree = "<group>"; };
 		686C02DD2231A8D6002F4063 /* Device.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Device.hpp; sourceTree = "<group>"; };
-		686C02DE2231A8D6002F4063 /* Rectangle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rectangle.cpp; sourceTree = "<group>"; };
-		686C02DF2231A8D6002F4063 /* Rectangle.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Rectangle.hpp; sourceTree = "<group>"; };
 		686C02E02231A8D6002F4063 /* Queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Queue.hpp; sourceTree = "<group>"; };
 		686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = QueueCapabilities.hpp; sourceTree = "<group>"; };
 		686C02E22231A8D6002F4063 /* Instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
@@ -162,7 +157,6 @@
 		686C02E42231A8D6002F4063 /* Window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Window.cpp; sourceTree = "<group>"; };
 		686C02E52231A8D6002F4063 /* ImageView.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ImageView.hpp; sourceTree = "<group>"; };
 		686C02E62231A8D6002F4063 /* View.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = View.hpp; sourceTree = "<group>"; };
-		686C02E72231A8D6002F4063 /* Vector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Vector.cpp; sourceTree = "<group>"; };
 		686C02E82231A8D6002F4063 /* GUI.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GUI.hpp; sourceTree = "<group>"; };
 		686C02E92231A8D6002F4063 /* Pipeline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Pipeline.hpp; sourceTree = "<group>"; };
 		686C02EA2231A8D6002F4063 /* BackingPipeline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BackingPipeline.hpp; sourceTree = "<group>"; };
@@ -175,11 +169,13 @@
 		686C02F12231A8D7002F4063 /* vulkan_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
 		686C02F22231A8D7002F4063 /* Device.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
 		686C02F32231A8D7002F4063 /* GUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI.cpp; sourceTree = "<group>"; };
-		686C02F42231A8D7002F4063 /* Vector.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Vector.hpp; sourceTree = "<group>"; };
 		686C02F52231A8D7002F4063 /* BackingPipeline.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = BackingPipeline.frag; sourceTree = "<group>"; };
 		68A9A0612208FC3600457876 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
 		68A9A079220B2F9500457876 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_thread.a; sourceTree = "<group>"; };
+		68BF1EE12236EBF10008955B /* WindowView.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = WindowView.hpp; sourceTree = "<group>"; };
+		68BF1EE22236EBF10008955B /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config.hpp; sourceTree = "<group>"; };
+		68BF1EE32236EBF10008955B /* WindowView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindowView.cpp; sourceTree = "<group>"; };
 		68D07C1E220CDF18005EFAB2 /* libboost_log.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_log.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_log.a; sourceTree = "<group>"; };
 		68DFA8D622032B8A005D9413 /* MoltenVK.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MoltenVK.framework; path = ../../Library/Frameworks/MoltenVK.framework; sourceTree = "<group>"; };
 		68DFA8D82203315C005D9413 /* MoltenVKView.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKView.mm; sourceTree = "<group>"; };
@@ -245,6 +241,9 @@
 		6838B93F2231A86E00FB8BD7 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
+				68BF1EE22236EBF10008955B /* config.hpp */,
+				68BF1EE32236EBF10008955B /* WindowView.cpp */,
+				68BF1EE12236EBF10008955B /* WindowView.hpp */,
 				686C02E32231A8D6002F4063 /* BackingPipeline.cpp */,
 				686C02F52231A8D7002F4063 /* BackingPipeline.frag */,
 				686C02EA2231A8D6002F4063 /* BackingPipeline.hpp */,
@@ -263,10 +262,6 @@
 				686C02E02231A8D6002F4063 /* Queue.hpp */,
 				686C02F02231A8D7002F4063 /* QueueCapabilities.cpp */,
 				686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */,
-				686C02DE2231A8D6002F4063 /* Rectangle.cpp */,
-				686C02DF2231A8D6002F4063 /* Rectangle.hpp */,
-				686C02E72231A8D6002F4063 /* Vector.cpp */,
-				686C02F42231A8D7002F4063 /* Vector.hpp */,
 				686C02DC2231A8D6002F4063 /* View.cpp */,
 				686C02E62231A8D6002F4063 /* View.hpp */,
 				686C02F12231A8D7002F4063 /* vulkan_utils.cpp */,
@@ -546,13 +541,12 @@
 				686C03022231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
 				686C02D42231A8A4002F4063 /* Time.cpp in Sources */,
 				686C030B2231A8D7002F4063 /* Queue.cpp in Sources */,
+				68BF1EE42236EBF10008955B /* WindowView.cpp in Sources */,
 				686C02FF2231A8D7002F4063 /* Instance.cpp in Sources */,
 				686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C031A2231A8D7002F4063 /* Device.cpp in Sources */,
 				686C03052231A8D7002F4063 /* Window.cpp in Sources */,
-				686C02FC2231A8D7002F4063 /* Rectangle.cpp in Sources */,
 				686C02CE2231A8A4002F4063 /* Application.cpp in Sources */,
-				686C03082231A8D7002F4063 /* Vector.cpp in Sources */,
 				686C02F62231A8D7002F4063 /* Pipeline.cpp in Sources */,
 				686C031D2231A8D7002F4063 /* GUI.cpp in Sources */,
 				68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */,
@@ -573,13 +567,12 @@
 				686C03032231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
 				686C02D52231A8A4002F4063 /* Time.cpp in Sources */,
 				686C030C2231A8D7002F4063 /* Queue.cpp in Sources */,
+				68BF1EE52236EBF10008955B /* WindowView.cpp in Sources */,
 				686C03002231A8D7002F4063 /* Instance.cpp in Sources */,
 				686C02D22231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C031B2231A8D7002F4063 /* Device.cpp in Sources */,
 				686C03062231A8D7002F4063 /* Window.cpp in Sources */,
-				686C02FD2231A8D7002F4063 /* Rectangle.cpp in Sources */,
 				686C02CF2231A8A4002F4063 /* Application.cpp in Sources */,
-				686C03092231A8D7002F4063 /* Vector.cpp in Sources */,
 				686C02F72231A8D7002F4063 /* Pipeline.cpp in Sources */,
 				686C031E2231A8D7002F4063 /* GUI.cpp in Sources */,
 				68F2629422030EA70078E5E4 /* GameViewController.m in Sources */,
@@ -597,16 +590,15 @@
 			files = (
 				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
-				686C030A2231A8D7002F4063 /* Vector.cpp in Sources */,
 				686C02D32231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C02F82231A8D7002F4063 /* Pipeline.cpp in Sources */,
-				686C02FE2231A8D7002F4063 /* Rectangle.cpp in Sources */,
 				686C02FB2231A8D7002F4063 /* View.cpp in Sources */,
 				686C03012231A8D7002F4063 /* Instance.cpp in Sources */,
 				686C03132231A8D7002F4063 /* ImageView.cpp in Sources */,
 				686C031F2231A8D7002F4063 /* GUI.cpp in Sources */,
 				686C03162231A8D7002F4063 /* QueueCapabilities.cpp in Sources */,
 				686C03072231A8D7002F4063 /* Window.cpp in Sources */,
+				68BF1EE62236EBF10008955B /* WindowView.cpp in Sources */,
 				686C031C2231A8D7002F4063 /* Device.cpp in Sources */,
 				686C03192231A8D7002F4063 /* vulkan_utils.cpp in Sources */,
 				686C02D92231A8A4002F4063 /* Logging.cpp in Sources */,
