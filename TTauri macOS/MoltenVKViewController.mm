@@ -62,6 +62,13 @@ struct CallbackData {
     rect.extent.height = self.view.frame.size.height;
     window->setWindowRectangle(rect);
 
+    auto view1 = std::make_shared<ImageView>(app->resourceDir / "lena.png");
+    view1->setRectangle({ 100.0, 100.0, 1.0 }, { 200.0, 100.0, 0.0 });
+    auto view2 = std::make_shared<ImageView>(app->resourceDir / "lena.png");
+    view2->setRectangle({ 200.0, 200.0, 1.0 }, { 200.0, 100.0, 0.0 });
+    window->view->add(view1);
+    window->view->add(view2);
+
     if (!callbackData.instance->add(window)) {
         auto alert = [[NSAlert alloc] init];
         [alert setMessageText:@"Could not open window."];

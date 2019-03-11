@@ -10,6 +10,7 @@
 #include "Window.hpp"
 #include "Device.hpp"
 #include "TTauri/Application.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri {
 namespace GUI {
@@ -47,12 +48,17 @@ void BackingPipeline::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
     std::vector<vk::Buffer> vertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> offsets;
-    for (auto vertexBuffer : vertexBuffers) {
+    for (size_t i = 0; i < vertexBuffers.size(); i++) {
         offsets.push_back(0);
     }
     commandBuffer.bindVertexBuffers(0, vertexBuffers, offsets);
 
-    commandBuffer.draw(numberOfVertices, 1, 0, 0);
+    commandBuffer.draw(
+        boost::numeric_cast<uint32_t>(numberOfVertices),
+        1,
+        0,
+        0
+    );
 }
 
 std::vector<vk::ShaderModule> BackingPipeline::createShaderModules() const

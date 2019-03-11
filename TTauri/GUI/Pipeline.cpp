@@ -113,7 +113,7 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent, si
     intrinsic = device()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
 
     vertexBuffer = createVertexBuffer(vertexInputBindingDescription.stride, maximumNumberOfVertices);
-    vertexBufferMemory = device()->allocateDeviceMemoryAndBind(vertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+    vertexBufferMemory = device()->allocateDeviceMemoryAndBind(vertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible);
 
     // Create a command buffer for each swapchain framebuffer, this way we can keep the same command in the command
     // buffer as long as no widgets are being added or removed (same number of triangles being rendered).
@@ -350,6 +350,12 @@ void *Pipeline::mapVertexBuffer() const
 
 void Pipeline::unmapVertexBuffer() const
 {
+    auto memoryRequirements = device()->intrinsic.getBufferMemoryRequirements(vertexBuffer);
+
+    std::vector<vk::MappedMemoryRange> mappedMemoryRanges = {
+        {vertexBufferMemory, 0, memoryRequirements.size}
+    };
+    device()->intrinsic.flushMappedMemoryRanges(mappedMemoryRanges);
     device()->intrinsic.unmapMemory(vertexBufferMemory);
 }
 
