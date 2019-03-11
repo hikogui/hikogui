@@ -51,6 +51,8 @@ Device::Device(Instance *instance, vk::PhysicalDevice physicalDevice) :
     vendorID = resultDeviceProperties2.properties.vendorID;
     deviceName = std::string(resultDeviceProperties2.properties.deviceName);
     memcpy(deviceUUID.data, resultDeviceIDProperties.deviceUUID, deviceUUID.size());
+
+    memoryProperties = physicalIntrinsic.getMemoryProperties();
 }
 
 Device::~Device()
@@ -59,7 +61,7 @@ Device::~Device()
     intrinsic.destroy();
 }
 
-std::string Device::str(void) const
+std::string Device::str() const
 {
     return (boost::format("%04x:%04x %s %s") % vendorID % deviceID % deviceName % deviceUUID).str();
 }
@@ -263,7 +265,7 @@ int Device::score(std::shared_ptr<Window> window)
         case vk::PresentModeKHR::eImmediate: score += 1; break;
         case vk::PresentModeKHR::eFifoRelaxed: score += 2; break;
         case vk::PresentModeKHR::eFifo: score += 3; break;
-        case vk::PresentModeKHR::eMailbox: score += 10; break;
+        case vk::PresentModeKHR::eMailbox: score += 1; break; // mailbox does not wait for vsync.
         default: continue;
         }
 
@@ -306,11 +308,43 @@ void Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
     }
 }
 
-void Device::maintance(void)
+void Device::maintance()
 {
     for (auto window: windows) {
         window->maintenance();
     }
+}
+
+uint32_t Device::findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
+{
+    for (uint32_t typeIndex = 0; typeIndex < memoryProperties.memoryTypeCount; typeIndex++) {
+        if ((validMemoryTypeMask & (typeIndex << typeIndex)) && ((memoryProperties.memoryTypes[typeIndex].propertyFlags & properties) == properties)) {
+            return typeIndex;
+        }
+    }
+    BOOST_THROW_EXCEPTION(Device::AllocateMemoryError());
+}
+
+
+vk::DeviceMemory Device::allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
+{
+    auto memoryTypeIndex = findMemoryType(validMemoryTypeMask, properties);
+
+    vk::MemoryAllocateInfo memoryAllocateInfo = {size, memoryTypeIndex};
+    return intrinsic.allocateMemory(memoryAllocateInfo, nullptr);
+}
+
+vk::DeviceMemory Device::allocateDeviceMemory(vk::Buffer buffer, vk::MemoryPropertyFlags properties)
+{
+    auto memoryRequirements = intrinsic.getBufferMemoryRequirements(buffer);
+    return allocateDeviceMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, properties);
+}
+
+vk::DeviceMemory Device::allocateDeviceMemoryAndBind(vk::Buffer buffer, vk::MemoryPropertyFlags properties)
+{
+    auto memory = allocateDeviceMemory(buffer, properties);
+    intrinsic.bindBufferMemory(buffer, memory, 0);
+    return memory;
 }
 
 }}

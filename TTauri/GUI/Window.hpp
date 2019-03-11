@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Rectangle.hpp"
 #include "BackingPipeline.hpp"
 #include "View.hpp"
 #include <vulkan/vulkan.hpp>
@@ -44,8 +43,7 @@ enum class WindowState {
     READY_TO_DRAW,
 };
 
-struct WindowStateError: virtual boost::exception, virtual std::exception {};
-struct WindowSwapChainError: virtual boost::exception, virtual std::exception {};
+class View;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -58,6 +56,9 @@ private:
     WindowState state;
 
 public:
+    struct StateError : virtual boost::exception, virtual std::exception {};
+    struct SwapChainError : virtual boost::exception, virtual std::exception {};
+
     vk::SurfaceKHR intrinsic;
 
     vk::SwapchainCreateInfoKHR swapchainCreateInfo;
@@ -78,7 +79,8 @@ public:
     Device *device;
 
     //! Location of the window on the screen.
-    Rectangle location;
+    glm::vec3 position;
+    glm::vec3 extent;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -117,11 +119,11 @@ public:
 
     /*! Build the swapchain, frame buffers and pipeline.
      */
-    void buildSwapchainAndPipeline(void);
+    void buildSwapchainAndPipeline();
 
     /*! Teardown the swapchain, frame buffers and pipeline.
      */
-    void teardownSwapchainAndPipeline(void);
+    void teardownSwapchainAndPipeline();
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
@@ -143,14 +145,14 @@ public:
 
     /*! Wait until everything has been drawn.
      */
-    void waitIdle(void);
+    void waitIdle();
 
     /*! Maintanance
      * Maintain the window on a low performance thread.
      *
      * For example: rebuilding the swapchain on window size changes.
      */
-    void maintenance(void);
+    void maintenance();
 
     void setWindowRectangle(vk::Rect2D rect) {
         windowRectangle = rect;
@@ -164,16 +166,16 @@ private:
      * \returns false when swapchain is out of date.
      */
     bool render(bool blockOnVSync);
-    void buildSemaphores(void);
-    void teardownSemaphores(void);
-    void buildSwapchain(void);
-    void teardownSwapchain(void);
-    void buildRenderPasses(void);
-    void teardownRenderPasses(void);
-    void buildFramebuffers(void);
-    void teardownFramebuffers(void);
-    void buildPipelines(void);
-    void teardownPipelines(void);
+    void buildSemaphores();
+    void teardownSemaphores();
+    void buildSwapchain();
+    void teardownSwapchain();
+    void buildRenderPasses();
+    void teardownRenderPasses();
+    void buildFramebuffers();
+    void teardownFramebuffers();
+    void buildPipelines();
+    void teardownPipelines();
 };
 
 }}

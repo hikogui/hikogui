@@ -16,7 +16,7 @@
 
 namespace TTauri {
 
-void initializeLogging(void);
+void initializeLogging();
 
 }
 

@@ -43,7 +43,7 @@ Instance::Instance(const std::vector<const char *> &extensionNames) :
     requiredExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     if (!hasRequiredExtensions(requiredExtensions)) {
-        BOOST_THROW_EXCEPTION(InstanceError());
+        BOOST_THROW_EXCEPTION(Instance::Error());
     }
 
     auto instanceCreateInfo = vk::InstanceCreateInfo(
@@ -118,7 +118,7 @@ void Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, 
     }
 }
 
-void Instance::maintance(void)
+void Instance::maintance()
 {
     for (auto device: physicalDevices) {
         device->maintance();

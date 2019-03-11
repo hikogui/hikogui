@@ -21,12 +21,6 @@ class Device;
 class Window;
 
 class Pipeline {
- 
-    struct PushConstants {
-        glm::vec2 windowExtent;
-        glm::vec2 viewportScale;
-    };
-
 public:
     vk::Pipeline intrinsic;
 
@@ -42,13 +36,19 @@ public:
     Pipeline(Window *window);
     virtual ~Pipeline();
 
+    Device *device() const;
+
+    /*! Render
+     */
+    virtual vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
+
     /*! Build the swapchain, frame buffers and pipeline.
      */
-    void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent);
+    void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent, size_t maximumNumberOfTriangles);
 
     /*! Teardown the swapchain, frame buffers and pipeline.
      */
-    void teardownPipeline(void);
+    void teardownPipeline();
 
     /*! Invalidate all command buffers.
      * This is used when the command buffer needs to be recreated due to changes in views.
@@ -61,16 +61,13 @@ public:
      */
     void validateCommandBuffer(uint32_t imageIndex);
 
-    vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
-
 protected:
     vk::RenderPass renderPass;
-    PushConstants pushConstants;
-    
     std::vector<vk::ShaderModule> shaderModules;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
-    std::vector<vk::PushConstantRange> pushConstantRanges;
     vk::PipelineLayout pipelineLayout;
+    vk::VertexInputBindingDescription vertexInputBindingDescription;
+    std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions;
     vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo;
     vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo;
     std::vector<vk::Viewport> viewports;
@@ -81,21 +78,31 @@ protected:
     std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates;
     vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
     vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
+    size_t maximumNumberOfTriangles;
+    size_t maximumNumberOfVertices;
+    vk::Buffer vertexBuffer;
+    vk::DeviceMemory vertexBufferMemory;
 
+    virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) = 0;
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
-    virtual std::vector<vk::ShaderModule> createShaderModules(void) const = 0;
+    virtual std::vector<vk::ShaderModule> createShaderModules() const = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const = 0;
-    virtual std::vector<vk::PushConstantRange> createPushConstantRanges(void) const;
-    virtual vk::PipelineLayout createPipelineLayout(const std::vector<vk::PushConstantRange> &pushConstantRanges) const;
-    virtual vk::PipelineVertexInputStateCreateInfo createPipelineVertexInputStateCreateInfo(void) const;
-    virtual vk::PipelineInputAssemblyStateCreateInfo createPipelineInputAssemblyStateCreateInfo(void) const;
+    virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
+    virtual vk::PipelineLayout createPipelineLayout() const;
+    virtual vk::PipelineVertexInputStateCreateInfo createPipelineVertexInputStateCreateInfo(const vk::VertexInputBindingDescription &vertexBindingDescriptions, const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const;
+    virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
+    virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
+    virtual vk::PipelineInputAssemblyStateCreateInfo createPipelineInputAssemblyStateCreateInfo() const;
     virtual std::vector<vk::Viewport> createViewports(vk::Extent2D extent) const;
     virtual std::vector<vk::Rect2D> createScissors(vk::Extent2D extent) const;
     virtual vk::PipelineViewportStateCreateInfo createPipelineViewportStateCreateInfo(const std::vector<vk::Viewport> &viewports, std::vector<vk::Rect2D> &scissors) const;
-    virtual vk::PipelineRasterizationStateCreateInfo createPipelineRasterizationStateCreateInfo(void) const;
-    virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo(void) const;
-    virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates(void) const;
+    virtual vk::PipelineRasterizationStateCreateInfo createPipelineRasterizationStateCreateInfo() const;
+    virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo() const;
+    virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates() const;
     virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
+    virtual vk::Buffer createVertexBuffer(size_t vertexSize, size_t numberOfVertices) const;
+    void *mapVertexBuffer() const;
+    void unmapVertexBuffer() const;
 };
 
 }}

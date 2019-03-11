@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Rectangle.hpp"
+#include "BackingPipeline.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -24,39 +24,34 @@ class Instance;
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class View {
+class View : public BackingPipeline::Delegate {
 public:
-    //! Convenient reference to the Instance.
-    Instance *instance;
-
     //! Convenient reference to the Window.
-    Window *window;
+    Window *window = nullptr;
 
-    View *parent;
+    View *parent = nullptr;
 
     std::vector<std::shared_ptr<View>> children;
 
     //! Location of the frame compared to the parent-frame.
-    Rectangle location;
-
-    //! Minimum size allowed for this view.
-    float2 minimumSize;
-
-    //! Maximum size allowed for this view.
-    float2 maximumSize;
-
-    //! Location of the frame compared to the window.
-    Rectangle windowLocation;
+    glm::vec3 position;
+    glm::vec3 extent;
 
     /*! Constructor for creating subviews.
      */
-    View(View *parent);
-
-    /*! Constructor for creating the main view of a window.
-     */
-    View(Window *window);
+    View();
 
     virtual ~View();
+
+    virtual void setParent(View *parent);
+    virtual void setRectangle(glm::vec3 position, glm::vec3 extent);
+
+    virtual void add(std::shared_ptr<View> view);
+
+    Device *device();
+  
+
+    virtual off_t BackingPipelineRender(BackingPipeline::Vertex *vertices, off_t offset, size_t size);
 };
 
 }}

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Rectangle.hpp"
 #include "Instance.hpp"
 #include "Window.hpp"
 #include "View.hpp"
+#include "ImageView.hpp"

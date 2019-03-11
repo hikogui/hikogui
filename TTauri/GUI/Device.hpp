@@ -15,6 +15,7 @@
 #include <mutex>
 #include <unordered_set>
 
+
 namespace TTauri {
 namespace GUI {
 
@@ -33,6 +34,8 @@ private:
     DeviceState state;
 
 public:
+    struct AllocateMemoryError : virtual boost::exception, virtual std::exception {};
+
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
 
@@ -43,6 +46,7 @@ public:
     uint32_t deviceID;
     vk::PhysicalDeviceType deviceType;
     boost::uuids::uuid deviceUUID;
+    vk::PhysicalDeviceMemoryProperties memoryProperties;
 
     /*! List if extension required on this device.
      */
@@ -88,7 +92,7 @@ public:
      */
     std::unordered_set<std::shared_ptr<Window>> windows;
 
-    std::string str(void) const;
+    std::string str() const;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same
@@ -130,8 +134,12 @@ public:
 
     /*! Maintanance work on low performance thread.
      */
-    void maintance(void);
+    void maintance();
 
+    uint32_t findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
+    vk::DeviceMemory allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
+    vk::DeviceMemory allocateDeviceMemory(vk::Buffer buffer, vk::MemoryPropertyFlags properties);
+    vk::DeviceMemory allocateDeviceMemoryAndBind(vk::Buffer buffer, vk::MemoryPropertyFlags properties);
 };
 
 }}

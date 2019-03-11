@@ -51,12 +51,6 @@
     <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="TTauri\GUI\Rectangle.cpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="TTauri\GUI\Vector.cpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="TTauri\GUI\View.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
@@ -64,6 +58,9 @@
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
     <ClCompile Include="TTauri\GUI\Window.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\GUI\WindowView.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -104,12 +101,6 @@
     <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="TTauri\GUI\Rectangle.hpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="TTauri\GUI\Vector.hpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="TTauri\GUI\View.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
@@ -117,6 +108,12 @@
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\GUI\Window.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\config.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\WindowView.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
   </ItemGroup>

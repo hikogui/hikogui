@@ -23,7 +23,7 @@ public:
 
     /*! Get a timestamp based on a high resolution system clock.
      */
-    static Timestamp now(void);
+    static Timestamp now();
 };
 
 }

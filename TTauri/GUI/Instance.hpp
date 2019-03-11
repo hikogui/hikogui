@@ -20,7 +20,6 @@
 namespace TTauri {
 namespace GUI {
 
-struct InstanceError: virtual boost::exception, virtual std::exception {};
 
 
 enum class InstanceState {
@@ -35,6 +34,8 @@ enum class InstanceState {
  */
 class Instance {
 public:
+    struct Error : virtual boost::exception, virtual std::exception {};
+
     InstanceState state = InstanceState::IDLE;
     
     //! Vulkan instance.
@@ -90,7 +91,7 @@ private:
     /*! Called when maintance is needed.
      * Run on seperate thread, 15 times per second.
      */
-    void maintance(void);
+    void maintance();
 
     static void maintanceThread(Instance *self);
 };

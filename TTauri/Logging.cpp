@@ -25,7 +25,7 @@ namespace TTauri {
 #ifdef _WIN32
 typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > sink_t;
 
-void initializeLogging(void)
+void initializeLogging()
 {
     boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 
@@ -46,7 +46,7 @@ void initializeLogging(void)
     core->add_sink(sink);
 }
 #else
-void initializeLogging(void)
+void initializeLogging()
 {
 }
 #endif

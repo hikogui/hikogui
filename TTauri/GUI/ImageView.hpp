@@ -15,12 +15,15 @@
 namespace TTauri {
 namespace GUI {
 
-class ImageView : View {
+class ImageView : public View {
 public:
     const boost::filesystem::path path;
 
-    ImageView(View *view, const boost::filesystem::path &path);
+    ImageView(const boost::filesystem::path &path);
     ~ImageView();
+
+    virtual off_t BackingPipelineRender(BackingPipeline::Vertex *vertices, off_t offset, size_t size);
+
 };
 
 }}

@@ -18,9 +18,6 @@
 namespace TTauri {
 namespace GUI {
 
-// Device may change when the window is moved, therefor make this indirect.
-#define device (window->device)
-
 Pipeline::Pipeline(Window *window) :
     window(window)
 {
@@ -30,11 +27,41 @@ Pipeline::~Pipeline()
 {
 }
 
+Device *Pipeline::device() const
+{
+    BOOST_ASSERT(window);
+    return window->device;
+}
+
+vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
+{
+    validateCommandBuffer(imageIndex);
+
+    vk::Semaphore waitSemaphores[] = { inputSemaphore };
+
+    vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+
+    vk::Semaphore signalSemaphores[] = { renderFinishedSemaphores[imageIndex] };
+
+    vk::SubmitInfo submitInfo[] = { vk::SubmitInfo(
+        1, waitSemaphores, waitStages,
+        1, &commandBuffers[imageIndex],
+        1, signalSemaphores
+    ) };
+
+    device()->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
+
+    return renderFinishedSemaphores[imageIndex];
+}
+
 /*! Build the swapchain, frame buffers and pipeline.
  */
-void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
+void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent, size_t maximumNumberOfTriangles)
 {
     LOG_INFO("buildPipeline (%i, %i)") % extent.width % extent.height;
+
+    this->maximumNumberOfTriangles = maximumNumberOfTriangles;
+    maximumNumberOfVertices = maximumNumberOfTriangles * 3;
 
     renderPass = _renderPass;
 
@@ -42,11 +69,11 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
 
     shaderStages = createShaderStages(shaderModules);
 
-    pushConstantRanges = createPushConstantRanges();
+    pipelineLayout = createPipelineLayout();
 
-    pipelineLayout = createPipelineLayout(pushConstantRanges);
-
-    pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo();
+    vertexInputBindingDescription = createVertexInputBindingDescription();
+    vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
+    pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo(vertexInputBindingDescription, vertexInputAttributeDescriptions);
 
     pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
 
@@ -83,16 +110,19 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
         -1 // basePipelineIndex
     };
 
-    intrinsic = device->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+    intrinsic = device()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+
+    vertexBuffer = createVertexBuffer(vertexInputBindingDescription.stride, maximumNumberOfVertices);
+    vertexBufferMemory = device()->allocateDeviceMemoryAndBind(vertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
     // Create a command buffer for each swapchain framebuffer, this way we can keep the same command in the command
     // buffer as long as no widgets are being added or removed (same number of triangles being rendered).
     auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        device->graphicQueue->commandPool,
+        device()->graphicQueue->commandPool,
         vk::CommandBufferLevel::ePrimary,
         boost::numeric_cast<uint32_t>(window->swapchainFramebuffers.size())
     );
-    commandBuffers = device->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
+    commandBuffers = device()->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
 
     commandBuffersValid.resize(commandBuffers.size());
     invalidateCommandBuffers();
@@ -100,25 +130,27 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
     auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     renderFinishedSemaphores.resize(commandBuffers.size());
     for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
-        renderFinishedSemaphores[i] = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+        renderFinishedSemaphores[i] = device()->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
     }
 }
 
 /*! Teardown the swapchain, frame buffers and pipeline.
  */
-void Pipeline::teardownPipeline(void)
+void Pipeline::teardownPipeline()
 {
     for (size_t i = 0; i <  renderFinishedSemaphores.size(); i++) {
-        device->intrinsic.destroy(renderFinishedSemaphores[i]);
+        device()->intrinsic.destroy(renderFinishedSemaphores[i]);
     }
 
-    device->intrinsic.freeCommandBuffers(device->graphicQueue->commandPool, commandBuffers);
+    device()->intrinsic.freeCommandBuffers(device()->graphicQueue->commandPool, commandBuffers);
     commandBuffers.clear();
 
-    device->intrinsic.destroy(intrinsic);
-    device->intrinsic.destroy(pipelineLayout);
+    device()->intrinsic.destroy(vertexBuffer);
+    device()->intrinsic.free(vertexBufferMemory);
+    device()->intrinsic.destroy(intrinsic);
+    device()->intrinsic.destroy(pipelineLayout);
     for (auto shaderModule: shaderModules) {
-        device->intrinsic.destroy(shaderModule);
+        device()->intrinsic.destroy(shaderModule);
     }
 }
 
@@ -155,12 +187,8 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    pushConstants.windowExtent = { scissors[0].extent.width , scissors[0].extent.height };
-    pushConstants.viewportScale = { 2.0 / scissors[0].extent.width, 2.0 / scissors[0].extent.height };
-    commandBuffers[imageIndex].pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants), static_cast<const void *>(&pushConstants));
-
-    commandBuffers[imageIndex].draw(3, 1, 0, 0);
-
+    drawInCommandBuffer(commandBuffers[imageIndex]);
+    
     commandBuffers[imageIndex].endRenderPass();
 
     commandBuffers[imageIndex].end();
@@ -168,26 +196,6 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
     commandBuffersValid[imageIndex] = true;
 }
 
-vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
-{
-    validateCommandBuffer(imageIndex);
-
-    vk::Semaphore waitSemaphores[] = {inputSemaphore};
-
-    vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
-
-    vk::Semaphore signalSemaphores[] = {renderFinishedSemaphores[imageIndex]};
-    
-    vk::SubmitInfo submitInfo[] = {vk::SubmitInfo(
-        1, waitSemaphores, waitStages,
-        1, &commandBuffers[imageIndex],
-        1, signalSemaphores
-    )};
-
-    device->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
-
-    return renderFinishedSemaphores[imageIndex];
-}
 
 vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
 {
@@ -206,32 +214,32 @@ vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
         reinterpret_cast<uint32_t *>(region.get_address())
     );
 
-    return device->intrinsic.createShaderModule(shaderModuleCreateInfo);
+    return device()->intrinsic.createShaderModule(shaderModuleCreateInfo);
 }
 
-std::vector<vk::PushConstantRange> Pipeline::createPushConstantRanges(void) const
+vk::PipelineLayout Pipeline::createPipelineLayout() const
 {
-    return {
-        {vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants)}
-    };
-}
+    auto pushConstantRanges = createPushConstantRanges();
 
-vk::PipelineLayout Pipeline::createPipelineLayout(const std::vector<vk::PushConstantRange> &pushConstantRanges) const
-{
     auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo(
         vk::PipelineLayoutCreateFlags(),
         0, nullptr,
         boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
     );
-    return device->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
+    return device()->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
 }
 
-vk::PipelineVertexInputStateCreateInfo Pipeline::createPipelineVertexInputStateCreateInfo(void) const
+vk::PipelineVertexInputStateCreateInfo Pipeline::createPipelineVertexInputStateCreateInfo(const vk::VertexInputBindingDescription &vertexBindingDescriptions, const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const
 {
-    return {};
+    return {
+        vk::PipelineVertexInputStateCreateFlags(),
+        1,
+        &vertexBindingDescriptions,
+        boost::numeric_cast<uint32_t>(vertexAttributeDescriptions.size()), vertexAttributeDescriptions.data()
+    };
 }
 
-vk::PipelineInputAssemblyStateCreateInfo Pipeline::createPipelineInputAssemblyStateCreateInfo(void) const
+vk::PipelineInputAssemblyStateCreateInfo Pipeline::createPipelineInputAssemblyStateCreateInfo() const
 {
     return {
         vk::PipelineInputAssemblyStateCreateFlags(),
@@ -269,7 +277,7 @@ vk::PipelineViewportStateCreateInfo Pipeline::createPipelineViewportStateCreateI
     };
 }
 
-vk::PipelineRasterizationStateCreateInfo Pipeline::createPipelineRasterizationStateCreateInfo(void) const
+vk::PipelineRasterizationStateCreateInfo Pipeline::createPipelineRasterizationStateCreateInfo() const
 {
     return {
         vk::PipelineRasterizationStateCreateFlags(),
@@ -286,7 +294,7 @@ vk::PipelineRasterizationStateCreateInfo Pipeline::createPipelineRasterizationSt
     };
 }
 
-vk::PipelineMultisampleStateCreateInfo Pipeline::createPipelineMultisampleStateCreateInfo(void) const
+vk::PipelineMultisampleStateCreateInfo Pipeline::createPipelineMultisampleStateCreateInfo() const
 {
     return {
         vk::PipelineMultisampleStateCreateFlags(),
@@ -299,7 +307,7 @@ vk::PipelineMultisampleStateCreateInfo Pipeline::createPipelineMultisampleStateC
     };
 }
 
-std::vector<vk::PipelineColorBlendAttachmentState> Pipeline::createPipelineColorBlendAttachmentStates(void) const
+std::vector<vk::PipelineColorBlendAttachmentState> Pipeline::createPipelineColorBlendAttachmentStates() const
 {
     return {{
         VK_FALSE, // blendEnable
@@ -321,6 +329,28 @@ vk::PipelineColorBlendStateCreateInfo Pipeline::createPipelineColorBlendStateCre
         vk::LogicOp::eCopy,
         boost::numeric_cast<uint32_t>(attachements.size()), attachements.data()
     };
+}
+
+vk::Buffer Pipeline::createVertexBuffer(size_t vertexSize, size_t numberOfVertices) const
+{
+    vk::BufferCreateInfo vertexBufferCreateInfo = {
+        vk::BufferCreateFlags(),
+        vertexInputBindingDescription.stride * maximumNumberOfVertices,
+        vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::SharingMode::eExclusive
+    };
+    return device()->intrinsic.createBuffer(vertexBufferCreateInfo, nullptr);
+}
+
+void *Pipeline::mapVertexBuffer() const
+{
+    auto memoryRequirements = device()->intrinsic.getBufferMemoryRequirements(vertexBuffer);
+    return device()->intrinsic.mapMemory(vertexBufferMemory, 0, memoryRequirements.size, vk::MemoryMapFlags());
+}
+
+void Pipeline::unmapVertexBuffer() const
+{
+    device()->intrinsic.unmapMemory(vertexBufferMemory);
 }
 
 }}

@@ -37,7 +37,7 @@ struct QueueCapabilities {
         return handlesGraphics && handlesCompute;
     }
 
-    std::string str(void) const {
+    std::string str() const {
         return (boost::format("%c%c%c") %
             (handlesGraphics ? "G" : ".") %
             (handlesCompute ? "C" : ".") %
@@ -53,7 +53,7 @@ struct QueueCapabilities {
         );
     }
 
-    unsigned int score(void) const {
+    unsigned int score() const {
         unsigned int score = 0;
         score += handlesEverything() ? 10 : 0;
         score += handlesGraphicsAndPresent() ? 5 : 0;

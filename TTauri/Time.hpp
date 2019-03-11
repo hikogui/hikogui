@@ -29,7 +29,7 @@ public:
 #ifdef _WIN32
 	/*! Get a timestamp based on a high resolution system clock.
      */
-	static Timestamp now(void) {
+	static Timestamp now() {
 		FILETIME ts; 
 
 		GetSystemTimePreciseAsFileTime(&ts);
@@ -51,7 +51,7 @@ public:
 #else
     /*! Get a timestamp based on a high resolution system clock.
      */
-    static Timestamp now(void) {
+    static Timestamp now() {
         struct timespec ts;
 
         // This should never return an error, but it needs to be fast too.

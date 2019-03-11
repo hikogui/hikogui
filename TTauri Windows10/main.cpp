@@ -119,6 +119,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     rect.extent.height = windowRect.bottom - windowRect.bottom;
     window->setWindowRectangle(rect);
 
+    auto view1 = std::make_shared<ImageView>(app->resourceDir / "lena.png");
+    view1->setRectangle({ 100.0, 100.0, 1.0 }, { 200.0, 100.0, 0.0 });
+    auto view2 = std::make_shared<ImageView>(app->resourceDir / "lena.png");
+    view2->setRectangle({ 200.0, 200.0, 1.0 }, { 200.0, 100.0, 0.0 });
+    window->view->add(view1);
+    window->view->add(view2);
+
     if (!callbackData.instance->add(window)) {
         LOG_FATAL("Could not open window.");
         abort();

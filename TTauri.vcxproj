@@ -207,11 +207,10 @@
     <ClCompile Include="TTauri\GUI\Pipeline.cpp" />
     <ClCompile Include="TTauri\GUI\Queue.cpp" />
     <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp" />
-    <ClCompile Include="TTauri\GUI\Rectangle.cpp" />
-    <ClCompile Include="TTauri\GUI\Vector.cpp" />
     <ClCompile Include="TTauri\GUI\View.cpp" />
     <ClCompile Include="TTauri\GUI\vulkan_utils.cpp" />
     <ClCompile Include="TTauri\GUI\Window.cpp" />
+    <ClCompile Include="TTauri\GUI\WindowView.cpp" />
     <ClCompile Include="TTauri\Logging.cpp" />
     <ClCompile Include="TTauri\Time.cpp" />
     <ClCompile Include="TTauri\Timestamp.cpp" />
@@ -219,6 +218,7 @@
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp" />
     <ClInclude Include="TTauri\GUI\BackingPipeline.hpp" />
+    <ClInclude Include="TTauri\GUI\config.hpp" />
     <ClInclude Include="TTauri\GUI\Device.hpp" />
     <ClInclude Include="TTauri\GUI\GUI.hpp" />
     <ClInclude Include="TTauri\GUI\ImageView.hpp" />
@@ -226,11 +226,10 @@
     <ClInclude Include="TTauri\GUI\Pipeline.hpp" />
     <ClInclude Include="TTauri\GUI\Queue.hpp" />
     <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp" />
-    <ClInclude Include="TTauri\GUI\Rectangle.hpp" />
-    <ClInclude Include="TTauri\GUI\Vector.hpp" />
     <ClInclude Include="TTauri\GUI\View.hpp" />
     <ClInclude Include="TTauri\GUI\vulkan_utils.hpp" />
     <ClInclude Include="TTauri\GUI\Window.hpp" />
+    <ClInclude Include="TTauri\GUI\WindowView.hpp" />
     <ClInclude Include="TTauri\Logging.hpp" />
     <ClInclude Include="TTauri\Time.hpp" />
     <ClInclude Include="TTauri\Timestamp.hpp" />
