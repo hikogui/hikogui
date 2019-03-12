@@ -20,7 +20,7 @@ ImageView::~ImageView()
 {
 }
 
-off_t ImageView::BackingPipelineRender(BackingPipeline::Vertex *vertices, off_t offset, size_t size)
+size_t ImageView::BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size)
 {
     if (offset + 6 >= size) {
         BOOST_THROW_EXCEPTION(BackingPipeline::Delegate::Error());

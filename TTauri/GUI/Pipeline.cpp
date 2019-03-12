@@ -18,6 +18,8 @@
 namespace TTauri {
 namespace GUI {
 
+using namespace std;
+
 Pipeline::Pipeline(Window *window) :
     window(window)
 {
@@ -112,9 +114,14 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent, si
 
     intrinsic = device()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
 
-    vertexBuffer = createVertexBuffer(vertexInputBindingDescription.stride, maximumNumberOfVertices);
-    vertexBufferMemory = device()->allocateDeviceMemoryAndBind(vertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible);
-
+    vertexBuffers = createVertexBuffers(window->swapchainFramebuffers.size(), vertexInputBindingDescription.stride * maximumNumberOfVertices);
+    auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+    vertexBufferMemory = get<0>(memoryOffsetsAndSizes);
+    vertexBufferOffsets = get<1>(memoryOffsetsAndSizes);
+    vertexBufferSizes = get<2>(memoryOffsetsAndSizes);
+    vertexBufferDataSize = vertexBufferOffsets.back() + vertexBufferSizes.back();
+    vertexBufferData = device()->intrinsic.mapMemory(vertexBufferMemory, 0, vertexBufferDataSize, vk::MemoryMapFlags());
+    
     // Create a command buffer for each swapchain framebuffer, this way we can keep the same command in the command
     // buffer as long as no widgets are being added or removed (same number of triangles being rendered).
     auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
@@ -142,11 +149,15 @@ void Pipeline::teardownPipeline()
         device()->intrinsic.destroy(renderFinishedSemaphores[i]);
     }
 
+    device()->intrinsic.unmapMemory(vertexBufferMemory);
+    device()->intrinsic.free(vertexBufferMemory);
+    for (auto buffer : vertexBuffers) {
+        device()->intrinsic.destroy(buffer);
+    }
+
     device()->intrinsic.freeCommandBuffers(device()->graphicQueue->commandPool, commandBuffers);
     commandBuffers.clear();
 
-    device()->intrinsic.destroy(vertexBuffer);
-    device()->intrinsic.free(vertexBufferMemory);
     device()->intrinsic.destroy(intrinsic);
     device()->intrinsic.destroy(pipelineLayout);
     for (auto shaderModule: shaderModules) {
@@ -186,6 +197,13 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
     commandBuffers[imageIndex].beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 
     commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
+
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers[imageIndex] };
+    std::vector<vk::DeviceSize> tmpOffsets;
+    for (size_t i = 0; i < tmpVertexBuffers.size(); i++) {
+        tmpOffsets.push_back(0);
+    }
+    commandBuffers[imageIndex].bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
     drawInCommandBuffer(commandBuffers[imageIndex]);
     
@@ -331,32 +349,20 @@ vk::PipelineColorBlendStateCreateInfo Pipeline::createPipelineColorBlendStateCre
     };
 }
 
-vk::Buffer Pipeline::createVertexBuffer(size_t vertexSize, size_t numberOfVertices) const
+std::vector<vk::Buffer> Pipeline::createVertexBuffers(size_t nrBuffers, size_t bufferSize) const
 {
-    vk::BufferCreateInfo vertexBufferCreateInfo = {
-        vk::BufferCreateFlags(),
-        vertexInputBindingDescription.stride * maximumNumberOfVertices,
-        vk::BufferUsageFlagBits::eVertexBuffer,
-        vk::SharingMode::eExclusive
-    };
-    return device()->intrinsic.createBuffer(vertexBufferCreateInfo, nullptr);
-}
-
-void *Pipeline::mapVertexBuffer() const
-{
-    auto memoryRequirements = device()->intrinsic.getBufferMemoryRequirements(vertexBuffer);
-    return device()->intrinsic.mapMemory(vertexBufferMemory, 0, memoryRequirements.size, vk::MemoryMapFlags());
-}
-
-void Pipeline::unmapVertexBuffer() const
-{
-    auto memoryRequirements = device()->intrinsic.getBufferMemoryRequirements(vertexBuffer);
-
-    std::vector<vk::MappedMemoryRange> mappedMemoryRanges = {
-        {vertexBufferMemory, 0, memoryRequirements.size}
-    };
-    device()->intrinsic.flushMappedMemoryRanges(mappedMemoryRanges);
-    device()->intrinsic.unmapMemory(vertexBufferMemory);
+    std::vector<vk::Buffer> buffers;
+    for (size_t i = 0; i < nrBuffers; i++) {
+        vk::BufferCreateInfo vertexBufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            bufferSize,
+            vk::BufferUsageFlagBits::eVertexBuffer,
+            vk::SharingMode::eExclusive
+        };
+        auto buffer = device()->intrinsic.createBuffer(vertexBufferCreateInfo, nullptr);
+        buffers.push_back(buffer);
+    }
+    return buffers;
 }
 
 }}

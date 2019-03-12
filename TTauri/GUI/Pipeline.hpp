@@ -26,13 +26,7 @@ public:
 
     Window *window;
 
-    std::vector<vk::CommandBuffer> commandBuffers;
-    std::vector<bool> commandBuffersValid;
-    std::vector<vk::Semaphore> renderFinishedSemaphores;
-
-    boost::filesystem::path vertexShaderPath;
-    boost::filesystem::path fragmentShaderPath;
-
+ 
     Pipeline(Window *window);
     virtual ~Pipeline();
 
@@ -62,6 +56,20 @@ public:
     void validateCommandBuffer(uint32_t imageIndex);
 
 protected:
+    std::vector<vk::CommandBuffer> commandBuffers;
+    std::vector<bool> commandBuffersValid;
+    std::vector<vk::Semaphore> renderFinishedSemaphores;
+
+    std::vector<vk::Buffer> vertexBuffers;
+    vk::DeviceMemory vertexBufferMemory;
+    std::vector<size_t> vertexBufferOffsets;
+    std::vector<size_t> vertexBufferSizes;
+    size_t vertexBufferDataSize;
+    void *vertexBufferData;
+
+    boost::filesystem::path vertexShaderPath;
+    boost::filesystem::path fragmentShaderPath;
+
     vk::RenderPass renderPass;
     std::vector<vk::ShaderModule> shaderModules;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
@@ -80,8 +88,7 @@ protected:
     vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
     size_t maximumNumberOfTriangles;
     size_t maximumNumberOfVertices;
-    vk::Buffer vertexBuffer;
-    vk::DeviceMemory vertexBufferMemory;
+    
 
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) = 0;
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
@@ -100,9 +107,8 @@ protected:
     virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo() const;
     virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates() const;
     virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
-    virtual vk::Buffer createVertexBuffer(size_t vertexSize, size_t numberOfVertices) const;
-    void *mapVertexBuffer() const;
-    void unmapVertexBuffer() const;
+    virtual std::vector<vk::Buffer> createVertexBuffers(size_t nrBuffers, size_t bufferSize) const;
+
 };
 
 }}

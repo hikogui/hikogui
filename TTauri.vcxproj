@@ -233,6 +233,7 @@
     <ClInclude Include="TTauri\Logging.hpp" />
     <ClInclude Include="TTauri\Time.hpp" />
     <ClInclude Include="TTauri\Timestamp.hpp" />
+    <ClInclude Include="TTauri\utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TTauri\GUI\BackingPipeline.frag" />

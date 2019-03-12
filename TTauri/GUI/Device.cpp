@@ -10,6 +10,8 @@
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
 #include "TTauri/Logging.hpp"
+#include "TTauri/utils.hpp"
+#include <boost/range/combine.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
 #include <tuple>
@@ -334,17 +336,43 @@ vk::DeviceMemory Device::allocateDeviceMemory(size_t size, uint32_t validMemoryT
     return intrinsic.allocateMemory(memoryAllocateInfo, nullptr);
 }
 
-vk::DeviceMemory Device::allocateDeviceMemory(vk::Buffer buffer, vk::MemoryPropertyFlags properties)
+std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device::allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
 {
-    auto memoryRequirements = intrinsic.getBufferMemoryRequirements(buffer);
-    return allocateDeviceMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, properties);
+    std::vector<size_t> offsets;
+    std::vector<size_t> sizes;
+
+    uint32_t memoryTypeBits = 0;
+    size_t offset = 0;
+    size_t size = 0;
+    for (auto buffer : buffers) {
+        auto memoryRequirements = intrinsic.getBufferMemoryRequirements(buffer);
+
+        // Align next buffer on offset.
+        offset = TTauri::align(offset, memoryRequirements.alignment);
+        offsets.push_back(offset);
+
+        size = offset + memoryRequirements.size;
+        sizes.push_back(memoryRequirements.size);
+
+       memoryTypeBits |= memoryRequirements.memoryTypeBits;
+    }
+    auto memory = allocateDeviceMemory(size, memoryTypeBits, properties);
+
+    return { memory, offsets, sizes };
 }
 
-vk::DeviceMemory Device::allocateDeviceMemoryAndBind(vk::Buffer buffer, vk::MemoryPropertyFlags properties)
+std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device::allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
 {
-    auto memory = allocateDeviceMemory(buffer, properties);
-    intrinsic.bindBufferMemory(buffer, memory, 0);
-    return memory;
+    auto memoryOffsetsAndSizes = allocateDeviceMemory(buffers, properties);
+    auto memory = get<0>(memoryOffsetsAndSizes);
+    auto offsets = get<1>(memoryOffsetsAndSizes);
+    for (auto bufferAndOffset : boost::combine(buffers, offsets)) {
+        auto buffer = bufferAndOffset.get<0>();
+        auto offset = bufferAndOffset.get<1>();
+        intrinsic.bindBufferMemory(buffer, memory, offset);
+    }
+
+    return memoryOffsetsAndSizes;
 }
 
 }}

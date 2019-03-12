@@ -61,7 +61,7 @@ public:
     public:
         struct Error : virtual boost::exception, virtual std::exception {};
 
-        virtual off_t BackingPipelineRender(Vertex *vertices, off_t offset, size_t size) = 0;
+        virtual size_t BackingPipelineRender(Vertex *vertices, size_t offset, size_t size) = 0;
     };
 
 

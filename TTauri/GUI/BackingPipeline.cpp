@@ -28,10 +28,14 @@ BackingPipeline::~BackingPipeline()
 
 vk::Semaphore BackingPipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto vertices = static_cast<Vertex *>(mapVertexBuffer());
+    auto vertexDataOffset = vertexBufferOffsets[imageIndex];
+    auto vertexDataSize = vertexBufferSizes[imageIndex];
+    auto vertices = reinterpret_cast<Vertex *>(reinterpret_cast<char *>(vertexBufferData) + vertexDataOffset);
+
     auto tmpNumberOfVertices = window->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices);
-    unmapVertexBuffer();
-  
+
+    //device()->intrinsic.flushMappedMemoryRanges({{vertexBufferMemory, vertexDataOffset, vertexDataSize}});
+
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers();
     }
@@ -45,13 +49,6 @@ void BackingPipeline::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
     pushConstants.windowExtent = { scissors[0].extent.width , scissors[0].extent.height };
     pushConstants.viewportScale = { 2.0 / scissors[0].extent.width, 2.0 / scissors[0].extent.height };
     commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants), static_cast<const void *>(&pushConstants));
-
-    std::vector<vk::Buffer> vertexBuffers = { vertexBuffer };
-    std::vector<vk::DeviceSize> offsets;
-    for (size_t i = 0; i < vertexBuffers.size(); i++) {
-        offsets.push_back(0);
-    }
-    commandBuffer.bindVertexBuffers(0, vertexBuffers, offsets);
 
     commandBuffer.draw(
         boost::numeric_cast<uint32_t>(numberOfVertices),
@@ -92,6 +89,5 @@ std::vector<vk::VertexInputAttributeDescription> BackingPipeline::createVertexIn
 {
     return Vertex::inputAttributeDescriptions();
 }
-
 
 }}

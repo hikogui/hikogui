@@ -14,7 +14,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <mutex>
 #include <unordered_set>
-
+#include <tuple>
 
 namespace TTauri {
 namespace GUI {
@@ -138,8 +138,8 @@ public:
 
     uint32_t findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
     vk::DeviceMemory allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
-    vk::DeviceMemory allocateDeviceMemory(vk::Buffer buffer, vk::MemoryPropertyFlags properties);
-    vk::DeviceMemory allocateDeviceMemoryAndBind(vk::Buffer buffer, vk::MemoryPropertyFlags properties);
+    std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+    std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
 };
 
 }}

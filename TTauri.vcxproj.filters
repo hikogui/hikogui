@@ -116,6 +116,9 @@
     <ClInclude Include="TTauri\GUI\WindowView.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="TTauri\utils.hpp">
+      <Filter>TTauri</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="TTauri\GUI\BackingPipeline.frag">

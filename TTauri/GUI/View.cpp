@@ -46,7 +46,7 @@ void View::add(std::shared_ptr<View> view)
 }
 
 
-off_t View::BackingPipelineRender(BackingPipeline::Vertex *vertices, off_t offset, size_t size)
+size_t View::BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size)
 {
     for (auto child : children) {
         offset = child->BackingPipelineRender(vertices, offset, size);
