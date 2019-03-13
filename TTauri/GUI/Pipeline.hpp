@@ -47,13 +47,13 @@ public:
      */
     void validateCommandBuffer(uint32_t imageIndex);
 
-    void Pipeline::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
+    void buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
 
-    void Pipeline::teardownForDeviceChange();
+    void teardownForDeviceChange();
 
-    void Pipeline::buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
+    void buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
 
-    void Pipeline::teardownForSwapchainChange();
+    void teardownForSwapchainChange();
 
 
 protected:

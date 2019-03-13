@@ -77,7 +77,8 @@ void Pipeline::buildVertexBuffers(size_t nrFrameBuffers)
     vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
 
     vertexBuffers = createVertexBuffers(nrFrameBuffers, vertexInputBindingDescription.stride * maximumNumberOfVertices());
-    auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+    //auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+    auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible);
     vertexBufferMemory = get<0>(memoryOffsetsAndSizes);
     vertexBufferOffsets = get<1>(memoryOffsetsAndSizes);
     vertexBufferSizes = get<2>(memoryOffsetsAndSizes);
