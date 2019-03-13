@@ -56,25 +56,96 @@ vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore
     return renderFinishedSemaphores[imageIndex];
 }
 
-/*! Build the swapchain, frame buffers and pipeline.
- */
-void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent, size_t maximumNumberOfTriangles)
+void Pipeline::buildShaders()
+{
+    shaderModules = createShaderModules();
+    shaderStages = createShaderStages(shaderModules);
+}
+
+void Pipeline::teardownShaders()
+{
+    for (auto shaderModule : shaderModules) {
+        device()->intrinsic.destroy(shaderModule);
+    }
+    shaderModules.clear();
+    shaderStages.clear();
+}
+
+void Pipeline::buildVertexBuffers(size_t nrFrameBuffers)
+{
+    vertexInputBindingDescription = createVertexInputBindingDescription();
+    vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
+
+    vertexBuffers = createVertexBuffers(nrFrameBuffers, vertexInputBindingDescription.stride * maximumNumberOfVertices());
+    auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+    vertexBufferMemory = get<0>(memoryOffsetsAndSizes);
+    vertexBufferOffsets = get<1>(memoryOffsetsAndSizes);
+    vertexBufferSizes = get<2>(memoryOffsetsAndSizes);
+    vertexBufferDataSize = vertexBufferOffsets.back() + vertexBufferSizes.back();
+    vertexBufferData = device()->intrinsic.mapMemory(vertexBufferMemory, 0, vertexBufferDataSize, vk::MemoryMapFlags());
+}
+
+void Pipeline::teardownVertexBuffers()
+{
+    device()->intrinsic.unmapMemory(vertexBufferMemory);
+    vertexBufferData = nullptr;
+
+    device()->intrinsic.free(vertexBufferMemory);
+    vertexBufferMemory = vk::DeviceMemory();
+
+    for (auto buffer : vertexBuffers) {
+        device()->intrinsic.destroy(buffer);
+    }
+    vertexBuffers.clear();
+    vertexBufferOffsets.clear();
+    vertexBufferSizes.clear();
+}
+
+void Pipeline::buildCommandBuffers(size_t nrFrameBuffers)
+{
+    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
+        device()->graphicQueue->commandPool,
+        vk::CommandBufferLevel::ePrimary,
+        boost::numeric_cast<uint32_t>(nrFrameBuffers)
+    );
+    commandBuffers = device()->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
+
+    commandBuffersValid.resize(nrFrameBuffers);
+    invalidateCommandBuffers();
+}
+
+void Pipeline::teardownCommandBuffers()
+{
+    device()->intrinsic.freeCommandBuffers(device()->graphicQueue->commandPool, commandBuffers);
+    commandBuffers.clear();
+    commandBuffersValid.clear();
+}
+
+void Pipeline::buildSemaphores(size_t nrFrameBuffers)
+{
+    auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
+    renderFinishedSemaphores.resize(nrFrameBuffers);
+    for (size_t i = 0; i < nrFrameBuffers; i++) {
+        renderFinishedSemaphores[i] = device()->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+    }
+}
+
+void Pipeline::teardownSemaphores()
+{
+    for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
+        device()->intrinsic.destroy(renderFinishedSemaphores[i]);
+    }
+    renderFinishedSemaphores.clear();
+}
+
+void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
 {
     LOG_INFO("buildPipeline (%i, %i)") % extent.width % extent.height;
 
-    this->maximumNumberOfTriangles = maximumNumberOfTriangles;
-    maximumNumberOfVertices = maximumNumberOfTriangles * 3;
-
     renderPass = _renderPass;
-
-    shaderModules = createShaderModules();
-
-    shaderStages = createShaderStages(shaderModules);
 
     pipelineLayout = createPipelineLayout();
 
-    vertexInputBindingDescription = createVertexInputBindingDescription();
-    vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
     pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo(vertexInputBindingDescription, vertexInputAttributeDescriptions);
 
     pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
@@ -113,56 +184,52 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent, si
     };
 
     intrinsic = device()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+ }
 
-    vertexBuffers = createVertexBuffers(window->swapchainFramebuffers.size(), vertexInputBindingDescription.stride * maximumNumberOfVertices);
-    auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-    vertexBufferMemory = get<0>(memoryOffsetsAndSizes);
-    vertexBufferOffsets = get<1>(memoryOffsetsAndSizes);
-    vertexBufferSizes = get<2>(memoryOffsetsAndSizes);
-    vertexBufferDataSize = vertexBufferOffsets.back() + vertexBufferSizes.back();
-    vertexBufferData = device()->intrinsic.mapMemory(vertexBufferMemory, 0, vertexBufferDataSize, vk::MemoryMapFlags());
-    
-    // Create a command buffer for each swapchain framebuffer, this way we can keep the same command in the command
-    // buffer as long as no widgets are being added or removed (same number of triangles being rendered).
-    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        device()->graphicQueue->commandPool,
-        vk::CommandBufferLevel::ePrimary,
-        boost::numeric_cast<uint32_t>(window->swapchainFramebuffers.size())
-    );
-    commandBuffers = device()->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
-
-    commandBuffersValid.resize(commandBuffers.size());
-    invalidateCommandBuffers();
-
-    auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-    renderFinishedSemaphores.resize(commandBuffers.size());
-    for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
-        renderFinishedSemaphores[i] = device()->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
-    }
-}
-
-/*! Teardown the swapchain, frame buffers and pipeline.
- */
 void Pipeline::teardownPipeline()
 {
-    for (size_t i = 0; i <  renderFinishedSemaphores.size(); i++) {
-        device()->intrinsic.destroy(renderFinishedSemaphores[i]);
-    }
-
-    device()->intrinsic.unmapMemory(vertexBufferMemory);
-    device()->intrinsic.free(vertexBufferMemory);
-    for (auto buffer : vertexBuffers) {
-        device()->intrinsic.destroy(buffer);
-    }
-
-    device()->intrinsic.freeCommandBuffers(device()->graphicQueue->commandPool, commandBuffers);
-    commandBuffers.clear();
-
+ 
     device()->intrinsic.destroy(intrinsic);
     device()->intrinsic.destroy(pipelineLayout);
-    for (auto shaderModule: shaderModules) {
-        device()->intrinsic.destroy(shaderModule);
+ 
+}
+
+void Pipeline::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
+{
+    buildShaders();
+    buildVertexBuffers(nrFrameBuffers);
+    buildCommandBuffers(nrFrameBuffers);
+    buildSemaphores(nrFrameBuffers);
+    buildPipeline(renderPass, extent);
+}
+
+void Pipeline::teardownForDeviceChange()
+{
+    teardownPipeline();
+    teardownSemaphores();
+    teardownCommandBuffers();
+    teardownVertexBuffers();
+    teardownShaders();
+}
+
+void Pipeline::buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
+{
+    if (nrFrameBuffers != commandBuffers.size()) {
+        teardownSemaphores();
+        teardownCommandBuffers();
+        teardownVertexBuffers();
+
+        buildVertexBuffers(nrFrameBuffers);
+        buildCommandBuffers(nrFrameBuffers);
+        buildSemaphores(nrFrameBuffers);
     }
+    invalidateCommandBuffers();
+    buildPipeline(renderPass, extent);
+}
+
+void Pipeline::teardownForSwapchainChange()
+{
+    teardownPipeline();
 }
 
 void Pipeline::invalidateCommandBuffers()

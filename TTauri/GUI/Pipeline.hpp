@@ -36,14 +36,6 @@ public:
      */
     virtual vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
 
-    /*! Build the swapchain, frame buffers and pipeline.
-     */
-    void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent, size_t maximumNumberOfTriangles);
-
-    /*! Teardown the swapchain, frame buffers and pipeline.
-     */
-    void teardownPipeline();
-
     /*! Invalidate all command buffers.
      * This is used when the command buffer needs to be recreated due to changes in views.
      */
@@ -54,6 +46,15 @@ public:
      * \param imageIndex The index of the command buffer to validate.
      */
     void validateCommandBuffer(uint32_t imageIndex);
+
+    void Pipeline::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
+
+    void Pipeline::teardownForDeviceChange();
+
+    void Pipeline::buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
+
+    void Pipeline::teardownForSwapchainChange();
+
 
 protected:
     std::vector<vk::CommandBuffer> commandBuffers;
@@ -86,10 +87,7 @@ protected:
     std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates;
     vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
     vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
-    size_t maximumNumberOfTriangles;
-    size_t maximumNumberOfVertices;
-    
-
+  
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) = 0;
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
     virtual std::vector<vk::ShaderModule> createShaderModules() const = 0;
@@ -107,8 +105,19 @@ protected:
     virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo() const;
     virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates() const;
     virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
+    virtual size_t maximumNumberOfVertices() const = 0;
     virtual std::vector<vk::Buffer> createVertexBuffers(size_t nrBuffers, size_t bufferSize) const;
 
+    virtual void buildShaders();
+    virtual void teardownShaders();
+    virtual void buildVertexBuffers(size_t nrFrameBuffers);
+    virtual void teardownVertexBuffers();
+    virtual void buildCommandBuffers(size_t nrFrameBuffers);
+    virtual void teardownCommandBuffers();
+    virtual void buildSemaphores(size_t nrFrameBuffers);
+    virtual void teardownSemaphores();
+    virtual void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent);
+    virtual void teardownPipeline();
 };
 
 }}

@@ -119,11 +119,11 @@ public:
 
     /*! Build the swapchain, frame buffers and pipeline.
      */
-    void buildSwapchainAndPipeline();
+    void buildForDeviceChange();
 
     /*! Teardown the swapchain, frame buffers and pipeline.
      */
-    void teardownSwapchainAndPipeline();
+    void teardownForDeviceChange();
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
@@ -142,10 +142,6 @@ public:
      * \param blockOnVSync May block on VSync.
      */
     void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
-
-    /*! Wait until everything has been drawn.
-     */
-    void waitIdle();
 
     /*! Maintanance
      * Maintain the window on a low performance thread.
@@ -168,14 +164,16 @@ private:
     bool render(bool blockOnVSync);
     void buildSemaphores();
     void teardownSemaphores();
-    void buildSwapchain();
-    void teardownSwapchain();
+    vk::SwapchainKHR buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
     void buildRenderPasses();
     void teardownRenderPasses();
     void buildFramebuffers();
     void teardownFramebuffers();
     void buildPipelines();
     void teardownPipelines();
+    void rebuildForSwapchainChange();
+    void waitIdle();
+    std::pair<uint32_t, vk::Extent2D> getImageCountAndImageExtent();
 };
 
 }}

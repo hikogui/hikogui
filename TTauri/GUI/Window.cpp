@@ -45,58 +45,66 @@ void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
     }
 }
 
-void Window::waitIdle()
-{
-    LOG_INFO("waitIdle");
-    device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-    LOG_INFO("/waitIdle");
-}
 
 void Window::maintenance()
 {
     std::scoped_lock lock(stateMutex);
 
     if (state == WindowState::SWAPCHAIN_OUT_OF_DATE) {
-        LOG_INFO("Rebuilding swapchain 1. %i") % static_cast<int>(state);
-
-        teardownSwapchainAndPipeline();
-         LOG_INFO("Rebuilding swapchain 2. %i") % static_cast<int>(state);
-       buildSwapchainAndPipeline();
-         LOG_INFO("Rebuilding swapchain 3. %i") % static_cast<int>(state);
+        rebuildForSwapchainChange();
+        state = WindowState::READY_TO_DRAW;
    }
 }
 
-void Window::buildSwapchainAndPipeline()
+void Window::buildForDeviceChange()
 {
     std::scoped_lock lock(stateMutex);
 
     if (state == WindowState::LINKED_TO_DEVICE) {
-        buildSwapchain();
+        swapchain = buildSwapchain();
         buildRenderPasses();
         buildFramebuffers();
-        buildPipelines();
         buildSemaphores();
+        backingPipeline->buildForDeviceChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
+
         state = WindowState::READY_TO_DRAW;
     } else {
         BOOST_THROW_EXCEPTION(Window::StateError());
     }
 }
 
-void Window::teardownSwapchainAndPipeline()
+void Window::teardownForDeviceChange()
 {
     std::scoped_lock lock(stateMutex);
 
     if (state == WindowState::READY_TO_DRAW || state == WindowState::SWAPCHAIN_OUT_OF_DATE) {
         waitIdle();
+        backingPipeline->teardownForDeviceChange();
         teardownSemaphores();
-        teardownPipelines();
         teardownFramebuffers();
         teardownRenderPasses();
-        teardownSwapchain();
+        device->intrinsic.destroy(swapchain);
         state = WindowState::LINKED_TO_DEVICE;
     } else {
         BOOST_THROW_EXCEPTION(Window::StateError());
     }
+}
+
+void Window::rebuildForSwapchainChange()
+{
+    waitIdle();
+
+    backingPipeline->teardownForSwapchainChange();
+    teardownFramebuffers();
+
+    swapchain = buildSwapchain(swapchain);
+    buildFramebuffers();
+    backingPipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
+}
+
+void Window::waitIdle()
+{
+    device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
 void Window::setDevice(Device *device) {
@@ -113,10 +121,10 @@ void Window::setDevice(Device *device) {
             }
         }
 
-        buildSwapchainAndPipeline();
+        buildForDeviceChange();
 
     } else {
-        teardownSwapchainAndPipeline();
+        teardownForDeviceChange();
 
         {
             std::scoped_lock lock(stateMutex);
@@ -135,8 +143,32 @@ void Window::setDevice(Device *device) {
 #pragma mark "Private"
 // Private methods don't need to lock.
 
+std::pair<uint32_t, vk::Extent2D> Window::getImageCountAndImageExtent()
+{
+    auto surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
-void Window::buildSwapchain()
+    uint32_t imageCount;
+    if (surfaceCapabilities.maxImageCount) {
+        imageCount = std::clamp(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+
+    } else {
+        imageCount = std::max(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount);
+    }
+
+    vk::Extent2D imageExtent;
+    if (surfaceCapabilities.currentExtent.width == std::numeric_limits<uint32_t>::max() && surfaceCapabilities.currentExtent.height == std::numeric_limits<uint32_t>::max()) {
+        LOG_WARNING("getSurfaceCapabilitiesKHR() does not supply currentExtent");
+        imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
+        imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
+
+    } else {
+        imageExtent = surfaceCapabilities.currentExtent;
+    }
+
+    return { imageCount, imageExtent };
+}
+
+vk::SwapchainKHR Window::buildSwapchain(vk::SwapchainKHR oldSwapchain)
 {
     // Figure out the best way of sharing data between the present and graphic queues.
     vk::SharingMode sharingMode;
@@ -160,16 +192,10 @@ void Window::buildSwapchain()
     uint32_t imageArrayLayers = 1;
     vk::Bool32 clipped = VK_TRUE;
 
-    vk::Extent2D previousImageExtent;
-
 retry:
-    auto surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
-    auto imageCount = std::clamp(surfaceCapabilities.minImageCount + 1, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
-    vk::Extent2D imageExtent = surfaceCapabilities.currentExtent;
-    if (imageExtent.width == std::numeric_limits<uint32_t>::max() || imageExtent.height == std::numeric_limits<uint32_t>::max()) {
-        imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-        imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-    }
+    auto imageCountAndImageExtent = getImageCountAndImageExtent();
+    auto imageCount = imageCountAndImageExtent.first;
+    auto imageExtent = imageCountAndImageExtent.second;
 
     swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
         vk::SwapchainCreateFlagsKHR(),
@@ -186,24 +212,27 @@ retry:
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
         device->bestSurfacePresentMode,
-        clipped
+        clipped,
+        oldSwapchain
     );
 
-    vk::Result result = device->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
+    vk::SwapchainKHR newSwapchain;
+    vk::Result result = device->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
+    // No matter what, the oldSwapchain has been retired after createSwapchainKHR().
+    device->intrinsic.destroy(oldSwapchain);
+    oldSwapchain = vk::SwapchainKHR();
+
     if (result != vk::Result::eSuccess) {
         LOG_WARNING("Could not create swapchain, retrying.");
         goto retry;
     }
 
-    auto checkSurfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
-    vk::Extent2D checkImageExtent = checkSurfaceCapabilities.currentExtent;
-    if (checkImageExtent.width == std::numeric_limits<uint32_t>::max() || checkImageExtent.height == std::numeric_limits<uint32_t>::max()) {
-        checkImageExtent.width = std::clamp(windowRectangle.extent.width, checkSurfaceCapabilities.minImageExtent.width, checkSurfaceCapabilities.maxImageExtent.width);
-        checkImageExtent.height = std::clamp(windowRectangle.extent.height, checkSurfaceCapabilities.minImageExtent.height, checkSurfaceCapabilities.maxImageExtent.height);
-    }
-
+    auto checkImageCountAndImageExtent = getImageCountAndImageExtent();
+    auto checkImageExtent = checkImageCountAndImageExtent.second;
     if (imageExtent != checkImageExtent) {
         LOG_WARNING("Surface extent changed while creating swapchain, retrying.");
+        // The newSwapchain was created succesfully, it is just of the wrong size so use it as the next oldSwapchain.
+        oldSwapchain = newSwapchain;
         goto retry;
     }
 
@@ -217,13 +246,7 @@ retry:
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
 
-}
-
-void Window::teardownSwapchain()
-{
-    LOG_INFO("Teardown swapchain");
-
-    device->intrinsic.destroy(swapchain);
+    return newSwapchain;
 }
 
 void Window::buildFramebuffers()
@@ -342,15 +365,9 @@ void Window::teardownRenderPasses()
     device->intrinsic.destroy(followUpRenderPass);
 }
 
-void Window::buildPipelines()
-{
-    backingPipeline->buildPipeline(firstRenderPass, swapchainCreateInfo.imageExtent, maximumNumberOfTriangles);
-}
 
-void Window::teardownPipelines()
-{
-    backingPipeline->teardownPipeline();
-}
+
+
 
 void Window::buildSemaphores()
 {
@@ -380,9 +397,11 @@ bool Window::render(bool blockOnVSync)
     switch (result) {
     case vk::Result::eSuccess:
         break;
-    case vk::Result::eSuboptimalKHR: /* FALLTHROUGH */
+    case vk::Result::eSuboptimalKHR:
+        LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
+        return false;
     case vk::Result::eErrorOutOfDateKHR:
-        // SwapChain needs to be rebuild.
+        LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
         return false;
     case vk::Result::eTimeout:
         // Don't render, we didn't receive an image.
@@ -412,9 +431,11 @@ bool Window::render(bool blockOnVSync)
     switch (result) {
     case vk::Result::eSuccess:
         break;
-    case vk::Result::eSuboptimalKHR: /* FALLTHROUGH */
+    case vk::Result::eSuboptimalKHR:
+        LOG_INFO("presentKHR() eSuboptimalKHR");
+        return false;
     case vk::Result::eErrorOutOfDateKHR:
-        // SwapChain needs to be rebuild.
+        LOG_INFO("presentKHR() eErrorOutOfDateKHR");
         return false;
     default:
         BOOST_THROW_EXCEPTION(Window::SwapChainError());

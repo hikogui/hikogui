@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Pipeline.hpp"
+#include "config.hpp"
 
 namespace TTauri {
 namespace GUI {
@@ -80,6 +81,8 @@ protected:
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const;
+    virtual size_t maximumNumberOfVertices() const { return backingPipelineMaximumNumberOfVertices; }
+
 };
 
 }}

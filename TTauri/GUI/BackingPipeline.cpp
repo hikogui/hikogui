@@ -32,7 +32,7 @@ vk::Semaphore BackingPipeline::render(uint32_t imageIndex, vk::Semaphore inputSe
     auto vertexDataSize = vertexBufferSizes[imageIndex];
     auto vertices = reinterpret_cast<Vertex *>(reinterpret_cast<char *>(vertexBufferData) + vertexDataOffset);
 
-    auto tmpNumberOfVertices = window->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices);
+    auto tmpNumberOfVertices = window->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices());
 
     //device()->intrinsic.flushMappedMemoryRanges({{vertexBufferMemory, vertexDataOffset, vertexDataSize}});
 
