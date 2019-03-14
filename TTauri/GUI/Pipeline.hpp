@@ -8,14 +8,15 @@
 
 #pragma once
 
-#include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
+#include <vulkan/vulkan.hpp>
+
 #include <boost/filesystem.hpp>
+
 #include <string>
 #include <vector>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri { namespace GUI {
 
 class Device;
 class Window;
@@ -26,7 +27,6 @@ public:
 
     Window *window;
 
- 
     Pipeline(Window *window);
     virtual ~Pipeline();
 
@@ -54,7 +54,6 @@ public:
     void buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
 
     void teardownForSwapchainChange();
-
 
 protected:
     std::vector<vk::CommandBuffer> commandBuffers;
@@ -87,14 +86,15 @@ protected:
     std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates;
     vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
     vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
-  
+
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) = 0;
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
     virtual std::vector<vk::ShaderModule> createShaderModules() const = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
     virtual vk::PipelineLayout createPipelineLayout() const;
-    virtual vk::PipelineVertexInputStateCreateInfo createPipelineVertexInputStateCreateInfo(const vk::VertexInputBindingDescription &vertexBindingDescriptions, const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const;
+    virtual vk::PipelineVertexInputStateCreateInfo createPipelineVertexInputStateCreateInfo(
+        const vk::VertexInputBindingDescription &vertexBindingDescriptions, const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
     virtual vk::PipelineInputAssemblyStateCreateInfo createPipelineInputAssemblyStateCreateInfo() const;

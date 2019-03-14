@@ -63,6 +63,12 @@
     <ClCompile Include="TTauri\GUI\WindowView.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\GUI\Window_win32.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\Application_win32.cpp">
+      <Filter>TTauri</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
@@ -117,6 +123,12 @@
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\utils.hpp">
+      <Filter>TTauri</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\Window_win32.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Application_win32.hpp">
       <Filter>TTauri</Filter>
     </ClInclude>
   </ItemGroup>

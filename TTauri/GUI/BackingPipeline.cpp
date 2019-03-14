@@ -61,8 +61,8 @@ void BackingPipeline::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 std::vector<vk::ShaderModule> BackingPipeline::createShaderModules() const
 {
     return {
-        loadShader(app->getPathToResource("BackingPipeline.vert.spv")),
-        loadShader(app->getPathToResource("BackingPipeline.frag.spv"))
+        loadShader(Application::shared->resourceDir / "BackingPipeline.vert.spv"),
+        loadShader(Application::shared->resourceDir / "BackingPipeline.frag.spv")
     };
 }
 

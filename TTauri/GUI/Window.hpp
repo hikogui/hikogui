@@ -10,38 +10,19 @@
 
 #include "BackingPipeline.hpp"
 #include "View.hpp"
+
+#include <unordered_set>
 #include <vulkan/vulkan.hpp>
+
 #include <memory>
 #include <mutex>
-#include <unordered_set>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri { namespace GUI {
 
 class Instance;
 class Device;
 
 
-enum class WindowType {
-    WINDOW,
-    PANEL,
-    FULLSCREEN,
-};
-
-enum class SubpixelLayout {
-    NONE,
-    RGB_LEFT_TO_RIGHT,
-    RGB_RIGHT_TO_LEFT,
-    RGB_TOP_TO_BOTTOM,
-    RGB_BOTTOM_TO_TOP,
-};
-
-enum class WindowState {
-    NO_DEVICE,
-    LINKED_TO_DEVICE,
-    SWAPCHAIN_OUT_OF_DATE,
-    READY_TO_DRAW,
-};
 
 class View;
 
@@ -52,14 +33,30 @@ class View;
  */
 class Window {
 private:
+    enum class State {
+        NO_DEVICE, //!< Can transition to: LINKED_TO_DEVICE
+        LINKED_TO_DEVICE, //!< Can transition to: READY_TO_DRAW, MINIMIZED, NO_DEVICE
+        SWAPCHAIN_OUT_OF_DATE, //!< Can transition to: READY_TO_DRAW, MINIMIZED, LINKED_TO_DEVICE
+        READY_TO_DRAW, //!< Can transition to: SWAPCHAIN_OUT_OF_DATE, LINKED_TO_DEVICE
+        MINIMIZED //!< Can transition to: READY_TO_DRAW, LINKED_TO_DEVICE
+    };
+
     std::recursive_mutex stateMutex;
-    WindowState state;
+    State state;
 
 public:
+    class Delegate {
+    public:
+        virtual void initialize(Window *window) = 0;
+    };
+
     struct StateError : virtual boost::exception, virtual std::exception {};
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
     vk::SurfaceKHR intrinsic;
+    std::shared_ptr<Delegate> delegate;
+
+    std::string title;
 
     vk::SwapchainCreateInfoKHR swapchainCreateInfo;
 
@@ -95,27 +92,16 @@ public:
      */
     float ppp;
 
-    /*! Definition on how subpixels are oriented on the window.
-     * If the window is located on multiple screens with different pixel layout then
-     * `SubpixelLayout::NONE` should be selected.
-     */
-    SubpixelLayout subpixelLayout;
-
     //! The view covering the complete window.
     std::shared_ptr<View> view;
 
-    /*! Type of window.
-     * The type of window dictates the way the window-decoration and possibly the
-     * rest of the user interface is drawn. This may switch during execution
-     * for example switching to `FULLSCREEN` and back to `WINDOW`.
-     */
-    WindowType windowType;
-
     std::shared_ptr<BackingPipeline> backingPipeline;
 
-    Window(Instance *instance, vk::SurfaceKHR surface);
+    Window(Instance *instance, std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
 
     ~Window();
+
+    void initialize();
 
     /*! Build the swapchain, frame buffers and pipeline.
      */
@@ -150,9 +136,7 @@ public:
      */
     void maintenance();
 
-    void setWindowRectangle(vk::Rect2D rect) {
-        windowRectangle = rect;
-    }
+    void setWindowRectangle(vk::Rect2D rect) { windowRectangle = rect; }
 
 private:
     // The extent of the window rectangle should only be read when creating the swapchain.
@@ -164,16 +148,17 @@ private:
     bool render(bool blockOnVSync);
     void buildSemaphores();
     void teardownSemaphores();
-    vk::SwapchainKHR buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
+    std::pair<vk::SwapchainKHR, bool> buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
     void buildRenderPasses();
     void teardownRenderPasses();
     void buildFramebuffers();
     void teardownFramebuffers();
     void buildPipelines();
     void teardownPipelines();
-    void rebuildForSwapchainChange();
+    bool rebuildForSwapchainChange();
     void waitIdle();
     std::pair<uint32_t, vk::Extent2D> getImageCountAndImageExtent();
+    bool isOnScreen();
 };
 
 }}

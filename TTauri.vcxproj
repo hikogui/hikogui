@@ -209,11 +209,13 @@
     <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp" />
     <ClCompile Include="TTauri\GUI\View.cpp" />
     <ClCompile Include="TTauri\GUI\vulkan_utils.cpp" />
+    <ClCompile Include="TTauri\GUI\Window_win32.cpp" />
     <ClCompile Include="TTauri\GUI\Window.cpp" />
     <ClCompile Include="TTauri\GUI\WindowView.cpp" />
     <ClCompile Include="TTauri\Logging.cpp" />
     <ClCompile Include="TTauri\Time.cpp" />
     <ClCompile Include="TTauri\Timestamp.cpp" />
+    <ClCompile Include="TTauri\Application_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp" />
@@ -228,12 +230,14 @@
     <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp" />
     <ClInclude Include="TTauri\GUI\View.hpp" />
     <ClInclude Include="TTauri\GUI\vulkan_utils.hpp" />
+    <ClInclude Include="TTauri\GUI\Window_win32.hpp" />
     <ClInclude Include="TTauri\GUI\Window.hpp" />
     <ClInclude Include="TTauri\GUI\WindowView.hpp" />
     <ClInclude Include="TTauri\Logging.hpp" />
     <ClInclude Include="TTauri\Time.hpp" />
     <ClInclude Include="TTauri\Timestamp.hpp" />
     <ClInclude Include="TTauri\utils.hpp" />
+    <ClInclude Include="TTauri\Application_win32.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TTauri\GUI\BackingPipeline.frag" />

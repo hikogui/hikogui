@@ -7,67 +7,82 @@
 //
 
 #include "Window.hpp"
+
 #include "Device.hpp"
-#include "config.hpp"
 #include "WindowView.hpp"
+#include "config.hpp"
+
 #include "TTauri/Logging.hpp"
+
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri { namespace GUI {
 
 using namespace std;
 
 #pragma mark "Public"
 // Public methods need to lock the instance.
 
-Window::Window(Instance *instance, vk::SurfaceKHR surface) :
-    state(WindowState::NO_DEVICE), instance(instance), intrinsic(surface)
+Window::Window(Instance *instance, std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface) :
+    state(State::NO_DEVICE),
+    instance(instance),
+    delegate(delegate),
+    title(title),
+    intrinsic(surface)
 {
     view = std::make_shared<WindowView>(this);
     backingPipeline = std::make_shared<BackingPipeline>(this);
 }
 
-Window::~Window()
+Window::~Window() {}
+
+void Window::initialize()
 {
+    delegate->initialize(this);
 }
 
 void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
     if (stateMutex.try_lock()) {
-        if (state == WindowState::READY_TO_DRAW) {
+        if (state == State::READY_TO_DRAW) {
             if (!render(blockOnVSync)) {
                 LOG_INFO("Swapchain out of date.");
-                state = WindowState::SWAPCHAIN_OUT_OF_DATE;
+                state = State::SWAPCHAIN_OUT_OF_DATE;
             }
         }
         stateMutex.unlock();
     }
 }
 
-
 void Window::maintenance()
 {
     std::scoped_lock lock(stateMutex);
 
-    if (state == WindowState::SWAPCHAIN_OUT_OF_DATE) {
-        rebuildForSwapchainChange();
-        state = WindowState::READY_TO_DRAW;
-   }
+    if (state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
+        state = State::SWAPCHAIN_OUT_OF_DATE;
+
+        auto onScreen = rebuildForSwapchainChange();
+
+        state = onScreen ? State::READY_TO_DRAW : State::MINIMIZED;
+    }
 }
 
 void Window::buildForDeviceChange()
 {
     std::scoped_lock lock(stateMutex);
 
-    if (state == WindowState::LINKED_TO_DEVICE) {
-        swapchain = buildSwapchain();
+    if (state == State::LINKED_TO_DEVICE) {
+        auto swapchainAndOnScreen = buildSwapchain();
+        swapchain = swapchainAndOnScreen.first;
+        auto onScreen = swapchainAndOnScreen.second;
+
         buildRenderPasses();
         buildFramebuffers();
         buildSemaphores();
         backingPipeline->buildForDeviceChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
 
-        state = WindowState::READY_TO_DRAW;
+        state = onScreen ? State::READY_TO_DRAW : State::MINIMIZED;
+
     } else {
         BOOST_THROW_EXCEPTION(Window::StateError());
     }
@@ -77,29 +92,40 @@ void Window::teardownForDeviceChange()
 {
     std::scoped_lock lock(stateMutex);
 
-    if (state == WindowState::READY_TO_DRAW || state == WindowState::SWAPCHAIN_OUT_OF_DATE) {
+    if (state == State::READY_TO_DRAW || state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
         waitIdle();
         backingPipeline->teardownForDeviceChange();
         teardownSemaphores();
         teardownFramebuffers();
         teardownRenderPasses();
         device->intrinsic.destroy(swapchain);
-        state = WindowState::LINKED_TO_DEVICE;
+        state = State::LINKED_TO_DEVICE;
     } else {
         BOOST_THROW_EXCEPTION(Window::StateError());
     }
 }
 
-void Window::rebuildForSwapchainChange()
+
+bool Window::rebuildForSwapchainChange()
 {
+    if (!isOnScreen()) {
+        // Early exit when window is minimized.
+        return false;
+    }
+
     waitIdle();
 
     backingPipeline->teardownForSwapchainChange();
     teardownFramebuffers();
 
-    swapchain = buildSwapchain(swapchain);
+    auto swapChainAndOnScreen = buildSwapchain(swapchain);
+    swapchain = swapChainAndOnScreen.first;
+    auto onScreen = swapChainAndOnScreen.second;
+
     buildFramebuffers();
     backingPipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
+
+    return onScreen;
 }
 
 void Window::waitIdle()
@@ -107,14 +133,15 @@ void Window::waitIdle()
     device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
-void Window::setDevice(Device *device) {
+void Window::setDevice(Device *device)
+{
     if (device) {
         {
             std::scoped_lock lock(stateMutex);
 
-            if (state == WindowState::NO_DEVICE) {
+            if (state == State::NO_DEVICE) {
                 this->device = device;
-                state = WindowState::LINKED_TO_DEVICE;
+                state = State::LINKED_TO_DEVICE;
 
             } else {
                 BOOST_THROW_EXCEPTION(Window::StateError());
@@ -129,9 +156,9 @@ void Window::setDevice(Device *device) {
         {
             std::scoped_lock lock(stateMutex);
 
-            if (state == WindowState::LINKED_TO_DEVICE) {
+            if (state == State::LINKED_TO_DEVICE) {
                 this->device = nullptr;
-                state = WindowState::NO_DEVICE;
+                state = State::NO_DEVICE;
 
             } else {
                 BOOST_THROW_EXCEPTION(Window::StateError());
@@ -156,10 +183,13 @@ std::pair<uint32_t, vk::Extent2D> Window::getImageCountAndImageExtent()
     }
 
     vk::Extent2D imageExtent;
-    if (surfaceCapabilities.currentExtent.width == std::numeric_limits<uint32_t>::max() && surfaceCapabilities.currentExtent.height == std::numeric_limits<uint32_t>::max()) {
+    if (surfaceCapabilities.currentExtent.width == std::numeric_limits<uint32_t>::max() &&
+        surfaceCapabilities.currentExtent.height == std::numeric_limits<uint32_t>::max()) {
         LOG_WARNING("getSurfaceCapabilitiesKHR() does not supply currentExtent");
-        imageExtent.width = std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-        imageExtent.height = std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
+        imageExtent.width =
+            std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
+        imageExtent.height =
+            std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
 
     } else {
         imageExtent = surfaceCapabilities.currentExtent;
@@ -168,15 +198,19 @@ std::pair<uint32_t, vk::Extent2D> Window::getImageCountAndImageExtent()
     return { imageCount, imageExtent };
 }
 
-vk::SwapchainKHR Window::buildSwapchain(vk::SwapchainKHR oldSwapchain)
+bool Window::isOnScreen()
+{
+    auto imageCountAndImageExtent = getImageCountAndImageExtent();
+
+    return imageCountAndImageExtent.second.width > 0 && imageCountAndImageExtent.second.height > 0;
+}
+
+std::pair<vk::SwapchainKHR, bool> Window::buildSwapchain(vk::SwapchainKHR oldSwapchain)
 {
     // Figure out the best way of sharing data between the present and graphic queues.
     vk::SharingMode sharingMode;
     uint32_t sharingQueueFamilyCount;
-    uint32_t sharingQueueFamilyIndices[2] = {
-        device->graphicQueue->queueFamilyIndex,
-        device->presentQueue->queueFamilyIndex
-    };
+    uint32_t sharingQueueFamilyIndices[2] = { device->graphicQueue->queueFamilyIndex, device->presentQueue->queueFamilyIndex };
     uint32_t *sharingQueueFamilyIndicesPtr;
 
     if (device->presentQueue->queueCapabilities.handlesGraphicsAndPresent()) {
@@ -189,13 +223,14 @@ vk::SwapchainKHR Window::buildSwapchain(vk::SwapchainKHR oldSwapchain)
         sharingQueueFamilyIndicesPtr = sharingQueueFamilyIndices;
     }
 
-    uint32_t imageArrayLayers = 1;
-    vk::Bool32 clipped = VK_TRUE;
-
 retry:
     auto imageCountAndImageExtent = getImageCountAndImageExtent();
     auto imageCount = imageCountAndImageExtent.first;
     auto imageExtent = imageCountAndImageExtent.second;
+
+    if (imageExtent.width == 0 || imageExtent.height == 0) {
+        return { oldSwapchain, false };
+    }
 
     swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
         vk::SwapchainCreateFlagsKHR(),
@@ -204,7 +239,7 @@ retry:
         device->bestSurfaceFormat.format,
         device->bestSurfaceFormat.colorSpace,
         imageExtent,
-        imageArrayLayers,
+        1, // imageArrayLayers
         vk::ImageUsageFlagBits::eColorAttachment,
         sharingMode,
         sharingQueueFamilyCount,
@@ -212,9 +247,8 @@ retry:
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
         device->bestSurfacePresentMode,
-        clipped,
-        oldSwapchain
-    );
+        VK_TRUE, // clipped
+        oldSwapchain);
 
     vk::SwapchainKHR newSwapchain;
     vk::Result result = device->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
@@ -236,34 +270,26 @@ retry:
         goto retry;
     }
 
-    view->setRectangle(
-        {0.0, 0.0, 0.0},
-        {swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 0.0}
-    );
+    view->setRectangle({ 0.0, 0.0, 0.0 }, { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 0.0 });
 
     LOG_INFO("Building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
 
-    return newSwapchain;
+    return { newSwapchain, true };
 }
 
 void Window::buildFramebuffers()
 {
     swapchainImages = device->intrinsic.getSwapchainImagesKHR(swapchain);
-    for (auto image: swapchainImages) {
+    for (auto image : swapchainImages) {
         uint32_t baseMipLlevel = 0;
         uint32_t levelCount = 1;
         uint32_t baseArrayLayer = 0;
         uint32_t layerCount = 1;
-        auto imageSubresourceRange = vk::ImageSubresourceRange(
-            vk::ImageAspectFlagBits::eColor,
-            baseMipLlevel,
-            levelCount,
-            baseArrayLayer,
-            layerCount
-        );
+        auto imageSubresourceRange =
+            vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, baseMipLlevel, levelCount, baseArrayLayer, layerCount);
 
         auto imageViewCreateInfo = vk::ImageViewCreateInfo(
             vk::ImageViewCreateFlags(),
@@ -271,19 +297,20 @@ void Window::buildFramebuffers()
             vk::ImageViewType::e2D,
             swapchainCreateInfo.imageFormat,
             vk::ComponentMapping(),
-            imageSubresourceRange
-        );
+            imageSubresourceRange);
 
         auto imageView = device->intrinsic.createImageView(imageViewCreateInfo);
         swapchainImageViews.push_back(imageView);
 
-        std::vector<vk::ImageView> attachments = {imageView};
+        std::vector<vk::ImageView> attachments = { imageView };
 
         auto framebufferCreateInfo = vk::FramebufferCreateInfo(
             vk::FramebufferCreateFlags(),
             firstRenderPass,
-            boost::numeric_cast<uint32_t>(attachments.size()), attachments.data(),
-            swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height,
+            boost::numeric_cast<uint32_t>(attachments.size()),
+            attachments.data(),
+            swapchainCreateInfo.imageExtent.width,
+            swapchainCreateInfo.imageExtent.height,
             1 // layers
         );
 
@@ -299,12 +326,12 @@ void Window::buildFramebuffers()
 
 void Window::teardownFramebuffers()
 {
-    for (auto frameBuffer: swapchainFramebuffers) {
+    for (auto frameBuffer : swapchainFramebuffers) {
         device->intrinsic.destroy(frameBuffer);
     }
     swapchainFramebuffers.clear();
 
-    for (auto imageView: swapchainImageViews) {
+    for (auto imageView : swapchainImageViews) {
         device->intrinsic.destroy(imageView);
     }
     swapchainImageViews.clear();
@@ -312,7 +339,7 @@ void Window::teardownFramebuffers()
 
 void Window::buildRenderPasses()
 {
-    std::vector<vk::AttachmentDescription> attachmentDescriptions = {{
+    std::vector<vk::AttachmentDescription> attachmentDescriptions = { {
         vk::AttachmentDescriptionFlags(),
         swapchainCreateInfo.imageFormat,
         vk::SampleCountFlagBits::e1,
@@ -322,37 +349,31 @@ void Window::buildRenderPasses()
         vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
         vk::ImageLayout::eUndefined, // initialLayout
         vk::ImageLayout::ePresentSrcKHR // finalLayout
-    }};
+    } };
 
-    std::vector<vk::AttachmentReference> inputAttachmentReferences = {
-    };
-    
-    std::vector<vk::AttachmentReference> colorAttachmentReferences = {
-        {0, vk::ImageLayout::eColorAttachmentOptimal}
-    };
+    std::vector<vk::AttachmentReference> inputAttachmentReferences = {};
 
-    std::vector<vk::SubpassDescription> subpassDescriptions = {{
-        vk::SubpassDescriptionFlags(),
-        vk::PipelineBindPoint::eGraphics,
-        boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()), inputAttachmentReferences.data(),
-        boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()), colorAttachmentReferences.data()
-    }};
+    std::vector<vk::AttachmentReference> colorAttachmentReferences = { { 0, vk::ImageLayout::eColorAttachmentOptimal } };
 
-    std::vector<vk::SubpassDependency> subpassDependency = {{
-        VK_SUBPASS_EXTERNAL,
-        0,
-        vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        vk::AccessFlags(),
-        vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
-    }};
+    std::vector<vk::SubpassDescription> subpassDescriptions = { { vk::SubpassDescriptionFlags(),
+                                                                  vk::PipelineBindPoint::eGraphics,
+                                                                  boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+                                                                  inputAttachmentReferences.data(),
+                                                                  boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+                                                                  colorAttachmentReferences.data() } };
 
-    vk::RenderPassCreateInfo renderPassCreateInfo = {
-        vk::RenderPassCreateFlags(),
-        boost::numeric_cast<uint32_t>(attachmentDescriptions.size()), attachmentDescriptions.data(),
-        boost::numeric_cast<uint32_t>(subpassDescriptions.size()), subpassDescriptions.data(),
-        boost::numeric_cast<uint32_t>(subpassDependency.size()), subpassDependency.data()
-    };
+    std::vector<vk::SubpassDependency> subpassDependency = { { VK_SUBPASS_EXTERNAL,
+                                                               0,
+                                                               vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                                                               vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                                                               vk::AccessFlags(),
+                                                               vk::AccessFlagBits::eColorAttachmentRead |
+                                                                   vk::AccessFlagBits::eColorAttachmentWrite } };
+
+    vk::RenderPassCreateInfo renderPassCreateInfo = { vk::RenderPassCreateFlags(),   boost::numeric_cast<uint32_t>(attachmentDescriptions.size()),
+                                                      attachmentDescriptions.data(), boost::numeric_cast<uint32_t>(subpassDescriptions.size()),
+                                                      subpassDescriptions.data(),    boost::numeric_cast<uint32_t>(subpassDependency.size()),
+                                                      subpassDependency.data() };
 
     firstRenderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
     attachmentDescriptions[0].loadOp = vk::AttachmentLoadOp::eClear;
@@ -364,10 +385,6 @@ void Window::teardownRenderPasses()
     device->intrinsic.destroy(firstRenderPass);
     device->intrinsic.destroy(followUpRenderPass);
 }
-
-
-
-
 
 void Window::buildSemaphores()
 {
@@ -387,7 +404,6 @@ void Window::teardownSemaphores()
     device->intrinsic.destroy(renderFinishedFence);
 }
 
-
 bool Window::render(bool blockOnVSync)
 {
     uint32_t imageIndex;
@@ -395,52 +411,35 @@ bool Window::render(bool blockOnVSync)
 
     auto result = device->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
     switch (result) {
-    case vk::Result::eSuccess:
-        break;
-    case vk::Result::eSuboptimalKHR:
-        LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
-        return false;
-    case vk::Result::eErrorOutOfDateKHR:
-        LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
-        return false;
+    case vk::Result::eSuccess: break;
+    case vk::Result::eSuboptimalKHR: LOG_INFO("acquireNextImageKHR() eSuboptimalKHR"); return false;
+    case vk::Result::eErrorOutOfDateKHR: LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR"); return false;
     case vk::Result::eTimeout:
         // Don't render, we didn't receive an image.
         return true;
-    default:
-        BOOST_THROW_EXCEPTION(Window::SwapChainError());
+    default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
     }
 
-    vk::Semaphore renderFinishedSemaphores[] = {
-        backingPipeline->render(imageIndex, imageAvailableSemaphore)
-    };
+    vk::Semaphore renderFinishedSemaphores[] = { backingPipeline->render(imageIndex, imageAvailableSemaphore) };
 
     // Make a fence that should be signaled when all drawing is finished.
     device->intrinsic.waitIdle();
-    //device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    // device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
     device->intrinsic.resetFences(1, &renderFinishedFence);
     device->graphicQueue->intrinsic.submit(0, nullptr, renderFinishedFence);
 
-    auto presentInfo = vk::PresentInfoKHR(
-        1, renderFinishedSemaphores,
-        1, &swapchain,
-        &imageIndex
-    );
+    auto presentInfo = vk::PresentInfoKHR(1, renderFinishedSemaphores, 1, &swapchain, &imageIndex);
 
     // Pass present info as a pointer to get the non-throw version.
     result = device->presentQueue->intrinsic.presentKHR(&presentInfo);
     switch (result) {
-    case vk::Result::eSuccess:
-        break;
-    case vk::Result::eSuboptimalKHR:
-        LOG_INFO("presentKHR() eSuboptimalKHR");
-        return false;
-    case vk::Result::eErrorOutOfDateKHR:
-        LOG_INFO("presentKHR() eErrorOutOfDateKHR");
-        return false;
-    default:
-        BOOST_THROW_EXCEPTION(Window::SwapChainError());
+    case vk::Result::eSuccess: break;
+    case vk::Result::eSuboptimalKHR: LOG_INFO("presentKHR() eSuboptimalKHR"); return false;
+    case vk::Result::eErrorOutOfDateKHR: LOG_INFO("presentKHR() eErrorOutOfDateKHR"); return false;
+    default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
     }
     return true;
 }
+
 
 }}

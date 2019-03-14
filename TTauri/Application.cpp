@@ -7,20 +7,33 @@
 //
 
 #include "Application.hpp"
+
 #include "Logging.hpp"
 
 namespace TTauri {
 
-std::shared_ptr<Application> app;
-
-Application::Application(const boost::filesystem::path &resourceDir) :
-    resourceDir(resourceDir)
+Application::Application(std::shared_ptr<Delegate> delegate, std::vector<const char *> vulkanExtensions) :
+    delegate(delegate)
 {
     initializeLogging();
+    LOG_INFO("Starting application.");
+
+    instance = std::make_shared<GUI::Instance>(vulkanExtensions);
+    instance->setPreferedDeviceUUID({});
 }
 
 Application::~Application()
 {
 }
 
+void Application::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
+{
+}
+
+void Application::initialize()
+{
+    delegate->initialize();    
+}
+
+std::shared_ptr<Application> Application::shared;
 }

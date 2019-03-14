@@ -8,26 +8,37 @@
 
 #pragma once
 
+#include "GUI/Instance.hpp"
+
 #include <boost/exception/all.hpp>
 #include <boost/filesystem.hpp>
+
 #include <memory>
+#include <string>
 
 namespace TTauri {
 
 class Application {
 public:
-    static Application *shared;
+    class Delegate {
+    public:
+        virtual void initialize() = 0;
+    };
 
+    struct Error : virtual boost::exception, virtual std::exception {};
+
+
+    std::shared_ptr<Delegate> delegate;
+    std::shared_ptr<GUI::Instance> instance;
     boost::filesystem::path resourceDir;
 
-    boost::filesystem::path getPathToResource(const boost::filesystem::path &resource) {
-        return boost::filesystem::canonical(resource, resourceDir);
-    }
+    Application(std::shared_ptr<Delegate> delegate, std::vector<const char *> vulkanExtensions);
+    virtual ~Application();
 
-    Application(const boost::filesystem::path &resourceDir);
-    ~Application();
+    virtual void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
+    virtual void initialize();
+    virtual int loop() = 0;
+
+    static std::shared_ptr<Application> shared;
 };
-
-extern std::shared_ptr<Application> app;
-
 }

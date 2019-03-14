@@ -7,27 +7,24 @@
 //
 
 #include "Pipeline.hpp"
+
 #include "Device.hpp"
 #include "Window.hpp"
+
 #include "TTauri/Logging.hpp"
+
 #include <boost/assert.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri { namespace GUI {
 
 using namespace std;
 
-Pipeline::Pipeline(Window *window) :
-    window(window)
-{
-}
+Pipeline::Pipeline(Window *window) : window(window) {}
 
-Pipeline::~Pipeline()
-{
-}
+Pipeline::~Pipeline() {}
 
 Device *Pipeline::device() const
 {
@@ -45,11 +42,7 @@ vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore
 
     vk::Semaphore signalSemaphores[] = { renderFinishedSemaphores[imageIndex] };
 
-    vk::SubmitInfo submitInfo[] = { vk::SubmitInfo(
-        1, waitSemaphores, waitStages,
-        1, &commandBuffers[imageIndex],
-        1, signalSemaphores
-    ) };
+    vk::SubmitInfo submitInfo[] = { vk::SubmitInfo(1, waitSemaphores, waitStages, 1, &commandBuffers[imageIndex], 1, signalSemaphores) };
 
     device()->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
 
@@ -77,7 +70,10 @@ void Pipeline::buildVertexBuffers(size_t nrFrameBuffers)
     vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
 
     vertexBuffers = createVertexBuffers(nrFrameBuffers, vertexInputBindingDescription.stride * maximumNumberOfVertices());
-    //auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+    // auto memoryOffsetsAndSizes =
+    // device()->allocateDeviceMemoryAndBind(vertexBuffers,
+    // vk::MemoryPropertyFlagBits::eHostVisible |
+    // vk::MemoryPropertyFlagBits::eHostCoherent);
     auto memoryOffsetsAndSizes = device()->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible);
     vertexBufferMemory = get<0>(memoryOffsetsAndSizes);
     vertexBufferOffsets = get<1>(memoryOffsetsAndSizes);
@@ -105,10 +101,7 @@ void Pipeline::teardownVertexBuffers()
 void Pipeline::buildCommandBuffers(size_t nrFrameBuffers)
 {
     auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        device()->graphicQueue->commandPool,
-        vk::CommandBufferLevel::ePrimary,
-        boost::numeric_cast<uint32_t>(nrFrameBuffers)
-    );
+        device()->graphicQueue->commandPool, vk::CommandBufferLevel::ePrimary, boost::numeric_cast<uint32_t>(nrFrameBuffers));
     commandBuffers = device()->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
 
     commandBuffersValid.resize(nrFrameBuffers);
@@ -167,7 +160,8 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
 
     graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
-        boost::numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
+        boost::numeric_cast<uint32_t>(shaderStages.size()),
+        shaderStages.data(),
         &pipelineVertexInputStateCreateInfo,
         &pipelineInputAssemblyStateCreateInfo,
         nullptr, // tesselationStateCreateInfo
@@ -185,14 +179,12 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
     };
 
     intrinsic = device()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
- }
+}
 
 void Pipeline::teardownPipeline()
 {
- 
     device()->intrinsic.destroy(intrinsic);
     device()->intrinsic.destroy(pipelineLayout);
- 
 }
 
 void Pipeline::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
@@ -253,15 +245,9 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
     auto commandBufferBeginInfo = vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
     commandBuffers[imageIndex].begin(commandBufferBeginInfo);
 
-    std::array<float,4> blackColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    std::array<float, 4> blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
     auto clearColor = vk::ClearValue(vk::ClearColorValue(blackColor));
-    auto renderPassBeginInfo = vk::RenderPassBeginInfo(
-        renderPass,
-        window->swapchainFramebuffers[imageIndex],
-        scissors[0],
-        1,
-        &clearColor
-    );
+    auto renderPassBeginInfo = vk::RenderPassBeginInfo(renderPass, window->swapchainFramebuffers[imageIndex], scissors[0], 1, &clearColor);
     commandBuffers[imageIndex].beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 
     commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
@@ -274,7 +260,7 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
     commandBuffers[imageIndex].bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
     drawInCommandBuffer(commandBuffers[imageIndex]);
-    
+
     commandBuffers[imageIndex].endRenderPass();
 
     commandBuffers[imageIndex].end();
@@ -282,23 +268,19 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
     commandBuffersValid[imageIndex] = true;
 }
 
-
 vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
 {
     LOG_INFO("Loading shader %s") % path.filename().generic_string();
 
-	auto tmp_path = path.generic_string();
-	boost::interprocess::file_mapping mapped_file(tmp_path.c_str(), boost::interprocess::read_only);
+    auto tmp_path = path.generic_string();
+    boost::interprocess::file_mapping mapped_file(tmp_path.c_str(), boost::interprocess::read_only);
     auto region = boost::interprocess::mapped_region(mapped_file, boost::interprocess::read_only);
 
     // Check uint32_t alignment of pointer.
     BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(region.get_address()) & 3) == 0);
 
-    auto shaderModuleCreateInfo = vk::ShaderModuleCreateInfo(
-        vk::ShaderModuleCreateFlags(),
-        region.get_size(),
-        reinterpret_cast<uint32_t *>(region.get_address())
-    );
+    auto shaderModuleCreateInfo =
+        vk::ShaderModuleCreateInfo(vk::ShaderModuleCreateFlags(), region.get_size(), reinterpret_cast<uint32_t *>(region.get_address()));
 
     return device()->intrinsic.createShaderModule(shaderModuleCreateInfo);
 }
@@ -308,59 +290,44 @@ vk::PipelineLayout Pipeline::createPipelineLayout() const
     auto pushConstantRanges = createPushConstantRanges();
 
     auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo(
-        vk::PipelineLayoutCreateFlags(),
-        0, nullptr,
-        boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
-    );
+        vk::PipelineLayoutCreateFlags(), 0, nullptr, boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data());
     return device()->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
 }
 
-vk::PipelineVertexInputStateCreateInfo Pipeline::createPipelineVertexInputStateCreateInfo(const vk::VertexInputBindingDescription &vertexBindingDescriptions, const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const
+vk::PipelineVertexInputStateCreateInfo Pipeline::createPipelineVertexInputStateCreateInfo(
+    const vk::VertexInputBindingDescription &vertexBindingDescriptions,
+    const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const
 {
-    return {
-        vk::PipelineVertexInputStateCreateFlags(),
-        1,
-        &vertexBindingDescriptions,
-        boost::numeric_cast<uint32_t>(vertexAttributeDescriptions.size()), vertexAttributeDescriptions.data()
-    };
+    return { vk::PipelineVertexInputStateCreateFlags(),
+             1,
+             &vertexBindingDescriptions,
+             boost::numeric_cast<uint32_t>(vertexAttributeDescriptions.size()),
+             vertexAttributeDescriptions.data() };
 }
 
 vk::PipelineInputAssemblyStateCreateInfo Pipeline::createPipelineInputAssemblyStateCreateInfo() const
 {
-    return {
-        vk::PipelineInputAssemblyStateCreateFlags(),
-        vk::PrimitiveTopology::eTriangleList,
-        VK_FALSE
-    };
+    return { vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList, VK_FALSE };
 }
 
 std::vector<vk::Viewport> Pipeline::createViewports(vk::Extent2D extent) const
 {
-    return {{
-        0.0f,
-        0.0f,
-        boost::numeric_cast<float>(extent.width),
-        boost::numeric_cast<float>(extent.height),
-        0.0f,
-        1.0f
-    }};
+    return { { 0.0f, 0.0f, boost::numeric_cast<float>(extent.width), boost::numeric_cast<float>(extent.height), 0.0f, 1.0f } };
 }
 
 std::vector<vk::Rect2D> Pipeline::createScissors(vk::Extent2D extent) const
 {
-    return {{
-        {0, 0},
-        extent
-    }};
+    return { { { 0, 0 }, extent } };
 }
 
-vk::PipelineViewportStateCreateInfo Pipeline::createPipelineViewportStateCreateInfo(const std::vector<vk::Viewport> &viewports, std::vector<vk::Rect2D> &scissors) const
+vk::PipelineViewportStateCreateInfo
+Pipeline::createPipelineViewportStateCreateInfo(const std::vector<vk::Viewport> &viewports, std::vector<vk::Rect2D> &scissors) const
 {
-    return {
-        vk::PipelineViewportStateCreateFlags(),
-        boost::numeric_cast<uint32_t>(viewports.size()), viewports.data(),
-        boost::numeric_cast<uint32_t>(scissors.size()), scissors.data()
-    };
+    return { vk::PipelineViewportStateCreateFlags(),
+             boost::numeric_cast<uint32_t>(viewports.size()),
+             viewports.data(),
+             boost::numeric_cast<uint32_t>(scissors.size()),
+             scissors.data() };
 }
 
 vk::PipelineRasterizationStateCreateInfo Pipeline::createPipelineRasterizationStateCreateInfo() const
@@ -395,26 +362,24 @@ vk::PipelineMultisampleStateCreateInfo Pipeline::createPipelineMultisampleStateC
 
 std::vector<vk::PipelineColorBlendAttachmentState> Pipeline::createPipelineColorBlendAttachmentStates() const
 {
-    return {{
-        VK_FALSE, // blendEnable
-        vk::BlendFactor::eOne, // srcColorBlendFactor
-        vk::BlendFactor::eZero, // dstColorBlendFactor
-        vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eZero, // dstAlphaBlendFactor
-        vk::BlendOp::eAdd, // aphaBlendOp
-        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    }};
+    return { { VK_FALSE, // blendEnable
+               vk::BlendFactor::eOne, // srcColorBlendFactor
+               vk::BlendFactor::eZero, // dstColorBlendFactor
+               vk::BlendOp::eAdd, // colorBlendOp
+               vk::BlendFactor::eOne, // srcAlphaBlendFactor
+               vk::BlendFactor::eZero, // dstAlphaBlendFactor
+               vk::BlendOp::eAdd, // aphaBlendOp
+               vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA } };
 }
 
-vk::PipelineColorBlendStateCreateInfo Pipeline::createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const
+vk::PipelineColorBlendStateCreateInfo
+Pipeline::createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const
 {
-    return {
-        vk::PipelineColorBlendStateCreateFlags(),
-        VK_FALSE, // logicOpenable
-        vk::LogicOp::eCopy,
-        boost::numeric_cast<uint32_t>(attachements.size()), attachements.data()
-    };
+    return { vk::PipelineColorBlendStateCreateFlags(),
+             VK_FALSE, // logicOpenable
+             vk::LogicOp::eCopy,
+             boost::numeric_cast<uint32_t>(attachements.size()),
+             attachements.data() };
 }
 
 std::vector<vk::Buffer> Pipeline::createVertexBuffers(size_t nrBuffers, size_t bufferSize) const
@@ -422,10 +387,7 @@ std::vector<vk::Buffer> Pipeline::createVertexBuffers(size_t nrBuffers, size_t b
     std::vector<vk::Buffer> buffers;
     for (size_t i = 0; i < nrBuffers; i++) {
         vk::BufferCreateInfo vertexBufferCreateInfo = {
-            vk::BufferCreateFlags(),
-            bufferSize,
-            vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::SharingMode::eExclusive
+            vk::BufferCreateFlags(), bufferSize, vk::BufferUsageFlagBits::eVertexBuffer, vk::SharingMode::eExclusive
         };
         auto buffer = device()->intrinsic.createBuffer(vertexBufferCreateInfo, nullptr);
         buffers.push_back(buffer);
