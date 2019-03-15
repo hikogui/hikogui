@@ -12,7 +12,6 @@
 #include "config.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlasses and sharing for all views.
@@ -85,4 +84,4 @@ protected:
 
 };
 
-}}
+}

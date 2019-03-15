@@ -2,7 +2,6 @@
 #include "Window.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 WindowView::WindowView(Window *window) :
     View()
@@ -14,6 +13,4 @@ WindowView::~WindowView()
 {
 }
 
-
-
-}}
+}

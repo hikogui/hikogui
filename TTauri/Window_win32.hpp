@@ -7,7 +7,6 @@
 #include <unordered_map>
 
 namespace TTauri {
-namespace GUI {
 
 class Instance;
 
@@ -29,4 +28,5 @@ public:
     static std::unordered_map<std::uintptr_t, Window_win32 *> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 };
-}}
+
+}

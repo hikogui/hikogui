@@ -9,7 +9,6 @@
 #include "ImageView.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 ImageView::ImageView(const boost::filesystem::path &path) :
     View(), path(path)
@@ -36,4 +35,4 @@ size_t ImageView::BackingPipelineRender(BackingPipeline::Vertex *vertices, size_
     return offset;
 }
 
-}}
+}

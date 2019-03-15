@@ -44,7 +44,7 @@ public:
 
     /*! Vulkan instance created for this application.
      */
-    std::shared_ptr<GUI::Instance> instance;
+    std::shared_ptr<Instance> instance;
 
     /*! Directory where resources are located.
      */
@@ -64,7 +64,7 @@ public:
      * \param title Title for the new window
      * \return the window that was created
      */
-    virtual std::shared_ptr<GUI::Window> createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
+    virtual std::shared_ptr<Window> createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title) = 0;
 
     /*! Initialize the application.
      * Must be called from main after constructing the Application.

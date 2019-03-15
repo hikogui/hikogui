@@ -3,7 +3,6 @@
 #include "View.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 class Window;
 
@@ -21,5 +20,4 @@ public:
     virtual ~WindowView();
 };
 
-}
 }

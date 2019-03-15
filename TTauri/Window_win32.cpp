@@ -3,10 +3,9 @@
 
 #include "Instance.hpp"
 
-#include "TTauri/Application_win32.hpp"
+#include "Application_win32.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -130,4 +129,4 @@ bool Window_win32::win32WindowClassIsRegistered = false;
 std::unordered_map<std::uintptr_t, Window_win32 *> Window_win32::win32WindowMap = {};
 bool Window_win32::firstWindowHasBeenOpened = false;
 
-}}
+}

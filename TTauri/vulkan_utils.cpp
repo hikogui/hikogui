@@ -9,7 +9,6 @@
 #include "vulkan_utils.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits)
 {
@@ -82,4 +81,4 @@ bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::Phy
     return meetsRequirements;
 }
 
-}}
+}

@@ -17,7 +17,6 @@
 #include <tuple>
 
 namespace TTauri {
-namespace GUI {
 
 class Instance;
 
@@ -142,4 +141,4 @@ public:
     std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
 };
 
-}}
+}

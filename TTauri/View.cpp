@@ -11,7 +11,6 @@
 #include <boost/assert.hpp>
 
 namespace TTauri {
-namespace GUI {
 
 View::View()
 {
@@ -55,4 +54,4 @@ size_t View::BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t off
 }
 
 
-}}
+}

@@ -14,7 +14,6 @@
 #include <vector>
 
 namespace TTauri {
-namespace GUI {
 
 class Window;
 class Instance;
@@ -54,4 +53,4 @@ public:
     virtual size_t BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size);
 };
 
-}}
+}
