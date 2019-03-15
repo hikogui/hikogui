@@ -16,7 +16,6 @@ namespace TTauri {
 class Device;
 class Instance;
 
-
 class Queue {
 public:
     vk::Queue intrinsic;

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "GUI/Instance.hpp"
+#include "Instance.hpp"
 
 #include <boost/exception/all.hpp>
 #include <boost/filesystem.hpp>

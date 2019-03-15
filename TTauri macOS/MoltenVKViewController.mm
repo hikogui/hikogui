@@ -10,11 +10,10 @@
 #import "MoltenVKViewController.h"
 #import "MoltenVKView.h"
 #include "TTauri/Application.hpp"
-#include "TTauri/GUI/GUI.hpp"
+#include "TTauri/ImageView.hpp"
 
 using namespace std;
 using namespace TTauri;
-using namespace TTauri::GUI;
 
 struct CallbackData {
     shared_ptr<Instance> instance;
