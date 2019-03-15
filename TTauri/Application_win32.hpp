@@ -19,7 +19,7 @@ public:
     Application_win32(std::shared_ptr<Delegate> delegate, HINSTANCE instance, PWSTR commandLine, int show);
     ~Application_win32();
 
-    virtual void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title);
+    virtual std::shared<GUI::Window> createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title);
     virtual int loop();
 };
 }

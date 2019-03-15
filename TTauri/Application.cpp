@@ -26,10 +26,6 @@ Application::~Application()
 {
 }
 
-void Application::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
-{
-}
-
 void Application::initialize()
 {
     delegate->initialize();    

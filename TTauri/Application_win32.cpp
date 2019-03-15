@@ -40,7 +40,7 @@ Application_win32::~Application_win32()
 {
 }
 
-void Application_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
+std::shared_ptr<GUI::Window> Application_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
 {
     auto window = std::make_shared<GUI::Window_win32>(instance.get(), windowDelegate, title, win32Show);
     if (!instance->add(window)) {
@@ -48,6 +48,7 @@ void Application_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> wind
         abort();
     }
     window->initialize();
+    return window;
 }
 
 int Application_win32::loop()
