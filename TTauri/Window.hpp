@@ -21,6 +21,9 @@ namespace TTauri {
 
 class Instance;
 class Device;
+
+
+
 class View;
 
 /*! A Window.

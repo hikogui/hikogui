@@ -10,6 +10,9 @@
 		686C02CE2231A8A4002F4063 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C62231A8A3002F4063 /* Application.cpp */; };
 		686C02CF2231A8A4002F4063 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C62231A8A3002F4063 /* Application.cpp */; };
 		686C02D02231A8A4002F4063 /* Application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C62231A8A3002F4063 /* Application.cpp */; };
+		686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C82231A8A3002F4063 /* Timestamp.cpp */; };
+		686C02D22231A8A4002F4063 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C82231A8A3002F4063 /* Timestamp.cpp */; };
+		686C02D32231A8A4002F4063 /* Timestamp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02C82231A8A3002F4063 /* Timestamp.cpp */; };
 		686C02D42231A8A4002F4063 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CA2231A8A4002F4063 /* Time.cpp */; };
 		686C02D52231A8A4002F4063 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CA2231A8A4002F4063 /* Time.cpp */; };
 		686C02D62231A8A4002F4063 /* Time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 686C02CA2231A8A4002F4063 /* Time.cpp */; };
@@ -19,6 +22,7 @@
 		686C03232231A971002F4063 /* Application.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02CB2231A8A4002F4063 /* Application.hpp */; };
 		686C03242231A971002F4063 /* Logging.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02C92231A8A4002F4063 /* Logging.hpp */; };
 		686C03252231A971002F4063 /* Time.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02C72231A8A3002F4063 /* Time.hpp */; };
+		686C03262231A971002F4063 /* Timestamp.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 686C02CD2231A8A4002F4063 /* Timestamp.hpp */; };
 		68A1EC8F223C550200F882D2 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC72223C550000F882D2 /* QueueCapabilities.cpp */; };
 		68A1EC90223C550200F882D2 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC72223C550000F882D2 /* QueueCapabilities.cpp */; };
 		68A1EC91223C550200F882D2 /* QueueCapabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC72223C550000F882D2 /* QueueCapabilities.cpp */; };
@@ -40,6 +44,9 @@
 		68A1ECA1223C550200F882D2 /* BackingPipeline.vert in Resources */ = {isa = PBXBuildFile; fileRef = 68A1EC7E223C550000F882D2 /* BackingPipeline.vert */; };
 		68A1ECA2223C550200F882D2 /* BackingPipeline.vert in Resources */ = {isa = PBXBuildFile; fileRef = 68A1EC7E223C550000F882D2 /* BackingPipeline.vert */; };
 		68A1ECA3223C550200F882D2 /* BackingPipeline.vert in Resources */ = {isa = PBXBuildFile; fileRef = 68A1EC7E223C550000F882D2 /* BackingPipeline.vert */; };
+		68A1ECA4223C550200F882D2 /* Window_win32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC81223C550100F882D2 /* Window_win32.cpp */; };
+		68A1ECA5223C550200F882D2 /* Window_win32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC81223C550100F882D2 /* Window_win32.cpp */; };
+		68A1ECA6223C550200F882D2 /* Window_win32.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC81223C550100F882D2 /* Window_win32.cpp */; };
 		68A1ECA7223C550200F882D2 /* BackingPipeline.frag in Resources */ = {isa = PBXBuildFile; fileRef = 68A1EC83223C550100F882D2 /* BackingPipeline.frag */; };
 		68A1ECA8223C550200F882D2 /* BackingPipeline.frag in Resources */ = {isa = PBXBuildFile; fileRef = 68A1EC83223C550100F882D2 /* BackingPipeline.frag */; };
 		68A1ECA9223C550200F882D2 /* BackingPipeline.frag in Resources */ = {isa = PBXBuildFile; fileRef = 68A1EC83223C550100F882D2 /* BackingPipeline.frag */; };
@@ -49,6 +56,9 @@
 		68A1ECAD223C550200F882D2 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC86223C550100F882D2 /* Pipeline.cpp */; };
 		68A1ECAE223C550200F882D2 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC86223C550100F882D2 /* Pipeline.cpp */; };
 		68A1ECAF223C550200F882D2 /* Pipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC86223C550100F882D2 /* Pipeline.cpp */; };
+		68A1ECB0223C550200F882D2 /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC87223C550100F882D2 /* GUI.cpp */; };
+		68A1ECB1223C550200F882D2 /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC87223C550100F882D2 /* GUI.cpp */; };
+		68A1ECB2223C550200F882D2 /* GUI.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC87223C550100F882D2 /* GUI.cpp */; };
 		68A1ECB3223C550200F882D2 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC88223C550100F882D2 /* Instance.cpp */; };
 		68A1ECB4223C550200F882D2 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC88223C550100F882D2 /* Instance.cpp */; };
 		68A1ECB5223C550200F882D2 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68A1EC88223C550100F882D2 /* Instance.cpp */; };
@@ -65,18 +75,6 @@
 		68D07C1F220CDF19005EFAB2 /* libboost_log.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68D07C1E220CDF18005EFAB2 /* libboost_log.a */; };
 		68DFA8D722032B8B005D9413 /* MoltenVK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68DFA8D622032B8A005D9413 /* MoltenVK.framework */; };
 		68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68DFA8D82203315C005D9413 /* MoltenVKView.mm */; };
-		68EF9952223C59CF008C2357 /* BackingPipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC7C223C550000F882D2 /* BackingPipeline.hpp */; };
-		68EF9953223C59CF008C2357 /* config.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC80223C550100F882D2 /* config.hpp */; };
-		68EF9954223C59CF008C2357 /* Device.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC7B223C550000F882D2 /* Device.hpp */; };
-		68EF9956223C59CF008C2357 /* ImageView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC79223C550000F882D2 /* ImageView.hpp */; };
-		68EF9957223C59CF008C2357 /* Instance.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC7F223C550000F882D2 /* Instance.hpp */; };
-		68EF9958223C59CF008C2357 /* Pipeline.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC8C223C550100F882D2 /* Pipeline.hpp */; };
-		68EF9959223C59CF008C2357 /* Queue.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC7A223C550000F882D2 /* Queue.hpp */; };
-		68EF995A223C59CF008C2357 /* QueueCapabilities.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC84223C550100F882D2 /* QueueCapabilities.hpp */; };
-		68EF995B223C59CF008C2357 /* View.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC82223C550100F882D2 /* View.hpp */; };
-		68EF995C223C59CF008C2357 /* vulkan_utils.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC8B223C550100F882D2 /* vulkan_utils.hpp */; };
-		68EF995D223C59CF008C2357 /* Window.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC74223C550000F882D2 /* Window.hpp */; };
-		68EF995E223C59CF008C2357 /* WindowView.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68A1EC7D223C550000F882D2 /* WindowView.hpp */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -93,27 +91,25 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		68A9A080220BB12C00457876 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = include/TTauri/GUI;
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		68C6C3B0220CCC7100B39337 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = include/TTauri;
 			dstSubfolderSpec = 16;
 			files = (
-				68EF9952223C59CF008C2357 /* BackingPipeline.hpp in CopyFiles */,
-				68EF9953223C59CF008C2357 /* config.hpp in CopyFiles */,
-				68EF9954223C59CF008C2357 /* Device.hpp in CopyFiles */,
-				68EF9956223C59CF008C2357 /* ImageView.hpp in CopyFiles */,
-				68EF9957223C59CF008C2357 /* Instance.hpp in CopyFiles */,
-				68EF9958223C59CF008C2357 /* Pipeline.hpp in CopyFiles */,
-				68EF9959223C59CF008C2357 /* Queue.hpp in CopyFiles */,
-				68EF995A223C59CF008C2357 /* QueueCapabilities.hpp in CopyFiles */,
-				68EF995B223C59CF008C2357 /* View.hpp in CopyFiles */,
-				68EF995C223C59CF008C2357 /* vulkan_utils.hpp in CopyFiles */,
-				68EF995D223C59CF008C2357 /* Window.hpp in CopyFiles */,
-				68EF995E223C59CF008C2357 /* WindowView.hpp in CopyFiles */,
 				686C03232231A971002F4063 /* Application.hpp in CopyFiles */,
 				686C03242231A971002F4063 /* Logging.hpp in CopyFiles */,
 				686C03252231A971002F4063 /* Time.hpp in CopyFiles */,
+				686C03262231A971002F4063 /* Timestamp.hpp in CopyFiles */,
 				68C8446622398A9800AC6B0F /* utils.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -123,10 +119,12 @@
 /* Begin PBXFileReference section */
 		686C02C62231A8A3002F4063 /* Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Application.cpp; sourceTree = "<group>"; };
 		686C02C72231A8A3002F4063 /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
+		686C02C82231A8A3002F4063 /* Timestamp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timestamp.cpp; sourceTree = "<group>"; };
 		686C02C92231A8A4002F4063 /* Logging.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Logging.hpp; sourceTree = "<group>"; };
 		686C02CA2231A8A4002F4063 /* Time.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Time.cpp; sourceTree = "<group>"; };
 		686C02CB2231A8A4002F4063 /* Application.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Application.hpp; sourceTree = "<group>"; };
 		686C02CC2231A8A4002F4063 /* Logging.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Logging.cpp; sourceTree = "<group>"; };
+		686C02CD2231A8A4002F4063 /* Timestamp.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Timestamp.hpp; sourceTree = "<group>"; };
 		68A1EC72223C550000F882D2 /* QueueCapabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QueueCapabilities.cpp; sourceTree = "<group>"; };
 		68A1EC73223C550000F882D2 /* Device.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Device.cpp; sourceTree = "<group>"; };
 		68A1EC74223C550000F882D2 /* Window.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Window.hpp; sourceTree = "<group>"; };
@@ -142,15 +140,19 @@
 		68A1EC7E223C550000F882D2 /* BackingPipeline.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = BackingPipeline.vert; sourceTree = "<group>"; };
 		68A1EC7F223C550000F882D2 /* Instance.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Instance.hpp; sourceTree = "<group>"; };
 		68A1EC80223C550100F882D2 /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config.hpp; sourceTree = "<group>"; };
+		68A1EC81223C550100F882D2 /* Window_win32.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Window_win32.cpp; sourceTree = "<group>"; };
 		68A1EC82223C550100F882D2 /* View.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = View.hpp; sourceTree = "<group>"; };
 		68A1EC83223C550100F882D2 /* BackingPipeline.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = BackingPipeline.frag; sourceTree = "<group>"; };
 		68A1EC84223C550100F882D2 /* QueueCapabilities.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = QueueCapabilities.hpp; sourceTree = "<group>"; };
 		68A1EC85223C550100F882D2 /* BackingPipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BackingPipeline.cpp; sourceTree = "<group>"; };
 		68A1EC86223C550100F882D2 /* Pipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Pipeline.cpp; sourceTree = "<group>"; };
+		68A1EC87223C550100F882D2 /* GUI.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI.cpp; sourceTree = "<group>"; };
 		68A1EC88223C550100F882D2 /* Instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
+		68A1EC89223C550100F882D2 /* Window_win32.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Window_win32.hpp; sourceTree = "<group>"; };
 		68A1EC8A223C550100F882D2 /* vulkan_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = vulkan_utils.cpp; sourceTree = "<group>"; };
 		68A1EC8B223C550100F882D2 /* vulkan_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = vulkan_utils.hpp; sourceTree = "<group>"; };
 		68A1EC8C223C550100F882D2 /* Pipeline.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Pipeline.hpp; sourceTree = "<group>"; };
+		68A1EC8D223C550200F882D2 /* GUI.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GUI.hpp; sourceTree = "<group>"; };
 		68A1EC8E223C550200F882D2 /* Queue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Queue.cpp; sourceTree = "<group>"; };
 		68A9A0612208FC3600457876 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
@@ -230,6 +232,8 @@
 				68A1EC80223C550100F882D2 /* config.hpp */,
 				68A1EC73223C550000F882D2 /* Device.cpp */,
 				68A1EC7B223C550000F882D2 /* Device.hpp */,
+				68A1EC87223C550100F882D2 /* GUI.cpp */,
+				68A1EC8D223C550200F882D2 /* GUI.hpp */,
 				68A1EC77223C550000F882D2 /* ImageView.cpp */,
 				68A1EC79223C550000F882D2 /* ImageView.hpp */,
 				68A1EC88223C550100F882D2 /* Instance.cpp */,
@@ -244,11 +248,15 @@
 				68A1EC84223C550100F882D2 /* QueueCapabilities.hpp */,
 				686C02CA2231A8A4002F4063 /* Time.cpp */,
 				686C02C72231A8A3002F4063 /* Time.hpp */,
+				686C02C82231A8A3002F4063 /* Timestamp.cpp */,
+				686C02CD2231A8A4002F4063 /* Timestamp.hpp */,
 				68C8446522398A9000AC6B0F /* utils.hpp */,
 				68A1EC75223C550000F882D2 /* View.cpp */,
 				68A1EC82223C550100F882D2 /* View.hpp */,
 				68A1EC8A223C550100F882D2 /* vulkan_utils.cpp */,
 				68A1EC8B223C550100F882D2 /* vulkan_utils.hpp */,
+				68A1EC81223C550100F882D2 /* Window_win32.cpp */,
+				68A1EC89223C550100F882D2 /* Window_win32.hpp */,
 				68A1EC78223C550000F882D2 /* Window.cpp */,
 				68A1EC74223C550000F882D2 /* Window.hpp */,
 				68A1EC76223C550000F882D2 /* WindowView.cpp */,
@@ -386,6 +394,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 68F262BE22030EA70078E5E4 /* Build configuration list for PBXNativeTarget "TTauri macOS" */;
 			buildPhases = (
+				68A9A080220BB12C00457876 /* CopyFiles */,
 				68C6C3B0220CCC7100B39337 /* CopyFiles */,
 				68F2629B22030EA70078E5E4 /* Sources */,
 				68F2629C22030EA70078E5E4 /* Frameworks */,
@@ -484,8 +493,8 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/TTauri/BackingPipeline.vert",
-				"$(SRCROOT)/TTauri/BackingPipeline.frag",
+				"$(SRCROOT)/TTauri/GUI/BackingPipeline.vert",
+				"$(SRCROOT)/TTauri/GUI/BackingPipeline.frag",
 			);
 			outputFileListPaths = (
 			);
@@ -508,7 +517,9 @@
 				68A1EC92223C550200F882D2 /* Device.cpp in Sources */,
 				68A1EC98223C550200F882D2 /* WindowView.cpp in Sources */,
 				68A1ECB9223C550200F882D2 /* Queue.cpp in Sources */,
+				68A1ECB0223C550200F882D2 /* GUI.cpp in Sources */,
 				68A1ECAD223C550200F882D2 /* Pipeline.cpp in Sources */,
+				686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				68A1ECB3223C550200F882D2 /* Instance.cpp in Sources */,
 				686C02CE2231A8A4002F4063 /* Application.cpp in Sources */,
 				68A1EC9E223C550200F882D2 /* Window.cpp in Sources */,
@@ -519,6 +530,7 @@
 				68F2628822030EA70078E5E4 /* main.m in Sources */,
 				68A1EC9B223C550200F882D2 /* ImageView.cpp in Sources */,
 				68A1EC8F223C550200F882D2 /* QueueCapabilities.cpp in Sources */,
+				68A1ECA4223C550200F882D2 /* Window_win32.cpp in Sources */,
 				686C02D72231A8A4002F4063 /* Logging.cpp in Sources */,
 				68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */,
 			);
@@ -532,7 +544,9 @@
 				68A1EC93223C550200F882D2 /* Device.cpp in Sources */,
 				68A1EC99223C550200F882D2 /* WindowView.cpp in Sources */,
 				68A1ECBA223C550200F882D2 /* Queue.cpp in Sources */,
+				68A1ECB1223C550200F882D2 /* GUI.cpp in Sources */,
 				68A1ECAE223C550200F882D2 /* Pipeline.cpp in Sources */,
+				686C02D22231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				68A1ECB4223C550200F882D2 /* Instance.cpp in Sources */,
 				686C02CF2231A8A4002F4063 /* Application.cpp in Sources */,
 				68A1EC9F223C550200F882D2 /* Window.cpp in Sources */,
@@ -543,6 +557,7 @@
 				68F2629A22030EA70078E5E4 /* main.m in Sources */,
 				68A1EC9C223C550200F882D2 /* ImageView.cpp in Sources */,
 				68A1EC90223C550200F882D2 /* QueueCapabilities.cpp in Sources */,
+				68A1ECA5223C550200F882D2 /* Window_win32.cpp in Sources */,
 				686C02D82231A8A4002F4063 /* Logging.cpp in Sources */,
 				68F2629122030EA70078E5E4 /* AppDelegate.m in Sources */,
 			);
@@ -556,10 +571,12 @@
 				68A1EC91223C550200F882D2 /* QueueCapabilities.cpp in Sources */,
 				68A1EC97223C550200F882D2 /* View.cpp in Sources */,
 				68A1EC94223C550200F882D2 /* Device.cpp in Sources */,
+				68A1ECB2223C550200F882D2 /* GUI.cpp in Sources */,
 				68A1ECB5223C550200F882D2 /* Instance.cpp in Sources */,
 				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
 				68A1ECB8223C550200F882D2 /* vulkan_utils.cpp in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
+				686C02D32231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				68A1EC9D223C550200F882D2 /* ImageView.cpp in Sources */,
 				68A1ECAF223C550200F882D2 /* Pipeline.cpp in Sources */,
 				68A1ECA0223C550200F882D2 /* Window.cpp in Sources */,
@@ -570,6 +587,7 @@
 				686C02D62231A8A4002F4063 /* Time.cpp in Sources */,
 				68A1EC9A223C550200F882D2 /* WindowView.cpp in Sources */,
 				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,
+				68A1ECA6223C550200F882D2 /* Window_win32.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
