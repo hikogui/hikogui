@@ -9,14 +9,15 @@
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
-#include "Logging.hpp"
-#include "utils.hpp"
+#include "TTauri/Logging.hpp"
+#include "TTauri/utils.hpp"
 #include <boost/range/combine.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <vector>
 #include <tuple>
 
 namespace TTauri {
+namespace GUI {
 
 using namespace std;
 
@@ -374,4 +375,4 @@ std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device::a
     return memoryOffsetsAndSizes;
 }
 
-}
+}}

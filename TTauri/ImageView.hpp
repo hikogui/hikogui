@@ -13,6 +13,7 @@
 #include <memory>
 
 namespace TTauri {
+namespace GUI {
 
 class ImageView : public View {
 public:
@@ -25,4 +26,4 @@ public:
 
 };
 
-}
+}}

@@ -9,10 +9,11 @@
 #include "BackingPipeline.hpp"
 #include "Window.hpp"
 #include "Device.hpp"
-#include "Application.hpp"
+#include "TTauri/Application.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri {
+namespace GUI {
 
 using namespace TTauri;
 
@@ -89,4 +90,4 @@ std::vector<vk::VertexInputAttributeDescription> BackingPipeline::createVertexIn
     return Vertex::inputAttributeDescriptions();
 }
 
-}
+}}

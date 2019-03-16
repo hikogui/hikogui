@@ -11,14 +11,14 @@
 #include "Device.hpp"
 #include "Window.hpp"
 
-#include "Logging.hpp"
+#include "TTauri/Logging.hpp"
 
 #include <boost/assert.hpp>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri {
+namespace TTauri { namespace GUI {
 
 using namespace std;
 
@@ -395,4 +395,4 @@ std::vector<vk::Buffer> Pipeline::createVertexBuffers(size_t nrBuffers, size_t b
     return buffers;
 }
 
-}
+}}

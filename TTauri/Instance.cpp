@@ -8,10 +8,11 @@
 
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
-#include "Logging.hpp"
+#include "TTauri/Logging.hpp"
 #include <chrono>
 
 namespace TTauri {
+namespace GUI {
 
 using namespace std;
 
@@ -135,4 +136,4 @@ void Instance::maintanceThread(Instance *self)
     self->state = InstanceState::STOPPED;
 }
 
-}
+}}

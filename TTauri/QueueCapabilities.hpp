@@ -15,6 +15,7 @@
 #include <string>
 
 namespace TTauri {
+namespace GUI {
 
 struct QueueCapabilities {
     bool handlesGraphics;
@@ -79,4 +80,4 @@ struct QueueCapabilities {
 
 };
 
-}
+}}

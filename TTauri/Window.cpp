@@ -12,11 +12,11 @@
 #include "WindowView.hpp"
 #include "config.hpp"
 
-#include "Logging.hpp"
+#include "TTauri/Logging.hpp"
 
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri {
+namespace TTauri { namespace GUI {
 
 using namespace std;
 
@@ -441,4 +441,5 @@ bool Window::render(bool blockOnVSync)
     return true;
 }
 
-}
+
+}}

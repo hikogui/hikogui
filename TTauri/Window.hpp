@@ -17,7 +17,7 @@
 #include <memory>
 #include <mutex>
 
-namespace TTauri {
+namespace TTauri { namespace GUI {
 
 class Instance;
 class Device;
@@ -161,4 +161,4 @@ private:
     bool isOnScreen();
 };
 
-}
+}}

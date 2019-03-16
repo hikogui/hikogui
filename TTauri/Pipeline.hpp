@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace TTauri {
+namespace TTauri { namespace GUI {
 
 class Device;
 class Window;
@@ -120,4 +120,4 @@ protected:
     virtual void teardownPipeline();
 };
 
-}
+}}

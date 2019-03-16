@@ -18,7 +18,7 @@ Application::Application(std::shared_ptr<Delegate> delegate, std::vector<const c
     initializeLogging();
     LOG_INFO("Starting application.");
 
-    instance = std::make_shared<Instance>(vulkanExtensions);
+    instance = std::make_shared<GUI::Instance>(vulkanExtensions);
     instance->setPreferedDeviceUUID({});
 }
 

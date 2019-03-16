@@ -18,6 +18,9 @@
 #include <vector>
 
 namespace TTauri {
+namespace GUI {
+
+
 
 enum class InstanceState {
     IDLE,
@@ -93,4 +96,4 @@ private:
     static void maintanceThread(Instance *self);
 };
 
-}
+}}

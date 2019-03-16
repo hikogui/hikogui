@@ -12,6 +12,7 @@
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri {
+namespace GUI {
 
 class Device;
 class Instance;
@@ -35,4 +36,4 @@ public:
     ~Queue();
 };
 
-}
+}}
