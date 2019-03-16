@@ -12,14 +12,13 @@
 
 namespace TTauri {
 
-Application::Application(std::shared_ptr<Delegate> delegate, std::vector<const char *> vulkanExtensions) :
+std::shared_ptr<Application> Application::shared;
+
+Application::Application(std::shared_ptr<Delegate> delegate) :
     delegate(delegate)
 {
     initializeLogging();
     LOG_INFO("Starting application.");
-
-    instance = std::make_shared<GUI::Instance>(vulkanExtensions);
-    instance->setPreferedDeviceUUID({});
 }
 
 Application::~Application()
@@ -28,8 +27,18 @@ Application::~Application()
 
 void Application::initialize()
 {
-    delegate->initialize();    
+    if (!initialized) {
+        initialized = true;
+        delegate->initialize();
+    }
 }
 
-std::shared_ptr<Application> Application::shared;
+void Application::startingLoop()
+{
+    if (!loopStarted) {
+        loopStarted = true;
+        delegate->startingLoop();
+    }
+}
+
 }

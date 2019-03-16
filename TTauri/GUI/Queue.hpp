@@ -26,7 +26,6 @@ public:
     const QueueCapabilities queueCapabilities;
 
     Device *device;
-    Instance *instance;
 
     vk::CommandPool commandPool;
 

@@ -39,8 +39,6 @@ public:
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
 
-    Instance *instance;
-
     std::string deviceName;
     uint32_t vendorID;
     uint32_t deviceID;
@@ -103,7 +101,7 @@ public:
      */
     std::vector<std::pair<uint32_t, QueueCapabilities>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
 
-    Device(Instance *instance, vk::PhysicalDevice physicalDevice);
+    Device(vk::PhysicalDevice physicalDevice);
     ~Device();
 
     /*! Check if this device is a good match for this window.

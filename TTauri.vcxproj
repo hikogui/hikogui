@@ -201,9 +201,10 @@
     <ClCompile Include="TTauri\Application.cpp" />
     <ClCompile Include="TTauri\GUI\BackingPipeline.cpp" />
     <ClCompile Include="TTauri\GUI\Device.cpp" />
-    <ClCompile Include="TTauri\GUI\GUI.cpp" />
     <ClCompile Include="TTauri\GUI\ImageView.cpp" />
     <ClCompile Include="TTauri\GUI\Instance.cpp" />
+    <ClCompile Include="TTauri\GUI\Instance_vulkan.cpp" />
+    <ClCompile Include="TTauri\GUI\Instance_vulkan_win32.cpp" />
     <ClCompile Include="TTauri\GUI\Pipeline.cpp" />
     <ClCompile Include="TTauri\GUI\Queue.cpp" />
     <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp" />
@@ -222,9 +223,10 @@
     <ClInclude Include="TTauri\GUI\BackingPipeline.hpp" />
     <ClInclude Include="TTauri\GUI\config.hpp" />
     <ClInclude Include="TTauri\GUI\Device.hpp" />
-    <ClInclude Include="TTauri\GUI\GUI.hpp" />
     <ClInclude Include="TTauri\GUI\ImageView.hpp" />
     <ClInclude Include="TTauri\GUI\Instance.hpp" />
+    <ClInclude Include="TTauri\GUI\Instance_vulkan.hpp" />
+    <ClInclude Include="TTauri\GUI\Instance_vulkan_win32.hpp" />
     <ClInclude Include="TTauri\GUI\Pipeline.hpp" />
     <ClInclude Include="TTauri\GUI\Queue.hpp" />
     <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp" />

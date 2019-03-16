@@ -72,7 +72,6 @@ public:
     vk::Semaphore imageAvailableSemaphore;
     vk::Fence renderFinishedFence;
 
-    Instance *instance;
     Device *device;
 
     //! Location of the window on the screen.
@@ -97,7 +96,7 @@ public:
 
     std::shared_ptr<BackingPipeline> backingPipeline;
 
-    Window(Instance *instance, std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
+    Window(std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
 
     ~Window();
 

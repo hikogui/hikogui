@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "GUI/Instance.hpp"
+#include "utils.hpp"
 
 #include <boost/exception/all.hpp>
 #include <boost/filesystem.hpp>
@@ -30,10 +30,13 @@ public:
      */
     class Delegate {
     public:
-        /*! Called when the application needs to be initialized.
-         * This is a good place to open the window and setup an application's own objects.
+        /*! Called right after the constructor.
          */
         virtual void initialize() = 0;
+
+         /*! Called right before the application loop is started.
+         */
+        virtual void startingLoop() = 0;
     };
 
     struct Error : virtual boost::exception, virtual std::exception {};
@@ -42,9 +45,8 @@ public:
      */
     const std::shared_ptr<Delegate> delegate;
 
-    /*! Vulkan instance created for this application.
-     */
-    std::shared_ptr<GUI::Instance> instance;
+    bool initialized = false;
+    bool loopStarted = false;
 
     /*! Directory where resources are located.
      */
@@ -54,22 +56,16 @@ public:
      * \param applicationDelegate application delegate to use to manage the application
      * \param vulkanExtensions Vulkan extensions that are needed to use Vulkan on this operating system.
      */
-    Application(std::shared_ptr<Delegate> applicationDelegate, std::vector<const char *> vulkanExtensions);
+    Application(std::shared_ptr<Delegate> applicationDelegate);
 
     virtual ~Application();
 
-    /*! Open a new window.
-     *
-     * \param windowDelegate window delegate to use to manage the window.
-     * \param title Title for the new window
-     * \return the window that was created
-     */
-    virtual std::shared_ptr<GUI::Window> createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
 
     /*! Initialize the application.
-     * Must be called from main after constructing the Application.
      */
     virtual void initialize();
+
+    virtual void startingLoop();
 
     /*! Run the operating system's main loop.
      * Must be called after initialize().

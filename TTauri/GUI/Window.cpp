@@ -23,9 +23,8 @@ using namespace std;
 #pragma mark "Public"
 // Public methods need to lock the instance.
 
-Window::Window(Instance *instance, std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface) :
+Window::Window(std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface) :
     state(State::NO_DEVICE),
-    instance(instance),
     delegate(delegate),
     title(title),
     intrinsic(surface)

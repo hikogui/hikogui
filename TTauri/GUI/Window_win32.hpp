@@ -9,16 +9,14 @@
 namespace TTauri {
 namespace GUI {
 
-class Instance;
-
 class Window_win32 : public Window {
 public:
     HWND win32Window;
 
-    Window_win32(Instance *instance, std::shared_ptr<Delegate> delegate, const std::string &title, int win32Show);
+    Window_win32(std::shared_ptr<Delegate> delegate, const std::string &title);
     ~Window_win32();
 
-    vk::SurfaceKHR Window_win32::createWindow(Instance *instance, const std::string &title, int win32Show);
+    vk::SurfaceKHR Window_win32::createWindow(const std::string &title);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();

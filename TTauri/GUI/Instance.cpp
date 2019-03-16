@@ -7,8 +7,11 @@
 //
 
 #include "Instance.hpp"
+
 #include "vulkan_utils.hpp"
+
 #include "TTauri/Logging.hpp"
+
 #include <chrono>
 
 namespace TTauri {
@@ -16,124 +19,93 @@ namespace GUI {
 
 using namespace std;
 
-static bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions)
-{
-    auto availableExtensions = std::unordered_set<std::string>();
-    for (auto availableExtensionProperties : vk::enumerateInstanceExtensionProperties()) {
-        availableExtensions.insert(std::string(availableExtensionProperties.extensionName));
-    }
+std::shared_ptr<Instance> Instance::shared = nullptr;
 
-    for (auto requiredExtension : requiredExtensions) {
-        if (availableExtensions.count(requiredExtension) == 0) {
-            return false;
-        }
-    }
-    return true;
+Instance::Instance()
+{
+    maintanceThread = thread(Instance::maintenanceLoop, this);
 }
 
-Instance::Instance(const std::vector<const char *> &extensionNames) :
-    requiredExtensions(extensionNames), requiredLayers(), requiredFeatures(), requiredLimits()
+Instance::~Instance()
 {
-    applicationInfo = vk::ApplicationInfo(
-        "TTauri App", VK_MAKE_VERSION(0, 1, 0),
-        "TTauri Engine", VK_MAKE_VERSION(0, 1, 0),
-        VK_API_VERSION_1_0
-    );
-
-    requiredExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-    if (!hasRequiredExtensions(requiredExtensions)) {
-        BOOST_THROW_EXCEPTION(Instance::Error());
-    }
-
-    auto instanceCreateInfo = vk::InstanceCreateInfo(
-        vk::InstanceCreateFlags(),
-        &applicationInfo
-    );
-    setExtensionNames(instanceCreateInfo, requiredExtensions);
-
-#if defined(_WIN32) && !defined(NDEBUG)
-    requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-#endif
-    setLayerNames(instanceCreateInfo, requiredLayers);
-
-    LOG_INFO("Creating Vulkan instance.");
-    intrinsic = vk::createInstance(instanceCreateInfo);
-
-#if (VK_HEADER_VERSION == 97)
-    loader = vk::DispatchLoaderDynamic(intrinsic);
-#else
-    loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
-#endif
-    for (auto _physicalDevice: intrinsic.enumeratePhysicalDevices()) {
-        auto physicalDevice = make_shared<Device>(this, _physicalDevice);
-        physicalDevices.push_back(physicalDevice);
-    }
-
-    maintanceThreadInstance = std::thread(Instance::maintanceThread, this);
+    stopMaintenance = true;
+    maintanceThread.join();
 }
 
-bool Instance::add(std::shared_ptr<Window> window)
+void Instance::initialize()
+{
+    std::scoped_lock lock(mutex);
+}
+
+void Instance::setPreferedDevice(boost::uuids::uuid deviceUUID)
+{
+    std::scoped_lock lock(mutex);
+}
+
+shared_ptr<Device> Instance::findBestDeviceForWindow(const shared_ptr<Window> &window)
 {
     int bestScore = -1;
     shared_ptr<Device> bestDevice;
-    
-    for (auto physicalDevice: physicalDevices) {
-        auto score = physicalDevice->score(window);
+
+    std::scoped_lock lock(mutex);
+
+    for (auto device : devices) {
+        auto score = device->score(window);
         LOG_INFO("Device has score=%i.") % score;
 
         if (score >= bestScore) {
             bestScore = score;
-            bestDevice = physicalDevice;
+            bestDevice = device;
         }
     }
 
     switch (bestScore) {
     case -1:
-        return false;
+        return nullptr;
     case 0:
         fprintf(stderr, "Could not really find a device that can present this window.");
         /* FALLTHROUGH */
     default:
-        bestDevice->add(window);
+        return bestDevice;
     }
-    return true;
 }
 
-Instance::~Instance()
+void Instance::add(shared_ptr<Window> window)
 {
-    state = InstanceState::STOPPING;
-    while (state != InstanceState::STOPPED) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(67));
-    };
+    std::scoped_lock lock(mutex);
 
-    intrinsic.destroy();
+    auto device = findBestDeviceForWindow(window);
+    if (!device) {
+        BOOST_THROW_EXCEPTION(ErrorNoDeviceForWindow());
+    }
+
+    device->add(window);
 }
-
 
 void Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
-    for (auto physicalDevice: physicalDevices) {
-        physicalDevice->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
+    std::scoped_lock lock(mutex);
+
+    for (auto device : devices) {
+        device->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
     }
 }
 
-void Instance::maintance()
+void Instance::maintenance()
 {
-    for (auto device: physicalDevices) {
+    std::scoped_lock lock(mutex);
+
+    for (auto device : devices) {
         device->maintance();
     }
 }
 
-void Instance::maintanceThread(Instance *self)
+void Instance::maintenanceLoop(Instance *self)
 {
-    self->state = InstanceState::RUNNING;
-
-    while (self->state == InstanceState::RUNNING) {
+    while (!self->stopMaintenance) {
         std::this_thread::sleep_for(std::chrono::milliseconds(67));
-        self->maintance();
+        self->maintenance();
     }
-    self->state = InstanceState::STOPPED;
 }
 
 }}

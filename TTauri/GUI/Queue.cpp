@@ -14,7 +14,7 @@ namespace TTauri {
 namespace GUI {
 
 Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities) :
-    device(device), instance(device->instance), intrinsic(device->intrinsic.getQueue(queueFamilyIndex, queueIndex)),
+    device(device), intrinsic(device->intrinsic.getQueue(queueFamilyIndex, queueIndex)),
     queueIndex(queueIndex), queueFamilyIndex(queueFamilyIndex),
     queueCapabilities(queueCapabilities)
 {

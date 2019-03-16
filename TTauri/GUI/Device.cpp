@@ -7,14 +7,18 @@
 //
 
 #include "Device.hpp"
-#include "Instance.hpp"
+
+#include "Instance_vulkan.hpp"
 #include "vulkan_utils.hpp"
+
 #include "TTauri/Logging.hpp"
 #include "TTauri/utils.hpp"
+
 #include <boost/range/combine.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <vector>
+
 #include <tuple>
+#include <vector>
 
 namespace TTauri {
 namespace GUI {
@@ -36,10 +40,11 @@ static bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, cons
     return true;
 }
 
-Device::Device(Instance *instance, vk::PhysicalDevice physicalDevice) :
-    instance(instance), physicalIntrinsic(physicalDevice), state(DeviceState::NO_DEVICE)
+Device::Device(vk::PhysicalDevice physicalDevice) :
+    physicalIntrinsic(physicalDevice),
+    state(DeviceState::NO_DEVICE)
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(instance->loader);
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(getShared<Instance_vulkan>()->loader);
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
@@ -68,13 +73,12 @@ std::string Device::str() const
     return (boost::format("%04x:%04x %s %s") % vendorID % deviceID % deviceName % deviceUUID).str();
 }
 
-
 void Device::initializeDevice(std::shared_ptr<Window> window)
 {
     float defaultQueuePriority = 1.0;
 
     vector<vk::DeviceQueueCreateInfo> deviceQueueCreateInfos;
-    for (auto queueFamilyIndexAndCapabilities: queueFamilyIndicesAndCapabilities) {
+    for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         auto index = queueFamilyIndexAndCapabilities.first;
 
         auto deviceQueueCreateInfo = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), index, 1, &defaultQueuePriority);
@@ -82,14 +86,14 @@ void Device::initializeDevice(std::shared_ptr<Window> window)
     }
 
     auto deviceCreateInfo = vk::DeviceCreateInfo();
-    deviceCreateInfo.setPEnabledFeatures(&(instance->requiredFeatures));
+    deviceCreateInfo.setPEnabledFeatures(&(getShared<Instance_vulkan>()->requiredFeatures));
     setQueueCreateInfos(deviceCreateInfo, deviceQueueCreateInfos);
     setExtensionNames(deviceCreateInfo, requiredExtensions);
-    setLayerNames(deviceCreateInfo, instance->requiredLayers);
+    setLayerNames(deviceCreateInfo, getShared<Instance_vulkan>()->requiredLayers);
 
     intrinsic = physicalIntrinsic.createDevice(deviceCreateInfo);
 
-    for (auto queueFamilyIndexAndCapabilities: queueFamilyIndicesAndCapabilities) {
+    for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         auto index = queueFamilyIndexAndCapabilities.first;
         auto queueCapabilities = queueFamilyIndexAndCapabilities.second;
 
@@ -128,7 +132,8 @@ void Device::remove(std::shared_ptr<Window> window)
     windows.erase(window);
 }
 
-static bool scoreIsGreater(const pair<uint32_t, QueueCapabilities> &a, const pair<uint32_t, QueueCapabilities> &b) {
+static bool scoreIsGreater(const pair<uint32_t, QueueCapabilities> &a, const pair<uint32_t, QueueCapabilities> &b)
+{
     return a.second.score() > b.second.score();
 }
 
@@ -140,7 +145,7 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyI
 
     // Create a sorted list of queueFamilies depending on the scoring.
     vector<pair<uint32_t, QueueCapabilities>> queueFamilieScores;
-    for (auto queueFamilyProperties: physicalIntrinsic.getQueueFamilyProperties()) {
+    for (auto queueFamilyProperties : physicalIntrinsic.getQueueFamilyProperties()) {
         QueueCapabilities capabilities;
         if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eGraphics) {
             capabilities.handlesGraphics = true;
@@ -161,7 +166,7 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyI
 
         LOG_INFO("    * %i: capabilities=%s, score=%i") % index % capabilities.str() % score;
 
-        queueFamilieScores.push_back({index, capabilities});
+        queueFamilieScores.push_back({ index, capabilities });
         index++;
     }
     sort(queueFamilieScores.begin(), queueFamilieScores.end(), scoreIsGreater);
@@ -169,12 +174,12 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyI
     // Iterativly add indices if it completes the totalQueueCapabilities.
     vector<pair<uint32_t, QueueCapabilities>> queueFamilyIndicesAndQueueCapabilitiess;
     QueueCapabilities totalCapabilities;
-    for (auto queueFamilyScore: queueFamilieScores) {
+    for (auto queueFamilyScore : queueFamilieScores) {
         auto index = get<0>(queueFamilyScore);
         auto capabilities = get<1>(queueFamilyScore);
 
         if (!totalCapabilities.handlesAllOff(capabilities)) {
-            queueFamilyIndicesAndQueueCapabilitiess.push_back({index, capabilities - totalCapabilities});
+            queueFamilyIndicesAndQueueCapabilitiess.push_back({ index, capabilities - totalCapabilities });
             totalCapabilities |= capabilities;
         }
     }
@@ -187,12 +192,12 @@ int Device::score(std::shared_ptr<Window> window)
     uint32_t score = 0;
 
     LOG_INFO("Scoring device: %s") % str();
-    if (!hasRequiredFeatures(physicalIntrinsic, instance->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, getShared<Instance_vulkan>()->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, instance->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, getShared<Instance_vulkan>()->requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -204,7 +209,7 @@ int Device::score(std::shared_ptr<Window> window)
 
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(window);
     QueueCapabilities deviceCapabilities;
-    for (auto queueFamilyIndexAndCapabilities: queueFamilyIndicesAndCapabilities) {
+    for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
     }
     LOG_INFO(" - Capabilities=%s") % deviceCapabilities.str();
@@ -222,7 +227,7 @@ int Device::score(std::shared_ptr<Window> window)
     LOG_INFO(" - Surface formats:");
     uint32_t bestSurfaceFormatScore = 0;
     auto formats = physicalIntrinsic.getSurfaceFormatsKHR(window->intrinsic);
-    for (auto format: formats) {
+    for (auto format : formats) {
         uint32_t score = 0;
 
         LOG_INFO("    * colorSpace=%s, format=%s") % vk::to_string(format.colorSpace) % vk::to_string(format.format);
@@ -258,7 +263,7 @@ int Device::score(std::shared_ptr<Window> window)
     LOG_INFO(" - Surface present modes:");
     uint32_t bestSurfacePresentModeScore = 0;
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(window->intrinsic);
-    for (auto presentMode: presentModes) {
+    for (auto presentMode : presentModes) {
         uint32_t score = 0;
 
         LOG_INFO("    * presentMode=%s") % vk::to_string(presentMode);
@@ -301,7 +306,7 @@ void Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
 {
     if (stateMutex.try_lock()) {
         if (state == DeviceState::READY_TO_DRAW) {
-            for (auto window: windows) {
+            for (auto window : windows) {
                 window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
                 blockOnVSync = false;
             }
@@ -312,7 +317,7 @@ void Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
 
 void Device::maintance()
 {
-    for (auto window: windows) {
+    for (auto window : windows) {
         window->maintenance();
     }
 }
@@ -327,12 +332,11 @@ uint32_t Device::findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryProperty
     BOOST_THROW_EXCEPTION(Device::AllocateMemoryError());
 }
 
-
 vk::DeviceMemory Device::allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
 {
     auto memoryTypeIndex = findMemoryType(validMemoryTypeMask, properties);
 
-    vk::MemoryAllocateInfo memoryAllocateInfo = {size, memoryTypeIndex};
+    vk::MemoryAllocateInfo memoryAllocateInfo = { size, memoryTypeIndex };
     return intrinsic.allocateMemory(memoryAllocateInfo, nullptr);
 }
 
@@ -354,7 +358,7 @@ std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device::a
         size = offset + memoryRequirements.size;
         sizes.push_back(memoryRequirements.size);
 
-       memoryTypeBits |= memoryRequirements.memoryTypeBits;
+        memoryTypeBits |= memoryRequirements.memoryTypeBits;
     }
     auto memory = allocateDeviceMemory(size, memoryTypeBits, properties);
 

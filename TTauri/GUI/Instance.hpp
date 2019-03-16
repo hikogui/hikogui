@@ -9,91 +9,71 @@
 #pragma once
 
 #include "Device.hpp"
-#include "vulkan_utils.hpp"
 #include "Window.hpp"
-#include <vulkan/vulkan.hpp>
+
+#include "TTauri/utils.hpp"
+
 #include <boost/uuid/uuid.hpp>
+
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <vector>
 
 namespace TTauri {
 namespace GUI {
 
-
-
-enum class InstanceState {
-    IDLE,
-    RUNNING,
-    STOPPING,
-    STOPPED
-};
-
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
  */
 class Instance {
 public:
+    std::recursive_mutex mutex;
+
     struct Error : virtual boost::exception, virtual std::exception {};
-
-    InstanceState state = InstanceState::IDLE;
-    
-    //! Vulkan instance.
-    vk::Instance intrinsic;
-
-    vk::DispatchLoaderDynamic loader;
-
-    //! List of extension that where requested when the instance was created.
-    std::vector<const char *> requiredExtensions;
-
-    //! List of extension that where requested when the instance was created.
-    std::vector<const char *> requiredLayers;
-
-    //! List of required features for each device.
-    vk::PhysicalDeviceFeatures requiredFeatures;
-
-    //! List of required limits for each device.
-    vk::PhysicalDeviceLimits requiredLimits;
-
-    //! Application info passed when the instance was created.
-    vk::ApplicationInfo applicationInfo;
+    struct ErrorNoDeviceForWindow : virtual Error {};
 
     //! List of all devices.
-    std::vector<std::shared_ptr<Device>> physicalDevices;
+    std::vector<std::shared_ptr<Device>> devices;
 
-    bool add(std::shared_ptr<Window> window);
+    Instance();
+    ~Instance();
 
-    void setPreferedDeviceUUID(boost::uuids::uuid deviceUUID) {
+    virtual void initialize();
 
-        // XXX Move Windows to new prefered device.
-    }
+    virtual void add(std::shared_ptr<Window> window);
+
+    /*! Open a new window.
+     *
+     * \param windowDelegate window delegate to use to manage the window.
+     * \param title Title for the new window
+     * \return the window that was created
+     */
+    virtual std::shared_ptr<GUI::Window> createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
+
+    virtual void setPreferedDevice(boost::uuids::uuid deviceUUID);
 
     /*! Refresh Display.
      *
      * \outTimestamp Number of nanoseconds since system start.
      * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      */
-    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
+    virtual void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
-    /*! Create an instance of a Device.
-     * After the constructor is completed it may be used to get a
-     * Vulkan surface and passed to `Window` constructors.
-     *
-     * \param extensions a list of Vulkan extensions required. Most useful
-     *      for including operating system specific surface extensions.
-     */
-    Instance(const std::vector<const char *> &extensions);
-    ~Instance();
+    static std::shared_ptr<Instance> shared;
 
-private:
-    std::thread maintanceThreadInstance;
+protected:
+    std::shared_ptr<Device> findBestDeviceForWindow(const std::shared_ptr<Window> &window);
+
+    std::thread maintanceThread;
 
     /*! Called when maintance is needed.
      * Run on seperate thread, 15 times per second.
      */
-    void maintance();
+    void maintenance();
+    bool stopMaintenance = false;
 
-    static void maintanceThread(Instance *self);
+    static void maintenanceLoop(Instance *self);
 };
 
 }}

@@ -1,25 +1,23 @@
 
-#include "Logging.hpp"
 #include "Application_win32.hpp"
 
+#include "Logging.hpp"
+
+#include "GUI/Instance.hpp"
 #include "GUI/Window_win32.hpp"
 
 #include <vulkan/vulkan.hpp>
+
 #include <thread>
 
 namespace TTauri {
 
-static void redrawLoop(Application_win32 *self)
-{
-    while (true) {
-        self->instance->updateAndRender(0, 0, true);
-    }
-}
-
-Application_win32::Application_win32(std::shared_ptr<Delegate> delegate, HINSTANCE win32Instance, PWSTR commandLine, int win32Show) :
-    Application(delegate, { VK_KHR_WIN32_SURFACE_EXTENSION_NAME }),
-    win32Instance(win32Instance),
-    win32Show(win32Show)
+Application_win32::Application_win32(std::shared_ptr<Delegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
+    Application(delegate),
+    hInstance(hInstance),
+    hPrevInstance(hPrevInstance),
+    pCmdLine(pCmdLine),
+    nCmdShow(nCmdShow)
 {
     // Resource path, is the same directory as where the executable lives.
     wchar_t modulePathWChar[MAX_PATH];
@@ -31,28 +29,16 @@ Application_win32::Application_win32(std::shared_ptr<Delegate> delegate, HINSTAN
 
     auto modulePath = boost::filesystem::path(modulePathWChar);
     resourceDir = modulePath.parent_path();
-
-    // Start update loop.
-    redrawThread = std::make_shared<std::thread>(redrawLoop, this);
 }
 
 Application_win32::~Application_win32()
 {
 }
 
-std::shared_ptr<GUI::Window> Application_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
-{
-    auto window = std::make_shared<GUI::Window_win32>(instance.get(), windowDelegate, title, win32Show);
-    if (!instance->add(window)) {
-        LOG_FATAL("Could not open window.");
-        abort();
-    }
-    window->initialize();
-    return window;
-}
-
 int Application_win32::loop()
 {
+    startingLoop();
+
     // Run the message loop.
     MSG msg = {};
     while (GetMessage(&msg, NULL, 0, 0)) {
@@ -62,5 +48,4 @@ int Application_win32::loop()
 
     return 0;
 }
-
 }

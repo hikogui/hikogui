@@ -1,12 +1,21 @@
 
 #include "Window_win32.hpp"
 
-#include "Instance.hpp"
+#include "Instance_vulkan.hpp"
 
 #include "TTauri/Application_win32.hpp"
 
 namespace TTauri {
 namespace GUI {
+
+using namespace TTauri;
+
+
+const wchar_t *Window_win32::win32WindowClassName = nullptr;
+WNDCLASS Window_win32::win32WindowClass = {};
+bool Window_win32::win32WindowClassIsRegistered = false;
+std::unordered_map<std::uintptr_t, Window_win32 *> Window_win32::win32WindowMap = {};
+bool Window_win32::firstWindowHasBeenOpened = false;
 
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -39,13 +48,11 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM l
 void Window_win32::createWindowClass()
 {
     if (!Window_win32::win32WindowClassIsRegistered) {
-        auto win32Instance = std::dynamic_pointer_cast<Application_win32>(Application::shared)->win32Instance;
-
-        // Register the window class.
+         // Register the window class.
         Window_win32::win32WindowClassName = L"TTauri Window Class";
 
         Window_win32::win32WindowClass.lpfnWndProc = WindowProc;
-        Window_win32::win32WindowClass.hInstance = win32Instance;
+        Window_win32::win32WindowClass.hInstance = getShared<Application_win32>()->hInstance;
         Window_win32::win32WindowClass.lpszClassName = Window_win32::win32WindowClassName;
 
         RegisterClass(&win32WindowClass);
@@ -53,11 +60,10 @@ void Window_win32::createWindowClass()
     Window_win32::win32WindowClassIsRegistered = true;
 }
 
-vk::SurfaceKHR Window_win32::createWindow(Instance *instance, const std::string &title, int win32Show)
+vk::SurfaceKHR Window_win32::createWindow(const std::string &title)
 {
     Window_win32::createWindowClass();
 
-    auto win32Instance = std::dynamic_pointer_cast<Application_win32>(Application::shared)->win32Instance;
     win32Window = CreateWindowEx(
         0, // Optional window styles.
         Window_win32::win32WindowClassName, // Window class
@@ -72,7 +78,7 @@ vk::SurfaceKHR Window_win32::createWindow(Instance *instance, const std::string 
 
         NULL, // Parent window
         NULL, // Menu
-        win32Instance, // Instance handle
+        getShared<Application_win32>()->hInstance, // Instance handle
         this
     );
 
@@ -81,17 +87,17 @@ vk::SurfaceKHR Window_win32::createWindow(Instance *instance, const std::string 
     }
 
     if (!Window_win32::firstWindowHasBeenOpened) {
-        ShowWindow(win32Window, win32Show);
+        ShowWindow(win32Window, getShared<Application_win32>()->nCmdShow);
         Window_win32::firstWindowHasBeenOpened = true;
     }
     ShowWindow(win32Window, SW_SHOW);
 
     auto win32SurfaceCreateInfoKHR = vk::Win32SurfaceCreateInfoKHR(
         vk::Win32SurfaceCreateFlagsKHR(),
-        win32Instance,
+        getShared<Application_win32>()->hInstance,
         win32Window);
 
-    return instance->intrinsic.createWin32SurfaceKHR(win32SurfaceCreateInfoKHR);
+    return getShared<Instance_vulkan>()->intrinsic.createWin32SurfaceKHR(win32SurfaceCreateInfoKHR);
 
     // XXX Should be done in the loop
     RECT windowRect;
@@ -105,8 +111,8 @@ vk::SurfaceKHR Window_win32::createWindow(Instance *instance, const std::string 
     setWindowRectangle(rect);
 }
 
-Window_win32::Window_win32(Instance *instance, std::shared_ptr<Window::Delegate> delegate, const std::string &title, int win32Show) :
-    Window(instance, delegate, title, createWindow(instance, title, win32Show))
+Window_win32::Window_win32(std::shared_ptr<Window::Delegate> delegate, const std::string &title) :
+    Window(delegate, title, createWindow(title))
 {
 }
 
@@ -118,16 +124,11 @@ LRESULT Window_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 {
     switch (uMsg) {
     case WM_DESTROY:
-        PostQuitMessage(0);
+        //PostQuitMessage(0);
         return 0;
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-const wchar_t *Window_win32::win32WindowClassName = nullptr;
-WNDCLASS Window_win32::win32WindowClass = {};
-bool Window_win32::win32WindowClassIsRegistered = false;
-std::unordered_map<std::uintptr_t, Window_win32 *> Window_win32::win32WindowMap = {};
-bool Window_win32::firstWindowHasBeenOpened = false;
 
 }}
