@@ -34,12 +34,13 @@ public:
          */
         virtual void initialize() = 0;
 
-         /*! Called right before the application loop is started.
+        /*! Called right before the application loop is started.
          */
         virtual void startingLoop() = 0;
     };
 
     struct Error : virtual boost::exception, virtual std::exception {};
+    struct ResourceDirError : virtual Error {};
 
     /*! Application delegate
      */
@@ -59,7 +60,6 @@ public:
     Application(std::shared_ptr<Delegate> applicationDelegate);
 
     virtual ~Application();
-
 
     /*! Initialize the application.
      */

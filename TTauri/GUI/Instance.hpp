@@ -49,7 +49,7 @@ public:
      * \param title Title for the new window
      * \return the window that was created
      */
-    virtual std::shared_ptr<GUI::Window> createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
+    virtual void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
 
     virtual void setPreferedDevice(boost::uuids::uuid deviceUUID);
 

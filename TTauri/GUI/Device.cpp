@@ -10,7 +10,7 @@
 
 #include "Instance_vulkan.hpp"
 #include "vulkan_utils.hpp"
-
+#include "Window_vulkan.hpp"
 #include "TTauri/Logging.hpp"
 #include "TTauri/utils.hpp"
 
@@ -42,7 +42,7 @@ static bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, cons
 
 Device::Device(vk::PhysicalDevice physicalDevice) :
     physicalIntrinsic(physicalDevice),
-    state(DeviceState::NO_DEVICE)
+    state(State::NO_DEVICE)
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(getShared<Instance_vulkan>()->loader);
 
@@ -109,7 +109,7 @@ void Device::initializeDevice(std::shared_ptr<Window> window)
         }
     }
 
-    state = DeviceState::READY_TO_DRAW;
+    state = State::READY_TO_DRAW;
 }
 
 void Device::add(std::shared_ptr<Window> window)
@@ -118,7 +118,7 @@ void Device::add(std::shared_ptr<Window> window)
         initializeDevice(window);
     }
 
-    std::scoped_lock lock(stateMutex);
+    std::scoped_lock lock(mutex);
 
     windows.insert(window);
     window->setDevice(this);
@@ -126,7 +126,7 @@ void Device::add(std::shared_ptr<Window> window)
 
 void Device::remove(std::shared_ptr<Window> window)
 {
-    std::scoped_lock lock(stateMutex);
+    std::scoped_lock lock(mutex);
 
     window->setDevice(nullptr);
     windows.erase(window);
@@ -137,8 +137,13 @@ static bool scoreIsGreater(const pair<uint32_t, QueueCapabilities> &a, const pai
     return a.second.score() > b.second.score();
 }
 
-std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyIndices(std::shared_ptr<Window> window)
+std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyIndices(std::shared_ptr<Window> _window)
 {
+    auto window = std::dynamic_pointer_cast<Window_vulkan>(_window);
+    if (!window) {
+        BOOST_THROW_EXCEPTION(NonVulkanWindowError());
+    }
+
     LOG_INFO(" - Scoring QueueFamilies");
 
     uint32_t index = 0;
@@ -187,8 +192,13 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device::findBestQueueFamilyI
     return queueFamilyIndicesAndQueueCapabilitiess;
 }
 
-int Device::score(std::shared_ptr<Window> window)
+int Device::score(std::shared_ptr<Window> _window)
 {
+    auto window = std::dynamic_pointer_cast<Window_vulkan>(_window);
+    if (!window) {
+        BOOST_THROW_EXCEPTION(NonVulkanWindowError());
+    }
+
     uint32_t score = 0;
 
     LOG_INFO("Scoring device: %s") % str();
@@ -304,14 +314,14 @@ int Device::score(std::shared_ptr<Window> window)
 
 void Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
-    if (stateMutex.try_lock()) {
-        if (state == DeviceState::READY_TO_DRAW) {
+    if (mutex.try_lock()) {
+        if (state == State::READY_TO_DRAW) {
             for (auto window : windows) {
                 window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
                 blockOnVSync = false;
             }
         }
-        stateMutex.unlock();
+        mutex.unlock();
     }
 }
 

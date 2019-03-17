@@ -33,7 +33,6 @@ class MyApplicationDelegate : public Application::Delegate {
 public:
     virtual void initialize()
     {
-       
     }
 
     virtual void startingLoop()
@@ -44,7 +43,7 @@ public:
     }
 };
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
     auto myApplicationDelegate = std::make_shared<MyApplicationDelegate>();
 

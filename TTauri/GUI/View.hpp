@@ -34,8 +34,8 @@ public:
     std::vector<std::shared_ptr<View>> children;
 
     //! Location of the frame compared to the parent-frame.
-    glm::vec3 position;
-    glm::vec3 extent;
+    glm::vec3 position = {0.0, 0.0, 0.0};
+    glm::vec3 extent = {0.0, 0.0, 0.0};
 
     /*! Constructor for creating subviews.
      */

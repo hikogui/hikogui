@@ -1,5 +1,5 @@
 #include "Instance_vulkan_win32.hpp"
-#include "Window_win32.hpp"
+#include "Window_vulkan_win32.hpp"
 
 namespace TTauri {
 namespace GUI {
@@ -18,14 +18,13 @@ Instance_vulkan_win32::~Instance_vulkan_win32()
 }
 
 
-std::shared_ptr<GUI::Window> Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
+void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
 {
     std::scoped_lock lock(mutex);
 
-    auto window = std::make_shared<GUI::Window_win32>(windowDelegate, title);
+    auto window = std::make_shared<GUI::Window_vulkan_win32>(windowDelegate, title);
     getShared<Instance>()->add(window);
     window->initialize();
-    return window;
 }
 
 void Instance_vulkan_win32::updateAndRenderLoop(Instance_vulkan_win32 *self)

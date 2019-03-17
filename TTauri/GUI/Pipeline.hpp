@@ -23,6 +23,9 @@ class Window;
 
 class Pipeline {
 public:
+    struct Error : virtual boost::exception, virtual std::exception {};
+    struct NonVulkanWindowError : virtual Error {};
+
     vk::Pipeline intrinsic;
 
     Window *window;
@@ -64,8 +67,8 @@ protected:
     vk::DeviceMemory vertexBufferMemory;
     std::vector<size_t> vertexBufferOffsets;
     std::vector<size_t> vertexBufferSizes;
-    size_t vertexBufferDataSize;
-    void *vertexBufferData;
+    size_t vertexBufferDataSize = 0;
+    void *vertexBufferData = nullptr;
 
     boost::filesystem::path vertexShaderPath;
     boost::filesystem::path fragmentShaderPath;

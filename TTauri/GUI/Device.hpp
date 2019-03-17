@@ -10,10 +10,13 @@
 
 #include "Queue.hpp"
 #include "Window.hpp"
-#include <vulkan/vulkan.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <mutex>
+
 #include <unordered_set>
+#include <vulkan/vulkan.hpp>
+
+#include <boost/uuid/uuid.hpp>
+
+#include <mutex>
 #include <tuple>
 
 namespace TTauri {
@@ -21,20 +24,23 @@ namespace GUI {
 
 class Instance;
 
-enum class DeviceState {
-    NO_DEVICE,
-    READY_TO_DRAW,
-};
 
 /*! A Device that handles a set of windows.
  */
 class Device {
-private:
-    std::recursive_mutex stateMutex;
-    DeviceState state;
-
 public:
-    struct AllocateMemoryError : virtual boost::exception, virtual std::exception {};
+
+    enum class State {
+        NO_DEVICE,
+        READY_TO_DRAW,
+    };
+
+    std::recursive_mutex mutex;
+    State state;
+
+    struct Error : virtual boost::exception, virtual std::exception {};
+    struct AllocateMemoryError : virtual Error {};
+    struct NonVulkanWindowError : virtual Error {};
 
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
@@ -42,7 +48,7 @@ public:
     std::string deviceName;
     uint32_t vendorID;
     uint32_t deviceID;
-    vk::PhysicalDeviceType deviceType;
+    vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     boost::uuids::uuid deviceUUID;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
 
@@ -58,12 +64,12 @@ public:
     /*! Best surfae format.
      * score(window) must be called before initializeDevice(window);
      */
-    vk::SurfaceFormatKHR bestSurfaceFormat;
+    vk::SurfaceFormatKHR bestSurfaceFormat = {};
 
     /*! Best surfae format.
      * score(window) must be called before initializeDevice(window);
      */
-    vk::PresentModeKHR bestSurfacePresentMode;
+    vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
     /*! A queue for sending graphics commands to.
      * These queue objects may be shared.

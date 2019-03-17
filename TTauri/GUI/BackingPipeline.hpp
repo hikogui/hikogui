@@ -20,8 +20,8 @@ namespace GUI {
 class BackingPipeline : public Pipeline {
 public:
     struct PushConstants {
-        glm::vec2 windowExtent;
-        glm::vec2 viewportScale;
+        glm::vec2 windowExtent = {0.0, 0.0};
+        glm::vec2 viewportScale = {0.0, 0.0};
 
         static std::vector<vk::PushConstantRange> pushConstantRanges()
         {
@@ -73,7 +73,7 @@ public:
 
 protected:
     PushConstants pushConstants;
-    size_t numberOfVertices;
+    size_t numberOfVertices = 0;
 
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
     virtual std::vector<vk::ShaderModule> createShaderModules() const;

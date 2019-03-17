@@ -9,7 +9,7 @@
 #include "Pipeline.hpp"
 
 #include "Device.hpp"
-#include "Window.hpp"
+#include "Window_vulkan.hpp"
 
 #include "TTauri/Logging.hpp"
 
@@ -247,7 +247,11 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
 
     std::array<float, 4> blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
     auto clearColor = vk::ClearValue(vk::ClearColorValue(blackColor));
-    auto renderPassBeginInfo = vk::RenderPassBeginInfo(renderPass, window->swapchainFramebuffers[imageIndex], scissors[0], 1, &clearColor);
+    auto vulkanWindow = dynamic_cast<Window_vulkan *>(window);
+    if (!vulkanWindow) {
+        BOOST_THROW_EXCEPTION(NonVulkanWindowError());
+    }
+    auto renderPassBeginInfo = vk::RenderPassBeginInfo(renderPass, vulkanWindow->swapchainFramebuffers[imageIndex], scissors[0], 1, &clearColor);
     commandBuffers[imageIndex].beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 
     commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);

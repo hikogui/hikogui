@@ -52,30 +52,38 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="PropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -210,7 +218,8 @@
     <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp" />
     <ClCompile Include="TTauri\GUI\View.cpp" />
     <ClCompile Include="TTauri\GUI\vulkan_utils.cpp" />
-    <ClCompile Include="TTauri\GUI\Window_win32.cpp" />
+    <ClCompile Include="TTauri\GUI\Window_vulkan.cpp" />
+    <ClCompile Include="TTauri\GUI\Window_vulkan_win32.cpp" />
     <ClCompile Include="TTauri\GUI\Window.cpp" />
     <ClCompile Include="TTauri\GUI\WindowView.cpp" />
     <ClCompile Include="TTauri\Logging.cpp" />
@@ -232,7 +241,8 @@
     <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp" />
     <ClInclude Include="TTauri\GUI\View.hpp" />
     <ClInclude Include="TTauri\GUI\vulkan_utils.hpp" />
-    <ClInclude Include="TTauri\GUI\Window_win32.hpp" />
+    <ClInclude Include="TTauri\GUI\Window_vulkan.hpp" />
+    <ClInclude Include="TTauri\GUI\Window_vulkan_win32.hpp" />
     <ClInclude Include="TTauri\GUI\Window.hpp" />
     <ClInclude Include="TTauri\GUI\WindowView.hpp" />
     <ClInclude Include="TTauri\Logging.hpp" />
@@ -248,4 +258,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <PropertyGroup Condition="'$(Language)'=='C++'">
+    <CAExcludePath>$(ThirdPartyHeaderDirectories);$(CAExcludePath)</CAExcludePath>
+  </PropertyGroup>
 </Project>

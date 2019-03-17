@@ -37,7 +37,7 @@ inline std::shared_ptr<T> getShared()
 struct MakeSharedNotNull : virtual boost::exception, virtual std::exception {};
 
 template<typename T, typename... Args>
-inline std::shared_ptr<T> makeShared(Args... args)
+decltype(auto) makeShared(Args... args)
 {
     if (T::shared) {
         BOOST_THROW_EXCEPTION(MakeSharedNotNull());
@@ -46,8 +46,7 @@ inline std::shared_ptr<T> makeShared(Args... args)
     auto tmpShared = std::make_shared<T>(args...);
     T::shared = tmpShared;
 
-    tmpShared->initialize();
-    return tmpShared;
+    return tmpShared->initialize();
 }
 
 }
