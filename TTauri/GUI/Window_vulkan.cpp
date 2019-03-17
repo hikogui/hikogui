@@ -1,9 +1,10 @@
 
 #include "Window_vulkan.hpp"
 
-#include "Device.hpp"
+#include "Device_vulkan.hpp"
 
 #include "TTauri/Logging.hpp"
+#include "TTauri/utils.hpp"
 
 #include <boost/numeric/conversion/cast.hpp>
 
@@ -22,12 +23,12 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::waitIdle()
 {
-    device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
 std::pair<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndImageExtent()
 {
-    auto surfaceCapabilities = device->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+    auto surfaceCapabilities = checked_dynamic_cast<Device_vulkan *>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
     uint32_t imageCount;
     if (surfaceCapabilities.maxImageCount) {
@@ -148,12 +149,13 @@ retry:
         return { oldSwapchain, false };
     }
 
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
     swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
         imageCount,
-        device->bestSurfaceFormat.format,
-        device->bestSurfaceFormat.colorSpace,
+        vulkanDevice->bestSurfaceFormat.format,
+        vulkanDevice->bestSurfaceFormat.colorSpace,
         imageExtent,
         1, // imageArrayLayers
         vk::ImageUsageFlagBits::eColorAttachment,
@@ -162,14 +164,14 @@ retry:
         sharingQueueFamilyIndicesPtr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        device->bestSurfacePresentMode,
+        vulkanDevice->bestSurfacePresentMode,
         VK_TRUE, // clipped
         oldSwapchain);
 
     vk::SwapchainKHR newSwapchain;
-    vk::Result result = device->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
+    vk::Result result = vulkanDevice->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
     // No matter what, the oldSwapchain has been retired after createSwapchainKHR().
-    device->intrinsic.destroy(oldSwapchain);
+    vulkanDevice->intrinsic.destroy(oldSwapchain);
     oldSwapchain = vk::SwapchainKHR();
 
     if (result != vk::Result::eSuccess) {
@@ -198,12 +200,14 @@ retry:
 
 void Window_vulkan::teardownSwapchain()
 {
-    device->intrinsic.destroy(swapchain);
+    checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.destroy(swapchain);
 }
 
 void Window_vulkan::buildFramebuffers()
 {
-    swapchainImages = device->intrinsic.getSwapchainImagesKHR(swapchain);
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    
+    swapchainImages = vulkanDevice->intrinsic.getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
         uint32_t baseMipLlevel = 0;
         uint32_t levelCount = 1;
@@ -220,7 +224,7 @@ void Window_vulkan::buildFramebuffers()
             vk::ComponentMapping(),
             imageSubresourceRange);
 
-        auto imageView = device->intrinsic.createImageView(imageViewCreateInfo);
+        auto imageView = vulkanDevice->intrinsic.createImageView(imageViewCreateInfo);
         swapchainImageViews.push_back(imageView);
 
         std::vector<vk::ImageView> attachments = { imageView };
@@ -237,7 +241,7 @@ void Window_vulkan::buildFramebuffers()
 
         LOG_INFO("createFramebuffer (%i, %i)") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
 
-        auto framebuffer = device->intrinsic.createFramebuffer(framebufferCreateInfo);
+        auto framebuffer = vulkanDevice->intrinsic.createFramebuffer(framebufferCreateInfo);
         swapchainFramebuffers.push_back(framebuffer);
     }
 
@@ -247,13 +251,15 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+
     for (auto frameBuffer : swapchainFramebuffers) {
-        device->intrinsic.destroy(frameBuffer);
+        vulkanDevice->intrinsic.destroy(frameBuffer);
     }
     swapchainFramebuffers.clear();
 
     for (auto imageView : swapchainImageViews) {
-        device->intrinsic.destroy(imageView);
+        vulkanDevice->intrinsic.destroy(imageView);
     }
     swapchainImageViews.clear();
 }
@@ -291,43 +297,56 @@ void Window_vulkan::buildRenderPasses()
                                                                vk::AccessFlagBits::eColorAttachmentRead |
                                                                    vk::AccessFlagBits::eColorAttachmentWrite } };
 
-    vk::RenderPassCreateInfo renderPassCreateInfo = { vk::RenderPassCreateFlags(), boost::numeric_cast<uint32_t>(attachmentDescriptions.size()), attachmentDescriptions.data(), boost::numeric_cast<uint32_t>(subpassDescriptions.size()), subpassDescriptions.data(), boost::numeric_cast<uint32_t>(subpassDependency.size()), subpassDependency.data() };
+    vk::RenderPassCreateInfo renderPassCreateInfo = {
+        vk::RenderPassCreateFlags(), 
+        boost::numeric_cast<uint32_t>(attachmentDescriptions.size()), 
+        attachmentDescriptions.data(),
+        boost::numeric_cast<uint32_t>(subpassDescriptions.size()), 
+        subpassDescriptions.data(), boost::numeric_cast<uint32_t>(subpassDependency.size()),
+        subpassDependency.data()
+    };
 
-    firstRenderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+
+    firstRenderPass = vulkanDevice->intrinsic.createRenderPass(renderPassCreateInfo);
     attachmentDescriptions[0].loadOp = vk::AttachmentLoadOp::eClear;
-    followUpRenderPass = device->intrinsic.createRenderPass(renderPassCreateInfo);
+    followUpRenderPass = vulkanDevice->intrinsic.createRenderPass(renderPassCreateInfo);
 }
 
 void Window_vulkan::teardownRenderPasses()
 {
-    device->intrinsic.destroy(firstRenderPass);
-    device->intrinsic.destroy(followUpRenderPass);
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    vulkanDevice->intrinsic.destroy(firstRenderPass);
+    vulkanDevice->intrinsic.destroy(followUpRenderPass);
 }
 
 void Window_vulkan::buildSemaphores()
 {
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
     auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-    imageAvailableSemaphore = device->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+    imageAvailableSemaphore = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
     // It should therefor be signed at the start so that when no rendering has been
     // done it is still idle.
     auto fenceCreateInfo = vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled);
-    renderFinishedFence = device->intrinsic.createFence(fenceCreateInfo, nullptr);
+    renderFinishedFence = vulkanDevice->intrinsic.createFence(fenceCreateInfo, nullptr);
 }
 
 void Window_vulkan::teardownSemaphores()
 {
-    device->intrinsic.destroy(imageAvailableSemaphore);
-    device->intrinsic.destroy(renderFinishedFence);
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    vulkanDevice->intrinsic.destroy(imageAvailableSemaphore);
+    vulkanDevice->intrinsic.destroy(renderFinishedFence);
 }
 
 bool Window_vulkan::render(bool blockOnVSync)
 {
     uint32_t imageIndex;
     uint64_t timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
 
-    auto result = device->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+    auto result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
     switch (result) {
     case vk::Result::eSuccess: break;
     case vk::Result::eSuboptimalKHR: LOG_INFO("acquireNextImageKHR() eSuboptimalKHR"); return false;
@@ -341,9 +360,9 @@ bool Window_vulkan::render(bool blockOnVSync)
     vk::Semaphore renderFinishedSemaphores[] = { backingPipeline->render(imageIndex, imageAvailableSemaphore) };
 
     // Make a fence that should be signaled when all drawing is finished.
-    device->intrinsic.waitIdle();
+    vulkanDevice->intrinsic.waitIdle();
     // device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-    device->intrinsic.resetFences(1, &renderFinishedFence);
+    vulkanDevice->intrinsic.resetFences(1, &renderFinishedFence);
     device->graphicQueue->intrinsic.submit(0, nullptr, renderFinishedFence);
 
     auto presentInfo = vk::PresentInfoKHR(1, renderFinishedSemaphores, 1, &swapchain, &imageIndex);

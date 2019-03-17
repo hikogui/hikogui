@@ -209,6 +209,7 @@
     <ClCompile Include="TTauri\Application.cpp" />
     <ClCompile Include="TTauri\GUI\BackingPipeline.cpp" />
     <ClCompile Include="TTauri\GUI\Device.cpp" />
+    <ClCompile Include="TTauri\GUI\Device_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\ImageView.cpp" />
     <ClCompile Include="TTauri\GUI\Instance.cpp" />
     <ClCompile Include="TTauri\GUI\Instance_vulkan.cpp" />
@@ -232,6 +233,7 @@
     <ClInclude Include="TTauri\GUI\BackingPipeline.hpp" />
     <ClInclude Include="TTauri\GUI\config.hpp" />
     <ClInclude Include="TTauri\GUI\Device.hpp" />
+    <ClInclude Include="TTauri\GUI\Device_vulkan.hpp" />
     <ClInclude Include="TTauri\GUI\ImageView.hpp" />
     <ClInclude Include="TTauri\GUI\Instance.hpp" />
     <ClInclude Include="TTauri\GUI\Instance_vulkan.hpp" />

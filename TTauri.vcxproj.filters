@@ -75,6 +75,9 @@
     <ClCompile Include="TTauri\GUI\Window_vulkan_win32.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\GUI\Device_vulkan.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
@@ -141,6 +144,9 @@
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\GUI\Window_vulkan_win32.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\Device_vulkan.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
   </ItemGroup>

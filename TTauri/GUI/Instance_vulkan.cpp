@@ -7,7 +7,7 @@
 //
 
 #include "Instance_vulkan.hpp"
-
+#include "Device_vulkan.hpp"
 #include "TTauri/Logging.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 #include <chrono>
@@ -84,7 +84,7 @@ void Instance_vulkan::initialize()
 
     std::scoped_lock lock(mutex);
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        auto device = make_shared<Device>(_physicalDevice);
+        auto device = make_shared<Device_vulkan>(_physicalDevice);
         devices.push_back(device);
     }
 }

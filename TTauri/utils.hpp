@@ -12,7 +12,23 @@ inline size_t align(size_t offset, size_t alignment)
     return ((offset + alignment - 1) / alignment) * alignment;
 }
 
+struct CheckedDynamicCastNullError : virtual boost::exception, virtual std::exception {};
+struct CheckedDynamicCastError : virtual boost::exception, virtual std::exception {};
 
+template<typename T, typename U>
+T checked_dynamic_cast(U x)
+{
+    if (!x) {
+        BOOST_THROW_EXCEPTION(CheckedDynamicCastNullError());
+    }
+    T castedX = dynamic_cast<T>(x);
+
+    if (!castedX) {
+        BOOST_THROW_EXCEPTION(CheckedDynamicCastError());
+    }
+
+    return castedX;
+}
 
 struct GetSharedNull : virtual boost::exception, virtual std::exception {};
 struct GetSharedCastError : virtual boost::exception, virtual std::exception {};
@@ -48,5 +64,4 @@ decltype(auto) makeShared(Args... args)
 
     return tmpShared->initialize();
 }
-
 }

@@ -8,7 +8,7 @@
 
 #include "BackingPipeline.hpp"
 #include "Window.hpp"
-#include "Device.hpp"
+#include "Device_vulkan.hpp"
 #include "TTauri/Application.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
@@ -34,7 +34,8 @@ vk::Semaphore BackingPipeline::render(uint32_t imageIndex, vk::Semaphore inputSe
 
     auto tmpNumberOfVertices = window->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices());
 
-    device()->intrinsic.flushMappedMemoryRanges({{vertexBufferMemory, vertexDataOffset, vertexDataSize}});
+    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    vulkanDevice->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
 
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers();

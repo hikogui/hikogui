@@ -12,7 +12,6 @@
 #include "Window.hpp"
 
 #include <unordered_set>
-#include <vulkan/vulkan.hpp>
 
 #include <boost/uuid/uuid.hpp>
 
@@ -29,47 +28,20 @@ class Instance;
  */
 class Device {
 public:
-
     enum class State {
         NO_DEVICE,
         READY_TO_DRAW,
     };
 
     std::recursive_mutex mutex;
-    State state;
+    State state = State::NO_DEVICE;
 
     struct Error : virtual boost::exception, virtual std::exception {};
-    struct AllocateMemoryError : virtual Error {};
-    struct NonVulkanWindowError : virtual Error {};
-
-    vk::PhysicalDevice physicalIntrinsic;
-    vk::Device intrinsic;
-
-    std::string deviceName;
-    uint32_t vendorID;
-    uint32_t deviceID;
-    vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
+    
+    std::string deviceName = "<no device>";
+    uint32_t vendorID = 0;
+    uint32_t deviceID = 0;
     boost::uuids::uuid deviceUUID;
-    vk::PhysicalDeviceMemoryProperties memoryProperties;
-
-    /*! List if extension required on this device.
-     */
-    std::vector<const char *> requiredExtensions;
-
-    /*! Sorted list of queueFamilies and their capabilities.
-     * score(window) must be called before initializeDevice(window);
-     */
-    std::vector<std::pair<uint32_t, QueueCapabilities>> queueFamilyIndicesAndCapabilities;
-
-    /*! Best surfae format.
-     * score(window) must be called before initializeDevice(window);
-     */
-    vk::SurfaceFormatKHR bestSurfaceFormat = {};
-
-    /*! Best surfae format.
-     * score(window) must be called before initializeDevice(window);
-     */
-    vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
     /*! A queue for sending graphics commands to.
      * These queue objects may be shared.
@@ -98,17 +70,8 @@ public:
 
     std::string str() const;
 
-    /*! Find the minimum number of queue families to instantiate for a window.
-     * This will give priority for having the Graphics and Present in the same
-     * queue family.
-     *
-     * It is possible this method returns an incomplete queue family set. For
-     * example without Present.
-     */
-    std::vector<std::pair<uint32_t, QueueCapabilities>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
-
-    Device(vk::PhysicalDevice physicalDevice);
-    ~Device();
+    Device();
+    virtual ~Device();
 
     /*! Check if this device is a good match for this window.
      *
@@ -117,13 +80,13 @@ public:
      *
      * \returns -1 When not viable, 0 when not presentable, postive values for increasing score.
      */
-    int score(std::shared_ptr<Window> window);
+    virtual int score(std::shared_ptr<Window> window) = 0;
 
     /*! Initialise the logical device.
      *
      * \param window is used as prototype for queue allocation.
      */
-    void initializeDevice(std::shared_ptr<Window> window);
+    virtual void initializeDevice(std::shared_ptr<Window> window);
 
     void add(std::shared_ptr<Window> window);
 
@@ -140,10 +103,7 @@ public:
      */
     void maintance();
 
-    uint32_t findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
-    vk::DeviceMemory allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
-    std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
-    std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+    
 };
 
 }}

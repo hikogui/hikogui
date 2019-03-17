@@ -7,28 +7,30 @@
 //
 
 #include "Queue.hpp"
-#include "Device.hpp"
+
+#include "Device_vulkan.hpp"
 #include "Instance.hpp"
 
 namespace TTauri {
 namespace GUI {
 
 Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities) :
-    device(device), intrinsic(device->intrinsic.getQueue(queueFamilyIndex, queueIndex)),
-    queueIndex(queueIndex), queueFamilyIndex(queueFamilyIndex),
+    device(device),
+    intrinsic(checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.getQueue(queueFamilyIndex, queueIndex)),
+    queueIndex(queueIndex),
+    queueFamilyIndex(queueFamilyIndex),
     queueCapabilities(queueCapabilities)
 {
     auto commandPoolCreateInfo = vk::CommandPoolCreateInfo(
         vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
-        queueFamilyIndex
-    );
+        queueFamilyIndex);
 
-    commandPool = device->intrinsic.createCommandPool(commandPoolCreateInfo);
+    commandPool = checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.createCommandPool(commandPoolCreateInfo);
 }
 
 Queue::~Queue()
 {
-    device->intrinsic.destroy(commandPool);
+    checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.destroy(commandPool);
 }
 
 }}
