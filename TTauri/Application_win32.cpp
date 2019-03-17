@@ -1,8 +1,6 @@
 
 #include "Application_win32.hpp"
 
-#include "Logging.hpp"
-
 #include "GUI/Instance.hpp"
 #include "GUI/Window_win32.hpp"
 
