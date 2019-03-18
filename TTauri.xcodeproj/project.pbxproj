@@ -89,6 +89,12 @@
 		68EF996C223DB02D008C2357 /* Instance_vulkan_macos.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68EF996A223DB02D008C2357 /* Instance_vulkan_macos.mm */; };
 		68EF996D223DB02D008C2357 /* Instance_vulkan_macos.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68EF996A223DB02D008C2357 /* Instance_vulkan_macos.mm */; };
 		68EF996E223DB4C0008C2357 /* Application_macos.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68EF9964223DA0A5008C2357 /* Application_macos.hpp */; };
+		68EF9973223EEADF008C2357 /* Window_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9971223EEADF008C2357 /* Window_vulkan.cpp */; };
+		68EF9974223EEADF008C2357 /* Window_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9971223EEADF008C2357 /* Window_vulkan.cpp */; };
+		68EF9975223EEADF008C2357 /* Window_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9971223EEADF008C2357 /* Window_vulkan.cpp */; };
+		68EF9976223EEADF008C2357 /* Device_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9972223EEADF008C2357 /* Device_vulkan.cpp */; };
+		68EF9977223EEADF008C2357 /* Device_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9972223EEADF008C2357 /* Device_vulkan.cpp */; };
+		68EF9978223EEADF008C2357 /* Device_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9972223EEADF008C2357 /* Device_vulkan.cpp */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -191,6 +197,10 @@
 		68EF9965223DA0A5008C2357 /* Application_macos.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Application_macos.mm; sourceTree = "<group>"; };
 		68EF9969223DB02D008C2357 /* Instance_vulkan_macos.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Instance_vulkan_macos.hpp; sourceTree = "<group>"; };
 		68EF996A223DB02D008C2357 /* Instance_vulkan_macos.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Instance_vulkan_macos.mm; sourceTree = "<group>"; };
+		68EF996F223EEADF008C2357 /* Window_vulkan.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Window_vulkan.hpp; sourceTree = "<group>"; };
+		68EF9970223EEADF008C2357 /* Device_vulkan.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Device_vulkan.hpp; sourceTree = "<group>"; };
+		68EF9971223EEADF008C2357 /* Window_vulkan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Window_vulkan.cpp; sourceTree = "<group>"; };
+		68EF9972223EEADF008C2357 /* Device_vulkan.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Device_vulkan.cpp; sourceTree = "<group>"; };
 		68F2627722030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F2627A22030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		68F2627B22030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -250,11 +260,9 @@
 		6838B93F2231A86E00FB8BD7 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
-				68EF995F223D9BA8008C2357 /* Instance_vulkan.cpp */,
-				68EF9960223D9BA8008C2357 /* Instance_vulkan.hpp */,
-				68EF9969223DB02D008C2357 /* Instance_vulkan_macos.hpp */,
-				68EF996A223DB02D008C2357 /* Instance_vulkan_macos.mm */,
 				68BF1EE22236EBF10008955B /* config.hpp */,
+				686C02F12231A8D7002F4063 /* vulkan_utils.cpp */,
+				686C02EF2231A8D7002F4063 /* vulkan_utils.hpp */,
 				68BF1EE32236EBF10008955B /* WindowView.cpp */,
 				68BF1EE12236EBF10008955B /* WindowView.hpp */,
 				686C02E32231A8D6002F4063 /* BackingPipeline.cpp */,
@@ -263,10 +271,14 @@
 				686C02ED2231A8D7002F4063 /* BackingPipeline.vert */,
 				686C02F22231A8D7002F4063 /* Device.cpp */,
 				686C02DD2231A8D6002F4063 /* Device.hpp */,
-				686C02EE2231A8D7002F4063 /* ImageView.cpp */,
-				686C02E52231A8D6002F4063 /* ImageView.hpp */,
+				68EF9972223EEADF008C2357 /* Device_vulkan.cpp */,
+				68EF9970223EEADF008C2357 /* Device_vulkan.hpp */,
 				686C02E22231A8D6002F4063 /* Instance.cpp */,
 				686C02DA2231A8D5002F4063 /* Instance.hpp */,
+				68EF995F223D9BA8008C2357 /* Instance_vulkan.cpp */,
+				68EF9960223D9BA8008C2357 /* Instance_vulkan.hpp */,
+				68EF9969223DB02D008C2357 /* Instance_vulkan_macos.hpp */,
+				68EF996A223DB02D008C2357 /* Instance_vulkan_macos.mm */,
 				686C02DB2231A8D5002F4063 /* Pipeline.cpp */,
 				686C02E92231A8D6002F4063 /* Pipeline.hpp */,
 				686C02EC2231A8D7002F4063 /* Queue.cpp */,
@@ -275,10 +287,12 @@
 				686C02E12231A8D6002F4063 /* QueueCapabilities.hpp */,
 				686C02DC2231A8D6002F4063 /* View.cpp */,
 				686C02E62231A8D6002F4063 /* View.hpp */,
-				686C02F12231A8D7002F4063 /* vulkan_utils.cpp */,
-				686C02EF2231A8D7002F4063 /* vulkan_utils.hpp */,
+				686C02EE2231A8D7002F4063 /* ImageView.cpp */,
+				686C02E52231A8D6002F4063 /* ImageView.hpp */,
 				686C02E42231A8D6002F4063 /* Window.cpp */,
 				686C02EB2231A8D6002F4063 /* Window.hpp */,
+				68EF9971223EEADF008C2357 /* Window_vulkan.cpp */,
+				68EF996F223EEADF008C2357 /* Window_vulkan.hpp */,
 			);
 			path = GUI;
 			sourceTree = "<group>";
@@ -553,10 +567,12 @@
 				686C03022231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
 				686C02D42231A8A4002F4063 /* Time.cpp in Sources */,
 				686C030B2231A8D7002F4063 /* Queue.cpp in Sources */,
+				68EF9973223EEADF008C2357 /* Window_vulkan.cpp in Sources */,
 				68BF1EE42236EBF10008955B /* WindowView.cpp in Sources */,
 				686C02FF2231A8D7002F4063 /* Instance.cpp in Sources */,
 				686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C031A2231A8D7002F4063 /* Device.cpp in Sources */,
+				68EF9976223EEADF008C2357 /* Device_vulkan.cpp in Sources */,
 				686C03052231A8D7002F4063 /* Window.cpp in Sources */,
 				686C02CE2231A8A4002F4063 /* Application.cpp in Sources */,
 				68EF996B223DB02D008C2357 /* Instance_vulkan_macos.mm in Sources */,
@@ -580,10 +596,12 @@
 				686C03032231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
 				686C02D52231A8A4002F4063 /* Time.cpp in Sources */,
 				686C030C2231A8D7002F4063 /* Queue.cpp in Sources */,
+				68EF9974223EEADF008C2357 /* Window_vulkan.cpp in Sources */,
 				68BF1EE52236EBF10008955B /* WindowView.cpp in Sources */,
 				686C03002231A8D7002F4063 /* Instance.cpp in Sources */,
 				686C02D22231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C031B2231A8D7002F4063 /* Device.cpp in Sources */,
+				68EF9977223EEADF008C2357 /* Device_vulkan.cpp in Sources */,
 				686C03062231A8D7002F4063 /* Window.cpp in Sources */,
 				686C02CF2231A8A4002F4063 /* Application.cpp in Sources */,
 				68EF996C223DB02D008C2357 /* Instance_vulkan_macos.mm in Sources */,
@@ -604,6 +622,7 @@
 			files = (
 				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
+				68EF9978223EEADF008C2357 /* Device_vulkan.cpp in Sources */,
 				68EF9968223DA0A5008C2357 /* Application_macos.mm in Sources */,
 				686C02D32231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C02F82231A8D7002F4063 /* Pipeline.cpp in Sources */,
@@ -620,6 +639,7 @@
 				68EF9963223D9BA8008C2357 /* Instance_vulkan.cpp in Sources */,
 				686C02D02231A8A4002F4063 /* Application.cpp in Sources */,
 				68F262AC22030EA70078E5E4 /* main.m in Sources */,
+				68EF9975223EEADF008C2357 /* Window_vulkan.cpp in Sources */,
 				686C03042231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
 				686C02D62231A8A4002F4063 /* Time.cpp in Sources */,
 				68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */,

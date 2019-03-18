@@ -12,22 +12,35 @@ inline size_t align(size_t offset, size_t alignment)
     return ((offset + alignment - 1) / alignment) * alignment;
 }
 
-struct CheckedDynamicCastNullError : virtual boost::exception, virtual std::exception {};
 struct CheckedDynamicCastError : virtual boost::exception, virtual std::exception {};
 
 template<typename T, typename U>
 T checked_dynamic_cast(U x)
 {
-    if (!x) {
-        BOOST_THROW_EXCEPTION(CheckedDynamicCastNullError());
-    }
-    T castedX = dynamic_cast<T>(x);
-
-    if (!castedX) {
+    T xCasted = dynamic_cast<T>(x);
+    if (!xCasted) {
         BOOST_THROW_EXCEPTION(CheckedDynamicCastError());
     }
+    return xCasted;
+}
 
-    return castedX;
+template<typename T, typename U>
+std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
+{
+    auto xLocked = x.lock();
+    return std::dynamic_pointer_cast<T>(xLocked);
+}
+
+struct CheckedLockDynamicCastError : virtual boost::exception, virtual std::exception {};
+
+template<typename T, typename U>
+std::shared_ptr<T> checked_lock_dynamic_cast(const std::weak_ptr<U> &x)
+{
+    auto xCasted = lock_dynamic_cast(x);
+    if (!xCasted)
+        BOOST_THROW_EXCEPTION(CheckedLockDynamicCastError());
+    }
+    return xCasted;
 }
 
 struct GetSharedNull : virtual boost::exception, virtual std::exception {};
