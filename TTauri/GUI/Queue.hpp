@@ -25,13 +25,13 @@ public:
     uint32_t queueIndex;
     const QueueCapabilities queueCapabilities;
 
-    Device *device;
+    std::weak_ptr<Device> device;
 
     vk::CommandPool commandPool;
 
     /**
      */
-    Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities);
+    Queue(const std::shared_ptr<Device> &device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities);
     ~Queue();
 };
 

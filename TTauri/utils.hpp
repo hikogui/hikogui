@@ -7,6 +7,38 @@
 
 namespace TTauri {
 
+template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
+constexpr bool hasInitializeHelper(int)
+{
+    return result;
+}
+
+template<typename T>
+constexpr bool hasInitializeHelper(...)
+{
+    return false;
+}
+
+template<typename T>
+constexpr bool hasInitialize()
+{
+    return hasInitializeHelper<T>(0);
+}
+
+template<typename T, typename... Args, typename std::enable_if<TTauri::hasInitialize<T>(), int>::type = 0>
+inline std::shared_ptr<T> make_shared(Args... args)
+{
+    auto tmp = std::make_shared<T>(args...);
+    tmp->initialize();
+    return tmp;
+}
+
+template<typename T, typename... Args, typename std::enable_if<!TTauri::hasInitialize<T>(), int>::type = 0>
+inline std::shared_ptr<T> make_shared(Args... args)
+{
+    return std::make_shared<T>(args...);
+}
+
 inline size_t align(size_t offset, size_t alignment)
 {
     return ((offset + alignment - 1) / alignment) * alignment;
@@ -31,31 +63,12 @@ std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
     return std::dynamic_pointer_cast<T>(xLocked);
 }
 
-struct CheckedLockDynamicCastError : virtual boost::exception, virtual std::exception {};
-
-template<typename T, typename U>
-std::shared_ptr<T> checked_lock_dynamic_cast(const std::weak_ptr<U> &x)
-{
-    auto xCasted = lock_dynamic_cast(x);
-    if (!xCasted)
-        BOOST_THROW_EXCEPTION(CheckedLockDynamicCastError());
-    }
-    return xCasted;
-}
-
-struct GetSharedNull : virtual boost::exception, virtual std::exception {};
 struct GetSharedCastError : virtual boost::exception, virtual std::exception {};
 
 template<typename T>
-inline std::shared_ptr<T> getShared()
+inline std::shared_ptr<T> get_singleton()
 {
-    auto tmpShared = T::shared;
-
-    if (!tmpShared) {
-        BOOST_THROW_EXCEPTION(GetSharedNull());
-    }
-
-    auto tmpCastedShared = std::dynamic_pointer_cast<T>(tmpShared);
+    auto tmpCastedShared = std::dynamic_pointer_cast<T>(T::singleton);
     if (!tmpCastedShared) {
         BOOST_THROW_EXCEPTION(GetSharedCastError());
     }
@@ -66,15 +79,13 @@ inline std::shared_ptr<T> getShared()
 struct MakeSharedNotNull : virtual boost::exception, virtual std::exception {};
 
 template<typename T, typename... Args>
-decltype(auto) makeShared(Args... args)
+inline decltype(auto) make_singleton(Args... args)
 {
-    if (T::shared) {
+    if (T::singleton) {
         BOOST_THROW_EXCEPTION(MakeSharedNotNull());
     }
 
-    auto tmpShared = std::make_shared<T>(args...);
-    T::shared = tmpShared;
-
-    return tmpShared->initialize();
+    T::singleton = std::make_shared<T>(args...);
+    return T::singleton->initialize();
 }
 }

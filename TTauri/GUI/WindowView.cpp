@@ -4,10 +4,10 @@
 namespace TTauri {
 namespace GUI {
 
-WindowView::WindowView(Window *window) :
+WindowView::WindowView(const std::shared_ptr<Window> &window) :
     View()
 {
-    window = window;
+    this->window = window;
 }
 
 WindowView::~WindowView()

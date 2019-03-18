@@ -26,7 +26,7 @@ class Instance;
 
 /*! A Device that handles a set of windows.
  */
-class Device {
+class Device : public std::enable_shared_from_this<Device> {
 public:
     enum class State {
         NO_DEVICE,

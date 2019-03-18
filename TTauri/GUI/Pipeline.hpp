@@ -28,12 +28,15 @@ public:
 
     vk::Pipeline intrinsic;
 
-    Window *window;
+    std::weak_ptr<Window> window;
 
-    Pipeline(Window *window);
+    Pipeline(const std::shared_ptr<Window> &window);
     virtual ~Pipeline();
 
-    Device *device() const;
+    template <typename T>
+    std::shared_ptr<T> device() const {
+        return lock_dynamic_cast<T>(window.lock()->device);
+    }
 
     /*! Render
      */

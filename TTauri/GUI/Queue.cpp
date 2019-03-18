@@ -14,9 +14,9 @@
 namespace TTauri {
 namespace GUI {
 
-Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities) :
+Queue::Queue(const std::shared_ptr<Device> &device, uint32_t queueFamilyIndex, uint32_t queueIndex, QueueCapabilities queueCapabilities) :
     device(device),
-    intrinsic(checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.getQueue(queueFamilyIndex, queueIndex)),
+    intrinsic(std::dynamic_pointer_cast<Device_vulkan>(device)->intrinsic.getQueue(queueFamilyIndex, queueIndex)),
     queueIndex(queueIndex),
     queueFamilyIndex(queueFamilyIndex),
     queueCapabilities(queueCapabilities)
@@ -25,12 +25,12 @@ Queue::Queue(Device *device, uint32_t queueFamilyIndex, uint32_t queueIndex, Que
         vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
         queueFamilyIndex);
 
-    commandPool = checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.createCommandPool(commandPoolCreateInfo);
+    commandPool = lock_dynamic_cast<Device_vulkan>(this->device)->intrinsic.createCommandPool(commandPoolCreateInfo);
 }
 
 Queue::~Queue()
 {
-    checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.destroy(commandPool);
+    lock_dynamic_cast<Device_vulkan>(device)->intrinsic.destroy(commandPool);
 }
 
 }}

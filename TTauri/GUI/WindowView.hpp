@@ -16,7 +16,7 @@ public:
         FULLSCREEN,
     };
 
-    WindowView(Window *window);
+    WindowView(const std::shared_ptr<Window> &window);
 
     virtual ~WindowView();
 };

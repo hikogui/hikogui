@@ -22,15 +22,15 @@ namespace TTauri { namespace GUI {
 
 using namespace std;
 
-Pipeline::Pipeline(Window *window) : window(window) {}
-
-Pipeline::~Pipeline() {}
-
-Device *Pipeline::device() const
+Pipeline::Pipeline(const std::shared_ptr<Window> &window) :
+    window(window)
 {
-    BOOST_ASSERT(window);
-    return window->device;
 }
+
+Pipeline::~Pipeline()
+{
+}
+
 
 vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
@@ -44,7 +44,7 @@ vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore
 
     vk::SubmitInfo submitInfo[] = { vk::SubmitInfo(1, waitSemaphores, waitStages, 1, &commandBuffers[imageIndex], 1, signalSemaphores) };
 
-    device()->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
+    device<Device_vulkan>()->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
 
     return renderFinishedSemaphores[imageIndex];
 }
@@ -57,7 +57,7 @@ void Pipeline::buildShaders()
 
 void Pipeline::teardownShaders()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
     for (auto shaderModule : shaderModules) {
         vulkanDevice->intrinsic.destroy(shaderModule);
@@ -68,7 +68,7 @@ void Pipeline::teardownShaders()
 
 void Pipeline::buildVertexBuffers(size_t nrFrameBuffers)
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
     vertexInputBindingDescription = createVertexInputBindingDescription();
     vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
@@ -88,7 +88,7 @@ void Pipeline::buildVertexBuffers(size_t nrFrameBuffers)
 
 void Pipeline::teardownVertexBuffers()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
     vulkanDevice->intrinsic.unmapMemory(vertexBufferMemory);
     vertexBufferData = nullptr;
@@ -106,10 +106,10 @@ void Pipeline::teardownVertexBuffers()
 
 void Pipeline::buildCommandBuffers(size_t nrFrameBuffers)
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
     auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        device()->graphicQueue->commandPool, vk::CommandBufferLevel::ePrimary, boost::numeric_cast<uint32_t>(nrFrameBuffers));
+        vulkanDevice->graphicQueue->commandPool, vk::CommandBufferLevel::ePrimary, boost::numeric_cast<uint32_t>(nrFrameBuffers));
     commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
 
     commandBuffersValid.resize(nrFrameBuffers);
@@ -118,16 +118,16 @@ void Pipeline::buildCommandBuffers(size_t nrFrameBuffers)
 
 void Pipeline::teardownCommandBuffers()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
-    vulkanDevice->intrinsic.freeCommandBuffers(device()->graphicQueue->commandPool, commandBuffers);
+    vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicQueue->commandPool, commandBuffers);
     commandBuffers.clear();
     commandBuffersValid.clear();
 }
 
 void Pipeline::buildSemaphores(size_t nrFrameBuffers)
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
     auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     renderFinishedSemaphores.resize(nrFrameBuffers);
@@ -138,7 +138,7 @@ void Pipeline::buildSemaphores(size_t nrFrameBuffers)
 
 void Pipeline::teardownSemaphores()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
 
     for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
         vulkanDevice->intrinsic.destroy(renderFinishedSemaphores[i]);
@@ -191,15 +191,13 @@ void Pipeline::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
         vk::Pipeline(), // basePipelineHandle
         -1 // basePipelineIndex
     };
-
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
-
-    intrinsic = vulkanDevice->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+    
+    intrinsic = device<Device_vulkan>()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
 }
 
 void Pipeline::teardownPipeline()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
+    auto vulkanDevice = device<Device_vulkan>();
     vulkanDevice->intrinsic.destroy(intrinsic);
     vulkanDevice->intrinsic.destroy(pipelineLayout);
 }
@@ -264,10 +262,7 @@ void Pipeline::validateCommandBuffer(uint32_t imageIndex)
 
     std::array<float, 4> blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
     auto clearColor = vk::ClearValue(vk::ClearColorValue(blackColor));
-    auto vulkanWindow = dynamic_cast<Window_vulkan *>(window);
-    if (!vulkanWindow) {
-        BOOST_THROW_EXCEPTION(NonVulkanWindowError());
-    }
+    auto vulkanWindow = lock_dynamic_cast<Window_vulkan>(window);
     auto renderPassBeginInfo = vk::RenderPassBeginInfo(renderPass, vulkanWindow->swapchainFramebuffers[imageIndex], scissors[0], 1, &clearColor);
     commandBuffers[imageIndex].beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 
@@ -303,8 +298,7 @@ vk::ShaderModule Pipeline::loadShader(boost::filesystem::path path) const
     auto shaderModuleCreateInfo =
         vk::ShaderModuleCreateInfo(vk::ShaderModuleCreateFlags(), region.get_size(), reinterpret_cast<uint32_t *>(region.get_address()));
 
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
-    return vulkanDevice->intrinsic.createShaderModule(shaderModuleCreateInfo);
+    return device<Device_vulkan>()->intrinsic.createShaderModule(shaderModuleCreateInfo);
 }
 
 vk::PipelineLayout Pipeline::createPipelineLayout() const
@@ -314,8 +308,7 @@ vk::PipelineLayout Pipeline::createPipelineLayout() const
     auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo(
         vk::PipelineLayoutCreateFlags(), 0, nullptr, boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data());
 
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
-    return vulkanDevice->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
+    return device<Device_vulkan>()->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
 }
 
 vk::PipelineVertexInputStateCreateInfo Pipeline::createPipelineVertexInputStateCreateInfo(
@@ -409,12 +402,13 @@ Pipeline::createPipelineColorBlendStateCreateInfo(const std::vector<vk::Pipeline
 std::vector<vk::Buffer> Pipeline::createVertexBuffers(size_t nrBuffers, size_t bufferSize) const
 {
     std::vector<vk::Buffer> buffers;
+    auto vulkanDevice = device<Device_vulkan>();
+
     for (size_t i = 0; i < nrBuffers; i++) {
         vk::BufferCreateInfo vertexBufferCreateInfo = {
             vk::BufferCreateFlags(), bufferSize, vk::BufferUsageFlagBits::eVertexBuffer, vk::SharingMode::eExclusive
         };
 
-        auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
         auto buffer = vulkanDevice->intrinsic.createBuffer(vertexBufferCreateInfo, nullptr);
         buffers.push_back(buffer);
     }

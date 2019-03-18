@@ -31,7 +31,7 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
     Device(),
     physicalIntrinsic(physicalDevice)
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(getShared<Instance_vulkan>()->loader);
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(get_singleton<Instance_vulkan>()->loader);
 
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
@@ -67,10 +67,10 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
     }
 
     auto deviceCreateInfo = vk::DeviceCreateInfo();
-    deviceCreateInfo.setPEnabledFeatures(&(getShared<Instance_vulkan>()->requiredFeatures));
+    deviceCreateInfo.setPEnabledFeatures(&(get_singleton<Instance_vulkan>()->requiredFeatures));
     setQueueCreateInfos(deviceCreateInfo, deviceQueueCreateInfos);
     setExtensionNames(deviceCreateInfo, requiredExtensions);
-    setLayerNames(deviceCreateInfo, getShared<Instance_vulkan>()->requiredLayers);
+    setLayerNames(deviceCreateInfo, get_singleton<Instance_vulkan>()->requiredLayers);
 
     intrinsic = physicalIntrinsic.createDevice(deviceCreateInfo);
 
@@ -78,7 +78,7 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
         auto index = queueFamilyIndexAndCapabilities.first;
         auto queueCapabilities = queueFamilyIndexAndCapabilities.second;
 
-        auto queue = make_shared<Queue>(this, index, 0, queueCapabilities);
+        auto queue = TTauri::make_shared<Queue>(shared_from_this(), index, 0, queueCapabilities);
         if (queueCapabilities.handlesGraphics) {
             graphicQueue = queue;
         }
@@ -163,12 +163,12 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
     uint32_t score = 0;
 
     LOG_INFO("Scoring device: %s") % str();
-    if (!hasRequiredFeatures(physicalIntrinsic, getShared<Instance_vulkan>()->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, get_singleton<Instance_vulkan>()->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, getShared<Instance_vulkan>()->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, get_singleton<Instance_vulkan>()->requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }

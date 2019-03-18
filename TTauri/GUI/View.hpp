@@ -24,12 +24,12 @@ class Instance;
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class View : public BackingPipeline::Delegate {
+class View : public std::enable_shared_from_this<View>, public BackingPipeline::Delegate {
 public:
     //! Convenient reference to the Window.
-    Window *window = nullptr;
+    std::weak_ptr<Window> window;
 
-    View *parent = nullptr;
+    std::weak_ptr<View> parent;
 
     std::vector<std::shared_ptr<View>> children;
 
@@ -43,13 +43,18 @@ public:
 
     virtual ~View();
 
-    virtual void setParent(View *parent);
+    virtual void setParent(const std::shared_ptr<View> &parent);
     virtual void setRectangle(glm::vec3 position, glm::vec3 extent);
 
     virtual void add(std::shared_ptr<View> view);
 
-    Device *device();
-  
+    std::shared_ptr<Device> device();
+    
+    template <typename T>
+    std::shared_ptr<T> device()
+    {
+        return lock_dynamic_cast<T>(window.lock()->device);
+    }
 
     virtual size_t BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size);
 };

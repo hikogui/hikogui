@@ -54,7 +54,7 @@ void Device::add(std::shared_ptr<Window> window)
     std::scoped_lock lock(mutex);
 
     windows.insert(window);
-    window->setDevice(this);
+    window->setDevice(shared_from_this());
 }
 
 void Device::remove(std::shared_ptr<Window> window)

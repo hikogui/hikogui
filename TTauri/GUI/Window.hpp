@@ -28,7 +28,7 @@ class View;
  * The Window should not have any decorations, which are to be drawn by the GUI, because
  * modern design requires drawing of user interface elements in the border.
  */
-class Window {
+class Window : public std::enable_shared_from_this<Window> {
 public:
     enum class State {
         NO_DEVICE, //!< Can transition to: LINKED_TO_DEVICE
@@ -40,13 +40,13 @@ public:
 
     class Delegate {
     public:
-        virtual void initialize(Window *window) = 0;
+        virtual void creatingWindow(const std::shared_ptr<Window> &window) = 0;
     };
 
     struct StateError : virtual boost::exception, virtual std::exception {};
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
-    std::recursive_mutex stateMutex;
+    std::recursive_mutex mutex;
     State state;
 
     std::shared_ptr<Delegate> delegate;
@@ -54,7 +54,7 @@ public:
     std::string title;
 
  
-    Device *device = nullptr;
+    std::weak_ptr<Device> device;
 
     //! Location of the window on the screen.
     glm::vec3 position = {0.0, 0.0, 0.0};
@@ -78,7 +78,7 @@ public:
 
     std::shared_ptr<BackingPipeline> backingPipeline;
 
-    Window(std::shared_ptr<Delegate> delegate, const std::string &title);
+    Window(const std::shared_ptr<Delegate> &delegate, const std::string &title);
 
     virtual ~Window();
 
@@ -97,7 +97,7 @@ public:
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
-    void setDevice(Device *device);
+    void setDevice(const std::shared_ptr<Device> &device);
 
     /*! Update window.
      * This will update animations and redraw all views managed by this window.

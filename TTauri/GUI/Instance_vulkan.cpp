@@ -84,7 +84,7 @@ void Instance_vulkan::initialize()
 
     std::scoped_lock lock(mutex);
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        auto device = make_shared<Device_vulkan>(_physicalDevice);
+        auto device = TTauri::make_shared<Device_vulkan>(_physicalDevice);
         devices.push_back(device);
     }
 }

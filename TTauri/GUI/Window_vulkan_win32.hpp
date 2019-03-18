@@ -13,7 +13,7 @@ class Window_vulkan_win32 : public Window_vulkan {
 public:
     HWND win32Window = nullptr;
 
-    Window_vulkan_win32(std::shared_ptr<Delegate> delegate, const std::string &title);
+    Window_vulkan_win32(const std::shared_ptr<Delegate> &delegate, const std::string &title);
     ~Window_vulkan_win32();
 
     vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title);

@@ -22,9 +22,8 @@ void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> 
 {
     std::scoped_lock lock(mutex);
 
-    auto window = std::make_shared<GUI::Window_vulkan_win32>(windowDelegate, title);
-    getShared<Instance>()->add(window);
-    window->initialize();
+    auto window = TTauri::make_shared<GUI::Window_vulkan_win32>(windowDelegate, title);
+    get_singleton<Instance>()->add(window);
 }
 
 void Instance_vulkan_win32::updateAndRenderLoop(Instance_vulkan_win32 *self)

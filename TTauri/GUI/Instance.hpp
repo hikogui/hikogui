@@ -60,7 +60,7 @@ public:
      */
     virtual void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
-    static std::shared_ptr<Instance> shared;
+    static std::shared_ptr<Instance> singleton;
 
 protected:
     std::shared_ptr<Device> findBestDeviceForWindow(const std::shared_ptr<Window> &window);

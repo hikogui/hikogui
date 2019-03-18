@@ -19,7 +19,7 @@ namespace GUI {
 
 using namespace std;
 
-std::shared_ptr<Instance> Instance::shared = nullptr;
+std::shared_ptr<Instance> Instance::singleton = nullptr;
 
 Instance::Instance()
 {

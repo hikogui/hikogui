@@ -30,10 +30,6 @@ public:
      */
     class Delegate {
     public:
-        /*! Called right after the constructor.
-         */
-        virtual void initialize() = 0;
-
         /*! Called right before the application loop is started.
          */
         virtual void startingLoop() = 0;
@@ -46,7 +42,6 @@ public:
      */
     const std::shared_ptr<Delegate> delegate;
 
-    bool initialized = false;
     bool loopStarted = false;
 
     /*! Directory where resources are located.
@@ -74,6 +69,6 @@ public:
 
     /*! The shared application / singleton.
      */
-    static std::shared_ptr<Application> shared;
+    static std::shared_ptr<Application> singleton;
 };
 }

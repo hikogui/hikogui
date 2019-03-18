@@ -25,7 +25,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClassName = L"TTauri Window Class";
 
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
-        Window_vulkan_win32::win32WindowClass.hInstance = getShared<Application_win32>()->hInstance;
+        Window_vulkan_win32::win32WindowClass.hInstance = get_singleton<Application_win32>()->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
 
         RegisterClass(&win32WindowClass);
@@ -51,7 +51,7 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
 
         NULL, // Parent window
         NULL, // Menu
-        getShared<Application_win32>()->hInstance, // Instance handle
+        get_singleton<Application_win32>()->hInstance, // Instance handle
         this
     );
 
@@ -60,17 +60,17 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
     }
 
     if (!Window_vulkan_win32::firstWindowHasBeenOpened) {
-        ShowWindow(win32Window, getShared<Application_win32>()->nCmdShow);
+        ShowWindow(win32Window, get_singleton<Application_win32>()->nCmdShow);
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
     ShowWindow(win32Window, SW_SHOW);
 
     auto win32SurfaceCreateInfoKHR = vk::Win32SurfaceCreateInfoKHR(
         vk::Win32SurfaceCreateFlagsKHR(),
-        getShared<Application_win32>()->hInstance,
+        get_singleton<Application_win32>()->hInstance,
         win32Window);
 
-    return getShared<Instance_vulkan>()->intrinsic.createWin32SurfaceKHR(win32SurfaceCreateInfoKHR);
+    return get_singleton<Instance_vulkan>()->intrinsic.createWin32SurfaceKHR(win32SurfaceCreateInfoKHR);
 
     // XXX Should be done in the loop
     RECT windowRect;
@@ -84,7 +84,7 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
     setWindowRectangle(rect);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(std::shared_ptr<Window::Delegate> delegate, const std::string &title) :
+Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate> &delegate, const std::string &title) :
     Window_vulkan(delegate, title, createWindow(title))
 {
 }

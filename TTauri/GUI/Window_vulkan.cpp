@@ -23,12 +23,12 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::waitIdle()
 {
-    checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
 std::pair<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndImageExtent()
 {
-    auto surfaceCapabilities = checked_dynamic_cast<Device_vulkan *>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+    auto surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
     uint32_t imageCount;
     if (surfaceCapabilities.maxImageCount) {
@@ -63,7 +63,7 @@ bool Window_vulkan::isOnScreen()
 
 void Window_vulkan::buildForDeviceChange()
 {
-    std::scoped_lock lock(stateMutex);
+    std::scoped_lock lock(mutex);
 
     if (state == State::LINKED_TO_DEVICE) {
         auto swapchainAndOnScreen = buildSwapchain();
@@ -84,7 +84,7 @@ void Window_vulkan::buildForDeviceChange()
 
 void Window_vulkan::teardownForDeviceChange()
 {
-    std::scoped_lock lock(stateMutex);
+    std::scoped_lock lock(mutex);
 
     if (state == State::READY_TO_DRAW || state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
         waitIdle();
@@ -124,13 +124,15 @@ bool Window_vulkan::rebuildForSwapchainChange()
 
 std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
 {
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
+
     // Figure out the best way of sharing data between the present and graphic queues.
     vk::SharingMode sharingMode;
     uint32_t sharingQueueFamilyCount;
-    uint32_t sharingQueueFamilyIndices[2] = { device->graphicQueue->queueFamilyIndex, device->presentQueue->queueFamilyIndex };
+    uint32_t sharingQueueFamilyIndices[2] = { vulkanDevice->graphicQueue->queueFamilyIndex, vulkanDevice->presentQueue->queueFamilyIndex };
     uint32_t *sharingQueueFamilyIndicesPtr;
 
-    if (device->presentQueue->queueCapabilities.handlesGraphicsAndPresent()) {
+    if (vulkanDevice->presentQueue->queueCapabilities.handlesGraphicsAndPresent()) {
         sharingMode = vk::SharingMode::eExclusive;
         sharingQueueFamilyCount = 0;
         sharingQueueFamilyIndicesPtr = nullptr;
@@ -149,7 +151,6 @@ retry:
         return { oldSwapchain, false };
     }
 
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
     swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
@@ -200,12 +201,12 @@ retry:
 
 void Window_vulkan::teardownSwapchain()
 {
-    checked_dynamic_cast<Device_vulkan *>(device)->intrinsic.destroy(swapchain);
+    lock_dynamic_cast<Device_vulkan>(device)->intrinsic.destroy(swapchain);
 }
 
 void Window_vulkan::buildFramebuffers()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
     
     swapchainImages = vulkanDevice->intrinsic.getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
@@ -251,7 +252,7 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     for (auto frameBuffer : swapchainFramebuffers) {
         vulkanDevice->intrinsic.destroy(frameBuffer);
@@ -306,7 +307,7 @@ void Window_vulkan::buildRenderPasses()
         subpassDependency.data()
     };
 
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     firstRenderPass = vulkanDevice->intrinsic.createRenderPass(renderPassCreateInfo);
     attachmentDescriptions[0].loadOp = vk::AttachmentLoadOp::eClear;
@@ -315,14 +316,14 @@ void Window_vulkan::buildRenderPasses()
 
 void Window_vulkan::teardownRenderPasses()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
     vulkanDevice->intrinsic.destroy(firstRenderPass);
     vulkanDevice->intrinsic.destroy(followUpRenderPass);
 }
 
 void Window_vulkan::buildSemaphores()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
     auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     imageAvailableSemaphore = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
 
@@ -335,7 +336,7 @@ void Window_vulkan::buildSemaphores()
 
 void Window_vulkan::teardownSemaphores()
 {
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
     vulkanDevice->intrinsic.destroy(imageAvailableSemaphore);
     vulkanDevice->intrinsic.destroy(renderFinishedFence);
 }
@@ -344,7 +345,7 @@ bool Window_vulkan::render(bool blockOnVSync)
 {
     uint32_t imageIndex;
     uint64_t timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device);
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     auto result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
     switch (result) {
@@ -363,12 +364,12 @@ bool Window_vulkan::render(bool blockOnVSync)
     vulkanDevice->intrinsic.waitIdle();
     // device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
     vulkanDevice->intrinsic.resetFences(1, &renderFinishedFence);
-    device->graphicQueue->intrinsic.submit(0, nullptr, renderFinishedFence);
+    vulkanDevice->graphicQueue->intrinsic.submit(0, nullptr, renderFinishedFence);
 
     auto presentInfo = vk::PresentInfoKHR(1, renderFinishedSemaphores, 1, &swapchain, &imageIndex);
 
     // Pass present info as a pointer to get the non-throw version.
-    result = device->presentQueue->intrinsic.presentKHR(&presentInfo);
+    result = vulkanDevice->presentQueue->intrinsic.presentKHR(&presentInfo);
     switch (result) {
     case vk::Result::eSuccess: break;
     case vk::Result::eSuboptimalKHR: LOG_INFO("presentKHR() eSuboptimalKHR"); return false;

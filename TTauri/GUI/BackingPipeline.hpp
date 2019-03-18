@@ -66,7 +66,7 @@ public:
     };
 
 
-    BackingPipeline(Window *window);
+    BackingPipeline(const std::shared_ptr<Window> &window);
     virtual ~BackingPipeline();
     
     virtual vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);

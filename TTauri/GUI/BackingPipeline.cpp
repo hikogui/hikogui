@@ -17,7 +17,7 @@ namespace GUI {
 
 using namespace TTauri;
 
-BackingPipeline::BackingPipeline(Window *window) :
+BackingPipeline::BackingPipeline(const std::shared_ptr<Window> &window) :
     Pipeline(window)
 {
 }
@@ -32,10 +32,9 @@ vk::Semaphore BackingPipeline::render(uint32_t imageIndex, vk::Semaphore inputSe
     auto vertexDataSize = vertexBufferSizes[imageIndex];
     auto vertices = reinterpret_cast<Vertex *>(reinterpret_cast<char *>(vertexBufferData) + vertexDataOffset);
 
-    auto tmpNumberOfVertices = window->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices());
+    auto tmpNumberOfVertices = window.lock()->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices());
 
-    auto vulkanDevice = checked_dynamic_cast<Device_vulkan *>(device());
-    vulkanDevice->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
+    device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
 
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers();
@@ -62,8 +61,8 @@ void BackingPipeline::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 std::vector<vk::ShaderModule> BackingPipeline::createShaderModules() const
 {
     return {
-        loadShader(Application::shared->resourceDir / "BackingPipeline.vert.spv"),
-        loadShader(Application::shared->resourceDir / "BackingPipeline.frag.spv")
+        loadShader(get_singleton<Application>()->resourceDir / "BackingPipeline.vert.spv"),
+        loadShader(get_singleton<Application>()->resourceDir / "BackingPipeline.frag.spv")
     };
 }
 

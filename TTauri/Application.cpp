@@ -12,7 +12,7 @@
 
 namespace TTauri {
 
-std::shared_ptr<Application> Application::shared;
+std::shared_ptr<Application> Application::singleton;
 
 Application::Application(std::shared_ptr<Delegate> delegate) :
     delegate(delegate)
@@ -27,10 +27,6 @@ Application::~Application()
 
 void Application::initialize()
 {
-    if (!initialized) {
-        initialized = true;
-        delegate->initialize();
-    }
 }
 
 void Application::startingLoop()

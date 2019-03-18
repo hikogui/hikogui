@@ -9,6 +9,7 @@
 #include "View.hpp"
 #include "Window.hpp"
 #include <boost/assert.hpp>
+#include <TTauri/utils.hpp>
 
 namespace TTauri {
 namespace GUI {
@@ -21,13 +22,8 @@ View::~View()
 {
 }
 
-Device *View::device()
-{
-    BOOST_ASSERT(window);
-    return window->device;
-}
 
-void View::setParent(View *parent)
+void View::setParent(const std::shared_ptr<View> &parent)
 {
     this->parent = parent;
     this->window = parent->window;
@@ -42,7 +38,7 @@ void View::setRectangle(glm::vec3 position, glm::vec3 extent)
 void View::add(std::shared_ptr<View> view)
 {
     children.push_back(view);
-    view->setParent(this);
+    view->setParent(shared_from_this());
 }
 
 
