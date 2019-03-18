@@ -22,6 +22,11 @@ View::~View()
 {
 }
 
+template <typename T>
+std::shared_ptr<T> View::device()
+{
+    return lock_dynamic_cast<T>(window.lock()->device);
+}
 
 void View::setParent(const std::shared_ptr<View> &parent)
 {

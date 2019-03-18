@@ -95,6 +95,8 @@
 		68EF9976223EEADF008C2357 /* Device_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9972223EEADF008C2357 /* Device_vulkan.cpp */; };
 		68EF9977223EEADF008C2357 /* Device_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9972223EEADF008C2357 /* Device_vulkan.cpp */; };
 		68EF9978223EEADF008C2357 /* Device_vulkan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68EF9972223EEADF008C2357 /* Device_vulkan.cpp */; };
+		68EF9979224018D1008C2357 /* Instance_vulkan_macos.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68EF9969223DB02D008C2357 /* Instance_vulkan_macos.hpp */; };
+		68EF997A224018E5008C2357 /* Instance_vulkan.hpp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 68EF9960223D9BA8008C2357 /* Instance_vulkan.hpp */; };
 		68F2627C22030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627B22030EA70078E5E4 /* AppDelegate.m */; };
 		68F2627F22030EA70078E5E4 /* GameViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2627E22030EA70078E5E4 /* GameViewController.m */; };
 		68F2628222030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2628022030EA70078E5E4 /* Main.storyboard */; };
@@ -105,8 +107,7 @@
 		68F2629722030EA70078E5E4 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 68F2629522030EA70078E5E4 /* Main.storyboard */; };
 		68F2629A22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F2629922030EA70078E5E4 /* main.m */; };
 		68F262A322030EA70078E5E4 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A222030EA70078E5E4 /* AppDelegate.m */; };
-		68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */; };
-		68F262AC22030EA70078E5E4 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 68F262AB22030EA70078E5E4 /* main.m */; };
+		68F262AC22030EA70078E5E4 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 68F262AB22030EA70078E5E4 /* main.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -127,6 +128,8 @@
 				686C03322231A989002F4063 /* vulkan_utils.hpp in CopyFiles */,
 				686C03332231A989002F4063 /* Window.hpp in CopyFiles */,
 				68BF1EE72236EC1E0008955B /* config.hpp in CopyFiles */,
+				68EF997A224018E5008C2357 /* Instance_vulkan.hpp in CopyFiles */,
+				68EF9979224018D1008C2357 /* Instance_vulkan_macos.hpp in CopyFiles */,
 				68BF1EE82236EC240008955B /* WindowView.hpp in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -221,10 +224,8 @@
 		68F2629F22030EA70078E5E4 /* TTauri.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TTauri.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		68F262A122030EA70078E5E4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		68F262A222030EA70078E5E4 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		68F262A422030EA70078E5E4 /* MoltenVKViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MoltenVKViewController.h; sourceTree = "<group>"; };
-		68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MoltenVKViewController.mm; sourceTree = "<group>"; };
 		68F262AA22030EA70078E5E4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		68F262AB22030EA70078E5E4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		68F262AB22030EA70078E5E4 /* main.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = main.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -393,10 +394,8 @@
 			children = (
 				68F262A122030EA70078E5E4 /* AppDelegate.h */,
 				68F262A222030EA70078E5E4 /* AppDelegate.m */,
-				68F262A422030EA70078E5E4 /* MoltenVKViewController.h */,
-				68F262A522030EA70078E5E4 /* MoltenVKViewController.mm */,
 				68F262AA22030EA70078E5E4 /* Info.plist */,
-				68F262AB22030EA70078E5E4 /* main.m */,
+				68F262AB22030EA70078E5E4 /* main.mm */,
 				68DFA8D82203315C005D9413 /* MoltenVKView.mm */,
 				68DFA8DA2203317E005D9413 /* MoltenVKView.h */,
 			);
@@ -620,7 +619,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				68F262A622030EA70078E5E4 /* MoltenVKViewController.mm in Sources */,
 				68DFA8D92203315C005D9413 /* MoltenVKView.mm in Sources */,
 				68EF9978223EEADF008C2357 /* Device_vulkan.cpp in Sources */,
 				68EF9968223DA0A5008C2357 /* Application_macos.mm in Sources */,
@@ -638,7 +636,7 @@
 				686C02D92231A8A4002F4063 /* Logging.cpp in Sources */,
 				68EF9963223D9BA8008C2357 /* Instance_vulkan.cpp in Sources */,
 				686C02D02231A8A4002F4063 /* Application.cpp in Sources */,
-				68F262AC22030EA70078E5E4 /* main.m in Sources */,
+				68F262AC22030EA70078E5E4 /* main.mm in Sources */,
 				68EF9975223EEADF008C2357 /* Window_vulkan.cpp in Sources */,
 				686C03042231A8D7002F4063 /* BackingPipeline.cpp in Sources */,
 				686C02D62231A8A4002F4063 /* Time.cpp in Sources */,

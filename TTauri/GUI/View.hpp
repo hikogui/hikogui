@@ -51,10 +51,7 @@ public:
     std::shared_ptr<Device> device();
     
     template <typename T>
-    std::shared_ptr<T> device()
-    {
-        return lock_dynamic_cast<T>(window.lock()->device);
-    }
+    std::shared_ptr<T> device();
 
     virtual size_t BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size);
 };

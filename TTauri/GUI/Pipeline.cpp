@@ -31,6 +31,12 @@ Pipeline::~Pipeline()
 {
 }
 
+template<typename T>
+std::shared_ptr<T> Pipeline::device() const
+{
+    return lock_dynamic_cast<T>(window.lock()->device);
+}
+
 
 vk::Semaphore Pipeline::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
