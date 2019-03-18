@@ -17,7 +17,6 @@ Instance_vulkan_win32::~Instance_vulkan_win32()
     updateAndRenderThread.join();
 }
 
-
 void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
 {
     std::scoped_lock lock(mutex);

@@ -33,8 +33,9 @@ public:
     Pipeline(const std::shared_ptr<Window> &window);
     virtual ~Pipeline();
 
-    template <typename T>
-    std::shared_ptr<T> device() const {
+    template<typename T>
+    std::shared_ptr<T> device() const
+    {
         return lock_dynamic_cast<T>(window.lock()->device);
     }
 

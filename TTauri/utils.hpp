@@ -44,23 +44,10 @@ inline size_t align(size_t offset, size_t alignment)
     return ((offset + alignment - 1) / alignment) * alignment;
 }
 
-struct CheckedDynamicCastError : virtual boost::exception, virtual std::exception {};
-
-template<typename T, typename U>
-T checked_dynamic_cast(U x)
-{
-    T xCasted = dynamic_cast<T>(x);
-    if (!xCasted) {
-        BOOST_THROW_EXCEPTION(CheckedDynamicCastError());
-    }
-    return xCasted;
-}
-
 template<typename T, typename U>
 std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 {
-    auto xLocked = x.lock();
-    return std::dynamic_pointer_cast<T>(xLocked);
+    return std::dynamic_pointer_cast<T>(x.lock());
 }
 
 struct GetSharedCastError : virtual boost::exception, virtual std::exception {};
