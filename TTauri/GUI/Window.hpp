@@ -13,7 +13,6 @@
 
 #include <unordered_set>
 
-
 #include <memory>
 #include <mutex>
 
@@ -40,6 +39,13 @@ public:
 
     class Delegate {
     public:
+        Delegate() = default;
+        virtual ~Delegate() = default;
+        Delegate(const Delegate &) = delete;
+        Delegate &operator=(const Delegate &) = delete;
+        Delegate(Delegate &&) = delete;
+        Delegate &operator=(Delegate &&) = delete;
+
         virtual void creatingWindow(const std::shared_ptr<Window> &window) = 0;
     };
 
@@ -53,12 +59,11 @@ public:
 
     std::string title;
 
- 
     std::weak_ptr<Device> device;
 
     //! Location of the window on the screen.
-    glm::vec3 position = {0.0, 0.0, 0.0};
-    glm::vec3 extent = {0.0, 0.0, 0.0};
+    glm::vec3 position = { 0.0, 0.0, 0.0 };
+    glm::vec3 extent = { 0.0, 0.0, 0.0 };
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -79,8 +84,12 @@ public:
     std::shared_ptr<BackingPipeline_vulkan> backingPipeline;
 
     Window(const std::shared_ptr<Delegate> &delegate, const std::string &title);
+    virtual ~Window() {}
 
-    virtual ~Window();
+    Window(const Window &) = delete;
+    Window &operator=(const Window &) = delete;
+    Window(Window &&) = delete;
+    Window &operator=(Window &&) = delete;
 
     void initialize();
 
@@ -125,14 +134,12 @@ protected:
     // The extent of the window rectangle should only be read when creating the swapchain.
     vk::Rect2D windowRectangle;
 
-     /*! Render views.
+    /*! Render views.
      * \returns false when swapchain is out of date.
      */
     virtual bool render(bool blockOnVSync) = 0;
 
 private:
-
-    
     bool isOnScreen();
 };
 

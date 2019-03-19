@@ -22,7 +22,6 @@ namespace GUI {
 
 class Instance;
 
-
 /*! A Device that handles a set of windows.
  */
 class Device : public std::enable_shared_from_this<Device> {
@@ -36,11 +35,11 @@ public:
     State state = State::NO_DEVICE;
 
     struct Error : virtual boost::exception, virtual std::exception {};
-    
+
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;
-    boost::uuids::uuid deviceUUID;
+    boost::uuids::uuid deviceUUID = {};
 
     /*! A list of windows managed by this device.
      */
@@ -50,6 +49,11 @@ public:
 
     Device();
     virtual ~Device();
+
+    Device(const Device &) = delete;
+    Device &operator=(const Device &) = delete;
+    Device(Device &&) = delete;
+    Device &operator=(Device &&) = delete;
 
     /*! Check if this device is a good match for this window.
      *
@@ -80,8 +84,6 @@ public:
     /*! Maintanance work on low performance thread.
      */
     void maintance();
-
-    
 };
 
 }}

@@ -30,6 +30,13 @@ public:
      */
     class Delegate {
     public:
+        Delegate() = default;
+        virtual ~Delegate() = default;
+        Delegate(const Delegate &) = delete;
+        Delegate &operator=(const Delegate &) = delete;
+        Delegate(Delegate &&) = delete;
+        Delegate &operator=(Delegate &&) = delete;
+
         /*! Called right before the application loop is started.
          */
         virtual void startingLoop() = 0;
@@ -54,11 +61,16 @@ public:
      */
     Application(std::shared_ptr<Delegate> applicationDelegate);
 
-    virtual ~Application();
+    virtual ~Application() = default;
+
+    Application(const Application &) = delete;
+    Application &operator=(const Application &) = delete;
+    Application(Application &&) = delete;
+    Application &operator=(Application &&) = delete;
 
     /*! Initialize the application.
      */
-    virtual void initialize();
+    virtual void initialize() {}
 
     virtual void startingLoop();
 

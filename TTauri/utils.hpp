@@ -39,7 +39,7 @@ inline std::shared_ptr<T> make_shared(Args... args)
     return std::make_shared<T>(args...);
 }
 
-inline size_t align(size_t offset, size_t alignment)
+inline constexpr size_t align(size_t offset, size_t alignment) 
 {
     return ((offset + alignment - 1) / alignment) * alignment;
 }

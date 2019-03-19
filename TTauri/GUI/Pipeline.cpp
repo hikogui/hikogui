@@ -17,8 +17,4 @@ Pipeline::Pipeline(const std::shared_ptr<Window> &window) :
 {
 }
 
-Pipeline::~Pipeline()
-{
-}
-
 }}

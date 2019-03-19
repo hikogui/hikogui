@@ -16,11 +16,7 @@ ImageView::ImageView(const boost::filesystem::path &path) :
 {
 }
 
-ImageView::~ImageView()
-{
-}
-
-size_t ImageView::BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size)
+size_t ImageView::backingPipelineRender(BackingPipeline_vulkan::Vertex * vertices, size_t offset, size_t size)
 {
     if (offset + 6 >= size) {
         BOOST_THROW_EXCEPTION(BackingPipeline_vulkan::Delegate::Error());

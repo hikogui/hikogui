@@ -9,6 +9,7 @@
 #pragma once
 
 #include "BackingPipeline_vulkan.hpp"
+
 #include <limits>
 #include <memory>
 #include <vector>
@@ -34,26 +35,31 @@ public:
     std::vector<std::shared_ptr<View>> children;
 
     //! Location of the frame compared to the parent-frame.
-    glm::vec3 position = {0.0, 0.0, 0.0};
-    glm::vec3 extent = {0.0, 0.0, 0.0};
+    glm::vec3 position = { 0.0, 0.0, 0.0 };
+    glm::vec3 extent = { 0.0, 0.0, 0.0 };
 
     /*! Constructor for creating subviews.
      */
     View();
+    virtual ~View() {}
 
-    virtual ~View();
+    View(const View &) = delete;
+    View &operator=(const View &) = delete;
+    View(View &&) = delete;
+    View &operator=(View &&) = delete;
 
     virtual void setParent(const std::shared_ptr<View> &parent);
     virtual void setRectangle(glm::vec3 position, glm::vec3 extent);
 
     virtual void add(std::shared_ptr<View> view);
-    
+
     template<typename T>
-    std::shared_ptr<T> device() {
+    std::shared_ptr<T> device()
+    {
         return lock_dynamic_cast<T>(window.lock()->device);
     }
 
-    virtual size_t BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size);
+    size_t backingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size) override;
 };
 
 }}

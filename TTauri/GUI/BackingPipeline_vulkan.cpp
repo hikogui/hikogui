@@ -22,17 +22,13 @@ BackingPipeline_vulkan::BackingPipeline_vulkan(const std::shared_ptr<Window> &wi
 {
 }
 
-BackingPipeline_vulkan::~BackingPipeline_vulkan()
-{
-}
-
 vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto vertexDataOffset = vertexBufferOffsets[imageIndex];
-    auto vertexDataSize = vertexBufferSizes[imageIndex];
-    auto vertices = reinterpret_cast<Vertex *>(reinterpret_cast<char *>(vertexBufferData) + vertexDataOffset);
+    auto const vertexDataOffset = vertexBufferOffsets.at(imageIndex);
+    auto const vertexDataSize = vertexBufferSizes.at(imageIndex);
+    auto const vertices = reinterpret_cast<Vertex *>(static_cast<char *>(vertexBufferData) + vertexDataOffset);
 
-    auto tmpNumberOfVertices = window.lock()->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices());
+    auto const tmpNumberOfVertices = window.lock()->view->backingPipelineRender(vertices, 0, maximumNumberOfVertices());
 
     if (vertexBufferNeedsFlushing) {
         device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
@@ -48,9 +44,15 @@ vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore 
 
 void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {
-    pushConstants.windowExtent = { scissors[0].extent.width , scissors[0].extent.height };
-    pushConstants.viewportScale = { 2.0 / scissors[0].extent.width, 2.0 / scissors[0].extent.height };
-    commandBuffer.pushConstants(pipelineLayout, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment, 0, sizeof(PushConstants), static_cast<const void *>(&pushConstants));
+    pushConstants.windowExtent = { scissors.at(0).extent.width , scissors.at(0).extent.height };
+    pushConstants.viewportScale = { 2.0 / scissors.at(0).extent.width, 2.0 / scissors.at(0).extent.height };
+    commandBuffer.pushConstants(
+        pipelineLayout,
+        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+        0, 
+        sizeof(PushConstants), 
+        &pushConstants
+    );
 
     commandBuffer.draw(
         boost::numeric_cast<uint32_t>(numberOfVertices),
@@ -71,8 +73,8 @@ std::vector<vk::ShaderModule> BackingPipeline_vulkan::createShaderModules() cons
 std::vector<vk::PipelineShaderStageCreateInfo> BackingPipeline_vulkan::createShaderStages(const std::vector<vk::ShaderModule> &shaders) const
 {
     return {
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, shaders[0], "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, shaders[1], "main"}
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, shaders.at(0), "main"},
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, shaders.at(1), "main"}
     };
 }
 

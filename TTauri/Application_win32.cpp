@@ -17,19 +17,16 @@ Application_win32::Application_win32(const std::shared_ptr<Delegate> &delegate, 
     pCmdLine(pCmdLine),
     nCmdShow(nCmdShow)
 {
+
     // Resource path, is the same directory as where the executable lives.
     wchar_t modulePathWChar[MAX_PATH];
-    auto r = GetModuleFileNameW(NULL, modulePathWChar, MAX_PATH);
-    if (r == 0 || r == MAX_PATH) {
+    if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
         BOOST_THROW_EXCEPTION(Application::ResourceDirError());
     }
 
-    auto modulePath = boost::filesystem::path(modulePathWChar);
-    resourceDir = modulePath.parent_path();
-}
+    auto const modulePath = boost::filesystem::path(modulePathWChar);
 
-Application_win32::~Application_win32()
-{
+    resourceDir = modulePath.parent_path();
 }
 
 int Application_win32::loop()
@@ -38,7 +35,7 @@ int Application_win32::loop()
 
     // Run the message loop.
     MSG msg = {};
-    while (GetMessage(&msg, NULL, 0, 0)) {
+    while (GetMessage(&msg, nullptr, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }

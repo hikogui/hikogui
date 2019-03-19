@@ -70,20 +70,20 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -94,6 +94,7 @@
       <Optimization>Disabled</Optimization>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -127,6 +128,7 @@
       <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -161,6 +163,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DisableSpecificWarnings>4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <PreprocessorDefinitions>UNICODE;NOMINMAX;VK_USE_PLATFORM_WIN32_KHR;_DEBUG</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <PreBuildEvent>
       <Command>
@@ -188,6 +191,7 @@
       <PreprocessorDefinitions>UNICODE;NOMINMAX;VK_USE_PLATFORM_WIN32_KHR;NDEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <PreBuildEvent>
       <Command>

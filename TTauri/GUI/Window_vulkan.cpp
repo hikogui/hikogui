@@ -8,16 +8,16 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 
+#include <vector>
+
 namespace TTauri {
 namespace GUI {
+
+using namespace std;
 
 Window_vulkan::Window_vulkan(std::shared_ptr<Window::Delegate> delegate, const std::string &title, vk::SurfaceKHR surface) :
     Window(delegate, title),
     intrinsic(surface)
-{
-}
-
-Window_vulkan::~Window_vulkan()
 {
 }
 
@@ -28,35 +28,32 @@ void Window_vulkan::waitIdle()
 
 std::pair<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndImageExtent()
 {
-    auto surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+    auto const surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
-    uint32_t imageCount;
-    if (surfaceCapabilities.maxImageCount) {
-        imageCount = std::clamp(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+    auto const currentExtentSet =
+        (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
+        (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
 
-    } else {
-        imageCount = std::max(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount);
-    }
-
-    vk::Extent2D imageExtent;
-    if (surfaceCapabilities.currentExtent.width == std::numeric_limits<uint32_t>::max() &&
-        surfaceCapabilities.currentExtent.height == std::numeric_limits<uint32_t>::max()) {
+    if (!currentExtentSet) {
         LOG_WARNING("getSurfaceCapabilitiesKHR() does not supply currentExtent");
-        imageExtent.width =
-            std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width);
-        imageExtent.height =
-            std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height);
-
-    } else {
-        imageExtent = surfaceCapabilities.currentExtent;
     }
+
+    uint32_t const imageCount = surfaceCapabilities.maxImageCount ?
+        std::clamp(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount) :
+        std::max(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount);
+
+    vk::Extent2D const imageExtent = currentExtentSet ?
+        surfaceCapabilities.currentExtent :
+        (vk::Extent2D{
+            std::clamp(windowRectangle.extent.width, surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
+            std::clamp(windowRectangle.extent.height, surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height) });
 
     return { imageCount, imageExtent };
 }
 
 bool Window_vulkan::isOnScreen()
 {
-    auto imageCountAndImageExtent = getImageCountAndImageExtent();
+    auto const imageCountAndImageExtent = getImageCountAndImageExtent();
 
     return imageCountAndImageExtent.second.width > 0 && imageCountAndImageExtent.second.height > 0;
 }
@@ -66,9 +63,9 @@ void Window_vulkan::buildForDeviceChange()
     std::scoped_lock lock(mutex);
 
     if (state == State::LINKED_TO_DEVICE) {
-        auto swapchainAndOnScreen = buildSwapchain();
+        auto const swapchainAndOnScreen = buildSwapchain();
         swapchain = swapchainAndOnScreen.first;
-        auto onScreen = swapchainAndOnScreen.second;
+        auto const onScreen = swapchainAndOnScreen.second;
 
         buildRenderPasses();
         buildFramebuffers();
@@ -112,9 +109,9 @@ bool Window_vulkan::rebuildForSwapchainChange()
     backingPipeline->teardownForSwapchainChange();
     teardownFramebuffers();
 
-    auto swapChainAndOnScreen = buildSwapchain(swapchain);
+    auto const swapChainAndOnScreen = buildSwapchain(swapchain);
     swapchain = swapChainAndOnScreen.first;
-    auto onScreen = swapChainAndOnScreen.second;
+    auto const onScreen = swapChainAndOnScreen.second;
 
     buildFramebuffers();
     backingPipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
@@ -126,67 +123,64 @@ std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR
 {
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
-    // Figure out the best way of sharing data between the present and graphic queues.
-    vk::SharingMode sharingMode;
-    uint32_t sharingQueueFamilyCount;
-    uint32_t sharingQueueFamilyIndices[2] = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
-    uint32_t *sharingQueueFamilyIndicesPtr;
+    auto const sharingMode = vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex ?
+        vk::SharingMode::eExclusive :
+        vk::SharingMode::eConcurrent;
 
-    if (vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex) {
-        sharingMode = vk::SharingMode::eExclusive;
-        sharingQueueFamilyCount = 0;
-        sharingQueueFamilyIndicesPtr = nullptr;
-    } else {
-        sharingMode = vk::SharingMode::eConcurrent;
-        sharingQueueFamilyCount = 2;
-        sharingQueueFamilyIndicesPtr = sharingQueueFamilyIndices;
-    }
+    vector<uint32_t> const sharingQueueFamilyAllIndices = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
+    vector<uint32_t> const sharingQueueFamilyNoneIndices = {};
 
-retry:
-    auto imageCountAndImageExtent = getImageCountAndImageExtent();
-    auto imageCount = imageCountAndImageExtent.first;
-    auto imageExtent = imageCountAndImageExtent.second;
+    auto const sharingQueueFamilyIndices = sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices : sharingQueueFamilyNoneIndices;
 
-    if (imageExtent.width == 0 || imageExtent.height == 0) {
-        return { oldSwapchain, false };
-    }
-
-    swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
-        vk::SwapchainCreateFlagsKHR(),
-        intrinsic,
-        imageCount,
-        vulkanDevice->bestSurfaceFormat.format,
-        vulkanDevice->bestSurfaceFormat.colorSpace,
-        imageExtent,
-        1, // imageArrayLayers
-        vk::ImageUsageFlagBits::eColorAttachment,
-        sharingMode,
-        sharingQueueFamilyCount,
-        sharingQueueFamilyIndicesPtr,
-        vk::SurfaceTransformFlagBitsKHR::eIdentity,
-        vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        vulkanDevice->bestSurfacePresentMode,
-        VK_TRUE, // clipped
-        oldSwapchain);
-
+    // Creating swapchain images can fail in different ways, we need to keep retrying.
     vk::SwapchainKHR newSwapchain;
-    vk::Result result = vulkanDevice->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
-    // No matter what, the oldSwapchain has been retired after createSwapchainKHR().
-    vulkanDevice->intrinsic.destroy(oldSwapchain);
-    oldSwapchain = vk::SwapchainKHR();
+    while (true) {
+        auto const imageCountAndImageExtent = getImageCountAndImageExtent();
+        auto const imageCount = imageCountAndImageExtent.first;
+        auto const imageExtent = imageCountAndImageExtent.second;
 
-    if (result != vk::Result::eSuccess) {
-        LOG_WARNING("Could not create swapchain, retrying.");
-        goto retry;
-    }
+        if (imageExtent.width == 0 || imageExtent.height == 0) {
+            return { oldSwapchain, false };
+        }
 
-    auto checkImageCountAndImageExtent = getImageCountAndImageExtent();
-    auto checkImageExtent = checkImageCountAndImageExtent.second;
-    if (imageExtent != checkImageExtent) {
-        LOG_WARNING("Surface extent changed while creating swapchain, retrying.");
-        // The newSwapchain was created succesfully, it is just of the wrong size so use it as the next oldSwapchain.
-        oldSwapchain = newSwapchain;
-        goto retry;
+        swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
+            vk::SwapchainCreateFlagsKHR(),
+            intrinsic,
+            imageCount,
+            vulkanDevice->bestSurfaceFormat.format,
+            vulkanDevice->bestSurfaceFormat.colorSpace,
+            imageExtent,
+            1, // imageArrayLayers
+            vk::ImageUsageFlagBits::eColorAttachment,
+            sharingMode,
+            boost::numeric_cast<uint32_t>(sharingQueueFamilyIndices.size()),
+            sharingQueueFamilyIndices.data(),
+            vk::SurfaceTransformFlagBitsKHR::eIdentity,
+            vk::CompositeAlphaFlagBitsKHR::eOpaque,
+            vulkanDevice->bestSurfacePresentMode,
+            VK_TRUE, // clipped
+            oldSwapchain);
+        
+        vk::Result const result = vulkanDevice->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
+        // No matter what, the oldSwapchain has been retired after createSwapchainKHR().
+        vulkanDevice->intrinsic.destroy(oldSwapchain);
+        oldSwapchain = vk::SwapchainKHR();
+
+        if (result != vk::Result::eSuccess) {
+            LOG_WARNING("Could not create swapchain, retrying.");
+            continue;
+        }
+
+        auto const checkImageCountAndImageExtent = getImageCountAndImageExtent();
+        auto const checkImageExtent = checkImageCountAndImageExtent.second;
+        if (imageExtent != checkImageExtent) {
+            LOG_WARNING("Surface extent changed while creating swapchain, retrying.");
+            // The newSwapchain was created succesfully, it is just of the wrong size so use it as the next oldSwapchain.
+            oldSwapchain = newSwapchain;
+            continue;
+        }
+
+        break;
     }
 
     view->setRectangle({ 0.0, 0.0, 0.0 }, { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 0.0 });
@@ -207,30 +201,21 @@ void Window_vulkan::teardownSwapchain()
 void Window_vulkan::buildFramebuffers()
 {
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
-    
+
     swapchainImages = vulkanDevice->intrinsic.getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
-        uint32_t baseMipLlevel = 0;
-        uint32_t levelCount = 1;
-        uint32_t baseArrayLayer = 0;
-        uint32_t layerCount = 1;
-        auto imageSubresourceRange =
-            vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, baseMipLlevel, levelCount, baseArrayLayer, layerCount);
+        auto imageView = vulkanDevice->intrinsic.createImageView({ vk::ImageViewCreateFlags(),
+                                                                   image,
+                                                                   vk::ImageViewType::e2D,
+                                                                   swapchainCreateInfo.imageFormat,
+                                                                   vk::ComponentMapping(),
+                                                                   { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 } });
 
-        auto imageViewCreateInfo = vk::ImageViewCreateInfo(
-            vk::ImageViewCreateFlags(),
-            image,
-            vk::ImageViewType::e2D,
-            swapchainCreateInfo.imageFormat,
-            vk::ComponentMapping(),
-            imageSubresourceRange);
-
-        auto imageView = vulkanDevice->intrinsic.createImageView(imageViewCreateInfo);
         swapchainImageViews.push_back(imageView);
 
         std::vector<vk::ImageView> attachments = { imageView };
 
-        auto framebufferCreateInfo = vk::FramebufferCreateInfo(
+        auto framebuffer = vulkanDevice->intrinsic.createFramebuffer({
             vk::FramebufferCreateFlags(),
             firstRenderPass,
             boost::numeric_cast<uint32_t>(attachments.size()),
@@ -238,11 +223,7 @@ void Window_vulkan::buildFramebuffers()
             swapchainCreateInfo.imageExtent.width,
             swapchainCreateInfo.imageExtent.height,
             1 // layers
-        );
-
-        LOG_INFO("createFramebuffer (%i, %i)") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
-
-        auto framebuffer = vulkanDevice->intrinsic.createFramebuffer(framebufferCreateInfo);
+        });
         swapchainFramebuffers.push_back(framebuffer);
     }
 
@@ -279,38 +260,39 @@ void Window_vulkan::buildRenderPasses()
         vk::ImageLayout::ePresentSrcKHR // finalLayout
     } };
 
-    std::vector<vk::AttachmentReference> inputAttachmentReferences = {};
+    std::vector<vk::AttachmentReference> const inputAttachmentReferences = {};
 
-    std::vector<vk::AttachmentReference> colorAttachmentReferences = { { 0, vk::ImageLayout::eColorAttachmentOptimal } };
+    std::vector<vk::AttachmentReference> const colorAttachmentReferences = { { 0, vk::ImageLayout::eColorAttachmentOptimal } };
 
-    std::vector<vk::SubpassDescription> subpassDescriptions = { { vk::SubpassDescriptionFlags(),
-                                                                  vk::PipelineBindPoint::eGraphics,
-                                                                  boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-                                                                  inputAttachmentReferences.data(),
-                                                                  boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
-                                                                  colorAttachmentReferences.data() } };
+    std::vector<vk::SubpassDescription> const subpassDescriptions = { { vk::SubpassDescriptionFlags(),
+                                                                        vk::PipelineBindPoint::eGraphics,
+                                                                        boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+                                                                        inputAttachmentReferences.data(),
+                                                                        boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+                                                                        colorAttachmentReferences.data() } };
 
-    std::vector<vk::SubpassDependency> subpassDependency = { { VK_SUBPASS_EXTERNAL,
-                                                               0,
-                                                               vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                                                               vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                                                               vk::AccessFlags(),
-                                                               vk::AccessFlagBits::eColorAttachmentRead |
-                                                                   vk::AccessFlagBits::eColorAttachmentWrite } };
+    std::vector<vk::SubpassDependency> const subpassDependency = { { VK_SUBPASS_EXTERNAL,
+                                                                     0,
+                                                                     vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                                                                     vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                                                                     vk::AccessFlags(),
+                                                                     vk::AccessFlagBits::eColorAttachmentRead |
+                                                                         vk::AccessFlagBits::eColorAttachmentWrite } };
 
-    vk::RenderPassCreateInfo renderPassCreateInfo = {
-        vk::RenderPassCreateFlags(), 
-        boost::numeric_cast<uint32_t>(attachmentDescriptions.size()), 
+    vk::RenderPassCreateInfo const renderPassCreateInfo = {
+        vk::RenderPassCreateFlags(),
+        boost::numeric_cast<uint32_t>(attachmentDescriptions.size()),
         attachmentDescriptions.data(),
-        boost::numeric_cast<uint32_t>(subpassDescriptions.size()), 
-        subpassDescriptions.data(), boost::numeric_cast<uint32_t>(subpassDependency.size()),
+        boost::numeric_cast<uint32_t>(subpassDescriptions.size()),
+        subpassDescriptions.data(),
+        boost::numeric_cast<uint32_t>(subpassDependency.size()),
         subpassDependency.data()
     };
 
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     firstRenderPass = vulkanDevice->intrinsic.createRenderPass(renderPassCreateInfo);
-    attachmentDescriptions[0].loadOp = vk::AttachmentLoadOp::eClear;
+    attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eClear;
     followUpRenderPass = vulkanDevice->intrinsic.createRenderPass(renderPassCreateInfo);
 }
 
@@ -324,14 +306,13 @@ void Window_vulkan::teardownRenderPasses()
 void Window_vulkan::buildSemaphores()
 {
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
-    auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-    imageAvailableSemaphore = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+
+    imageAvailableSemaphore = vulkanDevice->intrinsic.createSemaphore({}, nullptr);
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
     // It should therefor be signed at the start so that when no rendering has been
     // done it is still idle.
-    auto fenceCreateInfo = vk::FenceCreateInfo(vk::FenceCreateFlagBits::eSignaled);
-    renderFinishedFence = vulkanDevice->intrinsic.createFence(fenceCreateInfo, nullptr);
+    renderFinishedFence = vulkanDevice->intrinsic.createFence({ vk::FenceCreateFlagBits::eSignaled }, nullptr);
 }
 
 void Window_vulkan::teardownSemaphores()
@@ -343,40 +324,58 @@ void Window_vulkan::teardownSemaphores()
 
 bool Window_vulkan::render(bool blockOnVSync)
 {
-    uint32_t imageIndex;
-    uint64_t timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
+    uint64_t const timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
-    auto result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
-    switch (result) {
-    case vk::Result::eSuccess: break;
-    case vk::Result::eSuboptimalKHR: LOG_INFO("acquireNextImageKHR() eSuboptimalKHR"); return false;
-    case vk::Result::eErrorOutOfDateKHR: LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR"); return false;
-    case vk::Result::eTimeout:
-        // Don't render, we didn't receive an image.
-        return true;
-    default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
+    uint32_t imageIndex = 0;
+    {
+        auto const result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+        switch (result) {
+        case vk::Result::eSuccess: break;
+        case vk::Result::eSuboptimalKHR: LOG_INFO("acquireNextImageKHR() eSuboptimalKHR"); return false;
+        case vk::Result::eErrorOutOfDateKHR: LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR"); return false;
+        case vk::Result::eTimeout:
+            // Don't render, we didn't receive an image.
+            return true;
+        default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
+        }
     }
-
-    vk::Semaphore renderFinishedSemaphores[] = { backingPipeline->render(imageIndex, imageAvailableSemaphore) };
 
     // Make a fence that should be signaled when all drawing is finished.
     vulkanDevice->intrinsic.waitIdle();
     // device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-    vulkanDevice->intrinsic.resetFences(1, &renderFinishedFence);
+
+    vulkanDevice->intrinsic.resetFences({ renderFinishedFence });
     vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
-    auto presentInfo = vk::PresentInfoKHR(1, renderFinishedSemaphores, 1, &swapchain, &imageIndex);
+    {
+        vector<vk::Semaphore> const renderFinishedSemaphores = { backingPipeline->render(imageIndex, imageAvailableSemaphore) };
+        vector<vk::SwapchainKHR> const presentSwapchains = { swapchain };
+        vector<uint32_t> const presentImageIndices = { imageIndex };
+        BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
 
-    // Pass present info as a pointer to get the non-throw version.
-    result = vulkanDevice->presentQueue.presentKHR(&presentInfo);
-    switch (result) {
-    case vk::Result::eSuccess: break;
-    case vk::Result::eSuboptimalKHR: LOG_INFO("presentKHR() eSuboptimalKHR"); return false;
-    case vk::Result::eErrorOutOfDateKHR: LOG_INFO("presentKHR() eErrorOutOfDateKHR"); return false;
-    default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
+        try {
+            auto const result = vulkanDevice->presentQueue.presentKHR({
+                boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
+                boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
+            });
+
+            switch (result) {
+            case vk::Result::eSuccess:
+                return true;
+            case vk::Result::eSuboptimalKHR:
+                LOG_INFO("presentKHR() eSuboptimalKHR");
+                return false;
+            default:
+                LOG_ERROR("presentKHR() unknown result value");
+                return false;
+            }
+            
+        } catch (const vk::OutOfDateKHRError &e) {
+            LOG_INFO("presentKHR() eErrorOutOfDateKHR");
+            return false;
+        }
     }
-    return true;
 }
 
 }}

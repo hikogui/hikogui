@@ -42,7 +42,6 @@ public:
     //! Application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
-
     /*! Create an instance of a Device.
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
@@ -51,10 +50,14 @@ public:
      *      for including operating system specific surface extensions.
      */
     Instance_vulkan(const std::vector<const char *> &extensions);
-    virtual ~Instance_vulkan();
+    ~Instance_vulkan() {}
 
-    
-    virtual void initialize();
+    Instance_vulkan(const Instance_vulkan &) = delete;
+    Instance_vulkan &operator=(const Instance_vulkan &) = delete;
+    Instance_vulkan(Instance_vulkan &&) = delete;
+    Instance_vulkan &operator=(Instance_vulkan &&) = delete;
+
+    void initialize() override;
 };
 
 }}

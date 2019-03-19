@@ -18,10 +18,6 @@ View::View()
 {
 }
 
-View::~View()
-{
-}
-
 void View::setParent(const std::shared_ptr<View> &parent)
 {
     this->parent = parent;
@@ -41,10 +37,10 @@ void View::add(std::shared_ptr<View> view)
 }
 
 
-size_t View::BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size)
+size_t View::backingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size)
 {
     for (auto child : children) {
-        offset = child->BackingPipelineRender(vertices, offset, size);
+        offset = child->backingPipelineRender(vertices, offset, size);
     }
     return offset;
 }

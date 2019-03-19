@@ -9,7 +9,9 @@
 #pragma once
 
 #include "View.hpp"
+
 #include <boost/filesystem.hpp>
+
 #include <memory>
 
 namespace TTauri {
@@ -20,10 +22,14 @@ public:
     const boost::filesystem::path path;
 
     ImageView(const boost::filesystem::path &path);
-    ~ImageView();
+    ~ImageView() {}
 
-    virtual size_t BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size);
+    ImageView(const ImageView &) = delete;
+    ImageView &operator=(const ImageView &) = delete;
+    ImageView(ImageView &&) = delete;
+    ImageView &operator=(ImageView &&) = delete;
 
+    size_t backingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size) override;
 };
 
 }}

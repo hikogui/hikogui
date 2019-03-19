@@ -65,12 +65,11 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
     }
     ShowWindow(win32Window, SW_SHOW);
 
-    auto win32SurfaceCreateInfoKHR = vk::Win32SurfaceCreateInfoKHR(
+    return get_singleton<Instance_vulkan>()->intrinsic.createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
         get_singleton<Application_win32>()->hInstance,
-        win32Window);
-
-    return get_singleton<Instance_vulkan>()->intrinsic.createWin32SurfaceKHR(win32SurfaceCreateInfoKHR);
+        win32Window
+    });
 
     // XXX Should be done in the loop
     RECT windowRect;
@@ -89,10 +88,6 @@ Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate>
 {
 }
 
-Window_vulkan_win32::~Window_vulkan_win32()
-{
-}
-
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
@@ -105,30 +100,29 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
 LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    LRESULT result;
-
-    auto win32WindowID = reinterpret_cast<std::uintptr_t>(hwnd);
+    auto const win32WindowID = reinterpret_cast<std::uintptr_t>(hwnd);
 
     if (uMsg == WM_NCCREATE) {
-        auto createData = reinterpret_cast<CREATESTRUCT *>(lParam);
-        auto window = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
+        auto const createData = reinterpret_cast<CREATESTRUCT *>(lParam);
+        auto const window = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
 
         Window_vulkan_win32::win32WindowMap[win32WindowID] = window;
     }
 
     auto i = Window_vulkan_win32::win32WindowMap.find(win32WindowID);
     if (i != Window_vulkan_win32::win32WindowMap.end()) {
-        auto window = i->second;
-        result = window->windowProc(hwnd, uMsg, wParam, lParam);
+        auto const window = i->second;
+        auto const result = window->windowProc(hwnd, uMsg, wParam, lParam);
 
         if (uMsg == WM_DESTROY) {
             Window_vulkan_win32::win32WindowMap.erase(i);
         }
-    } else {
-        result = DefWindowProc(hwnd, uMsg, wParam, lParam);
-    }
 
-    return result;
+        return result;
+
+    } else {
+        return DefWindowProc(hwnd, uMsg, wParam, lParam);
+    }
 }
 
 }}

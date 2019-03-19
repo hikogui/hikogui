@@ -13,14 +13,12 @@ namespace GUI {
 
 bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceLimits &requiredLimits)
 {
-    auto meetsLimits = true;
-
-    return meetsLimits;
+    return true;
 }
 
 bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures)
 {
-    auto availableFeatures = physicalDevice.getFeatures();
+    auto const availableFeatures = physicalDevice.getFeatures();
     auto meetsRequirements = true;
 
     meetsRequirements &= (requiredFeatures.robustBufferAccess == VK_TRUE) ? (availableFeatures.robustBufferAccess == VK_TRUE) : true;

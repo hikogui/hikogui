@@ -74,10 +74,6 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> &extensionNames
     
 }
 
-Instance_vulkan::~Instance_vulkan()
-{
-}
-
 void Instance_vulkan::initialize()
 {
     Instance::initialize();

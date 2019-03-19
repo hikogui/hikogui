@@ -18,7 +18,7 @@ using namespace TTauri;
 
 class MyWindowDelegate : public GUI::Window::Delegate {
 public:
-    virtual void creatingWindow(const std::shared_ptr<GUI::Window> &window)
+    void creatingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
         auto view1 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "lena.png");
         view1->setRectangle({ 100.0, 100.0, 1.0 }, { 200.0, 100.0, 0.0 });
@@ -32,7 +32,7 @@ public:
 
 class MyApplicationDelegate : public Application::Delegate {
 public:
-    virtual void startingLoop()
+    void startingLoop() override
     {
         auto myWindowDelegate = TTauri::make_shared<MyWindowDelegate>();
 

@@ -20,7 +20,12 @@ public:
     vk::Pipeline intrinsic;
 
     Pipeline_vulkan(const std::shared_ptr<Window> &window);
-    virtual ~Pipeline_vulkan();
+    ~Pipeline_vulkan();
+
+    Pipeline_vulkan(const Pipeline_vulkan &) = delete;
+    Pipeline_vulkan &operator=(const Pipeline_vulkan &) = delete;
+    Pipeline_vulkan(Pipeline_vulkan &&) = delete;
+    Pipeline_vulkan &operator=(Pipeline_vulkan &&) = delete;
 
     /*! Render
      */

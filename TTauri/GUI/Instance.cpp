@@ -28,8 +28,14 @@ Instance::Instance()
 
 Instance::~Instance()
 {
-    stopMaintenance = true;
-    maintanceThread.join();
+    try {
+        [[gsl::suppress(f .6)]] {
+            stopMaintenance = true;
+            maintanceThread.join();
+        }
+    } catch (...) {
+        abort();
+    }
 }
 
 void Instance::initialize()
@@ -49,8 +55,8 @@ shared_ptr<Device> Instance::findBestDeviceForWindow(const shared_ptr<Window> &w
 
     std::scoped_lock lock(mutex);
 
-    for (auto device : devices) {
-        auto score = device->score(window);
+    for (auto const &device : devices) {
+        auto const score = device->score(window);
         LOG_INFO("Device has score=%i.") % score;
 
         if (score >= bestScore) {

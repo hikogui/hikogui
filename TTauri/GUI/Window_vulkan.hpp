@@ -25,14 +25,19 @@ public:
     vk::Fence renderFinishedFence;
 
     Window_vulkan(std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
-    virtual ~Window_vulkan();
+    ~Window_vulkan() {}
 
-    virtual void buildForDeviceChange();
-    virtual void teardownForDeviceChange();
-    virtual bool rebuildForSwapchainChange();
+    Window_vulkan(const Window_vulkan &) = delete;
+    Window_vulkan &operator=(const Window_vulkan &) = delete;
+    Window_vulkan(Window_vulkan &&) = delete;
+    Window_vulkan &operator=(Window_vulkan &&) = delete;
+
+    void buildForDeviceChange() override;
+    void teardownForDeviceChange() override;
+    bool rebuildForSwapchainChange() override;
 
 protected:
-    virtual bool render(bool blockOnVSync);
+    bool render(bool blockOnVSync) override;
 
 private:
     void buildSemaphores();
@@ -50,4 +55,5 @@ private:
     std::pair<uint32_t, vk::Extent2D> getImageCountAndImageExtent();
     bool isOnScreen();
 };
+
 }}

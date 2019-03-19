@@ -10,10 +10,4 @@ WindowView::WindowView(const std::shared_ptr<Window> &window) :
     this->window = window;
 }
 
-WindowView::~WindowView()
-{
-}
-
-
-
 }}

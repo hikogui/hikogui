@@ -52,9 +52,14 @@ public:
     Device_vulkan(vk::PhysicalDevice physicalDevice);
     ~Device_vulkan();
 
-    virtual void initializeDevice(std::shared_ptr<Window> window);
+    Device_vulkan(const Device_vulkan &) = delete;
+    Device_vulkan &operator=(const Device_vulkan &) = delete;
+    Device_vulkan(Device_vulkan &&) = delete;
+    Device_vulkan &operator=(Device_vulkan &&) = delete;
 
-    virtual int score(std::shared_ptr<Window> window);
+    void initializeDevice(std::shared_ptr<Window> window) override;
+
+    int score(std::shared_ptr<Window> window) override;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same

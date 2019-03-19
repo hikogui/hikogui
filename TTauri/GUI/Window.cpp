@@ -28,10 +28,6 @@ Window::Window(const std::shared_ptr<Delegate> &delegate, const std::string &tit
 {
 }
 
-Window::~Window()
-{
-}
-
 void Window::initialize()
 {
     view = TTauri::make_shared<WindowView>(shared_from_this());
@@ -59,7 +55,7 @@ void Window::maintenance()
     if (state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
         state = State::SWAPCHAIN_OUT_OF_DATE;
 
-        auto onScreen = rebuildForSwapchainChange();
+        auto const onScreen = rebuildForSwapchainChange();
 
         state = onScreen ? State::READY_TO_DRAW : State::MINIMIZED;
     }

@@ -44,7 +44,7 @@ public:
 		// Convert to 1ns format.
 		utc_ts *= 100;
 
-		auto ptp_ts = utc_ts;
+		auto const ptp_ts = utc_ts;
 		return { ptp_ts };
 	}
 
@@ -90,12 +90,12 @@ public:
     /*! Return a timestamp from a clock.
      */
     Timestamp operator()(uint64_t counter) const {
-        volatile auto c = calibration;
+        volatile auto const c = *calibration;
 
         auto counter128 = static_cast<boost::multiprecision::int128_t>(counter);
-        counter128 *= c->gain;
+        counter128 *= c.gain;
         counter128 >>= 64;
-        counter128 += c->bias;
+        counter128 += c.bias;
         return {static_cast<int64_t>(counter128)};
     }
 
@@ -106,7 +106,7 @@ public:
     /*! Calibrate the clock by comparing a counter with the current system time.
      */
     Timestamp calibrate(uint64_t counter) {
-        auto absoluteTime = Timestamp::now();
+        auto const absoluteTime = Timestamp::now();
         return calibrate(counter, absoluteTime);
     }
 };

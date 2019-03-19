@@ -1,4 +1,5 @@
 #include "Instance_vulkan_win32.hpp"
+
 #include "Window_vulkan_win32.hpp"
 
 namespace TTauri {
@@ -13,8 +14,14 @@ Instance_vulkan_win32::Instance_vulkan_win32() :
 
 Instance_vulkan_win32::~Instance_vulkan_win32()
 {
-    stopUpdateAndRender = true;
-    updateAndRenderThread.join();
+    try {
+        [[gsl::suppress(f.6)]] {
+            stopUpdateAndRender = true;
+            updateAndRenderThread.join();
+        }
+    } catch (...) {
+        abort();
+    }
 }
 
 void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)

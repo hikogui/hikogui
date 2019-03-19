@@ -21,14 +21,6 @@ Application::Application(std::shared_ptr<Delegate> delegate) :
     LOG_INFO("Starting application.");
 }
 
-Application::~Application()
-{
-}
-
-void Application::initialize()
-{
-}
-
 void Application::startingLoop()
 {
     if (!loopStarted) {

@@ -7,8 +7,7 @@ namespace GUI {
 
 class Window;
 
-class WindowView : public View
-{
+class WindowView : public View {
 public:
     enum class Type {
         WINDOW,
@@ -17,9 +16,12 @@ public:
     };
 
     WindowView(const std::shared_ptr<Window> &window);
+    ~WindowView(){};
 
-    virtual ~WindowView();
+    WindowView(const WindowView &) = delete;
+    WindowView &operator=(const WindowView &) = delete;
+    WindowView(WindowView &&) = delete;
+    WindowView &operator=(WindowView &&) = delete;
 };
 
-}
-}
+}}

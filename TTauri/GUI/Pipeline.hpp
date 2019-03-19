@@ -22,7 +22,12 @@ public:
     std::weak_ptr<Window> window;
 
     Pipeline(const std::shared_ptr<Window> &window);
-    virtual ~Pipeline();
+
+    virtual ~Pipeline() = default;
+    Pipeline(const Pipeline &) = delete;
+    Pipeline &operator=(const Pipeline &) = delete;
+    Pipeline(Pipeline &&) = delete;
+    Pipeline &operator=(Pipeline &&) = delete;
 
     template<typename T>
     std::shared_ptr<T> device() const {

@@ -27,17 +27,22 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
 {
     validateCommandBuffer(imageIndex);
 
-    vk::Semaphore waitSemaphores[] = { inputSemaphore };
+    vector<vk::Semaphore> const waitSemaphores = { inputSemaphore };
+    vector<vk::PipelineStageFlags> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+    BOOST_ASSERT(waitSemaphores.size() == waitStages.size());
 
-    vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+    vector<vk::Semaphore> const signalSemaphores = { renderFinishedSemaphores.at(imageIndex) };
+    vector<vk::CommandBuffer> const commandBuffersToSubmit = { commandBuffers.at(imageIndex) };
 
-    vk::Semaphore signalSemaphores[] = { renderFinishedSemaphores[imageIndex] };
+    vector<vk::SubmitInfo> const submitInfo = { {
+            boost::numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
+            boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
+            boost::numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
+    } };
 
-    vk::SubmitInfo submitInfo[] = { vk::SubmitInfo(1, waitSemaphores, waitStages, 1, &commandBuffers[imageIndex], 1, signalSemaphores) };
+    device<Device_vulkan>()->graphicsQueue.submit(submitInfo, vk::Fence());
 
-    device<Device_vulkan>()->graphicsQueue.submit(1, submitInfo, vk::Fence());
-
-    return renderFinishedSemaphores[imageIndex];
+    return renderFinishedSemaphores.at(imageIndex);
 }
 
 void Pipeline_vulkan::buildShaders()
@@ -97,9 +102,11 @@ void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
 {
     auto vulkanDevice = device<Device_vulkan>();
 
-    auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        vulkanDevice->graphicsCommandPool, vk::CommandBufferLevel::ePrimary, boost::numeric_cast<uint32_t>(nrFrameBuffers));
-    commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
+    commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers({
+        vulkanDevice->graphicsCommandPool, 
+        vk::CommandBufferLevel::ePrimary, 
+        boost::numeric_cast<uint32_t>(nrFrameBuffers)
+    });
 
     commandBuffersValid.resize(nrFrameBuffers);
     invalidateCommandBuffers();
@@ -118,10 +125,10 @@ void Pipeline_vulkan::buildSemaphores(size_t nrFrameBuffers)
 {
     auto vulkanDevice = device<Device_vulkan>();
 
-    auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
+    auto const semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     renderFinishedSemaphores.resize(nrFrameBuffers);
     for (size_t i = 0; i < nrFrameBuffers; i++) {
-        renderFinishedSemaphores[i] = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+        renderFinishedSemaphores.at(i) = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
     }
 }
 
@@ -130,7 +137,7 @@ void Pipeline_vulkan::teardownSemaphores()
     auto vulkanDevice = device<Device_vulkan>();
 
     for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
-        vulkanDevice->intrinsic.destroy(renderFinishedSemaphores[i]);
+        vulkanDevice->intrinsic.destroy(renderFinishedSemaphores.at(i));
     }
     renderFinishedSemaphores.clear();
 }
@@ -232,45 +239,53 @@ void Pipeline_vulkan::teardownForSwapchainChange()
 void Pipeline_vulkan::invalidateCommandBuffers()
 {
     for (size_t imageIndex = 0; imageIndex < commandBuffersValid.size(); imageIndex++) {
-        commandBuffersValid[imageIndex] = false;
+        commandBuffersValid.at(imageIndex) = false;
     }
 }
 
 void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 {
-    if (commandBuffersValid[imageIndex]) {
+    if (commandBuffersValid.at(imageIndex)) {
         return;
     }
 
-    LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % scissors[0].extent.width % scissors[0].extent.height;
+    LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % scissors.at(0).extent.width % scissors.at(0).extent.height;
 
-    commandBuffers[imageIndex].reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+    auto commandBuffer = commandBuffers.at(imageIndex);
 
-    auto commandBufferBeginInfo = vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eSimultaneousUse);
-    commandBuffers[imageIndex].begin(commandBufferBeginInfo);
+    commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
-    std::array<float, 4> blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-    auto clearColor = vk::ClearValue(vk::ClearColorValue(blackColor));
+    commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
+
+    std::array<float, 4> const blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+    vector<vk::ClearValue> const clearColors = {{blackColor}};
+
     auto vulkanWindow = lock_dynamic_cast<Window_vulkan>(window);
-    auto renderPassBeginInfo = vk::RenderPassBeginInfo(renderPass, vulkanWindow->swapchainFramebuffers[imageIndex], scissors[0], 1, &clearColor);
-    commandBuffers[imageIndex].beginRenderPass(renderPassBeginInfo, vk::SubpassContents::eInline);
 
-    commandBuffers[imageIndex].bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
+    commandBuffer.beginRenderPass({
+            renderPass, 
+            vulkanWindow->swapchainFramebuffers.at(imageIndex), 
+            scissors.at(0), 
+            boost::numeric_cast<uint32_t>(clearColors.size()),
+            clearColors.data()
+        }, vk::SubpassContents::eInline
+    );
 
-    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers[imageIndex] };
-    std::vector<vk::DeviceSize> tmpOffsets;
-    for (size_t i = 0; i < tmpVertexBuffers.size(); i++) {
-        tmpOffsets.push_back(0);
-    }
-    commandBuffers[imageIndex].bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    drawInCommandBuffer(commandBuffers[imageIndex]);
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(imageIndex) };
+    std::vector<vk::DeviceSize> tmpOffsets = { 0 };
+    BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
+  
+    commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
-    commandBuffers[imageIndex].endRenderPass();
+    drawInCommandBuffer(commandBuffer);
 
-    commandBuffers[imageIndex].end();
+    commandBuffer.endRenderPass();
 
-    commandBuffersValid[imageIndex] = true;
+    commandBuffer.end();
+
+    commandBuffersValid.at(imageIndex) = true;
 }
 
 vk::ShaderModule Pipeline_vulkan::loadShader(boost::filesystem::path path) const
@@ -284,20 +299,18 @@ vk::ShaderModule Pipeline_vulkan::loadShader(boost::filesystem::path path) const
     // Check uint32_t alignment of pointer.
     BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(region.get_address()) & 3) == 0);
 
-    auto shaderModuleCreateInfo =
-        vk::ShaderModuleCreateInfo(vk::ShaderModuleCreateFlags(), region.get_size(), reinterpret_cast<uint32_t *>(region.get_address()));
-
-    return device<Device_vulkan>()->intrinsic.createShaderModule(shaderModuleCreateInfo);
+    return device<Device_vulkan>()->intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), region.get_size(), static_cast<uint32_t *>(region.get_address())});
 }
 
 vk::PipelineLayout Pipeline_vulkan::createPipelineLayout() const
 {
     auto pushConstantRanges = createPushConstantRanges();
 
-    auto pipelineLayoutCreateInfo = vk::PipelineLayoutCreateInfo(
-        vk::PipelineLayoutCreateFlags(), 0, nullptr, boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data());
-
-    return device<Device_vulkan>()->intrinsic.createPipelineLayout(pipelineLayoutCreateInfo);
+    return device<Device_vulkan>()->intrinsic.createPipelineLayout({
+        vk::PipelineLayoutCreateFlags(),
+        0, nullptr,
+        boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
+    });
 }
 
 vk::PipelineVertexInputStateCreateInfo Pipeline_vulkan::createPipelineVertexInputStateCreateInfo(
@@ -394,11 +407,13 @@ std::vector<vk::Buffer> Pipeline_vulkan::createVertexBuffers(size_t nrBuffers, s
     auto vulkanDevice = device<Device_vulkan>();
 
     for (size_t i = 0; i < nrBuffers; i++) {
-        vk::BufferCreateInfo vertexBufferCreateInfo = {
-            vk::BufferCreateFlags(), bufferSize, vk::BufferUsageFlagBits::eVertexBuffer, vk::SharingMode::eExclusive
-        };
-
-        auto buffer = vulkanDevice->intrinsic.createBuffer(vertexBufferCreateInfo, nullptr);
+        auto buffer = vulkanDevice->intrinsic.createBuffer({
+                vk::BufferCreateFlags(),
+                bufferSize, 
+                vk::BufferUsageFlagBits::eVertexBuffer,
+                vk::SharingMode::eExclusive
+            }, nullptr
+        );
         buffers.push_back(buffer);
     }
     return buffers;

@@ -37,7 +37,12 @@ public:
     std::vector<std::shared_ptr<Device>> devices;
 
     Instance();
-    ~Instance();
+    virtual ~Instance();
+
+    Instance(const Instance &) = delete;
+    Instance &operator=(const Instance &) = delete;
+    Instance(Instance &&) = delete;
+    Instance &operator=(Instance &&) = delete;
 
     virtual void initialize();
 

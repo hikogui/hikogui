@@ -14,7 +14,12 @@ public:
     HWND win32Window = nullptr;
 
     Window_vulkan_win32(const std::shared_ptr<Delegate> &delegate, const std::string &title);
-    ~Window_vulkan_win32();
+    ~Window_vulkan_win32() {};
+
+    Window_vulkan_win32(const Window_vulkan_win32 &) = delete;
+    Window_vulkan_win32 &operator=(const Window_vulkan_win32 &) = delete;
+    Window_vulkan_win32(Window_vulkan_win32 &&) = delete;
+    Window_vulkan_win32 &operator=(Window_vulkan_win32 &&) = delete;
 
     vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
