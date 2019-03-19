@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "BackingPipeline.hpp"
+#include "BackingPipeline_vulkan.hpp"
 #include "View.hpp"
 
 #include <unordered_set>
@@ -76,7 +76,7 @@ public:
     //! The view covering the complete window.
     std::shared_ptr<View> view;
 
-    std::shared_ptr<BackingPipeline> backingPipeline;
+    std::shared_ptr<BackingPipeline_vulkan> backingPipeline;
 
     Window(const std::shared_ptr<Delegate> &delegate, const std::string &title);
 

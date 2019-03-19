@@ -207,7 +207,7 @@
   <ItemGroup>
     <ClCompile Include="TTauri Windows10\main.cpp" />
     <ClCompile Include="TTauri\Application.cpp" />
-    <ClCompile Include="TTauri\GUI\BackingPipeline.cpp" />
+    <ClCompile Include="TTauri\GUI\BackingPipeline_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\Device.cpp" />
     <ClCompile Include="TTauri\GUI\Device_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\ImageView.cpp" />
@@ -215,6 +215,7 @@
     <ClCompile Include="TTauri\GUI\Instance_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\Instance_vulkan_win32.cpp" />
     <ClCompile Include="TTauri\GUI\Pipeline.cpp" />
+    <ClCompile Include="TTauri\GUI\Pipeline_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\Queue.cpp" />
     <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp" />
     <ClCompile Include="TTauri\GUI\View.cpp" />
@@ -230,7 +231,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp" />
-    <ClInclude Include="TTauri\GUI\BackingPipeline.hpp" />
+    <ClInclude Include="TTauri\GUI\BackingPipeline_vulkan.hpp" />
     <ClInclude Include="TTauri\GUI\config.hpp" />
     <ClInclude Include="TTauri\GUI\Device.hpp" />
     <ClInclude Include="TTauri\GUI\Device_vulkan.hpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="TTauri\GUI\Instance_vulkan.hpp" />
     <ClInclude Include="TTauri\GUI\Instance_vulkan_win32.hpp" />
     <ClInclude Include="TTauri\GUI\Pipeline.hpp" />
+    <ClInclude Include="TTauri\GUI\Pipeline_vulkan.hpp" />
     <ClInclude Include="TTauri\GUI\Queue.hpp" />
     <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp" />
     <ClInclude Include="TTauri\GUI\View.hpp" />
@@ -254,8 +256,8 @@
     <ClInclude Include="TTauri\Application_win32.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="TTauri\GUI\BackingPipeline.frag" />
-    <None Include="TTauri\GUI\BackingPipeline.vert" />
+    <None Include="TTauri\GUI\BackingPipeline_vulkan.frag" />
+    <None Include="TTauri\GUI\BackingPipeline_vulkan.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

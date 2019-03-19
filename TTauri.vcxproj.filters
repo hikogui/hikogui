@@ -27,9 +27,6 @@
     <ClCompile Include="TTauri\Timestamp.cpp">
       <Filter>TTauri</Filter>
     </ClCompile>
-    <ClCompile Include="TTauri\GUI\BackingPipeline.cpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="TTauri\GUI\Device.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
@@ -78,6 +75,12 @@
     <ClCompile Include="TTauri\GUI\Device_vulkan.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\GUI\BackingPipeline_vulkan.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\GUI\Pipeline_vulkan.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
@@ -91,9 +94,6 @@
     </ClInclude>
     <ClInclude Include="TTauri\Timestamp.hpp">
       <Filter>TTauri</Filter>
-    </ClInclude>
-    <ClInclude Include="TTauri\GUI\BackingPipeline.hpp">
-      <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\GUI\Device.hpp">
       <Filter>TTauri\GUI</Filter>
@@ -149,12 +149,18 @@
     <ClInclude Include="TTauri\GUI\Device_vulkan.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="TTauri\GUI\BackingPipeline_vulkan.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\Pipeline_vulkan.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="TTauri\GUI\BackingPipeline.frag">
+    <None Include="TTauri\GUI\BackingPipeline_vulkan.frag">
       <Filter>TTauri\GUI</Filter>
     </None>
-    <None Include="TTauri\GUI\BackingPipeline.vert">
+    <None Include="TTauri\GUI\BackingPipeline_vulkan.vert">
       <Filter>TTauri\GUI</Filter>
     </None>
   </ItemGroup>

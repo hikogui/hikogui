@@ -20,10 +20,10 @@ ImageView::~ImageView()
 {
 }
 
-size_t ImageView::BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size)
+size_t ImageView::BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size)
 {
     if (offset + 6 >= size) {
-        BOOST_THROW_EXCEPTION(BackingPipeline::Delegate::Error());
+        BOOST_THROW_EXCEPTION(BackingPipeline_vulkan::Delegate::Error());
     }
 
     vertices[offset++] = { {position + glm::vec3(0.0,      0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };

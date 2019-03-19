@@ -22,12 +22,6 @@ View::~View()
 {
 }
 
-template <typename T>
-std::shared_ptr<T> View::device()
-{
-    return lock_dynamic_cast<T>(window.lock()->device);
-}
-
 void View::setParent(const std::shared_ptr<View> &parent)
 {
     this->parent = parent;
@@ -47,7 +41,7 @@ void View::add(std::shared_ptr<View> view)
 }
 
 
-size_t View::BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size)
+size_t View::BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size)
 {
     for (auto child : children) {
         offset = child->BackingPipelineRender(vertices, offset, size);

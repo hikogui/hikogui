@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Pipeline.hpp"
+#include "Pipeline_vulkan.hpp"
 #include "config.hpp"
 
 namespace TTauri {
@@ -17,7 +17,7 @@ namespace GUI {
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlasses and sharing for all views.
  */
-class BackingPipeline : public Pipeline {
+class BackingPipeline_vulkan : public Pipeline_vulkan {
 public:
     struct PushConstants {
         glm::vec2 windowExtent = {0.0, 0.0};
@@ -66,8 +66,8 @@ public:
     };
 
 
-    BackingPipeline(const std::shared_ptr<Window> &window);
-    virtual ~BackingPipeline();
+    BackingPipeline_vulkan(const std::shared_ptr<Window> &window);
+    virtual ~BackingPipeline_vulkan();
     
     virtual vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
 

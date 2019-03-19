@@ -22,7 +22,7 @@ public:
     ImageView(const boost::filesystem::path &path);
     ~ImageView();
 
-    virtual size_t BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size);
+    virtual size_t BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size);
 
 };
 

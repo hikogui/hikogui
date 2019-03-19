@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "BackingPipeline.hpp"
+#include "BackingPipeline_vulkan.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -24,7 +24,7 @@ class Instance;
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class View : public std::enable_shared_from_this<View>, public BackingPipeline::Delegate {
+class View : public std::enable_shared_from_this<View>, public BackingPipeline_vulkan::Delegate {
 public:
     //! Convenient reference to the Window.
     std::weak_ptr<Window> window;
@@ -47,13 +47,13 @@ public:
     virtual void setRectangle(glm::vec3 position, glm::vec3 extent);
 
     virtual void add(std::shared_ptr<View> view);
-
-    std::shared_ptr<Device> device();
     
-    template <typename T>
-    std::shared_ptr<T> device();
+    template<typename T>
+    std::shared_ptr<T> device() {
+        return lock_dynamic_cast<T>(window.lock()->device);
+    }
 
-    virtual size_t BackingPipelineRender(BackingPipeline::Vertex *vertices, size_t offset, size_t size);
+    virtual size_t BackingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size);
 };
 
 }}
