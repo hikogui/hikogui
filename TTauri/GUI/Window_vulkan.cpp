@@ -129,10 +129,10 @@ std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR
     // Figure out the best way of sharing data between the present and graphic queues.
     vk::SharingMode sharingMode;
     uint32_t sharingQueueFamilyCount;
-    uint32_t sharingQueueFamilyIndices[2] = { vulkanDevice->graphicQueue->queueFamilyIndex, vulkanDevice->presentQueue->queueFamilyIndex };
+    uint32_t sharingQueueFamilyIndices[2] = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
     uint32_t *sharingQueueFamilyIndicesPtr;
 
-    if (vulkanDevice->presentQueue->queueCapabilities.handlesGraphicsAndPresent()) {
+    if (vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex) {
         sharingMode = vk::SharingMode::eExclusive;
         sharingQueueFamilyCount = 0;
         sharingQueueFamilyIndicesPtr = nullptr;
@@ -364,12 +364,12 @@ bool Window_vulkan::render(bool blockOnVSync)
     vulkanDevice->intrinsic.waitIdle();
     // device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
     vulkanDevice->intrinsic.resetFences(1, &renderFinishedFence);
-    vulkanDevice->graphicQueue->intrinsic.submit(0, nullptr, renderFinishedFence);
+    vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     auto presentInfo = vk::PresentInfoKHR(1, renderFinishedSemaphores, 1, &swapchain, &imageIndex);
 
     // Pass present info as a pointer to get the non-throw version.
-    result = vulkanDevice->presentQueue->intrinsic.presentKHR(&presentInfo);
+    result = vulkanDevice->presentQueue.presentKHR(&presentInfo);
     switch (result) {
     case vk::Result::eSuccess: break;
     case vk::Result::eSuboptimalKHR: LOG_INFO("presentKHR() eSuboptimalKHR"); return false;

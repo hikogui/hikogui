@@ -35,7 +35,7 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
 
     vk::SubmitInfo submitInfo[] = { vk::SubmitInfo(1, waitSemaphores, waitStages, 1, &commandBuffers[imageIndex], 1, signalSemaphores) };
 
-    device<Device_vulkan>()->graphicQueue->intrinsic.submit(1, submitInfo, vk::Fence());
+    device<Device_vulkan>()->graphicsQueue.submit(1, submitInfo, vk::Fence());
 
     return renderFinishedSemaphores[imageIndex];
 }
@@ -66,10 +66,11 @@ void Pipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
 
     vertexBuffers = createVertexBuffers(nrFrameBuffers, vertexInputBindingDescription.stride * maximumNumberOfVertices());
 
-    auto memoryOffsetsAndSizes = vulkanDevice->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible);
-    vertexBufferMemory = get<0>(memoryOffsetsAndSizes);
-    vertexBufferOffsets = get<1>(memoryOffsetsAndSizes);
-    vertexBufferSizes = get<2>(memoryOffsetsAndSizes);
+    auto memoryNeedsFlushingOffsetsAndSizes = vulkanDevice->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible);
+    vertexBufferMemory = get<0>(memoryNeedsFlushingOffsetsAndSizes);
+    vertexBufferNeedsFlushing = get<1>(memoryNeedsFlushingOffsetsAndSizes);
+    vertexBufferOffsets = get<2>(memoryNeedsFlushingOffsetsAndSizes);
+    vertexBufferSizes = get<3>(memoryNeedsFlushingOffsetsAndSizes);
     vertexBufferDataSize = vertexBufferOffsets.back() + vertexBufferSizes.back();
     vertexBufferData = vulkanDevice->intrinsic.mapMemory(vertexBufferMemory, 0, vertexBufferDataSize, vk::MemoryMapFlags());
 }
@@ -97,7 +98,7 @@ void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
     auto vulkanDevice = device<Device_vulkan>();
 
     auto commandBufferAllocateInfo = vk::CommandBufferAllocateInfo(
-        vulkanDevice->graphicQueue->commandPool, vk::CommandBufferLevel::ePrimary, boost::numeric_cast<uint32_t>(nrFrameBuffers));
+        vulkanDevice->graphicsCommandPool, vk::CommandBufferLevel::ePrimary, boost::numeric_cast<uint32_t>(nrFrameBuffers));
     commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers(commandBufferAllocateInfo);
 
     commandBuffersValid.resize(nrFrameBuffers);
@@ -108,7 +109,7 @@ void Pipeline_vulkan::teardownCommandBuffers()
 {
     auto vulkanDevice = device<Device_vulkan>();
 
-    vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicQueue->commandPool, commandBuffers);
+    vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, commandBuffers);
     commandBuffers.clear();
     commandBuffersValid.clear();
 }

@@ -12,6 +12,12 @@ namespace TTauri { namespace GUI {
 
 using namespace std;
 
+#define QUEUE_CAPABILITY_GRAPHICS 1
+#define QUEUE_CAPABILITY_COMPUTE 2
+#define QUEUE_CAPABILITY_PRESENT 4
+#define QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT (QUEUE_CAPABILITY_GRAPHICS | QUEUE_CAPABILITY_PRESENT)
+#define QUEUE_CAPABILITY_ALL (QUEUE_CAPABILITY_GRAPHICS | QUEUE_CAPABILITY_COMPUTE | QUEUE_CAPABILITY_PRESENT)
+
 static bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, const std::vector<const char *> &requiredExtensions)
 {
     auto availableExtensions = std::unordered_set<std::string>();
@@ -51,6 +57,22 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
 
 Device_vulkan::~Device_vulkan()
 {
+    for (uint32_t index = 0; index < 3; index++) {
+        // Destroy one command pool for each queue index.
+        if (graphicsQueueIndex == index) {
+            this->intrinsic.destroy(graphicsCommandPool);
+            continue;
+        }
+        if (presentQueueIndex == index) {
+            this->intrinsic.destroy(presentCommandPool);
+            continue;
+        }
+        if (computeQueueIndex == index) {
+            this->intrinsic.destroy(computeCommandPool);
+            continue;
+        }
+    }
+
     intrinsic.destroy();
 }
 
@@ -74,31 +96,46 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
 
     intrinsic = physicalIntrinsic.createDevice(deviceCreateInfo);
 
+    uint32_t index = 0;
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
-        auto index = queueFamilyIndexAndCapabilities.first;
-        auto queueCapabilities = queueFamilyIndexAndCapabilities.second;
+        auto familyIndex = queueFamilyIndexAndCapabilities.first;
+        auto capabilities = queueFamilyIndexAndCapabilities.second;
+        auto queue = this->intrinsic.getQueue(familyIndex, index);
+        auto commandPool = this->intrinsic.createCommandPool({
+            vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+            familyIndex
+        });
 
-        auto queue = TTauri::make_shared<Queue>(shared_from_this(), index, 0, queueCapabilities);
-        if (queueCapabilities.handlesGraphics) {
-            graphicQueue = queue;
+        if (capabilities & QUEUE_CAPABILITY_GRAPHICS) {
+            graphicsQueueFamilyIndex = familyIndex;
+            graphicsQueueIndex = index;
+            graphicsQueue = queue;
+            graphicsCommandPool = commandPool;
         }
-        if (queueCapabilities.handlesPresent) {
+        if (capabilities & QUEUE_CAPABILITY_PRESENT) {
+            presentQueueFamilyIndex = familyIndex;
+            presentQueueIndex = index;
             presentQueue = queue;
+            presentCommandPool = commandPool;
         }
-        if (queueCapabilities.handlesCompute) {
+        if (capabilities & QUEUE_CAPABILITY_COMPUTE) {
+            computeQueueFamilyIndex = familyIndex;
+            computeQueueIndex = index;
             computeQueue = queue;
+            graphicsCommandPool = commandPool;
         }
+        index++;
     }
 
     Device::initializeDevice(window);
 }
 
-static bool scoreIsGreater(const pair<uint32_t, QueueCapabilities> &a, const pair<uint32_t, QueueCapabilities> &b)
+static bool scoreIsGreater(const tuple<uint32_t, uint8_t, uint32_t> &a, const tuple<uint32_t, uint8_t, uint32_t> &b)
 {
-    return a.second.score() > b.second.score();
+    return get<2>(a) > get<2>(b);
 }
 
-std::vector<std::pair<uint32_t, QueueCapabilities>> Device_vulkan::findBestQueueFamilyIndices(std::shared_ptr<Window> _window)
+std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(std::shared_ptr<Window> _window)
 {
     auto window = std::dynamic_pointer_cast<Window_vulkan>(_window);
     if (!window) {
@@ -110,42 +147,42 @@ std::vector<std::pair<uint32_t, QueueCapabilities>> Device_vulkan::findBestQueue
     uint32_t index = 0;
 
     // Create a sorted list of queueFamilies depending on the scoring.
-    vector<pair<uint32_t, QueueCapabilities>> queueFamilieScores;
+    vector<tuple<uint32_t, uint8_t, uint32_t>> queueFamilieScores;
     for (auto queueFamilyProperties : physicalIntrinsic.getQueueFamilyProperties()) {
-        QueueCapabilities capabilities;
+        uint8_t capabilities;
         if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eGraphics) {
-            capabilities.handlesGraphics = true;
+            capabilities |= QUEUE_CAPABILITY_GRAPHICS;
         }
         if (physicalIntrinsic.getSurfaceSupportKHR(index, window->intrinsic)) {
-            capabilities.handlesPresent = true;
+            capabilities |= QUEUE_CAPABILITY_PRESENT;
         }
         if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eCompute) {
-            capabilities.handlesCompute = true;
+            capabilities |= QUEUE_CAPABILITY_COMPUTE;
         }
 
         uint32_t score = 0;
-        score += capabilities.handlesEverything() ? 10 : 0;
-        score += capabilities.handlesGraphicsAndPresent() ? 5 : 0;
-        score += capabilities.handlesGraphics ? 1 : 0;
-        score += capabilities.handlesPresent ? 1 : 0;
-        score += capabilities.handlesCompute ? 1 : 0;
+        score += capabilities == QUEUE_CAPABILITY_ALL ? 10 : 0;
+        score += capabilities == QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT ? 5 : 0;
+        score += capabilities == QUEUE_CAPABILITY_GRAPHICS ? 1 : 0;
+        score += capabilities == QUEUE_CAPABILITY_COMPUTE ? 1 : 0;
+        score += capabilities == QUEUE_CAPABILITY_PRESENT ? 1 : 0;
 
-        LOG_INFO("    * %i: capabilities=%s, score=%i") % index % capabilities.str() % score;
+        LOG_INFO("    * %i: capabilities=%03b, score=%i") % index % capabilities % score;
 
-        queueFamilieScores.push_back({ index, capabilities });
+        queueFamilieScores.push_back({ index, capabilities, score });
         index++;
     }
     sort(queueFamilieScores.begin(), queueFamilieScores.end(), scoreIsGreater);
 
     // Iterativly add indices if it completes the totalQueueCapabilities.
-    vector<pair<uint32_t, QueueCapabilities>> queueFamilyIndicesAndQueueCapabilitiess;
-    QueueCapabilities totalCapabilities;
+    vector<pair<uint32_t, uint8_t>> queueFamilyIndicesAndQueueCapabilitiess;
+    uint8_t totalCapabilities = 0;
     for (auto queueFamilyScore : queueFamilieScores) {
         auto index = get<0>(queueFamilyScore);
         auto capabilities = get<1>(queueFamilyScore);
 
-        if (!totalCapabilities.handlesAllOff(capabilities)) {
-            queueFamilyIndicesAndQueueCapabilitiess.push_back({ index, capabilities - totalCapabilities });
+        if ((totalCapabilities & capabilities) != capabilities) {
+            queueFamilyIndicesAndQueueCapabilitiess.push_back({ index, capabilities & ~totalCapabilities });
             totalCapabilities |= capabilities;
         }
     }
@@ -179,17 +216,17 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
     }
 
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(window);
-    QueueCapabilities deviceCapabilities;
+    uint8_t deviceCapabilities;
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
     }
-    LOG_INFO(" - Capabilities=%s") % deviceCapabilities.str();
+    LOG_INFO(" - Capabilities=%03b") % deviceCapabilities;
 
-    if (!deviceCapabilities.handlesGraphicsAndCompute()) {
+    if ((deviceCapabilities & QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) != QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) {
         LOG_INFO(" - Does not have both the graphics and compute queues.");
         return -1;
 
-    } else if (!deviceCapabilities.handlesPresent) {
+    } else if (!(deviceCapabilities & QUEUE_CAPABILITY_PRESENT)) {
         LOG_INFO(" - Does not have a present queue.");
         return 0;
     }
@@ -272,25 +309,60 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
 
     return score;
 }
+
+bool Device_vulkan::memoryTypeNeedsFlushing(uint32_t typeIndex)
+{
+    auto propertyFlags = memoryProperties.memoryTypes[typeIndex].propertyFlags;
+
+    if ((propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible) == vk::MemoryPropertyFlags()) {
+        return false; // Non host-visible memory.
+    }
+
+    if ((propertyFlags & vk::MemoryPropertyFlagBits::eHostCached) != vk::MemoryPropertyFlags()) {
+        return true; // Cached memory needs to be flushed.
+    }
+
+    if ((propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent) == vk::MemoryPropertyFlags()) {
+        return true; // Non host-coherent memory needs to be flushed.
+    }
+    return false;
+}
+
 uint32_t Device_vulkan::findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
 {
+    // Prefer non-eHostCached when requesting eHostVisible.
+    if ((properties & vk::MemoryPropertyFlagBits::eHostVisible) != vk::MemoryPropertyFlags()) {
+        for (uint32_t typeIndex = 0; typeIndex < memoryProperties.memoryTypeCount; typeIndex++) {
+            if (
+                (validMemoryTypeMask & (1 << typeIndex)) &&
+                ((memoryProperties.memoryTypes[typeIndex].propertyFlags & properties) == properties) &&
+                ((memoryProperties.memoryTypes[typeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCached) == vk::MemoryPropertyFlags())
+            ) {
+                return typeIndex;
+            }
+        }
+    }
+
     for (uint32_t typeIndex = 0; typeIndex < memoryProperties.memoryTypeCount; typeIndex++) {
         if ((validMemoryTypeMask & (1 << typeIndex)) && ((memoryProperties.memoryTypes[typeIndex].propertyFlags & properties) == properties)) {
+            auto needsFlushing = !(memoryProperties.memoryTypes[typeIndex].propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent);
             return typeIndex;
         }
     }
+
     BOOST_THROW_EXCEPTION(AllocateMemoryError());
 }
 
-vk::DeviceMemory Device_vulkan::allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
+pair<vk::DeviceMemory, bool> Device_vulkan::allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
 {
     auto memoryTypeIndex = findMemoryType(validMemoryTypeMask, properties);
+    auto needsFlushing = memoryTypeNeedsFlushing(memoryTypeIndex);
 
     vk::MemoryAllocateInfo memoryAllocateInfo = { size, memoryTypeIndex };
-    return intrinsic.allocateMemory(memoryAllocateInfo, nullptr);
+    return {intrinsic.allocateMemory(memoryAllocateInfo, nullptr), needsFlushing};
 }
 
-std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device_vulkan::allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
+std::tuple<vk::DeviceMemory, bool, std::vector<size_t>, std::vector<size_t>> Device_vulkan::allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
 {
     std::vector<size_t> offsets;
     std::vector<size_t> sizes;
@@ -310,23 +382,23 @@ std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device_vu
 
         memoryTypeBits |= memoryRequirements.memoryTypeBits;
     }
-    auto memory = allocateDeviceMemory(size, memoryTypeBits, properties);
+    auto memoryAndNeedsFlushing = allocateDeviceMemory(size, memoryTypeBits, properties);
 
-    return { memory, offsets, sizes };
+    return { memoryAndNeedsFlushing.first, memoryAndNeedsFlushing.second, offsets, sizes };
 }
 
-std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> Device_vulkan::allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
+std::tuple<vk::DeviceMemory, bool, std::vector<size_t>, std::vector<size_t>> Device_vulkan::allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
 {
-    auto memoryOffsetsAndSizes = allocateDeviceMemory(buffers, properties);
-    auto memory = get<0>(memoryOffsetsAndSizes);
-    auto offsets = get<1>(memoryOffsetsAndSizes);
+    auto memoryNeedsFlushingOffsetsAndSizes = allocateDeviceMemory(buffers, properties);
+    auto memory = get<0>(memoryNeedsFlushingOffsetsAndSizes);
+    auto offsets = get<2>(memoryNeedsFlushingOffsetsAndSizes);
     for (auto bufferAndOffset : boost::combine(buffers, offsets)) {
         auto buffer = bufferAndOffset.get<0>();
         auto offset = bufferAndOffset.get<1>();
         intrinsic.bindBufferMemory(buffer, memory, offset);
     }
 
-    return memoryOffsetsAndSizes;
+    return memoryNeedsFlushingOffsetsAndSizes;
 }
 
 }}

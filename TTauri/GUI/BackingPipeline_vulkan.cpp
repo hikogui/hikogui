@@ -34,7 +34,9 @@ vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore 
 
     auto tmpNumberOfVertices = window.lock()->view->BackingPipelineRender(vertices, 0, maximumNumberOfVertices());
 
-    device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
+    if (vertexBufferNeedsFlushing) {
+        device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
+    }
 
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers();

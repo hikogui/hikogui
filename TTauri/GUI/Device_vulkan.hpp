@@ -6,6 +6,7 @@
 
 namespace TTauri { namespace GUI {
 
+
 class Device_vulkan : public Device {
 public:
     struct AllocateMemoryError : virtual Error {};
@@ -16,6 +17,19 @@ public:
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
 
+    uint32_t graphicsQueueFamilyIndex = 0;
+    uint32_t presentQueueFamilyIndex = 0;
+    uint32_t computeQueueFamilyIndex = 0;
+    uint32_t graphicsQueueIndex = 0;
+    uint32_t presentQueueIndex = 0;
+    uint32_t computeQueueIndex = 0;
+    vk::Queue graphicsQueue;
+    vk::Queue presentQueue;
+    vk::Queue computeQueue;
+    vk::CommandPool graphicsCommandPool;
+    vk::CommandPool presentCommandPool;
+    vk::CommandPool computeCommandPool;
+
     /*! List if extension required on this device.
      */
     std::vector<const char *> requiredExtensions;
@@ -23,7 +37,7 @@ public:
     /*! Sorted list of queueFamilies and their capabilities.
      * score(window) must be called before initializeDevice(window);
      */
-    std::vector<std::pair<uint32_t, QueueCapabilities>> queueFamilyIndicesAndCapabilities;
+    std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndCapabilities;
 
     /*! Best surfae format.
      * score(window) must be called before initializeDevice(window);
@@ -49,15 +63,33 @@ public:
      * It is possible this method returns an incomplete queue family set. For
      * example without Present.
      */
-    std::vector<std::pair<uint32_t, QueueCapabilities>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
+    std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
+
+    bool memoryTypeNeedsFlushing(uint32_t typeIndex);
 
     uint32_t findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
 
-    vk::DeviceMemory allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
+    /*! Allocate memory on the GPU.
+     * \param size number of bytes to allocate.
+     * \param validMemoryTypeMask from which memory types to allocate memory from.
+     * \param properties what kind of memory properties are needed.
+     * \return A block of device memory, and true if this memory requires flushing.
+     */
+    std::pair<vk::DeviceMemory, bool> allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
 
-    std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+    /*! Allocate memory on the GPU.
+     * \param buffers Buffers to allocate memory for.
+     * \param properties what kind of memory properties are needed.
+     * \return A block of device memory, and true if this memory requires flushing, offsets of each buffer, and size of each buffer.
+     */
+    std::tuple<vk::DeviceMemory, bool, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
 
-    std::tuple<vk::DeviceMemory, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+    /*! Allocate memory on the GPU and bind to buffers.
+     * \param buffers Buffers to allocate and bind memory for.
+     * \param properties what kind of memory properties are needed.
+     * \return A block of device memory, and true if this memory requires flushing, offsets of each buffer, and size of each buffer.
+     */
+    std::tuple<vk::DeviceMemory, bool, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
 };
 
 }}

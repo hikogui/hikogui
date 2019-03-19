@@ -54,6 +54,7 @@ protected:
     vk::DeviceMemory vertexBufferMemory;
     std::vector<size_t> vertexBufferOffsets;
     std::vector<size_t> vertexBufferSizes;
+    bool vertexBufferNeedsFlushing = false;
     size_t vertexBufferDataSize = 0;
     void *vertexBufferData = nullptr;
 

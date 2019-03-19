@@ -39,12 +39,6 @@
     <ClCompile Include="TTauri\GUI\Pipeline.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="TTauri\GUI\Queue.cpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="TTauri\GUI\QueueCapabilities.cpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="TTauri\GUI\View.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
@@ -105,12 +99,6 @@
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\GUI\Pipeline.hpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="TTauri\GUI\Queue.hpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="TTauri\GUI\QueueCapabilities.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\GUI\View.hpp">

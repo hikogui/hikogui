@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "Queue.hpp"
 #include "Window.hpp"
 
 #include <unordered_set>
@@ -42,27 +41,6 @@ public:
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;
     boost::uuids::uuid deviceUUID;
-
-    /*! A queue for sending graphics commands to.
-     * These queue objects may be shared.
-     *
-     * ASSUMPTION: A single presentQueue can be used by all Windows on this Device.
-     */
-    std::shared_ptr<Queue> graphicQueue;
-
-    /*! A queue for sending compute commands to.
-     * These queue objects may be shared.
-     *
-     * ASSUMPTION: A single presentQueue can be used by all Windows on this Device.
-     */
-    std::shared_ptr<Queue> computeQueue;
-
-    /*! A queue for sending present commands to.
-     * These queue objects may be shared.
-     *
-     * ASSUMPTION: A single presentQueue can be used by all Windows on this Device.
-     */
-    std::shared_ptr<Queue> presentQueue;
 
     /*! A list of windows managed by this device.
      */
