@@ -8,6 +8,7 @@
 #include "TTauri/Logging.hpp"
 
 #include <boost/range/combine.hpp>
+//#include <gsl/gsl>
 
 namespace TTauri { namespace GUI {
 

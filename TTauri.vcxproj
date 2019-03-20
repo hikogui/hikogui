@@ -260,8 +260,7 @@
     <None Include="TTauri\GUI\BackingPipeline_vulkan.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
   <PropertyGroup Condition="'$(Language)'=='C++'">
     <CAExcludePath>$(ThirdPartyHeaderDirectories);$(CAExcludePath)</CAExcludePath>
   </PropertyGroup>
