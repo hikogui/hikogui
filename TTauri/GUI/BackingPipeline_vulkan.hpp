@@ -11,6 +11,8 @@
 #include "Pipeline_vulkan.hpp"
 #include "config.hpp"
 
+#include <gsl/gsl>
+
 namespace TTauri {
 namespace GUI {
 
@@ -62,7 +64,7 @@ public:
     public:
         struct Error : virtual boost::exception, virtual std::exception {};
 
-        virtual size_t backingPipelineRender(Vertex *vertices, size_t offset, size_t size) = 0;
+        virtual size_t backingPipelineRender(const gsl::span<Vertex> &vertices, size_t offset) = 0;
     };
 
     BackingPipeline_vulkan(const std::shared_ptr<Window> &window);
@@ -77,6 +79,7 @@ public:
 
 protected:
     PushConstants pushConstants;
+    std::vector<gsl::span<Vertex>> vertexBufferData;
     size_t numberOfVertices = 0;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) override;
@@ -86,6 +89,11 @@ protected:
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
     size_t maximumNumberOfVertices() const override { return backingPipelineMaximumNumberOfVertices; }
+
+    void buildVertexBuffers(size_t nrFrameBuffers) override;
+    void teardownVertexBuffers() override;
+
+
 };
 
 }}

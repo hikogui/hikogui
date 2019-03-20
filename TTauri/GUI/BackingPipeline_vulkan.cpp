@@ -16,6 +16,8 @@ namespace TTauri {
 namespace GUI {
 
 using namespace TTauri;
+using namespace std;
+using namespace gsl;
 
 BackingPipeline_vulkan::BackingPipeline_vulkan(const std::shared_ptr<Window> &window) :
     Pipeline_vulkan(window)
@@ -24,14 +26,11 @@ BackingPipeline_vulkan::BackingPipeline_vulkan(const std::shared_ptr<Window> &wi
 
 vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const vertexDataOffset = vertexBufferOffsets.at(imageIndex);
-    auto const vertexDataSize = vertexBufferSizes.at(imageIndex);
-    auto const vertices = reinterpret_cast<Vertex *>(static_cast<char *>(vertexBufferData) + vertexDataOffset);
-
-    auto const tmpNumberOfVertices = window.lock()->view->backingPipelineRender(vertices, 0, maximumNumberOfVertices());
+    auto const tmpNumberOfVertices = window.lock()->view->backingPipelineRender(vertexBufferData.at(imageIndex), 0);
 
     if (vertexBufferNeedsFlushing) {
-        device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffset, vertexDataSize } });
+        auto const vertexDataOffsetAndSize = vertexBufferOffsetAndSizes.at(imageIndex);
+        device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffsetAndSize.first, tmpNumberOfVertices * sizeof (Vertex) } });
     }
 
     if (tmpNumberOfVertices != numberOfVertices) {
@@ -92,6 +91,40 @@ vk::VertexInputBindingDescription BackingPipeline_vulkan::createVertexInputBindi
 std::vector<vk::VertexInputAttributeDescription> BackingPipeline_vulkan::createVertexInputAttributeDescriptions() const
 {
     return Vertex::inputAttributeDescriptions();
+}
+
+void BackingPipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
+{
+    Pipeline_vulkan::buildVertexBuffers(nrFrameBuffers);
+
+    auto vulkanDevice = device<Device_vulkan>();
+
+    auto const lastOffsetAndSize = vertexBufferOffsetAndSizes.back();
+    auto const mappingSize = lastOffsetAndSize.first + lastOffsetAndSize.second;
+    auto const mappingPointer = vulkanDevice->intrinsic.mapMemory(vertexBufferMemory, 0, mappingSize, vk::MemoryMapFlags());
+
+    vertexBufferData = TTauri::transform<vector<span<Vertex>>>(vertexBufferOffsetAndSizes, [&mappingPointer](const pair<size_t, size_t> &offsetAndSize) -> span<Vertex> {
+        [[gsl::suppress(type.1)]] {
+            auto const offset = offsetAndSize.first;
+            auto const size = offsetAndSize.second;
+
+            return {
+                reinterpret_cast<Vertex *>(reinterpret_cast<uintptr_t>(mappingPointer) + offset),
+                boost::numeric_cast<uint32_t>(size / sizeof(Vertex))
+            };
+        }
+    });
+}
+
+void BackingPipeline_vulkan::teardownVertexBuffers()
+{
+    auto vulkanDevice = device<Device_vulkan>();
+
+    vulkanDevice->intrinsic.unmapMemory(vertexBufferMemory);
+
+    vertexBufferData.clear();
+
+    Pipeline_vulkan::teardownVertexBuffers();
 }
 
 }}

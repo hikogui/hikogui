@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <functional>
 
 namespace TTauri {
 
@@ -75,4 +76,13 @@ inline decltype(auto) make_singleton(Args... args)
     T::singleton = std::make_shared<T>(args...);
     return T::singleton->initialize();
 }
+
+template<typename T, typename U>
+inline T transform(const U &input, const std::function<typename T::value_type(const typename U::value_type &)> &operation)
+{
+    T result = {};
+    std::transform(input.begin(), input.end(), std::back_inserter(result), operation);
+    return result;
+}
+
 }

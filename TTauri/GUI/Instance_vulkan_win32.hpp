@@ -2,6 +2,7 @@
 
 #include "Instance_vulkan.hpp"
 
+#include <gsl/gsl>
 
 namespace TTauri {
 namespace GUI {
@@ -21,7 +22,7 @@ public:
 
     void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) override;
 
-    static void updateAndRenderLoop(Instance_vulkan_win32 *self);
+    static void updateAndRenderLoop(gsl::not_null<Instance_vulkan_win32 *> self);
 };
 
 }}

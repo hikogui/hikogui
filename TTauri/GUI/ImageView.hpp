@@ -29,7 +29,7 @@ public:
     ImageView(ImageView &&) = delete;
     ImageView &operator=(ImageView &&) = delete;
 
-    size_t backingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size) override;
+    size_t backingPipelineRender(const gsl::span<BackingPipeline_vulkan::Vertex> &vertices, size_t offset) override;
 };
 
 }}

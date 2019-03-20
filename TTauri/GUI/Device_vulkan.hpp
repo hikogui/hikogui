@@ -85,16 +85,16 @@ public:
     /*! Allocate memory on the GPU.
      * \param buffers Buffers to allocate memory for.
      * \param properties what kind of memory properties are needed.
-     * \return A block of device memory, and true if this memory requires flushing, offsets of each buffer, and size of each buffer.
+     * \return A block of device memory, and true if this memory requires flushing, offsets and size of each buffer.
      */
-    std::tuple<vk::DeviceMemory, bool, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+    std::tuple<vk::DeviceMemory, bool, std::vector<std::pair<size_t, size_t>>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
 
     /*! Allocate memory on the GPU and bind to buffers.
      * \param buffers Buffers to allocate and bind memory for.
      * \param properties what kind of memory properties are needed.
-     * \return A block of device memory, and true if this memory requires flushing, offsets of each buffer, and size of each buffer.
+     * \return A block of device memory, and true if this memory requires flushing, offsets and size of each buffer.
      */
-    std::tuple<vk::DeviceMemory, bool, std::vector<size_t>, std::vector<size_t>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+    std::tuple<vk::DeviceMemory, bool, std::vector<std::pair<size_t, size_t>>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
 };
 
 }}

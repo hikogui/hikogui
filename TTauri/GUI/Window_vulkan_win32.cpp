@@ -14,9 +14,8 @@ using namespace TTauri;
 const wchar_t *Window_vulkan_win32::win32WindowClassName = nullptr;
 WNDCLASS Window_vulkan_win32::win32WindowClass = {};
 bool Window_vulkan_win32::win32WindowClassIsRegistered = false;
-std::unordered_map<std::uintptr_t, Window_vulkan_win32 *> Window_vulkan_win32::win32WindowMap = {};
+std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> Window_vulkan_win32::win32WindowMap = {};
 bool Window_vulkan_win32::firstWindowHasBeenOpened = false;
-
 
 void Window_vulkan_win32::createWindowClass()
 {
@@ -100,29 +99,36 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
 LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    auto const win32WindowID = reinterpret_cast<std::uintptr_t>(hwnd);
-
-    if (uMsg == WM_NCCREATE) {
-        auto const createData = reinterpret_cast<CREATESTRUCT *>(lParam);
-        auto const window = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
-
-        Window_vulkan_win32::win32WindowMap[win32WindowID] = window;
+    if (!win32WindowMap) {
+        win32WindowMap = make_shared<std::unordered_map<HWND, Window_vulkan_win32 *>>();
     }
 
-    auto i = Window_vulkan_win32::win32WindowMap.find(win32WindowID);
-    if (i != Window_vulkan_win32::win32WindowMap.end()) {
+    if (uMsg == WM_NCCREATE && lParam) {
+        [[gsl::suppress(type.1)]] {
+            auto const createData = reinterpret_cast<CREATESTRUCT *>(lParam);
+
+            if (createData->lpCreateParams) {
+                [[gsl::suppress(lifetime.1)]] {
+                    (*Window_vulkan_win32::win32WindowMap)[hwnd] = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
+                }
+            }
+        }
+    }
+
+    auto i = Window_vulkan_win32::win32WindowMap->find(hwnd);
+    if (i != Window_vulkan_win32::win32WindowMap->end()) {
         auto const window = i->second;
         auto const result = window->windowProc(hwnd, uMsg, wParam, lParam);
 
         if (uMsg == WM_DESTROY) {
-            Window_vulkan_win32::win32WindowMap.erase(i);
+            Window_vulkan_win32::win32WindowMap->erase(i);
         }
 
         return result;
-
-    } else {
-        return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
+
+    // Fallback.
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 }}

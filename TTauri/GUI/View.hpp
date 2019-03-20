@@ -59,7 +59,7 @@ public:
         return lock_dynamic_cast<T>(window.lock()->device);
     }
 
-    size_t backingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size) override;
+    size_t backingPipelineRender(const gsl::span<BackingPipeline_vulkan::Vertex> &vertices, size_t offset) override;
 };
 
 }}

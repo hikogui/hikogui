@@ -16,18 +16,14 @@ ImageView::ImageView(const boost::filesystem::path &path) :
 {
 }
 
-size_t ImageView::backingPipelineRender(BackingPipeline_vulkan::Vertex * vertices, size_t offset, size_t size)
+size_t ImageView::backingPipelineRender(const gsl::span<BackingPipeline_vulkan::Vertex> &vertices, size_t offset)
 {
-    if (offset + 6 >= size) {
-        BOOST_THROW_EXCEPTION(BackingPipeline_vulkan::Delegate::Error());
-    }
-
-    vertices[offset++] = { {position + glm::vec3(0.0,      0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };
-    vertices[offset++] = { {position + glm::vec3(extent.x, 0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };
-    vertices[offset++] = { {position + glm::vec3(extent.x, extent.y, 0.0)}, {0.0, 0.0, 0.0}, 1.0 };
-    vertices[offset++] = { {position + glm::vec3(0.0,      0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };
-    vertices[offset++] = { {position + glm::vec3(extent.x, extent.y, 0.0)}, {0.0, 0.0, 0.0}, 1.0 };
-    vertices[offset++] = { {position + glm::vec3(0.0,      extent.y, 0.0)}, {0.0, 0.0, 0.0}, 1.0 };
+    vertices.at(offset++) = { {position + glm::vec3(0.0,      0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };
+    vertices.at(offset++) = { {position + glm::vec3(extent.x, 0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };
+    vertices.at(offset++) = { {position + glm::vec3(extent.x, extent.y, 0.0)}, {0.0, 0.0, 0.0}, 1.0 };
+    vertices.at(offset++) = { {position + glm::vec3(0.0,      0.0,      0.0)}, {0.0, 0.0, 0.0}, 1.0 };
+    vertices.at(offset++) = { {position + glm::vec3(extent.x, extent.y, 0.0)}, {0.0, 0.0, 0.0}, 1.0 };
+    vertices.at(offset++) = { {position + glm::vec3(0.0,      extent.y, 0.0)}, {0.0, 0.0, 0.0}, 1.0 };
 
     return offset;
 }

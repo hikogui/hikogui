@@ -29,7 +29,7 @@ public:
     static const wchar_t *win32WindowClassName;
     static WNDCLASS win32WindowClass;
     static bool win32WindowClassIsRegistered;
-    static std::unordered_map<std::uintptr_t, Window_vulkan_win32 *> win32WindowMap;
+    static std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
 private:

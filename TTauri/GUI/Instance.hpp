@@ -12,7 +12,7 @@
 #include "Window.hpp"
 
 #include "TTauri/utils.hpp"
-
+#include <gsl/gsl>
 #include <boost/uuid/uuid.hpp>
 
 #include <memory>
@@ -78,7 +78,7 @@ protected:
     void maintenance();
     bool stopMaintenance = false;
 
-    static void maintenanceLoop(Instance *self);
+    static void maintenanceLoop(gsl::not_null<Instance *> self);
 };
 
 }}

@@ -37,10 +37,10 @@ void View::add(std::shared_ptr<View> view)
 }
 
 
-size_t View::backingPipelineRender(BackingPipeline_vulkan::Vertex *vertices, size_t offset, size_t size)
+size_t View::backingPipelineRender(const gsl::span<BackingPipeline_vulkan::Vertex> &vertices, size_t offset)
 {
     for (auto child : children) {
-        offset = child->backingPipelineRender(vertices, offset, size);
+        offset = child->backingPipelineRender(vertices, offset);
     }
     return offset;
 }

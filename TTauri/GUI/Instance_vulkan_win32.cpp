@@ -5,11 +5,14 @@
 namespace TTauri {
 namespace GUI {
 
+using namespace std;
+using namespace gsl;
+
 Instance_vulkan_win32::Instance_vulkan_win32() :
     Instance_vulkan({ VK_KHR_WIN32_SURFACE_EXTENSION_NAME })
 {
     // Start update loop.
-    updateAndRenderThread = std::thread(Instance_vulkan_win32::updateAndRenderLoop, this);
+    updateAndRenderThread = std::thread(Instance_vulkan_win32::updateAndRenderLoop, not_null<Instance_vulkan_win32 *>(this));
 }
 
 Instance_vulkan_win32::~Instance_vulkan_win32()
@@ -32,7 +35,7 @@ void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> 
     get_singleton<Instance>()->add(window);
 }
 
-void Instance_vulkan_win32::updateAndRenderLoop(Instance_vulkan_win32 *self)
+void Instance_vulkan_win32::updateAndRenderLoop(gsl::not_null<Instance_vulkan_win32 *> self)
 {
     while (!self->stopUpdateAndRender) {
         self->updateAndRender(0, 0, true);

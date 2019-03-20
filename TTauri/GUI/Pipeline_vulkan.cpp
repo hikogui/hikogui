@@ -64,28 +64,21 @@ void Pipeline_vulkan::teardownShaders()
 
 void Pipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
 {
-    auto vulkanDevice = device<Device_vulkan>();
-
     vertexInputBindingDescription = createVertexInputBindingDescription();
     vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
 
     vertexBuffers = createVertexBuffers(nrFrameBuffers, vertexInputBindingDescription.stride * maximumNumberOfVertices());
 
+    auto vulkanDevice = device<Device_vulkan>();
     auto memoryNeedsFlushingOffsetsAndSizes = vulkanDevice->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible);
     vertexBufferMemory = get<0>(memoryNeedsFlushingOffsetsAndSizes);
     vertexBufferNeedsFlushing = get<1>(memoryNeedsFlushingOffsetsAndSizes);
-    vertexBufferOffsets = get<2>(memoryNeedsFlushingOffsetsAndSizes);
-    vertexBufferSizes = get<3>(memoryNeedsFlushingOffsetsAndSizes);
-    vertexBufferDataSize = vertexBufferOffsets.back() + vertexBufferSizes.back();
-    vertexBufferData = vulkanDevice->intrinsic.mapMemory(vertexBufferMemory, 0, vertexBufferDataSize, vk::MemoryMapFlags());
+    vertexBufferOffsetAndSizes = get<2>(memoryNeedsFlushingOffsetsAndSizes);
 }
 
 void Pipeline_vulkan::teardownVertexBuffers()
 {
     auto vulkanDevice = device<Device_vulkan>();
-
-    vulkanDevice->intrinsic.unmapMemory(vertexBufferMemory);
-    vertexBufferData = nullptr;
 
     vulkanDevice->intrinsic.free(vertexBufferMemory);
     vertexBufferMemory = vk::DeviceMemory();
@@ -94,8 +87,7 @@ void Pipeline_vulkan::teardownVertexBuffers()
         vulkanDevice->intrinsic.destroy(buffer);
     }
     vertexBuffers.clear();
-    vertexBufferOffsets.clear();
-    vertexBufferSizes.clear();
+    vertexBufferOffsetAndSizes.clear();
 }
 
 void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
