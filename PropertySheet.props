@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <ThirdPartyHeaderDirectories>$(BOOST_ROOT);$(VULKAN_SDK)\Include;$(GLM_ROOT)</ThirdPartyHeaderDirectories>
+    <ThirdPartyHeaderDirectories>$(BOOST_ROOT);$(VULKAN_SDK)\Include;$(GLM_ROOT);c:\program files (x86)\windows kits</ThirdPartyHeaderDirectories>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
