@@ -54,6 +54,7 @@
 		68A9A0622208FC3600457876 /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0612208FC3600457876 /* libboost_system.a */; };
 		68A9A0642208FC4100457876 /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A0632208FC4100457876 /* libboost_filesystem.a */; };
 		68A9A07A220B2F9500457876 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A9A079220B2F9500457876 /* libboost_thread.a */; };
+		68BE89492243074D003AA88F /* strings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BE89472243074D003AA88F /* strings.cpp */; };
 		68BF1EE42236EBF10008955B /* WindowView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BF1EE32236EBF10008955B /* WindowView.cpp */; };
 		68BF1EE52236EBF10008955B /* WindowView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BF1EE32236EBF10008955B /* WindowView.cpp */; };
 		68BF1EE62236EBF10008955B /* WindowView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 68BF1EE32236EBF10008955B /* WindowView.cpp */; };
@@ -172,6 +173,8 @@
 		68A9A0612208FC3600457876 /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_system.a; sourceTree = "<group>"; };
 		68A9A0632208FC4100457876 /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_filesystem.a; sourceTree = "<group>"; };
 		68A9A079220B2F9500457876 /* libboost_thread.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_thread.a; path = ../../../../opt/boost_1_69_0/stage/lib/libboost_thread.a; sourceTree = "<group>"; };
+		68BE89472243074D003AA88F /* strings.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = strings.cpp; sourceTree = "<group>"; };
+		68BE89482243074D003AA88F /* strings.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = strings.hpp; sourceTree = "<group>"; };
 		68BF1EE12236EBF10008955B /* WindowView.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = WindowView.hpp; sourceTree = "<group>"; };
 		68BF1EE22236EBF10008955B /* config.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = config.hpp; sourceTree = "<group>"; };
 		68BF1EE32236EBF10008955B /* WindowView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WindowView.cpp; sourceTree = "<group>"; };
@@ -303,6 +306,8 @@
 				686C02C72231A8A3002F4063 /* Time.hpp */,
 				686C02C82231A8A3002F4063 /* Timestamp.cpp */,
 				686C02CD2231A8A4002F4063 /* Timestamp.hpp */,
+				68BE89472243074D003AA88F /* strings.cpp */,
+				68BE89482243074D003AA88F /* strings.hpp */,
 				6838B93F2231A86E00FB8BD7 /* GUI */,
 			);
 			path = TTauri;
@@ -562,6 +567,7 @@
 				686C02D12231A8A4002F4063 /* Timestamp.cpp in Sources */,
 				686C031A2231A8D7002F4063 /* Device.cpp in Sources */,
 				68EF9976223EEADF008C2357 /* Device_vulkan.cpp in Sources */,
+				68BE89492243074D003AA88F /* strings.cpp in Sources */,
 				686C03052231A8D7002F4063 /* Window.cpp in Sources */,
 				686C02CE2231A8A4002F4063 /* Application.cpp in Sources */,
 				68EF996B223DB02D008C2357 /* Instance_vulkan_macos.mm in Sources */,
