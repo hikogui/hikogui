@@ -10,22 +10,24 @@
 
 #include <string>
 
-#define UNICODE_Replacement_Character 0xfffd
-#define UNICODE_Surrogates_BEGIN 0xd800
-#define UNICODE_Surrogates_END 0xdfff
-#define UNICODE_High_Surrogates_BEGIN 0xd800
-#define UNICODE_High_Surrogates_END 0xdbff
-#define UNICODE_Low_Surrogates_BEGIN 0xdc00
-#define UNICODE_Low_Surrogates_END 0xdfff
-#define UNICODE_ASCII_END 0x7f
-#define UNICODE_Plane_0_END 0xffff
-#define UNICODE_Basic_Multilinqual_Plane_END UNICODE_Plane_0_END
-#define UNICODE_Plane_1_BEGIN 0x010000
-#define UNICODE_Plane_16_END 0x10ffff
-#define UNICODE_Plane_17_BEGIN 0x110000
-#define UNICODE_Zero_Width_No_Break_Space 0xfeff
-#define UNICODE_BOM UNICODE_Zero_Width_No_Break_Space
-#define UNICODE_Reverse_BOM 0xfffe
+namespace TTauri {
+
+const char32_t UNICODE_Replacement_Character = 0xfffd;
+const char32_t UNICODE_Surrogates_BEGIN = 0xd800;
+const char32_t UNICODE_Surrogates_END = 0xdfff;
+const char32_t UNICODE_High_Surrogates_BEGIN = 0xd800;
+const char32_t UNICODE_High_Surrogates_END = 0xdbff;
+const char32_t UNICODE_Low_Surrogates_BEGIN = 0xdc00;
+const char32_t UNICODE_Low_Surrogates_END = 0xdfff;
+const char32_t UNICODE_ASCII_END = 0x7f;
+const char32_t UNICODE_Plane_0_END = 0xffff;
+const char32_t UNICODE_Basic_Multilinqual_Plane_END = UNICODE_Plane_0_END;
+const char32_t UNICODE_Plane_1_BEGIN = 0x010000;
+const char32_t UNICODE_Plane_16_END = 0x10ffff;
+const char32_t UNICODE_Plane_17_BEGIN = 0x110000;
+const char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
+const char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
+const char32_t UNICODE_Reverse_BOM = 0xfffe;
 
 char32_t CP1252ToCodePoint(char inputCharacter)
 {
@@ -97,9 +99,20 @@ struct TranslateStringOptions {
 };
 
 template<typename T, typename U>
-T translateString(const U &inputString, TranslateStringOptions options = {}) {
-    const auto intermediateString = translateString<std:u32string>(inputString, options);
-    return translateString<T>(intermediateString, options);
+T translateString(const U &inputString, TranslateStringOptions options = {})
+{
+    if constexpr (sizeof (T::value_type) == sizeof (U::value_type)) {
+        T outputString;
+
+        for (auto inputCharacter: inputString) {
+            outputString.push_back(inputCharacter);
+        }
+        return outputString;
+    
+    } else {
+        const auto intermediateString = translateString<std::u32string>(inputString, options);
+        return translateString<T>(intermediateString, options);
+    }
 }
 
 template<>
@@ -117,7 +130,7 @@ std::u32string translateString(const std::string &inputString, TranslateStringOp
             backtrackPosition = i;
 
             if ((inputCharacter & 0x80) == 0x00) {
-                codePoint = (inputCharacter & 0x1f);
+                codePoint = inputCharacter;
                 codePointToDo = 1;
 
             } else if ((inputCharacter & 0xe0) == 0xc0) {
@@ -149,7 +162,7 @@ std::u32string translateString(const std::string &inputString, TranslateStringOp
 
         } else {
             // Error decoding a multibyte code point, backtrack and report the single byte.
-            codePoint = inputString.at(backtrackPosition);
+            codePoint = 0x40000000 | inputString.at(backtrackPosition);
             codePointToDo = 1;
             i = backtrackPosition;
         }
@@ -294,3 +307,6 @@ std::string translateString(const std::u32string &inputString, TranslateStringOp
     return outputString;
 }
 
+
+
+}
