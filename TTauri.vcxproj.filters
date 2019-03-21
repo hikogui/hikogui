@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="TTauri Windows10">
-      <UniqueIdentifier>{831f2bd6-a519-4989-b701-2b01fde1a5e4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="TTauri">
       <UniqueIdentifier>{b0f5582c-92db-48ad-bf7c-e9a19c7a7f62}</UniqueIdentifier>
     </Filter>
@@ -12,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="TTauri Windows10\main.cpp">
-      <Filter>TTauri Windows10</Filter>
-    </ClCompile>
     <ClCompile Include="TTauri\Application.cpp">
       <Filter>TTauri</Filter>
     </ClCompile>
@@ -74,6 +68,9 @@
     </ClCompile>
     <ClCompile Include="TTauri\GUI\Pipeline_vulkan.cpp">
       <Filter>TTauri\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\strings.cpp">
+      <Filter>TTauri</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="TTauri\GUI\Pipeline_vulkan.hpp">
       <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\strings.hpp">
+      <Filter>TTauri</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
