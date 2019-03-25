@@ -4,10 +4,12 @@
 #include "Instance_vulkan.hpp"
 
 #include "TTauri/Application_win32.hpp"
+#include "TTauri/strings.hpp"
 
 namespace TTauri {
 namespace GUI {
 
+using namespace std;
 using namespace TTauri;
 
 
@@ -26,7 +28,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
         Window_vulkan_win32::win32WindowClass.hInstance = get_singleton<Application_win32>()->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
-
+        Window_vulkan_win32::win32WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
         RegisterClass(&win32WindowClass);
     }
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
@@ -36,10 +38,12 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
 {
     Window_vulkan_win32::createWindowClass();
 
-    win32Window = CreateWindowEx(
+    auto u16title = translateString<wstring>(title);
+
+    win32Window = CreateWindowExW(
         0, // Optional window styles.
         Window_vulkan_win32::win32WindowClassName, // Window class
-        L"Learn to Program Windows", // Window text
+        u16title.data(), // Window text
         WS_OVERLAPPEDWINDOW, // Window style
 
         // Size and position
@@ -69,17 +73,6 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
         get_singleton<Application_win32>()->hInstance,
         win32Window
     });
-
-    // XXX Should be done in the loop
-    RECT windowRect;
-    GetWindowRect(win32Window, &windowRect);
-
-    vk::Rect2D rect;
-    rect.offset.x = windowRect.left;
-    rect.offset.y = windowRect.top;
-    rect.extent.width = windowRect.right - windowRect.left;
-    rect.extent.height = windowRect.bottom - windowRect.bottom;
-    setWindowRectangle(rect);
 }
 
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate> &delegate, const std::string &title) :
@@ -90,9 +83,22 @@ Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate>
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
-    case WM_DESTROY:
-        //PostQuitMessage(0);
-        return 0;
+    case WM_MOVING: [[gsl::suppress(type.1)]] {
+        auto const windowRect = reinterpret_cast<RECT *>(lParam);
+        if (windowRect) {
+            setWindowPosition(windowRect->left, windowRect->top);
+        }
+        break;
+    }
+
+    case WM_SIZING: [[gsl::suppress(type.1)]] {
+        auto const windowRect = reinterpret_cast<RECT *>(lParam);
+        if (windowRect) {
+            setWindowSize(windowRect->right - windowRect->left, windowRect->bottom - windowRect->top);
+        }
+        break;
+    }
+
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }

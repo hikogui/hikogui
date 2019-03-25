@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include "utils.hpp"
 
 namespace TTauri {
 
@@ -29,7 +30,7 @@ const char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
 const char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
 const char32_t UNICODE_Reverse_BOM = 0xfffe;
 
-char32_t CP1252ToCodePoint(char inputCharacter)
+inline char32_t CP1252ToCodePoint(char inputCharacter)
 {
     if (inputCharacter >= 0 && inputCharacter <= 0x7f) {
         return inputCharacter;
@@ -99,16 +100,10 @@ struct TranslateStringOptions {
 };
 
 template<typename T, typename U>
-T translateString(const U &inputString, TranslateStringOptions options = {})
+inline T translateString(const U &inputString, TranslateStringOptions options = {})
 {
     if constexpr (sizeof (T::value_type) == sizeof (U::value_type)) {
-        T outputString;
-
-        for (auto inputCharacter: inputString) {
-            outputString.push_back(inputCharacter);
-        }
-        return outputString;
-    
+        return transform<T>(inputString, [](const U::value_type &inputCharacter) { return inputCharacter; });
     } else {
         const auto intermediateString = translateString<std::u32string>(inputString, options);
         return translateString<T>(intermediateString, options);
@@ -116,7 +111,7 @@ T translateString(const U &inputString, TranslateStringOptions options = {})
 }
 
 template<>
-std::u32string translateString(const std::string &inputString, TranslateStringOptions options)
+inline std::u32string translateString(const std::string &inputString, TranslateStringOptions options)
 {
     std::u32string outputString;
     char32_t codePoint = 0;
@@ -187,7 +182,7 @@ std::u32string translateString(const std::string &inputString, TranslateStringOp
 }
 
 template<>
-std::u32string translateString(const std::u16string &inputString, TranslateStringOptions options)
+inline std::u32string translateString(const std::u16string &inputString, TranslateStringOptions options)
 {
     bool byteSwap = options._byteSwap;
     std::u32string outputString;
@@ -208,10 +203,10 @@ std::u32string translateString(const std::u16string &inputString, TranslateStrin
 
         } else if (firstSurrogate && inputCharacter >= UNICODE_Low_Surrogates_BEGIN && inputCharacter <= UNICODE_Low_Surrogates_END) {
             // Second surrogate
-            auto const codePoint = (
-                    (static_cast<char32_t>(firstSurrogate - UNICODE_High_Surrogates_BEGIN) << 10) |
-                    static_cast<char32_t>(inputCharacter - UNICODE_Low_Surrogates_BEGIN)
-                ) + UNICODE_Plane_1_BEGIN;
+            char32_t codePoint = firstSurrogate - UNICODE_High_Surrogates_BEGIN;
+            codePoint <<= 10;
+            codePoint |= inputCharacter - UNICODE_Low_Surrogates_BEGIN;
+            codePoint += UNICODE_Plane_1_BEGIN;
 
             outputString.push_back(codePoint);
             firstSurrogate = 0;
@@ -242,7 +237,14 @@ std::u32string translateString(const std::u16string &inputString, TranslateStrin
 }
 
 template<>
-std::u16string translateString(const std::u32string &inputString, TranslateStringOptions options)
+inline std::u32string translateString(const std::wstring &inputString, TranslateStringOptions options)
+{
+    auto tmp = translateString<std::u16string>(inputString, options);
+    return translateString<std::u32string>(tmp, options);
+}
+
+template<>
+inline std::u16string translateString(const std::u32string &inputString, TranslateStringOptions options)
 {
     std::u16string outputString;
 
@@ -261,11 +263,11 @@ std::u16string translateString(const std::u32string &inputString, TranslateStrin
             auto const surrogateCode = inputCharacter - UNICODE_Plane_1_BEGIN;
             auto const highSurrogate = UNICODE_High_Surrogates_BEGIN + (surrogateCode >> 10);
             auto const lowSurrogate = UNICODE_Low_Surrogates_BEGIN + (surrogateCode & 0x3ff);
-            outputString.push_back(highSurrogate);
-            outputString.push_back(lowSurrogate);
+            outputString.push_back(highSurrogate & 0xffff);
+            outputString.push_back(lowSurrogate & 0xffff);
 
         } else {
-            outputString.push_back(inputCharacter);
+            outputString.push_back(inputCharacter & 0xffff);
         }
     }
 
@@ -273,7 +275,14 @@ std::u16string translateString(const std::u32string &inputString, TranslateStrin
 }
 
 template<>
-std::string translateString(const std::u32string &inputString, TranslateStringOptions options)
+inline std::wstring translateString(const std::u32string &inputString, TranslateStringOptions options)
+{
+    auto tmp = translateString<std::u16string>(inputString, options);
+    return translateString<std::wstring>(tmp, options);
+}
+
+template<>
+inline std::string translateString(const std::u32string &inputString, TranslateStringOptions options)
 {
     std::string outputString;
 
@@ -285,19 +294,19 @@ std::string translateString(const std::u32string &inputString, TranslateStringOp
         }
 
         if (inputCharacter <= UNICODE_ASCII_END) {
-            outputString.push_back(inputCharacter);
+            outputString.push_back(inputCharacter & 0x7f);
 
         } else if (inputCharacter <= 0x07ff) {
-            outputString.push_back((inputCharacter >> 6) | 0xc0);
+            outputString.push_back(((inputCharacter >> 6) & 0x1f) | 0xc0);
             outputString.push_back((inputCharacter & 0x3f) | 0x80);
 
         } else if (inputCharacter <= UNICODE_Basic_Multilinqual_Plane_END) {
-            outputString.push_back((inputCharacter >> 12) | 0xe0);
+            outputString.push_back(((inputCharacter >> 12) & 0x0f) | 0xe0);
             outputString.push_back(((inputCharacter >> 6) & 0x3f) | 0x80);
             outputString.push_back((inputCharacter & 0x3f) | 0x80);
 
         } else if (inputCharacter <= UNICODE_Plane_16_END) {
-            outputString.push_back((inputCharacter >> 18) | 0xf0);
+            outputString.push_back(((inputCharacter >> 18) & 0x07) | 0xf0);
             outputString.push_back(((inputCharacter >> 12) & 0x3f) | 0x80);
             outputString.push_back(((inputCharacter >> 6) & 0x3f) | 0x80);
             outputString.push_back((inputCharacter & 0x3f) | 0x80);
@@ -306,7 +315,5 @@ std::string translateString(const std::u32string &inputString, TranslateStringOp
 
     return outputString;
 }
-
-
 
 }

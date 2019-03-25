@@ -14,6 +14,7 @@ public:
 
     vk::SwapchainKHR swapchain;
 
+    std::optional<uint32_t> acquiredImageIndex;
     std::vector<vk::Image> swapchainImages;
     std::vector<vk::ImageView> swapchainImageViews;
     std::vector<vk::Framebuffer> swapchainFramebuffers;
@@ -32,12 +33,12 @@ public:
     Window_vulkan(Window_vulkan &&) = delete;
     Window_vulkan &operator=(Window_vulkan &&) = delete;
 
-    void buildForDeviceChange() override;
+    State buildForDeviceChange() override;
     void teardownForDeviceChange() override;
-    bool rebuildForSwapchainChange() override;
+    State rebuildForSwapchainChange() override;
 
 protected:
-    bool render(bool blockOnVSync) override;
+    void render(bool blockOnVSync) override;
 
 private:
     void buildSemaphores();

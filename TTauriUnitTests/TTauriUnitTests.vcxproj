@@ -191,4 +191,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <PropertyGroup Condition="'$(Language)'=='C++'">
+    <CAExcludePath>$(ThirdPartyHeaderDirectories);$(CAExcludePath)</CAExcludePath>
+  </PropertyGroup>
 </Project>

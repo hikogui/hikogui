@@ -1,10 +1,15 @@
 #pragma once
 
+#include "Logging.hpp"
+
 #include <boost/throw_exception.hpp>
 
 #include <cstdint>
 #include <memory>
 #include <functional>
+#include <algorithm>
+#include <thread>
+#include <atomic>
 
 namespace TTauri {
 
@@ -85,5 +90,89 @@ inline T transform(const U &input, const std::function<typename T::value_type(co
     return result;
 }
 
+template<typename T>
+struct atomic_state {
+    struct Error : virtual boost::exception, virtual std::exception {};
+
+    std::atomic<T> state;
+
+    atomic_state() = delete;
+    virtual ~atomic_state() = default;
+    atomic_state(const atomic_state &) = delete;
+    atomic_state &operator=(const atomic_state &) = delete;
+    atomic_state(atomic_state &&) = delete;
+    atomic_state &operator=(atomic_state &&) = delete;
+
+    atomic_state(const T &newState) {
+        state = newState;
+    }
+
+    bool set(T newState, const T &oldState) {
+        T expected = oldState;
+        if (state.compare_exchange_strong(expected, newState)) {
+            LOG_DEBUG("state %i -> %i") % static_cast<int>(oldState) % static_cast<int>(newState);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    bool set(T newState, const std::vector<T> &oldStates) {
+        for (auto oldState: oldStates) {
+            if (set(newState, oldState)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    T setAndWait(const std::vector<std::pair<T, T>> &stateChanges) {
+        while (true) {
+            for (auto const &stateChange: stateChanges) {
+                auto newState = stateChange.first;
+                auto oldState = stateChange.second;
+                if (set(newState, oldState)) {
+                    return oldState;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    T setAndWait(T newState, const std::vector<T> &oldStates) {
+        while (true) {
+            for (auto oldState: oldStates) {
+                if (set(newState, oldState)) {
+                    return oldState;
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    T setAndWait(T newState, const T &oldState) {
+        while (true) {
+            if (set(newState, oldState)) {
+                return oldState;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+
+    void setOrExcept(T newState, const std::vector<T> &oldStates) {
+        if (!set(newState, oldStates)) {
+            BOOST_THROW_EXCEPTION(Error());
+        }
+    }
+
+    void setOrExcept(T newState, const T &oldState) {
+        if (!set(newState, oldState)) {
+            BOOST_THROW_EXCEPTION(Error());
+        }
+    }
+};
 
 }

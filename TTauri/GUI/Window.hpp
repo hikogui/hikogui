@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include "BackingPipeline_vulkan.hpp"
 #include "View.hpp"
+
+#include "TTauri/utils.hpp"
+#include "geometry.hpp"
 
 #include <unordered_set>
 
@@ -30,11 +32,22 @@ class View;
 class Window : public std::enable_shared_from_this<Window> {
 public:
     enum class State {
-        NO_DEVICE, //!< Can transition to: LINKED_TO_DEVICE
-        LINKED_TO_DEVICE, //!< Can transition to: READY_TO_DRAW, MINIMIZED, NO_DEVICE
-        SWAPCHAIN_OUT_OF_DATE, //!< Can transition to: READY_TO_DRAW, MINIMIZED, LINKED_TO_DEVICE
-        READY_TO_DRAW, //!< Can transition to: SWAPCHAIN_OUT_OF_DATE, LINKED_TO_DEVICE
-        MINIMIZED //!< Can transition to: READY_TO_DRAW, LINKED_TO_DEVICE
+        NO_DEVICE, //!< Can transition to: SETTING_DEVICE
+        REQUEST_SET_DEVICE, //!<
+        ACCEPTED_SET_DEVICE,
+        SETTING_DEVICE, //!< Can transition to: NO_DEVICE, READY_TO_DRAW, MINIMIZED
+        SWAPCHAIN_OUT_OF_DATE, //!< Can transition to: REBUILDING_SWAPCHAIN
+        REBUILDING_SWAPCHAIN, //!< Can transition to: READY_TO_DRAW, MINIMIZED
+        READY_TO_DRAW, //!< Can transition to: SETTING_DEVICE
+        WAITING_FOR_VSYNC, //!< Can transition to: SETTING_DEVICE, SWAPCHAIN_OUT_OF_DATE, READY_TO_DRAW, 
+        DRAWING, //!< Can transition to: READY_TO_DRAW, SWAPCHAIN_OUT_OF_DATE
+        MINIMIZED //!< Can transition to: REBUILDING_SWAPCHAIN
+    };
+
+    enum class SizeState {
+        MINIMIZED,
+        NORMAL,
+        MAXIMIZED,
     };
 
     class Delegate {
@@ -49,11 +62,9 @@ public:
         virtual void creatingWindow(const std::shared_ptr<Window> &window) = 0;
     };
 
-    struct StateError : virtual boost::exception, virtual std::exception {};
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
-    std::recursive_mutex mutex;
-    State state;
+    atomic_state<State> state = { State::NO_DEVICE };
 
     std::shared_ptr<Delegate> delegate;
 
@@ -95,13 +106,13 @@ public:
 
     /*! Build the swapchain, frame buffers and pipeline.
      */
-    virtual void buildForDeviceChange() = 0;
+    virtual State buildForDeviceChange() = 0;
 
     /*! Teardown the swapchain, frame buffers and pipeline.
      */
     virtual void teardownForDeviceChange() = 0;
 
-    virtual bool rebuildForSwapchainChange() = 0;
+    virtual State rebuildForSwapchainChange() = 0;
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
@@ -128,16 +139,16 @@ public:
      */
     void maintenance();
 
-    void setWindowRectangle(vk::Rect2D rect) { windowRectangle = rect; }
 
 protected:
-    // The extent of the window rectangle should only be read when creating the swapchain.
-    vk::Rect2D windowRectangle;
+    u32rect2 windowRectangle;
+
+    virtual void setWindowPosition(uint32_t x, uint32_t y);
+    virtual void setWindowSize(uint32_t width, uint32_t height);
 
     /*! Render views.
-     * \returns false when swapchain is out of date.
      */
-    virtual bool render(bool blockOnVSync) = 0;
+    virtual void render(bool blockOnVSync) = 0;
 
 private:
     bool isOnScreen();

@@ -37,62 +37,57 @@ void Window::initialize()
 
 void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
-    if (mutex.try_lock()) {
-        if (state == State::READY_TO_DRAW) {
-            if (!render(blockOnVSync)) {
-                LOG_INFO("Swapchain out of date.");
-                state = State::SWAPCHAIN_OUT_OF_DATE;
-            }
-        }
-        mutex.unlock();
-    }
+    render(blockOnVSync);
 }
 
 void Window::maintenance()
 {
-    std::scoped_lock lock(mutex);
+    LOG_DEBUG("maintenance");
+    if (state.set(State::REBUILDING_SWAPCHAIN, {State::SWAPCHAIN_OUT_OF_DATE, State::MINIMIZED})) {
+        auto const newState = rebuildForSwapchainChange();
 
-    if (state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
-        state = State::SWAPCHAIN_OUT_OF_DATE;
-
-        auto const onScreen = rebuildForSwapchainChange();
-
-        state = onScreen ? State::READY_TO_DRAW : State::MINIMIZED;
+        state.setOrExcept(newState, State::REBUILDING_SWAPCHAIN);
     }
 }
 
 void Window::setDevice(const std::shared_ptr<Device> &device)
 {
-    if (device) {
-        {
-            std::scoped_lock lock(mutex);
+    state.setAndWait({
+        {State::SETTING_DEVICE, State::READY_TO_DRAW},
+        {State::SETTING_DEVICE, State::NO_DEVICE},
+        {State::REQUEST_SET_DEVICE, State::WAITING_FOR_VSYNC},
+    });
 
-            if (state == State::NO_DEVICE) {
-                this->device = device;
-                state = State::LINKED_TO_DEVICE;
+    state.setAndWait(State::SETTING_DEVICE, {State::SETTING_DEVICE, State::READY_TO_DRAW, State::NO_DEVICE, State::ACCEPTED_SET_DEVICE});
 
-            } else {
-                BOOST_THROW_EXCEPTION(Window::StateError());
-            }
-        }
+    auto const oldDevice = this->device.lock();
 
-        buildForDeviceChange();
-
-    } else {
+    if (oldDevice) {
         teardownForDeviceChange();
-
-        {
-            std::scoped_lock lock(mutex);
-
-            if (state == State::LINKED_TO_DEVICE) {
-                this->device.reset();
-                state = State::NO_DEVICE;
-
-            } else {
-                BOOST_THROW_EXCEPTION(Window::StateError());
-            }
-        }
+        this->device.reset();
     }
+
+    if (device) {
+        this->device = device;
+        auto const newState = buildForDeviceChange();
+        state.setOrExcept(newState, State::SETTING_DEVICE);
+    } else {
+        state.setOrExcept(State::NO_DEVICE, State::SETTING_DEVICE);
+    }   
+}
+
+void Window::setWindowPosition(uint32_t x, uint32_t y)
+{
+    //std::scoped_lock lock(mutex);
+
+    windowRectangle.offset = {x, y};
+}
+
+void Window::setWindowSize(uint32_t width, uint32_t height)
+{
+    //std::scoped_lock lock(mutex);
+
+    windowRectangle.extent = {width, height};
 }
 
 }}

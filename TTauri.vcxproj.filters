@@ -143,6 +143,9 @@
     <ClInclude Include="TTauri\strings.hpp">
       <Filter>TTauri</Filter>
     </ClInclude>
+    <ClInclude Include="TTauri\GUI\geometry.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="TTauri\GUI\BackingPipeline_vulkan.frag">
