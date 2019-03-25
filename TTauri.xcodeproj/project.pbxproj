@@ -148,6 +148,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6806C5BC22442D2C00E94F72 /* strings_tests.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = strings_tests.cpp; sourceTree = "<group>"; };
 		686C02C62231A8A3002F4063 /* Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Application.cpp; sourceTree = "<group>"; };
 		686C02C72231A8A3002F4063 /* Time.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Time.hpp; sourceTree = "<group>"; };
 		686C02C82231A8A3002F4063 /* Timestamp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timestamp.cpp; sourceTree = "<group>"; };
@@ -308,6 +309,7 @@
 				686C02CD2231A8A4002F4063 /* Timestamp.hpp */,
 				68BE89472243074D003AA88F /* strings.cpp */,
 				68BE89482243074D003AA88F /* strings.hpp */,
+				6806C5BC22442D2C00E94F72 /* strings_tests.cpp */,
 				6838B93F2231A86E00FB8BD7 /* GUI */,
 			);
 			path = TTauri;
