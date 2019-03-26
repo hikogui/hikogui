@@ -82,11 +82,30 @@ bool Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
     return hasBlockedOnVSync;
 }
 
-void Device::maintance()
+std::vector<std::shared_ptr<Window>> Device::maintance()
 {
-    for (auto window : windows) {
-        window->maintenance();
+    auto tmpWindows = windows;
+    vector<shared_ptr<Window>> orphanWindows;
+
+    for (auto window : tmpWindows) {
+        if (window->hasLostSurface()) {
+            // Window must be destroyed.
+            window->setDevice(nullptr);
+            window->destroyingWindow();
+            windows.erase(window);
+
+        } else if (window->hasLostDevice()) {
+            // Window must be passed to the Instance, for reinsertion on a new device.
+            window->setDevice(nullptr);
+            windows.erase(window);
+            orphanWindows.push_back(window);
+
+        } else {
+            window->maintenance();
+        }
     }
+
+    return orphanWindows;
 }
 
 }}

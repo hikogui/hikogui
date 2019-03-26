@@ -28,6 +28,21 @@ Window::Window(const std::shared_ptr<Delegate> &delegate, const std::string &tit
 {
 }
 
+Window::~Window()
+{
+    try {
+        [[gsl::suppress(f.6)]] {
+            if (state != State::NO_DEVICE || !this->device.expired()) {
+                LOG_FATAL("Device was associated with Window '%s' during destruction of the Window.") % title;
+                abort();
+            }
+            LOG_INFO("Window '%s' has been propertly destructed.") % title;
+        }
+    } catch (...) {
+        abort();
+    }
+}
+
 void Window::initialize()
 {
     view = TTauri::make_shared<WindowView>(shared_from_this());
@@ -57,6 +72,8 @@ void Window::setDevice(const std::shared_ptr<Device> &device)
         {State::NO_DEVICE, State::SETTING_DEVICE},
         {State::MINIMIZED, State::SETTING_DEVICE},
         {State::SWAPCHAIN_OUT_OF_DATE, State::SETTING_DEVICE},
+        {State::DEVICE_LOST, State::SETTING_DEVICE},
+        {State::SURFACE_LOST, State::SETTING_DEVICE},
 
         {State::WAITING_FOR_VSYNC, State::REQUEST_SET_DEVICE}
     });

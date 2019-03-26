@@ -31,6 +31,11 @@ public:
         view2->setRectangle({ 200.0, 200.0, 1.0 }, { 200.0, 100.0, 0.0 });
         window->view->add(view2);
     }
+
+    void destroyingWindow(const std::shared_ptr<GUI::Window> &window) override
+    {
+        LOG_INFO("Window being destroyed.");
+    }
 };
 
 class MyApplicationDelegate : public Application::Delegate {

@@ -1,6 +1,6 @@
 
 #include "Window_vulkan.hpp"
-
+#include "Instance_vulkan.hpp"
 #include "Device_vulkan.hpp"
 
 #include "TTauri/Logging.hpp"
@@ -21,14 +21,31 @@ Window_vulkan::Window_vulkan(std::shared_ptr<Window::Delegate> delegate, const s
 {
 }
 
+Window_vulkan::~Window_vulkan()
+{
+    try {
+        [[gsl::suppress(f.6)]] {
+            get_singleton<Instance_vulkan>()->intrinsic.destroySurfaceKHR(intrinsic);
+        }
+    } catch (...) {
+        abort();
+    }
+}
+
 void Window_vulkan::waitIdle()
 {
     lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
-std::pair<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndImageExtent()
+std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImageCountExtentAndState()
 {
-    auto const surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+    vk::SurfaceCapabilitiesKHR surfaceCapabilities;
+    try {
+        surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
+
+    } catch (const vk::SurfaceLostKHRError &e) {
+        return {0, {}, State::SURFACE_LOST};
+    }
 
     auto const currentExtentSet =
         (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
@@ -48,28 +65,23 @@ std::pair<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndImageExtent()
             std::clamp(windowRectangle.extent.width(), surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
             std::clamp(windowRectangle.extent.height(), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height) });
 
-    return { imageCount, imageExtent };
-}
+    auto const minimized = imageExtent.width == 0 || imageExtent.height == 0;
 
-bool Window_vulkan::isOnScreen()
-{
-    auto const imageCountAndImageExtent = getImageCountAndImageExtent();
-
-    return imageCountAndImageExtent.second.width > 0 && imageCountAndImageExtent.second.height > 0;
+    return { imageCount, imageExtent, minimized ? State::MINIMIZED : State::READY_TO_DRAW};
 }
 
 Window::State Window_vulkan::buildForDeviceChange()
 {
-    auto const swapchainAndOnScreen = buildSwapchain();
-    swapchain = swapchainAndOnScreen.first;
-    auto const onScreen = swapchainAndOnScreen.second;
+    auto const swapchainAndState = buildSwapchain();
+    swapchain = swapchainAndState.first;
+    auto const newState = swapchainAndState.second;
 
     buildRenderPasses();
     buildFramebuffers();
     buildSemaphores();
     backingPipeline->buildForDeviceChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
 
-    return onScreen ? State::READY_TO_DRAW : State::MINIMIZED;
+    return newState;
 }
 
 void Window_vulkan::teardownForDeviceChange()
@@ -84,9 +96,11 @@ void Window_vulkan::teardownForDeviceChange()
 
 Window::State Window_vulkan::rebuildForSwapchainChange()
 {
-    if (!isOnScreen()) {
+    auto const imageState = get<2>(getImageCountExtentAndState());
+
+    if (imageState != State::READY_TO_DRAW) {
         // Early exit when window is minimized.
-        return State::MINIMIZED;
+        return imageState;
     }
 
     waitIdle();
@@ -94,17 +108,16 @@ Window::State Window_vulkan::rebuildForSwapchainChange()
     backingPipeline->teardownForSwapchainChange();
     teardownFramebuffers();
 
-    auto const swapChainAndOnScreen = buildSwapchain(swapchain);
-    swapchain = swapChainAndOnScreen.first;
-    auto const onScreen = swapChainAndOnScreen.second;
+    auto const swapChainAndState = buildSwapchain(swapchain);
+    swapchain = swapChainAndState.first;
 
     buildFramebuffers();
     backingPipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
 
-    return onScreen ? State::READY_TO_DRAW : State::MINIMIZED;
+    return swapChainAndState.second;
 }
 
-std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
+std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
 {
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
@@ -120,12 +133,13 @@ std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR
     // Creating swapchain images can fail in different ways, we need to keep retrying.
     vk::SwapchainKHR newSwapchain;
     while (true) {
-        auto const imageCountAndImageExtent = getImageCountAndImageExtent();
-        auto const imageCount = imageCountAndImageExtent.first;
-        auto const imageExtent = imageCountAndImageExtent.second;
+        auto const imageCountExtentAndState = getImageCountExtentAndState();
+        auto const imageCount = get<0>(imageCountExtentAndState);
+        auto const imageExtent = get<1>(imageCountExtentAndState);
+        auto const imageState = get<2>(imageCountExtentAndState);
 
-        if (imageExtent.width == 0 || imageExtent.height == 0) {
-            return { oldSwapchain, false };
+        if (imageState != State::READY_TO_DRAW) {
+            return { oldSwapchain, imageState };
         }
 
         swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
@@ -144,20 +158,34 @@ std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR
             vk::CompositeAlphaFlagBitsKHR::eOpaque,
             vulkanDevice->bestSurfacePresentMode,
             VK_TRUE, // clipped
-            oldSwapchain);
+            oldSwapchain
+        );
         
         vk::Result const result = vulkanDevice->intrinsic.createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
         // No matter what, the oldSwapchain has been retired after createSwapchainKHR().
         vulkanDevice->intrinsic.destroy(oldSwapchain);
         oldSwapchain = vk::SwapchainKHR();
 
-        if (result != vk::Result::eSuccess) {
+        switch (result) {
+        case vk::Result::eSuccess:
+            break;
+
+        case vk::Result::eErrorSurfaceLostKHR:
+            return { {}, State::SURFACE_LOST };
+
+        default:
             LOG_WARNING("Could not create swapchain, retrying.");
             continue;
         }
 
-        auto const checkImageCountAndImageExtent = getImageCountAndImageExtent();
-        auto const checkImageExtent = checkImageCountAndImageExtent.second;
+        auto const checkImageCountExtentAndState = getImageCountExtentAndState();
+        auto const checkImageExtent = get<1>(checkImageCountExtentAndState);
+        auto const checkImageState = get<2>(checkImageCountExtentAndState);
+
+        if (checkImageState != State::READY_TO_DRAW) {
+            return {newSwapchain, checkImageState};
+        }
+
         if (imageExtent != checkImageExtent) {
             LOG_WARNING("Surface extent changed while creating swapchain, retrying.");
             // The newSwapchain was created succesfully, it is just of the wrong size so use it as the next oldSwapchain.
@@ -170,12 +198,12 @@ std::pair<vk::SwapchainKHR, bool> Window_vulkan::buildSwapchain(vk::SwapchainKHR
 
     view->setRectangle({ 0.0, 0.0, 0.0 }, { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 0.0 });
 
-    LOG_INFO("Building swap chain");
+    LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
 
-    return { newSwapchain, true };
+    return { newSwapchain, State::READY_TO_DRAW };
 }
 
 void Window_vulkan::teardownSwapchain()

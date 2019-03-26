@@ -64,6 +64,7 @@ public:
         Delegate &operator=(Delegate &&) = delete;
 
         virtual void creatingWindow(const std::shared_ptr<Window> &window) = 0;
+        virtual void destroyingWindow(const std::shared_ptr<Window> &window) = 0;
     };
 
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
@@ -99,7 +100,7 @@ public:
     std::shared_ptr<BackingPipeline_vulkan> backingPipeline;
 
     Window(const std::shared_ptr<Delegate> &delegate, const std::string &title);
-    virtual ~Window() {}
+    virtual ~Window();
 
     Window(const Window &) = delete;
     Window &operator=(const Window &) = delete;
@@ -107,6 +108,10 @@ public:
     Window &operator=(Window &&) = delete;
 
     void initialize();
+
+    bool hasLostSurface() { return state == State::SURFACE_LOST; }
+    bool hasLostDevice() { return state == State::DEVICE_LOST; }
+    void destroyingWindow() { delegate->destroyingWindow(shared_from_this()); }
 
     /*! Build the swapchain, frame buffers and pipeline.
      */

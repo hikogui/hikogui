@@ -31,8 +31,8 @@ struct extent<3, T, Q> : public glm::vec<3, T, Q> {
 
 template <int S, typename T, glm::qualifier Q>
 struct rect {
-    glm::vec<S, T, glm::defaultp> offset;
-    extent<S, T, glm::defaultp> extent;
+    glm::vec<S, T, glm::defaultp> offset = {};
+    extent<S, T, glm::defaultp> extent = {};
 };
 
 using u32rect2 = rect<2, uint32_t, glm::defaultp>;

@@ -102,10 +102,10 @@ bool Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, 
 
 void Instance::maintenance()
 {
-    std::scoped_lock lock(mutex);
+    scoped_lock lock(mutex);
 
     for (auto device : devices) {
-        device->maintance();
+        auto orphanWindow = device->maintance();
     }
 }
 

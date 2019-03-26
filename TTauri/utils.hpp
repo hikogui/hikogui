@@ -50,6 +50,7 @@ inline constexpr size_t align(size_t offset, size_t alignment)
     return ((offset + alignment - 1) / alignment) * alignment;
 }
 
+
 template<typename T, typename U>
 inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 {
@@ -105,6 +106,14 @@ struct atomic_state {
 
     atomic_state(const T &newState) {
         state = newState;
+    }
+
+    bool operator==(T other_state) {
+        return state.load() == other_state;
+    }
+
+    bool operator!=(T other_state) {
+        return state.load() != other_state;
     }
 
     /*! Transition between states.

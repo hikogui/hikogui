@@ -14,7 +14,7 @@ public:
     HWND win32Window = nullptr;
 
     Window_vulkan_win32(const std::shared_ptr<Delegate> &delegate, const std::string &title);
-    ~Window_vulkan_win32() {};
+    ~Window_vulkan_win32();
 
     Window_vulkan_win32(const Window_vulkan_win32 &) = delete;
     Window_vulkan_win32 &operator=(const Window_vulkan_win32 &) = delete;

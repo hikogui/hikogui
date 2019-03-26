@@ -26,7 +26,7 @@ public:
     vk::Fence renderFinishedFence;
 
     Window_vulkan(std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
-    ~Window_vulkan() {}
+    ~Window_vulkan();
 
     Window_vulkan(const Window_vulkan &) = delete;
     Window_vulkan &operator=(const Window_vulkan &) = delete;
@@ -43,7 +43,7 @@ protected:
 private:
     void buildSemaphores();
     void teardownSemaphores();
-    std::pair<vk::SwapchainKHR, bool> buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
+    std::pair<vk::SwapchainKHR, Window::State> buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
     void teardownSwapchain();
     void buildRenderPasses();
     void teardownRenderPasses();
@@ -53,8 +53,7 @@ private:
     void teardownPipelines();
 
     void waitIdle();
-    std::pair<uint32_t, vk::Extent2D> getImageCountAndImageExtent();
-    bool isOnScreen();
+    std::tuple<uint32_t, vk::Extent2D, State> getImageCountExtentAndState();
 };
 
 }}

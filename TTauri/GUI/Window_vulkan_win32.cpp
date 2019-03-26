@@ -12,6 +12,13 @@ namespace GUI {
 using namespace std;
 using namespace TTauri;
 
+inline gsl::not_null<void *>to_ptr(LPARAM lParam)
+{
+    void *ptr;
+    memcpy(&ptr, &lParam, sizeof(void *));
+
+    return gsl::not_null<void *>(ptr);
+}
 
 const wchar_t *Window_vulkan_win32::win32WindowClassName = nullptr;
 WNDCLASS Window_vulkan_win32::win32WindowClass = {};
@@ -28,7 +35,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
         Window_vulkan_win32::win32WindowClass.hInstance = get_singleton<Application_win32>()->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
-        Window_vulkan_win32::win32WindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+        Window_vulkan_win32::win32WindowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         RegisterClass(&win32WindowClass);
     }
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
@@ -80,24 +87,43 @@ Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate>
 {
 }
 
+Window_vulkan_win32::~Window_vulkan_win32()
+{
+    try {
+        [[gsl::suppress(f.6)]] {
+            if (win32Window != nullptr) {
+                LOG_FATAL("win32Window was not destroyed before Window '%s' was destructed.") % title;
+                abort();
+            }
+        }
+    } catch (...) {
+        abort();
+    }
+}
+
+
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
-    case WM_MOVING: [[gsl::suppress(type.1)]] {
-        auto const windowRect = reinterpret_cast<RECT *>(lParam);
-        if (windowRect) {
-            setWindowPosition(windowRect->left, windowRect->top);
-        }
+    case WM_MOVING: {
+        RECT windowRect;
+        memcpy(&windowRect, to_ptr(lParam).get(), sizeof (RECT));
+
+        setWindowPosition(windowRect.left, windowRect.top);
         break;
     }
 
-    case WM_SIZING: [[gsl::suppress(type.1)]] {
-        auto const windowRect = reinterpret_cast<RECT *>(lParam);
-        if (windowRect) {
-            setWindowSize(windowRect->right - windowRect->left, windowRect->bottom - windowRect->top);
-        }
+    case WM_SIZING: {
+        RECT windowRect;
+        memcpy(&windowRect, to_ptr(lParam).get(), sizeof (RECT));
+
+        setWindowSize(windowRect.right - windowRect.left, windowRect.bottom - windowRect.top);
         break;
     }
+
+    case WM_DESTROY:
+        win32Window = nullptr;
+        break;
 
     }
     return DefWindowProc(hwnd, uMsg, wParam, lParam);

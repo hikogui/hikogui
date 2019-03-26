@@ -242,5 +242,8 @@
     <Rule Id="C26440" Action="None" />
     <Rule Id="C26455" Action="None" />
     <Rule Id="C26485" Action="None" />
+    <Rule Id="C26486" Action="None" />
+    <Rule Id="C26487" Action="None" />
+    <Rule Id="C26489" Action="None" />
   </Rules>
 </RuleSet>

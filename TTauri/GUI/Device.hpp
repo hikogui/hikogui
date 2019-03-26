@@ -83,8 +83,9 @@ public:
     bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     /*! Maintanance work on low performance thread.
+     * \return Windows that got orphaned due to device dying.
      */
-    void maintance();
+    std::vector<std::shared_ptr<Window>> maintance();
 };
 
 }}
