@@ -51,7 +51,7 @@ inline constexpr size_t align(size_t offset, size_t alignment)
 }
 
 template<typename T, typename U>
-std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
+inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 {
     return std::dynamic_pointer_cast<T>(x.lock());
 }
@@ -92,6 +92,8 @@ inline T transform(const U &input, const std::function<typename T::value_type(co
 
 template<typename T>
 struct atomic_state {
+    using value_type = T;
+
     struct Error : virtual boost::exception, virtual std::exception {};
 
     std::atomic<T> state;
@@ -107,72 +109,85 @@ struct atomic_state {
         state = newState;
     }
 
-    bool set(T newState, const T &oldState) {
-        T expected = oldState;
-        if (state.compare_exchange_strong(expected, newState)) {
-            LOG_DEBUG("state %i -> %i") % static_cast<int>(oldState) % static_cast<int>(newState);
-            return true;
-        } else {
-            return false;
-        }
-    }
+    /*! Transition between states.
+     * \param stateChanges a list of from->to states (in that order).
+     * \return Return the original state, or empty when the state could not be changes.
+     */
+    std::optional<T> transition(const std::vector<std::pair<T, T>> &stateChanges) {
+        for (auto const &stateChange: stateChanges) {
+            auto const fromState = stateChanges.first;
+            auto const toState = stateChanges.second;
 
-    bool set(T newState, const std::vector<T> &oldStates) {
-        for (auto oldState: oldStates) {
-            if (set(newState, oldState)) {
-                return true;
+            T expectedState = fromState;
+            if (state.compare_exchange_strong(expectedState, toState)) {
+                LOG_DEBUG("state %i -> %i") % static_cast<int>(fromState) % static_cast<int>(toState);
+                return {fromState};
             }
         }
-        return false;
+        return {};
     }
 
-    T setAndWait(const std::vector<std::pair<T, T>> &stateChanges) {
-        while (true) {
-            for (auto const &stateChange: stateChanges) {
-                auto newState = stateChange.first;
-                auto oldState = stateChange.second;
-                if (set(newState, oldState)) {
-                    return oldState;
-                }
+    T transitionOrWait(const std::vector<std::pair<T, T>> &stateChanges) {
+        for (uint64_t retry = 0; ; retry++) {
+            auto const result = transition(stateChanges);
+            if (result) {
+                return result.value();
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            if (retry < 5) {
+                // Spin.
+            } else if (retry < 50) {
+                std::this_thread::yield();
+            } else {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
         }
     }
 
-    T setAndWait(T newState, const std::vector<T> &oldStates) {
-        while (true) {
-            for (auto oldState: oldStates) {
-                if (set(newState, oldState)) {
-                    return oldState;
-                }
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    T setAndWait(T newState, const T &oldState) {
-        while (true) {
-            if (set(newState, oldState)) {
-                return oldState;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-    }
-
-    void setOrExcept(T newState, const std::vector<T> &oldStates) {
-        if (!set(newState, oldStates)) {
+    T transitionOrExcept(const std::vector<std::pair<T, T>> &stateChanges) {
+        auto const result = transition(stateChanges);
+        if (!result) {
             BOOST_THROW_EXCEPTION(Error());
         }
-    }
-
-    void setOrExcept(T newState, const T &oldState) {
-        if (!set(newState, oldState)) {
-            BOOST_THROW_EXCEPTION(Error());
-        }
+        return result;
     }
 };
+
+template <typename T>
+struct scoped_state_stransition {
+    using state_change = std::pair<T::value_type, T::value_type>;
+    using state_changes = std::vector<state_change>;
+
+    T *state;
+
+    state_changes inputStateChanges;
+    state_changes exitStateState;
+
+    scoped_state_stransition() = delete;
+    virtual ~atomic_state() = default;
+    scoped_state_stransition(const scoped_state_stransition &) = delete;
+    scoped_state_stransition &operator=(const scoped_state_stransition &) = delete;
+    scoped_state_stransition(scoped_state_stransition &&) = delete;
+    scoped_state_stransition &operator=(scoped_state_stransition &&) = delete;
+
+    static const state_chages createExitStateChanges(const state_chages &inputStateChanges, T::value_type exitState)
+    {
+        return transform<state_changes>(inputStateChanges, [&exitState](const state_change &x) { return {x.second, exitState}; }
+    }
+
+    scoped_state_stransition(T &state, const state_chages &inputStateChanges, const state_chages &exitStateChanges = {}) :
+        state(&state),
+        inputStateChanges(exitStateChanges.size() > 0 ? {} : inputStateChanges),
+        exitStateState(exitStateState)
+    {
+
+    }
+
+    scoped_state_stransition(T &state, const state_changes &intputStateChanges, T::value_type exitState) :
+        scoped_state_stransition(state, inputStateChanges, scoped_state_stransition::createExitStateChanges(inputStateChanges, exitState)) {}
+
+}
+
+
 
 }
