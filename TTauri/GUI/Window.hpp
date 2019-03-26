@@ -32,16 +32,20 @@ class View;
 class Window : public std::enable_shared_from_this<Window> {
 public:
     enum class State {
-        NO_DEVICE, //!< Can transition to: SETTING_DEVICE
-        REQUEST_SET_DEVICE, //!<
-        ACCEPTED_SET_DEVICE,
-        SETTING_DEVICE, //!< Can transition to: NO_DEVICE, READY_TO_DRAW, MINIMIZED
-        SWAPCHAIN_OUT_OF_DATE, //!< Can transition to: REBUILDING_SWAPCHAIN
-        REBUILDING_SWAPCHAIN, //!< Can transition to: READY_TO_DRAW, MINIMIZED
-        READY_TO_DRAW, //!< Can transition to: SETTING_DEVICE
-        WAITING_FOR_VSYNC, //!< Can transition to: SETTING_DEVICE, SWAPCHAIN_OUT_OF_DATE, READY_TO_DRAW, 
-        DRAWING, //!< Can transition to: READY_TO_DRAW, SWAPCHAIN_OUT_OF_DATE
-        MINIMIZED //!< Can transition to: REBUILDING_SWAPCHAIN
+        NO_DEVICE, //!< state. No device is associated with the Window and can therefor not be rendered on.
+        MINIMIZED, //!< state. The window is minimized, the current swapchain is still out-of-date and can not be rendered on.
+        SWAPCHAIN_OUT_OF_DATE, //!< state. The window was resized, the swapchain needs to be rebuild and can not be rendered on.
+        READY_TO_DRAW, //!< state. The swapchain is ready drawing is allowed.
+        SURFACE_LOST, //!< state. The window was destroyed, everything needs to be destroyed.
+        DEVICE_LOST, //!< state. The device was last, but the window could move to a new device, or the device can be recreated.
+
+        REQUEST_SET_DEVICE, //!< thread-synchronization(during:WAITING_FOR_VSYNC)
+        ACCEPTED_SET_DEVICE, //!< thread-synchronization
+
+        SETTING_DEVICE, //!< mutex. tearing down the old device, building up the new device.
+        REBUILDING_SWAPCHAIN, //!< mutex. swapchain is rebuild after window was resized.
+        RENDERING, //!< mutex. The render thread is currently rendering on the window. No other threads should interrupt.
+        WAITING_FOR_VSYNC, //!< mutex. The render thread is currently acquiring a new image and blocking on vertical-sync.
     };
 
     enum class SizeState {
@@ -129,8 +133,9 @@ public:
      * \param outTimestamp Number of nanoseconds since system start.
      * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      * \param blockOnVSync May block on VSync.
+     * \return true if this function has blocked on vertical-sync.
      */
-    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
+    bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     /*! Maintanance
      * Maintain the window on a low performance thread.
@@ -147,8 +152,10 @@ protected:
     virtual void setWindowSize(uint32_t width, uint32_t height);
 
     /*! Render views.
+     * \param should this window block on vertical-sync.
+     * \returns true if this function has blocked on vertical-sync.
      */
-    virtual void render(bool blockOnVSync) = 0;
+    virtual bool render(bool blockOnVSync) = 0;
 
 private:
     bool isOnScreen();

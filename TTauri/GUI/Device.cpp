@@ -65,17 +65,21 @@ void Device::remove(std::shared_ptr<Window> window)
     windows.erase(window);
 }
 
-void Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
+bool Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
+    auto hasBlockedOnVSync = false;
+
     if (mutex.try_lock()) {
         if (state == State::READY_TO_DRAW) {
+
             for (auto window : windows) {
-                window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
-                blockOnVSync = false;
+                hasBlockedOnVSync |= window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync && !hasBlockedOnVSync);
             }
         }
         mutex.unlock();
     }
+
+    return hasBlockedOnVSync;
 }
 
 void Device::maintance()

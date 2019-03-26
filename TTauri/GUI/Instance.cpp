@@ -89,13 +89,15 @@ void Instance::add(shared_ptr<Window> window)
     device->add(window);
 }
 
-void Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
+bool Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
     std::scoped_lock lock(mutex);
 
+    auto hasBlockedOnVSync = false;
     for (auto device : devices) {
-        device->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
+        hasBlockedOnVSync |= device->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync && !hasBlockedOnVSync);
     }
+    return hasBlockedOnVSync;
 }
 
 void Instance::maintenance()

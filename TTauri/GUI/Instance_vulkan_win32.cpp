@@ -38,7 +38,12 @@ void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> 
 void Instance_vulkan_win32::updateAndRenderLoop(gsl::not_null<Instance_vulkan_win32 *> self)
 {
     while (!self->stopUpdateAndRender) {
-        self->updateAndRender(0, 0, true);
+        auto const hasBlockedOnVSync = self->updateAndRender(0, 0, true);
+
+        if (!hasBlockedOnVSync) {
+            // Wait for 1/60th of a second.
+            std::this_thread::sleep_for(16ms);
+        }
     }
 }
 

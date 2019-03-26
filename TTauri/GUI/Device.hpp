@@ -76,10 +76,11 @@ public:
 
     /*! Refresh Display.
      *
-     * \outTimestamp Number of nanoseconds since system start.
-     * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     * \param outTimestamp Number of nanoseconds since system start.
+     * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     * \return true if this function has blocked on vertical-sync.
      */
-    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
+    bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     /*! Maintanance work on low performance thread.
      */

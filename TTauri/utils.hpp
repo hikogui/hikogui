@@ -92,9 +92,7 @@ inline T transform(const U &input, const std::function<typename T::value_type(co
 
 template<typename T>
 struct atomic_state {
-    using value_type = T;
-
-    struct Error : virtual boost::exception, virtual std::exception {};
+    struct error : virtual boost::exception, virtual std::exception {};
 
     std::atomic<T> state;
 
@@ -113,23 +111,23 @@ struct atomic_state {
      * \param stateChanges a list of from->to states (in that order).
      * \return Return the original state, or empty when the state could not be changes.
      */
-    std::optional<T> transition(const std::vector<std::pair<T, T>> &stateChanges) {
-        for (auto const &stateChange: stateChanges) {
-            auto const fromState = stateChanges.first;
-            auto const toState = stateChanges.second;
+    std::optional<T> try_transition(const std::vector<std::pair<T, T>> &transitions) {
+        for (auto const &transition: transitions) {
+            auto const from_state = transition.first;
+            auto const to_state = transition.second;
 
-            T expectedState = fromState;
-            if (state.compare_exchange_strong(expectedState, toState)) {
-                LOG_DEBUG("state %i -> %i") % static_cast<int>(fromState) % static_cast<int>(toState);
-                return {fromState};
+            auto expected_state = from_state;
+            if (state.compare_exchange_strong(expected_state, to_state)) {
+                LOG_DEBUG("state %i -> %i") % static_cast<int>(from_state) % static_cast<int>(to_state);
+                return {from_state};
             }
         }
         return {};
     }
 
-    T transitionOrWait(const std::vector<std::pair<T, T>> &stateChanges) {
+    T transition(const std::vector<std::pair<T, T>> &transitions) {
         for (uint64_t retry = 0; ; retry++) {
-            auto const result = transition(stateChanges);
+            auto const result = try_transition(transitions);
             if (result) {
                 return result.value();
             }
@@ -138,56 +136,23 @@ struct atomic_state {
                 // Spin.
             } else if (retry < 50) {
                 std::this_thread::yield();
+            } else if (retry == 50) {
+                LOG_DEBUG("atomic_state transition starved.");
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
     }
 
-    T transitionOrExcept(const std::vector<std::pair<T, T>> &stateChanges) {
-        auto const result = transition(stateChanges);
+    T transition_or_throw(const std::vector<std::pair<T, T>> &transitions) {
+        auto const result = try_transition(transitions);
         if (!result) {
-            BOOST_THROW_EXCEPTION(Error());
+            BOOST_THROW_EXCEPTION(error());
         }
-        return result;
+        return result.value();
     }
 };
-
-template <typename T>
-struct scoped_state_stransition {
-    using state_change = std::pair<T::value_type, T::value_type>;
-    using state_changes = std::vector<state_change>;
-
-    T *state;
-
-    state_changes inputStateChanges;
-    state_changes exitStateState;
-
-    scoped_state_stransition() = delete;
-    virtual ~atomic_state() = default;
-    scoped_state_stransition(const scoped_state_stransition &) = delete;
-    scoped_state_stransition &operator=(const scoped_state_stransition &) = delete;
-    scoped_state_stransition(scoped_state_stransition &&) = delete;
-    scoped_state_stransition &operator=(scoped_state_stransition &&) = delete;
-
-    static const state_chages createExitStateChanges(const state_chages &inputStateChanges, T::value_type exitState)
-    {
-        return transform<state_changes>(inputStateChanges, [&exitState](const state_change &x) { return {x.second, exitState}; }
-    }
-
-    scoped_state_stransition(T &state, const state_chages &inputStateChanges, const state_chages &exitStateChanges = {}) :
-        state(&state),
-        inputStateChanges(exitStateChanges.size() > 0 ? {} : inputStateChanges),
-        exitStateState(exitStateState)
-    {
-
-    }
-
-    scoped_state_stransition(T &state, const state_changes &intputStateChanges, T::value_type exitState) :
-        scoped_state_stransition(state, inputStateChanges, scoped_state_stransition::createExitStateChanges(inputStateChanges, exitState)) {}
-
-}
-
 
 
 }

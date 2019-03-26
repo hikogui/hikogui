@@ -35,30 +35,36 @@ void Window::initialize()
     delegate->creatingWindow(shared_from_this());
 }
 
-void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
+bool Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
-    render(blockOnVSync);
+    return render(blockOnVSync);
 }
 
 void Window::maintenance()
 {
     LOG_DEBUG("maintenance");
-    if (state.set(State::REBUILDING_SWAPCHAIN, {State::SWAPCHAIN_OUT_OF_DATE, State::MINIMIZED})) {
+    if (state.try_transition({{State::SWAPCHAIN_OUT_OF_DATE, State::REBUILDING_SWAPCHAIN}, {State::MINIMIZED, State::REBUILDING_SWAPCHAIN}})) {
         auto const newState = rebuildForSwapchainChange();
 
-        state.setOrExcept(newState, State::REBUILDING_SWAPCHAIN);
+        state.transition_or_throw({{State::REBUILDING_SWAPCHAIN, newState}});
     }
 }
 
 void Window::setDevice(const std::shared_ptr<Device> &device)
 {
-    state.setAndWait({
-        {State::SETTING_DEVICE, State::READY_TO_DRAW},
-        {State::SETTING_DEVICE, State::NO_DEVICE},
-        {State::REQUEST_SET_DEVICE, State::WAITING_FOR_VSYNC},
+    state.transition({
+        {State::READY_TO_DRAW, State::SETTING_DEVICE},
+        {State::NO_DEVICE, State::SETTING_DEVICE},
+        {State::MINIMIZED, State::SETTING_DEVICE},
+        {State::SWAPCHAIN_OUT_OF_DATE, State::SETTING_DEVICE},
+
+        {State::WAITING_FOR_VSYNC, State::REQUEST_SET_DEVICE}
     });
 
-    state.setAndWait(State::SETTING_DEVICE, {State::SETTING_DEVICE, State::READY_TO_DRAW, State::NO_DEVICE, State::ACCEPTED_SET_DEVICE});
+    state.transition({
+        {State::SETTING_DEVICE, State::SETTING_DEVICE},
+        {State::ACCEPTED_SET_DEVICE, State::SETTING_DEVICE}
+    });
 
     auto const oldDevice = this->device.lock();
 
@@ -70,9 +76,10 @@ void Window::setDevice(const std::shared_ptr<Device> &device)
     if (device) {
         this->device = device;
         auto const newState = buildForDeviceChange();
-        state.setOrExcept(newState, State::SETTING_DEVICE);
+        state.transition_or_throw({{State::SETTING_DEVICE, newState}});
+
     } else {
-        state.setOrExcept(State::NO_DEVICE, State::SETTING_DEVICE);
+        state.transition_or_throw({{State::SETTING_DEVICE, State::NO_DEVICE}});
     }   
 }
 

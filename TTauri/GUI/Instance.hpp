@@ -60,10 +60,11 @@ public:
 
     /*! Refresh Display.
      *
-     * \outTimestamp Number of nanoseconds since system start.
-     * \outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     * \param outTimestamp Number of nanoseconds since system start.
+     * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
+     * \return true if function has blocked on vertical-sync.
      */
-    virtual void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
+    virtual bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     static std::shared_ptr<Instance> singleton;
 
