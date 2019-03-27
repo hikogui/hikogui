@@ -21,6 +21,11 @@ public:
     Window_vulkan_win32(Window_vulkan_win32 &&) = delete;
     Window_vulkan_win32 &operator=(Window_vulkan_win32 &&) = delete;
 
+    void closingWindow() override;
+    void mainThreadClosingWindow();
+    void openingWindow() override;
+    void mainThreadOpeningWindow();
+
     vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

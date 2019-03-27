@@ -34,7 +34,7 @@ vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore 
     }
 
     if (tmpNumberOfVertices != numberOfVertices) {
-        invalidateCommandBuffers();
+        invalidateCommandBuffers(false);
     }
     numberOfVertices = tmpNumberOfVertices;
 

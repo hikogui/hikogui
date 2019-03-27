@@ -48,6 +48,10 @@ public:
 
     virtual void add(std::shared_ptr<Window> window);
 
+    /*! Count the number of windows managed by the GUI.
+     */
+    size_t getNumberOfWindows();
+
     /*! Open a new window.
      *
      * \param windowDelegate window delegate to use to manage the window.

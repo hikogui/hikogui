@@ -33,8 +33,10 @@ public:
 
     /*! Invalidate all command buffers.
      * This is used when the command buffer needs to be recreated due to changes in views.
+     *
+     * \param reset Also reset the command buffer to release resources associated with them.
      */
-    void invalidateCommandBuffers();
+    void invalidateCommandBuffers(bool reset);
 
     /*! Validate/create a command buffer.
      *

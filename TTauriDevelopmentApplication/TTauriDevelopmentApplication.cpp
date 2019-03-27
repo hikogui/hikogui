@@ -21,7 +21,7 @@ using namespace TTauri;
 
 class MyWindowDelegate : public GUI::Window::Delegate {
 public:
-    void creatingWindow(const std::shared_ptr<GUI::Window> &window) override
+    void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
         auto view1 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "lena.png");
         view1->setRectangle({ 100.0, 100.0, 1.0 }, { 200.0, 100.0, 0.0 });
@@ -32,7 +32,7 @@ public:
         window->view->add(view2);
     }
 
-    void destroyingWindow(const std::shared_ptr<GUI::Window> &window) override
+    void closingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
         LOG_INFO("Window being destroyed.");
     }
@@ -44,7 +44,12 @@ public:
     {
         auto myWindowDelegate = TTauri::make_shared<MyWindowDelegate>();
 
-        get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World");
+        get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 1");
+        get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 2");
+    }
+
+    void lastWindowClosed() override
+    {
     }
 };
 

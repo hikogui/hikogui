@@ -87,6 +87,15 @@ Device_vulkan::~Device_vulkan()
     }
 }
 
+bool Device_vulkan::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
+{
+    if (state == State::READY_TO_DRAW) {
+        // Vulkan requires periodic waitIdle() calls to clean up internal resources.
+        intrinsic.waitIdle();
+    }
+    return Device::updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync);
+}
+
 void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
 {
     const float defaultQueuePriority = 1.0;

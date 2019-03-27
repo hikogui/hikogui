@@ -101,7 +101,7 @@ void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
     });
 
     commandBuffersValid.resize(nrFrameBuffers);
-    invalidateCommandBuffers();
+    invalidateCommandBuffers(false);
 }
 
 void Pipeline_vulkan::teardownCommandBuffers()
@@ -201,6 +201,7 @@ void Pipeline_vulkan::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent
 
 void Pipeline_vulkan::teardownForDeviceChange()
 {
+    invalidateCommandBuffers(true);
     teardownPipeline();
     teardownSemaphores();
     teardownCommandBuffers();
@@ -219,19 +220,23 @@ void Pipeline_vulkan::buildForSwapchainChange(vk::RenderPass renderPass, vk::Ext
         buildCommandBuffers(nrFrameBuffers);
         buildSemaphores(nrFrameBuffers);
     }
-    invalidateCommandBuffers();
     buildPipeline(renderPass, extent);
 }
 
 void Pipeline_vulkan::teardownForSwapchainChange()
 {
+    invalidateCommandBuffers(true);
     teardownPipeline();
 }
 
-void Pipeline_vulkan::invalidateCommandBuffers()
+void Pipeline_vulkan::invalidateCommandBuffers(bool reset)
 {
     for (size_t imageIndex = 0; imageIndex < commandBuffersValid.size(); imageIndex++) {
         commandBuffersValid.at(imageIndex) = false;
+        if (reset) {
+            auto commandBuffer = commandBuffers.at(imageIndex);
+            commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+        }
     }
 }
 

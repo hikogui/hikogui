@@ -29,4 +29,9 @@ void Application::startingLoop()
     }
 }
 
+void Application::lastWindowClosed()
+{
+    delegate->lastWindowClosed();
+}
+
 }

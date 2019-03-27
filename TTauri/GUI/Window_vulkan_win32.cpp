@@ -101,6 +101,30 @@ Window_vulkan_win32::~Window_vulkan_win32()
     }
 }
 
+void Window_vulkan_win32::closingWindow()
+{
+    auto app = get_singleton<Application_win32>();
+
+    PostThreadMessageW(app->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+}
+
+void Window_vulkan_win32::mainThreadClosingWindow()
+{
+    Window_vulkan::closingWindow();
+}
+
+void Window_vulkan_win32::openingWindow()
+{
+    auto app = get_singleton<Application_win32>();
+
+    PostThreadMessageW(app->mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+}
+
+void Window_vulkan_win32::mainThreadOpeningWindow()
+{
+    Window_vulkan::openingWindow();
+}
+
 
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

@@ -53,7 +53,7 @@ void Device::add(std::shared_ptr<Window> window)
 
     std::scoped_lock lock(mutex);
 
-    windows.insert(window);
+    windows.push_back(window);
     window->setDevice(shared_from_this());
 }
 
@@ -62,21 +62,23 @@ void Device::remove(std::shared_ptr<Window> window)
     std::scoped_lock lock(mutex);
 
     window->setDevice(nullptr);
-    windows.erase(window);
+    windows.erase(find(windows.begin(), windows.end(), window));
 }
 
 bool Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
 {
+    vector<shared_ptr<Window>> tmpWindows;
+    {
+        auto lock = scoped_lock(mutex);
+        tmpWindows = windows;
+    }
+
     auto hasBlockedOnVSync = false;
 
-    if (mutex.try_lock()) {
-        if (state == State::READY_TO_DRAW) {
-
-            for (auto window : windows) {
-                hasBlockedOnVSync |= window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync && !hasBlockedOnVSync);
-            }
+    if (state == State::READY_TO_DRAW) {
+        for (auto window : tmpWindows) {
+            hasBlockedOnVSync |= window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync && !hasBlockedOnVSync);
         }
-        mutex.unlock();
     }
 
     return hasBlockedOnVSync;
@@ -84,24 +86,28 @@ bool Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
 
 std::vector<std::shared_ptr<Window>> Device::maintance()
 {
-    auto tmpWindows = windows;
+    vector<shared_ptr<Window>> tmpWindows;
     vector<shared_ptr<Window>> orphanWindows;
+
+    {
+        auto lock = scoped_lock(mutex);
+        tmpWindows = windows;
+    }
 
     for (auto window : tmpWindows) {
         if (window->hasLostSurface()) {
             // Window must be destroyed.
-            window->setDevice(nullptr);
-            window->destroyingWindow();
-            windows.erase(window);
+            window->closingWindow();
+            remove(window);
 
         } else if (window->hasLostDevice()) {
             // Window must be passed to the Instance, for reinsertion on a new device.
-            window->setDevice(nullptr);
-            windows.erase(window);
+            remove(window);
             orphanWindows.push_back(window);
 
         } else {
             window->maintenance();
+
         }
     }
 

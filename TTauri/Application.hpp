@@ -40,6 +40,10 @@ public:
         /*! Called right before the application loop is started.
          */
         virtual void startingLoop() = 0;
+
+        /*! Called right after the last window is closed
+         */
+        virtual void lastWindowClosed() = 0;
     };
 
     struct Error : virtual boost::exception, virtual std::exception {};
@@ -78,6 +82,10 @@ public:
      * Must be called after initialize().
      */
     virtual int loop() = 0;
+
+    /*! Called by the GUI when the last window was closed.
+    */
+    virtual void lastWindowClosed();
 
     /*! The shared application / singleton.
      */

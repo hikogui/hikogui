@@ -34,9 +34,109 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::waitIdle()
 {
-    lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
+bool Window_vulkan::render(bool blockOnVSync)
+{
+    //LOG_DEBUG("render '%s' state=%i") % title % static_cast<int>(state.value());
+
+    auto oldState = state.try_transition({
+        {State::REQUEST_SET_DEVICE, State::ACCEPTED_SET_DEVICE},
+        {State::READY_TO_DRAW, State::WAITING_FOR_VSYNC}
+        });
+
+    if (!oldState || oldState.value() == State::REQUEST_SET_DEVICE) {
+        return false;
+    }
+
+    auto const timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
+
+    if (!acquiredImageIndex) {
+        // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
+        uint32_t imageIndex = 0;
+        //LOG_DEBUG("acquireNextImage '%s'") % title;
+        auto const result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+        //LOG_DEBUG("/acquireNextImage '%s'") % title;
+
+        switch (result) {
+        case vk::Result::eSuccess:
+            state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}}); // May not be in WAITING_FOR_SYNC anymore.
+            acquiredImageIndex = imageIndex;
+            break;
+
+        case vk::Result::eSuboptimalKHR:
+            LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
+            state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
+            return false;
+
+        case vk::Result::eErrorOutOfDateKHR:
+            LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
+            state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
+            return false;
+
+        case vk::Result::eTimeout:
+            // Don't render, we didn't receive an image.
+            LOG_INFO("acquireNextImageKHR() eTimeout");
+            state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}});
+            return false;
+
+        default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
+        }
+    }
+
+    if (!state.try_transition({{State::READY_TO_DRAW, State::RENDERING}})) {
+        return blockOnVSync;
+    }
+
+    // Wait until previous drawing was finished. XXX maybe use one for each swapchain image.
+    vulkanDevice->intrinsic.waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+
+    // Make a fence that should be signaled when all drawing is finished.
+    vulkanDevice->intrinsic.resetFences({ renderFinishedFence });
+    vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
+
+    auto const renderFinishedSemaphore = backingPipeline->render(acquiredImageIndex.value(), imageAvailableSemaphore);
+
+    {
+        vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };
+        vector<vk::SwapchainKHR> const presentSwapchains = { swapchain };
+        vector<uint32_t> const presentImageIndices = { acquiredImageIndex.value() };
+        BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
+
+        // We tried our best to return the acquired image.
+        acquiredImageIndex.reset();
+
+        try {
+            auto const result = vulkanDevice->presentQueue.presentKHR({
+                boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
+                boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
+                });
+
+            switch (result) {
+            case vk::Result::eSuccess:
+                state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
+                return blockOnVSync;
+
+            case vk::Result::eSuboptimalKHR:
+                LOG_INFO("presentKHR() eSuboptimalKHR");
+                state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
+                return blockOnVSync;
+
+            default:
+                LOG_ERROR("presentKHR() unknown result value");
+                state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
+                return blockOnVSync;
+            }
+
+        } catch (const vk::OutOfDateKHRError &e) {
+            LOG_INFO("presentKHR() eErrorOutOfDateKHR");
+            state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
+            return blockOnVSync;
+        }
+    }
+}
 std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImageCountExtentAndState()
 {
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
@@ -335,101 +435,6 @@ void Window_vulkan::teardownSemaphores()
     vulkanDevice->intrinsic.destroy(renderFinishedFence);
 }
 
-bool Window_vulkan::render(bool blockOnVSync)
-{
-    auto oldState = state.try_transition({
-        {State::REQUEST_SET_DEVICE, State::ACCEPTED_SET_DEVICE},
-        {State::READY_TO_DRAW, State::WAITING_FOR_VSYNC}
-    });
 
-    if (!oldState || oldState.value() == State::REQUEST_SET_DEVICE) {
-        return false;
-    }
-
-    auto const timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
-    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
-
-    if (!acquiredImageIndex) {
-        // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
-        LOG_DEBUG("acquireNextImage()");
-        uint32_t imageIndex = 0;
-        auto const result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
-        switch (result) {
-        case vk::Result::eSuccess:
-            state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}}); // May not be in WAITING_FOR_SYNC anymore.
-            acquiredImageIndex = imageIndex;
-            break;
-
-        case vk::Result::eSuboptimalKHR:
-            LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
-            state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
-            return false;
-
-        case vk::Result::eErrorOutOfDateKHR:
-            LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
-            state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
-            return false;
-
-        case vk::Result::eTimeout:
-            // Don't render, we didn't receive an image.
-            LOG_INFO("acquireNextImageKHR() eTimeout");
-            state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}});
-            return false;
-
-        default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
-        }
-    }
-
-    if (!state.try_transition({{State::READY_TO_DRAW, State::RENDERING}})) {
-        return blockOnVSync;
-    }
-
-    // Make a fence that should be signaled when all drawing is finished.
-    vulkanDevice->intrinsic.waitIdle();
-    // device->intrinsic.waitForFences(1, &renderFinishedFence, VK_TRUE, std::numeric_limits<uint64_t>::max());
-
-    vulkanDevice->intrinsic.resetFences({ renderFinishedFence });
-    vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
-
-    auto const renderFinishedSemaphore = backingPipeline->render(acquiredImageIndex.value(), imageAvailableSemaphore);
-
-    {
-        vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };
-        vector<vk::SwapchainKHR> const presentSwapchains = { swapchain };
-        vector<uint32_t> const presentImageIndices = { acquiredImageIndex.value() };
-        BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
-
-        // We tried our best to return the acquired image.
-        acquiredImageIndex.reset();
-
-        try {
-            auto const result = vulkanDevice->presentQueue.presentKHR({
-                boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
-                boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
-            });
-
-            switch (result) {
-            case vk::Result::eSuccess:
-                state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
-                return blockOnVSync;
-
-            case vk::Result::eSuboptimalKHR:
-                LOG_INFO("presentKHR() eSuboptimalKHR");
-                state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
-                return blockOnVSync;
-
-            default:
-                LOG_ERROR("presentKHR() unknown result value");
-                state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
-                return blockOnVSync;
-            }
-            
-        } catch (const vk::OutOfDateKHRError &e) {
-            LOG_INFO("presentKHR() eErrorOutOfDateKHR");
-            state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
-            return blockOnVSync;
-        }
-    }
-}
 
 }}

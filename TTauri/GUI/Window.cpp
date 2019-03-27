@@ -47,7 +47,7 @@ void Window::initialize()
 {
     view = TTauri::make_shared<WindowView>(shared_from_this());
     backingPipeline = TTauri::make_shared<BackingPipeline_vulkan>(shared_from_this());
-    delegate->creatingWindow(shared_from_this());
+    openingWindow();
 }
 
 bool Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
@@ -57,7 +57,6 @@ bool Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bo
 
 void Window::maintenance()
 {
-    LOG_DEBUG("maintenance");
     if (state.try_transition({{State::SWAPCHAIN_OUT_OF_DATE, State::REBUILDING_SWAPCHAIN}, {State::MINIMIZED, State::REBUILDING_SWAPCHAIN}})) {
         auto const newState = rebuildForSwapchainChange();
 

@@ -43,7 +43,7 @@ public:
 
     /*! A list of windows managed by this device.
      */
-    std::unordered_set<std::shared_ptr<Window>> windows;
+    std::vector<std::shared_ptr<Window>> windows;
 
     std::string str() const;
 
@@ -80,7 +80,7 @@ public:
      * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      * \return true if this function has blocked on vertical-sync.
      */
-    bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
+    virtual bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     /*! Maintanance work on low performance thread.
      * \return Windows that got orphaned due to device dying.

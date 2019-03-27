@@ -116,6 +116,10 @@ struct atomic_state {
         return state.load() != other_state;
     }
 
+    T value() {
+        return state.load();
+    }
+
     /*! Transition between states.
      * \param stateChanges a list of from->to states (in that order).
      * \return Return the original state, or empty when the state could not be changes.
@@ -127,7 +131,7 @@ struct atomic_state {
 
             auto expected_state = from_state;
             if (state.compare_exchange_strong(expected_state, to_state)) {
-                LOG_DEBUG("state %i -> %i") % static_cast<int>(from_state) % static_cast<int>(to_state);
+                //LOG_DEBUG("state %i -> %i") % static_cast<int>(from_state) % static_cast<int>(to_state);
                 return {from_state};
             }
         }
@@ -146,7 +150,7 @@ struct atomic_state {
             } else if (retry < 50) {
                 std::this_thread::yield();
             } else if (retry == 50) {
-                LOG_DEBUG("atomic_state transition starved.");
+                LOG_WARNING("atomic_state transition starved.");
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
             } else {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
