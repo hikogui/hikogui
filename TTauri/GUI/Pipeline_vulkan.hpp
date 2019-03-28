@@ -100,7 +100,6 @@ protected:
     virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo() const;
     virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates() const;
     virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
-    virtual size_t maximumNumberOfVertices() const = 0;
     virtual std::vector<vk::Buffer> createVertexBuffers(size_t nrBuffers, size_t bufferSize) const;
 
     virtual void buildShaders();

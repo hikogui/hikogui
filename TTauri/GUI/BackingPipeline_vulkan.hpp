@@ -88,7 +88,9 @@ protected:
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
-    size_t maximumNumberOfVertices() const override { return backingPipelineMaximumNumberOfVertices; }
+
+    size_t maximumNumberOfVertices() const override { return 65536; }
+    size_t maximumNumberOfVertexIndices() const override { return 6 * maximumNumberOfVertices(); }
 
     void buildVertexBuffers(size_t nrFrameBuffers) override;
     void teardownVertexBuffers() override;
