@@ -10,6 +10,7 @@
 
 #include "Pipeline_vulkan.hpp"
 #include "config.hpp"
+#include "geometry.hpp"
 
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
@@ -36,7 +37,7 @@ public:
 
     struct Vertex {
         //! x, y position in window coordinate. z is depth for layering.
-        glm::vec3 position;
+        u16vec3 position;
 
         //! x, y position in the atlast coordinate. z selects one of the atlas images.
         glm::vec3 atlasPosition;
@@ -54,7 +55,7 @@ public:
         static std::vector<vk::VertexInputAttributeDescription> inputAttributeDescriptions()
         {
             return {
-                { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position) },
+                { 0, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, position) },
                 { 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, atlasPosition) },
                 { 2, 0, vk::Format::eR32Sfloat, offsetof(Vertex, atlasPosition) }
             };

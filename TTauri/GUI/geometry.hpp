@@ -35,6 +35,8 @@ struct rect {
     extent<S, T, glm::defaultp> extent = {};
 };
 
+using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
+using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
 using u32rect2 = rect<2, uint32_t, glm::defaultp>;
 
 }}
