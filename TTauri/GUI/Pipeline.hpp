@@ -33,16 +33,6 @@ public:
     std::shared_ptr<T> device() const {
         return lock_dynamic_cast<T>(window.lock()->device);
     }
-
-protected:
-    /*! The size of the vertex buffer to allocate.
-     */
-    virtual size_t maximumNumberOfVertices() const = 0;
-
-    /*! The size of the vertex index buffer to allocate.
-     */
-    virtual size_t maximumNumberOfVertexIndices() const = 0;
-
 };
 
 }}

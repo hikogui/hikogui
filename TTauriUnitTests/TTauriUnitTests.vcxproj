@@ -76,19 +76,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(ProjectDir);$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

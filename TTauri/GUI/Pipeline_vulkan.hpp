@@ -57,11 +57,6 @@ protected:
     std::vector<bool> commandBuffersValid;
     std::vector<vk::Semaphore> renderFinishedSemaphores;
 
-    std::vector<vk::Buffer> vertexBuffers;
-    vk::DeviceMemory vertexBufferMemory;
-    std::vector<std::pair<size_t, size_t>> vertexBufferOffsetAndSizes;
-    bool vertexBufferNeedsFlushing = false;
-
     boost::filesystem::path vertexShaderPath;
     boost::filesystem::path fragmentShaderPath;
 
@@ -82,7 +77,7 @@ protected:
     vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
     vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
 
-    virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) = 0;
+    virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) = 0;
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
     virtual std::vector<vk::ShaderModule> createShaderModules() const = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const = 0;
@@ -100,12 +95,11 @@ protected:
     virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo() const;
     virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates() const;
     virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
-    virtual std::vector<vk::Buffer> createVertexBuffers(size_t nrBuffers, size_t bufferSize) const;
 
     virtual void buildShaders();
     virtual void teardownShaders();
-    virtual void buildVertexBuffers(size_t nrFrameBuffers);
-    virtual void teardownVertexBuffers();
+    virtual void buildVertexBuffers(size_t nrFrameBuffers) = 0;
+    virtual void teardownVertexBuffers() = 0;
     virtual void buildCommandBuffers(size_t nrFrameBuffers);
     virtual void teardownCommandBuffers();
     virtual void buildSemaphores(size_t nrFrameBuffers);

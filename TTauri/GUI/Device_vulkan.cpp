@@ -63,6 +63,8 @@ Device_vulkan::~Device_vulkan()
 {
     try {
         [[gsl::suppress(f.6)]] {
+            vmaDestroyAllocator(allocator);
+
             for (uint32_t index = 0; index < 3; index++) {
                 // Destroy one command pool for each queue index.
                 if (graphicsQueueIndex == index) {
@@ -113,6 +115,11 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
         boost::numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
         &(get_singleton<Instance_vulkan>()->requiredFeatures)
     });
+
+    VmaAllocatorCreateInfo allocatorCreateInfo = {};
+    allocatorCreateInfo.physicalDevice = physicalIntrinsic;
+    allocatorCreateInfo.device = intrinsic;
+    vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     uint32_t index = 0;
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
@@ -324,93 +331,26 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
     return totalScore;
 }
 
-bool Device_vulkan::memoryTypeNeedsFlushing(uint32_t typeIndex)
+std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo)
 {
-    auto const propertyFlags = at(memoryProperties.memoryTypes, typeIndex).propertyFlags;
+    VkBuffer buffer;
+    VmaAllocation allocation;
 
-    if ((propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible) == vk::MemoryPropertyFlags()) {
-        return false; // Non host-visible memory.
-    }
+    auto const result = static_cast<vk::Result>(vmaCreateBuffer(allocator, &(static_cast<VkBufferCreateInfo>(bufferCreateInfo)), &allocationCreateInfo, &buffer, &allocation, nullptr));
 
-    if ((propertyFlags & vk::MemoryPropertyFlagBits::eHostCached) != vk::MemoryPropertyFlags()) {
-        return true; // Cached memory needs to be flushed.
-    }
+    std::pair<vk::Buffer, VmaAllocation> const value = {buffer, allocation};
 
-    if ((propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent) == vk::MemoryPropertyFlags()) {
-        return true; // Non host-coherent memory needs to be flushed.
-    }
-    return false;
+    return vk::createResultValue(result, value, "TTauri::GUI::Device_vulkan::createBuffer");
 }
 
-uint32_t Device_vulkan::findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
+void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation)
 {
-    // Prefer non-eHostCached when requesting eHostVisible.
-    if ((properties & vk::MemoryPropertyFlagBits::eHostVisible) != vk::MemoryPropertyFlags()) {
-        for (uint32_t typeIndex = 0; typeIndex < memoryProperties.memoryTypeCount; typeIndex++) {
-            auto const propertyFlags = at(memoryProperties.memoryTypes, typeIndex).propertyFlags;
-            if (
-                (validMemoryTypeMask & (1 << typeIndex)) &&
-                ((propertyFlags & properties) == properties) &&
-                ((propertyFlags & vk::MemoryPropertyFlagBits::eHostCached) == vk::MemoryPropertyFlags())) {
-                return typeIndex;
-            }
-        }
-    }
-
-    for (uint32_t typeIndex = 0; typeIndex < memoryProperties.memoryTypeCount; typeIndex++) {
-        auto const propertyFlags = at(memoryProperties.memoryTypes, typeIndex).propertyFlags;
-
-        if ((validMemoryTypeMask & (1 << typeIndex)) && ((propertyFlags & properties) == properties)) {
-            return typeIndex;
-        }
-    }
-
-    BOOST_THROW_EXCEPTION(AllocateMemoryError());
+    vmaDestroyBuffer(allocator, buffer, allocation);
 }
 
-pair<vk::DeviceMemory, bool> Device_vulkan::allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties)
+void Device_vulkan::unmapMemory(const VmaAllocation &allocation)
 {
-    auto const memoryTypeIndex = findMemoryType(validMemoryTypeMask, properties);
-    auto const needsFlushing = memoryTypeNeedsFlushing(memoryTypeIndex);
-
-    return { intrinsic.allocateMemory({ size, memoryTypeIndex }, nullptr), needsFlushing };
-}
-
-std::tuple<vk::DeviceMemory, bool, std::vector<std::pair<size_t, size_t>>> Device_vulkan::allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
-{
-    vector<pair<size_t, size_t>> offsetAndSizes;
-
-    uint32_t memoryTypeBits = 0;
-    size_t offset = 0;
-    size_t size = 0;
-    for (auto buffer : buffers) {
-        auto const memoryRequirements = intrinsic.getBufferMemoryRequirements(buffer);
-
-        // Align next buffer on offset.
-        offset = TTauri::align(offset, memoryRequirements.alignment);
-        size = offset + memoryRequirements.size;
-
-        offsetAndSizes.push_back({ offset, memoryRequirements.size });
-
-        memoryTypeBits |= memoryRequirements.memoryTypeBits;
-    }
-    auto const memoryAndNeedsFlushing = allocateDeviceMemory(size, memoryTypeBits, properties);
-
-    return { memoryAndNeedsFlushing.first, memoryAndNeedsFlushing.second, offsetAndSizes };
-}
-
-std::tuple<vk::DeviceMemory, bool, std::vector<std::pair<size_t, size_t>>> Device_vulkan::allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties)
-{
-    auto memoryNeedsFlushingOffsetsAndSizes = allocateDeviceMemory(buffers, properties);
-    auto const memory = get<0>(memoryNeedsFlushingOffsetsAndSizes);
-    auto const offsetAndSizes = get<2>(memoryNeedsFlushingOffsetsAndSizes);
-    for (auto const &bufferAndOffset : boost::combine(buffers, offsetAndSizes)) {
-        auto const buffer = bufferAndOffset.get<0>();
-        auto const offset = bufferAndOffset.get<1>().first;
-        intrinsic.bindBufferMemory(buffer, memory, offset);
-    }
-
-    return memoryNeedsFlushingOffsetsAndSizes;
+    vmaUnmapMemory(allocator, allocation);
 }
 
 }}

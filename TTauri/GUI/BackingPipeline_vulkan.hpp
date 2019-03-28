@@ -11,6 +11,7 @@
 #include "Pipeline_vulkan.hpp"
 #include "config.hpp"
 
+#include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 
 namespace TTauri {
@@ -79,18 +80,24 @@ public:
 
 protected:
     PushConstants pushConstants;
-    std::vector<gsl::span<Vertex>> vertexBufferData;
-    size_t numberOfVertices = 0;
 
-    void drawInCommandBuffer(vk::CommandBuffer &commandBuffer) override;
+    size_t numberOfVertices = 0;
+    std::vector<vk::Buffer> vertexBuffers;
+    std::vector<VmaAllocation> vertexBuffersAllocation;
+    std::vector<gsl::span<Vertex>> vertexBuffersData;
+
+    vk::Buffer vertexIndexBuffer;
+    VmaAllocation vertexIndexBufferAllocation;
+
+    void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) override;
     std::vector<vk::ShaderModule> createShaderModules() const override;
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
-    size_t maximumNumberOfVertices() const override { return 65536; }
-    size_t maximumNumberOfVertexIndices() const override { return 6 * maximumNumberOfVertices(); }
+    size_t maximumNumberOfVertices() const { return 65536; }
+    size_t maximumNumberOfVertexIndices() const { return 6 * maximumNumberOfVertices(); }
 
     void buildVertexBuffers(size_t nrFrameBuffers) override;
     void teardownVertexBuffers() override;

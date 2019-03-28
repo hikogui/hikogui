@@ -3,6 +3,7 @@
 #include "Device.hpp"
 
 #include <vulkan/vulkan.hpp>
+#include <vma/vk_mem_alloc.h>
 
 namespace TTauri { namespace GUI {
 
@@ -16,6 +17,8 @@ public:
     vk::Device intrinsic;
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
+
+    VmaAllocator allocator;
 
     uint32_t graphicsQueueFamilyIndex = 0;
     uint32_t presentQueueFamilyIndex = 0;
@@ -72,31 +75,26 @@ public:
      */
     std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
 
-    bool memoryTypeNeedsFlushing(uint32_t typeIndex);
+    std::pair<vk::Buffer, VmaAllocation> createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo);
 
-    uint32_t findMemoryType(uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
+    void destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation);
 
-    /*! Allocate memory on the GPU.
-     * \param size number of bytes to allocate.
-     * \param validMemoryTypeMask from which memory types to allocate memory from.
-     * \param properties what kind of memory properties are needed.
-     * \return A block of device memory, and true if this memory requires flushing.
-     */
-    std::pair<vk::DeviceMemory, bool> allocateDeviceMemory(size_t size, uint32_t validMemoryTypeMask, vk::MemoryPropertyFlags properties);
+    template <typename T>
+    gsl::span<T> mapMemory(const VmaAllocation &allocation) {
+        void *mapping;
+        auto const result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
 
-    /*! Allocate memory on the GPU.
-     * \param buffers Buffers to allocate memory for.
-     * \param properties what kind of memory properties are needed.
-     * \return A block of device memory, and true if this memory requires flushing, offsets and size of each buffer.
-     */
-    std::tuple<vk::DeviceMemory, bool, std::vector<std::pair<size_t, size_t>>> allocateDeviceMemory(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+        VmaAllocationInfo allocationInfo;
+        vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
-    /*! Allocate memory on the GPU and bind to buffers.
-     * \param buffers Buffers to allocate and bind memory for.
-     * \param properties what kind of memory properties are needed.
-     * \return A block of device memory, and true if this memory requires flushing, offsets and size of each buffer.
-     */
-    std::tuple<vk::DeviceMemory, bool, std::vector<std::pair<size_t, size_t>>> allocateDeviceMemoryAndBind(std::vector<vk::Buffer> buffers, vk::MemoryPropertyFlags properties);
+        T *mappingT = reinterpret_cast<T *>(mapping);
+        auto const mappingSpan = gsl::span<T>(mappingT, allocationInfo.size / sizeof (T));
+
+        return vk::createResultValue(result, mappingSpan, "TTauri::GUI::Device_vulkan::mapMemory");
+    }
+
+    void unmapMemory(const VmaAllocation &allocation);
+
 };
 
 }}

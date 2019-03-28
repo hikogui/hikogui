@@ -26,12 +26,9 @@ BackingPipeline_vulkan::BackingPipeline_vulkan(const std::shared_ptr<Window> &wi
 
 vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const tmpNumberOfVertices = window.lock()->view->backingPipelineRender(vertexBufferData.at(imageIndex), 0);
+    auto const tmpNumberOfVertices = window.lock()->view->backingPipelineRender(vertexBuffersData.at(imageIndex), 0);
 
-    if (vertexBufferNeedsFlushing) {
-        auto const vertexDataOffsetAndSize = vertexBufferOffsetAndSizes.at(imageIndex);
-        device<Device_vulkan>()->intrinsic.flushMappedMemoryRanges({ { vertexBufferMemory, vertexDataOffsetAndSize.first, tmpNumberOfVertices * sizeof (Vertex) } });
-    }
+    vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, VK_WHOLE_SIZE);
 
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers(false);
@@ -41,8 +38,14 @@ vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore 
     return Pipeline_vulkan::render(imageIndex, inputSemaphore);
 }
 
-void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
+void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex)
 {
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(imageIndex) };
+    std::vector<vk::DeviceSize> tmpOffsets = { 0 };
+    BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
+
+    commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
+
     pushConstants.windowExtent = { scissors.at(0).extent.width , scissors.at(0).extent.height };
     pushConstants.viewportScale = { 2.0 / scissors.at(0).extent.width, 2.0 / scissors.at(0).extent.height };
     commandBuffer.pushConstants(
@@ -95,36 +98,104 @@ std::vector<vk::VertexInputAttributeDescription> BackingPipeline_vulkan::createV
 
 void BackingPipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
 {
-    Pipeline_vulkan::buildVertexBuffers(nrFrameBuffers);
-
     auto vulkanDevice = device<Device_vulkan>();
 
-    auto const lastOffsetAndSize = vertexBufferOffsetAndSizes.back();
-    auto const mappingSize = lastOffsetAndSize.first + lastOffsetAndSize.second;
-    auto const mappingPointer = vulkanDevice->intrinsic.mapMemory(vertexBufferMemory, 0, mappingSize, vk::MemoryMapFlags());
+    // Create vertex index buffer
+    {
+        vk::BufferCreateInfo bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (uint16_t) * maximumNumberOfVertexIndices(),
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        tie(vertexIndexBuffer, vertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    }
 
-    vertexBufferData = TTauri::transform<vector<span<Vertex>>>(vertexBufferOffsetAndSizes, [&mappingPointer](const pair<size_t, size_t> &offsetAndSize) -> span<Vertex> {
-        [[gsl::suppress(type.1)]] {
-            auto const offset = offsetAndSize.first;
-            auto const size = offsetAndSize.second;
+    // Fill in the vertex index buffer, using a staging buffer, then copying.
+    {
+        // Create staging vertex index buffer.
+        vk::BufferCreateInfo bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (uint16_t) * maximumNumberOfVertexIndices(),
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+        vk::Buffer stagingVertexIndexBuffer;
+        VmaAllocation stagingVertexIndexBufferAllocation;
+        tie(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
 
-            return {
-                reinterpret_cast<Vertex *>(reinterpret_cast<uintptr_t>(mappingPointer) + offset),
-                boost::numeric_cast<uint32_t>(size / sizeof(Vertex))
-            };
+        // Initialize indices.
+        auto stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
+        for (size_t i = 0; i < 65536; i++) {
+            gsl::at(stagingVertexIndexBufferData, i) = i;
         }
-    });
+        vmaFlushAllocation(vulkanDevice->allocator, stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
+        vulkanDevice->unmapMemory(stagingVertexIndexBufferAllocation);
+
+        // Copy indices to vertex index buffer.
+        auto commands = vulkanDevice->intrinsic.allocateCommandBuffers({
+            vulkanDevice->graphicsCommandPool, 
+            vk::CommandBufferLevel::ePrimary, 
+            1
+        }).at(0);
+        commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+        commands.copyBuffer(stagingVertexIndexBuffer, vertexIndexBuffer, {{0, 0, sizeof (uint16_t) * maximumNumberOfVertexIndices()}});
+        commands.end();
+
+        vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
+        vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
+        vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
+        vulkanDevice->graphicsQueue.waitIdle();
+
+        vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, {commands});
+        vulkanDevice->destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
+    }
+
+    BOOST_ASSERT(vertexBuffers.size() == 0);
+    BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
+    BOOST_ASSERT(vertexBuffersData.size() == 0);
+    for (size_t i = 0; i < nrFrameBuffers; i++) {
+        vk::BufferCreateInfo const bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (uint16_t) * maximumNumberOfVertexIndices(),
+            vk::BufferUsageFlagBits::eVertexBuffer,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+        vk::Buffer vertexBuffer;
+        VmaAllocation vertexBufferAllocation;
+        tie(vertexBuffer, vertexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        auto const vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
+
+        vertexBuffers.push_back(vertexBuffer);
+        vertexBuffersAllocation.push_back(vertexBufferAllocation);
+        vertexBuffersData.push_back(vertexBufferData);
+    }
 }
 
 void BackingPipeline_vulkan::teardownVertexBuffers()
 {
     auto vulkanDevice = device<Device_vulkan>();
 
-    vulkanDevice->intrinsic.unmapMemory(vertexBufferMemory);
+    BOOST_ASSERT(vertexBuffers.size() == vertexBuffersAllocation.size());
+    for (size_t i = 0; i < vertexBuffers.size(); i++) {
+        auto vertexBuffer = vertexBuffers.at(i);
+        auto vertexBufferAllocation = vertexBuffersAllocation.at(i);
 
-    vertexBufferData.clear();
+        vulkanDevice->unmapMemory(vertexBufferAllocation);
+        vulkanDevice->destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    }
+    vertexBuffers.clear();
+    vertexBuffersAllocation.clear();
+    vertexBuffersData.clear();
 
-    Pipeline_vulkan::teardownVertexBuffers();
+    vulkanDevice->destroyBuffer(vertexIndexBuffer, vertexIndexBufferAllocation);
 }
 
 }}

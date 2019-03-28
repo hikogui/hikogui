@@ -62,33 +62,7 @@ void Pipeline_vulkan::teardownShaders()
     shaderStages.clear();
 }
 
-void Pipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
-{
-    vertexInputBindingDescription = createVertexInputBindingDescription();
-    vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
 
-    vertexBuffers = createVertexBuffers(nrFrameBuffers, vertexInputBindingDescription.stride * maximumNumberOfVertices());
-
-    auto vulkanDevice = device<Device_vulkan>();
-    auto memoryNeedsFlushingOffsetsAndSizes = vulkanDevice->allocateDeviceMemoryAndBind(vertexBuffers, vk::MemoryPropertyFlagBits::eHostVisible);
-    vertexBufferMemory = get<0>(memoryNeedsFlushingOffsetsAndSizes);
-    vertexBufferNeedsFlushing = get<1>(memoryNeedsFlushingOffsetsAndSizes);
-    vertexBufferOffsetAndSizes = get<2>(memoryNeedsFlushingOffsetsAndSizes);
-}
-
-void Pipeline_vulkan::teardownVertexBuffers()
-{
-    auto vulkanDevice = device<Device_vulkan>();
-
-    vulkanDevice->intrinsic.free(vertexBufferMemory);
-    vertexBufferMemory = vk::DeviceMemory();
-
-    for (auto buffer : vertexBuffers) {
-        vulkanDevice->intrinsic.destroy(buffer);
-    }
-    vertexBuffers.clear();
-    vertexBufferOffsetAndSizes.clear();
-}
 
 void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
 {
@@ -142,6 +116,10 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D ext
 
     pipelineLayout = createPipelineLayout();
 
+    vertexInputBindingDescription = createVertexInputBindingDescription();
+
+    vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
+
     pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo(vertexInputBindingDescription, vertexInputAttributeDescriptions);
 
     pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
@@ -181,6 +159,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D ext
     };
 
     intrinsic = device<Device_vulkan>()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+    LOG_INFO("/buildPipeline (%i, %i)") % extent.width % extent.height;
+
 }
 
 void Pipeline_vulkan::teardownPipeline()
@@ -270,13 +250,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(imageIndex) };
-    std::vector<vk::DeviceSize> tmpOffsets = { 0 };
-    BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
-  
-    commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
-
-    drawInCommandBuffer(commandBuffer);
+    drawInCommandBuffer(commandBuffer, imageIndex);
 
     commandBuffer.endRenderPass();
 
@@ -398,22 +372,6 @@ Pipeline_vulkan::createPipelineColorBlendStateCreateInfo(const std::vector<vk::P
              attachements.data() };
 }
 
-std::vector<vk::Buffer> Pipeline_vulkan::createVertexBuffers(size_t nrBuffers, size_t bufferSize) const
-{
-    std::vector<vk::Buffer> buffers;
-    auto vulkanDevice = device<Device_vulkan>();
 
-    for (size_t i = 0; i < nrBuffers; i++) {
-        auto buffer = vulkanDevice->intrinsic.createBuffer({
-                vk::BufferCreateFlags(),
-                bufferSize, 
-                vk::BufferUsageFlagBits::eVertexBuffer,
-                vk::SharingMode::eExclusive
-            }, nullptr
-        );
-        buffers.push_back(buffer);
-    }
-    return buffers;
-}
 
 }}

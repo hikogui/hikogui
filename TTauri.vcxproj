@@ -69,20 +69,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -228,6 +228,7 @@
     <ClCompile Include="TTauri\GUI\Pipeline.cpp" />
     <ClCompile Include="TTauri\GUI\Pipeline_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\View.cpp" />
+    <ClCompile Include="TTauri\GUI\VulkanMemoryAllocator.cpp" />
     <ClCompile Include="TTauri\GUI\vulkan_utils.cpp" />
     <ClCompile Include="TTauri\GUI\Window_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\Window_vulkan_win32.cpp" />

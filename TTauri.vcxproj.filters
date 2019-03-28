@@ -72,6 +72,9 @@
     <ClCompile Include="TTauri\strings.cpp">
       <Filter>TTauri</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\GUI\VulkanMemoryAllocator.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
