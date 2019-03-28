@@ -45,6 +45,7 @@ void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffe
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
+    commandBuffer.bindIndexBuffer(vertexIndexBuffer, 0, vk::IndexType::eUint16);
 
     pushConstants.windowExtent = { scissors.at(0).extent.width , scissors.at(0).extent.height };
     pushConstants.viewportScale = { 2.0 / scissors.at(0).extent.width, 2.0 / scissors.at(0).extent.height };
@@ -56,9 +57,10 @@ void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffe
         &pushConstants
     );
 
-    commandBuffer.draw(
+    commandBuffer.drawIndexed(
         boost::numeric_cast<uint32_t>(numberOfVertices),
         1,
+        0,
         0,
         0
     );

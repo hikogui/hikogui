@@ -288,11 +288,11 @@ vk::PipelineVertexInputStateCreateInfo Pipeline_vulkan::createPipelineVertexInpu
     const vk::VertexInputBindingDescription &vertexBindingDescriptions,
     const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const
 {
-    return { vk::PipelineVertexInputStateCreateFlags(),
-             1,
-             &vertexBindingDescriptions,
-             boost::numeric_cast<uint32_t>(vertexAttributeDescriptions.size()),
-             vertexAttributeDescriptions.data() };
+    return {
+        vk::PipelineVertexInputStateCreateFlags(),
+        1, &vertexBindingDescriptions,
+        boost::numeric_cast<uint32_t>(vertexAttributeDescriptions.size()), vertexAttributeDescriptions.data()
+    };
 }
 
 vk::PipelineInputAssemblyStateCreateInfo Pipeline_vulkan::createPipelineInputAssemblyStateCreateInfo() const
