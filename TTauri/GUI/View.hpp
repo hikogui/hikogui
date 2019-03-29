@@ -35,8 +35,8 @@ public:
     std::vector<std::shared_ptr<View>> children;
 
     //! Location of the frame compared to the parent-frame.
-    glm::vec3 position = { 0.0, 0.0, 0.0 };
-    glm::vec3 extent = { 0.0, 0.0, 0.0 };
+    glm::vec2 position = { 0.0, 0.0 };
+    glm::u16vec2 extent = { 0, 0 };
 
     /*! Constructor for creating subviews.
      */
@@ -49,7 +49,7 @@ public:
     View &operator=(View &&) = delete;
 
     virtual void setParent(const std::shared_ptr<View> &parent);
-    virtual void setRectangle(glm::vec3 position, glm::vec3 extent);
+    virtual void setRectangle(glm::vec2 position, u16vec2 extent);
 
     virtual void add(std::shared_ptr<View> view);
 

@@ -6,22 +6,25 @@ layout(push_constant) uniform PushConstants {
     vec2 viewportScale;
 } pushConstants;
 
-layout(location = 0) in uvec3 inPosition;
-layout(location = 1) in vec3 inAtlasPosition;
-layout(location = 2) in float inAlpha;
+layout(location = 0) in vec2 inPosition;
+layout(location = 1) in uvec4 inClippingRectangle;
+layout(location = 2) in uvec3 inAtlasPosition;
+layout(location = 3) in uint inDepth;
+layout(location = 4) in uint inAlpha;
 
 layout(location = 0) out vec3 outAtlasPosition;
 layout(location = 1) out float outAlpha;
 
-vec3 convertToViewport(vec3 windowPosition) {
-    vec2 viewportPosition = (windowPosition.xy * pushConstants.viewportScale) - vec2(1.0, 1.0);
-    return vec3(viewportPosition, windowPosition.z);
+vec2 convertToViewport(vec2 windowPosition) {
+    return (windowPosition.xy * pushConstants.viewportScale) - vec2(1.0, 1.0);
 }
 
 void main() {
-    vec3 viewportPosition = convertToViewport(inPosition);
 
-    gl_Position = vec4(viewportPosition, 1.0);
+
+    vec2 viewportPosition = convertToViewport(inPosition);
+
+    gl_Position = vec4(viewportPosition, 0.0, 1.0);
     outAtlasPosition = inAtlasPosition;
     outAlpha = inAlpha;
 }

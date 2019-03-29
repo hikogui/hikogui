@@ -24,11 +24,11 @@ public:
     void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
         auto view1 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "lena.png");
-        view1->setRectangle({ 100.0, 100.0, 1.0 }, { 200.0, 100.0, 0.0 });
+        view1->setRectangle({ 100.0, 100.0 }, { 200, 100 });
         window->view->add(view1);
 
         auto view2 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "lena.png");
-        view2->setRectangle({ 200.0, 200.0, 1.0 }, { 200.0, 100.0, 0.0 });
+        view2->setRectangle({ 200.0, 200.0 }, { 200, 100 });
         window->view->add(view2);
     }
 

@@ -57,8 +57,10 @@ void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffe
         &pushConstants
     );
 
+    auto const numberOfRectangles = numberOfVertices / 4;
+    auto const numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
-        boost::numeric_cast<uint32_t>(numberOfVertices),
+        boost::numeric_cast<uint32_t>(numberOfTriangles * 3),
         1,
         0,
         0,
@@ -118,7 +120,7 @@ void BackingPipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
     // Fill in the vertex index buffer, using a staging buffer, then copying.
     {
         // Create staging vertex index buffer.
-        vk::BufferCreateInfo bufferCreateInfo = {
+        vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
             sizeof (uint16_t) * maximumNumberOfVertexIndices(),
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
@@ -131,9 +133,20 @@ void BackingPipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
         tie(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
 
         // Initialize indices.
-        auto stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
-        for (size_t i = 0; i < 65536; i++) {
-            gsl::at(stagingVertexIndexBufferData, i) = i;
+        auto const stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
+        for (size_t i = 0; i < maximumNumberOfVertexIndices(); i++) {
+            auto const vertexInRectangle = i % 6;
+            auto const rectangleNr = i / 6;
+            auto const rectangleBase = rectangleNr * 4;
+
+            switch (vertexInRectangle) {
+            case 0: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 0; break;
+            case 1: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
+            case 2: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
+            case 3: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
+            case 4: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
+            case 5: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 3; break;
+            }
         }
         vmaFlushAllocation(vulkanDevice->allocator, stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
         vulkanDevice->unmapMemory(stagingVertexIndexBufferAllocation);

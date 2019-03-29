@@ -35,15 +35,29 @@ public:
         }
     };
 
+    /*! A vertex defining a rectangle on a window.
+     * The same vertex is passed to the vertex shader 6 times for each rectangle (two triangles).
+     * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
+     */
     struct Vertex {
-        //! x, y position in window coordinate. z is depth for layering.
-        u16vec3 position;
+        //! The pixel-coordinates where the origin is located relative to the top-left corner of the window.
+        glm::vec2 position;
 
-        //! x, y position in the atlast coordinate. z selects one of the atlas images.
-        glm::vec3 atlasPosition;
+        //! The left-top and right-bottom position in pixels of the clipping rectangle relative to the top-left corner of the window.
+        u16vec4 clippingRectangle;
+
+        //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array
+        u16vec3 atlasPosition;
+
+        //! The depth for depth test.
+        uint16_t depth;
 
         //! transparency of the image.
-        float alpha;
+        uint8_t alpha;
+
+        //! Align to 32 bits.
+        uint8_t dummy[3];
+     
 
         static vk::VertexInputBindingDescription inputBindingDescription()
         {
@@ -55,9 +69,11 @@ public:
         static std::vector<vk::VertexInputAttributeDescription> inputAttributeDescriptions()
         {
             return {
-                { 0, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, position) },
-                { 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, atlasPosition) },
-                { 2, 0, vk::Format::eR32Sfloat, offsetof(Vertex, atlasPosition) }
+                { 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, position) },
+                { 1, 0, vk::Format::eR16G16B16A16Uint, offsetof(Vertex, clippingRectangle) },
+                { 2, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, atlasPosition) },                
+                { 3, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
+                { 4, 0, vk::Format::eR8Uint, offsetof(Vertex, alpha) },
             };
         }
     };

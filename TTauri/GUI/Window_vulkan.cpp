@@ -296,7 +296,7 @@ std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::Swa
         break;
     }
 
-    view->setRectangle({ 0.0, 0.0, 0.0 }, { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 0.0 });
+    view->setRectangle({ 0.0, 0.0 }, { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height });
 
     LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;

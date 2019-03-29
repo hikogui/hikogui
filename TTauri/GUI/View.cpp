@@ -24,7 +24,7 @@ void View::setParent(const std::shared_ptr<View> &parent)
     this->window = parent->window;
 }
 
-void View::setRectangle(glm::vec3 position, glm::vec3 extent)
+void View::setRectangle(glm::vec2 position, u16vec2 extent)
 {
     this->position = position;
     this->extent = extent;
