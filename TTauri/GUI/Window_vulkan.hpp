@@ -25,6 +25,8 @@ public:
     vk::Semaphore imageAvailableSemaphore;
     vk::Fence renderFinishedFence;
 
+    std::shared_ptr<PipelineRectanglesFromAtlas> pipelineRectanglesFromAtlas;
+
     Window_vulkan(std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
     ~Window_vulkan();
 
@@ -32,6 +34,8 @@ public:
     Window_vulkan &operator=(const Window_vulkan &) = delete;
     Window_vulkan(Window_vulkan &&) = delete;
     Window_vulkan &operator=(Window_vulkan &&) = delete;
+
+    void initialize() override;
 
     State buildForDeviceChange() override;
     void teardownForDeviceChange() override;

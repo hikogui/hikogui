@@ -6,7 +6,7 @@
 //  Copyright © 2019 Pokitec. All rights reserved.
 //
 
-#include "BackingPipeline_vulkan.hpp"
+#include "PipelineRectanglesFromAtlas.hpp"
 #include "Window.hpp"
 #include "Device_vulkan.hpp"
 #include "TTauri/Application.hpp"
@@ -19,14 +19,17 @@ using namespace TTauri;
 using namespace std;
 using namespace gsl;
 
-BackingPipeline_vulkan::BackingPipeline_vulkan(const std::shared_ptr<Window> &window) :
+
+
+
+PipelineRectanglesFromAtlas::PipelineRectanglesFromAtlas(const std::shared_ptr<Window> &window) :
     Pipeline_vulkan(window)
 {
 }
 
-vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
+vk::Semaphore PipelineRectanglesFromAtlas::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const tmpNumberOfVertices = window.lock()->view->backingPipelineRender(vertexBuffersData.at(imageIndex), 0);
+    auto const tmpNumberOfVertices = window.lock()->view->piplineRectangledFromAtlasPlaceVertices(vertexBuffersData.at(imageIndex), 0);
 
     vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, VK_WHOLE_SIZE);
 
@@ -38,7 +41,7 @@ vk::Semaphore BackingPipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore 
     return Pipeline_vulkan::render(imageIndex, inputSemaphore);
 }
 
-void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex)
+void PipelineRectanglesFromAtlas::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex)
 {
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(imageIndex) };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
@@ -68,15 +71,15 @@ void BackingPipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer &commandBuffe
     );
 }
 
-std::vector<vk::ShaderModule> BackingPipeline_vulkan::createShaderModules() const
+std::vector<vk::ShaderModule> PipelineRectanglesFromAtlas::createShaderModules() const
 {
     return {
-        loadShader(get_singleton<Application>()->resourceDir / "BackingPipeline_vulkan.vert.spv"),
-        loadShader(get_singleton<Application>()->resourceDir / "BackingPipeline_vulkan.frag.spv")
+        loadShader(get_singleton<Application>()->resourceDir / "PipelineRectanglesFromAtlas.vert.spv"),
+        loadShader(get_singleton<Application>()->resourceDir / "PipelineRectanglesFromAtlas.frag.spv")
     };
 }
 
-std::vector<vk::PipelineShaderStageCreateInfo> BackingPipeline_vulkan::createShaderStages(const std::vector<vk::ShaderModule> &shaders) const
+std::vector<vk::PipelineShaderStageCreateInfo> PipelineRectanglesFromAtlas::createShaderStages(const std::vector<vk::ShaderModule> &shaders) const
 {
     return {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, shaders.at(0), "main"},
@@ -84,23 +87,23 @@ std::vector<vk::PipelineShaderStageCreateInfo> BackingPipeline_vulkan::createSha
     };
 }
 
-std::vector<vk::PushConstantRange> BackingPipeline_vulkan::createPushConstantRanges() const
+std::vector<vk::PushConstantRange> PipelineRectanglesFromAtlas::createPushConstantRanges() const
 {
     return PushConstants::pushConstantRanges();
 }
 
 
-vk::VertexInputBindingDescription BackingPipeline_vulkan::createVertexInputBindingDescription() const
+vk::VertexInputBindingDescription PipelineRectanglesFromAtlas::createVertexInputBindingDescription() const
 {
     return Vertex::inputBindingDescription();
 }
 
-std::vector<vk::VertexInputAttributeDescription> BackingPipeline_vulkan::createVertexInputAttributeDescriptions() const
+std::vector<vk::VertexInputAttributeDescription> PipelineRectanglesFromAtlas::createVertexInputAttributeDescriptions() const
 {
     return Vertex::inputAttributeDescriptions();
 }
 
-void BackingPipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
+void PipelineRectanglesFromAtlas::buildVertexBuffers(size_t nrFrameBuffers)
 {
     auto vulkanDevice = device<Device_vulkan>();
 
@@ -194,7 +197,7 @@ void BackingPipeline_vulkan::buildVertexBuffers(size_t nrFrameBuffers)
     }
 }
 
-void BackingPipeline_vulkan::teardownVertexBuffers()
+void PipelineRectanglesFromAtlas::teardownVertexBuffers()
 {
     auto vulkanDevice = device<Device_vulkan>();
 

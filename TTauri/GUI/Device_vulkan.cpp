@@ -2,6 +2,7 @@
 #include "Device_vulkan.hpp"
 
 #include "Instance_vulkan.hpp"
+#include "PipelineRectanglesFromAtlas.hpp"
 #include "Window_vulkan.hpp"
 #include "vulkan_utils.hpp"
 
@@ -148,6 +149,8 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
         }
         index++;
     }
+
+    pipelineRectanglesFromAtlas_shared = TTauri::make_shared<PipelineRectanglesFromAtlas::DeviceShared>(dynamic_pointer_cast<Device_vulkan>(shared_from_this()));
 
     Device::initializeDevice(window);
 }

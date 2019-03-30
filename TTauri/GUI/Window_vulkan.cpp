@@ -32,6 +32,12 @@ Window_vulkan::~Window_vulkan()
     }
 }
 
+void Window_vulkan::initialize()
+{
+    Window::initialize();
+    pipelineRectanglesFromAtlas = TTauri::make_shared<PipelineRectanglesFromAtlas>(shared_from_this());
+}
+
 void Window_vulkan::waitIdle()
 {
     lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -97,7 +103,7 @@ bool Window_vulkan::render(bool blockOnVSync)
     vulkanDevice->intrinsic.resetFences({ renderFinishedFence });
     vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
-    auto const renderFinishedSemaphore = backingPipeline->render(acquiredImageIndex.value(), imageAvailableSemaphore);
+    auto const renderFinishedSemaphore = pipelineRectanglesFromAtlas->render(acquiredImageIndex.value(), imageAvailableSemaphore);
 
     {
         vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };
@@ -179,7 +185,7 @@ Window::State Window_vulkan::buildForDeviceChange()
     buildRenderPasses();
     buildFramebuffers();
     buildSemaphores();
-    backingPipeline->buildForDeviceChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
+    pipelineRectanglesFromAtlas->buildForDeviceChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
 
     return newState;
 }
@@ -187,7 +193,7 @@ Window::State Window_vulkan::buildForDeviceChange()
 void Window_vulkan::teardownForDeviceChange()
 {
     waitIdle();
-    backingPipeline->teardownForDeviceChange();
+    pipelineRectanglesFromAtlas->teardownForDeviceChange();
     teardownSemaphores();
     teardownFramebuffers();
     teardownRenderPasses();
@@ -205,14 +211,14 @@ Window::State Window_vulkan::rebuildForSwapchainChange()
 
     waitIdle();
 
-    backingPipeline->teardownForSwapchainChange();
+    pipelineRectanglesFromAtlas->teardownForSwapchainChange();
     teardownFramebuffers();
 
     auto const swapChainAndState = buildSwapchain(swapchain);
     swapchain = swapChainAndState.first;
 
     buildFramebuffers();
-    backingPipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
+    pipelineRectanglesFromAtlas->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
 
     return swapChainAndState.second;
 }

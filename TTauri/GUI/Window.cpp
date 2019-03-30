@@ -46,7 +46,7 @@ Window::~Window()
 void Window::initialize()
 {
     view = TTauri::make_shared<WindowView>(shared_from_this());
-    backingPipeline = TTauri::make_shared<BackingPipeline_vulkan>(shared_from_this());
+
     openingWindow();
 }
 

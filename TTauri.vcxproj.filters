@@ -63,9 +63,6 @@
     <ClCompile Include="TTauri\GUI\Device_vulkan.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="TTauri\GUI\BackingPipeline_vulkan.cpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClCompile>
     <ClCompile Include="TTauri\GUI\Pipeline_vulkan.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
@@ -73,6 +70,9 @@
       <Filter>TTauri</Filter>
     </ClCompile>
     <ClCompile Include="TTauri\GUI\VulkanMemoryAllocator.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\GUI\PipelineRectanglesFromAtlas.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,9 +137,6 @@
     <ClInclude Include="TTauri\GUI\Device_vulkan.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="TTauri\GUI\BackingPipeline_vulkan.hpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="TTauri\GUI\Pipeline_vulkan.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
@@ -149,12 +146,15 @@
     <ClInclude Include="TTauri\GUI\geometry.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="TTauri\GUI\PipelineRectanglesFromAtlas.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="TTauri\GUI\BackingPipeline_vulkan.frag">
+    <None Include="TTauri\GUI\PipelineRectanglesFromAtlas.vert">
       <Filter>TTauri\GUI</Filter>
     </None>
-    <None Include="TTauri\GUI\BackingPipeline_vulkan.vert">
+    <None Include="TTauri\GUI\PipelineRectanglesFromAtlas.frag">
       <Filter>TTauri\GUI</Filter>
     </None>
   </ItemGroup>

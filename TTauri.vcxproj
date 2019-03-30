@@ -218,7 +218,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="TTauri\Application.cpp" />
-    <ClCompile Include="TTauri\GUI\BackingPipeline_vulkan.cpp" />
+    <ClCompile Include="TTauri\GUI\PipelineRectanglesFromAtlas.cpp" />
     <ClCompile Include="TTauri\GUI\Device.cpp" />
     <ClCompile Include="TTauri\GUI\Device_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\ImageView.cpp" />
@@ -242,7 +242,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp" />
-    <ClInclude Include="TTauri\GUI\BackingPipeline_vulkan.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineRectanglesFromAtlas.hpp" />
     <ClInclude Include="TTauri\GUI\config.hpp" />
     <ClInclude Include="TTauri\GUI\Device.hpp" />
     <ClInclude Include="TTauri\GUI\Device_vulkan.hpp" />
@@ -267,8 +267,8 @@
     <ClInclude Include="TTauri\Application_win32.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="TTauri\GUI\BackingPipeline_vulkan.frag" />
-    <None Include="TTauri\GUI\BackingPipeline_vulkan.vert" />
+    <None Include="TTauri\GUI\PipelineRectanglesFromAtlas.frag" />
+    <None Include="TTauri\GUI\PipelineRectanglesFromAtlas.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

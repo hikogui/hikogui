@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "BackingPipeline_vulkan.hpp"
+#include "PipelineRectanglesFromAtlas.hpp"
 
 #include <limits>
 #include <memory>
@@ -25,7 +25,7 @@ class Instance;
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class View : public std::enable_shared_from_this<View>, public BackingPipeline_vulkan::Delegate {
+class View : public std::enable_shared_from_this<View>, public PipelineRectanglesFromAtlas::Delegate {
 public:
     //! Convenient reference to the Window.
     std::weak_ptr<Window> window;
@@ -59,7 +59,7 @@ public:
         return lock_dynamic_cast<T>(window.lock()->device);
     }
 
-    size_t backingPipelineRender(const gsl::span<BackingPipeline_vulkan::Vertex> &vertices, size_t offset) override;
+    size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset) override;
 };
 
 }}

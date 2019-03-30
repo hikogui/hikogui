@@ -18,11 +18,23 @@
 namespace TTauri {
 namespace GUI {
 
+class Device_vulkan;
+
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlasses and sharing for all views.
  */
-class BackingPipeline_vulkan : public Pipeline_vulkan {
+class PipelineRectanglesFromAtlas : public Pipeline_vulkan {
 public:
+    struct DeviceShared {
+        std::weak_ptr<Device_vulkan> device;
+
+
+        DeviceShared(const std::shared_ptr<Device_vulkan> &device) : device(device) {}
+
+        //void buildVertexBuffers();
+        //void teardownVertexBuffers();
+    };
+
     struct PushConstants {
         glm::vec2 windowExtent = { 0.0, 0.0 };
         glm::vec2 viewportScale = { 0.0, 0.0 };
@@ -44,7 +56,7 @@ public:
         glm::vec2 position;
 
         //! The left-top and right-bottom position in pixels of the clipping rectangle relative to the top-left corner of the window.
-        u16vec4 clippingRectangle;
+        u16rect2 clippingRectangle;
 
         //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array
         u16vec3 atlasPosition;
@@ -70,28 +82,42 @@ public:
         {
             return {
                 { 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, position) },
-                { 1, 0, vk::Format::eR16G16B16A16Uint, offsetof(Vertex, clippingRectangle) },
-                { 2, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, atlasPosition) },                
-                { 3, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
-                { 4, 0, vk::Format::eR8Uint, offsetof(Vertex, alpha) },
+                { 1, 0, vk::Format::eR16G16Uint, offsetof(Vertex, clippingRectangle.offset) },
+                { 2, 0, vk::Format::eR16G16Uint, offsetof(Vertex, clippingRectangle.extent) },
+                { 3, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, atlasPosition) },                
+                { 4, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
+                { 5, 0, vk::Format::eR8Uint, offsetof(Vertex, alpha) },
             };
         }
+    };
+
+    struct Rectangle {
+        std::string key;
+        std::vector<uint16_t> atlasIndices;
+
+        glm::vec2 origin;
+        glm::vec2 position;
+        float rotation;
+        float alpha;
+        u16vec2 extent;
+
+        void placeVertices(gsl::span<Vertex> &vertices, size_t &offset);
     };
 
     class Delegate {
     public:
         struct Error : virtual boost::exception, virtual std::exception {};
 
-        virtual size_t backingPipelineRender(const gsl::span<Vertex> &vertices, size_t offset) = 0;
+        virtual size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<Vertex> &vertices, size_t offset) = 0;
     };
 
-    BackingPipeline_vulkan(const std::shared_ptr<Window> &window);
-    ~BackingPipeline_vulkan() {};
+    PipelineRectanglesFromAtlas(const std::shared_ptr<Window> &window);
+    ~PipelineRectanglesFromAtlas() {};
 
-    BackingPipeline_vulkan(const BackingPipeline_vulkan &) = delete;
-    BackingPipeline_vulkan &operator=(const BackingPipeline_vulkan &) = delete;
-    BackingPipeline_vulkan(BackingPipeline_vulkan &&) = delete;
-    BackingPipeline_vulkan &operator=(BackingPipeline_vulkan &&) = delete;
+    PipelineRectanglesFromAtlas(const PipelineRectanglesFromAtlas &) = delete;
+    PipelineRectanglesFromAtlas &operator=(const PipelineRectanglesFromAtlas &) = delete;
+    PipelineRectanglesFromAtlas(PipelineRectanglesFromAtlas &&) = delete;
+    PipelineRectanglesFromAtlas &operator=(PipelineRectanglesFromAtlas &&) = delete;
 
     vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore) override;
 

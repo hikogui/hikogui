@@ -37,10 +37,10 @@ void View::add(std::shared_ptr<View> view)
 }
 
 
-size_t View::backingPipelineRender(const gsl::span<BackingPipeline_vulkan::Vertex> &vertices, size_t offset)
+size_t View::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset)
 {
     for (auto child : children) {
-        offset = child->backingPipelineRender(vertices, offset);
+        offset = child->piplineRectangledFromAtlasPlaceVertices(vertices, offset);
     }
     return offset;
 }

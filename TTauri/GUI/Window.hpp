@@ -97,7 +97,6 @@ public:
     //! The view covering the complete window.
     std::shared_ptr<View> view;
 
-    std::shared_ptr<BackingPipeline_vulkan> backingPipeline;
 
     Window(const std::shared_ptr<Delegate> &delegate, const std::string &title);
     virtual ~Window();
@@ -107,7 +106,7 @@ public:
     Window(Window &&) = delete;
     Window &operator=(Window &&) = delete;
 
-    void initialize();
+    virtual void initialize();
 
     bool hasLostSurface() { return state == State::SURFACE_LOST; }
     bool hasLostDevice() { return state == State::DEVICE_LOST; }

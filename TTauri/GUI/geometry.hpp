@@ -38,6 +38,7 @@ struct rect {
 using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
 using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
 using u16vec4 = glm::vec<4, uint16_t, glm::defaultp>;
+using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u32rect2 = rect<2, uint32_t, glm::defaultp>;
 
 }}
