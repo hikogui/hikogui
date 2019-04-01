@@ -25,14 +25,28 @@ class Device_vulkan;
  */
 class PipelineRectanglesFromAtlas : public Pipeline_vulkan {
 public:
-    struct DeviceShared {
+    static const size_t maximumNumberOfVertices = 65536;
+    static const size_t maximumNumberOfSquares = maximumNumberOfVertices / 4;
+    static const size_t maximumNumberOfTriangles = maximumNumberOfSquares * 2;
+    static const size_t maximumNumberOfIndices = maximumNumberOfTriangles * 3;
+
+    struct DeviceShared final {
         std::weak_ptr<Device_vulkan> device;
 
+        vk::Buffer indexBuffer;
+        VmaAllocation indexBufferAllocation;
 
-        DeviceShared(const std::shared_ptr<Device_vulkan> &device) : device(device) {}
+        DeviceShared(const std::shared_ptr<Device_vulkan> &device);
+        ~DeviceShared();
 
-        //void buildVertexBuffers();
-        //void teardownVertexBuffers();
+        /*! Deallocate vulkan resources.
+         * This is called in the destructor of Device_vulkan, therefor we can not use our device weak_ptr.
+         */
+        void destroy(Device_vulkan *vulkanDevice);
+
+    private:
+        void buildIndexBuffer();
+        void teardownIndexBuffer(Device_vulkan *vulkanDevice);
     };
 
     struct PushConstants {
@@ -129,18 +143,12 @@ protected:
     std::vector<VmaAllocation> vertexBuffersAllocation;
     std::vector<gsl::span<Vertex>> vertexBuffersData;
 
-    vk::Buffer vertexIndexBuffer;
-    VmaAllocation vertexIndexBufferAllocation;
-
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) override;
     std::vector<vk::ShaderModule> createShaderModules() const override;
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
-
-    size_t maximumNumberOfVertices() const { return 65536; }
-    size_t maximumNumberOfVertexIndices() const { return 6 * maximumNumberOfVertices(); }
 
     void buildVertexBuffers(size_t nrFrameBuffers) override;
     void teardownVertexBuffers() override;

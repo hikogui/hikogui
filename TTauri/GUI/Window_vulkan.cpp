@@ -96,14 +96,18 @@ bool Window_vulkan::render(bool blockOnVSync)
         return blockOnVSync;
     }
 
-    // Wait until previous drawing was finished. XXX maybe use one for each swapchain image.
+    // Wait until previous rendering has finished, before the next rendering.
+    // XXX maybe use one for each swapchain image or go to single command buffer.
     vulkanDevice->intrinsic.waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
-    // Make a fence that should be signaled when all drawing is finished.
+    // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     vulkanDevice->intrinsic.resetFences({ renderFinishedFence });
-    vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     auto const renderFinishedSemaphore = pipelineRectanglesFromAtlas->render(acquiredImageIndex.value(), imageAvailableSemaphore);
+
+    // Signal the fence when all rendering has finished on the graphics queue.
+    // When the fence is signaled we can modify/destroy the command buffers.
+    vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     {
         vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };

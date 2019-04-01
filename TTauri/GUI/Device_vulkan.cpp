@@ -64,6 +64,9 @@ Device_vulkan::~Device_vulkan()
 {
     try {
         [[gsl::suppress(f.6)]] {
+            pipelineRectanglesFromAtlas_shared->destroy(this);
+            pipelineRectanglesFromAtlas_shared = nullptr;
+
             vmaDestroyAllocator(allocator);
 
             for (uint32_t index = 0; index < 3; index++) {

@@ -101,15 +101,11 @@ void Window::setDevice(const std::shared_ptr<Device> &device)
 
 void Window::setWindowPosition(uint32_t x, uint32_t y)
 {
-    //std::scoped_lock lock(mutex);
-
     windowRectangle.offset = {x, y};
 }
 
 void Window::setWindowSize(uint32_t width, uint32_t height)
 {
-    //std::scoped_lock lock(mutex);
-
     windowRectangle.extent = {width, height};
 }
 

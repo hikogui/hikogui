@@ -19,8 +19,96 @@ using namespace TTauri;
 using namespace std;
 using namespace gsl;
 
+PipelineRectanglesFromAtlas::DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> &device) :
+    device(device)
+{
+    buildIndexBuffer();
+}
 
+PipelineRectanglesFromAtlas::DeviceShared::~DeviceShared()
+{
+}
 
+void PipelineRectanglesFromAtlas::DeviceShared::destroy(Device_vulkan *vulkanDevice)
+{
+    teardownIndexBuffer(vulkanDevice);
+}
+
+void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
+{
+    auto vulkanDevice = device.lock();
+
+    // Create vertex index buffer
+    {
+        vk::BufferCreateInfo bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (uint16_t) * PipelineRectanglesFromAtlas::maximumNumberOfIndices,
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        tie(indexBuffer, indexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+    }
+
+    // Fill in the vertex index buffer, using a staging buffer, then copying.
+    {
+        // Create staging vertex index buffer.
+        vk::BufferCreateInfo const bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (uint16_t) * PipelineRectanglesFromAtlas::maximumNumberOfIndices,
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+        vk::Buffer stagingVertexIndexBuffer;
+        VmaAllocation stagingVertexIndexBufferAllocation;
+        tie(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+
+        // Initialize indices.
+        auto const stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
+        for (size_t i = 0; i < PipelineRectanglesFromAtlas::maximumNumberOfIndices; i++) {
+            auto const vertexInRectangle = i % 6;
+            auto const rectangleNr = i / 6;
+            auto const rectangleBase = rectangleNr * 4;
+
+            switch (vertexInRectangle) {
+            case 0: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 0; break;
+            case 1: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
+            case 2: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
+            case 3: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
+            case 4: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
+            case 5: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 3; break;
+            }
+        }
+        vmaFlushAllocation(vulkanDevice->allocator, stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
+        vulkanDevice->unmapMemory(stagingVertexIndexBufferAllocation);
+
+        // Copy indices to vertex index buffer.
+        auto commands = vulkanDevice->intrinsic.allocateCommandBuffers({
+            vulkanDevice->graphicsCommandPool, 
+            vk::CommandBufferLevel::ePrimary, 
+            1
+            }).at(0);
+        commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+        commands.copyBuffer(stagingVertexIndexBuffer, indexBuffer, {{0, 0, sizeof (uint16_t) * PipelineRectanglesFromAtlas::maximumNumberOfIndices}});
+        commands.end();
+
+        vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
+        vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
+        vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
+        vulkanDevice->graphicsQueue.waitIdle();
+
+        vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, {commands});
+        vulkanDevice->destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
+    }
+}
+
+void PipelineRectanglesFromAtlas::DeviceShared::teardownIndexBuffer(Device_vulkan *vulkanDevice)
+{
+    vulkanDevice->destroyBuffer(indexBuffer, indexBufferAllocation);
+}
 
 PipelineRectanglesFromAtlas::PipelineRectanglesFromAtlas(const std::shared_ptr<Window> &window) :
     Pipeline_vulkan(window)
@@ -31,12 +119,13 @@ vk::Semaphore PipelineRectanglesFromAtlas::render(uint32_t imageIndex, vk::Semap
 {
     auto const tmpNumberOfVertices = window.lock()->view->piplineRectangledFromAtlasPlaceVertices(vertexBuffersData.at(imageIndex), 0);
 
-    vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, VK_WHOLE_SIZE);
+    vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineRectanglesFromAtlas::Vertex));
 
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers(false);
+        numberOfVertices = tmpNumberOfVertices;
     }
-    numberOfVertices = tmpNumberOfVertices;
+   
 
     return Pipeline_vulkan::render(imageIndex, inputSemaphore);
 }
@@ -47,8 +136,11 @@ void PipelineRectanglesFromAtlas::drawInCommandBuffer(vk::CommandBuffer &command
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
+    auto const vulkanDevice = device<Device_vulkan>();
+    auto const indexBuffer = vulkanDevice->pipelineRectanglesFromAtlas_shared->indexBuffer;
+    commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
+
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
-    commandBuffer.bindIndexBuffer(vertexIndexBuffer, 0, vk::IndexType::eUint16);
 
     pushConstants.windowExtent = { scissors.at(0).extent.width , scissors.at(0).extent.height };
     pushConstants.viewportScale = { 2.0 / scissors.at(0).extent.width, 2.0 / scissors.at(0).extent.height };
@@ -107,79 +199,13 @@ void PipelineRectanglesFromAtlas::buildVertexBuffers(size_t nrFrameBuffers)
 {
     auto vulkanDevice = device<Device_vulkan>();
 
-    // Create vertex index buffer
-    {
-        vk::BufferCreateInfo bufferCreateInfo = {
-            vk::BufferCreateFlags(),
-            sizeof (uint16_t) * maximumNumberOfVertexIndices(),
-            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
-            vk::SharingMode::eExclusive
-        };
-        VmaAllocationCreateInfo allocationCreateInfo = {};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        tie(vertexIndexBuffer, vertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
-    }
-
-    // Fill in the vertex index buffer, using a staging buffer, then copying.
-    {
-        // Create staging vertex index buffer.
-        vk::BufferCreateInfo const bufferCreateInfo = {
-            vk::BufferCreateFlags(),
-            sizeof (uint16_t) * maximumNumberOfVertexIndices(),
-            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
-            vk::SharingMode::eExclusive
-        };
-        VmaAllocationCreateInfo allocationCreateInfo = {};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        vk::Buffer stagingVertexIndexBuffer;
-        VmaAllocation stagingVertexIndexBufferAllocation;
-        tie(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
-
-        // Initialize indices.
-        auto const stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
-        for (size_t i = 0; i < maximumNumberOfVertexIndices(); i++) {
-            auto const vertexInRectangle = i % 6;
-            auto const rectangleNr = i / 6;
-            auto const rectangleBase = rectangleNr * 4;
-
-            switch (vertexInRectangle) {
-            case 0: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 0; break;
-            case 1: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
-            case 2: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
-            case 3: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
-            case 4: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
-            case 5: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 3; break;
-            }
-        }
-        vmaFlushAllocation(vulkanDevice->allocator, stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
-        vulkanDevice->unmapMemory(stagingVertexIndexBufferAllocation);
-
-        // Copy indices to vertex index buffer.
-        auto commands = vulkanDevice->intrinsic.allocateCommandBuffers({
-            vulkanDevice->graphicsCommandPool, 
-            vk::CommandBufferLevel::ePrimary, 
-            1
-        }).at(0);
-        commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-        commands.copyBuffer(stagingVertexIndexBuffer, vertexIndexBuffer, {{0, 0, sizeof (uint16_t) * maximumNumberOfVertexIndices()}});
-        commands.end();
-
-        vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
-        vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
-        vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
-        vulkanDevice->graphicsQueue.waitIdle();
-
-        vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, {commands});
-        vulkanDevice->destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
-    }
-
     BOOST_ASSERT(vertexBuffers.size() == 0);
     BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
     BOOST_ASSERT(vertexBuffersData.size() == 0);
     for (size_t i = 0; i < nrFrameBuffers; i++) {
         vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
-            sizeof (uint16_t) * maximumNumberOfVertexIndices(),
+            sizeof (Vertex) * PipelineRectanglesFromAtlas::maximumNumberOfVertices,
             vk::BufferUsageFlagBits::eVertexBuffer,
             vk::SharingMode::eExclusive
         };
@@ -212,8 +238,6 @@ void PipelineRectanglesFromAtlas::teardownVertexBuffers()
     vertexBuffers.clear();
     vertexBuffersAllocation.clear();
     vertexBuffersData.clear();
-
-    vulkanDevice->destroyBuffer(vertexIndexBuffer, vertexIndexBufferAllocation);
 }
 
 }}
