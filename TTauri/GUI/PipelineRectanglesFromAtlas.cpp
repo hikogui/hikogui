@@ -104,6 +104,11 @@ void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
     }
 }
 
+void PipelineRectanglesFromAtlas::DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice)
+{
+    vulkanDevice->destroyBuffer(indexBuffer, indexBufferAllocation);
+}
+
 void PipelineRectanglesFromAtlas::DeviceShared::buildShaders()
 {
     auto vulkanDevice = device.lock();
@@ -121,11 +126,6 @@ void PipelineRectanglesFromAtlas::DeviceShared::teardownShaders(gsl::not_null<De
 {
     vulkanDevice->intrinsic.destroy(vertexShaderModule);
     vulkanDevice->intrinsic.destroy(fragmentShaderModule);
-}
-
-void PipelineRectanglesFromAtlas::DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice)
-{
-    vulkanDevice->destroyBuffer(indexBuffer, indexBufferAllocation);
 }
 
 PipelineRectanglesFromAtlas::PipelineRectanglesFromAtlas(const std::shared_ptr<Window> window) :
@@ -181,26 +181,8 @@ void PipelineRectanglesFromAtlas::drawInCommandBuffer(vk::CommandBuffer &command
     );
 }
 
-std::vector<vk::PipelineShaderStageCreateInfo> PipelineRectanglesFromAtlas::createShaderStages() const
-{
-    auto vulkanDevice = device<Device_vulkan>();
-
-    return vulkanDevice->pipelineRectanglesFromAtlas_shared->shaderStages;
-}
-
-std::vector<vk::PushConstantRange> PipelineRectanglesFromAtlas::createPushConstantRanges() const
-{
-    return PushConstants::pushConstantRanges();
-}
-
-vk::VertexInputBindingDescription PipelineRectanglesFromAtlas::createVertexInputBindingDescription() const
-{
-    return Vertex::inputBindingDescription();
-}
-
-std::vector<vk::VertexInputAttributeDescription> PipelineRectanglesFromAtlas::createVertexInputAttributeDescriptions() const
-{
-    return Vertex::inputAttributeDescriptions();
+std::vector<vk::PipelineShaderStageCreateInfo> PipelineRectanglesFromAtlas::createShaderStages() const {
+    return device<Device_vulkan>()->pipelineRectanglesFromAtlas_shared->shaderStages;
 }
 
 void PipelineRectanglesFromAtlas::buildVertexBuffers(size_t nrFrameBuffers)

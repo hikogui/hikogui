@@ -154,15 +154,15 @@ protected:
     std::vector<gsl::span<Vertex>> vertexBuffersData;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) override;
-    std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
-    std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
-    vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
-    std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
+    std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
+    std::vector<vk::PushConstantRange> createPushConstantRanges() const override { return PushConstants::pushConstantRanges(); }
+    vk::VertexInputBindingDescription createVertexInputBindingDescription() const override { return Vertex::inputBindingDescription(); }
+    std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override { return Vertex::inputAttributeDescriptions(); }
+
+private:
     void buildVertexBuffers(size_t nrFrameBuffers) override;
     void teardownVertexBuffers() override;
-
-
 };
 
 }
