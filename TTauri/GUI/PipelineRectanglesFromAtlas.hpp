@@ -35,8 +35,17 @@ public:
         vk::Buffer indexBuffer;
         VmaAllocation indexBufferAllocation = {};
 
+        vk::ShaderModule vertexShaderModule;
+        vk::ShaderModule fragmentShaderModule;
+        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
+
         DeviceShared(const std::shared_ptr<Device_vulkan> device);
         ~DeviceShared();
+
+        DeviceShared(const DeviceShared &) = delete;
+        DeviceShared &operator=(const DeviceShared &) = delete;
+        DeviceShared(DeviceShared &&) = delete;
+        DeviceShared &operator=(DeviceShared &&) = delete;
 
         /*! Deallocate vulkan resources.
          * This is called in the destructor of Device_vulkan, therefor we can not use our device weak_ptr.
@@ -46,6 +55,8 @@ public:
     private:
         void buildIndexBuffer();
         void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
+        void buildShaders();
+        void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
     };
 
     struct PushConstants {
@@ -143,8 +154,7 @@ protected:
     std::vector<gsl::span<Vertex>> vertexBuffersData;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) override;
-    std::vector<vk::ShaderModule> createShaderModules() const override;
-    std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const override;
+    std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;

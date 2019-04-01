@@ -98,6 +98,7 @@ public:
 
     void unmapMemory(const VmaAllocation &allocation);
 
+    vk::ShaderModule loadShader(boost::filesystem::path path) const;
 };
 
 }

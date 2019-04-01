@@ -22,6 +22,7 @@ PipelineRectanglesFromAtlas::DeviceShared::DeviceShared(const std::shared_ptr<De
     device(move(device))
 {
     buildIndexBuffer();
+    buildShaders();
 }
 
 PipelineRectanglesFromAtlas::DeviceShared::~DeviceShared()
@@ -31,6 +32,7 @@ PipelineRectanglesFromAtlas::DeviceShared::~DeviceShared()
 void PipelineRectanglesFromAtlas::DeviceShared::destroy(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     teardownIndexBuffer(vulkanDevice);
+    teardownShaders(vulkanDevice);
 }
 
 void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
@@ -102,6 +104,25 @@ void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
     }
 }
 
+void PipelineRectanglesFromAtlas::DeviceShared::buildShaders()
+{
+    auto vulkanDevice = device.lock();
+
+    vertexShaderModule = vulkanDevice->loadShader(get_singleton<Application>()->resourceDir / "PipelineRectanglesFromAtlas.vert.spv");
+    fragmentShaderModule = vulkanDevice->loadShader(get_singleton<Application>()->resourceDir / "PipelineRectanglesFromAtlas.frag.spv");
+
+    shaderStages = {
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}
+    };
+}
+
+void PipelineRectanglesFromAtlas::DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
+{
+    vulkanDevice->intrinsic.destroy(vertexShaderModule);
+    vulkanDevice->intrinsic.destroy(fragmentShaderModule);
+}
+
 void PipelineRectanglesFromAtlas::DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     vulkanDevice->destroyBuffer(indexBuffer, indexBufferAllocation);
@@ -160,27 +181,17 @@ void PipelineRectanglesFromAtlas::drawInCommandBuffer(vk::CommandBuffer &command
     );
 }
 
-std::vector<vk::ShaderModule> PipelineRectanglesFromAtlas::createShaderModules() const
+std::vector<vk::PipelineShaderStageCreateInfo> PipelineRectanglesFromAtlas::createShaderStages() const
 {
-    return {
-        loadShader(get_singleton<Application>()->resourceDir / "PipelineRectanglesFromAtlas.vert.spv"),
-        loadShader(get_singleton<Application>()->resourceDir / "PipelineRectanglesFromAtlas.frag.spv")
-    };
-}
+    auto vulkanDevice = device<Device_vulkan>();
 
-std::vector<vk::PipelineShaderStageCreateInfo> PipelineRectanglesFromAtlas::createShaderStages(const std::vector<vk::ShaderModule> &shaders) const
-{
-    return {
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, shaders.at(0), "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, shaders.at(1), "main"}
-    };
+    return vulkanDevice->pipelineRectanglesFromAtlas_shared->shaderStages;
 }
 
 std::vector<vk::PushConstantRange> PipelineRectanglesFromAtlas::createPushConstantRanges() const
 {
     return PushConstants::pushConstantRanges();
 }
-
 
 vk::VertexInputBindingDescription PipelineRectanglesFromAtlas::createVertexInputBindingDescription() const
 {

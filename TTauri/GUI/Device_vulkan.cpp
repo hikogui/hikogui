@@ -10,6 +10,8 @@
 
 #include <gsl/gsl>
 
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 #include <boost/range/combine.hpp>
 
 namespace TTauri::GUI {
@@ -351,6 +353,20 @@ void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation 
 void Device_vulkan::unmapMemory(const VmaAllocation &allocation)
 {
     vmaUnmapMemory(allocator, allocation);
+}
+
+vk::ShaderModule Device_vulkan::loadShader(boost::filesystem::path path) const
+{
+    LOG_INFO("Loading shader %s") % path.filename().generic_string();
+
+    auto tmp_path = path.generic_string();
+    boost::interprocess::file_mapping mapped_file(tmp_path.c_str(), boost::interprocess::read_only);
+    auto region = boost::interprocess::mapped_region(mapped_file, boost::interprocess::read_only);
+
+    // Check uint32_t alignment of pointer.
+    BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(region.get_address()) & 3) == 0);
+
+    return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), region.get_size(), static_cast<uint32_t *>(region.get_address())});
 }
 
 }

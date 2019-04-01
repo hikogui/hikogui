@@ -8,8 +8,7 @@
 #include "TTauri/utils.hpp"
 
 #include <boost/assert.hpp>
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
+
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {
@@ -43,23 +42,6 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
     device<Device_vulkan>()->graphicsQueue.submit(submitInfo, vk::Fence());
 
     return renderFinishedSemaphores.at(imageIndex);
-}
-
-void Pipeline_vulkan::buildShaders()
-{
-    shaderModules = createShaderModules();
-    shaderStages = createShaderStages(shaderModules);
-}
-
-void Pipeline_vulkan::teardownShaders()
-{
-    auto vulkanDevice = device<Device_vulkan>();
-
-    for (auto shaderModule : shaderModules) {
-        vulkanDevice->intrinsic.destroy(shaderModule);
-    }
-    shaderModules.clear();
-    shaderStages.clear();
 }
 
 void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
@@ -117,6 +99,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     const auto pushConstantRanges = createPushConstantRanges();
     const auto vertexInputBindingDescription = createVertexInputBindingDescription();
     const auto vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
+    const auto shaderStages = createShaderStages();
 
     pipelineLayout = device<Device_vulkan>()->intrinsic.createPipelineLayout({
         vk::PipelineLayoutCreateFlags(),
@@ -194,8 +177,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
-        boost::numeric_cast<uint32_t>(shaderStages.size()),
-        shaderStages.data(),
+        boost::numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
         &pipelineVertexInputStateCreateInfo,
         &pipelineInputAssemblyStateCreateInfo,
         nullptr, // tesselationStateCreateInfo
@@ -225,7 +207,6 @@ void Pipeline_vulkan::teardownPipeline()
 
 void Pipeline_vulkan::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
 {
-    buildShaders();
     buildVertexBuffers(nrFrameBuffers);
     buildCommandBuffers(nrFrameBuffers);
     buildSemaphores(nrFrameBuffers);
@@ -239,7 +220,6 @@ void Pipeline_vulkan::teardownForDeviceChange()
     teardownSemaphores();
     teardownCommandBuffers();
     teardownVertexBuffers();
-    teardownShaders();
 }
 
 void Pipeline_vulkan::buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
@@ -312,18 +292,6 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
     commandBuffersValid.at(imageIndex) = true;
 }
 
-vk::ShaderModule Pipeline_vulkan::loadShader(boost::filesystem::path path) const
-{
-    LOG_INFO("Loading shader %s") % path.filename().generic_string();
 
-    auto tmp_path = path.generic_string();
-    boost::interprocess::file_mapping mapped_file(tmp_path.c_str(), boost::interprocess::read_only);
-    auto region = boost::interprocess::mapped_region(mapped_file, boost::interprocess::read_only);
-
-    // Check uint32_t alignment of pointer.
-    BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(region.get_address()) & 3) == 0);
-
-    return device<Device_vulkan>()->intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), region.get_size(), static_cast<uint32_t *>(region.get_address())});
-}
 
 }

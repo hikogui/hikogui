@@ -57,27 +57,17 @@ protected:
     std::vector<bool> commandBuffersValid;
     std::vector<vk::Semaphore> renderFinishedSemaphores;
 
-    boost::filesystem::path vertexShaderPath;
-    boost::filesystem::path fragmentShaderPath;
-
     vk::RenderPass renderPass;
     vk::Extent2D extent;
     vk::Rect2D scissor;
-    std::vector<vk::ShaderModule> shaderModules;
-    std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
     vk::PipelineLayout pipelineLayout;
 
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) = 0;
-    virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
-    virtual std::vector<vk::ShaderModule> createShaderModules() const = 0;
-    virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const = 0;
+    virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
 
-
-    virtual void buildShaders();
-    virtual void teardownShaders();
     virtual void buildVertexBuffers(size_t nrFrameBuffers) = 0;
     virtual void teardownVertexBuffers() = 0;
     virtual void buildCommandBuffers(size_t nrFrameBuffers);
