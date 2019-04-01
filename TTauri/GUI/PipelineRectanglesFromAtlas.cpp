@@ -12,15 +12,14 @@
 #include "TTauri/Application.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 using namespace TTauri;
 using namespace std;
 using namespace gsl;
 
-PipelineRectanglesFromAtlas::DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> &device) :
-    device(device)
+PipelineRectanglesFromAtlas::DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> device) :
+    device(move(device))
 {
     buildIndexBuffer();
 }
@@ -29,7 +28,7 @@ PipelineRectanglesFromAtlas::DeviceShared::~DeviceShared()
 {
 }
 
-void PipelineRectanglesFromAtlas::DeviceShared::destroy(Device_vulkan *vulkanDevice)
+void PipelineRectanglesFromAtlas::DeviceShared::destroy(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     teardownIndexBuffer(vulkanDevice);
 }
@@ -40,7 +39,7 @@ void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
 
     // Create vertex index buffer
     {
-        vk::BufferCreateInfo bufferCreateInfo = {
+        vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
             sizeof (uint16_t) * PipelineRectanglesFromAtlas::maximumNumberOfIndices,
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
@@ -62,9 +61,7 @@ void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
         };
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        vk::Buffer stagingVertexIndexBuffer;
-        VmaAllocation stagingVertexIndexBufferAllocation;
-        tie(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        auto const [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
 
         // Initialize indices.
         auto const stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
@@ -105,13 +102,13 @@ void PipelineRectanglesFromAtlas::DeviceShared::buildIndexBuffer()
     }
 }
 
-void PipelineRectanglesFromAtlas::DeviceShared::teardownIndexBuffer(Device_vulkan *vulkanDevice)
+void PipelineRectanglesFromAtlas::DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     vulkanDevice->destroyBuffer(indexBuffer, indexBufferAllocation);
 }
 
-PipelineRectanglesFromAtlas::PipelineRectanglesFromAtlas(const std::shared_ptr<Window> &window) :
-    Pipeline_vulkan(window)
+PipelineRectanglesFromAtlas::PipelineRectanglesFromAtlas(const std::shared_ptr<Window> window) :
+    Pipeline_vulkan(move(window))
 {
 }
 
@@ -142,8 +139,8 @@ void PipelineRectanglesFromAtlas::drawInCommandBuffer(vk::CommandBuffer &command
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = { scissors.at(0).extent.width , scissors.at(0).extent.height };
-    pushConstants.viewportScale = { 2.0 / scissors.at(0).extent.width, 2.0 / scissors.at(0).extent.height };
+    pushConstants.windowExtent = { extent.width , extent.height };
+    pushConstants.viewportScale = { 2.0 / extent.width, 2.0 / extent.height };
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
@@ -212,9 +209,7 @@ void PipelineRectanglesFromAtlas::buildVertexBuffers(size_t nrFrameBuffers)
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        vk::Buffer vertexBuffer;
-        VmaAllocation vertexBufferAllocation;
-        tie(vertexBuffer, vertexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        auto [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
         auto const vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
 
         vertexBuffers.push_back(vertexBuffer);
@@ -240,4 +235,4 @@ void PipelineRectanglesFromAtlas::teardownVertexBuffers()
     vertexBuffersData.clear();
 }
 
-}}
+}

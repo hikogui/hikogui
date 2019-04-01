@@ -6,8 +6,7 @@
 #include "TTauri/Application_win32.hpp"
 #include "TTauri/strings.hpp"
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 using namespace TTauri;
@@ -82,8 +81,8 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
     });
 }
 
-Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate> &delegate, const std::string &title) :
-    Window_vulkan(delegate, title, createWindow(title))
+Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate> delegate, const std::string title) :
+    Window_vulkan(move(delegate), title, createWindow(title))
 {
 }
 
@@ -187,4 +186,4 @@ LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM w
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-}}
+}

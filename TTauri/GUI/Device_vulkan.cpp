@@ -12,7 +12,7 @@
 
 #include <boost/range/combine.hpp>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 using namespace gsl;
@@ -40,10 +40,9 @@ static bool hasRequiredExtensions(const vk::PhysicalDevice &physicalDevice, cons
 
 Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
     Device(),
-    physicalIntrinsic(physicalDevice)
+    physicalIntrinsic(std::move(physicalDevice))
 {
     auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(get_singleton<Instance_vulkan>()->loader);
-
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
@@ -64,7 +63,7 @@ Device_vulkan::~Device_vulkan()
 {
     try {
         [[gsl::suppress(f.6)]] {
-            pipelineRectanglesFromAtlas_shared->destroy(this);
+            pipelineRectanglesFromAtlas_shared->destroy(gsl::make_not_null(this));
             pipelineRectanglesFromAtlas_shared = nullptr;
 
             vmaDestroyAllocator(allocator);
@@ -158,10 +157,6 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
     Device::initializeDevice(window);
 }
 
-static bool scoreIsGreater(const tuple<uint32_t, uint8_t, uint32_t> &a, const tuple<uint32_t, uint8_t, uint32_t> &b)
-{
-    return get<2>(a) > get<2>(b);
-}
 
 std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(std::shared_ptr<Window> _window)
 {
@@ -200,16 +195,15 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
             queueFamilieScores.push_back({ index, capabilities, score });
             index++;
         }
-        sort(queueFamilieScores.begin(), queueFamilieScores.end(), scoreIsGreater);
+        sort(queueFamilieScores.begin(), queueFamilieScores.end(), [](const auto &a, const auto &b) {
+            return get<2>(a) > get<2>(b);
+        });
     }
 
     // Iterativly add indices if it completes the totalQueueCapabilities.
     vector<pair<uint32_t, uint8_t>> queueFamilyIndicesAndQueueCapabilitiess;
     uint8_t totalCapabilities = 0;
-    for (auto const &queueFamilyScore : queueFamilieScores) {
-        auto const index = get<0>(queueFamilyScore);
-        auto const capabilities = get<1>(queueFamilyScore);
-
+    for (auto const &[index, capabilities, score] : queueFamilieScores) {
         if ((totalCapabilities & capabilities) != capabilities) {
             queueFamilyIndicesAndQueueCapabilitiess.push_back({ index, capabilities & ~totalCapabilities });
             totalCapabilities |= capabilities;
@@ -359,4 +353,4 @@ void Device_vulkan::unmapMemory(const VmaAllocation &allocation)
     vmaUnmapMemory(allocator, allocation);
 }
 
-}}
+}

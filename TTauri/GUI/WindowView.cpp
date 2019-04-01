@@ -1,13 +1,14 @@
 #include "WindowView.hpp"
 #include "Window.hpp"
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
-WindowView::WindowView(const std::shared_ptr<Window> &window) :
+using namespace std;
+
+WindowView::WindowView(const std::weak_ptr<Window> window) :
     View()
 {
-    this->window = window;
+    this->window = move(window);
 }
 
-}}
+}

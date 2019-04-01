@@ -17,8 +17,7 @@
 #include <mutex>
 #include <tuple>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 class Instance;
 
@@ -88,4 +87,4 @@ public:
     std::vector<std::shared_ptr<Window>> maintance();
 };
 
-}}
+}

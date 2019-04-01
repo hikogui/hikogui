@@ -2,9 +2,8 @@
 
 #include <cstdint>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 const uint32_t defaultNumberOfSwapchainImages = 2;
 
-}}
+}

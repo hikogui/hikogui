@@ -4,8 +4,8 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
+
 class Window_vulkan : public Window {
 public:
     vk::SurfaceKHR intrinsic;
@@ -27,7 +27,7 @@ public:
 
     std::shared_ptr<PipelineRectanglesFromAtlas> pipelineRectanglesFromAtlas;
 
-    Window_vulkan(std::shared_ptr<Delegate> delegate, const std::string &title, vk::SurfaceKHR surface);
+    Window_vulkan(const std::shared_ptr<Delegate> delegate, const std::string title, vk::SurfaceKHR surface);
     ~Window_vulkan();
 
     Window_vulkan(const Window_vulkan &) = delete;
@@ -60,4 +60,4 @@ private:
     std::tuple<uint32_t, vk::Extent2D, State> getImageCountExtentAndState();
 };
 
-}}
+}

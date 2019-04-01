@@ -12,8 +12,7 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <chrono>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 
@@ -32,9 +31,9 @@ static bool hasRequiredExtensions(const std::vector<const char *> &requiredExten
     return true;
 }
 
-Instance_vulkan::Instance_vulkan(const std::vector<const char *> &extensionNames) :
+Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames) :
     Instance(),
-    requiredExtensions(extensionNames)
+    requiredExtensions(std::move(extensionNames))
 {
     std::scoped_lock lock(mutex);
 
@@ -85,4 +84,4 @@ void Instance_vulkan::initialize()
     }
 }
 
-}}
+}

@@ -16,8 +16,7 @@
 
 #include <chrono>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 using namespace gsl;
@@ -26,19 +25,11 @@ std::shared_ptr<Instance> Instance::singleton = nullptr;
 
 Instance::Instance()
 {
-    maintanceThread = thread(Instance::maintenanceLoop, not_null<Instance *>(this));
 }
 
 Instance::~Instance()
 {
-    try {
-        [[gsl::suppress(f.6)]] {
-            stopMaintenance = true;
-            maintanceThread.join();
-        }
-    } catch (...) {
-        abort();
-    }
+    
 }
 
 void Instance::initialize()
@@ -142,12 +133,5 @@ void Instance::maintenance()
     }
 }
 
-void Instance::maintenanceLoop(gsl::not_null<Instance *> self)
-{
-    while (!self->stopMaintenance) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(67));
-        self->maintenance();
-    }
-}
 
-}}
+}

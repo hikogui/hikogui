@@ -10,14 +10,13 @@
 
 #include <vector>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(std::shared_ptr<Window::Delegate> delegate, const std::string &title, vk::SurfaceKHR surface) :
-    Window(delegate, title),
-    intrinsic(surface)
+Window_vulkan::Window_vulkan(const std::shared_ptr<Window::Delegate> delegate, const std::string title, vk::SurfaceKHR surface) :
+    Window(move(delegate), move(title)),
+    intrinsic(move(surface))
 {
 }
 
@@ -243,10 +242,7 @@ std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::Swa
     // Creating swapchain images can fail in different ways, we need to keep retrying.
     vk::SwapchainKHR newSwapchain;
     while (true) {
-        auto const imageCountExtentAndState = getImageCountExtentAndState();
-        auto const imageCount = get<0>(imageCountExtentAndState);
-        auto const imageExtent = get<1>(imageCountExtentAndState);
-        auto const imageState = get<2>(imageCountExtentAndState);
+        auto const [imageCount, imageExtent, imageState] = getImageCountExtentAndState();
 
         if (imageState != State::READY_TO_DRAW) {
             return { oldSwapchain, imageState };
@@ -288,16 +284,14 @@ std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::Swa
             continue;
         }
 
-        auto const checkImageCountExtentAndState = getImageCountExtentAndState();
-        auto const checkImageExtent = get<1>(checkImageCountExtentAndState);
-        auto const checkImageState = get<2>(checkImageCountExtentAndState);
+        auto const [checkImageCount, checkImageExtent, checkImageState] = getImageCountExtentAndState();
 
         if (checkImageState != State::READY_TO_DRAW) {
             return {newSwapchain, checkImageState};
         }
 
-        if (imageExtent != checkImageExtent) {
-            LOG_WARNING("Surface extent changed while creating swapchain, retrying.");
+        if ((imageExtent != checkImageExtent) || (imageCount != checkImageCount)) {
+            LOG_WARNING("Surface extent or imageCount has changed while creating swapchain, retrying.");
             // The newSwapchain was created succesfully, it is just of the wrong size so use it as the next oldSwapchain.
             oldSwapchain = newSwapchain;
             continue;
@@ -447,4 +441,4 @@ void Window_vulkan::teardownSemaphores()
 
 
 
-}}
+}

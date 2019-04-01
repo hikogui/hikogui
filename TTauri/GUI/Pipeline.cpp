@@ -8,13 +8,13 @@
 
 #include "Pipeline.hpp"
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 
-Pipeline::Pipeline(const std::shared_ptr<Window> &window) :
-    window(window)
+Pipeline::Pipeline(const std::shared_ptr<Window> window) :
+    window(std::move(window))
 {
 }
 
-}}
+}

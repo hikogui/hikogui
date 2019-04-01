@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 template <int S, typename T, glm::qualifier Q>
 struct extent;
@@ -41,4 +41,4 @@ using u16vec4 = glm::vec<4, uint16_t, glm::defaultp>;
 using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u32rect2 = rect<2, uint32_t, glm::defaultp>;
 
-}}
+}

@@ -12,8 +12,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
@@ -49,7 +48,7 @@ public:
      * \param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
-    Instance_vulkan(const std::vector<const char *> &extensions);
+    Instance_vulkan(const std::vector<const char *> extensions);
     ~Instance_vulkan() {}
 
     Instance_vulkan(const Instance_vulkan &) = delete;
@@ -60,4 +59,4 @@ public:
     void initialize() override;
 };
 
-}}
+}

@@ -11,8 +11,7 @@
 #include <boost/assert.hpp>
 #include <TTauri/utils.hpp>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 View::View()
 {
@@ -20,8 +19,8 @@ View::View()
 
 void View::setParent(const std::shared_ptr<View> &parent)
 {
-    this->parent = parent;
     this->window = parent->window;
+    this->parent = move(parent);
 }
 
 void View::setRectangle(glm::vec2 position, u16vec2 extent)
@@ -32,10 +31,9 @@ void View::setRectangle(glm::vec2 position, u16vec2 extent)
 
 void View::add(std::shared_ptr<View> view)
 {
-    children.push_back(view);
     view->setParent(shared_from_this());
+    children.push_back(move(view));
 }
-
 
 size_t View::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset)
 {
@@ -46,4 +44,4 @@ size_t View::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRec
 }
 
 
-}}
+}

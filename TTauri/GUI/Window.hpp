@@ -18,7 +18,7 @@
 #include <memory>
 #include <mutex>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 class Instance;
 class Device;
@@ -98,7 +98,7 @@ public:
     std::shared_ptr<View> view;
 
 
-    Window(const std::shared_ptr<Delegate> &delegate, const std::string &title);
+    Window(const std::shared_ptr<Delegate> delegate, const std::string title);
     virtual ~Window();
 
     Window(const Window &) = delete;
@@ -126,7 +126,11 @@ public:
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
-    void setDevice(const std::shared_ptr<Device> &device);
+    void setDevice(const std::weak_ptr<Device> device);
+
+    /*! Remove the GPU device from the window, making it an orphan.
+     */
+    void unsetDevice() { setDevice({}); }
 
     /*! Update window.
      * This will update animations and redraw all views managed by this window.
@@ -166,4 +170,4 @@ private:
     bool isOnScreen();
 };
 
-}}
+}

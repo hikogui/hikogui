@@ -20,8 +20,7 @@
 #include <thread>
 #include <vector>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
@@ -75,15 +74,10 @@ public:
 protected:
     std::shared_ptr<Device> findBestDeviceForWindow(const std::shared_ptr<Window> &window);
 
-    std::thread maintanceThread;
-
     /*! Called when maintance is needed.
      * Run on seperate thread, 15 times per second.
      */
     void maintenance();
-    bool stopMaintenance = false;
-
-    static void maintenanceLoop(gsl::not_null<Instance *> self);
 };
 
-}}
+}

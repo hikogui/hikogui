@@ -12,12 +12,12 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 
-Pipeline_vulkan::Pipeline_vulkan(const std::shared_ptr<Window> &window) :
-    Pipeline(window) {}
+Pipeline_vulkan::Pipeline_vulkan(const std::shared_ptr<Window> window) :
+    Pipeline(std::move(window)) {}
 
 Pipeline_vulkan::~Pipeline_vulkan()
 {
@@ -61,8 +61,6 @@ void Pipeline_vulkan::teardownShaders()
     shaderModules.clear();
     shaderStages.clear();
 }
-
-
 
 void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
 {
@@ -108,37 +106,93 @@ void Pipeline_vulkan::teardownSemaphores()
     renderFinishedSemaphores.clear();
 }
 
-void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D extent)
+void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _extent)
 {
     LOG_INFO("buildPipeline (%i, %i)") % extent.width % extent.height;
 
-    renderPass = _renderPass;
+    renderPass = move(_renderPass);
+    extent = move(_extent);
+    scissor = {{ 0, 0 }, extent};
 
-    pipelineLayout = createPipelineLayout();
+    const auto pushConstantRanges = createPushConstantRanges();
+    const auto vertexInputBindingDescription = createVertexInputBindingDescription();
+    const auto vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
 
-    vertexInputBindingDescription = createVertexInputBindingDescription();
+    pipelineLayout = device<Device_vulkan>()->intrinsic.createPipelineLayout({
+        vk::PipelineLayoutCreateFlags(),
+        0, nullptr,
+        boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
+    });
 
-    vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
+    const vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {
+        vk::PipelineVertexInputStateCreateFlags(),
+        1, &vertexInputBindingDescription,
+        boost::numeric_cast<uint32_t>(vertexInputAttributeDescriptions.size()), vertexInputAttributeDescriptions.data()
+    };
 
-    pipelineVertexInputStateCreateInfo = createPipelineVertexInputStateCreateInfo(vertexInputBindingDescription, vertexInputAttributeDescriptions);
+    const vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {
+        vk::PipelineInputAssemblyStateCreateFlags(),
+        vk::PrimitiveTopology::eTriangleList,
+        VK_FALSE
+    };
 
-    pipelineInputAssemblyStateCreateInfo = createPipelineInputAssemblyStateCreateInfo();
+    const std::vector<vk::Viewport> viewports = { {
+            0.0f, 0.0f,
+            boost::numeric_cast<float>(extent.width), boost::numeric_cast<float>(extent.height),
+            0.0f, 1.0f
+    } };
 
-    viewports = createViewports(extent);
+    const std::vector<vk::Rect2D> scissors = { scissor };
 
-    scissors = createScissors(extent);
+    const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
+        vk::PipelineViewportStateCreateFlags(),
+        boost::numeric_cast<uint32_t>(viewports.size()), viewports.data(),
+        boost::numeric_cast<uint32_t>(scissors.size()), scissors.data()
+    };
 
-    pipelineViewportStateCreateInfo = createPipelineViewportStateCreateInfo(viewports, scissors);
+    const vk::PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo =  {
+        vk::PipelineRasterizationStateCreateFlags(),
+        VK_FALSE, // depthClampEnable
+        VK_FALSE, // rasterizerDiscardEnable
+        vk::PolygonMode::eFill,
+        vk::CullModeFlagBits::eBack,
+        vk::FrontFace::eClockwise,
+        VK_FALSE, // depthBiasEnable
+        0.0, // depthBiasConstantFactor
+        0.0, // depthBiasClamp
+        0.0, // depthBiasSlopeFactor
+        1.0 // lineWidth
+    };
 
-    pipelineRasterizationStateCreateInfo = createPipelineRasterizationStateCreateInfo();
+    const vk::PipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo = {
+        vk::PipelineMultisampleStateCreateFlags(),
+        vk::SampleCountFlagBits::e1,
+        VK_FALSE, // sampleShadingEnable
+        1.0f, // minSampleShading
+        nullptr, // sampleMask
+        VK_FALSE, // alphaToCoverageEnable
+        VK_FALSE // alphaToOneEnable
+    };
 
-    pipelineMultisampleStateCreateInfo = createPipelineMultisampleStateCreateInfo();
+    const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
+        VK_FALSE, // blendEnable
+        vk::BlendFactor::eOne, // srcColorBlendFactor
+        vk::BlendFactor::eZero, // dstColorBlendFactor
+        vk::BlendOp::eAdd, // colorBlendOp
+        vk::BlendFactor::eOne, // srcAlphaBlendFactor
+        vk::BlendFactor::eZero, // dstAlphaBlendFactor
+        vk::BlendOp::eAdd, // aphaBlendOp
+        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+    } };
 
-    pipelineColorBlendAttachmentStates = createPipelineColorBlendAttachmentStates();
+    const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo =  {
+        vk::PipelineColorBlendStateCreateFlags(),
+        VK_FALSE, // logicOpenable
+        vk::LogicOp::eCopy,
+        boost::numeric_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
+    };
 
-    pipelineColorBlendStateCreateInfo = createPipelineColorBlendStateCreateInfo(pipelineColorBlendAttachmentStates);
-
-    graphicsPipelineCreateInfo = {
+    const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
         boost::numeric_cast<uint32_t>(shaderStages.size()),
         shaderStages.data(),
@@ -160,7 +214,6 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D ext
 
     intrinsic = device<Device_vulkan>()->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
     LOG_INFO("/buildPipeline (%i, %i)") % extent.width % extent.height;
-
 }
 
 void Pipeline_vulkan::teardownPipeline()
@@ -226,7 +279,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
         return;
     }
 
-    LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % scissors.at(0).extent.width % scissors.at(0).extent.height;
+    LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % extent.width % extent.height;
 
     auto commandBuffer = commandBuffers.at(imageIndex);
 
@@ -242,7 +295,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
     commandBuffer.beginRenderPass({
             renderPass, 
             vulkanWindow->swapchainFramebuffers.at(imageIndex), 
-            scissors.at(0), 
+            scissor, 
             boost::numeric_cast<uint32_t>(clearColors.size()),
             clearColors.data()
         }, vk::SubpassContents::eInline
@@ -273,105 +326,4 @@ vk::ShaderModule Pipeline_vulkan::loadShader(boost::filesystem::path path) const
     return device<Device_vulkan>()->intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), region.get_size(), static_cast<uint32_t *>(region.get_address())});
 }
 
-vk::PipelineLayout Pipeline_vulkan::createPipelineLayout() const
-{
-    auto pushConstantRanges = createPushConstantRanges();
-
-    return device<Device_vulkan>()->intrinsic.createPipelineLayout({
-        vk::PipelineLayoutCreateFlags(),
-        0, nullptr,
-        boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
-    });
 }
-
-vk::PipelineVertexInputStateCreateInfo Pipeline_vulkan::createPipelineVertexInputStateCreateInfo(
-    const vk::VertexInputBindingDescription &vertexBindingDescriptions,
-    const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const
-{
-    return {
-        vk::PipelineVertexInputStateCreateFlags(),
-        1, &vertexBindingDescriptions,
-        boost::numeric_cast<uint32_t>(vertexAttributeDescriptions.size()), vertexAttributeDescriptions.data()
-    };
-}
-
-vk::PipelineInputAssemblyStateCreateInfo Pipeline_vulkan::createPipelineInputAssemblyStateCreateInfo() const
-{
-    return { vk::PipelineInputAssemblyStateCreateFlags(), vk::PrimitiveTopology::eTriangleList, VK_FALSE };
-}
-
-std::vector<vk::Viewport> Pipeline_vulkan::createViewports(vk::Extent2D extent) const
-{
-    return { { 0.0f, 0.0f, boost::numeric_cast<float>(extent.width), boost::numeric_cast<float>(extent.height), 0.0f, 1.0f } };
-}
-
-std::vector<vk::Rect2D> Pipeline_vulkan::createScissors(vk::Extent2D extent) const
-{
-    return { { { 0, 0 }, extent } };
-}
-
-vk::PipelineViewportStateCreateInfo
-Pipeline_vulkan::createPipelineViewportStateCreateInfo(const std::vector<vk::Viewport> &viewports, std::vector<vk::Rect2D> &scissors) const
-{
-    return { vk::PipelineViewportStateCreateFlags(),
-             boost::numeric_cast<uint32_t>(viewports.size()),
-             viewports.data(),
-             boost::numeric_cast<uint32_t>(scissors.size()),
-             scissors.data() };
-}
-
-vk::PipelineRasterizationStateCreateInfo Pipeline_vulkan::createPipelineRasterizationStateCreateInfo() const
-{
-    return {
-        vk::PipelineRasterizationStateCreateFlags(),
-        VK_FALSE, // depthClampEnable
-        VK_FALSE, // rasterizerDiscardEnable
-        vk::PolygonMode::eFill,
-        vk::CullModeFlagBits::eBack,
-        vk::FrontFace::eClockwise,
-        VK_FALSE, // depthBiasEnable
-        0.0, // depthBiasConstantFactor
-        0.0, // depthBiasClamp
-        0.0, // depthBiasSlopeFactor
-        1.0 // lineWidth
-    };
-}
-
-vk::PipelineMultisampleStateCreateInfo Pipeline_vulkan::createPipelineMultisampleStateCreateInfo() const
-{
-    return {
-        vk::PipelineMultisampleStateCreateFlags(),
-        vk::SampleCountFlagBits::e1,
-        VK_FALSE, // sampleShadingEnable
-        1.0f, // minSampleShading
-        nullptr, // sampleMask
-        VK_FALSE, // alphaToCoverageEnable
-        VK_FALSE // alphaToOneEnable
-    };
-}
-
-std::vector<vk::PipelineColorBlendAttachmentState> Pipeline_vulkan::createPipelineColorBlendAttachmentStates() const
-{
-    return { { VK_FALSE, // blendEnable
-               vk::BlendFactor::eOne, // srcColorBlendFactor
-               vk::BlendFactor::eZero, // dstColorBlendFactor
-               vk::BlendOp::eAdd, // colorBlendOp
-               vk::BlendFactor::eOne, // srcAlphaBlendFactor
-               vk::BlendFactor::eZero, // dstAlphaBlendFactor
-               vk::BlendOp::eAdd, // aphaBlendOp
-               vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA } };
-}
-
-vk::PipelineColorBlendStateCreateInfo
-Pipeline_vulkan::createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const
-{
-    return { vk::PipelineColorBlendStateCreateFlags(),
-             VK_FALSE, // logicOpenable
-             vk::LogicOp::eCopy,
-             boost::numeric_cast<uint32_t>(attachements.size()),
-             attachements.data() };
-}
-
-
-
-}}

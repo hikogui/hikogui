@@ -16,8 +16,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 struct VulkanError: virtual boost::exception, virtual std::exception {};
 
@@ -43,4 +42,4 @@ bool meetsRequiredLimits(const vk::PhysicalDevice &physicalDevice, const vk::Phy
 
 bool hasRequiredFeatures(const vk::PhysicalDevice &physicalDevice, const vk::PhysicalDeviceFeatures &requiredFeatures);
 
-}}
+}

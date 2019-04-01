@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 class Pipeline_vulkan : public Pipeline {
 public:
@@ -19,7 +19,7 @@ public:
 
     vk::Pipeline intrinsic;
 
-    Pipeline_vulkan(const std::shared_ptr<Window> &window);
+    Pipeline_vulkan(const std::shared_ptr<Window> window);
     ~Pipeline_vulkan();
 
     Pipeline_vulkan(const Pipeline_vulkan &) = delete;
@@ -61,40 +61,20 @@ protected:
     boost::filesystem::path fragmentShaderPath;
 
     vk::RenderPass renderPass;
+    vk::Extent2D extent;
+    vk::Rect2D scissor;
     std::vector<vk::ShaderModule> shaderModules;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
     vk::PipelineLayout pipelineLayout;
-    vk::VertexInputBindingDescription vertexInputBindingDescription;
-    std::vector<vk::VertexInputAttributeDescription> vertexInputAttributeDescriptions;
-    vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo;
-    vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo;
-    std::vector<vk::Viewport> viewports;
-    std::vector<vk::Rect2D> scissors;
-    vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo;
-    vk::PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo;
-    vk::PipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo;
-    std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates;
-    vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo;
-    vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo;
 
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) = 0;
     virtual vk::ShaderModule loadShader(boost::filesystem::path path) const;
     virtual std::vector<vk::ShaderModule> createShaderModules() const = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages(const std::vector<vk::ShaderModule> &shaders) const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
-    virtual vk::PipelineLayout createPipelineLayout() const;
-    virtual vk::PipelineVertexInputStateCreateInfo createPipelineVertexInputStateCreateInfo(
-        const vk::VertexInputBindingDescription &vertexBindingDescriptions, const std::vector<vk::VertexInputAttributeDescription> &vertexAttributeDescriptions) const;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
-    virtual vk::PipelineInputAssemblyStateCreateInfo createPipelineInputAssemblyStateCreateInfo() const;
-    virtual std::vector<vk::Viewport> createViewports(vk::Extent2D extent) const;
-    virtual std::vector<vk::Rect2D> createScissors(vk::Extent2D extent) const;
-    virtual vk::PipelineViewportStateCreateInfo createPipelineViewportStateCreateInfo(const std::vector<vk::Viewport> &viewports, std::vector<vk::Rect2D> &scissors) const;
-    virtual vk::PipelineRasterizationStateCreateInfo createPipelineRasterizationStateCreateInfo() const;
-    virtual vk::PipelineMultisampleStateCreateInfo createPipelineMultisampleStateCreateInfo() const;
-    virtual std::vector<vk::PipelineColorBlendAttachmentState> createPipelineColorBlendAttachmentStates() const;
-    virtual vk::PipelineColorBlendStateCreateInfo createPipelineColorBlendStateCreateInfo(const std::vector<vk::PipelineColorBlendAttachmentState> &attachements) const;
+
 
     virtual void buildShaders();
     virtual void teardownShaders();
@@ -108,4 +88,4 @@ protected:
     virtual void teardownPipeline();
 };
 
-}}
+}

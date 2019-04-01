@@ -10,7 +10,7 @@
 
 #include "TTauri/utils.hpp"
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 class Device;
 class Window;
@@ -21,7 +21,7 @@ public:
 
     std::weak_ptr<Window> window;
 
-    Pipeline(const std::shared_ptr<Window> &window);
+    Pipeline(const std::shared_ptr<Window> window);
 
     virtual ~Pipeline() = default;
     Pipeline(const Pipeline &) = delete;
@@ -35,4 +35,4 @@ public:
     }
 };
 
-}}
+}

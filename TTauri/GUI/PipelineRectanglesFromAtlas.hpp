@@ -15,8 +15,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 class Device_vulkan;
 
@@ -34,19 +33,19 @@ public:
         std::weak_ptr<Device_vulkan> device;
 
         vk::Buffer indexBuffer;
-        VmaAllocation indexBufferAllocation;
+        VmaAllocation indexBufferAllocation = {};
 
-        DeviceShared(const std::shared_ptr<Device_vulkan> &device);
+        DeviceShared(const std::shared_ptr<Device_vulkan> device);
         ~DeviceShared();
 
         /*! Deallocate vulkan resources.
          * This is called in the destructor of Device_vulkan, therefor we can not use our device weak_ptr.
          */
-        void destroy(Device_vulkan *vulkanDevice);
+        void destroy(gsl::not_null<Device_vulkan *> vulkanDevice);
 
     private:
         void buildIndexBuffer();
-        void teardownIndexBuffer(Device_vulkan *vulkanDevice);
+        void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
     };
 
     struct PushConstants {
@@ -125,7 +124,7 @@ public:
         virtual size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<Vertex> &vertices, size_t offset) = 0;
     };
 
-    PipelineRectanglesFromAtlas(const std::shared_ptr<Window> &window);
+    PipelineRectanglesFromAtlas(const std::shared_ptr<Window> window);
     ~PipelineRectanglesFromAtlas() {};
 
     PipelineRectanglesFromAtlas(const PipelineRectanglesFromAtlas &) = delete;
@@ -156,4 +155,4 @@ protected:
 
 };
 
-}}
+}

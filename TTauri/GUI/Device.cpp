@@ -20,8 +20,7 @@
 #include <tuple>
 #include <vector>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 
@@ -61,7 +60,7 @@ void Device::remove(std::shared_ptr<Window> window)
 {
     std::scoped_lock lock(mutex);
 
-    window->setDevice(nullptr);
+    window->unsetDevice();
     windows.erase(find(windows.begin(), windows.end(), window));
 }
 
@@ -114,4 +113,4 @@ std::vector<std::shared_ptr<Window>> Device::maintance()
     return orphanWindows;
 }
 
-}}
+}

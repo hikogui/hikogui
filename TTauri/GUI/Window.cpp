@@ -17,14 +17,14 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 using namespace std;
 
-Window::Window(const std::shared_ptr<Delegate> &delegate, const std::string &title) :
+Window::Window(const std::shared_ptr<Delegate> delegate, const std::string title) :
     state(State::NO_DEVICE),
-    delegate(delegate),
-    title(title)
+    delegate(move(delegate)),
+    title(move(title))
 {
 }
 
@@ -64,7 +64,7 @@ void Window::maintenance()
     }
 }
 
-void Window::setDevice(const std::shared_ptr<Device> &device)
+void Window::setDevice(const std::weak_ptr<Device> newDevice)
 {
     state.transition({
         {State::READY_TO_DRAW, State::SETTING_DEVICE},
@@ -82,15 +82,12 @@ void Window::setDevice(const std::shared_ptr<Device> &device)
         {State::ACCEPTED_SET_DEVICE, State::SETTING_DEVICE}
     });
 
-    auto const oldDevice = this->device.lock();
-
-    if (oldDevice) {
+    if (!device.expired()) {
         teardownForDeviceChange();
-        this->device.reset();
     }
 
-    if (device) {
-        this->device = device;
+    device = move(newDevice);
+    if (!device.expired()) {
         auto const newState = buildForDeviceChange();
         state.transition_or_throw({{State::SETTING_DEVICE, newState}});
 
@@ -109,4 +106,4 @@ void Window::setWindowSize(uint32_t width, uint32_t height)
     windowRectangle.extent = {width, height};
 }
 
-}}
+}

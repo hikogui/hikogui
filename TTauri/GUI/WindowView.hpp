@@ -2,8 +2,7 @@
 
 #include "View.hpp"
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 class Window;
 
@@ -15,7 +14,7 @@ public:
         FULLSCREEN,
     };
 
-    WindowView(const std::shared_ptr<Window> &window);
+    WindowView(const std::weak_ptr<Window> window);
     ~WindowView(){};
 
     WindowView(const WindowView &) = delete;
@@ -24,4 +23,4 @@ public:
     WindowView &operator=(WindowView &&) = delete;
 };
 
-}}
+}

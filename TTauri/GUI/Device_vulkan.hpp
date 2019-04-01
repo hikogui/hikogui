@@ -5,7 +5,7 @@
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
-namespace TTauri { namespace GUI {
+namespace TTauri::GUI {
 
 class PipelineRectanglesFromAtlas::DeviceShared;
 
@@ -100,4 +100,4 @@ public:
 
 };
 
-}}
+}

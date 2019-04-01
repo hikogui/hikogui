@@ -8,11 +8,10 @@
 
 #include "ImageView.hpp"
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
-ImageView::ImageView(const boost::filesystem::path &path) :
-    View(), path(path)
+ImageView::ImageView(const boost::filesystem::path path) :
+    View(), path(std::move(path))
 {
 }
 
@@ -32,4 +31,4 @@ size_t ImageView::piplineRectangledFromAtlasPlaceVertices(const gsl::span<Pipeli
     return offset;
 }
 
-}}
+}

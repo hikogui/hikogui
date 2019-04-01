@@ -10,12 +10,13 @@
 
 namespace TTauri {
 
-Application_win32::Application_win32(const std::shared_ptr<Delegate> &delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
-    Application(delegate),
+Application_win32::Application_win32(const std::shared_ptr<Delegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
+    Application(move(delegate)),
     hInstance(hInstance),
     hPrevInstance(hPrevInstance),
     pCmdLine(pCmdLine),
-    nCmdShow(nCmdShow)
+    nCmdShow(nCmdShow),
+    mainThreadID(GetCurrentThreadId())
 {
 
     // Resource path, is the same directory as where the executable lives.
@@ -47,8 +48,6 @@ void Application_win32::mainThreadLastWindowClose()
 
 int Application_win32::loop()
 {
-    mainThreadID = GetCurrentThreadId();
-
     startingLoop();
 
     // Run the message loop.

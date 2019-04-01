@@ -14,14 +14,13 @@
 
 #include <memory>
 
-namespace TTauri {
-namespace GUI {
+namespace TTauri::GUI {
 
 class ImageView : public View {
 public:
     const boost::filesystem::path path;
 
-    ImageView(const boost::filesystem::path &path);
+    ImageView(const boost::filesystem::path path);
     ~ImageView() {}
 
     ImageView(const ImageView &) = delete;
@@ -32,4 +31,4 @@ public:
     size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset) override;
 };
 
-}}
+}

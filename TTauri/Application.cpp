@@ -12,10 +12,12 @@
 
 namespace TTauri {
 
+using namespace std;
+
 std::shared_ptr<Application> Application::singleton;
 
 Application::Application(std::shared_ptr<Delegate> delegate) :
-    delegate(delegate)
+    delegate(move(delegate))
 {
     initializeLogging();
     LOG_INFO("Starting application.");
