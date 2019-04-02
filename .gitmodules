@@ -13,3 +13,6 @@
 [submodule "ThirdPartyLibraries/pixman"]
 	path = ThirdPartyLibraries/pixman
 	url = https://gitlab.freedesktop.org/pixman/pixman
+[submodule "ThirdPartyLibraries/cairo"]
+	path = ThirdPartyLibraries/cairo
+	url = https://gitlab.freedesktop.org/cairo/cairo
