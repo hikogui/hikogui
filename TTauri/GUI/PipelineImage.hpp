@@ -30,6 +30,7 @@ public:
     static const size_t maximumNumberOfIndices = maximumNumberOfTriangles * 3;
 
     struct DeviceShared;
+    struct Image;
 
     struct PushConstants {
         glm::vec2 windowExtent = { 0.0, 0.0 };
@@ -85,19 +86,6 @@ public:
                 { 5, 0, vk::Format::eR8Uint, offsetof(Vertex, alpha) },
             };
         }
-    };
-
-    struct Rectangle {
-        std::string key;
-        std::vector<uint16_t> atlasIndices;
-
-        glm::vec2 origin;
-        glm::vec2 position;
-        float rotation;
-        float alpha;
-        u16vec2 extent;
-
-        void placeVertices(gsl::span<Vertex> &vertices, size_t &offset);
     };
 
     class Delegate {

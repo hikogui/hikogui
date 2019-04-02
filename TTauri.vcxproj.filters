@@ -78,6 +78,9 @@
     <ClCompile Include="TTauri\GUI\PipelineImage_DeviceShared.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\GUI\PipelineImage_Image.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
@@ -153,6 +156,9 @@
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\GUI\PipelineImage_DeviceShared.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\PipelineImage_Image.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
   </ItemGroup>

@@ -32,7 +32,8 @@ struct PipelineImage::DeviceShared final {
     */
     void destroy(gsl::not_null<Device_vulkan *> vulkanDevice);
 
-
+    std::shared_ptr<PipelineImage::Image> retainImage(const std::string &name, u16vec2 extent);
+    void releaseImage(std::shared_ptr<PipelineImage::Image> image);
 
 private:
     void buildIndexBuffer();
