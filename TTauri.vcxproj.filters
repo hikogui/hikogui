@@ -72,7 +72,10 @@
     <ClCompile Include="TTauri\GUI\VulkanMemoryAllocator.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="TTauri\GUI\PipelineRectanglesFromAtlas.cpp">
+    <ClCompile Include="TTauri\GUI\PipelineImage.cpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TTauri\GUI\PipelineImage_DeviceShared.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
   </ItemGroup>
@@ -146,15 +149,18 @@
     <ClInclude Include="TTauri\GUI\geometry.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="TTauri\GUI\PipelineRectanglesFromAtlas.hpp">
+    <ClInclude Include="TTauri\GUI\PipelineImage.hpp">
+      <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\GUI\PipelineImage_DeviceShared.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="TTauri\GUI\PipelineRectanglesFromAtlas.vert">
+    <None Include="TTauri\GUI\PipelineImage.frag">
       <Filter>TTauri\GUI</Filter>
     </None>
-    <None Include="TTauri\GUI\PipelineRectanglesFromAtlas.frag">
+    <None Include="TTauri\GUI\PipelineImage.vert">
       <Filter>TTauri\GUI</Filter>
     </None>
   </ItemGroup>

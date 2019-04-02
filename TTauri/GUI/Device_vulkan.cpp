@@ -2,7 +2,8 @@
 #include "Device_vulkan.hpp"
 
 #include "Instance_vulkan.hpp"
-#include "PipelineRectanglesFromAtlas.hpp"
+#include "PipelineImage.hpp"
+#include "PipelineImage_DeviceShared.hpp"
 #include "Window_vulkan.hpp"
 #include "vulkan_utils.hpp"
 
@@ -65,8 +66,8 @@ Device_vulkan::~Device_vulkan()
 {
     try {
         [[gsl::suppress(f.6)]] {
-            pipelineRectanglesFromAtlas_shared->destroy(gsl::make_not_null(this));
-            pipelineRectanglesFromAtlas_shared = nullptr;
+            imagePipeline->destroy(gsl::make_not_null(this));
+            imagePipeline = nullptr;
 
             vmaDestroyAllocator(allocator);
 
@@ -154,7 +155,7 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
         index++;
     }
 
-    pipelineRectanglesFromAtlas_shared = TTauri::make_shared<PipelineRectanglesFromAtlas::DeviceShared>(dynamic_pointer_cast<Device_vulkan>(shared_from_this()));
+    imagePipeline = TTauri::make_shared<PipelineImage::DeviceShared>(dynamic_pointer_cast<Device_vulkan>(shared_from_this()));
 
     Device::initializeDevice(window);
 }

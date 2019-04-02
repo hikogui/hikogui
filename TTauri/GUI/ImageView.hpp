@@ -28,7 +28,7 @@ public:
     ImageView(ImageView &&) = delete;
     ImageView &operator=(ImageView &&) = delete;
 
-    size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset) override;
+    size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineImage::Vertex> &vertices, size_t offset) override;
 };
 
 }

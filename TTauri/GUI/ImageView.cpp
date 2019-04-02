@@ -15,9 +15,9 @@ ImageView::ImageView(const boost::filesystem::path path) :
 {
 }
 
-size_t ImageView::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset)
+size_t ImageView::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineImage::Vertex> &vertices, size_t offset)
 {
-    PipelineRectanglesFromAtlas::Vertex v;
+    PipelineImage::Vertex v;
 
     v.position = position + glm::vec2(0.0,      0.0     );
     vertices.at(offset++) = v;

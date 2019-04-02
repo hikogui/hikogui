@@ -25,7 +25,7 @@ public:
     vk::Semaphore imageAvailableSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::shared_ptr<PipelineRectanglesFromAtlas> pipelineRectanglesFromAtlas;
+    std::shared_ptr<PipelineImage> imagePipeline;
 
     Window_vulkan(const std::shared_ptr<Delegate> delegate, const std::string title, vk::SurfaceKHR surface);
     ~Window_vulkan();

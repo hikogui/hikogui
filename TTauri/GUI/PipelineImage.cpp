@@ -1,0 +1,122 @@
+//
+//  BackingPipeline.cpp
+//  TTauri
+//
+//  Created by Tjienta Vara on 2019-02-12.
+//  Copyright © 2019 Pokitec. All rights reserved.
+//
+
+#include "PipelineImage.hpp"
+#include "PipelineImage_DeviceShared.hpp"
+#include "Window.hpp"
+#include "Device_vulkan.hpp"
+#include "TTauri/Application.hpp"
+#include <boost/numeric/conversion/cast.hpp>
+
+namespace TTauri::GUI {
+
+using namespace TTauri;
+using namespace std;
+using namespace gsl;
+
+PipelineImage::PipelineImage(const std::shared_ptr<Window> window) :
+    Pipeline_vulkan(move(window))
+{
+}
+
+vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
+{
+    auto const tmpNumberOfVertices = window.lock()->view->piplineRectangledFromAtlasPlaceVertices(vertexBuffersData.at(imageIndex), 0);
+
+    vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineImage::Vertex));
+
+    if (tmpNumberOfVertices != numberOfVertices) {
+        invalidateCommandBuffers(false);
+        numberOfVertices = tmpNumberOfVertices;
+    }
+   
+
+    return Pipeline_vulkan::render(imageIndex, inputSemaphore);
+}
+
+void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex)
+{
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(imageIndex) };
+    std::vector<vk::DeviceSize> tmpOffsets = { 0 };
+    BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
+
+    auto const vulkanDevice = device<Device_vulkan>();
+    auto const indexBuffer = vulkanDevice->imagePipeline->indexBuffer;
+    commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
+
+    commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
+
+    pushConstants.windowExtent = { extent.width , extent.height };
+    pushConstants.viewportScale = { 2.0 / extent.width, 2.0 / extent.height };
+    commandBuffer.pushConstants(
+        pipelineLayout,
+        vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
+        0, 
+        sizeof(PushConstants), 
+        &pushConstants
+    );
+
+    auto const numberOfRectangles = numberOfVertices / 4;
+    auto const numberOfTriangles = numberOfRectangles * 2;
+    commandBuffer.drawIndexed(
+        boost::numeric_cast<uint32_t>(numberOfTriangles * 3),
+        1,
+        0,
+        0,
+        0
+    );
+}
+
+std::vector<vk::PipelineShaderStageCreateInfo> PipelineImage::createShaderStages() const {
+    return device<Device_vulkan>()->imagePipeline->shaderStages;
+}
+
+void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
+{
+    auto vulkanDevice = device<Device_vulkan>();
+
+    BOOST_ASSERT(vertexBuffers.size() == 0);
+    BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
+    BOOST_ASSERT(vertexBuffersData.size() == 0);
+    for (size_t i = 0; i < nrFrameBuffers; i++) {
+        vk::BufferCreateInfo const bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (Vertex) * PipelineImage::maximumNumberOfVertices,
+            vk::BufferUsageFlagBits::eVertexBuffer,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+
+        auto [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        auto const vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
+
+        vertexBuffers.push_back(vertexBuffer);
+        vertexBuffersAllocation.push_back(vertexBufferAllocation);
+        vertexBuffersData.push_back(vertexBufferData);
+    }
+}
+
+void PipelineImage::teardownVertexBuffers()
+{
+    auto vulkanDevice = device<Device_vulkan>();
+
+    BOOST_ASSERT(vertexBuffers.size() == vertexBuffersAllocation.size());
+    for (size_t i = 0; i < vertexBuffers.size(); i++) {
+        auto vertexBuffer = vertexBuffers.at(i);
+        auto vertexBufferAllocation = vertexBuffersAllocation.at(i);
+
+        vulkanDevice->unmapMemory(vertexBufferAllocation);
+        vulkanDevice->destroyBuffer(vertexBuffer, vertexBufferAllocation);
+    }
+    vertexBuffers.clear();
+    vertexBuffersAllocation.clear();
+    vertexBuffersData.clear();
+}
+
+}

@@ -35,7 +35,7 @@ void View::add(std::shared_ptr<View> view)
     children.push_back(move(view));
 }
 
-size_t View::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineRectanglesFromAtlas::Vertex> &vertices, size_t offset)
+size_t View::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineImage::Vertex> &vertices, size_t offset)
 {
     for (auto child : children) {
         offset = child->piplineRectangledFromAtlasPlaceVertices(vertices, offset);

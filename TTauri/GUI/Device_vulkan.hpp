@@ -7,7 +7,7 @@
 
 namespace TTauri::GUI {
 
-class PipelineRectanglesFromAtlas::DeviceShared;
+class PipelineImage::DeviceShared;
 
 class Device_vulkan : public Device {
 public:
@@ -34,7 +34,7 @@ public:
     vk::CommandPool presentCommandPool;
     vk::CommandPool computeCommandPool;
 
-    std::shared_ptr<PipelineRectanglesFromAtlas::DeviceShared> pipelineRectanglesFromAtlas_shared;
+    std::shared_ptr<PipelineImage::DeviceShared> imagePipeline;
 
     /*! List if extension required on this device.
      */

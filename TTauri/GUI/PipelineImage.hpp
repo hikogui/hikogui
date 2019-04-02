@@ -22,42 +22,14 @@ class Device_vulkan;
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlasses and sharing for all views.
  */
-class PipelineRectanglesFromAtlas : public Pipeline_vulkan {
+class PipelineImage : public Pipeline_vulkan {
 public:
     static const size_t maximumNumberOfVertices = 65536;
     static const size_t maximumNumberOfSquares = maximumNumberOfVertices / 4;
     static const size_t maximumNumberOfTriangles = maximumNumberOfSquares * 2;
     static const size_t maximumNumberOfIndices = maximumNumberOfTriangles * 3;
 
-    struct DeviceShared final {
-        std::weak_ptr<Device_vulkan> device;
-
-        vk::Buffer indexBuffer;
-        VmaAllocation indexBufferAllocation = {};
-
-        vk::ShaderModule vertexShaderModule;
-        vk::ShaderModule fragmentShaderModule;
-        std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
-
-        DeviceShared(const std::shared_ptr<Device_vulkan> device);
-        ~DeviceShared();
-
-        DeviceShared(const DeviceShared &) = delete;
-        DeviceShared &operator=(const DeviceShared &) = delete;
-        DeviceShared(DeviceShared &&) = delete;
-        DeviceShared &operator=(DeviceShared &&) = delete;
-
-        /*! Deallocate vulkan resources.
-         * This is called in the destructor of Device_vulkan, therefor we can not use our device weak_ptr.
-         */
-        void destroy(gsl::not_null<Device_vulkan *> vulkanDevice);
-
-    private:
-        void buildIndexBuffer();
-        void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
-        void buildShaders();
-        void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
-    };
+    struct DeviceShared;
 
     struct PushConstants {
         glm::vec2 windowExtent = { 0.0, 0.0 };
@@ -135,13 +107,13 @@ public:
         virtual size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<Vertex> &vertices, size_t offset) = 0;
     };
 
-    PipelineRectanglesFromAtlas(const std::shared_ptr<Window> window);
-    ~PipelineRectanglesFromAtlas() {};
+    PipelineImage(const std::shared_ptr<Window> window);
+    ~PipelineImage() {};
 
-    PipelineRectanglesFromAtlas(const PipelineRectanglesFromAtlas &) = delete;
-    PipelineRectanglesFromAtlas &operator=(const PipelineRectanglesFromAtlas &) = delete;
-    PipelineRectanglesFromAtlas(PipelineRectanglesFromAtlas &&) = delete;
-    PipelineRectanglesFromAtlas &operator=(PipelineRectanglesFromAtlas &&) = delete;
+    PipelineImage(const PipelineImage &) = delete;
+    PipelineImage &operator=(const PipelineImage &) = delete;
+    PipelineImage(PipelineImage &&) = delete;
+    PipelineImage &operator=(PipelineImage &&) = delete;
 
     vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore) override;
 
