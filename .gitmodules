@@ -4,3 +4,6 @@
 [submodule "ThirdPartyLibraries/VMA/VulkanMemoryAllocator"]
 	path = ThirdPartyLibraries/VMA/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "ThirdPartyLibraries/skia"]
+	path = ThirdPartyLibraries/skia
+	url = https://skia.googlesource.com/skia.git
