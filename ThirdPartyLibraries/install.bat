@@ -16,8 +16,8 @@ devenv zlib.sln /build
 copy zconf.h ..
 cd ..
 cd ..
-set ZLIB_INCLUDE_DIR=..\..\zlib
-set ZLIB_LIBRARY=..\..\zlib\build\Debug\zlibstaticd.lib
+set INCLUDE=%INCLUDE%;%TDIR%\zlib
+set LIB=%LIB%;%TDIR%\zlib\build\Debug\
 
 cd libpng
 mkdir build
@@ -26,13 +26,6 @@ cmake .. -G "Visual Studio 15 2017" -A x64 -DZLIB_INCLUDE_DIR="%TDIR%\zlib" -DZL
 devenv libpng.sln /build
 cd ..
 cd ..
+set INCLUDE=%INCLUDE%;%TDIR%\libpng
+set LIB=%LIB%;%TDIR%\libpng\build\Debug\
 
-cd pixman
-cd pixman
-copy pixman-version.h.in pixman-version.h
-sed -i -e "s/@PIXMAN_VERSION_MAJOR@/0/g" pixman-version.h
-sed -i -e "s/@PIXMAN_VERSION_MINOR@/38/g" pixman-version.h
-sed -i -e "s/@PIXMAN_VERSION_MICRO@/0/g" pixman-version.h
-make -f Makefile.win32 "MMX=off" "SSE=off" "SSE2=off"
-cd ..
-cd ..
