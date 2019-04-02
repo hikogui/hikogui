@@ -10,3 +10,6 @@
 [submodule "ThirdPartyLibraries/libpng"]
 	path = ThirdPartyLibraries/libpng
 	url = git://git.code.sf.net/p/libpng/code
+[submodule "ThirdPartyLibraries/pixman"]
+	path = ThirdPartyLibraries/pixman
+	url = https://gitlab.freedesktop.org/pixman/pixman
