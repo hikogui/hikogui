@@ -11,7 +11,7 @@
 #include "View.hpp"
 
 #include "TTauri/utils.hpp"
-#include "geometry.hpp"
+#include "TTauri/geometry.hpp"
 
 #include <unordered_set>
 

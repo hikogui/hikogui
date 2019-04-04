@@ -10,7 +10,7 @@
 
 #include "Pipeline_vulkan.hpp"
 #include "config.hpp"
-#include "geometry.hpp"
+#include "TTauri/geometry.hpp"
 
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>

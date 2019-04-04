@@ -218,6 +218,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="TTauri\Application.cpp" />
+    <ClCompile Include="TTauri\Draw\PixelMap.cpp" />
     <ClCompile Include="TTauri\GUI\PipelineImage.cpp" />
     <ClCompile Include="TTauri\GUI\Device.cpp" />
     <ClCompile Include="TTauri\GUI\Device_vulkan.cpp" />
@@ -244,11 +245,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp" />
+    <ClInclude Include="TTauri\Draw\PixelMap.hpp" />
+    <ClInclude Include="TTauri\Draw\utils.hpp" />
+    <ClInclude Include="TTauri\geometry.hpp" />
     <ClInclude Include="TTauri\GUI\PipelineImage.hpp" />
     <ClInclude Include="TTauri\GUI\config.hpp" />
     <ClInclude Include="TTauri\GUI\Device.hpp" />
     <ClInclude Include="TTauri\GUI\Device_vulkan.hpp" />
-    <ClInclude Include="TTauri\GUI\geometry.hpp" />
     <ClInclude Include="TTauri\GUI\ImageView.hpp" />
     <ClInclude Include="TTauri\GUI\Instance.hpp" />
     <ClInclude Include="TTauri\GUI\Instance_vulkan.hpp" />

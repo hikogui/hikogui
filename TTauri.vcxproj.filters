@@ -7,6 +7,9 @@
     <Filter Include="TTauri\GUI">
       <UniqueIdentifier>{3c463c0a-2c99-485d-a03a-8b5b258ebd90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TTauri\Draw">
+      <UniqueIdentifier>{01fd8f47-35a0-4944-a30e-9c20896abdd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TTauri\Application.cpp">
@@ -81,6 +84,9 @@
     <ClCompile Include="TTauri\GUI\PipelineImage_Image.cpp">
       <Filter>TTauri\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\Draw\PixelMap.cpp">
+      <Filter>TTauri\Draw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
@@ -149,9 +155,6 @@
     <ClInclude Include="TTauri\strings.hpp">
       <Filter>TTauri</Filter>
     </ClInclude>
-    <ClInclude Include="TTauri\GUI\geometry.hpp">
-      <Filter>TTauri\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="TTauri\GUI\PipelineImage.hpp">
       <Filter>TTauri\GUI</Filter>
     </ClInclude>
@@ -160,6 +163,15 @@
     </ClInclude>
     <ClInclude Include="TTauri\GUI\PipelineImage_Image.hpp">
       <Filter>TTauri\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Draw\PixelMap.hpp">
+      <Filter>TTauri\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\geometry.hpp">
+      <Filter>TTauri</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Draw\utils.hpp">
+      <Filter>TTauri\Draw</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

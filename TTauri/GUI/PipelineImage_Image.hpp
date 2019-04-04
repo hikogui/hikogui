@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PipelineImage.hpp"
+#include "TTauri/Draw/PixelMap.hpp"
 
 namespace TTauri::GUI {
 
@@ -11,7 +12,7 @@ struct PipelineImage::Image {
     u16vec2 extent;
     std::vector<uint16_t> atlasIndicies;
 
-    //std::pair<gsl::span<uint32_t>, u16vec2> beginCPUDrawing();
+    TTauri::Draw::PixelMap<uint32_t> beginCPUDrawing();
     //void finishCPUDrawing();
 
 };

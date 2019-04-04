@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 template <int S, typename T, glm::qualifier Q>
 struct extent;
