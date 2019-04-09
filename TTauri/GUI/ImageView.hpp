@@ -20,6 +20,8 @@ class ImageView : public View {
 public:
     const boost::filesystem::path path;
 
+    std::shared_ptr<PipelineImage::Image> backingImage;
+
     ImageView(const boost::filesystem::path path);
     ~ImageView() {}
 
@@ -28,7 +30,9 @@ public:
     ImageView(ImageView &&) = delete;
     ImageView &operator=(ImageView &&) = delete;
 
-    size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineImage::Vertex> &vertices, size_t offset) override;
+    void drawBackingImage();
+
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
 };
 
 }

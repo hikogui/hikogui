@@ -26,7 +26,8 @@ PipelineImage::PipelineImage(const std::shared_ptr<Window> window) :
 
 vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const tmpNumberOfVertices = window.lock()->view->piplineRectangledFromAtlasPlaceVertices(vertexBuffersData.at(imageIndex), 0);
+    size_t tmpNumberOfVertices = 0;
+    window.lock()->view->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
     vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineImage::Vertex));
 
@@ -45,14 +46,15 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    auto const vulkanDevice = device<Device_vulkan>();
-    auto const indexBuffer = vulkanDevice->imagePipeline->indexBuffer;
-    commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
+    device<Device_vulkan>()->imagePipeline->drawInCommandBuffer(commandBuffer);
+
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
     pushConstants.windowExtent = { extent.width , extent.height };
     pushConstants.viewportScale = { 2.0 / extent.width, 2.0 / extent.height };
+    pushConstants.atlasExtent = { PipelineImage::DeviceShared::atlasImageWidth, PipelineImage::DeviceShared::atlasImageHeight };
+    pushConstants.atlasScale = { 1.0 / PipelineImage::DeviceShared::atlasImageWidth, 1.0 / PipelineImage::DeviceShared::atlasImageHeight };
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
@@ -74,6 +76,20 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineImage::createShaderStages() const {
     return device<Device_vulkan>()->imagePipeline->shaderStages;
+}
+
+std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLayoutBindings() const {
+    return { {
+        0, // binding
+        vk::DescriptorType::eSampler,
+        1, // descriptorCount
+        vk::ShaderStageFlagBits::eFragment
+    }, {
+        1, // binding
+        vk::DescriptorType::eSampledImage,
+        boost::numeric_cast<uint32_t>(PipelineImage::DeviceShared::atlasMaximumNrImages), // descriptorCount
+        vk::ShaderStageFlagBits::eFragment
+    } };
 }
 
 void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)

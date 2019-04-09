@@ -35,6 +35,8 @@ public:
     struct PushConstants {
         glm::vec2 windowExtent = { 0.0, 0.0 };
         glm::vec2 viewportScale = { 0.0, 0.0 };
+        glm::vec2 atlasExtent = { 0.0, 0.0 };
+        glm::vec2 atlasScale = { 0.0, 0.0 };
 
         static std::vector<vk::PushConstantRange> pushConstantRanges()
         {
@@ -44,16 +46,37 @@ public:
         }
     };
 
+    /*! Information on the location and orientation of an image on a window.
+     */
+    struct ImageLocation {
+        //! The pixel-coordinates where the origin is located relative to the top-left corner of the window.
+        glm::vec2 position;
+
+        //! Location of the origin relative to the top-left of the image in number of pixels.
+        glm::vec2 origin;
+
+        //! Clockwise rotation around the origin of the image in radials.
+        float rotation;
+
+        //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
+        u16rect clippingRectangle;
+
+        //! Depth location of the rendered image.
+        uint16_t depth;
+
+        //! Transparency of the image.
+        uint8_t alpha;
+    };
+
     /*! A vertex defining a rectangle on a window.
-     * The same vertex is passed to the vertex shader 6 times for each rectangle (two triangles).
      * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
      */
     struct Vertex {
         //! The pixel-coordinates where the origin is located relative to the top-left corner of the window.
         glm::vec2 position;
 
-        //! The left-top and right-bottom position in pixels of the clipping rectangle relative to the top-left corner of the window.
-        u16rect2 clippingRectangle;
+        //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
+        u16rect clippingRectangle;
 
         //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array
         u16vec3 atlasPosition;
@@ -92,7 +115,7 @@ public:
     public:
         struct Error : virtual boost::exception, virtual std::exception {};
 
-        virtual size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<Vertex> &vertices, size_t offset) = 0;
+        virtual void pipelineImagePlaceVertices(gsl::span<Vertex> &vertices, size_t &offset) = 0;
     };
 
     PipelineImage(const std::shared_ptr<Window> window);
@@ -116,6 +139,7 @@ protected:
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) override;
 
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
+    std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override { return PushConstants::pushConstantRanges(); }
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override { return Vertex::inputBindingDescription(); }
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override { return Vertex::inputAttributeDescriptions(); }

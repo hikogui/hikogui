@@ -35,6 +35,7 @@ public:
 
     //! Location of the frame compared to the parent-frame.
     glm::vec2 position = { 0.0, 0.0 };
+    uint16_t depth = 0;
     glm::u16vec2 extent = { 0, 0 };
 
     /*! Constructor for creating subviews.
@@ -58,7 +59,7 @@ public:
         return lock_dynamic_cast<T>(window.lock()->device);
     }
 
-    size_t piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineImage::Vertex> &vertices, size_t offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
 };
 
 }

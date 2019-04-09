@@ -4,6 +4,8 @@
 layout(push_constant) uniform PushConstants {
     vec2 windowExtent;
     vec2 viewportScale;
+    vec2 atlasExtent;
+    vec2 atlasScale;
 } pushConstants;
 
 layout(location = 0) in vec2 inPosition;

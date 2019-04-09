@@ -108,8 +108,7 @@ inline __m128 compositeOver(const __m128 a, const __m128 b)
 {
     auto const a_alpha = _mm_broadcastss_ps(a);
     auto const b_alpha = _mm_broadcastss_ps(b);
-    auto const a_inv_alpha = _mm_sub_ps(_mm_set1_ps(1.0), a_alpha);
-    auto const b_inv_alpha = _mm_mul_ps(b_alpha, a_inv_alpha);
+    auto const b_inv_alpha = _mm_mul_ps(b_alpha, _mm_sub_ps(_mm_set1_ps(1.0), a_alpha));
 
     auto const c_alpha = _mm_add_ps(a_alpha, b_inv_alpha);
     auto const c = _mm_div_ps(

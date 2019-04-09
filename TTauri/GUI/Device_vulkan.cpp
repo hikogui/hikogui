@@ -13,7 +13,6 @@
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
-#include <boost/range/combine.hpp>
 
 namespace TTauri::GUI {
 
@@ -349,6 +348,23 @@ std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::Buffe
 void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation)
 {
     vmaDestroyBuffer(allocator, buffer, allocation);
+}
+
+std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo)
+{
+    VkImage image;
+    VmaAllocation allocation;
+
+    auto const result = static_cast<vk::Result>(vmaCreateImage(allocator, &(static_cast<VkImageCreateInfo>(imageCreateInfo)), &allocationCreateInfo, &image, &allocation, nullptr));
+
+    std::pair<vk::Image, VmaAllocation> const value = {image, allocation};
+
+    return vk::createResultValue(result, value, "TTauri::GUI::Device_vulkan::createImage");
+}
+
+void Device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation)
+{
+    vmaDestroyImage(allocator, image, allocation);
 }
 
 void Device_vulkan::unmapMemory(const VmaAllocation &allocation)

@@ -15,28 +15,31 @@
 
 namespace TTauri::Draw {
 
-
-
 template <typename T>
 struct PixelMap {
     gsl::span<T> pixels;
     size_t width;
     size_t height;
 
-    constexpr PixelMap(gsl::span<T> pixels, size_t width, size_t height) :
-        pixels(std::move(pixels)), width(width), height(height)
-    {
-        if (width * height >= pixels.size()) {
-            throw std::out_of_range("Width * height >= number of pixels");
+    //! Stride in number of pixels; width of the original image.
+    size_t stride;
+
+    constexpr PixelMap<T> submap(size_t const x, size_t const y, size_t const newWidth, size_t const newHeight) const {
+        size_t const offset = y * stride + x;
+        size_t const count = newHeight * stride + newWidth;
+
+        if ((x + newWidth >= width) || (y + newHeight >= height)) {
+            throw std::out_of_range("(x + newWidth >= width) || (y + newHeight >= height)");
         }
+        return { pixels.subspan(offset, const), newWidth, newHeight, stride };
     }
 
-    constexpr gsl::span<T> operator[](const size_t rowNr) const {
-        return pixels.subspan(rownNr * width, width);
+    constexpr gsl::span<T> operator[](size_t const rowNr) const {
+        return pixels.subspan(rownNr * stride, width);
     }
 
     constexpr gsl::span<T> at(const size_t rowNr) const {
-        if (rowNr > height) {
+        if (rowNr >= height) {
             throw std::out_of_range("rowNr >= height");
         }
         return *this[rowNr];
@@ -81,8 +84,6 @@ struct Color_sRGBA {
     void store_ps(__m128 x) {
         pack_sRGBA_ps(&color, sRGBA_gamma_ps(x));
     }
-
-
 };
 
 inline void compositeOver(Color_sRGBA &dst, const Color_sRGBA &below, const Color_sRGBA &above)
@@ -97,20 +98,27 @@ inline void compositeOver(Color_sRGBA &dst, const Color_sRGBA &below, const Colo
 
 /*! 
  */
-inline void compositeOver(PixelMap<Color_sRGBA> dst, const PixelMap<Color_sRGBA> srcBelow, const PixelMap<Color_sRGBA> srcAbove)
+inline void compositeOver(PixelMap<uint32_t> dstMap, const PixelMap<uint32_t> belowMap, const PixelMap<uint32_t> aboveMap)
 {
-    BOOST_ASSERT(dst.width == srcBelow.width);
-    BOOST_ASSERT(dst.width == srcAbove.width);
-    BOOST_ASSERT(dst.height == srcBelow.height);
-    BOOST_ASSERT(dst.height == srcAbove.height);
+  /*  auto const indices = _mm512_set_epi32(0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60);
 
-    auto const nrPixels = dst.width * dst.height;
-    for (size_t i = 0; i < nrPixels; i++) {
-        auto &dstPixel = dst.pixels[i];
-        auto const srcPixelBelow = srcBelow.pixels[i];
-        auto const srcPixelAbove = srcAbove.pixels[i];
-        compositeOver(dstPixel, srcPixelBelow, srcPixelAbove);
-    }
+    for (size_t rowNr = 0; rowNr < dstMap.height; rowNr++) {
+        auto const dstRow = dstMap.at(rowNr);
+        auto const belowRow = belowMap.at(rowNr);
+        auto const aboveRow = aboveMap.at(rowNr);
+
+        for (size_t columnNr = 0; columnNr < dstMap.width; columnNr += 8) {
+            auto aboveRIndices = _mm512_i32gather_ps(indices, gammaToLinearTable.data(), sizeof (float));
+            auto aboveR = _mm512_i32gather_ps(aboveRIndices, gammaToLinearTable.data(), sizeof (float));
+
+                
+            return 
+
+            auto above = aboveRow[columnNr];
+            auto below = belowRow[columnNr]; 
+        
+        }
+    }*/
 }
 
 }

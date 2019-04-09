@@ -82,6 +82,9 @@ public:
 
     void destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation);
 
+    std::pair<vk::Image, VmaAllocation> createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo);
+    void destroyImage(const vk::Image &image, const VmaAllocation &allocation);
+
     template <typename T>
     gsl::span<T> mapMemory(const VmaAllocation &allocation) {
         void *mapping;

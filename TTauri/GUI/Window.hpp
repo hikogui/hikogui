@@ -155,7 +155,7 @@ public:
 
 
 protected:
-    u32rect2 windowRectangle;
+    u32rect windowRectangle;
 
     virtual void setWindowPosition(uint32_t x, uint32_t y);
     virtual void setWindowSize(uint32_t width, uint32_t height);

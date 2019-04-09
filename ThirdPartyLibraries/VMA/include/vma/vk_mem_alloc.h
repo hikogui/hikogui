@@ -15225,7 +15225,7 @@ VkResult VmaAllocator_T::BindImageMemory(VmaAllocation hAllocation, VkImage hIma
     case VmaAllocation_T::ALLOCATION_TYPE_BLOCK:
     {
         VmaDeviceMemoryBlock* pBlock = hAllocation->GetBlock();
-        VMA_ASSERT(pBlock && "Binding image to allocation that doesn't belong to any block. Is the allocation lost?");
+        VMA_ASSERT(pBlock && "Binding backingImage to allocation that doesn't belong to any block. Is the allocation lost?");
         res = pBlock->BindImageMemory(this, hAllocation, hImage);
         break;
     }

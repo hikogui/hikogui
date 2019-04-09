@@ -7,6 +7,10 @@
 //
 
 #include "ImageView.hpp"
+#include "PipelineImage_Image.hpp"
+#include "Device_vulkan.hpp"
+#include "PipelineImage_DeviceShared.hpp"
+#include "PipelineImage_Image.hpp"
 
 namespace TTauri::GUI {
 
@@ -15,20 +19,34 @@ ImageView::ImageView(const boost::filesystem::path path) :
 {
 }
 
-size_t ImageView::piplineRectangledFromAtlasPlaceVertices(const gsl::span<PipelineImage::Vertex> &vertices, size_t offset)
+void ImageView::drawBackingImage()
 {
-    PipelineImage::Vertex v;
+    if (backingImage->drawn) {
+        return;
+    }
 
-    v.position = position + glm::vec2(0.0,      0.0     );
-    vertices.at(offset++) = v;
-    v.position = position + glm::vec2(extent.x, 0.0     );
-    vertices.at(offset++) = v;
-    v.position = position + glm::vec2(0.0,      extent.y);
-    vertices.at(offset++) = v;
-    v.position = position + glm::vec2(extent.x, extent.y);
-    vertices.at(offset++) = v;
 
-    return offset;
+    backingImage->drawn = true;
+}
+
+void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
+{
+    auto key = (boost::format("ImageView(%i,%i,%s)") % extent.x % extent.y % path).str();
+
+    auto vulkanDevice = device<Device_vulkan>();
+
+    vulkanDevice->imagePipeline->exchangeImage(backingImage, key, extent);
+    drawBackingImage();
+
+    PipelineImage::ImageLocation location;
+    location.position = position;
+    location.depth = depth + 0.0;
+    location.origin = {0.0, 0.0};
+    location.rotation = 0.0;
+    location.alpha = 1.0;
+    location.clippingRectangle = {{0, 0}, {std::numeric_limits<uint16_t>::max(), std::numeric_limits<uint16_t>::max()}};
+
+    backingImage->placeVertices(location, vertices, offset);
 }
 
 }

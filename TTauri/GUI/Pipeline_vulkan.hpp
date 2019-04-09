@@ -56,14 +56,18 @@ protected:
     std::vector<vk::CommandBuffer> commandBuffers;
     std::vector<bool> commandBuffersValid;
     std::vector<vk::Semaphore> renderFinishedSemaphores;
+    std::vector<vk::DescriptorSet> descriptorSets;
 
     vk::RenderPass renderPass;
     vk::Extent2D extent;
     vk::Rect2D scissor;
+    vk::DescriptorSetLayout descriptorSetLayout;
     vk::PipelineLayout pipelineLayout;
+    vk::DescriptorPool descriptorPool;
 
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
+    virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
@@ -72,6 +76,8 @@ protected:
     virtual void teardownVertexBuffers() = 0;
     virtual void buildCommandBuffers(size_t nrFrameBuffers);
     virtual void teardownCommandBuffers();
+    virtual void buildDescriptorSets(size_t nrFrameBuffers);
+    virtual void teardownDescriptorSets();
     virtual void buildSemaphores(size_t nrFrameBuffers);
     virtual void teardownSemaphores();
     virtual void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent);
