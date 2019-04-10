@@ -12,6 +12,9 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 
+#include <cmath>
+#include <boost/math/constants/constants.hpp>
+
 namespace TTauri::GUI {
 
 ImageView::ImageView(const boost::filesystem::path path) :
@@ -38,11 +41,13 @@ void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &ver
     vulkanDevice->imagePipeline->exchangeImage(backingImage, key, extent);
     drawBackingImage();
 
+    rotation = fmod(rotation + 0.0001, boost::math::constants::pi<double>() * 2.0);
+
     PipelineImage::ImageLocation location;
     location.position = position;
     location.depth = depth + 0.0;
     location.origin = {0.0, 0.0};
-    location.rotation = 0.0;
+    location.rotation = rotation;
     location.alpha = 1.0;
     location.clippingRectangle = {{0, 0}, {std::numeric_limits<uint16_t>::max(), std::numeric_limits<uint16_t>::max()}};
 

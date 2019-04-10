@@ -130,6 +130,7 @@ public:
 
 protected:
     PushConstants pushConstants;
+    size_t numberOfAtlasImagesInDescriptor = 0;
 
     size_t numberOfVertices = 0;
     std::vector<vk::Buffer> vertexBuffers;
@@ -140,6 +141,8 @@ protected:
 
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
+    std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t imageIndex) const override;
+    virtual uint64_t getDescriptorSetVersion() const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override { return PushConstants::pushConstantRanges(); }
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override { return Vertex::inputBindingDescription(); }
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override { return Vertex::inputAttributeDescriptions(); }

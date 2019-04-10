@@ -28,6 +28,8 @@ public:
     Pipeline_vulkan &operator=(Pipeline_vulkan &&) = delete;
 
     /*! Render
+     * This method should be called from sub-classes after completing their own rendering (placing vertices and
+     * updating texture maps).
      */
     virtual vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
 
@@ -53,10 +55,15 @@ public:
     void teardownForSwapchainChange();
 
 protected:
-    std::vector<vk::CommandBuffer> commandBuffers;
-    std::vector<bool> commandBuffersValid;
-    std::vector<vk::Semaphore> renderFinishedSemaphores;
-    std::vector<vk::DescriptorSet> descriptorSets;
+    struct FrameBufferObjects {
+        vk::CommandBuffer commandBuffer;
+        bool commandBufferValid;
+        vk::Semaphore renderFinishedSemaphore;
+        vk::DescriptorSet descriptorSet;
+        uint64_t descriptorSetVersion = 0;
+    };
+
+    std::vector<FrameBufferObjects> frameBufferObjects;
 
     vk::RenderPass renderPass;
     vk::Extent2D extent;
@@ -68,17 +75,19 @@ protected:
     virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
     virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
+    virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t imageIndex) const = 0;
+    virtual uint64_t getDescriptorSetVersion() const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
 
     virtual void buildVertexBuffers(size_t nrFrameBuffers) = 0;
     virtual void teardownVertexBuffers() = 0;
-    virtual void buildCommandBuffers(size_t nrFrameBuffers);
+    virtual void buildCommandBuffers();
     virtual void teardownCommandBuffers();
-    virtual void buildDescriptorSets(size_t nrFrameBuffers);
+    virtual void buildDescriptorSets();
     virtual void teardownDescriptorSets();
-    virtual void buildSemaphores(size_t nrFrameBuffers);
+    virtual void buildSemaphores();
     virtual void teardownSemaphores();
     virtual void buildPipeline(vk::RenderPass renderPass, vk::Extent2D extent);
     virtual void teardownPipeline();

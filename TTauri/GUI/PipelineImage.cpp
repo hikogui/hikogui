@@ -31,11 +31,15 @@ vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSema
 
     vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineImage::Vertex));
 
+    auto const vulkanDevice = device<Device_vulkan>();
+    auto const sharedImagePipeline = vulkanDevice->imagePipeline;
+    auto const nrAtlasImages = sharedImagePipeline->atlasImages.size();
+    
+
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers(false);
         numberOfVertices = tmpNumberOfVertices;
     }
-   
 
     return Pipeline_vulkan::render(imageIndex, inputSemaphore);
 }
@@ -90,6 +94,38 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
         boost::numeric_cast<uint32_t>(PipelineImage::DeviceShared::atlasMaximumNrImages), // descriptorCount
         vk::ShaderStageFlagBits::eFragment
     } };
+}
+
+vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t imageIndex) const
+{
+    auto const vulkanDevice = device<Device_vulkan>();
+    auto const sharedImagePipeline = vulkanDevice->imagePipeline;
+    auto const &frameBufferObject = frameBufferObjects.at(imageIndex);
+
+    return { {
+        frameBufferObject.descriptorSet,
+        0, // destBinding
+        0, // arrayElement
+        1, // descriptorCount
+        vk::DescriptorType::eSampler,
+        &sharedImagePipeline->atlasSamplerDescriptorImageInfo,
+        nullptr,  // bufferInfo
+        nullptr // texelBufferView
+    }, {
+        frameBufferObject.descriptorSet,
+        1, // destBinding
+        0, // arrayElement
+        boost::numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
+        vk::DescriptorType::eSampledImage,
+        sharedImagePipeline->atlasDescriptorImageInfos.data(),
+        nullptr, // bufferInfo
+        nullptr // texelBufferView
+    } };
+}
+
+uint64_t PipelineImage::getDescriptorSetVersion() const
+{
+    return device<Device_vulkan>()->imagePipeline->atlasImages.size();
 }
 
 void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)

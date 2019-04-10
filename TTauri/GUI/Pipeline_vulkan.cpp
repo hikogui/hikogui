@@ -24,14 +24,24 @@ Pipeline_vulkan::~Pipeline_vulkan()
 
 vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
+    auto const vulkanDevice = device<Device_vulkan>();
+    auto &imageObject = frameBufferObjects.at(imageIndex);
+
+    if (imageObject.descriptorSetVersion < getDescriptorSetVersion()) {
+        auto const writeDescriptorSets = createWriteDescriptorSet(imageIndex);
+        vulkanDevice->intrinsic.updateDescriptorSets(writeDescriptorSets, {});
+
+        imageObject.descriptorSetVersion = getDescriptorSetVersion();
+    }
+
     validateCommandBuffer(imageIndex);
 
     vector<vk::Semaphore> const waitSemaphores = { inputSemaphore };
     vector<vk::PipelineStageFlags> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     BOOST_ASSERT(waitSemaphores.size() == waitStages.size());
 
-    vector<vk::Semaphore> const signalSemaphores = { renderFinishedSemaphores.at(imageIndex) };
-    vector<vk::CommandBuffer> const commandBuffersToSubmit = { commandBuffers.at(imageIndex) };
+    vector<vk::Semaphore> const signalSemaphores = { imageObject.renderFinishedSemaphore };
+    vector<vk::CommandBuffer> const commandBuffersToSubmit = { imageObject.commandBuffer };
 
     vector<vk::SubmitInfo> const submitInfo = { {
             boost::numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
@@ -39,22 +49,27 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
             boost::numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
     } };
 
-    device<Device_vulkan>()->graphicsQueue.submit(submitInfo, vk::Fence());
+    vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
 
-    return renderFinishedSemaphores.at(imageIndex);
+    return imageObject.renderFinishedSemaphore;
 }
 
-void Pipeline_vulkan::buildCommandBuffers(size_t nrFrameBuffers)
+void Pipeline_vulkan::buildCommandBuffers()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device<Device_vulkan>();
 
-    commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers({
+    auto const commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers({
         vulkanDevice->graphicsCommandPool, 
         vk::CommandBufferLevel::ePrimary, 
-        boost::numeric_cast<uint32_t>(nrFrameBuffers)
+        boost::numeric_cast<uint32_t>(frameBufferObjects.size())
     });
 
-    commandBuffersValid.resize(nrFrameBuffers);
+    for (size_t imageIndex = 0; imageIndex < frameBufferObjects.size(); imageIndex++) {
+        auto &frameBufferObject = frameBufferObjects.at(imageIndex);
+        frameBufferObject.commandBuffer = commandBuffers.at(imageIndex);
+        frameBufferObject.commandBufferValid = false;
+    }
+
     invalidateCommandBuffers(false);
 }
 
@@ -62,12 +77,12 @@ void Pipeline_vulkan::teardownCommandBuffers()
 {
     auto vulkanDevice = device<Device_vulkan>();
 
+    auto const commandBuffers = transform<vector<vk::CommandBuffer>>(frameBufferObjects, [](auto x) { return x.commandBuffer; });
+
     vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, commandBuffers);
-    commandBuffers.clear();
-    commandBuffersValid.clear();
 }
 
-void Pipeline_vulkan::buildDescriptorSets(size_t nrFrameBuffers)
+void Pipeline_vulkan::buildDescriptorSets()
 {
     auto const vulkanDevice = device<Device_vulkan>();
 
@@ -82,57 +97,61 @@ void Pipeline_vulkan::buildDescriptorSets(size_t nrFrameBuffers)
 
     auto const descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
         descriptorSetLayoutBindings,
-        [nrFrameBuffers](auto x) -> vk::DescriptorPoolSize {
+        [this](auto x) -> vk::DescriptorPoolSize {
             return {
                 x.descriptorType,
-                boost::numeric_cast<uint32_t>(x.descriptorCount * nrFrameBuffers)
+                boost::numeric_cast<uint32_t>(x.descriptorCount * this->frameBufferObjects.size())
             };
         }
     );
   
     descriptorPool = vulkanDevice->intrinsic.createDescriptorPool({
         vk::DescriptorPoolCreateFlags(),
-        boost::numeric_cast<uint32_t>(nrFrameBuffers), // maxSets
+        boost::numeric_cast<uint32_t>(frameBufferObjects.size()), // maxSets
         boost::numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
     });
 
-    std::vector<vk::DescriptorSetLayout> const descriptorSetLayouts(nrFrameBuffers, descriptorSetLayout);
+    std::vector<vk::DescriptorSetLayout> const descriptorSetLayouts(frameBufferObjects.size(), descriptorSetLayout);
     
-    descriptorSets = vulkanDevice->intrinsic.allocateDescriptorSets({
+    auto const descriptorSets = vulkanDevice->intrinsic.allocateDescriptorSets({
         descriptorPool,
         boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
+
+    for (size_t imageIndex = 0; imageIndex < frameBufferObjects.size(); imageIndex++) {
+        auto &frameBufferObject = frameBufferObjects.at(imageIndex);
+        frameBufferObject.descriptorSet = descriptorSets.at(imageIndex);
+        frameBufferObject.descriptorSetVersion = 0;
+    }
 }
 
 void Pipeline_vulkan::teardownDescriptorSets()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device<Device_vulkan>();
 
-    vulkanDevice->intrinsic.freeDescriptorSets(descriptorPool, descriptorSets);
+    auto const descriptorSets = transform<vector<vk::DescriptorSet>>(frameBufferObjects, [](auto x) { return x.descriptorSet; });
+
     vulkanDevice->intrinsic.destroy(descriptorPool);
     vulkanDevice->intrinsic.destroy(descriptorSetLayout);
-    descriptorSets.clear();
 }
 
-void Pipeline_vulkan::buildSemaphores(size_t nrFrameBuffers)
+void Pipeline_vulkan::buildSemaphores()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device<Device_vulkan>();
 
     auto const semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-    renderFinishedSemaphores.resize(nrFrameBuffers);
-    for (size_t i = 0; i < nrFrameBuffers; i++) {
-        renderFinishedSemaphores.at(i) = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+    for (auto &frameBufferObject: frameBufferObjects) {
+        frameBufferObject.renderFinishedSemaphore = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
     }
 }
 
 void Pipeline_vulkan::teardownSemaphores()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device<Device_vulkan>();
 
-    for (size_t i = 0; i < renderFinishedSemaphores.size(); i++) {
-        vulkanDevice->intrinsic.destroy(renderFinishedSemaphores.at(i));
+    for (auto const &frameBufferObject: frameBufferObjects) {
+        vulkanDevice->intrinsic.destroy(frameBufferObject.renderFinishedSemaphore);
     }
-    renderFinishedSemaphores.clear();
 }
 
 void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _extent)
@@ -258,10 +277,11 @@ void Pipeline_vulkan::teardownPipeline()
 
 void Pipeline_vulkan::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
 {
+    frameBufferObjects.resize(nrFrameBuffers);
     buildVertexBuffers(nrFrameBuffers);
-    buildCommandBuffers(nrFrameBuffers);
-    buildDescriptorSets(nrFrameBuffers);
-    buildSemaphores(nrFrameBuffers);
+    buildCommandBuffers();
+    buildDescriptorSets();
+    buildSemaphores();
     buildPipeline(renderPass, extent);
 }
 
@@ -273,20 +293,22 @@ void Pipeline_vulkan::teardownForDeviceChange()
     teardownDescriptorSets();
     teardownCommandBuffers();
     teardownVertexBuffers();
+    frameBufferObjects.resize(0);
 }
 
 void Pipeline_vulkan::buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
 {
-    if (nrFrameBuffers != commandBuffers.size()) {
+    if (nrFrameBuffers != frameBufferObjects.size()) {
         teardownSemaphores();
         teardownDescriptorSets();
         teardownCommandBuffers();
         teardownVertexBuffers();
 
+        frameBufferObjects.resize(nrFrameBuffers);
         buildVertexBuffers(nrFrameBuffers);
-        buildCommandBuffers(nrFrameBuffers);
-        buildDescriptorSets(nrFrameBuffers);
-        buildSemaphores(nrFrameBuffers);
+        buildCommandBuffers();
+        buildDescriptorSets();
+        buildSemaphores();
     }
     buildPipeline(renderPass, extent);
 }
@@ -299,10 +321,10 @@ void Pipeline_vulkan::teardownForSwapchainChange()
 
 void Pipeline_vulkan::invalidateCommandBuffers(bool reset)
 {
-    for (size_t imageIndex = 0; imageIndex < commandBuffersValid.size(); imageIndex++) {
-        commandBuffersValid.at(imageIndex) = false;
+    for (auto &frameBufferObject: frameBufferObjects) {
+        frameBufferObject.commandBufferValid = false;
         if (reset) {
-            auto commandBuffer = commandBuffers.at(imageIndex);
+            auto const commandBuffer = frameBufferObject.commandBuffer;
             commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
         }
     }
@@ -310,13 +332,15 @@ void Pipeline_vulkan::invalidateCommandBuffers(bool reset)
 
 void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 {
-    if (commandBuffersValid.at(imageIndex)) {
+    auto &frameBufferObject = frameBufferObjects.at(imageIndex);
+
+    if (frameBufferObject.commandBufferValid) {
         return;
     }
 
     LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % extent.width % extent.height;
 
-    auto commandBuffer = commandBuffers.at(imageIndex);
+    auto commandBuffer = frameBufferObject.commandBuffer;
 
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
@@ -338,9 +362,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    std::array<uint32_t, 0> dynamicOffsets;
-    std::array<vk::DescriptorSet, 1> descriptorSetsToBind = {descriptorSets.at(imageIndex)};
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, descriptorSetsToBind, dynamicOffsets);
+    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {frameBufferObject.descriptorSet}, {});
 
     drawInCommandBuffer(commandBuffer, imageIndex);
 
@@ -348,7 +370,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffer.end();
 
-    commandBuffersValid.at(imageIndex) = true;
+    frameBufferObject.commandBufferValid = true;
 }
 
 }

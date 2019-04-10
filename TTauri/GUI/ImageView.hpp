@@ -20,6 +20,8 @@ class ImageView : public View {
 public:
     const boost::filesystem::path path;
 
+    float rotation = 0.0;
+
     std::shared_ptr<PipelineImage::Image> backingImage;
 
     ImageView(const boost::filesystem::path path);

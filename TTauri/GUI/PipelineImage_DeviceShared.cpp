@@ -241,7 +241,7 @@ void PipelineImage::DeviceShared::addAtlasImage()
         atlasFreeSlices.push_back(sliceOffset + i);
     }
 
-    // Build image descript info.
+    // Build image descriptor info.
     for (size_t i = 0; i < atlasDescriptorImageInfos.size(); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
@@ -295,6 +295,12 @@ void PipelineImage::DeviceShared::buildAtlas()
         FALSE // unnormazlizedCoordinates
     };
     atlasSampler = vulkanDevice->intrinsic.createSampler(samplerCreateInfo);
+
+    atlasSamplerDescriptorImageInfo = {
+        atlasSampler,
+        vk::ImageView(),
+        vk::ImageLayout::eUndefined
+    };
 
     // There needs to be at least one atlas image, so the array of samplers can point to
     // the single image.

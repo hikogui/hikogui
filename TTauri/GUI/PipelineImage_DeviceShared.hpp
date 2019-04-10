@@ -41,6 +41,7 @@ struct PipelineImage::DeviceShared final {
     std::vector<uint16_t> atlasFreeSlices;
     std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;
     vk::Sampler atlasSampler;
+    vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
     std::unordered_map<std::string, std::shared_ptr<PipelineImage::Image>> viewImages;
 
