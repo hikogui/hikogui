@@ -24,6 +24,7 @@ mkdir build
 cd build
 cmake .. -G "Visual Studio 15 2017" -A x64 -DZLIB_INCLUDE_DIR="%TDIR%\zlib" -DZLIB_LIBRARY="%TDIR%\zlib\build\Debug\zlibstaticd.lib"
 devenv libpng.sln /build
+copy pnglibconf.h ..
 cd ..
 cd ..
 set INCLUDE=%INCLUDE%;%TDIR%\libpng

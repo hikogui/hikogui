@@ -29,7 +29,11 @@ struct PipelineImage::Image {
     Draw::PixelMap<uint32_t> getPixelMap(u16vec2 extent);
     void transferPixelMapToAtlas();
 
- 
+    /*! Find the image coordinates of a slice in the image.
+     * \param sliceIndex Index in the slices-vector.
+     */
+    u64rect indexToRect(size_t const sliceIndex) const;
+
     /*! Place vertices for this image.
      * An image is build out of atlas slices, that need to be individual rendered.
      * A slice with the value std::numeric_limits<uint16_t>::max() is not rendered.

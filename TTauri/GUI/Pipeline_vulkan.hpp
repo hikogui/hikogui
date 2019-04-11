@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <string>
 #include <vector>

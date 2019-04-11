@@ -372,7 +372,104 @@ void Device_vulkan::unmapMemory(const VmaAllocation &allocation)
     vmaUnmapMemory(allocator, allocation);
 }
 
-vk::ShaderModule Device_vulkan::loadShader(boost::filesystem::path path) const
+vk::CommandBuffer Device_vulkan::beginSingleTimeCommands() const
+{
+    auto const commandBuffers = intrinsic.allocateCommandBuffers({ graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1 });
+    auto const commandBuffer = commandBuffers.at(0);
+
+    commandBuffer.begin({ vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
+    return commandBuffer;
+}
+
+void Device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
+{
+    commandBuffer.end();
+
+    vector<vk::CommandBuffer> const commandBuffers = {commandBuffer};
+
+    graphicsQueue.submit({{
+        0, nullptr, nullptr, // wait semaphores, wait stages
+        boost::numeric_cast<uint32_t>(commandBuffers.size()), commandBuffers.data(),
+        0, nullptr // signal semaphores
+    }}, vk::Fence());
+
+    graphicsQueue.waitIdle();
+    intrinsic.freeCommandBuffers(graphicsCommandPool, commandBuffers);
+}
+
+static pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayout(vk::ImageLayout layout)
+{
+    switch (layout) {
+    case vk::ImageLayout::eUndefined:
+        return { vk::AccessFlags(), vk::PipelineStageFlagBits::eTopOfPipe };
+
+    // GPU Texure Maps
+    case vk::ImageLayout::eTransferDstOptimal:
+        return { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer };
+
+    case vk::ImageLayout::eShaderReadOnlyOptimal:
+        return { vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eFragmentShader };
+
+    // CPU Staging texture maps
+    case vk::ImageLayout::eGeneral:
+        return { vk::AccessFlagBits::eHostWrite, vk::PipelineStageFlagBits::eHost };
+
+    case vk::ImageLayout::eTransferSrcOptimal:
+        return { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer };
+
+    default:
+        BOOST_THROW_EXCEPTION(Device_vulkan::ImageLayoutTransitionError());
+    }
+}
+
+void Device_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const
+{
+    auto const commandBuffer = beginSingleTimeCommands();
+
+    auto const [srcAccessMask, srcStage] = accessAndStageFromLayout(srcLayout);
+    auto const [dstAccessMask, dstStage] = accessAndStageFromLayout(dstLayout);
+
+    vector<vk::ImageMemoryBarrier> barriers = {{
+        srcAccessMask,
+        dstAccessMask,
+        srcLayout,
+        dstLayout,
+        VK_QUEUE_FAMILY_IGNORED,
+        VK_QUEUE_FAMILY_IGNORED,
+        image, {
+            vk::ImageAspectFlagBits::eColor,
+            0, // baseMipLevel
+            1, // levelCount
+            0, // baseArrayLayer
+            1 // layerCount
+        }
+    }};
+
+    commandBuffer.pipelineBarrier(
+        srcStage, dstStage,
+        vk::DependencyFlags(),
+        0, nullptr,
+        0, nullptr,
+        boost::numeric_cast<uint32_t>(barriers.size()), barriers.data()
+    );
+
+    endSingleTimeCommands(commandBuffer);
+}
+
+void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, std::vector<vk::ImageCopy> regions) const
+{
+    auto const commandBuffer = beginSingleTimeCommands();
+
+    commandBuffer.copyImage(
+        srcImage, srcLayout,
+        dstImage, dstLayout,
+        regions
+    );
+
+    endSingleTimeCommands(commandBuffer);
+}
+
+vk::ShaderModule Device_vulkan::loadShader(std::filesystem::path path) const
 {
     LOG_INFO("Loading shader %s") % path.filename().generic_string();
 

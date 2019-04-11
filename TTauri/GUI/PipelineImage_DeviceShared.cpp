@@ -6,6 +6,7 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>
+#include <array>
 
 namespace TTauri::GUI {
 
@@ -88,6 +89,72 @@ void PipelineImage::DeviceShared::exchangeImage(std::shared_ptr<PipelineImage::I
     }
     
     image = retainImage(key, extent);
+}
+
+TTauri::Draw::PixelMap<uint32_t> PipelineImage::DeviceShared::getStagingPixelMap()
+{
+    auto vulkanDevice = device.lock();
+    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eGeneral);
+
+    return stagingTexture.pixelMap;
+}
+
+void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineImage::Image &image)
+{
+    auto const vulkanDevice = device.lock();
+
+    vmaFlushAllocation(
+        vulkanDevice->allocator,
+        stagingTexture.allocation,
+        0,
+        (image.extent.y * stagingTexture.pixelMap.stride + image.extent.x) * sizeof (uint32_t)
+    );
+
+    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferSrcOptimal);
+
+    array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
+    for (size_t index = 0 ; index < image.slices.size(); index++) {
+        auto const slice = image.slices.at(index);
+
+        if (slice == std::numeric_limits<uint16_t>::max()) {
+            // Hole in the image does not need to be rendered.
+            continue;
+        }
+
+        auto const imageRect = image.indexToRect(index);
+        auto const atlasPosition = getAtlasPositionFromSlice(slice);
+        auto const atlasTexureIndex = atlasPosition.z;
+
+        auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTexureIndex);
+        regionsToCopy.push_back({
+            { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
+            { boost::numeric_cast<int32_t>(imageRect.offset.x), boost::numeric_cast<int32_t>(imageRect.offset.y), 0 },
+            { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
+            { boost::numeric_cast<int32_t>(atlasPosition.x), boost::numeric_cast<int32_t>(atlasPosition.y), 0 },
+            { boost::numeric_cast<uint32_t>(imageRect.extent.x), boost::numeric_cast<uint32_t>(imageRect.extent.y), 1}
+        });
+    }
+
+    for (size_t atlasTextureIndex = 0; atlasTextureIndex < atlasTextures.size(); atlasTextureIndex++) {
+        auto const &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
+        if (regionsToCopy.size() == 0) {
+            continue;
+        }
+
+        auto &atlasTexture = atlasTextures.at(atlasTextureIndex);
+        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferDstOptimal);
+
+        vulkanDevice->copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
+    }
+}
+
+void PipelineImage::DeviceShared::prepareAtlasForRendering()
+{
+    auto const vulkanDevice = device.lock();
+
+    for (auto &atlasTexture: atlasTextures) {
+        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eShaderReadOnlyOptimal);
+    }
 }
 
 void PipelineImage::DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
@@ -194,14 +261,14 @@ void PipelineImage::DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *>
 void PipelineImage::DeviceShared::addAtlasImage()
 {
     auto vulkanDevice = device.lock();
-    auto const currentImageIndex = atlasImages.size();
+    auto const currentImageIndex = atlasTextures.size();
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
         vk::Format::eR8G8B8A8Unorm,
-        vk::Extent3D(4096, 4096, 1),
+        vk::Extent3D(atlasImageWidth, atlasImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
         vk::SampleCountFlagBits::e1,
@@ -231,10 +298,8 @@ void PipelineImage::DeviceShared::addAtlasImage()
         }
     });
 
-    atlasImages.push_back(atlasImage);
-    atlasImageAllocations.push_back(atlasImageAllocation);
-    atlasImageViews.push_back(atlasImageView);
-
+    atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
+ 
     // Add slices for this image to free list.
     size_t const sliceOffset = currentImageIndex * atlasNrSlicesPerImage;
     for (size_t i = 0; i < atlasNrSlicesPerImage; i++) {
@@ -247,7 +312,7 @@ void PipelineImage::DeviceShared::addAtlasImage()
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {
             vk::Sampler(),
-            i < atlasImageViews.size() ? atlasImageViews.at(i) : atlasImageViews.at(0),
+            i < atlasTextures.size() ? atlasTextures.at(i).view : atlasTextures.at(0).view,
             vk::ImageLayout::eShaderReadOnlyOptimal
         };
     }
@@ -262,7 +327,7 @@ void PipelineImage::DeviceShared::buildAtlas()
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
         vk::Format::eR8G8B8A8Unorm,
-        vk::Extent3D(4096, 4096, 1),
+        vk::Extent3D(stagingImageWidth, stagingImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
         vk::SampleCountFlagBits::e1,
@@ -274,7 +339,11 @@ void PipelineImage::DeviceShared::buildAtlas()
     };
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    tie(stagingImage, stagingImageAllocation) = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
+    auto const [image, allocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
+    auto const data = vulkanDevice->mapMemory<uint32_t>(allocation);
+    auto const pixelMap = TTauri::Draw::PixelMap<uint32_t>{data, imageCreateInfo.extent.width, imageCreateInfo.extent.height};
+
+    stagingTexture = { image, allocation, vk::ImageView(), pixelMap };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),
@@ -311,15 +380,14 @@ void PipelineImage::DeviceShared::teardownAtlas(gsl::not_null<Device_vulkan *> v
 {
     vulkanDevice->intrinsic.destroy(atlasSampler);
 
-    for (size_t i = 0; i < atlasImages.size(); i++) {
-        vulkanDevice->intrinsic.destroy(atlasImageViews.at(i));
-        vulkanDevice->destroyImage(atlasImages.at(i), atlasImageAllocations.at(i));
+    for (const auto &atlasImage: atlasTextures) {
+        vulkanDevice->intrinsic.destroy(atlasImage.view);
+        vulkanDevice->destroyImage(atlasImage.image, atlasImage.allocation);
     }
-    atlasImages.clear();
-    atlasImageAllocations.clear();
-    atlasImageViews.clear();
+    atlasTextures.clear();
 
-    vulkanDevice->destroyImage(stagingImage, stagingImageAllocation);
+    vulkanDevice->unmapMemory(stagingTexture.allocation);
+    vulkanDevice->destroyImage(stagingTexture.image, stagingTexture.allocation);
 }
 
 }

@@ -11,7 +11,7 @@
 #include "utils.hpp"
 
 #include <boost/exception/all.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <memory>
 #include <string>
@@ -57,7 +57,7 @@ public:
 
     /*! Directory where resources are located.
      */
-    boost::filesystem::path resourceDir;
+    std::filesystem::path resourceDir;
 
     /*! Constructor
      * \param applicationDelegate application delegate to use to manage the application

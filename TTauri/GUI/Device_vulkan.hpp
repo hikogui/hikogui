@@ -13,6 +13,7 @@ class Device_vulkan : public Device {
 public:
     struct AllocateMemoryError : virtual Error {};
     struct NonVulkanWindowError : virtual Error {};
+    struct ImageLayoutTransitionError : virtual Error {};
 
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
@@ -85,6 +86,12 @@ public:
     std::pair<vk::Image, VmaAllocation> createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo);
     void destroyImage(const vk::Image &image, const VmaAllocation &allocation);
 
+    vk::CommandBuffer beginSingleTimeCommands() const;
+    void endSingleTimeCommands(vk::CommandBuffer commandBuffer) const;
+
+    void transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const;
+    void copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, std::vector<vk::ImageCopy> regions) const;
+
     template <typename T>
     gsl::span<T> mapMemory(const VmaAllocation &allocation) {
         void *mapping;
@@ -101,7 +108,7 @@ public:
 
     void unmapMemory(const VmaAllocation &allocation);
 
-    vk::ShaderModule loadShader(boost::filesystem::path path) const;
+    vk::ShaderModule loadShader(std::filesystem::path path) const;
 };
 
 }

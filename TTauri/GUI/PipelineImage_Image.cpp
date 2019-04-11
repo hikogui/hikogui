@@ -6,16 +6,10 @@
 
 namespace TTauri::GUI {
 
-void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLocation &location, gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) const {
-    auto const slice = slices.at(index);
-
-    if (slice == std::numeric_limits<uint16_t>::max()) {
-        // Hole in the image does not need to be rendered.
-        return;
-    }
-
-    auto const indexY = index / sliceExtent.x;
-    auto const indexX = index % sliceExtent.x;
+u64rect PipelineImage::Image::indexToRect(size_t const sliceIndex) const
+{
+    auto const indexY = sliceIndex / sliceExtent.x;
+    auto const indexX = sliceIndex % sliceExtent.x;
 
     auto const left = indexX * PipelineImage::DeviceShared::atlasSliceWidth;
     auto const top = indexY * PipelineImage::DeviceShared::atlasSliceHeight;
@@ -26,11 +20,24 @@ void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLoc
     auto const width = PipelineImage::DeviceShared::atlasSliceWidth - rightOverflow;
     auto const height = PipelineImage::DeviceShared::atlasSliceHeight - bottomOverflow;
 
+    return {{left, top}, {width, height}};
+}
+
+void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLocation &location, gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) const {
+    auto const slice = slices.at(index);
+
+    if (slice == std::numeric_limits<uint16_t>::max()) {
+        // Hole in the image does not need to be rendered.
+        return;
+    }
+
+    auto const rect = indexToRect(index);
+
     // Calculate position of each vertex of this index within the image.
-    auto lt = glm::vec2{ left, top };
-    auto rt = lt + glm::vec2{ width, 0.0 };
-    auto lb = lt + glm::vec2{ 0.0, height };
-    auto rb = lt + glm::vec2{ width, height };
+    auto lt = glm::vec2{ rect.offset.x, rect.offset.y };
+    auto rt = lt + glm::vec2{ rect.extent.x, 0.0 };
+    auto lb = lt + glm::vec2{ 0.0, rect.extent.y };
+    auto rb = lt + glm::vec2{ rect.extent.x, rect.extent.y };
 
     // Calculate positions compared to origin of the image.
     lt -= location.origin;
@@ -72,21 +79,21 @@ void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLoc
 
     auto &v_rt = vertices.at(offset++);
     v_rt.position = rt;
-    v_rt.atlasPosition = {atlasPosition.x + width, atlasPosition.y, atlasPosition.z};
+    v_rt.atlasPosition = {atlasPosition.x + rect.extent.x, atlasPosition.y, atlasPosition.z};
     v_rt.clippingRectangle = location.clippingRectangle;
     v_rt.depth = location.depth;
     v_rt.alpha = location.alpha;
 
     auto &v_lb = vertices.at(offset++);
     v_lb.position = lb;
-    v_lb.atlasPosition = {atlasPosition.x, atlasPosition.y + height, atlasPosition.z};
+    v_lb.atlasPosition = {atlasPosition.x, atlasPosition.y + rect.extent.y, atlasPosition.z};
     v_lb.clippingRectangle = location.clippingRectangle;
     v_lb.depth = location.depth;
     v_lb.alpha = location.alpha;
 
     auto &v_rb = vertices.at(offset++);
     v_rb.position = rb;
-    v_rb.atlasPosition = {atlasPosition.x + width, atlasPosition.y + height, atlasPosition.z};
+    v_rb.atlasPosition = {atlasPosition.x + rect.extent.x, atlasPosition.y + rect.extent.y, atlasPosition.z};
     v_rb.clippingRectangle = location.clippingRectangle;
     v_rb.depth = location.depth;
     v_rb.alpha = location.alpha;

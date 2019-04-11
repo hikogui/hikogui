@@ -25,7 +25,7 @@ Application_win32::Application_win32(const std::shared_ptr<Delegate> delegate, H
         BOOST_THROW_EXCEPTION(Application::ResourceDirError());
     }
 
-    auto const modulePath = boost::filesystem::path(modulePathWChar);
+    auto const modulePath = std::filesystem::path(modulePathWChar);
 
     resourceDir = modulePath.parent_path();
 }

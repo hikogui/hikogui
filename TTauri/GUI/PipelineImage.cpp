@@ -26,16 +26,16 @@ PipelineImage::PipelineImage(const std::shared_ptr<Window> window) :
 
 vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
+    auto const vulkanDevice = device<Device_vulkan>();
+
     size_t tmpNumberOfVertices = 0;
     window.lock()->view->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
-    vmaFlushAllocation(device<Device_vulkan>()->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineImage::Vertex));
+    vmaFlushAllocation(vulkanDevice->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineImage::Vertex));
 
-    auto const vulkanDevice = device<Device_vulkan>();
     auto const sharedImagePipeline = vulkanDevice->imagePipeline;
-    auto const nrAtlasImages = sharedImagePipeline->atlasImages.size();
-    
-
+    sharedImagePipeline->prepareAtlasForRendering();
+   
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers(false);
         numberOfVertices = tmpNumberOfVertices;
@@ -125,7 +125,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
 
 uint64_t PipelineImage::getDescriptorSetVersion() const
 {
-    return device<Device_vulkan>()->imagePipeline->atlasImages.size();
+    return device<Device_vulkan>()->imagePipeline->atlasTextures.size();
 }
 
 void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
@@ -145,7 +145,7 @@ void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        auto [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        auto const [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
         auto const vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
 
         vertexBuffers.push_back(vertexBuffer);

@@ -12,12 +12,14 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 
+#include "TTauri/Draw/PNG.hpp"
+
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 
 namespace TTauri::GUI {
 
-ImageView::ImageView(const boost::filesystem::path path) :
+ImageView::ImageView(const std::filesystem::path path) :
     View(), path(std::move(path))
 {
 }
@@ -28,6 +30,12 @@ void ImageView::drawBackingImage()
         return;
     }
 
+    auto vulkanDevice = device<Device_vulkan>();
+
+    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap();
+    TTauri::Draw::loadPNG(fullPixelMap, path);
+
+    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
 
     backingImage->drawn = true;
 }

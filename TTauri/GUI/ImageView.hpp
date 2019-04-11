@@ -10,7 +10,7 @@
 
 #include "View.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <memory>
 
@@ -18,13 +18,13 @@ namespace TTauri::GUI {
 
 class ImageView : public View {
 public:
-    const boost::filesystem::path path;
+    const std::filesystem::path path;
 
     float rotation = 0.0;
 
     std::shared_ptr<PipelineImage::Image> backingImage;
 
-    ImageView(const boost::filesystem::path path);
+    ImageView(const std::filesystem::path path);
     ~ImageView() {}
 
     ImageView(const ImageView &) = delete;

@@ -69,20 +69,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\libpng;$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\libpng;$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\libpng;$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>$(SolutionDir)\ThirdPartyLibraries\libpng;$(SolutionDir)\ThirdPartyLibraries\VMA\include;$(SolutionDir)\ThirdPartyLibraries\GSL\include;$(SolutionDir);$(VC_IncludePath);$(WindowsSDK_IncludePath);$(BOOST_ROOT);$(GLM_ROOT);$(VULKAN_SDK)\Include</IncludePath>
     <CodeAnalysisRuleSet>AlmostAllCodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -219,6 +219,7 @@
   <ItemGroup>
     <ClCompile Include="TTauri\Application.cpp" />
     <ClCompile Include="TTauri\Draw\PixelMap.cpp" />
+    <ClCompile Include="TTauri\Draw\PNG.cpp" />
     <ClCompile Include="TTauri\GUI\PipelineImage.cpp" />
     <ClCompile Include="TTauri\GUI\Device.cpp" />
     <ClCompile Include="TTauri\GUI\Device_vulkan.cpp" />
@@ -246,6 +247,7 @@
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp" />
     <ClInclude Include="TTauri\Draw\PixelMap.hpp" />
+    <ClInclude Include="TTauri\Draw\PNG.hpp" />
     <ClInclude Include="TTauri\Draw\utils.hpp" />
     <ClInclude Include="TTauri\geometry.hpp" />
     <ClInclude Include="TTauri\GUI\PipelineImage.hpp" />

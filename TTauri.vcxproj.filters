@@ -87,6 +87,9 @@
     <ClCompile Include="TTauri\Draw\PixelMap.cpp">
       <Filter>TTauri\Draw</Filter>
     </ClCompile>
+    <ClCompile Include="TTauri\Draw\PNG.cpp">
+      <Filter>TTauri\Draw</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TTauri\Application.hpp">
@@ -171,6 +174,9 @@
       <Filter>TTauri</Filter>
     </ClInclude>
     <ClInclude Include="TTauri\Draw\utils.hpp">
+      <Filter>TTauri\Draw</Filter>
+    </ClInclude>
+    <ClInclude Include="TTauri\Draw\PNG.hpp">
       <Filter>TTauri\Draw</Filter>
     </ClInclude>
   </ItemGroup>

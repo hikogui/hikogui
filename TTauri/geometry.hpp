@@ -40,5 +40,6 @@ using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
 using u16vec4 = glm::vec<4, uint16_t, glm::defaultp>;
 using u16rect = rect<2, uint16_t, glm::defaultp>;
 using u32rect = rect<2, uint32_t, glm::defaultp>;
+using u64rect = rect<2, uint64_t, glm::defaultp>;
 
 }

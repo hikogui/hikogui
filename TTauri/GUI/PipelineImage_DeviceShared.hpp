@@ -16,6 +16,8 @@ struct PipelineImage::DeviceShared final {
 
     static const size_t atlasImageWidth = 4096;
     static const size_t atlasImageHeight = 4096;
+    static const size_t stagingImageWidth = 2048;
+    static const size_t stagingImageHeight = 1024;
     static const size_t atlasSliceWidth = 64;
     static const size_t atlasSliceHeight = 64;
     static const size_t atlasNrHorizontalSlices = atlasImageWidth / atlasSliceWidth;
@@ -32,12 +34,23 @@ struct PipelineImage::DeviceShared final {
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    vk::Image stagingImage;
-    VmaAllocation stagingImageAllocation = {};
+    struct TextureMap {
+        vk::Image image;
+        VmaAllocation allocation = {};
+        vk::ImageView view;
+        TTauri::Draw::PixelMap<uint32_t> pixelMap;
+        vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
-    std::vector<vk::Image> atlasImages;
-    std::vector<VmaAllocation> atlasImageAllocations;
-    std::vector<vk::ImageView> atlasImageViews;
+        void transitionLayout(const Device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout) {
+            if (layout != nextLayout) {
+                device.transitionLayout(image, format, layout, nextLayout);
+                layout = nextLayout;
+            }
+        }
+    };
+    TextureMap stagingTexture;
+    std::vector<TextureMap> atlasTextures;
+
     std::vector<uint16_t> atlasFreeSlices;
     std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;
     vk::Sampler atlasSampler;
@@ -86,8 +99,9 @@ struct PipelineImage::DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    Draw::PixelMap<uint32_t> getTranferPixelMap(u16vec2 extent);
-    void transferPixelMapToImage(const PipelineImage::Image &image);
+    TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap();
+    void updateAtlasWithStagingPixelMap(const PipelineImage::Image &image);
+    void prepareAtlasForRendering();
 
 private:
     void buildIndexBuffer();
