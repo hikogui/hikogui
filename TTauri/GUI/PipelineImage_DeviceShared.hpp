@@ -14,7 +14,7 @@ namespace TTauri::GUI {
 struct PipelineImage::DeviceShared final {
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    static const size_t atlasImageWidth = 4096;
+    static const size_t atlasImageWidth = 4096; // XXX Add border pixel around each slice.
     static const size_t atlasImageHeight = 4096;
     static const size_t stagingImageWidth = 2048;
     static const size_t stagingImageHeight = 1024;
@@ -72,6 +72,8 @@ struct PipelineImage::DeviceShared final {
     void destroy(gsl::not_null<Device_vulkan *> vulkanDevice);
 
     /*! Get the coordinate in the atlast from a slice index.
+     * \param slice number in the atlas
+     * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
      */
     static u16vec3 getAtlasPositionFromSlice(uint16_t slice) {
         uint16_t const imageIndex = slice / atlasNrSlicesPerImage;
@@ -82,7 +84,7 @@ struct PipelineImage::DeviceShared final {
 
         uint16_t const x = slice;
 
-        return {x, y, imageIndex};
+        return {x * atlasSliceWidth, y * atlasSliceHeight, imageIndex};
     }
 
     std::vector<uint16_t> getFreeSlices(size_t const nrSlices);

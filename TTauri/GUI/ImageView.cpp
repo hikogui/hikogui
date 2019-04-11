@@ -54,7 +54,8 @@ void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &ver
     PipelineImage::ImageLocation location;
     location.position = position;
     location.depth = depth + 0.0;
-    location.origin = {0.0, 0.0};
+    location.origin = {backingImage->extent.x * 0.5, backingImage->extent.y * 0.5};
+    location.position = position + location.origin;
     location.rotation = rotation;
     location.alpha = 1.0;
     location.clippingRectangle = {{0, 0}, {std::numeric_limits<uint16_t>::max(), std::numeric_limits<uint16_t>::max()}};

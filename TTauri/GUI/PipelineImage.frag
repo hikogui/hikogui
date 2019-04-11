@@ -9,11 +9,17 @@ layout(push_constant) uniform PushConstants {
 layout(set = 0, binding = 0) uniform sampler samp;
 layout(set = 0, binding = 1) uniform texture2D textures[16];
 
-layout(location = 0) in vec3 inAtlasPosition;
-layout(location = 1) in float inAlpha;
+layout(location = 0) in vec2 inClippingRectangleMinimum;
+layout(location = 1) in vec2 inClippingRectangleMaximum;
+layout(location = 2) in vec3 inAtlasPosition;
+layout(location = 3) in float inAlpha;
+
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(1.0, 0.0, 0.0, 1.0);
+    int atlasTextureIndex = int(inAtlasPosition.z);
+    vec2 textureCoord = inAtlasPosition.xy;
+
+    outColor = texture(sampler2D(textures[atlasTextureIndex], samp), textureCoord);
 }

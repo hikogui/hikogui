@@ -24,11 +24,11 @@ public:
     void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
         auto view1 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "camera.png");
-        view1->setRectangle({ 100.0, 100.0 }, { 200, 100 });
+        view1->setRectangle({ 200.0, 200.0 }, { 512, 512 });
         window->view->add(view1);
 
         auto view2 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "camera.png");
-        view2->setRectangle({ 200.0, 200.0 }, { 200, 100 });
+        view2->setRectangle({ 600.0, 600.0 }, { 512, 512 });
         window->view->add(view2);
     }
 
@@ -45,7 +45,7 @@ public:
         auto myWindowDelegate = TTauri::make_shared<MyWindowDelegate>();
 
         get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 1");
-        get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 2");
+        //get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 2");
     }
 
     void lastWindowClosed() override

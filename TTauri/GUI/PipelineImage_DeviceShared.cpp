@@ -303,7 +303,7 @@ void PipelineImage::DeviceShared::addAtlasImage()
     // Add slices for this image to free list.
     size_t const sliceOffset = currentImageIndex * atlasNrSlicesPerImage;
     for (size_t i = 0; i < atlasNrSlicesPerImage; i++) {
-        atlasFreeSlices.push_back(sliceOffset + i);
+            atlasFreeSlices.push_back(sliceOffset + i);
     }
 
     // Build image descriptor info.
@@ -347,8 +347,8 @@ void PipelineImage::DeviceShared::buildAtlas()
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),
-        vk::Filter::eNearest, // magFilter
-        vk::Filter::eNearest, // minFilter
+        vk::Filter::eLinear, // magFilter
+        vk::Filter::eLinear, // minFilter
         vk::SamplerMipmapMode::eNearest, // mipmapMode
         vk::SamplerAddressMode::eRepeat, // addressModeU
         vk::SamplerAddressMode::eRepeat, // addressModeV

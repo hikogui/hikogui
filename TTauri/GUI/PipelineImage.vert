@@ -15,19 +15,26 @@ layout(location = 3) in uvec3 inAtlasPosition;
 layout(location = 4) in uint inDepth;
 layout(location = 5) in uint inAlpha;
 
-layout(location = 0) out vec3 outAtlasPosition;
-layout(location = 1) out float outAlpha;
+layout(location = 0) out vec2 outClippingRectangleMinimum;
+layout(location = 1) out vec2 outClippingRectangleMaximum;
+layout(location = 2) out vec3 outAtlasPosition;
+layout(location = 3) out float outAlpha;
 
 vec2 convertToViewport(vec2 windowPosition) {
-    return (windowPosition.xy * pushConstants.viewportScale) - vec2(1.0, 1.0);
+    return (windowPosition * pushConstants.viewportScale) - vec2(1.0, 1.0);
+}
+
+vec3 convertToTexture(vec3 atlasPosition) {
+    return vec3(atlasPosition.xy * pushConstants.atlasScale, atlasPosition.z);
 }
 
 void main() {
+    vec2 position = convertToViewport(inPosition);
 
+    gl_Position = vec4(position, 0.0, 1.0);
 
-    vec2 viewportPosition = convertToViewport(inPosition);
-
-    gl_Position = vec4(viewportPosition, 0.0, 1.0);
-    outAtlasPosition = inAtlasPosition;
+    outClippingRectangleMinimum = convertToViewport(inClippingRectangleOffset);
+    outClippingRectangleMaximum = convertToViewport(inClippingRectangleOffset + inClippingRectangleExtent);
+    outAtlasPosition = convertToTexture(inAtlasPosition);
     outAlpha = inAlpha;
 }
