@@ -4,6 +4,9 @@
 #include "PipelineImage_Image.hpp"
 #include "TTauri/Application.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/vec_swizzle.hpp>
+
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>
 #include <array>
@@ -31,19 +34,19 @@ void PipelineImage::DeviceShared::destroy(gsl::not_null<Device_vulkan *> vulkanD
     teardownAtlas(vulkanDevice);
 }
 
-std::vector<uint16_t> PipelineImage::DeviceShared::getFreeSlices(size_t const nrSlices)
+std::vector<uint16_t> PipelineImage::DeviceShared::getFreePages(size_t const nrPages)
 {
-    while (nrSlices > atlasFreeSlices.size()) {
+    while (nrPages > atlasFreePages.size()) {
         addAtlasImage();
     }
 
-    auto slices = std::vector<uint16_t>();
-    for (size_t i = 0; i < nrSlices; i++) {
-        auto const slice = atlasFreeSlices.back();
-        slices.push_back(slice);
-        atlasFreeSlices.pop_back();
+    auto pages = std::vector<uint16_t>();
+    for (size_t i = 0; i < nrPages; i++) {
+        auto const page = atlasFreePages.back();
+        pages.push_back(page);
+        atlasFreePages.pop_back();
     }
-    return slices;
+    return pages;
 }
 
 std::shared_ptr<PipelineImage::Image> PipelineImage::DeviceShared::retainImage(const std::string &key, u16vec2 const extent)
@@ -55,13 +58,13 @@ std::shared_ptr<PipelineImage::Image> PipelineImage::DeviceShared::retainImage(c
         return image;
     }
 
-    auto const sliceExtent = u16vec2{
-        (extent.x + (atlasSliceWidth - 1)) / atlasSliceWidth,
-        (extent.y + (atlasSliceHeight - 1)) / atlasSliceHeight
+    auto const pageExtent = u16vec2{
+        (extent.x + (atlasPageWidth - 1)) / atlasPageWidth,
+        (extent.y + (atlasPageHeight - 1)) / atlasPageHeight
     };
 
-    auto const slices = getFreeSlices(sliceExtent.x * sliceExtent.y);
-    auto image = TTauri::make_shared<PipelineImage::Image>(key, extent, sliceExtent, slices);
+    auto const pages = getFreePages(pageExtent.x * pageExtent.y);
+    auto image = TTauri::make_shared<PipelineImage::Image>(key, extent, pageExtent, pages);
     viewImages.insert_or_assign(key, image);
     return image;
 }
@@ -96,41 +99,66 @@ TTauri::Draw::PixelMap<uint32_t> PipelineImage::DeviceShared::getStagingPixelMap
     auto vulkanDevice = device.lock();
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eGeneral);
 
-    return stagingTexture.pixelMap;
+    auto const textureWithoutBorder = stagingTexture.pixelMap.submap(
+        atlasPageBorder, atlasPageBorder,
+        stagingImageWidth - 2 * atlasPageBorder, stagingImageHeight - 2 * atlasPageBorder
+    );
+    return textureWithoutBorder;
 }
 
 void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineImage::Image &image)
 {
     auto const vulkanDevice = device.lock();
 
+    // Add a proper border around the given image.
+    auto rectangle = u64rect{
+        {atlasPageBorder, atlasPageBorder},
+        {image.extent.x - 2 * atlasPageBorder, image.extent.y - 2 * atlasPageBorder}
+    };
+    for (size_t b = 0; b < atlasPageBorder; b++) {
+        rectangle.offset -= glm::u64vec2(atlasPageBorder, atlasPageBorder);
+        rectangle.extent += glm::u64vec2(atlasPageBorder*2, atlasPageBorder*2);
+
+        auto const pixelMap = stagingTexture.pixelMap.submap(rectangle);
+        TTauri::Draw::add1PixelTransparentBorder(pixelMap);
+    }
+
+    // Flush the given image, included the border.
     vmaFlushAllocation(
         vulkanDevice->allocator,
         stagingTexture.allocation,
         0,
-        (image.extent.y * stagingTexture.pixelMap.stride + image.extent.x) * sizeof (uint32_t)
+        ((image.extent.y + 2 * atlasPageBorder) * stagingTexture.pixelMap.stride + image.extent.x + 2 * atlasPageBorder) * sizeof (uint32_t)
     );
 
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
-    for (size_t index = 0 ; index < image.slices.size(); index++) {
-        auto const slice = image.slices.at(index);
+    for (size_t index = 0 ; index < image.pages.size(); index++) {
+        auto const page = image.pages.at(index);
 
-        if (slice == std::numeric_limits<uint16_t>::max()) {
+        if (page == std::numeric_limits<uint16_t>::max()) {
             // Hole in the image does not need to be rendered.
             continue;
         }
 
-        auto const imageRect = image.indexToRect(index);
-        auto const atlasPosition = getAtlasPositionFromSlice(slice);
-        auto const atlasTexureIndex = atlasPosition.z;
+        auto imageRect = image.indexToRect(index);
+        // Adjust the position to be inside the stagingImage, excluding its border.
+        imageRect.offset += glm::u64vec2(atlasPageBorder, atlasPageBorder);
+        auto const atlasPosition = getAtlasPositionFromPage(page);
 
-        auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTexureIndex);
+        // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbour sampling
+        // on the edge of a page.
+        imageRect.offset -= glm::u64vec2(atlasPageBorder, atlasPageBorder);
+        imageRect.extent += glm::u64vec2(atlasPageBorder*2, atlasPageBorder*2);
+        auto const atlasOffset = xy(atlasPosition) - glm::u16vec2(atlasPageBorder, atlasPageBorder);
+
+        auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
         regionsToCopy.push_back({
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
             { boost::numeric_cast<int32_t>(imageRect.offset.x), boost::numeric_cast<int32_t>(imageRect.offset.y), 0 },
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { boost::numeric_cast<int32_t>(atlasPosition.x), boost::numeric_cast<int32_t>(atlasPosition.y), 0 },
+            { boost::numeric_cast<int32_t>(atlasOffset.x), boost::numeric_cast<int32_t>(atlasOffset.y), 0 },
             { boost::numeric_cast<uint32_t>(imageRect.extent.x), boost::numeric_cast<uint32_t>(imageRect.extent.y), 1}
         });
     }
@@ -300,10 +328,10 @@ void PipelineImage::DeviceShared::addAtlasImage()
 
     atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
  
-    // Add slices for this image to free list.
-    size_t const sliceOffset = currentImageIndex * atlasNrSlicesPerImage;
-    for (size_t i = 0; i < atlasNrSlicesPerImage; i++) {
-            atlasFreeSlices.push_back(sliceOffset + i);
+    // Add pages for this image to free list.
+    size_t const pageOffset = currentImageIndex * atlasNrPagesPerImage;
+    for (size_t i = 0; i < atlasNrPagesPerImage; i++) {
+            atlasFreePages.push_back(pageOffset + i);
     }
 
     // Build image descriptor info.

@@ -50,7 +50,6 @@ inline constexpr size_t align(size_t offset, size_t alignment)
     return ((offset + alignment - 1) / alignment) * alignment;
 }
 
-
 template<typename T, typename U>
 inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 {

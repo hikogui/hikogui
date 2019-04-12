@@ -14,16 +14,17 @@ namespace TTauri::GUI {
 struct PipelineImage::DeviceShared final {
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    static const size_t atlasImageWidth = 4096; // XXX Add border pixel around each slice.
-    static const size_t atlasImageHeight = 4096;
+    static const size_t atlasPageWidth = 64;
+    static const size_t atlasPageHeight = 64;
+    static const size_t atlasPageBorder = 1;
+    static const size_t atlasNrHorizontalPages = 60;
+    static const size_t atlasNrVerticalPages = 60;
+    static const size_t atlasImageWidth = atlasNrHorizontalPages * (atlasPageWidth + 2 * atlasPageBorder);
+    static const size_t atlasImageHeight = atlasNrVerticalPages * (atlasPageHeight + 2 * atlasPageBorder);
+    static const size_t atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
+    static const size_t atlasMaximumNrImages = 16;
     static const size_t stagingImageWidth = 2048;
     static const size_t stagingImageHeight = 1024;
-    static const size_t atlasSliceWidth = 64;
-    static const size_t atlasSliceHeight = 64;
-    static const size_t atlasNrHorizontalSlices = atlasImageWidth / atlasSliceWidth;
-    static const size_t atlasNrVerticalSlices = atlasImageHeight / atlasSliceHeight;
-    static const size_t atlasNrSlicesPerImage = atlasNrHorizontalSlices * atlasNrVerticalSlices;
-    static const size_t atlasMaximumNrImages = 65536 / atlasNrSlicesPerImage;
 
     std::weak_ptr<Device_vulkan> device;
 
@@ -51,7 +52,7 @@ struct PipelineImage::DeviceShared final {
     TextureMap stagingTexture;
     std::vector<TextureMap> atlasTextures;
 
-    std::vector<uint16_t> atlasFreeSlices;
+    std::vector<uint16_t> atlasFreePages;
     std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
@@ -71,23 +72,26 @@ struct PipelineImage::DeviceShared final {
     */
     void destroy(gsl::not_null<Device_vulkan *> vulkanDevice);
 
-    /*! Get the coordinate in the atlast from a slice index.
-     * \param slice number in the atlas
+    /*! Get the coordinate in the atlast from a page index.
+     * \param page number in the atlas
      * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
      */
-    static u16vec3 getAtlasPositionFromSlice(uint16_t slice) {
-        uint16_t const imageIndex = slice / atlasNrSlicesPerImage;
-        slice %= atlasNrSlicesPerImage;
+    static u16vec3 getAtlasPositionFromPage(uint16_t page) {
+        uint16_t const imageIndex = page / atlasNrPagesPerImage;
+        page %= atlasNrPagesPerImage;
 
-        uint16_t const y = slice / atlasNrVerticalSlices;
-        slice %= atlasNrVerticalSlices;
+        uint16_t const pageY = page / atlasNrVerticalPages;
+        page %= atlasNrVerticalPages;
 
-        uint16_t const x = slice;
+        uint16_t const pageX = page;
 
-        return {x * atlasSliceWidth, y * atlasSliceHeight, imageIndex};
+        uint16_t const x = pageX * (atlasPageWidth + 2 * atlasPageBorder) + atlasPageBorder;
+        uint16_t const y = pageY * (atlasPageHeight + 2 * atlasPageBorder) + atlasPageBorder;
+
+        return {x, y, imageIndex};
     }
 
-    std::vector<uint16_t> getFreeSlices(size_t const nrSlices);
+    std::vector<uint16_t> getFreePages(size_t const nrPages);
 
     std::shared_ptr<PipelineImage::Image> retainImage(const std::string &key, u16vec2 extent);
     void releaseImage(const std::shared_ptr<PipelineImage::Image> &image);

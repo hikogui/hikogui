@@ -6,27 +6,27 @@
 
 namespace TTauri::GUI {
 
-u64rect PipelineImage::Image::indexToRect(size_t const sliceIndex) const
+u64rect PipelineImage::Image::indexToRect(size_t const pageIndex) const
 {
-    auto const indexY = sliceIndex / sliceExtent.x;
-    auto const indexX = sliceIndex % sliceExtent.x;
+    auto const indexY = pageIndex / pageExtent.x;
+    auto const indexX = pageIndex % pageExtent.x;
 
-    auto const left = indexX * PipelineImage::DeviceShared::atlasSliceWidth;
-    auto const top = indexY * PipelineImage::DeviceShared::atlasSliceHeight;
-    auto const right = left + PipelineImage::DeviceShared::atlasSliceWidth;
-    auto const bottom = top + PipelineImage::DeviceShared::atlasSliceHeight;
+    auto const left = indexX * PipelineImage::DeviceShared::atlasPageWidth;
+    auto const top = indexY * PipelineImage::DeviceShared::atlasPageHeight;
+    auto const right = left + PipelineImage::DeviceShared::atlasPageWidth;
+    auto const bottom = top + PipelineImage::DeviceShared::atlasPageHeight;
     auto const rightOverflow = right - std::min(right, static_cast<size_t>(extent.x));
     auto const bottomOverflow = bottom - std::min(bottom, static_cast<size_t>(extent.y));
-    auto const width = PipelineImage::DeviceShared::atlasSliceWidth - rightOverflow;
-    auto const height = PipelineImage::DeviceShared::atlasSliceHeight - bottomOverflow;
+    auto const width = PipelineImage::DeviceShared::atlasPageWidth - rightOverflow;
+    auto const height = PipelineImage::DeviceShared::atlasPageHeight - bottomOverflow;
 
     return {{left, top}, {width, height}};
 }
 
-void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLocation &location, gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) const {
-    auto const slice = slices.at(index);
+void PipelineImage::Image::placePageVertices(size_t const index, const ImageLocation &location, gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) const {
+    auto const page = pages.at(index);
 
-    if (slice == std::numeric_limits<uint16_t>::max()) {
+    if (page == std::numeric_limits<uint16_t>::max()) {
         // Hole in the image does not need to be rendered.
         return;
     }
@@ -57,7 +57,7 @@ void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLoc
     lb += location.position;
     rb += location.position;
     
-    // Drop slice when fully outside of clipping rectangle
+    // Drop page when fully outside of clipping rectangle
     auto const clip_low_x = location.clippingRectangle.offset.x;
     auto const clip_low_y = location.clippingRectangle.offset.y;
     auto const clip_high_x = location.clippingRectangle.offset.x + location.clippingRectangle.extent.x;
@@ -68,7 +68,7 @@ void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLoc
     if (lt.y < clip_low_y && rt.y < clip_low_y && lb.y < clip_low_y && rt.y < clip_low_y) { return; }
     if (lt.y > clip_high_y && rt.y > clip_high_y && lb.y > clip_high_y && rt.y > clip_high_y) { return; }
 
-    auto const atlasPosition = PipelineImage::DeviceShared::getAtlasPositionFromSlice(slice);
+    auto const atlasPosition = PipelineImage::DeviceShared::getAtlasPositionFromPage(page);
 
     auto &v_lt = vertices.at(offset++);
     v_lt.position = lt;
@@ -100,15 +100,15 @@ void PipelineImage::Image::placeSliceVertices(size_t const index, const ImageLoc
 }
 
 /*! Place vertices for this image.
-* An image is build out of atlas slices, that need to be individual rendered.
-* A slice with the value std::numeric_limits<uint16_t>::max() is not rendered.
+* An image is build out of atlas pages, that need to be individual rendered.
+* A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
 *
 * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
 * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
 void PipelineImage::Image::placeVertices(const ImageLocation &location, gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) const {
-    for (size_t index = 0; index < slices.size(); index++) {
-        placeSliceVertices(index, location, vertices, offset);
+    for (size_t index = 0; index < pages.size(); index++) {
+        placePageVertices(index, location, vertices, offset);
     }
 }
 
