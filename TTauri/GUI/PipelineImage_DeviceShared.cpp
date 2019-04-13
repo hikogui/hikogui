@@ -1,7 +1,8 @@
 
-
+#include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
+#include "Device_vulkan.hpp"
 #include "TTauri/Application.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -11,11 +12,11 @@
 #include <boost/range/combine.hpp>
 #include <array>
 
-namespace TTauri::GUI {
+namespace TTauri::GUI::PipelineImage {
 
 using namespace std;
 
-PipelineImage::DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> device) :
+DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> device) :
     device(move(device))
 {
     buildIndexBuffer();
@@ -23,24 +24,24 @@ PipelineImage::DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> d
     buildAtlas();
 }
 
-PipelineImage::DeviceShared::~DeviceShared()
+DeviceShared::~DeviceShared()
 {
 }
 
-void PipelineImage::DeviceShared::destroy(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::destroy(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     teardownIndexBuffer(vulkanDevice);
     teardownShaders(vulkanDevice);
     teardownAtlas(vulkanDevice);
 }
 
-std::vector<uint16_t> PipelineImage::DeviceShared::getFreePages(size_t const nrPages)
+std::vector<Page> DeviceShared::getFreePages(size_t const nrPages)
 {
     while (nrPages > atlasFreePages.size()) {
         addAtlasImage();
     }
 
-    auto pages = std::vector<uint16_t>();
+    auto pages = std::vector<Page>();
     for (size_t i = 0; i < nrPages; i++) {
         auto const page = atlasFreePages.back();
         pages.push_back(page);
@@ -49,7 +50,7 @@ std::vector<uint16_t> PipelineImage::DeviceShared::getFreePages(size_t const nrP
     return pages;
 }
 
-std::shared_ptr<PipelineImage::Image> PipelineImage::DeviceShared::retainImage(const std::string &key, u16vec2 const extent)
+std::shared_ptr<Image> DeviceShared::retainImage(const std::string &key, u64extent2 const extent)
 {
     auto const i = viewImages.find(key);
     if (i != viewImages.end()) {
@@ -58,18 +59,18 @@ std::shared_ptr<PipelineImage::Image> PipelineImage::DeviceShared::retainImage(c
         return image;
     }
 
-    auto const pageExtent = u16vec2{
-        (extent.x + (atlasPageWidth - 1)) / atlasPageWidth,
-        (extent.y + (atlasPageHeight - 1)) / atlasPageHeight
+    auto const pageExtent = u64extent2{
+        (extent.width() + (Page::width - 1)) / Page::width,
+        (extent.height() + (Page::height - 1)) / Page::height
     };
 
     auto const pages = getFreePages(pageExtent.x * pageExtent.y);
-    auto image = TTauri::make_shared<PipelineImage::Image>(key, extent, pageExtent, pages);
+    auto image = TTauri::make_shared<Image>(key, extent, pageExtent, pages);
     viewImages.insert_or_assign(key, image);
     return image;
 }
 
-void PipelineImage::DeviceShared::releaseImage(const std::shared_ptr<PipelineImage::Image> &image)
+void DeviceShared::releaseImage(const std::shared_ptr<Image> &image)
 {
     if (--image->retainCount == 0) {
         auto const i = viewImages.find(image->key);
@@ -81,7 +82,7 @@ void PipelineImage::DeviceShared::releaseImage(const std::shared_ptr<PipelineIma
     }
 }
 
-void PipelineImage::DeviceShared::exchangeImage(std::shared_ptr<PipelineImage::Image> &image, const std::string &key, const u16vec2 extent)
+void DeviceShared::exchangeImage(std::shared_ptr<Image> &image, const std::string &key, const u64extent2 extent)
 {
     if (image && image->key == key) {
         return;
@@ -94,30 +95,30 @@ void PipelineImage::DeviceShared::exchangeImage(std::shared_ptr<PipelineImage::I
     image = retainImage(key, extent);
 }
 
-TTauri::Draw::PixelMap<uint32_t> PipelineImage::DeviceShared::getStagingPixelMap()
+TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 {
     auto vulkanDevice = device.lock();
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eGeneral);
 
     auto const textureWithoutBorder = stagingTexture.pixelMap.submap(
-        atlasPageBorder, atlasPageBorder,
-        stagingImageWidth - 2 * atlasPageBorder, stagingImageHeight - 2 * atlasPageBorder
+        Page::border, Page::border,
+        stagingImageWidth - 2 * Page::border, stagingImageHeight - 2 * Page::border
     );
     return textureWithoutBorder;
 }
 
-void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineImage::Image &image)
+void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     auto const vulkanDevice = device.lock();
 
     // Add a proper border around the given image.
-    auto rectangle = u64rect{
-        {atlasPageBorder, atlasPageBorder},
-        {image.extent.x - 2 * atlasPageBorder, image.extent.y - 2 * atlasPageBorder}
+    auto rectangle = u64rect2{
+        {Page::border, Page::border},
+        {image.extent.width() - 2 * Page::border, image.extent.height() - 2 * Page::border}
     };
-    for (size_t b = 0; b < atlasPageBorder; b++) {
-        rectangle.offset -= glm::u64vec2(atlasPageBorder, atlasPageBorder);
-        rectangle.extent += glm::u64vec2(atlasPageBorder*2, atlasPageBorder*2);
+    for (size_t b = 0; b < Page::border; b++) {
+        rectangle.offset -= glm::u64vec2(Page::border, Page::border);
+        rectangle.extent += glm::u64vec2(Page::border*2, Page::border*2);
 
         auto const pixelMap = stagingTexture.pixelMap.submap(rectangle);
         TTauri::Draw::add1PixelTransparentBorder(pixelMap);
@@ -128,7 +129,7 @@ void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineI
         vulkanDevice->allocator,
         stagingTexture.allocation,
         0,
-        ((image.extent.y + 2 * atlasPageBorder) * stagingTexture.pixelMap.stride + image.extent.x + 2 * atlasPageBorder) * sizeof (uint32_t)
+        ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride + image.extent.width() + 2 * Page::border) * sizeof (uint32_t)
     );
 
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferSrcOptimal);
@@ -137,21 +138,21 @@ void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineI
     for (size_t index = 0 ; index < image.pages.size(); index++) {
         auto const page = image.pages.at(index);
 
-        if (page == std::numeric_limits<uint16_t>::max()) {
+        if (page.isFullyTransparent()) {
             // Hole in the image does not need to be rendered.
             continue;
         }
 
         auto imageRect = image.indexToRect(index);
         // Adjust the position to be inside the stagingImage, excluding its border.
-        imageRect.offset += glm::u64vec2(atlasPageBorder, atlasPageBorder);
+        imageRect.offset += glm::u64vec2(Page::border, Page::border);
         auto const atlasPosition = getAtlasPositionFromPage(page);
 
         // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbour sampling
         // on the edge of a page.
-        imageRect.offset -= glm::u64vec2(atlasPageBorder, atlasPageBorder);
-        imageRect.extent += glm::u64vec2(atlasPageBorder*2, atlasPageBorder*2);
-        auto const atlasOffset = xy(atlasPosition) - glm::u16vec2(atlasPageBorder, atlasPageBorder);
+        imageRect.offset -= glm::u64vec2(Page::border, Page::border);
+        imageRect.extent += glm::u64vec2(Page::border*2, Page::border*2);
+        auto const atlasOffset = xy(atlasPosition) - glm::u64vec2(Page::border, Page::border);
 
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
         regionsToCopy.push_back({
@@ -159,7 +160,7 @@ void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineI
             { boost::numeric_cast<int32_t>(imageRect.offset.x), boost::numeric_cast<int32_t>(imageRect.offset.y), 0 },
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
             { boost::numeric_cast<int32_t>(atlasOffset.x), boost::numeric_cast<int32_t>(atlasOffset.y), 0 },
-            { boost::numeric_cast<uint32_t>(imageRect.extent.x), boost::numeric_cast<uint32_t>(imageRect.extent.y), 1}
+            { boost::numeric_cast<uint32_t>(imageRect.extent.width()), boost::numeric_cast<uint32_t>(imageRect.extent.height()), 1}
         });
     }
 
@@ -176,7 +177,7 @@ void PipelineImage::DeviceShared::updateAtlasWithStagingPixelMap(const PipelineI
     }
 }
 
-void PipelineImage::DeviceShared::prepareAtlasForRendering()
+void DeviceShared::prepareAtlasForRendering()
 {
     auto const vulkanDevice = device.lock();
 
@@ -185,7 +186,7 @@ void PipelineImage::DeviceShared::prepareAtlasForRendering()
     }
 }
 
-void PipelineImage::DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
+void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {
     auto const vulkanDevice = device.lock();
 
@@ -193,7 +194,7 @@ void PipelineImage::DeviceShared::drawInCommandBuffer(vk::CommandBuffer &command
 }
 
 
-void PipelineImage::DeviceShared::buildIndexBuffer()
+void DeviceShared::buildIndexBuffer()
 {
     auto const vulkanDevice = device.lock();
 
@@ -201,7 +202,7 @@ void PipelineImage::DeviceShared::buildIndexBuffer()
     {
         vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
-            sizeof (uint16_t) * PipelineImage::maximumNumberOfIndices,
+            sizeof (uint16_t) * PipelineImage::PipelineImage::maximumNumberOfIndices,
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
             vk::SharingMode::eExclusive
         };
@@ -215,7 +216,7 @@ void PipelineImage::DeviceShared::buildIndexBuffer()
         // Create staging vertex index buffer.
         vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
-            sizeof (uint16_t) * PipelineImage::maximumNumberOfIndices,
+            sizeof (uint16_t) * PipelineImage::PipelineImage::maximumNumberOfIndices,
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
             vk::SharingMode::eExclusive
         };
@@ -225,7 +226,7 @@ void PipelineImage::DeviceShared::buildIndexBuffer()
 
         // Initialize indices.
         auto const stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
-        for (size_t i = 0; i < PipelineImage::maximumNumberOfIndices; i++) {
+        for (size_t i = 0; i < PipelineImage::PipelineImage::maximumNumberOfIndices; i++) {
             auto const vertexInRectangle = i % 6;
             auto const rectangleNr = i / 6;
             auto const rectangleBase = rectangleNr * 4;
@@ -249,7 +250,7 @@ void PipelineImage::DeviceShared::buildIndexBuffer()
             1
             }).at(0);
         commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-        commands.copyBuffer(stagingVertexIndexBuffer, indexBuffer, {{0, 0, sizeof (uint16_t) * PipelineImage::maximumNumberOfIndices}});
+        commands.copyBuffer(stagingVertexIndexBuffer, indexBuffer, {{0, 0, sizeof (uint16_t) * PipelineImage::PipelineImage::maximumNumberOfIndices}});
         commands.end();
 
         vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
@@ -262,12 +263,12 @@ void PipelineImage::DeviceShared::buildIndexBuffer()
     }
 }
 
-void PipelineImage::DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     vulkanDevice->destroyBuffer(indexBuffer, indexBufferAllocation);
 }
 
-void PipelineImage::DeviceShared::buildShaders()
+void DeviceShared::buildShaders()
 {
     auto vulkanDevice = device.lock();
 
@@ -280,13 +281,13 @@ void PipelineImage::DeviceShared::buildShaders()
     };
 }
 
-void PipelineImage::DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     vulkanDevice->intrinsic.destroy(vertexShaderModule);
     vulkanDevice->intrinsic.destroy(fragmentShaderModule);
 }
 
-void PipelineImage::DeviceShared::addAtlasImage()
+void DeviceShared::addAtlasImage()
 {
     auto vulkanDevice = device.lock();
     auto const currentImageIndex = atlasTextures.size();
@@ -331,7 +332,7 @@ void PipelineImage::DeviceShared::addAtlasImage()
     // Add pages for this image to free list.
     size_t const pageOffset = currentImageIndex * atlasNrPagesPerImage;
     for (size_t i = 0; i < atlasNrPagesPerImage; i++) {
-            atlasFreePages.push_back(pageOffset + i);
+            atlasFreePages.push_back({pageOffset + i});
     }
 
     // Build image descriptor info.
@@ -346,7 +347,7 @@ void PipelineImage::DeviceShared::addAtlasImage()
     }
 }
 
-void PipelineImage::DeviceShared::buildAtlas()
+void DeviceShared::buildAtlas()
 {
     auto vulkanDevice = device.lock();
 
@@ -404,7 +405,7 @@ void PipelineImage::DeviceShared::buildAtlas()
     addAtlasImage();
 }
 
-void PipelineImage::DeviceShared::teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
     vulkanDevice->intrinsic.destroy(atlasSampler);
 

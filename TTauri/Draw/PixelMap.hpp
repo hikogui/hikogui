@@ -30,7 +30,7 @@ struct PixelMap {
     PixelMap(gsl::span<T> pixels, glm::u64vec2 extent) : pixels(pixels), width(extent.x), height(extent.y), stride(extent.x) {}
     PixelMap(gsl::span<T> pixels, glm::u64vec2 extent, size_t stride) : pixels(pixels), width(extent.x), height(extent.y), stride(stride) {}
 
-    constexpr PixelMap<T> submap(u64rect rect) const {
+    constexpr PixelMap<T> submap(u64rect2 rect) const {
         size_t const offset = rect.offset.y * stride + rect.offset.x;
         size_t const count = (rect.extent.y - 1) * stride + rect.extent.x;
 

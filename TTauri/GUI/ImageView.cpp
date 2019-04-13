@@ -11,6 +11,7 @@
 #include "Device_vulkan.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
+#include "PipelineImage_ImageLocation.hpp"
 
 #include "TTauri/Draw/PNG.hpp"
 

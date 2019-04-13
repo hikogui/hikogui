@@ -23,7 +23,7 @@ void View::setParent(const std::shared_ptr<View> &parent)
     this->parent = move(parent);
 }
 
-void View::setRectangle(glm::vec2 position, u16vec2 extent)
+void View::setRectangle(glm::vec2 position, u64extent2 extent)
 {
     this->position = position;
     this->extent = extent;

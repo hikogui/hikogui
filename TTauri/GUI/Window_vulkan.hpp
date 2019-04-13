@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Window.hpp"
-
+#include "PipelineImage.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI {
@@ -25,7 +25,7 @@ public:
     vk::Semaphore imageAvailableSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::shared_ptr<PipelineImage> imagePipeline;
+    std::shared_ptr<PipelineImage::PipelineImage> imagePipeline;
 
     Window_vulkan(const std::shared_ptr<Delegate> delegate, const std::string title, vk::SurfaceKHR surface);
     ~Window_vulkan();

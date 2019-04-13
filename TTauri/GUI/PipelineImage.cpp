@@ -13,7 +13,7 @@
 #include "TTauri/Application.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
-namespace TTauri::GUI {
+namespace TTauri::GUI::PipelineImage {
 
 using namespace TTauri;
 using namespace std;
@@ -31,7 +31,7 @@ vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSema
     size_t tmpNumberOfVertices = 0;
     window.lock()->view->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
-    vmaFlushAllocation(vulkanDevice->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (PipelineImage::Vertex));
+    vmaFlushAllocation(vulkanDevice->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 
     auto const sharedImagePipeline = vulkanDevice->imagePipeline;
     sharedImagePipeline->prepareAtlasForRendering();
@@ -57,8 +57,8 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
 
     pushConstants.windowExtent = { extent.width , extent.height };
     pushConstants.viewportScale = { 2.0 / extent.width, 2.0 / extent.height };
-    pushConstants.atlasExtent = { PipelineImage::DeviceShared::atlasImageWidth, PipelineImage::DeviceShared::atlasImageHeight };
-    pushConstants.atlasScale = { 1.0 / PipelineImage::DeviceShared::atlasImageWidth, 1.0 / PipelineImage::DeviceShared::atlasImageHeight };
+    pushConstants.atlasExtent = { DeviceShared::atlasImageWidth, DeviceShared::atlasImageHeight };
+    pushConstants.atlasScale = { 1.0 / DeviceShared::atlasImageWidth, 1.0 / DeviceShared::atlasImageHeight };
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,
@@ -91,7 +91,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
     }, {
         1, // binding
         vk::DescriptorType::eSampledImage,
-        boost::numeric_cast<uint32_t>(PipelineImage::DeviceShared::atlasMaximumNrImages), // descriptorCount
+        boost::numeric_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
         vk::ShaderStageFlagBits::eFragment
     } };
 }
@@ -126,6 +126,20 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
 uint64_t PipelineImage::getDescriptorSetVersion() const
 {
     return device<Device_vulkan>()->imagePipeline->atlasTextures.size();
+}
+
+std::vector<vk::PushConstantRange> PipelineImage::createPushConstantRanges() const
+{
+    return PushConstants::pushConstantRanges();
+}
+
+vk::VertexInputBindingDescription PipelineImage::createVertexInputBindingDescription() const
+{
+    return Vertex::inputBindingDescription();
+}
+
+std::vector<vk::VertexInputAttributeDescription> PipelineImage::createVertexInputAttributeDescriptions() const {
+    return Vertex::inputAttributeDescriptions();
 }
 
 void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)

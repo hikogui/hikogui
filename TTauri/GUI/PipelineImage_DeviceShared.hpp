@@ -1,26 +1,27 @@
 
 #pragma once
 
-#include "PipelineImage.hpp"
-#include "Device_vulkan.hpp"
-
+#include "PipelineImage_Image.hpp"
+#include "PipelineImage_TextureMap.hpp"
+#include "PipelineImage_Page.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
 
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI {
+class Device_vulkan;
+}
 
-struct PipelineImage::DeviceShared final {
+namespace TTauri::GUI::PipelineImage {
+
+struct DeviceShared final {
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    static const size_t atlasPageWidth = 64;
-    static const size_t atlasPageHeight = 64;
-    static const size_t atlasPageBorder = 1;
     static const size_t atlasNrHorizontalPages = 60;
     static const size_t atlasNrVerticalPages = 60;
-    static const size_t atlasImageWidth = atlasNrHorizontalPages * (atlasPageWidth + 2 * atlasPageBorder);
-    static const size_t atlasImageHeight = atlasNrVerticalPages * (atlasPageHeight + 2 * atlasPageBorder);
+    static const size_t atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
+    static const size_t atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
     static const size_t atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
     static const size_t atlasMaximumNrImages = 16;
     static const size_t stagingImageWidth = 2048;
@@ -35,29 +36,15 @@ struct PipelineImage::DeviceShared final {
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    struct TextureMap {
-        vk::Image image;
-        VmaAllocation allocation = {};
-        vk::ImageView view;
-        TTauri::Draw::PixelMap<uint32_t> pixelMap;
-        vk::ImageLayout layout = vk::ImageLayout::eUndefined;
-
-        void transitionLayout(const Device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout) {
-            if (layout != nextLayout) {
-                device.transitionLayout(image, format, layout, nextLayout);
-                layout = nextLayout;
-            }
-        }
-    };
     TextureMap stagingTexture;
     std::vector<TextureMap> atlasTextures;
 
-    std::vector<uint16_t> atlasFreePages;
+    std::vector<Page> atlasFreePages;
     std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
-    std::unordered_map<std::string, std::shared_ptr<PipelineImage::Image>> viewImages;
+    std::unordered_map<std::string, std::shared_ptr<Image>> viewImages;
 
     DeviceShared(const std::shared_ptr<Device_vulkan> device);
     ~DeviceShared();
@@ -76,37 +63,35 @@ struct PipelineImage::DeviceShared final {
      * \param page number in the atlas
      * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
      */
-    static u16vec3 getAtlasPositionFromPage(uint16_t page) {
-        uint16_t const imageIndex = page / atlasNrPagesPerImage;
-        page %= atlasNrPagesPerImage;
+    static glm::u64vec3 getAtlasPositionFromPage(Page page) {
+        auto const imageIndex = page.nr / atlasNrPagesPerImage;
+        auto const pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 
-        uint16_t const pageY = page / atlasNrVerticalPages;
-        page %= atlasNrVerticalPages;
+        auto const pageY = pageNrInsideImage / atlasNrVerticalPages;
+        auto const pageX = pageNrInsideImage % atlasNrVerticalPages;
 
-        uint16_t const pageX = page;
-
-        uint16_t const x = pageX * (atlasPageWidth + 2 * atlasPageBorder) + atlasPageBorder;
-        uint16_t const y = pageY * (atlasPageHeight + 2 * atlasPageBorder) + atlasPageBorder;
+        auto const x = pageX * Page::widthIncludingBorder + Page::border;
+        auto const y = pageY * Page::heightIncludingBorder + Page::border;
 
         return {x, y, imageIndex};
     }
 
-    std::vector<uint16_t> getFreePages(size_t const nrPages);
+    std::vector<Page> getFreePages(size_t const nrPages);
 
-    std::shared_ptr<PipelineImage::Image> retainImage(const std::string &key, u16vec2 extent);
-    void releaseImage(const std::shared_ptr<PipelineImage::Image> &image);
+    std::shared_ptr<Image> retainImage(const std::string &key, u64extent2 extent);
+    void releaseImage(const std::shared_ptr<Image> &image);
 
     /*! Exchange an image when the key is different.
      * \param image A shared pointer to an image, which may be reseated.
      * \param key of the image.
      * \param extent of the image.
      */
-    void exchangeImage(std::shared_ptr<PipelineImage::Image> &image, const std::string &key, const u16vec2 extent);
+    void exchangeImage(std::shared_ptr<Image> &image, const std::string &key, const u64extent2 extent);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
     TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap();
-    void updateAtlasWithStagingPixelMap(const PipelineImage::Image &image);
+    void updateAtlasWithStagingPixelMap(const Image &image);
     void prepareAtlasForRendering();
 
 private:

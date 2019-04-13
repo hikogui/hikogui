@@ -9,6 +9,7 @@
 #pragma once
 
 #include "View.hpp"
+#include "PipelineImage_Image.hpp"
 
 #include <filesystem>
 

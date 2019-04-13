@@ -230,6 +230,7 @@
     <ClCompile Include="TTauri\GUI\Pipeline.cpp" />
     <ClCompile Include="TTauri\GUI\PipelineImage_DeviceShared.cpp" />
     <ClCompile Include="TTauri\GUI\PipelineImage_Image.cpp" />
+    <ClCompile Include="TTauri\GUI\PipelineImage_TextureMap.cpp" />
     <ClCompile Include="TTauri\GUI\Pipeline_vulkan.cpp" />
     <ClCompile Include="TTauri\GUI\View.cpp" />
     <ClCompile Include="TTauri\GUI\VulkanMemoryAllocator.cpp" />
@@ -259,8 +260,14 @@
     <ClInclude Include="TTauri\GUI\Instance_vulkan.hpp" />
     <ClInclude Include="TTauri\GUI\Instance_vulkan_win32.hpp" />
     <ClInclude Include="TTauri\GUI\Pipeline.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineImage_Delegate.hpp" />
     <ClInclude Include="TTauri\GUI\PipelineImage_DeviceShared.hpp" />
     <ClInclude Include="TTauri\GUI\PipelineImage_Image.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineImage_ImageLocation.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineImage_Page.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineImage_PushConstants.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineImage_TextureMap.hpp" />
+    <ClInclude Include="TTauri\GUI\PipelineImage_Vertex.hpp" />
     <ClInclude Include="TTauri\GUI\Pipeline_vulkan.hpp" />
     <ClInclude Include="TTauri\GUI\View.hpp" />
     <ClInclude Include="TTauri\GUI\vulkan_utils.hpp" />

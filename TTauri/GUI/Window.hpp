@@ -78,8 +78,8 @@ public:
     std::weak_ptr<Device> device;
 
     //! Location of the window on the screen.
-    glm::vec3 position = { 0.0, 0.0, 0.0 };
-    glm::vec3 extent = { 0.0, 0.0, 0.0 };
+    //glm::vec3 position = { 0.0, 0.0, 0.0 };
+    //glm::vec3 extent = { 0.0, 0.0, 0.0 };
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -155,7 +155,7 @@ public:
 
 
 protected:
-    u32rect windowRectangle;
+    u64rect2 windowRectangle;
 
     virtual void setWindowPosition(uint32_t x, uint32_t y);
     virtual void setWindowSize(uint32_t width, uint32_t height);

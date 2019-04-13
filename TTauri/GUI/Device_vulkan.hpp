@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Device.hpp"
+#include "PipelineImage_DeviceShared.hpp"
 
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
+#include <filesystem>
 
 namespace TTauri::GUI {
-
-class PipelineImage::DeviceShared;
 
 class Device_vulkan : public Device {
 public:

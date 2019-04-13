@@ -8,7 +8,8 @@
 
 #pragma once
 
-#include "PipelineImage.hpp"
+#include "PipelineImage_Delegate.hpp"
+#include "TTauri/geometry.hpp"
 
 #include <limits>
 #include <memory>
@@ -35,8 +36,8 @@ public:
 
     //! Location of the frame compared to the parent-frame.
     glm::vec2 position = { 0.0, 0.0 };
-    uint16_t depth = 0;
-    glm::u16vec2 extent = { 0, 0 };
+    size_t depth = 0;
+    u64extent2 extent = { 0, 0 };
 
     /*! Constructor for creating subviews.
      */
@@ -49,7 +50,7 @@ public:
     View &operator=(View &&) = delete;
 
     virtual void setParent(const std::shared_ptr<View> &parent);
-    virtual void setRectangle(glm::vec2 position, u16vec2 extent);
+    virtual void setRectangle(glm::vec2 position, u64extent2 extent);
 
     virtual void add(std::shared_ptr<View> view);
 

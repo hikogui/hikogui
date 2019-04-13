@@ -34,7 +34,7 @@ Window_vulkan::~Window_vulkan()
 void Window_vulkan::initialize()
 {
     Window::initialize();
-    imagePipeline = TTauri::make_shared<PipelineImage>(shared_from_this());
+    imagePipeline = TTauri::make_shared<PipelineImage::PipelineImage>(shared_from_this());
 }
 
 void Window_vulkan::waitIdle()
@@ -171,8 +171,15 @@ std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImage
     vk::Extent2D const imageExtent = currentExtentSet ?
         surfaceCapabilities.currentExtent :
         (vk::Extent2D{
-            std::clamp(windowRectangle.extent.width(), surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width),
-            std::clamp(windowRectangle.extent.height(), surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height) });
+            std::clamp(
+                static_cast<uint32_t>(windowRectangle.extent.width()),
+                surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width
+            ),
+            std::clamp(
+                static_cast<uint32_t>(windowRectangle.extent.height()),
+                surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height
+            )
+        });
 
     auto const minimized = imageExtent.width == 0 || imageExtent.height == 0;
 
