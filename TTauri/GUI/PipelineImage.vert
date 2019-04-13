@@ -33,8 +33,8 @@ void main() {
 
     gl_Position = vec4(position, 0.0, 1.0);
 
-    outClippingRectangleMinimum = convertToViewport(inClippingRectangleOffset);
-    outClippingRectangleMaximum = convertToViewport(inClippingRectangleOffset + inClippingRectangleExtent);
+    outClippingRectangleMinimum = inClippingRectangleOffset;
+    outClippingRectangleMaximum = inClippingRectangleOffset + inClippingRectangleExtent;
     outAtlasPosition = convertToTexture(inAtlasPosition);
     outAlpha = inAlpha;
 }

@@ -42,8 +42,14 @@ struct Image {
      * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
      * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
      */
-    void placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset) const;
+    void placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset);
+
 private:
+    //! Temporary memory used for pre calculating vertices.
+    std::vector<std::tuple<glm::vec2, u64extent2, bool>> tmpVertexPositions;
+
+    void calculateVertexPositions(const ImageLocation &location);
+
     void placePageVertices(size_t const index, const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset) const;
 
 };

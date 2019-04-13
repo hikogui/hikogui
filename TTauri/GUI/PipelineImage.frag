@@ -14,10 +14,14 @@ layout(location = 1) in vec2 inClippingRectangleMaximum;
 layout(location = 2) in vec3 inAtlasPosition;
 layout(location = 3) in float inAlpha;
 
-
+layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 outColor;
 
 void main() {
+    if (clamp(gl_FragCoord.xy, inClippingRectangleMinimum, inClippingRectangleMaximum) != gl_FragCoord.xy) {
+        discard;
+    }
+
     int atlasTextureIndex = int(inAtlasPosition.z);
     vec2 textureCoord = inAtlasPosition.xy;
 

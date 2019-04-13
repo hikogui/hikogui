@@ -18,13 +18,26 @@ struct ImageLocation {
     float rotation;
 
     //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
-    u16rect2 clippingRectangle;
+    u64rect2 clippingRectangle;
 
     //! Depth location of the rendered image.
-    uint16_t depth;
+    size_t depth;
 
     //! Transparency of the image.
-    uint8_t alpha;
+    float alpha;
+
+    bool operator==(const ImageLocation &other) {
+        return (
+            position == other.position &&
+            origin == other.origin &&
+            rotation == other.rotation &&
+            clippingRectangle == other.clippingRectangle &&
+            depth == other.depth &&
+            alpha == other.alpha
+        );
+    }
+
+    bool operator!=(const ImageLocation &other) { return !((*this) == other); }
 };
 
 }
