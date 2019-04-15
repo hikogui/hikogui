@@ -4,9 +4,6 @@
 [submodule "ThirdPartyLibraries/VMA/VulkanMemoryAllocator"]
 	path = ThirdPartyLibraries/VMA/VulkanMemoryAllocator
 	url = https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
-[submodule "ThirdPartyLibraries/zlib"]
-	path = ThirdPartyLibraries/zlib
-	url = https://github.com/madler/zlib.git
 [submodule "ThirdPartyLibraries/libpng"]
 	path = ThirdPartyLibraries/libpng
 	url = git://git.code.sf.net/p/libpng/code
