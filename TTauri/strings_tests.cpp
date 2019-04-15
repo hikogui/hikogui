@@ -1,5 +1,4 @@
 
-#include "pch.h"
 
 #include <TTauri/strings.hpp>
 

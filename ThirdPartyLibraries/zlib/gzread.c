@@ -297,7 +297,7 @@ local z_size_t gz_read(state, buf, len)
     z_size_t len;
 {
     z_size_t got;
-    unsigned n;
+    z_size_t n;
 
     /* if len is zero, avoid unnecessary operations */
     if (len == 0)
@@ -324,7 +324,7 @@ local z_size_t gz_read(state, buf, len)
                 n = state->x.have;
             memcpy(buf, state->x.next, n);
             state->x.next += n;
-            state->x.have -= n;
+            state->x.have -= (unsigned int)n;
         }
 
         /* output buffer empty -- return if we're at the end of the input */
@@ -346,13 +346,13 @@ local z_size_t gz_read(state, buf, len)
 
         /* large len -- read directly into user buffer */
         else if (state->how == COPY) {      /* read directly */
-            if (gz_load(state, (unsigned char *)buf, n, &n) == -1)
+            if (gz_load(state, (unsigned char *)buf, (unsigned)n, (unsigned *)&n) == -1)
                 return 0;
         }
 
         /* large len -- decompress directly into user buffer */
         else {  /* state->how == GZIP */
-            state->strm.avail_out = n;
+            state->strm.avail_out = (uInt)n;
             state->strm.next_out = (unsigned char *)buf;
             if (gz_decomp(state) == -1)
                 return 0;
@@ -397,7 +397,7 @@ int ZEXPORT gzread(file, buf, len)
     }
 
     /* read len or fewer bytes to buf */
-    len = gz_read(state, buf, len);
+    len = (unsigned)gz_read(state, buf, len);
 
     /* check for an error */
     if (len == 0 && state->err != Z_OK && state->err != Z_BUF_ERROR)
@@ -469,7 +469,7 @@ int ZEXPORT gzgetc(file)
     }
 
     /* nothing there -- try gz_read() */
-    ret = gz_read(state, buf, 1);
+    ret = (int)gz_read(state, buf, 1);
     return ret < 1 ? -1 : buf[0];
 }
 

@@ -218,7 +218,7 @@ if(MSVC)
 endif()
 
 # NOW BUILD OUR TARGET
-add_library(png ${libpng_sources})
+add_library(png STATIC ${libpng_sources})
 target_link_libraries(png zlib ${M_LIBRARY})
 target_include_directories(png PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
