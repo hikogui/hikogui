@@ -115,6 +115,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
 endif()
 
 if(MSVC)
+    add_compile_options(/wd4267 /wd26451 /wd6297)
     if(ASM686)
 		ENABLE_LANGUAGE(ASM_MASM)
         set(ZLIB_ASMS
@@ -150,16 +151,9 @@ add_executable(example test/example.c)
 target_link_libraries(example zlib)
 add_test(example example)
 
-# add_executable(minigzip test/minigzip.c)
-# target_link_libraries(minigzip zlib)
-
 if(HAVE_OFF64_T)
     add_executable(example64 test/example.c)
     target_link_libraries(example64 zlib)
     set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
     add_test(example64 example64)
-
-    # k    add_executable(minigzip64 test/minigzip.c)
-    # target_link_libraries(minigzip64 zlib)
-    # set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
 endif()
