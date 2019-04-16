@@ -1,4 +1,6 @@
 
+
+
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
@@ -11,6 +13,11 @@
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>
 #include <array>
+
+#define BINARY_ASSETS_PipelineImage_frag_spv_IMPL
+#include "PipelineImage.frag.spv.hpp"
+#define BINARY_ASSETS_PipelineImage_vert_spv_IMPL
+#include "PipelineImage.vert.spv.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -272,8 +279,8 @@ void DeviceShared::buildShaders()
 {
     auto vulkanDevice = device.lock();
 
-    vertexShaderModule = vulkanDevice->loadShader(get_singleton<Application>()->resourceDir / "PipelineImage.vert.spv");
-    fragmentShaderModule = vulkanDevice->loadShader(get_singleton<Application>()->resourceDir / "PipelineImage.frag.spv");
+    vertexShaderModule = vulkanDevice->loadShader(BinaryAssets::u32PipelineImage_vert_spv, sizeof(BinaryAssets::PipelineImage_vert_spv));
+    fragmentShaderModule = vulkanDevice->loadShader(BinaryAssets::u32PipelineImage_frag_spv, sizeof(BinaryAssets::PipelineImage_frag_spv));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

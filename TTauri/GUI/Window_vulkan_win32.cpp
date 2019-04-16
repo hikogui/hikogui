@@ -20,7 +20,7 @@ inline gsl::not_null<void *>to_ptr(LPARAM lParam)
 }
 
 const wchar_t *Window_vulkan_win32::win32WindowClassName = nullptr;
-WNDCLASS Window_vulkan_win32::win32WindowClass = {};
+WNDCLASSW Window_vulkan_win32::win32WindowClass = {};
 bool Window_vulkan_win32::win32WindowClassIsRegistered = false;
 std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> Window_vulkan_win32::win32WindowMap = {};
 bool Window_vulkan_win32::firstWindowHasBeenOpened = false;
@@ -35,7 +35,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClass.hInstance = get_singleton<Application_win32>()->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
         Window_vulkan_win32::win32WindowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
-        RegisterClass(&win32WindowClass);
+        RegisterClassW(&win32WindowClass);
     }
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
 }

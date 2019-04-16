@@ -469,18 +469,14 @@ void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk:
     endSingleTimeCommands(commandBuffer);
 }
 
-vk::ShaderModule Device_vulkan::loadShader(std::filesystem::path path) const
+vk::ShaderModule Device_vulkan::loadShader(const uint32_t *data, size_t size) const
 {
-    LOG_INFO("Loading shader %s") % path.filename().generic_string();
-
-    auto tmp_path = path.generic_string();
-    boost::interprocess::file_mapping mapped_file(tmp_path.c_str(), boost::interprocess::read_only);
-    auto region = boost::interprocess::mapped_region(mapped_file, boost::interprocess::read_only);
+    LOG_INFO("Loading shader");
 
     // Check uint32_t alignment of pointer.
-    BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(region.get_address()) & 3) == 0);
+    BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
 
-    return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), region.get_size(), static_cast<uint32_t *>(region.get_address())});
+    return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }
 
 }

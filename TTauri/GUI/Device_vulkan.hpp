@@ -108,7 +108,7 @@ public:
 
     void unmapMemory(const VmaAllocation &allocation);
 
-    vk::ShaderModule loadShader(std::filesystem::path path) const;
+    vk::ShaderModule loadShader(const uint32_t *data, size_t size) const;
 };
 
 }

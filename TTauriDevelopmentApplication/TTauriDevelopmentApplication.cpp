@@ -1,6 +1,4 @@
 
-#include "pch.h"
-
 #include "TTauri/utils.hpp"
 #include "TTauri/Application_win32.hpp"
 #include "TTauri/GUI/ImageView.hpp"
