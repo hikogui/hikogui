@@ -7,6 +7,7 @@ project(TTauri CXX)
 set(TTauri_Draw_srcs
     Draw/PixelMap.cpp
     Draw/PNG.cpp
+	Draw/FreeType.cpp
 )
 
 set(TTauri_GUI_srcs

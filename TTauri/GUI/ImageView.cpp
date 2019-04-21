@@ -34,10 +34,14 @@ void ImageView::drawBackingImage()
     auto vulkanDevice = device<Device_vulkan>();
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap();
+
+    // Draw image in the fullPixelMap.
     TTauri::Draw::loadPNG(fullPixelMap, path);
 
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
+    // Draw some text on top of the fullPixelMap.
 
+
+    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
     backingImage->drawn = true;
 }
 

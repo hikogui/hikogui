@@ -51,7 +51,7 @@ PixelMap<uint32_t> loadPNG(const PixelMap<uint32_t> &pixelMap, const std::filesy
 
     png_init_io(png_ptr, fp);
     png_set_sig_bytes(png_ptr, PNGHeader_size);
-    png_set_user_limits(png_ptr, pixelMap.width, pixelMap.height);
+    png_set_user_limits(png_ptr, boost::numeric_cast<png_uint_32>(pixelMap.width), boost::numeric_cast<png_uint_32>(pixelMap.height));
     png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
     
     auto row_pointers = pixelMap.rowPointers();

@@ -239,12 +239,12 @@ void DeviceShared::buildIndexBuffer()
             auto const rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
-            case 0: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 0; break;
-            case 1: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
-            case 2: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
-            case 3: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 2; break;
-            case 4: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 1; break;
-            case 5: gsl::at(stagingVertexIndexBufferData, i) = rectangleBase + 3; break;
+            case 0: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 0); break;
+            case 1: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 1); break;
+            case 2: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 2); break;
+            case 3: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 2); break;
+            case 4: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 1); break;
+            case 5: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 3); break;
             }
         }
         vmaFlushAllocation(vulkanDevice->allocator, stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);

@@ -98,33 +98,10 @@ void Image::placePageVertices(size_t const index, const ImageLocation &location,
 
     auto const atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
 
-    auto &v_lt = vertices.at(offset++);
-    v_lt.position = p1;
-    v_lt.atlasPosition = atlasPosition;
-    v_lt.clippingRectangle = rect2_cast<u16rect2>(location.clippingRectangle);
-    v_lt.depth = location.depth;
-    v_lt.alpha = location.alpha;
-
-    auto &v_rt = vertices.at(offset++);
-    v_rt.position = p2;
-    v_rt.atlasPosition = {atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z};
-    v_rt.clippingRectangle = rect2_cast<u16rect2>(location.clippingRectangle);
-    v_rt.depth = location.depth;
-    v_rt.alpha = location.alpha;
-
-    auto &v_lb = vertices.at(offset++);
-    v_lb.position = p3;
-    v_lb.atlasPosition = {atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z};
-    v_lb.clippingRectangle = rect2_cast<u16rect2>(location.clippingRectangle);
-    v_lb.depth = location.depth;
-    v_lb.alpha = location.alpha;
-
-    auto &v_rb = vertices.at(offset++);
-    v_rb.position = p4;
-    v_rb.atlasPosition = {atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z};
-    v_rb.clippingRectangle = rect2_cast<u16rect2>(location.clippingRectangle);
-    v_rb.depth = location.depth;
-    v_rb.alpha = location.alpha;
+    vertices.at(offset++) = {location, p1, atlasPosition};
+    vertices.at(offset++) = {location, p2, {atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z}};
+    vertices.at(offset++) = {location, p3, {atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z}};
+    vertices.at(offset++) = {location, p4, {atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z}};
 }
 
 /*! Place vertices for this image.

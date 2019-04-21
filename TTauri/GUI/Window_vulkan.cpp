@@ -139,7 +139,7 @@ bool Window_vulkan::render(bool blockOnVSync)
                 return blockOnVSync;
             }
 
-        } catch (const vk::OutOfDateKHRError &e) {
+        } catch (const vk::OutOfDateKHRError &) {
             LOG_INFO("presentKHR() eErrorOutOfDateKHR");
             state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
             return blockOnVSync;
@@ -152,7 +152,7 @@ std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImage
     try {
         surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
 
-    } catch (const vk::SurfaceLostKHRError &e) {
+    } catch (const vk::SurfaceLostKHRError &) {
         return {0, {}, State::SURFACE_LOST};
     }
 

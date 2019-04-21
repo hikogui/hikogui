@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include "PipelineImage_ImageLocation.hpp"
+
 #include "TTauri/geometry.hpp"
 #include <vulkan/vulkan.hpp>
 
@@ -27,6 +29,16 @@ struct Vertex {
 
     //! Align to 32 bits.
     uint8_t dummy[3];
+
+    Vertex(const ImageLocation &location, glm::vec2 position, u16vec3 atlasPosition) :
+        position(position),
+        atlasPosition(atlasPosition),
+        clippingRectangle({
+            {static_cast<uint16_t>(location.clippingRectangle.offset.x), static_cast<uint16_t>(location.clippingRectangle.offset.y)},
+            {static_cast<uint16_t>(location.clippingRectangle.extent.width()), static_cast<uint16_t>(location.clippingRectangle.extent.height())}
+        }),
+        depth(static_cast<uint16_t>(location.depth)),
+        alpha(static_cast<uint8_t>(location.alpha * 255.0)) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
