@@ -8,44 +8,26 @@ Mostly like JSON, but with extra features:
 ## Examples
 
 ```
-foo: 3;
 
-bar: {
-	baz: foo + 3
-};
-
-// Replace everything in bar.
-bar: {
-	toy: "Hello World",
-	widgets: [
-		{name: "light", color: "#123456"},
-		{name: "dark", color: "#000000"}
-	]
-};
-
-// Append something to the widgets.
-bar.widgets +: {name: "append", "#976274"};
-
-// Insert at position 0 something to the widgets.
-bar.widgets +0: {name: "insert", "#9999999"};
-
-// Remove the color from the widget with the name 'dark'.
-bar.widgets[name="dark"].color-;
-
-// Remove the widget with the name 'dark'.
-bar.widgets[name="dark"]-;
-
-// Replace colour on the widget with the name 'light'.
-bar.widgets[name="light"].color: "#111111";
 
 ```
 
-## Syntax
 
+## Lexicon
 ```
 bindigit := '[01_]';
 decdigit := bindigit | '[23456789]';
 hexdigit := decdigit | '[aAbBcCdDeEfF]';
+
+string-char := '[^"]';
+
+white-space-char := '[ \n\t\r]';
+
+escaped-double-quote := '\\"';
+
+// identifiers starting with '$' will be deleted after parsing of the
+// configuration file has finished and can be seen as temporary variables.
+identifier := '[a-zA-Z_$][a-zA-Z0-9_]*'
 
 int :=
 	'-'? '0[dD]'? +decdigit |
@@ -61,50 +43,68 @@ boolean := 'true' | 'false';
 
 null := 'null';
 
-char := '[^"]';
+delete := 'delete';
 
-escaped-quote := '\"';
+string := '"' *(string-char | escaped-double-quote) '"';
 
-string := '"' *(char | escaped-quote) '"';
+color := '#' (hexdigit{6} | hexdigit{8});
 
+comment := '//.*?\n';
+
+keywords := 'include';
+
+```
+
+## Syntax
+Ignores comment and white-space-char tokens.
+
+```
 array :=
 	'[' ']' |
-	'[' expression *(',' expression) ','? ']';
+	'[' expression *(',' expression) ?',' ']';
 
+statement :=
+	'[' key ']' |		    					// Set prefix key from this point onwards in this object.
+	'[]' |			     						// Unset prefix key from this point onwards in this object.
+	key '-' [,;] |								// Delete key.
+	key ':' expression [,;] |					// Replace value.
+	key ':@' expression [,;] |					// Replace last value in list.
+	key ':' expression '@' expression [,;] |	// Replace value at index in list. Negative index from end of list.
+	key ':-' ?[,;] |							// Delete last entry from list.
+	key ':' expression '-' ?[,;] |				// Delete at index. Negative index from end of list.
+	key ':+' expression ?[,;] |					// Append value at end of list.
+	key ':' expression '+' expression ?[,;] |	// Insert value before index. Negative index from end of list.
+	'include' '(' expression ')' ?[,;];			// Object included from another file is merged with this object.
 
-object :=
-	'{' '}' |
-	'{' path ':' expression *(',' path ':' expression) ','? '}'
+object := '{' *statement '}';
 
-include := 'include' string;
-
-value := int | float | boolean | null | string | array | object;
+literal :=
+	int |
+	float |
+	boolean |
+	null |
+	string |
+	color |
+	array |
+	object;
 
 binary-operator := '+' | '-' | '*' | '%' | '/' | '=' | '!=';
 
-path :=
-	path '.' name |
-	path '[' expression ']' |
-	name;
+key :=
+	key '.' identifier |
+	identifier;
 
 expression :=
 	'(' expression ')'
+	'include' '(' expression ')' |
+	expression '(' ')' |
+	expression '(' expression *(',' expression) ?',' ')' |
 	expression binary-operator expression |
-	path |
-	value;
+	expression '.' identifier |
+	expression '[' expression ']' |
+	identifier |
+	literal;
 
-patch :=
-	path ':' expression
-
-block :=
-	include |
-	patch
-
-file := *block
-
-
-
-
-
+file := *statement;
 
 ```
