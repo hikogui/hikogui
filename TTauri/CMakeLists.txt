@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.0)
 
 project(TTauri CXX)
 
+set(TTauri_Config_srcs
+    Config/Token.cpp
+)
 
 set(TTauri_Draw_srcs
     Draw/PixelMap.cpp
@@ -38,6 +41,7 @@ set(TTauri_GUI_shaders
 )
 
 set(TTauri_srcs
+    ${TTauri_Config_srcs}
     ${TTauri_Draw_srcs}
     ${TTauri_GUI_srcs}
     Application.cpp

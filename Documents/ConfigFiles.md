@@ -8,8 +8,53 @@ Mostly like JSON, but with extra features:
 ## Examples
 
 ```
+foo = 12;
 
+baz = {
+    name: "Hello"
+};
 
+foo.bar: 42; // Error, foo is not an object.
+
+baz.value: "World";
+
+[test]
+// Creates object test, with foo = 13 key-value.
+foo: 13;
+
+// Includes the object from otherfile.txt and merge with the test object.
+// Calls the include method on the test object.
+include("otherfile.txt");
+
+// Select the root object
+[]
+
+// Add more to the root object and calculate foo + 5.
+more: foo + 5;
+
+intlist: [1, 2, 3, 4];
+
+// Insert 100 in front of intlist.
+intlist.add(0, 100);
+
+// Append 5 after intlist.
+intlist.add(5);
+
+// Insert 6 before the last entry.
+intlist.add(-1, 6);
+
+// Remove the 4th entry.
+intlist.remove(3);
+
+// Remove the last entry.
+intlist.remove();
+
+// Remove the last entry.
+intlist.remove(-1);
+
+// Delete the intlist key from the root object.
+// Calls the delete object from the root object.
+delete("intlist");
 ```
 
 
@@ -19,7 +64,7 @@ bindigit := '[01_]';
 decdigit := bindigit | '[23456789]';
 hexdigit := decdigit | '[aAbBcCdDeEfF]';
 
-string-char := '[^"]';
+string-char := '[^"\n]';
 
 white-space-char := '[ \n\t\r]';
 
@@ -29,29 +74,32 @@ escaped-double-quote := '\\"';
 // configuration file has finished and can be seen as temporary variables.
 identifier := '[a-zA-Z_$][a-zA-Z0-9_]*'
 
-int :=
-	'-'? '0[dD]'? +decdigit |
-	'-'? '0[xX]' +hexdigit |
-	'-'? '0[bB]' +bindigit;
+unsigned :=
+    '0[dD]'? decdigit+ |
+	'0[xX]' hexdigit+ |
+	'0[bB]' bindigit+;
+
+int := '-'? unsigned;
 
 float :=
-	'-'? int '.' int |
-	'-'? int '.' |
-	'-'? '.' int
+	int '.' unsigned ('[eE]' int)? |
+	int '.' ('[eE]' int)? |
+	'-'? '.' unsigned ('[eE]' int)?;
+
+color := '#' (hexdigit{6} | hexdigit{8});
 
 boolean := 'true' | 'false';
 
 null := 'null';
 
-delete := 'delete';
-
-string := '"' *(string-char | escaped-double-quote) '"';
-
-color := '#' (hexdigit{6} | hexdigit{8});
+string := '"' (string-char | escaped-double-quote)*? '"';
 
 comment := '//.*?\n';
 
-keywords := 'include';
+binary-operator := '==|!=|<=|>=|<>|and|or|not|xor|[+-*/%~&|]';
+
+AS := '[=:]'
+SC := '[;,]';
 
 ```
 
@@ -59,24 +107,41 @@ keywords := 'include';
 Ignores comment and white-space-char tokens.
 
 ```
-array :=
-	'[' ']' |
-	'[' expression *(',' expression) ?',' ']';
+key :=
+	key '.' identifier |
+	identifier;
 
-statement :=
-	'[' key ']' |		    					// Set prefix key from this point onwards in this object.
-	'[]' |			     						// Unset prefix key from this point onwards in this object.
-	key '-' [,;] |								// Delete key.
-	key ':' expression [,;] |					// Replace value.
-	key ':@' expression [,;] |					// Replace last value in list.
-	key ':' expression '@' expression [,;] |	// Replace value at index in list. Negative index from end of list.
-	key ':-' ?[,;] |							// Delete last entry from list.
-	key ':' expression '-' ?[,;] |				// Delete at index. Negative index from end of list.
-	key ':+' expression ?[,;] |					// Append value at end of list.
-	key ':' expression '+' expression ?[,;] |	// Insert value before index. Negative index from end of list.
-	'include' '(' expression ')' ?[,;];			// Object included from another file is merged with this object.
+section-statement :=
+	'[' key ']' |		    					// Set prefix key from this point onwards the current object.
+	'[]';			     						// Unset prefix key from this point onwards the current object.
 
-object := '{' *statement '}';
+assignment-statement := key AS expression;  // Replace value.
+
+expression-statement := expression;             // Any function call will imply a method on the current object.
+                                                // The returned object of this expression will be merged with the current object.
+
+nonlast-statement :=
+    section-statement SC? |
+    assignment-statement SC |
+    expression-statment SC;                              
+                                               
+last-statment :=
+    section-statment SC? | 
+    assignment-statement SC? |
+    expression-statment SC;
+
+statement-list :=
+    |
+    last-statement;
+    nonlast-statement statement-list;
+
+object := '{' statement-list '}';
+
+expression-list :=
+    |
+    expression (SC expression)* SC?;
+
+array := '[' expression-list ']';
 
 literal :=
 	int |
@@ -84,21 +149,13 @@ literal :=
 	boolean |
 	null |
 	string |
-	color |
+    color |
 	array |
 	object;
 
-binary-operator := '+' | '-' | '*' | '%' | '/' | '=' | '!=';
-
-key :=
-	key '.' identifier |
-	identifier;
-
 expression :=
 	'(' expression ')'
-	'include' '(' expression ')' |
-	expression '(' ')' |
-	expression '(' expression *(',' expression) ?',' ')' |
+	expression '(' expression-list ')' |
 	expression binary-operator expression |
 	expression '.' identifier |
 	expression '[' expression ']' |
@@ -108,3 +165,17 @@ expression :=
 file := *statement;
 
 ```
+
+## Functions
+### path(string)
+Return a path object from the given string.
+A relative path will be relative to the current configuration file.
+
+### color(r: float, g: float, b: float, a: float=1.0)
+Return a color object. Given r, g, b values are sRGB including gamma.
+r, g, b values outside of the range 0.0-1.0 are allowed and are clamped to
+the color space of the display.
+
+### color(string)
+Return a color object. The string is a '#' character followed by 6 or 8 hex digits
+each pair denoting r, g, b, a values in sRGB color space including gamma.
