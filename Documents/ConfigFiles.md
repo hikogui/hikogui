@@ -132,8 +132,7 @@ last-statment :=
 
 statement-list :=
     |
-    last-statement;
-    nonlast-statement statement-list;
+    *nonlast-statement last-statement;
 
 object := '{' statement-list '}';
 
@@ -162,7 +161,7 @@ expression :=
 	identifier |
 	literal;
 
-file := *statement;
+file := statement-list;
 
 ```
 
