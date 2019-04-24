@@ -96,7 +96,7 @@ string := '"' (string-char | escaped-double-quote)*? '"';
 
 comment := '//.*?\n';
 
-binary-operator := '==|!=|<=|>=|<>|and|or|not|xor|[+-*/%~&|]';
+binary-operator := '==|!=|<=|>=|<>|and|or|not|xor|[+-*/%~&.|]';
 
 AS := '[=:]'
 SC := '[;,]';
@@ -156,7 +156,6 @@ expression :=
 	'(' expression ')'
 	expression '(' expression-list ')' |
 	expression binary-operator expression |
-	expression '.' identifier |
 	expression '[' expression ']' |
 	identifier |
 	literal;

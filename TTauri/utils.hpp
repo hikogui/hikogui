@@ -50,6 +50,14 @@ inline constexpr size_t align(size_t offset, size_t alignment)
     return ((offset + alignment - 1) / alignment) * alignment;
 }
 
+template<typename T>
+inline typename T::value_type pop_back(T &v)
+{
+    typename T::value_type x = std::move(v.back());
+    v.pop_back();
+    return x;
+}
+
 template<typename T, typename U>
 inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 {

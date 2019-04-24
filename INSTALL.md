@@ -2,12 +2,8 @@
 
 ## Dependencies
 
-### Boost
-Install boost. Make sure `BOOST_ROOT` variable is set.
-
-### Vulkan SDK
-Install vulkan SDK.
-
-
+ * Install boost. Make sure `BOOST_ROOT` variable is set.
+ * Install Vulkan SDK
+ * Install flex/bison, make sure to add binaries to PATH
 
 
