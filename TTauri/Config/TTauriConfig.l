@@ -1,6 +1,11 @@
-
+%option noinput nounput noyywrap 8bit nodefault                                 
+%option yylineno
+%option reentrant bison-bridge bison-locations
+%option nounistd never-interactive
 %{
-#include "TTauriConfig.tab.h"
+#include "TTauriConfigParser.hpp"
+#include "TTauri/Config/LiteralParser.hpp"
+
 %}
 
 BIN             [_01]
@@ -14,20 +19,20 @@ WS              [ \t\f\r\n]
 
 %%
 
-[_$a-zA-Z][_$a-zA-Z0-9]*    yylval = parseIdentifier(yytext); return T_IDENTIFIER;
+[_$a-zA-Z][_$a-zA-Z0-9]*    yylval->string = TTauri::Config::parseIdentifier(yytext); return T_IDENTIFIER;
 
--?0[bBoOdDxX]{HEX}+         yylval = parseInteger(yytext); return T_INTEGER;
--?{DEC}+                    yylval = parseInteger(yytext); return T_INTEGER;
+-?0[bBoOdDxX]{HEX}+         yylval->integer = TTauri::Config::parseInteger(yytext); return T_INTEGER;
+-?{DEC}+                    yylval->integer = TTauri::Config::parseInteger(yytext); return T_INTEGER;
 
--?"."{DEC}+                 yylval = parseFloat(yytext); return T_FLOAT;
--?{DEC}+"."{DEC}*           yylval = parseFloat(yytext); return T_FLOAT;
+-?"."{DEC}+                 yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
+-?{DEC}+"."{DEC}*           yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 
-true|false                  yylval = parseBoolean(yytext); return T_BOOLEAN;
-null                        yylval = parseNull(yytext); return T_NULL;
+true|false                  yylval->boolean = TTauri::Config::parseBoolean(yytext); return T_BOOLEAN;
+null                        return T_NULL;
 
-\"({STR}|{STRDQ})*?\"       yylval = parseString(yytext); return T_STRING;
+\"({STR}|{STRDQ})*?\"       yylval->string = TTauri::Config::parseString(yytext); return T_STRING;
 
-//.*?\n                     ;
+"//".*?\n                   ;
 {WS}                        ;
 
 [=:]                        return T_AS;
@@ -45,8 +50,7 @@ null                        yylval = parseNull(yytext); return T_NULL;
 "or"                        return T_LOG_OR;
 [][)(}{.~*/%+-<>&^|]        return *yytext;;
 
-.                           yylval = tokenError(yytext); return T_ERROR;
+.                           ;
 
 
 %%
-

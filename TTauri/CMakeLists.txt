@@ -6,15 +6,15 @@ project(TTauri CXX)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
-BISON_TARGET(TTauriConfigParser Config/TTauriConfig.y ${CMAKE_CURRENT_SOURCE_DIR}/Config/TTauriConfigParser.cpp DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Config/TTauriConfigParserTokens.h)
-FLEX_TARGET(TTauriConfigScanner Config/TTauriConfig.l ${CMAKE_CURRENT_SOURCE_DIR}/Config/TTauriConfigScanner.cpp DEFINES_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Config/TTauriConfigParserTokens.h)
+BISON_TARGET(TTauriConfigParser Config/TTauriConfig.y ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigParser.cpp DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigParser.hpp)
+FLEX_TARGET(TTauriConfigScanner Config/TTauriConfig.l ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.cpp DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.hpp)
 ADD_FLEX_BISON_DEPENDENCY(TTauriConfigScanner TTauriConfigParser)
 
 
 set(TTauri_srcs
     ${BISON_TTauriConfigParser_OUTPUTS}
-    ${BISON_TTauriConfigScanner_OUTPUTS}
-    Config/Token.cpp
+    ${FLEX_TTauriConfigScanner_OUTPUTS}
+    Config/LiteralParser.cpp
     Config/Parser.cpp
     Draw/PixelMap.cpp
     Draw/PNG.cpp
@@ -57,6 +57,10 @@ set(TTauri_GUI_shaders
 
 file(GLOB_RECURSE TTauri_hdrs *.hpp)
 source_group("Headers" FILES ${TTauri_hdrs})
+
+if(MSVC)
+    add_compile_options(/wd4996 /wd4005)
+endif()
 
 add_library(TTauri STATIC ${TTauri_srcs})
 target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA freetype)
