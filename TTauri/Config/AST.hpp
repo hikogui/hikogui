@@ -152,4 +152,71 @@ struct ASTArray : ASTExpression {
     }
 };
 
+struct ASTStatement : ASTNode {
+    ASTStatement(ASTLocation location) : ASTNode(location) {}
+};
+
+struct ASTStatements : ASTNode {
+    std::vector<ASTStatement *> statements;
+
+    ASTStatements(ASTLocation location, ASTStatement *firstStatement) : ASTNode(location), statements({firstStatement}) {}
+
+    ~ASTStatements() {
+        for (auto statement: statements) {
+            delete statement;
+        }
+    }
+};
+
+struct ASTObject : ASTExpression {
+    std::vector<ASTStatement *> statements;
+
+    ASTObject(ASTLocation location) : ASTExpression(location), statements() { }
+
+    ASTObject(ASTLocation location, ASTStatement *statement) : ASTExpression(location), statements({statement}) {
+    }
+
+    ASTObject(ASTLocation location, ASTStatements *statements) : ASTExpression(location), statements(statements->statements) {
+        // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
+        statements->statements.clear();
+        delete statements;
+    }
+
+    ~ASTObject() {
+        for (auto statement: statements) {
+            delete statement;
+        }
+    }
+};
+
+struct ASTPrefix : ASTStatement {
+    ASTExpression *key;
+
+    ASTPrefix(ASTLocation location, ASTExpression *key) : ASTStatement(location), key(key) {}
+    ~ASTPrefix() {
+        delete key;
+    }
+};
+
+struct ASTAssignment : ASTStatement {
+    ASTExpression *key;
+    ASTExpression *expression;
+
+    ASTAssignment(ASTLocation location, ASTExpression *key, ASTExpression *expression) : ASTStatement(location), key(key), expression(expression) {}
+    ~ASTAssignment() {
+        delete key;
+        delete expression;
+    }
+};
+
+struct ASTExpressionStatement : ASTStatement {
+    ASTExpression *expression;
+
+    ASTExpressionStatement(ASTLocation location, ASTExpression *expression) : ASTStatement(location), expression(expression) {}
+    ~ASTExpressionStatement() {
+        delete expression;
+    }
+};
+
+
 }

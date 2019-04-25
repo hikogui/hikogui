@@ -23,3 +23,5 @@ add_subdirectory(TTauri)
 add_subdirectory(TTauriDevelopmentApplication)
 #add_subdirectory(TTauriUnitTests) 
  
+ enable_testing()
+ add_test(TTauriTests TTauri/TTauriTests)

@@ -24,8 +24,12 @@
           "value": "OFF"
         },
         {
-          "name": "GLM_TEST_ENABLE_SIMD_AVX2",
-          "value": "ON"
+            "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+            "value": "ON"
+        },
+        {
+            "name": "gtest_force_shared_crt",
+            "value": "ON"
         }
       ]
     }

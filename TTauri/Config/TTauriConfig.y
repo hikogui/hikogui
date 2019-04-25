@@ -1,6 +1,8 @@
 %define api.pure full
+%define parse.lac full
 %locations
 %param { yyscan_t scanner }
+%param { TTauri::Config::ParseContext* context }
 
 %code top {
   #include <stdio.h>
@@ -12,11 +14,15 @@
   #include <cstdint>
   #include <memory>
   #include "TTauri/Config/AST.hpp"
+  #include "TTauri/Config/ParseContext.hpp"
   typedef void* yyscan_t;
 }
+
 %code {
-  int yylex(YYSTYPE* yylvalp, YYLTYPE* yyllocp, yyscan_t scanner);
-  void yyerror(YYLTYPE* yyllocp, yyscan_t unused, const char* msg);
+  int yylex(YYSTYPE* yylvalp, YYLTYPE* yyllocp, yyscan_t scanner, TTauri::Config::ParseContext* context);
+  void yyerror(YYLTYPE* yyllocp, yyscan_t scanner, TTauri::Config::ParseContext* context, const char* msg) {
+    context->setError({yyllocp->first_line, yyllocp->last_line, yyllocp->first_column, yyllocp->last_column}, msg);
+  }
 }
 
 %union {
@@ -27,7 +33,8 @@
     TTauri::Config::ASTExpression *expression;
     TTauri::Config::ASTExpressions *expressions;
     TTauri::Config::ASTStatement *statement;
-    TTauri::Config::ASTStatements *statement;
+    TTauri::Config::ASTStatements *statements;
+    TTauri::Config::ASTObject *object;
 }
 
 %token <string> T_IDENTIFIER
@@ -67,7 +74,7 @@
 %left FCALL SUBSC
 %left '.'
 
-%type <expression> root
+%type <object> root
 %type <expression> expression
 %type <expression> array
 %type <expression> object
@@ -120,7 +127,7 @@ expression:
 
 expressions:
       expression                                                    { $$ = NEW_NODE(ASTExpressions, @1, $1); }
-    | expressions T_SC expression                                   { $$ = $1; $1->expressions.push_back($3); }
+    | expressions T_SC expression                                   { $1->expressions.push_back($3); $$ = $1; }
     ;
 
 array:
@@ -137,29 +144,29 @@ key:
 last_statement:
      '[' key ']'                                                    { $$ = NEW_NODE(ASTPrefix, @1, $2); }
     | key T_AS expression                                           { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
-    | T_IDENTIFIER '(' expressions ')'                              { $$ = NEW_NODE(ASTCallStatement(@1, NEW_NODE(ASTCall, @2, $1, $3)); }
+    | T_IDENTIFIER '(' expressions ')'                              { $$ = NEW_NODE(ASTExpressionStatement, @1, NEW_NODE(ASTCall, @2, $1, $3)); }
     ;
 
 nonlast_statement:
       '[' key ']'                                                   { $$ = NEW_NODE(ASTPrefix, @1, $2); }
     | key T_AS expression T_SC                                      { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
-    | T_IDENTIFIER '(' expressions ')' T_SC                         { $$ = NEW_NODE(ASTCallStatement(@1, NEW_NODE(ASTCall, @2, $1, $3)); }
+    | T_IDENTIFIER '(' expressions ')' T_SC                         { $$ = NEW_NODE(ASTExpressionStatement, @1, NEW_NODE(ASTCall, @2, $1, $3)); }
     ;
 
 nonlast_statements:
       nonlast_statement                                             { $$ = NEW_NODE(ASTStatements, @1, $1); }
-    | nonlast_statements nonlast_statement                          { $$ = $1; $1->statements.push_back($2); }
+    | nonlast_statements nonlast_statement                          { $1->statements.push_back($2); $$ = $1; }
     ;
 
 object:
       '{' '}'                                                       { $$ = NEW_NODE(ASTObject, @1); }
     | '{' last_statement '}'                                        { $$ = NEW_NODE(ASTObject, @1, $2); }
-    | '{' nonlast_statements last_statement '}'                     { $$ = NEW_NODE(ASTObject, @1, $2); $2->statements.push_back($3); }
+    | '{' nonlast_statements last_statement '}'                     { $2->statements.push_back($3); $$ = NEW_NODE(ASTObject, @1, $2); }
     ;
 
 root:
-      /* empty */                                                   { $$ = new TTauri::Config::ASTObject({0,0,0,0}); }
-    | nonlast_statements                                            { $$ = NEW_NODE(ASTObject, @1, $1); }
+      /* empty */                                                   { $$ = new TTauri::Config::ASTObject({0,0,0,0}); context->object = $$; }
+    | nonlast_statements                                            { $$ = NEW_NODE(ASTObject, @1, $1); context->object = $$; }
     ;
 
 %%
