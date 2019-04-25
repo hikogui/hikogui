@@ -11,7 +11,7 @@ int64_t parseInteger(const char *text)
     size_t offset = 0;
     bool startsWithZero = false;
     bool isNegative = false;
-    int64_t value;
+    int64_t value = 0;
     int radix = 10;
 
     if (offset < size) {
@@ -57,7 +57,7 @@ int64_t parseInteger(const char *text)
     return isNegative ? -value : value;
 }
 
-double parseFloatToken(const char *text) {
+double parseFloat(const char *text) {
     size_t size = strlen(text);
     size_t offset = 0;
     int64_t value = 0;
@@ -90,13 +90,15 @@ double parseFloatToken(const char *text) {
         }
     }
 
-    return static_cast<double>(isNegative ? -value : value) / static_cast<double>(fractional);
+    double fvalue = static_cast<double>(value) / static_cast<double>(fractional);
+    double fvalue_ = isNegative ? -fvalue : fvalue;
+    return fvalue_;
 }
 
-char *parseStringToken(const char *text)
+char *parseString(const char *text)
 {
     size_t size = strlen(text);
-    size_t offset = 0;
+    size_t offset = 1; // Skip over first '"' double-quote character.
     std::string value;
     bool foundEscape = false;
 
@@ -128,11 +130,15 @@ char *parseStringToken(const char *text)
     return strdup(value.data());
 }
 
-char *parseIdentifierToken(const char *text) 
+char *parseIdentifier(const char *text) 
 {
     return strdup(text);
 }
 
+bool parseBoolean(const char *text)
+{
+    return strcmp(text, "true") == 0;
+}
 
 
 

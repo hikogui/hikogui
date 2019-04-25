@@ -24,4 +24,8 @@ add_subdirectory(TTauriDevelopmentApplication)
 #add_subdirectory(TTauriUnitTests) 
  
  enable_testing()
- add_test(TTauriTests TTauri/TTauriTests)
+
+ add_test(NAME TTauriTests COMMAND TTauri/TTauriTests)
+ 
+ 
+

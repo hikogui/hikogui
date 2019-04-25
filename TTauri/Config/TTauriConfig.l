@@ -34,7 +34,7 @@ WS              [ \t\f\r\n]
 "and"                       return T_LOG_AND;
 "xor"                       return T_LOG_XOR;
 "or"                        return T_LOG_OR;
-[][)(}{.~*/%+-<>&^|]        return *yytext;;
+[][)(}{.~*/%+<>&^|]         return yytext[0];
 
 true|false                  yylval->boolean = TTauri::Config::parseBoolean(yytext); return T_BOOLEAN;
 null                        return T_NULL;
@@ -47,10 +47,13 @@ null                        return T_NULL;
 -?"."{DEC}+                 yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 -?{DEC}+"."{DEC}*           yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 
+-                           return yytext[0];
+
 \"({STR}|{STRDQ})*?\"       yylval->string = TTauri::Config::parseString(yytext); return T_STRING;
 
 "//".*?\n                   ;
 {WS}                        ;
+
 
 .                           ;
 

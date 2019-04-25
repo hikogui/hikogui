@@ -77,3 +77,12 @@ set(TTauriTests_srcs
 
 add_executable(TTauriTests ${TTauriTests_srcs})
 target_link_libraries(TTauriTests TTauri gtest_main)
+set_property(TARGET TTauriTests PROPERTY CXX_STANDARD 17)
+
+file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Config/TestFiles/*)
+ foreach(TestFile ${TestFiles})
+     add_custom_command(TARGET TTauriTests POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    ${CMAKE_CURRENT_SOURCE_DIR}/${TestFile}
+                    ${CMAKE_CURRENT_BINARY_DIR}/${TestFile})
+endforeach()

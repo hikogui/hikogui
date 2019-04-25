@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <boost/format.hpp>
+
 #include <string>
 #include <vector>
 #include <memory>
@@ -18,6 +20,8 @@ struct ASTLocation {
 struct ASTNode {
     ASTLocation location;
     ASTNode(ASTLocation location) : location(location) {}
+
+    virtual std::string str() { return "<node>"; }
 };
 
 struct ASTExpression : ASTNode {
@@ -40,18 +44,31 @@ struct ASTIntegerLiteral : ASTExpression {
     int64_t value;
 
     ASTIntegerLiteral(ASTLocation location, int64_t value) : ASTExpression(location), value(value) {}
+
+
+    std::string str() override {
+        return (boost::format("%i") % value).str();
+    }
 };
 
 struct ASTFloatLiteral : ASTExpression {
     double value;
 
     ASTFloatLiteral(ASTLocation location, double value) : ASTExpression(location), value(value) {}
+
+    std::string str() override {
+        return (boost::format("%g") % value).str();
+    }
 };
 
 struct ASTBooleanLiteral : ASTExpression {
     bool value;
 
     ASTBooleanLiteral(ASTLocation location, bool value) : ASTExpression(location), value(value) {}
+
+    std::string str() override {
+        return value ? "true" : "false";
+    }
 };
 
 struct ASTStringLiteral : ASTExpression {
@@ -60,11 +77,19 @@ struct ASTStringLiteral : ASTExpression {
     ASTStringLiteral(ASTLocation location, char *value) : ASTExpression(location), value(value) {
         free(value);
     }
+
+    std::string str() override {
+        return "\"" + value + "\"";
+    }
 };
 
 struct ASTNullLiteral : ASTExpression {
 
     ASTNullLiteral(ASTLocation location) : ASTExpression(location) {}
+
+    std::string str() override {
+        return "null";
+    }
 };
 
 struct ASTIdentifier : ASTExpression {
@@ -72,6 +97,10 @@ struct ASTIdentifier : ASTExpression {
 
     ASTIdentifier(ASTLocation location, char *name) : ASTExpression(location), name(name) {
         free(name);
+    }
+
+    std::string str() override {
+        return name;
     }
 };
 
@@ -150,6 +179,22 @@ struct ASTArray : ASTExpression {
             delete expression;
         }
     }
+
+    std::string str() override {
+        std::string s = "[";
+
+        bool first = true;
+        for (auto expression: expressions) {
+            if (!first) {
+                s += ",";
+            }
+            s += expression->str();
+            first = false;
+        }
+
+        s += "]";
+        return s;
+    }
 };
 
 struct ASTStatement : ASTNode {
@@ -187,6 +232,22 @@ struct ASTObject : ASTExpression {
             delete statement;
         }
     }
+
+    std::string str() override {
+        std::string s = "{";
+
+        bool first = true;
+        for (auto statement: statements) {
+            if (!first) {
+                s += ",";
+            }
+            s += statement->str();
+            first = false;
+        }
+
+        s += "}";
+        return s;
+    }
 };
 
 struct ASTPrefix : ASTStatement {
@@ -206,6 +267,10 @@ struct ASTAssignment : ASTStatement {
     ~ASTAssignment() {
         delete key;
         delete expression;
+    }
+
+    std::string str() override {
+        return key->str() + ":" + expression->str();
     }
 };
 

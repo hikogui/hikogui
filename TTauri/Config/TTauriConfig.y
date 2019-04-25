@@ -1,5 +1,6 @@
 %define api.pure full
 %define parse.lac full
+%define parse.error verbose
 %locations
 %param { yyscan_t scanner }
 %param { TTauri::Config::ParseContext* context }
