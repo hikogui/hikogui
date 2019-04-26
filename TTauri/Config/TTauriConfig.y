@@ -91,12 +91,12 @@ expression:
       '(' expression ')'                                            { $$ = $2; }
     | array                                                         { $$ = $1; }
     | object                                                        { $$ = $1; }
-    | T_INTEGER                                                     { $$ = NEW_NODE(ASTIntegerLiteral, @1, $1); }
-    | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloatLiteral, @1, $1); }
-    | T_BOOLEAN                                                     { $$ = NEW_NODE(ASTBooleanLiteral, @1, $1); }
-    | T_NULL                                                        { $$ = NEW_NODE(ASTNullLiteral, @1); }
-    | T_STRING                                                      { $$ = NEW_NODE(ASTStringLiteral, @1, $1); }
-    | T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTIdentifier, @1, $1); }
+    | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
+    | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
+    | T_BOOLEAN                                                     { $$ = NEW_NODE(ASTBoolean, @1, $1); }
+    | T_NULL                                                        { $$ = NEW_NODE(ASTNull, @1); }
+    | T_STRING                                                      { $$ = NEW_NODE(ASTString, @1, $1); }
+    | T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
     | T_IDENTIFIER '(' expressions ')' %prec FCALL                  { $$ = NEW_NODE(ASTCall, @4, $1, $3); }
     | expression '.' T_IDENTIFIER '(' expressions ')' %prec FCALL   { $$ = NEW_NODE(ASTCall, @4, $1, $3, $5); }
  //   | T_IDENTIFIER '[' expressions ']' %prec SUBSCRIPT
@@ -138,7 +138,7 @@ array:
     ;
 
 key:
-      T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTIdentifier, @1, $1); }
+      T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
     | key '.' T_IDENTIFIER                                          { $$ = NEW_NODE(ASTMember, @2, $1, $3); }
     ;
 
