@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace TTauri::Connfig {
+namespace TTauri::Config {
 
 struct ASTMember : ASTExpression {
     ASTExpression *object;

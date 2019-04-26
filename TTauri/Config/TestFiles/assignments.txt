@@ -1,2 +1,3 @@
 
 foo = "Hello World";
+bar : 1;

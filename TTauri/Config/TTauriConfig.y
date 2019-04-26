@@ -72,13 +72,11 @@
 %left '+' '-'
 %left '*' '/' '%'
 %right '~' T_LOG_NOT UMINUS
-%left FCALL SUBSC
+%left '(' '['
 %left '.'
 
 %type <object> root
 %type <expression> expression
-%type <expression> array
-%type <expression> object
 %type <expression> key
 %type <expressions> expressions
 %type <statement> last_statement
@@ -89,18 +87,20 @@
 
 expression:
       '(' expression ')'                                            { $$ = $2; }
-    | array                                                         { $$ = $1; }
-    | object                                                        { $$ = $1; }
+    | '[' ']'                                                       { $$ = NEW_NODE(ASTArray, @1); }
+    | '[' expressions ']'                                           { $$ = NEW_NODE(ASTArray, @1, $2); }
+    | '[' expressions T_SC ']'                                      { $$ = NEW_NODE(ASTArray, @1, $2); }
+    | '{' '}'                                                       { $$ = NEW_NODE(ASTObject, @1); }
+    | '{' last_statement '}'                                        { $$ = NEW_NODE(ASTObject, @1, $2); }
+    | '{' nonlast_statements last_statement '}'                     { $2->statements.push_back($3); $$ = NEW_NODE(ASTObject, @1, $2); }
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
     | T_BOOLEAN                                                     { $$ = NEW_NODE(ASTBoolean, @1, $1); }
     | T_NULL                                                        { $$ = NEW_NODE(ASTNull, @1); }
     | T_STRING                                                      { $$ = NEW_NODE(ASTString, @1, $1); }
     | T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
-    | T_IDENTIFIER '(' expressions ')' %prec FCALL                  { $$ = NEW_NODE(ASTCall, @4, $1, $3); }
-    | expression '.' T_IDENTIFIER '(' expressions ')' %prec FCALL   { $$ = NEW_NODE(ASTCall, @4, $1, $3, $5); }
- //   | T_IDENTIFIER '[' expressions ']' %prec SUBSCRIPT
- //   | expression '.' T_IDENTIFIER '[' expressions ']' %prec SUBSC
+    | expression '(' expressions ')'                                { $$ = NEW_NODE(ASTCall, @2, $1, $3); }
+    | expression '[' expressions ']'                                { $$ = NEW_NODE(ASTSlice, @2, $1, $3); }
     | expression '.' T_IDENTIFIER                                   { $$ = NEW_NODE(ASTMember, @1, $1, $3); }
     | '~' expression                                                { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__bin_not__")); }
     | T_LOG_NOT expression                                          { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__log_not__")); }
@@ -131,12 +131,6 @@ expressions:
     | expressions T_SC expression                                   { $1->expressions.push_back($3); $$ = $1; }
     ;
 
-array:
-      '[' ']'                                                       { $$ = NEW_NODE(ASTArray, @1); }
-    | '[' expressions ']'                                           { $$ = NEW_NODE(ASTArray, @1, $2); }
-    | '[' expressions T_SC ']'                                      { $$ = NEW_NODE(ASTArray, @1, $2); }
-    ;
-
 key:
       T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
     | key '.' T_IDENTIFIER                                          { $$ = NEW_NODE(ASTMember, @2, $1, $3); }
@@ -157,12 +151,6 @@ nonlast_statement:
 nonlast_statements:
       nonlast_statement                                             { $$ = NEW_NODE(ASTStatements, @1, $1); }
     | nonlast_statements nonlast_statement                          { $1->statements.push_back($2); $$ = $1; }
-    ;
-
-object:
-      '{' '}'                                                       { $$ = NEW_NODE(ASTObject, @1); }
-    | '{' last_statement '}'                                        { $$ = NEW_NODE(ASTObject, @1, $2); }
-    | '{' nonlast_statements last_statement '}'                     { $2->statements.push_back($3); $$ = NEW_NODE(ASTObject, @1, $2); }
     ;
 
 root:

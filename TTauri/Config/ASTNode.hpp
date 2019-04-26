@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include "ASTLocation.hpp"
+#include <string>
+
 namespace TTauri::Config {
 
 struct ASTNode {

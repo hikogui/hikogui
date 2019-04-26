@@ -20,7 +20,7 @@ set(TTauri_srcs
     ${BISON_TTauriConfigParser_OUTPUTS}
     ${FLEX_TTauriConfigScanner_OUTPUTS}
     Config/LiteralParser.cpp
-    Config/Parser.cpp
+    Config/parser.cpp
     Draw/PixelMap.cpp
     Draw/PNG.cpp
 	Draw/FreeType.cpp
@@ -71,7 +71,8 @@ foreach(shader ${TTauri_GUI_shaders})
 endforeach(shader)
 
 set(TTauriTests_srcs
-    Config/Parser_tests.cpp
+    Config/parser_tests.cpp
+    strings_tests.cpp
 )
 
 
