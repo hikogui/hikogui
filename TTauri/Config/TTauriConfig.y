@@ -7,8 +7,11 @@
 
 %code top {
   #include <stdio.h>
+  #define YYPRINT(a, b, c)
 
   #define NEW_NODE(ast_type, location, ...) new TTauri::Config::ast_type({location.first_line, location.last_line, location.first_column, location.last_column}, __VA_ARGS__)
+  #define NEW_UNARY_OPERATOR(op, location, right) NEW_NODE(ASTUnaryOperator, location, TTauri::Config::ASTUnaryOperator::Type:: ## op, right)
+  #define NEW_BINARY_OPERATOR(op, location, left, right) NEW_NODE(ASTBinaryOperator, location, TTauri::Config::ASTBinaryOperator::Type:: ## op, left, right)
 } 
 %code requires {
   #include <string>
@@ -93,32 +96,32 @@ expression:
     | "null"                                                        { $$ = NEW_NODE(ASTNull, @1); }
     | T_STRING                                                      { $$ = NEW_NODE(ASTString, @1, $1); }
     | T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
+    | '~' expression                                                { $$ = NEW_UNARY_OPERATOR(NOT, @1, $2); }
+    | '-' expression %prec UMINUS                                   { $$ = NEW_UNARY_OPERATOR(NEG, @1, $2); }
+    | "not" expression                                              { $$ = NEW_UNARY_OPERATOR(LOGICAL_NOT, @1, $2); }
     | expression '=' expression                                     { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
+    | expression '.' T_IDENTIFIER                                   { $$ = NEW_NODE(ASTMember, @2, $1, $3); }
+    | expression '*' expression                                     { $$ = NEW_BINARY_OPERATOR(MUL, @2, $1, $3 ); }
+    | expression '/' expression                                     { $$ = NEW_BINARY_OPERATOR(DIV, @2, $1, $3 ); }
+    | expression '%' expression                                     { $$ = NEW_BINARY_OPERATOR(MOD, @2, $1, $3 ); }
+    | expression '+' expression                                     { $$ = NEW_BINARY_OPERATOR(ADD, @2, $1, $3 ); }
+    | expression '-' expression                                     { $$ = NEW_BINARY_OPERATOR(SUB, @2, $1, $3 ); }
+    | expression "<<" expression                                    { $$ = NEW_BINARY_OPERATOR(SHL, @2, $1, $3 ); }
+    | expression ">>" expression                                    { $$ = NEW_BINARY_OPERATOR(SHR, @2, $1, $3 ); }
+    | expression '<' expression                                     { $$ = NEW_BINARY_OPERATOR(LT, @2, $1, $3 ); }
+    | expression '>' expression                                     { $$ = NEW_BINARY_OPERATOR(GT, @2, $1, $3 ); }
+    | expression "<=" expression                                    { $$ = NEW_BINARY_OPERATOR(LE, @2, $1, $3 ); }
+    | expression ">=" expression                                    { $$ = NEW_BINARY_OPERATOR(GE, @2, $1, $3 ); }
+    | expression "==" expression                                    { $$ = NEW_BINARY_OPERATOR(EQ, @2, $1, $3 ); }
+    | expression "!=" expression                                    { $$ = NEW_BINARY_OPERATOR(NE, @2, $1, $3 ); }
+    | expression '&' expression                                     { $$ = NEW_BINARY_OPERATOR(AND, @2, $1, $3 ); }
+    | expression '^' expression                                     { $$ = NEW_BINARY_OPERATOR(XOR, @2, $1, $3 ); }
+    | expression '|' expression                                     { $$ = NEW_BINARY_OPERATOR(OR, @2, $1, $3 ); }
+    | expression "and" expression                                   { $$ = NEW_BINARY_OPERATOR(LOGICAL_AND, @2, $1, $3 ); }
+    | expression "xor" expression                                   { $$ = NEW_BINARY_OPERATOR(LOGICAL_XOR, @2, $1, $3 ); }
+    | expression "or" expression                                    { $$ = NEW_BINARY_OPERATOR(LOGICAL_OR, @2, $1, $3 ); }
+    | expression '[' expression ']'                                 { $$ = NEW_NODE(ASTIndex, @2, $1, $3); }
     | expression '(' expressions ')'                                { $$ = NEW_NODE(ASTCall, @2, $1, $3); }
-    | expression '[' expressions ']'                                { $$ = NEW_NODE(ASTSlice, @2, $1, $3); }
-    | expression '.' T_IDENTIFIER                                   { $$ = NEW_NODE(ASTMember, @1, $1, $3); }
-    | '~' expression                                                { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__not__")); }
-    | '-' expression %prec UMINUS                                   { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__neg__")); }
-    | expression '*' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__mul__"), $3); }
-    | expression '/' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__div__"), $3); }
-    | expression '%' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__mod__"), $3); }
-    | expression '+' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__add__"), $3); }
-    | expression '-' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__sub__"), $3); }
-    | expression "<<" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__shl__"), $3); }
-    | expression ">>" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__shr__"), $3); }
-    | expression '<' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__lt__"), $3); }
-    | expression '>' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__gt__"), $3); }
-    | expression "<=" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__le__"), $3); }
-    | expression ">=" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__ge__"), $3); }
-    | expression "==" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__eq__"), $3); }
-    | expression "!=" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__ne__"), $3); }
-    | expression '&' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__and__"), $3); }
-    | expression '^' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__xor__"), $3); }
-    | expression '|' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__or__"), $3); }
-    | "not" expression                                              { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__logic_not__")); }
-    | expression "and" expression                                   { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__logic_and__"), $3); }
-    | expression "xor" expression                                   { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__logic_xor__"), $3); }
-    | expression "or" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__logic_or__"), $3); }
     ;
 
 expressions:
@@ -143,16 +146,16 @@ int TTauriConfig_yyfind_token(char *text)
 {
     size_t size = strlen(text);
 
-    for (size_t i = 0; i < YYNTOKENS; i++) {
+    for (size_t symbolNumber = 0; symbolNumber < YYNTOKENS; symbolNumber++) {
         if (
-            (yytname[i] != 0) &&
-            (yytname[i][0] == '"') &&
-            (strncmp (yytname[i] + 1, text, size) == 0) &&
-            (yytname[i][size + 1] == '"') &&
-            (yytname[i][size + 2] == 0)
+            (yytname[symbolNumber] != 0) &&
+            (yytname[symbolNumber][0] == '"') &&
+            (strncmp (yytname[symbolNumber] + 1, text, size) == 0) &&
+            (yytname[symbolNumber][size + 1] == '"') &&
+            (yytname[symbolNumber][size + 2] == 0)
         ) {
-            return i;
+            return yytoknum[symbolNumber];
         }
     }
-    return 1;
+    return yytoknum[1]; // "error" is the second entry in yytname.
 }

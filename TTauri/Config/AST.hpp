@@ -15,6 +15,8 @@
 #include "ASTNode.hpp"
 #include "ASTNull.hpp"
 #include "ASTObject.hpp"
-#include "ASTSlice.hpp"
+#include "ASTIndex.hpp"
 #include "ASTString.hpp"
+#include "ASTUnaryOperator.hpp"
+#include "ASTBinaryOperator.hpp"
 

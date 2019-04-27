@@ -26,6 +26,11 @@ TEST(TTauriConfigParser, Floats) {
     ASSERT_EQ(o->str(), "{a:0,b:-0,c:1,d:-1,e:0,f:-0,g:0.1,h:-0.1,i:0,j:-0,k:1,l:-1}");
 }
 
+TEST(TTauriConfigParser, Booleans) {
+    auto o = parseFile("Config/TestFiles/booleans.txt");
+    ASSERT_EQ(o->str(), "{a:true,b:false,c:null}");
+}
+
 TEST(TTauriConfigParser, Arrays) {
     auto o = parseFile("Config/TestFiles/arrays.txt");
     ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2]}");
