@@ -21,23 +21,23 @@ WS              [ \t\f\r\n]
 
 %%
 
-[=:]                        return T_AS;
-[;,]                        return T_SC;
+[=:]                        return '=';
+[;,]                        return ';';
 
-"not"                       return T_LOG_NOT;
-"<<"                        return T_SHL;
-">>"                        return T_SHR;
-"<="                        return T_LE;
-">="                        return T_GE;
-"=="                        return T_EQ;
-"!="                        return T_NE;
-"and"                       return T_LOG_AND;
-"xor"                       return T_LOG_XOR;
-"or"                        return T_LOG_OR;
+"not"                       return TTauriConfig_yyfind_token(yytext);
+"<<"                        return TTauriConfig_yyfind_token(yytext);
+">>"                        return TTauriConfig_yyfind_token(yytext);
+"<="                        return TTauriConfig_yyfind_token(yytext);
+">="                        return TTauriConfig_yyfind_token(yytext);
+"=="                        return TTauriConfig_yyfind_token(yytext);
+"!="                        return TTauriConfig_yyfind_token(yytext);
+"and"                       return TTauriConfig_yyfind_token(yytext);
+"xor"                       return TTauriConfig_yyfind_token(yytext);
+"or"                        return TTauriConfig_yyfind_token(yytext);
+"true"                      return TTauriConfig_yyfind_token(yytext);
+"false"                     return TTauriConfig_yyfind_token(yytext);
+"null"                      return TTauriConfig_yyfind_token(yytext);
 [][)(}{.~*/%+<>&^|]         return yytext[0];
-
-true|false                  yylval->boolean = TTauri::Config::parseBoolean(yytext); return T_BOOLEAN;
-null                        return T_NULL;
 
 [_$a-zA-Z][_$a-zA-Z0-9]*    yylval->string = TTauri::Config::parseIdentifier(yytext); return T_IDENTIFIER;
 

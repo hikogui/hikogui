@@ -17,6 +17,7 @@
   #include "TTauri/Config/AST.hpp"
   #include "TTauri/Config/ParseContext.hpp"
   typedef void* yyscan_t;
+  int TTauriConfig_yyfind_token(char *text);
 }
 
 %code {
@@ -30,132 +31,128 @@
     char *string;
     int64_t integer;
     double real;
-    bool boolean;
     TTauri::Config::ASTExpression *expression;
     TTauri::Config::ASTExpressions *expressions;
-    TTauri::Config::ASTStatement *statement;
-    TTauri::Config::ASTStatements *statements;
     TTauri::Config::ASTObject *object;
+    TTauri::Config::ASTArray *array;
 }
 
+%token-table
 %token <string> T_IDENTIFIER
 %token <integer> T_INTEGER
 %token <real> T_FLOAT
-%token <boolean> T_BOOLEAN
-%token T_NULL
 %token <string> T_STRING
-%token T_AS
-%token T_SC
-%token T_LOG_NOT
-%token T_SHL
-%token T_SHR
-%token T_LE
-%token T_GE
-%token T_EQ
-%token T_NE
-%token T_LOG_AND
-%token T_LOG_XOR
-%token T_LOG_OR
 
 // Same precedence order as C++ operators.
-%left T_SC
-%right T_AS
-%left T_LOG_OR
-%left T_LOG_XOR
-%left T_LOG_AND
-%left T_BIN_OR
-%left T_BIN_XOR
-%left T_BIN_AND
-%left T_EQ T_NE
-%left '<' '>' T_LE T_GE
-%left T_SHL T_SHR
+%left ';'
+%right '='
+%left "or"
+%left "xor"
+%left "and"
+%left '|'
+%left '^'
+%left '&'
+%left "==" "!="
+%left '<' '>' "<=" ">="
+%left "<<" ">>"
 %left '+' '-'
 %left '*' '/' '%'
-%right '~' T_LOG_NOT UMINUS
+%right '~' "not" UMINUS
 %left '(' '['
 %left '.'
 
 %type <object> root
 %type <expression> expression
-%type <expression> key
+%type <object> object
+%type <array> array
 %type <expressions> expressions
-%type <statement> last_statement
-%type <statement> nonlast_statement
-%type <statements> nonlast_statements
+%type <expressions> statements
 %start root
 %%
 
+array:
+      '[' ']'                                                       { $$ = NEW_NODE(ASTArray, @1); }
+    | '[' expressions ']'                                           { $$ = NEW_NODE(ASTArray, @1, $2); }
+    | '[' expressions ';' ']'                                       { $$ = NEW_NODE(ASTArray, @1, $2); }
+    ;
+
+object:
+      '{' '}'                                                       { $$ = NEW_NODE(ASTObject, @1); }
+    | '{' expressions '}'                                           { $$ = NEW_NODE(ASTObject, @1, $2); }
+    | '{' expressions ';' '}'                                       { $$ = NEW_NODE(ASTObject, @1, $2); }
+    ;
+
 expression:
       '(' expression ')'                                            { $$ = $2; }
-    | '[' ']'                                                       { $$ = NEW_NODE(ASTArray, @1); }
-    | '[' expressions ']'                                           { $$ = NEW_NODE(ASTArray, @1, $2); }
-    | '[' expressions T_SC ']'                                      { $$ = NEW_NODE(ASTArray, @1, $2); }
-    | '{' '}'                                                       { $$ = NEW_NODE(ASTObject, @1); }
-    | '{' last_statement '}'                                        { $$ = NEW_NODE(ASTObject, @1, $2); }
-    | '{' nonlast_statements last_statement '}'                     { $2->statements.push_back($3); $$ = NEW_NODE(ASTObject, @1, $2); }
+    | object                                                        { $$ = $1; }
+    | array                                                         { $$ = $1; }
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
-    | T_BOOLEAN                                                     { $$ = NEW_NODE(ASTBoolean, @1, $1); }
-    | T_NULL                                                        { $$ = NEW_NODE(ASTNull, @1); }
+    | "true"                                                        { $$ = NEW_NODE(ASTBoolean, @1, true); }
+    | "false"                                                       { $$ = NEW_NODE(ASTBoolean, @1, false); }
+    | "null"                                                        { $$ = NEW_NODE(ASTNull, @1); }
     | T_STRING                                                      { $$ = NEW_NODE(ASTString, @1, $1); }
     | T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
+    | expression '=' expression                                     { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
     | expression '(' expressions ')'                                { $$ = NEW_NODE(ASTCall, @2, $1, $3); }
     | expression '[' expressions ']'                                { $$ = NEW_NODE(ASTSlice, @2, $1, $3); }
     | expression '.' T_IDENTIFIER                                   { $$ = NEW_NODE(ASTMember, @1, $1, $3); }
-    | '~' expression                                                { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__bin_not__")); }
-    | T_LOG_NOT expression                                          { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__log_not__")); }
+    | '~' expression                                                { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__not__")); }
     | '-' expression %prec UMINUS                                   { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__neg__")); }
     | expression '*' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__mul__"), $3); }
     | expression '/' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__div__"), $3); }
     | expression '%' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__mod__"), $3); }
     | expression '+' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__add__"), $3); }
     | expression '-' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__sub__"), $3); }
-    | expression T_SHL expression                                   { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__shl__"), $3); }
-    | expression T_SHR expression                                   { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__shr__"), $3); }
+    | expression "<<" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__shl__"), $3); }
+    | expression ">>" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__shr__"), $3); }
     | expression '<' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__lt__"), $3); }
     | expression '>' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__gt__"), $3); }
-    | expression T_LE expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__le__"), $3); }
-    | expression T_GE expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__ge__"), $3); }
-    | expression T_EQ expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__eq__"), $3); }
-    | expression T_NE expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__ne__"), $3); }
-    | expression T_BIN_AND expression                               { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__bin_and__"), $3); }
-    | expression T_BIN_XOR expression                               { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__bin_xor__"), $3); }
-    | expression T_BIN_OR expression                                { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__bin_or__"), $3); }
-    | expression T_LOG_AND expression                               { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__log_and__"), $3); }
-    | expression T_LOG_XOR expression                               { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__log_xor__"), $3); }
-    | expression T_LOG_OR expression                                { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__log_or__"), $3); }
+    | expression "<=" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__le__"), $3); }
+    | expression ">=" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__ge__"), $3); }
+    | expression "==" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__eq__"), $3); }
+    | expression "!=" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__ne__"), $3); }
+    | expression '&' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__and__"), $3); }
+    | expression '^' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__xor__"), $3); }
+    | expression '|' expression                                     { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__or__"), $3); }
+    | "not" expression                                              { $$ = NEW_NODE(ASTCall, @1, $2, strdup("__logic_not__")); }
+    | expression "and" expression                                   { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__logic_and__"), $3); }
+    | expression "xor" expression                                   { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__logic_xor__"), $3); }
+    | expression "or" expression                                    { $$ = NEW_NODE(ASTCall, @2, $1, strdup("__logic_or__"), $3); }
     ;
 
 expressions:
       expression                                                    { $$ = NEW_NODE(ASTExpressions, @1, $1); }
-    | expressions T_SC expression                                   { $1->expressions.push_back($3); $$ = $1; }
+    | expressions ';' expression                                    { $1->expressions.push_back($3); $$ = $1; }
     ;
 
-key:
-      T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
-    | key '.' T_IDENTIFIER                                          { $$ = NEW_NODE(ASTMember, @2, $1, $3); }
-    ;
-
-last_statement:
-     '[' key ']'                                                    { $$ = NEW_NODE(ASTPrefix, @1, $2); }
-    | key T_AS expression                                           { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
-    | T_IDENTIFIER '(' expressions ')'                              { $$ = NEW_NODE(ASTExpressionStatement, @1, NEW_NODE(ASTCall, @2, $1, $3)); }
-    ;
-
-nonlast_statement:
-      '[' key ']'                                                   { $$ = NEW_NODE(ASTPrefix, @1, $2); }
-    | key T_AS expression T_SC                                      { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
-    | T_IDENTIFIER '(' expressions ')' T_SC                         { $$ = NEW_NODE(ASTExpressionStatement, @1, NEW_NODE(ASTCall, @2, $1, $3)); }
-    ;
-
-nonlast_statements:
-      nonlast_statement                                             { $$ = NEW_NODE(ASTStatements, @1, $1); }
-    | nonlast_statements nonlast_statement                          { $1->statements.push_back($2); $$ = $1; }
+statements:
+      expression ';'                                                { $$ = NEW_NODE(ASTExpressions, @1, $1); }
+    | statements expression ';'                                     { $1->expressions.push_back($2); $$ = $1; }
     ;
 
 root:
       /* empty */                                                   { $$ = new TTauri::Config::ASTObject({0,0,0,0}); context->object = $$; }
-    | nonlast_statements                                            { $$ = NEW_NODE(ASTObject, @1, $1); context->object = $$; }
+    | object                                                        { $$ = $1; context->object = $$; };
+    | statements                                                    { $$ = NEW_NODE(ASTObject, @1, $1); context->object = $$; }
     ;
 
 %%
+
+int TTauriConfig_yyfind_token(char *text)
+{
+    size_t size = strlen(text);
+
+    for (size_t i = 0; i < YYNTOKENS; i++) {
+        if (
+            (yytname[i] != 0) &&
+            (yytname[i][0] == '"') &&
+            (strncmp (yytname[i] + 1, text, size) == 0) &&
+            (yytname[i][size + 1] == '"') &&
+            (yytname[i][size + 2] == 0)
+        ) {
+            return i;
+        }
+    }
+    return 1;
+}

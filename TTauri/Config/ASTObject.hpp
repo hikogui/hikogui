@@ -2,29 +2,28 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include "ASTStatement.hpp"
-#include "ASTStatements.hpp"
+#include "ASTExpressions.hpp"
 #include <vector>
 
 namespace TTauri::Config {
 
 struct ASTObject : ASTExpression {
-    std::vector<ASTStatement *> statements;
+    std::vector<ASTExpression *> expressions;
 
-    ASTObject(ASTLocation location) : ASTExpression(location), statements() { }
+    ASTObject(ASTLocation location) : ASTExpression(location), expressions() { }
 
-    ASTObject(ASTLocation location, ASTStatement *statement) : ASTExpression(location), statements({statement}) {
+    ASTObject(ASTLocation location, ASTExpression *expression) : ASTExpression(location), expressions({expression}) {
     }
 
-    ASTObject(ASTLocation location, ASTStatements *statements) : ASTExpression(location), statements(statements->statements) {
+    ASTObject(ASTLocation location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
         // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
-        statements->statements.clear();
-        delete statements;
+        expressions->expressions.clear();
+        delete expressions;
     }
 
     ~ASTObject() {
-        for (auto statement: statements) {
-            delete statement;
+        for (auto expression: expressions) {
+            delete expression;
         }
     }
 
@@ -32,11 +31,11 @@ struct ASTObject : ASTExpression {
         std::string s = "{";
 
         bool first = true;
-        for (auto statement: statements) {
+        for (auto expression: expressions) {
             if (!first) {
                 s += ",";
             }
-            s += statement->str();
+            s += expression->str();
             first = false;
         }
 

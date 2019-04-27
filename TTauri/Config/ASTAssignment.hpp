@@ -1,16 +1,15 @@
 
 #pragma once
 
-#include "ASTStatement.hpp"
 #include "ASTExpression.hpp"
 
 namespace TTauri::Config {
 
-struct ASTAssignment : ASTStatement {
+struct ASTAssignment : ASTExpression {
     ASTExpression *key;
     ASTExpression *expression;
 
-    ASTAssignment(ASTLocation location, ASTExpression *key, ASTExpression *expression) : ASTStatement(location), key(key), expression(expression) {}
+    ASTAssignment(ASTLocation location, ASTExpression *key, ASTExpression *expression) : ASTExpression(location), key(key), expression(expression) {}
     ~ASTAssignment() {
         delete key;
         delete expression;
