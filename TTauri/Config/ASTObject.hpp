@@ -31,7 +31,7 @@ struct ASTObject : ASTExpression {
         std::string s = "{";
 
         bool first = true;
-        for (auto expression: expressions) {
+        for (auto const expression: expressions) {
             if (!first) {
                 s += ",";
             }
@@ -42,6 +42,19 @@ struct ASTObject : ASTExpression {
         s += "}";
         return s;
     }
+
+    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
+        auto r = std::make_shared<ValueObject>();
+        context->objectStack.push_back(r);
+
+        for (auto const expression: expressions) {
+            expression->executeStatement(context);
+        }
+
+        context->objectStack.pop_back();
+        return r;
+    } 
+
 };
 
 }

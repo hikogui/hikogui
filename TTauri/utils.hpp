@@ -13,6 +13,8 @@
 
 namespace TTauri {
 
+struct NotImplementedError : virtual boost::exception, virtual std::exception {};
+
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
 constexpr bool hasInitializeHelper(int)
 {

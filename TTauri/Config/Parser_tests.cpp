@@ -34,4 +34,7 @@ TEST(TTauriConfigParser, Booleans) {
 TEST(TTauriConfigParser, Arrays) {
     auto o = parseFile("Config/TestFiles/arrays.txt");
     ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2]}");
+
+    auto c = ExecutionContext();
+    auto e = o->execute(&c);
 }

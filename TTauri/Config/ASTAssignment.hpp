@@ -18,6 +18,15 @@ struct ASTAssignment : ASTExpression {
     std::string str() override {
         return key->str() + ":" + expression->str();
     }
+
+    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
+        return key->executeAssignment(context, expression->execute(context));
+    }
+
+    void executeStatement(ExecutionContext *context) {
+        execute(context);
+    }
+
 };
 
 }

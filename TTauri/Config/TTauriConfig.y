@@ -10,8 +10,8 @@
   #define YYPRINT(a, b, c)
 
   #define NEW_NODE(ast_type, location, ...) new TTauri::Config::ast_type({location.first_line, location.last_line, location.first_column, location.last_column}, __VA_ARGS__)
-  #define NEW_UNARY_OPERATOR(op, location, right) NEW_NODE(ASTUnaryOperator, location, TTauri::Config::ASTUnaryOperator::Type:: ## op, right)
-  #define NEW_BINARY_OPERATOR(op, location, left, right) NEW_NODE(ASTBinaryOperator, location, TTauri::Config::ASTBinaryOperator::Type:: ## op, left, right)
+  #define NEW_UNARY_OPERATOR(op, location, right) NEW_NODE(ASTUnaryOperator, location, TTauri::Config::ASTUnaryOperator::Operator:: ## op, right)
+  #define NEW_BINARY_OPERATOR(op, location, left, right) NEW_NODE(ASTBinaryOperator, location, TTauri::Config::ASTBinaryOperator::Operator:: ## op, left, right)
 } 
 %code requires {
   #include <string>

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "ASTExpression.hpp"
+#include "TTauri/utils.hpp"
 
 #include <vector>
 
@@ -19,8 +20,12 @@ struct ASTExpressions : ASTNode {
     }
 
     std::string str() override {
-        return "<expressions>";
+        BOOST_THROW_EXCEPTION(NotImplementedError());
     }
+
+    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
+        BOOST_THROW_EXCEPTION(NotImplementedError());
+    } 
 };
 
 }

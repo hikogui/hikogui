@@ -22,6 +22,16 @@ struct ASTMember : ASTExpression {
     std::string str() override {
         return object->str() + "." + name;
     }
+
+    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
+        return (*object->execute(context))[name];
+    } 
+
+    virtual std::shared_ptr<ValueBase> executeAssignment(ExecutionContext *context, const std::shared_ptr<ValueBase> &other) {
+        (*object->execute(context))[name] = other;
+        return other;
+    }
+
 };
 
 }
