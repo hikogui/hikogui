@@ -39,13 +39,13 @@ struct ASTArray : ASTExpression {
         return s;
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
-        std::vector<std::shared_ptr<ValueBase>> values;
+    Value execute(ExecutionContext *context) override {
+        Array values;
 
         for (auto const expression: expressions) {
             values.push_back(expression->execute(context));
         }
-        return std::make_shared<ValueArray>(values);
+        return {values};
     } 
 
 };

@@ -13,8 +13,8 @@ struct ASTNull : ASTExpression {
         return "null";
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
-        return std::make_shared<ValueNull>();
+    Value execute(ExecutionContext *context) override { 
+        return {};
     } 
 
 };

@@ -15,8 +15,8 @@ struct ASTFloat : ASTExpression {
         return (boost::format("%g") % value).str();
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
-        return std::make_shared<ValueFloat>(value);
+    Value execute(ExecutionContext *context) override { 
+        return value;
     } 
 
 };

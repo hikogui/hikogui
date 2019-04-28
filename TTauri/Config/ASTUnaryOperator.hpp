@@ -33,12 +33,13 @@ struct ASTUnaryOperator : ASTExpression {
         return s + right->str();
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
+    Value execute(ExecutionContext *context) override {
         switch (op) {
-        case Operator::NOT: return ~(*right->execute(context));
-        case Operator::NEG: return -(*right->execute(context));
-        case Operator::LOGICAL_NOT: return !(*right->execute(context));
+        case Operator::NOT: return ~right->execute(context);
+        case Operator::NEG: return -right->execute(context);
+        case Operator::LOGICAL_NOT: return !right->execute(context);
         }
+        abort(); // Compiler doesn't recognize that switch is complete.
     }
 };
 

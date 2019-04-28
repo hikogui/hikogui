@@ -23,7 +23,7 @@ struct ASTExpressions : ASTNode {
         BOOST_THROW_EXCEPTION(NotImplementedError());
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
+    Value execute(ExecutionContext *context) override { 
         BOOST_THROW_EXCEPTION(NotImplementedError());
     } 
 };

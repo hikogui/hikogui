@@ -14,8 +14,8 @@ struct ASTBoolean : ASTExpression {
         return value ? "true" : "false";
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
-        return std::make_shared<ValueBoolean>(value);
+    Value execute(ExecutionContext *context) override { 
+        return value;
     } 
 
 };

@@ -16,8 +16,8 @@ struct ASTString : ASTExpression {
         return "\"" + value + "\"";
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
-        return std::make_shared<ValueString>(value);
+    Value execute(ExecutionContext *context) override {
+        return value;
     } 
 
 };

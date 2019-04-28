@@ -4,6 +4,7 @@
 #include "ASTExpression.hpp"
 #include "ASTExpressions.hpp"
 #include <vector>
+#include <map>
 
 namespace TTauri::Config {
 
@@ -43,8 +44,9 @@ struct ASTObject : ASTExpression {
         return s;
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
-        auto r = std::make_shared<ValueObject>();
+    Value execute(ExecutionContext *context) override {
+        Object m = {};
+        auto r = Value(m);
         context->objectStack.push_back(r);
 
         for (auto const expression: expressions) {

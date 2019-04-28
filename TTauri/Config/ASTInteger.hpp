@@ -15,8 +15,8 @@ struct ASTInteger : ASTExpression {
         return (boost::format("%i") % value).str();
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
-        return std::make_shared<ValueInteger>(value);
+    Value execute(ExecutionContext *context) override { 
+        return value;
     } 
 
 };

@@ -16,12 +16,12 @@ struct ASTName : ASTExpression {
         return name;
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
-        return (*context->objectStack.back())[name];
+    Value execute(ExecutionContext *context) override {
+        return context->objectStack.back()[name];
     } 
 
-    virtual std::shared_ptr<ValueBase> executeAssignment(ExecutionContext *context, const std::shared_ptr<ValueBase> &other) {
-        (*context->objectStack.back())[name] = other;
+    Value executeAssignment(ExecutionContext *context, Value other) override {
+        context->objectStack.back()[name] = other;
         return other;
     }
 };

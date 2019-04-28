@@ -66,28 +66,29 @@ namespace TTauri::Config {
             return s + right->str();
         }
 
-        virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override { 
+        virtual Value execute(ExecutionContext *context) override { 
             switch (op) {
-            case Operator::MUL: return (*left->execute(context)) * (*right->execute(context));
-            case Operator::DIV: return (*left->execute(context)) / (*right->execute(context));
-            case Operator::MOD: return (*left->execute(context)) % (*right->execute(context));
-            case Operator::ADD: return (*left->execute(context)) + (*right->execute(context));
-            case Operator::SUB: return (*left->execute(context)) - (*right->execute(context));
-            case Operator::SHL: return (*left->execute(context)) << (*right->execute(context));
-            case Operator::SHR: return (*left->execute(context)) >> (*right->execute(context));
-            case Operator::LT: return (*left->execute(context)) < (*right->execute(context));
-            case Operator::GT: return (*left->execute(context)) > (*right->execute(context));
-            case Operator::LE: return (*left->execute(context)) <= (*right->execute(context));
-            case Operator::GE: return (*left->execute(context)) >= (*right->execute(context));
-            case Operator::EQ: return (*left->execute(context)) == (*right->execute(context));
-            case Operator::NE: return (*left->execute(context)) != (*right->execute(context));
-            case Operator::AND: return (*left->execute(context)) & (*right->execute(context));
-            case Operator::XOR: return (*left->execute(context)) ^ (*right->execute(context));
-            case Operator::OR: return (*left->execute(context)) | (*right->execute(context));
-            case Operator::LOGICAL_AND: return (*left->execute(context)) && (*right->execute(context));
-            case Operator::LOGICAL_XOR: return (*left->execute(context)).operator_xor(*right->execute(context));
-            case Operator::LOGICAL_OR: return (*left->execute(context)) || (*right->execute(context));
+            case Operator::MUL: return left->execute(context) * right->execute(context);
+            case Operator::DIV: return left->execute(context) / right->execute(context);
+            case Operator::MOD: return left->execute(context) % right->execute(context);
+            case Operator::ADD: return left->execute(context) + right->execute(context);
+            case Operator::SUB: return left->execute(context) - right->execute(context);
+            case Operator::SHL: return left->execute(context) << right->execute(context);
+            case Operator::SHR: return left->execute(context) >> right->execute(context);
+            case Operator::LT: return left->execute(context) < right->execute(context);
+            case Operator::GT: return left->execute(context) > right->execute(context);
+            case Operator::LE: return left->execute(context) <= right->execute(context);
+            case Operator::GE: return left->execute(context) >= right->execute(context);
+            case Operator::EQ: return left->execute(context) == right->execute(context);
+            case Operator::NE: return left->execute(context) != right->execute(context);
+            case Operator::AND: return left->execute(context) & right->execute(context);
+            case Operator::XOR: return left->execute(context) ^ right->execute(context);
+            case Operator::OR: return left->execute(context) | right->execute(context);
+            case Operator::LOGICAL_AND: return left->execute(context) && right->execute(context);
+            case Operator::LOGICAL_XOR: return left->execute(context).operator_xor(right->execute(context));
+            case Operator::LOGICAL_OR: return left->execute(context) || right->execute(context);
             }
+            abort(); // Compiler doesn't recognize that switch is complete.
         } 
     };
 

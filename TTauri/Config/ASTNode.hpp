@@ -17,11 +17,13 @@ struct ASTNode {
     ASTNode(ASTLocation location) : location(location) {}
 
     virtual std::string str() = 0;
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) = 0;
-    virtual std::shared_ptr<ValueBase> executeAssignment(ExecutionContext *context, const std::shared_ptr<ValueBase> &other) {
+
+    virtual Value execute(ExecutionContext *context) = 0;
+
+    virtual Value executeAssignment(ExecutionContext *context, Value other) {
         BOOST_THROW_EXCEPTION(InvalidOperation());
     }
-    void executeStatement(ExecutionContext *context) {
+    virtual void executeStatement(ExecutionContext *context) {
         BOOST_THROW_EXCEPTION(InvalidOperation());
     }
 };

@@ -20,12 +20,12 @@ struct ASTIndex : ASTExpression {
         return object->str() + "[" + index->str() + "]";
     }
 
-    virtual std::shared_ptr<ValueBase> execute(ExecutionContext *context) override {
-        return (*object->execute(context))[*index->execute(context)];
+    Value execute(ExecutionContext *context) override {
+        return object->execute(context)[index->execute(context)];
     }
 
-    virtual std::shared_ptr<ValueBase> executeAssignment(ExecutionContext *context, const std::shared_ptr<ValueBase> &other) {
-        (*object->execute(context))[*index->execute(context)] = other;
+    Value executeAssignment(ExecutionContext *context, Value other) {
+        object->execute(context)[index->execute(context)] = std::move(other);
         return other;
     }
 };
