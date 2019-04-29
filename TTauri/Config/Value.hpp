@@ -3,6 +3,7 @@
 
 #include "TTauri/utils.hpp"
 
+#include <glm/glm.hpp>
 #include <boost/format.hpp>
 
 #include <any>
@@ -10,6 +11,7 @@
 #include <vector>
 #include <cstdint>
 #include <cmath>
+#include <filesystem>
 
 namespace TTauri::Config {
 
@@ -92,26 +94,37 @@ inline CompareResult compare(double l, double r)
 }
 
 
-struct Value {
-    struct InvalidOperationError : virtual boost::exception, virtual std::exception {};
-
+/*! A generic value type which will handle intra type operations.
+ */
+class Value {
+private:
     std::any intrinsic;
 
+public:
+    /*! Exception raised when an operation is not allowed by the contained type.
+     */
+    struct InvalidOperationError : virtual boost::exception, virtual std::exception {};
+
     Value() : intrinsic({}) {}
+
     Value(std::any value) : intrinsic(value) {}
+
     Value(const Value &) = default;
+
     Value(Value &&) = default;
 
     ~Value() = default;
 
     Value &operator=(const Value &) = default;
+
     Value &operator=(Value &&) = default;
+
     Value &operator=(std::any value) {
         intrinsic = std::move(value);
         return *this;
     }
 
-    bool hasValue() const {
+    bool has_value() const {
         return intrinsic.has_value();
     }
 
@@ -120,12 +133,12 @@ struct Value {
     }
 
     template<typename T>
-    bool isType() const {
+    bool is_type() const {
         return type() == typeid(T);
     }
 
     template<typename T>
-    T value() const {
+    T const &value() const {
         return std::any_cast<T>(intrinsic);
     }
 
@@ -134,18 +147,31 @@ struct Value {
         return std::any_cast<T &>(intrinsic);
     }
 
+    /*! Return a string representation of the value.
+     * \return a string representing the value.
+     */
     std::string str() const {
-        if (isType<bool>()) {
+        if (is_type<bool>()) {
             return value<bool>() ? "true" : "false";
-        } else if (!hasValue()) {
+        } else if (!has_value()) {
             return "null";
-        } else if (isType<int64_t>()) {
+        } else if (is_type<int64_t>()) {
             return (boost::format("%i") % value<int64_t>()).str();
-        } else if (isType<double>()) {
+        } else if (is_type<double>()) {
             return (boost::format("%g") % value<double>()).str();
-        } else if (isType<std::string>()) {
+        } else if (is_type<glm::vec4>()) {
+            uint32_t tmp =
+                (static_cast<uint32_t>(linearToGamma(value.r) * 255.0) << 24) |
+                (static_cast<uint32_t>(linearToGamma(value.g) * 255.0) << 16) |
+                (static_cast<uint32_t>(linearToGamma(value.b) * 255.0) << 8) |
+                (static_cast<uint32_t>(value.a * 255.0);
+
+            return (boost::format("#%08x") % tmp).str();
+        } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
-        } else if (isType<Array>()) {
+        } else if (is_type<std::filesystem::path>()) {
+            return "\"" + value<std::filesystem::path>().string() + "\"";
+        } else if (is_type<Array>()) {
             std::string s = "[";
             auto first = true;
             for (auto const &x: value<Array>()) {
@@ -156,11 +182,11 @@ struct Value {
                 first = false;
             }
             return s + "]";
-        } else if (isType<Object>()) {
+        } else if (is_type<Object>()) {
             std::string s = "{";
             auto first = true;
             for (auto const &[k, v]: value<Object>()) {
-                if (!v.isType<Undefined>()) {
+                if (!v.is_type<Undefined>()) {
                     if (!first) {
                         s += ",";
                     }
@@ -173,18 +199,22 @@ struct Value {
         BOOST_THROW_EXCEPTION(NotImplementedError());
     }
 
+    /*! Return the internal any-value.
+     * The returned any-value is potentially simplified for Arrays and Objects.
+     * \return the std:any value,
+     */
     std::any any() const {
-        if (isType<Array>()) {
+        if (is_type<Array>()) {
             std::vector<std::any> r;
             for (auto const &x: value<Array>()) {
                 r.push_back(x.any());
             }
             return r;
 
-        } else if (isType<Object>()) {
+        } else if (is_type<Object>()) {
             std::map<std::string, std::any> r;
             for (auto const &[k, v]: value<Object>()) {
-                if (!v.isType<Undefined>()) {
+                if (!v.is_type<Undefined>()) {
                     r[k] = v.any();
                 }
             }
@@ -196,29 +226,33 @@ struct Value {
     }
 
     Value boolean() const {
-        if (!hasValue()) {
+        if (!has_value()) {
             return false;
-        } else if (isType<bool>()) {
+        } else if (is_type<bool>()) {
             return value<bool>();
-        } else if (isType<int64_t>()) {
+        } else if (is_type<int64_t>()) {
             return value<int64_t>() != 0;
-        } else if (isType<double>()) {
+        } else if (is_type<double>()) {
             return value<double>() != 0.0;
-        } else if (isType<std::string>()) {
+        } else if (is_type<glm::vec4>()) {
+            return value<glm::vec4>().a != 0.0; // Not transparent
+        } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
-        } else if (isType<Array>()) {
+        } else if (is_type<std::filesystem::path>()) {
+            return true;
+        } else if (is_type<Array>()) {
             return value<Array>().size() > 0;
-        } else if (isType<Object>()) {
+        } else if (is_type<Object>()) {
             return value<Object>().size() > 0;
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     CompareResult cmp(Value const &other) const {
-        if (isType<std::string>() && other.isType<std::string>()) {
+        if (is_type<std::string>() && other.is_type<std::string>()) {
             return compare(value<std::string>(), other.value<std::string>());
 
-        } else if (isType<Array>() && other.isType<Array>()) {
+        } else if (is_type<Array>() && other.is_type<Array>()) {
             auto l = value<Array>();
             auto r = other.value<Array>();
 
@@ -246,7 +280,7 @@ struct Value {
                 return CompareResult::SAME;
             }
 
-        } else if (isType<Object>() && other.isType<Object>()) {
+        } else if (is_type<Object>() && other.is_type<Object>()) {
             auto l = value<Object>();
             auto r = other.value<Object>();
 
@@ -280,11 +314,11 @@ struct Value {
                 return CompareResult::SAME;
             }
 
-        } else if (isType<double>() || other.isType<double>()) {
+        } else if (is_type<double>() || other.is_type<double>()) {
             return compare(value<double>(), other.value<double>());
-        } else if (isType<int64_t>() || other.isType<int64_t>()) {
+        } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return compare(value<int64_t>(), other.value<int64_t>());
-        } else if (isType<bool>() || other.isType<bool>()) {
+        } else if (is_type<bool>() || other.is_type<bool>()) {
             return compare(value<bool>(), other.value<bool>());
         }
 
@@ -292,23 +326,23 @@ struct Value {
     }
 
     Value operator-() const {
-        if (isType<int64_t>()) {
+        if (is_type<int64_t>()) {
             return -value<int64_t>();
-        } else if (isType<double>()) {
+        } else if (is_type<double>()) {
             return -value<double>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator~() const {
-        if (isType<int64_t>()) {
+        if (is_type<int64_t>()) {
             return ~value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator!() const {
-        if (isType<bool>()) {
+        if (is_type<bool>()) {
             return !value<bool>();
         } else {
             return !boolean();
@@ -316,71 +350,75 @@ struct Value {
     }
 
     Value operator*(Value const &other) const {
-        if (isType<double>() || other.isType<double>()) {
+        if (is_type<double>() || other.is_type<double>()) {
             return value<double>() * other.value<double>();
-        } else if (isType<int64_t>() || other.isType<int64_t>()) {
+        } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() * other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator/(Value const &other) const {
-        if (isType<double>() || other.isType<double>()) {
+        if (is_type<double>() || other.is_type<double>()) {
             return value<double>() / other.value<double>();
-        } else if (isType<int64_t>() || other.isType<int64_t>()) {
+        } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() / other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator%(Value const &other) const {
-        if (isType<double>() || other.isType<double>()) {
+        if (is_type<double>() || other.is_type<double>()) {
             return fmod(value<double>(), other.value<double>());
-        } else if (isType<int64_t>() || other.isType<int64_t>()) {
+        } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() % other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator+(Value const &other) const {
-        if (isType<std::string>() && other.isType<std::string>()) {
+        } if (is_type<std::filesystem::path>() && other.is_type<std::string>()) {
+            return value<std::filesysem::path>() / other.value<std::string>();
+        } if (is_type<std::filesystem::path>() && other.is_type<std::filesystem::path>()) {
+            return value<std::filesysem::path>() / other.value<std::filesystem::path>();
+        } else if (is_type<std::string>() && other.is_type<std::string>()) {
             return value<std::string>() + other.value<std::string>();
-        } else if (isType<Array>() && other.isType<Array>()) {
+        } else if (is_type<Array>() && other.is_type<Array>()) {
             Array r;
             for (auto const x: value<Array>()) { r.push_back(x); }
             for (auto const x: other.value<Array>()) { r.push_back(x); }
             return r;
-        } else if (isType<Object>() && other.isType<Object>()) {
+        } else if (is_type<Object>() && other.is_type<Object>()) {
             Object r;
             for (auto const [k, v]: value<Object>()) { r[k] = v; }
             for (auto const [k, v]: other.value<Object>()) { r[k] = v; }
             return r;
-        } else if (isType<double>() || other.isType<double>()) {
+        } else if (is_type<double>() || other.is_type<double>()) {
             return value<double>() + other.value<double>();
-        } else if (isType<int64_t>() || other.isType<int64_t>()) {
+        } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() + other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator-(Value const &other) const {
-        if (isType<double>() || other.isType<double>()) {
+        if (is_type<double>() || other.is_type<double>()) {
             return value<double>() - other.value<double>();
-        } else if (isType<int64_t>() || other.isType<int64_t>()) {
+        } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() - other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator<<(Value const &other) const {
-        if (isType<int64_t>() && other.isType<int64_t>()) {
+        if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() << other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator>>(Value const &other) const {
-        if (isType<int64_t>() && other.isType<int64_t>()) {
+        if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() >> other.value<int64_t>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
@@ -411,34 +449,34 @@ struct Value {
     }
 
     Value operator&(Value const &other) const {
-        if (isType<int64_t>() && other.isType<int64_t>()) {
+        if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() & other.value<int64_t>();
-        } else if (isType<bool>() && other.isType<bool>()) {
+        } else if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() & other.value<bool>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator^(Value const &other) const {
-        if (isType<int64_t>() && other.isType<int64_t>()) {
+        if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() ^ other.value<int64_t>();
-        } else if (isType<bool>() && other.isType<bool>()) {
+        } else if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() ^ other.value<bool>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator|(Value const &other) const {
-        if (isType<int64_t>() && other.isType<int64_t>()) {
+        if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() & other.value<int64_t>();
-        } else if (isType<bool>() && other.isType<bool>()) {
+        } else if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() & other.value<bool>();
         }
         BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     Value operator&&(Value const &other) const {
-        if (isType<bool>() && other.isType<bool>()) {
+        if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() & other.value<bool>();
         } else {
             return boolean() && other.boolean();
@@ -446,7 +484,7 @@ struct Value {
     }
 
     Value operator||(Value const &other) const {
-        if (isType<bool>() && other.isType<bool>()) {
+        if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() | other.value<bool>();
         } else {
             return boolean() || other.boolean();
@@ -454,7 +492,7 @@ struct Value {
     }
 
     Value operator_xor(Value const &other) const {
-        if (isType<bool>() && other.isType<bool>()) {
+        if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() ^ other.value<bool>();
         } else {
             return boolean() || other.boolean();
@@ -462,10 +500,10 @@ struct Value {
     }
 
     Value &operator[](Value const &other) {
-        if (isType<Array>() && other.isType<int64_t>()) {
+        if (is_type<Array>() && other.is_type<int64_t>()) {
             return value<Array>().at(other.value<int64_t>());
 
-        } else if (isType<Object>() && other.isType<std::string>()) {
+        } else if (is_type<Object>() && other.is_type<std::string>()) {
             auto &obj = value<Object>();
             auto const &key = other.value<std::string>();
             obj.try_emplace(key, Undefined{});
@@ -476,7 +514,7 @@ struct Value {
     }
 
     virtual Value &operator[](std::string const &other) {
-        if (isType<Object>()) {
+        if (is_type<Object>()) {
             auto &obj = value<Object>();
             obj.try_emplace(other, Undefined{});
             return obj[other];

@@ -15,6 +15,18 @@ namespace TTauri {
 
 struct NotImplementedError : virtual boost::exception, virtual std::exception {};
 
+inline float linearToGamma(float u) {
+    return u <= 0.0031308 ?
+        12.92 * u :
+        (powf(u, 1.0 / 2.4) * 1.055) - 0.055;
+}
+
+inline float gammaToLinear(float u) {
+    return u <= 0.04045 ?
+        u / 12.92 :
+        powf((u + 0.055) / 1.055, 2.4);
+}
+
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
 constexpr bool hasInitializeHelper(int)
 {

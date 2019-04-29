@@ -5,37 +5,11 @@
 
 namespace TTauri::Config {
 
-int64_t parseInteger(const char *text)
+int64_t parseInteger(const char *text, int radix, bool negative);
 {
     size_t size = strlen(text);
     size_t offset = 0;
-    bool startsWithZero = false;
-    bool isNegative = false;
     int64_t value = 0;
-    int radix = 10;
-
-    if (offset < size) {
-        switch (text[offset]) {
-        case '+': isNegative = false; offset++; break;
-        case '-': isNegative = true; offset++; break;
-        } 
-    }
-
-    if (offset < size) {
-        if (text[offset] == '0') {
-            startsWithZero = true;
-            offset++;
-        }
-    }
-
-    if (offset < size && startsWithZero) {
-        switch (text[offset]) {
-        case 'b': case 'B': radix = 2; offset++; break;
-        case 'o': case 'O': radix = 8; offset++; break;
-        case 'd': case 'D': radix = 10; offset++; break;
-        case 'x': case 'X': radix = 16; offset++; break;
-        }
-    }
 
     while (offset < size) {
         auto c = text[offset];
@@ -54,7 +28,7 @@ int64_t parseInteger(const char *text)
         }
     }
 
-    return isNegative ? -value : value;
+    return negative ? -value : value;
 }
 
 double parseFloat(const char *text) {
@@ -97,8 +71,8 @@ double parseFloat(const char *text) {
 
 char *parseString(const char *text)
 {
-    size_t size = strlen(text);
-    size_t offset = 1; // Skip over first '"' double-quote character.
+    size_t size = strlen(text) - 1; // Ignore the last '"' or '>' character.
+    size_t offset = 1; // Skip over first '"' or '<' character.
     std::string value;
     bool foundEscape = false;
 
@@ -118,9 +92,6 @@ char *parseString(const char *text)
         } else if (c == '\\') {
             offset++;
             foundEscape = true;
-        } else if (c == '"') {
-            offset++;
-            break;
         } else {
             offset++;
             value.push_back(c);

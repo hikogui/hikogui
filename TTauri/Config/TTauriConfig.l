@@ -37,25 +37,34 @@ WS              [ \t\f\r\n]
 "true"                      return TTauriConfig_yyfind_token(yytext);
 "false"                     return TTauriConfig_yyfind_token(yytext);
 "null"                      return TTauriConfig_yyfind_token(yytext);
-[][)(}{.~*/%+<>&^|]         return yytext[0];
 
-[_$a-zA-Z][_$a-zA-Z0-9]*    yylval->string = TTauri::Config::parseIdentifier(yytext); return T_IDENTIFIER;
+[_$a-zA-Z][_$a-zA-Z0-9]*    yylval->string = strdup(yytext); return T_IDENTIFIER;
 
--?0[bBoOdDxX]{HEX}+         yylval->integer = TTauri::Config::parseInteger(yytext); return T_INTEGER;
--?{DEC}+                    yylval->integer = TTauri::Config::parseInteger(yytext); return T_INTEGER;
+-0[bB]{BIN}+                yylval->integer = TTauri::Config::parseInteger(&yytext[3], 2, true); return T_INTEGER;
+-0[oO]{OCT}+                yylval->integer = TTauri::Config::parseInteger(&yytext[3], 8, true); return T_INTEGER;
+-0[dD]{DEC}+                yylval->integer = TTauri::Config::parseInteger(&yytext[3], 10, true); return T_INTEGER;
+-0[xX]{HEX}+                yylval->integer = TTauri::Config::parseInteger(&yytext[3], 16, true); return T_INTEGER;
+0[bB]{BIN}+                 yylval->integer = TTauri::Config::parseInteger(&yytext[2], 2, false); return T_INTEGER;
+0[oO]{OCT}+                 yylval->integer = TTauri::Config::parseInteger(&yytext[2], 8, false); return T_INTEGER;
+0[dD]{DEC}+                 yylval->integer = TTauri::Config::parseInteger(&yytext[2], 10, false); return T_INTEGER;
+0[xX]{HEX}+                 yylval->integer = TTauri::Config::parseInteger(&yytext[2], 16, false); return T_INTEGER;
+-{DEC}+                     yylval->integer = TTauri::Config::parseInteger(&yytext[1], 10, true); return T_INTEGER;
+{DEC}+                      yylval->integer = TTauri::Config::parseInteger(yytext, 10, false); return T_INTEGER;
+#{HEX}{6}                   yylval->integer = (TTauri::Config::parseInteger(&yytext[1], 16, false) << 8) | 0xff; return T_COLOR;
+#{HEX}{8}                   yylval->integer = TTauri::Config::parseInteger(&yytext[1], 16, false); return T_COLOR;
 
 -?"."{DEC}+                 yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 -?{DEC}+"."{DEC}*           yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 
--                           return yytext[0];
-
 \"({STR}|{STRDQ})*?\"       yylval->string = TTauri::Config::parseString(yytext); return T_STRING;
+<.*?>                       yylval->string = strndup(&yytext[1], strlen(yytext) - 2); return T_PATH;
 
-"//".*?\n                   ;
-{WS}                        ;
+[][)(}{.~*/%+<>&^|-]        return yytext[0];
 
+
+"//".*?\n                   ; // Comment is ignored.
+{WS}                        ; // Whitespace is ignored.
 
 .                           ;
-
 
 %%

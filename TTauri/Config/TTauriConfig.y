@@ -45,6 +45,8 @@
 %token <integer> T_INTEGER
 %token <real> T_FLOAT
 %token <string> T_STRING
+%token <string> T_PATH
+%token <integer> T_COLOR
 
 // Same precedence order as C++ operators.
 %left ';'
@@ -91,6 +93,8 @@ expression:
     | array                                                         { $$ = $1; }
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
+    | T_COLOR                                                       { $$ = NEW_NODE(ASTColor, @1, $1); }
+    | T_PATH                                                        { $$ = NEW_NODE(ASTPath, @1, $1); }
     | "true"                                                        { $$ = NEW_NODE(ASTBoolean, @1, true); }
     | "false"                                                       { $$ = NEW_NODE(ASTBoolean, @1, false); }
     | "null"                                                        { $$ = NEW_NODE(ASTNull, @1); }
