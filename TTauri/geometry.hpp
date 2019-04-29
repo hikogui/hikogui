@@ -1,6 +1,7 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
-
 
 #include <glm/glm.hpp>
 #include <boost/numeric/conversion/cast.hpp>

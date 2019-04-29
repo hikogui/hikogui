@@ -1,8 +1,9 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "ASTExpression.hpp"
-
 #include <string>
 
 namespace TTauri::Config {

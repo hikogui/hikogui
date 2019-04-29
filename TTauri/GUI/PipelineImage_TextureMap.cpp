@@ -1,3 +1,5 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "PipelineImage_TextureMap.hpp"
 #include "Device_vulkan.hpp"

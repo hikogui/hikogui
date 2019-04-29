@@ -1,20 +1,12 @@
-//
-//  Window.cpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-04.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "Window.hpp"
-
 #include "Device.hpp"
 #include "WindowView.hpp"
 #include "config.hpp"
-
 #include "TTauri/utils.hpp"
 #include "TTauri/Logging.hpp"
-
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {

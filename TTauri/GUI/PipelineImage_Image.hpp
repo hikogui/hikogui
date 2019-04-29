@@ -1,3 +1,5 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
@@ -5,7 +7,6 @@
 #include "PipelineImage_Vertex.hpp"
 #include "PipelineImage_Page.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-
 #include <gsl/gsl>
 
 namespace TTauri::GUI::PipelineImage {

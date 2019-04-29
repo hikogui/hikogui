@@ -1,3 +1,5 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "LiteralParser.hpp"
 #include <vector>

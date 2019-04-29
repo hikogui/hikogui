@@ -1,22 +1,12 @@
-//
-//  Device.cpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-06.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "Device.hpp"
-
 #include "Instance.hpp"
 #include "Window.hpp"
-
 #include "TTauri/Logging.hpp"
 #include "TTauri/utils.hpp"
-
-
 #include <boost/uuid/uuid_io.hpp>
-
 #include <tuple>
 #include <vector>
 

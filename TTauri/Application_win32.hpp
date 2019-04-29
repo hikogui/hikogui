@@ -1,10 +1,10 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "Application.hpp"
-
 #include <Windows.h>
-
 #include <thread>
 
 namespace TTauri {

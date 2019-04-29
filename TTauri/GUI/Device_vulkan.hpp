@@ -1,8 +1,10 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
 #pragma once
 
 #include "Device.hpp"
 #include "PipelineImage_DeviceShared.hpp"
-
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <filesystem>

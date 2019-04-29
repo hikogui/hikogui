@@ -1,9 +1,10 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
 #pragma once
 
 #include "Window_vulkan.hpp"
-
 #include <unordered_map>
-
 #include <Windows.h>
 
 namespace TTauri::GUI {

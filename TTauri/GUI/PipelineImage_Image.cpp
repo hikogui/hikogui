@@ -1,7 +1,9 @@
-#include "PipelineImage_Image.hpp"
-#include "PipelineImage_DeviceShared.hpp"
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include "PipelineImage_Image.hpp"
+#include "PipelineImage_DeviceShared.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace TTauri::GUI::PipelineImage {

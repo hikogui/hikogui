@@ -1,10 +1,5 @@
-//
-//  vulkan_utils.cpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-05.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "vulkan_utils.hpp"
 
