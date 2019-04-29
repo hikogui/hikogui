@@ -2,8 +2,8 @@
 #pragma once
 
 #include "TTauri/utils.hpp"
+#include "TTauri/Color.hpp"
 
-#include <glm/glm.hpp>
 #include <boost/format.hpp>
 
 #include <any>
@@ -96,11 +96,9 @@ inline CompareResult compare(double l, double r)
 
 /*! A generic value type which will handle intra type operations.
  */
-class Value {
-private:
+struct Value {
     std::any intrinsic;
 
-public:
     /*! Exception raised when an operation is not allowed by the contained type.
      */
     struct InvalidOperationError : virtual boost::exception, virtual std::exception {};
@@ -138,7 +136,7 @@ public:
     }
 
     template<typename T>
-    T const &value() const {
+    T value() const {
         return std::any_cast<T>(intrinsic);
     }
 
@@ -159,14 +157,8 @@ public:
             return (boost::format("%i") % value<int64_t>()).str();
         } else if (is_type<double>()) {
             return (boost::format("%g") % value<double>()).str();
-        } else if (is_type<glm::vec4>()) {
-            uint32_t tmp =
-                (static_cast<uint32_t>(linearToGamma(value.r) * 255.0) << 24) |
-                (static_cast<uint32_t>(linearToGamma(value.g) * 255.0) << 16) |
-                (static_cast<uint32_t>(linearToGamma(value.b) * 255.0) << 8) |
-                (static_cast<uint32_t>(value.a * 255.0);
-
-            return (boost::format("#%08x") % tmp).str();
+        } else if (is_type<Color_sRGB>()) {
+            return value<Color_sRGB>().str();
         } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
         } else if (is_type<std::filesystem::path>()) {
@@ -234,8 +226,8 @@ public:
             return value<int64_t>() != 0;
         } else if (is_type<double>()) {
             return value<double>() != 0.0;
-        } else if (is_type<glm::vec4>()) {
-            return value<glm::vec4>().a != 0.0; // Not transparent
+        } else if (is_type<Color_sRGB>()) {
+            return value<Color_sRGB>().a() != 0.0; // Not transparent
         } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
         } else if (is_type<std::filesystem::path>()) {
@@ -377,10 +369,10 @@ public:
     }
 
     Value operator+(Value const &other) const {
-        } if (is_type<std::filesystem::path>() && other.is_type<std::string>()) {
-            return value<std::filesysem::path>() / other.value<std::string>();
-        } if (is_type<std::filesystem::path>() && other.is_type<std::filesystem::path>()) {
-            return value<std::filesysem::path>() / other.value<std::filesystem::path>();
+        if (is_type<std::filesystem::path>() && other.is_type<std::string>()) {
+            return value<std::filesystem::path>() / other.value<std::string>();
+        } else if (is_type<std::filesystem::path>() && other.is_type<std::filesystem::path>()) {
+            return value<std::filesystem::path>() / other.value<std::filesystem::path>();
         } else if (is_type<std::string>() && other.is_type<std::string>()) {
             return value<std::string>() + other.value<std::string>();
         } else if (is_type<Array>() && other.is_type<Array>()) {
@@ -514,6 +506,11 @@ public:
     }
 
     virtual Value &operator[](std::string const &other) {
+        if (is_type<Undefined>()) {
+            // When accessing a name on an undefined it means we need replace it with an empty object.
+            intrinsic = Object{};
+        }
+
         if (is_type<Object>()) {
             auto &obj = value<Object>();
             obj.try_emplace(other, Undefined{});

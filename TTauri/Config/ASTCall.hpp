@@ -64,7 +64,7 @@ struct ASTCall : ASTExpression {
         }
     }
 
-    std::string str() override {
+    std::string str() const override {
         std::string s = object->str() + "(";
 
         bool first = true;
@@ -79,7 +79,7 @@ struct ASTCall : ASTExpression {
         return s + ")";
     }
 
-    Value execute(ExecutionContext *context) override { 
+    Value execute(ExecutionContext *context) const override { 
         BOOST_THROW_EXCEPTION(NotImplementedError());
     } 
 

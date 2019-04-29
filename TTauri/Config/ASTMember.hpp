@@ -19,19 +19,19 @@ struct ASTMember : ASTExpression {
         delete object;
     }
 
-    std::string str() override {
+    std::string str() const override {
         return object->str() + "." + name;
     }
 
-    Value execute(ExecutionContext *context) override { 
-        return object->execute(context)[name];
-    } 
-
-    Value executeAssignment(ExecutionContext *context, Value other) {
-        object->execute(context)[name] = std::move(other);
-        return other;
+    Value &executeLValue(ExecutionContext *context) const override {
+        return object->executeLValue(context)[name];
     }
 
+    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+        auto &lv = object->executeLValue(context)[name];
+        lv = std::move(other);
+        return lv;
+    }
 };
 
 }

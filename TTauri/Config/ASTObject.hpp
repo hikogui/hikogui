@@ -28,7 +28,7 @@ struct ASTObject : ASTExpression {
         }
     }
 
-    std::string str() override {
+    std::string str() const override {
         std::string s = "{";
 
         bool first = true;
@@ -44,18 +44,20 @@ struct ASTObject : ASTExpression {
         return s;
     }
 
-    Value execute(ExecutionContext *context) override {
-        Object m = {};
-        auto r = Value(m);
-        context->objectStack.push_back(r);
+    Value execute(ExecutionContext *context) const override {
+        context->pushObject();
 
         for (auto const expression: expressions) {
             expression->executeStatement(context);
         }
 
-        context->objectStack.pop_back();
-        return r;
-    } 
+        return context->popObject();
+    }
+
+    Value execute() const {
+        ExecutionContext context;
+        return execute(&context);
+    }
 
 };
 

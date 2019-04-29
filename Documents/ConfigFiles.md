@@ -94,6 +94,8 @@ null := 'null';
 
 string := '"' (string-char | escaped-double-quote)*? '"';
 
+path := '<' .*? '>';
+
 comment := '//.*?\n';
 
 binary-operator := '==|!=|<=|>=|<>|and|or|not|xor|[+-*/%~&.|]';

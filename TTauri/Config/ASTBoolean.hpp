@@ -10,11 +10,11 @@ struct ASTBoolean : ASTExpression {
 
     ASTBoolean(ASTLocation location, bool value) : ASTExpression(location), value(value) {}
 
-    std::string str() override {
+    std::string str() const override {
         return value ? "true" : "false";
     }
 
-    Value execute(ExecutionContext *context) override { 
+    Value execute(ExecutionContext *context) const override { 
         return value;
     } 
 

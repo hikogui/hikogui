@@ -15,18 +15,17 @@ struct ASTAssignment : ASTExpression {
         delete expression;
     }
 
-    std::string str() override {
+    std::string str() const override {
         return key->str() + ":" + expression->str();
     }
 
-    Value execute(ExecutionContext *context) override {
+    Value &executeLValue(ExecutionContext *context) const override {
         return key->executeAssignment(context, expression->execute(context));
     }
 
-    void executeStatement(ExecutionContext *context) override {
+    void executeStatement(ExecutionContext *context) const override {
         execute(context);
     }
-
 };
 
 }

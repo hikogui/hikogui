@@ -5,7 +5,7 @@
 
 namespace TTauri::Config {
 
-int64_t parseInteger(const char *text, int radix, bool negative);
+int64_t parseInteger(const char *text, int radix, bool negative)
 {
     size_t size = strlen(text);
     size_t offset = 0;
@@ -110,7 +110,5 @@ bool parseBoolean(const char *text)
 {
     return strcmp(text, "true") == 0;
 }
-
-
 
 }

@@ -21,7 +21,7 @@ struct ASTUnaryOperator : ASTExpression {
         delete right;
     }
 
-    std::string str() override {
+    std::string str() const override {
         std::string s;
 
         switch (op) {
@@ -33,7 +33,7 @@ struct ASTUnaryOperator : ASTExpression {
         return s + right->str();
     }
 
-    Value execute(ExecutionContext *context) override {
+    Value execute(ExecutionContext *context) const override {
         switch (op) {
         case Operator::NOT: return ~right->execute(context);
         case Operator::NEG: return -right->execute(context);

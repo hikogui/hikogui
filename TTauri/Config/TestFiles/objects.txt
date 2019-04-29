@@ -1,0 +1,8 @@
+
+foo = {
+    a: 1,
+    b: 2
+};
+
+// automatic object creation.
+bar.baz = 5;

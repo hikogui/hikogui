@@ -6,6 +6,7 @@
 #include "TTauriConfigParser.hpp"
 #include "TTauri/Config/ParseContext.hpp"
 #include "TTauri/Config/LiteralParser.hpp"
+#include <string.h>
 
 #define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, TTauri::Config::ParseContext* context)
 %}
@@ -57,7 +58,7 @@ WS              [ \t\f\r\n]
 -?{DEC}+"."{DEC}*           yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 
 \"({STR}|{STRDQ})*?\"       yylval->string = TTauri::Config::parseString(yytext); return T_STRING;
-<.*?>                       yylval->string = strndup(&yytext[1], strlen(yytext) - 2); return T_PATH;
+"<".*?">"                   yylval->string = TTauri::Config::parseString(yytext); return T_PATH;
 
 [][)(}{.~*/%+<>&^|-]        return yytext[0];
 

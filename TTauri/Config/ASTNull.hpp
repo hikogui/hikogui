@@ -9,11 +9,11 @@ struct ASTNull : ASTExpression {
 
     ASTNull(ASTLocation location) : ASTExpression(location) {}
 
-    std::string str() override {
+    std::string str() const override {
         return "null";
     }
 
-    Value execute(ExecutionContext *context) override { 
+    Value execute(ExecutionContext *context) const override { 
         return {};
     } 
 

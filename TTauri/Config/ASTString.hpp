@@ -12,11 +12,11 @@ struct ASTString : ASTExpression {
         free(value);
     }
 
-    std::string str() override {
+    std::string str() const override {
         return "\"" + value + "\"";
     }
 
-    Value execute(ExecutionContext *context) override {
+    Value execute(ExecutionContext *context) const override {
         return value;
     } 
 

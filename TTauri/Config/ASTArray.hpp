@@ -23,7 +23,7 @@ struct ASTArray : ASTExpression {
         }
     }
 
-    std::string str() override {
+    std::string str() const override {
         std::string s = "[";
 
         bool first = true;
@@ -39,7 +39,7 @@ struct ASTArray : ASTExpression {
         return s;
     }
 
-    Value execute(ExecutionContext *context) override {
+    Value execute(ExecutionContext *context) const override {
         Array values;
 
         for (auto const expression: expressions) {
@@ -47,7 +47,6 @@ struct ASTArray : ASTExpression {
         }
         return {values};
     } 
-
 };
 
 }

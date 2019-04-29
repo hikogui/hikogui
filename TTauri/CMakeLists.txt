@@ -16,6 +16,7 @@ BISON_TARGET(TTauriConfigParser Config/TTauriConfig.y ${CMAKE_CURRENT_BINARY_DIR
 FLEX_TARGET(TTauriConfigScanner Config/TTauriConfig.l ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.cpp COMPILE_FLAGS "-P TTauriConfig_yy" DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.hpp)
 ADD_FLEX_BISON_DEPENDENCY(TTauriConfigScanner TTauriConfigParser)
 
+
 set(TTauri_srcs
     ${BISON_TTauriConfigParser_OUTPUTS}
     ${FLEX_TTauriConfigScanner_OUTPUTS}

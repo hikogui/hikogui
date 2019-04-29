@@ -16,17 +16,18 @@ struct ASTIndex : ASTExpression {
         delete index;
     }
 
-    std::string str() override {
+    std::string str() const override {
         return object->str() + "[" + index->str() + "]";
     }
 
-    Value execute(ExecutionContext *context) override {
-        return object->execute(context)[index->execute(context)];
+    Value &executeLValue(ExecutionContext *context) const override {
+        return object->executeLValue(context)[index->execute(context)];
     }
 
-    Value executeAssignment(ExecutionContext *context, Value other) {
-        object->execute(context)[index->execute(context)] = std::move(other);
-        return other;
+    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+        auto &lv = object->executeLValue(context)[index->execute(context)];
+        lv = std::move(other);
+        return lv;
     }
 };
 

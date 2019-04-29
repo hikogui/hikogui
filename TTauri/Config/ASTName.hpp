@@ -12,17 +12,18 @@ struct ASTName : ASTExpression {
         free(name);
     }
 
-    std::string str() override {
+    std::string str() const override {
         return name;
     }
 
-    Value execute(ExecutionContext *context) override {
-        return context->objectStack.back()[name];
+    Value &executeLValue(ExecutionContext *context) const override {
+        return context->currentObject()[name];
     } 
 
-    Value executeAssignment(ExecutionContext *context, Value other) override {
-        context->objectStack.back()[name] = other;
-        return other;
+    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+        auto &lv = context->currentObject()[name];
+        lv = std::move(other);
+        return lv;
     }
 };
 

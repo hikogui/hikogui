@@ -18,14 +18,6 @@ struct ASTExpressions : ASTNode {
             delete expression;
         }
     }
-
-    std::string str() override {
-        BOOST_THROW_EXCEPTION(NotImplementedError());
-    }
-
-    Value execute(ExecutionContext *context) override { 
-        BOOST_THROW_EXCEPTION(NotImplementedError());
-    } 
 };
 
 }

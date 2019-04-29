@@ -11,11 +11,11 @@ struct ASTInteger : ASTExpression {
 
     ASTInteger(ASTLocation location, int64_t value) : ASTExpression(location), value(value) {}
 
-    std::string str() override {
+    std::string str() const override {
         return (boost::format("%i") % value).str();
     }
 
-    Value execute(ExecutionContext *context) override { 
+    Value execute(ExecutionContext *context) const override { 
         return value;
     } 
 

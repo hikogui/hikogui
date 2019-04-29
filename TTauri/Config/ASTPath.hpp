@@ -5,18 +5,18 @@
 
 namespace TTauri::Config {
 
-struct ASTString : ASTExpression {
+struct ASTPath : ASTExpression {
     std::filesystem::path value;
 
-    ASTString(ASTLocation location, char *value) : ASTExpression(location), value(value) {
+    ASTPath(ASTLocation location, char *value) : ASTExpression(location), value(value) {
         free(value);
     }
 
-    std::string str() override {
+    std::string str() const override {
         return "<" + value.string() + ">";
     }
 
-    Value execute(ExecutionContext *context) override {
+    Value execute(ExecutionContext *context) const override {
         return value;
     } 
 

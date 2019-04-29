@@ -16,14 +16,22 @@ struct ASTNode {
     ASTLocation location;
     ASTNode(ASTLocation location) : location(location) {}
 
-    virtual std::string str() = 0;
-
-    virtual Value execute(ExecutionContext *context) = 0;
-
-    virtual Value executeAssignment(ExecutionContext *context, Value other) {
+    virtual std::string str() const {
         BOOST_THROW_EXCEPTION(InvalidOperation());
     }
-    virtual void executeStatement(ExecutionContext *context) {
+
+    virtual Value &executeLValue(ExecutionContext *context) const {
+        BOOST_THROW_EXCEPTION(InvalidOperation());
+    }
+
+    virtual Value execute(ExecutionContext *context) const {
+        return executeLValue(context);
+    }
+
+    virtual Value &executeAssignment(ExecutionContext *context, Value other) const {
+        BOOST_THROW_EXCEPTION(InvalidOperation());
+    }
+    virtual void executeStatement(ExecutionContext *context) const {
         BOOST_THROW_EXCEPTION(InvalidOperation());
     }
 };
