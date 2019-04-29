@@ -6,3 +6,10 @@ foo = {
 
 // automatic object creation.
 bar.baz = 5;
+
+// Section and automatic object creation.
+[hello]
+world = "World";
+
+[z]
+w = 3;

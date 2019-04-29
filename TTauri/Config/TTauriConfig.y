@@ -68,9 +68,11 @@
 
 %type <object> root
 %type <expression> expression
+%type <expression> expression_without_array
 %type <object> object
 %type <array> array
 %type <expressions> expressions
+%type <expression> statement
 %type <expressions> statements
 %start root
 %%
@@ -87,10 +89,9 @@ object:
     | '{' expressions ';' '}'                                       { $$ = NEW_NODE(ASTObject, @1, $2); }
     ;
 
-expression:
+expression_without_array:
       '(' expression ')'                                            { $$ = $2; }
     | object                                                        { $$ = $1; }
-    | array                                                         { $$ = $1; }
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
     | T_COLOR                                                       { $$ = NEW_NODE(ASTColor, @1, static_cast<uint32_t>($1)); }
@@ -128,14 +129,24 @@ expression:
     | expression '(' expressions ')'                                { $$ = NEW_NODE(ASTCall, @2, $1, $3); }
     ;
 
+expression:
+      expression_without_array                                      { $$ = $1; }
+    | array                                                         { $$ = $1; }
+    ;
+
 expressions:
       expression                                                    { $$ = NEW_NODE(ASTExpressions, @1, $1); }
     | expressions ';' expression                                    { $1->expressions.push_back($3); $$ = $1; }
     ;
 
+statement:
+      expression_without_array ';'                                  { $$ = $1; }
+    | array                                                         { $$ = $1; }
+    ;
+
 statements:
-      expression ';'                                                { $$ = NEW_NODE(ASTExpressions, @1, $1); }
-    | statements expression ';'                                     { $1->expressions.push_back($2); $$ = $1; }
+      statement                                                     { $$ = NEW_NODE(ASTExpressions, @1, $1); }
+    | statements statement                                          { $1->expressions.push_back($2); $$ = $1; }
     ;
 
 root:

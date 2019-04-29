@@ -2,22 +2,39 @@
 #pragma once
 
 #include "Value.hpp"
+#include <optional>
 
 namespace TTauri::Config {
 
+struct ObjectStackItem {
+    Value object = Object{};
+    Value *section = nullptr;
+};
+
 struct ExecutionContext {
-    std::vector<Value> objectStack;
+    std::vector<ObjectStackItem> objectStack;
 
     void pushObject() {
-        objectStack.emplace_back(Object{});
+        objectStack.emplace_back();
+    }
+
+    void setSection(Value *section) {
+        auto &item = objectStack.back();
+        item.section = section;
     }
 
     Value popObject() {
-        return pop_back(objectStack);
+        return pop_back(objectStack).object;
     }
 
     Value &currentObject() {
-        return objectStack.back();
+        auto &item = objectStack.back();
+        
+        if (item.section) {
+            return *(item.section);
+        } else {
+            return item.object;
+        }
     }
 };
 

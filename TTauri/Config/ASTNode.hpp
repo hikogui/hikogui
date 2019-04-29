@@ -11,17 +11,17 @@
 namespace TTauri::Config {
 
 struct ASTNode {
-    struct InvalidOperation : virtual boost::exception, virtual std::exception {};
+    struct InvalidOperationError : virtual boost::exception, virtual std::exception {};
 
     ASTLocation location;
     ASTNode(ASTLocation location) : location(location) {}
 
     virtual std::string str() const {
-        BOOST_THROW_EXCEPTION(InvalidOperation());
+        BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     virtual Value &executeLValue(ExecutionContext *context) const {
-        BOOST_THROW_EXCEPTION(InvalidOperation());
+        BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 
     virtual Value execute(ExecutionContext *context) const {
@@ -29,10 +29,10 @@ struct ASTNode {
     }
 
     virtual Value &executeAssignment(ExecutionContext *context, Value other) const {
-        BOOST_THROW_EXCEPTION(InvalidOperation());
+        BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
     virtual void executeStatement(ExecutionContext *context) const {
-        BOOST_THROW_EXCEPTION(InvalidOperation());
+        BOOST_THROW_EXCEPTION(InvalidOperationError());
     }
 };
 

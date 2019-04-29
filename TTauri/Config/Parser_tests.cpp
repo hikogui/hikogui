@@ -44,12 +44,12 @@ TEST(TTauriConfigParser, Booleans) {
 
 TEST(TTauriConfigParser, Arrays) {
     auto o = parseFile("Config/TestFiles/arrays.txt");
-    ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2]}");
-    ASSERT_EQ(o->execute().str(), "{bar:[1],baz:[1,2],bob:[1,2],foo:[]}");
+    ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2],a[0]:3}");
+    ASSERT_EQ(o->execute().str(), "{a:[3],bar:[1],baz:[1,2],bob:[1,2],foo:[]}");
 }
 
 TEST(TTauriConfigParser, Objects) {
     auto o = parseFile("Config/TestFiles/objects.txt");
-    ASSERT_EQ(o->str(), "{foo:{a:1,b:2},bar.baz:5}");
-    ASSERT_EQ(o->execute().str(), "{bar:{baz:5},foo:{a:1,b:2}}");
+    ASSERT_EQ(o->str(), "{foo:{a:1,b:2},bar.baz:5,[hello],world:\"World\",[z],w:3}");
+    ASSERT_EQ(o->execute().str(), "{bar:{baz:5},foo:{a:1,b:2},hello:{world:\"World\"},z:{w:3}}");
 }

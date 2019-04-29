@@ -5,7 +5,7 @@
 #include "TTauri/Color.hpp"
 
 #include <boost/format.hpp>
-
+#include <boost/numeric/conversion/cast.hpp>
 #include <any>
 #include <map>
 #include <vector>
@@ -492,8 +492,22 @@ struct Value {
     }
 
     Value &operator[](Value const &other) {
+        if (is_type<Undefined>()) {
+            if (other.is_type<int64_t>()) {
+                intrinsic = Array{};
+            } else if (other.is_type<std::string>()) {
+                intrinsic = Object{};
+            }
+        }
+
         if (is_type<Array>() && other.is_type<int64_t>()) {
-            return value<Array>().at(other.value<int64_t>());
+            auto &_array = value<Array>();
+            size_t index = boost::numeric_cast<size_t>(other.value<int64_t>());
+            while (index >= _array.size()) {
+                _array.emplace_back(Undefined{});
+            }
+
+            return _array.at(index);
 
         } else if (is_type<Object>() && other.is_type<std::string>()) {
             auto &obj = value<Object>();

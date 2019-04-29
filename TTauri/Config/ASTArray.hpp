@@ -46,7 +46,22 @@ struct ASTArray : ASTExpression {
             values.push_back(expression->execute(context));
         }
         return {values};
-    } 
+    }
+
+    void executeStatement(ExecutionContext *context) const override {
+        if (expressions.size() == 0) {
+            context->setSection(nullptr);
+
+        } else if (expressions.size() == 1) {
+            context->setSection(nullptr);
+            auto &lv = expressions.at(0)->executeLValue(context);
+            context->setSection(&lv);
+
+        } else {
+            BOOST_THROW_EXCEPTION(InvalidOperationError());
+        }
+    }
+
 };
 
 }
