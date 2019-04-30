@@ -1,9 +1,65 @@
-# Config Files
-Mostly like JSON, but with extra features:
+# TTauri Config
 
- * Including files
- * Comments
- * Patching sections.
+This configuration file format is inspired by many types of configuration file formats
+such as JSON and INI files. TTauri configuration files have access to an expression language
+to calculate values to be assigned to configuration items.
+
+## Types
+
+### Null
+
+```
+a = null;
+```
+
+### Boolean
+
+```
+a = true;
+b = false;
+```
+
+### Integer
+The radix of the integer can be giving by using one of the following prefixes:
+ * 0b - Binary
+ * 0o - Octal
+ * 0d - Decimal
+ * 0x - Hexadecimal
+
+Numbers without a prefix are decimal.
+
+Negative numbers start with the minus `-` character before the radix prefix.
+Numbers may contain `_` or `'` characters to group digits.
+
+```
+a = 12;     // Assign 12.
+b = 0x40;   // Assign 64.
+c = -0x20;  // Assign -32.
+```
+
+### Float
+
+```
+a = 1.5;    // Assign 1.5
+b = .5;     // Assign 0.5
+c = -1.;    // Assign -1.0
+```
+
+### String
+
+### Path
+
+### Color
+
+### Array
+
+
+### Object
+
+
+
+
+
 
 ## Examples
 
@@ -109,12 +165,10 @@ SC := '[;,]';
 Ignores comment and white-space-char tokens.
 
 ```
-key :=
-	key '.' identifier |
-	identifier;
+empty := ;
 
 section-statement :=
-	'[' key ']' |		    					// Set prefix key from this point onwards the current object.
+	'[' expression ']' |		  				// Set prefix key from this point onwards the current object.
 	'[]';			     						// Unset prefix key from this point onwards the current object.
 
 assignment-statement := key AS expression;  // Replace value.
@@ -122,54 +176,47 @@ assignment-statement := key AS expression;  // Replace value.
 expression-statement := expression;             // Any function call will imply a method on the current object.
                                                 // The returned object of this expression will be merged with the current object.
 
-nonlast-statement :=
-    section-statement SC? |
-    assignment-statement SC |
-    expression-statment SC;                              
+statement :=
+    section-statement |
+    expression-statment SC |
+    assignment-statement SC;
                                                
-last-statment :=
-    section-statment SC? | 
-    assignment-statement SC? |
-    expression-statment SC;
-
-statement-list :=
-    |
-    *nonlast-statement last-statement;
+statement-list := statement*;
 
 object := '{' statement-list '}';
 
 expression-list :=
-    |
+    empty |
     expression (SC expression)* SC?;
 
 array := '[' expression-list ']';
 
-literal :=
+expression :=
+	'(' expression ')'
 	int |
 	float |
 	boolean |
 	null |
 	string |
     color |
+    path |
 	array |
 	object;
-
-expression :=
-	'(' expression ')'
 	expression '(' expression-list ')' |
+    unary-operator expression |
 	expression binary-operator expression |
 	expression '[' expression ']' |
 	identifier |
 	literal;
 
-file := statement-list;
+file := 
+    empty |
+    object |
+    statement-list;
 
 ```
 
 ## Functions
-### path(string)
-Return a path object from the given string.
-A relative path will be relative to the current configuration file.
 
 ### color(r: float, g: float, b: float, a: float=1.0)
 Return a color object. Given r, g, b values are sRGB including gamma.
