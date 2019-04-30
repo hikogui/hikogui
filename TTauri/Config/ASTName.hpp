@@ -10,7 +10,7 @@ namespace TTauri::Config {
 struct ASTName : ASTExpression {
     std::string name;
 
-    ASTName(ASTLocation location, char *name) : ASTExpression(location), name(name) {
+    ASTName(Location location, char *name) : ASTExpression(location), name(name) {
         free(name);
     }
 

@@ -10,7 +10,7 @@ namespace TTauri::Config {
 struct ASTBoolean : ASTExpression {
     bool value;
 
-    ASTBoolean(ASTLocation location, bool value) : ASTExpression(location), value(value) {}
+    ASTBoolean(Location location, bool value) : ASTExpression(location), value(value) {}
 
     std::string str() const override {
         return value ? "true" : "false";

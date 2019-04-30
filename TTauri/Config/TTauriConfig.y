@@ -9,7 +9,7 @@
   #include <stdio.h>
   #define YYPRINT(a, b, c)
 
-  #define NEW_NODE(ast_type, location, ...) new TTauri::Config::ast_type({location.first_line, location.last_line, location.first_column, location.last_column}, __VA_ARGS__)
+  #define NEW_NODE(ast_type, location, ...) new TTauri::Config::ast_type({context->file, location.first_line, location.first_column}, __VA_ARGS__)
   #define NEW_UNARY_OPERATOR(op, location, right) NEW_NODE(ASTUnaryOperator, location, TTauri::Config::ASTUnaryOperator::Operator:: ## op, right)
   #define NEW_BINARY_OPERATOR(op, location, left, right) NEW_NODE(ASTBinaryOperator, location, TTauri::Config::ASTBinaryOperator::Operator:: ## op, left, right)
 } 
@@ -26,7 +26,7 @@
 %code {
   int yylex(YYSTYPE* yylvalp, YYLTYPE* yyllocp, yyscan_t scanner, TTauri::Config::ParseContext* context);
   void yyerror(YYLTYPE* yyllocp, yyscan_t scanner, TTauri::Config::ParseContext* context, const char* msg) {
-    context->setError({yyllocp->first_line, yyllocp->last_line, yyllocp->first_column, yyllocp->last_column}, msg);
+    context->setError({context->file, yyllocp->first_line, yyllocp->first_column}, msg);
   }
 }
 
@@ -150,7 +150,7 @@ statements:
     ;
 
 root:
-      /* empty */                                                   { $$ = new TTauri::Config::ASTObject({0,0,0,0}); context->object = $$; }
+      /* empty */                                                   { $$ = new TTauri::Config::ASTObject({context->file, 1, 1}); context->object = $$; }
     | object                                                        { $$ = $1; context->object = $$; };
     | statements                                                    { $$ = NEW_NODE(ASTObject, @1, $1); context->object = $$; }
     ;

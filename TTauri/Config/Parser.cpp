@@ -4,6 +4,7 @@
 #include "parser.hpp"
 #include "AST.hpp"
 #include "ParseContext.hpp"
+#include "exceptions.hpp"
 #include "TTauri/utils.hpp"
 #include "TTauri/Logging.hpp"
 #include <cstdio>
@@ -29,11 +30,12 @@ ASTObject *parseFile(const std::filesystem::path &path)
     yyscan_t scanner;
     FILE *file;
     string path_string = path.string();
-    ASTObject *r;
-    ParseContext context;
+    ParseContext context(path);
 
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
-        BOOST_THROW_EXCEPTION(CanNotOpenFile());
+        BOOST_THROW_EXCEPTION(CanNotOpenFile()
+            << boost::errinfo_file_name(context.errorLocation.file->string())
+        );
     }
 
     if (TTauriConfig_yylex_init(&scanner) != 0) {
@@ -42,18 +44,25 @@ ASTObject *parseFile(const std::filesystem::path &path)
 
     TTauriConfig_yyset_in(file, scanner);
 
-    if (TTauriConfig_yyparse(scanner, &context) == 0) {
-        r = context.object;
-    } else {
-        LOG_ERROR("%i:%i: %s") % context.errorLocation.firstLine % context.errorLocation.firstColumn % context.errorMessage;
-        r = nullptr;
-    }
+    auto r = TTauriConfig_yyparse(scanner, &context);
 
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {
-        BOOST_THROW_EXCEPTION(CanNotCloseFile());
+        BOOST_THROW_EXCEPTION(CanNotCloseFile()
+            << boost::errinfo_file_name(context.errorLocation.file->string())
+        );
     }
-    return r;
+
+    if (r != 0) {
+        BOOST_THROW_EXCEPTION(ParseError()
+            << boost::errinfo_file_name(context.errorLocation.file->string())
+            << boost::errinfo_at_line(context.errorLocation.line)
+            << errinfo_at_column(context.errorLocation.column)
+            << errinfo_message(context.errorMessage)
+        );
+    }
+
+    return context.object;
 }
 
 

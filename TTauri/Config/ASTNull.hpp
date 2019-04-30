@@ -9,7 +9,7 @@ namespace TTauri::Config {
 
 struct ASTNull : ASTExpression {
 
-    ASTNull(ASTLocation location) : ASTExpression(location) {}
+    ASTNull(Location location) : ASTExpression(location) {}
 
     std::string str() const override {
         return "null";

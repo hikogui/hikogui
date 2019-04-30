@@ -13,7 +13,6 @@
 #include "ASTFloat.hpp"
 #include "ASTIndex.hpp"
 #include "ASTInteger.hpp"
-#include "ASTLocation.hpp"
 #include "ASTMember.hpp"
 #include "ASTName.hpp"
 #include "ASTNode.hpp"

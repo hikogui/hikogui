@@ -11,7 +11,7 @@ struct ASTIndex : ASTExpression {
     ASTExpression *object;
     ASTExpression *index;
 
-    ASTIndex(ASTLocation location, ASTExpression *object, ASTExpression *index) : ASTExpression(location), object(object), index(index) {}
+    ASTIndex(Location location, ASTExpression *object, ASTExpression *index) : ASTExpression(location), object(object), index(index) {}
 
     ~ASTIndex() {
         delete object;

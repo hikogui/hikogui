@@ -11,7 +11,7 @@ struct ASTAssignment : ASTExpression {
     ASTExpression *key;
     ASTExpression *expression;
 
-    ASTAssignment(ASTLocation location, ASTExpression *key, ASTExpression *expression) : ASTExpression(location), key(key), expression(expression) {}
+    ASTAssignment(Location location, ASTExpression *key, ASTExpression *expression) : ASTExpression(location), key(key), expression(expression) {}
     ~ASTAssignment() {
         delete key;
         delete expression;

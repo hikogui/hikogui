@@ -9,9 +9,6 @@
 
 namespace TTauri::Config {
 
-    struct CanNotOpenFile : virtual boost::exception, virtual std::exception {};
-    struct CanNotCloseFile : virtual boost::exception, virtual std::exception {};
-    struct InternalParserError : virtual boost::exception, virtual std::exception {};
 
 ASTObject *parseFile(const std::filesystem::path &path);
 

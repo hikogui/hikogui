@@ -10,7 +10,7 @@ namespace TTauri::Config {
 struct ASTString : ASTExpression {
     std::string value;
 
-    ASTString(ASTLocation location, char *value) : ASTExpression(location), value(value) {
+    ASTString(Location location, char *value) : ASTExpression(location), value(value) {
         free(value);
     }
 

@@ -12,7 +12,7 @@ struct ASTMember : ASTExpression {
     ASTExpression *object;
     std::string name;
 
-    ASTMember(ASTLocation location, ASTExpression *object, char *name) : ASTExpression(location), object(object), name(name) {
+    ASTMember(Location location, ASTExpression *object, char *name) : ASTExpression(location), object(object), name(name) {
         free(name);
     }
 

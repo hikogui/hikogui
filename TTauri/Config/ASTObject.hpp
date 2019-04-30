@@ -13,12 +13,12 @@ namespace TTauri::Config {
 struct ASTObject : ASTExpression {
     std::vector<ASTExpression *> expressions;
 
-    ASTObject(ASTLocation location) : ASTExpression(location), expressions() { }
+    ASTObject(Location location) : ASTExpression(location), expressions() { }
 
-    ASTObject(ASTLocation location, ASTExpression *expression) : ASTExpression(location), expressions({expression}) {
+    ASTObject(Location location, ASTExpression *expression) : ASTExpression(location), expressions({expression}) {
     }
 
-    ASTObject(ASTLocation location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
+    ASTObject(Location location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
         // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
         expressions->expressions.clear();
         delete expressions;

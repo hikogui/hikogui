@@ -1,5 +1,4 @@
 %option noinput nounput noyywrap 8bit nodefault                                 
-%option yylineno
 %option reentrant bison-bridge bison-locations
 %option nounistd never-interactive
 %{
@@ -8,6 +7,24 @@
 #include "TTauri/Config/LiteralParser.hpp"
 #include <string.h>
 
+inline void updateLocation(YYLTYPE *location, char *text)
+{
+    location->first_line = location->last_line;
+    location->first_column = location->last_column;
+
+    for (size_t i = 0; char c = text[i]; i++) {
+        switch (c) {
+        case '\r': location->last_column = 1; break;
+        case '\n': location->last_column = 1; location->last_line++; break;
+        case '\t': location->last_column /= 8; location->last_column *= 8; location->last_column += 8; break;
+        case '\f': location->last_column = 1; location->last_line++; break;
+        default:
+            location->last_column++;
+        }
+    }
+}
+
+#define YY_USER_ACTION updateLocation(yylloc_param, yytext);
 #define YY_DECL int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, TTauri::Config::ParseContext* context)
 %}
 
@@ -66,6 +83,6 @@ WS              [ \t\f\r\n]
 "//".*?\n                   ; // Comment is ignored.
 {WS}                        ; // Whitespace is ignored.
 
-.                           ;
+.                           return yytext[0];
 
 %%

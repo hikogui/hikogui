@@ -11,7 +11,7 @@ namespace TTauri::Config {
 struct ASTInteger : ASTExpression {
     int64_t value;
 
-    ASTInteger(ASTLocation location, int64_t value) : ASTExpression(location), value(value) {}
+    ASTInteger(Location location, int64_t value) : ASTExpression(location), value(value) {}
 
     std::string str() const override {
         return (boost::format("%i") % value).str();

@@ -11,9 +11,9 @@ namespace TTauri::Config {
 struct ASTArray : ASTExpression {
     std::vector<ASTExpression *> expressions;
 
-    ASTArray(ASTLocation location) : ASTExpression(location), expressions() { }
+    ASTArray(Location location) : ASTExpression(location), expressions() { }
 
-    ASTArray(ASTLocation location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
+    ASTArray(Location location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
         // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
         expressions->expressions.clear();
         delete expressions;
@@ -60,7 +60,12 @@ struct ASTArray : ASTExpression {
             context->setSection(&lv);
 
         } else {
-            BOOST_THROW_EXCEPTION(InvalidOperationError());
+            BOOST_THROW_EXCEPTION(InvalidOperationError()
+                << boost::errinfo_file_name(location.file->string())
+                << boost::errinfo_at_line(location.line)
+                << errinfo_at_column(location.column)
+                << errinfo_message("syntax error, expected 0 or 1 expression in section statement")
+            );
         }
     }
 

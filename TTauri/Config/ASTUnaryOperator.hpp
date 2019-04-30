@@ -17,7 +17,7 @@ struct ASTUnaryOperator : ASTExpression {
     Operator op;
     ASTExpression *right;
 
-    ASTUnaryOperator(ASTLocation location, Operator op, ASTExpression *right) : ASTExpression(location), op(op), right(right) {}
+    ASTUnaryOperator(Location location, Operator op, ASTExpression *right) : ASTExpression(location), op(op), right(right) {}
 
     ~ASTUnaryOperator() {
         delete right;
@@ -36,12 +36,19 @@ struct ASTUnaryOperator : ASTExpression {
     }
 
     Value execute(ExecutionContext *context) const override {
-        switch (op) {
-        case Operator::NOT: return ~right->execute(context);
-        case Operator::NEG: return -right->execute(context);
-        case Operator::LOGICAL_NOT: return !right->execute(context);
+        try {
+            switch (op) {
+            case Operator::NOT: return ~right->execute(context);
+            case Operator::NEG: return -right->execute(context);
+            case Operator::LOGICAL_NOT: return !right->execute(context);
+            }
+            abort(); // Compiler doesn't recognize that switch is complete.
+        } catch (boost::exception &e) {
+            e << boost::errinfo_file_name(location.file->string())
+                << boost::errinfo_at_line(location.line)
+                << errinfo_at_column(location.column);
+            throw;
         }
-        abort(); // Compiler doesn't recognize that switch is complete.
     }
 };
 

@@ -10,7 +10,7 @@ namespace TTauri::Config {
 struct ASTPath : ASTExpression {
     std::filesystem::path value;
 
-    ASTPath(ASTLocation location, char *value) : ASTExpression(location), value(value) {
+    ASTPath(Location location, char *value) : ASTExpression(location), value(value) {
         free(value);
     }
 

@@ -6,16 +6,16 @@
 #include "Location.hpp"
 #include "ExecutionContext.hpp"
 #include "Value.hpp"
+#include "exceptions.hpp"
 #include "TTauri/utils.hpp"
 #include <string>
 
 namespace TTauri::Config {
 
 struct ASTNode {
-    struct InvalidOperationError : virtual boost::exception, virtual std::exception {};
 
-    ASTLocation location;
-    ASTNode(ASTLocation location) : location(location) {}
+    Location location;
+    ASTNode(Location location) : location(location) {}
 
     virtual std::string str() const {
         BOOST_THROW_EXCEPTION(InvalidOperationError());

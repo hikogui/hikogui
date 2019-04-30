@@ -5,6 +5,7 @@
 
 #include "TTauri/utils.hpp"
 #include "TTauri/Color.hpp"
+#include "exceptions.hpp"
 #include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <any>
@@ -13,6 +14,7 @@
 #include <cstdint>
 #include <cmath>
 #include <filesystem>
+#include <typeinfo>
 
 namespace TTauri::Config {
 
@@ -100,13 +102,15 @@ inline CompareResult compare(double l, double r)
 struct Value {
     std::any intrinsic;
 
-    /*! Exception raised when an operation is not allowed by the contained type.
-     */
-    struct InvalidOperationError : virtual boost::exception, virtual std::exception {};
-
     Value() : intrinsic({}) {}
 
-    Value(std::any value) : intrinsic(value) {}
+    Value(std::any value) : intrinsic(value) {
+        if (!is_valid_type()) {
+            BOOST_THROW_EXCEPTION(NotImplementedError()
+                << errinfo_message((boost::format("Assigning a value of type %s is not implemented") % type_name()).str())        
+            );
+        }
+    }
 
     Value(const Value &) = default;
 
@@ -120,6 +124,13 @@ struct Value {
 
     Value &operator=(std::any value) {
         intrinsic = std::move(value);
+
+        if (!is_valid_type()) {
+            BOOST_THROW_EXCEPTION(NotImplementedError()
+                << errinfo_message((boost::format("Assigning a value of type %s is not implemented") % type_name()).str())        
+            );
+        }
+
         return *this;
     }
 
@@ -136,6 +147,11 @@ struct Value {
         return type() == typeid(T);
     }
 
+    bool is_valid_type() const {
+        return is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
+            is_type<Color_sRGB>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+    }
+
     template<typename T>
     T value() const {
         return std::any_cast<T>(intrinsic);
@@ -144,6 +160,19 @@ struct Value {
     template<typename T>
     T &value() {
         return std::any_cast<T &>(intrinsic);
+    }
+
+    template<>
+    double value() const {
+        if (is_type<int64_t>()) {
+            return static_cast<double>(std::any_cast<int64_t>(intrinsic));
+        } else {
+            return std::any_cast<double>(intrinsic);
+        }
+    }
+
+    std::string type_name() const {
+        return type().name();
     }
 
     /*! Return a string representation of the value.
@@ -157,7 +186,12 @@ struct Value {
         } else if (is_type<int64_t>()) {
             return (boost::format("%i") % value<int64_t>()).str();
         } else if (is_type<double>()) {
-            return (boost::format("%g") % value<double>()).str();
+            auto s = (boost::format("%g") % value<double>()).str();
+            if (s.find('.') == s.npos) {
+                return s + ".";
+            } else {
+                return s;
+            }
         } else if (is_type<Color_sRGB>()) {
             return value<Color_sRGB>().str();
         } else if (is_type<std::string>()) {
@@ -189,7 +223,9 @@ struct Value {
             }
             return s + "}";
         }
-        BOOST_THROW_EXCEPTION(NotImplementedError());
+        BOOST_THROW_EXCEPTION(NotImplementedError()
+            << errinfo_message((boost::format("type %s does not implement .str()") % type_name()).str())        
+        );
     }
 
     /*! Return the internal any-value.
@@ -238,7 +274,9 @@ struct Value {
         } else if (is_type<Object>()) {
             return value<Object>().size() > 0;
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("type %s does not implement .boolean()") % type_name()).str())
+        );
     }
 
     CompareResult cmp(Value const &other) const {
@@ -315,7 +353,9 @@ struct Value {
             return compare(value<bool>(), other.value<bool>());
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot compare values of types %s and %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     Value operator-() const {
@@ -324,14 +364,20 @@ struct Value {
         } else if (is_type<double>()) {
             return -value<double>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot make value of type %s negative") % type_name()).str())        
+        );
     }
 
     Value operator~() const {
         if (is_type<int64_t>()) {
             return ~value<int64_t>();
+        } else if (is_type<bool>()) {
+            return !value<bool>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot invert value of type %s") % type_name()).str())        
+        );
     }
 
     Value operator!() const {
@@ -348,7 +394,9 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() * other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot multiple value of type %s with value of type %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     Value operator/(Value const &other) const {
@@ -357,7 +405,9 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() / other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot divide value of type %s with value of type %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     Value operator%(Value const &other) const {
@@ -366,7 +416,9 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() % other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot take modulo of value of type %s with value of type %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     Value operator+(Value const &other) const {
@@ -391,7 +443,9 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() + other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot add value of type %s to a value of type %s") % other.type_name() % type_name()).str())        
+        );
     }
 
     Value operator-(Value const &other) const {
@@ -400,21 +454,27 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() - other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot subtract value of type %s from a value of type %s") % other.type_name() % type_name()).str())        
+        );
     }
 
     Value operator<<(Value const &other) const {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() << other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot left shift a of value of type %s with a value of type %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     Value operator>>(Value const &other) const {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() >> other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot right shift a of value of type %s with a value of type %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     Value operator<(Value const &other) const {
@@ -445,32 +505,38 @@ struct Value {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() & other.value<int64_t>();
         } else if (is_type<bool>() && other.is_type<bool>()) {
-            return value<bool>() & other.value<bool>();
+            return value<bool>() && other.value<bool>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot binary-and a of value of type %s to a value of type %s") % other.type_name() % type_name() ).str())        
+        );
     }
 
     Value operator^(Value const &other) const {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() ^ other.value<int64_t>();
         } else if (is_type<bool>() && other.is_type<bool>()) {
-            return value<bool>() ^ other.value<bool>();
+            return static_cast<bool>(value<bool>() ^ other.value<bool>());
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot binary-xor a of value of type %s to a value of type %s") % other.type_name() % type_name() ).str())        
+        );
     }
 
     Value operator|(Value const &other) const {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
-            return value<int64_t>() & other.value<int64_t>();
+            return value<int64_t>() | other.value<int64_t>();
         } else if (is_type<bool>() && other.is_type<bool>()) {
-            return value<bool>() & other.value<bool>();
+            return value<bool>() || other.value<bool>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot binary-or a of value of type %s to a value of type %s") % other.type_name() % type_name() ).str())        
+        );
     }
 
     Value operator&&(Value const &other) const {
         if (is_type<bool>() && other.is_type<bool>()) {
-            return value<bool>() & other.value<bool>();
+            return value<bool>() && other.value<bool>();
         } else {
             return boolean() && other.boolean();
         }
@@ -478,7 +544,7 @@ struct Value {
 
     Value operator||(Value const &other) const {
         if (is_type<bool>() && other.is_type<bool>()) {
-            return value<bool>() | other.value<bool>();
+            return value<bool>() || other.value<bool>();
         } else {
             return boolean() || other.boolean();
         }
@@ -486,9 +552,9 @@ struct Value {
 
     Value operator_xor(Value const &other) const {
         if (is_type<bool>() && other.is_type<bool>()) {
-            return value<bool>() ^ other.value<bool>();
+            return static_cast<bool>(value<bool>() ^ other.value<bool>());
         } else {
-            return boolean() || other.boolean();
+            return boolean().operator_xor(other.boolean());
         }
     }
 
@@ -517,7 +583,9 @@ struct Value {
             return obj[key];
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot index of value of type %s with a value of type %s") % type_name() % other.type_name()).str())        
+        );
     }
 
     virtual Value &operator[](std::string const &other) {
@@ -532,9 +600,10 @@ struct Value {
             return obj[other];
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot get member .%s of type %s") % other % type_name()).str())        
+        );
     }
-
 };
 
 }

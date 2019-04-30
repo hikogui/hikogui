@@ -34,7 +34,7 @@ struct ASTBinaryOperator : ASTExpression {
     ASTExpression *left;
     ASTExpression *right;
 
-    ASTBinaryOperator(ASTLocation location, Operator op, ASTExpression *left, ASTExpression *right) : ASTExpression(location), op(op), left(left), right(right) {}
+    ASTBinaryOperator(Location location, Operator op, ASTExpression *left, ASTExpression *right) : ASTExpression(location), op(op), left(left), right(right) {}
 
     ~ASTBinaryOperator() {
         delete left;
@@ -69,29 +69,36 @@ struct ASTBinaryOperator : ASTExpression {
         return s + right->str();
     }
 
-    virtual Value execute(ExecutionContext *context) const override { 
-        switch (op) {
-        case Operator::MUL: return left->execute(context) * right->execute(context);
-        case Operator::DIV: return left->execute(context) / right->execute(context);
-        case Operator::MOD: return left->execute(context) % right->execute(context);
-        case Operator::ADD: return left->execute(context) + right->execute(context);
-        case Operator::SUB: return left->execute(context) - right->execute(context);
-        case Operator::SHL: return left->execute(context) << right->execute(context);
-        case Operator::SHR: return left->execute(context) >> right->execute(context);
-        case Operator::LT: return left->execute(context) < right->execute(context);
-        case Operator::GT: return left->execute(context) > right->execute(context);
-        case Operator::LE: return left->execute(context) <= right->execute(context);
-        case Operator::GE: return left->execute(context) >= right->execute(context);
-        case Operator::EQ: return left->execute(context) == right->execute(context);
-        case Operator::NE: return left->execute(context) != right->execute(context);
-        case Operator::AND: return left->execute(context) & right->execute(context);
-        case Operator::XOR: return left->execute(context) ^ right->execute(context);
-        case Operator::OR: return left->execute(context) | right->execute(context);
-        case Operator::LOGICAL_AND: return left->execute(context) && right->execute(context);
-        case Operator::LOGICAL_XOR: return left->execute(context).operator_xor(right->execute(context));
-        case Operator::LOGICAL_OR: return left->execute(context) || right->execute(context);
+    virtual Value execute(ExecutionContext *context) const override {
+        try {
+            switch (op) {
+            case Operator::MUL: return left->execute(context) * right->execute(context);
+            case Operator::DIV: return left->execute(context) / right->execute(context);
+            case Operator::MOD: return left->execute(context) % right->execute(context);
+            case Operator::ADD: return left->execute(context) + right->execute(context);
+            case Operator::SUB: return left->execute(context) - right->execute(context);
+            case Operator::SHL: return left->execute(context) << right->execute(context);
+            case Operator::SHR: return left->execute(context) >> right->execute(context);
+            case Operator::LT: return left->execute(context) < right->execute(context);
+            case Operator::GT: return left->execute(context) > right->execute(context);
+            case Operator::LE: return left->execute(context) <= right->execute(context);
+            case Operator::GE: return left->execute(context) >= right->execute(context);
+            case Operator::EQ: return left->execute(context) == right->execute(context);
+            case Operator::NE: return left->execute(context) != right->execute(context);
+            case Operator::AND: return left->execute(context) & right->execute(context);
+            case Operator::XOR: return left->execute(context) ^ right->execute(context);
+            case Operator::OR: return left->execute(context) | right->execute(context);
+            case Operator::LOGICAL_AND: return left->execute(context) && right->execute(context);
+            case Operator::LOGICAL_XOR: return left->execute(context).operator_xor(right->execute(context));
+            case Operator::LOGICAL_OR: return left->execute(context) || right->execute(context);
+            }
+            abort(); // Compiler doesn't recognize that switch is complete.
+        } catch (boost::exception &e) {
+            e << boost::errinfo_file_name(location.file->string())
+              << boost::errinfo_at_line(location.line)
+              << errinfo_at_column(location.column);
+            throw;
         }
-        abort(); // Compiler doesn't recognize that switch is complete.
     } 
 };
 
