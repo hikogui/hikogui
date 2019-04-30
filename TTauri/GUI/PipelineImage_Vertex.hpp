@@ -1,8 +1,9 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "PipelineImage_ImageLocation.hpp"
-
 #include "TTauri/geometry.hpp"
 #include <vulkan/vulkan.hpp>
 

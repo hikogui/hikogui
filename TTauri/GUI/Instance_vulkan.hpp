@@ -1,15 +1,9 @@
-//
-//  Device.hpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-04.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "Instance.hpp"
-
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI {

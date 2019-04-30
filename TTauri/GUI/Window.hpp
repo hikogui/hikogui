@@ -1,20 +1,12 @@
-//
-//  Window.hpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-04.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "View.hpp"
-
 #include "TTauri/utils.hpp"
 #include "TTauri/geometry.hpp"
-
 #include <unordered_set>
-
 #include <memory>
 #include <mutex>
 

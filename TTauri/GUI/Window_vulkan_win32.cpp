@@ -1,8 +1,8 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "Window_vulkan_win32.hpp"
-
 #include "Instance_vulkan.hpp"
-
 #include "TTauri/Application_win32.hpp"
 #include "TTauri/strings.hpp"
 

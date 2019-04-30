@@ -1,13 +1,12 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "Window_vulkan.hpp"
 #include "Instance_vulkan.hpp"
 #include "Device_vulkan.hpp"
-
 #include "TTauri/Logging.hpp"
 #include "TTauri/utils.hpp"
-
 #include <boost/numeric/conversion/cast.hpp>
-
 #include <vector>
 
 namespace TTauri::GUI {

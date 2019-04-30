@@ -1,10 +1,5 @@
-//
-//  ImageView.cpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-04.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "ImageView.hpp"
 #include "PipelineImage_Image.hpp"
@@ -12,9 +7,7 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 #include "PipelineImage_ImageLocation.hpp"
-
 #include "TTauri/Draw/PNG.hpp"
-
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 

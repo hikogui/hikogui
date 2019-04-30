@@ -1,16 +1,10 @@
-//
-//  Frame.hpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-04.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "PipelineImage_Delegate.hpp"
 #include "TTauri/geometry.hpp"
-
 #include <limits>
 #include <memory>
 #include <vector>

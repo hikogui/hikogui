@@ -1,16 +1,14 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "Device_vulkan.hpp"
-
 #include "Instance_vulkan.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window_vulkan.hpp"
 #include "vulkan_utils.hpp"
-
 #include "TTauri/Logging.hpp"
-
 #include <gsl/gsl>
-
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 

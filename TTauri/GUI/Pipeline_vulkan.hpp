@@ -1,13 +1,12 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "Pipeline.hpp"
-
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
-
 #include <filesystem>
-
 #include <string>
 #include <vector>
 

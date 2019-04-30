@@ -1,8 +1,8 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include <gtest/gtest.h>
-
 #include <Windows.h>
-
 #include "parser.hpp"
 
 using namespace std;

@@ -1,9 +1,10 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "TTauri/utils.hpp"
 #include "TTauri/Color.hpp"
-
 #include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <any>

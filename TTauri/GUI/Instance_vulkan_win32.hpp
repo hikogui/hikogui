@@ -1,7 +1,9 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
 #pragma once
 
 #include "Instance_vulkan.hpp"
-
 #include <gsl/gsl>
 
 namespace TTauri::GUI {

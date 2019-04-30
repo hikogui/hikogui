@@ -1,20 +1,13 @@
-//
-//  Device.hpp
-//  TTauri
-//
-//  Created by Tjienta Vara on 2019-02-04.
-//  Copyright © 2019 Pokitec. All rights reserved.
-//
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
 
 #include "Device.hpp"
 #include "Window.hpp"
-
 #include "TTauri/utils.hpp"
 #include <gsl/gsl>
 #include <boost/uuid/uuid.hpp>
-
 #include <memory>
 #include <mutex>
 #include <thread>
