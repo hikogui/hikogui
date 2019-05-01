@@ -85,6 +85,10 @@ struct ASTCall : ASTExpression {
         BOOST_THROW_EXCEPTION(NotImplementedError());
     } 
 
+    void executeStatement(ExecutionContext *context) const override {
+        auto result = execute(context);
+        context->currentObject() = context->currentObject() + result;
+    }
 };
 
 }
