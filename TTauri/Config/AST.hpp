@@ -5,6 +5,7 @@
 
 #include "ASTArray.hpp"
 #include "ASTAssignment.hpp"
+#include "ASTBinaryOperator.hpp"
 #include "ASTBoolean.hpp"
 #include "ASTCall.hpp"
 #include "ASTColor.hpp"
@@ -18,8 +19,8 @@
 #include "ASTNode.hpp"
 #include "ASTNull.hpp"
 #include "ASTObject.hpp"
-#include "ASTPath.hpp"
+#include "ASTRootObject.hpp"
 #include "ASTString.hpp"
 #include "ASTUnaryOperator.hpp"
-#include "ASTBinaryOperator.hpp"
+#include "ASTVariableObject.hpp"
 

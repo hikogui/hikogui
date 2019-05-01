@@ -1,3 +1,5 @@
 
 a = #012345;
-b = #6789abcd;
+
+// Conversion from/to sRGB/XYZ is not perfect. Not all values will work.
+b = #6889abcd;

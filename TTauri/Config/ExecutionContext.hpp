@@ -14,6 +14,7 @@ struct ObjectStackItem {
 };
 
 struct ExecutionContext {
+    Value _variableObject = Object{};
     std::vector<ObjectStackItem> objectStack;
 
     void pushObject() {
@@ -37,6 +38,16 @@ struct ExecutionContext {
         } else {
             return item.object;
         }
+    }
+
+    Value &rootObject() {
+        auto &item = objectStack.front();
+
+        return item.object;
+    }
+
+    Value &variableObject() {
+        return _variableObject;
     }
 };
 

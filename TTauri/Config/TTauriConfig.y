@@ -45,7 +45,6 @@
 %token <integer> T_INTEGER
 %token <real> T_FLOAT
 %token <string> T_STRING
-%token <string> T_PATH
 %token <integer> T_COLOR
 
 // Same precedence order as C++ operators.
@@ -95,7 +94,6 @@ expression_without_array:
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
     | T_COLOR                                                       { $$ = NEW_NODE(ASTColor, @1, static_cast<uint32_t>($1)); }
-    | T_PATH                                                        { $$ = NEW_NODE(ASTPath, @1, $1); }
     | "true"                                                        { $$ = NEW_NODE(ASTBoolean, @1, true); }
     | "false"                                                       { $$ = NEW_NODE(ASTBoolean, @1, false); }
     | "null"                                                        { $$ = NEW_NODE(ASTNull, @1); }
@@ -103,6 +101,8 @@ expression_without_array:
     | T_IDENTIFIER                                                  { $$ = NEW_NODE(ASTName, @1, $1); }
     | '~' expression                                                { $$ = NEW_UNARY_OPERATOR(NOT, @1, $2); }
     | '-' expression %prec UMINUS                                   { $$ = NEW_UNARY_OPERATOR(NEG, @1, $2); }
+    | '.' T_IDENTIFIER                                              { $$ = NEW_NODE(ASTMember, @1, new TTauri::Config::ASTRootObject({context->file, @1.first_line, @1.first_column}), $2); }
+    | '$' T_IDENTIFIER                                              { $$ = NEW_NODE(ASTMember, @1, new TTauri::Config::ASTVariableObject({context->file, @1.first_line, @1.first_column}), $2); }
     | "not" expression                                              { $$ = NEW_UNARY_OPERATOR(LOGICAL_NOT, @1, $2); }
     | expression '=' expression                                     { $$ = NEW_NODE(ASTAssignment, @2, $1, $3); }
     | expression '.' T_IDENTIFIER                                   { $$ = NEW_NODE(ASTMember, @2, $1, $3); }

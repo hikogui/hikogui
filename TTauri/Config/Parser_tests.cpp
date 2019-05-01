@@ -8,56 +8,108 @@
 using namespace std;
 using namespace TTauri::Config;
 TEST(TTauriConfigParser, EmptyFile) {
-    auto o = parseFile("Config/TestFiles/empty.txt");
-    ASSERT_EQ(o->str(), "{}");
-    ASSERT_EQ(o->execute().str(), "{}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/empty.txt"));
+        ASSERT_EQ(o->str(), "{}");
+        ASSERT_EQ(o->execute().str(), "{}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Assignments) {
-    auto o = parseFile("Config/TestFiles/assignments.txt");
-    ASSERT_EQ(o->str(), "{foo:\"Hello World\",bar:1}");
-    ASSERT_EQ(o->execute().str(), "{bar:1,foo:\"Hello World\"}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/assignments.txt"));
+        ASSERT_EQ(o->str(), "{foo:\"Hello World\",bar:1}");
+        ASSERT_EQ(o->execute().str(), "{bar:1,foo:\"Hello World\"}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Integers) {
-    auto o = parseFile("Config/TestFiles/integers.txt");
-    ASSERT_EQ(o->str(), "{a:0,b:1,c:10,d:2,e:8,f:10,g:16,h:0,i:-1,j:-10,k:-2,l:-8,m:-10,n:-16,o:-10,p:-2,q:-8,r:-10,s:-16}");
-    ASSERT_EQ(o->execute().str(), "{a:0,b:1,c:10,d:2,e:8,f:10,g:16,h:0,i:-1,j:-10,k:-2,l:-8,m:-10,n:-16,o:-10,p:-2,q:-8,r:-10,s:-16}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/integers.txt"));
+        ASSERT_EQ(o->str(), "{a:0,b:1,c:10,d:2,e:8,f:10,g:16,h:0,i:-1,j:-10,k:-2,l:-8,m:-10,n:-16,o:-10,p:-2,q:-8,r:-10,s:-16}");
+        ASSERT_EQ(o->execute().str(), "{a:0,b:1,c:10,d:2,e:8,f:10,g:16,h:0,i:-1,j:-10,k:-2,l:-8,m:-10,n:-16,o:-10,p:-2,q:-8,r:-10,s:-16}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Floats) {
-    auto o = parseFile("Config/TestFiles/floats.txt");
-    ASSERT_EQ(o->str(), "{a:0.,b:-0.,c:1.,d:-1.,e:0.,f:-0.,g:0.1,h:-0.1,i:0.,j:-0.,k:1.,l:-1.}");
-    ASSERT_EQ(o->execute().str(), "{a:0.,b:-0.,c:1.,d:-1.,e:0.,f:-0.,g:0.1,h:-0.1,i:0.,j:-0.,k:1.,l:-1.}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/floats.txt"));
+        ASSERT_EQ(o->str(), "{a:0.,b:-0.,c:1.,d:-1.,e:0.,f:-0.,g:0.1,h:-0.1,i:0.,j:-0.,k:1.,l:-1.}");
+        ASSERT_EQ(o->execute().str(), "{a:0.,b:-0.,c:1.,d:-1.,e:0.,f:-0.,g:0.1,h:-0.1,i:0.,j:-0.,k:1.,l:-1.}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Colors) {
-    auto o = parseFile("Config/TestFiles/colors.txt");
-    ASSERT_EQ(o->str(), "{a:#012345ff,b:#6789abcd}");
-    ASSERT_EQ(o->execute().str(), "{a:#012345ff,b:#6789abcd}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/colors.txt"));
+
+        auto parse_r = "{a:#012345ff,b:#6889abcd}"s;
+        ASSERT_EQ(o->str(), parse_r);
+
+        auto exec_r = "{a:#012345ff,b:#6889abcd}"s;
+        ASSERT_EQ(o->execute().str(), exec_r);
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Booleans) {
-    auto o = parseFile("Config/TestFiles/booleans.txt");
-    ASSERT_EQ(o->str(), "{a:true,b:false,c:null}");
-    ASSERT_EQ(o->execute().str(), "{a:true,b:false,c:null}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/booleans.txt"));
+        ASSERT_EQ(o->str(), "{a:true,b:false,c:null}");
+        ASSERT_EQ(o->execute().str(), "{a:true,b:false,c:null}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Arrays) {
-    auto o = parseFile("Config/TestFiles/arrays.txt");
-    ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2],a[0]:3}");
-    ASSERT_EQ(o->execute().str(), "{a:[3],bar:[1],baz:[1,2],bob:[1,2],foo:[]}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/arrays.txt"));
+        ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2],a[0]:3}");
+        ASSERT_EQ(o->execute().str(), "{a:[3],bar:[1],baz:[1,2],bob:[1,2],foo:[]}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, Objects) {
-    auto o = parseFile("Config/TestFiles/objects.txt");
-    ASSERT_EQ(o->str(), "{foo:{a:1,b:2},bar.baz:5,[hello],world:\"World\",[z],w:3}");
-    ASSERT_EQ(o->execute().str(), "{bar:{baz:5},foo:{a:1,b:2},hello:{world:\"World\"},z:{w:3}}");
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/objects.txt"));
+        ASSERT_EQ(o->str(), "{foo:{a:1,b:2},bar.baz:5,[hello],world:\"World\",[z],w:3}");
+        ASSERT_EQ(o->execute().str(), "{bar:{baz:5},foo:{a:1,b:2},hello:{world:\"World\"},z:{w:3}}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
 }
 
 TEST(TTauriConfigParser, IntegerExpressions) {
     try {
-        auto o = parseFile("Config/TestFiles/integer_expressions.txt");
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/integer_expressions.txt"));
 
         auto parse_r = "{a:35,b:3,c:a+b,d:a-3,e:35*b,f:35/3,g:35%3,h:35&3,i:35|3,j:35^3,k:35<<3,l:35>>3,"s + 
                        "m:35<3,n:35>3,o:35<=3,p:35>=3,q:35==3,r:35!=3,s:35 and 3,t:35 or 3,u:35 xor 3,v:~35,w:-35,x:not 35,y:--35}"s;
@@ -75,7 +127,7 @@ TEST(TTauriConfigParser, IntegerExpressions) {
 
 TEST(TTauriConfigParser, StringExpressions) {
     try {
-        auto o = parseFile("Config/TestFiles/string_expressions.txt");
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/string_expressions.txt"));
 
         auto parse_r = "{a:\"Hello\",b:\"World\",c:a+b,d:a<b,e:a>b,f:a<=b,g:a>=b,h:a==b,i:a!=b,j:a and b,"s +
             "k:a or b,l:a xor b,m:not a,n:not \"\",o:a and \"\",p:a or \"\",q:a xor \"\"}"s;
@@ -93,7 +145,7 @@ TEST(TTauriConfigParser, StringExpressions) {
 
 TEST(TTauriConfigParser, BooleanExpressions) {
     try {
-        auto o = parseFile("Config/TestFiles/boolean_expressions.txt");
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/boolean_expressions.txt"));
 
         auto parse_r =
             "{a:true&true,b:true&false,c:false&true,d:false&false,e:true|true,f:true|false,"s +
@@ -120,7 +172,7 @@ TEST(TTauriConfigParser, BooleanExpressions) {
 
 TEST(TTauriConfigParser, FloatExpressions) {
     try {
-        auto o = parseFile("Config/TestFiles/float_expressions.txt");
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/float_expressions.txt"));
 
         auto parse_r =
             "{a:35.,b:3.,ac:a+b,ad:a-b,ae:a*b,af:a/b,ag:a%b,"s +
@@ -154,4 +206,51 @@ TEST(TTauriConfigParser, FloatExpressions) {
     }
 }
 
+TEST(TTauriConfigParser, IncludeFiles) {
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/includer.txt"));
+
+        auto parse_r = "{include(\"included.txt\"),a:{include(\"included.txt\")},[b],include(\"included.txt\")}"s;
+        ASSERT_EQ(o->str(), parse_r);
+
+        auto exec_r = "{a:{foo:\"bar\"},b:{foo:\"bar\"},foo:\"bar\"}"s;
+        ASSERT_EQ(o->execute().str(), exec_r);
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
+}
+
+TEST(TTauriConfigParser, Variables) {
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/variables.txt"));
+
+        auto parse_r = "{$.a:3,$.b.foo:5,c:$.a,d:$.b}"s;
+        ASSERT_EQ(o->str(), parse_r);
+
+        auto exec_r = "{c:3,d:{foo:5}}"s;
+        ASSERT_EQ(o->execute().str(), exec_r);
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
+}
+
+TEST(TTauriConfigParser, RootAccess) {
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/root_access.txt"));
+
+        auto parse_r = "{a:3,b:{foo:/.a,/.a:5,bar:/.a},/.b.baz:/.b.foo}"s;
+        ASSERT_EQ(o->str(), parse_r);
+
+        auto exec_r = "{a:5,b:{bar:5,baz:3,foo:3}}"s;
+        ASSERT_EQ(o->execute().str(), exec_r);
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
+}
 

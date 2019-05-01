@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "AST.hpp"
+#include "ASTObject.hpp"
 #include <filesystem>
 #include <boost/exception/all.hpp>
 
 namespace TTauri::Config {
 
 
-ASTObject *parseFile(const std::filesystem::path &path);
+ASTObject *parseConfigFile(const std::filesystem::path &path);
 
 }
 

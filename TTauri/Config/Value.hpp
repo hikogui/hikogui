@@ -15,6 +15,7 @@
 #include <cmath>
 #include <filesystem>
 #include <typeinfo>
+#include <string>
 
 namespace TTauri::Config {
 
@@ -102,7 +103,7 @@ inline CompareResult compare(double l, double r)
 struct Value {
     std::any intrinsic;
 
-    Value() : intrinsic({}) {}
+    Value() : intrinsic(Undefined{}) {}
 
     Value(std::any value) : intrinsic(value) {
         if (!is_valid_type()) {
@@ -148,8 +149,17 @@ struct Value {
     }
 
     bool is_valid_type() const {
-        return is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
-            is_type<Color_sRGB>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+        return is_type<void>() || is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
+            is_type<Color_XYZ>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+    }
+
+    template<typename T>
+    bool is_promotable_to() const {
+        return (
+            (typeid(T) == typeid(double) && is_type<uint64_t>()) ||
+            (typeid(T) == typeid(std::filesystem::path) && is_type<std::string>()) ||
+            is_type<T>()
+        );
     }
 
     template<typename T>
@@ -171,8 +181,52 @@ struct Value {
         }
     }
 
+    template<>
+    std::filesystem::path value() const {
+        if (is_type<std::string>()) {
+            return std::filesystem::path{std::any_cast<std::string>(intrinsic)};
+        } else {
+            return std::any_cast<std::filesystem::path>(intrinsic);
+        }
+    }
+
+    template<>
+    std::vector<std::any> value() const {
+        return std::any_cast<std::vector<std::any>>(any());
+    }
+
+    template<>
+    std::map<std::string, std::any> value() const {
+        return std::any_cast<std::map<std::string, std::any>>(any());
+    }
+
     std::string type_name() const {
         return type().name();
+    }
+
+    Value const &get(std::vector<std::string> const &key) {
+        if (is_type<Object>()) {
+            size_t const index = std::stoll(key.at(0));
+            auto next = (*this)[index];
+            return next.get(std::vector<std::string>{key.begin() + 1, key.end()});
+
+        } else if (is_type<Array>()) {
+            auto const index = key.at(0);
+            auto next = (*this)[index];
+            return next.get(std::vector<std::string>{key.begin() + 1, key.end()});
+
+        } else if (key.size() > 0) {
+            BOOST_THROW_EXCEPTION(InvalidOperationError()
+                << errinfo_message((boost::format("type %s does not support get() with '%s'")
+                    % type_name() % key.at(0)).str())        
+            );
+        } else {
+            return *this;
+        }
+    }
+
+    Value const &get(std::string const &key) {
+        return get(split(key, '.'));
     }
 
     /*! Return a string representation of the value.
@@ -192,8 +246,8 @@ struct Value {
             } else {
                 return s;
             }
-        } else if (is_type<Color_sRGB>()) {
-            return value<Color_sRGB>().str();
+        } else if (is_type<Color_XYZ>()) {
+            return color_cast<Color_sRGB>(value<Color_XYZ>()).str();
         } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
         } else if (is_type<std::filesystem::path>()) {
@@ -263,8 +317,8 @@ struct Value {
             return value<int64_t>() != 0;
         } else if (is_type<double>()) {
             return value<double>() != 0.0;
-        } else if (is_type<Color_sRGB>()) {
-            return value<Color_sRGB>().a() != 0.0; // Not transparent
+        } else if (is_type<Color_XYZ>()) {
+            return value<Color_XYZ>().a() != 0.0; // Not transparent
         } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
         } else if (is_type<std::filesystem::path>()) {
@@ -422,9 +476,7 @@ struct Value {
     }
 
     Value operator+(Value const &other) const {
-        if (is_type<std::filesystem::path>() && other.is_type<std::string>()) {
-            return value<std::filesystem::path>() / other.value<std::string>();
-        } else if (is_type<std::filesystem::path>() && other.is_type<std::filesystem::path>()) {
+        if (is_type<std::filesystem::path>() || other.is_type<std::filesystem::path>()) {
             return value<std::filesystem::path>() / other.value<std::filesystem::path>();
         } else if (is_type<std::string>() && other.is_type<std::string>()) {
             return value<std::string>() + other.value<std::string>();
@@ -602,6 +654,26 @@ struct Value {
 
         BOOST_THROW_EXCEPTION(InvalidOperationError()
             << errinfo_message((boost::format("Cannot get member .%s of type %s") % other % type_name()).str())        
+        );
+    }
+
+    virtual Value &operator[](size_t const index) {
+        if (is_type<Undefined>()) {
+            // When accessing a name on an undefined it means we need replace it with an empty object.
+            intrinsic = Array{};
+        }
+
+        if (is_type<Array>()) {
+            auto &_array = value<Array>();
+            while (index >= _array.size()) {
+                _array.emplace_back(Undefined{});
+            }
+
+            return _array.at(index);
+        }
+
+        BOOST_THROW_EXCEPTION(InvalidOperationError()
+            << errinfo_message((boost::format("Cannot get item at index %i of type %s") % index % type_name()).str())        
         );
     }
 };

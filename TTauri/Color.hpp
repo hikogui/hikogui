@@ -3,6 +3,7 @@
 
 #pragma once
 
+#define GLM_SWIZZLE 
 #include <glm/glm.hpp>
 #include <boost/format.hpp>
 #include <string>
@@ -34,7 +35,11 @@ struct Color {
 
     glm::vec4 value;
 
+    Color() : value({0.0, 0.0, 0.0, 0.0}) {}
+
     Color(glm::vec4 value) : value(value) {}
+
+    Color(const Color &color) : value(color.value) {} 
 
     /*! Convert a uint32_t value to a colour.
      * The uint32_t value is split into 4 bytes. Most-to-leas significant byte Red, Green, Blue, Alpha component.
@@ -46,6 +51,11 @@ struct Color {
             static_cast<float>((rgba >> 8) & 0xff) / 255.0,
             static_cast<float>(rgba & 0xff) / 255.0
         }) {}
+
+    Color const &operator=(const Color &color) {
+        value = color.value;
+        return *this;
+    }
 
     float r() const { return value.r; }
     float g() const { return value.g; }
@@ -71,9 +81,9 @@ struct Color {
             return *this;
         } else {
             return {{
-                Color<COLORSPACE>::toLinear(value.r),
-                Color<COLORSPACE>::toLinear(value.g),
-                Color<COLORSPACE>::toLinear(value.b),
+                Color::toLinear(value.r),
+                Color::toLinear(value.g),
+                Color::toLinear(value.b),
                 value.a
             }};
         }
@@ -82,9 +92,9 @@ struct Color {
     Color<COLORSPACE, false> toGamma() const {
         if constexpr (LINEAR) {
             return {{
-                Color<COLORSPACE>::toGamma(value.r),
-                Color<COLORSPACE>::toGamma(value.g),
-                Color<COLORSPACE>::toGamma(value.b),
+                Color::toGamma(value.r),
+                Color::toGamma(value.g),
+                Color::toGamma(value.b),
                 value.a
             }};
         } else {
@@ -92,34 +102,46 @@ struct Color {
         }
     }
 
+    glm::vec4 transform(glm::mat3x3 mat) const {
+        auto rgb = value.rgb();
+        auto rgb_ = rgb * mat;
+        return {rgb_, value.a};
+    }
+
     Color<ColorSpace::XYZ, true> toXYZ() const {
         auto tmpLinear = toLinear();
-        switch (COLORSPACE) {
-        case ColorSpace::sRGB: return {tmpLinear.value * matrix_sRGB_to_XYZ};
-        case ColorSpace::XYZ: return *this;
+        if constexpr (COLORSPACE == ColorSpace::sRGB) {
+            return {tmpLinear.transform(matrix_sRGB_to_XYZ)};
+        } else if constexpr (COLORSPACE == ColorSpace::XYZ) {
+            return *this;
         }
     }
 
-    static float toLinear(float x) {
-        switch constexpr (COLORSPACE) {
-        case ColorSpace::sRGB: return x <= 0.04045 ? (x / 12.92) : powf((x + 0.055) / 1.055, 2.4);
-        case ColorSpace::XYZ: return x;
+    static double toLinear(double x) {
+        if constexpr (COLORSPACE == ColorSpace::sRGB) {
+            return x <= 0.04045 ? (x / 12.92) : pow((x + 0.055) / 1.055, 2.4);
+        } else if constexpr (COLORSPACE == ColorSpace::XYZ) {
+            case ColorSpace::XYZ: return x;
         }
     }
 
-    static float toGamma(float x) {
-        switch constexpr (COLORSPACE) {
-        case ColorSpace::sRGB: return u <= 0.0031308 ? (x * 12.92) : (powf(x, 1.0 / 2.4) * 1.055) - 0.055;
-        case ColorSpace::XYZ: return x;
+    static double toGamma(double x) {
+        if constexpr (COLORSPACE == ColorSpace::sRGB) {
+            return x <= 0.0031308 ? (x * 12.92) : (pow(x, 1.0 / 2.4) * 1.055) - 0.055;
+        } else if constexpr (COLORSPACE == ColorSpace::XYZ) {
+            return x;
         }
     }
 };
 
-template<typename T, ColorSpace TO_COLORSPACE, bool TO_LINEAR>
-Color<TO_COLORSPACE, TO_LINEAR> color_cast(T from)
+using Color_sRGB = Color<ColorSpace::sRGB, false>;
+using Color_XYZ = Color<ColorSpace::XYZ, true>;
+
+template<ColorSpace TO_COLORSPACE, bool TO_LINEAR, typename U>
+Color<TO_COLORSPACE, TO_LINEAR> colorspace_cast(U from)
 {
-    if constexpr (TO_COLORSPACE == from.colorSpace) {
-        if constexpr (TO_LINEAR == from.linear) {
+    if constexpr (TO_COLORSPACE == U::colorSpace) {
+        if constexpr (TO_LINEAR == U::linear) {
             return from;
         } else if constexpr (TO_LINEAR) {
             return from.toLinear();
@@ -131,9 +153,10 @@ Color<TO_COLORSPACE, TO_LINEAR> color_cast(T from)
         auto tmpXYZ = from.toXYZ();
 
         Color<TO_COLORSPACE, true> tmpLinear;
-        switch constexpr (TO_COLORSPACE) {
-        case ColorSpace::sRGB: tmpLinear = {tmpXYZ.value * matrix_XYZ_to_sRGB};
-        case ColorSpace::XYZ: tmpLinear = tmpXYZ;
+        if constexpr (TO_COLORSPACE == ColorSpace::sRGB) {
+            tmpLinear = {tmpXYZ.transform(matrix_XYZ_to_sRGB)};
+        } else if constexpr (TO_COLORSPACE == ColorSpace::XYZ) {
+            tmpLinear = tmpXYZ;
         }
 
         if constexpr (TO_LINEAR) {
@@ -144,7 +167,11 @@ Color<TO_COLORSPACE, TO_LINEAR> color_cast(T from)
     }
 }
 
-using Color_sRGB = Color<ColorSpace::sRGB, false>;
+template<typename T, typename U>
+T color_cast(U from) {
+    return colorspace_cast<T::colorSpace, T::linear>(from);
+}
+
 
 }
 

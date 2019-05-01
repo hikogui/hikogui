@@ -7,6 +7,7 @@
 #include "ASTExpressions.hpp"
 #include "ASTMember.hpp"
 #include "ASTName.hpp"
+#include "TTauri/utils.hpp"
 #include <vector>
 
 namespace TTauri::Config {
@@ -81,13 +82,32 @@ struct ASTCall : ASTExpression {
         return s + ")";
     }
 
-    Value execute(ExecutionContext *context) const override { 
-        BOOST_THROW_EXCEPTION(NotImplementedError());
+    Value execute(ExecutionContext *context) const override {
+        auto const values = transform<std::vector<Value>>(arguments, [context](auto const x) {
+            return x->execute(context);
+        });
+
+        return object->executeCall(context, values);
     } 
 
     void executeStatement(ExecutionContext *context) const override {
         auto result = execute(context);
-        context->currentObject() = context->currentObject() + result;
+        try {
+            auto &lv = context->currentObject();
+            auto v = lv;
+
+            if (v.is_type<Undefined>()) {
+                lv = result;
+            } else {
+                lv = v + result;
+            }
+        } catch (boost::exception &e) {
+            e << boost::errinfo_file_name(location.file->string())
+                << boost::errinfo_at_line(location.line)
+                << errinfo_at_column(location.column);
+            throw;
+        }
+
     }
 };
 

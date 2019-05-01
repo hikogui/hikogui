@@ -56,7 +56,7 @@ WS              [ \t\f\r\n]
 "false"                     return TTauriConfig_yyfind_token(yytext);
 "null"                      return TTauriConfig_yyfind_token(yytext);
 
-[_$a-zA-Z][_$a-zA-Z0-9]*    yylval->string = strdup(yytext); return T_IDENTIFIER;
+[_a-zA-Z][_a-zA-Z0-9]*      yylval->string = strdup(yytext); return T_IDENTIFIER;
 
 -0[bB]{BIN}+                yylval->integer = TTauri::Config::parseInteger(&yytext[3], 2, true); return T_INTEGER;
 -0[oO]{OCT}+                yylval->integer = TTauri::Config::parseInteger(&yytext[3], 8, true); return T_INTEGER;
@@ -75,10 +75,6 @@ WS              [ \t\f\r\n]
 -?{DEC}+"."{DEC}*           yylval->real = TTauri::Config::parseFloat(yytext); return T_FLOAT;
 
 \"({STR}|{STRDQ})*?\"       yylval->string = TTauri::Config::parseString(yytext); return T_STRING;
-"<".*?">"                   yylval->string = TTauri::Config::parseString(yytext); return T_PATH;
-
-[][)(}{.~*/%+<>&^|-]        return yytext[0];
-
 
 "//".*?\n                   ; // Comment is ignored.
 {WS}                        ; // Whitespace is ignored.

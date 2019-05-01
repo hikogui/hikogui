@@ -61,6 +61,22 @@ inline typename T::value_type pop_back(T &v)
     return x;
 }
 
+inline std::vector<std::string> split(std::string haystack, char needle)
+{
+    std::vector<std::string> r;
+
+    size_t offset = 0;
+    size_t pos = haystack.find('.', offset);
+    while (pos != haystack.npos) {
+        r.push_back(haystack.substr(offset, pos - offset));
+
+        offset = pos + 1;
+        pos = haystack.find('.', offset);
+    }
+
+    return r;
+}
+
 template<typename T, typename U>
 inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 {

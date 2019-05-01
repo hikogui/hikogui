@@ -11,12 +11,12 @@
 namespace TTauri::Config {
 
 struct ASTColor : ASTExpression {
-    Color_sRGB value;
+    Color_XYZ value;
 
-    ASTColor(Location location, uint32_t value) : ASTExpression(location), value(value) {}
+    ASTColor(Location location, uint32_t value) : ASTExpression(location), value(color_cast<Color_XYZ>(Color_sRGB(value))) {}
 
     std::string str() const override {
-        return value.str();
+        return color_cast<Color_sRGB>(value).str();
     }
 
     Value execute(ExecutionContext *context) const override { 

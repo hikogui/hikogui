@@ -25,7 +25,7 @@ namespace TTauri::Config {
 using namespace std;
 
 
-ASTObject *parseFile(const std::filesystem::path &path)
+ASTObject *parseConfigFile(const std::filesystem::path &path)
 {
     yyscan_t scanner;
     FILE *file;
@@ -33,8 +33,8 @@ ASTObject *parseFile(const std::filesystem::path &path)
     ParseContext context(path);
 
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
-        BOOST_THROW_EXCEPTION(CanNotOpenFile()
-            << boost::errinfo_file_name(context.errorLocation.file->string())
+        BOOST_THROW_EXCEPTION(IOError()
+            << boost::errinfo_file_name(path.string())
         );
     }
 
@@ -48,8 +48,8 @@ ASTObject *parseFile(const std::filesystem::path &path)
 
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {
-        BOOST_THROW_EXCEPTION(CanNotCloseFile()
-            << boost::errinfo_file_name(context.errorLocation.file->string())
+        BOOST_THROW_EXCEPTION(IOError()
+            << boost::errinfo_file_name(path.string())
         );
     }
 

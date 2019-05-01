@@ -47,173 +47,230 @@ c = -1.;    // Assign -1.0
 
 ### String
 
+```
+a = "hello";
+b = "foo \"bar\"";
+c = "foo\nbar";
+```
+
 ### Path
+There is no direct path literal, a path can be created by using the functions `path()` and `cwd()`.
+Concatenating path objects with strings will result in a new path.
 
 ### Color
+```
+a = #123456;
+b = #123456ff;
+```
 
 ### Array
-
+```
+a = [];
+b = [1, 2, 3];
+c = [1, 2, 3,];
+```
 
 ### Object
-
-
-
-
-
-
-## Examples
-
 ```
-foo = 12;
-
-baz = {
-    name: "Hello"
-};
-
-foo.bar: 42; // Error, foo is not an object.
-
-baz.value: "World";
-
-[test]
-// Creates object test, with foo = 13 key-value.
-foo: 13;
-
-// Includes the object from otherfile.txt and merge with the test object.
-// Calls the include method on the test object.
-include("otherfile.txt");
-
-// Select the root object
-[]
-
-// Add more to the root object and calculate foo + 5.
-more: foo + 5;
-
-intlist: [1, 2, 3, 4];
-
-// Insert 100 in front of intlist.
-intlist.add(0, 100);
-
-// Append 5 after intlist.
-intlist.add(5);
-
-// Insert 6 before the last entry.
-intlist.add(-1, 6);
-
-// Remove the 4th entry.
-intlist.remove(3);
-
-// Remove the last entry.
-intlist.remove();
-
-// Remove the last entry.
-intlist.remove(-1);
-
-// Delete the intlist key from the root object.
-// Calls the delete object from the root object.
-delete("intlist");
+a = 5; // Assign 5 to the root object.
+b = {
+    foo: 1; // Asign 1 to foo in the object b.
+    include("bar.txt") // Add the root object parsed from "bar.txt" into object b.
+}
 ```
+## Operators
+
+ | operator           | description                                                               |
+ |:------------------ |:------------------------------------------------------------------------- |
+ | ~ int              | Invert all bits of the int                                                |
+ | - int              | Negate the int                                                            |
+ | - float            | Negate float                                                              |
+ | . id               | Access member of root object                                              |
+ | $ id               | Access variable                                                           |
+ | not any            | Invert boolean value, almost every type can be represented as a bool      |
+ | lvalue = any       | Asign an expression to the left side. May be used inside an expression itself. It is not allowed to assign Undefined values |
+ | object . id        | Access member of object                                                   |
+ | int * int          | Multiply integers                                                         |
+ | float * float      | Multiply floats                                                           |
+ | int / int          | Divide integers                                                           |
+ | float / float      | Divide floats                                                             |
+ | int % int          | Take modulo of integers                                                   |
+ | float % float      | Take modulo of floats                                                     |
+ | int + int          | Add integers                                                              |
+ | float + float      | Add floats                                                                |
+ | string + string    | Concatonate strings                                                       |
+ | path + path        | Concatonate path and string into a path.                                  |
+ | int - int          | Subtract integers                                                         |
+ | float - float      | Subtract floats                                                           |
+ | int << int         | Shift left integer                                                        |
+ | int >> int         | Shift right integer                                                       |
+ | float < float      | Compare floats using epsilon                                              |
+ | float > float      | Compare floats using epsilon                                              |
+ | float <= float     | Compare floats using epsilon                                              |
+ | float >= float     | Compare floats using epsilon                                              |
+ | float != float     | Compare floats using epsilon                                              |
+ | float == float     | Compare floats using epsilon                                              |
+ | string < string    | Compare string lexographically                                            |
+ | string > string    | Compare string lexographically                                            |
+ | string <= string   | Compare string lexographically                                            |
+ | string >= string   | Compare string lexographically                                            |
+ | string != string   | Compare string lexographically                                            |
+ | string == string   | Compare string lexographically                                            |
+ | boolean < boolean  | Compare booleans                                                          |
+ | boolean > boolean  | Compare booleans                                                          |
+ | boolean <= boolean | Compare booleans                                                          |
+ | boolean >= boolean | Compare booleans                                                          |
+ | boolean != boolean | Compare booleans                                                          |
+ | boolean == boolean | Compare booleans                                                          |
+ | int & int          | AND all bits together of two integers                                     |
+ | int \| int         | OR all bits together of two integers                                      |
+ | int ^ int          | XOR all bits together of two integers                                     |
+ | boolean & boolean  | Boolean AND                                                               |
+ | boolean \| boolean | Boolean OR                                                                |
+ | boolean ^ boolean  | Boolean XOR                                                               |
+ | any and any        | AND two boolean values, almost every type can be represented as a boolean |
+ | any or any         | OR two boolean values, almost every type can be represented as a boolean  |
+ | any xor any        | XOR two boolean values, almost every type can be represented as a boolean |
+ | array [ int ]      | Index and array by an integer                                             |
+ | any ( any* )       | Call a function on an object with any argument                            |
+
+`int` and `string` are promoted to `double` and `path` to match operands on both side of the operator.
+
+## Functions
+
+### include(path|string)
+Include a file relative to the configuration file into the current object.
+
+### path(path|string)
+Transform string to a path relative to the configuration file.
+An absolute path as argument remains absolute.
+
+### cwd(path|string)
+Transform string to a path relative to the current working directory.
+An absolute path as argument is not allowed.
 
 
 ## Lexicon
 ```
-bindigit := '[01_]';
-decdigit := bindigit | '[23456789]';
-hexdigit := decdigit | '[aAbBcCdDeEfF]';
+BIN             [_01]
+OCT             [_0-7]
+DEC             [_0-9]
+HEX             [_0-9a-fA-F]
 
-string-char := '[^"\n]';
+STR             [^"\n\r]
+STRDQ           "\\\""
+WS              [ \t\f\r\n]
 
-white-space-char := '[ \n\t\r]';
+%%
 
-escaped-double-quote := '\\"';
+[=:]                        '='
+[;,]                        ';'
 
-// identifiers starting with '$' will be deleted after parsing of the
-// configuration file has finished and can be seen as temporary variables.
-identifier := '[a-zA-Z_$][a-zA-Z0-9_]*'
+[_a-zA-Z][_a-zA-Z0-9]*      T_IDENTIFIER;
 
-unsigned :=
-    '0[dD]'? decdigit+ |
-	'0[xX]' hexdigit+ |
-	'0[bB]' bindigit+;
+-0[bB]{BIN}+                T_INTEGER;
+-0[oO]{OCT}+                T_INTEGER;
+-0[dD]{DEC}+                T_INTEGER;
+-0[xX]{HEX}+                T_INTEGER;
+0[bB]{BIN}+                 T_INTEGER;
+0[oO]{OCT}+                 T_INTEGER;
+0[dD]{DEC}+                 T_INTEGER;
+0[xX]{HEX}+                 T_INTEGER;
+-{DEC}+                     T_INTEGER;
+{DEC}+                      T_INTEGER;
+#{HEX}{6}                   T_COLOR;
+#{HEX}{8}                   T_COLOR;
 
-int := '-'? unsigned;
+-?"."{DEC}+                 T_FLOAT;
+-?{DEC}+"."{DEC}*           T_FLOAT;
 
-float :=
-	int '.' unsigned ('[eE]' int)? |
-	int '.' ('[eE]' int)? |
-	'-'? '.' unsigned ('[eE]' int)?;
+\"({STR}|{STRDQ})*?\"       T_STRING;
 
-color := '#' (hexdigit{6} | hexdigit{8});
-
-boolean := 'true' | 'false';
-
-null := 'null';
-
-string := '"' (string-char | escaped-double-quote)*? '"';
-
-path := '<' .*? '>';
-
-comment := '//.*?\n';
-
-binary-operator := '==|!=|<=|>=|<>|and|or|not|xor|[+-*/%~&.|]';
-
-AS := '[=:]'
-SC := '[;,]';
-
-```
+"//".*?\n                   ; // Comment is ignored.
+{WS}                        ; // Whitespace is ignored.
 
 ## Syntax
 Ignores comment and white-space-char tokens.
 
 ```
-empty := ;
+array:
+      '[' ']'
+    | '[' expressions ']'
+    | '[' expressions ';' ']'
+    ;
 
-section-statement :=
-	'[' expression ']' |		  				// Set prefix key from this point onwards the current object.
-	'[]';			     						// Unset prefix key from this point onwards the current object.
+object:
+      '{' '}'
+    | '{' expressions '}'
+    | '{' expressions ';' '}'
+    ;
 
-assignment-statement := key AS expression;  // Replace value.
+expression_without_array:
+      '(' expression ')'
+    | object
+    | T_INTEGER
+    | T_FLOAT
+    | T_COLOR
+    | "true"
+    | "false"
+    | "null"
+    | T_STRING
+    | T_IDENTIFIER
+    | '~' expression
+    | '-' expression %prec UMINUS
+    | '.' T_IDENTIFIER
+    | '$' T_IDENTIFIER
+    | "not" expression
+    | expression '=' expression
+    | expression '.' T_IDENTIFIER
+    | expression '*' expression
+    | expression '/' expression
+    | expression '%' expression
+    | expression '+' expression
+    | expression '-' expression
+    | expression "<<" expression
+    | expression ">>" expression
+    | expression '<' expression
+    | expression '>' expression
+    | expression "<=" expression
+    | expression ">=" expression
+    | expression "==" expression
+    | expression "!=" expression
+    | expression '&' expression
+    | expression '^' expression
+    | expression '|' expression
+    | expression "and" expression
+    | expression "xor" expression
+    | expression "or" expression
+    | expression '[' expression ']'
+    | expression '(' expressions ')'
+    ;
 
-expression-statement := expression;             // Any function call will imply a method on the current object.
-                                                // The returned object of this expression will be merged with the current object.
+expression:
+      expression_without_array
+    | array
+    ;
 
-statement :=
-    section-statement |
-    expression-statment SC |
-    assignment-statement SC;
-                                               
-statement-list := statement*;
+expressions:
+      expression
+    | expressions ';' expression
+    ;
 
-object := '{' statement-list '}';
+statement:
+      expression_without_array ';'
+    | array
+    ;
 
-expression-list :=
-    empty |
-    expression (SC expression)* SC?;
+statements:
+      statement
+    | statements statement
+    ;
 
-array := '[' expression-list ']';
-
-expression :=
-	'(' expression ')'
-	int |
-	float |
-	boolean |
-	null |
-	string |
-    color |
-    path |
-	array |
-	object;
-	expression '(' expression-list ')' |
-    unary-operator expression |
-	expression binary-operator expression |
-	expression '[' expression ']' |
-	identifier |
-	literal;
-
-file := 
-    empty |
-    object |
-    statement-list;
-
+root:
+      /* empty */
+    | object
+    | statements
+    ;
 ```
 
 ## Functions

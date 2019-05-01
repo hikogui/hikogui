@@ -22,7 +22,18 @@ struct ASTAssignment : ASTExpression {
     }
 
     Value &executeLValue(ExecutionContext *context) const override {
-        return key->executeAssignment(context, expression->execute(context));
+        auto const value = expression->execute(context);
+
+        if (value.is_type<Undefined>()) {
+            BOOST_THROW_EXCEPTION(InvalidOperationError()
+                << boost::errinfo_file_name(location.file->string())
+                << boost::errinfo_at_line(location.line)
+                << errinfo_at_column(location.column)
+                << errinfo_message("right hand side value of assignment is Undefined")
+            );
+        }
+
+        return key->executeAssignment(context, value);
     }
 
     void executeStatement(ExecutionContext *context) const override {
