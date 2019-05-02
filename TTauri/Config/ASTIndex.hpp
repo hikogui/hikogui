@@ -28,6 +28,11 @@ struct ASTIndex : ASTExpression {
         }
     }
 
+    /*! Index an object or array.
+     * An object can be indexed by a std::string.
+     * An array can be indexed by a int64_t.
+     * An non-index can be used to append to an array.
+     */
     Value &executeLValue(ExecutionContext *context) const override {
         auto &object_ = object->executeLValue(context);
 
@@ -35,6 +40,7 @@ struct ASTIndex : ASTExpression {
             auto const index_ = index->execute(context);
 
             if ((object_.is_type<Undefined>() || object_.is_type<Object>()) && index_.is_type<std::string>()) {
+                // Use a string to index into an object.
                 auto const index__ = index_.value<std::string>();
                 try {
                     return object_[index__];
@@ -44,6 +50,7 @@ struct ASTIndex : ASTExpression {
                 }
 
             } else if ((object_.is_type<Undefined>() || object_.is_type<Array>()) && index_.is_type<int64_t>()) {
+                // Use a integer to index into an array.
                 size_t const index__ = index_.value<size_t>();
                 try {
                     return object_[index__];
@@ -63,6 +70,7 @@ struct ASTIndex : ASTExpression {
             }
 
         } else if (object_.is_type<Undefined>() || object_.is_type<Array>()) {
+            // Append to an array because no index was specified.
             try {
                 return object_.append();
             } catch (boost::exception &e) {

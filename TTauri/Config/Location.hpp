@@ -20,7 +20,7 @@ struct Location {
     Location(std::shared_ptr<std::filesystem::path> const &file, int line, int column) : file(file), line(line), column(column) {}
 
     std::string str() const {
-        return (boost::format("%s:%i:%i") % file->string() % line % column).str();
+        return (boost::format("%s:%i:%i") % file->generic_string() % line % column).str();
     }
 };
 

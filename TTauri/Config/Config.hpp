@@ -15,7 +15,6 @@ struct Config {
     ASTObject *ast = nullptr;
     Value root = {};
 
-    Location errorLocation;
     std::string errorMessage;
 
     /*! Load a configuration file.
@@ -28,11 +27,16 @@ struct Config {
             root = ast->execute();
 
         } catch (ConfigError &e) {
-            errorMessage = e.what();
-
-            if (auto const location=boost::get_error_info<errinfo_location>(e)) {
-                errorLocation = *location;
+            if (auto const previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
+                errorMessage += *previousErrorMessage + "\n";
             }
+
+            if (auto const location = boost::get_error_info<errinfo_location>(e)) {
+                errorMessage += location->str() + ": ";
+            }
+
+            errorMessage += e.what();
+            errorMessage += ".";
         }
     }
 
@@ -52,11 +56,7 @@ struct Config {
         if (success()) {
             return "";
         } else {
-            return (
-                boost::format("%s: %s.") %
-                errorLocation.str() %
-                errorMessage
-            ).str();
+            return errorMessage;
         }
     }
 

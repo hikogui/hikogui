@@ -97,8 +97,12 @@ struct ASTCall : ASTExpression {
             auto v = lv;
 
             if (v.is_type<Undefined>()) {
+                // An undefined value is replaced with the result of the call.
+                // For example when including a file directly after a section.
                 lv = result;
             } else {
+                // If the value is already defined then try to add the result
+                // of the call. For example including a file inside an object-literal.
                 lv = v + result;
             }
         } catch (boost::exception &e) {

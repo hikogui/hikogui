@@ -31,10 +31,19 @@ TEST(TTauriConfigConfig, ConfigTest) {
 
 TEST(TTauriConfigConfig, SyntaxError) {
     try {
-        auto config = Config("Config/TestFiles/syntax_error.txt");
-        ASSERT_TRUE(!config.success());
+        {
+            auto config = Config("Config/TestFiles/syntax_error.txt");
+            ASSERT_TRUE(!config.success());
+            ASSERT_EQ(config.error(), "Config/TestFiles/syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.");
+        }
 
-        ASSERT_EQ(config.error(), "Config/TestFiles/syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.");
+        {
+            auto config = Config("Config/TestFiles/include_syntax_error.txt");
+            ASSERT_TRUE(!config.success());
+            ASSERT_EQ(config.error(),
+                "Config/TestFiles/syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.\n"
+                "Config/TestFiles/include_syntax_error.txt:2:1: Could not include file 'Config/TestFiles/syntax_error.txt'.");
+        }
 
     } catch (boost::exception &e) {
         std::cerr << boost::diagnostic_information(e);

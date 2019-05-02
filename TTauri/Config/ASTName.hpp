@@ -57,21 +57,48 @@ struct ASTName : ASTExpression {
         return argument.value<T>();
     }
 
+    /*! Include a configuration file.
+     */
     Value executeIncludeCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
         auto path = getArgument<std::filesystem::path>(arguments, 0, true);
 
+        // The included file is relative to the directory of this configuration file.
         if (path.is_relative()) {
             path = location.file->parent_path() / path;
         }
 
-        auto const ast = std::unique_ptr<ASTObject>{parseConfigFile(path)};
-        return ast->execute();
+        try {
+            auto const ast = std::unique_ptr<ASTObject>{parseConfigFile(path)};
+            return ast->execute();
+
+        } catch (ConfigError &e) {
+            std::string errorMessage;
+            if (auto const previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
+                errorMessage += *previousErrorMessage + "\n";
+            }
+
+            if (auto const location = boost::get_error_info<errinfo_location>(e)) {
+                errorMessage += location->str() + ": ";
+            }
+
+            errorMessage += e.what();
+            errorMessage += ".";
+
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Could not include file '%s'") % path.generic_string()).str())
+                << errinfo_location(location)
+                << errinfo_previous_error_message(errorMessage)
+            );
+        }
     }
 
+    /*! Return a absolute path relative to the directory where this configuration file is located.
+    */
     Value executePathCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
         if (arguments.size() == 0) {
+            // Without arguments return the directory where this configuration file is located.
             return location.file->parent_path();
         } else {
+            // Suffix the given argument with the directory where this configuration file is located.
             auto const path = getArgument<std::filesystem::path>(arguments, 0, true);
 
             if (path.is_relative()) {
@@ -82,10 +109,15 @@ struct ASTName : ASTExpression {
         }
     }
 
+    /*! Return a absolute path relative to the current working directory.
+     */
     Value executeCwdCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
         if (arguments.size() == 0) {
+            // Without argument return the current working directory.
             return std::filesystem::current_path();
+
         } else {
+            // Suffix the given argument with the current working directory.
             auto const path = getArgument<std::filesystem::path>(arguments, 0, true);
 
             if (path.is_relative()) {
@@ -99,6 +131,9 @@ struct ASTName : ASTExpression {
         }
     }
 
+    /*! A function call.
+     * The expression is a identifier followed by a call; therefor this is a normal function call.
+     */
     Value executeCall(ExecutionContext *context, std::vector<Value> const &arguments) const override {
         if (name == "include") {
             return executeIncludeCall(context, arguments);

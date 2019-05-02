@@ -10,6 +10,7 @@
 namespace TTauri::Config {
 
 using errinfo_location = boost::error_info<struct tag_location,Location>;
+using errinfo_previous_error_message = boost::error_info<struct tag_previous_error_message,std::string>;
 
 struct ConfigError : virtual boost::exception, virtual std::exception {
     std::string _what;

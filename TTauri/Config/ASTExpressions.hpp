@@ -9,6 +9,9 @@
 
 namespace TTauri::Config {
 
+/*! Temporary node holding a list of expressions.
+ * instances only exists during the execution of bison.
+ */
 struct ASTExpressions : ASTNode {
     std::vector<ASTExpression *> expressions;
 

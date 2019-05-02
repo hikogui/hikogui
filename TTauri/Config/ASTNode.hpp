@@ -12,8 +12,12 @@
 
 namespace TTauri::Config {
 
+/*! Abstract syntax tree node.
+ */
 struct ASTNode {
+    //! Location of node in the source file.
     Location location;
+ 
     ASTNode(Location location) : location(location) {}
 
     virtual std::string str() const {
@@ -23,7 +27,7 @@ struct ASTNode {
         );
     }
 
-    /*! Get a modifiable value from an expression.
+    /*! Execute the expression and return a value that can be modifed by the caller.
      */
     virtual Value &executeLValue(ExecutionContext *context) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expected a lvalue expression")
@@ -31,7 +35,7 @@ struct ASTNode {
         );
     }
 
-    /*! Get a read-only value from an expression.
+    /*! Execute the expression.
     */
     virtual Value execute(ExecutionContext *context) const {
         return executeLValue(context);
@@ -53,7 +57,7 @@ struct ASTNode {
         );
     }
 
-    /*! Execute a object-statement.
+    /*! Execute an object-statement.
      */
     virtual void executeStatement(ExecutionContext *context) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expression can not be used as a statement inside an object")
