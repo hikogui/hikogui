@@ -72,6 +72,8 @@ struct ASTName : ASTExpression {
             return ast->execute();
 
         } catch (ConfigError &e) {
+            // An error was captured from recursive parsing.
+            // Assemble the error message from this error and throw it.
             std::string errorMessage;
             if (auto const previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
                 errorMessage += *previousErrorMessage + "\n";

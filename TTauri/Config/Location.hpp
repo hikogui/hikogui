@@ -10,6 +10,8 @@
 
 namespace TTauri::Config {
 
+/*! Location inside a configuration file.
+ */
 struct Location {
     std::shared_ptr<std::filesystem::path> file;
     int line;

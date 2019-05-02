@@ -1,3 +1,7 @@
+/* Copyright 2019 Pokitec
+ * All rights reserved.
+ */
+
 %define api.pure full
 %define parse.lac full
 %define parse.error verbose
