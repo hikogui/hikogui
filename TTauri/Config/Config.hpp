@@ -12,8 +12,8 @@ namespace TTauri::Config {
  */
 struct Config {
     std::filesystem::path path;
-    ASTObject *ast;
-    Value root;
+    ASTObject *ast = nullptr;
+    Value root = {};
 
     Location errorLocation;
     std::string errorMessage;
@@ -95,7 +95,7 @@ struct Config {
      * \param key A configuration key.
      */
     template<typename T>
-    T value(std::string key) const {
+    T value(std::string const &key) const {
         auto const obj = root.get(key);
         return obj.value<T>();
     }
@@ -106,7 +106,6 @@ struct Config {
     std::map<std::string,std::any> rootObject() {
         return root.value<std::map<std::string,std::any>>();
     }
-
 };
 
 }
