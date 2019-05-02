@@ -9,7 +9,7 @@
 
 namespace TTauri::Config {
 
-using errinfo_at_column = boost::error_info<struct tag_at_column,int>;
+using errinfo_location = boost::error_info<struct tag_location,Location>;
 using errinfo_message = boost::error_info<struct tag_message,std::string>;
 
 struct ConfigError : virtual boost::exception, virtual std::exception {};

@@ -24,9 +24,7 @@ struct ASTNode {
      */
     virtual Value &executeLValue(ExecutionContext *context) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << boost::errinfo_file_name(location.file->string())
-            << boost::errinfo_at_line(location.line)
-            << errinfo_at_column(location.column)
+            << errinfo_location(location)
             << errinfo_message("syntax error, expected a lvalue expression")
         );
     }
@@ -41,9 +39,7 @@ struct ASTNode {
      */
     virtual Value executeCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << boost::errinfo_file_name(location.file->string())
-            << boost::errinfo_at_line(location.line)
-            << errinfo_at_column(location.column)
+            << errinfo_location(location)
             << errinfo_message("result of expression does not support being used as a function")
         );
     }
@@ -52,9 +48,7 @@ struct ASTNode {
      */
     virtual Value &executeAssignment(ExecutionContext *context, Value other) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << boost::errinfo_file_name(location.file->string())
-            << boost::errinfo_at_line(location.line)
-            << errinfo_at_column(location.column)
+            << errinfo_location(location)
             << errinfo_message("result of expression does not support assignment")
         );
     }
@@ -63,9 +57,7 @@ struct ASTNode {
      */
     virtual void executeStatement(ExecutionContext *context) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << boost::errinfo_file_name(location.file->string())
-            << boost::errinfo_at_line(location.line)
-            << errinfo_at_column(location.column)
+            << errinfo_location(location)
             << errinfo_message("syntax error, expression can not be used as a statement inside an object")
         );
     }

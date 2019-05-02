@@ -26,9 +26,7 @@ struct ASTAssignment : ASTExpression {
 
         if (value.is_type<Undefined>()) {
             BOOST_THROW_EXCEPTION(InvalidOperationError()
-                << boost::errinfo_file_name(location.file->string())
-                << boost::errinfo_at_line(location.line)
-                << errinfo_at_column(location.column)
+                << errinfo_location(location)
                 << errinfo_message("right hand side value of assignment is Undefined")
             );
         }

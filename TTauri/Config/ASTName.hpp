@@ -34,9 +34,7 @@ struct ASTName : ASTExpression {
     T getArgument(std::vector<Value> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
             BOOST_THROW_EXCEPTION(InvalidOperationError()
-                << boost::errinfo_file_name(location.file->string())
-                << boost::errinfo_at_line(location.line)
-                << errinfo_at_column(location.column)
+                << errinfo_location(location)
                 << errinfo_message((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
                     % name % (i + 1) % typeid(T).name()).str())
             );
@@ -45,9 +43,7 @@ struct ASTName : ASTExpression {
         auto const argument = arguments.at(0);
         if (!argument.is_promotable_to<T>()) {
             BOOST_THROW_EXCEPTION(InvalidOperationError()
-                << boost::errinfo_file_name(location.file->string())
-                << boost::errinfo_at_line(location.line)
-                << errinfo_at_column(location.column)
+                << errinfo_location(location)
                 << errinfo_message((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
                     % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
             );
@@ -55,9 +51,7 @@ struct ASTName : ASTExpression {
 
         if (lastArgument && i != (arguments.size() - 1)) {
             BOOST_THROW_EXCEPTION(InvalidOperationError()
-                << boost::errinfo_file_name(location.file->string())
-                << boost::errinfo_at_line(location.line)
-                << errinfo_at_column(location.column)
+                << errinfo_location(location)
                 << errinfo_message((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
                     % name % (i + 1) % arguments.size()).str())
             );
@@ -101,9 +95,7 @@ struct ASTName : ASTExpression {
                 return std::filesystem::current_path() / path;
             } else {
                 BOOST_THROW_EXCEPTION(InvalidOperationError()
-                    << boost::errinfo_file_name(location.file->string())
-                    << boost::errinfo_at_line(location.line)
-                    << errinfo_at_column(location.column)
+                    << errinfo_location(location)
                     << errinfo_message((boost::format("Expecting relative path argument to function '%s' got '%s'")
                         % name % path.string()).str())
                 );
@@ -123,9 +115,7 @@ struct ASTName : ASTExpression {
 
         } else {
             BOOST_THROW_EXCEPTION(InvalidOperationError()
-                << boost::errinfo_file_name(location.file->string())
-                << boost::errinfo_at_line(location.line)
-                << errinfo_at_column(location.column)
+                << errinfo_location(location)
                 << errinfo_message((boost::format("Unknown function '%'") % name).str())
             );
         }
