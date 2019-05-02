@@ -74,6 +74,7 @@ inline std::vector<std::string> split(std::string haystack, char needle)
         pos = haystack.find('.', offset);
     }
 
+    r.push_back(haystack.substr(offset, haystack.size() - offset));
     return r;
 }
 

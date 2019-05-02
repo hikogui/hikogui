@@ -25,9 +25,8 @@ struct ASTAssignment : ASTExpression {
         auto const value = expression->execute(context);
 
         if (value.is_type<Undefined>()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
+            BOOST_THROW_EXCEPTION(InvalidOperationError("right hand side value of assignment is Undefined")
                 << errinfo_location(location)
-                << errinfo_message("right hand side value of assignment is Undefined")
             );
         }
 

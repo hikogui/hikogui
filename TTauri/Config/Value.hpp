@@ -107,8 +107,8 @@ struct Value {
 
     Value(std::any value) : intrinsic(value) {
         if (!is_valid_type()) {
-            BOOST_THROW_EXCEPTION(NotImplementedError()
-                << errinfo_message((boost::format("Assigning a value of type %s is not implemented") % type_name()).str())        
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Assigning a value of type %s is not implemented") %
+                type_name()).str())
             );
         }
     }
@@ -127,8 +127,8 @@ struct Value {
         intrinsic = std::move(value);
 
         if (!is_valid_type()) {
-            BOOST_THROW_EXCEPTION(NotImplementedError()
-                << errinfo_message((boost::format("Assigning a value of type %s is not implemented") % type_name()).str())        
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Assigning a value of type %s is not implemented") %
+                type_name()).str())
             );
         }
 
@@ -163,13 +163,13 @@ struct Value {
     }
 
     template<typename T>
-    T value() const {
-        return std::any_cast<T>(intrinsic);
+    T &lvalue() {
+        return std::any_cast<T &>(intrinsic);
     }
 
     template<typename T>
-    T &value() {
-        return std::any_cast<T &>(intrinsic);
+    T value() const {
+        return std::any_cast<T>(intrinsic);
     }
 
     template<>
@@ -182,6 +182,11 @@ struct Value {
     }
 
     template<>
+    size_t value() const {
+        return boost::numeric_cast<size_t>(value<int64_t>());
+    }
+
+    template<>
     std::filesystem::path value() const {
         if (is_type<std::string>()) {
             return std::filesystem::path{std::any_cast<std::string>(intrinsic)};
@@ -190,42 +195,31 @@ struct Value {
         }
     }
 
-    template<>
-    std::vector<std::any> value() const {
-        return std::any_cast<std::vector<std::any>>(any());
-    }
-
-    template<>
-    std::map<std::string, std::any> value() const {
-        return std::any_cast<std::map<std::string, std::any>>(any());
-    }
-
     std::string type_name() const {
         return type().name();
     }
 
-    Value const &get(std::vector<std::string> const &key) {
-        if (is_type<Object>()) {
-            size_t const index = std::stoll(key.at(0));
-            auto next = (*this)[index];
+    Value get(std::vector<std::string> const &key) const {
+        if (key.size() > 0 && is_type<Object>()) {
+            auto const index = key.at(0);
+            auto const next = (*this)[index];
             return next.get(std::vector<std::string>{key.begin() + 1, key.end()});
 
-        } else if (is_type<Array>()) {
-            auto const index = key.at(0);
-            auto next = (*this)[index];
+        } else if (key.size() > 0 && is_type<Array>()) {
+            size_t const index = std::stoll(key.at(0));
+            auto const next = (*this)[index];
             return next.get(std::vector<std::string>{key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
-                << errinfo_message((boost::format("type %s does not support get() with '%s'")
-                    % type_name() % key.at(0)).str())        
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not support get() with '%s'")
+                % type_name() % key.at(0)).str())
             );
         } else {
             return *this;
         }
     }
 
-    Value const &get(std::string const &key) {
+    Value get(std::string const &key) const {
         return get(split(key, '.'));
     }
 
@@ -277,8 +271,8 @@ struct Value {
             }
             return s + "}";
         }
-        BOOST_THROW_EXCEPTION(NotImplementedError()
-            << errinfo_message((boost::format("type %s does not implement .str()") % type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not implement .str()") %
+            type_name()).str())
         );
     }
 
@@ -328,9 +322,7 @@ struct Value {
         } else if (is_type<Object>()) {
             return value<Object>().size() > 0;
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("type %s does not implement .boolean()") % type_name()).str())
-        );
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not implement .boolean()") % type_name()).str()));
     }
 
     CompareResult cmp(Value const &other) const {
@@ -407,8 +399,8 @@ struct Value {
             return compare(value<bool>(), other.value<bool>());
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot compare values of types %s and %s") % type_name() % other.type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot compare values of types %s and %s") %
+            type_name() % other.type_name()).str())
         );
     }
 
@@ -418,9 +410,7 @@ struct Value {
         } else if (is_type<double>()) {
             return -value<double>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot make value of type %s negative") % type_name()).str())        
-        );
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot make value of type %s negative") % type_name()).str()));
     }
 
     Value operator~() const {
@@ -429,9 +419,7 @@ struct Value {
         } else if (is_type<bool>()) {
             return !value<bool>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot invert value of type %s") % type_name()).str())        
-        );
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot invert value of type %s") % type_name()).str()));
     }
 
     Value operator!() const {
@@ -448,8 +436,8 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() * other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot multiple value of type %s with value of type %s") % type_name() % other.type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot multiple value of type %s with value of type %s") %
+            type_name() % other.type_name()).str())
         );
     }
 
@@ -459,8 +447,8 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() / other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot divide value of type %s with value of type %s") % type_name() % other.type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot divide value of type %s with value of type %s") %
+            type_name() % other.type_name()).str())
         );
     }
 
@@ -470,8 +458,8 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() % other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot take modulo of value of type %s with value of type %s") % type_name() % other.type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot take modulo of value of type %s with value of type %s") %
+            type_name() % other.type_name()).str())
         );
     }
 
@@ -495,8 +483,8 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() + other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot add value of type %s to a value of type %s") % other.type_name() % type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot add value of type %s to a value of type %s") %
+            other.type_name() % type_name()).str())
         );
     }
 
@@ -506,8 +494,8 @@ struct Value {
         } else if (is_type<int64_t>() || other.is_type<int64_t>()) {
             return value<int64_t>() - other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot subtract value of type %s from a value of type %s") % other.type_name() % type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot subtract value of type %s from a value of type %s") %
+            other.type_name() % type_name()).str())
         );
     }
 
@@ -515,8 +503,8 @@ struct Value {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() << other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot left shift a of value of type %s with a value of type %s") % type_name() % other.type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot left shift a of value of type %s with a value of type %s") %
+            type_name() % other.type_name()).str())
         );
     }
 
@@ -524,8 +512,8 @@ struct Value {
         if (is_type<int64_t>() && other.is_type<int64_t>()) {
             return value<int64_t>() >> other.value<int64_t>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot right shift a of value of type %s with a value of type %s") % type_name() % other.type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot right shift a of value of type %s with a value of type %s") %
+            type_name() % other.type_name()).str())
         );
     }
 
@@ -559,8 +547,8 @@ struct Value {
         } else if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() && other.value<bool>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot binary-and a of value of type %s to a value of type %s") % other.type_name() % type_name() ).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot binary-and a of value of type %s to a value of type %s") %
+            other.type_name() % type_name() ).str())
         );
     }
 
@@ -570,8 +558,8 @@ struct Value {
         } else if (is_type<bool>() && other.is_type<bool>()) {
             return static_cast<bool>(value<bool>() ^ other.value<bool>());
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot binary-xor a of value of type %s to a value of type %s") % other.type_name() % type_name() ).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot binary-xor a of value of type %s to a value of type %s") %
+            other.type_name() % type_name() ).str())
         );
     }
 
@@ -581,8 +569,8 @@ struct Value {
         } else if (is_type<bool>() && other.is_type<bool>()) {
             return value<bool>() || other.value<bool>();
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot binary-or a of value of type %s to a value of type %s") % other.type_name() % type_name() ).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot binary-or a of value of type %s to a value of type %s") %
+            other.type_name() % type_name() ).str())
         );
     }
 
@@ -610,70 +598,93 @@ struct Value {
         }
     }
 
-    Value &operator[](Value const &other) {
-        if (is_type<Undefined>()) {
-            if (other.is_type<int64_t>()) {
-                intrinsic = Array{};
-            } else if (other.is_type<std::string>()) {
-                intrinsic = Object{};
-            }
-        }
-
-        if (is_type<Array>() && other.is_type<int64_t>()) {
-            auto &_array = value<Array>();
-            size_t index = boost::numeric_cast<size_t>(other.value<int64_t>());
-            while (index >= _array.size()) {
-                _array.emplace_back(Undefined{});
-            }
-
-            return _array.at(index);
-
-        } else if (is_type<Object>() && other.is_type<std::string>()) {
-            auto &obj = value<Object>();
-            auto const &key = other.value<std::string>();
-            obj.try_emplace(key, Undefined{});
-            return obj[key];
-        }
-
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot index of value of type %s with a value of type %s") % type_name() % other.type_name()).str())        
-        );
-    }
-
-    virtual Value &operator[](std::string const &other) {
+    Value &operator[](std::string const &other) {
         if (is_type<Undefined>()) {
             // When accessing a name on an undefined it means we need replace it with an empty object.
             intrinsic = Object{};
         }
 
         if (is_type<Object>()) {
-            auto &obj = value<Object>();
+            auto &obj = lvalue<Object>();
             obj.try_emplace(other, Undefined{});
             return obj[other];
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot get member .%s of type %s") % other % type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get member .%s of type %s") %
+            other % type_name()).str())
         );
     }
 
-    virtual Value &operator[](size_t const index) {
+    Value operator[](std::string const &other) const {
+        if (is_type<Object>()) {
+            auto obj = value<Object>();
+            auto i = obj.find(other);
+
+            if (i != obj.end()) {
+                return i->second;
+            }
+        }
+
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get member .%s of type %s") %
+            other % type_name()).str())
+        );
+    }
+
+    Value &operator[](size_t const index) {
         if (is_type<Undefined>()) {
             // When accessing a name on an undefined it means we need replace it with an empty object.
             intrinsic = Array{};
         }
 
         if (is_type<Array>()) {
-            auto &_array = value<Array>();
-            while (index >= _array.size()) {
-                _array.emplace_back(Undefined{});
-            }
+            auto &_array = lvalue<Array>();
 
-            return _array.at(index);
+            if (index < _array.size()) {
+                return _array[index];
+            } else {
+                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Index %i out of range, size of array is %i") %
+                    index % _array.size()).str())
+                );
+            }
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
-            << errinfo_message((boost::format("Cannot get item at index %i of type %s") % index % type_name()).str())        
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get item at index %i of type %s") %
+            index % type_name()).str())
+        );
+    }
+
+    Value operator[](size_t const index) const {
+        if (is_type<Array>()) {
+            auto _array = value<Array>();
+            
+            if (index < _array.size()) {
+                return _array[index];
+            } else {
+                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Index %i out of range, size of array is %i") %
+                    index % _array.size()).str())
+                );
+            }
+        }
+
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get item at index %i of type %s") %
+            index % type_name()).str())
+        );
+    }
+
+    Value &append() {
+        if (is_type<Undefined>()) {
+            // When accessing a name on an undefined it means we need replace it with an empty object.
+            intrinsic = Array{};
+        }
+
+        if (is_type<Array>()) {
+            auto &_array = lvalue<Array>();
+            _array.emplace_back(Undefined{});
+            return _array.back();
+        }
+
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot append new item onto type %s") %
+            type_name()).str())
         );
     }
 };

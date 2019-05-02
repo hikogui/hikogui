@@ -33,13 +33,14 @@ ASTObject *parseConfigFile(const std::filesystem::path &path)
     ParseContext context(path);
 
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
-        BOOST_THROW_EXCEPTION(IOError()
+        BOOST_THROW_EXCEPTION(IOError("Could not open file")
             << boost::errinfo_file_name(path.string())
+            << boost::errinfo_errno(errno)
         );
     }
 
     if (TTauriConfig_yylex_init(&scanner) != 0) {
-        BOOST_THROW_EXCEPTION(InternalParserError());
+        BOOST_THROW_EXCEPTION(InternalParserError("Failed to allocate memory using TTauriConfig_yylex_init()"));
     }
 
     TTauriConfig_yyset_in(file, scanner);
@@ -48,17 +49,15 @@ ASTObject *parseConfigFile(const std::filesystem::path &path)
 
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {
-        BOOST_THROW_EXCEPTION(IOError()
+        BOOST_THROW_EXCEPTION(IOError("Could not close file")
             << boost::errinfo_file_name(path.string())
+            << boost::errinfo_errno(errno)
         );
     }
 
     if (r != 0) {
-        BOOST_THROW_EXCEPTION(ParseError()
-            << boost::errinfo_file_name(context.errorLocation.file->string())
-            << boost::errinfo_at_line(context.errorLocation.line)
-            << errinfo_at_column(context.errorLocation.column)
-            << errinfo_message(context.errorMessage)
+        BOOST_THROW_EXCEPTION(ParseError(context.errorMessage)
+            << errinfo_location(context.errorLocation)
         );
     }
 

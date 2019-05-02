@@ -86,7 +86,7 @@ TEST(TTauriConfigParser, Booleans) {
 TEST(TTauriConfigParser, Arrays) {
     try {
         auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/arrays.txt"));
-        ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2],a[0]:3}");
+        ASSERT_EQ(o->str(), "{foo:[],bar:[1],baz:[1,2],bob:[1,2],a[]:3}");
         ASSERT_EQ(o->execute().str(), "{a:[3],bar:[1],baz:[1,2],bob:[1,2],foo:[]}");
 
     } catch (boost::exception &e) {

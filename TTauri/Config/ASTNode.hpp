@@ -17,15 +17,17 @@ struct ASTNode {
     ASTNode(Location location) : location(location) {}
 
     virtual std::string str() const {
-        BOOST_THROW_EXCEPTION(InvalidOperationError());
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("str() not implemented for %s") %
+            typeid(*this).name()).str())
+            << errinfo_location(location)
+        );
     }
 
     /*! Get a modifiable value from an expression.
      */
     virtual Value &executeLValue(ExecutionContext *context) const {
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
+        BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expected a lvalue expression")
             << errinfo_location(location)
-            << errinfo_message("syntax error, expected a lvalue expression")
         );
     }
 
@@ -38,27 +40,24 @@ struct ASTNode {
     /*! Execute a function or method call.
      */
     virtual Value executeCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
+        BOOST_THROW_EXCEPTION(InvalidOperationError("result of expression does not support being used as a function")
             << errinfo_location(location)
-            << errinfo_message("result of expression does not support being used as a function")
         );
     }
 
     /*! Execute an assignment of a value to an modifiable value.
      */
     virtual Value &executeAssignment(ExecutionContext *context, Value other) const {
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
+        BOOST_THROW_EXCEPTION(InvalidOperationError("result of expression does not support assignment")
             << errinfo_location(location)
-            << errinfo_message("result of expression does not support assignment")
         );
     }
 
     /*! Execute a object-statement.
      */
     virtual void executeStatement(ExecutionContext *context) const {
-        BOOST_THROW_EXCEPTION(InvalidOperationError()
+        BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expression can not be used as a statement inside an object")
             << errinfo_location(location)
-            << errinfo_message("syntax error, expression can not be used as a statement inside an object")
         );
     }
 };

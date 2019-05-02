@@ -11,6 +11,8 @@ struct ASTIndex : ASTExpression {
     ASTExpression *object;
     ASTExpression *index;
 
+    ASTIndex(Location location, ASTExpression *object) : ASTExpression(location), object(object), index(nullptr) {}
+
     ASTIndex(Location location, ASTExpression *object, ASTExpression *index) : ASTExpression(location), object(object), index(index) {}
 
     ~ASTIndex() {
@@ -19,15 +21,65 @@ struct ASTIndex : ASTExpression {
     }
 
     std::string str() const override {
-        return object->str() + "[" + index->str() + "]";
+        if (index) {
+            return object->str() + "[" + index->str() + "]";
+        } else {
+            return object->str() + "[]";
+        }
     }
 
     Value &executeLValue(ExecutionContext *context) const override {
-        return object->executeLValue(context)[index->execute(context)];
+        auto &object_ = object->executeLValue(context);
+
+        if (index) {
+            auto const index_ = index->execute(context);
+
+            if ((object_.is_type<Undefined>() || object_.is_type<Object>()) && index_.is_type<std::string>()) {
+                auto const index__ = index_.value<std::string>();
+                try {
+                    return object_[index__];
+                } catch (boost::exception &e) {
+                    e << errinfo_location(location);
+                    throw;
+                }
+
+            } else if ((object_.is_type<Undefined>() || object_.is_type<Array>()) && index_.is_type<int64_t>()) {
+                size_t const index__ = index_.value<size_t>();
+                try {
+                    return object_[index__];
+                } catch (boost::exception &e) {
+                    e << errinfo_location(location);
+                    throw;
+                }
+
+            } else {
+                BOOST_THROW_EXCEPTION(InvalidOperationError(
+                    (boost::format("Can not index object of type %s with index of type %s") %
+                        object_.type_name() %
+                        index_.type_name()
+                    ).str())
+                    << errinfo_location(location)
+                );
+            }
+
+        } else if (object_.is_type<Undefined>() || object_.is_type<Array>()) {
+            try {
+                return object_.append();
+            } catch (boost::exception &e) {
+                e << errinfo_location(location);
+                throw;
+            }
+
+        } else {
+            BOOST_THROW_EXCEPTION(InvalidOperationError(
+                (boost::format("Can not append to object of type %s") % object_.type_name()).str())
+                << errinfo_location(location)
+            );
+        }
     }
 
     Value &executeAssignment(ExecutionContext *context, Value other) const override {
-        auto &lv = object->executeLValue(context)[index->execute(context)];
+        auto &lv = executeLValue(context);
         lv = std::move(other);
         return lv;
     }

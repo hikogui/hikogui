@@ -60,9 +60,8 @@ struct ASTArray : ASTExpression {
             context->setSection(&lv);
 
         } else {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
+            BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expected 0 or 1 expression in section statement")
                 << errinfo_location(location)
-                << errinfo_message("syntax error, expected 0 or 1 expression in section statement")
             );
         }
     }

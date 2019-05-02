@@ -126,6 +126,7 @@ expression_without_array:
     | expression "xor" expression                                   { $$ = NEW_BINARY_OPERATOR(LOGICAL_XOR, @2, $1, $3 ); }
     | expression "or" expression                                    { $$ = NEW_BINARY_OPERATOR(LOGICAL_OR, @2, $1, $3 ); }
     | expression '[' expression ']'                                 { $$ = NEW_NODE(ASTIndex, @2, $1, $3); }
+    | expression '[' ']'                                            { $$ = NEW_NODE(ASTIndex, @2, $1); }
     | expression '(' expressions ')'                                { $$ = NEW_NODE(ASTCall, @2, $1, $3); }
     ;
 

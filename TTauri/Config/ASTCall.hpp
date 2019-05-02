@@ -102,9 +102,7 @@ struct ASTCall : ASTExpression {
                 lv = v + result;
             }
         } catch (boost::exception &e) {
-            e << boost::errinfo_file_name(location.file->string())
-                << boost::errinfo_at_line(location.line)
-                << errinfo_at_column(location.column);
+            e << errinfo_location(location);
             throw;
         }
 

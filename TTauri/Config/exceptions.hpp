@@ -10,12 +10,32 @@
 namespace TTauri::Config {
 
 using errinfo_location = boost::error_info<struct tag_location,Location>;
-using errinfo_message = boost::error_info<struct tag_message,std::string>;
 
-struct ConfigError : virtual boost::exception, virtual std::exception {};
-struct ParseError : virtual ConfigError {};
-struct InvalidOperationError : virtual ConfigError {};
-struct IOError : virtual ConfigError {};
-struct InternalParserError : virtual ConfigError {};
+struct ConfigError : virtual boost::exception, virtual std::exception {
+    std::string _what;
+
+    ConfigError() : _what("unknown ConfigError") {}
+    ConfigError(const std::string &what) : _what(what) {}
+
+    const char* what() const noexcept override {
+        return _what.data();
+    }
+};
+
+struct ParseError : ConfigError {
+    ParseError(const std::string &msg) : ConfigError(msg) {}
+};
+
+struct InvalidOperationError : ConfigError {
+    InvalidOperationError(const std::string &msg) : ConfigError(msg) {}
+};
+
+struct IOError : ConfigError {
+    IOError(const std::string &msg) : ConfigError(msg) {}
+};
+
+struct InternalParserError : ConfigError {
+    InternalParserError(const std::string &msg) : ConfigError(msg) {}
+};
 
 }

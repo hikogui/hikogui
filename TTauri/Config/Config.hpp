@@ -11,7 +11,7 @@ namespace TTauri::Config {
  * 
  */
 struct Config {
-    std::system::path path;
+    std::filesystem::path path;
     ASTObject *ast;
     Value root;
 
@@ -22,18 +22,16 @@ struct Config {
      * See the README.md file is this directory for the file format of the configuration file.
      * \param path path to the configuration file.
      */
-    Config(std::system::path const &path) : path(path) {
+    Config(std::filesystem::path const &path) : path(path) {
         try {
             ast = parseConfigFile(path);
             root = ast->execute();
 
-        } catch (ConfigError &x) {
-            if (auto const location=boost::get_error_info<errinfo_location>(e) )
-                errorLocation = *location;
-            }
+        } catch (ConfigError &e) {
+            errorMessage = e.what();
 
-            if (auto const message=boost::get_error_info<errinfo_message>(e) )
-                errorMessage = *message;
+            if (auto const location=boost::get_error_info<errinfo_location>(e)) {
+                errorLocation = *location;
             }
         }
     }
@@ -52,13 +50,11 @@ struct Config {
      */
     std::string error() const {
         if (success()) {
-            return ""s;
+            return "";
         } else {
             return (
-                boost::format("%s:%i:%i: %s.") %
-                errorLocation.file %
-                errorLocation.line %
-                errorLocation.column %
+                boost::format("%s: %s.") %
+                errorLocation.str() %
                 errorMessage
             ).str();
         }
@@ -100,7 +96,8 @@ struct Config {
      */
     template<typename T>
     T value(std::string key) const {
-        return root.get(key).value<T>();
+        auto const obj = root.get(key);
+        return obj.value<T>();
     }
 
     /*! Get the root object.

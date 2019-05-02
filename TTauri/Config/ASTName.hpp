@@ -33,27 +33,24 @@ struct ASTName : ASTExpression {
     template<typename T>
     T getArgument(std::vector<Value> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
+                % name % (i + 1) % typeid(T).name()).str())
                 << errinfo_location(location)
-                << errinfo_message((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
-                    % name % (i + 1) % typeid(T).name()).str())
             );
         }
 
         auto const argument = arguments.at(0);
         if (!argument.is_promotable_to<T>()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
+                % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
                 << errinfo_location(location)
-                << errinfo_message((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
-                    % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
             );
         }
 
         if (lastArgument && i != (arguments.size() - 1)) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
+                % name % (i + 1) % arguments.size()).str())
                 << errinfo_location(location)
-                << errinfo_message((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
-                    % name % (i + 1) % arguments.size()).str())
             );
         }
 
@@ -94,10 +91,9 @@ struct ASTName : ASTExpression {
             if (path.is_relative()) {
                 return std::filesystem::current_path() / path;
             } else {
-                BOOST_THROW_EXCEPTION(InvalidOperationError()
+                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Expecting relative path argument to function '%s' got '%s'")
+                    % name % path.string()).str())
                     << errinfo_location(location)
-                    << errinfo_message((boost::format("Expecting relative path argument to function '%s' got '%s'")
-                        % name % path.string()).str())
                 );
             }
         }
@@ -114,9 +110,8 @@ struct ASTName : ASTExpression {
             return executeCwdCall(context, arguments);
 
         } else {
-            BOOST_THROW_EXCEPTION(InvalidOperationError()
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Unknown function '%'") % name).str())
                 << errinfo_location(location)
-                << errinfo_message((boost::format("Unknown function '%'") % name).str())
             );
         }
     }
