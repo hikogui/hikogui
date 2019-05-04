@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include "ASTExpressions.hpp"
+#include "ASTExpressionList.hpp"
 #include "ASTMember.hpp"
 #include "ASTName.hpp"
 #include "TTauri/utils.hpp"
@@ -16,7 +16,7 @@ struct ASTCall : ASTExpression {
     ASTExpression *object;
     std::vector<ASTExpression *> arguments;
 
-    ASTCall(Location location, ASTExpression *object, ASTExpressions *arguments) :
+    ASTCall(Location location, ASTExpression *object, ASTExpressionList *arguments) :
         ASTExpression(location),
         object(object),
         arguments(arguments->expressions)
@@ -26,7 +26,7 @@ struct ASTCall : ASTExpression {
         delete arguments;
     }
 
-    ASTCall(Location location, ASTExpression *object, char *name, ASTExpressions *arguments) :
+    ASTCall(Location location, ASTExpression *object, char *name, ASTExpressionList *arguments) :
         ASTExpression(location),
         object(new ASTMember(object->location, object, name)),
         arguments(arguments->expressions)
@@ -36,7 +36,7 @@ struct ASTCall : ASTExpression {
         delete arguments;
     }
 
-    ASTCall(Location location, char *name, ASTExpressions *arguments) :
+    ASTCall(Location location, char *name, ASTExpressionList *arguments) :
         ASTExpression(location),
         object(new ASTName(location, name)),
         arguments(arguments->expressions)

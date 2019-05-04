@@ -98,8 +98,20 @@ TEST(TTauriConfigParser, Arrays) {
 TEST(TTauriConfigParser, Objects) {
     try {
         auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/objects.txt"));
-        ASSERT_EQ(o->str(), "{foo:{a:1,b:2},bar.baz:5,[hello],world:\"World\",[z],w:3}");
+        ASSERT_EQ(o->str(), "{foo:{a:1,\"b\":2},bar.baz:5,[hello],world:\"World\",[z],w:3}");
         ASSERT_EQ(o->execute().str(), "{bar:{baz:5},foo:{a:1,b:2},hello:{world:\"World\"},z:{w:3}}");
+
+    } catch (boost::exception &e) {
+        std::cerr << boost::diagnostic_information(e);
+        throw;
+    }
+}
+
+TEST(TTauriConfigParser, JSON) {
+    try {
+        auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/json.txt"));
+        ASSERT_EQ(o->str(), "{\"a\":1,\"b\":\"foo\",\"c\":1.1,\"d\":[1,2,3],\"e\":{\"a\":1,\"b\":1.1}}");
+        ASSERT_EQ(o->execute().str(), "{a:1,b:\"foo\",c:1.1,d:[1,2,3],e:{a:1,b:1.1}}");
 
     } catch (boost::exception &e) {
         std::cerr << boost::diagnostic_information(e);

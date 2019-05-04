@@ -40,7 +40,13 @@ STR             [^"\n\r]
 STRDQ           "\\\""
 WS              [ \t\f\r\n]
 
+%x LFEND_STATE
 %%
+
+"]"                         BEGIN(LFEND_STATE); return yytext[0];
+<LFEND_STATE>[ \t\f\r]      ; // Whitespace after ']' is ignored.
+<LFEND_STATE>\n             BEGIN(INITIAL); return ';';
+<LFEND_STATE>.              BEGIN(INITIAL); yyless(0); yylloc_param->last_column--;
 
 [=:]                        return '=';
 [;,]                        return ';';

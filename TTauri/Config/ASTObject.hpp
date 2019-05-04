@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include "ASTExpressions.hpp"
+#include "ASTExpressionList.hpp"
 #include <vector>
 #include <map>
 
@@ -15,13 +15,24 @@ struct ASTObject : ASTExpression {
 
     ASTObject(Location location) : ASTExpression(location), expressions() { }
 
-    ASTObject(Location location, ASTExpression *expression) : ASTExpression(location), expressions({expression}) {
-    }
+    ASTObject(Location location, ASTExpressionList *expressionList) : ASTExpression(location), expressions() {
+        for (auto expression: expressionList->expressions) {
+            if (auto obj = dynamic_cast<ASTObject *>(expression)) {
+                // An object will be merged with this.
+                for (auto e: obj->expressions) {
+                    expressions.push_back(e);
+                }
+                // We stole all expressions of obj, so make sure they are not deleted by the destructor of obj.
+                obj->expressions.clear();
+                delete obj;
+            } else {
+                expressions.push_back(expression);
+            }
+        }
 
-    ASTObject(Location location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
-        // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
-        expressions->expressions.clear();
-        delete expressions;
+        // We stole all expressions of expressions, so make sure they are not deleted by the destructor of expressions.
+        expressionList->expressions.clear();
+        delete expressionList;
     }
 
     ~ASTObject() {

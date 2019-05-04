@@ -39,7 +39,7 @@
     int64_t integer;
     double real;
     TTauri::Config::ASTExpression *expression;
-    TTauri::Config::ASTExpressions *expressions;
+    TTauri::Config::ASTExpressionList *expression_list;
     TTauri::Config::ASTObject *object;
     TTauri::Config::ASTArray *array;
 }
@@ -69,14 +69,14 @@
 %left '(' '['
 %left '.'
 
+%precedence SELECTOR
+
+%type <object> body
 %type <object> root
 %type <expression> expression
-%type <expression> expression_without_array
 %type <object> object
 %type <array> array
-%type <expressions> expressions
-%type <expression> statement
-%type <expressions> statements
+%type <expression_list> expressions
 %start root
 %%
 
@@ -92,9 +92,10 @@ object:
     | '{' expressions ';' '}'                                       { $$ = NEW_NODE(ASTObject, @1, $2); }
     ;
 
-expression_without_array:
+expression:
       '(' expression ')'                                            { $$ = $2; }
     | object                                                        { $$ = $1; }
+    | array                                                         { $$ = $1; }
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
     | T_COLOR                                                       { $$ = NEW_NODE(ASTColor, @1, static_cast<uint32_t>($1)); }
@@ -134,30 +135,19 @@ expression_without_array:
     | expression '(' expressions ')'                                { $$ = NEW_NODE(ASTCall, @2, $1, $3); }
     ;
 
-expression:
-      expression_without_array                                      { $$ = $1; }
-    | array                                                         { $$ = $1; }
-    ;
-
 expressions:
-      expression                                                    { $$ = NEW_NODE(ASTExpressions, @1, $1); }
+      expression                                                    { $$ = NEW_NODE(ASTExpressionList, @1, $1); }
     | expressions ';' expression                                    { $1->expressions.push_back($3); $$ = $1; }
     ;
 
-statement:
-      expression_without_array ';'                                  { $$ = $1; }
-    | array                                                         { $$ = $1; }
-    ;
-
-statements:
-      statement                                                     { $$ = NEW_NODE(ASTExpressions, @1, $1); }
-    | statements statement                                          { $1->expressions.push_back($2); $$ = $1; }
+body:
+      %empty                                                        { $$ = new TTauri::Config::ASTObject({context->file, 1, 1}); }
+    | expressions                                                   { $$ = NEW_NODE(ASTObject, @1, $1); }
+    | expressions ';'                                               { $$ = NEW_NODE(ASTObject, @1, $1); }
     ;
 
 root:
-      /* empty */                                                   { $$ = new TTauri::Config::ASTObject({context->file, 1, 1}); context->object = $$; }
-    | object                                                        { $$ = $1; context->object = $$; };
-    | statements                                                    { $$ = NEW_NODE(ASTObject, @1, $1); context->object = $$; }
+    body                                                            { $$ = $1; context->object = $$; }
     ;
 
 %%

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include "ASTExpressions.hpp"
+#include "ASTExpressionList.hpp"
 
 namespace TTauri::Config {
 
@@ -13,7 +13,7 @@ struct ASTArray : ASTExpression {
 
     ASTArray(Location location) : ASTExpression(location), expressions() { }
 
-    ASTArray(Location location, ASTExpressions *expressions) : ASTExpression(location), expressions(expressions->expressions) {
+    ASTArray(Location location, ASTExpressionList *expressions) : ASTExpression(location), expressions(expressions->expressions) {
         // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
         expressions->expressions.clear();
         delete expressions;

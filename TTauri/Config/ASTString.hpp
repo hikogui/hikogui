@@ -22,6 +22,11 @@ struct ASTString : ASTExpression {
         return value;
     } 
 
+    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+        auto &lv = context->currentObject()[value];
+        lv = std::move(other);
+        return lv;
+    }
 };
 
 }

@@ -12,12 +12,12 @@ namespace TTauri::Config {
 /*! Temporary node holding a list of expressions.
  * instances only exists during the execution of bison.
  */
-struct ASTExpressions : ASTNode {
+struct ASTExpressionList : ASTNode {
     std::vector<ASTExpression *> expressions;
 
-    ASTExpressions(Location location, ASTExpression *firstExpression) : ASTNode(location), expressions({firstExpression}) {}
+    ASTExpressionList(Location location, ASTExpression *firstExpression) : ASTNode(location), expressions({firstExpression}) {}
 
-    ~ASTExpressions() {
+    ~ASTExpressionList() {
         for (auto expression: expressions) {
             delete expression;
         }
