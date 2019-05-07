@@ -23,6 +23,10 @@ TEST(TTauriConfigConfig, ConfigTest) {
         ASSERT_EQ(config.value<double>("a"), 1.0);
         ASSERT_EQ(config.value<std::filesystem::path>("foo.bar.d.2.value"), std::filesystem::path("nein"));
 
+        // Modifying
+        config["foo.bar.d.0.value"] = "hello"s;
+        ASSERT_EQ(config.value<std::string>("foo.bar.d.0.value"), "hello"s);
+
     } catch (boost::exception &e) {
         std::cerr << boost::diagnostic_information(e);
         throw;

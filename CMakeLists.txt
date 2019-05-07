@@ -21,11 +21,10 @@ add_subdirectory(Utilities)
 add_subdirectory(ThirdPartyLibraries)
 add_subdirectory(TTauri)
 add_subdirectory(TTauriDevelopmentApplication)
-#add_subdirectory(TTauriUnitTests) 
  
- enable_testing()
+enable_testing()
 
- add_test(NAME TTauriTests COMMAND TTauri/TTauriTests)
+add_test(NAME TTauriTests COMMAND TTauri/TTauriTests)
  
  
 

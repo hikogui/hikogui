@@ -74,7 +74,9 @@ endforeach(shader)
 set(TTauriTests_srcs
     Config/parser_tests.cpp
     Config/Config_tests.cpp
+    Draw/QBezier_tests.cpp
     strings_tests.cpp
+    math_tests.cpp
 )
 
 

@@ -163,7 +163,7 @@ struct Value {
     }
 
     template<typename T>
-    T &lvalue() {
+    T &value() {
         return std::any_cast<T &>(intrinsic);
     }
 
@@ -199,16 +199,16 @@ struct Value {
         return type().name();
     }
 
-    Value get(std::vector<std::string> const &key) const {
+    Value &get(std::vector<std::string> const &key) {
         if (key.size() > 0 && is_type<Object>()) {
             auto const index = key.at(0);
-            auto const next = (*this)[index];
-            return next.get(std::vector<std::string>{key.begin() + 1, key.end()});
+            auto &next = (*this)[index];
+            return next.get({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0 && is_type<Array>()) {
             size_t const index = std::stoll(key.at(0));
-            auto const next = (*this)[index];
-            return next.get(std::vector<std::string>{key.begin() + 1, key.end()});
+            auto &next = (*this)[index];
+            return next.get({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
             BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not support get() with '%s'")
@@ -219,9 +219,26 @@ struct Value {
         }
     }
 
-    Value get(std::string const &key) const {
-        return get(split(key, '.'));
+    Value get(std::vector<std::string> const &key) const {
+        if (key.size() > 0 && is_type<Object>()) {
+            auto const index = key.at(0);
+            auto const next = (*this)[index];
+            return next.get({key.begin() + 1, key.end()});
+
+        } else if (key.size() > 0 && is_type<Array>()) {
+            size_t const index = std::stoll(key.at(0));
+            auto const next = (*this)[index];
+            return next.get({key.begin() + 1, key.end()});
+
+        } else if (key.size() > 0) {
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not support get() with '%s'")
+                % type_name() % key.at(0)).str())
+            );
+        } else {
+            return *this;
+        }
     }
+
 
     /*! Return a string representation of the value.
      * \return a string representing the value.
@@ -605,7 +622,7 @@ struct Value {
         }
 
         if (is_type<Object>()) {
-            auto &obj = lvalue<Object>();
+            auto &obj = value<Object>();
             obj.try_emplace(other, Undefined{});
             return obj[other];
         }
@@ -637,7 +654,7 @@ struct Value {
         }
 
         if (is_type<Array>()) {
-            auto &_array = lvalue<Array>();
+            auto &_array = value<Array>();
 
             if (index < _array.size()) {
                 return _array[index];
@@ -678,7 +695,7 @@ struct Value {
         }
 
         if (is_type<Array>()) {
-            auto &_array = lvalue<Array>();
+            auto &_array = value<Array>();
             _array.emplace_back(Undefined{});
             return _array.back();
         }

@@ -80,6 +80,16 @@ struct Config {
         }
     }
 
+    Value operator[](std::string const &key) const {
+        auto const splitKey = split(key, '.');
+        return root.get(splitKey);
+    }
+
+    Value &operator[](std::string const &key) {
+        auto const splitKey = split(key, '.');
+        return root.get(splitKey);
+    }
+
     /*! Get a value from the configuration.
      * The key is a string; identifiers and integer indices
      * seperated by dots. To select items from nested objects
@@ -96,7 +106,7 @@ struct Config {
      */
     template<typename T>
     T value(std::string const &key) const {
-        auto const obj = root.get(key);
+        auto const obj = (*this)[key];
         return obj.value<T>();
     }
 

@@ -1,0 +1,10 @@
+
+fonts = [
+    {name: "Roboto-Regular-12", file: path("Fonts/Roboto-Regular.ttf"), faceIndex: 0, fontSize: 12}
+];
+
+[default.label]
+font = "Roboto-Regular-12";
+foreground = #ffffffff;
+background = #00000000;
+

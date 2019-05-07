@@ -1,37 +1,42 @@
 ﻿{
-  "configurations": [
-    {
-      "name": "x64-Debug",
-      "generator": "Ninja",
-      "configurationType": "Debug",
-      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
-      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
-      "cmakeCommandArgs": "",
-      "buildCommandArgs": "-v",
-      "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ],
-      "variables": [
+    "configurations": [
         {
-          "name": "GLM_TEST_ENABLE_CXX_17",
-          "value": "ON"
-        },
-        {
-          "name": "BUILD_SHARED_LIBS",
-          "value": "OFF"
-        },
-        {
-          "name": "GLM_TEST_ENABLE",
-          "value": "OFF"
-        },
-        {
-            "name": "GLM_TEST_ENABLE_SIMD_AVX2",
-            "value": "ON"
-        },
-        {
-            "name": "gtest_force_shared_crt",
-            "value": "ON"
+            "name": "x64-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "-v",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "GLM_TEST_ENABLE_CXX_17",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "BUILD_SHARED_LIBS",
+                    "value": "OFF",
+                    "type": "STRING"
+                },
+                {
+                    "name": "GLM_TEST_ENABLE",
+                    "value": "OFF",
+                    "type": "STRING"
+                },
+                {
+                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "gtest_force_shared_crt",
+                    "value": "ON",
+                    "type": "STRING"
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
 }
