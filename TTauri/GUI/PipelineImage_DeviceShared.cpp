@@ -1,7 +1,6 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#define GLM_ENABLE_EXPERIMENTAL
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"

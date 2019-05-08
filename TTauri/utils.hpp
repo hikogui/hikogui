@@ -174,6 +174,18 @@ constexpr std::array<T, N> generate_array(F operation)
     return a;
 }
 
+template<typename T, typename F>
+inline void erase_if(T &v, F operation)
+{
+    while (true) {
+        auto const i = std::find_if(v.begin(), v.end(), operation);
+        if (i == v.end()) {
+            return;
+        }
+        v.erase(i);
+    }
+}
+
 template<typename T>
 struct atomic_state {
     struct error : virtual boost::exception, virtual std::exception {};

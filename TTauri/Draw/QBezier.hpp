@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #pragma once
-#define GLM_FORCE_SWIZZLE
 
 #include "TTauri/math.hpp"
 

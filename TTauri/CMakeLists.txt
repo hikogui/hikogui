@@ -1,8 +1,11 @@
 
 cmake_minimum_required(VERSION 3.0)
+cmake_policy(SET CMP0074 NEW)
 
 project(TTauri CXX)
 
+find_package(Boost REQUIRED)
+find_package(Vulkan REQUIRED)
 
 
 # Visual Studio likes to know about all header files.
@@ -24,7 +27,6 @@ set(TTauri_srcs
     Config/parser.cpp
     Draw/PixelMap.cpp
     Draw/PNG.cpp
-	Draw/FreeType.cpp
     GUI/Device.cpp
     GUI/Device_vulkan.cpp
     GUI/ImageView.cpp
@@ -47,6 +49,7 @@ set(TTauri_srcs
     Application.cpp
     Application_win32.cpp
     Logging.cpp
+    File.cpp
     strings.cpp
     Time.cpp
     Timestamp.cpp
@@ -57,10 +60,23 @@ if(MSVC)
     add_compile_options(/wd4996 /wd4005)
 endif()
 
+
 add_library(TTauri STATIC ${TTauri_srcs})
-target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA freetype)
+target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
+
+target_include_directories(TTauri PUBLIC ${Boost_INCLUDE_DIRS})
+target_link_directories(TTauri PUBLIC ${Boost_LIBRARY_DIRS})
+
+target_include_directories(TTauri PUBLIC ${Vulkan_INCLUDE_DIRS})
+if (MSVC)
+    target_compile_definitions(TTauri PUBLIC -D_WIN64)
+    target_compile_definitions(TTauri PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
+endif()
+
+target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
+
 
 set(TTauri_GUI_shaders
 	GUI/PipelineImage.vert
