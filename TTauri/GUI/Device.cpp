@@ -4,7 +4,7 @@
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "Window.hpp"
-#include "TTauri/Logging.hpp"
+#include "TTauri/logging.hpp"
 #include "TTauri/utils.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <tuple>

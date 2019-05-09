@@ -27,6 +27,8 @@ set(TTauri_srcs
     Config/parser.cpp
     Draw/PixelMap.cpp
     Draw/PNG.cpp
+    Draw/Font.cpp
+    Draw/TrueTypeParser.cpp
     GUI/Device.cpp
     GUI/Device_vulkan.cpp
     GUI/ImageView.cpp
@@ -48,8 +50,10 @@ set(TTauri_srcs
     GUI/WindowView.cpp
     Application.cpp
     Application_win32.cpp
-    Logging.cpp
+    logging.cpp
     File.cpp
+    FileMapping.cpp
+    FileView.cpp
     strings.cpp
     Time.cpp
     Timestamp.cpp
@@ -91,6 +95,7 @@ set(TTauriTests_srcs
     Config/parser_tests.cpp
     Config/Config_tests.cpp
     Draw/QBezier_tests.cpp
+    FileView_tests.cpp
     strings_tests.cpp
     math_tests.cpp
 )
@@ -100,7 +105,7 @@ add_executable(TTauriTests ${TTauriTests_srcs})
 target_link_libraries(TTauriTests TTauri gtest_main)
 set_property(TARGET TTauriTests PROPERTY CXX_STANDARD 17)
 
-file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Config/TestFiles/*)
+file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestFiles/* ${CMAKE_CURRENT_SOURCE_DIR}/Config/TestFiles/*)
  foreach(TestFile ${TestFiles})
      add_custom_command(TARGET TTauriTests POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy

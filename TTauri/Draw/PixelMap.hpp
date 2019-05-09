@@ -1,7 +1,7 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #pragma once
-
-//#include "utils.hpp"
 
 #include "TTauri/utils.hpp"
 #include "TTauri/geometry.hpp"

@@ -3,7 +3,7 @@
 
 #include "Instance.hpp"
 #include "vulkan_utils.hpp"
-#include "TTauri/Logging.hpp"
+#include "TTauri/logging.hpp"
 #include "TTauri/Application.hpp"
 #include <chrono>
 

@@ -6,7 +6,7 @@
 #include "WindowView.hpp"
 #include "config.hpp"
 #include "TTauri/utils.hpp"
-#include "TTauri/Logging.hpp"
+#include "TTauri/logging.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {

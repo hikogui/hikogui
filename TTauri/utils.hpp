@@ -3,8 +3,10 @@
 
 #pragma once
 
-#include "Logging.hpp"
+#include "logging.hpp"
 #include <boost/throw_exception.hpp>
+#include <gsl/gsl>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <functional>
@@ -14,7 +16,8 @@
 
 namespace TTauri {
 
-struct NotImplementedError : virtual boost::exception, virtual std::exception {};
+    struct NotImplementedError : virtual boost::exception, virtual std::exception {};
+    struct OutOfBoundsError : virtual boost::exception, virtual std::exception {};
 
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
 constexpr bool hasInitializeHelper(int)
@@ -48,9 +51,43 @@ inline std::shared_ptr<T> make_shared(Args... args)
     return std::make_shared<T>(args...);
 }
 
+template<typename T>
+inline T &at(gsl::span<std::byte> bytes, size_t offset)
+{
+    if (offset + sizeof(T) > static_cast<size_t>(bytes.size())) {
+        BOOST_THROW_EXCEPTION(OutOfBoundsError());
+    }
+
+    T *ptr = reinterpret_cast<T *>(&bytes[offset]);
+    return *ptr;
+}
+
+template<typename T>
+inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset, size_t count)
+{
+    size_t size = count * sizeof(T);
+
+    if (offset + size > static_cast<size_t>(bytes.size())) {
+        BOOST_THROW_EXCEPTION(OutOfBoundsError());
+    }
+
+    T* ptr = reinterpret_cast<T *>(&bytes[offset]);
+    return gsl::span<T>(ptr, count);
+}
+
 inline constexpr size_t align(size_t offset, size_t alignment) 
 {
     return ((offset + alignment - 1) / alignment) * alignment;
+}
+
+inline constexpr uint32_t fourcc(char *txt)
+{
+    return (
+        (static_cast<uint32_t>(txt[0]) << 24) |
+        (static_cast<uint32_t>(txt[1]) << 16) |
+        (static_cast<uint32_t>(txt[2]) <<  8) |
+        static_cast<uint32_t>(txt[3])
+   );
 }
 
 template<typename T>
@@ -226,7 +263,6 @@ struct atomic_state {
 
             auto expected_state = from_state;
             if (state.compare_exchange_strong(expected_state, to_state)) {
-                //LOG_DEBUG("state %i -> %i") % static_cast<int>(from_state) % static_cast<int>(to_state);
                 return {from_state};
             }
         }

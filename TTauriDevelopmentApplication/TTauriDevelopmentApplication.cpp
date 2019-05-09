@@ -3,7 +3,7 @@
 #include "TTauri/Application_win32.hpp"
 #include "TTauri/GUI/ImageView.hpp"
 #include "TTauri/GUI/Instance_vulkan_win32.hpp"
-#include "TTauri/Logging.hpp"
+#include "TTauri/logging.hpp"
 
 #include <vulkan/vulkan.hpp>
 
