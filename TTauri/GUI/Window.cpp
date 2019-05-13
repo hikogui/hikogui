@@ -37,6 +37,8 @@ Window::~Window()
 
 void Window::initialize()
 {
+    std::scoped_lock lock(mutex);
+
     view = TTauri::make_shared<WindowView>(shared_from_this());
 
     openingWindow();
@@ -44,35 +46,23 @@ void Window::initialize()
 
 void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp)
 {
+    std::scoped_lock lock(mutex);
+
     render();
 }
 
 void Window::maintenance()
 {
-    if (state.try_transition({{State::SWAPCHAIN_OUT_OF_DATE, State::REBUILDING_SWAPCHAIN}, {State::MINIMIZED, State::REBUILDING_SWAPCHAIN}})) {
-        auto const newState = rebuildForSwapchainChange();
+    std::scoped_lock lock(mutex);
 
-        state.transition_or_throw({{State::REBUILDING_SWAPCHAIN, newState}});
+    if (state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
+        state = rebuildForSwapchainChange();
     }
 }
 
 void Window::setDevice(const std::weak_ptr<Device> newDevice)
 {
-    state.transition({
-        {State::READY_TO_DRAW, State::SETTING_DEVICE},
-        {State::NO_DEVICE, State::SETTING_DEVICE},
-        {State::MINIMIZED, State::SETTING_DEVICE},
-        {State::SWAPCHAIN_OUT_OF_DATE, State::SETTING_DEVICE},
-        {State::DEVICE_LOST, State::SETTING_DEVICE},
-        {State::SURFACE_LOST, State::SETTING_DEVICE},
-
-        {State::WAITING_FOR_VSYNC, State::REQUEST_SET_DEVICE}
-    });
-
-    state.transition({
-        {State::SETTING_DEVICE, State::SETTING_DEVICE},
-        {State::ACCEPTED_SET_DEVICE, State::SETTING_DEVICE}
-    });
+    std::scoped_lock lock(mutex);
 
     if (!device.expired()) {
         teardownForDeviceChange();
@@ -80,21 +70,23 @@ void Window::setDevice(const std::weak_ptr<Device> newDevice)
 
     device = move(newDevice);
     if (!device.expired()) {
-        auto const newState = buildForDeviceChange();
-        state.transition_or_throw({{State::SETTING_DEVICE, newState}});
-
+        state = buildForDeviceChange();
     } else {
-        state.transition_or_throw({{State::SETTING_DEVICE, State::NO_DEVICE}});
+        state = State::NO_DEVICE;
     }   
 }
 
 void Window::setWindowPosition(uint32_t x, uint32_t y)
 {
+    std::scoped_lock lock(mutex);
+
     windowRectangle.offset = {x, y};
 }
 
 void Window::setWindowSize(uint32_t width, uint32_t height)
 {
+    std::scoped_lock lock(mutex);
+
     windowRectangle.extent = {width, height};
 }
 

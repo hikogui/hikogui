@@ -58,15 +58,12 @@ int Application_win32::loop()
             mainThreadLastWindowClose();
             break;
 
-        case WM_APP_CLOSING_WINDOW: {
-            auto window = reinterpret_cast<GUI::Window_vulkan_win32 *>(msg.lParam);
-            window->mainThreadClosingWindow();
-        }
-        case WM_APP_OPENING_WINDOW: {
-            auto window = reinterpret_cast<GUI::Window_vulkan_win32 *>(msg.lParam);
-            window->mainThreadOpeningWindow();
-        }
-
+        case WM_APP_CLOSING_WINDOW:
+            reinterpret_cast<GUI::Window_vulkan_win32*>(msg.lParam)->mainThreadClosingWindow();
+            break;
+        case WM_APP_OPENING_WINDOW:
+            reinterpret_cast<GUI::Window_vulkan_win32*>(msg.lParam)->mainThreadOpeningWindow();
+            break;
         }
 
         TranslateMessage(&msg);

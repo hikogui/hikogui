@@ -102,6 +102,8 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closingWindow()
 {
+    // Don't lock mutex, the window is about to be destructed.
+    // Also no members of this are being accessed.
     auto app = get_singleton<Application_win32>();
 
     PostThreadMessageW(app->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
@@ -109,11 +111,13 @@ void Window_vulkan_win32::closingWindow()
 
 void Window_vulkan_win32::mainThreadClosingWindow()
 {
+    // Don't lock mutex, the window is about to be destructed.
     Window_vulkan::closingWindow();
 }
 
 void Window_vulkan_win32::openingWindow()
 {
+    // Don't lock mutex, no members of this are being accessed.
     auto app = get_singleton<Application_win32>();
 
     PostThreadMessageW(app->mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
@@ -121,12 +125,14 @@ void Window_vulkan_win32::openingWindow()
 
 void Window_vulkan_win32::mainThreadOpeningWindow()
 {
+    std::scoped_lock lock(mutex);
+
     Window_vulkan::openingWindow();
 }
 
-
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    // Cannot lock mutex as Window_vulkan_win32 may still be in the process of being constructed.
     switch (uMsg) {
     case WM_MOVING: {
         RECT windowRect;

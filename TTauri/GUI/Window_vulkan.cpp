@@ -32,25 +32,24 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::initialize()
 {
+    std::scoped_lock lock(mutex);
+
     Window::initialize();
     imagePipeline = TTauri::make_shared<PipelineImage::PipelineImage>(shared_from_this());
 }
 
 void Window_vulkan::waitIdle()
 {
+    std::scoped_lock lock(mutex);
+
     lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
 void Window_vulkan::render()
 {
-    //LOG_DEBUG("render '%s' state=%i") % title % static_cast<int>(state.value());
+    std::scoped_lock lock(mutex);
 
-    auto oldState = state.try_transition({
-        {State::REQUEST_SET_DEVICE, State::ACCEPTED_SET_DEVICE},
-        {State::READY_TO_DRAW, State::WAITING_FOR_VSYNC}
-        });
-
-    if (!oldState || oldState.value() == State::REQUEST_SET_DEVICE) {
+    if (state != State::READY_TO_DRAW) {
         return;
     }
 
@@ -65,32 +64,26 @@ void Window_vulkan::render()
 
         switch (result) {
         case vk::Result::eSuccess:
-            state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}}); // May not be in WAITING_FOR_SYNC anymore.
             acquiredImageIndex = imageIndex;
             break;
 
         case vk::Result::eSuboptimalKHR:
             LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
-            state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
+            state = State::SWAPCHAIN_OUT_OF_DATE;
             return;
 
         case vk::Result::eErrorOutOfDateKHR:
             LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
-            state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
+            state = State::SWAPCHAIN_OUT_OF_DATE;
             return;
 
         case vk::Result::eTimeout:
             // Don't render, we didn't receive an image.
             LOG_INFO("acquireNextImageKHR() eTimeout");
-            state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}});
             return;
 
         default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
         }
-    }
-
-    if (!state.try_transition({{State::READY_TO_DRAW, State::RENDERING}})) {
-        return;
     }
 
     // Wait until previous rendering has finished, before the next rendering.
@@ -124,23 +117,21 @@ void Window_vulkan::render()
 
             switch (result) {
             case vk::Result::eSuccess:
-                state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
                 return;
 
             case vk::Result::eSuboptimalKHR:
                 LOG_INFO("presentKHR() eSuboptimalKHR");
-                state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
+                state = State::SWAPCHAIN_OUT_OF_DATE;
                 return;
 
             default:
                 LOG_ERROR("presentKHR() unknown result value");
-                state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
+                state = State::SWAPCHAIN_OUT_OF_DATE;
                 return;
             }
 
         } catch (const vk::OutOfDateKHRError &) {
             LOG_INFO("presentKHR() eErrorOutOfDateKHR");
-            state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
             return;
         }
 
@@ -150,6 +141,8 @@ void Window_vulkan::render()
 }
 std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImageCountExtentAndState()
 {
+    std::scoped_lock lock(mutex);
+
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     try {
         surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->physicalIntrinsic.getSurfaceCapabilitiesKHR(intrinsic);
@@ -190,6 +183,8 @@ std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImage
 
 Window::State Window_vulkan::buildForDeviceChange()
 {
+    std::scoped_lock lock(mutex);
+
     auto const swapchainAndState = buildSwapchain();
     swapchain = swapchainAndState.first;
     auto const newState = swapchainAndState.second;
@@ -204,6 +199,8 @@ Window::State Window_vulkan::buildForDeviceChange()
 
 void Window_vulkan::teardownForDeviceChange()
 {
+    std::scoped_lock lock(mutex);
+
     waitIdle();
     imagePipeline->teardownForDeviceChange();
     teardownSemaphores();
@@ -214,6 +211,8 @@ void Window_vulkan::teardownForDeviceChange()
 
 Window::State Window_vulkan::rebuildForSwapchainChange()
 {
+    std::scoped_lock lock(mutex);
+
     auto const imageState = get<2>(getImageCountExtentAndState());
 
     if (imageState != State::READY_TO_DRAW) {
@@ -237,6 +236,8 @@ Window::State Window_vulkan::rebuildForSwapchainChange()
 
 std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
 {
+    std::scoped_lock lock(mutex);
+
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     auto const sharingMode = vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex ?
@@ -321,21 +322,27 @@ std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::Swa
 
 void Window_vulkan::teardownSwapchain()
 {
+    std::scoped_lock lock(mutex);
+
     lock_dynamic_cast<Device_vulkan>(device)->intrinsic.destroy(swapchain);
 }
 
 void Window_vulkan::buildFramebuffers()
 {
+    std::scoped_lock lock(mutex);
+
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     swapchainImages = vulkanDevice->intrinsic.getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
-        auto imageView = vulkanDevice->intrinsic.createImageView({ vk::ImageViewCreateFlags(),
-                                                                   image,
-                                                                   vk::ImageViewType::e2D,
-                                                                   swapchainCreateInfo.imageFormat,
-                                                                   vk::ComponentMapping(),
-                                                                   { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 } });
+        auto imageView = vulkanDevice->intrinsic.createImageView({
+            vk::ImageViewCreateFlags(),
+            image,
+            vk::ImageViewType::e2D,
+            swapchainCreateInfo.imageFormat,
+            vk::ComponentMapping(),
+            { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+        });
 
         swapchainImageViews.push_back(imageView);
 
@@ -359,6 +366,8 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
+    std::scoped_lock lock(mutex);
+
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     for (auto frameBuffer : swapchainFramebuffers) {
@@ -374,6 +383,8 @@ void Window_vulkan::teardownFramebuffers()
 
 void Window_vulkan::buildRenderPasses()
 {
+    std::scoped_lock lock(mutex);
+
     std::vector<vk::AttachmentDescription> attachmentDescriptions = { {
         vk::AttachmentDescriptionFlags(),
         swapchainCreateInfo.imageFormat,
@@ -390,20 +401,23 @@ void Window_vulkan::buildRenderPasses()
 
     std::vector<vk::AttachmentReference> const colorAttachmentReferences = { { 0, vk::ImageLayout::eColorAttachmentOptimal } };
 
-    std::vector<vk::SubpassDescription> const subpassDescriptions = { { vk::SubpassDescriptionFlags(),
-                                                                        vk::PipelineBindPoint::eGraphics,
-                                                                        boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-                                                                        inputAttachmentReferences.data(),
-                                                                        boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
-                                                                        colorAttachmentReferences.data() } };
+    std::vector<vk::SubpassDescription> const subpassDescriptions = { {
+        vk::SubpassDescriptionFlags(),
+        vk::PipelineBindPoint::eGraphics,
+        boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+        inputAttachmentReferences.data(),
+        boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+        colorAttachmentReferences.data()
+    } };
 
-    std::vector<vk::SubpassDependency> const subpassDependency = { { VK_SUBPASS_EXTERNAL,
-                                                                     0,
-                                                                     vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                                                                     vk::PipelineStageFlagBits::eColorAttachmentOutput,
-                                                                     vk::AccessFlags(),
-                                                                     vk::AccessFlagBits::eColorAttachmentRead |
-                                                                         vk::AccessFlagBits::eColorAttachmentWrite } };
+    std::vector<vk::SubpassDependency> const subpassDependency = { {
+        VK_SUBPASS_EXTERNAL,
+        0,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::AccessFlags(),
+        vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
+    } };
 
     vk::RenderPassCreateInfo const renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),
@@ -424,6 +438,8 @@ void Window_vulkan::buildRenderPasses()
 
 void Window_vulkan::teardownRenderPasses()
 {
+    std::scoped_lock lock(mutex);
+
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
     vulkanDevice->intrinsic.destroy(firstRenderPass);
     vulkanDevice->intrinsic.destroy(followUpRenderPass);
@@ -431,6 +447,8 @@ void Window_vulkan::teardownRenderPasses()
 
 void Window_vulkan::buildSemaphores()
 {
+    std::scoped_lock lock(mutex);
+
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     imageAvailableSemaphore = vulkanDevice->intrinsic.createSemaphore({}, nullptr);
@@ -443,6 +461,8 @@ void Window_vulkan::buildSemaphores()
 
 void Window_vulkan::teardownSemaphores()
 {
+    std::scoped_lock lock(mutex);
+
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
     vulkanDevice->intrinsic.destroy(imageAvailableSemaphore);
     vulkanDevice->intrinsic.destroy(renderFinishedFence);

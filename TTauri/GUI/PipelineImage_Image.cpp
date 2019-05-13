@@ -87,10 +87,10 @@ void Image::placePageVertices(size_t const index, const ImageLocation &location,
     auto const vertexIndex = vertexY * vertexStride + vertexX;
 
     // Point, Extent, Inside
-    auto const [p1, e1, i1] = tmpVertexPositions.at(vertexIndex);
-    auto const [p2, e2, i2] = tmpVertexPositions.at(vertexIndex + 1);
-    auto const [p3, e3, i3] = tmpVertexPositions.at(vertexIndex + vertexStride);
-    auto const [p4, e4, i4] = tmpVertexPositions.at(vertexIndex + vertexStride + 1);
+    auto const [p1, e1, i1] = tmpVertexPositions[vertexIndex];
+    auto const [p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
+    auto const [p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
+    auto const [p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
 
     if (!(i1 || i2 || i3 || i4)) {
         // Clipped page.
@@ -99,10 +99,10 @@ void Image::placePageVertices(size_t const index, const ImageLocation &location,
 
     auto const atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
 
-    vertices.at(offset++) = {location, p1, atlasPosition};
-    vertices.at(offset++) = {location, p2, {atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z}};
-    vertices.at(offset++) = {location, p3, {atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z}};
-    vertices.at(offset++) = {location, p4, {atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z}};
+    vertices[offset++] = {location, p1, atlasPosition};
+    vertices[offset++] = {location, p2, {atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z}};
+    vertices[offset++] = {location, p3, {atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z}};
+    vertices[offset++] = {location, p4, {atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z}};
 }
 
 /*! Place vertices for this image.
@@ -114,6 +114,12 @@ void Image::placePageVertices(size_t const index, const ImageLocation &location,
 void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset)
 {
     calculateVertexPositions(location);
+
+    if (offset + pages.size() * 4 > vertices.size()) {
+        LOG_FATAL("vertices don't fit");
+        abort();
+    }
+
     for (size_t index = 0; index < pages.size(); index++) {
         placePageVertices(index, location, vertices, offset);
     }

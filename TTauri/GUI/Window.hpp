@@ -30,14 +30,6 @@ public:
         READY_TO_DRAW, //!< state. The swapchain is ready drawing is allowed.
         SURFACE_LOST, //!< state. The window was destroyed, everything needs to be destroyed.
         DEVICE_LOST, //!< state. The device was last, but the window could move to a new device, or the device can be recreated.
-
-        REQUEST_SET_DEVICE, //!< thread-synchronization(during:WAITING_FOR_VSYNC)
-        ACCEPTED_SET_DEVICE, //!< thread-synchronization
-
-        SETTING_DEVICE, //!< mutex. tearing down the old device, building up the new device.
-        REBUILDING_SWAPCHAIN, //!< mutex. swapchain is rebuild after window was resized.
-        RENDERING, //!< mutex. The render thread is currently rendering on the window. No other threads should interrupt.
-        WAITING_FOR_VSYNC, //!< mutex. The render thread is currently acquiring a new image and blocking on vertical-sync.
     };
 
     enum class SizeState {
@@ -61,17 +53,14 @@ public:
 
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
-    atomic_state<State> state = { State::NO_DEVICE };
+    mutable std::recursive_mutex mutex;
+    State state = State::NO_DEVICE;
 
     std::shared_ptr<Delegate> delegate;
 
     std::string title;
 
     std::weak_ptr<Device> device;
-
-    //! Location of the window on the screen.
-    //glm::vec3 position = { 0.0, 0.0, 0.0 };
-    //glm::vec3 extent = { 0.0, 0.0, 0.0 };
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
