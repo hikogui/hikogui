@@ -9,27 +9,6 @@
 namespace TTauri {
 
 
-std::string getLastErrorMessage()
-{
-    DWORD const errorCode = GetLastError();
-    size_t const messageSize = 32768;
-    wchar_t *const c16_message = new wchar_t[messageSize];;
-
-    FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, // source
-        errorCode,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        c16_message,
-        messageSize,
-        NULL
-    );
-
-    auto const message = translateString<std::string>(std::wstring(c16_message));
-    delete c16_message;
-
-    return message;
-}
 
 File::File(const std::filesystem::path &path, AccessMode accessMode) :
     path(path), accessMode(accessMode)

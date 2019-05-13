@@ -21,14 +21,10 @@ public:
     void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) override;
 
 private:
-    std::thread updateAndRenderThread;
-    bool stopUpdateAndRender = false;
-
     std::thread maintanceThread;
     bool stopMaintenance = false;
 
     static void maintenanceLoop(gsl::not_null<Instance_vulkan_win32 *> self);
-    static void updateAndRenderLoop(gsl::not_null<Instance_vulkan_win32 *> self);
 };
 
 }

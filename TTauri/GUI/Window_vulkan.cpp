@@ -41,7 +41,7 @@ void Window_vulkan::waitIdle()
     lock_dynamic_cast<Device_vulkan>(device)->intrinsic.waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 }
 
-bool Window_vulkan::render(bool blockOnVSync)
+void Window_vulkan::render()
 {
     //LOG_DEBUG("render '%s' state=%i") % title % static_cast<int>(state.value());
 
@@ -51,17 +51,16 @@ bool Window_vulkan::render(bool blockOnVSync)
         });
 
     if (!oldState || oldState.value() == State::REQUEST_SET_DEVICE) {
-        return false;
+        return;
     }
 
-    auto const timeout = blockOnVSync ? std::numeric_limits<uint64_t>::max() : 0;
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
     if (!acquiredImageIndex) {
         // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
         uint32_t imageIndex = 0;
         //LOG_DEBUG("acquireNextImage '%s'") % title;
-        auto const result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, timeout, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+        auto const result = vulkanDevice->intrinsic.acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
         //LOG_DEBUG("/acquireNextImage '%s'") % title;
 
         switch (result) {
@@ -73,25 +72,25 @@ bool Window_vulkan::render(bool blockOnVSync)
         case vk::Result::eSuboptimalKHR:
             LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
             state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
-            return false;
+            return;
 
         case vk::Result::eErrorOutOfDateKHR:
             LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
             state.transition({{State::WAITING_FOR_VSYNC, State::SWAPCHAIN_OUT_OF_DATE}});
-            return false;
+            return;
 
         case vk::Result::eTimeout:
             // Don't render, we didn't receive an image.
             LOG_INFO("acquireNextImageKHR() eTimeout");
             state.transition({{State::WAITING_FOR_VSYNC, State::READY_TO_DRAW}});
-            return false;
+            return;
 
         default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
         }
     }
 
     if (!state.try_transition({{State::READY_TO_DRAW, State::RENDERING}})) {
-        return blockOnVSync;
+        return;
     }
 
     // Wait until previous rendering has finished, before the next rendering.
@@ -113,7 +112,8 @@ bool Window_vulkan::render(bool blockOnVSync)
         vector<uint32_t> const presentImageIndices = { acquiredImageIndex.value() };
         BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
 
-        // We tried our best to return the acquired image.
+        // We will try our best to return the acquired image.
+        // A call to presentKHR() always releases the resources of the given image index.
         acquiredImageIndex.reset();
 
         try {
@@ -125,24 +125,27 @@ bool Window_vulkan::render(bool blockOnVSync)
             switch (result) {
             case vk::Result::eSuccess:
                 state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
-                return blockOnVSync;
+                return;
 
             case vk::Result::eSuboptimalKHR:
                 LOG_INFO("presentKHR() eSuboptimalKHR");
                 state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
-                return blockOnVSync;
+                return;
 
             default:
                 LOG_ERROR("presentKHR() unknown result value");
                 state.transition_or_throw({{State::RENDERING, State::READY_TO_DRAW}});
-                return blockOnVSync;
+                return;
             }
 
         } catch (const vk::OutOfDateKHRError &) {
             LOG_INFO("presentKHR() eErrorOutOfDateKHR");
             state.transition_or_throw({{State::RENDERING, State::SWAPCHAIN_OUT_OF_DATE}});
-            return blockOnVSync;
+            return;
         }
+
+        // Make sure that resources are released by Vulkan by calling
+        vulkanDevice->intrinsic.waitIdle();
     }
 }
 std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImageCountExtentAndState()

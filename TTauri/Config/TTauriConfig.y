@@ -137,7 +137,7 @@ expression:
 
 expressions:
       expression                                                    { $$ = NEW_NODE(ASTExpressionList, @1, $1); }
-    | expressions ';' expression                                    { $1->expressions.push_back($3); $$ = $1; }
+    | expressions ';' expression                                    { $1->add($3); $$ = $1; }
     ;
 
 body:

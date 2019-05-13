@@ -45,7 +45,7 @@ public:
     State rebuildForSwapchainChange() override;
 
 protected:
-    bool render(bool blockOnVSync) override;
+    void render() override;
 
 private:
     void buildSemaphores();

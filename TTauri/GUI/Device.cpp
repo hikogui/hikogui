@@ -54,25 +54,6 @@ void Device::remove(std::shared_ptr<Window> window)
     windows.erase(find(windows.begin(), windows.end(), window));
 }
 
-bool Device::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
-{
-    vector<shared_ptr<Window>> tmpWindows;
-    {
-        auto lock = scoped_lock(mutex);
-        tmpWindows = windows;
-    }
-
-    auto hasBlockedOnVSync = false;
-
-    if (state == State::READY_TO_DRAW) {
-        for (auto window : tmpWindows) {
-            hasBlockedOnVSync |= window->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync && !hasBlockedOnVSync);
-        }
-    }
-
-    return hasBlockedOnVSync;
-}
-
 std::vector<std::shared_ptr<Window>> Device::maintance()
 {
     vector<shared_ptr<Window>> tmpWindows;

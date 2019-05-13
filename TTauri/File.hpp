@@ -15,7 +15,6 @@
 
 namespace TTauri {
 
-std::string getLastErrorMessage();
 
 
 struct FileError : virtual boost::exception, virtual std::exception {

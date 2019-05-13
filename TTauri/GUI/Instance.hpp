@@ -5,6 +5,7 @@
 
 #include "Device.hpp"
 #include "Window.hpp"
+#include "VerticalSync.hpp"
 #include "TTauri/utils.hpp"
 #include <gsl/gsl>
 #include <boost/uuid/uuid.hpp>
@@ -21,6 +22,8 @@ namespace TTauri::GUI {
 class Instance {
 public:
     std::recursive_mutex mutex;
+
+    VerticalSync verticalSync;
 
     struct Error : virtual boost::exception, virtual std::exception {};
     struct ErrorNoDeviceForWindow : virtual Error {};
@@ -53,14 +56,6 @@ public:
     virtual void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
 
     virtual void setPreferedDevice(boost::uuids::uuid deviceUUID);
-
-    /*! Refresh Display.
-     *
-     * \param outTimestamp Number of nanoseconds since system start.
-     * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
-     * \return true if function has blocked on vertical-sync.
-     */
-    virtual bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
 
     static std::shared_ptr<Instance> singleton;
 

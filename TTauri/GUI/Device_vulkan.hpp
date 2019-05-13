@@ -66,8 +66,6 @@ public:
     Device_vulkan(Device_vulkan &&) = delete;
     Device_vulkan &operator=(Device_vulkan &&) = delete;
 
-    bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync) override;
-
     void initializeDevice(std::shared_ptr<Window> window) override;
 
     int score(std::shared_ptr<Window> window) override;

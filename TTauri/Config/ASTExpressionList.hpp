@@ -22,6 +22,10 @@ struct ASTExpressionList : ASTNode {
             delete expression;
         }
     }
+
+    void add(ASTExpression *x) {
+        expressions.push_back(x);
+    }
 };
 
 }

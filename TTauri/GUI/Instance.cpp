@@ -71,6 +71,7 @@ void Instance::add(shared_ptr<Window> window)
     }
 
     device->add(window);
+    verticalSync.add(window);
 }
 
 size_t Instance::getNumberOfWindows()
@@ -83,21 +84,6 @@ size_t Instance::getNumberOfWindows()
     }
 
     return numberOfWindows;
-}
-
-bool Instance::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
-{
-    vector<shared_ptr<Device>> tmpDevices;
-    {
-        scoped_lock lock(mutex);
-        tmpDevices = devices;
-    }
-
-    auto hasBlockedOnVSync = false;
-    for (auto device : tmpDevices) {
-        hasBlockedOnVSync |= device->updateAndRender(nowTimestamp, outputTimestamp, blockOnVSync && !hasBlockedOnVSync);
-    }
-    return hasBlockedOnVSync;
 }
 
 void Instance::maintenance()

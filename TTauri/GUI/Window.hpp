@@ -133,10 +133,8 @@ public:
      *
      * \param outTimestamp Number of nanoseconds since system start.
      * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
-     * \param blockOnVSync May block on VSync.
-     * \return true if this function has blocked on vertical-sync.
      */
-    bool updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync);
+    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp);
 
     /*! Maintanance
      * Maintain the window on a low performance thread.
@@ -156,7 +154,7 @@ protected:
      * \param should this window block on vertical-sync.
      * \returns true if this function has blocked on vertical-sync.
      */
-    virtual bool render(bool blockOnVSync) = 0;
+    virtual void render() = 0;
 
 private:
     bool isOnScreen();

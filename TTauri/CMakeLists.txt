@@ -29,6 +29,7 @@ set(TTauri_srcs
     Draw/PNG.cpp
     Draw/Font.cpp
     Draw/TrueTypeParser.cpp
+    GUI/VerticalSync.cpp
     GUI/Device.cpp
     GUI/Device_vulkan.cpp
     GUI/ImageView.cpp

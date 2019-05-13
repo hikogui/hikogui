@@ -11,6 +11,10 @@
 
 namespace TTauri {
 
+#ifdef _WIN32
+std::string getLastErrorMessage();
+#endif
+
 void initializeLogging();
 
 }

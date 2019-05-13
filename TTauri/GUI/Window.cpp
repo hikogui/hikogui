@@ -42,9 +42,9 @@ void Window::initialize()
     openingWindow();
 }
 
-bool Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp, bool blockOnVSync)
+void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp)
 {
-    return render(blockOnVSync);
+    render();
 }
 
 void Window::maintenance()

@@ -4,6 +4,8 @@
 #include "Instance_vulkan_win32.hpp"
 #include "Window_vulkan_win32.hpp"
 
+#include <ddraw.h>
+
 namespace TTauri::GUI {
 
 using namespace std;
@@ -13,7 +15,6 @@ Instance_vulkan_win32::Instance_vulkan_win32() :
     Instance_vulkan({ VK_KHR_WIN32_SURFACE_EXTENSION_NAME })
 {
     // Start update loop.
-    updateAndRenderThread = thread(Instance_vulkan_win32::updateAndRenderLoop, not_null<Instance_vulkan_win32 *>(this));
     maintanceThread = thread(Instance_vulkan_win32::maintenanceLoop, not_null<Instance_vulkan_win32 *>(this));
 }
 
@@ -21,11 +22,9 @@ Instance_vulkan_win32::~Instance_vulkan_win32()
 {
     try {
         [[gsl::suppress(f.6)]] {
-            stopUpdateAndRender = true;
             stopMaintenance = true;
 
             maintanceThread.join();
-            updateAndRenderThread.join();
         }
     } catch (...) {
         abort();
@@ -52,19 +51,5 @@ void Instance_vulkan_win32::maintenanceLoop(gsl::not_null<Instance_vulkan_win32 
     }
 }
 
-void Instance_vulkan_win32::updateAndRenderLoop(gsl::not_null<Instance_vulkan_win32 *> self)
-{
-    auto threadID = GetCurrentThread();
-    SetThreadDescription(threadID, L"TTauri::GUI Update And Render");
-
-    while (!self->stopUpdateAndRender) {
-        auto const hasBlockedOnVSync = self->updateAndRender(0, 0, true);
-
-        if (!hasBlockedOnVSync) {
-            // Wait for 1/60th of a second.
-            std::this_thread::sleep_for(16ms);
-        }
-    }
-}
 
 }
