@@ -27,7 +27,7 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
 
     if (imageObject.descriptorSetVersion < getDescriptorSetVersion()) {
         auto const writeDescriptorSets = createWriteDescriptorSet(imageIndex);
-        vulkanDevice->intrinsic.updateDescriptorSets(writeDescriptorSets, {});
+        vulkanDevice->updateDescriptorSets(writeDescriptorSets, {});
 
         imageObject.descriptorSetVersion = getDescriptorSetVersion();
     }
@@ -56,7 +56,7 @@ void Pipeline_vulkan::buildCommandBuffers()
 {
     auto const vulkanDevice = device<Device_vulkan>();
 
-    auto const commandBuffers = vulkanDevice->intrinsic.allocateCommandBuffers({
+    auto const commandBuffers = vulkanDevice->allocateCommandBuffers({
         vulkanDevice->graphicsCommandPool, 
         vk::CommandBufferLevel::ePrimary, 
         boost::numeric_cast<uint32_t>(frameBufferObjects.size())
@@ -77,7 +77,7 @@ void Pipeline_vulkan::teardownCommandBuffers()
 
     auto const commandBuffers = transform<vector<vk::CommandBuffer>>(frameBufferObjects, [](auto x) { return x.commandBuffer; });
 
-    vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, commandBuffers);
+    vulkanDevice->freeCommandBuffers(vulkanDevice->graphicsCommandPool, commandBuffers);
 }
 
 void Pipeline_vulkan::buildDescriptorSets()
@@ -91,7 +91,7 @@ void Pipeline_vulkan::buildDescriptorSets()
         boost::numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
     };
 
-    descriptorSetLayout = vulkanDevice->intrinsic.createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
+    descriptorSetLayout = vulkanDevice->createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
     auto const descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
         descriptorSetLayoutBindings,
@@ -103,7 +103,7 @@ void Pipeline_vulkan::buildDescriptorSets()
         }
     );
   
-    descriptorPool = vulkanDevice->intrinsic.createDescriptorPool({
+    descriptorPool = vulkanDevice->createDescriptorPool({
         vk::DescriptorPoolCreateFlags(),
         boost::numeric_cast<uint32_t>(frameBufferObjects.size()), // maxSets
         boost::numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
@@ -111,7 +111,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
     std::vector<vk::DescriptorSetLayout> const descriptorSetLayouts(frameBufferObjects.size(), descriptorSetLayout);
     
-    auto const descriptorSets = vulkanDevice->intrinsic.allocateDescriptorSets({
+    auto const descriptorSets = vulkanDevice->allocateDescriptorSets({
         descriptorPool,
         boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
@@ -129,8 +129,8 @@ void Pipeline_vulkan::teardownDescriptorSets()
 
     auto const descriptorSets = transform<vector<vk::DescriptorSet>>(frameBufferObjects, [](auto x) { return x.descriptorSet; });
 
-    vulkanDevice->intrinsic.destroy(descriptorPool);
-    vulkanDevice->intrinsic.destroy(descriptorSetLayout);
+    vulkanDevice->destroy(descriptorPool);
+    vulkanDevice->destroy(descriptorSetLayout);
 }
 
 void Pipeline_vulkan::buildSemaphores()
@@ -139,7 +139,7 @@ void Pipeline_vulkan::buildSemaphores()
 
     auto const semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     for (auto &frameBufferObject: frameBufferObjects) {
-        frameBufferObject.renderFinishedSemaphore = vulkanDevice->intrinsic.createSemaphore(semaphoreCreateInfo, nullptr);
+        frameBufferObject.renderFinishedSemaphore = vulkanDevice->createSemaphore(semaphoreCreateInfo);
     }
 }
 
@@ -148,7 +148,7 @@ void Pipeline_vulkan::teardownSemaphores()
     auto const vulkanDevice = device<Device_vulkan>();
 
     for (auto const &frameBufferObject: frameBufferObjects) {
-        vulkanDevice->intrinsic.destroy(frameBufferObject.renderFinishedSemaphore);
+        vulkanDevice->destroy(frameBufferObject.renderFinishedSemaphore);
     }
 }
 
@@ -169,7 +169,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     const std::vector<vk::DescriptorSetLayout> descriptorSetLayouts = {descriptorSetLayout};
 
-    pipelineLayout = vulkanDevice->intrinsic.createPipelineLayout({
+    pipelineLayout = vulkanDevice->createPipelineLayout({
         vk::PipelineLayoutCreateFlags(),
         boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
         boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
@@ -262,15 +262,15 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         -1 // basePipelineIndex
     };
 
-    intrinsic = vulkanDevice->intrinsic.createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
+    intrinsic = vulkanDevice->createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
     LOG_INFO("/buildPipeline (%i, %i)") % extent.width % extent.height;
 }
 
 void Pipeline_vulkan::teardownPipeline()
 {
     auto vulkanDevice = device<Device_vulkan>();
-    vulkanDevice->intrinsic.destroy(intrinsic);
-    vulkanDevice->intrinsic.destroy(pipelineLayout);
+    vulkanDevice->destroy(intrinsic);
+    vulkanDevice->destroy(pipelineLayout);
 }
 
 void Pipeline_vulkan::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)

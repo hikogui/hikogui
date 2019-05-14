@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Window.hpp"
+#include "globals.hpp"
 #include <unordered_set>
 #include <boost/uuid/uuid.hpp>
 #include <mutex>
@@ -22,7 +23,6 @@ public:
         READY_TO_DRAW,
     };
 
-    std::recursive_mutex mutex;
     State state = State::NO_DEVICE;
 
     struct Error : virtual boost::exception, virtual std::exception {};

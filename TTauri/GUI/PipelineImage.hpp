@@ -6,7 +6,7 @@
 #include "Pipeline_vulkan.hpp"
 #include "PipelineImage_PushConstants.hpp"
 #include "PipelineImage_Vertex.hpp"
-#include "config.hpp"
+#include "globals.hpp"
 #include "TTauri/geometry.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>

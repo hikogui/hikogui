@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Window_vulkan_win32.hpp"
-#include "Instance_vulkan.hpp"
+#include "Instance_vulkan_win32.hpp"
 #include "TTauri/Application_win32.hpp"
 #include "TTauri/strings.hpp"
 
@@ -74,7 +74,7 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
     }
     ShowWindow(win32Window, SW_SHOW);
 
-    return get_singleton<Instance_vulkan>()->intrinsic.createWin32SurfaceKHR({
+    return get_singleton<Instance_vulkan_win32>()->createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
         get_singleton<Application_win32>()->hInstance,
         win32Window
@@ -125,7 +125,7 @@ void Window_vulkan_win32::openingWindow()
 
 void Window_vulkan_win32::mainThreadOpeningWindow()
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     Window_vulkan::openingWindow();
 }

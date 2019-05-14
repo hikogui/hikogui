@@ -4,7 +4,6 @@
 #include "Window.hpp"
 #include "Device.hpp"
 #include "WindowView.hpp"
-#include "config.hpp"
 #include "TTauri/utils.hpp"
 #include "TTauri/logging.hpp"
 #include <boost/numeric/conversion/cast.hpp>
@@ -37,7 +36,7 @@ Window::~Window()
 
 void Window::initialize()
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     view = TTauri::make_shared<WindowView>(shared_from_this());
 
@@ -46,14 +45,14 @@ void Window::initialize()
 
 void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     render();
 }
 
 void Window::maintenance()
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     if (state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
         state = rebuildForSwapchainChange();
@@ -62,7 +61,7 @@ void Window::maintenance()
 
 void Window::setDevice(const std::weak_ptr<Device> newDevice)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     if (!device.expired()) {
         teardownForDeviceChange();
@@ -78,14 +77,14 @@ void Window::setDevice(const std::weak_ptr<Device> newDevice)
 
 void Window::setWindowPosition(uint32_t x, uint32_t y)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     windowRectangle.offset = {x, y};
 }
 
 void Window::setWindowSize(uint32_t width, uint32_t height)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     windowRectangle.extent = {width, height};
 }

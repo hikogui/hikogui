@@ -129,8 +129,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     }
 
     // Flush the given image, included the border.
-    vmaFlushAllocation(
-        vulkanDevice->allocator,
+    vulkanDevice->flushAllocation(
         stagingTexture.allocation,
         0,
         ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride + image.extent.width() + 2 * Page::border) * sizeof (uint32_t)
@@ -244,11 +243,11 @@ void DeviceShared::buildIndexBuffer()
             case 5: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 3); break;
             }
         }
-        vmaFlushAllocation(vulkanDevice->allocator, stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
+        vulkanDevice->flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
         vulkanDevice->unmapMemory(stagingVertexIndexBufferAllocation);
 
         // Copy indices to vertex index buffer.
-        auto commands = vulkanDevice->intrinsic.allocateCommandBuffers({
+        auto commands = vulkanDevice->allocateCommandBuffers({
             vulkanDevice->graphicsCommandPool, 
             vk::CommandBufferLevel::ePrimary, 
             1
@@ -262,7 +261,7 @@ void DeviceShared::buildIndexBuffer()
         vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
         vulkanDevice->graphicsQueue.waitIdle();
 
-        vulkanDevice->intrinsic.freeCommandBuffers(vulkanDevice->graphicsCommandPool, {commands});
+        vulkanDevice->freeCommandBuffers(vulkanDevice->graphicsCommandPool, {commands});
         vulkanDevice->destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
     }
 }
@@ -287,8 +286,8 @@ void DeviceShared::buildShaders()
 
 void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
-    vulkanDevice->intrinsic.destroy(vertexShaderModule);
-    vulkanDevice->intrinsic.destroy(fragmentShaderModule);
+    vulkanDevice->destroy(vertexShaderModule);
+    vulkanDevice->destroy(fragmentShaderModule);
 }
 
 void DeviceShared::addAtlasImage()
@@ -316,7 +315,7 @@ void DeviceShared::addAtlasImage()
 
     auto const [atlasImage, atlasImageAllocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
 
-    auto const atlasImageView = vulkanDevice->intrinsic.createImageView({
+    auto const atlasImageView = vulkanDevice->createImageView({
         vk::ImageViewCreateFlags(),
         atlasImage,
         vk::ImageViewType::e2D,
@@ -396,7 +395,7 @@ void DeviceShared::buildAtlas()
         vk::BorderColor::eFloatTransparentBlack,
         FALSE // unnormazlizedCoordinates
     };
-    atlasSampler = vulkanDevice->intrinsic.createSampler(samplerCreateInfo);
+    atlasSampler = vulkanDevice->createSampler(samplerCreateInfo);
 
     atlasSamplerDescriptorImageInfo = {
         atlasSampler,
@@ -411,10 +410,10 @@ void DeviceShared::buildAtlas()
 
 void DeviceShared::teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice)
 {
-    vulkanDevice->intrinsic.destroy(atlasSampler);
+    vulkanDevice->destroy(atlasSampler);
 
     for (const auto &atlasImage: atlasTextures) {
-        vulkanDevice->intrinsic.destroy(atlasImage.view);
+        vulkanDevice->destroy(atlasImage.view);
         vulkanDevice->destroyImage(atlasImage.image, atlasImage.allocation);
     }
     atlasTextures.clear();

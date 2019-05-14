@@ -29,6 +29,7 @@ set(TTauri_srcs
     Draw/PNG.cpp
     Draw/Font.cpp
     Draw/TrueTypeParser.cpp
+    GUI/globals.cpp
     GUI/VerticalSync.cpp
     GUI/Device.cpp
     GUI/Device_vulkan.cpp
@@ -43,7 +44,6 @@ set(TTauri_srcs
     GUI/PipelineImage_Image.cpp
     GUI/PipelineImage_TextureMap.cpp
     GUI/View.cpp
-    GUI/vulkan_utils.cpp
     GUI/VulkanMemoryAllocator.cpp
     GUI/Window.cpp
     GUI/Window_vulkan.cpp

@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Instance.hpp"
-#include "vulkan_utils.hpp"
 #include "TTauri/logging.hpp"
 #include "TTauri/Application.hpp"
 #include <chrono>
@@ -14,31 +13,13 @@ using namespace gsl;
 
 std::shared_ptr<Instance> Instance::singleton = nullptr;
 
-Instance::Instance()
-{
-}
-
-Instance::~Instance()
-{
-    
-}
-
-void Instance::initialize()
-{
-    std::scoped_lock lock(mutex);
-}
-
-void Instance::setPreferedDevice(boost::uuids::uuid deviceUUID)
-{
-    std::scoped_lock lock(mutex);
-}
 
 shared_ptr<Device> Instance::findBestDeviceForWindow(const shared_ptr<Window> &window)
 {
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
     int bestScore = -1;
     shared_ptr<Device> bestDevice;
-
-    std::scoped_lock lock(mutex);
 
     for (auto const &device : devices) {
         auto const score = device->score(window);
@@ -63,7 +44,7 @@ shared_ptr<Device> Instance::findBestDeviceForWindow(const shared_ptr<Window> &w
 
 void Instance::add(shared_ptr<Window> window)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     auto device = findBestDeviceForWindow(window);
     if (!device) {
@@ -76,7 +57,7 @@ void Instance::add(shared_ptr<Window> window)
 
 size_t Instance::getNumberOfWindows()
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     size_t numberOfWindows = 0;
     for (const auto &device: devices) {
@@ -88,12 +69,9 @@ size_t Instance::getNumberOfWindows()
 
 void Instance::maintenance()
 {
+    scoped_lock lock(TTauri::GUI::mutex);
 
-    vector<shared_ptr<Device>> tmpDevices;
-    {
-        scoped_lock lock(mutex);
-        tmpDevices = devices;
-    }
+    auto tmpDevices = devices;
 
     // Check how many windows are still open.
     auto numberOfOpenWindowsBefore = getNumberOfWindows();

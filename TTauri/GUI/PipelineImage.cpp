@@ -26,7 +26,7 @@ vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSema
     size_t tmpNumberOfVertices = 0;
     window.lock()->view->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
-    vmaFlushAllocation(vulkanDevice->allocator, vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
+    vulkanDevice->flushAllocation(vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 
     auto const sharedImagePipeline = vulkanDevice->imagePipeline;
     sharedImagePipeline->prepareAtlasForRendering();

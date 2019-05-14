@@ -24,7 +24,7 @@ Instance_vulkan_macos::~Instance_vulkan_macos()
 
 std::shared_ptr<GUI::Window> Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     auto window = std::make_shared<GUI::Window_win32>(windowDelegate, title);
     getShared<Instance>()->add(window);
@@ -34,6 +34,8 @@ std::shared_ptr<GUI::Window> Instance_vulkan_win32::createWindow(std::shared_ptr
 
 CVReturn Instance_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
 {
+    scoped_lock lock(TTauri::GUI::mutex);
+
     auto self = static_cast<Instance_vulkan_win32 *>(target);
 
     auto currentHostTime = static_cast<__uint128_t>(now->hostTime);

@@ -43,7 +43,7 @@ public:
         auto myWindowDelegate = TTauri::make_shared<MyWindowDelegate>();
 
         get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 1");
-        get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 2");
+        //get_singleton<GUI::Instance>()->createWindow(myWindowDelegate, "Hello World 2");
     }
 
     void lastWindowClosed() override

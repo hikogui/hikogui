@@ -20,6 +20,11 @@ public:
 
     void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) override;
 
+    vk::ResultValueType<vk::SurfaceKHR>::type createWin32SurfaceKHR(const vk::Win32SurfaceCreateInfoKHR& createInfo) const {
+        std::scoped_lock lock(TTauri::GUI::mutex);
+        return intrinsic.createWin32SurfaceKHR(createInfo);
+    }
+
 private:
     std::thread maintanceThread;
     bool stopMaintenance = false;

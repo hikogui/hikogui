@@ -30,7 +30,7 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
     Instance(),
     requiredExtensions(std::move(extensionNames))
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     applicationInfo = vk::ApplicationInfo(
         "TTauri App", VK_MAKE_VERSION(0, 1, 0), "TTauri Engine", VK_MAKE_VERSION(0, 1, 0), VK_API_VERSION_1_0);
@@ -61,18 +61,19 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
     intrinsic = vk::createInstance(instanceCreateInfo);
 
 #if (VK_HEADER_VERSION == 97)
-    loader = vk::DispatchLoaderDynamic(intrinsic);
+    _loader = vk::DispatchLoaderDynamic(intrinsic);
 #else
-    loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
+    _loader = vk::DispatchLoaderDynamic(intrinsic, vkGetInstanceProcAddr);
 #endif
     
 }
 
 void Instance_vulkan::initialize()
 {
+    scoped_lock lock(TTauri::GUI::mutex);
+
     Instance::initialize();
 
-    std::scoped_lock lock(mutex);
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
         auto device = TTauri::make_shared<Device_vulkan>(_physicalDevice);
         devices.push_back(device);

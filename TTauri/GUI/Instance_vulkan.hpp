@@ -12,13 +12,15 @@ namespace TTauri::GUI {
  * Manages Vulkan device and a set of Windows.
  */
 class Instance_vulkan : public Instance {
-public:
-    struct MissingRequiredExtensionsError : virtual Instance::Error {};
-
+protected:
     //! Vulkan instance.
     vk::Instance intrinsic;
 
-    vk::DispatchLoaderDynamic loader;
+    //! Vulkan dynamic loader of library functions.
+    vk::DispatchLoaderDynamic _loader;
+
+public:
+    struct MissingRequiredExtensionsError : virtual Instance::Error {};
 
     //! List of extension that where requested when the instance was created.
     std::vector<const char *> requiredExtensions;
@@ -51,6 +53,16 @@ public:
     Instance_vulkan &operator=(Instance_vulkan &&) = delete;
 
     void initialize() override;
+
+    vk::DispatchLoaderDynamic const &loader() const {
+        // Mutex not required, all callers that require a loader will use the const version.
+        return _loader;
+    }
+
+    void destroySurfaceKHR(vk::SurfaceKHR surface) {
+        std::scoped_lock lock(TTauri::GUI::mutex);
+        intrinsic.destroySurfaceKHR(surface);
+    }
 };
 
 }

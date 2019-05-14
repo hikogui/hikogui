@@ -4,6 +4,7 @@
 #pragma once
 
 #include "View.hpp"
+#include "globals.hpp"
 #include "TTauri/utils.hpp"
 #include "TTauri/geometry.hpp"
 #include <unordered_set>
@@ -53,7 +54,6 @@ public:
 
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
-    mutable std::recursive_mutex mutex;
     State state = State::NO_DEVICE;
 
     std::shared_ptr<Delegate> delegate;

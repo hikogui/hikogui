@@ -7,6 +7,7 @@
 #include "Window.hpp"
 #include "VerticalSync.hpp"
 #include "TTauri/utils.hpp"
+#include "globals.hpp"
 #include <gsl/gsl>
 #include <boost/uuid/uuid.hpp>
 #include <memory>
@@ -21,8 +22,6 @@ namespace TTauri::GUI {
  */
 class Instance {
 public:
-    std::recursive_mutex mutex;
-
     VerticalSync verticalSync;
 
     struct Error : virtual boost::exception, virtual std::exception {};
@@ -31,15 +30,15 @@ public:
     //! List of all devices.
     std::vector<std::shared_ptr<Device>> devices;
 
-    Instance();
-    virtual ~Instance();
+    Instance() {}
+    virtual ~Instance() {}
 
     Instance(const Instance &) = delete;
     Instance &operator=(const Instance &) = delete;
     Instance(Instance &&) = delete;
     Instance &operator=(Instance &&) = delete;
 
-    virtual void initialize();
+    virtual void initialize() {}
 
     virtual void add(std::shared_ptr<Window> window);
 
@@ -54,8 +53,6 @@ public:
      * \return the window that was created
      */
     virtual void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title) = 0;
-
-    virtual void setPreferedDevice(boost::uuids::uuid deviceUUID);
 
     static std::shared_ptr<Instance> singleton;
 

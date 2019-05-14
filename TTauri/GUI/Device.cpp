@@ -14,7 +14,6 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-
 Device::Device()
 {
 }
@@ -26,21 +25,25 @@ Device::~Device()
 
 std::string Device::str() const
 {
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
     return (boost::format("%04x:%04x %s %s") % vendorID % deviceID % deviceName % deviceUUID).str();
 }
 
 void Device::initializeDevice(std::shared_ptr<Window> window)
 {
+    std::scoped_lock lock(TTauri::GUI::mutex);
+    
     state = State::READY_TO_DRAW;
 }
 
 void Device::add(std::shared_ptr<Window> window)
 {
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
     if (state == State::NO_DEVICE) {
         initializeDevice(window);
     }
-
-    std::scoped_lock lock(mutex);
 
     windows.push_back(window);
     window->setDevice(shared_from_this());
@@ -48,7 +51,7 @@ void Device::add(std::shared_ptr<Window> window)
 
 void Device::remove(std::shared_ptr<Window> window)
 {
-    std::scoped_lock lock(mutex);
+    std::scoped_lock lock(TTauri::GUI::mutex);
 
     window->unsetDevice();
     windows.erase(find(windows.begin(), windows.end(), window));
@@ -56,13 +59,10 @@ void Device::remove(std::shared_ptr<Window> window)
 
 std::vector<std::shared_ptr<Window>> Device::maintance()
 {
-    vector<shared_ptr<Window>> tmpWindows;
-    vector<shared_ptr<Window>> orphanWindows;
+    auto lock = scoped_lock(TTauri::GUI::mutex);
 
-    {
-        auto lock = scoped_lock(mutex);
-        tmpWindows = windows;
-    }
+    auto tmpWindows = windows;
+    decltype(tmpWindows) orphanWindows;
 
     for (auto window : tmpWindows) {
         if (window->hasLostSurface()) {
