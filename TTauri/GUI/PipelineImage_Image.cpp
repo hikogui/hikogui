@@ -115,7 +115,7 @@ void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vert
 {
     calculateVertexPositions(location);
 
-    if (offset + pages.size() * 4 > vertices.size()) {
+    if (offset + pages.size() * 4 > static_cast<size_t>(vertices.size())) {
         LOG_FATAL("vertices don't fit");
         abort();
     }

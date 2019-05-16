@@ -19,6 +19,8 @@ namespace TTauri {
     struct NotImplementedError : virtual boost::exception, virtual std::exception {};
     struct OutOfBoundsError : virtual boost::exception, virtual std::exception {};
 
+#define let auto const
+
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
 constexpr bool hasInitializeHelper(int)
 {
@@ -88,6 +90,18 @@ inline constexpr uint32_t fourcc(char *txt)
         (static_cast<uint32_t>(txt[2]) <<  8) |
         static_cast<uint32_t>(txt[3])
    );
+}
+
+inline std::string fourcc_to_string(uint32_t x)
+{
+    char c_str[5];
+    c_str[0] = static_cast<char>((x >> 24) & 0xff);
+    c_str[1] = static_cast<char>((x >> 16) & 0xff);
+    c_str[2] = static_cast<char>((x >> 8) & 0xff);
+    c_str[3] = static_cast<char>(x & 0xff);
+    c_str[4] = 0;
+
+    return {c_str};
 }
 
 template<typename T>

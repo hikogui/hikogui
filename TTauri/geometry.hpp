@@ -44,7 +44,7 @@ struct rect {
 
 
 template<typename T, typename U>
-T rect2_cast(U other)
+inline T rect2_cast(U other)
 {
     T r;
 
@@ -57,12 +57,15 @@ T rect2_cast(U other)
     }};;
 }
 
+inline glm::vec2 midpoint(glm::vec2 a, glm::vec2 b) {
+    return { (a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f };
+}
+
 using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
 using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
 using u64extent2 = extent<2, uint64_t, glm::defaultp>;
 using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u64rect2 = rect<2, uint64_t, glm::defaultp>;
-
 
 
 }
