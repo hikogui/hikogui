@@ -77,6 +77,15 @@ inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset, size_t 
     return gsl::span<T>(ptr, count);
 }
 
+template<typename T>
+inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset=0)
+{
+    size_t count = bytes.size() / sizeof(T);
+
+    T* ptr = reinterpret_cast<T *>(&bytes[offset]);
+    return gsl::span<T>(ptr, count);
+}
+
 inline constexpr size_t align(size_t offset, size_t alignment) 
 {
     return ((offset + alignment - 1) / alignment) * alignment;
