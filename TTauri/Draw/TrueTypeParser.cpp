@@ -3,6 +3,7 @@
 
 #include "TrueTypeParser.hpp"
 #include "Glyph.hpp"
+#include "Font.hpp"
 #include "exceptions.hpp"
 #include "TTauri/FileView.hpp"
 #include "TTauri/utils.hpp"
@@ -15,6 +16,27 @@
 using namespace boost::endian;
 
 namespace TTauri::Draw {
+
+
+struct Fixed_buf_t {
+    big_uint32_buf_t x;
+    float value() const { return static_cast<float>(x.value()) / 65536.0f; }
+};
+
+struct shortFrac_buf_t {
+    big_int16_buf_t x;
+    float value() const { return static_cast<float>(x.value()) / 32768.0f; }
+};
+
+struct FWord_buf_t {
+    big_int16_buf_t x;
+    float value(uint16_t unitsPerEm) const { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
+};
+
+struct uFWord_buf_t {
+    big_uint16_buf_t x;
+    float value(uint16_t unitsPerEm) const { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
+};
 
 struct SFNTHeader {
     big_uint32_buf_t scalerType;
@@ -33,10 +55,10 @@ struct SFNTEntry {
 
 struct GLYFEntry {
     big_int16_buf_t numberOfContours;
-    big_uint16_buf_t xMin;
-    big_uint16_buf_t yMin;
-    big_uint16_buf_t xMax;
-    big_uint16_buf_t yMax;
+    FWord_buf_t xMin;
+    FWord_buf_t yMin;
+    FWord_buf_t xMax;
+    FWord_buf_t yMax;
 };
 
 struct CMAPHeader {
@@ -85,7 +107,52 @@ struct CMAPFormat12Group {
     big_uint32_buf_t startGlyphCode;
 };
 
-struct MAXPHeader {
+struct HEADTable {
+    Fixed_buf_t version;
+    Fixed_buf_t fontRevision;
+    big_uint32_buf_t checkSumAdjustment;
+    big_uint32_buf_t magicNumber;
+    big_uint16_buf_t flags;
+    big_uint16_buf_t unitsPerEm;
+    big_uint64_buf_t created;
+    big_uint64_buf_t modified;
+    FWord_buf_t xMin;
+    FWord_buf_t yMin;
+    FWord_buf_t xMax;
+    FWord_buf_t yMax;
+    big_uint16_buf_t macStyle;
+    big_uint16_buf_t lowestRecPPEM;
+    big_int16_buf_t fontDirectionHint;
+    big_int16_buf_t indexToLocFormat;
+    big_int16_buf_t glyphDataFormat;
+};
+
+struct HHEATable {
+    Fixed_buf_t version;
+    FWord_buf_t ascender;
+    FWord_buf_t descender;
+    FWord_buf_t lineGap;
+    uFWord_buf_t advanceWidthMax;
+    FWord_buf_t minLeftSideBearing;
+    FWord_buf_t minRightSideBearing;
+    FWord_buf_t xMaxExtent;
+    big_int16_buf_t caretSlopeRise;
+    big_int16_buf_t caretSlopRun;
+    big_int16_buf_t caretOffset;
+    big_int16_buf_t reserved0;
+    big_int16_buf_t reserved1;
+    big_int16_buf_t reserved2;
+    big_int16_buf_t reserved3;
+    big_int16_buf_t metricDataFormat;
+    big_int16_buf_t numberOfHMetrics;
+};
+
+struct HMTXEntry {
+    uFWord_buf_t advanceWidth;
+    FWord_buf_t leftSideBearing;
+};
+
+struct MAXPTable {
     big_uint32_buf_t version;
     big_uint16_buf_t numGlyphs;
     big_uint16_buf_t maxPoints;
@@ -103,7 +170,7 @@ struct MAXPHeader {
     big_uint16_buf_t maxComponentDepth;
 };
 
-static std::map<char32_t, uint32_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
 {
     let &entry = at<CMAPFormat4>(bytes, 0);
     let segCount = entry.segCountX2.value() / 2;
@@ -120,7 +187,7 @@ static std::map<char32_t, uint32_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
     let idRangeIndiciesOffset = idDeltasOffset + 2 * segCount;
     let idRangeIndices = make_span<big_uint16_buf_t>(bytes, idRangeIndiciesOffset, segCount);
 
-    std::map<char32_t, uint32_t> characterToGlyph;
+    std::map<char32_t, size_t> characterToGlyph;
     for (uint16_t segmentIndex = 0; segmentIndex < segCount; segmentIndex++) {
         let startCode = startCodes.at(segmentIndex).value();
         let endCode = endCodes.at(segmentIndex).value();
@@ -141,7 +208,7 @@ static std::map<char32_t, uint32_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
     return characterToGlyph;
 }
 
-static std::map<char32_t, uint32_t> parseCMAPFormat6(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAPFormat6(gsl::span<std::byte> bytes)
 {
     let& entry = at<CMAPFormat6>(bytes, 0);
     let firstCode = entry.firstCode.value();
@@ -150,20 +217,20 @@ static std::map<char32_t, uint32_t> parseCMAPFormat6(gsl::span<std::byte> bytes)
     let glyphIndexArrayOffset = sizeof(CMAPFormat6);
     let glyphIndexArray = make_span<big_uint16_buf_t>(bytes, glyphIndexArrayOffset, entryCount);
 
-    std::map<char32_t, uint32_t> characterToGlyph;
+    std::map<char32_t, size_t> characterToGlyph;
     for (uint16_t entryIndex = 0; entryIndex < entryCount; entryIndex++) {
         characterToGlyph[entryIndex + firstCode] = glyphIndexArray.at(entryIndex).value();
     }
     return characterToGlyph;
 }
 
-static std::map<char32_t, uint32_t> parseCMAPFormat12(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAPFormat12(gsl::span<std::byte> bytes)
 {
     let& entry = at<CMAPFormat12>(bytes, 0);
 
     let groups = make_span<CMAPFormat12Group>(bytes, sizeof(CMAPFormat12), entry.numGroups.value());
 
-    std::map<char32_t, uint32_t> characterToGlyph;
+    std::map<char32_t, size_t> characterToGlyph;
     for (let& group: groups) {
         let startCharCode = group.startCharCode.value();
         let endCharCode = group.endCharCode.value();
@@ -195,7 +262,7 @@ static gsl::span<CMAPEntry>::iterator findBestCMAPEntry(gsl::span<CMAPEntry> ent
     return entries.end();
 }
 
-static std::map<char32_t, uint32_t> parseCMAP(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte> bytes)
 {
     let& header = at<CMAPHeader>(bytes, 0);
     if (!(header.version.value() == 0)) {
@@ -222,150 +289,163 @@ static std::map<char32_t, uint32_t> parseCMAP(gsl::span<std::byte> bytes)
     }
 }
 
-static Glyph parseGlyph(gsl::span<std::byte> bytes, float scale)
+const uint8_t FLAG_ON_CURVE = 0x01;
+const uint8_t FLAG_X_SHORT = 0x02;
+const uint8_t FLAG_Y_SHORT = 0x04;
+const uint8_t FLAG_REPEAT = 0x08;
+const uint8_t FLAG_X_SAME = 0x10;
+const uint8_t FLAG_Y_SAME = 0x20;
+static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
 {
+    let scale = 1.0f / static_cast<float>(unitsPerEm);
+    size_t offset = 0;
+    Glyph glyph;
 
+    let &entry = at<GLYFEntry>(bytes, offset);
+    offset += sizeof(GLYFEntry);
+
+    let numberOfContours = entry.numberOfContours.value();
+    let endPoints = make_span<big_uint16_buf_t>(bytes, offset, numberOfContours);
+    offset += numberOfContours * sizeof(uint16_t);
+
+    let numberOfPoints = endPoints.at(numberOfContours - 1).value() + 1;
+
+    // Skip over the instructions.
+    let instructionLength = at<big_uint16_buf_t>(bytes, offset).value();
+    offset += sizeof(uint16_t) + instructionLength;
+
+    // Extract all the flags.
+    std::vector<uint8_t> flags;
+    while (flags.size() < numberOfPoints) {
+        let flag = at<uint8_t>(bytes, offset++);
+        flags.push_back(flag);
+
+        if (flag & FLAG_REPEAT) {
+            let repeat = at<uint8_t>(bytes, offset++);
+            for (size_t i = 0; i < repeat; i++) {
+                flags.push_back(flag);
+            }
+        }
+    }
+    assert(flags.size() == numberOfPoints);
+
+    // Get xCoordinates
+    std::vector<int16_t> xCoordinates;
+    for (let flag: flags) {
+        switch (flag & (FLAG_X_SHORT | FLAG_X_SAME)) {
+        case 0: // long-vector, different.
+            xCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
+            offset += sizeof(int16_t);
+            break;
+        case FLAG_X_SAME: // Long-vector, same.
+            xCoordinates.push_back(0);
+            break;
+        case FLAG_X_SHORT: // short-vector, positive.
+            xCoordinates.push_back(at<uint8_t>(bytes, offset));
+            offset += sizeof(uint8_t);
+            break;
+        case FLAG_X_SAME | FLAG_X_SHORT: // short-vector, negative.
+            xCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+            offset += sizeof(uint8_t);
+            break;
+        default:
+            abort();
+        }
+    }
+
+    // Get yCoordinates
+    std::vector<int16_t> yCoordinates;
+    for (let flag: flags) {
+        switch (flag & (FLAG_Y_SHORT | FLAG_Y_SAME)) {
+        case 0: // long-vector, different.
+            yCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
+            offset += sizeof(int16_t);
+            break;
+        case FLAG_Y_SAME: // Long-vector, same.
+            yCoordinates.push_back(0);
+            break;
+        case FLAG_Y_SHORT: // short-vector, positive.
+            yCoordinates.push_back(at<uint8_t>(bytes, offset));
+            offset += sizeof(uint8_t);
+            break;
+        case FLAG_Y_SAME | FLAG_Y_SHORT: // short-vector, negative.
+            yCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+            offset += sizeof(uint8_t);
+            break;
+        default:
+            abort();
+        }
+    }
+
+    // Create absolute points
+    int16_t x = 0;
+    int16_t y = 0;
+    size_t pointNr = 0;
+    size_t contourNr = 0;
+    std::vector<std::pair<glm::vec2, bool>> points;
+    for (let flag : flags) {
+        glm::vec2 coord = {
+            static_cast<float>(x += xCoordinates.at(pointNr)) * scale,
+            static_cast<float>(y += yCoordinates.at(pointNr)) * scale
+        };
+
+        let onCurve = (flag & FLAG_ON_CURVE) > 0;
+        points.emplace_back(coord, onCurve);
+
+        if (pointNr == endPoints.at(contourNr).value()) {
+            contourNr++;
+
+            glyph.addContour(points);
+            points.clear();
+        }
+        pointNr++;
+    }
+
+    return glyph;
 }
 
-static std::vector<Glyph> parseGLYF(gsl::span<std::byte> bytes, float scale)
+static Glyph parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const& glyphs)
+{
+    return {};
+}
+
+static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const &glyphs)
+{
+    let bytes = glyphDataList.at(i);
+    if (bytes.size() == 0) {
+        // Glyph does not have an outline.
+        return {};
+    }
+
+    let &entry = at<GLYFEntry>(bytes, 0);
+    let numberOfContours = entry.numberOfContours.value();
+
+    Glyph glyph;
+    if (numberOfContours == 0) {
+        glyph = {};
+    } else if (numberOfContours > 0) {
+        glyph = parseSimpleGlyph(bytes, unitsPerEm);
+    } else {
+        glyph = parseCompoundGlyph(glyphDataList, i, unitsPerEm, glyphs);
+    }
+
+    glm::vec2 const position = { entry.xMin.value(unitsPerEm), entry.yMin.value(unitsPerEm) };
+    extent2 const extent = {
+        entry.xMax.value(unitsPerEm) - position.x,
+        entry.yMax.value(unitsPerEm) - position.y
+    };
+
+    glyph.boundingBox = { position, extent };
+    return glyph;
+}
+
+static std::vector<Glyph> parseGLYF(std::vector<gsl::span<std::byte>> const &glyphDataList, uint16_t unitsPerEm)
 {
     std::vector<Glyph> glyphs;
 
-    size_t offset = 0;
-    while (offset < static_cast<size_t>(bytes.size())) {
-        let &entry = at<GLYFEntry>(bytes, offset);
-        offset += sizeof (GLYFEntry);
-
-        auto &glyph = glyphs.emplace_back();
-
-        let numberOfContours = entry.numberOfContours.value();
-        if (numberOfContours == 0) {
-            // Empty glyph.
-
-        } else if (numberOfContours >= 0) {
-            // Simple glyph.
-            let endPoints = make_span<big_uint16_buf_t>(bytes, offset, numberOfContours);
-            let numberOfPoints = endPoints.at(numberOfContours - 1).value();
-            offset += numberOfContours * sizeof(uint16_t);
-
-            // Skip over the instructions.
-            let instructionLength = at<big_uint16_buf_t>(bytes, offset).value();
-            offset += sizeof(uint16_t) + instructionLength;
-
-            // Extract all the flags.
-            std::vector<uint8_t> flags;
-            for (size_t pointNr = 0; pointNr < numberOfPoints;) {
-                let flag = at<uint8_t>(bytes, offset);
-                flags.push_back(flag);
-                offset += sizeof(uint8_t);
-
-                if (flag & 0x08) {
-                    let repeat = at<uint8_t>(bytes, offset);
-                    flags.push_back(repeat);
-                    offset += sizeof(uint8_t);
-                    pointNr += repeat;
-                }
-                pointNr += 1;
-            }
-
-            // Get xCoordinates
-            std::vector<int16_t> xCoordinates;
-            for (auto i = flags.begin(); i != flags.end(); ++i) {
-                let flag = *i;
-                let repeat = (flag & 0x08) ? *(++i) + 1 : 1;
-
-                for (size_t i = 0; i < repeat; i++) {
-                    switch (flag & 0x12) {
-                    case 0x00: // long-vector, different.
-                        xCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
-                        offset += sizeof(int16_t);
-                        break;
-                    case 0x10: // Long-vector, same.
-                        xCoordinates.push_back(0);
-                        break;
-                    case 0x02: // short-vector, positive.
-                        xCoordinates.push_back(at<uint8_t>(bytes, offset));
-                        offset += sizeof(uint8_t);
-                        break;
-                    case 0x12: // short-vector, negative.
-                        xCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
-                        offset += sizeof(uint8_t);
-                        break;
-                    default:
-                        abort();
-                    }
-                }
-            }
-
-            // Get yCoordinates
-            std::vector<int16_t> yCoordinates;
-            for (auto i = flags.begin(); i != flags.end(); ++i) {
-                let flag = *i;
-                let repeat = (flag & 0x08) ? *(++i) + 1 : 1;
-
-                for (size_t i = 0; i < repeat; i++) {
-                    switch (flag & 0x24) {
-                    case 0x00: // long-vector, different.
-                        yCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
-                        offset += sizeof(int16_t);
-                        break;
-                    case 0x20: // Long-vector, same.
-                        yCoordinates.push_back(0);
-                        break;
-                    case 0x04: // short-vector, positive.
-                        yCoordinates.push_back(at<uint8_t>(bytes, offset));
-                        offset += sizeof(uint8_t);
-                        break;
-                    case 0x24: // short-vector, negative.
-                        yCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
-                        offset += sizeof(uint8_t);
-                        break;
-                    default:
-                        abort();
-                    }
-                }
-            }
-
-            // Create absolute points
-            int16_t x = 0;
-            int16_t y = 0;
-            size_t pointNr = 0;
-            size_t contourNr = 0;
-            size_t endPoint = endPoints.at(contourNr).value();
-            std::vector<std::pair<glm::vec2, bool>> points;
-            for (auto i = flags.begin(); i != flags.end(); ++i) {
-                let flag = *i;
-                let repeat = (flag & 0x08) ? *(++i) + 1 : 1;
-
-                for (size_t i = 0; i < repeat; i++) {
-                    let onCurve = (flag & 0x01) > 0;
-                    glm::vec2 coord = {
-                        static_cast<float>(x += xCoordinates.at(pointNr)) * scale,
-                        static_cast<float>(y += yCoordinates.at(pointNr)) * scale
-                    };
-                    pointNr++;
-
-                    points.emplace_back(coord, onCurve);
-
-                    let isEndPoint = (pointNr == endPoint);
-                    if (isEndPoint) {
-                        endPoint = endPoints.at(++contourNr).value();
-                        glyph.addContour(points);
-                        points.clear();
-                    }
-                }
-            }
-
-        } else {
-            // Compound glyph.
-            let flags = at<big_uint16_buf_t>(bytes, offset).value();
-            offset += sizeof(uint16_t);
-            let glyphIndex = at<big_uint16_buf_t>(bytes, offset).value();
-            offset += sizeof(uint16_t);
-
-        }
-
-        offset = align(offset, sizeof (uint16_t));
+    for (size_t i = 0; i < glyphDataList.size(); i++) {
+        let glyph = parseGlyph(glyphDataList, i, unitsPerEm, glyphs);
+        glyphs.push_back(glyph);
     }
 
     return glyphs;
@@ -376,17 +456,17 @@ static std::vector<gsl::span<std::byte>> parseLOCA(gsl::span<std::byte> bytes, g
     std::vector<gsl::span<std::byte>> r;
 
     if (longFormat) {
-        let longTable = make_span<big_uint32_buf_t>(bytes, 0, numberOfGlyphs);
+        let longTable = make_span<big_uint32_buf_t>(bytes, 0, numberOfGlyphs + 1);
 
-        for (i = 0; i < (longTable.size() - 1); i++) {
-            let offset = static_cast<size_t>(longtable.at(i).value());
-            let size = static_cast<size_t>(longtable.at(i + 1).value()) - offset;
+        for (size_t i = 0; i < numberOfGlyphs; i++) {
+            let offset = static_cast<size_t>(longTable.at(i).value());
+            let size = static_cast<size_t>(longTable.at(i + 1).value()) - offset;
             r.emplace_back(glyfBytes.subspan(offset, size));
         }
     } else {
-        let shortTable = make_span<big_uint16_buf_t>(bytes, 0, numberOfGlyphs);
+        let shortTable = make_span<big_uint16_buf_t>(bytes, 0, numberOfGlyphs + 1);
 
-        for (i = 0; i < (shortTable.size() - 1); i++) {
+        for (size_t i = 0; i < numberOfGlyphs; i++) {
             let offset = static_cast<size_t>(shortTable.at(i).value()) * 2;
             let size = static_cast<size_t>(shortTable.at(i + 1).value() * 2) - offset;
             r.emplace_back(glyfBytes.subspan(offset, size));
@@ -396,26 +476,59 @@ static std::vector<gsl::span<std::byte>> parseLOCA(gsl::span<std::byte> bytes, g
     return r;
 }
 
-static SFNTEntry const &findEntryFromHeader(gsl::span<SFNTEntry> const entries, uint32_t tag)
+static void parseHMTX(std::vector<Glyph> &glyphs, gsl::span<std::byte> horizontalMetricsData, size_t numberOfHMetrics, uint16_t unitsPerEm)
+{
+    size_t offset = 0;
+    let longHorizontalMetricTable = make_span<HMTXEntry>(horizontalMetricsData, offset, numberOfHMetrics);
+    offset += numberOfHMetrics * sizeof(HMTXEntry);
+    let leftSideBearings = make_span<FWord_buf_t>(horizontalMetricsData, offset, glyphs.size() - numberOfHMetrics);
+
+    float advanceWidth;
+    float leftSideBearing;
+    for (size_t i = 0; i < glyphs.size(); i++) {
+        if (i < numberOfHMetrics) {
+            advanceWidth = longHorizontalMetricTable.at(i).advanceWidth.value(unitsPerEm);
+            leftSideBearing = longHorizontalMetricTable.at(i).leftSideBearing.value(unitsPerEm);
+        } else {
+            leftSideBearing = leftSideBearings.at(i - numberOfHMetrics).value(unitsPerEm);
+        }
+
+        auto &glyph = glyphs.at(i);
+        glyph.advanceWidth = advanceWidth;
+        glyph.leftSideBearing = leftSideBearing;
+        glyph.rightSideBearing = advanceWidth - (leftSideBearing + glyph.boundingBox.extent.width());
+    }
+
+}
+
+
+template<typename T=std::byte>
+static gsl::span<T> getSpanToTable(gsl::span<std::byte> bytes, gsl::span<SFNTEntry> const entries, uint32_t tag)
 {
     for (let &entry: entries) {
         if (entry.tag.value() == tag) {
-            return entry;
+            return make_span<T>(bytes, entry.offset.value(), entry.length.value() / sizeof(T));
         }
     }
-    BOOST_THROW_EXCEPTION(TrueTypeError((boost::format("Could not find '%s' entry in header.") % fourcc_to_string(tag)).str()));
+    return make_span<T>(bytes, 0, 0);
+}
+
+template<typename T = std::byte>
+static T getTable(gsl::span<std::byte> bytes, gsl::span<SFNTEntry> const entries, uint32_t tag)
+{
+    return getSpanToTable<T>(bytes, entries, tag).at(0);
 }
 
 Font parseTrueTypeFile(gsl::span<std::byte> bytes)
 {
     Font font;
 
-    let &header = at<SFNTHeader>(bytes, 0);
-    if (!(header.scalerType.value() == fourcc("true") || header.scalerType.value() == 0x00010000)) {
+    let &fontDirectory = at<SFNTHeader>(bytes, 0);
+    if (!(fontDirectory.scalerType.value() == fourcc("true") || fontDirectory.scalerType.value() == 0x00010000)) {
         BOOST_THROW_EXCEPTION(TrueTypeError("sfnt.scalerType is not 'true' or 0x00010000"));
     }
 
-    let headerEntries = make_span<SFNTEntry>(bytes, sizeof(SFNTHeader), header.numTables.value());
+    let tableDirectory = make_span<SFNTEntry>(bytes, sizeof(SFNTHeader), fontDirectory.numTables.value());
     // required tables, tables are sorted alphabetically, but we need to read them in another order.
     // 'cmap'	character to glyph mapping
     // 'glyf'	glyph data
@@ -427,24 +540,27 @@ Font parseTrueTypeFile(gsl::span<std::byte> bytes)
     // 'name'	naming
     // 'post'	PostScript (not needed)
 
-    let characterMapHeaderEntry = findEntryFromHeader(headerEntries, fourcc("cmap"));
-    let characterMap = parseCMAP(bytes.subspan(characterMapHeaderEntry.offset.value(), characterMapHeaderEntry.length.value()));
+    let characterMapData = getSpanToTable(bytes, tableDirectory, fourcc("cmap"));
+    font.characterMap = parseCMAP(characterMapData);
 
-    let memoryRequirementHeaderEntry = findEntryFromHeader(headerEntries, fourcc("maxp"));
-    let memoryRequirements = at<MAXPHeader>(bytes, memoryRequirementHeaderEntry.offset.value());
-    let numGlyphs = memoryRequirements.numGlyphs.value();
+    let header = getTable<HEADTable>(bytes, tableDirectory, fourcc("head"));
+    let locationLongFormat = header.indexToLocFormat.value() > 0;
+    let unitsPerEm = header.unitsPerEm.value();
 
-    let glyphHeaderEntry = findEntryFromHeader(headerEntries, fourcc("glyf"));
-    let glyphTable = bytes.subspan(glyphHeaderEntry.offset.value(), glyphHeaderEntry.length.value());
+    let memoryRequirementTable = getTable<MAXPTable>(bytes, tableDirectory, fourcc("maxp"));
+    let numGlyphs = memoryRequirementTable.numGlyphs.value();
 
-    let longFormat = true;
-    let glyphLocationHeaderEntry = findEntryFromHeader(headerEntries, fourcc("loca"));
-    let glyphDataMap = parseLOCA(bytes.subspan(glyphLocationHeaderEntry.offset.value(), glyphLocationHeaderEntry.length.value()), glyphTable, numOfGlyphs, longFormat);
+    let locationTableData = getSpanToTable(bytes, tableDirectory, fourcc("loca"));
+    let glyphTableData = getSpanToTable(bytes, tableDirectory, fourcc("glyf"));
+    let glyphDataList = parseLOCA(locationTableData, glyphTableData, numGlyphs, locationLongFormat);
 
-    let scale = 0.0;
-    let glyphs = parseGLYF(bytes.subspan(glyphHeaderEntry.offset.value(), glyphHeaderEntry.length.value()), scale);
+    font.glyphs = parseGLYF(glyphDataList, unitsPerEm);
 
+    let horizontalHeader = getTable<HHEATable>(bytes, tableDirectory, fourcc("hhea"));
+    let numberOfHMetrics = horizontalHeader.numberOfHMetrics.value();
 
+    let horizontalMetricsData = getSpanToTable(bytes, tableDirectory, fourcc("hmtx"));
+    parseHMTX(font.glyphs, horizontalMetricsData, numberOfHMetrics, unitsPerEm);
 
     return font;
 }

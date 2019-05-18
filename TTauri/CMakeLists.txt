@@ -96,6 +96,7 @@ set(TTauriTests_srcs
     Config/parser_tests.cpp
     Config/Config_tests.cpp
     Draw/QBezier_tests.cpp
+    Draw/TrueTypeParser_tests.cpp
     FileView_tests.cpp
     strings_tests.cpp
     math_tests.cpp
@@ -106,7 +107,13 @@ add_executable(TTauriTests ${TTauriTests_srcs})
 target_link_libraries(TTauriTests TTauri gtest_main)
 set_property(TARGET TTauriTests PROPERTY CXX_STANDARD 17)
 
-file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestFiles/* ${CMAKE_CURRENT_SOURCE_DIR}/Config/TestFiles/*)
+set(TestFileGlobs
+    ${CMAKE_CURRENT_SOURCE_DIR}/TestFiles/*
+    ${CMAKE_CURRENT_SOURCE_DIR}/Config/TestFiles/*
+    ${CMAKE_CURRENT_SOURCE_DIR}/Draw/TestFiles/*
+)
+
+file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${TestFileGlobs})
  foreach(TestFile ${TestFiles})
      add_custom_command(TARGET TTauriTests POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy

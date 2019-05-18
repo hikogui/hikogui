@@ -21,6 +21,8 @@ namespace TTauri {
 
 #define let auto const
 
+#define TTAURI_ASSERT(x) if (!(x)) { abort(); }
+
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
 constexpr bool hasInitializeHelper(int)
 {

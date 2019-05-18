@@ -64,8 +64,9 @@ inline glm::vec2 midpoint(glm::vec2 a, glm::vec2 b) {
 using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
 using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
 using u64extent2 = extent<2, uint64_t, glm::defaultp>;
+using extent2 = extent<2, float, glm::defaultp>;
 using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u64rect2 = rect<2, uint64_t, glm::defaultp>;
-
+using rect2 = rect<2, float, glm::defaultp>;
 
 }

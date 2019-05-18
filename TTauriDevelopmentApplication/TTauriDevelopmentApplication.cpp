@@ -51,9 +51,14 @@ public:
     }
 };
 
+#include "TTauri/Draw/TrueTypeParser.hpp"
+
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
     auto myApplicationDelegate = TTauri::make_shared<MyApplicationDelegate>();
+
+    let font = TTauri::Draw::parseTrueTypeFile(std::filesystem::path("../TTauri/Draw/TestFiles/Roboto-Regular.ttf"));
+
 
     make_singleton<Application_win32>(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
     make_singleton<GUI::Instance_vulkan_win32>();

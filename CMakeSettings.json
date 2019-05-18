@@ -8,7 +8,7 @@
             "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
             "cmakeCommandArgs": "",
             "buildCommandArgs": "-v",
-            "ctestCommandArgs": "",
+            "ctestCommandArgs": "-C Debug",
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "variables": [
                 {

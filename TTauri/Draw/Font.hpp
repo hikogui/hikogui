@@ -3,16 +3,17 @@
 
 #pragma once
 
-#include <filesystem>
+#include "Glyph.hpp"
+#include <vector>
+#include <map>
 #include <gsl/gsl>
 
 namespace TTauri::Draw {
 
 struct Font {
-
+    std::map<char32_t,size_t> characterMap;
+    std::vector<Glyph> glyphs;
 };
 
-Font parseTrueTypeFile(gsl::span<std::byte> bytes);
-Font parseTrueTypeFile(std::filesystem::path& path);
 
 }
