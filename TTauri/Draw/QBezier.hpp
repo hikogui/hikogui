@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "BezierPoint.hpp"
 #include "TTauri/math.hpp"
 #include "TTauri/geometry.hpp"
 
@@ -27,6 +28,29 @@ struct QBezier {
         P1 = (glm::vec3(P1, 1.0) * M).xy();
         P2 = (glm::vec3(P2, 1.0) * M).xy();
     }
+
+    static std::vector<QBezier> getContour(std::vector<BezierPoint> const& points) {
+        std::vector<QBezier> contour;
+
+        let normalizedPoints = BezierPoint::normalizePoints(points);
+        for (auto i = normalizedPoints.begin(); i != normalizedPoints.end();) {
+            let onCurvePoint = *(i++);
+            assert(onCurvePoint.onCurve);
+            let offCurvePoint = *(i++);
+            assert(!offCurvePoint.onCurve);
+
+            if (contour.size()) {
+                contour.back().P2 = onCurvePoint.p;
+            }
+
+            contour.emplace_back(onCurvePoint.p, offCurvePoint.p, glm::vec2{});
+        }
+        contour.back().P2 = contour.front().P0;
+
+        return contour;
+    }
 };
+
+
 
 }

@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TrueTypeParser.hpp"
+#include "BezierPoint.hpp"
 #include "Glyph.hpp"
 #include "Font.hpp"
 #include "exceptions.hpp"
@@ -308,6 +309,10 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
     let endPoints = make_span<big_uint16_buf_t>(bytes, offset, numberOfContours);
     offset += numberOfContours * sizeof(uint16_t);
 
+    for (let endPoint: endPoints) {
+        glyph.endPoints.push_back(endPoint.value());
+    }
+
     let numberOfPoints = endPoints.at(numberOfContours - 1).value() + 1;
 
     // Skip over the instructions.
@@ -381,23 +386,13 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
     int16_t x = 0;
     int16_t y = 0;
     size_t pointNr = 0;
-    size_t contourNr = 0;
-    std::vector<std::pair<glm::vec2, bool>> points;
+    std::vector<BezierPoint> points;
     for (let flag : flags) {
-        glm::vec2 coord = {
+        glyph.points.emplace_back(
             static_cast<float>(x += xCoordinates.at(pointNr)) * scale,
-            static_cast<float>(y += yCoordinates.at(pointNr)) * scale
-        };
-
-        let onCurve = (flag & FLAG_ON_CURVE) > 0;
-        points.emplace_back(coord, onCurve);
-
-        if (pointNr == endPoints.at(contourNr).value()) {
-            contourNr++;
-
-            glyph.addContour(points);
-            points.clear();
-        }
+            static_cast<float>(y += yCoordinates.at(pointNr)) * scale,
+            (flag & FLAG_ON_CURVE) > 0
+        );
         pointNr++;
     }
 
