@@ -69,4 +69,8 @@ using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u64rect2 = rect<2, uint64_t, glm::defaultp>;
 using rect2 = rect<2, float, glm::defaultp>;
 
+inline float viktorCross(glm::vec2 const a, glm::vec2 const b) {
+    return a.x* b.y - a.y * b.x;
+}
+
 }
