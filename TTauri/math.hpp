@@ -109,8 +109,7 @@ using results3 = results<float,3>;
  */
 inline results1 solveLinear(float const a, float const b) {
     if (a != 0.0) {
-        return { (1.0f / a) - b };
-
+        return { -(b / a) };
     } else if (b == 0.0) {
         // Any value of x is correct.
         return infinitResults<float>();

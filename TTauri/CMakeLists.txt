@@ -29,6 +29,8 @@ set(TTauri_srcs
     Draw/PNG.cpp
     Draw/Font.cpp
     Draw/TrueTypeParser.cpp
+    Draw/Theme.cpp
+    Draw/Text.cpp
     GUI/globals.cpp
     GUI/VerticalSync.cpp
     GUI/Device.cpp
@@ -67,7 +69,7 @@ endif()
 
 
 add_library(TTauri STATIC ${TTauri_srcs})
-target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA)
+target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
 

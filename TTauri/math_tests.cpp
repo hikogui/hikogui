@@ -53,3 +53,17 @@ TEST(TTauriMath, SolveCubic) {
     // Fails because of numeric inaccuracies, solveCubic will return only one real root.
     //ASSERT_RESULTS(TTauri::solveCubic(1.0, -5.0, 8.0, -4.0), std::make_tuple(1.0, 2.0, 2.0));
 }
+
+TEST(TTauriMath, SolveQuadratic) {
+    ASSERT_RESULTS(TTauri::solveQuadratic(1.0, -10.0, 16.0), TTauri::results2(2.0, 8.0));
+    ASSERT_RESULTS(TTauri::solveQuadratic(18.0, -3.0, -6.0), TTauri::results2(2.0f / 3.0f, -0.5));
+    ASSERT_RESULTS(TTauri::solveQuadratic(50.0, 0.0, -72.0), TTauri::results2(-6.0f / 5.0f, 6.0f / 5.0f));
+    ASSERT_RESULTS(TTauri::solveQuadratic(2.0, -1.0, -3.0), TTauri::results2(3.0 / 2.0, -1.0));
+    ASSERT_RESULTS(TTauri::solveQuadratic(1.0, -2.0, -8.0), TTauri::results2(-2.0, 4.0));
+    ASSERT_RESULTS(TTauri::solveQuadratic(1.0, -2.0, -3.0), TTauri::results2(-1.0, 3.0));
+}
+
+TEST(TTauriMath, SolveLinear) {
+    ASSERT_RESULTS(TTauri::solveLinear(2.0, -6.0), TTauri::results1(3.0));
+    ASSERT_RESULTS(TTauri::solveLinear(3.0, 6.0), TTauri::results1(-2.0));
+}

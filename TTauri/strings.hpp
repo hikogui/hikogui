@@ -5,6 +5,7 @@
 
 #include <string>
 #include "utils.hpp"
+#include <utf8proc/utf8proc.h>
 
 namespace TTauri {
 
@@ -309,6 +310,25 @@ inline std::string translateString(const std::u32string &inputString, TranslateS
     }
 
     return outputString;
+}
+
+inline std::string normalizeNFC(std::string str) {
+    let s = utf8proc_NFC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
+    let r = std::string(reinterpret_cast<char *>(s));
+    free(s);
+    return r;
+}
+
+inline std::u32string splitLigature(char32_t x) {
+    return {x};
+}
+
+inline std::u32string splitLigatures(std::u32string str) {
+    std::u32string r;
+    for (let character: str) {
+        r += splitLigature(character);
+    }
+    return r;
 }
 
 }
