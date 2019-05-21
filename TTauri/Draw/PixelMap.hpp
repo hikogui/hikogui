@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "QBezier.hpp"
 #include "TTauri/utils.hpp"
 #include "TTauri/geometry.hpp"
 
@@ -68,34 +69,13 @@ struct PixelMap {
     }
 };
 
-inline void add1PixelTransparentBorder(PixelMap<uint32_t> pixelMap)
-{
+void add1PixelTransparentBorder(PixelMap<uint32_t> pixelMap);
 
-    uint8_t const u8invisibleMask[4] = {0xff, 0xff, 0xff, 0};
-    uint32_t u32invisibleMask;
-    std::memcpy(&u32invisibleMask, u8invisibleMask, sizeof(u32invisibleMask));
-
-    auto const topBorder = pixelMap.at(0);
-    auto const topRow = pixelMap.at(1);
-    auto const bottomRow = pixelMap.at(pixelMap.height - 2);
-    auto const bottomBorder = pixelMap.at(pixelMap.height - 1);
-    for (size_t x = 1; x < pixelMap.width - 1; x++) {
-        topBorder[x] = topRow[x] & u32invisibleMask;
-        bottomBorder[x] = bottomRow[x] & u32invisibleMask;
-    }
-
-    auto const rightBorderY = pixelMap.width - 1;
-    auto const rightY = pixelMap.width - 2;
-    for (size_t y = 1; y < pixelMap.height - 1; y++) {
-        auto const row = pixelMap[y];
-        row[0] = row[1] & u32invisibleMask;
-        row[rightBorderY] = row[rightY] & u32invisibleMask;
-    }
-
-    pixelMap[0][0] = pixelMap[1][1] & u32invisibleMask;
-    pixelMap[0][pixelMap.width - 1] = pixelMap[1][pixelMap.width - 2] & u32invisibleMask;
-    pixelMap[pixelMap.height - 1][0] = pixelMap[pixelMap.height - 2][1] & u32invisibleMask;
-    pixelMap[pixelMap.height - 1][pixelMap.width - 1] = pixelMap[pixelMap.height - 2][pixelMap.width - 2] & u32invisibleMask;
-}
+/*! Render glyphs in pixelmap.
+ * Each uint32_t pixel is split into the four bytes. MSB->LSB: left-sub-pixel, mid-sub-pixel, right-sub-pixel, color-index.
+ * The rendering will only increase the value on the pixels, so multiple pieces of text can
+ * be rendered on top of the same pixels. If a pixel is incremented it's colorIndex is overwritten.
+ */
+void render(PixelMap<uint32_t> pixels, std::vector<QBezier> const &curves, uint8_t colorIndex);
 
 }

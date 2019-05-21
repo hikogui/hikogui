@@ -9,6 +9,8 @@
 
 namespace TTauri {
 
+
+
 const char32_t UNICODE_Replacement_Character = 0xfffd;
 const char32_t UNICODE_Surrogates_BEGIN = 0xd800;
 const char32_t UNICODE_Surrogates_END = 0xdfff;
@@ -314,21 +316,146 @@ inline std::string translateString(const std::u32string &inputString, TranslateS
 
 inline std::string normalizeNFC(std::string str) {
     let s = utf8proc_NFC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
-    let r = std::string(reinterpret_cast<char *>(s));
+    let r = std::string(reinterpret_cast<char*>(s));
+    free(s);
+    return r;
+}
+
+inline std::string normalizeNFD(std::string str) {
+    let s = utf8proc_NFD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
+    let r = std::string(reinterpret_cast<char*>(s));
+    free(s);
+    return r;
+}
+
+inline std::string normalizeNFKD(std::string str) {
+    let s = utf8proc_NFKD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
+    let r = std::string(reinterpret_cast<char*>(s));
+    free(s);
+    return r;
+}
+
+inline std::string normalizeNFKC(std::string str) {
+    let s = utf8proc_NFKC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
+    let r = std::string(reinterpret_cast<char*>(s));
+    free(s);
+    return r;
+}
+
+inline std::string normalizeNFKCCasefold(std::string str) {
+    let s = utf8proc_NFKC_Casefold(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
+    let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
 inline std::u32string splitLigature(char32_t x) {
-    return {x};
+    switch (x) {
+    case 0xfb00: return { 0x0066, 0x0066 }; // ff
+    case 0xfb01: return { 0x0066, 0x0069 }; // fi
+    case 0xfb02: return { 0x0066, 0x006c }; // fl
+    case 0xfb03: return { 0x0066, 0x0066, 0x0069 }; // ffi
+    case 0xfb04: return { 0x0066, 0x0066, 0x006c }; // ffl
+    case 0xfb05: return { 0x017f, 0x0074 }; // long st
+    case 0xfb06: return { 0x0073, 0x0074 }; // st
+
+    case 0xfb13: return { 0x0574, 0x0576 }; // men now
+    case 0xfb14: return { 0x0574, 0x0565 }; // men ech
+    case 0xfb15: return { 0x0574, 0x056b }; // men ini
+    case 0xfb16: return { 0x057e, 0x0576 }; // vew now
+    case 0xfb17: return { 0x0574, 0x056d }; // men xeh
+
+    default: return {};
+    }
 }
 
-inline std::u32string splitLigatures(std::u32string str) {
-    std::u32string r;
-    for (let character: str) {
-        r += splitLigature(character);
+/*! A grapheme, what a user thinks a character is.
+ * This will exclude ligatures, because a user would see those as seperate characters.
+ */
+struct grapheme {
+    //! codePoints representing the grapheme, normalized to NFC.
+    std::u32string codePoints;
+
+    grapheme() : codePoints({}) {}
+
+    grapheme(std::u32string codePoints) :
+        codePoints(translateString<std::u32string>(normalizeNFC(translateString<std::string>(codePoints)))) {}
+
+    std::u32string NFC() const {
+        return codePoints;
     }
-    return r;
+
+    std::u32string NFD() const {
+        return translateString<std::u32string>(normalizeNFD(translateString<std::string>(codePoints)));
+    }
+
+    std::u32string NFKC() const {
+        return translateString<std::u32string>(normalizeNFKC(translateString<std::string>(codePoints)));
+    }
+
+    std::u32string NFKD() const {
+        return translateString<std::u32string>(normalizeNFKD(translateString<std::string>(codePoints)));
+    }
+
+    std::u32string NFKCCasefold() const {
+        return translateString<std::u32string>(normalizeNFKCCasefold(translateString<std::string>(codePoints)));
+    }
+
+};
+
+inline bool operator<(grapheme const& a, grapheme const& b) {
+    return a.NFKCCasefold() < b.NFKCCasefold();
+}
+
+inline bool operator==(grapheme const& a, grapheme const& b) {
+    return a.NFKCCasefold() == b.NFKCCasefold();
+}
+
+using gstring = std::basic_string<grapheme>;
+
+template<>
+inline gstring translateString(const std::u32string& inputString, TranslateStringOptions options)
+{
+    gstring outputString;
+    std::u32string cluster;
+    utf8proc_int32_t breakState = 0;
+    utf8proc_int32_t previousCodePoint = -1;
+
+    for (let currentCodePoint : inputString) {
+        let sl = splitLigature(currentCodePoint);
+        if (sl.size() > 0) {
+            outputString += grapheme(cluster);
+            cluster.clear();
+            for (let c: sl) {
+                outputString += grapheme({c});
+            }
+            breakState = 0;
+            continue;
+        }
+
+        if (previousCodePoint >= 0) {
+            if (utf8proc_grapheme_break_stateful(previousCodePoint, currentCodePoint, &breakState)) {
+                outputString += grapheme(cluster);
+                cluster.clear();
+            }
+        }
+
+        cluster += currentCodePoint;
+        previousCodePoint = currentCodePoint;
+    }
+    outputString += grapheme(cluster);
+    return outputString;
+}
+
+template<>
+inline std::u32string translateString(const gstring& inputString, TranslateStringOptions options)
+{
+    std::u32string outputString;
+
+    for (let c: inputString) {
+        outputString += c.NFC();
+    }
+    return outputString;
 }
 
 }

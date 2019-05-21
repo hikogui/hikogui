@@ -30,7 +30,6 @@ set(TTauri_srcs
     Draw/Font.cpp
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
-    Draw/Text.cpp
     GUI/globals.cpp
     GUI/VerticalSync.cpp
     GUI/Device.cpp

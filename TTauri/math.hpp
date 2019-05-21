@@ -24,6 +24,7 @@ template<typename T, int N>
 struct results {
     static const size_t maxCount = N;
     using element_type = T;
+    using const_iterator = typename std::array<T,N>::const_iterator;
 
     ptrdiff_t count;
     std::array<T,N> value;
@@ -34,20 +35,16 @@ struct results {
     }
 
     results(T a, T b) : count(2) {
-        if (a > b) { std::swap(a, b); }
-
         value[0] = a;
         value[1] = b;
+        sort();
     }
 
     results(T a, T b, T c) : count(3) {
-        if (a > c) { std::swap(a, c); }
-        if (a > b) { std::swap(a, b); }
-        if (b > c) { std::swap(b, c); }
-
         value[0] = a;
         value[1] = b;
         value[2] = c;
+        sort();
     }
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
@@ -55,6 +52,31 @@ struct results {
         for (size_t i = 0; i < maxCount; i++) {
             value[i] = other.value[i];
         }
+    }
+
+    size_t size() const {
+        return (count >= 0) ? count : 0;
+    }
+
+    bool hasInfiniteResults() const {
+        return count < 0;
+    }
+
+    const_iterator begin() const {
+        return value.begin();
+    }
+
+    const_iterator end() const {
+        return value.begin() + size();
+    }
+
+    void sort() {
+        std::sort(value.begin(), value.begin() + size());
+    }
+
+    void add(T a) {
+        value.at(count++) = a;
+        sort();
     }
 
     results operator-(T a) const {

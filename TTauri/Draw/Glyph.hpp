@@ -20,23 +20,28 @@ struct Glyph {
     float leftSideBearing;
     float rightSideBearing;
     float advanceWidth;
+    size_t numberOfGraphemes;
 
     std::vector<BezierPoint> points;
     std::vector<size_t> endPoints;
 
-    size_t nrContours() {
+    size_t nrContours() const {
         return endPoints.size();
     }
 
-    std::vector<BezierPoint> getPointsOfContour(size_t contourNr) {
+    float getAdvanceForGrapheme(size_t index) const {
+        return (advanceWidth / numberOfGraphemes) * index;
+    }
+
+    std::vector<BezierPoint> getPointsOfContour(size_t contourNr) const {
         let begin = points.begin() + (contourNr == 0 ? 0 : endPoints.at(contourNr - 1));
         let end = points.begin() + endPoints.at(contourNr);
         return std::vector(begin, end);
     }
 
-    std::vector<QBezier> getContour(size_t contourNr) {
+    std::vector<QBezier> getContour(size_t contourNr) const {
         let contourPoints = getPointsOfContour(contourNr);
-        QBezier::getContour(contourPoints);
+        return QBezier::getContour(contourPoints);
     }
 };
 

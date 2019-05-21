@@ -9,7 +9,7 @@ namespace TTauri::Draw {
 
 
 
-extern std::shared_ptr<Theme> theme;
+extern Theme *selectedTheme;
 extern std::vector<std::shared_ptr<Theme>> themes;
 
 }
