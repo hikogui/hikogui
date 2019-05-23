@@ -49,7 +49,7 @@ struct results {
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
     results(results<T,O> const &other) : count(other.count) {
-        for (size_t i = 0; i < maxCount; i++) {
+        for (size_t i = 0; i < other.maxCount; i++) {
             value[i] = other.value[i];
         }
     }

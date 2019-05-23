@@ -24,6 +24,13 @@ struct QBezier {
 
     QBezier(glm::vec2 P0, glm::vec2 P1, glm::vec2 P2) : P0(P0), P1(P1), P2(P2) {}
 
+    bool operator==(QBezier const &other) const {
+        return
+            (P0 == other.P0) &&
+            (P1 == other.P1) &&
+            (P2 == other.P2);
+    }
+
     void transform(glm::mat3x3 M) {
         P0 = (glm::vec3(P0, 1.0) * M).xy();
         P1 = (glm::vec3(P1, 1.0) * M).xy();
@@ -56,8 +63,8 @@ struct QBezier {
     }
 
     results2 solveTByY(float y) const {
-        let a = P0.y + 2.0f*P1.y + P2.y;
-        let b = -2.0f*P0.y + 2.0f*P1.y;
+        let a = P0.y - 2.0f*P1.y + P2.y;
+        let b = 2.0f*(P1.y - P0.y);
         let c = P0.y;
         return solveQuadratic(a, b, c - y);
     }
@@ -67,8 +74,8 @@ struct QBezier {
 
         for (let t: solveTByY(y)) {
             if (t >= 0.0f && t <= 1.0f) {
-                let a = P0.x + 2.0f * P1.x + P2.x;
-                let b = -2.0f * P0.x + 2.0f * P1.x;
+                let a = P0.x - 2.0f * P1.x + P2.x;
+                let b = 2.0f*(P1.x - P0.x);
                 let c = P0.x;
                 r.add(a*t*t + b*t + c);
             }

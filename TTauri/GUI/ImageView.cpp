@@ -28,18 +28,19 @@ void ImageView::drawBackingImage()
     auto vulkanDevice = device<Device_vulkan>();
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap();
+    fullPixelMap.fill({{0.0f, 0.0f, 0.0f, 1.0f}});
 
     // Draw image in the fullPixelMap.
     Draw::loadPNG(fullPixelMap, path);
 
     // Draw something.
     auto path = Draw::Path();
-    path.moveTo({20.0, 20.0});
-    path.lineTo({100.0, 20.0});
-    path.lineTo({ 100.0, 100.0 });
-    path.lineTo({ 20.0, 100.0 });
+    path.moveTo({20.0, 400.0});
+    path.lineTo({100.0, 400.0});
+    path.lineTo({ 325.0, 500.0 });
+    path.lineTo({ 111.0, 500.0 });
     path.close();
-    render(fullPixelMap, path, Color_XYZ{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}});
+    render(fullPixelMap, path, Color_sRGB{glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}}, Draw::SubpixelOrientation::RedLeft);
 
     // Draw some text on top of the fullPixelMap.
 
@@ -57,7 +58,7 @@ void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &ver
     vulkanDevice->imagePipeline->exchangeImage(backingImage, key, extent);
     drawBackingImage();
 
-    rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);
+    //rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);
 
     PipelineImage::ImageLocation location;
     location.position = position;

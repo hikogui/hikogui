@@ -22,8 +22,8 @@ struct Path {
     }
 
     std::vector<BezierPoint> getBezierPointsOfSubpath(size_t subpathNr) const {
-        let begin = points.begin() + (subpathNr == 0 ? 0 : endPoints.at(subpathNr - 1));
-        let end = points.begin() + endPoints.at(subpathNr);
+        let begin = points.begin() + (subpathNr == 0 ? 0 : endPoints.at(subpathNr - 1) + 1);
+        let end = points.begin() + endPoints.at(subpathNr) + 1;
         return std::vector(begin, end);
     }
 

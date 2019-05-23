@@ -96,6 +96,18 @@ struct PixelMap {
             memset(data, 0, row.size_bytes());
         }
     }
+
+    /*! Fill with color.
+     */
+    void fill(Color_sRGB color) {
+        let pixelValue = color.writePixel();
+        for (size_t rowNr = 0; rowNr < height; rowNr++) {
+            let row = this->at(rowNr);
+            for (size_t columnNr = 0; columnNr < width; columnNr++) {
+                row[columnNr] = pixelValue;
+            }
+        }
+    }
 };
 
 /*! Make the pixel around the border transparent.
@@ -109,11 +121,11 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
  * The rendering will only increase the value on the pixels, so multiple pieces of text can
  * be rendered on top of the same pixels.
  */
-void renderSubpixelMask(PixelMap<uint32_t> &mask, Path const &path);
+void renderMask(PixelMap<uint32_t> &mask, Path const &path);
 
 /*! Render path directly into an image.
  */
-void render(PixelMap<uint32_t> &pixels, Path const &path, Color_XYZ color, SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown);
+void render(PixelMap<uint32_t> &pixels, Path const &path, Color_sRGB color, SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown);
 
 /*! Filter subpixels in PixelMap.
  * Each uint32_t pixel is split into the four bytes. MSB->LSB: left-sub-pixel, mid-sub-pixel, right-sub-pixel, color-index.
@@ -122,12 +134,8 @@ void render(PixelMap<uint32_t> &pixels, Path const &path, Color_XYZ color, Subpi
 void subpixelFiltering(PixelMap<uint32_t> &pixels, SubpixelOrientation subpixelOrientation);
 
 /*! Composit colors from the color table based on the mask onto destination.
- */
-void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& source, PixelMap<uint32_t> const& mask, Color_XYZ color);
-
-/*! Composit colors from the color table based on the mask onto destination.
  * Mask should be subpixelFiltered before use.
  */
-void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& mask, Color_XYZ color);
+void maskComposit(PixelMap<uint32_t>& under, Color_sRGB over, PixelMap<uint32_t> const& mask);
 
 }

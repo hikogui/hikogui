@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <boost/format.hpp>
+#include <boost/endian/conversion.hpp>
 #include <string>
 
 namespace TTauri {
@@ -63,11 +64,19 @@ struct Color {
     glm::vec3 rgb() const { return value.rgb; }
 
     std::string str() const {
-        uint32_t tmp = toRGBA();
+        uint32_t tmp = toUInt32();
         return (boost::format("#%08x") % tmp).str();
     }
 
-    uint32_t toRGBA() const {
+    static Color readPixel(uint32_t const &v) {
+        return Color(boost::endian::big_to_native(v));
+    }
+
+    uint32_t writePixel() const {
+        return boost::endian::native_to_big(toUInt32());
+    }
+
+    uint32_t toUInt32() const {
         return (
             (static_cast<uint32_t>(std::clamp(value.r, 0.0f, 1.0f) * 255.0) << 24) |
             (static_cast<uint32_t>(std::clamp(value.g, 0.0f, 1.0f) * 255.0) << 16) |
@@ -120,9 +129,9 @@ struct Color {
     Color composit(Color const &over, glm::vec3 subpixelMask) const {
         let overAlpha = subpixelMask * over.a();
         let underAlpha = glm::vec3{this->a(), this->a(), this->a()};
-        let underAlphaResult = overAlpha + underAlpha * (glm::vec3{1.0, 1.0, 1.0} - overAlpha);
-        let color = over.rgb() * overAlpha + this->rgb() * underAlphaResult;
-        let alpha = overAlpha + underAlphaResult;
+        let underAlpha_ = underAlpha * (glm::vec3{ 1.0, 1.0, 1.0 } - overAlpha);
+        let alpha = overAlpha + underAlpha_;
+        let color = (over.rgb() * overAlpha + this->rgb() * underAlpha_) / alpha;
         let averageAlpha = (alpha.r + alpha.g + alpha.b) / 3.0f;
         return { glm::vec4{color, averageAlpha} };
     }

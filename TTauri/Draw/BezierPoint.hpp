@@ -17,6 +17,10 @@ struct BezierPoint {
     BezierPoint(glm::vec2 p, bool onCurve) : p(p), onCurve(onCurve) {}
     BezierPoint(float x, float y, bool onCurve) : BezierPoint({x, y}, onCurve) {}
 
+    bool operator==(BezierPoint const &other) const {
+        return (p == other.p) && (onCurve == other.onCurve);
+    }
+
     BezierPoint transform(glm::vec2 position, float scale=1.0f, float rotate=0.0f) const {
         let newP = glm::rotate(p * scale, rotate) + position;
         return { newP, onCurve };

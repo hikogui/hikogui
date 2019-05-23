@@ -37,22 +37,28 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap)
 /*! Render a single pixel between two x values.
  * Fully covered sub-pixel will have the value 200.
  */
-static void renderSubpixel(uint32_t &pixel, float beginX, float endX) {
+static void renderMaskSubpixel(uint32_t &pixel, float beginX, float endX) {
     let leftLength = std::clamp(endX, 0.0f, 1.0f/3.0f) - std::clamp(beginX, 0.0f, 1.0f/3.0f);
     let midLength = std::clamp(endX, 1.0f/3.0f, 2.0f/3.0f) - std::clamp(beginX, 1.0f/3.0f, 2.0f/3.0f);
     let rightLength = std::clamp(endX, 2.0f/3.0f, 1.0f) - std::clamp(beginX, 2.0f/3.0f, 1.0f);
 
+    let leftValue = (pixel >> 20) & 0x3ff;
+    let midValue = (pixel >> 10) & 0x3ff;
+    let rightValue = pixel & 0x3ff;
+
+    // Bias by .3 to have the result be maximum 1000.5 transforming the truncate to a round.
+    let newLeftValue = static_cast<uint32_t>(std::min(leftValue + leftLength * 600.3f, 1000.0f));
+    let newMidValue = static_cast<uint32_t>(std::min(midValue + midLength * 600.3f, 1000.0f));
+    let newRightValue = static_cast<uint32_t>(std::min(rightValue + rightLength * 600.3f, 1000.0f));
+
     // The length are between 0.0 and 0.3.. so multiply the bright value by 3 to compensate.
-    pixel +=
-        (static_cast<uint32_t>(leftLength * 600) << 20) |
-        (static_cast<uint32_t>(midLength * 600) << 10) |
-        static_cast<uint32_t>(rightLength * 600)
+    pixel = (newLeftValue << 20) | (newMidValue << 10) | newRightValue;
 }
 
 /*! Render pixels in a row between two x values.
  * Fully covered sub-pixel will have the value 200.
  */
-static void renderSpan(gsl::span<uint32_t> row, float startX, float endX) {
+static void renderMaskSpan(gsl::span<uint32_t> row, float startX, float endX) {
     if (startX >= row.size() || endX < 0.0f) {
         return;
     }
@@ -70,23 +76,23 @@ static void renderSpan(gsl::span<uint32_t> row, float startX, float endX) {
         return;
 
     } else if (nrColumns == 1) {
-        renderSubpixel(row[startColumn], startX - startColumn, endX - startColumn);
+        renderMaskSubpixel(row[startColumn], startX - startColumn, endX - startColumn);
 
     } else {
-        renderSubpixel(row[startColumn], startX - startColumn, 1.0f);
+        renderMaskSubpixel(row[startColumn], startX - startColumn, 1.0f);
 
         for (int64_t i = startColumn + 1; i < (endColumn - 1); i++) {
             row[i] += ((200 << 20) | (200 << 10) | 200);
         }
 
-        renderSubpixel(row[endColumn - 1], 0.0f, endX - (endColumn - 1)); 
+        renderMaskSubpixel(row[endColumn - 1], 0.0f, endX - (endColumn - 1)); 
     }
 }
 
 /*! SuperSample a row of pixels once.
  * Fully covered sub-pixel will have the value 0x33
  */
-static void renderSuperSampleRow(gsl::span<uint32_t> row, float rowY, std::vector<QBezier> const& curves) {
+static void renderMaskSuperSampleRow(gsl::span<uint32_t> row, float rowY, std::vector<QBezier> const& curves) {
     auto results = solveCurvesXByY(curves, rowY);
     if (results.size() == 0) {
         return;
@@ -98,14 +104,14 @@ static void renderSuperSampleRow(gsl::span<uint32_t> row, float rowY, std::vecto
     for (size_t i = 0; i < (results.size() / 2); i++) {
         let startX = results[i];
         let endX = results[i+1];
-        renderSpan(row, startX, endX);
+        renderMaskSpan(row, startX, endX);
     }
 
     // the rest of the row is inside a curve.
     if (results.size() % 2 == 1) {
         let startX = results.back();
         let endX = static_cast<float>(row.size());
-        renderSpan(row, startX, endX);
+        renderMaskSpan(row, startX, endX);
     }
 }
 
@@ -113,17 +119,17 @@ static void renderSuperSampleRow(gsl::span<uint32_t> row, float rowY, std::vecto
  * Each row needs to be rendered 5 times as slightly different heights, performing super sampling.
  * Fully covered sub-pixels will have the value 0xff;
  */
-static void renderRow(gsl::span<uint32_t> row, int64_t rowY, std::vector<QBezier> const &curves)
+static void renderMaskRow(gsl::span<uint32_t> row, int64_t rowY, std::vector<QBezier> const &curves)
 {
     let rowCurves = filterCurvesByY(curves, static_cast<float>(rowY), static_cast<float>(rowY + 1));
 
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
-        renderSuperSampleRow(row, y, rowCurves);
+        renderMaskSuperSampleRow(row, y, rowCurves);
     }
 }
 
-static void renderSubpixelMask(PixelMap<uint32_t> &mask, std::vector<QBezier> const &curves)
+static void renderMask(PixelMap<uint32_t> &mask, std::vector<QBezier> const &curves)
 {
     let [startY, endY] = minmaxYOfCurves(curves);
 
@@ -132,13 +138,13 @@ static void renderSubpixelMask(PixelMap<uint32_t> &mask, std::vector<QBezier> co
 
     for (auto rowNr = startRow; rowNr < endRow; rowNr++) {
         auto row = mask.at(rowNr);
-        renderRow(row, rowNr, curves);
+        renderMaskRow(row, rowNr, curves);
     }
 }
 
-void renderSubpixelMask(PixelMap<uint32_t>& mask, Path const& path)
+void renderMask(PixelMap<uint32_t>& mask, Path const& path)
 {
-    return renderSubpixelMask(mask, path.getQBeziers());
+    return renderMask(mask, path.getQBeziers());
 }
 
 
@@ -201,7 +207,7 @@ static void subpixelFilteringLCD(PixelMap<uint32_t>& pixels)
         for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.size() * 3);) {
             let value = getSubpixel(row, columnNr);
 
-            if (value == prevValue && value == prevPrevValue) {
+            if (abs(value - prevValue) < 100 && abs(value - prevPrevValue) < 100) {
                 // Nothing changes.
                 columnNr++;
                 prevPrevValue = prevValue;
@@ -248,7 +254,7 @@ static void subpixelFlip(PixelMap<uint32_t>& pixels)
         for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.size()); columnNr++) {
             auto &pixel = row[columnNr];
             let oldPixel = pixel;
-            pixel = ((oldPixel & 0x3dd) << 20) | ((oldPixel & 0x000ffc00 | ((oldPixel >> 20) & 0x3ff);
+            pixel = ((oldPixel & 0x3dd) << 20) | (oldPixel & 0x000ffc00) | ((oldPixel >> 20) & 0x3ff);
         }
     }
 }
@@ -270,59 +276,45 @@ void subpixelFiltering(PixelMap<uint32_t> &pixels, SubpixelOrientation subpixelO
 }
 
 /*! Composit colors from the color table based on the mask onto destination.
+ * Mask should be subpixelFiltered before use.
  */
-void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& source, PixelMap<uint32_t> const& mask, Color_XYZ color)
+void maskComposit(PixelMap<uint32_t>& under, Color_sRGB over, PixelMap<uint32_t> const& mask)
 {
-    assert(destination.height >= source.height);
-    assert(destination.width >= source.width);
-    assert(mask.height >= source.height);
-    assert(mask.width >= source.width);
+    assert(mask.height >= under.height);
+    assert(mask.width >= under.width);
 
-    let overColor = color_cast<Color_sRGBLinear>(color);
+    let overColor = color_cast<Color_sRGBLinear>(over);
 
-    for (size_t rowNr = 0; rowNr < source.height; rowNr++) {
-        auto sourceRow = source[rowNr];
+    for (size_t rowNr = 0; rowNr < under.height; rowNr++) {
         auto maskRow = mask[rowNr];
-        auto destinationRow = destination[rowNr];
-        for (size_t columnNr = 0; columnNr < static_cast<size_t>(sourceRow.size()); columnNr++) {
-            let sourcePixel = sourceRow[columnNr];
-            let maskPixel = maskRow[columnNr];
-
-            if (maskPixel > 0) {
-                let underColor = Color_sRGB(sourcePixel).toLinear();
-                let indexColor = maskPixel & 0xff;
-                let subpixelMask = glm::vec3{
+        auto underRow = under[rowNr];
+        for (size_t columnNr = 0; columnNr < static_cast<size_t>(underRow.size()); columnNr++) {
+            if (let maskPixel = maskRow[columnNr]; maskPixel > 0) {
+                let maskSubpixelVector = glm::vec3{
                     ((maskPixel >> 20) & 0x3ff) / 1000.0,
                     ((maskPixel >> 10) & 0x3ff) / 1000.0,
-                    ((maskPixel & 0x3ff) / 1000.0
+                    (maskPixel & 0x3ff) / 1000.0
                 };
 
-                let destinationColor = underColor.composit(overColor, subpixelMask);
+                auto &underPixel = underRow[columnNr];
+                let underColor = color_cast<Color_sRGBLinear>(Color_sRGB::readPixel(underPixel));
 
-            } else {
-                // Shortcut for fully transparent mask pixel.
-                destinationRow[columnNr] = sourcePixel;
+                let destinationColor = underColor.composit(overColor, maskSubpixelVector);
+
+                underPixel = color_cast<Color_sRGB>(destinationColor).writePixel();
             }
         }
     }
 }
 
-/*! Composit colors from the color table based on the mask onto destination.
- * Mask should be subpixelFiltered before use.
- */
-void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& mask, Color_XYZ color)
-{
-    return subpixelComposit(destination, destination, mask, color);
-}
-
-void render(PixelMap<uint32_t>& pixels, Path const& path, Color_XYZ color, SubpixelOrientation subpixelOrientation)
+void render(PixelMap<uint32_t>& pixels, Path const& path, Color_sRGB color, SubpixelOrientation subpixelOrientation)
 {
     auto mask = PixelMap<uint32_t>(pixels.width, pixels.height);
     mask.clear();
-    renderSubpixelMask(mask, path);
+    renderMask(mask, path);
     subpixelFiltering(mask, subpixelOrientation);
 
-    subpixelComposit(pixels, mask, color);
+    maskComposit(pixels, color, mask);
 }
 
 

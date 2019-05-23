@@ -98,6 +98,8 @@ set(TTauriTests_srcs
     Config/Config_tests.cpp
     Draw/QBezier_tests.cpp
     Draw/TrueTypeParser_tests.cpp
+    Draw/Path_tests.cpp
+    Draw/PixelMap_tests.cpp
     FileView_tests.cpp
     strings_tests.cpp
     math_tests.cpp
