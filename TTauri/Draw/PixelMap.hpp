@@ -37,7 +37,6 @@ struct PixelMap {
     PixelMap(size_t width, size_t height) : width(width), height(height), stride(width), selfAllocated(true) {
         T *data = new T[width * height];
         pixels = {data, boost::numeric_cast<ptrdiff_t>(width * height)};
-        clear();
     }
 
     PixelMap(gsl::span<T> pixels, size_t width, size_t height) : pixels(pixels), width(width), height(height), stride(width) {}
@@ -106,11 +105,11 @@ struct PixelMap {
 void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
 
 /*! Render path in subpixel mask.
- * Each uint32_t pixel is split into the four bytes. MSB->LSB: left-sub-pixel, mid-sub-pixel, right-sub-pixel, color-index.
+ * Each uint32_t pixel is split into the three 10bit words. MSB->LSB: left-sub-pixel, mid-sub-pixel, right-sub-pixel.
  * The rendering will only increase the value on the pixels, so multiple pieces of text can
- * be rendered on top of the same pixels. If a pixel is incremented it's colorIndex is overwritten.
+ * be rendered on top of the same pixels.
  */
-void renderSubpixelMask(PixelMap<uint32_t> &mask, Path const &path, uint8_t colorIndex=0);
+void renderSubpixelMask(PixelMap<uint32_t> &mask, Path const &path);
 
 /*! Render path directly into an image.
  */
@@ -124,11 +123,11 @@ void subpixelFiltering(PixelMap<uint32_t> &pixels, SubpixelOrientation subpixelO
 
 /*! Composit colors from the color table based on the mask onto destination.
  */
-void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& source, PixelMap<uint32_t> const& mask, std::vector<Color_sRGBLinear> const& colorTable);
+void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& source, PixelMap<uint32_t> const& mask, Color_XYZ color);
 
 /*! Composit colors from the color table based on the mask onto destination.
  * Mask should be subpixelFiltered before use.
  */
-void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& mask, std::vector<Color_sRGBLinear> const& colorTable);
+void subpixelComposit(PixelMap<uint32_t>& destination, PixelMap<uint32_t> const& mask, Color_XYZ color);
 
 }
