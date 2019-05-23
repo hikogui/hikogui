@@ -124,7 +124,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         rectangle.offset -= glm::u64vec2(Page::border, Page::border);
         rectangle.extent += glm::u64vec2(Page::border*2, Page::border*2);
 
-        auto const pixelMap = stagingTexture.pixelMap.submap(rectangle);
+        auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
         TTauri::Draw::add1PixelTransparentBorder(pixelMap);
     }
 

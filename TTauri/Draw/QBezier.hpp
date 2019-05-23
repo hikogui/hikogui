@@ -86,7 +86,7 @@ inline std::pair<float, float> minmaxYOfCurves(std::vector<QBezier> const& v) {
     for (let& curve : v) {
         let[curveMinimumY, curveMaximumY] = curve.minmaxY();
         minimum = std::min(minimum, curveMinimumY);
-        maximum = std::min(maximum, curveMaximumY);
+        maximum = std::max(maximum, curveMaximumY);
     }
     return { minimum, maximum };
 }

@@ -5,7 +5,6 @@
 
 #include "BezierPoint.hpp"
 #include "QBezier.hpp"
-#include "PixelMap.hpp"
 #include "TTauri/geometry.hpp"
 
 #include <glm/glm.hpp>

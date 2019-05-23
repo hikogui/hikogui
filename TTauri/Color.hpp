@@ -41,7 +41,7 @@ struct Color {
     Color(const Color &color) : value(color.value) {} 
 
     /*! Convert a uint32_t value to a colour.
-     * The uint32_t value is split into 4 bytes. Most-to-leas significant byte Red, Green, Blue, Alpha component.
+     * The uint32_t value is split into 4 bytes. MSB->LSB: Red, Green, Blue, Alpha component.
      */
     Color(uint32_t rgba) :
         value({
@@ -60,6 +60,7 @@ struct Color {
     float g() const { return value.g; }
     float b() const { return value.b; }
     float a() const { return value.a; }
+    glm::vec3 rgb() const { return value.rgb; }
 
     std::string str() const {
         uint32_t tmp = toRGBA();
@@ -116,6 +117,16 @@ struct Color {
         }
     }
 
+    Color composit(Color const &over, glm::vec3 subpixelMask) const {
+        let overAlpha = subpixelMask * over.a();
+        let underAlpha = glm::vec3{this->a(), this->a(), this->a()};
+        let underAlphaResult = overAlpha + underAlpha * (glm::vec3{1.0, 1.0, 1.0} - overAlpha);
+        let color = over.rgb() * overAlpha + this->rgb() * underAlphaResult;
+        let alpha = overAlpha + underAlphaResult;
+        let averageAlpha = (alpha.r + alpha.g + alpha.b) / 3.0f;
+        return { glm::vec4{color, averageAlpha} };
+    }
+
     static double toLinear(double x) {
         if constexpr (COLORSPACE == ColorSpace::sRGB) {
             return x <= 0.04045 ? (x / 12.92) : pow((x + 0.055) / 1.055, 2.4);
@@ -134,6 +145,7 @@ struct Color {
 };
 
 using Color_sRGB = Color<ColorSpace::sRGB, false>;
+using Color_sRGBLinear = Color<ColorSpace::sRGB, true>;
 using Color_XYZ = Color<ColorSpace::XYZ, true>;
 
 template<ColorSpace TO_COLORSPACE, bool TO_LINEAR, typename U>

@@ -8,6 +8,7 @@
 #include "PipelineImage_Image.hpp"
 #include "PipelineImage_ImageLocation.hpp"
 #include "TTauri/Draw/PNG.hpp"
+#include "TTauri/Draw/Path.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 
@@ -29,7 +30,16 @@ void ImageView::drawBackingImage()
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap();
 
     // Draw image in the fullPixelMap.
-    TTauri::Draw::loadPNG(fullPixelMap, path);
+    Draw::loadPNG(fullPixelMap, path);
+
+    // Draw something.
+    auto path = Draw::Path();
+    path.moveTo({20.0, 20.0});
+    path.lineTo({100.0, 20.0});
+    path.lineTo({ 100.0, 100.0 });
+    path.lineTo({ 20.0, 100.0 });
+    path.close();
+    render(fullPixelMap, path, Color_XYZ{glm::vec4{0.0f, 1.0f, 0.0f, 1.0f}});
 
     // Draw some text on top of the fullPixelMap.
 
