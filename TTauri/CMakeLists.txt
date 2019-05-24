@@ -28,6 +28,7 @@ set(TTauri_srcs
     Draw/PixelMap.cpp
     Draw/PNG.cpp
     Draw/Font.cpp
+    Draw/Fonts.cpp
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
     GUI/globals.cpp

@@ -101,7 +101,8 @@ static void renderMaskSuperSampleRow(gsl::span<uint32_t> row, float rowY, std::v
     std::sort(results.begin(), results.end());
 
     // For each span of x values.
-    for (size_t i = 0; i < (results.size() / 2); i++) {
+    let shortSize = (results.size() / 2) * 2;
+    for (size_t i = 0; i < shortSize; i += 2) {
         let startX = results[i];
         let endX = results[i+1];
         renderMaskSpan(row, startX, endX);
@@ -263,10 +264,10 @@ void subpixelFiltering(PixelMap<uint32_t> &pixels, SubpixelOrientation subpixelO
 {
     switch (subpixelOrientation) {
     case SubpixelOrientation::RedLeft:
-        subpixelFilteringLCD(pixels);
+        //subpixelFilteringLCD(pixels);
         return;
     case SubpixelOrientation::RedRight:
-        subpixelFilteringLCD(pixels);
+        //subpixelFilteringLCD(pixels);
         subpixelFlip(pixels);
         return;
     case SubpixelOrientation::Unknown:

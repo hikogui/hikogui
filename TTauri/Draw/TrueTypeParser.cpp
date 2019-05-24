@@ -183,7 +183,7 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
     let startCodes = make_span<big_uint16_buf_t>(bytes, startCodesOffset, segCount);
 
     let idDeltasOffset = startCodesOffset + 2*segCount;
-    let idDeltas = make_span<big_uint16_buf_t>(bytes, idDeltasOffset, segCount);
+    let idDeltas = make_span<big_int16_buf_t>(bytes, idDeltasOffset, segCount);
 
     let idRangeIndiciesOffset = idDeltasOffset + 2 * segCount;
     let idRangeIndices = make_span<big_uint16_buf_t>(bytes, idRangeIndiciesOffset, segCount);
@@ -317,7 +317,7 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
 
     // Skip over the instructions.
     let instructionLength = at<big_uint16_buf_t>(bytes, offset).value();
-    offset += sizeof(uint16_t) + instructionLength;
+    offset += sizeof(uint16_t) + instructionLength * sizeof(uint8_t);
 
     // Extract all the flags.
     std::vector<uint8_t> flags;
@@ -345,12 +345,12 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
         case FLAG_X_SAME: // Long-vector, same.
             xCoordinates.push_back(0);
             break;
-        case FLAG_X_SHORT: // short-vector, positive.
-            xCoordinates.push_back(at<uint8_t>(bytes, offset));
+        case FLAG_X_SHORT: // short-vector, negative.
+            xCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
             offset += sizeof(uint8_t);
             break;
-        case FLAG_X_SAME | FLAG_X_SHORT: // short-vector, negative.
-            xCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+        case FLAG_X_SAME | FLAG_X_SHORT: // short-vector, positve.
+            xCoordinates.push_back(static_cast<int16_t>(at<uint8_t>(bytes, offset)));
             offset += sizeof(uint8_t);
             break;
         default:
@@ -369,12 +369,12 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
         case FLAG_Y_SAME: // Long-vector, same.
             yCoordinates.push_back(0);
             break;
-        case FLAG_Y_SHORT: // short-vector, positive.
-            yCoordinates.push_back(at<uint8_t>(bytes, offset));
+        case FLAG_Y_SHORT: // short-vector, negative.
+            yCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
             offset += sizeof(uint8_t);
             break;
-        case FLAG_Y_SAME | FLAG_Y_SHORT: // short-vector, negative.
-            yCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+        case FLAG_Y_SAME | FLAG_Y_SHORT: // short-vector, positive.
+            yCoordinates.push_back(static_cast<int16_t>(at<uint8_t>(bytes, offset)));
             offset += sizeof(uint8_t);
             break;
         default:

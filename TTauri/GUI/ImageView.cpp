@@ -9,6 +9,7 @@
 #include "PipelineImage_ImageLocation.hpp"
 #include "TTauri/Draw/PNG.hpp"
 #include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/Fonts.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 
@@ -33,14 +34,22 @@ void ImageView::drawBackingImage()
     // Draw image in the fullPixelMap.
     Draw::loadPNG(fullPixelMap, path);
 
+    let myFont = get_singleton<Draw::Fonts>()->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let glyphIndex = myFont.characterMap.at('g');
+    let glyph = myFont.glyphs.at(glyphIndex);
+
     // Draw something.
-    auto path = Draw::Path();
-    path.moveTo({20.0, 400.0});
-    path.lineTo({100.0, 400.0});
-    path.lineTo({ 325.0, 500.0 });
-    path.lineTo({ 111.0, 500.0 });
-    path.close();
-    render(fullPixelMap, path, Color_sRGB{glm::vec4{1.0f, 1.0f, 1.0f, 1.0f}}, Draw::SubpixelOrientation::RedLeft);
+    auto path1 = Draw::Path();
+    path1.addGlyph(glyph, {20.0, 450.0}, 8.0);
+    render(fullPixelMap, path1, Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} }, Draw::SubpixelOrientation::Unknown);
+
+    auto path2 = Draw::Path();
+    path2.addGlyph(glyph, { 30.0, 450.0 }, 8.0);
+    render(fullPixelMap, path2, Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} }, Draw::SubpixelOrientation::RedLeft);
+
+    auto path3 = Draw::Path();
+    path3.addGlyph(glyph, { 40.0, 450.0 }, 8.0);
+    render(fullPixelMap, path3, Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} }, Draw::SubpixelOrientation::RedRight);
 
     // Draw some text on top of the fullPixelMap.
 

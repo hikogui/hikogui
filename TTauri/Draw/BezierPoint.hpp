@@ -21,8 +21,13 @@ struct BezierPoint {
         return (p == other.p) && (onCurve == other.onCurve);
     }
 
-    BezierPoint transform(glm::vec2 position, float scale=1.0f, float rotate=0.0f) const {
+    BezierPoint transform(glm::vec2 position, float scale = 1.0f, float rotate = 0.0f) const {
         let newP = glm::rotate(p * scale, rotate) + position;
+        return { newP, onCurve };
+    }
+
+    BezierPoint transformFlipY(glm::vec2 position, float scale = 1.0f, float rotate = 0.0f) const {
+        let newP = glm::rotate(glm::vec2{p.x, -p.y} * scale, rotate) + position;
         return { newP, onCurve };
     }
 
