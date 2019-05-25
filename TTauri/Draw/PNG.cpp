@@ -55,6 +55,7 @@ PixelMap<uint32_t> loadPNG(const PixelMap<uint32_t> &pixelMap, const std::filesy
     png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
     
     auto row_pointers = pixelMap.rowPointers();
+    std::reverse(row_pointers.begin(), row_pointers.end());
     png_bytepp row_pointers_data = reinterpret_cast<png_bytepp>(row_pointers.data());
     png_set_rows(png_ptr, info_ptr, row_pointers_data);
 

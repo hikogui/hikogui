@@ -92,6 +92,11 @@ struct DeviceShared final {
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
     TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap();
+
+    TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap(u64extent2 extent) {
+        return getStagingPixelMap().submap({{0,0}, extent});
+    }
+
     void updateAtlasWithStagingPixelMap(const Image &image);
     void prepareAtlasForRendering();
 

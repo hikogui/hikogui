@@ -207,7 +207,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         VK_FALSE, // rasterizerDiscardEnable
         vk::PolygonMode::eFill,
         vk::CullModeFlagBits::eBack,
-        vk::FrontFace::eClockwise,
+        vk::FrontFace::eCounterClockwise,
         VK_FALSE, // depthBiasEnable
         0.0, // depthBiasConstantFactor
         0.0, // depthBiasClamp

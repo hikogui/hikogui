@@ -20,6 +20,10 @@ layout(location = 1) out vec2 outClippingRectangleMaximum;
 layout(location = 2) out vec3 outAtlasPosition;
 layout(location = 3) out float outAlpha;
 
+vec2 flipY(vec2 windowPosition) {
+    return vec2(windowPosition.x, pushConstants.windowExtent.y - windowPosition.y);
+}
+
 vec2 convertToViewport(vec2 windowPosition) {
     return (windowPosition * pushConstants.viewportScale) - vec2(1.0, 1.0);
 }
@@ -29,12 +33,12 @@ vec3 convertToTexture(vec3 atlasPosition) {
 }
 
 void main() {
-    vec2 position = convertToViewport(inPosition);
+    vec2 position = convertToViewport(flipY(inPosition));
 
     gl_Position = vec4(position, 0.0, 1.0);
 
-    outClippingRectangleMinimum = inClippingRectangleOffset;
-    outClippingRectangleMaximum = inClippingRectangleOffset + inClippingRectangleExtent;
+    outClippingRectangleMinimum = flipY(inClippingRectangleOffset) - vec2(0.0, inClippingRectangleExtent.y);
+    outClippingRectangleMaximum = flipY(inClippingRectangleOffset) + vec2(inClippingRectangleExtent.x, 0.0);
     outAtlasPosition = convertToTexture(inAtlasPosition);
     outAlpha = inAlpha;
 }

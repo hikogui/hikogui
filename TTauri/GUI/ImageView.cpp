@@ -28,7 +28,7 @@ void ImageView::drawBackingImage()
 
     auto vulkanDevice = device<Device_vulkan>();
 
-    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap();
+    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     fullPixelMap.fill({{0.0f, 0.0f, 0.0f, 1.0f}});
 
     // Draw image in the fullPixelMap.
@@ -40,18 +40,16 @@ void ImageView::drawBackingImage()
 
     // Draw something.
     auto path1 = Draw::Path();
-    path1.addGlyph(glyph, {20.0, 450.0}, 8.0);
-    render(fullPixelMap, path1, Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} }, Draw::SubpixelOrientation::Unknown);
+    path1.addGlyph(glyph, {20.0, 30.0}, 8.0);
+    render(fullPixelMap, path1, Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} }, Draw::SubpixelOrientation::Unknown);
 
     auto path2 = Draw::Path();
-    path2.addGlyph(glyph, { 30.0, 450.0 }, 8.0);
-    render(fullPixelMap, path2, Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} }, Draw::SubpixelOrientation::RedLeft);
+    path2.addGlyph(glyph, { 30.0, 30.0 }, 8.0);
+    render(fullPixelMap, path2, Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} }, Draw::SubpixelOrientation::RedLeft);
 
     auto path3 = Draw::Path();
-    path3.addGlyph(glyph, { 40.0, 450.0 }, 8.0);
-    render(fullPixelMap, path3, Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} }, Draw::SubpixelOrientation::RedRight);
-
-    // Draw some text on top of the fullPixelMap.
+    path3.addGlyph(glyph, { 40.0, 30.0 }, 8.0);
+    render(fullPixelMap, path3, Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} }, Draw::SubpixelOrientation::RedRight);
 
 
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
@@ -64,6 +62,7 @@ void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &ver
 
     auto vulkanDevice = device<Device_vulkan>();
 
+    // backingImage keeps track of use count.
     vulkanDevice->imagePipeline->exchangeImage(backingImage, key, extent);
     drawBackingImage();
 
@@ -78,7 +77,7 @@ void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &ver
     location.alpha = 1.0;
     location.clippingRectangle = {
         {position.x, position.y},
-        extent
+        extent - u64vec2(10, 10)
     };
 
     backingImage->placeVertices(location, vertices, offset);

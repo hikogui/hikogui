@@ -51,12 +51,19 @@ struct PixelMap {
     }
 
     PixelMap<T> submap(u64rect2 rect) const {
-        size_t const offset = rect.offset.y * stride + rect.offset.x;
-        size_t const count = (rect.extent.y - 1) * stride + rect.extent.x;
-
         if ((rect.offset.x + rect.extent.x > width) || (rect.offset.y + rect.extent.y > height)) {
             throw std::out_of_range("(rect.offset.x + rect.extent.x > width) || (rect.offset.y + rect.extent.y > height)");
         }
+        
+        size_t const offset = rect.offset.y * stride + rect.offset.x;
+
+        if (rect.extent.y == 0 || rect.extent.x == 0) {
+            // Image of zero width or height needs zero pixels returned.
+            return { pixels.subspan(offset, 0), rect.extent.x, rect.extent.y, stride };
+        }
+
+        size_t const count = (rect.extent.y - 1) * stride + rect.extent.x;
+
         return { pixels.subspan(offset, count), rect.extent.x, rect.extent.y, stride };
     }
     

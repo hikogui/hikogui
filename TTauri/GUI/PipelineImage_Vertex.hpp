@@ -13,10 +13,10 @@ namespace TTauri::GUI::PipelineImage {
 * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.
 */
 struct Vertex {
-    //! The pixel-coordinates where the origin is located relative to the top-left corner of the window.
+    //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
     glm::vec2 position;
 
-    //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
+    //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
     u16rect2 clippingRectangle;
 
     //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array

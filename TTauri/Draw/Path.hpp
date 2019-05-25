@@ -123,7 +123,7 @@ struct Path {
         close();
         let currentNrPoints = points.size();
         for (let point: glyph.points) {
-            points.push_back(point.transformFlipY(position, scale, rotation));
+            points.push_back(point.transform(position, scale, rotation));
         }
         for (let endPoint: glyph.endPoints) {
             endPoints.push_back(currentNrPoints + endPoint);

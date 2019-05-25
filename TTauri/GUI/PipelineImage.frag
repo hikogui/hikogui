@@ -20,10 +20,13 @@ layout(location = 0) out vec4 outColor;
 void main() {
     if (clamp(gl_FragCoord.xy, inClippingRectangleMinimum, inClippingRectangleMaximum) != gl_FragCoord.xy) {
         discard;
+        outColor = vec4(1.0, 1.0, 0.0, 1.0);
+
+    } else {
+
+        int atlasTextureIndex = int(inAtlasPosition.z);
+        vec2 textureCoord = inAtlasPosition.xy;
+
+        outColor = texture(sampler2D(textures[atlasTextureIndex], samp), textureCoord);
     }
-
-    int atlasTextureIndex = int(inAtlasPosition.z);
-    vec2 textureCoord = inAtlasPosition.xy;
-
-    outColor = texture(sampler2D(textures[atlasTextureIndex], samp), textureCoord);
 }
