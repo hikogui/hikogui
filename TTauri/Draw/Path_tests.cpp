@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PixelMap.hpp"
+#include "Path.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

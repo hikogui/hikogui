@@ -26,7 +26,9 @@ set(TTauri_srcs
     Config/LiteralParser.cpp
     Config/parser.cpp
     Draw/PixelMap.cpp
+    Draw/SubpixelMask.cpp
     Draw/PNG.cpp
+    Draw/Path.cpp
     Draw/Font.cpp
     Draw/Fonts.cpp
     Draw/TrueTypeParser.cpp

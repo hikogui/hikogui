@@ -1,15 +1,18 @@
-// Copyright 2019 Pokitec
-// All rights reserved.
-
 #pragma once
 
 #include "BezierPoint.hpp"
 #include "QBezier.hpp"
 #include "Glyph.hpp"
+#include "SubpixelMask.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
 namespace TTauri::Draw {
+
+template<typename T> struct PixelMap;
+
+void renderMask(PixelMap<uint8_t>& mask, std::vector<QBezier> const& curves);
+
 
 struct Path {
     std::vector<BezierPoint> points;
@@ -129,6 +132,27 @@ struct Path {
             endPoints.push_back(currentNrPoints + endPoint);
         }
     }
+
+    /*! Render path in subpixel mask.
+     * The rendering done is additive and saturates the pixel value, therefor
+     * you can do multiple path renders into the same mask.
+     * 
+     * \param mask pixelmap to be modified.
+     */
+    void render(SubpixelMask& mask) const {
+        return mask.render(getQBeziers());
+    }
+
+    void render(PixelMap<uint32_t>& pixels, Color_sRGBLinear color, SubpixelMask::Orientation subpixelOrientation) const {
+        auto mask = SubpixelMask(pixels.width * 3, pixels.height);
+        mask.clear();
+        mask.render(getQBeziers());
+        mask.filter(subpixelOrientation);
+
+        composit(pixels, color, mask);
+    }
 };
+
+
 
 }

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "Path.hpp"
 #include "TTauri/utils.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/Color.hpp"
@@ -16,12 +15,6 @@
 
 
 namespace TTauri::Draw {
-
-enum class SubpixelOrientation {
-    RedLeft,
-    RedRight,
-    Unknown
-};
 
 template <typename T>
 struct PixelMap {
@@ -122,27 +115,5 @@ struct PixelMap {
  * interpolation near the border will work propertly.
  */
 void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
-
-/*! Render path in subpixel mask.
- * Each uint32_t pixel is split into the three 10bit words. MSB->LSB: left-sub-pixel, mid-sub-pixel, right-sub-pixel.
- * The rendering will only increase the value on the pixels, so multiple pieces of text can
- * be rendered on top of the same pixels.
- */
-void renderMask(PixelMap<uint32_t> &mask, Path const &path);
-
-/*! Render path directly into an image.
- */
-void render(PixelMap<uint32_t> &pixels, Path const &path, Color_sRGB color, SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown);
-
-/*! Filter subpixels in PixelMap.
- * Each uint32_t pixel is split into the four bytes. MSB->LSB: left-sub-pixel, mid-sub-pixel, right-sub-pixel, color-index.
- * The pixels will be filtered so they wi
- */
-void subpixelFiltering(PixelMap<uint32_t> &pixels, SubpixelOrientation subpixelOrientation);
-
-/*! Composit colors from the color table based on the mask onto destination.
- * Mask should be subpixelFiltered before use.
- */
-void maskComposit(PixelMap<uint32_t>& under, Color_sRGB over, PixelMap<uint32_t> const& mask);
 
 }

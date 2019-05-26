@@ -39,17 +39,18 @@ void ImageView::drawBackingImage()
     let glyph = myFont.glyphs.at(glyphIndex);
 
     // Draw something.
+    let color = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} });
     auto path1 = Draw::Path();
     path1.addGlyph(glyph, {20.0, 30.0}, 8.0);
-    render(fullPixelMap, path1, Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} }, Draw::SubpixelOrientation::Unknown);
+    path1.render(fullPixelMap, color , Draw::SubpixelMask::Orientation::Unknown);
 
     auto path2 = Draw::Path();
     path2.addGlyph(glyph, { 30.0, 30.0 }, 8.0);
-    render(fullPixelMap, path2, Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} }, Draw::SubpixelOrientation::RedLeft);
+    path2.render(fullPixelMap, color, Draw::SubpixelMask::Orientation::RedLeft);
 
     auto path3 = Draw::Path();
     path3.addGlyph(glyph, { 40.0, 30.0 }, 8.0);
-    render(fullPixelMap, path3, Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} }, Draw::SubpixelOrientation::RedRight);
+    path3.render(fullPixelMap, color, Draw::SubpixelMask::Orientation::RedRight);
 
 
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);

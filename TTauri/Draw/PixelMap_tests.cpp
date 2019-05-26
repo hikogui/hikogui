@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "PixelMap.hpp"
+#include "Path.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -11,7 +12,7 @@ using namespace TTauri;
 using namespace TTauri::Draw;
 
 TEST(PixelMapTests, renderMaskFromPath) {
-    auto mask = PixelMap<uint32_t>(3, 3);
+    auto mask = SubpixelMask(9, 3);
     mask.clear();
 
     auto path = Path();
@@ -21,27 +22,47 @@ TEST(PixelMapTests, renderMaskFromPath) {
     path.lineTo({1, 2});
     path.close();
 
-    renderMask(mask, path);
+    path.render(mask);
     ASSERT_EQ(mask[0][0], 0);
     ASSERT_EQ(mask[0][1], 0);
     ASSERT_EQ(mask[0][2], 0);
+    ASSERT_EQ(mask[0][3], 0);
+    ASSERT_EQ(mask[0][4], 0);
+    ASSERT_EQ(mask[0][5], 0);
+    ASSERT_EQ(mask[0][6], 0);
+    ASSERT_EQ(mask[0][7], 0);
+    ASSERT_EQ(mask[0][8], 0);
     ASSERT_EQ(mask[1][0], 0);
-    ASSERT_EQ(mask[1][1], (1000 << 20) | (1000 << 10) | 1000);
+    ASSERT_EQ(mask[1][1], 0);
     ASSERT_EQ(mask[1][2], 0);
+    ASSERT_EQ(mask[1][3], 255);
+    ASSERT_EQ(mask[1][4], 255);
+    ASSERT_EQ(mask[1][5], 255);
+    ASSERT_EQ(mask[1][6], 0);
+    ASSERT_EQ(mask[1][7], 0);
+    ASSERT_EQ(mask[1][8], 0);
     ASSERT_EQ(mask[2][0], 0);
     ASSERT_EQ(mask[2][1], 0);
     ASSERT_EQ(mask[2][2], 0);
+    ASSERT_EQ(mask[2][3], 0);
+    ASSERT_EQ(mask[2][4], 0);
+    ASSERT_EQ(mask[2][5], 0);
+    ASSERT_EQ(mask[2][6], 0);
+    ASSERT_EQ(mask[2][7], 0);
+    ASSERT_EQ(mask[2][8], 0);
 }
 
 TEST(PixelMapTests, maskComposit) {
-    auto mask = PixelMap<uint32_t>(3, 3);
+    auto mask = SubpixelMask(9, 3);
     mask.clear();
-    mask[1][1] = (1000 << 20) | (1000 << 10) | 1000;
+    mask[1][3] = 255;
+    mask[1][4] = 255;
+    mask[1][5] = 255;
 
     auto image = PixelMap<uint32_t>(3, 3);
     image.clear();
 
-    maskComposit(image, Color_sRGB(0xffffffff), mask);
+    composit(image, color_cast<Color_sRGBLinear>(Color_sRGB(0xffffffff)), mask);
 
     ASSERT_EQ(image[0][0], 0);
     ASSERT_EQ(image[0][1], 0);
