@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/all.hpp"
 #include <boost/format.hpp>
 #include <glm/glm.hpp>
 

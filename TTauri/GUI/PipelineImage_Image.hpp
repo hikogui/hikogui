@@ -6,7 +6,7 @@
 #include "PipelineImage_ImageLocation.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "PipelineImage_Page.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Draw/all.hpp"
 #include <gsl/gsl>
 
 namespace TTauri::GUI::PipelineImage {

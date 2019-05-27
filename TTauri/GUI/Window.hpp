@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include "View.hpp"
 #include "globals.hpp"
-#include "TTauri/utils.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/all.hpp"
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -15,7 +13,7 @@ namespace TTauri::GUI {
 
 class Instance;
 class Device;
-class View;
+class WindowWidget;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -75,8 +73,8 @@ public:
      */
     float ppp = 1.0;
 
-    //! The view covering the complete window.
-    std::shared_ptr<View> view;
+    //! The widget covering the complete window.
+    std::shared_ptr<WindowWidget> widget;
 
 
     Window(const std::shared_ptr<Delegate> delegate, const std::string title);
@@ -114,7 +112,7 @@ public:
     void unsetDevice() { setDevice({}); }
 
     /*! Update window.
-     * This will update animations and redraw all views managed by this window.
+     * This will update animations and redraw all widgets managed by this window.
      * This may be called on a low latency thread, it is careful to not block on operations.
      *
      * blockOnVSync should only be called on the first window in the system. This allows a
@@ -139,7 +137,7 @@ protected:
     virtual void setWindowPosition(uint32_t x, uint32_t y);
     virtual void setWindowSize(uint32_t width, uint32_t height);
 
-    /*! Render views.
+    /*! Render widgets.
      * \param should this window block on vertical-sync.
      * \returns true if this function has blocked on vertical-sync.
      */

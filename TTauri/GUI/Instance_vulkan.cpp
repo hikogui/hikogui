@@ -3,7 +3,7 @@
 
 #include "Instance_vulkan.hpp"
 #include "Device_vulkan.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 #include <chrono>
 

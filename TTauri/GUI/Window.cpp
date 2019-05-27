@@ -3,9 +3,8 @@
 
 #include "Window.hpp"
 #include "Device.hpp"
-#include "WindowView.hpp"
-#include "TTauri/utils.hpp"
-#include "TTauri/logging.hpp"
+#include "WindowWidget.hpp"
+#include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {
@@ -38,7 +37,7 @@ void Window::initialize()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    view = TTauri::make_shared<WindowView>(shared_from_this());
+    widget = TTauri::make_shared<WindowWidget>(shared_from_this());
 
     openingWindow();
 }

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/utils.hpp"
+#include "TTauri/all.hpp"
 
 #include <complex>
 #include <cmath>

@@ -5,8 +5,7 @@
 #include "AST.hpp"
 #include "ParseContext.hpp"
 #include "exceptions.hpp"
-#include "TTauri/utils.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/all.hpp"
 #include <cstdio>
 #include <vector>
 #include <string>

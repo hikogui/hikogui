@@ -21,8 +21,7 @@
   #include <string>
   #include <cstdint>
   #include <memory>
-  #include "TTauri/Config/AST.hpp"
-  #include "TTauri/Config/ParseContext.hpp"
+  #include "TTauri/Config/all.hpp"
   typedef void* yyscan_t;
   int TTauriConfig_yyfind_token(char *text);
 }

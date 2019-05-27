@@ -6,7 +6,7 @@
 #include "PipelineImage_Image.hpp"
 #include "PipelineImage_TextureMap.hpp"
 #include "PipelineImage_Page.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Draw/all.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 

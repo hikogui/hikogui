@@ -37,7 +37,6 @@ set(TTauri_srcs
     GUI/VerticalSync.cpp
     GUI/Device.cpp
     GUI/Device_vulkan.cpp
-    GUI/ImageView.cpp
     GUI/Instance.cpp
     GUI/Instance_vulkan.cpp
     GUI/Instance_vulkan_win32.cpp
@@ -47,12 +46,13 @@ set(TTauri_srcs
     GUI/PipelineImage_DeviceShared.cpp
     GUI/PipelineImage_Image.cpp
     GUI/PipelineImage_TextureMap.cpp
-    GUI/View.cpp
     GUI/VulkanMemoryAllocator.cpp
     GUI/Window.cpp
     GUI/Window_vulkan.cpp
     GUI/Window_vulkan_win32.cpp
-    GUI/WindowView.cpp
+    GUI/Widget.cpp
+    GUI/WindowWidget.cpp
+    Widgets/ImageWidget.cpp
     Application.cpp
     Application_win32.cpp
     logging.cpp
@@ -61,7 +61,6 @@ set(TTauri_srcs
     FileView.cpp
     strings.cpp
     Time.cpp
-    Timestamp.cpp
 )
 
 

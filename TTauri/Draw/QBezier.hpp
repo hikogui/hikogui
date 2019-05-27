@@ -4,9 +4,7 @@
 #pragma once
 
 #include "BezierPoint.hpp"
-#include "TTauri/utils.hpp"
-#include "TTauri/math.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/all.hpp"
 
 #include <glm/glm.hpp>
 #include <tuple>

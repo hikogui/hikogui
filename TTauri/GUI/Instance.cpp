@@ -2,8 +2,7 @@
 // All rights reserved.
 
 #include "Instance.hpp"
-#include "TTauri/logging.hpp"
-#include "TTauri/Application.hpp"
+#include "TTauri/all.hpp"
 #include <chrono>
 
 namespace TTauri::GUI {

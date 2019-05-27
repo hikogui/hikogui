@@ -7,7 +7,7 @@
 #include "PipelineImage_PushConstants.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "globals.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/all.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 

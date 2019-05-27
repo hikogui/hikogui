@@ -1,15 +1,15 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "WindowView.hpp"
-#include "Window.hpp"
+#include "WindowWidget.hpp"
+#include "TTauri/GUI/all.hpp"
 
 namespace TTauri::GUI {
 
 using namespace std;
 
-WindowView::WindowView(const std::weak_ptr<Window> window) :
-    View()
+WindowWidget::WindowWidget(const std::weak_ptr<Window> window) :
+    Widget()
 {
     this->window = move(window);
 }

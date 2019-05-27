@@ -4,7 +4,7 @@
 #pragma once
 
 #include "PipelineImage_Delegate.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/all.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
@@ -19,14 +19,14 @@ class Instance;
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class View : public std::enable_shared_from_this<View>, public PipelineImage::Delegate {
+class Widget : public std::enable_shared_from_this<Widget>, public PipelineImage::Delegate {
 public:
     //! Convenient reference to the Window.
     std::weak_ptr<Window> window;
 
-    std::weak_ptr<View> parent;
+    std::weak_ptr<Widget> parent;
 
-    std::vector<std::shared_ptr<View>> children;
+    std::vector<std::shared_ptr<Widget>> children;
 
     //! Location of the frame compared to the parent-frame.
     glm::vec2 position = { 0.0, 0.0 };
@@ -35,18 +35,18 @@ public:
 
     /*! Constructor for creating subviews.
      */
-    View();
-    virtual ~View() {}
+    Widget();
+    virtual ~Widget() {}
 
-    View(const View &) = delete;
-    View &operator=(const View &) = delete;
-    View(View &&) = delete;
-    View &operator=(View &&) = delete;
+    Widget(const Widget &) = delete;
+    Widget &operator=(const Widget &) = delete;
+    Widget(Widget &&) = delete;
+    Widget &operator=(Widget &&) = delete;
 
-    virtual void setParent(const std::shared_ptr<View> &parent);
+    virtual void setParent(const std::shared_ptr<Widget> &parent);
     virtual void setRectangle(glm::vec2 position, u64extent2 extent);
 
-    virtual void add(std::shared_ptr<View> view);
+    virtual void add(std::shared_ptr<Widget> widget);
 
     template<typename T>
     std::shared_ptr<T> device()

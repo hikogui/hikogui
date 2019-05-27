@@ -1,32 +1,26 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ImageView.hpp"
-#include "PipelineImage_Image.hpp"
-#include "Device_vulkan.hpp"
-#include "PipelineImage_DeviceShared.hpp"
-#include "PipelineImage_Image.hpp"
-#include "PipelineImage_ImageLocation.hpp"
-#include "TTauri/Draw/PNG.hpp"
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/Fonts.hpp"
+#include "ImageWidget.hpp"
+#include "TTauri/GUI/all.hpp"
+#include "TTauri/Draw/all.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 
-namespace TTauri::GUI {
+namespace TTauri::Widgets {
 
-ImageView::ImageView(const std::filesystem::path path) :
-    View(), path(std::move(path))
+ImageWidget::ImageWidget(const std::filesystem::path path) :
+    Widget(), path(std::move(path))
 {
 }
 
-void ImageView::drawBackingImage()
+void ImageWidget::drawBackingImage()
 {
     if (backingImage->drawn) {
         return;
     }
 
-    auto vulkanDevice = device<Device_vulkan>();
+    auto vulkanDevice = device<GUI::Device_vulkan>();
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     fullPixelMap.fill({{0.0f, 0.0f, 0.0f, 1.0f}});
@@ -57,11 +51,11 @@ void ImageView::drawBackingImage()
     backingImage->drawn = true;
 }
 
-void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
+void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset)
 {
     auto key = (boost::format("ImageView(%i,%i,%s)") % extent.x % extent.y % path).str();
 
-    auto vulkanDevice = device<Device_vulkan>();
+    auto vulkanDevice = device<GUI::Device_vulkan>();
 
     // backingImage keeps track of use count.
     vulkanDevice->imagePipeline->exchangeImage(backingImage, key, extent);
@@ -69,7 +63,7 @@ void ImageView::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &ver
 
     //rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);
 
-    PipelineImage::ImageLocation location;
+    GUI::PipelineImage::ImageLocation location;
     location.position = position;
     location.depth = depth + 0.0;
     location.origin = {backingImage->extent.x * 0.5, backingImage->extent.y * 0.5};

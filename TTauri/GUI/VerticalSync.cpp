@@ -1,7 +1,6 @@
 
 #include "VerticalSync.hpp"
-#include "TTauri/logging.hpp"
-#include "TTauri/strings.hpp"
+#include "TTauri/all.hpp"
 
 #include <ntstatus.h>
 

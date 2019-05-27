@@ -6,8 +6,7 @@
 %option nounistd never-interactive
 %{
 #include "TTauriConfigParser.hpp"
-#include "TTauri/Config/ParseContext.hpp"
-#include "TTauri/Config/LiteralParser.hpp"
+#include "TTauri/Config/all.hpp"
 #include <string.h>
 
 inline void updateLocation(YYLTYPE *location, char *text)

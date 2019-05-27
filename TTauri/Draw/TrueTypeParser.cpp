@@ -6,8 +6,7 @@
 #include "Glyph.hpp"
 #include "Font.hpp"
 #include "exceptions.hpp"
-#include "TTauri/FileView.hpp"
-#include "TTauri/utils.hpp"
+#include "TTauri/all.hpp"
 
 #include <boost/endian/buffers.hpp>
 

@@ -5,8 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-#include "TTauri/utils.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/all.hpp"
 
 namespace TTauri::Draw {
 

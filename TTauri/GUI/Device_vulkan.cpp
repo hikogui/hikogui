@@ -6,7 +6,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window_vulkan.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/all.hpp"
 #include <gsl/gsl>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>

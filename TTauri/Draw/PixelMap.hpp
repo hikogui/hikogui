@@ -3,9 +3,7 @@
 
 #pragma once
 
-#include "TTauri/utils.hpp"
-#include "TTauri/geometry.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/all.hpp"
 
 #include <glm/glm.hpp>
 #include <gsl/gsl>

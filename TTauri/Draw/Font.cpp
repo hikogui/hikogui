@@ -2,8 +2,7 @@
 // All rights reserved.
 
 #include "Font.hpp"
-#include "TTauri/FileView.hpp"
-#include "TTauri/utils.hpp"
+#include "TTauri/all.hpp"
 
 #include <boost/endian/buffers.hpp>
 

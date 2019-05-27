@@ -7,7 +7,7 @@
 #include "ASTExpressionList.hpp"
 #include "ASTMember.hpp"
 #include "ASTName.hpp"
-#include "TTauri/utils.hpp"
+#include "TTauri/all.hpp"
 #include <vector>
 
 namespace TTauri::Config {

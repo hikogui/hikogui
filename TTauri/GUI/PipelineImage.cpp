@@ -4,8 +4,9 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
+#include "WindowWidget.hpp"
 #include "Device_vulkan.hpp"
-#include "TTauri/Application.hpp"
+#include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI::PipelineImage {
@@ -24,7 +25,7 @@ vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSema
     auto const vulkanDevice = device<Device_vulkan>();
 
     size_t tmpNumberOfVertices = 0;
-    window.lock()->view->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
+    window.lock()->widget->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
     vulkanDevice->flushAllocation(vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 

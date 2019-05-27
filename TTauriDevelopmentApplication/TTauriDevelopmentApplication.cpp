@@ -1,9 +1,7 @@
 
-#include "TTauri/utils.hpp"
-#include "TTauri/Application_win32.hpp"
-#include "TTauri/GUI/ImageView.hpp"
-#include "TTauri/GUI/Instance_vulkan_win32.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/all.hpp"
+#include "TTauri/GUI/all.hpp"
+#include "TTauri/Widgets/all.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -21,13 +19,13 @@ class MyWindowDelegate : public GUI::Window::Delegate {
 public:
     void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
-        auto view1 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "camera.png");
+        auto view1 = TTauri::make_shared<Widgets::ImageWidget>(get_singleton<Application>()->resourceDir / "camera.png");
         view1->setRectangle({ 100.0, 100.0 }, { 512, 512 });
-        window->view->add(view1);
+        window->widget->add(view1);
 
-        auto view2 = TTauri::make_shared<GUI::ImageView>(get_singleton<Application>()->resourceDir / "camera.png");
+        auto view2 = TTauri::make_shared<Widgets::ImageWidget>(get_singleton<Application>()->resourceDir / "camera.png");
         view2->setRectangle({ 200.0, 200.0 }, { 512, 512 });
-        window->view->add(view2);
+        window->widget->add(view2);
     }
 
     void closingWindow(const std::shared_ptr<GUI::Window> &window) override

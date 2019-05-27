@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Window.hpp"
-#include "TTauri/utils.hpp"
+#include "TTauri/all.hpp"
 #include <gsl/gsl>
 
 #ifdef _WIN32
