@@ -4,3 +4,4 @@
 #pragma once
 
 #include "ImageWidget.hpp"
+#include "ButtonWidget.hpp"

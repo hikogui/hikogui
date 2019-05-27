@@ -53,6 +53,7 @@ set(TTauri_srcs
     GUI/Widget.cpp
     GUI/WindowWidget.cpp
     Widgets/ImageWidget.cpp
+    Widgets/ButtonWidget.cpp
     Application.cpp
     Application_win32.cpp
     logging.cpp

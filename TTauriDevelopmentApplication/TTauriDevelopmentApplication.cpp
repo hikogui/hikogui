@@ -19,13 +19,13 @@ class MyWindowDelegate : public GUI::Window::Delegate {
 public:
     void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
-        auto view1 = TTauri::make_shared<Widgets::ImageWidget>(get_singleton<Application>()->resourceDir / "camera.png");
-        view1->setRectangle({ 100.0, 100.0 }, { 512, 512 });
+        auto view1 = TTauri::make_shared<Widgets::ButtonWidget>("Hello World");
+        view1->setRectangle({ 10.0, 10.0 }, { 100, 25});
         window->widget->add(view1);
 
-        auto view2 = TTauri::make_shared<Widgets::ImageWidget>(get_singleton<Application>()->resourceDir / "camera.png");
-        view2->setRectangle({ 200.0, 200.0 }, { 512, 512 });
-        window->widget->add(view2);
+        //auto view2 = TTauri::make_shared<Widgets::ImageWidget>(get_singleton<Application>()->resourceDir / "camera.png");
+        //view2->setRectangle({ 200.0, 200.0 }, { 512, 512 });
+        //window->widget->add(view2);
     }
 
     void closingWindow(const std::shared_ptr<GUI::Window> &window) override

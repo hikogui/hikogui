@@ -19,7 +19,7 @@ layout(location = 0) out vec4 outColor;
 
 void main() {
     if (clamp(gl_FragCoord.xy, inClippingRectangleMinimum, inClippingRectangleMaximum) != gl_FragCoord.xy) {
-        discard;
+        //discard;
         outColor = vec4(1.0, 1.0, 0.0, 1.0);
 
     } else {

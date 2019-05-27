@@ -116,6 +116,28 @@ struct Path {
         points.emplace_back(p + direction, true);
     }
 
+    void arcTo(glm::vec2 circleCenterPosition, glm::vec2 position) {
+        // Calculate the radius and angle between the current and new position compared to the circle center.
+        let v0 = currentPosition() - circleCenterPosition;
+        let v2 = position - circleCenterPosition;
+        let r0 = glm::length(v0);
+        let r2 = glm::length(v2);
+        let alpha = acos(glm::dot(v0, v2) / (r0 * r2));
+
+        // Technically r0 == r2, lets take the average just in case.
+        let r = (r0 + r2) * 0.5f;
+
+        // Extend the midpoint out to form the control point.
+        // XXX so very wrong.
+        let X = midpoint(currentPosition(), position);
+        let vx = X - circleCenterPosition;
+        let extension = r * (1.0f + cosf(alpha * 0.5f) * 0.45f);
+        let vx_extended = glm::normalize(vx) * extension;
+        let controlPosition = vx_extended + circleCenterPosition;
+
+        curveTo(controlPosition, position);
+    }
+
     /*! Add glyph to path.
      * \param glyph Glyph to draw.
      * \param position The position to draw the origin of the glyph.

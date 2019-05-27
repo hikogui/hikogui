@@ -115,14 +115,16 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     auto const vulkanDevice = device.lock();
 
-    // Add a proper border around the given image.
+    // Start with the actual image inside the stagingImage.
     auto rectangle = u64rect2{
         {Page::border, Page::border},
-        {image.extent.width() - 2 * Page::border, image.extent.height() - 2 * Page::border}
+        image.extent
     };
+    // Add one pixel of border around the actual image and keep extending
+    // until the full border with is finished.
     for (size_t b = 0; b < Page::border; b++) {
-        rectangle.offset -= glm::u64vec2(Page::border, Page::border);
-        rectangle.extent += glm::u64vec2(Page::border*2, Page::border*2);
+        rectangle.offset -= glm::u64vec2(1, 1);
+        rectangle.extent += glm::u64vec2(2, 2);
 
         auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
         TTauri::Draw::add1PixelTransparentBorder(pixelMap);
@@ -132,7 +134,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     vulkanDevice->flushAllocation(
         stagingTexture.allocation,
         0,
-        ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride + image.extent.width() + 2 * Page::border) * sizeof (uint32_t)
+        ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
     );
 
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferSrcOptimal);
