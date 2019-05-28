@@ -19,7 +19,7 @@ class MyWindowDelegate : public GUI::Window::Delegate {
 public:
     void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
-        auto view1 = TTauri::make_shared<Widgets::ButtonWidget>("Hello World");
+        auto view1 = TTauri::make_shared<Widgets::ButtonWidget>(u8"Hëllö Wörld");
         view1->setRectangle({ 10.0, 10.0 }, { 100, 25});
         window->widget->add(view1);
 

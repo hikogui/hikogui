@@ -10,6 +10,7 @@
 
 namespace TTauri::Draw {
 
+
 Font parseTrueTypeFile(gsl::span<std::byte> bytes);
 Font parseTrueTypeFile(std::filesystem::path& path);
 

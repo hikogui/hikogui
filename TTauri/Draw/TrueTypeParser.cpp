@@ -33,6 +33,11 @@ struct FWord_buf_t {
     float value(uint16_t unitsPerEm) const { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
 };
 
+struct FByte_buf_t {
+    int8_t x;
+    float value(uint16_t unitsPerEm) const { return static_cast<float>(x) / static_cast<float>(unitsPerEm); }
+};
+
 struct uFWord_buf_t {
     big_uint16_buf_t x;
     float value(uint16_t unitsPerEm) const { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
@@ -182,7 +187,7 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
     let startCodes = make_span<big_uint16_buf_t>(bytes, startCodesOffset, segCount);
 
     let idDeltasOffset = startCodesOffset + 2*segCount;
-    let idDeltas = make_span<big_int16_buf_t>(bytes, idDeltasOffset, segCount);
+    let idDeltas = make_span<big_uint16_buf_t>(bytes, idDeltasOffset, segCount);
 
     let idRangeIndiciesOffset = idDeltasOffset + 2 * segCount;
     let idRangeIndices = make_span<big_uint16_buf_t>(bytes, idRangeIndiciesOffset, segCount);
@@ -197,7 +202,8 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
 
         for (char32_t c = startCode; c <= endCode; c++) {
             if (idRangeIndex == 0) {
-                characterToGlyph[c] = c + idDelta;
+                // Calculation must be done modulo 65536.
+                characterToGlyph[c] = (c + idDelta) & 0xffff;
             } else {
                 let index = idRangeIndex + idRangeIndexOffset + 2*(c - startCode);
                 characterToGlyph[c] = at<big_uint16_buf_t>(bytes, index).value();
@@ -395,12 +401,111 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
         pointNr++;
     }
 
+    glyph.valid = true;
     return glyph;
 }
 
+static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const& glyphs);
+
+const uint16_t FLAG_ARG_1_AND_2_ARE_WORDS = 0x0001;
+const uint16_t FLAG_ARGS_ARE_XY_VALUES = 0x0002;
+const uint16_t FLAG_ROUND_XY_TO_GRID = 0x0004;
+const uint16_t FLAG_WE_HAVE_A_SCALE = 0x0008;
+const uint16_t FLAG_MORE_COMPONENTS = 0x0020;
+const uint16_t FLAG_WE_HAVE_AN_X_AND_Y_SCALE = 0x0040;
+const uint16_t FLAG_WE_HAVE_A_TWO_BY_TWO = 0x0080;
+const uint16_t FLAG_WE_HAVE_INSTRUCTIONS = 0x0100;
+const uint16_t FLAG_USE_MY_METRICS = 0x0200;
+const uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
+const uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
+const uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
 static Glyph parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const& glyphs)
 {
-    return {};
+    let bytes = glyphDataList.at(i);
+    size_t offset = 0;
+
+    let& entry = at<GLYFEntry>(bytes, offset);
+    offset += sizeof(GLYFEntry);
+
+    Glyph glyph;
+
+    uint16_t flags;
+    do {
+        flags = at<big_uint16_buf_t>(bytes, offset).value();
+        offset += sizeof(uint16_t);
+        let subGlyphIndex = at<big_uint16_buf_t>(bytes, offset).value();
+        offset += sizeof(uint16_t);
+        let subGlyph = parseGlyph(glyphDataList, subGlyphIndex, unitsPerEm, glyphs);
+
+        glm::vec2 subGlyphOffset;
+        if (flags & FLAG_ARGS_ARE_XY_VALUES) {
+            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
+                subGlyphOffset.x = at<FWord_buf_t>(bytes, offset).value(unitsPerEm);
+                offset += sizeof(int16_t);
+                subGlyphOffset.y = at<FWord_buf_t>(bytes, offset).value(unitsPerEm);
+                offset += sizeof(int16_t);
+            } else {
+                subGlyphOffset.x = at<FByte_buf_t>(bytes, offset).value(unitsPerEm);
+                offset += sizeof(int8_t);
+                subGlyphOffset.y = at<FByte_buf_t>(bytes, offset).value(unitsPerEm);
+                offset += sizeof(int8_t);
+            }
+        } else {
+            size_t pointNr1;
+            size_t pointNr2;
+            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
+                pointNr1 = at<big_uint16_buf_t>(bytes, offset).value();
+                offset += sizeof(uint16_t);
+                pointNr2 = at<big_uint16_buf_t>(bytes, offset).value();
+                offset += sizeof(uint16_t);
+            }
+            else {
+                pointNr1 = at<uint8_t>(bytes, offset);
+                offset += sizeof(uint8_t);
+                pointNr2 = at<uint8_t>(bytes, offset);
+                offset += sizeof(uint8_t);
+            }
+            abort();
+            // XXX Calculate subGlyphOffset
+        }
+
+        // Start with an identity matrix.
+        auto subGlyphScale = glm::mat2x2(1.0f);
+        if (flags & FLAG_WE_HAVE_A_SCALE) {
+            subGlyphScale[0][0] = at<shortFrac_buf_t>(bytes, offset).value();
+            subGlyphScale[1][1] = subGlyphScale[0][0];
+            offset += sizeof(uint16_t);
+        } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
+            subGlyphScale[0][0] = at<shortFrac_buf_t>(bytes, offset).value();
+            offset += sizeof(uint16_t);
+            subGlyphScale[1][1] = at<shortFrac_buf_t>(bytes, offset).value();
+            offset += sizeof(uint16_t);
+        } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
+            subGlyphScale[0][0] = at<shortFrac_buf_t>(bytes, offset).value();
+            offset += sizeof(uint16_t);
+            subGlyphScale[0][1] = at<shortFrac_buf_t>(bytes, offset).value();
+            offset += sizeof(uint16_t);
+            subGlyphScale[1][0] = at<shortFrac_buf_t>(bytes, offset).value();
+            offset += sizeof(uint16_t);
+            subGlyphScale[1][1] = at<shortFrac_buf_t>(bytes, offset).value();
+            offset += sizeof(uint16_t);
+        }
+
+        if (flags & FLAG_SCALED_COMPONENT_OFFSET) {
+            subGlyphOffset = subGlyphOffset * subGlyphScale;
+        }
+
+        if (flags & FLAG_USE_MY_METRICS) {
+            glyph.useMetricsOfGlyph = subGlyphIndex;
+        }
+        
+        glyph.addSubGlyph(subGlyph, subGlyphScale, subGlyphOffset);
+
+    } while (flags & FLAG_MORE_COMPONENTS);
+    // Ignore trailing instructions.
+
+    glyph.valid = true;
+    return glyph;
 }
 
 static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const &glyphs)
@@ -408,7 +513,9 @@ static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, 
     let bytes = glyphDataList.at(i);
     if (bytes.size() == 0) {
         // Glyph does not have an outline.
-        return {};
+        Glyph glyph = {};
+        glyph.valid = true;
+        return glyph;
     }
 
     let &entry = at<GLYFEntry>(bytes, 0);
@@ -417,6 +524,7 @@ static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, 
     Glyph glyph;
     if (numberOfContours == 0) {
         glyph = {};
+        glyph.valid = true;
     } else if (numberOfContours > 0) {
         glyph = parseSimpleGlyph(bytes, unitsPerEm);
     } else {
@@ -492,9 +600,7 @@ static void parseHMTX(std::vector<Glyph> &glyphs, gsl::span<std::byte> horizonta
         glyph.leftSideBearing = leftSideBearing;
         glyph.rightSideBearing = advanceWidth - (leftSideBearing + glyph.boundingBox.extent.width());
     }
-
 }
-
 
 template<typename T=std::byte>
 static gsl::span<T> getSpanToTable(gsl::span<std::byte> bytes, gsl::span<SFNTEntry> const entries, uint32_t tag)

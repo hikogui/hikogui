@@ -10,6 +10,7 @@
 #include "FileMapping.hpp"
 #include "FileView.hpp"
 #include "geometry.hpp"
+#include "grapheme.hpp"
 #include "math.hpp"
 #include "strings.hpp"
 #include "Time.hpp"

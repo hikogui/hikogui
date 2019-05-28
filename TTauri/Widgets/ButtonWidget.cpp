@@ -53,53 +53,24 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     pixelMap.fill({ {0.0f, 0.0f, 0.0f, 1.0f} });
 
-    let myFont = get_singleton<Draw::Fonts>()->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
-    let glyphIndex = myFont.characterMap.at('g');
-    let glyph = myFont.glyphs.at(glyphIndex);
-
     // Draw something.
-    let backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.5f, 0.5f, 0.5f, 1.0f} });
-    float topLeftCornerRadius = 10.0;
-    float topRightCornerRadius = 10.0;
-    float bottomLeftCornerRadius = 10.0;
-    float bottomRightCornerRadius = 10.0;
+    let backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.2f, 0.2f, 0.2f, 1.0f} });
+    let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
+    let labelFont = get_singleton<Draw::Fonts>()->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
+    let labelFontSize = 12.0;
 
-    bool topLeftCornerIsRounded = true;
-    bool topRightCornerIsRounded = true;
-    bool bottomLeftCornerIsRounded = true;
-    bool bottomRightCornerIsRounded = false;
+    let rect = rect2{{0.0f, 0.0f}, { static_cast<float>(image.extent.width()), static_cast<float>(image.extent.height()) }};
+    let fontCenter = labelFontSize * 0.5f;
+    let labelLocation = midpoint(rect) + glm::vec2(0.0f, -fontCenter);
 
-    auto buttonShape = Draw::Path();
-    buttonShape.moveTo({ 0.0, image.extent.y - topLeftCornerRadius });
-    if (topLeftCornerIsRounded) {
-        buttonShape.arcTo({topLeftCornerRadius, image.extent.y - topLeftCornerRadius}, { topLeftCornerRadius, image.extent.y });
-    } else {
-        buttonShape.lineTo({ topLeftCornerRadius, image.extent.y });
-    }
+    auto buttonBackgroundMask = Draw::Path();
+    buttonBackgroundMask.addRectangle(rect, backgroundShape);
+    buttonBackgroundMask.render(pixelMap, backgroundColor, Draw::SubpixelMask::Orientation::RedLeft);
 
-    buttonShape.lineTo({ image.extent.x - topRightCornerRadius, image.extent.y });
-    if (topRightCornerIsRounded) {
-        buttonShape.arcTo({image.extent.x - topRightCornerRadius, image.extent.y - topRightCornerRadius}, { image.extent.x, image.extent.y - topRightCornerRadius });
-    } else {
-        buttonShape.lineTo({ image.extent.x, image.extent.y - topRightCornerRadius });
-    }
-
-    buttonShape.lineTo({ image.extent.x, bottomRightCornerRadius });
-    if (bottomRightCornerIsRounded) {
-        buttonShape.arcTo({image.extent.x - bottomRightCornerRadius, bottomRightCornerRadius}, { image.extent.x - bottomRightCornerRadius, 0.0 });
-    } else {
-        buttonShape.lineTo({ image.extent.x - bottomRightCornerRadius, 0.0 });
-    }
-
-    buttonShape.lineTo({ bottomLeftCornerRadius, 0.0 });
-    if (bottomLeftCornerIsRounded) {
-        buttonShape.arcTo({bottomLeftCornerRadius, bottomLeftCornerRadius}, { 0.0, bottomLeftCornerRadius });
-    } else {
-        buttonShape.lineTo({ 0.0, bottomLeftCornerRadius });
-    }
-
-    buttonShape.close();
-    buttonShape.render(pixelMap, backgroundColor, Draw::SubpixelMask::Orientation::RedLeft);
+    auto textMask = Draw::Path();
+    textMask.addText(label, labelFont, labelLocation, labelFontSize, 0.0f, Draw::HorizontalAlignment::Center);
+    textMask.render(pixelMap, labelColor, Draw::SubpixelMask::Orientation::RedLeft);
 
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
     image.drawn = true;
