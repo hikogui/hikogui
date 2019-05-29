@@ -24,7 +24,7 @@ u64rect2 Image::indexToRect(size_t const pageIndex) const
     return {{left, top}, {width, height}};
 }
 
-static bool inside(glm::vec2 point, u64rect2 clip)
+static bool inside(glm::vec2 point, rect2 clip)
 {
     return (
         (point.x >= clip.offset.x) &&
@@ -34,7 +34,7 @@ static bool inside(glm::vec2 point, u64rect2 clip)
     );
 }
 
-static bool anyInside(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, u64rect2 clip)
+static bool anyInside(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, rect2 clip)
 {
     return inside(p1, clip) || inside(p2, clip) || inside(p3, clip) || inside(p4, clip);
 }

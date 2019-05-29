@@ -19,13 +19,22 @@ class MyWindowDelegate : public GUI::Window::Delegate {
 public:
     void openingWindow(const std::shared_ptr<GUI::Window> &window) override
     {
-        auto view1 = TTauri::make_shared<Widgets::ButtonWidget>(u8"Hëllö Wörld");
-        view1->setRectangle({ 10.0, 10.0 }, { 100, 25});
-        window->widget->add(view1);
+        auto button1 = TTauri::make_shared<Widgets::ButtonWidget>(u8"Hëllö Wörld");
+        window->widget->add(button1);
+        window->addConstraint(button1->box.width == 100);
+        window->addConstraint(button1->box.height == 30);
+        window->addConstraint(button1->box.outerLeft() == window->box().left);
+        window->addConstraint(button1->box.outerBottom() == window->box().bottom);
+        window->addConstraint(button1->box.outerTop() <= window->box().top());
 
-        //auto view2 = TTauri::make_shared<Widgets::ImageWidget>(get_singleton<Application>()->resourceDir / "camera.png");
-        //view2->setRectangle({ 200.0, 200.0 }, { 512, 512 });
-        //window->widget->add(view2);
+        auto button2 = TTauri::make_shared<Widgets::ButtonWidget>(u8"Foo Bar");
+        window->widget->add(button2);
+        window->addConstraint(button2->box.width >= 100);
+        window->addConstraint(button2->box.height == 30);
+        window->addConstraint(button2->box.outerLeft() == button1->box.right());
+        window->addConstraint(button2->box.outerBottom() == window->box().bottom);
+        window->addConstraint(button2->box.outerRight() == window->box().right());
+        window->addConstraint(button2->box.outerTop() <= window->box().top());
     }
 
     void closingWindow(const std::shared_ptr<GUI::Window> &window) override

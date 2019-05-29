@@ -309,7 +309,15 @@ std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::Swa
         break;
     }
 
-    widget->setRectangle({ 0.0, 0.0 }, { swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height });
+    if (widthHeightContraintsAdded) {
+        removeConstraint(widthConstraint);
+        removeConstraint(heightConstraint);
+    }
+    widthConstraint = (box().width == swapchainCreateInfo.imageExtent.width);
+    heightConstraint = (box().height == swapchainCreateInfo.imageExtent.height);
+    addConstraint(widthConstraint);
+    addConstraint(heightConstraint);
+    widthHeightContraintsAdded = true;
 
     LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;

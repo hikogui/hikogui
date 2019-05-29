@@ -54,8 +54,8 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
         // Size and position
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        640,
+        480,
 
         NULL, // Parent window
         NULL, // Menu

@@ -87,7 +87,11 @@ struct DeviceShared final {
      * \param key of the image.
      * \param extent of the image.
      */
-    void exchangeImage(std::shared_ptr<Image> &image, const std::string &key, const u64extent2 extent);
+    void exchangeImage(std::shared_ptr<Image>& image, const std::string& key, const u64extent2 extent);
+
+    void exchangeImage(std::shared_ptr<Image>& image, const std::string& key, const extent2 extent) {
+        return exchangeImage(image, key, u64extent2{extent.width(), extent.height()});
+    }
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 

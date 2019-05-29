@@ -19,25 +19,21 @@ ButtonWidget::ButtonWidget(std::string const label) :
 void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset)
 {
     auto vulkanDevice = device<GUI::Device_vulkan>();
-    let key = (boost::format("ButtonWidget(%i,%i,%i)") % extent.x % extent.y % static_cast<size_t>(state)).str();
+    let key = (boost::format("ButtonWidget(%i,%i,%s,%i)") % box.width.value() % box.height.value() % label % static_cast<size_t>(state)).str();
 
     auto &imagePtrRef = imagePerState.at(static_cast<size_t>(state));
-    vulkanDevice->imagePipeline->exchangeImage(imagePtrRef, key, extent);
+    vulkanDevice->imagePipeline->exchangeImage(imagePtrRef, key, box.currentExtent());
 
     auto &image = *imagePtrRef;
     drawImage(image, State::ENABLED);
 
     GUI::PipelineImage::ImageLocation location;
-    location.position = position;
     location.depth = depth + 0.0;
     location.origin = { image.extent.x * 0.5, image.extent.y * 0.5 };
-    location.position = position + location.origin;
+    location.position = box.currentPosition() + location.origin;
     location.rotation = 0.0;
     location.alpha = 1.0;
-    location.clippingRectangle = {
-        {position.x, position.y},
-        extent
-    };
+    location.clippingRectangle = box.currentRectangle();
 
     image.placeVertices(location, vertices, offset);
 }

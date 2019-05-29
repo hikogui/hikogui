@@ -1,0 +1,13 @@
+BasedOnStyle: LLVM
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: Inline
+AlwaysBreakTemplateDeclarations: true
+BreakBeforeBraces: Linux
+BreakBeforeBinaryOperators: true
+BreakConstructorInitializersBeforeComma: true
+ColumnLimit: 79
+Cpp11BracedListStyle: true
+IndentWidth: 4
+PointerBindsToType: true
+Standard: Cpp11
+

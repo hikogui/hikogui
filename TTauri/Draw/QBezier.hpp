@@ -76,7 +76,9 @@ struct QBezier {
 
         results2 r;
         for (let t: solveTByY(y)) {
-            if (t >= 0.0f && t <= 1.0f) {
+            // When two curves are sampled exactly on an end point we need to make sure we only return one answer.
+            // Therefor we do not use the result of the 1.0f end-point.
+            if (t >= 0.0f && t < 1.0f) {
                 let a = P0.x - 2.0f * P1.x + P2.x;
                 let b = 2.0f*(P1.x - P0.x);
                 let c = P0.x;

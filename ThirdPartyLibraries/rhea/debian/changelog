@@ -1,0 +1,59 @@
+rhea (0.2.4) raring; urgency=medium
+
+  * More flexibility in adding/removing edit constraints
+
+ -- Nocte <nocte@hippie.nu>  Thu, 12 Feb 2015 19:16:13 +0100
+
+rhea (0.2.3) raring; urgency=medium
+
+  * Bugfix: throw when denominator is not constant (#26)
+
+ -- Nocte <nocte@hippie.nu>  Thu, 27 Nov 2014 09:20:54 +0100
+
+rhea (0.2.2) raring; urgency=medium
+
+  * Renamed COPYING to LICENSE.md
+
+ -- Nocte <nocte@hippie.nu>  Wed, 05 Nov 2014 22:24:57 +0100
+
+rhea (0.2.1) raring; urgency=medium
+
+  * Changed the license to MIT/Expat.
+
+ -- Nocte <nocte@hippie.nu>  Wed, 05 Nov 2014 22:03:58 +0100
+
+rhea (0.2.0) raring; urgency=medium
+
+  * Add linked and action variables.
+
+ -- Nocte <nocte@hippie.nu>  Mon, 20 Oct 2014 21:46:28 +0200
+
+rhea (0.1.6) raring; urgency=low
+
+  * Fix a bug with required strength stays and edits (#18).
+
+ -- Nocte <nocte@hippie.nu>  Mon, 20 Oct 2014 19:28:18 +0200
+
+rhea (0.1.4) raring; urgency=low
+
+  * Fix for Launchpad.
+
+ -- Nocte <nocte@outlook.com>  Mon, 02 Jun 2014 22:40:56 +0200
+
+rhea (0.1.3) raring; urgency=low
+
+  * Formatting with clang-format.
+
+ -- Nocte <nocte@outlook.com>  Mon, 02 Jun 2014 21:08:29 +0200
+
+rhea (0.1.2) raring; urgency=low
+
+  * Small fixes for Debian packaging.
+
+ -- Nocte <nocte@hippie.nu>  Sat, 08 Jun 2013 12:30:37 +0200
+
+rhea (0.1.1) raring; urgency=low
+
+  * Initial release.
+
+ -- Nocte <nocte@hippie.nu>  Tue, 04 Jun 2013 13:58:45 +0200

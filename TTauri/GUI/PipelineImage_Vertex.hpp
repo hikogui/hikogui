@@ -17,7 +17,7 @@ struct Vertex {
     glm::vec2 position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    u16rect2 clippingRectangle;
+    rect2 clippingRectangle;
 
     //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array
     u16vec3 atlasPosition;
@@ -35,8 +35,8 @@ struct Vertex {
         position(position),
         atlasPosition(atlasPosition),
         clippingRectangle({
-            {static_cast<uint16_t>(location.clippingRectangle.offset.x), static_cast<uint16_t>(location.clippingRectangle.offset.y)},
-            {static_cast<uint16_t>(location.clippingRectangle.extent.width()), static_cast<uint16_t>(location.clippingRectangle.extent.height())}
+            {location.clippingRectangle.offset.x, location.clippingRectangle.offset.y},
+            {location.clippingRectangle.extent.width(), location.clippingRectangle.extent.height()}
         }),
         depth(static_cast<uint16_t>(location.depth)),
         alpha(static_cast<uint8_t>(location.alpha * 255.0)) {}
@@ -52,8 +52,8 @@ struct Vertex {
     {
         return {
             { 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, position) },
-            { 1, 0, vk::Format::eR16G16Uint, offsetof(Vertex, clippingRectangle.offset) },
-            { 2, 0, vk::Format::eR16G16Uint, offsetof(Vertex, clippingRectangle.extent) },
+            { 1, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.offset) },
+            { 2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.extent) },
             { 3, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, atlasPosition) },                
             { 4, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
             { 5, 0, vk::Format::eR8Uint, offsetof(Vertex, alpha) },

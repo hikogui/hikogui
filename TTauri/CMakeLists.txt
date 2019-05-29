@@ -71,7 +71,7 @@ endif()
 
 
 add_library(TTauri STATIC ${TTauri_srcs})
-target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc)
+target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
 

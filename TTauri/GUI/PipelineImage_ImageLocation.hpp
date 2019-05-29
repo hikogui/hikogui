@@ -20,7 +20,7 @@ struct ImageLocation {
     float rotation;
 
     //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
-    u64rect2 clippingRectangle;
+    rect2 clippingRectangle;
 
     //! Depth location of the rendered image.
     size_t depth;

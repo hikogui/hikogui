@@ -78,14 +78,14 @@ void Window::setWindowPosition(uint32_t x, uint32_t y)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    windowRectangle.offset = {x, y};
+    //windowRectangle.offset = {x, y};
 }
 
 void Window::setWindowSize(uint32_t width, uint32_t height)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    windowRectangle.extent = {width, height};
+    //windowRectangle.extent = {width, height};
 }
 
 }

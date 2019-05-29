@@ -4,7 +4,9 @@
 #pragma once
 
 #include "globals.hpp"
+#include "WindowWidget.hpp"
 #include "TTauri/all.hpp"
+#include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>
 #include <mutex>
@@ -13,7 +15,6 @@ namespace TTauri::GUI {
 
 class Instance;
 class Device;
-class WindowWidget;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -76,6 +77,11 @@ public:
     //! The widget covering the complete window.
     std::shared_ptr<WindowWidget> widget;
 
+    //! This solver determines size and position of all widgets in this window.
+    rhea::constraint widthConstraint;
+    rhea::constraint heightConstraint;
+    bool widthHeightContraintsAdded = false;
+    rhea::simplex_solver widgetSolver;
 
     Window(const std::shared_ptr<Delegate> delegate, const std::string title);
     virtual ~Window();
@@ -129,6 +135,19 @@ public:
      * For example: rebuilding the swapchain on window size changes.
      */
     void maintenance();
+
+    BoxModel &box() {
+        return widget->box;
+    }
+
+    rhea::solver& addConstraint(rhea::constraint const& constraint) {
+        return widgetSolver.add_constraint(constraint);
+    }
+
+    rhea::solver& removeConstraint(rhea::constraint const& constraint) {
+        return widgetSolver.remove_constraint(constraint);
+    }
+
 
 
 protected:

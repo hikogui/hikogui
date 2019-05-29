@@ -1,0 +1,20 @@
+language: cpp
+compiler:
+  - gcc
+  - clang
+before_install: 
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq libboost-test-dev lcov libgemplugin-ruby python-yaml
+  - gem install coveralls-lcov
+script:
+  - mkdir build 
+  - cd build 
+  - cmake -DBUILD_UNITTESTS=ON -DBUILD_COVERAGE=ON .. 
+  - make 
+  - unit_tests/unit_tests
+after_success:
+  - lcov --directory unit_tests --base-directory=.. --capture --output-file=coverage.info
+  - lcov --remove coverage.info '/usr*' -o coverage.info
+  - cd ..
+  - coveralls-lcov build/coverage.info
+
