@@ -5,7 +5,7 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
 #include "WindowWidget.hpp"
-#include "Device_vulkan.hpp"
+#include "Device.hpp"
 #include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
@@ -22,7 +22,7 @@ PipelineImage::PipelineImage(const std::shared_ptr<Window> window) :
 
 vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
     size_t tmpNumberOfVertices = 0;
     window.lock()->widget->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
@@ -46,7 +46,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    device<Device_vulkan>()->imagePipeline->drawInCommandBuffer(commandBuffer);
+    device()->imagePipeline->drawInCommandBuffer(commandBuffer);
 
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
@@ -75,7 +75,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineImage::createShaderStages() const {
-    return device<Device_vulkan>()->imagePipeline->shaderStages;
+    return device()->imagePipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLayoutBindings() const {
@@ -94,7 +94,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
 
 vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t imageIndex) const
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
     auto const sharedImagePipeline = vulkanDevice->imagePipeline;
     auto const &frameBufferObject = frameBufferObjects.at(imageIndex);
 
@@ -121,7 +121,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
 
 uint64_t PipelineImage::getDescriptorSetVersion() const
 {
-    return device<Device_vulkan>()->imagePipeline->atlasTextures.size();
+    return device()->imagePipeline->atlasTextures.size();
 }
 
 std::vector<vk::PushConstantRange> PipelineImage::createPushConstantRanges() const
@@ -140,7 +140,7 @@ std::vector<vk::VertexInputAttributeDescription> PipelineImage::createVertexInpu
 
 void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto vulkanDevice = device();
 
     BOOST_ASSERT(vertexBuffers.size() == 0);
     BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
@@ -166,7 +166,7 @@ void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
 
 void PipelineImage::teardownVertexBuffers()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto vulkanDevice = device();
 
     BOOST_ASSERT(vertexBuffers.size() == vertexBuffersAllocation.size());
     for (size_t i = 0; i < vertexBuffers.size(); i++) {

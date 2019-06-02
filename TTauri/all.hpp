@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Application.hpp"
-#include "Application_win32.hpp"
 #include "Color.hpp"
 #include "File.hpp"
 #include "FileMapping.hpp"

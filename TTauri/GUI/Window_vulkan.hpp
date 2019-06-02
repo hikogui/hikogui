@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "Window.hpp"
+#include "Window_base.hpp"
 #include "PipelineImage.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI {
 
-class Window_vulkan : public Window {
+class Window_vulkan : public Window_base {
 public:
     vk::SurfaceKHR intrinsic;
 
@@ -30,7 +30,7 @@ public:
 
     std::shared_ptr<PipelineImage::PipelineImage> imagePipeline;
 
-    Window_vulkan(const std::shared_ptr<Delegate> delegate, const std::string title, vk::SurfaceKHR surface);
+    Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title, vk::SurfaceKHR surface);
     ~Window_vulkan();
 
     Window_vulkan(const Window_vulkan &) = delete;
@@ -50,7 +50,7 @@ protected:
 private:
     void buildSemaphores();
     void teardownSemaphores();
-    std::pair<vk::SwapchainKHR, Window::State> buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
+    std::pair<vk::SwapchainKHR, Window_base::State> buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
     void teardownSwapchain();
     void buildRenderPasses();
     void teardownRenderPasses();

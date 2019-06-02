@@ -1,6 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
+#include "Window_base.hpp"
 #include "Window.hpp"
 #include "Device.hpp"
 #include "WindowWidget.hpp"
@@ -11,14 +12,14 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-Window::Window(const std::shared_ptr<Delegate> delegate, const std::string title) :
+Window_base::Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
     state(State::NO_DEVICE),
     delegate(move(delegate)),
     title(move(title))
 {
 }
 
-Window::~Window()
+Window_base::~Window_base()
 {
     try {
         [[gsl::suppress(f.6)]] {
@@ -33,23 +34,32 @@ Window::~Window()
     }
 }
 
-void Window::initialize()
+void Window_base::initialize()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    widget = TTauri::make_shared<WindowWidget>(shared_from_this());
+    auto window = std::dynamic_pointer_cast<Window>(shared_from_this());
+    widget = TTauri::make_shared<WindowWidget>(window);
 
     openingWindow();
 }
 
-void Window::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp)
+void Window_base::openingWindow() {
+    delegate->openingWindow(dynamic_cast<Window &>(*this));
+}
+
+void Window_base::closingWindow() {
+    delegate->closingWindow(dynamic_cast<Window&>(*this));
+}
+
+void Window_base::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     render();
 }
 
-void Window::maintenance()
+void Window_base::maintenance()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
@@ -58,7 +68,7 @@ void Window::maintenance()
     }
 }
 
-void Window::setDevice(const std::weak_ptr<Device> newDevice)
+void Window_base::setDevice(const std::weak_ptr<Device> newDevice)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
@@ -74,18 +84,31 @@ void Window::setDevice(const std::weak_ptr<Device> newDevice)
     }   
 }
 
-void Window::setWindowPosition(uint32_t x, uint32_t y)
+void Window_base::setWindowPosition(uint32_t x, uint32_t y)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     //windowRectangle.offset = {x, y};
 }
 
-void Window::setWindowSize(uint32_t width, uint32_t height)
+void Window_base::setWindowSize(uint32_t width, uint32_t height)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     //windowRectangle.extent = {width, height};
 }
+
+void Window_base::windowChangedSize(u64extent2 extent) {
+    if (widthHeightContraintsAdded) {
+        removeConstraint(widthConstraint);
+        removeConstraint(heightConstraint);
+    }
+    widthConstraint = (box().width == extent.width());
+    heightConstraint = (box().height == extent.height());
+    addConstraint(widthConstraint);
+    addConstraint(heightConstraint);
+    widthHeightContraintsAdded = true;
+}
+
 
 }

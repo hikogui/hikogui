@@ -4,10 +4,9 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "Window_forward.hpp"
 
 namespace TTauri::GUI {
-
-class Window;
 
 class WindowWidget : public Widget {
 public:

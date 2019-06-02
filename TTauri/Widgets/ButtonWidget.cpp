@@ -52,7 +52,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
     // Draw something.
     let backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.2f, 0.2f, 0.2f, 1.0f} });
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-    let labelFont = get_singleton<Draw::Fonts>()->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
     let labelFontSize = 12.0;
 

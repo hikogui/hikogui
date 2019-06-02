@@ -35,19 +35,20 @@ set(TTauri_srcs
     Draw/Theme.cpp
     GUI/globals.cpp
     GUI/VerticalSync.cpp
-    GUI/Device.cpp
+    GUI/Device_base.cpp
     GUI/Device_vulkan.cpp
-    GUI/Instance.cpp
+    GUI/Instance_base.cpp
     GUI/Instance_vulkan.cpp
     GUI/Instance_vulkan_win32.cpp
-    GUI/Pipeline.cpp
+    GUI/Instance.cpp
+    GUI/Pipeline_base.cpp
     GUI/Pipeline_vulkan.cpp
     GUI/PipelineImage.cpp
     GUI/PipelineImage_DeviceShared.cpp
     GUI/PipelineImage_Image.cpp
     GUI/PipelineImage_TextureMap.cpp
     GUI/VulkanMemoryAllocator.cpp
-    GUI/Window.cpp
+    GUI/Window_base.cpp
     GUI/Window_vulkan.cpp
     GUI/Window_vulkan_win32.cpp
     GUI/Widget.cpp
@@ -55,6 +56,7 @@ set(TTauri_srcs
     Widgets/ImageWidget.cpp
     Widgets/ButtonWidget.cpp
     Application.cpp
+    Application_base.cpp
     Application_win32.cpp
     logging.cpp
     File.cpp

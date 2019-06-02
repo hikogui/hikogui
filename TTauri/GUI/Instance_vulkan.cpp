@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Instance_vulkan.hpp"
-#include "Device_vulkan.hpp"
+#include "Device.hpp"
 #include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 #include <chrono>
@@ -27,7 +27,7 @@ static bool hasRequiredExtensions(const std::vector<const char *> &requiredExten
 }
 
 Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames) :
-    Instance(),
+    Instance_base(),
     requiredExtensions(std::move(extensionNames))
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
@@ -43,6 +43,10 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
     // VK_KHR_SURFACE extension is needed to draw in a window.
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
+#if defined(_WIN32) && !defined(NDEBUG)
+    requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+
     if (!hasRequiredExtensions(requiredExtensions)) {
         BOOST_THROW_EXCEPTION(MissingRequiredExtensionsError());
     }
@@ -53,6 +57,7 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
 
 #if defined(_WIN32) && !defined(NDEBUG)
     requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+    requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
 #endif
     instanceCreateInfo.setEnabledLayerCount(boost::numeric_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
@@ -72,12 +77,51 @@ void Instance_vulkan::initialize()
 {
     scoped_lock lock(TTauri::GUI::mutex);
 
-    Instance::initialize();
+    Instance_base::initialize();
+
+#if defined(_WIN32) && !defined(NDEBUG)
+    debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
+        vk::DebugUtilsMessengerCreateFlagsEXT(),
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+        vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+        debugUtilsMessageCallback
+    }, nullptr, loader());
+#endif
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
         auto device = TTauri::make_shared<Device_vulkan>(_physicalDevice);
         devices.push_back(device);
     }
+}
+
+VkBool32 Instance_vulkan::debugUtilsMessageCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VkDebugUtilsMessageTypeFlagsEXT messageType,
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+    void* pUserData)
+{
+
+    switch (messageSeverity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        LOG_DEBUG("Vulkan: %s") % pCallbackData->pMessage;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        LOG_INFO("Vulkan: %s") % pCallbackData->pMessage;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        LOG_WARNING("Vulkan: %s") % pCallbackData->pMessage;
+        std::terminate();
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        LOG_ERROR("Vulkan: %s") % pCallbackData->pMessage;
+        std::terminate();
+    }
+
+    return VK_FALSE;
 }
 
 }

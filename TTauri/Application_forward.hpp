@@ -5,19 +5,12 @@
 
 #ifdef _WIN32
 
-#include "Application_win32.hpp"
-#include <memory>
-
 namespace TTauri {
 
+class Application_win32;
 using Application = Application_win32;
 
 }
 
 #endif
 
-namespace TTauri {
-
-extern std::unique_ptr<Application> application;
-
-}

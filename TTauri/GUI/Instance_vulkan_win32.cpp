@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Instance_vulkan_win32.hpp"
-#include "Window_vulkan_win32.hpp"
+#include "Window.hpp"
 
 #include <ddraw.h>
 
@@ -31,12 +31,12 @@ Instance_vulkan_win32::~Instance_vulkan_win32()
     }
 }
 
-void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
+void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::WindowDelegate> windowDelegate, const std::string &title)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto window = TTauri::make_shared<GUI::Window_vulkan_win32>(windowDelegate, title);
-    get_singleton<Instance>()->add(window);
+    auto window = TTauri::make_shared<GUI::Window>(windowDelegate, title);
+    add(window);
 }
 
 void Instance_vulkan_win32::maintenanceLoop(gsl::not_null<Instance_vulkan_win32 *> self)

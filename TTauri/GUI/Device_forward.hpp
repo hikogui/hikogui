@@ -1,10 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Instance.hpp"
+#pragma once
 
 namespace TTauri::GUI {
-
-std::unique_ptr<Instance> instance{};
-
+    class Device_vulkan;
+    using Device = Device_vulkan;
 }

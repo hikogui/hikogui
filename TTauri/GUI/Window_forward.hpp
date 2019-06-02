@@ -3,14 +3,11 @@
 
 #pragma once
 
-#ifdef _WIN32
-
-#include "Window_vulkan_win32.hpp"
-
 namespace TTauri::GUI {
 
+#ifdef _WIN32
+class Window_vulkan_win32;
 using Window = Window_vulkan_win32;
+#endif
 
 }
-
-#endif

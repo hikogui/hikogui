@@ -5,15 +5,13 @@
 
 #include "PipelineImage_Delegate.hpp"
 #include "BoxModel.hpp"
+#include "Window_forward.hpp"
 #include "TTauri/all.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
 
 namespace TTauri::GUI {
-
-class Window;
-class Instance;
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing

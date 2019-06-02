@@ -18,6 +18,7 @@ struct extent<2, T, Q> : public glm::vec<2, T, Q> {
     constexpr extent(glm::vec<2, T, Q> const &other) : glm::vec<2, T, Q>(other) {}
     constexpr extent(T width, T height) : glm::vec<2, T, Q>(width, height) {}
     constexpr extent(double width, double height) : glm::vec<2, T, Q>(width, height) {}
+    constexpr extent(uint32_t width, uint32_t height) : glm::vec<2, T, Q>(width, height) {}
 
     constexpr T width() const { return this->x; }
     constexpr T height() const { return this->y; }

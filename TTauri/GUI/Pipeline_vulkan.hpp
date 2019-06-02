@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline.hpp"
+#include "Pipeline_base.hpp"
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 #include <filesystem>
@@ -12,7 +12,7 @@
 
 namespace TTauri::GUI {
 
-class Pipeline_vulkan : public Pipeline {
+class Pipeline_vulkan : public Pipeline_base {
 public:
     struct NonVulkanWindowError : virtual Error {};
 

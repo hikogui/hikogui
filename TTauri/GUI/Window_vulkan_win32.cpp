@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Window_vulkan_win32.hpp"
-#include "Instance_vulkan_win32.hpp"
+#include "Instance.hpp"
 #include "TTauri/all.hpp"
 
 namespace TTauri::GUI {
@@ -31,7 +31,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClassName = L"TTauri Window Class";
 
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
-        Window_vulkan_win32::win32WindowClass.hInstance = get_singleton<Application_win32>()->hInstance;
+        Window_vulkan_win32::win32WindowClass.hInstance = application->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
         Window_vulkan_win32::win32WindowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
         RegisterClassW(&win32WindowClass);
@@ -59,7 +59,7 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
 
         NULL, // Parent window
         NULL, // Menu
-        get_singleton<Application_win32>()->hInstance, // Instance handle
+        application->hInstance, // Instance handle
         this
     );
 
@@ -68,19 +68,19 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
     }
 
     if (!Window_vulkan_win32::firstWindowHasBeenOpened) {
-        ShowWindow(win32Window, get_singleton<Application_win32>()->nCmdShow);
+        ShowWindow(win32Window, application->nCmdShow);
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
     ShowWindow(win32Window, SW_SHOW);
 
-    return get_singleton<Instance_vulkan_win32>()->createWin32SurfaceKHR({
+    return instance->createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
-        get_singleton<Application_win32>()->hInstance,
+        application->hInstance,
         win32Window
     });
 }
 
-Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<Window::Delegate> delegate, const std::string title) :
+Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
     Window_vulkan(move(delegate), title, createWindow(title))
 {
 }
@@ -103,9 +103,7 @@ void Window_vulkan_win32::closingWindow()
 {
     // Don't lock mutex, the window is about to be destructed.
     // Also no members of this are being accessed.
-    auto app = get_singleton<Application_win32>();
-
-    PostThreadMessageW(app->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(application->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadClosingWindow()
@@ -117,9 +115,7 @@ void Window_vulkan_win32::mainThreadClosingWindow()
 void Window_vulkan_win32::openingWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    auto app = get_singleton<Application_win32>();
-
-    PostThreadMessageW(app->mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(application->mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadOpeningWindow()

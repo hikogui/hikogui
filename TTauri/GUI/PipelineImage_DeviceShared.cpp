@@ -4,7 +4,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
-#include "Device_vulkan.hpp"
+#include "Device.hpp"
 #include "TTauri/all.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -369,7 +369,7 @@ void DeviceShared::buildAtlas()
         vk::ImageUsageFlagBits::eTransferSrc,
         vk::SharingMode::eExclusive,
         0, nullptr,
-        vk::ImageLayout::eUndefined
+        vk::ImageLayout::ePreinitialized
     };
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;

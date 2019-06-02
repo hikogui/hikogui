@@ -10,7 +10,7 @@
 namespace TTauri {
 namespace GUI {
 
-class Instance_vulkan_macos : public Instance_vulkan {
+class Instance_vulkan_macos final : public Instance_vulkan {
 public:
     uint64_t hostFrequency;
     CVDisplayLinkRef updateAndRenderThread;

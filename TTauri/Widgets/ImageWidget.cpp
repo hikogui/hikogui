@@ -28,7 +28,7 @@ void ImageWidget::drawBackingImage()
     // Draw image in the fullPixelMap.
     Draw::loadPNG(fullPixelMap, path);
 
-    let myFont = get_singleton<Draw::Fonts>()->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let myFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let glyphIndex = myFont.characterMap.at('g');
     let glyph = myFont.glyphs.at(glyphIndex);
 

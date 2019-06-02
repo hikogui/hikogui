@@ -12,7 +12,7 @@ public:
     int argc;
     const char **argv;
 
-    Application_macos(const std::shared_ptr<Delegate> &delegate, int argc, const char **arg);
+    Application_macos(const std::shared_ptr<ApplicationDelegate> &delegate, int argc, const char **arg);
     ~Application_macos();
 
     virtual int loop();

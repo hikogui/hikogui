@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Device.hpp"
+#include "Device_base.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
@@ -11,7 +11,7 @@
 
 namespace TTauri::GUI {
 
-class Device_vulkan : public Device {
+class Device_vulkan final : public Device_base {
 protected:
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;

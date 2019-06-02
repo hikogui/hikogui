@@ -3,15 +3,14 @@
 
 #include "Application_win32.hpp"
 #include "utils.hpp"
-#include "GUI/Instance.hpp"
-#include "GUI/Window_vulkan_win32.hpp"
+#include "GUI/all.hpp"
 #include <vulkan/vulkan.hpp>
 #include <thread>
 
 namespace TTauri {
 
-Application_win32::Application_win32(const std::shared_ptr<Delegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
-    Application(move(delegate)),
+Application_win32::Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
+    Application_base(move(delegate)),
     hInstance(hInstance),
     hPrevInstance(hPrevInstance),
     pCmdLine(pCmdLine),
@@ -22,7 +21,7 @@ Application_win32::Application_win32(const std::shared_ptr<Delegate> delegate, H
     // Resource path, is the same directory as where the executable lives.
     wchar_t modulePathWChar[MAX_PATH];
     if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
-        BOOST_THROW_EXCEPTION(Application::ResourceDirError());
+        BOOST_THROW_EXCEPTION(Application_base::ResourceDirError());
     }
 
     auto const modulePath = std::filesystem::path(modulePathWChar);
@@ -38,9 +37,9 @@ void Application_win32::lastWindowClosed()
 void Application_win32::mainThreadLastWindowClose()
 {
     // Let the application have a change to open new windows from the main thread.
-    Application::lastWindowClosed();
+    Application_base::lastWindowClosed();
 
-    if (get_singleton<GUI::Instance>()->getNumberOfWindows() == 0) {
+    if (GUI::instance->getNumberOfWindows() == 0) {
         LOG_INFO("Application quiting due to all windows having been closed.");
         PostQuitMessage(0);
     }
@@ -59,10 +58,10 @@ int Application_win32::loop()
             break;
 
         case WM_APP_CLOSING_WINDOW:
-            reinterpret_cast<GUI::Window_vulkan_win32*>(msg.lParam)->mainThreadClosingWindow();
+            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadClosingWindow();
             break;
         case WM_APP_OPENING_WINDOW:
-            reinterpret_cast<GUI::Window_vulkan_win32*>(msg.lParam)->mainThreadOpeningWindow();
+            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadOpeningWindow();
             break;
         }
 

@@ -9,11 +9,11 @@
 
 namespace TTauri::GUI {
 
-class Window_vulkan_win32 : public Window_vulkan {
+class Window_vulkan_win32 final : public Window_vulkan {
 public:
     HWND win32Window = nullptr;
 
-    Window_vulkan_win32(const std::shared_ptr<Delegate> delegate, const std::string title);
+    Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan_win32();
 
     Window_vulkan_win32(const Window_vulkan_win32 &) = delete;

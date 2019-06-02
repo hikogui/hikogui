@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "Pipeline_vulkan.hpp"
-#include "Device_vulkan.hpp"
-#include "Window_vulkan.hpp"
+#include "Device.hpp"
+#include "Window.hpp"
 #include "TTauri/all.hpp"
 #include <boost/assert.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -13,7 +13,7 @@ namespace TTauri::GUI {
 using namespace std;
 
 Pipeline_vulkan::Pipeline_vulkan(const std::shared_ptr<Window> window) :
-    Pipeline(std::move(window)) {}
+    Pipeline_base(std::move(window)) {}
 
 Pipeline_vulkan::~Pipeline_vulkan()
 {
@@ -21,7 +21,7 @@ Pipeline_vulkan::~Pipeline_vulkan()
 
 vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
     auto &imageObject = frameBufferObjects.at(imageIndex);
 
     if (imageObject.descriptorSetVersion < getDescriptorSetVersion()) {
@@ -53,7 +53,7 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
 
 void Pipeline_vulkan::buildCommandBuffers()
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
     auto const commandBuffers = vulkanDevice->allocateCommandBuffers({
         vulkanDevice->graphicsCommandPool, 
@@ -72,7 +72,7 @@ void Pipeline_vulkan::buildCommandBuffers()
 
 void Pipeline_vulkan::teardownCommandBuffers()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto vulkanDevice = device();
 
     auto const commandBuffers = transform<vector<vk::CommandBuffer>>(frameBufferObjects, [](auto x) { return x.commandBuffer; });
 
@@ -81,7 +81,7 @@ void Pipeline_vulkan::teardownCommandBuffers()
 
 void Pipeline_vulkan::buildDescriptorSets()
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
     auto const descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
@@ -124,7 +124,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
 void Pipeline_vulkan::teardownDescriptorSets()
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
     auto const descriptorSets = transform<vector<vk::DescriptorSet>>(frameBufferObjects, [](auto x) { return x.descriptorSet; });
 
@@ -134,7 +134,7 @@ void Pipeline_vulkan::teardownDescriptorSets()
 
 void Pipeline_vulkan::buildSemaphores()
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
     auto const semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     for (auto &frameBufferObject: frameBufferObjects) {
@@ -144,7 +144,7 @@ void Pipeline_vulkan::buildSemaphores()
 
 void Pipeline_vulkan::teardownSemaphores()
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
     for (auto const &frameBufferObject: frameBufferObjects) {
         vulkanDevice->destroy(frameBufferObject.renderFinishedSemaphore);
@@ -153,9 +153,9 @@ void Pipeline_vulkan::teardownSemaphores()
 
 void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _extent)
 {
-    auto const vulkanDevice = device<Device_vulkan>();
+    auto const vulkanDevice = device();
 
-    LOG_INFO("buildPipeline (%i, %i)") % extent.width % extent.height;
+    LOG_INFO("buildPipeline previous size (%i, %i)") % extent.width % extent.height;
 
     renderPass = move(_renderPass);
     extent = move(_extent);
@@ -262,12 +262,12 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     };
 
     intrinsic = vulkanDevice->createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
-    LOG_INFO("/buildPipeline (%i, %i)") % extent.width % extent.height;
+    LOG_INFO("/buildPipeline new size (%i, %i)") % extent.width % extent.height;
 }
 
 void Pipeline_vulkan::teardownPipeline()
 {
-    auto vulkanDevice = device<Device_vulkan>();
+    auto vulkanDevice = device();
     vulkanDevice->destroy(intrinsic);
     vulkanDevice->destroy(pipelineLayout);
 }
@@ -346,7 +346,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
     std::array<float, 4> const blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
     vector<vk::ClearValue> const clearColors = {{blackColor}};
 
-    auto vulkanWindow = lock_dynamic_cast<Window_vulkan>(window);
+    auto vulkanWindow = lock_dynamic_cast<Window>(window);
 
     commandBuffer.beginRenderPass({
             renderPass, 

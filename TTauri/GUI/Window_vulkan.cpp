@@ -2,8 +2,9 @@
 // All rights reserved.
 
 #include "Window_vulkan.hpp"
-#include "Instance_vulkan.hpp"
-#include "Device_vulkan.hpp"
+#include "Window.hpp"
+#include "Instance.hpp"
+#include "Device.hpp"
 #include "WindowWidget.hpp"
 #include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
@@ -13,8 +14,8 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(const std::shared_ptr<Window::Delegate> delegate, const std::string title, vk::SurfaceKHR surface) :
-    Window(move(delegate), move(title)),
+Window_vulkan::Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title, vk::SurfaceKHR surface) :
+    Window_base(move(delegate), move(title)),
     intrinsic(move(surface))
 {
 }
@@ -23,7 +24,7 @@ Window_vulkan::~Window_vulkan()
 {
     try {
         [[gsl::suppress(f.6)]] {
-            get_singleton<Instance_vulkan>()->destroySurfaceKHR(intrinsic);
+            instance->destroySurfaceKHR(intrinsic);
         }
     } catch (...) {
         abort();
@@ -34,14 +35,19 @@ void Window_vulkan::initialize()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    Window::initialize();
-    imagePipeline = TTauri::make_shared<PipelineImage::PipelineImage>(shared_from_this());
+    Window_base::initialize();
+    auto window = std::dynamic_pointer_cast<Window>(shared_from_this());
+    assert(window);
+    imagePipeline = TTauri::make_shared<PipelineImage::PipelineImage>(window);
 }
 
 void Window_vulkan::waitIdle()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
-    lock_dynamic_cast<Device_vulkan>(device)-> waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    auto vulkanDevice = device.lock();
+    vulkanDevice->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    vulkanDevice->waitIdle();
+    LOG_INFO("/waitIdle");
 }
 
 void Window_vulkan::render()
@@ -59,7 +65,7 @@ void Window_vulkan::render()
         uint32_t imageIndex = 0;
         //LOG_DEBUG("acquireNextImage '%s'") % title;
         auto const result = vulkanDevice->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
-        //LOG_DEBUG("/acquireNextImage '%s'") % title;
+        LOG_DEBUG("acquireNextImage %i") % imageIndex;
 
         switch (result) {
         case vk::Result::eSuccess:
@@ -81,7 +87,7 @@ void Window_vulkan::render()
             LOG_INFO("acquireNextImageKHR() eTimeout");
             return;
 
-        default: BOOST_THROW_EXCEPTION(Window::SwapChainError());
+        default: BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
         }
     }
 
@@ -109,6 +115,8 @@ void Window_vulkan::render()
         acquiredImageIndex.reset();
 
         try {
+            LOG_DEBUG("presentQueue %i") % presentImageIndices.at(0);
+
             auto const result = vulkanDevice->presentQueue.presentKHR({
                 boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
                 boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
@@ -131,6 +139,7 @@ void Window_vulkan::render()
 
         } catch (const vk::OutOfDateKHRError &) {
             LOG_INFO("presentKHR() eErrorOutOfDateKHR");
+            state = State::SWAPCHAIN_OUT_OF_DATE;
             return;
         }
 
@@ -180,7 +189,7 @@ std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImage
     return { imageCount, imageExtent, minimized ? State::MINIMIZED : State::READY_TO_DRAW};
 }
 
-Window::State Window_vulkan::buildForDeviceChange()
+Window_base::State Window_vulkan::buildForDeviceChange()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
@@ -208,14 +217,14 @@ void Window_vulkan::teardownForDeviceChange()
     teardownSwapchain();
 }
 
-Window::State Window_vulkan::rebuildForSwapchainChange()
+Window_base::State Window_vulkan::rebuildForSwapchainChange()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     auto const imageState = get<2>(getImageCountExtentAndState());
 
     if (imageState != State::READY_TO_DRAW) {
-        // Early exit when window is minimized.
+        // Early exit when window is minimized or surface is lost.
         return imageState;
     }
 
@@ -230,12 +239,17 @@ Window::State Window_vulkan::rebuildForSwapchainChange()
     buildFramebuffers();
     imagePipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
 
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
+    vulkanDevice->waitIdle();
+
     return swapChainAndState.second;
 }
 
-std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
+std::pair<vk::SwapchainKHR, Window_base::State> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
+
+    LOG_INFO("Building swap chain");
 
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
@@ -309,20 +323,12 @@ std::pair<vk::SwapchainKHR, Window::State> Window_vulkan::buildSwapchain(vk::Swa
         break;
     }
 
-    if (widthHeightContraintsAdded) {
-        removeConstraint(widthConstraint);
-        removeConstraint(heightConstraint);
-    }
-    widthConstraint = (box().width == swapchainCreateInfo.imageExtent.width);
-    heightConstraint = (box().height == swapchainCreateInfo.imageExtent.height);
-    addConstraint(widthConstraint);
-    addConstraint(heightConstraint);
-    widthHeightContraintsAdded = true;
-
     LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
+
+    windowChangedSize({swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height});
 
     return { newSwapchain, State::READY_TO_DRAW };
 }
