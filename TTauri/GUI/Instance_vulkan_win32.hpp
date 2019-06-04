@@ -24,12 +24,6 @@ public:
         std::scoped_lock lock(TTauri::GUI::mutex);
         return intrinsic.createWin32SurfaceKHR(createInfo);
     }
-
-private:
-    std::thread maintanceThread;
-    bool stopMaintenance = false;
-
-    static void maintenanceLoop(gsl::not_null<Instance_vulkan_win32 *> self);
 };
 
 }

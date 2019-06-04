@@ -26,7 +26,7 @@ public:
     void openingWindow() override;
     void mainThreadOpeningWindow();
 
-    vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title);
+    void Window_vulkan_win32::createWindow(const std::string &title);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();
@@ -37,7 +37,9 @@ public:
     static std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
+    vk::SurfaceKHR getSurface() override;
 private:
+
     static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 }

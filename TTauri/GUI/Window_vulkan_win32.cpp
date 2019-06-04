@@ -39,7 +39,7 @@ void Window_vulkan_win32::createWindowClass()
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
 }
 
-vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
+void Window_vulkan_win32::createWindow(const std::string &title)
 {
     Window_vulkan_win32::createWindowClass();
 
@@ -72,17 +72,12 @@ vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title)
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
     ShowWindow(win32Window, SW_SHOW);
-
-    return instance->createWin32SurfaceKHR({
-        vk::Win32SurfaceCreateFlagsKHR(),
-        application->hInstance,
-        win32Window
-    });
 }
 
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    Window_vulkan(move(delegate), title, createWindow(title))
+    Window_vulkan(move(delegate), title)
 {
+    createWindow(title);
 }
 
 Window_vulkan_win32::~Window_vulkan_win32()
@@ -125,32 +120,36 @@ void Window_vulkan_win32::mainThreadOpeningWindow()
     Window_vulkan::openingWindow();
 }
 
+vk::SurfaceKHR Window_vulkan_win32::getSurface()
+{
+    return instance->createWin32SurfaceKHR({
+        vk::Win32SurfaceCreateFlagsKHR(),
+        application->hInstance,
+        win32Window
+    });
+}
+
+
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     // Cannot lock mutex as Window_vulkan_win32 may still be in the process of being constructed.
-    switch (uMsg) {
-    case WM_MOVING: {
-        RECT windowRect;
-        memcpy(&windowRect, to_ptr(lParam).get(), sizeof (RECT));
+    let r = DefWindowProc(hwnd, uMsg, wParam, lParam);
 
-        setWindowPosition(windowRect.left, windowRect.top);
-        break;
-    }
+    // These messages need to be processed after the DefWindowProc has been run.
+    // For example the window first needs to be fully resized before we are going to update
+    // the swap chain.
 
-    case WM_SIZING: {
-        RECT windowRect;
-        memcpy(&windowRect, to_ptr(lParam).get(), sizeof (RECT));
-
-        setWindowSize(windowRect.right - windowRect.left, windowRect.bottom - windowRect.top);
-        break;
-    }
-
+    switch (uMsg) {    
     case WM_DESTROY:
         win32Window = nullptr;
+        state = State::WINDOW_LOST;
         break;
-
+    
+    default:
+        break;
     }
-    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+
+    return r;
 }
 
 LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -183,7 +182,6 @@ LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM w
         return result;
     }
 
-    // Fallback.
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 

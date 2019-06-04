@@ -5,7 +5,6 @@
 
 #include "Device.hpp"
 #include "Window.hpp"
-#include "VerticalSync.hpp"
 #include "TTauri/all.hpp"
 #include "globals.hpp"
 #include <gsl/gsl>
@@ -22,8 +21,6 @@ namespace TTauri::GUI {
  */
 class Instance_base {
 public:
-    VerticalSync verticalSync;
-
     struct Error : virtual boost::exception, virtual std::exception {};
     struct ErrorNoDeviceForWindow : virtual Error {};
 
@@ -54,13 +51,14 @@ public:
      */
     virtual void createWindow(std::shared_ptr<GUI::WindowDelegate> windowDelegate, const std::string &title) = 0;
 
+    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp) {
+        for (auto &device: devices) {
+            device->updateAndRender(nowTimestamp, outputTimestamp);
+        }
+    }
+
 protected:
     std::shared_ptr<Device> findBestDeviceForWindow(const std::shared_ptr<Window> &window);
-
-    /*! Called when maintance is needed.
-     * Run on seperate thread, 15 times per second.
-     */
-    void maintenance();
 };
 
 }

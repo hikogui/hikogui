@@ -60,31 +60,4 @@ void Device_base::remove(std::shared_ptr<Window> window)
     windows.erase(find(windows.begin(), windows.end(), window));
 }
 
-std::vector<std::shared_ptr<Window>> Device_base::maintance()
-{
-    auto lock = scoped_lock(TTauri::GUI::mutex);
-
-    auto tmpWindows = windows;
-    decltype(tmpWindows) orphanWindows;
-
-    for (auto window : tmpWindows) {
-        if (window->hasLostSurface()) {
-            // Window must be destroyed.
-            window->closingWindow();
-            remove(window);
-
-        } else if (window->hasLostDevice()) {
-            // Window must be passed to the Instance, for reinsertion on a new device.
-            remove(window);
-            orphanWindows.push_back(window);
-
-        } else {
-            window->maintenance();
-
-        }
-    }
-
-    return orphanWindows;
-}
-
 }

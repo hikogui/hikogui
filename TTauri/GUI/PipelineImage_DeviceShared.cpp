@@ -136,7 +136,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         0,
         ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
     );
-
+    
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 

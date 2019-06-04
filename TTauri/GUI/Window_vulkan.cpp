@@ -14,21 +14,13 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title, vk::SurfaceKHR surface) :
-    Window_base(move(delegate), move(title)),
-    intrinsic(move(surface))
+Window_vulkan::Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
+    Window_base(move(delegate), move(title))
 {
 }
 
 Window_vulkan::~Window_vulkan()
 {
-    try {
-        [[gsl::suppress(f.6)]] {
-            instance->destroySurfaceKHR(intrinsic);
-        }
-    } catch (...) {
-        abort();
-    }
 }
 
 void Window_vulkan::initialize()
@@ -44,52 +36,205 @@ void Window_vulkan::initialize()
 void Window_vulkan::waitIdle()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
+
     auto vulkanDevice = device.lock();
     vulkanDevice->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
     vulkanDevice->waitIdle();
     LOG_INFO("/waitIdle");
 }
 
+std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
+
+    // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
+    uint32_t imageIndex = 0;
+    //LOG_DEBUG("acquireNextImage '%s'") % title;
+    let result = vulkanDevice->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+    //LOG_DEBUG("acquireNextImage %i") % imageIndex;
+
+    switch (result) {
+    case vk::Result::eSuccess:
+        return {imageIndex};
+
+    case vk::Result::eSuboptimalKHR:
+        LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
+        state = State::SWAPCHAIN_LOST;
+        return {};
+
+    case vk::Result::eErrorOutOfDateKHR:
+        LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
+        state = State::SWAPCHAIN_LOST;
+        return {};
+
+    case vk::Result::eErrorSurfaceLostKHR:
+        LOG_INFO("acquireNextImageKHR() eErrorSurfaceLostKHR");
+        state = State::SURFACE_LOST;
+        return {};
+
+    case vk::Result::eTimeout:
+        // Don't render, we didn't receive an image.
+        LOG_INFO("acquireNextImageKHR() eTimeout");
+        return {};
+
+    default:
+        BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
+    }
+}
+
+void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore renderFinishedSemaphore)
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };
+    vector<vk::SwapchainKHR> const presentSwapchains = { swapchain };
+    vector<uint32_t> const presentImageIndices = { imageIndex };
+    BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
+
+    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
+
+    try {
+        //LOG_DEBUG("presentQueue %i") % presentImageIndices.at(0);
+
+        let result = vulkanDevice->presentQueue.presentKHR({
+            boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
+            boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
+            });
+
+        switch (result) {
+        case vk::Result::eSuccess:
+            return;
+
+        case vk::Result::eSuboptimalKHR:
+            LOG_INFO("presentKHR() eSuboptimalKHR");
+            state = State::SWAPCHAIN_LOST;
+            return;
+
+        default:
+            BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
+            return;
+        }
+
+    }
+    catch (const vk::OutOfDateKHRError&) {
+        LOG_INFO("presentKHR() eErrorOutOfDateKHR");
+        state = State::SWAPCHAIN_LOST;
+        return;
+    }
+    catch (const vk::SurfaceLostKHRError&) {
+        LOG_INFO("presentKHR() eErrorSurfaceLostKHR");
+        state = State::SURFACE_LOST;
+        return;
+    }
+
+    // Make sure that resources are released by Vulkan by calling
+    vulkanDevice->waitIdle();
+}
+
+void Window_vulkan::build()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    if (state == State::NO_WINDOW) {
+    }
+
+    if (state == State::NO_DEVICE) {
+        if (!device.expired()) {
+            imagePipeline->buildForNewDevice();
+            state = State::NO_SURFACE;
+        }
+    }
+
+    if (state == State::NO_SURFACE) {
+        if (!buildSurface()) {
+            state = State::DEVICE_LOST;
+            return;
+        }
+        imagePipeline->buildForNewSurface();
+        state = State::NO_SWAPCHAIN;
+    }
+
+    if (state == State::NO_SWAPCHAIN) {
+        if (!readSurfaceExtent()) {
+            // Minimized window, can not build a new swapchain.
+            return;
+        }
+
+        let s = buildSwapchain();
+        if (s != State::READY_TO_RENDER) {
+            state = s;
+            return;
+        }
+
+        if (!checkSurfaceExtent()) {
+            // Window has changed during swapchain creation, it is in a inconsistant bad state.
+            // This is a bug in the Vulkan specification.
+            teardownSwapchain();
+            return;
+        }
+        buildRenderPasses();
+        buildFramebuffers();
+        buildSemaphores();
+        imagePipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
+
+        windowChangedSize({ swapchainImageExtent.width, swapchainImageExtent.height });
+        state = State::READY_TO_RENDER;
+    }
+}
+
+void Window_vulkan::teardown()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    if (state >= State::SWAPCHAIN_LOST) {
+        waitIdle();
+        imagePipeline->teardownForSwapchainLost();
+        teardownSemaphores();
+        teardownFramebuffers();
+        teardownRenderPasses();
+        teardownSwapchain();
+    }
+    if (state >= State::SURFACE_LOST) {
+        imagePipeline->teardownForSurfaceLost();
+        teardownSurface();
+    }
+    if (state >= State::DEVICE_LOST) {
+        imagePipeline->teardownForDeviceLost();
+        teardownDevice();
+    }
+    if (state >= State::WINDOW_LOST) {
+        imagePipeline->teardownForWindowLost();
+        teardownWindow();
+    }
+
+    switch (state) {
+    case State::WINDOW_LOST: state = State::NO_WINDOW; break;
+    case State::DEVICE_LOST: state = State::NO_DEVICE; break;
+    case State::SURFACE_LOST: state = State::NO_SURFACE; break;
+    case State::SWAPCHAIN_LOST: state = State::NO_SWAPCHAIN; break;
+    }
+}
+
 void Window_vulkan::render()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    if (state != State::READY_TO_DRAW) {
+    rebuild();
+
+    if (state != State::READY_TO_RENDER) {
+        return;
+    }
+
+    let imageIndex = acquireNextImageFromSwapchain();
+    if (!imageIndex) {
+        // No image is ready to be rendered, yet, possibly because our vertical sync function
+        // is not working correctly.
         return;
     }
 
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
-
-    if (!acquiredImageIndex) {
-        // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
-        uint32_t imageIndex = 0;
-        //LOG_DEBUG("acquireNextImage '%s'") % title;
-        auto const result = vulkanDevice->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
-        LOG_DEBUG("acquireNextImage %i") % imageIndex;
-
-        switch (result) {
-        case vk::Result::eSuccess:
-            acquiredImageIndex = imageIndex;
-            break;
-
-        case vk::Result::eSuboptimalKHR:
-            LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
-            state = State::SWAPCHAIN_OUT_OF_DATE;
-            return;
-
-        case vk::Result::eErrorOutOfDateKHR:
-            LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
-            state = State::SWAPCHAIN_OUT_OF_DATE;
-            return;
-
-        case vk::Result::eTimeout:
-            // Don't render, we didn't receive an image.
-            LOG_INFO("acquireNextImageKHR() eTimeout");
-            return;
-
-        default: BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
-        }
-    }
 
     // Wait until previous rendering has finished, before the next rendering.
     // XXX maybe use one for each swapchain image or go to single command buffer.
@@ -98,68 +243,23 @@ void Window_vulkan::render()
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     vulkanDevice->resetFences({ renderFinishedFence });
 
-    auto const renderFinishedSemaphore = imagePipeline->render(acquiredImageIndex.value(), imageAvailableSemaphore);
+    let renderFinishedSemaphore = imagePipeline->render(imageIndex.value(), imageAvailableSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
     vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
-    {
-        vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };
-        vector<vk::SwapchainKHR> const presentSwapchains = { swapchain };
-        vector<uint32_t> const presentImageIndices = { acquiredImageIndex.value() };
-        BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
-
-        // We will try our best to return the acquired image.
-        // A call to presentKHR() always releases the resources of the given image index.
-        acquiredImageIndex.reset();
-
-        try {
-            LOG_DEBUG("presentQueue %i") % presentImageIndices.at(0);
-
-            auto const result = vulkanDevice->presentQueue.presentKHR({
-                boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
-                boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
-                });
-
-            switch (result) {
-            case vk::Result::eSuccess:
-                return;
-
-            case vk::Result::eSuboptimalKHR:
-                LOG_INFO("presentKHR() eSuboptimalKHR");
-                state = State::SWAPCHAIN_OUT_OF_DATE;
-                return;
-
-            default:
-                LOG_ERROR("presentKHR() unknown result value");
-                state = State::SWAPCHAIN_OUT_OF_DATE;
-                return;
-            }
-
-        } catch (const vk::OutOfDateKHRError &) {
-            LOG_INFO("presentKHR() eErrorOutOfDateKHR");
-            state = State::SWAPCHAIN_OUT_OF_DATE;
-            return;
-        }
-
-        // Make sure that resources are released by Vulkan by calling
-        vulkanDevice->waitIdle();
-    }
+    presentImageToQueue(imageIndex.value(), renderFinishedSemaphore);
 }
-std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImageCountExtentAndState()
+
+std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-    try {
-        surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->getSurfaceCapabilitiesKHR(intrinsic);
+    surfaceCapabilities = lock_dynamic_cast<Device_vulkan>(device)->getSurfaceCapabilitiesKHR(intrinsic);
 
-    } catch (const vk::SurfaceLostKHRError &) {
-        return {0, {}, State::SURFACE_LOST};
-    }
-
-    auto const currentExtentSet =
+    let currentExtentSet =
         (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
         (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
 
@@ -184,68 +284,46 @@ std::tuple<uint32_t, vk::Extent2D, Window_vulkan::State> Window_vulkan::getImage
             )
         });
 
-    auto const minimized = imageExtent.width == 0 || imageExtent.height == 0;
-
-    return { imageCount, imageExtent, minimized ? State::MINIMIZED : State::READY_TO_DRAW};
+    return { imageCount, imageExtent };
 }
 
-Window_base::State Window_vulkan::buildForDeviceChange()
+bool Window_vulkan::readSurfaceExtent()
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    try {
+        std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
-    auto const swapchainAndState = buildSwapchain();
-    swapchain = swapchainAndState.first;
-    auto const newState = swapchainAndState.second;
-
-    buildRenderPasses();
-    buildFramebuffers();
-    buildSemaphores();
-    imagePipeline->buildForDeviceChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
-
-    return newState;
-}
-
-void Window_vulkan::teardownForDeviceChange()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    waitIdle();
-    imagePipeline->teardownForDeviceChange();
-    teardownSemaphores();
-    teardownFramebuffers();
-    teardownRenderPasses();
-    teardownSwapchain();
-}
-
-Window_base::State Window_vulkan::rebuildForSwapchainChange()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    auto const imageState = get<2>(getImageCountExtentAndState());
-
-    if (imageState != State::READY_TO_DRAW) {
-        // Early exit when window is minimized or surface is lost.
-        return imageState;
+    } catch (const vk::SurfaceLostKHRError&) {
+        state = State::SURFACE_LOST;
+        return false;
     }
 
-    waitIdle();
-
-    imagePipeline->teardownForSwapchainChange();
-    teardownFramebuffers();
-
-    auto const swapChainAndState = buildSwapchain(swapchain);
-    swapchain = swapChainAndState.first;
-
-    buildFramebuffers();
-    imagePipeline->buildForSwapchainChange(firstRenderPass, swapchainCreateInfo.imageExtent, swapchainFramebuffers.size());
-
-    auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
-    vulkanDevice->waitIdle();
-
-    return swapChainAndState.second;
+    return swapchainImageExtent.width > 0 && swapchainImageExtent.height > 0;
 }
 
-std::pair<vk::SwapchainKHR, Window_base::State> Window_vulkan::buildSwapchain(vk::SwapchainKHR oldSwapchain)
+bool Window_vulkan::checkSurfaceExtent()
+{
+    try {
+        let [nrImages, extent] = getImageCountAndExtent();
+        return (nrImages == nrSwapchainImages) && (extent == swapchainImageExtent);
+
+    } catch (const vk::SurfaceLostKHRError&) {
+        state = State::SURFACE_LOST;
+        return false;
+    }
+}
+
+void Window_vulkan::buildDevice()
+{
+}
+
+bool Window_vulkan::buildSurface()
+{
+    intrinsic = getSurface();
+
+    return device.lock()->score(intrinsic) > 0;
+}
+
+Window_base::State Window_vulkan::buildSwapchain()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
@@ -253,84 +331,52 @@ std::pair<vk::SwapchainKHR, Window_base::State> Window_vulkan::buildSwapchain(vk
 
     auto vulkanDevice = lock_dynamic_cast<Device_vulkan>(device);
 
-    auto const sharingMode = vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex ?
+    let sharingMode = vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex ?
         vk::SharingMode::eExclusive :
         vk::SharingMode::eConcurrent;
 
     vector<uint32_t> const sharingQueueFamilyAllIndices = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
     vector<uint32_t> const sharingQueueFamilyNoneIndices = {};
 
-    auto const sharingQueueFamilyIndices = sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices : sharingQueueFamilyNoneIndices;
+    let sharingQueueFamilyIndices = sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices : sharingQueueFamilyNoneIndices;
 
-    // Creating swapchain images can fail in different ways, we need to keep retrying.
-    vk::SwapchainKHR newSwapchain;
-    while (true) {
-        auto const [imageCount, imageExtent, imageState] = getImageCountExtentAndState();
-
-        if (imageState != State::READY_TO_DRAW) {
-            return { oldSwapchain, imageState };
-        }
-
-        swapchainCreateInfo = vk::SwapchainCreateInfoKHR(
-            vk::SwapchainCreateFlagsKHR(),
-            intrinsic,
-            imageCount,
-            vulkanDevice->bestSurfaceFormat.format,
-            vulkanDevice->bestSurfaceFormat.colorSpace,
-            imageExtent,
-            1, // imageArrayLayers
-            vk::ImageUsageFlagBits::eColorAttachment,
-            sharingMode,
-            boost::numeric_cast<uint32_t>(sharingQueueFamilyIndices.size()),
-            sharingQueueFamilyIndices.data(),
-            vk::SurfaceTransformFlagBitsKHR::eIdentity,
-            vk::CompositeAlphaFlagBitsKHR::eOpaque,
-            vulkanDevice->bestSurfacePresentMode,
-            VK_TRUE, // clipped
-            oldSwapchain
-        );
+    swapchainImageFormat = vulkanDevice->bestSurfaceFormat;
+    vk::SwapchainCreateInfoKHR swapchainCreateInfo{
+        vk::SwapchainCreateFlagsKHR(),
+        intrinsic,
+        nrSwapchainImages,
+        swapchainImageFormat.format,
+        swapchainImageFormat.colorSpace,
+        swapchainImageExtent,
+        1, // imageArrayLayers
+        vk::ImageUsageFlagBits::eColorAttachment,
+        sharingMode,
+        boost::numeric_cast<uint32_t>(sharingQueueFamilyIndices.size()),
+        sharingQueueFamilyIndices.data(),
+        vk::SurfaceTransformFlagBitsKHR::eIdentity,
+        vk::CompositeAlphaFlagBitsKHR::eOpaque,
+        vulkanDevice->bestSurfacePresentMode,
+        VK_TRUE, // clipped
+        nullptr
+    };
         
-        vk::Result const result = vulkanDevice->createSwapchainKHR(&swapchainCreateInfo, nullptr, &newSwapchain);
-        // No matter what, the oldSwapchain has been retired after createSwapchainKHR().
-        vulkanDevice->destroy(oldSwapchain);
-        oldSwapchain = vk::SwapchainKHR();
-
-        switch (result) {
-        case vk::Result::eSuccess:
-            break;
-
-        case vk::Result::eErrorSurfaceLostKHR:
-            return { {}, State::SURFACE_LOST };
-
-        default:
-            LOG_WARNING("Could not create swapchain, retrying.");
-            continue;
-        }
-
-        auto const [checkImageCount, checkImageExtent, checkImageState] = getImageCountExtentAndState();
-
-        if (checkImageState != State::READY_TO_DRAW) {
-            return {newSwapchain, checkImageState};
-        }
-
-        if ((imageExtent != checkImageExtent) || (imageCount != checkImageCount)) {
-            LOG_WARNING("Surface extent or imageCount has changed while creating swapchain, retrying.");
-            // The newSwapchain was created succesfully, it is just of the wrong size so use it as the next oldSwapchain.
-            oldSwapchain = newSwapchain;
-            continue;
-        }
-
+    vk::Result const result = vulkanDevice->createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
+    switch (result) {
+    case vk::Result::eSuccess:
         break;
+
+    case vk::Result::eErrorSurfaceLostKHR:
+        return State::SURFACE_LOST;
+
+    default:
+        BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
     }
 
     LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
     LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
     LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
-
-    windowChangedSize({swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height});
-
-    return { newSwapchain, State::READY_TO_DRAW };
+    return State::READY_TO_RENDER;
 }
 
 void Window_vulkan::teardownSwapchain()
@@ -352,7 +398,7 @@ void Window_vulkan::buildFramebuffers()
             vk::ImageViewCreateFlags(),
             image,
             vk::ImageViewType::e2D,
-            swapchainCreateInfo.imageFormat,
+            swapchainImageFormat.format,
             vk::ComponentMapping(),
             { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
         });
@@ -366,8 +412,8 @@ void Window_vulkan::buildFramebuffers()
             firstRenderPass,
             boost::numeric_cast<uint32_t>(attachments.size()),
             attachments.data(),
-            swapchainCreateInfo.imageExtent.width,
-            swapchainCreateInfo.imageExtent.height,
+            swapchainImageExtent.width,
+            swapchainImageExtent.height,
             1 // layers
         });
         swapchainFramebuffers.push_back(framebuffer);
@@ -400,7 +446,7 @@ void Window_vulkan::buildRenderPasses()
 
     std::vector<vk::AttachmentDescription> attachmentDescriptions = { {
         vk::AttachmentDescriptionFlags(),
-        swapchainCreateInfo.imageFormat,
+        swapchainImageFormat.format,
         vk::SampleCountFlagBits::e1,
         vk::AttachmentLoadOp::eClear,
         vk::AttachmentStoreOp::eStore,
@@ -482,5 +528,19 @@ void Window_vulkan::teardownSemaphores()
 }
 
 
+void Window_vulkan::teardownSurface()
+{
+    instance->destroySurfaceKHR(intrinsic);
+}
+
+void Window_vulkan::teardownDevice()
+{
+        device.reset();
+}
+
+void Window_vulkan::teardownWindow()
+{
+
+}
 
 }

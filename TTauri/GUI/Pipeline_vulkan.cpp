@@ -67,7 +67,7 @@ void Pipeline_vulkan::buildCommandBuffers()
         frameBufferObject.commandBufferValid = false;
     }
 
-    invalidateCommandBuffers(false);
+    invalidateCommandBuffers();
 }
 
 void Pipeline_vulkan::teardownCommandBuffers()
@@ -272,34 +272,24 @@ void Pipeline_vulkan::teardownPipeline()
     vulkanDevice->destroy(pipelineLayout);
 }
 
-void Pipeline_vulkan::buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
+
+void Pipeline_vulkan::buildForNewDevice()
 {
-    frameBufferObjects.resize(nrFrameBuffers);
-    buildVertexBuffers(nrFrameBuffers);
-    buildCommandBuffers();
-    buildDescriptorSets();
-    buildSemaphores();
-    buildPipeline(renderPass, extent);
 }
 
-void Pipeline_vulkan::teardownForDeviceChange()
+void Pipeline_vulkan::buildForNewSurface()
 {
-    invalidateCommandBuffers(true);
-    teardownPipeline();
-    teardownSemaphores();
-    teardownDescriptorSets();
-    teardownCommandBuffers();
-    teardownVertexBuffers();
-    frameBufferObjects.resize(0);
 }
 
-void Pipeline_vulkan::buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
+void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
 {
     if (nrFrameBuffers != frameBufferObjects.size()) {
-        teardownSemaphores();
-        teardownDescriptorSets();
-        teardownCommandBuffers();
-        teardownVertexBuffers();
+        if (frameBufferObjects.size() > 0) {
+            teardownSemaphores();
+            teardownDescriptorSets();
+            teardownCommandBuffers();
+            teardownVertexBuffers();
+        }
 
         frameBufferObjects.resize(nrFrameBuffers);
         buildVertexBuffers(nrFrameBuffers);
@@ -310,20 +300,35 @@ void Pipeline_vulkan::buildForSwapchainChange(vk::RenderPass renderPass, vk::Ext
     buildPipeline(renderPass, extent);
 }
 
-void Pipeline_vulkan::teardownForSwapchainChange()
+void Pipeline_vulkan::teardownForSwapchainLost()
 {
-    invalidateCommandBuffers(true);
+    invalidateCommandBuffers();
     teardownPipeline();
 }
 
-void Pipeline_vulkan::invalidateCommandBuffers(bool reset)
+void Pipeline_vulkan::teardownForSurfaceLost()
+{
+}
+
+void Pipeline_vulkan::teardownForDeviceLost()
+{
+    teardownSemaphores();
+    teardownDescriptorSets();
+    teardownCommandBuffers();
+    teardownVertexBuffers();
+    frameBufferObjects.resize(0);
+}
+
+void Pipeline_vulkan::teardownForWindowLost()
+{
+}
+
+void Pipeline_vulkan::invalidateCommandBuffers()
 {
     for (auto &frameBufferObject: frameBufferObjects) {
         frameBufferObject.commandBufferValid = false;
-        if (reset) {
-            auto const commandBuffer = frameBufferObject.commandBuffer;
-            commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-        }
+        auto const commandBuffer = frameBufferObject.commandBuffer;
+        commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     }
 }
 
@@ -338,8 +343,6 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
     LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % extent.width % extent.height;
 
     auto commandBuffer = frameBufferObject.commandBuffer;
-
-    commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
 
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 

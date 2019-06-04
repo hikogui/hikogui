@@ -34,7 +34,6 @@ set(TTauri_srcs
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
     GUI/globals.cpp
-    GUI/VerticalSync.cpp
     GUI/Device_base.cpp
     GUI/Device_vulkan.cpp
     GUI/Instance_base.cpp
@@ -58,6 +57,7 @@ set(TTauri_srcs
     Application.cpp
     Application_base.cpp
     Application_win32.cpp
+    VerticalSync_win32.cpp
     logging.cpp
     File.cpp
     FileMapping.cpp

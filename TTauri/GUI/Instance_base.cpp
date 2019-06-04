@@ -48,7 +48,6 @@ void Instance_base::add(shared_ptr<Window> window)
     }
 
     device->add(window);
-    verticalSync.add(window);
 }
 
 size_t Instance_base::getNumberOfWindows()
@@ -62,27 +61,5 @@ size_t Instance_base::getNumberOfWindows()
 
     return numberOfWindows;
 }
-
-void Instance_base::maintenance()
-{
-    scoped_lock lock(TTauri::GUI::mutex);
-
-    auto tmpDevices = devices;
-
-    // Check how many windows are still open.
-    auto numberOfOpenWindowsBefore = getNumberOfWindows();
-
-    for (auto device : tmpDevices) {
-        auto orphanWindow = device->maintance();
-    }
-
-    // Check how many windows are still open.
-    auto numberOfOpenWindowsAfter = getNumberOfWindows();
-
-    if (numberOfOpenWindowsAfter == 0 && numberOfOpenWindowsBefore > 0) {
-        application->lastWindowClosed();
-    }
-}
-
 
 }

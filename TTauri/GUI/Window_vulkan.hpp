@@ -13,11 +13,11 @@ class Window_vulkan : public Window_base {
 public:
     vk::SurfaceKHR intrinsic;
 
-    vk::SwapchainCreateInfoKHR swapchainCreateInfo;
-
     vk::SwapchainKHR swapchain;
 
-    std::optional<uint32_t> acquiredImageIndex;
+    uint32_t nrSwapchainImages;
+    vk::Extent2D swapchainImageExtent;
+    vk::SurfaceFormatKHR swapchainImageFormat;
     std::vector<vk::Image> swapchainImages;
     std::vector<vk::ImageView> swapchainImageViews;
     std::vector<vk::Framebuffer> swapchainFramebuffers;
@@ -30,7 +30,7 @@ public:
 
     std::shared_ptr<PipelineImage::PipelineImage> imagePipeline;
 
-    Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title, vk::SurfaceKHR surface);
+    Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan();
 
     Window_vulkan(const Window_vulkan &) = delete;
@@ -40,17 +40,26 @@ public:
 
     void initialize() override;
 
-    State buildForDeviceChange() override;
-    void teardownForDeviceChange() override;
-    State rebuildForSwapchainChange() override;
-
 protected:
     void render() override;
+    void teardown() override;
+    void build() override;
 
+    /*! Query the surface from the operating-system window.
+     */
+    virtual vk::SurfaceKHR getSurface() = 0;
+    
 private:
+    std::optional<uint32_t> acquireNextImageFromSwapchain();
+    void presentImageToQueue(uint32_t imageIndex, vk::Semaphore renderFinishedSemaphore);
+
+    bool readSurfaceExtent();
+    bool checkSurfaceExtent();
+
+    void buildDevice();
     void buildSemaphores();
     void teardownSemaphores();
-    std::pair<vk::SwapchainKHR, Window_base::State> buildSwapchain(vk::SwapchainKHR oldSwapchain = {});
+    State buildSwapchain();
     void teardownSwapchain();
     void buildRenderPasses();
     void teardownRenderPasses();
@@ -58,9 +67,13 @@ private:
     void teardownFramebuffers();
     void buildPipelines();
     void teardownPipelines();
+    bool buildSurface();
+    void teardownSurface();
+    void teardownDevice();
+    void teardownWindow();
 
     void waitIdle();
-    std::tuple<uint32_t, vk::Extent2D, State> getImageCountExtentAndState();
+    std::tuple<uint32_t, vk::Extent2D> getImageCountAndExtent();
 };
 
 }

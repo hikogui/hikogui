@@ -23,12 +23,15 @@ namespace TTauri::GUI {
 class Window_base : public std::enable_shared_from_this<Window_base> {
 public:
     enum class State {
-        NO_DEVICE, //!< state. No device is associated with the Window and can therefor not be rendered on.
-        MINIMIZED, //!< state. The window is minimized, the current swapchain is still out-of-date and can not be rendered on.
-        SWAPCHAIN_OUT_OF_DATE, //!< state. The window was resized, the swapchain needs to be rebuild and can not be rendered on.
-        READY_TO_DRAW, //!< state. The swapchain is ready drawing is allowed.
-        SURFACE_LOST, //!< state. The window was destroyed, everything needs to be destroyed.
-        DEVICE_LOST, //!< state. The device was last, but the window could move to a new device, or the device can be recreated.
+        NO_WINDOW, //!< The window was destroyed.
+        NO_DEVICE, //!< No device is associated with the Window and can therefor not be rendered on.
+        NO_SURFACE, //!< Need to request a new surface before building a swapchain
+        NO_SWAPCHAIN, //! Need to request a swapchain before rendering.
+        READY_TO_RENDER, //!< The swapchain is ready drawing is allowed.
+        SWAPCHAIN_LOST, //!< The window was resized, the swapchain needs to be rebuild and can not be rendered on.
+        SURFACE_LOST, //!< The Vulkan surface on the window was destroyed.
+        DEVICE_LOST, //!< The device was lost, but the window could move to a new device, or the device can be recreated.
+        WINDOW_LOST, //!< The window was destroyed, need to cleanup.
     };
 
     enum class SizeState {
@@ -84,15 +87,6 @@ public:
     virtual void openingWindow();
     virtual void closingWindow();
 
-    /*! Build the swapchain, frame buffers and pipeline.
-     */
-    virtual State buildForDeviceChange() = 0;
-
-    /*! Teardown the swapchain, frame buffers and pipeline.
-     */
-    virtual void teardownForDeviceChange() = 0;
-
-    virtual State rebuildForSwapchainChange() = 0;
 
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
@@ -115,13 +109,6 @@ public:
      */
     void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp);
 
-    /*! Maintanance
-     * Maintain the window on a low performance thread.
-     *
-     * For example: rebuilding the swapchain on window size changes.
-     */
-    void maintenance();
-
     BoxModel &box() {
         return widget->box;
     }
@@ -134,20 +121,25 @@ public:
         return widgetSolver.remove_constraint(constraint);
     }
 
-
-
 protected:
     u64rect2 windowRectangle;
 
-    virtual void setWindowPosition(uint32_t x, uint32_t y);
-    virtual void setWindowSize(uint32_t width, uint32_t height);
     virtual void windowChangedSize(u64extent2 extent);
 
-    /*! Render widgets.
-     * \param should this window block on vertical-sync.
-     * \returns true if this function has blocked on vertical-sync.
-     */
     virtual void render() = 0;
+
+    /*! Teardown Window based on State::*_LOST
+     */
+    virtual void teardown() = 0;
+
+    /*! Build Windows based on State::NO_*
+     */
+    virtual void build() = 0;
+
+    void rebuild() {
+        teardown();
+        build();
+    }
 
 private:
     bool isOnScreen();

@@ -33,7 +33,7 @@ vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSema
     sharedImagePipeline->prepareAtlasForRendering();
    
     if (tmpNumberOfVertices != numberOfVertices) {
-        invalidateCommandBuffers(false);
+        invalidateCommandBuffers();
         numberOfVertices = tmpNumberOfVertices;
     }
 

@@ -34,7 +34,7 @@ void Application_win32::lastWindowClosed()
     PostThreadMessageW(mainThreadID, WM_APP_LAST_WINDOW_CLOSED, 0, 0);
 }
 
-void Application_win32::mainThreadLastWindowClose()
+void Application_win32::mainThreadLastWindowClosed()
 {
     // Let the application have a change to open new windows from the main thread.
     Application_base::lastWindowClosed();
@@ -43,6 +43,17 @@ void Application_win32::mainThreadLastWindowClose()
         LOG_INFO("Application quiting due to all windows having been closed.");
         PostQuitMessage(0);
     }
+}
+
+void Application_win32::handleVerticalSync()
+{
+    GUI::instance->updateAndRender(0, 0);
+}
+
+void Application_win32::startingLoop()
+{
+    Application_base::startingLoop();
+    verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync);
 }
 
 int Application_win32::loop()
@@ -54,12 +65,13 @@ int Application_win32::loop()
     while (GetMessage(&msg, nullptr, 0, 0)) {
         switch (msg.message) {
         case WM_APP_LAST_WINDOW_CLOSED:
-            mainThreadLastWindowClose();
+            mainThreadLastWindowClosed();
             break;
 
         case WM_APP_CLOSING_WINDOW:
             reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadClosingWindow();
             break;
+
         case WM_APP_OPENING_WINDOW:
             reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadOpeningWindow();
             break;

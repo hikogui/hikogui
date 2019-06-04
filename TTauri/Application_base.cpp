@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Application_base.hpp"
+#include "Application.hpp"
 #include "logging.hpp"
 
 namespace TTauri {
@@ -26,6 +26,11 @@ void Application_base::startingLoop()
 void Application_base::lastWindowClosed()
 {
     delegate->lastWindowClosed();
+}
+
+void Application_base::_handleVerticalSync()
+{
+    application->handleVerticalSync();
 }
 
 }

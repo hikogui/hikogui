@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Application.hpp"
+#include "VerticalSync.hpp"
 #include "Color.hpp"
 #include "File.hpp"
 #include "FileMapping.hpp"

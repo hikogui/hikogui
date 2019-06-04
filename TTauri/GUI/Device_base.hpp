@@ -63,10 +63,11 @@ public:
 
     void remove(std::shared_ptr<Window> window);
 
-    /*! Maintanance work on low performance thread.
-     * \return Windows that got orphaned due to device dying.
-     */
-    std::vector<std::shared_ptr<Window>> maintance();
+    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp) {
+        for (auto &window: windows) {
+            window->updateAndRender(nowTimestamp, outputTimestamp);
+        }
+    }
 };
 
 }

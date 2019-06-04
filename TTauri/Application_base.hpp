@@ -5,6 +5,7 @@
 
 #include "utils.hpp"
 #include "ApplicationDelegate.hpp"
+#include "VerticalSync.hpp"
 #include <boost/exception/all.hpp>
 #include <filesystem>
 #include <memory>
@@ -26,6 +27,8 @@ public:
     /*! Application delegate
      */
     const std::shared_ptr<ApplicationDelegate> delegate;
+
+    std::unique_ptr<VerticalSync> verticalSync;
 
     bool loopStarted = false;
 
@@ -50,6 +53,12 @@ public:
      */
     virtual void initialize() {}
 
+    /*! Called every time there was a vertical sync.
+     */
+    virtual void handleVerticalSync() = 0;
+
+    /*! Called right before a loop is started.
+     */
     virtual void startingLoop();
 
     /*! Run the operating system's main loop.
@@ -60,5 +69,8 @@ public:
     /*! Called by the GUI when the last window was closed.
     */
     virtual void lastWindowClosed();
+
+    static void _handleVerticalSync();
 };
+
 }

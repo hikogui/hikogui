@@ -59,43 +59,16 @@ void Window_base::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestam
     render();
 }
 
-void Window_base::maintenance()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    if (state == State::SWAPCHAIN_OUT_OF_DATE || state == State::MINIMIZED) {
-        state = rebuildForSwapchainChange();
-    }
-}
-
 void Window_base::setDevice(const std::weak_ptr<Device> newDevice)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     if (!device.expired()) {
-        teardownForDeviceChange();
+        state = State::DEVICE_LOST;
+        teardown();
     }
 
-    device = move(newDevice);
-    if (!device.expired()) {
-        state = buildForDeviceChange();
-    } else {
-        state = State::NO_DEVICE;
-    }   
-}
-
-void Window_base::setWindowPosition(uint32_t x, uint32_t y)
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    //windowRectangle.offset = {x, y};
-}
-
-void Window_base::setWindowSize(uint32_t width, uint32_t height)
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    //windowRectangle.extent = {width, height};
+    device = newDevice;
 }
 
 void Window_base::windowChangedSize(u64extent2 extent) {
