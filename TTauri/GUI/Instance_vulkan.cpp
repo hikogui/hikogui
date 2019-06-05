@@ -58,7 +58,7 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
 
 #if defined(_WIN32) && !defined(NDEBUG)
     requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-    requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
+    //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
 #endif
     instanceCreateInfo.setEnabledLayerCount(boost::numeric_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
@@ -95,7 +95,7 @@ void Instance_vulkan::initialize()
     debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
         vk::DebugUtilsMessengerCreateFlagsEXT(),
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+        //vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
         vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
