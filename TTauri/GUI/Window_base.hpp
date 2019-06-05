@@ -82,8 +82,8 @@ public:
 
     virtual void initialize();
 
-    bool hasLostSurface() { return state == State::SURFACE_LOST; }
-    bool hasLostDevice() { return state == State::DEVICE_LOST; }
+    //bool hasLostSurface() { return state == State::SURFACE_LOST; }
+    //bool hasLostDevice() { return state == State::DEVICE_LOST; }
     virtual void openingWindow();
     virtual void closingWindow();
 

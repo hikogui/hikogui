@@ -37,11 +37,11 @@ struct ASTIndex : ASTExpression {
         auto &object_ = object->executeLValue(context);
 
         if (index) {
-            auto const index_ = index->execute(context);
+            let index_ = index->execute(context);
 
             if ((object_.is_type<Undefined>() || object_.is_type<Object>()) && index_.is_type<std::string>()) {
                 // Use a string to index into an object.
-                auto const index__ = index_.value<std::string>();
+                let index__ = index_.value<std::string>();
                 try {
                     return object_[index__];
                 } catch (boost::exception &e) {

@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "FileView.hpp"
+#include "required.hpp"
 #include "logging.hpp"
 #include "utils.hpp"
 
@@ -73,7 +74,7 @@ std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(std::filesy
 {
     cleanup();
 
-    auto const absolutePath = std::filesystem::absolute(path);
+    let absolutePath = std::filesystem::absolute(path);
 
     auto& mappings = mappedFileObjects[absolutePath];
 

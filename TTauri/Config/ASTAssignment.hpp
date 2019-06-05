@@ -22,7 +22,7 @@ struct ASTAssignment : ASTExpression {
     }
 
     Value &executeLValue(ExecutionContext *context) const override {
-        auto const value = expression->execute(context);
+        let value = expression->execute(context);
 
         if (value.is_type<Undefined>()) {
             BOOST_THROW_EXCEPTION(InvalidOperationError("right hand side value of assignment is Undefined")

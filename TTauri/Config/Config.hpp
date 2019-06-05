@@ -27,11 +27,11 @@ struct Config {
             root = ast->execute();
 
         } catch (ConfigError &e) {
-            if (auto const previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
+            if (let previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
                 errorMessage += *previousErrorMessage + "\n";
             }
 
-            if (auto const location = boost::get_error_info<errinfo_location>(e)) {
+            if (let location = boost::get_error_info<errinfo_location>(e)) {
                 errorMessage += location->str() + ": ";
             }
 
@@ -81,12 +81,12 @@ struct Config {
     }
 
     Value operator[](std::string const &key) const {
-        auto const splitKey = split(key, '.');
+        let splitKey = split(key, '.');
         return root.get(splitKey);
     }
 
     Value &operator[](std::string const &key) {
-        auto const splitKey = split(key, '.');
+        let splitKey = split(key, '.');
         return root.get(splitKey);
     }
 
@@ -106,7 +106,7 @@ struct Config {
      */
     template<typename T>
     T value(std::string const &key) const {
-        auto const obj = (*this)[key];
+        let obj = (*this)[key];
         return obj.value<T>();
     }
 

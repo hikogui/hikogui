@@ -62,14 +62,14 @@ struct DeviceShared final {
      * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
      */
     static glm::u64vec3 getAtlasPositionFromPage(Page page) {
-        auto const imageIndex = page.nr / atlasNrPagesPerImage;
-        auto const pageNrInsideImage = page.nr % atlasNrPagesPerImage;
+        let imageIndex = page.nr / atlasNrPagesPerImage;
+        let pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 
-        auto const pageY = pageNrInsideImage / atlasNrVerticalPages;
-        auto const pageX = pageNrInsideImage % atlasNrVerticalPages;
+        let pageY = pageNrInsideImage / atlasNrVerticalPages;
+        let pageX = pageNrInsideImage % atlasNrVerticalPages;
 
-        auto const x = pageX * Page::widthIncludingBorder + Page::border;
-        auto const y = pageY * Page::heightIncludingBorder + Page::border;
+        let x = pageX * Page::widthIncludingBorder + Page::border;
+        let y = pageY * Page::heightIncludingBorder + Page::border;
 
         return {x, y, imageIndex};
     }

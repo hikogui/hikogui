@@ -9,17 +9,17 @@ namespace TTauri::GUI::PipelineImage {
 
 u64rect2 Image::indexToRect(size_t const pageIndex) const
 {
-    auto const indexY = pageIndex / pageExtent.x;
-    auto const indexX = pageIndex % pageExtent.x;
+    let indexY = pageIndex / pageExtent.x;
+    let indexX = pageIndex % pageExtent.x;
 
-    auto const left = indexX * Page::width;
-    auto const top = indexY * Page::height;
-    auto const right = left + Page::width;
-    auto const bottom = top + Page::height;
-    auto const rightOverflow = right - std::min(right, static_cast<size_t>(extent.x));
-    auto const bottomOverflow = bottom - std::min(bottom, static_cast<size_t>(extent.y));
-    auto const width = Page::width - rightOverflow;
-    auto const height = Page::height - bottomOverflow;
+    let left = indexX * Page::width;
+    let top = indexY * Page::height;
+    let right = left + Page::width;
+    let bottom = top + Page::height;
+    let rightOverflow = right - std::min(right, static_cast<size_t>(extent.x));
+    let bottomOverflow = bottom - std::min(bottom, static_cast<size_t>(extent.y));
+    let width = Page::width - rightOverflow;
+    let height = Page::height - bottomOverflow;
 
     return {{left, top}, {width, height}};
 }
@@ -53,10 +53,10 @@ void Image::calculateVertexPositions(const ImageLocation &location)
 {
     tmpVertexPositions.clear();
 
-    auto const restWidth = extent.width() % Page::width;
-    auto const restHeight = extent.height() % Page::height;
-    auto const lastWidth = restWidth ? restWidth : Page::width;
-    auto const lastHeight = restHeight ? restHeight : Page::height;
+    let restWidth = extent.width() % Page::width;
+    let restHeight = extent.height() % Page::height;
+    let lastWidth = restWidth ? restWidth : Page::width;
+    let lastHeight = restHeight ? restHeight : Page::height;
 
     for (size_t y = 0; y < extent.height(); y += Page::height) {
         for (size_t x = 0; x < extent.width(); x += Page::width) {
@@ -73,31 +73,31 @@ void Image::calculateVertexPositions(const ImageLocation &location)
 }
 
 void Image::placePageVertices(size_t const index, const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset) const {
-    auto const page = pages.at(index);
+    let page = pages.at(index);
 
     if (page.isFullyTransparent()) {
         // Hole in the image does not need to be rendered.
         return;
     }
 
-    auto const vertexY = index / pageExtent.width();
-    auto const vertexX = index % pageExtent.width();
+    let vertexY = index / pageExtent.width();
+    let vertexX = index % pageExtent.width();
 
-    auto const vertexStride = pageExtent.width() + 1;
-    auto const vertexIndex = vertexY * vertexStride + vertexX;
+    let vertexStride = pageExtent.width() + 1;
+    let vertexIndex = vertexY * vertexStride + vertexX;
 
     // Point, Extent, Inside
-    auto const [p1, e1, i1] = tmpVertexPositions[vertexIndex];
-    auto const [p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
-    auto const [p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
-    auto const [p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
+    let [p1, e1, i1] = tmpVertexPositions[vertexIndex];
+    let [p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
+    let [p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
+    let [p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
 
     if (!(i1 || i2 || i3 || i4)) {
         // Clipped page.
         return;
     }
 
-    auto const atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
+    let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
 
     vertices[offset++] = {location, p1, atlasPosition};
     vertices[offset++] = {location, p2, {atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z}};

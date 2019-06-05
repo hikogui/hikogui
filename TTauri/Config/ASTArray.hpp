@@ -44,7 +44,7 @@ struct ASTArray : ASTExpression {
     Value execute(ExecutionContext *context) const override {
         Array values;
 
-        for (auto const expression: expressions) {
+        for (let expression: expressions) {
             values.push_back(expression->execute(context));
         }
         return {values};

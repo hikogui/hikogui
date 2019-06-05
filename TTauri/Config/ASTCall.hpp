@@ -71,7 +71,7 @@ struct ASTCall : ASTExpression {
         std::string s = object->str() + "(";
 
         bool first = true;
-        for (auto const argument: arguments) {
+        for (let argument: arguments) {
             if (!first) {
                 s += ",";
             }
@@ -83,7 +83,7 @@ struct ASTCall : ASTExpression {
     }
 
     Value execute(ExecutionContext *context) const override {
-        auto const values = transform<std::vector<Value>>(arguments, [context](auto const x) {
+        let values = transform<std::vector<Value>>(arguments, [context](let x) {
             return x->execute(context);
         });
 

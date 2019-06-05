@@ -39,7 +39,7 @@ struct ASTName : ASTExpression {
             );
         }
 
-        auto const argument = arguments.at(0);
+        let argument = arguments.at(0);
         if (!argument.is_promotable_to<T>()) {
             BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
                 % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
@@ -68,18 +68,18 @@ struct ASTName : ASTExpression {
         }
 
         try {
-            auto const ast = std::unique_ptr<ASTObject>{parseConfigFile(path)};
+            let ast = std::unique_ptr<ASTObject>{parseConfigFile(path)};
             return ast->execute();
 
         } catch (ConfigError &e) {
             // An error was captured from recursive parsing.
             // Assemble the error message from this error and throw it.
             std::string errorMessage;
-            if (auto const previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
+            if (let previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
                 errorMessage += *previousErrorMessage + "\n";
             }
 
-            if (auto const location = boost::get_error_info<errinfo_location>(e)) {
+            if (let location = boost::get_error_info<errinfo_location>(e)) {
                 errorMessage += location->str() + ": ";
             }
 
@@ -101,7 +101,7 @@ struct ASTName : ASTExpression {
             return location.file->parent_path();
         } else {
             // Suffix the given argument with the directory where this configuration file is located.
-            auto const path = getArgument<std::filesystem::path>(arguments, 0, true);
+            let path = getArgument<std::filesystem::path>(arguments, 0, true);
 
             if (path.is_relative()) {
                 return location.file->parent_path() / path;
@@ -120,7 +120,7 @@ struct ASTName : ASTExpression {
 
         } else {
             // Suffix the given argument with the current working directory.
-            auto const path = getArgument<std::filesystem::path>(arguments, 0, true);
+            let path = getArgument<std::filesystem::path>(arguments, 0, true);
 
             if (path.is_relative()) {
                 return std::filesystem::current_path() / path;

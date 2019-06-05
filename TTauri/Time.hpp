@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "required.hpp"
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -39,7 +41,7 @@ public:
 		// Convert to 1ns format.
 		utc_ts *= 100;
 
-		auto const ptp_ts = utc_ts;
+		let ptp_ts = utc_ts;
 		return { ptp_ts };
 	}
 
@@ -85,7 +87,7 @@ public:
     /*! Return a timestamp from a clock.
      */
     Timestamp operator()(uint64_t counter) const {
-        volatile auto const c = *calibration;
+        volatile let c = *calibration;
 
         auto counter128 = static_cast<boost::multiprecision::int128_t>(counter);
         counter128 *= c.gain;
@@ -101,7 +103,7 @@ public:
     /*! Calibrate the clock by comparing a counter with the current system time.
      */
     Timestamp calibrate(uint64_t counter) {
-        auto const absoluteTime = Timestamp::now();
+        let absoluteTime = Timestamp::now();
         return calibrate(counter, absoluteTime);
     }
 };

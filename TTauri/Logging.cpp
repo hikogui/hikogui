@@ -63,7 +63,7 @@ std::string getLastErrorMessage()
         NULL
     );
 
-    auto const message = translateString<std::string>(std::wstring(c16_message));
+    let message = translateString<std::string>(std::wstring(c16_message));
     delete c16_message;
 
     return message;

@@ -47,7 +47,7 @@ std::vector<Page> DeviceShared::getFreePages(size_t const nrPages)
 
     auto pages = std::vector<Page>();
     for (size_t i = 0; i < nrPages; i++) {
-        auto const page = atlasFreePages.back();
+        let page = atlasFreePages.back();
         pages.push_back(page);
         atlasFreePages.pop_back();
     }
@@ -56,19 +56,19 @@ std::vector<Page> DeviceShared::getFreePages(size_t const nrPages)
 
 std::shared_ptr<Image> DeviceShared::retainImage(const std::string &key, u64extent2 const extent)
 {
-    auto const i = viewImages.find(key);
+    let i = viewImages.find(key);
     if (i != viewImages.end()) {
         auto image = (*i).second;
         image->retainCount++;
         return image;
     }
 
-    auto const pageExtent = u64extent2{
+    let pageExtent = u64extent2{
         (extent.width() + (Page::width - 1)) / Page::width,
         (extent.height() + (Page::height - 1)) / Page::height
     };
 
-    auto const pages = getFreePages(pageExtent.x * pageExtent.y);
+    let pages = getFreePages(pageExtent.x * pageExtent.y);
     auto image = TTauri::make_shared<Image>(key, extent, pageExtent, pages);
     viewImages.insert_or_assign(key, image);
     return image;
@@ -77,7 +77,7 @@ std::shared_ptr<Image> DeviceShared::retainImage(const std::string &key, u64exte
 void DeviceShared::releaseImage(const std::shared_ptr<Image> &image)
 {
     if (--image->retainCount == 0) {
-        auto const i = viewImages.find(image->key);
+        let i = viewImages.find(image->key);
         if (i != viewImages.end()) {
             viewImages.erase(i);
         } else {
@@ -104,7 +104,7 @@ TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
     auto vulkanDevice = device.lock();
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eGeneral);
 
-    auto const textureWithoutBorder = stagingTexture.pixelMap.submap(
+    let textureWithoutBorder = stagingTexture.pixelMap.submap(
         Page::border, Page::border,
         stagingImageWidth - 2 * Page::border, stagingImageHeight - 2 * Page::border
     );
@@ -113,7 +113,7 @@ TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
-    auto const vulkanDevice = device.lock();
+    let vulkanDevice = device.lock();
 
     // Start with the actual image inside the stagingImage.
     auto rectangle = u64rect2{
@@ -141,7 +141,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
     for (size_t index = 0 ; index < image.pages.size(); index++) {
-        auto const page = image.pages.at(index);
+        let page = image.pages.at(index);
 
         if (page.isFullyTransparent()) {
             // Hole in the image does not need to be rendered.
@@ -151,13 +151,13 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         auto imageRect = image.indexToRect(index);
         // Adjust the position to be inside the stagingImage, excluding its border.
         imageRect.offset += glm::u64vec2(Page::border, Page::border);
-        auto const atlasPosition = getAtlasPositionFromPage(page);
+        let atlasPosition = getAtlasPositionFromPage(page);
 
         // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbour sampling
         // on the edge of a page.
         imageRect.offset -= glm::u64vec2(Page::border, Page::border);
         imageRect.extent += glm::u64vec2(Page::border*2, Page::border*2);
-        auto const atlasOffset = xy(atlasPosition) - glm::u64vec2(Page::border, Page::border);
+        let atlasOffset = xy(atlasPosition) - glm::u64vec2(Page::border, Page::border);
 
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
         regionsToCopy.push_back({
@@ -170,7 +170,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     }
 
     for (size_t atlasTextureIndex = 0; atlasTextureIndex < atlasTextures.size(); atlasTextureIndex++) {
-        auto const &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
+        let &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
         if (regionsToCopy.size() == 0) {
             continue;
         }
@@ -184,7 +184,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
 void DeviceShared::prepareAtlasForRendering()
 {
-    auto const vulkanDevice = device.lock();
+    let vulkanDevice = device.lock();
 
     for (auto &atlasTexture: atlasTextures) {
         atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eShaderReadOnlyOptimal);
@@ -193,7 +193,7 @@ void DeviceShared::prepareAtlasForRendering()
 
 void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {
-    auto const vulkanDevice = device.lock();
+    let vulkanDevice = device.lock();
 
     commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
 }
@@ -201,7 +201,7 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
 void DeviceShared::buildIndexBuffer()
 {
-    auto const vulkanDevice = device.lock();
+    let vulkanDevice = device.lock();
 
     // Create vertex index buffer
     {
@@ -227,14 +227,14 @@ void DeviceShared::buildIndexBuffer()
         };
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        auto const [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        let [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
 
         // Initialize indices.
-        auto const stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
+        let stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
         for (size_t i = 0; i < PipelineImage::PipelineImage::maximumNumberOfIndices; i++) {
-            auto const vertexInRectangle = i % 6;
-            auto const rectangleNr = i / 6;
-            auto const rectangleBase = rectangleNr * 4;
+            let vertexInRectangle = i % 6;
+            let rectangleNr = i / 6;
+            let rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
             case 0: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 0); break;
@@ -295,7 +295,7 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 void DeviceShared::addAtlasImage()
 {
     auto vulkanDevice = device.lock();
-    auto const currentImageIndex = atlasTextures.size();
+    let currentImageIndex = atlasTextures.size();
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -315,9 +315,9 @@ void DeviceShared::addAtlasImage()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    auto const [atlasImage, atlasImageAllocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
+    let [atlasImage, atlasImageAllocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
 
-    auto const atlasImageView = vulkanDevice->createImageView({
+    let atlasImageView = vulkanDevice->createImageView({
         vk::ImageViewCreateFlags(),
         atlasImage,
         vk::ImageViewType::e2D,
@@ -373,9 +373,9 @@ void DeviceShared::buildAtlas()
     };
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    auto const [image, allocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
-    auto const data = vulkanDevice->mapMemory<uint32_t>(allocation);
-    auto const pixelMap = TTauri::Draw::PixelMap<uint32_t>{data, imageCreateInfo.extent.width, imageCreateInfo.extent.height};
+    let [image, allocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
+    let data = vulkanDevice->mapMemory<uint32_t>(allocation);
+    let pixelMap = TTauri::Draw::PixelMap<uint32_t>{data, imageCreateInfo.extent.width, imageCreateInfo.extent.height};
 
     stagingTexture = { image, allocation, vk::ImageView(), pixelMap };
 

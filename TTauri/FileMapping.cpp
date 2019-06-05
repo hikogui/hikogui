@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "FileMapping.hpp"
+#include "required.hpp"
 #include "logging.hpp"
 #include "utils.hpp"
 
@@ -51,10 +52,10 @@ std::shared_ptr<File> FileMapping::findOrCreateFile(std::filesystem::path const&
 {
     cleanup();
 
-    auto const absolutePath = std::filesystem::absolute(path);
+    let absolutePath = std::filesystem::absolute(path);
 
     auto& files = mappedFiles[absolutePath];
-    for (auto const weak_file : files) {
+    for (let weak_file : files) {
         if (auto file = weak_file.lock()) {
             if (file->accessMode >= accessMode) {
                 return file;

@@ -163,7 +163,7 @@ template<typename T, typename U>
 inline T binary_nearest_find(T begin, T end, U value)
 {
     while (begin < end) {
-        auto const m = middle(begin, end);
+        let m = middle(begin, end);
 
         if (value > *m) {
             begin = m + 1;
@@ -200,7 +200,7 @@ template<typename T, typename F>
 inline void erase_if(T &v, F operation)
 {
     while (true) {
-        auto const i = std::find_if(v.begin(), v.end(), operation);
+        let i = std::find_if(v.begin(), v.end(), operation);
         if (i == v.end()) {
             return;
         }

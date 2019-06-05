@@ -200,7 +200,7 @@ struct Value {
 
     Value &get(std::vector<std::string> const &key) {
         if (key.size() > 0 && is_type<Object>()) {
-            auto const index = key.at(0);
+            let index = key.at(0);
             auto &next = (*this)[index];
             return next.get({key.begin() + 1, key.end()});
 
@@ -220,13 +220,13 @@ struct Value {
 
     Value get(std::vector<std::string> const &key) const {
         if (key.size() > 0 && is_type<Object>()) {
-            auto const index = key.at(0);
-            auto const next = (*this)[index];
+            let index = key.at(0);
+            let next = (*this)[index];
             return next.get({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0 && is_type<Array>()) {
             size_t const index = std::stoll(key.at(0));
-            auto const next = (*this)[index];
+            let next = (*this)[index];
             return next.get({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
@@ -265,7 +265,7 @@ struct Value {
         } else if (is_type<Array>()) {
             std::string s = "[";
             auto first = true;
-            for (auto const &x: value<Array>()) {
+            for (let &x: value<Array>()) {
                 if (!first) {
                     s += ",";
                 }
@@ -276,7 +276,7 @@ struct Value {
         } else if (is_type<Object>()) {
             std::string s = "{";
             auto first = true;
-            for (auto const &[k, v]: value<Object>()) {
+            for (let &[k, v]: value<Object>()) {
                 if (!v.is_type<Undefined>()) {
                     if (!first) {
                         s += ",";
@@ -299,14 +299,14 @@ struct Value {
     std::any any() const {
         if (is_type<Array>()) {
             std::vector<std::any> r;
-            for (auto const &x: value<Array>()) {
+            for (let &x: value<Array>()) {
                 r.push_back(x.any());
             }
             return r;
 
         } else if (is_type<Object>()) {
             std::map<std::string, std::any> r;
-            for (auto const &[k, v]: value<Object>()) {
+            for (let &[k, v]: value<Object>()) {
                 if (!v.is_type<Undefined>()) {
                     r[k] = v.any();
                 }
@@ -352,8 +352,8 @@ struct Value {
             auto l_iterator = l.begin();
             auto r_iterator = r.begin();
             while (l_iterator != l.end() && r_iterator != r.end()) {
-                auto const l_value = *l_iterator;
-                auto const r_value = *r_iterator;
+                let l_value = *l_iterator;
+                let r_value = *r_iterator;
 
                 switch (l_value.cmp(r_value)) {
                 case CompareResult::LOWER: return CompareResult::LOWER;
@@ -380,8 +380,8 @@ struct Value {
             auto l_iterator = l.begin();
             auto r_iterator = r.begin();
             while (l_iterator != l.end() && r_iterator != r.end()) {
-                auto const [l_key, l_value] = *l_iterator;
-                auto const [r_key, r_value] = *r_iterator;
+                let [l_key, l_value] = *l_iterator;
+                let [r_key, r_value] = *r_iterator;
 
                 switch (compare(l_key, r_key)) {
                 case CompareResult::LOWER: return CompareResult::LOWER;
@@ -486,13 +486,13 @@ struct Value {
             return value<std::string>() + other.value<std::string>();
         } else if (is_type<Array>() && other.is_type<Array>()) {
             Array r;
-            for (auto const x: value<Array>()) { r.push_back(x); }
-            for (auto const x: other.value<Array>()) { r.push_back(x); }
+            for (let x: value<Array>()) { r.push_back(x); }
+            for (let x: other.value<Array>()) { r.push_back(x); }
             return r;
         } else if (is_type<Object>() && other.is_type<Object>()) {
             Object r;
-            for (auto const [k, v]: value<Object>()) { r[k] = v; }
-            for (auto const [k, v]: other.value<Object>()) { r[k] = v; }
+            for (let [k, v]: value<Object>()) { r[k] = v; }
+            for (let [k, v]: other.value<Object>()) { r[k] = v; }
             return r;
         } else if (is_type<double>() || other.is_type<double>()) {
             return value<double>() + other.value<double>();

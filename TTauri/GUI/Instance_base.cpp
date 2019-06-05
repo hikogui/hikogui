@@ -17,8 +17,8 @@ shared_ptr<Device> Instance_base::findBestDeviceForWindow(const shared_ptr<Windo
     int bestScore = -1;
     shared_ptr<Device> bestDevice;
 
-    for (auto const &device : devices) {
-        auto const score = device->score(window);
+    for (let &device : devices) {
+        let score = device->score(window);
         LOG_INFO("Device has score=%i.") % score;
 
         if (score >= bestScore) {

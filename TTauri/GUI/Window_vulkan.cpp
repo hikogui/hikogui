@@ -527,7 +527,6 @@ void Window_vulkan::teardownSemaphores()
     vulkanDevice->destroy(renderFinishedFence);
 }
 
-
 void Window_vulkan::teardownSurface()
 {
     instance->destroySurfaceKHR(intrinsic);
@@ -535,12 +534,12 @@ void Window_vulkan::teardownSurface()
 
 void Window_vulkan::teardownDevice()
 {
-        device.reset();
+    device.reset();
 }
 
 void Window_vulkan::teardownWindow()
 {
-
+    closingWindow();
 }
 
 }

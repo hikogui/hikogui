@@ -160,7 +160,7 @@ LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM w
 
     if (uMsg == WM_NCCREATE && lParam) {
         [[gsl::suppress(type.1)]] {
-            auto const createData = reinterpret_cast<CREATESTRUCT *>(lParam);
+            let createData = reinterpret_cast<CREATESTRUCT *>(lParam);
 
             if (createData->lpCreateParams) {
                 [[gsl::suppress(lifetime.1)]] {
@@ -172,8 +172,8 @@ LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM w
 
     auto i = Window_vulkan_win32::win32WindowMap->find(hwnd);
     if (i != Window_vulkan_win32::win32WindowMap->end()) {
-        auto const window = i->second;
-        auto const result = window->windowProc(hwnd, uMsg, wParam, lParam);
+        let window = i->second;
+        let result = window->windowProc(hwnd, uMsg, wParam, lParam);
 
         if (uMsg == WM_DESTROY) {
             Window_vulkan_win32::win32WindowMap->erase(i);

@@ -101,13 +101,13 @@ public:
         std::scoped_lock lock(TTauri::GUI::mutex);
 
         void *mapping;
-        auto const result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
+        let result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
 
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
         T *mappingT = reinterpret_cast<T *>(mapping);
-        auto const mappingSpan = gsl::span<T>(mappingT, allocationInfo.size / sizeof (T));
+        let mappingSpan = gsl::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
         return vk::createResultValue(result, mappingSpan, "TTauri::GUI::Device_vulkan::mapMemory");
     }

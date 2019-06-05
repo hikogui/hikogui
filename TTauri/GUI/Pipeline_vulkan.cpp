@@ -21,11 +21,11 @@ Pipeline_vulkan::~Pipeline_vulkan()
 
 vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
     auto &imageObject = frameBufferObjects.at(imageIndex);
 
     if (imageObject.descriptorSetVersion < getDescriptorSetVersion()) {
-        auto const writeDescriptorSets = createWriteDescriptorSet(imageIndex);
+        let writeDescriptorSets = createWriteDescriptorSet(imageIndex);
         vulkanDevice->updateDescriptorSets(writeDescriptorSets, {});
 
         imageObject.descriptorSetVersion = getDescriptorSetVersion();
@@ -53,9 +53,9 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
 
 void Pipeline_vulkan::buildCommandBuffers()
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
-    auto const commandBuffers = vulkanDevice->allocateCommandBuffers({
+    let commandBuffers = vulkanDevice->allocateCommandBuffers({
         vulkanDevice->graphicsCommandPool, 
         vk::CommandBufferLevel::ePrimary, 
         boost::numeric_cast<uint32_t>(frameBufferObjects.size())
@@ -74,16 +74,16 @@ void Pipeline_vulkan::teardownCommandBuffers()
 {
     auto vulkanDevice = device();
 
-    auto const commandBuffers = transform<vector<vk::CommandBuffer>>(frameBufferObjects, [](auto x) { return x.commandBuffer; });
+    let commandBuffers = transform<vector<vk::CommandBuffer>>(frameBufferObjects, [](auto x) { return x.commandBuffer; });
 
     vulkanDevice->freeCommandBuffers(vulkanDevice->graphicsCommandPool, commandBuffers);
 }
 
 void Pipeline_vulkan::buildDescriptorSets()
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
-    auto const descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
+    let descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
     const vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {
         vk::DescriptorSetLayoutCreateFlags(),
@@ -92,7 +92,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
     descriptorSetLayout = vulkanDevice->createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
-    auto const descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
+    let descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
         descriptorSetLayoutBindings,
         [this](auto x) -> vk::DescriptorPoolSize {
             return {
@@ -110,7 +110,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
     std::vector<vk::DescriptorSetLayout> const descriptorSetLayouts(frameBufferObjects.size(), descriptorSetLayout);
     
-    auto const descriptorSets = vulkanDevice->allocateDescriptorSets({
+    let descriptorSets = vulkanDevice->allocateDescriptorSets({
         descriptorPool,
         boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
@@ -124,9 +124,9 @@ void Pipeline_vulkan::buildDescriptorSets()
 
 void Pipeline_vulkan::teardownDescriptorSets()
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
-    auto const descriptorSets = transform<vector<vk::DescriptorSet>>(frameBufferObjects, [](auto x) { return x.descriptorSet; });
+    let descriptorSets = transform<vector<vk::DescriptorSet>>(frameBufferObjects, [](auto x) { return x.descriptorSet; });
 
     vulkanDevice->destroy(descriptorPool);
     vulkanDevice->destroy(descriptorSetLayout);
@@ -134,9 +134,9 @@ void Pipeline_vulkan::teardownDescriptorSets()
 
 void Pipeline_vulkan::buildSemaphores()
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
-    auto const semaphoreCreateInfo = vk::SemaphoreCreateInfo();
+    let semaphoreCreateInfo = vk::SemaphoreCreateInfo();
     for (auto &frameBufferObject: frameBufferObjects) {
         frameBufferObject.renderFinishedSemaphore = vulkanDevice->createSemaphore(semaphoreCreateInfo);
     }
@@ -144,16 +144,16 @@ void Pipeline_vulkan::buildSemaphores()
 
 void Pipeline_vulkan::teardownSemaphores()
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
-    for (auto const &frameBufferObject: frameBufferObjects) {
+    for (let &frameBufferObject: frameBufferObjects) {
         vulkanDevice->destroy(frameBufferObject.renderFinishedSemaphore);
     }
 }
 
 void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _extent)
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
     LOG_INFO("buildPipeline previous size (%i, %i)") % extent.width % extent.height;
 
@@ -327,7 +327,7 @@ void Pipeline_vulkan::invalidateCommandBuffers()
 {
     for (auto &frameBufferObject: frameBufferObjects) {
         frameBufferObject.commandBufferValid = false;
-        auto const commandBuffer = frameBufferObject.commandBuffer;
+        let commandBuffer = frameBufferObject.commandBuffer;
         commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     }
 }

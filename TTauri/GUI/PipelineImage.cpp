@@ -22,14 +22,14 @@ PipelineImage::PipelineImage(const std::shared_ptr<Window> window) :
 
 vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    auto const vulkanDevice = device();
+    let vulkanDevice = device();
 
     size_t tmpNumberOfVertices = 0;
     window.lock()->widget->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
     vulkanDevice->flushAllocation(vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 
-    auto const sharedImagePipeline = vulkanDevice->imagePipeline;
+    let sharedImagePipeline = vulkanDevice->imagePipeline;
     sharedImagePipeline->prepareAtlasForRendering();
    
     if (tmpNumberOfVertices != numberOfVertices) {
@@ -63,8 +63,8 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
         &pushConstants
     );
 
-    auto const numberOfRectangles = numberOfVertices / 4;
-    auto const numberOfTriangles = numberOfRectangles * 2;
+    let numberOfRectangles = numberOfVertices / 4;
+    let numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
         boost::numeric_cast<uint32_t>(numberOfTriangles * 3),
         1,
@@ -94,9 +94,9 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
 
 vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t imageIndex) const
 {
-    auto const vulkanDevice = device();
-    auto const sharedImagePipeline = vulkanDevice->imagePipeline;
-    auto const &frameBufferObject = frameBufferObjects.at(imageIndex);
+    let vulkanDevice = device();
+    let sharedImagePipeline = vulkanDevice->imagePipeline;
+    let &frameBufferObject = frameBufferObjects.at(imageIndex);
 
     return { {
         frameBufferObject.descriptorSet,
@@ -155,8 +155,8 @@ void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        auto const [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
-        auto const vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
+        let [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        let vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
 
         vertexBuffers.push_back(vertexBuffer);
         vertexBuffersAllocation.push_back(vertexBufferAllocation);

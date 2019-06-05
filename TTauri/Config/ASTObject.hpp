@@ -45,7 +45,7 @@ struct ASTObject : ASTExpression {
         std::string s = "{";
 
         bool first = true;
-        for (auto const expression: expressions) {
+        for (let expression: expressions) {
             if (!first) {
                 s += ",";
             }
@@ -60,7 +60,7 @@ struct ASTObject : ASTExpression {
     Value execute(ExecutionContext *context) const override {
         context->pushObject();
 
-        for (auto const expression: expressions) {
+        for (let expression: expressions) {
             expression->executeStatement(context);
         }
 

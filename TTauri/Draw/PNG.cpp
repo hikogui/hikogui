@@ -61,8 +61,8 @@ PixelMap<uint32_t> loadPNG(const PixelMap<uint32_t> &pixelMap, const std::filesy
 
     png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_SCALE_16 | PNG_TRANSFORM_GRAY_TO_RGB, NULL);
 
-    auto const width = png_get_image_width(png_ptr, info_ptr);
-    auto const height = png_get_image_height(png_ptr, info_ptr);
+    let width = png_get_image_width(png_ptr, info_ptr);
+    let height = png_get_image_height(png_ptr, info_ptr);
 
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
     fclose(fp);

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include "required.hpp"
 #include "utils.hpp"
 #include <utf8proc/utf8proc.h>
 
@@ -258,9 +259,9 @@ inline std::u16string translateString(const std::u32string &inputString, Transla
         }
 
         if (inputCharacter >= UNICODE_Plane_1_BEGIN) {
-            auto const surrogateCode = inputCharacter - UNICODE_Plane_1_BEGIN;
-            auto const highSurrogate = UNICODE_High_Surrogates_BEGIN + (surrogateCode >> 10);
-            auto const lowSurrogate = UNICODE_Low_Surrogates_BEGIN + (surrogateCode & 0x3ff);
+            let surrogateCode = inputCharacter - UNICODE_Plane_1_BEGIN;
+            let highSurrogate = UNICODE_High_Surrogates_BEGIN + (surrogateCode >> 10);
+            let lowSurrogate = UNICODE_Low_Surrogates_BEGIN + (surrogateCode & 0x3ff);
             outputString.push_back(highSurrogate & 0xffff);
             outputString.push_back(lowSurrogate & 0xffff);
 
