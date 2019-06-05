@@ -1,10 +1,8 @@
 
-#include "VerticalSync.hpp"
+#include "VerticalSync_win32.hpp"
 #include "TTauri/all.hpp"
-
 #include <ntstatus.h>
 
-#ifdef _WIN32
 typedef UINT D3DDDI_VIDEO_PRESENT_TARGET_ID;
 
 typedef struct _D3DKMT_OPENADAPTERFROMHDC
@@ -26,7 +24,6 @@ typedef struct _D3DKMT_WAITFORVERTICALBLANKEVENT
     D3DDDI_VIDEO_PRESENT_SOURCE_ID  VidPnSourceId; // in: adapter's VidPN Source ID
 } D3DKMT_WAITFORVERTICALBLANKEVENT;
 
-
 typedef NTSTATUS(APIENTRY* PFND3DKMT_WAITFORVERTICALBLANKEVENT)(_In_ CONST D3DKMT_WAITFORVERTICALBLANKEVENT*);
 typedef NTSTATUS(APIENTRY* PFND3DKMT_OPENADAPTERFROMHDC)(_Inout_ D3DKMT_OPENADAPTERFROMHDC*);
 typedef NTSTATUS(APIENTRY* PFND3DKMT_CLOSEADAPTER)(_Inout_ D3DKMT_CLOSEADAPTER*);
@@ -34,19 +31,17 @@ typedef NTSTATUS(APIENTRY* PFND3DKMT_CLOSEADAPTER)(_Inout_ D3DKMT_CLOSEADAPTER*)
 PFND3DKMT_WAITFORVERTICALBLANKEVENT pfnD3DKMTWaitForVerticalBlankEvent;
 PFND3DKMT_OPENADAPTERFROMHDC		pfnD3DKMTOpenAdapterFromHdc;
 PFND3DKMT_CLOSEADAPTER		        pfnD3DKMTCloseAdapter;
-#endif
 
-namespace TTauri::GUI {
-
-
+namespace TTauri {
 
 using namespace std;
 using namespace gsl;
 
-VerticalSync::VerticalSync() {
-    state = VerticalSync::State::ADAPTER_CLOSED;
+VerticalSync_win32::VerticalSync_win32(std::function<void(void)> callback) :
+    callback(callback)
+{
+    state = State::ADAPTER_CLOSED;
 
-#ifdef _WIN32
     /*
      * Initialize driver hooks for D3DKMT.
      *
@@ -77,22 +72,17 @@ VerticalSync::VerticalSync() {
         abort();
     }
 
-    renderThreadID = thread(renderThread, not_null<VerticalSync*>(this));
-
-#endif
+    verticalSyncThreadID = { verticalSyncThread, this };
 }
 
-VerticalSync::~VerticalSync() {
-#ifdef _WIN32
-    stopRenderThread = true;
-    renderThreadID.join();
+VerticalSync_win32::~VerticalSync_win32() {
+    stop = true;
+    verticalSyncThreadID.join();
 
     FreeLibrary(gdi);
-#endif
 }
 
-#ifdef _WIN32
-void VerticalSync::openAdapter()
+void VerticalSync_win32::openAdapter()
 {
     // Search for primary display device.
     DISPLAY_DEVICEW dd;
@@ -109,7 +99,7 @@ void VerticalSync::openAdapter()
     HDC hdc = CreateDCW(NULL, dd.DeviceName, NULL, NULL);
     if (hdc == NULL) {
         LOG_ERROR("Could not get handle to primary display device.");
-        state = VerticalSync::State::FALLBACK;
+        state = State::FALLBACK;
         return;
     }
 
@@ -120,16 +110,16 @@ void VerticalSync::openAdapter()
     NTSTATUS status = pfnD3DKMTOpenAdapterFromHdc(&oa);
     if (status != STATUS_SUCCESS) {
         LOG_ERROR("Could not open adapter.");
-        state = VerticalSync::State::FALLBACK;
+        state = State::FALLBACK;
 
     } else {
         adapter = oa.hAdapter;
         videoPresentSourceID = oa.VidPnSourceId;
-        state = VerticalSync::State::ADAPTER_OPEN;
+        state = State::ADAPTER_OPEN;
     }
 }
 
-void VerticalSync::closeAdapter()
+void VerticalSync_win32::closeAdapter()
 {
     D3DKMT_CLOSEADAPTER ca;
 
@@ -138,19 +128,19 @@ void VerticalSync::closeAdapter()
     NTSTATUS status = pfnD3DKMTCloseAdapter(&ca);
     if (status != STATUS_SUCCESS) {
         LOG_ERROR("Could not close adapter '%s'.") % getLastErrorMessage();
-        state = VerticalSync::State::FALLBACK;
+        state = State::FALLBACK;
     } else {
-        state = VerticalSync::State::ADAPTER_CLOSED;
+        state = State::ADAPTER_CLOSED;
     }
 }
 
-void VerticalSync::waitForVSync()
+void VerticalSync_win32::wait()
 {
-    if (state == VerticalSync::State::ADAPTER_CLOSED) {
+    if (state == State::ADAPTER_CLOSED) {
         openAdapter();
     }
 
-    if (state == VerticalSync::State::ADAPTER_OPEN) {
+    if (state == State::ADAPTER_OPEN) {
         D3DKMT_WAITFORVERTICALBLANKEVENT we;
 
         we.hAdapter = adapter;
@@ -168,39 +158,23 @@ void VerticalSync::waitForVSync()
         default:
             LOG_ERROR("Failed waiting for vertical sync. '%s'") % getLastErrorMessage();
             closeAdapter();
-            state = VerticalSync::State::FALLBACK;
+            state = State::FALLBACK;
             break;
         }
     }
 
-    if (state != VerticalSync::State::ADAPTER_OPEN) {
+    if (state != State::ADAPTER_OPEN) {
         std::this_thread::sleep_for(16ms);
     }
 }
 
-void VerticalSync::renderThread(gsl::not_null<VerticalSync*> self)
+void VerticalSync_win32::verticalSyncThread(VerticalSync_win32* self)
 {
-    auto threadID = GetCurrentThread();
-    SetThreadDescription(threadID, L"TTauri::GUI Update And Render");
-
-    while (!self->stopRenderThread) {
-        auto needsCleanup = false;
-
-        self->waitForVSync();
-
-        for (auto const &window: self->windows) {
-            if (auto window_ = window.lock()) {
-                window_->updateAndRender(0, 0);
-            } else {
-                needsCleanup = true;
-            }
-        }
-
-        if (needsCleanup) {
-            self->cleanup();
-        }
+    while (!self->stop) {
+        self->wait();
+        self->callback();
     }
 }
-#endif
+
 
 }

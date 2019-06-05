@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Instance.hpp"
+#include "Instance_base.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI {
@@ -11,7 +11,7 @@ namespace TTauri::GUI {
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
  */
-class Instance_vulkan : public Instance {
+class Instance_vulkan : public Instance_base {
 protected:
     //! Vulkan instance.
     vk::Instance intrinsic;
@@ -20,7 +20,7 @@ protected:
     vk::DispatchLoaderDynamic _loader;
 
 public:
-    struct MissingRequiredExtensionsError : virtual Instance::Error {};
+    struct MissingRequiredExtensionsError : virtual Instance_base::Error {};
 
     //! List of extension that where requested when the instance was created.
     std::vector<const char *> requiredExtensions;
@@ -36,6 +36,8 @@ public:
 
     //! Application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
+
+    vk::DebugUtilsMessengerEXT debugUtilsMessager;
 
     /*! Create an instance of a Device.
      * After the constructor is completed it may be used to get a
@@ -54,8 +56,7 @@ public:
 
     void initialize() override;
 
-    vk::DispatchLoaderDynamic const &loader() const {
-        // Mutex not required, all callers that require a loader will use the const version.
+    vk::DispatchLoaderDynamic loader() const {
         return _loader;
     }
 
@@ -63,6 +64,12 @@ public:
         std::scoped_lock lock(TTauri::GUI::mutex);
         intrinsic.destroySurfaceKHR(surface);
     }
+
+    static VkBool32 debugUtilsMessageCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+        void* pUserData);
 };
 
 }

@@ -1,5 +1,5 @@
 #include "Instance_vulkan_macos.hpp"
-#include "Window_vulkan_macos.hpp"
+#include "Window.hpp"
 
 namespace TTauri {
 namespace GUI {

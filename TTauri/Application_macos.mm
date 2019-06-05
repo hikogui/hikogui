@@ -6,7 +6,7 @@
 
 namespace TTauri {
 
-Application_macos::Application_macos(const std::shared_ptr<Delegate> &delegate, int argc, const char **argv) :
+Application_macos::Application_macos(const std::shared_ptr<ApplicationDelegate> &delegate, int argc, const char **argv) :
     Application(delegate),
     argc(argc),
     argv(argv)

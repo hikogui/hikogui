@@ -145,45 +145,7 @@ inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
 }
 
 struct GetSharedCastError : virtual boost::exception, virtual std::exception {};
-
-template<typename T, typename std::enable_if_t<std::is_constructible_v<T>, int> = 0>
-inline std::shared_ptr<T> get_singleton()
-{
-    if (!T::singleton) {
-        T::singleton = std::make_shared<T>();
-    }
-
-    auto tmpCastedShared = std::dynamic_pointer_cast<T>(T::singleton);
-    if (!tmpCastedShared) {
-        BOOST_THROW_EXCEPTION(GetSharedCastError());
-    }
-
-    return tmpCastedShared;
-}
-
-template<typename T, typename std::enable_if_t<!std::is_constructible_v<T>, int> = 0>
-inline std::shared_ptr<T> get_singleton()
-{
-    auto tmpCastedShared = std::dynamic_pointer_cast<T>(T::singleton);
-    if (!tmpCastedShared) {
-        BOOST_THROW_EXCEPTION(GetSharedCastError());
-    }
-
-    return tmpCastedShared;
-}
-
 struct MakeSharedNotNull : virtual boost::exception, virtual std::exception {};
-
-template<typename T, typename... Args>
-inline decltype(auto) make_singleton(Args... args)
-{
-    if (T::singleton) {
-        BOOST_THROW_EXCEPTION(MakeSharedNotNull());
-    }
-
-    T::singleton = std::make_shared<T>(args...);
-    return T::singleton->initialize();
-}
 
 template<typename T>
 inline std::enable_if_t<!std::is_pointer_v<T>, T> middle(T begin, T end)

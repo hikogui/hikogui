@@ -6,13 +6,10 @@
 #include "PipelineImage_Image.hpp"
 #include "PipelineImage_TextureMap.hpp"
 #include "PipelineImage_Page.hpp"
+#include "Device_forward.hpp"
 #include "TTauri/Draw/all.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
-
-namespace TTauri::GUI {
-class Device_vulkan;
-}
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -28,7 +25,7 @@ struct DeviceShared final {
     static const size_t stagingImageWidth = 2048;
     static const size_t stagingImageHeight = 1024;
 
-    std::weak_ptr<Device_vulkan> device;
+    std::weak_ptr<Device> device;
 
     vk::Buffer indexBuffer;
     VmaAllocation indexBufferAllocation = {};
@@ -87,7 +84,11 @@ struct DeviceShared final {
      * \param key of the image.
      * \param extent of the image.
      */
-    void exchangeImage(std::shared_ptr<Image> &image, const std::string &key, const u64extent2 extent);
+    void exchangeImage(std::shared_ptr<Image>& image, const std::string& key, const u64extent2 extent);
+
+    void exchangeImage(std::shared_ptr<Image>& image, const std::string& key, const extent2 extent) {
+        return exchangeImage(image, key, u64extent2{extent.width(), extent.height()});
+    }
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 

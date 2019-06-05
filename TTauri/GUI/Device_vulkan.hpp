@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Device.hpp"
+#include "Device_base.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
@@ -11,7 +11,7 @@
 
 namespace TTauri::GUI {
 
-class Device_vulkan : public Device {
+class Device_vulkan final : public Device_base {
 protected:
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
@@ -69,6 +69,9 @@ public:
 
     void initializeDevice(std::shared_ptr<Window> window) override;
 
+
+    int score(vk::SurfaceKHR surface);
+
     int score(std::shared_ptr<Window> window) override;
 
     /*! Find the minimum number of queue families to instantiate for a window.
@@ -78,7 +81,7 @@ public:
      * It is possible this method returns an incomplete queue family set. For
      * example without Present.
      */
-    std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(std::shared_ptr<Window> window);
+    std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(vk::SurfaceKHR surface);
 
     std::pair<vk::Buffer, VmaAllocation> createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo);
 

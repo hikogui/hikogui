@@ -21,10 +21,8 @@ struct Fonts {
             return i->second;
         }
     }
-
-    /*! The shared fonts / singleton.
-     */
-    static std::shared_ptr<Fonts> singleton;
 };
+
+extern std::unique_ptr<Fonts> fonts;
 
 }

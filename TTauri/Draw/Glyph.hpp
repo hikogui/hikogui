@@ -15,11 +15,15 @@ namespace TTauri::Draw {
 
 
 struct Glyph {
+    // Glyph is valid when completely parsed by font parser.
+    bool valid;
+
     rect2 boundingBox;
     float leftSideBearing;
     float rightSideBearing;
     float advanceWidth;
-    size_t numberOfGraphemes;
+    size_t numberOfGraphemes = 1;
+    size_t useMetricsOfGlyph = std::numeric_limits<size_t>::max();
 
     std::vector<BezierPoint> points;
     std::vector<size_t> endPoints;
@@ -41,6 +45,15 @@ struct Glyph {
     std::vector<QBezier> getContour(size_t contourNr) const {
         let contourPoints = getPointsOfContour(contourNr);
         return QBezier::getContour(contourPoints);
+    }
+
+    void addSubGlyph(Glyph const &other, glm::mat2x2 scale, glm::vec2 offset) {
+        for (let endPoint: other.endPoints) {
+            endPoints.push_back(endPoint + points.size());
+        }
+        for (let point: other.points) {
+            points.push_back(point * scale + offset);
+        }
     }
 };
 

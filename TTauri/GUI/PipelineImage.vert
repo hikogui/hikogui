@@ -9,8 +9,8 @@ layout(push_constant) uniform PushConstants {
 } pushConstants;
 
 layout(location = 0) in vec2 inPosition;
-layout(location = 1) in uvec2 inClippingRectangleOffset;
-layout(location = 2) in uvec2 inClippingRectangleExtent;
+layout(location = 1) in vec2 inClippingRectangleOffset;
+layout(location = 2) in vec2 inClippingRectangleExtent;
 layout(location = 3) in uvec3 inAtlasPosition;
 layout(location = 4) in uint inDepth;
 layout(location = 5) in uint inAlpha;

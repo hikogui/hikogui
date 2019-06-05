@@ -2,10 +2,10 @@
 // All rights reserved.
 
 #include "Device_vulkan.hpp"
-#include "Instance_vulkan.hpp"
+#include "Instance.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
-#include "Window_vulkan.hpp"
+#include "Window.hpp"
 #include "TTauri/all.hpp"
 #include <gsl/gsl>
 #include <boost/interprocess/file_mapping.hpp>
@@ -107,10 +107,10 @@ static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const 
 }
 
 Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
-    Device(),
+    Device_base(),
     physicalIntrinsic(std::move(physicalDevice))
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(get_singleton<Instance_vulkan>()->loader());
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(instance->loader());
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
@@ -177,7 +177,7 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
         boost::numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         boost::numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-        &(get_singleton<Instance_vulkan>()->requiredFeatures)
+        &(instance->requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
@@ -215,18 +215,13 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
 
     imagePipeline = TTauri::make_shared<PipelineImage::DeviceShared>(dynamic_pointer_cast<Device_vulkan>(shared_from_this()));
 
-    Device::initializeDevice(window);
+    Device_base::initializeDevice(window);
 }
 
 
-std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(std::shared_ptr<Window> _window)
+std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface)
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
-
-    auto window = std::dynamic_pointer_cast<Window_vulkan>(_window);
-    if (!window) {
-        BOOST_THROW_EXCEPTION(NonVulkanWindowError());
-    }
 
     LOG_INFO(" - Scoring QueueFamilies");
 
@@ -239,7 +234,7 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
             if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eGraphics) {
                 capabilities |= QUEUE_CAPABILITY_GRAPHICS;
             }
-            if (physicalIntrinsic.getSurfaceSupportKHR(index, window->intrinsic)) {
+            if (physicalIntrinsic.getSurfaceSupportKHR(index, surface)) {
                 capabilities |= QUEUE_CAPABILITY_PRESENT;
             }
             if (queueFamilyProperties.queueFlags & vk::QueueFlagBits::eCompute) {
@@ -276,22 +271,21 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
     return queueFamilyIndicesAndQueueCapabilitiess;
 }
 
-int Device_vulkan::score(std::shared_ptr<Window> _window)
+int Device_vulkan::score(vk::SurfaceKHR surface)
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
-    auto window = std::dynamic_pointer_cast<Window_vulkan>(_window);
-    if (!window) {
-        BOOST_THROW_EXCEPTION(NonVulkanWindowError());
-    }
+    auto formats = physicalIntrinsic.getSurfaceFormatsKHR(surface);
+    auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
+    queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: %s") % str();
-    if (!hasRequiredFeatures(physicalIntrinsic, get_singleton<Instance_vulkan>()->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, instance->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, get_singleton<Instance_vulkan>()->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, instance->requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -301,7 +295,6 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
         return -1;
     }
 
-    queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(window);
     uint8_t deviceCapabilities = 0;
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
@@ -320,7 +313,6 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
     // Give score based on colour quality.
     LOG_INFO(" - Surface formats:");
     uint32_t bestSurfaceFormatScore = 0;
-    auto formats = physicalIntrinsic.getSurfaceFormatsKHR(window->intrinsic);
     for (auto format : formats) {
         uint32_t score = 0;
 
@@ -356,7 +348,6 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
 
     LOG_INFO(" - Surface present modes:");
     uint32_t bestSurfacePresentModeScore = 0;
-    auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(window->intrinsic);
     for (auto const &presentMode : presentModes) {
         uint32_t score = 0;
 
@@ -394,6 +385,13 @@ int Device_vulkan::score(std::shared_ptr<Window> _window)
     }
 
     return totalScore;
+}
+
+int Device_vulkan::score(std::shared_ptr<Window> window) {
+    auto surface = window->getSurface();
+    let s = score(surface);
+    instance->destroySurfaceKHR(surface);
+    return s;
 }
 
 std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo)

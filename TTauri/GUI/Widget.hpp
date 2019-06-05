@@ -4,15 +4,14 @@
 #pragma once
 
 #include "PipelineImage_Delegate.hpp"
+#include "BoxModel.hpp"
+#include "Window_forward.hpp"
 #include "TTauri/all.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
 
 namespace TTauri::GUI {
-
-class Window;
-class Instance;
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -28,10 +27,10 @@ public:
 
     std::vector<std::shared_ptr<Widget>> children;
 
-    //! Location of the frame compared to the parent-frame.
-    glm::vec2 position = { 0.0, 0.0 };
+    //! Location of the frame compared to the window.
+    BoxModel box;
+
     size_t depth = 0;
-    u64extent2 extent = { 0, 0 };
 
     /*! Constructor for creating subviews.
      */
@@ -44,7 +43,6 @@ public:
     Widget &operator=(Widget &&) = delete;
 
     virtual void setParent(const std::shared_ptr<Widget> &parent);
-    virtual void setRectangle(glm::vec2 position, u64extent2 extent);
 
     virtual void add(std::shared_ptr<Widget> widget);
 

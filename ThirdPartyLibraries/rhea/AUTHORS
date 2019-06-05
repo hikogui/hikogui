@@ -1,0 +1,21 @@
+
+Developers:
+  Nocte <nocte@hippie.nu>
+
+Documentation:
+  Russell Keith-Magee <russell@keith-magee.com>
+
+Contributors:
+  Håvard Fossli <hfossli@gmail.com>
+  Juan Pedro Bolívar Puuente <jbo@ableton.com>
+
+
+This library is based on the Cassowary Constraint Solving Toolkit,
+implemented by:
+
+  Greg J. Badros <gjb@cs.washington.edu> and
+  Alan Borning <borning@cs.washington.edu>
+  University of Washington
+  Computer Science and Engineering
+  Seattle, WA 98195-2350
+

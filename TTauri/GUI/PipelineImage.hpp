@@ -7,13 +7,10 @@
 #include "PipelineImage_PushConstants.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "globals.hpp"
+#include "Device_forward.hpp"
 #include "TTauri/all.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
-
-namespace TTauri::GUI {
-class Device_vulkan;
-}
 
 namespace TTauri::GUI::PipelineImage {
 

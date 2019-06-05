@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Pipeline.hpp"
+#include "Pipeline_base.hpp"
 #include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 #include <filesystem>
@@ -12,7 +12,7 @@
 
 namespace TTauri::GUI {
 
-class Pipeline_vulkan : public Pipeline {
+class Pipeline_vulkan : public Pipeline_base {
 public:
     struct NonVulkanWindowError : virtual Error {};
 
@@ -37,7 +37,7 @@ public:
      *
      * \param reset Also reset the command buffer to release resources associated with them.
      */
-    void invalidateCommandBuffers(bool reset);
+    void invalidateCommandBuffers();
 
     /*! Validate/create a command buffer.
      *
@@ -45,13 +45,13 @@ public:
      */
     void validateCommandBuffer(uint32_t imageIndex);
 
-    void buildForDeviceChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
-
-    void teardownForDeviceChange();
-
-    void buildForSwapchainChange(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
-
-    void teardownForSwapchainChange();
+    void buildForNewDevice();
+    void teardownForDeviceLost();
+    void buildForNewSurface();
+    void teardownForSurfaceLost();
+    void buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
+    void teardownForSwapchainLost();
+    void teardownForWindowLost();
 
 protected:
     struct FrameBufferObjects {

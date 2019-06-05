@@ -3,13 +3,11 @@
 
 #pragma once;
 
+#include "Device_forward.hpp"
 #include "TTauri/Draw/all.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI {
-class Device_vulkan;
-}
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -20,7 +18,7 @@ struct TextureMap {
     TTauri::Draw::PixelMap<uint32_t> pixelMap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
-    void transitionLayout(const Device_vulkan &device, vk::Format format, vk::ImageLayout nextLayout);
+    void transitionLayout(const Device &device, vk::Format format, vk::ImageLayout nextLayout);
 };
 
 }

@@ -34,20 +34,20 @@ set(TTauri_srcs
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
     GUI/globals.cpp
-    GUI/VerticalSync.cpp
-    GUI/Device.cpp
+    GUI/Device_base.cpp
     GUI/Device_vulkan.cpp
-    GUI/Instance.cpp
+    GUI/Instance_base.cpp
     GUI/Instance_vulkan.cpp
     GUI/Instance_vulkan_win32.cpp
-    GUI/Pipeline.cpp
+    GUI/Instance.cpp
+    GUI/Pipeline_base.cpp
     GUI/Pipeline_vulkan.cpp
     GUI/PipelineImage.cpp
     GUI/PipelineImage_DeviceShared.cpp
     GUI/PipelineImage_Image.cpp
     GUI/PipelineImage_TextureMap.cpp
     GUI/VulkanMemoryAllocator.cpp
-    GUI/Window.cpp
+    GUI/Window_base.cpp
     GUI/Window_vulkan.cpp
     GUI/Window_vulkan_win32.cpp
     GUI/Widget.cpp
@@ -55,7 +55,9 @@ set(TTauri_srcs
     Widgets/ImageWidget.cpp
     Widgets/ButtonWidget.cpp
     Application.cpp
+    Application_base.cpp
     Application_win32.cpp
+    VerticalSync_win32.cpp
     logging.cpp
     File.cpp
     FileMapping.cpp
@@ -71,7 +73,7 @@ endif()
 
 
 add_library(TTauri STATIC ${TTauri_srcs})
-target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc)
+target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
 

@@ -28,7 +28,7 @@ void ImageWidget::drawBackingImage()
     // Draw image in the fullPixelMap.
     Draw::loadPNG(fullPixelMap, path);
 
-    let myFont = get_singleton<Draw::Fonts>()->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let myFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let glyphIndex = myFont.characterMap.at('g');
     let glyph = myFont.glyphs.at(glyphIndex);
 
@@ -53,27 +53,23 @@ void ImageWidget::drawBackingImage()
 
 void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset)
 {
-    auto key = (boost::format("ImageView(%i,%i,%s)") % extent.x % extent.y % path).str();
+    auto key = (boost::format("ImageView(%i,%i,%s)") % box.width.value() % box.height.value() % path).str();
 
     auto vulkanDevice = device<GUI::Device_vulkan>();
 
     // backingImage keeps track of use count.
-    vulkanDevice->imagePipeline->exchangeImage(backingImage, key, extent);
+    vulkanDevice->imagePipeline->exchangeImage(backingImage, key, box.currentExtent());
     drawBackingImage();
 
     //rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);
 
     GUI::PipelineImage::ImageLocation location;
-    location.position = position;
     location.depth = depth + 0.0;
     location.origin = {backingImage->extent.x * 0.5, backingImage->extent.y * 0.5};
-    location.position = position + location.origin;
+    location.position = box.currentPosition() + location.origin;
     location.rotation = rotation;
     location.alpha = 1.0;
-    location.clippingRectangle = {
-        {position.x, position.y},
-        extent - u64vec2(10, 10)
-    };
+    location.clippingRectangle = box.currentRectangle();
 
     backingImage->placeVertices(location, vertices, offset);
 }

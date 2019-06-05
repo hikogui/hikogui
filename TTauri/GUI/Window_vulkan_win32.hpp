@@ -9,11 +9,11 @@
 
 namespace TTauri::GUI {
 
-class Window_vulkan_win32 : public Window_vulkan {
+class Window_vulkan_win32 final : public Window_vulkan {
 public:
     HWND win32Window = nullptr;
 
-    Window_vulkan_win32(const std::shared_ptr<Delegate> delegate, const std::string title);
+    Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan_win32();
 
     Window_vulkan_win32(const Window_vulkan_win32 &) = delete;
@@ -26,7 +26,7 @@ public:
     void openingWindow() override;
     void mainThreadOpeningWindow();
 
-    vk::SurfaceKHR Window_vulkan_win32::createWindow(const std::string &title);
+    void Window_vulkan_win32::createWindow(const std::string &title);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();
@@ -37,7 +37,9 @@ public:
     static std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
+    vk::SurfaceKHR getSurface() override;
 private:
+
     static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 }

@@ -5,6 +5,6 @@
 
 namespace TTauri::Draw {
 
-std::shared_ptr<Fonts> Fonts::singleton;
+extern std::unique_ptr<Fonts> fonts{};
 
 }

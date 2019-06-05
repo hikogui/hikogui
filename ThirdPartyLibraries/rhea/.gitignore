@@ -1,0 +1,38 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Backup files
+*~
+*.bak
+*.log
+.*.sw[a-z]
+\#*\#
+.\#*
+*.tmp
+
+# CMake cruft
+/build/
+CMakeFiles
+Makefile
+*.cmake
+CMakeCache.txt
+CMakeLists.txt.user
+CMakeLists.txt.user.*
+tags
+*.json
+.excludes
+krb5doxy.tag
+
+# Generated headers
+rhea/version.hpp

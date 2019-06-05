@@ -18,12 +18,6 @@ void Widget::setParent(const std::shared_ptr<Widget> &parent)
     this->parent = move(parent);
 }
 
-void Widget::setRectangle(glm::vec2 position, u64extent2 extent)
-{
-    this->position = position;
-    this->extent = extent;
-}
-
 void Widget::add(std::shared_ptr<Widget> widget)
 {
     widget->setParent(shared_from_this());

@@ -20,6 +20,14 @@ struct BezierPoint {
         return (p == other.p) && (onCurve == other.onCurve);
     }
 
+    BezierPoint operator*(glm::mat2x2 scale) const {
+        return { p * scale, onCurve };
+    }
+
+    BezierPoint operator+(glm::vec2 offset) const {
+        return { p + offset, onCurve };
+    }
+
     BezierPoint transform(glm::vec2 position, float scale = 1.0f, float rotate = 0.0f) const {
         let newP = glm::rotate(p * scale, rotate) + position;
         return { newP, onCurve };

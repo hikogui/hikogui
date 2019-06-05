@@ -17,6 +17,8 @@ struct extent<2, T, Q> : public glm::vec<2, T, Q> {
     constexpr extent() : glm::vec<2, T, Q>() {}
     constexpr extent(glm::vec<2, T, Q> const &other) : glm::vec<2, T, Q>(other) {}
     constexpr extent(T width, T height) : glm::vec<2, T, Q>(width, height) {}
+    constexpr extent(double width, double height) : glm::vec<2, T, Q>(width, height) {}
+    constexpr extent(uint32_t width, uint32_t height) : glm::vec<2, T, Q>(width, height) {}
 
     constexpr T width() const { return this->x; }
     constexpr T height() const { return this->y; }
@@ -41,9 +43,17 @@ struct rect {
     bool operator==(const rect<S, T, Q> &other) {
         return offset == other.offset && extent == other.extent;
     }
+
 };
 
-
+using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
+using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
+using u64vec2 = glm::vec<2, uint64_t, glm::defaultp>;
+using u64extent2 = extent<2, uint64_t, glm::defaultp>;
+using extent2 = extent<2, float, glm::defaultp>;
+using u16rect2 = rect<2, uint16_t, glm::defaultp>;
+using u64rect2 = rect<2, uint64_t, glm::defaultp>;
+using rect2 = rect<2, float, glm::defaultp>;
 
 template<typename T, typename U>
 inline T rect2_cast(U other)
@@ -56,24 +66,23 @@ inline T rect2_cast(U other)
     }, {
         boost::numeric_cast<decltype(r.extent.x)>(other.extent.x),
         boost::numeric_cast<decltype(r.extent.y)>(other.extent.y)
-    }};;
+    } };;
 }
 
 inline glm::vec2 midpoint(glm::vec2 a, glm::vec2 b) {
-    return { (a.x + b.x) * 0.5f, (a.y + b.y) * 0.5f };
+    return (a + b) * 0.5f;
 }
 
-using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
-using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
-using u64vec2 = glm::vec<2, uint64_t, glm::defaultp>;
-using u64extent2 = extent<2, uint64_t, glm::defaultp>;
-using extent2 = extent<2, float, glm::defaultp>;
-using u16rect2 = rect<2, uint16_t, glm::defaultp>;
-using u64rect2 = rect<2, uint64_t, glm::defaultp>;
-using rect2 = rect<2, float, glm::defaultp>;
+inline glm::vec2 midpoint(rect2 r) {
+    return midpoint(r.offset, r.offset + r.extent);
+}
 
 inline float viktorCross(glm::vec2 const a, glm::vec2 const b) {
     return a.x* b.y - a.y * b.x;
+}
+
+inline glm::vec2 normal(glm::vec2 const a) {
+    return glm::normalize(glm::vec2{-a.y, a.x});
 }
 
 }
