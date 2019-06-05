@@ -137,9 +137,6 @@ void Window_vulkan::build()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    if (state == State::NO_WINDOW) {
-    }
-
     if (state == State::NO_DEVICE) {
         if (!device.expired()) {
             imagePipeline->buildForNewDevice();
@@ -187,6 +184,7 @@ void Window_vulkan::build()
 void Window_vulkan::teardown()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
+    auto nextState = state;
 
     if (state >= State::SWAPCHAIN_LOST) {
         waitIdle();
@@ -195,33 +193,36 @@ void Window_vulkan::teardown()
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-    }
-    if (state >= State::SURFACE_LOST) {
-        imagePipeline->teardownForSurfaceLost();
-        teardownSurface();
-    }
-    if (state >= State::DEVICE_LOST) {
-        imagePipeline->teardownForDeviceLost();
-        teardownDevice();
-    }
-    if (state >= State::WINDOW_LOST) {
-        imagePipeline->teardownForWindowLost();
-        teardownWindow();
-    }
+        nextState = State::NO_SWAPCHAIN;
 
-    switch (state) {
-    case State::WINDOW_LOST: state = State::NO_WINDOW; break;
-    case State::DEVICE_LOST: state = State::NO_DEVICE; break;
-    case State::SURFACE_LOST: state = State::NO_SURFACE; break;
-    case State::SWAPCHAIN_LOST: state = State::NO_SWAPCHAIN; break;
+        if (state >= State::SURFACE_LOST) {
+            imagePipeline->teardownForSurfaceLost();
+            teardownSurface();
+            nextState = State::NO_SURFACE;
+
+            if (state >= State::DEVICE_LOST) {
+                imagePipeline->teardownForDeviceLost();
+                teardownDevice();
+                nextState = State::NO_DEVICE;
+
+                if (state >= State::WINDOW_LOST) {
+                    imagePipeline->teardownForWindowLost();
+                    // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
+                    closingWindow();
+                }
+            }
+        }
     }
+    state = nextState;
 }
 
 void Window_vulkan::render()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    rebuild();
+    // Teardown then buildup from the vulkan objects that where invalid.
+    teardown();
+    build();
 
     if (state != State::READY_TO_RENDER) {
         return;
@@ -250,6 +251,9 @@ void Window_vulkan::render()
     vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     presentImageToQueue(imageIndex.value(), renderFinishedSemaphore);
+
+    // Do an early teardown of invalid vulkan objects.
+    teardown();
 }
 
 std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
@@ -535,11 +539,6 @@ void Window_vulkan::teardownSurface()
 void Window_vulkan::teardownDevice()
 {
     device.reset();
-}
-
-void Window_vulkan::teardownWindow()
-{
-    closingWindow();
 }
 
 }

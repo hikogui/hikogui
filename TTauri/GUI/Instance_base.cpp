@@ -56,7 +56,7 @@ size_t Instance_base::getNumberOfWindows()
 
     size_t numberOfWindows = 0;
     for (const auto &device: devices) {
-        numberOfWindows+= device->windows.size();
+        numberOfWindows+= device->getNumberOfWindows();
     }
 
     return numberOfWindows;

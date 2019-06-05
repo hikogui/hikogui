@@ -59,13 +59,21 @@ public:
      */
     virtual void initializeDevice(std::shared_ptr<Window> window);
 
+    size_t getNumberOfWindows() const {
+        return windows.size();
+    }
+
     void add(std::shared_ptr<Window> window);
 
     void remove(std::shared_ptr<Window> window);
 
-    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp) {
+    void render() {
         for (auto &window: windows) {
-            window->updateAndRender(nowTimestamp, outputTimestamp);
+            window->render();
+
+            if (window->isClosed()) {
+                remove(window);
+            }
         }
     }
 };

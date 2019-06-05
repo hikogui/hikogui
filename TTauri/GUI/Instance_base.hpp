@@ -27,6 +27,11 @@ public:
     //! List of all devices.
     std::vector<std::shared_ptr<Device>> devices;
 
+    /*! Keep track of the numberOfWindows in the previous render cycle.
+     * This way we can call closedLastWindow on the application once.
+     */
+    size_t previousNumberOfWindows = 0;
+
     Instance_base() {}
     virtual ~Instance_base() {}
 
@@ -51,10 +56,15 @@ public:
      */
     virtual void createWindow(std::shared_ptr<GUI::WindowDelegate> windowDelegate, const std::string &title) = 0;
 
-    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp) {
+    void render() {
         for (auto &device: devices) {
-            device->updateAndRender(nowTimestamp, outputTimestamp);
+            device->render();
         }
+        let currentNumberOfWindows = getNumberOfWindows();
+        if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
+            application->lastWindowClosed();
+        }
+        previousNumberOfWindows = currentNumberOfWindows;
     }
 
 protected:

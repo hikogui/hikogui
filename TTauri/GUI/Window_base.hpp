@@ -23,7 +23,8 @@ namespace TTauri::GUI {
 class Window_base : public std::enable_shared_from_this<Window_base> {
 public:
     enum class State {
-        NO_WINDOW, //!< The window was destroyed.
+        INITIALIZING, //!< The window has not been initialized yet.
+        NO_WINDOW, //!< The window was destroyed, the device will drop the window on the next render cycle.
         NO_DEVICE, //!< No device is associated with the Window and can therefor not be rendered on.
         NO_SURFACE, //!< Need to request a new surface before building a swapchain
         NO_SWAPCHAIN, //! Need to request a swapchain before rendering.
@@ -82,12 +83,6 @@ public:
 
     virtual void initialize();
 
-    //bool hasLostSurface() { return state == State::SURFACE_LOST; }
-    //bool hasLostDevice() { return state == State::DEVICE_LOST; }
-    virtual void openingWindow();
-    virtual void closingWindow();
-
-
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
@@ -99,15 +94,13 @@ public:
 
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
-     * This may be called on a low latency thread, it is careful to not block on operations.
-     *
-     * blockOnVSync should only be called on the first window in the system. This allows a
-     * non-vsync thread to call this method with minimal CPU usage.
-     *
-     * \param outTimestamp Number of nanoseconds since system start.
-     * \param outputTimestamp Number of nanoseconds since system start until the frame will be displayed on the screen.
      */
-    void updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp);
+    virtual void render() = 0;
+
+    bool isClosed() {
+        std::scoped_lock lock(TTauri::GUI::mutex);
+        return state == State::NO_WINDOW;
+    }
 
     BoxModel &box() {
         return widget->box;
@@ -126,7 +119,15 @@ protected:
 
     virtual void windowChangedSize(u64extent2 extent);
 
-    virtual void render() = 0;
+
+    /*! call openingWindow() on the delegate. 
+     */
+    virtual void openingWindow();
+
+    /*! call closingWindow() on the delegate.
+     */
+    virtual void closingWindow();
+
 
     /*! Teardown Window based on State::*_LOST
      */
@@ -135,11 +136,6 @@ protected:
     /*! Build Windows based on State::NO_*
      */
     virtual void build() = 0;
-
-    void rebuild() {
-        teardown();
-        build();
-    }
 
 private:
     bool isOnScreen();

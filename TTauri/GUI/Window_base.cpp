@@ -13,7 +13,7 @@ namespace TTauri::GUI {
 using namespace std;
 
 Window_base::Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    state(State::NO_DEVICE),
+    state(State::INITIALIZING),
     delegate(move(delegate)),
     title(move(title))
 {
@@ -23,8 +23,8 @@ Window_base::~Window_base()
 {
     try {
         [[gsl::suppress(f.6)]] {
-            if (state != State::NO_DEVICE || !this->device.expired()) {
-                LOG_FATAL("Device was associated with Window '%s' during destruction of the Window.") % title;
+            if (state != State::NO_WINDOW) {
+                LOG_FATAL("Window was not properly teardown before destruction.") % title;
                 abort();
             }
             LOG_INFO("Window '%s' has been propertly destructed.") % title;
@@ -45,18 +45,17 @@ void Window_base::initialize()
 }
 
 void Window_base::openingWindow() {
-    delegate->openingWindow(dynamic_cast<Window &>(*this));
+    Window *thisWindow = dynamic_cast<Window *>(this);
+    assert(thisWindow);
+    delegate->openingWindow(*thisWindow);
+    state = State::NO_DEVICE;
 }
 
 void Window_base::closingWindow() {
-    delegate->closingWindow(dynamic_cast<Window&>(*this));
-}
-
-void Window_base::updateAndRender(uint64_t nowTimestamp, uint64_t outputTimestamp)
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    render();
+    Window* thisWindow = dynamic_cast<Window*>(this);
+    assert(thisWindow);
+    delegate->closingWindow(*thisWindow);
+    state = State::NO_WINDOW;
 }
 
 void Window_base::setDevice(const std::weak_ptr<Device> newDevice)

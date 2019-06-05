@@ -19,6 +19,9 @@ protected:
     //! Vulkan dynamic loader of library functions.
     vk::DispatchLoaderDynamic _loader;
 
+    bool stopDebugUtilsMessagerLogging = false;
+    vk::DebugUtilsMessengerEXT debugUtilsMessager;
+
 public:
     struct MissingRequiredExtensionsError : virtual Instance_base::Error {};
 
@@ -37,8 +40,6 @@ public:
     //! Application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
-    vk::DebugUtilsMessengerEXT debugUtilsMessager;
-
     /*! Create an instance of a Device.
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
@@ -47,7 +48,7 @@ public:
      *      for including operating system specific surface extensions.
      */
     Instance_vulkan(const std::vector<const char *> extensions);
-    ~Instance_vulkan() {}
+    ~Instance_vulkan();
 
     Instance_vulkan(const Instance_vulkan &) = delete;
     Instance_vulkan &operator=(const Instance_vulkan &) = delete;

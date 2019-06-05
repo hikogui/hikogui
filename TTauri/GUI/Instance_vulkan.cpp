@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "Instance_vulkan.hpp"
+#include "Instance.hpp"
 #include "Device.hpp"
 #include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
@@ -73,6 +74,17 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
     
 }
 
+Instance_vulkan::~Instance_vulkan()
+{
+#if defined(_WIN32) && !defined(NDEBUG)
+    // Boost loggin may get destroyed before Instance gets destroyed,
+    // therefor stop sending data to the log now, but still allow abort() to
+    // be called on warning or error.
+    stopDebugUtilsMessagerLogging = true;
+    intrinsic.destroy(debugUtilsMessager, nullptr, loader());
+#endif
+}
+
 void Instance_vulkan::initialize()
 {
     scoped_lock lock(TTauri::GUI::mutex);
@@ -89,7 +101,8 @@ void Instance_vulkan::initialize()
         vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
         vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
         vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-        debugUtilsMessageCallback
+        debugUtilsMessageCallback,
+        this
     }, nullptr, loader());
 #endif
 
@@ -105,19 +118,28 @@ VkBool32 Instance_vulkan::debugUtilsMessageCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData)
 {
+    auto self = reinterpret_cast<Instance *>(pUserData);
 
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
-        LOG_DEBUG("Vulkan: %s") % pCallbackData->pMessage;
+        if (!self->stopDebugUtilsMessagerLogging) {
+            LOG_DEBUG("Vulkan: %s") % pCallbackData->pMessage;
+        }
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        LOG_INFO("Vulkan: %s") % pCallbackData->pMessage;
+        if (!self->stopDebugUtilsMessagerLogging) {
+            LOG_INFO("Vulkan: %s") % pCallbackData->pMessage;
+        }
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
-        LOG_WARNING("Vulkan: %s") % pCallbackData->pMessage;
+        if (!self->stopDebugUtilsMessagerLogging) {
+            LOG_WARNING("Vulkan: %s") % pCallbackData->pMessage;
+        }
         std::terminate();
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-        LOG_ERROR("Vulkan: %s") % pCallbackData->pMessage;
+        if (!self->stopDebugUtilsMessagerLogging) {
+            LOG_ERROR("Vulkan: %s") % pCallbackData->pMessage;
+        }
         std::terminate();
     }
 

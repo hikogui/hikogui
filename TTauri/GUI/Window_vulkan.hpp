@@ -39,9 +39,9 @@ public:
     Window_vulkan &operator=(Window_vulkan &&) = delete;
 
     void initialize() override;
+    void render() override;
 
 protected:
-    void render() override;
     void teardown() override;
     void build() override;
 
@@ -70,7 +70,6 @@ private:
     bool buildSurface();
     void teardownSurface();
     void teardownDevice();
-    void teardownWindow();
 
     void waitIdle();
     std::tuple<uint32_t, vk::Extent2D> getImageCountAndExtent();

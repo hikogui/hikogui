@@ -47,7 +47,7 @@ void Application_win32::mainThreadLastWindowClosed()
 
 void Application_win32::handleVerticalSync()
 {
-    GUI::instance->updateAndRender(0, 0);
+    GUI::instance->render();
 }
 
 void Application_win32::startingLoop()
