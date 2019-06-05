@@ -19,8 +19,6 @@ namespace TTauri {
     struct NotImplementedError : virtual boost::exception, virtual std::exception {};
     struct OutOfBoundsError : virtual boost::exception, virtual std::exception {};
 
-#define let auto const
-
 #define TTAURI_ASSERT(x) if (!(x)) { abort(); }
 
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "required.hpp"
 #include "Application.hpp"
 #include "Application_win32.hpp"
 #include "Color.hpp"
