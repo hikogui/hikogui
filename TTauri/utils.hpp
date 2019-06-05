@@ -4,6 +4,7 @@
 #pragma once
 
 #include "logging.hpp"
+#include "required.hpp"
 #include <boost/throw_exception.hpp>
 #include <gsl/gsl>
 #include <cstddef>
@@ -86,9 +87,23 @@ inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset=0)
     return gsl::span<T>(ptr, count);
 }
 
-inline constexpr size_t align(size_t offset, size_t alignment) 
+template<typename R, typename T>
+inline R align(T ptr, size_t alignment) 
 {
-    return ((offset + alignment - 1) / alignment) * alignment;
+    let byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
+    let alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;
+    return reinterpret_cast<R>(alignedByteOffset);
+}
+
+/*! Align an end iterator.
+ * This lowers the end interator so that it the last read is can be done fully.
+ */
+template<typename R, typename T>
+inline R align_end(T ptr, size_t alignment)
+{
+    let byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
+    let alignedByteOffset = (byteOffset / alignment) * alignment;
+    return reinterpret_cast<R>(alignedByteOffset);
 }
 
 inline constexpr uint32_t fourcc(char *txt)
@@ -187,7 +202,7 @@ inline T transform(const U &input, F operation)
 template<typename T, size_t N, typename F>
 constexpr std::array<T, N> generate_array(F operation)
 {
-    std::array<T, N> a;
+    std::array<T, N> a{};
 
     for (size_t i = 0; i < N; i++) {
         a[i] = operation(i);

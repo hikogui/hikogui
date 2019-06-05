@@ -46,13 +46,13 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
 
     auto vulkanDevice = device<GUI::Device_vulkan>();
 
-    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
-    pixelMap.fill({ {0.0f, 0.0f, 0.0f, 1.0f} });
+    auto linearMap = Draw::PixelMap<uint64_t>{image.extent};
+    linearMap.fill(0x0000'0000'0000'ffffULL);
 
     // Draw something.
     let backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.2f, 0.2f, 0.2f, 1.0f} });
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-    let labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let &labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
     let labelFontSize = 12.0;
 
@@ -62,12 +62,14 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
 
     auto buttonBackgroundMask = Draw::Path();
     buttonBackgroundMask.addRectangle(rect, backgroundShape);
-    buttonBackgroundMask.render(pixelMap, backgroundColor, Draw::SubpixelMask::Orientation::RedLeft);
+    buttonBackgroundMask.render(linearMap, backgroundColor, Draw::SubpixelMask::Orientation::RedLeft);
 
     auto textMask = Draw::Path();
     textMask.addText(label, labelFont, labelLocation, labelFontSize, 0.0f, Draw::HorizontalAlignment::Center);
-    textMask.render(pixelMap, labelColor, Draw::SubpixelMask::Orientation::RedLeft);
+    textMask.render(linearMap, labelColor, Draw::SubpixelMask::Orientation::RedLeft);
 
+    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
+    copyLinearToGamma(pixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
     image.drawn = true;
 }

@@ -22,6 +22,6 @@ struct PNGLibraryError : virtual PNGError {};
  *
  * \return A pixelMap the size of the actual PNG file, a submap() from pixelMap.
  */
-PixelMap<uint32_t> loadPNG(const PixelMap<uint32_t> &pixelMap, const std::filesystem::path &path);
+PixelMap<uint64_t> loadPNG(const PixelMap<uint64_t> &pixelMap, const std::filesystem::path &path);
 
 }

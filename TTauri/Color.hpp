@@ -78,10 +78,35 @@ struct Color {
 
     uint32_t toUInt32() const {
         return (
-            (static_cast<uint32_t>(std::clamp(value.r, 0.0f, 1.0f) * 255.0) << 24) |
-            (static_cast<uint32_t>(std::clamp(value.g, 0.0f, 1.0f) * 255.0) << 16) |
-            (static_cast<uint32_t>(std::clamp(value.b, 0.0f, 1.0f) * 255.0) << 8) |
-            static_cast<uint32_t>(std::clamp(value.a, 0.0f, 1.0f) * 255.0)
+            (static_cast<uint32_t>(std::clamp(value.r, 0.0f, 1.0f) * 255.0f) << 24) |
+            (static_cast<uint32_t>(std::clamp(value.g, 0.0f, 1.0f) * 255.0f) << 16) |
+            (static_cast<uint32_t>(std::clamp(value.b, 0.0f, 1.0f) * 255.0f) << 8) |
+            static_cast<uint32_t>(std::clamp(value.a, 0.0f, 1.0f) * 255.0f)
+        );
+    }
+
+    uint64_t toUInt64() const {
+        return (
+            (static_cast<uint64_t>(std::clamp(value.r, 0.0f, 1.0f) * 65535.0f) << 48) |
+            (static_cast<uint64_t>(std::clamp(value.g, 0.0f, 1.0f) * 65535.0f) << 32) |
+            (static_cast<uint64_t>(std::clamp(value.b, 0.0f, 1.0f) * 65535.0f) << 16) |
+            static_cast<uint64_t>(std::clamp(value.a, 0.0f, 1.0f) * 65535.0f)
+        );
+    }
+
+    uint64_t toUInt64PreMultipliedAlpha() const {
+        glm::vec4 preMultiplied = {
+            value.r * value.a,
+            value.g * value.a,
+            value.b * value.a,
+            value.a
+        };
+
+        return (
+            (static_cast<uint64_t>(std::clamp(preMultiplied.r, 0.0f, 1.0f) * 65535.0f) << 48) |
+            (static_cast<uint64_t>(std::clamp(preMultiplied.g, 0.0f, 1.0f) * 65535.0f) << 32) |
+            (static_cast<uint64_t>(std::clamp(preMultiplied.b, 0.0f, 1.0f) * 65535.0f) << 16) |
+            static_cast<uint64_t>(std::clamp(preMultiplied.a, 0.0f, 1.0f) * 65535.0f)
         );
     }
 

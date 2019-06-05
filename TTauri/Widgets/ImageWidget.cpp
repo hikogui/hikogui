@@ -22,11 +22,11 @@ void ImageWidget::drawBackingImage()
 
     auto vulkanDevice = device<GUI::Device_vulkan>();
 
-    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
-    fullPixelMap.fill({{0.0f, 0.0f, 0.0f, 1.0f}});
+    auto linearMap = Draw::PixelMap<uint64_t>{ backingImage->extent };
+    linearMap.fill(0x0000'0000'0000'ffffULL);
 
     // Draw image in the fullPixelMap.
-    Draw::loadPNG(fullPixelMap, path);
+    Draw::loadPNG(linearMap, path);
 
     let myFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let glyphIndex = myFont.characterMap.at('g');
@@ -36,17 +36,18 @@ void ImageWidget::drawBackingImage()
     let color = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} });
     auto path1 = Draw::Path();
     path1.addGlyph(glyph, {20.0, 30.0}, 8.0);
-    path1.render(fullPixelMap, color , Draw::SubpixelMask::Orientation::Unknown);
+    path1.render(linearMap, color , Draw::SubpixelMask::Orientation::Unknown);
 
     auto path2 = Draw::Path();
     path2.addGlyph(glyph, { 30.0, 30.0 }, 8.0);
-    path2.render(fullPixelMap, color, Draw::SubpixelMask::Orientation::RedLeft);
+    path2.render(linearMap, color, Draw::SubpixelMask::Orientation::RedLeft);
 
     auto path3 = Draw::Path();
     path3.addGlyph(glyph, { 40.0, 30.0 }, 8.0);
-    path3.render(fullPixelMap, color, Draw::SubpixelMask::Orientation::RedRight);
+    path3.render(linearMap, color, Draw::SubpixelMask::Orientation::RedRight);
 
-
+    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
+    copyLinearToGamma(fullPixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
     backingImage->drawn = true;
 }

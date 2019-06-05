@@ -59,18 +59,49 @@ TEST(PixelMapTests, maskComposit) {
     mask[1][4] = 255;
     mask[1][5] = 255;
 
-    auto image = PixelMap<uint32_t>(3, 3);
+    auto image = PixelMap<uint64_t>(3, 3);
     image.clear();
 
-    composit(image, color_cast<Color_sRGBLinear>(Color_sRGB(0xffffffff)), mask);
+    composit(image, 0xffffffffffffffffULL, mask);
 
     ASSERT_EQ(image[0][0], 0);
     ASSERT_EQ(image[0][1], 0);
     ASSERT_EQ(image[0][2], 0);
     ASSERT_EQ(image[1][0], 0);
-    ASSERT_EQ(image[1][1], 0xffffffff);
+    ASSERT_EQ(image[1][1], 0xffffffffffffffffULL);
     ASSERT_EQ(image[1][2], 0);
     ASSERT_EQ(image[2][0], 0);
     ASSERT_EQ(image[2][1], 0);
     ASSERT_EQ(image[2][2], 0);
 }
+
+TEST(PixelMapTests, maskComposit2) {
+    auto mask = SubpixelMask(9, 3);
+    mask.clear();
+    mask[1][3] = 255;
+    mask[1][4] = 255;
+    mask[1][5] = 255;
+
+    auto image = PixelMap<uint64_t>(3, 3);
+    image.clear();
+
+    composit(image, 0x1234'5678'9abc'ffffULL, mask);
+
+    ASSERT_EQ(image[1][1], 0x1234'5678'9abc'ffffULL);
+}
+
+TEST(PixelMapTests, maskComposit3) {
+    auto mask = SubpixelMask(9, 3);
+    mask.clear();
+    mask[1][3] = 0x88;
+    mask[1][4] = 0x44;
+    mask[1][5] = 0x22;
+
+    auto image = PixelMap<uint64_t>(3, 3);
+    image.clear();
+
+    composit(image, 0xffff'ffff'ffff'ffffULL, mask);
+
+    ASSERT_EQ(image[1][1], 0x8888'4444'2222'4f4fULL);
+}
+

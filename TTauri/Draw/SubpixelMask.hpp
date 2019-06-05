@@ -79,10 +79,10 @@ struct SubpixelMask : PixelMap<uint8_t> {
         }
     }
 
-    /*! Render a sub-single pixel.
-     * Fully covered sub-pixel will have the value 51.
-     */
-    static void renderPixel(uint8_t& pixel, float start, float end);
+    static void renderFullPixels(gsl::span<uint8_t> row, size_t start, size_t size);
+
+
+    static void renderPartialPixels(gsl::span<uint8_t> row, size_t i, float const startX, float const endX);
 
     /*! Render pixels in a row between two x values.
      * Fully covered sub-pixel will have the value 51.
@@ -96,10 +96,12 @@ struct SubpixelMask : PixelMap<uint8_t> {
 
 };
 
+void composit(PixelMap<uint64_t>& under, uint64_t overColor, SubpixelMask const& mask);
+
 /*! Composit colors from the color table based on the mask onto destination.
  * Mask should be subpixelFiltered before use.
  */
-void composit(PixelMap<uint32_t>& under, Color_sRGBLinear overColor, SubpixelMask const& mask);
+void composit(PixelMap<uint64_t>& under, Color_sRGBLinear overColor, SubpixelMask const& mask);
 
 
 }

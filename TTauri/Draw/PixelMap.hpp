@@ -6,6 +6,7 @@
 #include "TTauri/all.hpp"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/color_space.hpp>
 #include <gsl/gsl>
 #include <string>
 
@@ -28,6 +29,10 @@ struct PixelMap {
     PixelMap(size_t width, size_t height) : width(width), height(height), stride(width), selfAllocated(true) {
         T *data = new T[width * height];
         pixels = {data, boost::numeric_cast<ptrdiff_t>(width * height)};
+    }
+    PixelMap(glm::u64vec2 extent) : width(extent.x), height(extent.y), stride(extent.x), selfAllocated(true) {
+        T* data = new T[width * height];
+        pixels = { data, boost::numeric_cast<ptrdiff_t>(width * height) };
     }
 
     PixelMap(gsl::span<T> pixels, size_t width, size_t height) : pixels(pixels), width(width), height(height), stride(width) {}
@@ -97,12 +102,11 @@ struct PixelMap {
 
     /*! Fill with color.
      */
-    void fill(Color_sRGB color) {
-        let pixelValue = color.writePixel();
+    void fill(T color) {
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
             let row = this->at(rowNr);
             for (size_t columnNr = 0; columnNr < width; columnNr++) {
-                row[columnNr] = pixelValue;
+                row[columnNr] = color;
             }
         }
     }
@@ -113,5 +117,11 @@ struct PixelMap {
  * interpolation near the border will work propertly.
  */
 void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
+
+/*! Copy a image with linear 16bit-per-color-component to a
+ * gamma corrected 8bit-per-color-component image.
+ */
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<uint64_t> const& src);
+
 
 }
