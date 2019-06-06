@@ -103,5 +103,11 @@ inline std::vector<float> solveCurvesXByY(std::vector<QBezier> const &v, float y
     return r;
 }
 
+/*! Render a single row of pixels.
+ * Each row needs to be rendered 5 times as slightly different heights, performing super sampling.
+ * The row needs to be cleared (set to zero) before rendering it.
+ * Fully covered sub-pixels will have the value 0xff;
+ */
+void renderRow(gsl::span<uint8_t> row, size_t rowY, std::vector<QBezier> const& curves);
 
 }

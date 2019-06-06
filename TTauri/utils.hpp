@@ -153,12 +153,6 @@ inline std::vector<std::string> split(std::string haystack, char needle)
     return r;
 }
 
-template<typename T, typename U>
-inline std::shared_ptr<T> lock_dynamic_cast(const std::weak_ptr<U> &x)
-{
-    return std::dynamic_pointer_cast<T>(x.lock());
-}
-
 struct GetSharedCastError : virtual boost::exception, virtual std::exception {};
 struct MakeSharedNotNull : virtual boost::exception, virtual std::exception {};
 

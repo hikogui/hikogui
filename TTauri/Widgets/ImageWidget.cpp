@@ -20,7 +20,7 @@ void ImageWidget::drawBackingImage()
         return;
     }
 
-    auto vulkanDevice = device<GUI::Device_vulkan>();
+    auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<uint64_t>{ backingImage->extent };
     linearMap.fill(0x0000'0000'0000'ffffULL);
@@ -56,7 +56,7 @@ void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Verte
 {
     auto key = (boost::format("ImageView(%i,%i,%s)") % box.width.value() % box.height.value() % path).str();
 
-    auto vulkanDevice = device<GUI::Device_vulkan>();
+    auto vulkanDevice = device();
 
     // backingImage keeps track of use count.
     vulkanDevice->imagePipeline->exchangeImage(backingImage, key, box.currentExtent());

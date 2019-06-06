@@ -45,15 +45,9 @@ void Application_win32::mainThreadLastWindowClosed()
     }
 }
 
-void Application_win32::handleVerticalSync()
-{
-    GUI::instance->render();
-}
-
 void Application_win32::startingLoop()
 {
     Application_base::startingLoop();
-    verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync);
 }
 
 int Application_win32::loop()

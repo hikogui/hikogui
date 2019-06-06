@@ -31,6 +31,7 @@ set(TTauri_srcs
     Draw/Path.cpp
     Draw/Font.cpp
     Draw/Fonts.cpp
+    Draw/QBezier.cpp
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
     GUI/globals.cpp
@@ -40,6 +41,7 @@ set(TTauri_srcs
     GUI/Instance_vulkan.cpp
     GUI/Instance_vulkan_win32.cpp
     GUI/Instance.cpp
+    GUI/VerticalSync_win32.cpp
     GUI/Pipeline_base.cpp
     GUI/Pipeline_vulkan.cpp
     GUI/PipelineImage.cpp
@@ -57,7 +59,6 @@ set(TTauri_srcs
     Application.cpp
     Application_base.cpp
     Application_win32.cpp
-    VerticalSync_win32.cpp
     logging.cpp
     File.cpp
     FileMapping.cpp

@@ -6,6 +6,7 @@
 #include "PipelineImage_Delegate.hpp"
 #include "BoxModel.hpp"
 #include "Window_forward.hpp"
+#include "Device_forward.hpp"
 #include "TTauri/all.hpp"
 #include <limits>
 #include <memory>
@@ -46,11 +47,7 @@ public:
 
     virtual void add(std::shared_ptr<Widget> widget);
 
-    template<typename T>
-    std::shared_ptr<T> device()
-    {
-        return lock_dynamic_cast<T>(window.lock()->device);
-    }
+    std::shared_ptr<Device> device();
 
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
 };

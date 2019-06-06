@@ -225,12 +225,12 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     };
 
     const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
-        VK_FALSE, // blendEnable
-        vk::BlendFactor::eOne, // srcColorBlendFactor
-        vk::BlendFactor::eZero, // dstColorBlendFactor
+        VK_TRUE, // blendEnable
+        vk::BlendFactor::eSrcAlpha, // srcColorBlendFactor
+        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
         vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eZero, // dstAlphaBlendFactor
+        vk::BlendFactor::eSrcAlpha, // srcAlphaBlendFactor
+        vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
         vk::BlendOp::eAdd, // aphaBlendOp
         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
     } };
@@ -346,14 +346,15 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    std::array<float, 4> const blackColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-    vector<vk::ClearValue> const clearColors = {{blackColor}};
+    auto _window = window.lock();
 
-    auto vulkanWindow = lock_dynamic_cast<Window>(window);
+    let backgroundColor = color_cast<Color_sRGB>(_window->widget->backgroundColor).value;
+    std::array<float,4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
+    vector<vk::ClearValue> const clearColors = { { _backgroundColor } };
 
     commandBuffer.beginRenderPass({
             renderPass, 
-            vulkanWindow->swapchainFramebuffers.at(imageIndex), 
+            _window->swapchainFramebuffers.at(imageIndex),
             scissor, 
             boost::numeric_cast<uint32_t>(clearColors.size()),
             clearColors.data()

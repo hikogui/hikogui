@@ -62,4 +62,12 @@ size_t Instance_base::getNumberOfWindows()
     return numberOfWindows;
 }
 
+void Instance_base::_handleVerticalSync(void *data)
+{
+    auto self = static_cast<Instance_base *>(data);
+
+    self->handleVerticalSync();
+}
+
+
 }

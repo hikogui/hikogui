@@ -18,7 +18,7 @@ ButtonWidget::ButtonWidget(std::string const label) :
 
 void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset)
 {
-    auto vulkanDevice = device<GUI::Device_vulkan>();
+    auto vulkanDevice = device();
     let key = (boost::format("ButtonWidget(%i,%i,%s,%i)") % box.width.value() % box.height.value() % label % static_cast<size_t>(state)).str();
 
     auto &imagePtrRef = imagePerState.at(static_cast<size_t>(state));
@@ -44,17 +44,25 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
         return;
     }
 
-    auto vulkanDevice = device<GUI::Device_vulkan>();
+    auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<uint64_t>{image.extent};
-    linearMap.fill(0x0000'0000'0000'ffffULL);
+    linearMap.clear();
 
     // Draw something.
-    let backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.2f, 0.2f, 0.2f, 1.0f} });
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
     let &labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
-    let labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
     let labelFontSize = 12.0;
+
+    Color_sRGBLinear backgroundColor{};
+    Color_sRGBLinear labelColor{};
+    if (label == "Foo Bar") {
+        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
+        labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
+    } else {
+        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
+        labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
+    }
 
     let rect = rect2{{0.0f, 0.0f}, { static_cast<float>(image.extent.width()), static_cast<float>(image.extent.height()) }};
     let fontCenter = labelFontSize * 0.5f;

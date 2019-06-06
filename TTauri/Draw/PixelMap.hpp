@@ -6,12 +6,9 @@
 #include "TTauri/all.hpp"
 
 #include <glm/glm.hpp>
-#include <glm/gtc/color_space.hpp>
 #include <gsl/gsl>
 #include <string>
-
-#include <immintrin.h>
-
+#include <algorithm>
 
 namespace TTauri::Draw {
 
@@ -122,6 +119,55 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
  * gamma corrected 8bit-per-color-component image.
  */
 void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<uint64_t> const& src);
+
+template<int N, typename Kernel>
+void horizontalFilterRow(gsl::span<uint8_t> row, Kernel kernel) {
+    constexpr auto halfN = N/2;
+
+    uint64_t values = 0;
+    ptrdiff_t x;
+
+    // Start beyond the left pixel. Then lookahead upto
+    // the point we can start the kernel.
+    let leftEdgeValue = row[0];
+    for (x = -N; x < 0; x++) {
+        values <<= 8;
+
+        let lookAheadX = x + halfN;
+        if (lookAheadX < 0) {
+            values |= leftEdgeValue;
+        } else {
+            values |= row[lookAheadX];
+        }
+    }
+
+    // Execute the kernel on all the pixels upto the right edge.
+    // The values are still looked up ahead.
+    let lastX = row.size() - halfN;
+    for (; x < lastX; x++) {
+        values <<= 8;
+        values |= row[x + halfN];
+
+        row[x] = kernel(values);
+    }
+
+    // Finish up to the right edge.
+    let rightEdgeValue = row[row.size() - 1];
+    for (; x < row.size(); x++) {
+        values <<= 8;
+        values |= rightEdgeValue;
+
+        row[x] = kernel(values);
+    }
+}
+
+template<int N, typename T, typename Kernel>
+void horizontalFilter(PixelMap<T> &pixels, Kernel kernel) {
+    for (size_t rowNr = 0; rowNr < pixels.height; rowNr++) {
+        auto row = pixels.at(rowNr);
+        horizontalFilterRow<N>(row, kernel);
+    }
+}
 
 
 }

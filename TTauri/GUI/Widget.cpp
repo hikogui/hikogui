@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "Widget.hpp"
+#include "Window.hpp"
 #include "TTauri/GUI/all.hpp"
 #include <boost/assert.hpp>
 #include <TTauri/utils.hpp>
@@ -10,6 +11,11 @@ namespace TTauri::GUI {
 
 Widget::Widget()
 {
+}
+
+std::shared_ptr<Device> Widget::device()
+{
+    return window.lock()->device.lock();
 }
 
 void Widget::setParent(const std::shared_ptr<Widget> &parent)

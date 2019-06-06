@@ -5,6 +5,7 @@
 
 #include "Device.hpp"
 #include "Window.hpp"
+#include "VerticalSync.hpp"
 #include "TTauri/all.hpp"
 #include "globals.hpp"
 #include <gsl/gsl>
@@ -16,6 +17,7 @@
 
 namespace TTauri::GUI {
 
+
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.
  */
@@ -23,6 +25,8 @@ class Instance_base {
 public:
     struct Error : virtual boost::exception, virtual std::exception {};
     struct ErrorNoDeviceForWindow : virtual Error {};
+
+    std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
     std::vector<std::shared_ptr<Device>> devices;
@@ -32,7 +36,10 @@ public:
      */
     size_t previousNumberOfWindows = 0;
 
-    Instance_base() {}
+    Instance_base() {
+        verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
+    }
+
     virtual ~Instance_base() {}
 
     Instance_base(const Instance_base &) = delete;
@@ -66,6 +73,14 @@ public:
         }
         previousNumberOfWindows = currentNumberOfWindows;
     }
+
+    void handleVerticalSync()
+    {
+        render();
+    }
+
+
+    static void _handleVerticalSync(void *data);
 
 protected:
     std::shared_ptr<Device> findBestDeviceForWindow(const std::shared_ptr<Window> &window);

@@ -102,7 +102,7 @@ void DeviceShared::exchangeImage(std::shared_ptr<Image> &image, const std::strin
 TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 {
     auto vulkanDevice = device.lock();
-    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eGeneral);
+    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
 
     let textureWithoutBorder = stagingTexture.pixelMap.submap(
         Page::border, Page::border,
@@ -137,7 +137,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
     );
     
-    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferSrcOptimal);
+    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
     for (size_t index = 0 ; index < image.pages.size(); index++) {
@@ -176,7 +176,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         }
 
         auto &atlasTexture = atlasTextures.at(atlasTextureIndex);
-        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eTransferDstOptimal);
+        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal);
 
         vulkanDevice->copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
     }
@@ -187,7 +187,7 @@ void DeviceShared::prepareAtlasForRendering()
     let vulkanDevice = device.lock();
 
     for (auto &atlasTexture: atlasTextures) {
-        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Unorm, vk::ImageLayout::eShaderReadOnlyOptimal);
+        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
@@ -301,7 +301,7 @@ void DeviceShared::addAtlasImage()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eR8G8B8A8Unorm,
+        vk::Format::eR8G8B8A8Srgb,
         vk::Extent3D(atlasImageWidth, atlasImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -360,7 +360,7 @@ void DeviceShared::buildAtlas()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eR8G8B8A8Unorm,
+        vk::Format::eR8G8B8A8Srgb,
         vk::Extent3D(stagingImageWidth, stagingImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers

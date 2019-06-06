@@ -28,9 +28,4 @@ void Application_base::lastWindowClosed()
     delegate->lastWindowClosed();
 }
 
-void Application_base::_handleVerticalSync()
-{
-    application->handleVerticalSync();
-}
-
 }

@@ -32,8 +32,6 @@ public:
     void lastWindowClosed() override;
     void mainThreadLastWindowClosed();
 
-    void handleVerticalSync() override;
-
     void startingLoop() override;
 
     int loop() override;

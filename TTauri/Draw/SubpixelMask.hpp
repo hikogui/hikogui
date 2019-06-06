@@ -17,9 +17,10 @@ struct SubpixelMask : PixelMap<uint8_t> {
 
     SubpixelMask(size_t width, size_t height) : PixelMap(width, height) {}
 
-    /*! Average R,G,B pixels.
+    /*! Average each RGB pixel.
+     * This results in a standard anti-aliased image.
      */
-    void average() {
+    void averageRGB() {
         assert(width % 3 == 0);
 
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
@@ -33,9 +34,9 @@ struct SubpixelMask : PixelMap<uint8_t> {
         }
     }
 
-    /*! Swap R and B values of each pixel.
+    /*! Swap R and B values of each RGB pixel.
      */
-    void flip() {
+    void flipRGB() {
         assert(width % 3 == 0);
 
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
@@ -46,54 +47,47 @@ struct SubpixelMask : PixelMap<uint8_t> {
         }
     }
 
+    /*! Reduce colour fringe for subpixels.
+     */
+    void smoothRGB() {
+        horizontalFilter<5>(*this, [](auto values) {
+            return static_cast<uint8_t>((
+                (values & 0xff) +
+                ((values >> 8) & 0xff) * 2 +
+                ((values >> 16) & 0xff) * 3 +
+                ((values >> 24) & 0xff) * 2 +
+                ((values >> 32) & 0xff)
+            ) / 9);
+        });
+    }
+
     void filter(Orientation subpixelOrientation) {
         switch (subpixelOrientation) {
         case Orientation::RedLeft:
+            smoothRGB();
             return;
-        case Orientation::RedRight:
-            return flip();
-        case Orientation::Unknown:
-            return average();
-        }
-    }
 
-    /*! Render a single row of pixels.
-     * Each row needs to be rendered 5 times as slightly different heights, performing super sampling.
-     * Fully covered sub-pixels will have the value 0xff;
-     */
-    void renderRow(size_t rowY, std::vector<QBezier> const& curves) {
-        // 5 times super sampling.
-        gsl::span<uint8_t> row = at(rowY);
-        for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
-            renderSubRow(row, y, curves);
+        case Orientation::RedRight:
+            smoothRGB();
+            flipRGB();
+            return;
+
+        case Orientation::Unknown:
+            averageRGB();
+            return;
         }
     }
 
     void render(std::vector<QBezier> curves) {
-        for (auto &curve: curves) {
-            curve.scale({3.0, 1.0});
+        for (auto& curve : curves) {
+            curve.scale({ 3.0, 1.0 });
         }
 
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
-            renderRow(rowNr, curves);
+            auto row = at(rowNr);
+            renderRow(row, rowNr, curves);
         }
     }
-
-    static void renderFullPixels(gsl::span<uint8_t> row, size_t start, size_t size);
-
-
-    static void renderPartialPixels(gsl::span<uint8_t> row, size_t i, float const startX, float const endX);
-
-    /*! Render pixels in a row between two x values.
-     * Fully covered sub-pixel will have the value 51.
-     */
-    static void renderRowSpan(gsl::span<uint8_t> row, float startX, float endX);
-
-    /*! SuperSample a row of pixels once.
-     * Fully covered sub-pixel will have the value 51
-     */
-    static void renderSubRow(gsl::span<uint8_t> row, float rowY, std::vector<QBezier> const& curves);
-
 };
 
 void composit(PixelMap<uint64_t>& under, uint64_t overColor, SubpixelMask const& mask);
