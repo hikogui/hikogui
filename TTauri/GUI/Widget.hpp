@@ -31,6 +31,13 @@ public:
     //! Location of the frame compared to the window.
     BoxModel box;
 
+    /*! current extent of the widget.
+     * Calculated at the start of pipelineImagePlaceVertices, but may be
+     * defered until the resizing of the window has been completed.
+     * This allows for the widget to be scaled, instead of redrawn.
+     */
+    extent2 currentExtent;
+
     size_t depth = 0;
 
     /*! Constructor for creating subviews.

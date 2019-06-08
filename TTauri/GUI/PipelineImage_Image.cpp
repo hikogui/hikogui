@@ -43,6 +43,7 @@ static std::tuple<glm::vec2, u64extent2, bool>calculatePosition(size_t x, size_t
 {
     auto p = glm::vec2{x, y};
     p -= location.origin;
+    p = p * location.scale;
     p = glm::rotate(p, location.rotation);
     p += location.position;
 

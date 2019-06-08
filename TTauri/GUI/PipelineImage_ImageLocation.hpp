@@ -16,6 +16,9 @@ struct ImageLocation {
     //! Location of the origin relative to the top-left of the image in number of pixels.
     glm::vec2 origin;
 
+    //! Scale of the image around the origin before rotation.
+    glm::vec2 scale;
+
     //! Clockwise rotation around the origin of the image in radials.
     float rotation;
 
