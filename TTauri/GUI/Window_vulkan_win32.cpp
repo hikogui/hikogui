@@ -40,7 +40,7 @@ void Window_vulkan_win32::createWindowClass()
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::string &title)
+void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 extent)
 {
     Window_vulkan_win32::createWindowClass();
 
@@ -55,8 +55,8 @@ void Window_vulkan_win32::createWindow(const std::string &title)
         // Size and position
         CW_USEDEFAULT,
         CW_USEDEFAULT,
-        640,
-        480,
+        extent.width(),
+        extent.height(),
 
         NULL, // Parent window
         NULL, // Menu
@@ -78,10 +78,6 @@ void Window_vulkan_win32::createWindow(const std::string &title)
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
     Window_vulkan(move(delegate), title)
 {
-    // XXX create window after Window_vulkan_win32 has been constructed, needed for locking and for
-    // figuring out the window size from the widget layout.
-
-    createWindow(title);
 }
 
 Window_vulkan_win32::~Window_vulkan_win32()
@@ -122,6 +118,11 @@ void Window_vulkan_win32::mainThreadOpeningWindow()
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     Window_vulkan::openingWindow();
+
+    // Delegate has been called, layout of widgets has been calculated for the
+    // minimum and maximum size of the window.
+    u32extent2 windowExtent = minimumWindowExtent;
+    createWindow(title, windowExtent);
 }
 
 vk::SurfaceKHR Window_vulkan_win32::getSurface()

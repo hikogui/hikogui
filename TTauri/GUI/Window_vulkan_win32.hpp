@@ -26,7 +26,7 @@ public:
     void openingWindow() override;
     void mainThreadOpeningWindow();
 
-    void Window_vulkan_win32::createWindow(const std::string &title);
+    void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 extent);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();
