@@ -96,8 +96,7 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closingWindow()
 {
-    // Don't lock mutex, the window is about to be destructed.
-    // Also no members of this are being accessed.
+    // Don't lock mutex, no members of this are being accessed.
     PostThreadMessageW(application->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
@@ -137,42 +136,54 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface()
 
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    // Cannot lock mutex as Window_vulkan_win32 may still be in the process of being constructed.
     RECT* rect;
     MINMAXINFO* minmaxinfo;
 
     switch (uMsg) {    
-    case WM_DESTROY:
-        win32Window = nullptr;
-        state = State::WINDOW_LOST;
+    case WM_DESTROY: {
+            std::scoped_lock lock(TTauri::GUI::mutex);
+
+            win32Window = nullptr;
+            state = State::WINDOW_LOST;
+        }
         break;
 
-    case WM_SIZING:
-        rect = to_ptr<RECT>(lParam);
-        OSWindowRectangle.offset.x = rect->left;
-        OSWindowRectangle.offset.y = 0; // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
-        // XXX - figure out size of decoration to remove these constants.
-        OSWindowRectangle.extent.x = (rect->right - rect->left) - 26;
-        OSWindowRectangle.extent.y = (rect->bottom - rect->top) - 39;
+    case WM_SIZING: {
+            std::scoped_lock lock(TTauri::GUI::mutex);
+
+            rect = to_ptr<RECT>(lParam);
+            OSWindowRectangle.offset.x = rect->left;
+            OSWindowRectangle.offset.y = 0; // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
+            // XXX - figure out size of decoration to remove these constants.
+            OSWindowRectangle.extent.x = (rect->right - rect->left) - 26;
+            OSWindowRectangle.extent.y = (rect->bottom - rect->top) - 39;
+        }
         break;
 
-    case WM_ENTERSIZEMOVE:
-        resizing = true;
+    case WM_ENTERSIZEMOVE: {
+            std::scoped_lock lock(TTauri::GUI::mutex);
+            resizing = true;
+        }
         break;
 
-    case WM_EXITSIZEMOVE:
-        resizing = false;
+    case WM_EXITSIZEMOVE: {
+            std::scoped_lock lock(TTauri::GUI::mutex);
+            resizing = false;
+        }
         break;
     
-    case WM_GETMINMAXINFO:
-        minmaxinfo = to_ptr<MINMAXINFO>(lParam);
-        // XXX - figure out size of decoration to remove these constants.
-        minmaxinfo->ptMaxSize.x = maximumWindowExtent.width() + 26;
-        minmaxinfo->ptMaxSize.y = maximumWindowExtent.height() + 39;
-        minmaxinfo->ptMinTrackSize.x = minimumWindowExtent.width() + 26;
-        minmaxinfo->ptMinTrackSize.y = minimumWindowExtent.height() + 39;
-        minmaxinfo->ptMaxTrackSize.x = maximumWindowExtent.width() + 26;
-        minmaxinfo->ptMaxTrackSize.y = maximumWindowExtent.height() + 39;
+    case WM_GETMINMAXINFO: {
+            std::scoped_lock lock(TTauri::GUI::mutex);
+
+            minmaxinfo = to_ptr<MINMAXINFO>(lParam);
+            // XXX - figure out size of decoration to remove these constants.
+            minmaxinfo->ptMaxSize.x = maximumWindowExtent.width() + 26;
+            minmaxinfo->ptMaxSize.y = maximumWindowExtent.height() + 39;
+            minmaxinfo->ptMinTrackSize.x = minimumWindowExtent.width() + 26;
+            minmaxinfo->ptMinTrackSize.y = minimumWindowExtent.height() + 39;
+            minmaxinfo->ptMaxTrackSize.x = maximumWindowExtent.width() + 26;
+            minmaxinfo->ptMaxTrackSize.y = maximumWindowExtent.height() + 39;
+        }
         break;
 
     default:
