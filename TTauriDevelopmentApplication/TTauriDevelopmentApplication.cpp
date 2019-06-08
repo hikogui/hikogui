@@ -31,6 +31,7 @@ public:
         auto button2 = TTauri::make_shared<Widgets::ButtonWidget>(u8"Foo Bar");
         window.widget->add(button2);
         window.addConstraint(button2->box.width >= 100);
+        window.addConstraint(button2->box.width <= 1500);
         window.addConstraint(button2->box.height == 30);
         window.addConstraint(button2->box.outerLeft() == button1->box.right());
         window.addConstraint(button2->box.outerBottom() == window.box().bottom);

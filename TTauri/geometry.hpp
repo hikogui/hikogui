@@ -18,10 +18,11 @@ struct extent<2, T, Q> : public glm::vec<2, T, Q> {
     constexpr extent(glm::vec<2, T, Q> const &other) : glm::vec<2, T, Q>(other) {}
     constexpr extent(T width, T height) : glm::vec<2, T, Q>(width, height) {}
     constexpr extent(double width, double height) : glm::vec<2, T, Q>(width, height) {}
-    constexpr extent(uint32_t width, uint32_t height) : glm::vec<2, T, Q>(width, height) {}
 
     constexpr T width() const { return this->x; }
     constexpr T height() const { return this->y; }
+    constexpr T &width() { return this->x; }
+    constexpr T &height() { return this->y; }
 };
 
 template <typename T, glm::qualifier Q>
@@ -33,6 +34,9 @@ struct extent<3, T, Q> : public glm::vec<3, T, Q> {
     constexpr T width() const { return this->x; }
     constexpr T height() const { return this->y; }
     constexpr T depth() const { return this->z; }
+    constexpr T &width() { return this->x; }
+    constexpr T &height() { return this->y; }
+    constexpr T &depth() { return this->z; }
 };
 
 template <int S, typename T, glm::qualifier Q>
@@ -49,9 +53,11 @@ struct rect {
 using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;
 using u16vec3 = glm::vec<3, uint16_t, glm::defaultp>;
 using u64vec2 = glm::vec<2, uint64_t, glm::defaultp>;
+using u32extent2 = extent<2, uint32_t, glm::defaultp>;
 using u64extent2 = extent<2, uint64_t, glm::defaultp>;
 using extent2 = extent<2, float, glm::defaultp>;
 using u16rect2 = rect<2, uint16_t, glm::defaultp>;
+using u32rect2 = rect<2, uint32_t, glm::defaultp>;
 using u64rect2 = rect<2, uint64_t, glm::defaultp>;
 using rect2 = rect<2, float, glm::defaultp>;
 

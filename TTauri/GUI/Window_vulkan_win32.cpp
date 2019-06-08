@@ -10,12 +10,13 @@ namespace TTauri::GUI {
 using namespace std;
 using namespace TTauri;
 
-inline gsl::not_null<void *>to_ptr(LPARAM lParam)
+template<typename T>
+inline gsl::not_null<T *>to_ptr(LPARAM lParam)
 {
-    void *ptr;
-    memcpy(&ptr, &lParam, sizeof(void *));
+    T *ptr;
+    memcpy(&ptr, &lParam, sizeof(T *));
 
-    return gsl::not_null<void *>(ptr);
+    return gsl::not_null<T *>(ptr);
 }
 
 const wchar_t *Window_vulkan_win32::win32WindowClassName = nullptr;
@@ -77,6 +78,9 @@ void Window_vulkan_win32::createWindow(const std::string &title)
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
     Window_vulkan(move(delegate), title)
 {
+    // XXX create window after Window_vulkan_win32 has been constructed, needed for locking and for
+    // figuring out the window size from the widget layout.
+
     createWindow(title);
 }
 
@@ -133,23 +137,48 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface()
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     // Cannot lock mutex as Window_vulkan_win32 may still be in the process of being constructed.
-    let r = DefWindowProc(hwnd, uMsg, wParam, lParam);
-
-    // These messages need to be processed after the DefWindowProc has been run.
-    // For example the window first needs to be fully resized before we are going to update
-    // the swap chain.
+    RECT* rect;
+    MINMAXINFO* minmaxinfo;
 
     switch (uMsg) {    
     case WM_DESTROY:
         win32Window = nullptr;
         state = State::WINDOW_LOST;
         break;
+
+    case WM_SIZING:
+        rect = to_ptr<RECT>(lParam);
+        OSWindowRectangle.offset.x = rect->left;
+        OSWindowRectangle.offset.y = 0; // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
+        // XXX - figure out size of decoration to remove these constants.
+        OSWindowRectangle.extent.x = (rect->right - rect->left) - 26;
+        OSWindowRectangle.extent.y = (rect->bottom - rect->top) - 39;
+        break;
+
+    case WM_ENTERSIZEMOVE:
+        resizing = true;
+        break;
+
+    case WM_EXITSIZEMOVE:
+        resizing = false;
+        break;
     
+    case WM_GETMINMAXINFO:
+        minmaxinfo = to_ptr<MINMAXINFO>(lParam);
+        // XXX - figure out size of decoration to remove these constants.
+        minmaxinfo->ptMaxSize.x = maximumWindowExtent.width() + 26;
+        minmaxinfo->ptMaxSize.y = maximumWindowExtent.height() + 39;
+        minmaxinfo->ptMinTrackSize.x = minimumWindowExtent.width() + 26;
+        minmaxinfo->ptMinTrackSize.y = minimumWindowExtent.height() + 39;
+        minmaxinfo->ptMaxTrackSize.x = maximumWindowExtent.width() + 26;
+        minmaxinfo->ptMaxTrackSize.y = maximumWindowExtent.height() + 39;
+        break;
+
     default:
         break;
     }
 
-    return r;
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

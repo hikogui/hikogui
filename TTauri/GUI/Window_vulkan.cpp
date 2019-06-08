@@ -279,11 +279,11 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
         surfaceCapabilities.currentExtent :
         (vk::Extent2D{
             std::clamp(
-                static_cast<uint32_t>(windowRectangle.extent.width()),
+                static_cast<uint32_t>(OSWindowRectangle.extent.width()),
                 surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width
             ),
             std::clamp(
-                static_cast<uint32_t>(windowRectangle.extent.height()),
+                static_cast<uint32_t>(OSWindowRectangle.extent.height()),
                 surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height
             )
         });

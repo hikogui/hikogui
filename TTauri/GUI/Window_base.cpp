@@ -70,17 +70,6 @@ void Window_base::setDevice(const std::weak_ptr<Device> newDevice)
     device = newDevice;
 }
 
-void Window_base::windowChangedSize(u64extent2 extent) {
-    if (widthHeightContraintsAdded) {
-        removeConstraint(widthConstraint);
-        removeConstraint(heightConstraint);
-    }
-    widthConstraint = (box().width == extent.width());
-    heightConstraint = (box().height == extent.height());
-    addConstraint(widthConstraint);
-    addConstraint(heightConstraint);
-    widthHeightContraintsAdded = true;
-}
 
 
 }
