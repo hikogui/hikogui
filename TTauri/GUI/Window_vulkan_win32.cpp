@@ -4,6 +4,7 @@
 #include "Window_vulkan_win32.hpp"
 #include "Instance.hpp"
 #include "TTauri/all.hpp"
+#include <windowsx.h>
 
 namespace TTauri::GUI {
 
@@ -34,7 +35,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
         Window_vulkan_win32::win32WindowClass.hInstance = application->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
-        Window_vulkan_win32::win32WindowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+        Window_vulkan_win32::win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
     }
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
@@ -72,6 +73,12 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
         ShowWindow(win32Window, application->nCmdShow);
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
+
+    trackMouseLeaveEventParameters.cbSize = sizeof(trackMouseLeaveEventParameters);
+    trackMouseLeaveEventParameters.dwFlags = TME_LEAVE;
+    trackMouseLeaveEventParameters.hwndTrack = win32Window;
+    trackMouseLeaveEventParameters.dwHoverTime = HOVER_DEFAULT;
+
     ShowWindow(win32Window, SW_SHOW);
 }
 
@@ -136,45 +143,39 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface()
 
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    RECT* rect;
-    MINMAXINFO* minmaxinfo;
+    {
+        std::scoped_lock lock(TTauri::GUI::mutex);
 
-    switch (uMsg) {    
-    case WM_DESTROY: {
-            std::scoped_lock lock(TTauri::GUI::mutex);
+        RECT* rect;
+        MINMAXINFO* minmaxinfo;
+        glm::vec2 mousePosition;
 
+        MouseEvent mouseEvent;
+
+        switch (uMsg) {    
+        case WM_DESTROY:
             win32Window = nullptr;
             state = State::WINDOW_LOST;
-        }
-        break;
+            break;
 
-    case WM_SIZING: {
-            std::scoped_lock lock(TTauri::GUI::mutex);
-
+        case WM_SIZING:
             rect = to_ptr<RECT>(lParam);
             OSWindowRectangle.offset.x = rect->left;
             OSWindowRectangle.offset.y = 0; // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
             // XXX - figure out size of decoration to remove these constants.
             OSWindowRectangle.extent.x = (rect->right - rect->left) - 26;
             OSWindowRectangle.extent.y = (rect->bottom - rect->top) - 39;
-        }
-        break;
+            break;
 
-    case WM_ENTERSIZEMOVE: {
-            std::scoped_lock lock(TTauri::GUI::mutex);
+        case WM_ENTERSIZEMOVE:
             resizing = true;
-        }
-        break;
+            break;
 
-    case WM_EXITSIZEMOVE: {
-            std::scoped_lock lock(TTauri::GUI::mutex);
+        case WM_EXITSIZEMOVE:
             resizing = false;
-        }
-        break;
+            break;
     
-    case WM_GETMINMAXINFO: {
-            std::scoped_lock lock(TTauri::GUI::mutex);
-
+        case WM_GETMINMAXINFO:
             minmaxinfo = to_ptr<MINMAXINFO>(lParam);
             // XXX - figure out size of decoration to remove these constants.
             minmaxinfo->ptMaxSize.x = maximumWindowExtent.width() + 26;
@@ -183,11 +184,97 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             minmaxinfo->ptMinTrackSize.y = minimumWindowExtent.height() + 39;
             minmaxinfo->ptMaxTrackSize.x = maximumWindowExtent.width() + 26;
             minmaxinfo->ptMaxTrackSize.y = maximumWindowExtent.height() + 39;
-        }
-        break;
+            break;
 
-    default:
-        break;
+        case WM_LBUTTONDOWN:
+            mouseEvent.type = MouseEvent::Type::ButtonDown;
+            mouseEvent.cause.leftButton = true;
+            goto parseMouseEvent;
+        case WM_LBUTTONUP:
+            mouseEvent.type = MouseEvent::Type::ButtonUp;
+            mouseEvent.cause.leftButton = true;
+            goto parseMouseEvent;
+        case WM_LBUTTONDBLCLK:
+            mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+            mouseEvent.cause.leftButton = true;
+            goto parseMouseEvent;
+        case WM_MBUTTONDOWN:
+            mouseEvent.type = MouseEvent::Type::ButtonDown;
+            mouseEvent.cause.middleButton = true;
+            goto parseMouseEvent;
+        case WM_MBUTTONUP:
+            mouseEvent.type = MouseEvent::Type::ButtonUp;
+            mouseEvent.cause.middleButton = true;
+            goto parseMouseEvent;
+        case WM_MBUTTONDBLCLK:
+            mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+            mouseEvent.cause.middleButton = true;
+            goto parseMouseEvent;
+        case WM_RBUTTONDOWN:
+            mouseEvent.type = MouseEvent::Type::ButtonDown;
+            mouseEvent.cause.rightButton = true;
+            goto parseMouseEvent;
+        case WM_RBUTTONUP:
+            mouseEvent.type = MouseEvent::Type::ButtonUp;
+            mouseEvent.cause.rightButton = true;
+            goto parseMouseEvent;
+        case WM_RBUTTONDBLCLK:
+            mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+            mouseEvent.cause.rightButton = true;
+            goto parseMouseEvent;
+        case WM_XBUTTONDOWN:
+            mouseEvent.type = MouseEvent::Type::ButtonDown;
+            mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
+            mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
+            goto parseMouseEvent;
+        case WM_XBUTTONUP:
+            mouseEvent.type = MouseEvent::Type::ButtonUp;
+            mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
+            mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
+            goto parseMouseEvent;
+        case WM_XBUTTONDBLCLK:
+            mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+            mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
+            mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
+            goto parseMouseEvent;
+
+        case WM_MOUSEMOVE:
+            if (!trackingMouseLeaveEvent) {
+                if (!TrackMouseEvent(&trackMouseLeaveEventParameters)) {
+                    LOG_ERROR("Could not track leave event '%s'") % getLastErrorMessage();
+                }
+                trackingMouseLeaveEvent = true;
+            }
+            mouseEvent.type = MouseEvent::Type::Move;
+            goto parseMouseEvent;
+
+        parseMouseEvent:
+            mouseEvent.position.x = GET_X_LPARAM(lParam);
+            mouseEvent.position.y = currentWindowExtent.height() - GET_Y_LPARAM(lParam);
+            mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
+            mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
+            mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
+            mouseEvent.down.rightButton = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
+            mouseEvent.down.shiftKey = (GET_KEYSTATE_WPARAM(wParam) & MK_SHIFT) > 0;
+            mouseEvent.down.x1Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
+            mouseEvent.down.x2Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
+            handleMouseEvent(mouseEvent);
+            break;
+
+        case WM_MOUSELEAVE:
+            // After this event we need to ask win32 to track the mouse again.
+            trackingMouseLeaveEvent = false;
+
+            // Force currentCursor to None so that the Window is in a fresh
+            // state when the mouse reenters it.
+            currentCursor = Cursor::None;
+
+            handleMouseEvent(ExitedMouseEvent());
+            break;
+
+        default:
+            break;
+        }
     }
 
     return DefWindowProc(hwnd, uMsg, wParam, lParam);

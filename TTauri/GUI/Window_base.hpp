@@ -7,6 +7,7 @@
 #include "WindowDelegate.hpp"
 #include "WindowWidget.hpp"
 #include "Device_forward.hpp"
+#include "Mouse.hpp"
 #include "TTauri/all.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
@@ -38,6 +39,10 @@ public:
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
     State state = State::NO_DEVICE;
+
+    /*! The current cursor that is being displayed.
+     */
+    Cursor currentCursor = Cursor::None;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -112,6 +117,8 @@ public:
         return r;
     }
 
+    virtual void setCursor(Cursor cursor) = 0;
+
 protected:
     /*! The current rectangle which has been set by the operating system.
      * This value may lag behind the actual window extent as seen by the GPU
@@ -154,6 +161,15 @@ protected:
     /*! Build Windows based on State::NO_*
      */
     virtual void build() = 0;
+
+    /*! Mouse moved.
+     * Called by the operating system to show the position of the mouse.
+     * This is called very often so it must be made efficient.
+     * Most often this function is used to determine the mouse cursor.
+     */
+    void handleMouseEvent(MouseEvent event) {
+        widget->handleMouseEvent(event);
+    }
 
 private:
     //! This solver determines size and position of all widgets in this window.

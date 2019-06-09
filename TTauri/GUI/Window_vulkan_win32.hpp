@@ -38,7 +38,33 @@ public:
     static bool firstWindowHasBeenOpened;
 
     vk::SurfaceKHR getSurface() override;
+
+    void setCursor(Cursor cursor) override {
+        if (cursor == currentCursor) {
+            return;
+        }
+        currentCursor = cursor;
+
+        switch (cursor) {
+        case Cursor::None:
+            SetCursor(LoadCursorW(nullptr, IDC_APPSTARTING));
+            break;
+        case Cursor::Default:
+            SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+            break;
+        case Cursor::Clickable:
+            SetCursor(LoadCursorW(nullptr, IDC_HAND));
+            break;
+        default:
+            SetCursor(LoadCursorW(nullptr, IDC_NO));
+            break;
+        }
+    }
+
+
 private:
+    TRACKMOUSEEVENT trackMouseLeaveEventParameters;
+    bool trackingMouseLeaveEvent = false;
 
     static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

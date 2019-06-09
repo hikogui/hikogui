@@ -25,13 +25,11 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     }
     let currentScale = box.currentExtent() / currentExtent;
 
-    let key = (boost::format("ButtonWidget(%i,%i,%s,%i)") % currentExtent.x % currentExtent.y % label % static_cast<size_t>(state)).str();
+    let key = (boost::format("ButtonWidget(%i,%i,%s,%i)") % currentExtent.x % currentExtent.y % label % state()).str();
 
-    auto &imagePtrRef = imagePerState.at(static_cast<size_t>(state));
-    vulkanDevice->imagePipeline->exchangeImage(imagePtrRef, key, currentExtent);
+    vulkanDevice->imagePipeline->exchangeImage(image, key, currentExtent);
 
-    auto &image = *imagePtrRef;
-    drawImage(image, State::ENABLED);
+    drawImage(*image);
 
     GUI::PipelineImage::ImageLocation location;
     location.depth = depth + 0.0;
@@ -42,10 +40,10 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     location.alpha = 1.0;
     location.clippingRectangle = box.currentRectangle();
 
-    image.placeVertices(location, vertices, offset);
+    image->placeVertices(location, vertices, offset);
 }
 
-void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
+void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 {
     if (image.drawn) {
         return;
@@ -63,11 +61,15 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
 
     Color_sRGBLinear backgroundColor{};
     Color_sRGBLinear labelColor{};
-    if (label == "Foo Bar") {
+    if (value) {
         backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
         labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
     } else {
         backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
+        labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
+    }
+    if (pressed) {
+        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.3f, 0.3f, 1.0f, 1.0f} });
         labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
     }
 
@@ -89,5 +91,18 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image, State state)
     image.drawn = true;
 }
 
+void ButtonWidget::handleMouseEvent(GUI::MouseEvent event) {
+    if (enabled) {
+        window.lock()->setCursor(GUI::Cursor::Clickable);
+        pressed = event.down.leftButton;
+
+        if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+            value = !value;
+        }
+
+    } else {
+        window.lock()->setCursor(GUI::Cursor::Default);
+    }
+}
 
 }

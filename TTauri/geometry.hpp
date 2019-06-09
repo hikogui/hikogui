@@ -44,10 +44,17 @@ struct rect {
     glm::vec<S, T, glm::defaultp> offset = {};
     extent<S, T, glm::defaultp> extent = {};
 
-    bool operator==(const rect<S, T, Q> &other) {
+    bool operator==(const rect<S, T, Q> &other) const {
         return offset == other.offset && extent == other.extent;
     }
 
+    bool contains(const glm::vec<S, T, glm::defaultp> &position) const {
+        return
+            (position.x >= offset.x) &&
+            (position.y >= offset.y) &&
+            (position.x < (offset.x + extent.width())) &&
+            (position.y < (offset.y + extent.height()));
+    }
 };
 
 using u16vec2 = glm::vec<2, uint16_t, glm::defaultp>;

@@ -7,6 +7,7 @@
 #include "BoxModel.hpp"
 #include "Window_forward.hpp"
 #include "Device_forward.hpp"
+#include "Mouse.hpp"
 #include "TTauri/all.hpp"
 #include <limits>
 #include <memory>
@@ -27,6 +28,8 @@ public:
     std::weak_ptr<Widget> parent;
 
     std::vector<std::shared_ptr<Widget>> children;
+
+    std::weak_ptr<Widget> currentMouseTarget;
 
     //! Location of the frame compared to the window.
     BoxModel box;
@@ -57,6 +60,13 @@ public:
     std::shared_ptr<Device> device();
 
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
+
+    /*! Mouse moved.
+     * Called by the operating system to show the position of the mouse.
+     * This is called very often so it must be made efficient.
+     * Most often this function is used to determine the mouse cursor.
+     */
+    virtual void handleMouseEvent(MouseEvent event);
 };
 
 }

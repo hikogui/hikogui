@@ -6,6 +6,7 @@
 #include "Device.hpp"
 #include "globals.hpp"
 #include "Instance.hpp"
+#include "Mouse.hpp"
 #include "Pipeline.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineImage_Delegate.hpp"

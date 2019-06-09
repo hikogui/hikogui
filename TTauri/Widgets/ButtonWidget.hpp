@@ -12,19 +12,14 @@ namespace TTauri::Widgets {
 
 class ButtonWidget : public GUI::Widget {
 public:
-    enum class State {
-        ENABLED,
-        DISABLED,
-        ACTIVE,
-        PRESSED,
-        HOVER
-    };
-    static constexpr size_t StateCount = 5;
+    bool value = false;
+    bool enabled = true;
+    bool focus = false;
+    bool pressed = false;
 
-    std::array<std::shared_ptr<GUI::PipelineImage::Image>, StateCount> imagePerState;
+    std::shared_ptr<GUI::PipelineImage::Image> image;
 
     std::string label;
-    State state = State::ENABLED;
 
     ButtonWidget(std::string const label);
     ~ButtonWidget() {}
@@ -34,11 +29,21 @@ public:
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
+    int state() {
+        int r = 0;
+        r |= value ? 1 : 0;
+        r |= enabled ? 2 : 0;
+        r |= focus ? 4 : 0;
+        r |= pressed ? 8 : 0;
+        return r;
+    }
 
     void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset) override;
 
+    void handleMouseEvent(GUI::MouseEvent event) override;
+
 protected:
-    void drawImage(GUI::PipelineImage::Image &image, State state);
+    void drawImage(GUI::PipelineImage::Image &image);
 
 };
 

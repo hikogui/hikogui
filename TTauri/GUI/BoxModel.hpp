@@ -139,7 +139,9 @@ struct BoxModel {
         return { currentOuterPosition(), currentOuterExtent() };
     }
 
-
+    bool contains(glm::vec2 position) const {
+        return currentRectangle().contains(position);
+    }
 };
 
 }

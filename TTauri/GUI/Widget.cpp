@@ -37,5 +37,39 @@ void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertic
     }
 }
 
+void Widget::handleMouseEvent(MouseEvent const event) {
+    assert(event.type != MouseEvent::Type::None);
+
+    let targetWidget = currentMouseTarget.lock();
+    if (targetWidget) {
+        if (targetWidget->box.contains(event.position)) {
+            targetWidget->handleMouseEvent(event);
+            if (event.type == MouseEvent::Type::Exited) {
+                currentMouseTarget.reset();
+            }
+
+            // We completed sending the mouse event to the correct widget.
+            return;
+
+        } else {
+            // We exited the previous target widget, send a exited event.
+            targetWidget->handleMouseEvent(ExitedMouseEvent());
+            currentMouseTarget.reset();
+        }
+    }
+
+    if (event.type == MouseEvent::Type::Exited) {
+        // We do not have any targets to send this event.
+        return;
+    }
+
+    for (auto& widget : children) {
+        if (widget->box.contains(event.position)) {
+            currentMouseTarget = widget;
+            return widget->handleMouseEvent(event);
+        }
+    }
+    window.lock()->setCursor(Cursor::Default);
+}
 
 }
