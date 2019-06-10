@@ -54,7 +54,7 @@ std::vector<Page> DeviceShared::getFreePages(size_t const nrPages)
     return pages;
 }
 
-std::shared_ptr<Image> DeviceShared::retainImage(const std::string &key, u64extent2 const extent)
+std::shared_ptr<Image> DeviceShared::retainImage(BinaryKey const &key, u64extent2 const extent)
 {
     let i = viewImages.find(key);
     if (i != viewImages.end()) {
@@ -86,7 +86,7 @@ void DeviceShared::releaseImage(const std::shared_ptr<Image> &image)
     }
 }
 
-void DeviceShared::exchangeImage(std::shared_ptr<Image> &image, const std::string &key, const u64extent2 extent)
+void DeviceShared::exchangeImage(std::shared_ptr<Image> &image, BinaryKey const &key, const u64extent2 extent)
 {
     if (image && image->key == key) {
         return;

@@ -9,6 +9,9 @@
 
 namespace TTauri::Widgets {
 
+using namespace std::literals;
+
+
 ImageWidget::ImageWidget(const std::filesystem::path path) :
     Widget(), path(std::move(path))
 {
@@ -54,7 +57,7 @@ void ImageWidget::drawBackingImage()
 
 void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset)
 {
-    auto key = (boost::format("ImageView(%i,%i,%s)") % box.width.value() % box.height.value() % path).str();
+    let key = BinaryKey("ImageView"s, box.currentExtent(), path.u8string());
 
     auto vulkanDevice = device();
 

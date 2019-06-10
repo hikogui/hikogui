@@ -42,13 +42,13 @@ struct DeviceShared final {
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
-    std::unordered_map<std::string, std::shared_ptr<Image>> viewImages;
+    std::unordered_map<BinaryKey, std::shared_ptr<Image>> viewImages;
 
-    DeviceShared(const std::shared_ptr<Device_vulkan> device);
+    DeviceShared(std::shared_ptr<Device_vulkan> const device);
     ~DeviceShared();
 
-    DeviceShared(const DeviceShared &) = delete;
-    DeviceShared &operator=(const DeviceShared &) = delete;
+    DeviceShared(DeviceShared const &) = delete;
+    DeviceShared &operator=(DeviceShared const &) = delete;
     DeviceShared(DeviceShared &&) = delete;
     DeviceShared &operator=(DeviceShared &&) = delete;
 
@@ -76,7 +76,7 @@ struct DeviceShared final {
 
     std::vector<Page> getFreePages(size_t const nrPages);
 
-    std::shared_ptr<Image> retainImage(const std::string &key, u64extent2 extent);
+    std::shared_ptr<Image> retainImage(BinaryKey const &key, u64extent2 extent);
     void releaseImage(const std::shared_ptr<Image> &image);
 
     /*! Exchange an image when the key is different.
@@ -84,9 +84,9 @@ struct DeviceShared final {
      * \param key of the image.
      * \param extent of the image.
      */
-    void exchangeImage(std::shared_ptr<Image>& image, const std::string& key, const u64extent2 extent);
+    void exchangeImage(std::shared_ptr<Image>& image, BinaryKey const &key, u64extent2 extent);
 
-    void exchangeImage(std::shared_ptr<Image>& image, const std::string& key, const extent2 extent) {
+    void exchangeImage(std::shared_ptr<Image>& image, BinaryKey const &key, extent2 extent) {
         return exchangeImage(image, key, u64extent2{extent.width(), extent.height()});
     }
 
@@ -98,7 +98,7 @@ struct DeviceShared final {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 
-    void updateAtlasWithStagingPixelMap(const Image &image);
+    void updateAtlasWithStagingPixelMap(Image const &image);
     void prepareAtlasForRendering();
 
 private:

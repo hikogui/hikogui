@@ -88,9 +88,9 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    vector<vk::Semaphore> const renderFinishedSemaphores = { renderFinishedSemaphore };
-    vector<vk::SwapchainKHR> const presentSwapchains = { swapchain };
-    vector<uint32_t> const presentImageIndices = { imageIndex };
+    std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { renderFinishedSemaphore };
+    std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
+    std::array<uint32_t, 1> const presentImageIndices = { imageIndex };
     BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
 
     auto vulkanDevice = device.lock();
@@ -339,10 +339,7 @@ Window_base::State Window_vulkan::buildSwapchain()
         vk::SharingMode::eExclusive :
         vk::SharingMode::eConcurrent;
 
-    vector<uint32_t> const sharingQueueFamilyAllIndices = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
-    vector<uint32_t> const sharingQueueFamilyNoneIndices = {};
-
-    let sharingQueueFamilyIndices = sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices : sharingQueueFamilyNoneIndices;
+    std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
 
     swapchainImageFormat = vulkanDevice->bestSurfaceFormat;
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
@@ -355,8 +352,8 @@ Window_base::State Window_vulkan::buildSwapchain()
         1, // imageArrayLayers
         vk::ImageUsageFlagBits::eColorAttachment,
         sharingMode,
-        boost::numeric_cast<uint32_t>(sharingQueueFamilyIndices.size()),
-        sharingQueueFamilyIndices.data(),
+        sharingMode == vk::SharingMode::eConcurrent ? boost::numeric_cast<uint32_t>(sharingQueueFamilyAllIndices.size()) : 0,
+        sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
         vulkanDevice->bestSurfacePresentMode,
@@ -409,7 +406,7 @@ void Window_vulkan::buildFramebuffers()
 
         swapchainImageViews.push_back(imageView);
 
-        std::vector<vk::ImageView> attachments = { imageView };
+        std::array<vk::ImageView, 1> attachments = { imageView };
 
         auto framebuffer = vulkanDevice->createFramebuffer({
             vk::FramebufferCreateFlags(),
@@ -448,40 +445,48 @@ void Window_vulkan::buildRenderPasses()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    std::vector<vk::AttachmentDescription> attachmentDescriptions = { {
-        vk::AttachmentDescriptionFlags(),
-        swapchainImageFormat.format,
-        vk::SampleCountFlagBits::e1,
-        vk::AttachmentLoadOp::eClear,
-        vk::AttachmentStoreOp::eStore,
-        vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
-        vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
-        vk::ImageLayout::eUndefined, // initialLayout
-        // XXX ePresentSrcKHR should only be used on the last pass.
-        vk::ImageLayout::ePresentSrcKHR // finalLayout
-    } };
+    std::array<vk::AttachmentDescription, 1> attachmentDescriptions = {
+        vk::AttachmentDescription{
+            vk::AttachmentDescriptionFlags(),
+            swapchainImageFormat.format,
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eStore,
+            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+            vk::ImageLayout::eUndefined, // initialLayout
+            // XXX ePresentSrcKHR should only be used on the last pass.
+            vk::ImageLayout::ePresentSrcKHR // finalLayout
+        }
+    };
 
-    std::vector<vk::AttachmentReference> const inputAttachmentReferences = {};
+    std::array<vk::AttachmentReference, 0> const inputAttachmentReferences = {};
 
-    std::vector<vk::AttachmentReference> const colorAttachmentReferences = { { 0, vk::ImageLayout::eColorAttachmentOptimal } };
+    std::array<vk::AttachmentReference, 1> const colorAttachmentReferences = {
+        vk::AttachmentReference{ 0, vk::ImageLayout::eColorAttachmentOptimal }
+    };
 
-    std::vector<vk::SubpassDescription> const subpassDescriptions = { {
-        vk::SubpassDescriptionFlags(),
-        vk::PipelineBindPoint::eGraphics,
-        boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-        inputAttachmentReferences.data(),
-        boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
-        colorAttachmentReferences.data()
-    } };
+    std::array<vk::SubpassDescription, 1> const subpassDescriptions = {
+        vk::SubpassDescription{
+            vk::SubpassDescriptionFlags(),
+            vk::PipelineBindPoint::eGraphics,
+            boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+            inputAttachmentReferences.data(),
+            boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            colorAttachmentReferences.data()
+        }
+    };
 
-    std::vector<vk::SubpassDependency> const subpassDependency = { {
-        VK_SUBPASS_EXTERNAL,
-        0,
-        vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        vk::PipelineStageFlagBits::eColorAttachmentOutput,
-        vk::AccessFlags(),
-        vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
-    } };
+    std::array<vk::SubpassDependency, 1> const subpassDependency = {
+        vk::SubpassDependency{
+            VK_SUBPASS_EXTERNAL,
+            0,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::AccessFlags(),
+            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
+        }
+    };
 
     vk::RenderPassCreateInfo const renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),

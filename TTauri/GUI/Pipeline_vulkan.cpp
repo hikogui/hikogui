@@ -33,18 +33,20 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSe
 
     validateCommandBuffer(imageIndex);
 
-    vector<vk::Semaphore> const waitSemaphores = { inputSemaphore };
-    vector<vk::PipelineStageFlags> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+    std::array<vk::Semaphore, 1> const waitSemaphores = { inputSemaphore };
+    std::array<vk::PipelineStageFlags, 1> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     BOOST_ASSERT(waitSemaphores.size() == waitStages.size());
 
-    vector<vk::Semaphore> const signalSemaphores = { imageObject.renderFinishedSemaphore };
-    vector<vk::CommandBuffer> const commandBuffersToSubmit = { imageObject.commandBuffer };
+    std::array<vk::Semaphore, 1> const signalSemaphores = { imageObject.renderFinishedSemaphore };
+    std::array<vk::CommandBuffer, 1> const commandBuffersToSubmit = { imageObject.commandBuffer };
 
-    vector<vk::SubmitInfo> const submitInfo = { {
+    std::array<vk::SubmitInfo, 1> const submitInfo = {
+        vk::SubmitInfo{
             boost::numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
             boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
             boost::numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
-    } };
+        }
+    };
 
     vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
 
@@ -166,7 +168,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     const auto vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
     const auto shaderStages = createShaderStages();
 
-    const std::vector<vk::DescriptorSetLayout> descriptorSetLayouts = {descriptorSetLayout};
+    const std::array<vk::DescriptorSetLayout, 1> descriptorSetLayouts = {descriptorSetLayout};
 
     pipelineLayout = vulkanDevice->createPipelineLayout({
         vk::PipelineLayoutCreateFlags(),
@@ -186,13 +188,15 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         VK_FALSE
     };
 
-    const std::vector<vk::Viewport> viewports = { {
+    const std::array<vk::Viewport, 1> viewports = {
+        vk::Viewport{
             0.0f, 0.0f,
             boost::numeric_cast<float>(extent.width), boost::numeric_cast<float>(extent.height),
             0.0f, 1.0f
-    } };
+        }
+    };
 
-    const std::vector<vk::Rect2D> scissors = { scissor };
+    const std::array<vk::Rect2D, 1> scissors = { scissor };
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
@@ -226,10 +230,10 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
         VK_TRUE, // blendEnable
-        vk::BlendFactor::eSrcAlpha, // srcColorBlendFactor
+        vk::BlendFactor::eOne, // srcColorBlendFactor
         vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
         vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eSrcAlpha, // srcAlphaBlendFactor
+        vk::BlendFactor::eOne, // srcAlphaBlendFactor
         vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
         vk::BlendOp::eAdd, // aphaBlendOp
         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
@@ -349,8 +353,8 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
     auto _window = window.lock();
 
     let backgroundColor = color_cast<Color_sRGB>(_window->widget->backgroundColor).value;
-    std::array<float,4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
-    vector<vk::ClearValue> const clearColors = { { _backgroundColor } };
+    std::array<float, 4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
+    std::array<vk::ClearValue, 1> const clearColors = { { _backgroundColor } };
 
     commandBuffer.beginRenderPass({
             renderPass, 

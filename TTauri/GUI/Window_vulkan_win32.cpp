@@ -148,7 +148,6 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
         RECT* rect;
         MINMAXINFO* minmaxinfo;
-        glm::vec2 mousePosition;
 
         MouseEvent mouseEvent;
 

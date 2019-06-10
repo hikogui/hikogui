@@ -9,6 +9,8 @@
 
 namespace TTauri::Widgets {
 
+using namespace std::literals;
+
 ButtonWidget::ButtonWidget(std::string const label) :
     label(std::move(label)), Widget()
 {
@@ -25,7 +27,7 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     }
     let currentScale = box.currentExtent() / currentExtent;
 
-    let key = (boost::format("ButtonWidget(%i,%i,%s,%i)") % currentExtent.x % currentExtent.y % label % state()).str();
+    key.update("ButtonWidget", currentExtent, label, state());
 
     vulkanDevice->imagePipeline->exchangeImage(image, key, currentExtent);
 
@@ -62,7 +64,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     Color_sRGBLinear backgroundColor{};
     Color_sRGBLinear labelColor{};
     if (value) {
-        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
+        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.3f, 0.3f, 1.0f, 1.0f} });
         labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
     } else {
         backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });

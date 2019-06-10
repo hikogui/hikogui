@@ -44,7 +44,10 @@ public:
 
 protected:
     void drawImage(GUI::PipelineImage::Image &image);
+private:
 
+    // Shared key to reduce number of allocations.
+    BinaryKey key;
 };
 
 }

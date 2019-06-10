@@ -5,6 +5,7 @@
 
 #include "required.hpp"
 #include "Application.hpp"
+#include "BinaryKey.hpp"
 #include "Color.hpp"
 #include "File.hpp"
 #include "FileMapping.hpp"

@@ -17,7 +17,7 @@ struct Image {
     bool drawn = false;
     size_t retainCount = 1;
 
-    std::string key;
+    BinaryKey key;
     u64extent2 extent;
 
     //! Number of pages in width and height.
@@ -25,7 +25,7 @@ struct Image {
 
     std::vector<Page> pages;
 
-    Image(std::string key, u64extent2 extent, u64extent2 pageExtent, std::vector<Page> pages) :
+    Image(BinaryKey key, u64extent2 extent, u64extent2 pageExtent, std::vector<Page> pages) :
         key(std::move(key)),
         extent(std::move(extent)),
         pageExtent(std::move(pageExtent)),
