@@ -36,7 +36,7 @@ void ImageWidget::drawBackingImage()
     let glyph = myFont.glyphs.at(glyphIndex);
 
     // Draw something.
-    let color = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.5f, 1.0f, 0.5f, 1.0f} });
+    let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
     auto path1 = Draw::Path();
     path1.addGlyph(glyph, {20.0, 30.0}, 8.0);
     path1.render(linearMap, color , Draw::SubpixelMask::Orientation::Unknown);

@@ -22,7 +22,7 @@ enum class ThemeFontStyle {
 struct FontStyle {
     std::shared_ptr<Font> font;
     float fontSize;
-    Color_XYZ color;
+    wsRGBA color;
 };
 
 struct Theme {

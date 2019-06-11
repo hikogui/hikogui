@@ -10,6 +10,150 @@
 
 namespace TTauri {
 
+/*! Wide Gammut linear sRGB with pre-mulitplied alpha.
+ * This RGB space is compatible with sRGB but can represent colours outside of the
+ * sRGB gammut. Becuase it is linear and has pre-multiplied alpha it is easy to use
+ * for compositing.
+ */
+struct wsRGBApm {
+    glm::i16vec4 color;
+
+    wsRGBA() : color({0, 0, 0, 0}) {}
+
+    /*! Set the colour using the pixel value.
+     * No conversion is done with the given value.
+     */
+    wsRGBA(glm::i16vec4 c) :
+        color(c) {}
+
+    /*! Set the colour with linear-sRGB values.
+     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
+     * This constructor expect colour which has not been pre-multiplied with the alpha.
+     */
+    wsRGBA(glm::vec4 c) :
+        color(static_cast<i16vec4>(glm::vec4(c.rgb * c.a) * 4095.0f)) {}
+
+    /*! Set the colour with linear-sRGB values.
+     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
+     * This constructor expect colour which has not been pre-multiplied with the alpha.
+     */
+    wsRGBA(double r, double g, double b, double a) : wsRGBA({r, g, b, a}) {}
+
+    int16_t const &r() const { return color.r; }
+    int16_t const &g() const { return color.g; }
+    int16_t const &b() const { return color.b; }
+    int16_t const &a() const { return color.a; }
+
+    int16_t &r() { return color.r; }
+    int16_t &g() { return color.g; }
+    int16_t &b() { return color.b; }
+    int16_t &a() { return color.a; }
+
+    bool isTransparant() const { return color.a <= 0; }
+    bool isOpaque() const { return color.a >= 4095; }
+
+    std::string string() const {
+        let floatColor = to_i64vec4();
+        return (boost::format("<%.3f, %.3f, %.3f, %.3f>") % floatColor.r % floatColor.g % floatColor.b % floatColor.a).str();
+    }
+
+    void composit(wsRGBA over) {
+        if (over.isTransparent()) {
+            return;
+        }
+        if (over.isOpaque()) {
+            color = over.color;
+            return;
+        }
+
+        // 15 bit
+        constexpr int64_t overVmax = 0x7fff;
+        let overV = static_cast<glm::i64vec4>(over.color);
+
+        // 15 bit
+        constexpr int64_t underVmax = 0x7fff;
+        let underV = static_cast<glm::i64vec4>(color);
+
+        // 15 bit
+        constexpr int64_t oneMinusOverAlphaMax = 0x7fff;
+        let oneMinusOverAlpha = overVmax - overV.a();
+
+        // 15 bit + 15 bit == 15 bit + 15 bit
+        static_assert(overVmax * 0x7fff == underVmax * oneMinusOverAlphaMax);
+        constexpr int64_t resultVmax = underVmax * oneMinusOverAlphaMax;
+        let resultV = overV * 0x7fff + underV * oneMinusOverAlphaMax;
+
+        constexpr int64_t resultVdivider = resultVmax / 0x7fff;
+        color = static_cast<glm::i16vec4>(resultV / resultVdivider);
+    }
+
+    void subpixelComposit(wsRGBA over, glm::u8vec3 mask) {
+        if (mask.r == mask.g && mask.r == mask.b) {
+            if (mask.r == 0) {
+                return;
+            } else if (mask.r == 255) {
+                return composit(over);
+            } else {
+                // calculate 'over' by multiplying all components with the new alpha.
+                // This means that the color stays pre-multiplied.
+                constexpr int64_t newOverVmax = 0x7fff * 0xff;
+                let newOverV = static_cast<glm::i64vec4>(over.color) * mask.r;
+
+                constexpr int64_t newOverVdivider = newOverVmax / 0x7fff;
+                let newOver = { static_cast<glm::i16vec4>(newOverV / newOverVdivider) };
+                return composit(newOver);
+            }
+        }
+
+        // 8 bit
+        constexpr int64_t maskVmax = 0xff;
+        let maskV = glm::i64vec4{
+            mask,
+            (static_cast<int64_t>(mask.r) + static_cast<int64_t>(mask.g) + static_cast<int64_t>(mask.b)) / 3
+        };
+
+        // 15 bit
+        constexpr int64_t underVmax = 0x7fff;
+        let underV = static_cast<glm::i64vec4>(color);
+
+        // 15 bit
+        constexpr int64_t _overVmax = 0x7fff;
+        let _overV = static_cast<glm::i64vec4>(over.color);
+
+        // The over color was already pre-multiplied with it's own alpha, so
+        // it only needs to be pre multiplied with the mask.
+        // 15 bit * 23 bit = 38 bit
+        constexpr int64_t overVmax = _overVmax * maskVmax;
+        let overV = _overV * maskV;
+
+        // The alpha for each component is the subpixel-mask multiplied by the alpha of the original over.
+        // 8 bit * 15 bit = 23 bit
+        constexpr int64_t alphaVmax = maskVmax * _overVmax;
+        let alphaV = maskV * _overV.a;
+
+        // 23 bit
+        constexpr int64_t oneMinusOverAlphaVmax = alphaVmax;
+        let oneMinusOverAlphaV = glm::i64vec4{ alphaVmax, alphaVmax, alphaVmax, alphaVmax } - alphaV;
+
+        // 38 bit == 15bit + 23bit
+        static_assert(overVmax == underVmax * oneMinusOverAlphaV);
+        constexpr int64_t resultVmax = overVmax;
+        let resultV = overV + underV * oneMinusMaskV;
+
+        constexpr int64_t resultVdivider = resultVmax / 0x7fff;
+        color = static_cast<glm::i16vec4>(resultV / resultVdivider);
+    }
+};
+
+struct sRGBA {
+    glm::u8vec4 color;
+
+    sRGBA() : color({0, 0, 0, 0}) {}
+
+    sRGBA(uint32_t x) : color(
+};
+
+
 enum class ColorSpace {
     sRGB,
     XYZ

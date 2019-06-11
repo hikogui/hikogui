@@ -16,7 +16,7 @@ public:
         FULLSCREEN,
     };
 
-    Color_sRGB backgroundColor;
+    wsRGBA backgroundColor;
 
     WindowWidget(const std::weak_ptr<Window> window);
     ~WindowWidget(){};

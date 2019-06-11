@@ -149,7 +149,7 @@ struct Value {
 
     bool is_valid_type() const {
         return is_type<void>() || is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
-            is_type<Color_XYZ>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+            is_type<wsRGBA>() || is_type<sRGBA> || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
     }
 
     template<typename T>
@@ -242,7 +242,7 @@ struct Value {
     /*! Return a string representation of the value.
      * \return a string representing the value.
      */
-    std::string str() const {
+    std::string string() const {
         if (is_type<bool>()) {
             return value<bool>() ? "true" : "false";
         } else if (!has_value()) {
@@ -256,8 +256,10 @@ struct Value {
             } else {
                 return s;
             }
-        } else if (is_type<Color_XYZ>()) {
-            return color_cast<Color_sRGB>(value<Color_XYZ>()).str();
+        } else if (is_type<wsRGBA>()) {
+            return value<wsRGBA>().string();
+        } else if (is_type<sRGBA>()) {
+            return value<sRGBA>().string();
         } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
         } else if (is_type<std::filesystem::path>()) {
@@ -327,8 +329,10 @@ struct Value {
             return value<int64_t>() != 0;
         } else if (is_type<double>()) {
             return value<double>() != 0.0;
-        } else if (is_type<Color_XYZ>()) {
-            return value<Color_XYZ>().a() != 0.0; // Not transparent
+        } else if (is_type<wsRGBA>()) {
+            return value<wsRGBA>().a() != 0; // Not transparent
+        } else if (is_type<sRGBA>()) {
+            return value<sRGBA>().a() != 0; // Not transparent
         } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
         } else if (is_type<std::filesystem::path>()) {

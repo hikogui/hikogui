@@ -234,7 +234,7 @@ struct Path {
         return mask.render(getQBeziers());
     }
 
-    void render(PixelMap<uint64_t>& pixels, Color_sRGBLinear color, SubpixelMask::Orientation subpixelOrientation) const {
+    void render(PixelMap<uint64_t>& pixels, wsRGBA color, SubpixelMask::Orientation subpixelOrientation) const {
         auto mask = SubpixelMask(pixels.width * 3, pixels.height);
         mask.clear();
         mask.render(getQBeziers());

@@ -61,18 +61,18 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     let &labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let labelFontSize = 12.0;
 
-    Color_sRGBLinear backgroundColor{};
-    Color_sRGBLinear labelColor{};
+    wsRGBA backgroundColor;
+    wsRGBA labelColor;
     if (value) {
-        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.3f, 0.3f, 1.0f, 1.0f} });
-        labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
+        backgroundColor = {0.3, 0.3, 1.0, 1.0};
+        labelColor = {1.0, 1.0, 1.0, 1.0};
     } else {
-        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{1.0f, 1.0f, 1.0f, 1.0f} });
-        labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
+        backgroundColor = {1.0, 1.0, 1.0, 1.0};
+        labelColor = {0.0, 0.0, 0.0, 1.0};
     }
     if (pressed) {
-        backgroundColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.3f, 0.3f, 1.0f, 1.0f} });
-        labelColor = color_cast<Color_sRGBLinear>(Color_sRGB{ glm::vec4{0.0f, 0.0f, 0.0f, 1.0f} });
+        backgroundColor = {0.3, 0.3, 1.0, 1.0};
+        labelColor = {0.0, 0.0, 0.0, 1.0};
     }
 
     let rect = rect2{{0.0f, 0.0f}, { static_cast<float>(image.extent.width()), static_cast<float>(image.extent.height()) }};
