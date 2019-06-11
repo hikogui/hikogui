@@ -13,7 +13,7 @@ struct ASTInteger : ASTExpression {
 
     ASTInteger(Location location, int64_t value) : ASTExpression(location), value(value) {}
 
-    std::string str() const override {
+    std::string string() const override {
         return (boost::format("%i") % value).str();
     }
 

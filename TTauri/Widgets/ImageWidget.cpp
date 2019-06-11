@@ -25,7 +25,7 @@ void ImageWidget::drawBackingImage()
 
     auto vulkanDevice = device();
 
-    auto linearMap = Draw::PixelMap<uint64_t>{ backingImage->extent };
+    auto linearMap = Draw::PixelMap<wsRGBApm>{ backingImage->extent };
     linearMap.fill(0x0000'0000'0000'ffffULL);
 
     // Draw image in the fullPixelMap.
@@ -36,7 +36,7 @@ void ImageWidget::drawBackingImage()
     let glyph = myFont.glyphs.at(glyphIndex);
 
     // Draw something.
-    let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
+    let color = wsRGBApm{ 0.5f, 1.0f, 0.5f, 1.0f };
     auto path1 = Draw::Path();
     path1.addGlyph(glyph, {20.0, 30.0}, 8.0);
     path1.render(linearMap, color , Draw::SubpixelMask::Orientation::Unknown);

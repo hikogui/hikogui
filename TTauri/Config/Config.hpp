@@ -32,7 +32,7 @@ struct Config {
             }
 
             if (let location = boost::get_error_info<errinfo_location>(e)) {
-                errorMessage += location->str() + ": ";
+                errorMessage += location->string() + ": ";
             }
 
             errorMessage += e.what();
@@ -62,9 +62,9 @@ struct Config {
 
     /*! string representation of the abstract-syntax-tree.
      */
-    std::string astStr() const {
+    std::string astString() const {
         if (ast) {
-            return ast->str();
+            return ast->string();
         } else {
             return "";
         }
@@ -72,9 +72,9 @@ struct Config {
 
     /*! string representation of the configuration.
      */
-    std::string str() const {
+    std::string string() const {
         if (success()) {
-            return root.str();
+            return root.string();
         } else {
             return error();
         }

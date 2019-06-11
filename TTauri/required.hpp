@@ -9,5 +9,3 @@
  * when you have defined a variant.
  */
 #define let auto const
-
-

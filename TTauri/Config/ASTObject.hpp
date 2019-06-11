@@ -41,7 +41,7 @@ struct ASTObject : ASTExpression {
         }
     }
 
-    std::string str() const override {
+    std::string string() const override {
         std::string s = "{";
 
         bool first = true;
@@ -49,7 +49,7 @@ struct ASTObject : ASTExpression {
             if (!first) {
                 s += ",";
             }
-            s += expression->str();
+            s += expression->string();
             first = false;
         }
 

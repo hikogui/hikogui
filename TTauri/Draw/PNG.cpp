@@ -10,7 +10,7 @@ namespace TTauri::Draw {
 
 using namespace std;
 
-PixelMap<uint64_t> loadPNG(const PixelMap<uint64_t> &pixelMap, const std::filesystem::path &path)
+PixelMap<wsRGBApm> loadPNG(const PixelMap<wsRGBApm> &pixelMap, const std::filesystem::path &path)
 {
     // XXX Replace with memory mapped IO.
     string stringPath = path.string();

@@ -20,7 +20,7 @@ struct Vertex {
     rect2 clippingRectangle;
 
     //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array
-    u16vec3 atlasPosition;
+    glm::u16vec3 atlasPosition;
 
     //! The depth for depth test.
     uint16_t depth;
@@ -31,7 +31,7 @@ struct Vertex {
     //! Align to 32 bits.
     uint8_t dummy[3];
 
-    Vertex(const ImageLocation &location, glm::vec2 position, u16vec3 atlasPosition) :
+    Vertex(const ImageLocation &location, glm::vec2 position, glm::u16vec3 atlasPosition) :
         position(position),
         atlasPosition(atlasPosition),
         clippingRectangle({

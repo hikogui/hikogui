@@ -149,7 +149,7 @@ struct Value {
 
     bool is_valid_type() const {
         return is_type<void>() || is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
-            is_type<wsRGBA>() || is_type<sRGBA> || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+            is_type<wsRGBApm>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
     }
 
     template<typename T>
@@ -256,10 +256,8 @@ struct Value {
             } else {
                 return s;
             }
-        } else if (is_type<wsRGBA>()) {
-            return value<wsRGBA>().string();
-        } else if (is_type<sRGBA>()) {
-            return value<sRGBA>().string();
+        } else if (is_type<wsRGBApm>()) {
+            return value<wsRGBApm>().string();
         } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
         } else if (is_type<std::filesystem::path>()) {
@@ -271,7 +269,7 @@ struct Value {
                 if (!first) {
                     s += ",";
                 }
-                s += x.str();
+                s += x.string();
                 first = false;
             }
             return s + "]";
@@ -283,13 +281,13 @@ struct Value {
                     if (!first) {
                         s += ",";
                     }
-                    s += k + ":" + v.str();
+                    s += k + ":" + v.string();
                     first = false;
                 }
             }
             return s + "}";
         }
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not implement .str()") %
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not implement .string()") %
             type_name()).str())
         );
     }
@@ -329,10 +327,8 @@ struct Value {
             return value<int64_t>() != 0;
         } else if (is_type<double>()) {
             return value<double>() != 0.0;
-        } else if (is_type<wsRGBA>()) {
-            return value<wsRGBA>().a() != 0; // Not transparent
-        } else if (is_type<sRGBA>()) {
-            return value<sRGBA>().a() != 0; // Not transparent
+        } else if (is_type<wsRGBApm>()) {
+            return !value<wsRGBApm>().isTransparent();
         } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
         } else if (is_type<std::filesystem::path>()) {

@@ -11,7 +11,7 @@ struct ASTNull : ASTExpression {
 
     ASTNull(Location location) : ASTExpression(location) {}
 
-    std::string str() const override {
+    std::string string() const override {
         return "null";
     }
 

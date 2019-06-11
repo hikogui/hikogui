@@ -9,7 +9,7 @@ namespace TTauri::Draw {
 
 
 
-void composit(PixelMap<wsRGBA> &under, wsRGBA over, SubpixelMask const& mask)
+void composit(PixelMap<wsRGBApm> &under, wsRGBApm over, SubpixelMask const& mask)
 {
     assert(mask.height >= under.height);
     assert((mask.width * 3) >= under.width);

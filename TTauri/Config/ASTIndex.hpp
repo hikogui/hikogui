@@ -20,11 +20,11 @@ struct ASTIndex : ASTExpression {
         delete index;
     }
 
-    std::string str() const override {
+    std::string string() const override {
         if (index) {
-            return object->str() + "[" + index->str() + "]";
+            return object->string() + "[" + index->string() + "]";
         } else {
-            return object->str() + "[]";
+            return object->string() + "[]";
         }
     }
 

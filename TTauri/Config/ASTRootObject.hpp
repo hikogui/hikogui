@@ -11,7 +11,7 @@ struct ASTRootObject : ASTExpression {
 
     ASTRootObject(Location location) : ASTExpression(location)  {}
 
-    std::string str() const override {
+    std::string string() const override {
         return "/";
     }
 

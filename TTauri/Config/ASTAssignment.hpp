@@ -17,8 +17,8 @@ struct ASTAssignment : ASTExpression {
         delete expression;
     }
 
-    std::string str() const override {
-        return key->str() + ":" + expression->str();
+    std::string string() const override {
+        return key->string() + ":" + expression->string();
     }
 
     Value &executeLValue(ExecutionContext *context) const override {

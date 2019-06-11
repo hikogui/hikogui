@@ -13,7 +13,7 @@ struct ASTFloat : ASTExpression {
 
     ASTFloat(Location location, double value) : ASTExpression(location), value(value) {}
 
-    std::string str() const override {
+    std::string string() const override {
         auto s = (boost::format("%g") % value).str();
         if (s.find('.') == s.npos) {
             return s + ".";

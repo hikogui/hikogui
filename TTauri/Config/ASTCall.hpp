@@ -67,15 +67,15 @@ struct ASTCall : ASTExpression {
         }
     }
 
-    std::string str() const override {
-        std::string s = object->str() + "(";
+    std::string string() const override {
+        std::string s = object->string() + "(";
 
         bool first = true;
         for (let argument: arguments) {
             if (!first) {
                 s += ",";
             }
-            s += argument->str();
+            s += argument->string();
             first = false;
         }
 

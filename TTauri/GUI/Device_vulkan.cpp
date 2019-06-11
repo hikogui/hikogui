@@ -279,7 +279,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface)
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
-    LOG_INFO("Scoring device: %s") % str();
+    LOG_INFO("Scoring device: %s") % string();
     if (!hasRequiredFeatures(physicalIntrinsic, instance->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;

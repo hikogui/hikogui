@@ -12,11 +12,11 @@ namespace TTauri::Config {
 
 struct ASTColor : ASTExpression {
     //! The color value, stored in CIE XYZ linear color space.
-    sRGBA value;
+    wsRGBApm value;
 
     ASTColor(Location location, uint32_t value) : ASTExpression(location), value(value) {}
 
-    std::string str() const override {
+    std::string string() const override {
         return value.string();
     }
 

@@ -107,6 +107,7 @@ set(TTauriTests_srcs
     Draw/Path_tests.cpp
     Draw/PixelMap_tests.cpp
     BinaryKey_tests.cpp
+    Color_tests.cpp
     FileView_tests.cpp
     strings_tests.cpp
     math_tests.cpp

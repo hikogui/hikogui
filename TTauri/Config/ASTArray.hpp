@@ -25,7 +25,7 @@ struct ASTArray : ASTExpression {
         }
     }
 
-    std::string str() const override {
+    std::string string() const override {
         std::string s = "[";
 
         bool first = true;
@@ -33,7 +33,7 @@ struct ASTArray : ASTExpression {
             if (!first) {
                 s += ",";
             }
-            s += expression->str();
+            s += expression->string();
             first = false;
         }
 

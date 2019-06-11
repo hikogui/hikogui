@@ -12,7 +12,7 @@ struct ASTBoolean : ASTExpression {
 
     ASTBoolean(Location location, bool value) : ASTExpression(location), value(value) {}
 
-    std::string str() const override {
+    std::string string() const override {
         return value ? "true" : "false";
     }
 

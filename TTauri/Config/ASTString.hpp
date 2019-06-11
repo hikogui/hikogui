@@ -14,7 +14,7 @@ struct ASTString : ASTExpression {
         free(value);
     }
 
-    std::string str() const override {
+    std::string string() const override {
         return "\"" + value + "\"";
     }
 

@@ -93,7 +93,7 @@ struct SubpixelMask : PixelMap<uint8_t> {
 /*! Composit colors from the color table based on the mask onto destination.
  * Mask should be subpixelFiltered before use.
  */
-void composit(PixelMap<wsRGBA>& under, wsRGBA overColor, SubpixelMask const& mask);
+void composit(PixelMap<wsRGBApm>& under, wsRGBApm overColor, SubpixelMask const& mask);
 
 
 }

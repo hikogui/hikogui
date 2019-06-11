@@ -118,7 +118,7 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
 /*! Copy a image with linear 16bit-per-color-component to a
  * gamma corrected 8bit-per-color-component image.
  */
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<uint64_t> const& src);
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src);
 
 template<int N, typename Kernel>
 void horizontalFilterRow(gsl::span<uint8_t> row, Kernel kernel) {

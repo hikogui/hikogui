@@ -16,7 +16,7 @@ struct ASTName : ASTExpression {
         free(name);
     }
 
-    std::string str() const override {
+    std::string string() const override {
         return name;
     }
 
@@ -80,7 +80,7 @@ struct ASTName : ASTExpression {
             }
 
             if (let location = boost::get_error_info<errinfo_location>(e)) {
-                errorMessage += location->str() + ": ";
+                errorMessage += location->string() + ": ";
             }
 
             errorMessage += e.what();

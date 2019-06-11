@@ -41,8 +41,8 @@ struct ASTBinaryOperator : ASTExpression {
         delete right;
     }
 
-    std::string str() const override {
-        std::string s = left->str();
+    std::string string() const override {
+        std::string s = left->string();
 
         switch (op) {
         case Operator::MUL: s+= "*"; break;
@@ -66,7 +66,7 @@ struct ASTBinaryOperator : ASTExpression {
         case Operator::LOGICAL_OR: s+= " or "; break;
         }
 
-        return s + right->str();
+        return s + right->string();
     }
 
     virtual Value execute(ExecutionContext *context) const override {

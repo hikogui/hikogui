@@ -23,7 +23,7 @@ Device_base::~Device_base()
     windows.clear();
 }
 
-std::string Device_base::str() const
+std::string Device_base::string() const
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 

@@ -35,28 +35,9 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap)
     pixelMap[pixelMap.height - 1][pixelMap.width - 1] = pixelMap[pixelMap.height - 2][pixelMap.width - 2] & u32invisibleMask;
 }
 
-const auto linearToGamma = generate_array<uint8_t,257>([](auto i) {
-    let u = i / 255.0f;
-    
-    if (u <= 0.0031308f) {
-        return (u * 12.92f) * 255.0f;
-    } else {
-        return (std::pow(u * 1.055f, 1.0f / 2.4f) - 0.055f) * 255.0f;
-    }
-});
 
-static uint8_t linearToGammaInterpolate(uint16_t input)
-{
-    let index = input >> 8;
-    let low = linearToGamma[index];
-    let high = linearToGamma[index + 1];
-    let diff = high - low;
 
-    let scaledDiff = diff * (input & 0xff);
-    return low + (scaledDiff >> 8); 
-}
-
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<uint64_t> const& src)
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src)
 {
     assert(dst.width >= src.width);
     assert(dst.height >= src.height);
@@ -65,26 +46,7 @@ void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<uint64_t> const& src)
         let srcRow = src.at(rowNr);
         let dstRow = dst.at(rowNr);
         for (size_t columnNr = 0; columnNr < src.width; columnNr++) {
-            let valueLinear = srcRow[columnNr];
-
-            let valueLinearRed = (valueLinear >> 48) & 0xffff;
-            let valueLinearGreen = (valueLinear >> 32) & 0xffff;
-            let valueLinearBlue = (valueLinear >> 16) & 0xffff;
-            let valueLinearAlpha = valueLinear & 0xffff;
-
-            let valueGammaRed = linearToGammaInterpolate(valueLinearRed);
-            let valueGammaGreen = linearToGammaInterpolate(valueLinearGreen);
-            let valueGammaBlue = linearToGammaInterpolate(valueLinearBlue);
-            let valueGammaAlpha = valueLinearAlpha >> 8;
-
-            uint32_t valueGamma = (
-                (valueGammaRed << 24) |
-                (valueGammaGreen << 16) |
-                (valueGammaBlue << 8) |
-                valueGammaAlpha
-            );
-
-            dstRow[columnNr] = boost::endian::native_to_big(valueGamma);
+            dstRow[columnNr] = boost::endian::native_to_big(srcRow[columnNr].to_sRGBApm_u32());
         }
     }
 }

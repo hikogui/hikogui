@@ -20,8 +20,8 @@ struct ASTNode {
  
     ASTNode(Location location) : location(location) {}
 
-    virtual std::string str() const {
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("str() not implemented for %s") %
+    virtual std::string string() const {
+        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("string() not implemented for %s") %
             typeid(*this).name()).str())
             << errinfo_location(location)
         );

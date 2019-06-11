@@ -13,7 +13,7 @@ WindowWidget::WindowWidget(const std::weak_ptr<Window> window) :
 {
     this->window = move(window);
 
-    backgroundColor = {{0.27f, 0.31f, 0.10f, 1.0f}};
+    backgroundColor = wsRGBApm{ 0x444f19ff };
 }
 
 

@@ -21,14 +21,14 @@ struct Location {
 
     Location(std::shared_ptr<std::filesystem::path> const &file, int line, int column) : file(file), line(line), column(column) {}
 
-    std::string str() const {
+    std::string string() const {
         return (boost::format("%s:%i:%i") % file->generic_string() % line % column).str();
     }
 };
 
 inline std::ostream& operator<<(std::ostream &os, const Location &l)
 {
-    os << l.str();
+    os << l.string();
     return os;
 }
 

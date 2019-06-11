@@ -2,7 +2,9 @@
 // All rights reserved.
 
 #include "PixelMap.hpp"
+#include "SubpixelMask.hpp"
 #include "Path.hpp"
+#include "TTauri/Color.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -59,20 +61,22 @@ TEST(PixelMapTests, maskComposit) {
     mask[1][4] = 255;
     mask[1][5] = 255;
 
-    auto image = PixelMap<uint64_t>(3, 3);
+    auto image = PixelMap<wsRGBApm>(3, 3);
     image.clear();
 
-    composit(image, 0xffffffffffffffffULL, mask);
+    let transparent = wsRGBApm{ 0.0, 0.0, 0.0, 0.0 };
+    let white = wsRGBApm{ 1.0, 1.0, 1.0, 1.0 };
+    composit(image, white, mask);
 
-    ASSERT_EQ(image[0][0], 0);
-    ASSERT_EQ(image[0][1], 0);
-    ASSERT_EQ(image[0][2], 0);
-    ASSERT_EQ(image[1][0], 0);
-    ASSERT_EQ(image[1][1], 0xffffffffffffffffULL);
-    ASSERT_EQ(image[1][2], 0);
-    ASSERT_EQ(image[2][0], 0);
-    ASSERT_EQ(image[2][1], 0);
-    ASSERT_EQ(image[2][2], 0);
+    ASSERT_EQ(image[0][0], transparent);
+    ASSERT_EQ(image[0][1], transparent);
+    ASSERT_EQ(image[0][2], transparent);
+    ASSERT_EQ(image[1][0], transparent);
+    ASSERT_EQ(image[1][1], white);
+    ASSERT_EQ(image[1][2], transparent);
+    ASSERT_EQ(image[2][0], transparent);
+    ASSERT_EQ(image[2][1], transparent);
+    ASSERT_EQ(image[2][2], transparent);
 }
 
 TEST(PixelMapTests, maskComposit2) {
@@ -82,12 +86,13 @@ TEST(PixelMapTests, maskComposit2) {
     mask[1][4] = 255;
     mask[1][5] = 255;
 
-    auto image = PixelMap<uint64_t>(3, 3);
+    auto image = PixelMap<wsRGBApm>(3, 3);
     image.clear();
 
-    composit(image, 0x1234'5678'9abc'ffffULL, mask);
+    let color = wsRGBApm{ 0.25, 0.50, 0.75, 1.0 };
+    composit(image, color, mask);
 
-    ASSERT_EQ(image[1][1], 0x1234'5678'9abc'ffffULL);
+    ASSERT_EQ(image[1][1], color);
 }
 
 TEST(PixelMapTests, maskComposit3) {
@@ -97,11 +102,18 @@ TEST(PixelMapTests, maskComposit3) {
     mask[1][4] = 0x44;
     mask[1][5] = 0x22;
 
-    auto image = PixelMap<uint64_t>(3, 3);
+    auto image = PixelMap<wsRGBApm>(3, 3);
     image.clear();
 
-    composit(image, 0xffff'ffff'ffff'ffffULL, mask);
+    let white = wsRGBApm{ 1.0, 1.0, 1.0, 1.0 };
+    composit(image, white, mask);
 
-    ASSERT_EQ(image[1][1], 0x8888'4444'2222'4f4fULL);
+    let alpha = ((0x88 + 0x44 + 0x22) / 3) / 255.0f;
+    let red = 0x88 / 255.0f;
+    let green = 0x44 / 255.0f;
+    let blue = 0x22 / 255.0f;
+
+    let compositColor = wsRGBApm{ red / alpha, green / alpha, blue / alpha, alpha };
+    ASSERT_EQ(image[1][1].string(), compositColor.string());
 }
 

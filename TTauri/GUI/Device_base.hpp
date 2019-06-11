@@ -34,7 +34,7 @@ public:
      */
     std::vector<std::shared_ptr<Window>> windows;
 
-    std::string str() const;
+    std::string string() const;
 
     Device_base();
     virtual ~Device_base();

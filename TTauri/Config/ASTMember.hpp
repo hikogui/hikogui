@@ -20,8 +20,8 @@ struct ASTMember : ASTExpression {
         delete object;
     }
 
-    std::string str() const override {
-        return object->str() + "." + name;
+    std::string string() const override {
+        return object->string() + "." + name;
     }
 
     Value &executeLValue(ExecutionContext *context) const override {
