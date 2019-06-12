@@ -17,11 +17,11 @@ int64_t parseInteger(const char *text, int radix, bool negative)
         auto c = text[offset];
         if (c >= '0' && c <= '9') {
             value *= radix;
-            value += (c - '0');
+            value += (static_cast<int64_t>(c) - '0');
             offset++;
         } else if (c >= 'a' && c <= 'f' || c >= 'A' && c <='F') {
             value *= radix;
-            value += ((c | 0x20) - 'a' + 10);
+            value += ((static_cast<int64_t>(c) | 0x20) - 'a' + 10);
             offset++;
         } else if (c == '_') {
             offset++;
@@ -51,7 +51,7 @@ double parseFloat(const char *text) {
         auto c = text[offset];
         if (c >= '0' && c <= '9') {
             value *= 10;
-            value += (c - '0');
+            value += (static_cast<int64_t>(c) - '0');
             offset++;
             if (fractional > 0) {
                 fractional*= 10;

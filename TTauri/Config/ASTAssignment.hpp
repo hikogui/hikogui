@@ -34,7 +34,8 @@ struct ASTAssignment : ASTExpression {
     }
 
     void executeStatement(ExecutionContext *context) const override {
-        execute(context);
+        // We are ignoring the return value here, not fast, but a lot simpler.
+        [[gsl::supress(es.84)]] execute(context);
     }
 };
 

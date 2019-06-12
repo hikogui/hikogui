@@ -22,25 +22,26 @@ constexpr float oneTwentySeventh = 1.0f / 27.0f;
 
 template<typename T, int N>
 struct results {
-    static const size_t maxCount = N;
+    static constexpr size_t maxCount = N;
     using element_type = T;
     using const_iterator = typename std::array<T,N>::const_iterator;
 
     ptrdiff_t count;
     std::array<T,N> value;
 
-    results() : count(0) {}
-    results(T a) : count(1) {
+    results() : count(0), value() {}
+
+    results(T a) : count(1), value() {
         value[0] = a;
     }
 
-    results(T a, T b) : count(2) {
+    results(T a, T b) : count(2), value() {
         value[0] = a;
         value[1] = b;
         sort();
     }
 
-    results(T a, T b, T c) : count(3) {
+    results(T a, T b, T c) : count(3), value() {
         value[0] = a;
         value[1] = b;
         value[2] = c;
@@ -48,9 +49,11 @@ struct results {
     }
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
-    results(results<T,O> const &other) : count(other.count) {
-        for (size_t i = 0; i < other.maxCount; i++) {
-            value[i] = other.value[i];
+    results(results<T,O> const &other) : count(other.count), value() {
+        if constexpr (other.maxCount > 0) {
+            for (size_t i = 0; i < other.maxCount; i++) {
+                value[i] = other.value[i];
+            }
         }
     }
 

@@ -68,7 +68,7 @@ void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Verte
     //rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);
 
     GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0;
+    location.depth = depth + 0.0f;
     location.origin = {backingImage->extent.x * 0.5, backingImage->extent.y * 0.5};
     location.position = box.currentPosition() + location.origin;
     location.rotation = rotation;

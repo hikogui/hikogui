@@ -83,7 +83,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
 }
 
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    Window_vulkan(move(delegate), title)
+    Window_vulkan(move(delegate), title), trackMouseLeaveEventParameters()
 {
 }
 
@@ -177,12 +177,12 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
         case WM_GETMINMAXINFO:
             minmaxinfo = to_ptr<MINMAXINFO>(lParam);
             // XXX - figure out size of decoration to remove these constants.
-            minmaxinfo->ptMaxSize.x = maximumWindowExtent.width() + 26;
-            minmaxinfo->ptMaxSize.y = maximumWindowExtent.height() + 39;
-            minmaxinfo->ptMinTrackSize.x = minimumWindowExtent.width() + 26;
-            minmaxinfo->ptMinTrackSize.y = minimumWindowExtent.height() + 39;
-            minmaxinfo->ptMaxTrackSize.x = maximumWindowExtent.width() + 26;
-            minmaxinfo->ptMaxTrackSize.y = maximumWindowExtent.height() + 39;
+            minmaxinfo->ptMaxSize.x = boost::numeric_cast<long>(maximumWindowExtent.width() + 26);
+            minmaxinfo->ptMaxSize.y = boost::numeric_cast<long>(maximumWindowExtent.height() + 39);
+            minmaxinfo->ptMinTrackSize.x = boost::numeric_cast<long>(minimumWindowExtent.width() + 26);
+            minmaxinfo->ptMinTrackSize.y = boost::numeric_cast<long>(minimumWindowExtent.height() + 39);
+            minmaxinfo->ptMaxTrackSize.x = boost::numeric_cast<long>(maximumWindowExtent.width() + 26);
+            minmaxinfo->ptMaxTrackSize.y = boost::numeric_cast<long>(maximumWindowExtent.height() + 39);
             break;
 
         case WM_LBUTTONDOWN:
@@ -248,8 +248,8 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             goto parseMouseEvent;
 
         parseMouseEvent:
-            mouseEvent.position.x = GET_X_LPARAM(lParam);
-            mouseEvent.position.y = currentWindowExtent.height() - GET_Y_LPARAM(lParam);
+            mouseEvent.position.x = boost::numeric_cast<float>(GET_X_LPARAM(lParam));
+            mouseEvent.position.y = boost::numeric_cast<float>(currentWindowExtent.height() - GET_Y_LPARAM(lParam));
             mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
             mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
             mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;

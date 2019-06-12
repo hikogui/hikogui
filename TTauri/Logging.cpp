@@ -64,7 +64,7 @@ std::string getLastErrorMessage()
     );
 
     let message = translateString<std::string>(std::wstring(c16_message));
-    delete c16_message;
+    delete [] c16_message;
 
     return message;
 }

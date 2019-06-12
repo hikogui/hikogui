@@ -40,8 +40,8 @@ public:
      * This allows for the widget to be scaled, instead of redrawn.
      */
     extent2 currentExtent;
-
-    size_t depth = 0;
+     
+    float depth = 0;
 
     /*! Constructor for creating subviews.
      */

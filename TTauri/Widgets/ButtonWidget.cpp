@@ -34,7 +34,7 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     drawImage(*image);
 
     GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0;
+    location.depth = depth + 0.0f;
     location.origin = {0.0, 0.0};
     location.position = box.currentPosition() + location.origin;
     location.scale = currentScale;

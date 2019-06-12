@@ -120,7 +120,7 @@ struct BinaryKey {
     BinaryKey(Targs... Fargs) : data(binarykey_create_data(Fargs...)) {}
 
     BinaryKey(BinaryKey const &other) : data(other.data) {}
-    BinaryKey(BinaryKey &&other) : data(std::move(other.data)) {}
+    BinaryKey(BinaryKey &&other) noexcept : data(std::move(other.data)) {}
 
     template<typename... Targs>
     void update(Targs... Fargs) {

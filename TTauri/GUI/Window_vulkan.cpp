@@ -15,7 +15,7 @@ namespace TTauri::GUI {
 using namespace std;
 
 Window_vulkan::Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    Window_base(move(delegate), move(title))
+    Window_base(move(delegate), move(title)), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
 
@@ -176,7 +176,10 @@ void Window_vulkan::build()
         buildSemaphores();
         imagePipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
 
-        windowChangedSize({ swapchainImageExtent.width, swapchainImageExtent.height });
+        windowChangedSize({
+            boost::numeric_cast<float>(swapchainImageExtent.width),
+            boost::numeric_cast<float>(swapchainImageExtent.height)
+        });
         state = State::READY_TO_RENDER;
     }
 }

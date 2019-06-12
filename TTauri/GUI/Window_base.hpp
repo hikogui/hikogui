@@ -129,18 +129,18 @@ protected:
     u32rect2 OSWindowRectangle;
 
     //! The minimum window extent as calculated by laying out all the widgets.
-    u32extent2 minimumWindowExtent;
+    extent2 minimumWindowExtent;
 
     //! The maximum window extent as calculated by laying out all the widgets.
-    u32extent2 maximumWindowExtent;
+    extent2 maximumWindowExtent;
 
     //! The current window extent as set by the GPU library.
-    u32extent2 currentWindowExtent;
+    extent2 currentWindowExtent;
 
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void windowChangedSize(u32extent2 extent) {
+    virtual void windowChangedSize(extent2 extent) {
         removeCurrentWindowExtentConstraints();
         currentWindowExtent = extent;
         addCurrentWindowExtentConstraints();
@@ -210,13 +210,11 @@ private:
 
         widgetSolver.suggest(widget->box.width, 0);
         widgetSolver.suggest(widget->box.height, 0);
-        minimumWindowExtent.width() = widget->box.width.value();
-        minimumWindowExtent.height() = widget->box.height.value();
+        minimumWindowExtent = widget->box.currentExtent();
 
         widgetSolver.suggest(widget->box.width, static_cast<double>(std::numeric_limits<uint32_t>::max()));
         widgetSolver.suggest(widget->box.height, static_cast<double>(std::numeric_limits<uint32_t>::max()));
-        maximumWindowExtent.x = widget->box.width.value();
-        maximumWindowExtent.y = widget->box.height.value();
+        maximumWindowExtent = widget->box.currentExtent();
 
         LOG_INFO("Window '%s' minimumExtent(%i,%i) maximumExtent(%i,%i)") %
             title %

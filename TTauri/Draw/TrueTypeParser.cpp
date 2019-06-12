@@ -178,7 +178,7 @@ struct MAXPTable {
 static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
 {
     let &entry = at<CMAPFormat4>(bytes, 0);
-    let segCount = entry.segCountX2.value() / 2;
+    let segCount = static_cast<size_t>(entry.segCountX2.value()) / 2;
 
     let endCodesOffset = sizeof(CMAPFormat4);
     let endCodes = make_span<big_uint16_buf_t>(bytes, endCodesOffset, segCount);
@@ -193,7 +193,7 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
     let idRangeIndices = make_span<big_uint16_buf_t>(bytes, idRangeIndiciesOffset, segCount);
 
     std::map<char32_t, size_t> characterToGlyph;
-    for (uint16_t segmentIndex = 0; segmentIndex < segCount; segmentIndex++) {
+    for (size_t segmentIndex = 0; segmentIndex < segCount; segmentIndex++) {
         let startCode = startCodes.at(segmentIndex).value();
         let endCode = endCodes.at(segmentIndex).value();
         let idDelta = idDeltas.at(segmentIndex).value();
@@ -205,7 +205,7 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
                 // Calculation must be done modulo 65536.
                 characterToGlyph[c] = (c + idDelta) & 0xffff;
             } else {
-                let index = idRangeIndex + idRangeIndexOffset + 2*(c - startCode);
+                let index = idRangeIndex + idRangeIndexOffset + 2*static_cast<size_t>(c - startCode);
                 characterToGlyph[c] = at<big_uint16_buf_t>(bytes, index).value();
             }
         }
@@ -310,7 +310,7 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
     let &entry = at<GLYFEntry>(bytes, offset);
     offset += sizeof(GLYFEntry);
 
-    let numberOfContours = entry.numberOfContours.value();
+    let numberOfContours = static_cast<size_t>(entry.numberOfContours.value());
     let endPoints = make_span<big_uint16_buf_t>(bytes, offset, numberOfContours);
     offset += numberOfContours * sizeof(uint16_t);
 
@@ -393,9 +393,12 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
     size_t pointNr = 0;
     std::vector<BezierPoint> points;
     for (let flag : flags) {
+        x += xCoordinates.at(pointNr);
+        y += yCoordinates.at(pointNr);
+
         glyph.points.emplace_back(
-            static_cast<float>(x += xCoordinates.at(pointNr)) * scale,
-            static_cast<float>(y += yCoordinates.at(pointNr)) * scale,
+            x * scale,
+            y * scale,
             (flag & FLAG_ON_CURVE) > 0
         );
         pointNr++;
@@ -585,13 +588,14 @@ static void parseHMTX(std::vector<Glyph> &glyphs, gsl::span<std::byte> horizonta
     offset += numberOfHMetrics * sizeof(HMTXEntry);
     let leftSideBearings = make_span<FWord_buf_t>(horizontalMetricsData, offset, glyphs.size() - numberOfHMetrics);
 
-    float advanceWidth;
+    float advanceWidth = 0.0f;
     float leftSideBearing;
     for (size_t i = 0; i < glyphs.size(); i++) {
         if (i < numberOfHMetrics) {
             advanceWidth = longHorizontalMetricTable.at(i).advanceWidth.value(unitsPerEm);
             leftSideBearing = longHorizontalMetricTable.at(i).leftSideBearing.value(unitsPerEm);
         } else {
+            //advanceWidth will be repeated.
             leftSideBearing = leftSideBearings.at(i - numberOfHMetrics).value(unitsPerEm);
         }
 

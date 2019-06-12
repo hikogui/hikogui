@@ -31,11 +31,11 @@ struct grapheme {
         return *this;
     }
 
-    grapheme(grapheme&& other) {
+    grapheme(grapheme&& other) noexcept {
         codePoints = std::move(other.codePoints);
     }
 
-    grapheme& operator=(grapheme&& other) {
+    grapheme& operator=(grapheme&& other) noexcept {
         codePoints = std::move(other.codePoints);
         return *this;
     }

@@ -26,7 +26,7 @@ struct ImageLocation {
     rect2 clippingRectangle;
 
     //! Depth location of the rendered image.
-    size_t depth;
+    float depth;
 
     //! Transparency of the image.
     float alpha;

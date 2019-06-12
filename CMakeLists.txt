@@ -8,7 +8,6 @@ if (MSVC)
 	add_definitions(-DWIN32 -D_WINDOWS -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 endif ()
 
-
 add_subdirectory(Utilities)
 add_subdirectory(ThirdPartyLibraries)
 add_subdirectory(TTauri)
