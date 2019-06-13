@@ -197,7 +197,7 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
         let startCode = startCodes.at(segmentIndex).value();
         let endCode = endCodes.at(segmentIndex).value();
         let idDelta = idDeltas.at(segmentIndex).value();
-        let idRangeIndex = idRangeIndices.at(segmentIndex).value();
+        let idRangeIndex = static_cast<size_t>(idRangeIndices.at(segmentIndex).value());
         let idRangeIndexOffset = idRangeIndiciesOffset + 2*segmentIndex;
 
         for (char32_t c = startCode; c <= endCode; c++) {
@@ -205,7 +205,7 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
                 // Calculation must be done modulo 65536.
                 characterToGlyph[c] = (c + idDelta) & 0xffff;
             } else {
-                let index = idRangeIndex + idRangeIndexOffset + 2*static_cast<size_t>(c - startCode);
+                let index = idRangeIndex + idRangeIndexOffset + 2*(static_cast<size_t>(c) - startCode);
                 characterToGlyph[c] = at<big_uint16_buf_t>(bytes, index).value();
             }
         }
@@ -573,7 +573,7 @@ static std::vector<gsl::span<std::byte>> parseLOCA(gsl::span<std::byte> bytes, g
 
         for (size_t i = 0; i < numberOfGlyphs; i++) {
             let offset = static_cast<size_t>(shortTable.at(i).value()) * 2;
-            let size = static_cast<size_t>(shortTable.at(i + 1).value() * 2) - offset;
+            let size = static_cast<size_t>(shortTable.at(i + 1).value()) * 2 - offset;
             r.emplace_back(glyfBytes.subspan(offset, size));
         }
     }

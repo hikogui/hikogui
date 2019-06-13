@@ -3,12 +3,16 @@
 
 #pragma once
 
-#include "TTauri/all.hpp"
-
+#include "TTauri/geometry.hpp"
+#include "TTauri/required.hpp"
 #include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <string>
 #include <algorithm>
+
+namespace TTauri {
+struct wsRGBApm;
+}
 
 namespace TTauri::Draw {
 

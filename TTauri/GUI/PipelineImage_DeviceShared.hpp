@@ -3,27 +3,35 @@
 
 #pragma once
 
-#include "PipelineImage_Image.hpp"
 #include "PipelineImage_TextureMap.hpp"
 #include "PipelineImage_Page.hpp"
 #include "Device_forward.hpp"
-#include "TTauri/Draw/all.hpp"
+#include "TTauri/BinaryKey.hpp"
+#include "TTauri/geometry.hpp"
+#include "TTauri/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
+#include <boost/exception/exception.hpp>
+
+namespace TTauri::Draw {
+template<typename T> struct PixelMap;
+}
 
 namespace TTauri::GUI::PipelineImage {
+
+struct Image;
 
 struct DeviceShared final {
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    static const size_t atlasNrHorizontalPages = 60;
-    static const size_t atlasNrVerticalPages = 60;
-    static const size_t atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
-    static const size_t atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
-    static const size_t atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
-    static const size_t atlasMaximumNrImages = 16;
-    static const size_t stagingImageWidth = 2048;
-    static const size_t stagingImageHeight = 1024;
+    static constexpr size_t atlasNrHorizontalPages = 60;
+    static constexpr size_t atlasNrVerticalPages = 60;
+    static constexpr size_t atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
+    static constexpr size_t atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
+    static constexpr size_t atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
+    static constexpr size_t atlasMaximumNrImages = 16;
+    static constexpr size_t stagingImageWidth = 2048;
+    static constexpr size_t stagingImageHeight = 1024;
 
     std::weak_ptr<Device> device;
 

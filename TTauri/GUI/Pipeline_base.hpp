@@ -5,10 +5,10 @@
 
 #include "Device_forward.hpp"
 #include "Window_forward.hpp"
-#include "TTauri/all.hpp"
+#include <boost/exception/exception.hpp>
+#include <memory>
 
 namespace TTauri::GUI {
-
 
 class Pipeline_base {
 public:

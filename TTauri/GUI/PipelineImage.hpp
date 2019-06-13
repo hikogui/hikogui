@@ -8,7 +8,6 @@
 #include "PipelineImage_Vertex.hpp"
 #include "globals.hpp"
 #include "Device_forward.hpp"
-#include "TTauri/all.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 
@@ -19,10 +18,10 @@ namespace TTauri::GUI::PipelineImage {
  */
 class PipelineImage : public Pipeline_vulkan {
 public:
-    static const size_t maximumNumberOfVertices = 65536;
-    static const size_t maximumNumberOfSquares = maximumNumberOfVertices / 4;
-    static const size_t maximumNumberOfTriangles = maximumNumberOfSquares * 2;
-    static const size_t maximumNumberOfIndices = maximumNumberOfTriangles * 3;
+    static constexpr size_t maximumNumberOfVertices = 65536;
+    static constexpr size_t maximumNumberOfSquares = maximumNumberOfVertices / 4;
+    static constexpr size_t maximumNumberOfTriangles = maximumNumberOfSquares * 2;
+    static constexpr size_t maximumNumberOfIndices = maximumNumberOfTriangles * 3;
     
     PipelineImage(const std::shared_ptr<Window> window);
     ~PipelineImage() {};

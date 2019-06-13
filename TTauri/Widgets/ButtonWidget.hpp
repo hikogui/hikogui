@@ -3,7 +3,9 @@
 
 #pragma once
 
-#include "TTauri/GUI/all.hpp"
+#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/GUI/Mouse.hpp"
+#include "TTauri/BinaryKey.hpp"
 #include <memory>
 #include <string>
 #include <array>

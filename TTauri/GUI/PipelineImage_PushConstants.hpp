@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/all.hpp"
 #include <vulkan/vulkan.hpp>
+#include <glm/glm.hpp>
 
 namespace TTauri::GUI::PipelineImage {
 

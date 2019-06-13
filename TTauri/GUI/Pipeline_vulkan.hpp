@@ -56,7 +56,7 @@ public:
 protected:
     struct FrameBufferObjects {
         vk::CommandBuffer commandBuffer;
-        bool commandBufferValid;
+        bool commandBufferValid = false;
         vk::Semaphore renderFinishedSemaphore;
         vk::DescriptorSet descriptorSet;
         uint64_t descriptorSetVersion = 0;

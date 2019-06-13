@@ -34,13 +34,11 @@ set(TTauri_srcs
     Draw/QBezier.cpp
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
-    GUI/globals.cpp
     GUI/Device_base.cpp
     GUI/Device_vulkan.cpp
     GUI/Instance_base.cpp
     GUI/Instance_vulkan.cpp
     GUI/Instance_vulkan_win32.cpp
-    GUI/Instance.cpp
     GUI/VerticalSync_win32.cpp
     GUI/Pipeline_base.cpp
     GUI/Pipeline_vulkan.cpp
@@ -74,29 +72,38 @@ endif()
 
 
 add_library(TTauri STATIC ${TTauri_srcs})
-target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
-target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
-
-target_include_directories(TTauri PUBLIC ${Boost_INCLUDE_DIRS})
+target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
 target_link_directories(TTauri PUBLIC ${Boost_LIBRARY_DIRS})
-
-target_include_directories(TTauri PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
+target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
 if (MSVC)
-    target_compile_definitions(TTauri PUBLIC -D_WIN64)
-    target_compile_definitions(TTauri PUBLIC -DVK_USE_PLATFORM_WIN32_KHR)
+    target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
 endif()
 
-target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
-
+# Almost same as the library, but define a target for the Code Analysis
+if(WIN32)
+  set(GUI_TYPE WIN32)
+elseif(APPLE)
+  set(GUI_TYPE MACOSX_BUNDLE)
+endif()
+add_executable(TTauriCodeAnalysisTarget ${GUI_TYPE} TTauriCodeAnalysisTarget.cpp ${TTauri_srcs})
+set_property(TARGET TTauriCodeAnalysisTarget PROPERTY CXX_STANDARD 17)
+target_include_directories(TTauriCodeAnalysisTarget PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
+target_link_directories(TTauriCodeAnalysisTarget PUBLIC ${Boost_LIBRARY_DIRS})
+target_link_libraries(TTauriCodeAnalysisTarget GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
+target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
+if (MSVC)
+    target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
+endif()
 
 set(TTauri_GUI_shaders
 	GUI/PipelineImage.vert
 	GUI/PipelineImage.frag
 )
-
 foreach(shader ${TTauri_GUI_shaders})
 	target_add_shader(TTauri ${shader})
+	target_add_shader(TTauriCodeAnalysisTarget ${shader})
 endforeach(shader)
 
 set(TTauriTests_srcs
@@ -112,7 +119,6 @@ set(TTauriTests_srcs
     strings_tests.cpp
     math_tests.cpp
 )
-
 
 add_executable(TTauriTests ${TTauriTests_srcs})
 target_link_libraries(TTauriTests TTauri gtest_main)
@@ -131,3 +137,4 @@ file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${Tes
                     ${CMAKE_CURRENT_SOURCE_DIR}/${TestFile}
                     ${CMAKE_CURRENT_BINARY_DIR}/${TestFile})
 endforeach()
+

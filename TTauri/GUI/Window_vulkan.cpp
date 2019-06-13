@@ -6,6 +6,7 @@
 #include "Instance.hpp"
 #include "Device.hpp"
 #include "WindowWidget.hpp"
+#include "PipelineImage.hpp"
 #include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 #include <vector>

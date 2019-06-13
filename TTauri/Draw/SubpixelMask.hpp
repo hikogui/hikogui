@@ -6,6 +6,10 @@
 #include "PixelMap.hpp"
 #include "QBezier.hpp"
 
+namespace TTauri {
+struct wsRGBApm;
+}
+
 namespace TTauri::Draw {
 
 struct SubpixelMask : PixelMap<uint8_t> {

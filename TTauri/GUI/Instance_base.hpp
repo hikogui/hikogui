@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include "globals.hpp"
 #include "Device.hpp"
 #include "Window.hpp"
 #include "VerticalSync.hpp"
 #include "TTauri/all.hpp"
-#include "globals.hpp"
 #include <gsl/gsl>
 #include <boost/uuid/uuid.hpp>
 #include <memory>

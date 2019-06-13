@@ -3,13 +3,16 @@
 
 #pragma once
 
-#include "PipelineImage_ImageLocation.hpp"
-#include "PipelineImage_Vertex.hpp"
-#include "PipelineImage_Page.hpp"
-#include "TTauri/Draw/all.hpp"
+#include "TTauri/geometry.hpp"
+#include "TTauri/BinaryKey.hpp"
+#include <boost/exception/exception.hpp>
 #include <gsl/gsl>
 
 namespace TTauri::GUI::PipelineImage {
+
+struct Page;
+struct Vertex;
+struct ImageLocation;
 
 struct Image {
     struct Error : virtual boost::exception, virtual std::exception {};

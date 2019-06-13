@@ -3,9 +3,10 @@
 
 #pragma once
 
+#include "TTauri/geometry.hpp"
+#include "TTauri/required.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-#include "TTauri/all.hpp"
 
 namespace TTauri::Draw {
 

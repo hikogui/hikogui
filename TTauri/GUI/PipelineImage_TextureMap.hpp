@@ -4,10 +4,9 @@
 #pragma once;
 
 #include "Device_forward.hpp"
-#include "TTauri/Draw/all.hpp"
+#include "TTauri/Draw/PixelMap.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
-
 
 namespace TTauri::GUI::PipelineImage {
 

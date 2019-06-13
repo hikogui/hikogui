@@ -15,7 +15,6 @@
 #include "PNG.hpp"
 #include "QBezier.hpp"
 #include "SubpixelMask.hpp"
-#include "TextStyle.hpp"
 #include "Theme.hpp"
 #include "TrueTypeParser.hpp"
 #include "utils.hpp"

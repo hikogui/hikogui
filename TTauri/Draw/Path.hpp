@@ -6,7 +6,8 @@
 #include "Glyphs.hpp"
 #include "Font.hpp"
 #include "SubpixelMask.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/Color.hpp"
+#include "TTauri/required.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 

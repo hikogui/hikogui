@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "QBezier.hpp"
+#include "TTauri/utils.hpp"
 
 namespace TTauri::Draw {
 
@@ -57,7 +58,8 @@ static void renderRowSpan(gsl::span<uint8_t> row, float const startX, float cons
     }
 
     let startX_int = static_cast<int64_t>(startX);
-    [[gsl::suppress(io.2)]] let endX_int = static_cast<int64_t>(endX + 1.0f);
+    let endXplusOne = endX + 1.0f;
+    let endX_int = static_cast<int64_t>(endXplusOne);
     let startColumn = std::max(startX_int, static_cast<int64_t>(0));
     let endColumn = std::min(endX_int, row.size());
     let nrColumns = endColumn - startColumn;

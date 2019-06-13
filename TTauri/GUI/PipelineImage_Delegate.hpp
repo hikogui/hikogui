@@ -3,11 +3,12 @@
 
 #pragma once
 
-#include "PipelineImage_Vertex.hpp"
 #include <boost/exception/all.hpp>
 #include <gsl/gsl>
 
 namespace TTauri::GUI::PipelineImage {
+
+struct Vertex;
 
 struct Delegate {
     struct Error : virtual boost::exception, virtual std::exception {};

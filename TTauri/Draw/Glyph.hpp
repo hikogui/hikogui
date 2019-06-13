@@ -5,23 +5,20 @@
 
 #include "BezierPoint.hpp"
 #include "QBezier.hpp"
-#include "TTauri/all.hpp"
-
+#include "TTauri/required.hpp"
 #include <glm/glm.hpp>
 
 namespace TTauri::Draw {
 
 
-
-
 struct Glyph {
     // Glyph is valid when completely parsed by font parser.
-    bool valid;
+    bool valid = false;
 
-    rect2 boundingBox;
-    float leftSideBearing;
-    float rightSideBearing;
-    float advanceWidth;
+    rect2 boundingBox = {};
+    float leftSideBearing = 0.0;
+    float rightSideBearing = 0.0;
+    float advanceWidth = 0.0;
     size_t numberOfGraphemes = 1;
     size_t useMetricsOfGlyph = std::numeric_limits<size_t>::max();
 

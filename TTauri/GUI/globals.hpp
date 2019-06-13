@@ -5,12 +5,14 @@
 
 #include <cstdint>
 #include <mutex>
+#include <memory>
 
 namespace TTauri::GUI {
 
 //! Global TTauri::GUI mutex.
-extern std::recursive_mutex mutex;
+inline std::recursive_mutex mutex;
 
-const uint32_t defaultNumberOfSwapchainImages = 2;
+inline constexpr uint32_t defaultNumberOfSwapchainImages = 2;
 
 }
+

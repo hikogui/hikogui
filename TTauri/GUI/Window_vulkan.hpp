@@ -4,10 +4,14 @@
 #pragma once
 
 #include "Window_base.hpp"
-#include "PipelineImage.hpp"
 #include <vulkan/vulkan.hpp>
+#include <optional>
 
 namespace TTauri::GUI {
+
+namespace PipelineImage {
+class PipelineImage;
+}
 
 class Window_vulkan : public Window_base {
 public:

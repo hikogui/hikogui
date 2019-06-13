@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "logging.hpp"
 #include "required.hpp"
 #include <boost/throw_exception.hpp>
 #include <gsl/gsl>

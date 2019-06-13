@@ -2,7 +2,9 @@
 // All rights reserved.
 
 #include "PNG.hpp"
-
+#include "PixelMap.hpp"
+#include "TTauri/Color.hpp"
+#include "TTauri/required.hpp"
 #include <png.h>
 #include <stdio.h>
 
@@ -22,10 +24,11 @@ PixelMap<wsRGBApm> loadPNG(const PixelMap<wsRGBApm> &pixelMap, const std::filesy
 
 #define PNG_THROW_EXCEPTION(e) \
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info); \
-    fclose(fp); \
+    if (fp != nullptr) { fclose(fp); } \
     BOOST_THROW_EXCEPTION(e);
 
-    if (!(fp = fopen(stringPath.data(), "rb"))) {
+    fp = fopen(stringPath.data(), "rb");
+    if (fp == nullptr) {
         PNG_THROW_EXCEPTION(PNGFileOpenError());
     }
 
@@ -78,6 +81,7 @@ PixelMap<wsRGBApm> loadPNG(const PixelMap<wsRGBApm> &pixelMap, const std::filesy
     let height = png_get_image_height(png_ptr, info_ptr);
 
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
+
     fclose(fp);
 
     return pixelMap.submap(0, 0, width, height);

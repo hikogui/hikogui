@@ -5,6 +5,7 @@
 
 #include "Widget.hpp"
 #include "Window_forward.hpp"
+#include "TTauri/Color.hpp"
 
 namespace TTauri::GUI {
 

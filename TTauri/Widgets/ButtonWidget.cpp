@@ -75,12 +75,13 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
         labelColor = {0.0, 0.0, 0.0, 1.0};
     }
 
-    let rect = rect2{{0.0f, 0.0f}, { static_cast<float>(image.extent.width()), static_cast<float>(image.extent.height()) }};
+#pragma warning(suppress: 6001)
+    let rectangle = rect2{{0.0f, 0.0f}, { static_cast<float>(image.extent.width()), static_cast<float>(image.extent.height()) }};
     let fontCenter = labelFontSize * 0.5f;
-    let labelLocation = midpoint(rect) + glm::vec2(0.0f, -fontCenter);
+    let labelLocation = midpoint(rectangle) + glm::vec2(0.0f, -fontCenter);
 
     auto buttonBackgroundMask = Draw::Path();
-    buttonBackgroundMask.addRectangle(rect, backgroundShape);
+    buttonBackgroundMask.addRectangle(rectangle, backgroundShape);
     buttonBackgroundMask.render(linearMap, backgroundColor, Draw::SubpixelMask::Orientation::RedLeft);
 
     auto textMask = Draw::Path();

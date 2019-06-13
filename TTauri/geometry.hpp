@@ -16,11 +16,11 @@ template <typename T, glm::qualifier Q>
 struct extent<2, T, Q> : public glm::vec<2, T, Q> {
     constexpr extent() : glm::vec<2, T, Q>() {}
     constexpr extent(glm::vec<2, T, Q> const &other) : glm::vec<2, T, Q>(other) {}
-    constexpr extent(T width, T height) : glm::vec<2, T, Q>(width, height) {}
-    constexpr extent(double width, double height) : glm::vec<2, T, Q>(width, height) {}
+    constexpr extent(T width, T height) : glm::vec<2, T, Q>({width, height}) {}
+    constexpr extent(double width, double height) : glm::vec<2, T, Q>({width, height}) {}
 
-    constexpr T width() const { return this->x; }
-    constexpr T height() const { return this->y; }
+    constexpr T const &width() const { return this->x; }
+    constexpr T const &height() const { return this->y; }
     constexpr T &width() { return this->x; }
     constexpr T &height() { return this->y; }
 };
@@ -29,11 +29,11 @@ template <typename T, glm::qualifier Q>
 struct extent<3, T, Q> : public glm::vec<3, T, Q> {
     constexpr extent() : glm::vec<3, T, Q>() {}
     constexpr extent(glm::vec<3, T, Q> const& other) : glm::vec<3, T, Q>(other) {}
-    constexpr extent(T width, T height, T depth) : glm::vec<3, T, Q>(width, height, depth) {}
+    constexpr extent(T width, T height, T depth) : glm::vec<3, T, Q>({width, height, depth}) {}
 
-    constexpr T width() const { return this->x; }
-    constexpr T height() const { return this->y; }
-    constexpr T depth() const { return this->z; }
+    constexpr T const &width() const { return this->x; }
+    constexpr T const &height() const { return this->y; }
+    constexpr T const &depth() const { return this->z; }
     constexpr T &width() { return this->x; }
     constexpr T &height() { return this->y; }
     constexpr T &depth() { return this->z; }

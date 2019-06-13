@@ -8,7 +8,7 @@
 #include "WindowWidget.hpp"
 #include "Device_forward.hpp"
 #include "Mouse.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/geometry.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>

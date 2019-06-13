@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include "TTauri/all.hpp"
+#include "TTauri/required.hpp"
 
 #include <complex>
 #include <cmath>
 #include <limits>
 #include <boost/assert.hpp>
 #include <glm/glm.hpp>
+#include <gsl/gsl>
 
 namespace TTauri {
 
@@ -96,8 +97,9 @@ struct results {
         }
 
         T maxDiff = 0.0;
+        assert(this->count <= maxCount);
         for (ptrdiff_t i = 0; i < this->count; i++) {
-            let diff = abs(this->value[i] - other.value[i]);
+            let diff = std::abs(this->value[i] - other.value[i]);
             maxDiff = std::max(maxDiff, diff);
         }
         return maxDiff;
@@ -115,6 +117,7 @@ template<typename T, int N>
 inline std::ostream& operator<<(std::ostream& os, const results<T,N> &r)
 {
     os << "[";
+    assert(r.count <= r.maxCount);
     for (ptrdiff_t i = 0; i < r.count; i++) {
         if (i > 0) {
             os << ", ";

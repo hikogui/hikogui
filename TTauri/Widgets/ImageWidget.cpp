@@ -29,6 +29,7 @@ void ImageWidget::drawBackingImage()
     linearMap.fill(0x0000'0000'0000'ffffULL);
 
     // Draw image in the fullPixelMap.
+    // XXX This probably should allocate a PixelMap and add it to this class.
     Draw::loadPNG(linearMap, path);
 
     let myFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");

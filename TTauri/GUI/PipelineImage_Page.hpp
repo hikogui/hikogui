@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "TTauri/all.hpp"
+#include <limits>
 
 namespace TTauri::GUI::PipelineImage {
 
 struct Page {
-    static const size_t width = 64;
-    static const size_t height = 64;
-    static const size_t border = 1;
-    static const size_t widthIncludingBorder = width + 2 * border;
-    static const size_t heightIncludingBorder = height + 2 * border;
+    static constexpr size_t width = 64;
+    static constexpr size_t height = 64;
+    static constexpr size_t border = 1;
+    static constexpr size_t widthIncludingBorder = width + 2 * border;
+    static constexpr size_t heightIncludingBorder = height + 2 * border;
 
     size_t nr;
 

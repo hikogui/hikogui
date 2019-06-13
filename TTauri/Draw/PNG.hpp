@@ -3,11 +3,16 @@
 
 #pragma once
 
-#include "PixelMap.hpp"
-
+#include <boost/exception/exception.hpp>
 #include <filesystem>
 
+namespace TTauri {
+struct wsRGBApm;
+}
+
 namespace TTauri::Draw {
+
+template<typename T> struct PixelMap;
 
 struct PNGError : virtual boost::exception, virtual std::exception {};
 struct PNGFileOpenError : virtual PNGError {};

@@ -100,6 +100,7 @@ inline CompareResult compare(double l, double r)
 /*! A generic value type which will handle intra type operations.
  */
 struct Value {
+    // XXX std::any allocates, use std::variant instead.
     std::any intrinsic;
 
     Value() : intrinsic(Undefined{}) {}

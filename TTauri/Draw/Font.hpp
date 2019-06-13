@@ -5,7 +5,8 @@
 
 #include "Glyph.hpp"
 #include "Glyphs.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/grapheme.hpp"
+#include "TTauri/required.hpp"
 #include <vector>
 #include <map>
 #include <gsl/gsl>

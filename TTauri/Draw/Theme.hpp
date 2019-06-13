@@ -6,7 +6,8 @@
 #include "Font.hpp"
 #include "Glyph.hpp"
 #include "Glyphs.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/Color.hpp"
+#include "TTauri/required.hpp"
 
 #include <string>
 #include <vector>

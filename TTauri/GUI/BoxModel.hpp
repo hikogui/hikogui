@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "TTauri/all.hpp"
+#include "TTauri/geometry.hpp"
+#include "TTauri/required.hpp"
 #include <rhea/linear_expression.hpp>
 
 namespace TTauri::GUI {

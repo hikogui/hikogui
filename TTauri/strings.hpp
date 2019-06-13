@@ -3,31 +3,29 @@
 
 #pragma once
 
-#include <string>
 #include "required.hpp"
 #include "utils.hpp"
 #include <utf8proc/utf8proc.h>
+#include <string>
 
 namespace TTauri {
 
-
-
-const char32_t UNICODE_Replacement_Character = 0xfffd;
-const char32_t UNICODE_Surrogates_BEGIN = 0xd800;
-const char32_t UNICODE_Surrogates_END = 0xdfff;
-const char32_t UNICODE_High_Surrogates_BEGIN = 0xd800;
-const char32_t UNICODE_High_Surrogates_END = 0xdbff;
-const char32_t UNICODE_Low_Surrogates_BEGIN = 0xdc00;
-const char32_t UNICODE_Low_Surrogates_END = 0xdfff;
-const char32_t UNICODE_ASCII_END = 0x7f;
-const char32_t UNICODE_Plane_0_END = 0xffff;
-const char32_t UNICODE_Basic_Multilinqual_Plane_END = UNICODE_Plane_0_END;
-const char32_t UNICODE_Plane_1_BEGIN = 0x010000;
-const char32_t UNICODE_Plane_16_END = 0x10ffff;
-const char32_t UNICODE_Plane_17_BEGIN = 0x110000;
-const char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
-const char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
-const char32_t UNICODE_Reverse_BOM = 0xfffe;
+constexpr char32_t UNICODE_Replacement_Character = 0xfffd;
+constexpr char32_t UNICODE_Surrogates_BEGIN = 0xd800;
+constexpr char32_t UNICODE_Surrogates_END = 0xdfff;
+constexpr char32_t UNICODE_High_Surrogates_BEGIN = 0xd800;
+constexpr char32_t UNICODE_High_Surrogates_END = 0xdbff;
+constexpr char32_t UNICODE_Low_Surrogates_BEGIN = 0xdc00;
+constexpr char32_t UNICODE_Low_Surrogates_END = 0xdfff;
+constexpr char32_t UNICODE_ASCII_END = 0x7f;
+constexpr char32_t UNICODE_Plane_0_END = 0xffff;
+constexpr char32_t UNICODE_Basic_Multilinqual_Plane_END = UNICODE_Plane_0_END;
+constexpr char32_t UNICODE_Plane_1_BEGIN = 0x010000;
+constexpr char32_t UNICODE_Plane_16_END = 0x10ffff;
+constexpr char32_t UNICODE_Plane_17_BEGIN = 0x110000;
+constexpr char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
+constexpr char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
+constexpr char32_t UNICODE_Reverse_BOM = 0xfffe;
 
 inline char32_t CP1252ToCodePoint(char inputCharacter)
 {

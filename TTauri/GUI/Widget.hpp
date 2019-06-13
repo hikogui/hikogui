@@ -8,10 +8,14 @@
 #include "Window_forward.hpp"
 #include "Device_forward.hpp"
 #include "Mouse.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/geometry.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
+
+namespace TTauri::GUI::PipelineImage {
+struct Image;
+}
 
 namespace TTauri::GUI {
 
