@@ -18,6 +18,6 @@ using Application = Application_win32;
 
 namespace TTauri {
 
-extern std::unique_ptr<Application> application;
+inline std::unique_ptr<Application> application;
 
 }

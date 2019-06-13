@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "TTauri/all.hpp"
+#include "TTauri/Color.hpp"
+#include "TTauri/required.hpp"
 #include "exceptions.hpp"
 #include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>

@@ -2,8 +2,7 @@
 // All rights reserved.
 
 #include "ImageWidget.hpp"
-#include "TTauri/GUI/all.hpp"
-#include "TTauri/Draw/all.hpp"
+#include "utils.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 

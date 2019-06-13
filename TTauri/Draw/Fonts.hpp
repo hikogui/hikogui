@@ -23,6 +23,6 @@ struct Fonts {
     }
 };
 
-extern std::unique_ptr<Fonts> fonts;
+inline std::unique_ptr<Fonts> fonts;
 
 }

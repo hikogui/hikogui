@@ -4,7 +4,6 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include "TTauri/all.hpp"
 #include <vector>
 
 namespace TTauri::Config {

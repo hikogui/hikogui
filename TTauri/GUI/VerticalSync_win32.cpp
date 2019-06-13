@@ -1,6 +1,7 @@
 
 #include "VerticalSync_win32.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/logging.hpp"
+#include "TTauri/strings.hpp"
 #include <ntstatus.h>
 
 typedef UINT D3DDDI_VIDEO_PRESENT_TARGET_ID;

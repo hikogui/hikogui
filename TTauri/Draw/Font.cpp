@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Font.hpp"
-#include "TTauri/all.hpp"
 
 #include <boost/endian/buffers.hpp>
 

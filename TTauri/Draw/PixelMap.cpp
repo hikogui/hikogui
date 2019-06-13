@@ -2,7 +2,8 @@
 // All rights reserved.
 
 #include "PixelMap.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/Color.hpp"
+#include <boost/endian/conversion.hpp>
 
 namespace TTauri::Draw {
 

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Location.hpp"
 #include <boost/exception/all.hpp>
 #include <exception>
 #include <string>

@@ -4,7 +4,6 @@
 #include "Pipeline_vulkan.hpp"
 #include "Device.hpp"
 #include "Window.hpp"
-#include "TTauri/all.hpp"
 #include <boost/assert.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 

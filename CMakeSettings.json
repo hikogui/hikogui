@@ -7,7 +7,7 @@
             "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
             "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
             "cmakeCommandArgs": "",
-            "buildCommandArgs": "-v",
+            "buildCommandArgs": "",
             "ctestCommandArgs": "-C Debug",
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "variables": [
@@ -45,7 +45,7 @@
             "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
             "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
             "cmakeCommandArgs": "",
-            "buildCommandArgs": "-v",
+            "buildCommandArgs": "",
             "ctestCommandArgs": "",
             "inheritEnvironments": [ "msvc_x64_x64" ],
             "variables": [

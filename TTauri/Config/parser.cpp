@@ -2,10 +2,9 @@
 // All rights reserved.
 
 #include "parser.hpp"
-#include "AST.hpp"
+#include "ASTObject.hpp"
 #include "ParseContext.hpp"
 #include "exceptions.hpp"
-#include "TTauri/all.hpp"
 #include <cstdio>
 #include <vector>
 #include <string>

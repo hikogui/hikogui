@@ -30,7 +30,6 @@ set(TTauri_srcs
     Draw/PNG.cpp
     Draw/Path.cpp
     Draw/Font.cpp
-    Draw/Fonts.cpp
     Draw/QBezier.cpp
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
@@ -54,7 +53,6 @@ set(TTauri_srcs
     GUI/WindowWidget.cpp
     Widgets/ImageWidget.cpp
     Widgets/ButtonWidget.cpp
-    Application.cpp
     Application_base.cpp
     Application_win32.cpp
     logging.cpp
@@ -82,20 +80,20 @@ if (MSVC)
 endif()
 
 # Almost same as the library, but define a target for the Code Analysis
-if(WIN32)
-  set(GUI_TYPE WIN32)
-elseif(APPLE)
-  set(GUI_TYPE MACOSX_BUNDLE)
-endif()
-add_executable(TTauriCodeAnalysisTarget ${GUI_TYPE} TTauriCodeAnalysisTarget.cpp ${TTauri_srcs})
-set_property(TARGET TTauriCodeAnalysisTarget PROPERTY CXX_STANDARD 17)
-target_include_directories(TTauriCodeAnalysisTarget PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
-target_link_directories(TTauriCodeAnalysisTarget PUBLIC ${Boost_LIBRARY_DIRS})
-target_link_libraries(TTauriCodeAnalysisTarget GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
-target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
-if (MSVC)
-    target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
-endif()
+#if(WIN32)
+#  set(GUI_TYPE WIN32)
+#elseif(APPLE)
+#  set(GUI_TYPE MACOSX_BUNDLE)
+#endif()
+#add_executable(TTauriCodeAnalysisTarget ${GUI_TYPE} TTauriCodeAnalysisTarget.cpp ${TTauri_srcs})
+#set_property(TARGET TTauriCodeAnalysisTarget PROPERTY CXX_STANDARD 17)
+#target_include_directories(TTauriCodeAnalysisTarget PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
+#target_link_directories(TTauriCodeAnalysisTarget PUBLIC ${Boost_LIBRARY_DIRS})
+#target_link_libraries(TTauriCodeAnalysisTarget GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
+#target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
+#if (MSVC)
+#    target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
+#endif()
 
 set(TTauri_GUI_shaders
 	GUI/PipelineImage.vert
@@ -103,7 +101,7 @@ set(TTauri_GUI_shaders
 )
 foreach(shader ${TTauri_GUI_shaders})
 	target_add_shader(TTauri ${shader})
-	target_add_shader(TTauriCodeAnalysisTarget ${shader})
+#	target_add_shader(TTauriCodeAnalysisTarget ${shader})
 endforeach(shader)
 
 set(TTauriTests_srcs

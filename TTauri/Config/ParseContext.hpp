@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "AST.hpp"
-
 namespace TTauri::Config {
+
+struct ASTObject;
 
 /*! Context used during parsing.
  */

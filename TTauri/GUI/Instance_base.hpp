@@ -7,7 +7,7 @@
 #include "Device.hpp"
 #include "Window.hpp"
 #include "VerticalSync.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/Application.hpp"
 #include <gsl/gsl>
 #include <boost/uuid/uuid.hpp>
 #include <memory>

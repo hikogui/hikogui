@@ -16,3 +16,4 @@
 #include "strings.hpp"
 #include "Time.hpp"
 #include "utils.hpp"
+#include "logging.hpp"

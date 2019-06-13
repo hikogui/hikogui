@@ -3,7 +3,8 @@
 
 #include "Window_vulkan_win32.hpp"
 #include "Instance.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/Application.hpp"
+#include "TTauri/strings.hpp"
 #include <windowsx.h>
 
 namespace TTauri::GUI {

@@ -6,7 +6,6 @@
 #include "Window.hpp"
 #include "WindowWidget.hpp"
 #include "Device.hpp"
-#include "TTauri/all.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI::PipelineImage {

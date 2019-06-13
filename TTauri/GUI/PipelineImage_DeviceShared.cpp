@@ -5,7 +5,6 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 #include "Device.hpp"
-#include "TTauri/all.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>

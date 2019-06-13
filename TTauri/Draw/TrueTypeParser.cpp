@@ -6,10 +6,10 @@
 #include "Glyph.hpp"
 #include "Font.hpp"
 #include "exceptions.hpp"
-#include "TTauri/all.hpp"
-
+#include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
-
+#include <boost/format.hpp>
+#include <boost/exception/all.hpp>
 #include <map>
 #include <array>
 

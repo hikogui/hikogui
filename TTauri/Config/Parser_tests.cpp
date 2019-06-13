@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <Windows.h>
 #include "parser.hpp"
+#include "ASTObject.hpp"
 
 using namespace std;
 using namespace TTauri::Config;

@@ -4,6 +4,8 @@
 #pragma once
 
 #include "parser.hpp"
+#include "Value.hpp"
+#include "ASTObject.hpp"
 
 namespace TTauri::Config {
 

@@ -3,7 +3,8 @@
 
 #include "Application_win32.hpp"
 #include "utils.hpp"
-#include "GUI/all.hpp"
+#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/Window.hpp"
 #include <vulkan/vulkan.hpp>
 #include <thread>
 

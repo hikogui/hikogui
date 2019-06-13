@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "SubpixelMask.hpp"
-#include "TTauri/all.hpp"
+#include "TTauri/Color.hpp"
 #include <algorithm>
 
 namespace TTauri::Draw {

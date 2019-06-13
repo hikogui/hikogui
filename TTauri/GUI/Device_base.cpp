@@ -5,7 +5,6 @@
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "Window.hpp"
-#include "TTauri/all.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <tuple>
 #include <vector>
