@@ -44,7 +44,7 @@ FileMapping::FileMapping(const std::filesystem::path & path, AccessMode accessMo
 FileMapping::~FileMapping()
 {
     if (!CloseHandle(intrinsic)) {
-        LOG_ERROR("Could not close file mapping object on file '%s'") % getLastErrorMessage();
+        LOG_ERROR("Could not close file mapping object on file '%s'", getLastErrorMessage());
     }
 }
 

@@ -68,7 +68,7 @@ File::File(const std::filesystem::path &path, AccessMode accessMode) :
 File::~File()
 {
     if (!CloseHandle(intrinsic)) {
-        LOG_ERROR("Could not close file '%s'") % getLastErrorMessage();
+        LOG_ERROR("Could not close file '%s'", getLastErrorMessage());
     }
 }
 

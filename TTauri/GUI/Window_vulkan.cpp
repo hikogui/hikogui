@@ -51,9 +51,9 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
     // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t imageIndex = 0;
-    //LOG_DEBUG("acquireNextImage '%s'") % title;
+    //LOG_DEBUG("acquireNextImage '%s'", title);
     let result = vulkanDevice->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
-    //LOG_DEBUG("acquireNextImage %i") % imageIndex;
+    //LOG_DEBUG("acquireNextImage %i", imageIndex);
 
     switch (result) {
     case vk::Result::eSuccess:
@@ -96,7 +96,7 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
     auto vulkanDevice = device.lock();
 
     try {
-        //LOG_DEBUG("presentQueue %i") % presentImageIndices.at(0);
+        //LOG_DEBUG("presentQueue %i", presentImageIndices.at(0));
 
         let result = vulkanDevice->presentQueue.presentKHR({
             boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
@@ -377,9 +377,9 @@ Window_base::State Window_vulkan::buildSwapchain()
     }
 
     LOG_INFO("Finished building swap chain");
-    LOG_INFO(" - extent=%i x %i") % swapchainCreateInfo.imageExtent.width % swapchainCreateInfo.imageExtent.height;
-    LOG_INFO(" - colorSpace=%s, format=%s") % vk::to_string(swapchainCreateInfo.imageColorSpace) % vk::to_string(swapchainCreateInfo.imageFormat);
-    LOG_INFO(" - presentMode=%s, imageCount=%i") % vk::to_string(swapchainCreateInfo.presentMode) % swapchainCreateInfo.minImageCount;
+    LOG_INFO(" - extent=(%i, %i)", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);
+    LOG_INFO(" - colorSpace=%s, format=%s", vk::to_string(swapchainCreateInfo.imageColorSpace), vk::to_string(swapchainCreateInfo.imageFormat));
+    LOG_INFO(" - presentMode=%s, imageCount=%i", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
     return State::READY_TO_RENDER;
 }
 

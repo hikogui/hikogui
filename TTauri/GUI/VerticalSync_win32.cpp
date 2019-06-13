@@ -50,7 +50,7 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void
      */
 
     if (!(gdi = LoadLibraryW(L"Gdi32.dll"))) {
-        LOG_FATAL("Error opening Gdi32.dll %s") << getLastErrorMessage();
+        LOG_FATAL("Error opening Gdi32.dll %s", getLastErrorMessage());
         abort();
     }
 
@@ -95,7 +95,7 @@ void VerticalSync_win32::openAdapter()
         }
     }
 
-    LOG_INFO("Found primary display device '%s'.") % translateString<string>(wstring(dd.DeviceName));
+    LOG_INFO("Found primary display device '%s'.", translateString<string>(wstring(dd.DeviceName)));
 
     HDC hdc = CreateDCW(NULL, dd.DeviceName, NULL, NULL);
     if (hdc == NULL) {
@@ -128,7 +128,7 @@ void VerticalSync_win32::closeAdapter()
 
     NTSTATUS status = pfnD3DKMTCloseAdapter(&ca);
     if (status != STATUS_SUCCESS) {
-        LOG_ERROR("Could not close adapter '%s'.") % getLastErrorMessage();
+        LOG_ERROR("Could not close adapter '%s'.", getLastErrorMessage());
         state = State::FALLBACK;
     } else {
         state = State::ADAPTER_CLOSED;
@@ -157,7 +157,7 @@ void VerticalSync_win32::wait()
             closeAdapter();
             break;
         default:
-            LOG_ERROR("Failed waiting for vertical sync. '%s'") % getLastErrorMessage();
+            LOG_ERROR("Failed waiting for vertical sync. '%s'", getLastErrorMessage());
             closeAdapter();
             state = State::FALLBACK;
             break;

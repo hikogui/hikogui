@@ -11,3 +11,4 @@
 #include "TTauri/Draw/PNG.hpp"
 #include "TTauri/Draw/Fonts.hpp"
 #include "TTauri/Draw/Path.hpp"
+#include "TTauri/BinaryKey.hpp"

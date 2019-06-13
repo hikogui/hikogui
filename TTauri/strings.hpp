@@ -368,5 +368,4 @@ inline std::u32string splitLigature(char32_t x) {
     }
 }
 
-
 }

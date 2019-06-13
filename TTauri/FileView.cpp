@@ -54,7 +54,7 @@ FileView::~FileView()
 #ifdef WIN32
     void *data = bytes.data();
     if (!UnmapViewOfFile(data)) {
-        LOG_ERROR("Could not unmap view on file '%s'") % getLastErrorMessage();
+        LOG_ERROR("Could not unmap view on file '%s'", getLastErrorMessage());
     }
 #endif
 }

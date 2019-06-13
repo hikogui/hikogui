@@ -3,11 +3,9 @@
 
 #pragma once
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #include <boost/format.hpp>
 #include <boost/log/trivial.hpp>
-#pragma clang diagnostic pop
+#include <string>
 
 namespace TTauri {
 
@@ -17,12 +15,24 @@ std::string getLastErrorMessage();
 
 void initializeLogging();
 
+template<typename F>
+inline std::string sformat(F format)
+{
+    return format;
 }
 
-#define LOG_TRACE(fmt) BOOST_LOG_TRIVIAL(trace) << boost::format(fmt)
-#define LOG_DEBUG(fmt) BOOST_LOG_TRIVIAL(debug) << boost::format(fmt)
-#define LOG_INFO(fmt) BOOST_LOG_TRIVIAL(info) << boost::format(fmt)
-#define LOG_WARNING(fmt) BOOST_LOG_TRIVIAL(warning) << boost::format(fmt)
-#define LOG_ERROR(fmt) BOOST_LOG_TRIVIAL(error) << boost::format(fmt)
-#define LOG_FATAL(fmt) BOOST_LOG_TRIVIAL(fatal) << boost::format(fmt)
+template<typename F, typename... Targs>
+inline std::string sformat(F format, Targs... Fargs)
+{
+    return (boost::format(format) % ... % Fargs).str();
+}
+
+}
+
+#define LOG_TRACE(...) BOOST_LOG_TRIVIAL(trace) << ::TTauri::sformat(__VA_ARGS__)
+#define LOG_DEBUG(...) BOOST_LOG_TRIVIAL(debug) << ::TTauri::sformat(__VA_ARGS__)
+#define LOG_INFO(...) BOOST_LOG_TRIVIAL(info) << ::TTauri::sformat(__VA_ARGS__)
+#define LOG_WARNING(...) BOOST_LOG_TRIVIAL(warning) << ::TTauri::sformat(__VA_ARGS__)
+#define LOG_ERROR(...) BOOST_LOG_TRIVIAL(error) << ::TTauri::sformat(__VA_ARGS__)
+#define LOG_FATAL(...) BOOST_LOG_TRIVIAL(fatal) << ::TTauri::sformat(__VA_ARGS__); std::abort()
 

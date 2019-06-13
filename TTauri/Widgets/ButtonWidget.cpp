@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
+#include <typeinfo>
 
 namespace TTauri::Widgets {
 
@@ -26,7 +27,7 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     }
     let currentScale = box.currentExtent() / currentExtent;
 
-    key.update("ButtonWidget", currentExtent, label, state());
+    key.update("Button", currentExtent, label, state());
 
     vulkanDevice->imagePipeline->exchangeImage(image, key, currentExtent);
 

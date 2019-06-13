@@ -29,7 +29,7 @@ template<> inline size_t binarykey_typeindex(float const& value) { return 9; }
 template<> inline size_t binarykey_typeindex(double const& value) { return 10; }
 template<> inline size_t binarykey_typeindex(glm::vec2 const& value) { return 11; }
 template<> inline size_t binarykey_typeindex(std::string const& value) { return 12; }
-template<> inline size_t binarykey_typeindex(char const * const& value) { return 13; }
+template<> inline size_t binarykey_typeindex(char const* const& value) { return 13; }
 
 template<typename T>
 inline size_t binarykey_typeindexsize(T const &value)
@@ -68,7 +68,7 @@ inline void binarykey_append_value(std::string& data, char const * const& value)
     data.append(value);
 }
 
-inline void binarykey_append_typevalues(std::string &data) {}
+inline void binarykey_append_typevalues(std::string& data) {}
 
 template<typename T, typename... Targs>
 inline void binarykey_append_typevalues(std::string &data, T value, Targs... Fargs)
@@ -89,14 +89,11 @@ inline size_t binarykey_size(std::string const& value) {
     return binarykey_typeindexsize(value) + value.size();
 }
 
-inline size_t binarykey_size(char const * const &value) {
+inline size_t binarykey_size(char const* const& value) {
     return binarykey_typeindexsize(value) + strlen(value);
 }
 
-inline size_t binarykey_total_size()
-{
-    return 0;
-}
+inline size_t binarykey_total_size() { return 0; }
 
 template<typename T, typename... Targs>
 inline size_t binarykey_total_size(T value, Targs... Fargs)

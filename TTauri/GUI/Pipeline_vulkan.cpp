@@ -156,7 +156,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 {
     let vulkanDevice = device();
 
-    LOG_INFO("buildPipeline previous size (%i, %i)") % extent.width % extent.height;
+    LOG_INFO("buildPipeline previous size (%i, %i)", extent.width, extent.height);
 
     renderPass = move(_renderPass);
     extent = move(_extent);
@@ -265,7 +265,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     };
 
     intrinsic = vulkanDevice->createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
-    LOG_INFO("/buildPipeline new size (%i, %i)") % extent.width % extent.height;
+    LOG_INFO("/buildPipeline new size (%i, %i)", extent.width, extent.height);
 }
 
 void Pipeline_vulkan::teardownPipeline()
@@ -343,7 +343,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
         return;
     }
 
-    LOG_INFO("validateCommandBuffer %i (%i, %i)") % imageIndex % extent.width % extent.height;
+    LOG_INFO("validateCommandBuffer %i (%i, %i)", imageIndex, extent.width, extent.height);
 
     auto commandBuffer = frameBufferObject.commandBuffer;
 
