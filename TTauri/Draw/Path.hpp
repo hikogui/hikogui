@@ -2,7 +2,7 @@
 
 #include "alignment.hpp"
 #include "BezierPoint.hpp"
-#include "QBezier.hpp"
+#include "Bezier.hpp"
 #include "Glyphs.hpp"
 #include "Font.hpp"
 #include "SubpixelMask.hpp"
@@ -15,7 +15,7 @@ namespace TTauri::Draw {
 
 template<typename T> struct PixelMap;
 
-void renderMask(PixelMap<uint8_t>& mask, std::vector<QBezier> const& curves);
+void renderMask(PixelMap<uint8_t>& mask, std::vector<Bezier> const& curves);
 
 
 struct Path {
@@ -34,15 +34,15 @@ struct Path {
         return std::vector(begin, end);
     }
 
-    std::vector<QBezier> getQBeziersOfSubpath(size_t subpathNr) const {
+    std::vector<Bezier> getBeziersOfSubpath(size_t subpathNr) const {
         let contourPoints = getBezierPointsOfSubpath(subpathNr);
-        return QBezier::getContour(contourPoints);
+        return Bezier::getContour(contourPoints);
     }
 
-    std::vector<QBezier> getQBeziers() const {
-        std::vector<QBezier> r;
+    std::vector<Bezier> getBeziers() const {
+        std::vector<Bezier> r;
         for (size_t subpathNr = 0; subpathNr < numberOfSubpaths(); subpathNr++) {
-            for (let bezier: getQBeziersOfSubpath(subpathNr)) {
+            for (let bezier: getBeziersOfSubpath(subpathNr)) {
                 r.push_back(std::move(bezier));
             }
         }
@@ -86,7 +86,7 @@ struct Path {
      */
     void moveTo(glm::vec2 position) {
         close();
-        points.emplace_back(position, true);
+        points.emplace_back(position, BezierPoint::Type::Anchor);
     }
 
     /*! Start a new sub-path relative to current position.
@@ -94,54 +94,93 @@ struct Path {
      */
     void moveRelativeTo(glm::vec2 direction) {
         close();
-        points.emplace_back(currentPosition() + direction, true);
+        points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
     }
 
     void lineTo(glm::vec2 position) {
-        points.emplace_back(position, true);
+        points.emplace_back(position, BezierPoint::Type::Anchor);
     }
 
     void lineRelativeTo(glm::vec2 direction) {
-        points.emplace_back(currentPosition() + direction, true);
+        points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
     }
 
-    void curveTo(glm::vec2 controlPosition, glm::vec2 position) {
-        points.emplace_back(controlPosition, false);
-        points.emplace_back(position, true);
+    void quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) {
+        points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
+        points.emplace_back(position, BezierPoint::Type::Anchor);
     }
 
     /*! Draw curve from the current position to the new direction.
      * \param controlDirection control point of the curve relative from the start of the curve.
      * \param direction end point of the curve relative from the start of the curve.
      */
-    void curveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) {
+    void quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) {
         let p = currentPosition();
-        points.emplace_back(p + controlDirection, false);
-        points.emplace_back(p + direction, true);
+        points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
+        points.emplace_back(p + direction, BezierPoint::Type::Anchor);
+    }
+
+    void cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) {
+        points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
+        points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
+        points.emplace_back(position, BezierPoint::Type::Anchor);
+    }
+
+    /*! Draw curve from the current position to the new direction.
+     * \param controlDirection control point of the curve relative from the start of the curve.
+     * \param direction end point of the curve relative from the start of the curve.
+     */
+    void cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) {
+        let p = currentPosition();
+        points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
+        points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
+        points.emplace_back(p + direction, BezierPoint::Type::Anchor);
     }
 
     /*! Draw an circular arc.
      * The arc is drawn from the current position to the position given
      * in this method. A positive arc is drawn counter-clockwise.
      *
+     * Using method in:
+     *     "Approximation of a cubic bezier curve by circular arcs and vice versa"
+     *     -- Aleksas Riškus (chapter 3, formulas 8 and 9, there are a few typos in the formulas)
+     *
      * \param radius postive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.
      */
     void arcTo(float radius, glm::vec2 position) {
         let r = std::abs(radius);
-        let P0 = currentPosition();
+        let P1 = currentPosition();
         let P2 = position;
-        let Pm = midpoint(P0, P2);
+        let Pm = midpoint(P1, P2);
 
         let Vm2 = P2 - Pm;
 
         // Calculate the half angle between vectors P0 - C and P2 - C.
         let alpha = std::asin(glm::length(Vm2) / r);
-        
-        // Find P1 by extending a normal at Pm away from C.
-        let P1 = Pm + normal(Vm2) * std::sin(alpha) * -radius;
 
-        curveTo(P1, P2);
+        // Calculate the center point C. As the length of the normal of Vm2 at Pm.
+        let C = Pm + normal(Vm2) * std::cos(alpha) * radius;
+        
+        // Culate vectors from center to end points.
+        let VC1 = P1 - C;
+        let VC2 = P2 - C;
+
+        let q1 = VC1.x * VC1.x + VC1.y * VC1.y;
+        let q2 = q1 + VC1.x * VC2.x + VC1.y * VC2.y;
+        let k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / (VC1.x*VC2.y - VC1.y*VC2.x);
+
+        // Calculate the control points.
+        let C1 = glm::vec2{
+            (C.x + VC1.x) - k2 * VC1.y,
+            (C.y + VC1.y) + k2 * VC1.x
+        };
+        let C2 = glm::vec2{
+            (C.x + VC2.x) + k2 * VC2.y,
+            (C.y + VC2.y) - k2 * VC2.x
+        };
+
+        cubicCurveTo(C1, C2, P2);
     }
 
     /*! Draw a rectangle.
@@ -232,13 +271,13 @@ struct Path {
      * \param mask pixelmap to be modified.
      */
     void render(SubpixelMask& mask) const {
-        return mask.render(getQBeziers());
+        return mask.render(getBeziers());
     }
 
     void render(PixelMap<wsRGBApm>& pixels, wsRGBApm color, SubpixelMask::Orientation subpixelOrientation) const {
         auto mask = SubpixelMask(pixels.width * 3, pixels.height);
         mask.clear();
-        mask.render(getQBeziers());
+        mask.render(getBeziers());
         mask.filter(subpixelOrientation);
 
         composit(pixels, color, mask);

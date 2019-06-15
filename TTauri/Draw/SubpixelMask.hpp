@@ -4,7 +4,7 @@
 #pragma once
 
 #include "PixelMap.hpp"
-#include "QBezier.hpp"
+#include "Bezier.hpp"
 
 namespace TTauri {
 struct wsRGBApm;
@@ -82,7 +82,7 @@ struct SubpixelMask : PixelMap<uint8_t> {
         }
     }
 
-    void render(std::vector<QBezier> curves) {
+    void render(std::vector<Bezier> curves) {
         for (auto& curve : curves) {
             curve.scale({ 3.0, 1.0 });
         }

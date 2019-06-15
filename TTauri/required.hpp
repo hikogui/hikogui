@@ -9,3 +9,7 @@
  * when you have defined a variant.
  */
 #define let auto const
+
+#define required_assert(x) if (!(x)) { std::abort(); }
+
+#define no_default { std::abort(); }

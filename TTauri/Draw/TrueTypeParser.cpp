@@ -396,10 +396,14 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
         x += xCoordinates.at(pointNr);
         y += yCoordinates.at(pointNr);
 
+        let type = (flag & FLAG_ON_CURVE) > 0 ?
+            BezierPoint::Type::Anchor :
+            BezierPoint::Type::QuadraticControl;
+
         glyph.points.emplace_back(
             x * scale,
             y * scale,
-            (flag & FLAG_ON_CURVE) > 0
+            type 
         );
         pointNr++;
     }

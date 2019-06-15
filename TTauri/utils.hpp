@@ -21,6 +21,16 @@ namespace TTauri {
 
 #define TTAURI_ASSERT(x) if (!(x)) { abort(); }
 
+template<typename T, typename M>
+constexpr T safe_modulo(T x, M m)
+{
+    if (x >= 0) {
+        return x % m;
+    } else {
+        return m - (-x % m);
+    }
+}
+
 template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
 constexpr bool hasInitializeHelper(int)
 {

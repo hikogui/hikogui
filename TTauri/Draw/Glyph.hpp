@@ -4,7 +4,7 @@
 #pragma once
 
 #include "BezierPoint.hpp"
-#include "QBezier.hpp"
+#include "Bezier.hpp"
 #include "TTauri/required.hpp"
 #include <glm/glm.hpp>
 
@@ -39,9 +39,9 @@ struct Glyph {
         return std::vector(begin, end);
     }
 
-    std::vector<QBezier> getContour(size_t contourNr) const {
+    std::vector<Bezier> getContour(size_t contourNr) const {
         let contourPoints = getPointsOfContour(contourNr);
-        return QBezier::getContour(contourPoints);
+        return Bezier::getContour(contourPoints);
     }
 
     void addSubGlyph(Glyph const &other, glm::mat2x2 scale, glm::vec2 offset) {

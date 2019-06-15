@@ -136,9 +136,9 @@ using results3 = results<float,3>;
  * a*x + b = 0;
  */
 inline results1 solveLinear(float const a, float const b) {
-    if (a != 0.0) {
+    if (a != 0.0f) {
         return { -(b / a) };
-    } else if (b == 0.0) {
+    } else if (b == 0.0f) {
         // Any value of x is correct.
         return infinitResults<float>();
     } else {
@@ -151,13 +151,13 @@ inline results1 solveLinear(float const a, float const b) {
  * ax*x + bx + c = 0
  */
 inline results2 solveQuadratic(float const a, float const b, float const c) {
-    if (a == 0) {
+    if (a == 0.0f) {
         return solveLinear(b, c);
     } else {
         let D = b*b - 4.0f*a*c;
-        if (D < 0.0) {
+        if (D < 0.0f) {
             return {};
-        } else if (D == 0) {
+        } else if (D == 0.0f) {
             return { -b / (2.0f*a) };
         } else {
             let Dsqrt = sqrtf(D);
@@ -196,11 +196,11 @@ inline results3 solveDepressedCubic(float p, float q) {
     if (p != 0.0f || q != 0.0f) {
         let D = oneForth*q*q + oneTwentySeventh*p*p*p;
 
-        if (D < 0) {
+        if (D < 0.0f) {
             // Has three real roots.
             return solveDepressedCubicTrig(p, q);
 
-        } else if (D == 0.0) {
+        } else if (D == 0.0f) {
             // Has two real roots, or maybe one root
             let t0 = (3.0f*q) / p;
             let t1 = (-3.0f*q) / (2.0f*p);
@@ -211,7 +211,7 @@ inline results3 solveDepressedCubic(float p, float q) {
             return solveDepressedCubicCardano(p, q, D);
         }
     } else {
-        return {0.0};
+        return {0.0f};
     }
 }
 
