@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-556 -605 1136 1178" width="1136" height="1178">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
   <defs/>
   <metadata> Produced by OmniGraffle 7.9.4 
-    <dc:date>2019-06-16 10:40:58 +0000</dc:date>
+    <dc:date>2019-06-16 12:00:40 +0000</dc:date>
   </metadata>
   <g id="Maximize_Window" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1" stroke-opacity="1">
     <title>Maximize Window</title>
-    <rect fill="#222221" x="-556" y="-605" width="1136" height="1178"/>
-    <g id="Maximize_Window: Layer 2">
-      <title>Layer 2</title>
-      <g id="Graphic_22">
-        <path d="M 12 -221.77165 L 12 -23.346457 L 12 -23.346457 L 12 5 L 12 5 L 40.346457 5 L 267.1181 5 L 295.46457 5 L 295.46457 -23.346457 L 295.46457 -221.77165 L 295.46457 -221.77165 L 295.46457 -278.46457 L 295.46457 -278.46457 L 267.1181 -278.46457 L 40.346457 -278.46457 L 12 -278.46457 Z M 40.346457 -221.77165 L 267.1181 -221.77165 L 267.1181 -23.346457 L 40.346457 -23.346457 Z" fill="white"/>
+    <g id="Maximize_Window: __TTauriIconBounds">
+      <title>__TTauriIconBounds</title>
+      <g id="Graphic_5">
+        <title>__TTauriIconBounds</title>
+        <rect x="-1690.9291" y="-1781.9291" width="1133.8583" height="1133.8583" stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+    </g>
+    <g id="Maximize_Window: Layer 3">
+      <title>Layer 3</title>
+      <g id="Graphic_6">
+        <path d="M -1124 -1441.7717 L -1124 -1243.3465 L -1124 -1243.3465 L -1124 -1215 L -1124 -1215 L -1095.6535 -1215 L -868.8819 -1215 L -840.5354 -1215 L -840.5354 -1243.3465 L -840.5354 -1441.7717 L -840.5354 -1441.7717 L -840.5354 -1498.4646 L -840.5354 -1498.4646 L -868.8819 -1498.4646 L -1095.6535 -1498.4646 L -1124 -1498.4646 Z M -1095.6535 -1441.7717 L -868.8819 -1441.7717 L -868.8819 -1243.3465 L -1095.6535 -1243.3465 Z" fill="white"/>
       </g>
     </g>
   </g>

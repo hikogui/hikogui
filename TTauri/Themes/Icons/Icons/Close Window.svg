@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-556 -605 1136 1178" width="1136" height="1178">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
   <defs/>
   <metadata> Produced by OmniGraffle 7.9.4 
-    <dc:date>2019-06-16 10:40:58 +0000</dc:date>
+    <dc:date>2019-06-16 12:00:40 +0000</dc:date>
   </metadata>
   <g id="Close_Window" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1" stroke-opacity="1">
     <title>Close Window</title>
-    <rect fill="#222221" x="-556" y="-605" width="1136" height="1178"/>
-    <g id="Close_Window: Layer 2">
-      <title>Layer 2</title>
-      <g id="Graphic_17">
-        <path d="M 133.68831 -136.73228 L 3.4024954 -6.446467 L 23.446467 13.597505 L 153.73228 -116.68831 L 284.0181 13.597505 L 304.06207 -6.446467 L 173.77625 -136.73228 L 304.06207 -267.0181 L 284.0181 -287.06207 L 153.73228 -156.77625 L 23.446467 -287.06207 L 3.4024954 -267.0181 Z" fill="white"/>
+    <g id="Close_Window: __TTauriIconBounds">
+      <title>__TTauriIconBounds</title>
+      <g id="Graphic_5">
+        <title>__TTauriIconBounds</title>
+        <rect x="-1690.9291" y="-1781.9291" width="1133.8583" height="1133.8583" stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+      </g>
+    </g>
+    <g id="Close_Window: Layer 3">
+      <title>Layer 3</title>
+      <g id="Graphic_6">
+        <path d="M -1002.3117 -1356.7323 L -1132.5975 -1226.4465 L -1112.5535 -1206.4025 L -982.2677 -1336.6883 L -851.9819 -1206.4025 L -831.9379 -1226.4465 L -962.2237 -1356.7323 L -831.9379 -1487.0181 L -851.9819 -1507.062 L -982.2677 -1376.7763 L -1112.5535 -1507.062 L -1132.5975 -1487.0181 Z" fill="white"/>
       </g>
     </g>
   </g>
