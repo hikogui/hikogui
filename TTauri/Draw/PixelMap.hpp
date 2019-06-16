@@ -124,9 +124,9 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
  */
 void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src);
 
-template<int N, typename Kernel>
-void horizontalFilterRow(gsl::span<uint8_t> row, Kernel kernel) {
-    constexpr auto halfN = N/2;
+template<int KERNEL_SIZE, typename KERNEL>
+void horizontalFilterRow(gsl::span<uint8_t> row, KERNEL kernel) {
+    constexpr auto LOOK_AHEAD_SIZE = KERNEL_SIZE / 2;
 
     uint64_t values = 0;
     ptrdiff_t x;
@@ -134,23 +134,22 @@ void horizontalFilterRow(gsl::span<uint8_t> row, Kernel kernel) {
     // Start beyond the left pixel. Then lookahead upto
     // the point we can start the kernel.
     let leftEdgeValue = row[0];
-    for (x = -N; x < 0; x++) {
+    for (x = -KERNEL_SIZE; x < 0; x++) {
         values <<= 8;
 
-        let lookAheadX = x + halfN;
-        if (lookAheadX < 0) {
+        if ((LOOK_AHEAD + x) < 0) {
             values |= leftEdgeValue;
         } else {
-            values |= row[lookAheadX];
+            values |= row[LOOK_AHEAD + x];
         }
     }
 
     // Execute the kernel on all the pixels upto the right edge.
     // The values are still looked up ahead.
-    let lastX = row.size() - halfN;
+    let lastX = row.size() - LOOK_AHEAD_SIZE;
     for (; x < lastX; x++) {
         values <<= 8;
-        values |= row[x + halfN];
+        values |= row[LOOK_AHEAD_SIZE + x];
 
         row[x] = kernel(values);
     }
@@ -165,11 +164,12 @@ void horizontalFilterRow(gsl::span<uint8_t> row, Kernel kernel) {
     }
 }
 
-template<int N, typename T, typename Kernel>
-void horizontalFilter(PixelMap<T> &pixels, Kernel kernel) {
+
+template<int KERNEL_SIZE, typename T, typename KERNEL>
+void horizontalFilter(PixelMap<T> &pixels, KERNEL kernel) {
     for (size_t rowNr = 0; rowNr < pixels.height; rowNr++) {
         auto row = pixels.at(rowNr);
-        horizontalFilterRow<N>(row, kernel);
+        horizontalFilterRow<KERNEL_SIZE>(row, kernel);
     }
 }
 
