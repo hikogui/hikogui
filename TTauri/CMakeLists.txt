@@ -30,7 +30,7 @@ set(TTauri_srcs
     Draw/PNG.cpp
     Draw/Path.cpp
     Draw/Font.cpp
-    Draw/QBezier.cpp
+    Draw/Bezier.cpp
     Draw/TrueTypeParser.cpp
     Draw/Theme.cpp
     GUI/Device_base.cpp
@@ -107,7 +107,7 @@ endforeach(shader)
 set(TTauriTests_srcs
     Config/parser_tests.cpp
     Config/Config_tests.cpp
-    Draw/QBezier_tests.cpp
+    Draw/Bezier_tests.cpp
     Draw/TrueTypeParser_tests.cpp
     Draw/Path_tests.cpp
     Draw/PixelMap_tests.cpp

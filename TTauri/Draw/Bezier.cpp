@@ -1,10 +1,70 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "QBezier.hpp"
+#include "Bezier.hpp"
+#include "BezierPoint.hpp"
 #include "TTauri/utils.hpp"
 
 namespace TTauri::Draw {
+
+std::vector<Bezier> Bezier::getContour(std::vector<BezierPoint> const& _points)
+{
+    let points = BezierPoint::normalizePoints(_points);
+
+    std::vector<Bezier> r;
+
+    auto type = Bezier::Type::None;
+    auto P1 = glm::vec2{};
+    auto C1 = glm::vec2{};
+    auto C2 = glm::vec2{};
+
+    for (let &point: points) {
+        switch (point.type) {
+        case BezierPoint::Type::Anchor:
+            switch (type) {
+            case Bezier::Type::None:
+                P1 = point.p;
+                type = Bezier::Type::Linear;
+                break;
+            case Bezier::Type::Linear:
+                r.emplace_back(P1, point.p);
+                P1 = point.p;
+                type = Bezier::Type::Linear;
+                break;
+            case Bezier::Type::Quadratic:
+                r.emplace_back(P1, C1, point.p);
+                P1 = point.p;
+                type = Bezier::Type::Linear;
+                break;
+            case Bezier::Type::Cubic:
+                r.emplace_back(P1, C1, C2, point.p);
+                P1 = point.p;
+                type = Bezier::Type::Linear;
+                break;
+            default:
+                no_default;
+            }
+            break;
+        case BezierPoint::Type::QuadraticControl:
+            C1 = point.p;
+            type = Bezier::Type::Quadratic;
+            break;
+        case BezierPoint::Type::CubicControl1:
+            C1 = point.p;
+            type = Bezier::Type::Cubic;
+            break;
+        case BezierPoint::Type::CubicControl2:
+            C2 = point.p;
+            required_assert(type == Bezier::Type::Cubic);
+            break;
+        default:
+            no_default;
+        }
+    }
+
+    return r;
+}
+
 
 static void renderPartialPixels(gsl::span<uint8_t> row, size_t i, float const startX, float const endX)
 {
@@ -75,7 +135,7 @@ static void renderRowSpan(gsl::span<uint8_t> row, float const startX, float cons
     }
 }
 
-static void renderSubRow(gsl::span<uint8_t> row, float rowY, std::vector<QBezier> const& curves) {
+static void renderSubRow(gsl::span<uint8_t> row, float rowY, std::vector<Bezier> const& curves) {
     auto results = solveCurvesXByY(curves, rowY);
     if (results.size() == 0) {
         return;
@@ -94,7 +154,7 @@ static void renderSubRow(gsl::span<uint8_t> row, float rowY, std::vector<QBezier
     }
 }
 
-void renderRow(gsl::span<uint8_t> row, size_t rowY, std::vector<QBezier> const& curves) {
+void renderRow(gsl::span<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves) {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
         renderSubRow(row, y, curves);

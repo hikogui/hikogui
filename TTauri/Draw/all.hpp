@@ -13,7 +13,7 @@
 #include "Path.hpp"
 #include "PixelMap.hpp"
 #include "PNG.hpp"
-#include "QBezier.hpp"
+#include "Bezier.hpp"
 #include "SubpixelMask.hpp"
 #include "Theme.hpp"
 #include "TrueTypeParser.hpp"

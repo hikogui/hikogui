@@ -5,70 +5,100 @@
 
 #include "TTauri/geometry.hpp"
 #include "TTauri/required.hpp"
+#include "TTauri/utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace TTauri::Draw {
 
 struct BezierPoint {
-    glm::vec2 p;
-    bool onCurve;
+    enum class Type { Anchor, QuadraticControl, CubicControl1, CubicControl2 };
 
-    BezierPoint(glm::vec2 p, bool onCurve) : p(p), onCurve(onCurve) {}
-    BezierPoint(float x, float y, bool onCurve) : BezierPoint({x, y}, onCurve) {}
+    Type type;
+    glm::vec2 p;
+
+    BezierPoint(glm::vec2 p, Type type) : p(p), type(type) {}
+    BezierPoint(float x, float y, Type type) : BezierPoint({x, y}, type) {}
 
     bool operator==(BezierPoint const &other) const {
-        return (p == other.p) && (onCurve == other.onCurve);
+        return (p == other.p) && (type == other.type);
     }
 
     BezierPoint operator*(glm::mat2x2 scale) const {
-        return { p * scale, onCurve };
+        return { p * scale, type };
     }
 
     BezierPoint operator+(glm::vec2 offset) const {
-        return { p + offset, onCurve };
+        return { p + offset, type };
     }
 
     BezierPoint transform(glm::vec2 position, float scale = 1.0f, float rotate = 0.0f) const {
         let newP = glm::rotate(p * scale, rotate) + position;
-        return { newP, onCurve };
+        return { newP, type };
     }
 
-    static BezierPoint midpoint(BezierPoint a, BezierPoint b)
-    {
-        assert(a.onCurve == b.onCurve);
-        return { TTauri::midpoint(a.p, b.p), !a.onCurve };
-    }
-
-    /*!
-     *
-     * \return A list of points, starting with an onCurve point. Each onCurve point is followed by an offCurve point.
+    /*! Normalize points in a list.
+     * The following normalizations are executed:
+     *  - Missing anchor points between two quadratic-control-points are added.
+     *  - Missing first-cubic-control-points are added by reflecting the previous second-control point around the previous anchor.
+     *  - The list of points will start with an anchor.
+     *  - The list will close with the first anchor.
      */
-    static std::vector<BezierPoint> normalizePoints(std::vector<BezierPoint> const& points)
-    {
-        assert(points.size() >= 2);
+    static std::vector<BezierPoint> normalizePoints(std::vector<BezierPoint> originalPoints) {
+        std::vector<BezierPoint> r;
 
-        std::vector<BezierPoint> normalizedPoints;
+        let numberOfPoints = static_cast<ptrdiff_t>(originalPoints.size());
+        for (ptrdiff_t i = 0; i < numberOfPoints; i++) {
+            let point = originalPoints[i];
+            let previousPoint = originalPoints[safe_modulo(i - 1, numberOfPoints)];
+            let previousPreviousPoint = originalPoints[safe_modulo(i - 2, numberOfPoints)];
 
-        auto previousPoint = points.back();
+            switch (point.type) {
+            case BezierPoint::Type::Anchor:
+                required_assert(previousPoint.type != BezierPoint::Type::CubicControl1);
+                r.push_back(point);
+                break;
 
-        for (let point : points) {
-            // Make sure that every onCurve point is acompanied by a offCurve point.
-            if (previousPoint.onCurve == point.onCurve) {
-                normalizedPoints.push_back(BezierPoint::midpoint(previousPoint, point));
+            case BezierPoint::Type::QuadraticControl:
+                if (previousPoint.type == BezierPoint::Type::QuadraticControl) {
+                    r.emplace_back(midpoint(previousPoint.p, point.p), BezierPoint::Type::Anchor);
+
+                } else {
+                    required_assert(previousPoint.type == BezierPoint::Type::Anchor);
+                }
+                r.push_back(point);
+                break;
+
+            case BezierPoint::Type::CubicControl1:
+                r.push_back(point);
+                break;
+
+            case BezierPoint::Type::CubicControl2:
+                if (previousPoint.type == BezierPoint::Type::Anchor) {
+                    required_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
+
+                    r.emplace_back(glm::reflect(previousPreviousPoint.p, previousPoint.p), BezierPoint::Type::CubicControl1);
+                } else {
+                    required_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
+                }
+                r.push_back(point);
+                break;
+
+            default:
+                no_default;
             }
-            normalizedPoints.push_back(point);
-
-            previousPoint = point;
         }
 
-        if (!normalizedPoints.front().onCurve) {
-            // Make sure the first point lays on the curve.
-            std::rotate(normalizedPoints.begin(), normalizedPoints.begin() + 1, normalizedPoints.end());
+        for (size_t i = 0; i < r.size(); i++) {
+            if (r[i].type == BezierPoint::Type::Anchor) {
+                std::rotate(r.begin(), r.begin() + i, r.end());
+                r.push_back(r.front());
+                return r;
+            }
         }
 
-        assert(normalizedPoints.size() % 2 == 0);
-        return normalizedPoints;
+        // The result did not contain an anchor.
+        required_assert(false);
     }
 };
 

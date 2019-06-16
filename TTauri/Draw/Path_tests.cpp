@@ -9,7 +9,7 @@
 using namespace std;
 using namespace TTauri::Draw;
 
-TEST(PathTests, getQBeziers) {
+TEST(PathTests, getBeziers) {
     auto path = Path();
     path.moveTo({ 1, 1 });
     path.lineTo({ 2, 1 });
@@ -17,12 +17,12 @@ TEST(PathTests, getQBeziers) {
     path.lineTo({ 1, 2 });
     path.close();
 
-    let beziers = path.getQBeziers();
+    let beziers = path.getBeziers();
     ASSERT_EQ(beziers.size(), 4);
-    ASSERT_EQ(beziers[0], QBezier({ 1,1 }, { 1.5,1 }, { 2,1 }));
-    ASSERT_EQ(beziers[1], QBezier({ 2,1 }, { 2,1.5 }, { 2,2 }));
-    ASSERT_EQ(beziers[2], QBezier({ 2,2 }, { 1.5,2 }, { 1,2 }));
-    ASSERT_EQ(beziers[3], QBezier({ 1,2 }, { 1,1.5 }, { 1,1 }));
+    ASSERT_EQ(beziers[0], Bezier({ 1,1 }, { 1.5,1 }, { 2,1 }));
+    ASSERT_EQ(beziers[1], Bezier({ 2,1 }, { 2,1.5 }, { 2,2 }));
+    ASSERT_EQ(beziers[2], Bezier({ 2,2 }, { 1.5,2 }, { 1,2 }));
+    ASSERT_EQ(beziers[3], Bezier({ 1,2 }, { 1,1.5 }, { 1,1 }));
 }
 
 TEST(PathTests, getBezierPointsOfSubpath) {
@@ -35,8 +35,8 @@ TEST(PathTests, getBezierPointsOfSubpath) {
 
     let points = path.getBezierPointsOfSubpath(0);
     ASSERT_EQ(points.size(), 4);
-    ASSERT_EQ(points[0], BezierPoint({ 1,1 }, true));
-    ASSERT_EQ(points[1], BezierPoint({ 2,1 }, true));
-    ASSERT_EQ(points[2], BezierPoint({ 2,2 }, true));
-    ASSERT_EQ(points[3], BezierPoint({ 1,2 }, true));
+    ASSERT_EQ(points[0], BezierPoint({ 1,1 }, BezierPoint::Type::Anchor));
+    ASSERT_EQ(points[1], BezierPoint({ 2,1 }, BezierPoint::Type::Anchor));
+    ASSERT_EQ(points[2], BezierPoint({ 2,2 }, BezierPoint::Type::Anchor));
+    ASSERT_EQ(points[3], BezierPoint({ 1,2 }, BezierPoint::Type::Anchor));
 }
