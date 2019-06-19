@@ -17,6 +17,42 @@ struct wsRGBApm;
 namespace TTauri::Draw {
 
 template <typename T>
+struct PixelRow {
+    gsl::span<T> const pixels;
+    size_t const width;
+
+    T const* data() const {
+        return pixels.data();
+    }
+
+    T * data() {
+        return pixels.data();
+    }
+
+    T const &operator[](size_t columnNr) const {
+        return pixels[columnNr];
+    }
+
+    T &operator[](size_t columnNr) {
+        return pixels[columnNr];
+    }
+
+    T const &at(size_t columnNr) const {
+        if (columnNr >= width) {
+            throw std::out_of_range("columnNr >= height");
+        }
+        return pixels.at(columnNr);
+    }
+
+    T &at(size_t columnNr) {
+        if (columnNr >= width) {
+            throw std::out_of_range("columnNr >= height");
+        }
+        return pixels.at(columnNr);
+    }
+};
+
+template <typename T>
 struct PixelMap {
     bool selfAllocated = false;
     gsl::span<T> pixels;
@@ -26,20 +62,29 @@ struct PixelMap {
     //! Stride in number of pixels; width of the original image.
     size_t stride;
 
-    PixelMap() : pixels({}), width(0), height(0), stride(0) {}
-    PixelMap(size_t width, size_t height) : width(width), height(height), stride(width), selfAllocated(true) {
-        T *data = new T[width * height];
-        pixels = {data, boost::numeric_cast<ptrdiff_t>(width * height)};
-    }
-    PixelMap(glm::u64vec2 extent) : width(extent.x), height(extent.y), stride(extent.x), selfAllocated(true) {
-        T* data = new T[width * height];
-        pixels = { data, boost::numeric_cast<ptrdiff_t>(width * height) };
-    }
+    PixelMap() :
+        pixels({}),
+        width(0),
+        height(0),
+        stride(0) {}
 
-    PixelMap(gsl::span<T> pixels, size_t width, size_t height) : pixels(pixels), width(width), height(height), stride(width) {}
-    PixelMap(gsl::span<T> pixels, size_t width, size_t height, size_t stride) : pixels(pixels), width(width), height(height), stride(stride) {}
-    PixelMap(gsl::span<T> pixels, glm::u64vec2 extent) : pixels(pixels), width(extent.x), height(extent.y), stride(extent.x) {}
-    PixelMap(gsl::span<T> pixels, glm::u64vec2 extent, size_t stride) : pixels(pixels), width(extent.x), height(extent.y), stride(stride) {}
+    PixelMap(gsl::span<T> pixels, size_t width, size_t height, size_t stride) :
+        pixels(pixels),
+        width(width),
+        height(height),
+        stride(stride) {}
+
+    PixelMap(size_t width, size_t height) :
+        pixels({ new T[width * height], boost::numeric_cast<ptrdiff_t>(width * height) }),
+        width(width),
+        height(height),
+        stride(width),
+        selfAllocated(true) {}
+
+    PixelMap(u64extent2 extent) : PixelMap(extent.width(), extent.height()) {}
+    PixelMap(gsl::span<T> pixels, size_t width, size_t height) : PixelMap(pixels, width, height, width) {}
+    PixelMap(gsl::span<T> pixels, u64extent2 extent) : PixelMap(pixels, extent.width(), extent.height()) {}
+    PixelMap(gsl::span<T> pixels, u64extent2 extent, size_t stride) : PixelMap(pixels, extent.width(), extent.height(), stride) {}
 
     ~PixelMap() {
         if (selfAllocated) {
@@ -68,23 +113,34 @@ struct PixelMap {
         return submap({{x, y}, {width, height}});
     }
 
-    gsl::span<T> operator[](size_t const rowNr) const {
-        return pixels.subspan(rowNr * stride, width);
+    PixelRow<T> const operator[](size_t const rowNr) const {
+        return { pixels.subspan(rowNr * stride, width), width };
     }
 
-    gsl::span<T> at(const size_t rowNr) const {
+    PixelRow<T> operator[](size_t const rowNr) {
+        return { pixels.subspan(rowNr * stride, width), width };
+    }
+
+    PixelRow<T> const at(const size_t rowNr) const {
         if (rowNr >= height) {
             throw std::out_of_range("rowNr >= height");
         }
         return (*this)[rowNr];
     }
 
-    std::vector<void *> rowPointers() const {
+    PixelRow<T> at(const size_t rowNr) {
+        if (rowNr >= height) {
+            throw std::out_of_range("rowNr >= height");
+        }
+        return (*this)[rowNr];
+    }
+
+    std::vector<void *> rowPointers() {
         std::vector<void *> r;
         r.reserve(height);
 
         for (size_t row = 0; row < height; row++) {
-            void *ptr = &(at(row).at(0));
+            void *ptr = at(row).data();
             r.push_back(ptr);
         }
 
@@ -95,9 +151,9 @@ struct PixelMap {
      */
     void clear() {
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
-            let row = this->at(rowNr);
+            auto row = this->at(rowNr);
             void *data = row.data();
-            memset(data, 0, row.size_bytes());
+            memset(data, 0, row.width * sizeof(T));
         }
     }
 
@@ -105,7 +161,7 @@ struct PixelMap {
      */
     void fill(T color) {
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
-            let row = this->at(rowNr);
+            auto row = this->at(rowNr);
             for (size_t columnNr = 0; columnNr < width; columnNr++) {
                 row[columnNr] = color;
             }
@@ -125,11 +181,11 @@ void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
 void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src);
 
 template<int KERNEL_SIZE, typename KERNEL>
-void horizontalFilterRow(gsl::span<uint8_t> row, KERNEL kernel) {
+void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) {
     constexpr auto LOOK_AHEAD_SIZE = KERNEL_SIZE / 2;
 
     uint64_t values = 0;
-    ptrdiff_t x;
+    int64_t x;
 
     // Start beyond the left pixel. Then lookahead upto
     // the point we can start the kernel.
@@ -137,16 +193,16 @@ void horizontalFilterRow(gsl::span<uint8_t> row, KERNEL kernel) {
     for (x = -KERNEL_SIZE; x < 0; x++) {
         values <<= 8;
 
-        if ((LOOK_AHEAD + x) < 0) {
+        if ((LOOK_AHEAD_SIZE + x) < 0) {
             values |= leftEdgeValue;
         } else {
-            values |= row[LOOK_AHEAD + x];
+            values |= row[LOOK_AHEAD_SIZE + x];
         }
     }
 
     // Execute the kernel on all the pixels upto the right edge.
     // The values are still looked up ahead.
-    let lastX = row.size() - LOOK_AHEAD_SIZE;
+    int64_t const lastX = row.width - LOOK_AHEAD_SIZE;
     for (; x < lastX; x++) {
         values <<= 8;
         values |= row[LOOK_AHEAD_SIZE + x];
@@ -155,8 +211,8 @@ void horizontalFilterRow(gsl::span<uint8_t> row, KERNEL kernel) {
     }
 
     // Finish up to the right edge.
-    let rightEdgeValue = row[row.size() - 1];
-    for (; x < row.size(); x++) {
+    let rightEdgeValue = row[row.width - 1];
+    for (; x < static_cast<int64_t>(row.width); x++) {
         values <<= 8;
         values |= rightEdgeValue;
 

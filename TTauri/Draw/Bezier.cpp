@@ -66,7 +66,7 @@ std::vector<Bezier> Bezier::getContour(std::vector<BezierPoint> const& _points)
 }
 
 
-static void renderPartialPixels(gsl::span<uint8_t> row, size_t i, float const startX, float const endX)
+static void fillPartialPixels(PixelRow<uint8_t> row, size_t i, float const startX, float const endX)
 {
     let pixelCoverage =
         std::clamp(endX, i + 0.0f, i + 1.0f) -
@@ -76,7 +76,7 @@ static void renderPartialPixels(gsl::span<uint8_t> row, size_t i, float const st
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
 }
 
-static void renderFullPixels(gsl::span<uint8_t> row, size_t start, size_t size)
+static void fillFullPixels(PixelRow<uint8_t> row, size_t start, size_t size)
 {
     if (size < 16) {
         let end = start + size;
@@ -112,8 +112,8 @@ static void renderFullPixels(gsl::span<uint8_t> row, size_t start, size_t size)
 /*! Render pixels in a row between two x values.
  * Fully covered sub-pixel will have the value 51.
  */
-static void renderRowSpan(gsl::span<uint8_t> row, float const startX, float const endX) {
-    if (startX >= row.size() || endX < 0.0f) {
+static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const endX) {
+    if (startX >= row.width || endX < 0.0f) {
         return;
     }
 
@@ -121,21 +121,21 @@ static void renderRowSpan(gsl::span<uint8_t> row, float const startX, float cons
     let endXplusOne = endX + 1.0f;
     let endX_int = static_cast<int64_t>(endXplusOne);
     let startColumn = std::max(startX_int, static_cast<int64_t>(0));
-    let endColumn = std::min(endX_int, row.size());
+    let endColumn = std::min(endX_int, static_cast<int64_t>(row.width));
     let nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
-        renderPartialPixels(row, startColumn, startX, endX);
+        fillPartialPixels(row, startColumn, startX, endX);
 
     }
     else {
-        renderPartialPixels(row, startColumn, startX, endX);
-        renderFullPixels(row, startColumn + 1, nrColumns - 2);
-        renderPartialPixels(row, endColumn - 1, startX, endX);
+        fillPartialPixels(row, startColumn, startX, endX);
+        fillFullPixels(row, startColumn + 1, nrColumns - 2);
+        fillPartialPixels(row, endColumn - 1, startX, endX);
     }
 }
 
-static void renderSubRow(gsl::span<uint8_t> row, float rowY, std::vector<Bezier> const& curves) {
+static void fillSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves) {
     auto results = solveCurvesXByY(curves, rowY);
     if (results.size() == 0) {
         return;
@@ -150,14 +150,14 @@ static void renderSubRow(gsl::span<uint8_t> row, float rowY, std::vector<Bezier>
     for (size_t i = 0; i < results.size(); i += 2) {
         let startX = results[i];
         let endX = results[i + 1];
-        renderRowSpan(row, startX, endX);
+        fillRowSpan(row, startX, endX);
     }
 }
 
-void renderRow(gsl::span<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves) {
+void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves) {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
-        renderSubRow(row, y, curves);
+        fillSubRow(row, y, curves);
     }
 }
 

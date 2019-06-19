@@ -29,7 +29,7 @@ struct SubpixelMask : PixelMap<uint8_t> {
 
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
             auto row = (*this)[rowNr];
-            for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.size()); columnNr += 3) {
+            for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.width); columnNr += 3) {
                 auto& r = row[columnNr];
                 auto& g = row[columnNr + 1];
                 auto& b = row[columnNr + 2];
@@ -45,7 +45,7 @@ struct SubpixelMask : PixelMap<uint8_t> {
 
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
             auto row = (*this)[rowNr];
-            for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.size()); columnNr += 3) {
+            for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.width); columnNr += 3) {
                 std::swap(row[columnNr], row[columnNr + 2]);
             }
         }
@@ -82,14 +82,14 @@ struct SubpixelMask : PixelMap<uint8_t> {
         }
     }
 
-    void render(std::vector<Bezier> curves) {
+    void fill(std::vector<Bezier> curves) {
         for (auto& curve : curves) {
             curve.scale({ 3.0, 1.0 });
         }
 
         for (size_t rowNr = 0; rowNr < height; rowNr++) {
             auto row = at(rowNr);
-            renderRow(row, rowNr, curves);
+            fillRow(row, rowNr, curves);
         }
     }
 };

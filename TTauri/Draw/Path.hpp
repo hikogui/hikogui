@@ -270,14 +270,14 @@ struct Path {
      * 
      * \param mask pixelmap to be modified.
      */
-    void render(SubpixelMask& mask) const {
-        return mask.render(getBeziers());
+    void fill(SubpixelMask& mask) const {
+        return mask.fill(getBeziers());
     }
 
-    void render(PixelMap<wsRGBApm>& pixels, wsRGBApm color, SubpixelMask::Orientation subpixelOrientation) const {
+    void fill(PixelMap<wsRGBApm>& pixels, wsRGBApm color, SubpixelMask::Orientation subpixelOrientation) const {
         auto mask = SubpixelMask(pixels.width * 3, pixels.height);
         mask.clear();
-        mask.render(getBeziers());
+        mask.fill(getBeziers());
         mask.filter(subpixelOrientation);
 
         composit(pixels, color, mask);

@@ -24,7 +24,7 @@ TEST(PixelMapTests, renderMaskFromPath) {
     path.lineTo({1, 2});
     path.close();
 
-    path.render(mask);
+    path.fill(mask);
     ASSERT_EQ(mask[0][0], 0);
     ASSERT_EQ(mask[0][1], 0);
     ASSERT_EQ(mask[0][2], 0);

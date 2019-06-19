@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include "PixelMap.hpp"
 #include "TTauri/math.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/required.hpp"
-
 #include <glm/glm.hpp>
 #include <tuple>
 #include <limits>
@@ -169,6 +169,6 @@ inline std::vector<float> solveCurvesXByY(std::vector<Bezier> const &v, float y)
  * The row needs to be cleared (set to zero) before rendering it.
  * Fully covered sub-pixels will have the value 0xff;
  */
-void renderRow(gsl::span<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves);
+void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves);
 
 }

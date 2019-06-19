@@ -15,9 +15,9 @@ void composit(PixelMap<wsRGBApm> &under, wsRGBApm over, SubpixelMask const& mask
     assert((mask.width * 3) >= under.width);
 
     for (size_t rowNr = 0; rowNr < under.height; rowNr++) {
-        auto maskRow = mask.at(rowNr);
+        let maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (size_t maskColumnNr = 0, columnNr = 0; columnNr < static_cast<size_t>(underRow.size()); columnNr++, maskColumnNr += 3) {
+        for (size_t maskColumnNr = 0, columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++, maskColumnNr += 3) {
             let mask = glm::u8vec3 {
                 maskRow[maskColumnNr],
                 maskRow[maskColumnNr + 1],
