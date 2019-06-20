@@ -265,24 +265,30 @@ struct wsRGBApm {
         color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
     }
 
+    void composit(wsRGBApm over, uint8_t mask) {
+        constexpr int64_t MASK_MAX = 255;
+
+        if (mask == 0) {
+            return;
+        } else if (mask == MASK_MAX) {
+            return composit(over);
+        } else {
+            // calculate 'over' by multiplying all components with the new alpha.
+            // This means that the color stays pre-multiplied.
+            constexpr int64_t NEWOVERV_MAX = I64_MAX_COLOR * MASK_MAX;
+            let newOverV = static_cast<glm::i64vec4>(over.color) * static_cast<int64_t>(mask);
+
+            constexpr int64_t NEWOVERV_DIVIDER = NEWOVERV_MAX / I64_MAX_COLOR;
+            let newOver = wsRGBApm{ static_cast<glm::i16vec4>(newOverV / NEWOVERV_DIVIDER) };
+            return composit(newOver);
+        }
+    }
+
     void subpixelComposit(wsRGBApm over, glm::u8vec3 mask) {
         constexpr int64_t MASK_MAX = 255;
 
         if (mask.r == mask.g && mask.r == mask.b) {
-            if (mask.r == 0) {
-                return;
-            } else if (mask.r == MASK_MAX) {
-                return composit(over);
-            } else {
-                // calculate 'over' by multiplying all components with the new alpha.
-                // This means that the color stays pre-multiplied.
-                constexpr int64_t NEWOVERV_MAX = I64_MAX_COLOR * MASK_MAX;
-                let newOverV = static_cast<glm::i64vec4>(over.color) * static_cast<int64_t>(mask.r);
-
-                constexpr int64_t NEWOVERV_DIVIDER = NEWOVERV_MAX / I64_MAX_COLOR;
-                let newOver = wsRGBApm{ static_cast<glm::i16vec4>(newOverV / NEWOVERV_DIVIDER) };
-                return composit(newOver);
-            }
+            return composit(over, mask.r);
         }
 
         // 8 bit

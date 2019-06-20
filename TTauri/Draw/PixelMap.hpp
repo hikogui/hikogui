@@ -88,8 +88,31 @@ struct PixelMap {
 
     ~PixelMap() {
         if (selfAllocated) {
-            delete pixels.data();
+            delete[] pixels.data();
         }
+    }
+
+    /*! Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
+     */
+    PixelMap(PixelMap const &other) = delete;
+    PixelMap(PixelMap &&other) : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
+        other.selfAllocated = false;
+    }
+
+    /*! Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
+    */
+    PixelMap &operator=(PixelMap const &other) = delete;
+    PixelMap &operator=(PixelMap &&other) {
+        if (selfAllocated) {
+            delete[] pixels.data();
+        }
+        pixels = other.pixels;
+        width = other.width;
+        height = other.height;
+        stride = other.stride;
+        selfAllocated = other.selfAllocated;
+        other.selfAllocated = false;
+        return *this;
     }
 
     PixelMap<T> submap(u64rect2 rect) const {
@@ -169,65 +192,6 @@ struct PixelMap {
     }
 };
 
-/*! Make the pixel around the border transparent.
- * But copy the color information from the neighbour pixel so that linear
- * interpolation near the border will work propertly.
- */
-void add1PixelTransparentBorder(PixelMap<uint32_t> &pixelMap);
-
-/*! Copy a image with linear 16bit-per-color-component to a
- * gamma corrected 8bit-per-color-component image.
- */
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src);
-
-template<int KERNEL_SIZE, typename KERNEL>
-void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) {
-    constexpr auto LOOK_AHEAD_SIZE = KERNEL_SIZE / 2;
-
-    uint64_t values = 0;
-    int64_t x;
-
-    // Start beyond the left pixel. Then lookahead upto
-    // the point we can start the kernel.
-    let leftEdgeValue = row[0];
-    for (x = -KERNEL_SIZE; x < 0; x++) {
-        values <<= 8;
-
-        if ((LOOK_AHEAD_SIZE + x) < 0) {
-            values |= leftEdgeValue;
-        } else {
-            values |= row[LOOK_AHEAD_SIZE + x];
-        }
-    }
-
-    // Execute the kernel on all the pixels upto the right edge.
-    // The values are still looked up ahead.
-    int64_t const lastX = row.width - LOOK_AHEAD_SIZE;
-    for (; x < lastX; x++) {
-        values <<= 8;
-        values |= row[LOOK_AHEAD_SIZE + x];
-
-        row[x] = kernel(values);
-    }
-
-    // Finish up to the right edge.
-    let rightEdgeValue = row[row.width - 1];
-    for (; x < static_cast<int64_t>(row.width); x++) {
-        values <<= 8;
-        values |= rightEdgeValue;
-
-        row[x] = kernel(values);
-    }
-}
-
-
-template<int KERNEL_SIZE, typename T, typename KERNEL>
-void horizontalFilter(PixelMap<T> &pixels, KERNEL kernel) {
-    for (size_t rowNr = 0; rowNr < pixels.height; rowNr++) {
-        auto row = pixels.at(rowNr);
-        horizontalFilterRow<KERNEL_SIZE>(row, kernel);
-    }
-}
 
 
 }

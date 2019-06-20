@@ -25,8 +25,6 @@ set(TTauri_srcs
     ${FLEX_TTauriConfigScanner_OUTPUTS}
     Config/LiteralParser.cpp
     Config/parser.cpp
-    Draw/PixelMap.cpp
-    Draw/SubpixelMask.cpp
     Draw/PNG.cpp
     Draw/Path.cpp
     Draw/Font.cpp

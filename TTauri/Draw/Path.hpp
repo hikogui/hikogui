@@ -5,7 +5,7 @@
 #include "Bezier.hpp"
 #include "Glyphs.hpp"
 #include "Font.hpp"
-#include "SubpixelMask.hpp"
+#include "image_algorithm.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
 #include <glm/glm.hpp>
@@ -13,9 +13,11 @@
 
 namespace TTauri::Draw {
 
-template<typename T> struct PixelMap;
-
-void renderMask(PixelMap<uint8_t>& mask, std::vector<Bezier> const& curves);
+enum class SubpixelOrientation {
+    RedLeft,
+    RedRight,
+    Unknown
+};
 
 
 struct Path {
@@ -264,23 +266,29 @@ struct Path {
         }
     }
 
-    /*! Render path in subpixel mask.
-     * The rendering done is additive and saturates the pixel value, therefor
-     * you can do multiple path renders into the same mask.
-     * 
-     * \param mask pixelmap to be modified.
-     */
-    void fill(SubpixelMask& mask) const {
-        return mask.fill(getBeziers());
-    }
+    void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, SubpixelOrientation subpixelOrientation) const {
+        let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
 
-    void fill(PixelMap<wsRGBApm>& pixels, wsRGBApm color, SubpixelMask::Orientation subpixelOrientation) const {
-        auto mask = SubpixelMask(pixels.width * 3, pixels.height);
+        auto beziers = getBeziers();
+        if (renderSubpixels) {
+            for (auto &&bezier: beziers) {
+                bezier.scale({3.0f, 1.0f});
+            }
+        }
+
+        auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
         mask.clear();
-        mask.fill(getBeziers());
-        mask.filter(subpixelOrientation);
+        Draw::fill(mask, beziers);
 
-        composit(pixels, color, mask);
+        if (renderSubpixels) {
+            subpixelFilter(mask);
+            if (subpixelOrientation == SubpixelOrientation::RedRight) {
+                subpixelFlip(mask);
+            }
+            subpixelComposit(dst, color, mask);
+        } else {
+            composit(dst, color, mask);
+        }
     }
 };
 

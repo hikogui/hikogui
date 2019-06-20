@@ -112,7 +112,8 @@ static void fillFullPixels(PixelRow<uint8_t> row, size_t start, size_t size)
 /*! Render pixels in a row between two x values.
  * Fully covered sub-pixel will have the value 51.
  */
-static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const endX) {
+static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const endX)
+{
     if (startX >= row.width || endX < 0.0f) {
         return;
     }
@@ -135,7 +136,8 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
     }
 }
 
-static void fillSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves) {
+static void fillSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves)
+{
     auto results = solveCurvesXByY(curves, rowY);
     if (results.size() == 0) {
         return;
@@ -154,13 +156,19 @@ static void fillSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> co
     }
 }
 
-void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves) {
+void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves)
+{
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
         fillSubRow(row, y, curves);
     }
 }
 
-
+void fill(PixelMap<uint8_t> &image, std::vector<Bezier> const &curves)
+{
+    for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
+        fillRow(image.at(rowNr), rowNr, curves);
+    }
+}
 
 }

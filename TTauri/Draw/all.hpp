@@ -14,7 +14,7 @@
 #include "PixelMap.hpp"
 #include "PNG.hpp"
 #include "Bezier.hpp"
-#include "SubpixelMask.hpp"
+#include "image_algorithm.hpp"
 #include "Theme.hpp"
 #include "TrueTypeParser.hpp"
 #include "utils.hpp"

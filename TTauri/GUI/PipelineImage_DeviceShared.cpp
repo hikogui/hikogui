@@ -5,6 +5,7 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 #include "Device.hpp"
+#include "TTauri/Draw/image_algorithm.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>
@@ -103,11 +104,10 @@ TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
     auto vulkanDevice = device.lock();
     stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
 
-    let textureWithoutBorder = stagingTexture.pixelMap.submap(
+    return stagingTexture.pixelMap.submap(
         Page::border, Page::border,
         stagingImageWidth - 2 * Page::border, stagingImageHeight - 2 * Page::border
     );
-    return textureWithoutBorder;
 }
 
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
@@ -374,9 +374,13 @@ void DeviceShared::buildAtlas()
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     let [image, allocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
     let data = vulkanDevice->mapMemory<uint32_t>(allocation);
-    let pixelMap = TTauri::Draw::PixelMap<uint32_t>{data, imageCreateInfo.extent.width, imageCreateInfo.extent.height};
 
-    stagingTexture = { image, allocation, vk::ImageView(), pixelMap };
+    stagingTexture = {
+        image,
+        allocation,
+        vk::ImageView(),
+        TTauri::Draw::PixelMap<uint32_t>{data, imageCreateInfo.extent.width, imageCreateInfo.extent.height}
+    };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {
         vk::SamplerCreateFlags(),

@@ -19,10 +19,10 @@ TEST(PathTests, getBeziers) {
 
     let beziers = path.getBeziers();
     ASSERT_EQ(beziers.size(), 4);
-    ASSERT_EQ(beziers[0], Bezier({ 1,1 }, { 1.5,1 }, { 2,1 }));
-    ASSERT_EQ(beziers[1], Bezier({ 2,1 }, { 2,1.5 }, { 2,2 }));
-    ASSERT_EQ(beziers[2], Bezier({ 2,2 }, { 1.5,2 }, { 1,2 }));
-    ASSERT_EQ(beziers[3], Bezier({ 1,2 }, { 1,1.5 }, { 1,1 }));
+    ASSERT_EQ(beziers[0], Bezier({ 1,1 }, { 2,1 }));
+    ASSERT_EQ(beziers[1], Bezier({ 2,1 }, { 2,2 }));
+    ASSERT_EQ(beziers[2], Bezier({ 2,2 }, { 1,2 }));
+    ASSERT_EQ(beziers[3], Bezier({ 1,2 }, { 1,1 }));
 }
 
 TEST(PathTests, getBezierPointsOfSubpath) {

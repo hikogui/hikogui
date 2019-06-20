@@ -82,11 +82,11 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 
     auto buttonBackgroundMask = Draw::Path();
     buttonBackgroundMask.addRectangle(rectangle, backgroundShape);
-    buttonBackgroundMask.fill(linearMap, backgroundColor, Draw::SubpixelMask::Orientation::RedLeft);
+    buttonBackgroundMask.fill(linearMap, backgroundColor, Draw::SubpixelOrientation::RedLeft);
 
     auto textMask = Draw::Path();
     textMask.addText(label, labelFont, labelLocation, labelFontSize, 0.0f, Draw::HorizontalAlignment::Center);
-    textMask.fill(linearMap, labelColor, Draw::SubpixelMask::Orientation::RedLeft);
+    textMask.fill(linearMap, labelColor, Draw::SubpixelOrientation::RedLeft);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     copyLinearToGamma(pixelMap, linearMap);
