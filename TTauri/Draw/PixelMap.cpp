@@ -3,17 +3,13 @@
 
 #pragma once
 
-#include "PixelMap.hpp"
+#include "PixelMap.inl"
 #include "TTauri/Color.hpp"
 #include <algorithm>
 
 namespace TTauri::Draw {
 
-/*! Make the pixel around the border transparent.
- * But copy the color information from the neighbour pixel so that linear
- * interpolation near the border will work propertly.
- */
-inline void add1PixelTransparentBorder(PixelMap<uint32_t>& pixelMap)
+void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
 {
     uint8_t const u8invisibleMask[4] = { 0xff, 0xff, 0xff, 0 };
     uint32_t u32invisibleMask;
@@ -42,10 +38,7 @@ inline void add1PixelTransparentBorder(PixelMap<uint32_t>& pixelMap)
     pixelMap[pixelMap.height - 1][pixelMap.width - 1] = pixelMap[pixelMap.height - 2][pixelMap.width - 2] & u32invisibleMask;
 }
 
-/*! Copy a image with linear 16bit-per-color-component to a
- * gamma corrected 8bit-per-color-component image.
- */
-inline void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src)
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src)
 {
     assert(dst.width >= src.width);
     assert(dst.height >= src.height);
@@ -59,60 +52,7 @@ inline void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const&
     }
 }
 
-template<int KERNEL_SIZE, typename KERNEL>
-inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) {
-    constexpr auto LOOK_AHEAD_SIZE = KERNEL_SIZE / 2;
-
-    uint64_t values = 0;
-    int64_t x;
-
-    // Start beyond the left pixel. Then lookahead upto
-    // the point we can start the kernel.
-    let leftEdgeValue = row[0];
-    for (x = -KERNEL_SIZE; x < 0; x++) {
-        values <<= 8;
-
-        if ((LOOK_AHEAD_SIZE + x) < 0) {
-            values |= leftEdgeValue;
-        }
-        else {
-            values |= row[LOOK_AHEAD_SIZE + x];
-        }
-    }
-
-    // Execute the kernel on all the pixels upto the right edge.
-    // The values are still looked up ahead.
-    int64_t const lastX = row.width - LOOK_AHEAD_SIZE;
-    for (; x < lastX; x++) {
-        values <<= 8;
-        values |= row[LOOK_AHEAD_SIZE + x];
-
-        row[x] = kernel(values);
-    }
-
-    // Finish up to the right edge.
-    let rightEdgeValue = row[row.width - 1];
-    for (; x < static_cast<int64_t>(row.width); x++) {
-        values <<= 8;
-        values |= rightEdgeValue;
-
-        row[x] = kernel(values);
-    }
-}
-
-
-template<int KERNEL_SIZE, typename T, typename KERNEL>
-inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) {
-    for (size_t rowNr = 0; rowNr < pixels.height; rowNr++) {
-        auto row = pixels.at(rowNr);
-        horizontalFilterRow<KERNEL_SIZE>(row, kernel);
-    }
-}
-
-/*! Composit the color `over` onto the image `under` based on the pixel mask.
- * Mask should be passed to subpixelFilter() before use.
- */
-inline void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
+void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
 {
     assert(mask.height >= under.height);
     assert(mask.width >= under.width);
@@ -128,10 +68,7 @@ inline void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t>
     }
 }
 
-/*! Composit the color `over` onto the image `under` based on the subpixel mask.
- * Mask should be passed to subpixelFilter() before use.
- */
-inline void subpixelComposit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
+void subpixelComposit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
 {
     assert(mask.height >= under.height);
     assert((mask.width * 3) >= under.width);
@@ -152,7 +89,8 @@ inline void subpixelComposit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<
     }
 }
 
-inline void subpixelFilter(PixelMap<uint8_t> &image) {
+void subpixelFilter(PixelMap<uint8_t> &image)
+{
     horizontalFilter<5>(image, [](auto values) {
         return static_cast<uint8_t>((
             (values & 0xff) +
@@ -165,9 +103,8 @@ inline void subpixelFilter(PixelMap<uint8_t> &image) {
     );
 }
 
-/*! Swap R and B values of each RGB pixel.
- */
-inline void subpixelFlip(PixelMap<uint8_t> &image) {
+void subpixelFlip(PixelMap<uint8_t> &image)
+{
     assert(image.width % 3 == 0);
 
     for (size_t rowNr = 0; rowNr < image.height; rowNr++) {

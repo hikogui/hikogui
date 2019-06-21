@@ -18,15 +18,15 @@ namespace TTauri::Draw {
 
 template <typename T>
 struct PixelRow {
-    gsl::span<T> const pixels;
+    T * const pixels;
     size_t const width;
 
     T const* data() const {
-        return pixels.data();
+        return pixels;
     }
 
     T * data() {
-        return pixels.data();
+        return pixels;
     }
 
     T const &operator[](size_t columnNr) const {
@@ -41,45 +41,30 @@ struct PixelRow {
         if (columnNr >= width) {
             throw std::out_of_range("columnNr >= height");
         }
-        return pixels.at(columnNr);
+        return pixels[columnNr];
     }
 
     T &at(size_t columnNr) {
         if (columnNr >= width) {
             throw std::out_of_range("columnNr >= height");
         }
-        return pixels.at(columnNr);
+        return pixels[columnNr];
     }
 };
 
 template <typename T>
 struct PixelMap {
-    bool selfAllocated = false;
-    gsl::span<T> pixels;
+    T *pixels;
     size_t width;
     size_t height;
-
-    //! Stride in number of pixels; width of the original image.
     size_t stride;
+    bool selfAllocated = false;
 
-    PixelMap() :
-        pixels({}),
-        width(0),
-        height(0),
-        stride(0) {}
+    PixelMap() : pixels(nullptr), width(0), height(0), stride(0) {}
 
-    PixelMap(gsl::span<T> pixels, size_t width, size_t height, size_t stride) :
-        pixels(pixels),
-        width(width),
-        height(height),
-        stride(stride) {}
+    PixelMap(T *pixels, size_t width, size_t height, size_t stride) : pixels(pixels), width(width), height(height), stride(stride) {} 
 
-    PixelMap(size_t width, size_t height) :
-        pixels({ new T[width * height], boost::numeric_cast<ptrdiff_t>(width * height) }),
-        width(width),
-        height(height),
-        stride(width),
-        selfAllocated(true) {}
+    PixelMap(size_t width, size_t height) : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {}
 
     PixelMap(u64extent2 extent) : PixelMap(extent.width(), extent.height()) {}
     PixelMap(gsl::span<T> pixels, size_t width, size_t height) : PixelMap(pixels, width, height, width) {}
@@ -88,7 +73,7 @@ struct PixelMap {
 
     ~PixelMap() {
         if (selfAllocated) {
-            delete[] pixels.data();
+            delete[] pixels;
         }
     }
 
@@ -124,12 +109,10 @@ struct PixelMap {
 
         if (rect.extent.y == 0 || rect.extent.x == 0) {
             // Image of zero width or height needs zero pixels returned.
-            return { pixels.subspan(offset, 0), rect.extent.x, rect.extent.y, stride };
+            return { };
         }
 
-        size_t const count = (rect.extent.y - 1) * stride + rect.extent.x;
-
-        return { pixels.subspan(offset, count), rect.extent.x, rect.extent.y, stride };
+        return { pixels + offset, rect.extent.x, rect.extent.y, stride };
     }
     
     PixelMap<T> submap(size_t const x, size_t const y, size_t const width, size_t const height) const {
@@ -137,11 +120,11 @@ struct PixelMap {
     }
 
     PixelRow<T> const operator[](size_t const rowNr) const {
-        return { pixels.subspan(rowNr * stride, width), width };
+        return { pixels + (rowNr * stride), width };
     }
 
     PixelRow<T> operator[](size_t const rowNr) {
-        return { pixels.subspan(rowNr * stride, width), width };
+        return { pixels + (rowNr * stride), width };
     }
 
     PixelRow<T> const at(const size_t rowNr) const {
@@ -170,28 +153,61 @@ struct PixelMap {
         return r;
     }
 
-    /*! Clear the pixels of this (sub)image.
-     */
-    void clear() {
-        for (size_t rowNr = 0; rowNr < height; rowNr++) {
-            auto row = this->at(rowNr);
-            void *data = row.data();
-            memset(data, 0, row.width * sizeof(T));
-        }
-    }
-
-    /*! Fill with color.
-     */
-    void fill(T color) {
-        for (size_t rowNr = 0; rowNr < height; rowNr++) {
-            auto row = this->at(rowNr);
-            for (size_t columnNr = 0; columnNr < width; columnNr++) {
-                row[columnNr] = color;
-            }
-        }
-    }
 };
 
+template<int KERNEL_SIZE, typename KERNEL>
+void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel);
 
+template<int KERNEL_SIZE, typename T, typename KERNEL>
+void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel);
+
+/*! Clear the pixels of this (sub)image.
+ */
+template<typename T>
+void clear(PixelMap<T> &dst);
+
+/*! Fill with color.
+ */
+template<typename T>
+void fill(PixelMap<T> &dst, T color);
+
+/*! Rotate an image 90 degrees counter-clockwise.
+ */
+template<typename T>
+void rotate90(PixelMap<T> &dst, PixelMap<T> const &src);
+
+/*! Rotate an image 270 degrees counter-clockwise.
+ */
+template<typename T>
+void rotate270(PixelMap<T> &dst, PixelMap<T> const &src);
+
+/*! Make the pixel around the border transparent.
+ * But copy the color information from the neighbour pixel so that linear
+ * interpolation near the border will work propertly.
+ */
+void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
+
+/*! Copy a image with linear 16bit-per-color-component to a
+ * gamma corrected 8bit-per-color-component image.
+ */
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src);
+
+/*! Composit the color `over` onto the image `under` based on the pixel mask.
+ * Mask should be passed to subpixelFilter() before use.
+ */
+void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask);
+
+/*! Composit the color `over` onto the image `under` based on the subpixel mask.
+ * Mask should be passed to subpixelFilter() before use.
+ */
+void subpixelComposit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask);
+
+/*! Execute a slight horiontal blur filter to reduce colour fringes with subpixel compositing.
+ */
+void subpixelFilter(PixelMap<uint8_t> &image);
+
+/*! Swap R and B values of each RGB pixel.
+ */
+void subpixelFlip(PixelMap<uint8_t> &image);
 
 }

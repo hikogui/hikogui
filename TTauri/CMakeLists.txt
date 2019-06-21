@@ -26,6 +26,7 @@ set(TTauri_srcs
     Config/LiteralParser.cpp
     Config/parser.cpp
     Draw/PNG.cpp
+    Draw/PixelMap.cpp
     Draw/Path.cpp
     Draw/Font.cpp
     Draw/Bezier.cpp
