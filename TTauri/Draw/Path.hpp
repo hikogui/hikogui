@@ -5,7 +5,7 @@
 #include "Bezier.hpp"
 #include "Glyphs.hpp"
 #include "Font.hpp"
-#include "image_algorithm.hpp"
+#include "PixelMap.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
 #include <glm/glm.hpp>
@@ -277,7 +277,7 @@ struct Path {
         }
 
         auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
-        mask.clear();
+        clear(mask);
         Draw::fill(mask, beziers);
 
         if (renderSubpixels) {
@@ -290,6 +290,32 @@ struct Path {
             composit(dst, color, mask);
         }
     }
+
+    void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, float strokeWidth, SubpixelOrientation subpixelOrientation) const {
+        let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
+
+        auto beziers = getBeziers();
+        if (renderSubpixels) {
+            for (auto &&bezier: beziers) {
+                bezier.scale({3.0f, 1.0f});
+            }
+        }
+
+        auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
+        clear(mask);
+        Draw::stroke(mask, beziers, strokeWidth * 3.0f);
+
+        if (renderSubpixels) {
+            subpixelFilter(mask);
+            if (subpixelOrientation == SubpixelOrientation::RedRight) {
+                subpixelFlip(mask);
+            }
+            subpixelComposit(dst, color, mask);
+        } else {
+            composit(dst, color, mask);
+        }
+    }
+
 };
 
 

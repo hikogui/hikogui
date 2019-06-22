@@ -54,7 +54,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<wsRGBApm>{image.extent};
-    linearMap.clear();
+    clear(linearMap);
 
     // Draw something.
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
@@ -76,13 +76,13 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
 #pragma warning(suppress: 6001)
-    let rectangle = rect2{{0.0f, 0.0f}, { static_cast<float>(image.extent.width()), static_cast<float>(image.extent.height()) }};
+    let rectangle = rect2{{3.0f, 3.0f}, { static_cast<float>(image.extent.width()) - 3.0f, static_cast<float>(image.extent.height()) - 3.0f }};
     let fontCenter = labelFontSize * 0.5f;
     let labelLocation = midpoint(rectangle) + glm::vec2(0.0f, -fontCenter);
 
     auto buttonBackgroundMask = Draw::Path();
     buttonBackgroundMask.addRectangle(rectangle, backgroundShape);
-    buttonBackgroundMask.fill(linearMap, backgroundColor, Draw::SubpixelOrientation::RedLeft);
+    buttonBackgroundMask.stroke(linearMap, backgroundColor, 1.0, Draw::SubpixelOrientation::RedLeft);
 
     auto textMask = Draw::Path();
     textMask.addText(label, labelFont, labelLocation, labelFontSize, 0.0f, Draw::HorizontalAlignment::Center);

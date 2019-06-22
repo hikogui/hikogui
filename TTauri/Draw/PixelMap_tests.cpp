@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PixelMap.hpp"
+#include "PixelMap.inl"
 #include "Path.hpp"
 #include "TTauri/Color.hpp"
 #include <gtest/gtest.h>
@@ -14,7 +14,7 @@ using namespace TTauri::Draw;
 
 TEST(PixelMapTests, renderMaskFromPath) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    mask.clear();
+    clear(mask);
 
     auto path = Path();
     path.moveTo({1, 1});
@@ -60,13 +60,13 @@ TEST(PixelMapTests, renderMaskFromPath) {
 
 TEST(PixelMapTests, maskComposit) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    mask.clear();
+    clear(mask);
     mask[1][3] = 255;
     mask[1][4] = 255;
     mask[1][5] = 255;
 
     auto image = PixelMap<wsRGBApm>(3, 3);
-    image.clear();
+    clear(image);
 
     let transparent = wsRGBApm{ 0.0, 0.0, 0.0, 0.0 };
     let white = wsRGBApm{ 1.0, 1.0, 1.0, 1.0 };
@@ -85,13 +85,13 @@ TEST(PixelMapTests, maskComposit) {
 
 TEST(PixelMapTests, maskComposit2) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    mask.clear();
+    clear(mask);
     mask[1][3] = 255;
     mask[1][4] = 255;
     mask[1][5] = 255;
 
     auto image = PixelMap<wsRGBApm>(3, 3);
-    image.clear();
+    clear(image);
 
     let color = wsRGBApm{ 0.25, 0.50, 0.75, 1.0 };
     subpixelComposit(image, color, mask);
@@ -101,13 +101,13 @@ TEST(PixelMapTests, maskComposit2) {
 
 TEST(PixelMapTests, maskComposit3) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    mask.clear();
+    clear(mask);
     mask[1][3] = 0x88;
     mask[1][4] = 0x44;
     mask[1][5] = 0x22;
 
     auto image = PixelMap<wsRGBApm>(3, 3);
-    image.clear();
+    clear(image);
 
     let white = wsRGBApm{ 1.0, 1.0, 1.0, 1.0 };
     subpixelComposit(image, white, mask);

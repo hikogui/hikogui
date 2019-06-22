@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "ImageWidget.hpp"
+#include "TTauri/Draw/PixelMap.inl"
 #include "utils.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
@@ -25,7 +26,7 @@ void ImageWidget::drawBackingImage()
     auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<wsRGBApm>{ backingImage->extent };
-    linearMap.fill(0x0000'0000'0000'ffffULL);
+    fill(linearMap, wsRGBApm{0x0000'0000'0000'ffffULL});
 
     // Draw image in the fullPixelMap.
     // XXX This probably should allocate a PixelMap and add it to this class.

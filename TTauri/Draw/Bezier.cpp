@@ -65,6 +65,51 @@ std::vector<Bezier> Bezier::getContour(std::vector<BezierPoint> const& _points)
     return r;
 }
 
+static std::vector<std::pair<float, float>> getFillSpansAtY(std::vector<Bezier> const &v, float y) {
+    auto xValues = solveCurvesXByY(v, y);
+
+    // Sort x values, each pair is a span.
+    std::sort(xValues.begin(), xValues.end());
+
+    // End-to-end connected curves will yield duplicate values.
+    let uniqueEnd = std::unique(xValues.begin(), xValues.end());
+
+    // After removing duplicates, we should end up with pairs of x values.
+    size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
+    assert(uniqueValueCount % 2 == 0);
+
+    // Create pairs of values.
+    auto r = std::vector<std::pair<float, float>>{};
+    r.reserve(uniqueValueCount / 2);
+    for (size_t i = 0; i < uniqueValueCount; i += 2) {
+        r.emplace_back(xValues[i], xValues[i+1]);
+    }
+    return r;
+}
+
+static std::vector<std::pair<float, float>> getStrokeSpansAtY(std::vector<Bezier> const &v, float y, float halfStrokeWidth) {
+    auto results = solveCurvesXByY(v, y);
+    if (results.size() == 0) {
+        return {};
+    }
+
+    // The x values need to be sorted for span overlap removal.
+    std::sort(results.begin(), results.end());
+
+    // offset each result with the stroke width.
+    auto spans = transform<std::vector<std::pair<float, float>>>(results, [=](auto x) {
+        return std::pair<float, float>{x - halfStrokeWidth, x + halfStrokeWidth};
+        });
+
+    // Remove overlaps.
+    for (size_t i = 1; i < spans.size(); i++) {
+        if (spans.at(i).first < spans.at(i-1).second) {
+            spans.at(i).first = spans.at(i-1).second;
+        }
+    }
+
+    return spans;
+}
 
 static void fillPartialPixels(PixelRow<uint8_t> row, size_t i, float const startX, float const endX)
 {
@@ -83,8 +128,7 @@ static void fillFullPixels(PixelRow<uint8_t> row, size_t start, size_t size)
         for (size_t i = start; i < end; i++) {
             row[i] += 0x33;
         }
-    }
-    else {
+    } else {
         auto u8p = &row[start];
         let u8end = u8p + size;
 
@@ -127,9 +171,7 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
 
     if (nrColumns == 1) {
         fillPartialPixels(row, startColumn, startX, endX);
-
-    }
-    else {
+    } else {
         fillPartialPixels(row, startColumn, startX, endX);
         fillFullPixels(row, startColumn + 1, nrColumns - 2);
         fillPartialPixels(row, endColumn - 1, startX, endX);
@@ -138,25 +180,14 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
 
 static void fillSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves)
 {
-    auto results = solveCurvesXByY(curves, rowY);
-    if (results.size() == 0) {
-        return;
-    }
+    let spans = getFillSpansAtY(curves, rowY);
 
-    // Each closed path will result in intersection with a line in pairs.
-    assert(results.size() % 2 == 0);
-
-    std::sort(results.begin(), results.end());
-
-    // For each span of x values.
-    for (size_t i = 0; i < results.size(); i += 2) {
-        let startX = results[i];
-        let endX = results[i + 1];
-        fillRowSpan(row, startX, endX);
+    for (let &span: spans) {
+        fillRowSpan(row, span.first, span.second);
     }
 }
 
-void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves)
+static void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves)
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -168,6 +199,32 @@ void fill(PixelMap<uint8_t> &image, std::vector<Bezier> const &curves)
 {
     for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
+    }
+}
+
+static void strokeSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves, float halfStrokeWidth)
+{
+    let spans = getStrokeSpansAtY(curves, rowY, halfStrokeWidth);
+
+    for (let &span: spans) {
+        fillRowSpan(row, span.first, span.second);
+    }
+}
+
+static void strokeRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves, float halfStrokeWidth)
+{
+    // 5 times super sampling.
+    for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
+        strokeSubRow(row, y, curves, halfStrokeWidth);
+    }
+}
+
+void stroke(PixelMap<uint8_t>& image, std::vector<Bezier> const& curves, float strokeWidth)
+{
+    float halfStrokeWidth = strokeWidth / 2.0f;
+
+    for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
+        strokeRow(image.at(rowNr), rowNr, curves, halfStrokeWidth);
     }
 }
 

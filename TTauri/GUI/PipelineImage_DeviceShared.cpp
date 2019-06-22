@@ -5,7 +5,7 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_Image.hpp"
 #include "Device.hpp"
-#include "TTauri/Draw/image_algorithm.hpp"
+#include "TTauri/Draw/PixelMap.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>
@@ -126,7 +126,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         rectangle.extent += glm::u64vec2(2, 2);
 
         auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
-        TTauri::Draw::add1PixelTransparentBorder(pixelMap);
+        Draw::addTransparentBorder(pixelMap);
     }
 
     // Flush the given image, included the border.
@@ -379,7 +379,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::Draw::PixelMap<uint32_t>{data, imageCreateInfo.extent.width, imageCreateInfo.extent.height}
+        TTauri::Draw::PixelMap<uint32_t>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

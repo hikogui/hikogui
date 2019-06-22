@@ -67,9 +67,9 @@ struct PixelMap {
     PixelMap(size_t width, size_t height) : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {}
 
     PixelMap(u64extent2 extent) : PixelMap(extent.width(), extent.height()) {}
-    PixelMap(gsl::span<T> pixels, size_t width, size_t height) : PixelMap(pixels, width, height, width) {}
-    PixelMap(gsl::span<T> pixels, u64extent2 extent) : PixelMap(pixels, extent.width(), extent.height()) {}
-    PixelMap(gsl::span<T> pixels, u64extent2 extent, size_t stride) : PixelMap(pixels, extent.width(), extent.height(), stride) {}
+    PixelMap(T *pixels, size_t width, size_t height) : PixelMap(pixels, width, height, width) {}
+    PixelMap(T *pixels, u64extent2 extent) : PixelMap(pixels, extent.width(), extent.height()) {}
+    PixelMap(T *pixels, u64extent2 extent, size_t stride) : PixelMap(pixels, extent.width(), extent.height(), stride) {}
 
     ~PixelMap() {
         if (selfAllocated) {
@@ -89,7 +89,7 @@ struct PixelMap {
     PixelMap &operator=(PixelMap const &other) = delete;
     PixelMap &operator=(PixelMap &&other) {
         if (selfAllocated) {
-            delete[] pixels.data();
+            delete[] pixels;
         }
         pixels = other.pixels;
         width = other.width;
@@ -185,7 +185,7 @@ void rotate270(PixelMap<T> &dst, PixelMap<T> const &src);
  * But copy the color information from the neighbour pixel so that linear
  * interpolation near the border will work propertly.
  */
-void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
+void addTransparentBorder(PixelMap<uint32_t>& pixelMap);
 
 /*! Copy a image with linear 16bit-per-color-component to a
  * gamma corrected 8bit-per-color-component image.

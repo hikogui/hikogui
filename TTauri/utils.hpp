@@ -198,6 +198,7 @@ template<typename T, typename U, typename F>
 inline T transform(const U &input, F operation)
 {
     T result = {};
+    result.reserve(input.size());
     std::transform(input.begin(), input.end(), std::back_inserter(result), operation);
     return result;
 }

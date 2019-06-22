@@ -95,7 +95,7 @@ struct Bezier {
         let height = P2.y - P1.y;
 
         let t = (y - P1.y) / height;
-        if (t >= 0.0f && t < 1.0f) {
+        if (t >= 0.0f && t <= 1.0f) {
             let width = P2.x - P1.x;
             return {width * t + P1.x};
         } else {
@@ -110,9 +110,7 @@ struct Bezier {
 
         results2 r;
         for (let t: quadraticSolveTByY(y)) {
-            // When two curves are sampled exactly on an end point we need to make sure we only return one answer.
-            // Therefor we do not use the result of the 1.0f end-point.
-            if (t >= 0.0f && t < 1.0f) {
+            if (t >= 0.0f && t <= 1.0f) {
                 let a = P1.x - 2.0f * C1.x + P2.x;
                 let b = 2.0f*(C1.x - P1.x);
                 let c = P1.x;
@@ -130,7 +128,7 @@ struct Bezier {
 
         results3 r;
         for (let t: cubicSolveTByY(y)) {
-            if (t >= 0.0f && t < 1.0f) {
+            if (t >= 0.0f && t <= 1.0f) {
                 let a = -P1.x + 3.0f * C1.x - 3.0f * C2.x + P2.x;
                 let b = 3.0f * P1.x - 6.0f * C1.x + 3.0f * C2.x;
                 let c = -3.0f * P1.x + 3.0f * C1.x;
@@ -157,15 +155,21 @@ inline std::vector<float> solveCurvesXByY(std::vector<Bezier> const &v, float y)
     r.reserve(v.size());
 
     for (let &curve: v) {
-        for (let x: curve.solveXByY(y)) {
+        let xValues = curve.solveXByY(y);
+        for (let x: xValues) {
             r.push_back(x);
         }
     }
     return r;
 }
 
+
 /*! Fill a linear greyscale image by filling a curve with anti-aliasing.
  */
-void fill(PixelMap<uint8_t> &image, std::vector<Bezier> const& curves);
+void fill(PixelMap<uint8_t>& image, std::vector<Bezier> const& curves);
+
+/*! Stroke a linear greyscale image by stroking a curve with anti-aliasing.
+ */
+void stroke(PixelMap<uint8_t>& image, std::vector<Bezier> const& curves, float strokeWidth);
 
 }
