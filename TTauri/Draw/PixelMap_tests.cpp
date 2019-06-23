@@ -3,6 +3,7 @@
 
 #include "PixelMap.inl"
 #include "Path.hpp"
+#include "Bezier.hpp"
 #include "TTauri/Color.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

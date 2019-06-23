@@ -4,6 +4,7 @@
 #pragma once
 
 #include "PixelMap.hpp"
+#include "attributes.hpp"
 #include "TTauri/math.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/required.hpp"
@@ -266,7 +267,7 @@ std::vector<Bezier> makeInverseContour(std::vector<Bezier> const &contour);
 /*! Make a contour of Bezier curves from another contour of Bezier curves at a offset.
  * \offset positive means the parrallel contour will be on the starboard side of the given contour. 
  */
-std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, float offset, float tolerance);
+std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance);
 
 /*! Fill a linear greyscale image by filling a curve with anti-aliasing.
  */

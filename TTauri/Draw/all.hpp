@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "alignment.hpp"
+#include "attributes.hpp"
 #include "BezierPoint.hpp"
 #include "exceptions.hpp"
 #include "Font.hpp"

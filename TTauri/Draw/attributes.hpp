@@ -29,4 +29,17 @@ enum class Alignment {
     BottomRight
 };
 
+enum class LineJoinStyle {
+    Bevel,
+    Miter,
+    Rounded
+};
+
+enum class SubpixelOrientation {
+    RedLeft,
+    RedRight,
+    Unknown
+};
+
+
 }

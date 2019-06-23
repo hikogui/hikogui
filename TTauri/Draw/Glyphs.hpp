@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "alignment.hpp"
+#include "attributes.hpp"
 #include "Glyph.hpp"
 
 namespace TTauri::Draw {

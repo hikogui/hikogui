@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "Path.hpp"
+#include "Bezier.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

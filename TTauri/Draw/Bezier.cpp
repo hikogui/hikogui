@@ -79,7 +79,7 @@ std::vector<Bezier> makeInverseContour(std::vector<Bezier> const &contour)
     return r;
 }
 
-std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, float offset, float tolerance)
+std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance)
 {
     auto contourAtOffset = std::vector<Bezier>{};
     for (let &curve: contour) {
@@ -90,6 +90,7 @@ std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, flo
 
     // The resulting path now consists purely of line-segments that may have gaps and overlaps.
     // This needs to be repaired.
+    std::optional<glm::vec2> intersectPoint;
     auto r = std::vector<Bezier>{};
     for (let &curve: contourAtOffset) {
         if (r.size() == 0) {
@@ -98,7 +99,12 @@ std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, flo
         } else if (r.back().P2 == curve.P1) {
             r.push_back(curve);
 
-        } else if (let intersectPoint = getIntersectionPoint(r.back().P1, r.back().P2, curve.P1, curve.P2)) {
+        } else if ((intersectPoint = getIntersectionPoint(r.back().P1, r.back().P2, curve.P1, curve.P2))) {
+            r.back().P2 = intersectPoint.value();
+            r.push_back(curve);
+            r.back().P1 = intersectPoint.value();
+
+        } else if (lineJoinStyle == LineJoinStyle::Miter && (intersectPoint = getExtrapolatedIntersectionPoint(r.back().P1, r.back().P2, curve.P1, curve.P2))) {
             r.back().P2 = intersectPoint.value();
             r.push_back(curve);
             r.back().P1 = intersectPoint.value();

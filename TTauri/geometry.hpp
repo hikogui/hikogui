@@ -210,4 +210,29 @@ inline std::optional<glm::vec2> getIntersectionPoint(glm::vec2 A1, glm::vec2 A2,
     }
 }
 
+/*! Find the intersect points between two line segments.
+*/
+inline std::optional<glm::vec2> getExtrapolatedIntersectionPoint(glm::vec2 A1, glm::vec2 A2, glm::vec2 B1, glm::vec2 B2)
+{
+    // convert points to vectors.
+    let p = A1;
+    let r = A2 - A1;
+    let q = B1;
+    let s = B2 - B1;
+
+    // find t and u in:
+    // p + t*r == q + us
+    let crossRS = viktorCross(r, s);
+    if (crossRS == 0.0f) {
+        // Parrallel, other non, or a range of points intersect.
+        return {};
+
+    } else {
+        let q_min_p = q - p;
+        let t = viktorCross(q_min_p, s) / crossRS;
+
+        return bezierPointAt(A1, A2, t);
+    }
+}
+
 }
