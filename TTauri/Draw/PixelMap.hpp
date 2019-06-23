@@ -181,6 +181,10 @@ void rotate90(PixelMap<T> &dst, PixelMap<T> const &src);
 template<typename T>
 void rotate270(PixelMap<T> &dst, PixelMap<T> const &src);
 
+/*! Merge two image by applying std::max on each pixel.
+ */
+void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src);
+
 /*! Make the pixel around the border transparent.
  * But copy the color information from the neighbour pixel so that linear
  * interpolation near the border will work propertly.

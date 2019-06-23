@@ -17,6 +17,7 @@ namespace TTauri {
 constexpr float pi = 3.14159265358979323846f;
 constexpr float pi2_3 = 2.0f * pi / 3.0f;
 constexpr float pi4_3 = 2.0f * pi2_3;
+constexpr float halfPi = pi / 2.0f;
 constexpr float oneThird = 1.0f / 3.0f;
 constexpr float oneForth = 1.0f / 4.0f;
 constexpr float oneTwentySeventh = 1.0f / 27.0f;
@@ -233,6 +234,7 @@ inline results3 solveCubic(float a, float b, float c, float d) {
         return r - b_3a;
     }
 }
+
 
 
 }

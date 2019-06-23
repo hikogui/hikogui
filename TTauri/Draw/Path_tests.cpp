@@ -25,7 +25,7 @@ TEST(PathTests, getBeziers) {
     ASSERT_EQ(beziers[3], Bezier({ 1,2 }, { 1,1 }));
 }
 
-TEST(PathTests, getBezierPointsOfSubpath) {
+TEST(PathTests, getBezierPointsOfContour) {
     auto path = Path();
     path.moveTo({ 1, 1 });
     path.lineTo({ 2, 1 });
@@ -33,7 +33,7 @@ TEST(PathTests, getBezierPointsOfSubpath) {
     path.lineTo({ 1, 2 });
     path.close();
 
-    let points = path.getBezierPointsOfSubpath(0);
+    let points = path.getBezierPointsOfContour(0);
     ASSERT_EQ(points.size(), 4);
     ASSERT_EQ(points[0], BezierPoint({ 1,1 }, BezierPoint::Type::Anchor));
     ASSERT_EQ(points[1], BezierPoint({ 2,1 }, BezierPoint::Type::Anchor));

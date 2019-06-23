@@ -26,25 +26,25 @@ struct Path {
 
     /*! Return the number of closed sub-paths.
      */
-    size_t numberOfSubpaths() const {
+    size_t numberOfContours() const {
         return endPoints.size();
     }
 
-    std::vector<BezierPoint> getBezierPointsOfSubpath(size_t subpathNr) const {
+    std::vector<BezierPoint> getBezierPointsOfContour(size_t subpathNr) const {
         let begin = points.begin() + (subpathNr == 0 ? 0 : endPoints.at(subpathNr - 1) + 1);
         let end = points.begin() + endPoints.at(subpathNr) + 1;
         return std::vector(begin, end);
     }
 
-    std::vector<Bezier> getBeziersOfSubpath(size_t subpathNr) const {
-        let contourPoints = getBezierPointsOfSubpath(subpathNr);
-        return Bezier::getContour(contourPoints);
+    std::vector<Bezier> getBeziersOfContour(size_t subpathNr) const {
+        let contourPoints = getBezierPointsOfContour(subpathNr);
+        return makeContourFromPoints(contourPoints);
     }
 
     std::vector<Bezier> getBeziers() const {
         std::vector<Bezier> r;
-        for (size_t subpathNr = 0; subpathNr < numberOfSubpaths(); subpathNr++) {
-            for (let bezier: getBeziersOfSubpath(subpathNr)) {
+        for (size_t subpathNr = 0; subpathNr < numberOfContours(); subpathNr++) {
+            for (let bezier: getBeziersOfContour(subpathNr)) {
                 r.push_back(std::move(bezier));
             }
         }
@@ -266,58 +266,80 @@ struct Path {
         }
     }
 
-    void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, SubpixelOrientation subpixelOrientation) const {
-        let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
+    /*! Curve with the given bezier curve.
+    * The first anchor will be ignored.
+    */
+    void addContour(std::vector<Bezier> const &contour) {
+        close();
 
-        auto beziers = getBeziers();
-        if (renderSubpixels) {
-            for (auto &&bezier: beziers) {
-                bezier.scale({3.0f, 1.0f});
+        for (let &curve: contour) {
+            // Don't emit the first point, the last point of the contour will wrap around.
+            switch (curve.type) {
+            case Bezier::Type::Linear:
+                points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
+                break;
+            case Bezier::Type::Quadratic:
+                points.emplace_back(curve.C1, BezierPoint::Type::QuadraticControl);
+                points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
+                break;
+            case Bezier::Type::Cubic:
+                points.emplace_back(curve.C1, BezierPoint::Type::CubicControl1);
+                points.emplace_back(curve.C2, BezierPoint::Type::CubicControl2);
+                points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
+                break;
+            default:
+                no_default;
             }
         }
 
-        auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
-        clear(mask);
-        Draw::fill(mask, beziers);
-
-        if (renderSubpixels) {
-            subpixelFilter(mask);
-            if (subpixelOrientation == SubpixelOrientation::RedRight) {
-                subpixelFlip(mask);
-            }
-            subpixelComposit(dst, color, mask);
-        } else {
-            composit(dst, color, mask);
-        }
+        close();
     }
 
-    void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, float strokeWidth, SubpixelOrientation subpixelOrientation) const {
-        let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
+    void addPathToStroke(Path const &path, float strokeWidth, float tolerance=0.05f) {
+        float starboardOffset = strokeWidth / 2;
+        float portOffset = -starboardOffset;
 
-        auto beziers = getBeziers();
-        if (renderSubpixels) {
-            for (auto &&bezier: beziers) {
-                bezier.scale({3.0f, 1.0f});
-            }
-        }
+        for (size_t i = 0; i < path.numberOfContours(); i++) {
+            let baseContour = path.getBeziersOfContour(i);
 
-        auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
-        clear(mask);
-        Draw::stroke(mask, beziers, strokeWidth * 3.0f);
+            let starboardContour = makeParrallelContour(baseContour, starboardOffset, tolerance);
+            addContour(starboardContour);
 
-        if (renderSubpixels) {
-            subpixelFilter(mask);
-            if (subpixelOrientation == SubpixelOrientation::RedRight) {
-                subpixelFlip(mask);
-            }
-            subpixelComposit(dst, color, mask);
-        } else {
-            composit(dst, color, mask);
+            let portContour = makeInverseContour(makeParrallelContour(baseContour, portOffset, tolerance));
+            addContour(portContour);
         }
     }
-
 };
 
+inline void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, SubpixelOrientation subpixelOrientation) {
+    let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
 
+    auto curves = path.getBeziers();
+    if (renderSubpixels) {
+        curves = transform<std::vector<Bezier>>(curves, [](auto const &curve) {
+            return curve * glm::vec2{3.0f, 1.0f};
+            });
+    }
+
+    auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
+    clear(mask);
+    Draw::fill(mask, curves);
+
+    if (renderSubpixels) {
+        subpixelFilter(mask);
+        if (subpixelOrientation == SubpixelOrientation::RedRight) {
+            subpixelFlip(mask);
+        }
+        subpixelComposit(dst, color, mask);
+    } else {
+        composit(dst, color, mask);
+    }
+}
+
+inline void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, float strokeWidth, SubpixelOrientation subpixelOrientation) {
+    Path fillPath{};
+    fillPath.addPathToStroke(path, strokeWidth);
+    fill(dst, color, fillPath, subpixelOrientation);
+}
 
 }

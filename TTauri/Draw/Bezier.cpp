@@ -3,11 +3,13 @@
 
 #include "Bezier.hpp"
 #include "BezierPoint.hpp"
+#include "PixelMap.inl"
 #include "TTauri/utils.hpp"
+#include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace TTauri::Draw {
 
-std::vector<Bezier> Bezier::getContour(std::vector<BezierPoint> const& _points)
+std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint> const& _points)
 {
     let points = BezierPoint::normalizePoints(_points);
 
@@ -65,6 +67,74 @@ std::vector<Bezier> Bezier::getContour(std::vector<BezierPoint> const& _points)
     return r;
 }
 
+std::vector<Bezier> makeInverseContour(std::vector<Bezier> const &contour)
+{
+    auto r = std::vector<Bezier>{};
+    r.reserve(contour.size());
+
+    for (auto i = contour.rbegin(); i != contour.rend(); i++) {
+        r.push_back(~(*i));
+    }
+
+    return r;
+}
+
+std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, float offset, float tolerance)
+{
+    auto contourAtOffset = std::vector<Bezier>{};
+    for (let &curve: contour) {
+        for (let &flatCurve: curve.subdivideUntilFlat(tolerance)) {
+            contourAtOffset.push_back(flatCurve.toParrallelLine(offset));
+        }
+    }
+
+    // The resulting path now consists purely of line-segments that may have gaps and overlaps.
+    // This needs to be repaired.
+    auto r = std::vector<Bezier>{};
+    for (let &curve: contourAtOffset) {
+        if (r.size() == 0) {
+            r.push_back(curve);
+
+        } else if (r.back().P2 == curve.P1) {
+            r.push_back(curve);
+
+        } else if (let intersectPoint = getIntersectionPoint(r.back().P1, r.back().P2, curve.P1, curve.P2)) {
+            r.back().P2 = intersectPoint.value();
+            r.push_back(curve);
+            r.back().P1 = intersectPoint.value();
+
+        } else {
+            r.emplace_back(r.back().P2, curve.P1);
+            r.push_back(curve);
+        } 
+    }
+
+    // Repair the endpoints of the contour as well.
+    if (r.size() > 0 && r.back().P2 != r.front().P1) {
+        if (let intersectPoint = getIntersectionPoint(r.back().P1, r.back().P2, r.front().P1, r.front().P2)) {
+            r.back().P2 = intersectPoint.value();
+            r.front().P1 = intersectPoint.value();
+        } else {
+            r.emplace_back(r.back().P2, r.front().P1);
+        }
+    }
+
+    return r;
+}
+
+static std::vector<float> solveCurvesXByY(std::vector<Bezier> const &v, float y) {
+    std::vector<float> r;
+    r.reserve(v.size());
+
+    for (let &curve: v) {
+        let xValues = curve.solveXByY(y);
+        for (let x: xValues) {
+            r.push_back(x);
+        }
+    }
+    return r;
+}
+
 static std::vector<std::pair<float, float>> getFillSpansAtY(std::vector<Bezier> const &v, float y) {
     auto xValues = solveCurvesXByY(v, y);
 
@@ -85,30 +155,6 @@ static std::vector<std::pair<float, float>> getFillSpansAtY(std::vector<Bezier> 
         r.emplace_back(xValues[i], xValues[i+1]);
     }
     return r;
-}
-
-static std::vector<std::pair<float, float>> getStrokeSpansAtY(std::vector<Bezier> const &v, float y, float halfStrokeWidth) {
-    auto results = solveCurvesXByY(v, y);
-    if (results.size() == 0) {
-        return {};
-    }
-
-    // The x values need to be sorted for span overlap removal.
-    std::sort(results.begin(), results.end());
-
-    // offset each result with the stroke width.
-    auto spans = transform<std::vector<std::pair<float, float>>>(results, [=](auto x) {
-        return std::pair<float, float>{x - halfStrokeWidth, x + halfStrokeWidth};
-        });
-
-    // Remove overlaps.
-    for (size_t i = 1; i < spans.size(); i++) {
-        if (spans.at(i).first < spans.at(i-1).second) {
-            spans.at(i).first = spans.at(i-1).second;
-        }
-    }
-
-    return spans;
 }
 
 static void fillPartialPixels(PixelRow<uint8_t> row, size_t i, float const startX, float const endX)
@@ -199,32 +245,6 @@ void fill(PixelMap<uint8_t> &image, std::vector<Bezier> const &curves)
 {
     for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
-    }
-}
-
-static void strokeSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves, float halfStrokeWidth)
-{
-    let spans = getStrokeSpansAtY(curves, rowY, halfStrokeWidth);
-
-    for (let &span: spans) {
-        fillRowSpan(row, span.first, span.second);
-    }
-}
-
-static void strokeRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves, float halfStrokeWidth)
-{
-    // 5 times super sampling.
-    for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
-        strokeSubRow(row, y, curves, halfStrokeWidth);
-    }
-}
-
-void stroke(PixelMap<uint8_t>& image, std::vector<Bezier> const& curves, float strokeWidth)
-{
-    float halfStrokeWidth = strokeWidth / 2.0f;
-
-    for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
-        strokeRow(image.at(rowNr), rowNr, curves, halfStrokeWidth);
     }
 }
 

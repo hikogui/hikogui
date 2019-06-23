@@ -39,9 +39,9 @@ struct Glyph {
         return std::vector(begin, end);
     }
 
-    std::vector<Bezier> getContour(size_t contourNr) const {
+    std::vector<Bezier> makeContourFromPoints(size_t contourNr) const {
         let contourPoints = getPointsOfContour(contourNr);
-        return Bezier::getContour(contourPoints);
+        return Draw::makeContourFromPoints(contourPoints);
     }
 
     void addSubGlyph(Glyph const &other, glm::mat2x2 scale, glm::vec2 offset) {

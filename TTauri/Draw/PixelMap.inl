@@ -85,13 +85,14 @@ inline void rotate90(PixelMap<T> &dst, PixelMap<T> const &src)
 
     for (size_t rowNr = 0; rowNr < src.height; rowNr++) {
         let row = src.at(rowNr);
-        size_t dstColumnNr = rowNr;
-        size_t dstRowNr = row.width - 1;
+        size_t dstColumnNr = src.height - rowNr - 1;
+        size_t dstRowNr = 0;
         for (size_t columnNr = 0; columnNr < row.width; columnNr++) {
-            dst[dstRowNr--][dstColumnNr] = row[columnNr];
+            dst[dstRowNr++][dstColumnNr] = row[columnNr];
         }
     }
 }
+
 template<typename T>
 inline void rotate270(PixelMap<T> &dst, PixelMap<T> const &src)
 {
@@ -100,10 +101,10 @@ inline void rotate270(PixelMap<T> &dst, PixelMap<T> const &src)
 
     for (size_t rowNr = 0; rowNr < src.height; rowNr++) {
         let row = src.at(rowNr);
-        size_t dstColumnNr = src.height - rowNr - 1;
-        size_t dstRowNr = 0;
+        size_t dstColumnNr = rowNr;
+        size_t dstRowNr = row.width - 1;
         for (size_t columnNr = 0; columnNr < row.width; columnNr++) {
-            dst[dstRowNr++][dstColumnNr] = row[columnNr];
+            dst[dstRowNr--][dstColumnNr] = row[columnNr];
         }
     }
 }

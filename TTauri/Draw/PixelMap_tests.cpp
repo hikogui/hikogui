@@ -12,6 +12,28 @@ using namespace std;
 using namespace TTauri;
 using namespace TTauri::Draw;
 
+TEST(PixelMapTests, rotate90) {
+    auto mask = PixelMap<uint8_t>(2, 2);
+    mask[1][0] = 3; mask[1][1] = 4;
+    mask[0][0] = 1; mask[0][1] = 2;
+
+    auto r = PixelMap<uint8_t>(2, 2);
+    rotate90(r, mask);
+    ASSERT_EQ(r[1][0], 4); ASSERT_EQ(r[1][1], 2);
+    ASSERT_EQ(r[0][0], 3); ASSERT_EQ(r[0][1], 1);
+}
+
+TEST(PixelMapTests, rotate270) {
+    auto mask = PixelMap<uint8_t>(2, 2);
+    mask[1][0] = 3; mask[1][1] = 4;
+    mask[0][0] = 1; mask[0][1] = 2;
+
+    auto r = PixelMap<uint8_t>(2, 2);
+    rotate270(r, mask);
+    ASSERT_EQ(r[1][0], 1); ASSERT_EQ(r[1][1], 3);
+    ASSERT_EQ(r[0][0], 2); ASSERT_EQ(r[0][1], 4);
+}
+
 TEST(PixelMapTests, renderMaskFromPath) {
     auto mask = PixelMap<uint8_t>(9, 3);
     clear(mask);
@@ -25,7 +47,7 @@ TEST(PixelMapTests, renderMaskFromPath) {
 
     auto beziers = path.getBeziers();
     for (auto &&bezier: beziers) {
-        bezier.scale({3.0, 1.0});
+        bezier *= glm::vec2{3.0, 1.0};
     }
 
     fill(mask, beziers);

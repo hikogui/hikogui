@@ -52,6 +52,22 @@ void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src)
     }
 }
 
+void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
+{
+    assert(src.width >= dst.width);
+    assert(src.height >= dst.height);
+
+    for (size_t rowNr = 0; rowNr < dst.height; rowNr++) {
+        auto dstRow = dst[rowNr];
+        let srcRow = src[rowNr];
+        for (size_t columnNr = 0; columnNr < dstRow.width; columnNr++) {
+            auto &dstPixel = dstRow[columnNr];
+            let srcPixel = srcRow[columnNr];
+            dstPixel = std::max(dstPixel, srcPixel);
+        }
+    }
+}
+
 void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
 {
     assert(mask.height >= under.height);

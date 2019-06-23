@@ -40,15 +40,15 @@ void ImageWidget::drawBackingImage()
     let color = wsRGBApm{ 0.5f, 1.0f, 0.5f, 1.0f };
     auto path1 = Draw::Path();
     path1.addGlyph(glyph, {20.0, 30.0}, 8.0);
-    path1.fill(linearMap, color , Draw::SubpixelOrientation::Unknown);
+    fill(linearMap, color, path1, Draw::SubpixelOrientation::Unknown);
 
     auto path2 = Draw::Path();
     path2.addGlyph(glyph, { 30.0, 30.0 }, 8.0);
-    path2.fill(linearMap, color, Draw::SubpixelOrientation::RedLeft);
+    fill(linearMap, color, path2, Draw::SubpixelOrientation::RedLeft);
 
     auto path3 = Draw::Path();
     path3.addGlyph(glyph, { 40.0, 30.0 }, 8.0);
-    path3.fill(linearMap, color, Draw::SubpixelOrientation::RedRight);
+    fill(linearMap, color, path3, Draw::SubpixelOrientation::RedRight);
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     copyLinearToGamma(fullPixelMap, linearMap);

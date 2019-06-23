@@ -63,11 +63,12 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 
     wsRGBApm backgroundColor;
     wsRGBApm labelColor;
+    wsRGBApm borderColor = {1.0, 1.0, 1.0, 1.0};
     if (value) {
         backgroundColor = { 0x4c4cffff };
         labelColor = {1.0, 1.0, 1.0, 1.0};
     } else {
-        backgroundColor = {1.0, 1.0, 1.0, 1.0};
+        backgroundColor = { 0x4c884cff };
         labelColor = {0.0, 0.0, 0.0, 1.0};
     }
     if (pressed) {
@@ -76,17 +77,18 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
 #pragma warning(suppress: 6001)
-    let rectangle = rect2{{3.0f, 3.0f}, { static_cast<float>(image.extent.width()) - 3.0f, static_cast<float>(image.extent.height()) - 3.0f }};
+    let rectangle = rect2{{3.0f, 3.0f}, { static_cast<float>(image.extent.width()) - 6.0f, static_cast<float>(image.extent.height()) - 6.0f }};
     let fontCenter = labelFontSize * 0.5f;
     let labelLocation = midpoint(rectangle) + glm::vec2(0.0f, -fontCenter);
 
     auto buttonBackgroundMask = Draw::Path();
     buttonBackgroundMask.addRectangle(rectangle, backgroundShape);
-    buttonBackgroundMask.stroke(linearMap, backgroundColor, 1.0, Draw::SubpixelOrientation::RedLeft);
+    fill(linearMap, backgroundColor, buttonBackgroundMask, Draw::SubpixelOrientation::RedLeft);
+    stroke(linearMap, borderColor, buttonBackgroundMask, 2.0, Draw::SubpixelOrientation::RedLeft);
 
     auto textMask = Draw::Path();
     textMask.addText(label, labelFont, labelLocation, labelFontSize, 0.0f, Draw::HorizontalAlignment::Center);
-    textMask.fill(linearMap, labelColor, Draw::SubpixelOrientation::RedLeft);
+    fill(linearMap, labelColor, textMask, Draw::SubpixelOrientation::RedLeft);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     copyLinearToGamma(pixelMap, linearMap);
