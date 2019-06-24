@@ -4,12 +4,15 @@ cmake_policy(SET CMP0074 NEW)
 
 project(TTauri CXX)
 
+include(CMakeIncludes/AddShader.cmake)
+include(CMakeIncludes/AddIcon.cmake)
+
 find_package(Boost REQUIRED)
 find_package(Vulkan REQUIRED)
 
 
 # Visual Studio likes to know about all header files.
-file(GLOB_RECURSE TTauri_hdrs *.hpp)
+file(GLOB_RECURSE TTauri_hdrs *.hpp *.inl)
 source_group("Headers" FILES ${TTauri_hdrs})
 
 find_package(FLEX REQUIRED)
@@ -78,30 +81,22 @@ if (MSVC)
     target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
 endif()
 
-# Almost same as the library, but define a target for the Code Analysis
-#if(WIN32)
-#  set(GUI_TYPE WIN32)
-#elseif(APPLE)
-#  set(GUI_TYPE MACOSX_BUNDLE)
-#endif()
-#add_executable(TTauriCodeAnalysisTarget ${GUI_TYPE} TTauriCodeAnalysisTarget.cpp ${TTauri_srcs})
-#set_property(TARGET TTauriCodeAnalysisTarget PROPERTY CXX_STANDARD 17)
-#target_include_directories(TTauriCodeAnalysisTarget PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
-#target_link_directories(TTauriCodeAnalysisTarget PUBLIC ${Boost_LIBRARY_DIRS})
-#target_link_libraries(TTauriCodeAnalysisTarget GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
-#target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_ENABLE_EXPERIMENTAL)
-#if (MSVC)
-#    target_compile_definitions(TTauriCodeAnalysisTarget PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
-#endif()
-
 set(TTauri_GUI_shaders
 	GUI/PipelineImage.vert
 	GUI/PipelineImage.frag
 )
 foreach(shader ${TTauri_GUI_shaders})
 	target_add_shader(TTauri ${shader})
-#	target_add_shader(TTauriCodeAnalysisTarget ${shader})
 endforeach(shader)
+
+set(TTauri_GUI_icons
+	"Themes/Icons/Close Window.svg"
+	"Themes/Icons/Maximize Window.svg"
+	"Themes/Icons/Minimize Window.svg"
+)
+foreach(icon ${TTauri_GUI_icons})
+	target_add_icon(TTauri ${icon})
+endforeach(icon)
 
 set(TTauriTests_srcs
     Config/parser_tests.cpp

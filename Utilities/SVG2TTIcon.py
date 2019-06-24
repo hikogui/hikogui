@@ -14,57 +14,9 @@ def float_to_fixedPoint1_13(x, flag):
     if flag:
         r |= 1
 
-    return r
+    return struct.pack("<H", r)
 
 
-class Point (object):
-    ANCHOR = 0
-    CUBIC_CONTROL1 = 1
-    CUBIC_CONTROL2 = 2
-    QUADRATIC_CONTROL = 3
-
-    def __init__(self, x, y, kind):
-        self.x = x
-        self.y = y
-        self.kind = kind
-
-    def __repr__(self):
-        return "<Point %f, %f, %i>" % (self.x, self.y, self.kind)
-
-    def serialize(self):
-        x_flag = (self.kind == Point.CUBIC_CONTROL1) or (self.kind == Point.QUADRATIC_CONTROL)
-        y_flag = (self.kind == Point.CUBIC_CONTROL2) or (self.kind == Point.QUADRATIC_CONTROL)
-        return struct.pack(
-            "<hh",
-            float_to_fixedPoint1_13(self.x, x_flag),
-            float_to_fixedPoint1_13(self.y, y_flag)	
-        )
-
-    def transform(self, xOffset, yOffset, widthScale, heightScale):
-        self.x = (self.x + xOffset) * widthScale
-        self.y = (self.y + yOffset) * heightScale
-
-class Contour (object):
-    def __init__(self):
-        self.points = []
-
-    def __repr__(self):
-        return "<Contour %s>" % (self.points)
-
-    def serialize(self):
-        header = struct.pack("<I", len(self.points))
-        body = b"".join(x.serialize() for x in self.points)
-        return header + body
-
-    def add(self, point):
-        self.points.append(point)
-
-    def addPoint(self, x, y, kind):
-        self.points.append(Point(x, y, kind))
-
-    def transform(self, xOffset, yOffset, widthScale, heightScale):
-        for point in self.points:
-            point.transform(xOffset, yOffset, widthScale, heightScale)
 
 color_names = {
     "black": "#000000",
@@ -122,10 +74,10 @@ class Color (object):
         return "<Color %f, %f, %f, %f>" % self.color
 
     def serialize(self):
-        r =	self.color.redInt16()
-        g = self.color.greenInt16()
-        b = self.color.blueInt16()
-        a = self.color.alphaInt16()
+        r =	self.redInt16()
+        g = self.greenInt16()
+        b = self.blueInt16()
+        a = self.alphaInt16()
         return struct.pack("<hhhh", r, g, b, a)
 
     def redInt16(self):
@@ -153,6 +105,54 @@ class Color (object):
         return x
     
 
+class Point (object):
+    ANCHOR = 0
+    CUBIC_CONTROL1 = 1
+    CUBIC_CONTROL2 = 2
+    QUADRATIC_CONTROL = 3
+
+    def __init__(self, x, y, kind):
+        self.x = x
+        self.y = y
+        self.kind = kind
+
+    def __repr__(self):
+        return "<Point %f, %f, %i>" % (self.x, self.y, self.kind)
+
+    def serialize(self):
+        x_flag = (self.kind == Point.CUBIC_CONTROL1) or (self.kind == Point.QUADRATIC_CONTROL)
+        y_flag = (self.kind == Point.CUBIC_CONTROL2) or (self.kind == Point.QUADRATIC_CONTROL)
+        return float_to_fixedPoint1_13(self.x, x_flag) + float_to_fixedPoint1_13(self.y, y_flag)	
+
+    def transform(self, xOffset, yOffset, widthScale, heightScale):
+        self.x = (self.x + xOffset) * widthScale
+        self.y = (self.y + yOffset) * heightScale
+
+
+class Contour (object):
+    def __init__(self):
+        self.points = []
+
+    def __repr__(self):
+        return "<Contour %s>" % (self.points)
+
+    def serialize(self):
+        header = struct.pack("<I", len(self.points))
+        body = b"".join(x.serialize() for x in self.points)
+        return header + body
+
+    def add(self, point):
+        self.points.append(point)
+
+    def addPoint(self, x, y, kind):
+        self.points.append(Point(x, y, kind))
+
+    def transform(self, xOffset, yOffset, widthScale, heightScale):
+        for point in self.points:
+            point.transform(xOffset, yOffset, widthScale, heightScale)
+
+
+
 class Path (object):
     def __init__(self, fillColor, strokeColor, strokeWidth):
         self.fillColor = fillColor
@@ -167,7 +167,7 @@ class Path (object):
         header = self.fillColor.serialize()
         header += self.strokeColor.serialize()
         header += float_to_fixedPoint1_13(self.strokeWidth, False)
-        header += "\0\0"
+        header += b"\0\0"
         header += struct.pack("<I", len(self.contours))
         body = b"".join(x.serialize() for x in self.contours)
         return header + body
@@ -210,9 +210,10 @@ class Icon (object):
     def setBoundingBox(self, x, y, width, height):
         self.boundingBox = (x, y, width, height)
 
-    def addRectangle(self, x, y, width, height, fillColor):
-        path = Path(fillColor)
-        # Clockwise, because y-axis is flipped.
+    def addRectangle(self, x, y, width, height, fillColor, strokeColor, strokeWidth):
+        path = Path(fillColor, strokeColor, strokeWidth)
+        # Clockwise, because y-axis is flipped.'
+        contour = Contour()
         contour.addPoint(x, y, Point.ANCHOR)
         contour.addPoint(x+width, y, Point.ANCHOR)
         contour.addPoint(x+width, y+height, Point.ANCHOR)
@@ -320,9 +321,9 @@ def parseSVGIconGroup(icon, group):
 
         elif child.tag == "{http://www.w3.org/2000/svg}path":
             if not title.startswith("__"):
-                fillColor = Color(child.attrib.get("fill", default=None))
-                strokeColor = Color(child.attrib.get("stroke", default=None))
-                strokeWidth = float(child.attrib.get("stroke-width", default=1.0))
+                fillColor = Color(child.attrib.get("fill", None))
+                strokeColor = Color(child.attrib.get("stroke", None))
+                strokeWidth = float(child.attrib.get("stroke-width", 1.0))
 
                 path = Path(fillColor, strokeColor, strokeWidth)
                 contours = convertContours(child.attrib["d"])
@@ -350,7 +351,9 @@ def parseSVGIconGroup(icon, group):
                     float(child.attrib["y"]),
                     float(child.attrib["width"]),
                     float(child.attrib["height"]),
-                    Color(child.attrib["fill"])
+                    Color(child.attrib.get("fill", None)),
+                    Color(child.attrib.get("stroke", None)),
+                    float(child.attrib.get("stroke-width", 1.0))
                 )
 
     # Set the icon title to the title of the top level group

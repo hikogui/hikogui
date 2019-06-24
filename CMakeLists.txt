@@ -1,8 +1,6 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-include(CMakeIncludes/AddShader.cmake)
-
 if (MSVC)
     add_compile_options(/wd4068)
 	add_definitions(-DWIN32 -D_WINDOWS -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)

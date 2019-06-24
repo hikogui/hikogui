@@ -35,3 +35,10 @@ Download at: https://github.com/lexxmark/winflexbison/releases
 Unpack the .zip file in: `c:\Program Files\win_flex_bison`
 
 add `c:\Program Files\win_flex_bison` to PATH environment variable.
+
+
+## Python 3.x
+Download at: https://python.org/
+
+### Windows install
+Make sure to install it for all users and add Python to the path.
