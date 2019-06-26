@@ -3,9 +3,9 @@
 
 #include "TrueTypeParser.hpp"
 #include "BezierPoint.hpp"
-#include "Glyph.hpp"
+#include "Path.hpp"
 #include "Font.hpp"
-#include "exceptions.hpp"
+#include "TTauri/exceptions.hpp"
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
 #include <boost/format.hpp>
@@ -175,6 +175,8 @@ struct MAXPTable {
     big_uint16_buf_t maxComponentDepth;
 };
 
+static Path parseGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm);
+
 static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
 {
     let &entry = at<CMAPFormat4>(bytes, 0);
@@ -272,14 +274,14 @@ static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte> bytes)
 {
     let& header = at<CMAPHeader>(bytes, 0);
     if (!(header.version.value() == 0)) {
-        BOOST_THROW_EXCEPTION(TrueTypeError("cmap.version is not 0"));
+        BOOST_THROW_EXCEPTION(ParseError("cmap.version is not 0"));
     }
 
     let entries = make_span<CMAPEntry>(bytes, sizeof(CMAPHeader), header.numTables.value());
     
     let i = findBestCMAPEntry(entries);
     if (i == entries.end()) {
-        BOOST_THROW_EXCEPTION(TrueTypeError("Could not find a proper unicode character map"));
+        BOOST_THROW_EXCEPTION(ParseError("Could not find a proper unicode character map"));
     }
 
     let tableOffset = i->offset.value();
@@ -291,21 +293,21 @@ static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte> bytes)
     case 6: return parseCMAPFormat6(tableSpan);
     case 12: return parseCMAPFormat12(tableSpan);
     default:
-        BOOST_THROW_EXCEPTION(TrueTypeError((boost::format("Unexpected character map format %i") % table.format.value()).str()));
+        BOOST_THROW_EXCEPTION(ParseError((boost::format("Unexpected character map format %i") % table.format.value()).str()));
     }
 }
 
-const uint8_t FLAG_ON_CURVE = 0x01;
-const uint8_t FLAG_X_SHORT = 0x02;
-const uint8_t FLAG_Y_SHORT = 0x04;
-const uint8_t FLAG_REPEAT = 0x08;
-const uint8_t FLAG_X_SAME = 0x10;
-const uint8_t FLAG_Y_SAME = 0x20;
-static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
+constexpr uint8_t FLAG_ON_CURVE = 0x01;
+constexpr uint8_t FLAG_X_SHORT = 0x02;
+constexpr uint8_t FLAG_Y_SHORT = 0x04;
+constexpr uint8_t FLAG_REPEAT = 0x08;
+constexpr uint8_t FLAG_X_SAME = 0x10;
+constexpr uint8_t FLAG_Y_SAME = 0x20;
+static Path parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
 {
     let scale = 1.0f / static_cast<float>(unitsPerEm);
     size_t offset = 0;
-    Glyph glyph;
+    Path glyph;
 
     let &entry = at<GLYFEntry>(bytes, offset);
     offset += sizeof(GLYFEntry);
@@ -408,25 +410,22 @@ static Glyph parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
         pointNr++;
     }
 
-    glyph.valid = true;
     return glyph;
 }
 
-static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const& glyphs);
-
-const uint16_t FLAG_ARG_1_AND_2_ARE_WORDS = 0x0001;
-const uint16_t FLAG_ARGS_ARE_XY_VALUES = 0x0002;
-const uint16_t FLAG_ROUND_XY_TO_GRID = 0x0004;
-const uint16_t FLAG_WE_HAVE_A_SCALE = 0x0008;
-const uint16_t FLAG_MORE_COMPONENTS = 0x0020;
-const uint16_t FLAG_WE_HAVE_AN_X_AND_Y_SCALE = 0x0040;
-const uint16_t FLAG_WE_HAVE_A_TWO_BY_TWO = 0x0080;
-const uint16_t FLAG_WE_HAVE_INSTRUCTIONS = 0x0100;
-const uint16_t FLAG_USE_MY_METRICS = 0x0200;
-const uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
-const uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
-const uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-static Glyph parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const& glyphs)
+constexpr uint16_t FLAG_ARG_1_AND_2_ARE_WORDS = 0x0001;
+constexpr uint16_t FLAG_ARGS_ARE_XY_VALUES = 0x0002;
+constexpr uint16_t FLAG_ROUND_XY_TO_GRID = 0x0004;
+constexpr uint16_t FLAG_WE_HAVE_A_SCALE = 0x0008;
+constexpr uint16_t FLAG_MORE_COMPONENTS = 0x0020;
+constexpr uint16_t FLAG_WE_HAVE_AN_X_AND_Y_SCALE = 0x0040;
+constexpr uint16_t FLAG_WE_HAVE_A_TWO_BY_TWO = 0x0080;
+constexpr uint16_t FLAG_WE_HAVE_INSTRUCTIONS = 0x0100;
+constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
+constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
+constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
+constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
+static Path parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm)
 {
     let bytes = glyphDataList.at(i);
     size_t offset = 0;
@@ -434,7 +433,7 @@ static Glyph parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDa
     let& entry = at<GLYFEntry>(bytes, offset);
     offset += sizeof(GLYFEntry);
 
-    Glyph glyph;
+    Path glyph;
 
     uint16_t flags;
     do {
@@ -442,7 +441,7 @@ static Glyph parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDa
         offset += sizeof(uint16_t);
         let subGlyphIndex = at<big_uint16_buf_t>(bytes, offset).value();
         offset += sizeof(uint16_t);
-        let subGlyph = parseGlyph(glyphDataList, subGlyphIndex, unitsPerEm, glyphs);
+        let subGlyph = parseGlyph(glyphDataList, subGlyphIndex, unitsPerEm);
 
         glm::vec2 subGlyphOffset;
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
@@ -503,39 +502,36 @@ static Glyph parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDa
         }
 
         if (flags & FLAG_USE_MY_METRICS) {
-            glyph.useMetricsOfGlyph = subGlyphIndex;
+            // XXX implement.
         }
         
-        glyph.addSubGlyph(subGlyph, subGlyphScale, subGlyphOffset);
+        glyph += T2D(subGlyphOffset, subGlyphScale) * subGlyph;
 
     } while (flags & FLAG_MORE_COMPONENTS);
     // Ignore trailing instructions.
 
-    glyph.valid = true;
     return glyph;
 }
 
-static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, size_t i, uint16_t unitsPerEm, std::vector<Glyph> const &glyphs)
+static Path parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, size_t i, uint16_t unitsPerEm)
 {
     let bytes = glyphDataList.at(i);
     if (bytes.size() == 0) {
         // Glyph does not have an outline.
-        Glyph glyph = {};
-        glyph.valid = true;
+        Path glyph = {};
         return glyph;
     }
 
     let &entry = at<GLYFEntry>(bytes, 0);
     let numberOfContours = entry.numberOfContours.value();
 
-    Glyph glyph;
+    Path glyph;
     if (numberOfContours == 0) {
         glyph = {};
-        glyph.valid = true;
     } else if (numberOfContours > 0) {
         glyph = parseSimpleGlyph(bytes, unitsPerEm);
     } else {
-        glyph = parseCompoundGlyph(glyphDataList, i, unitsPerEm, glyphs);
+        glyph = parseCompoundGlyph(glyphDataList, i, unitsPerEm);
     }
 
     glm::vec2 const position = { entry.xMin.value(unitsPerEm), entry.yMin.value(unitsPerEm) };
@@ -548,12 +544,12 @@ static Glyph parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, 
     return glyph;
 }
 
-static std::vector<Glyph> parseGLYF(std::vector<gsl::span<std::byte>> const &glyphDataList, uint16_t unitsPerEm)
+static std::vector<Path> parseGLYF(std::vector<gsl::span<std::byte>> const &glyphDataList, uint16_t unitsPerEm)
 {
-    std::vector<Glyph> glyphs;
+    std::vector<Path> glyphs;
 
     for (size_t i = 0; i < glyphDataList.size(); i++) {
-        let glyph = parseGlyph(glyphDataList, i, unitsPerEm, glyphs);
+        let glyph = parseGlyph(glyphDataList, i, unitsPerEm);
         glyphs.push_back(glyph);
     }
 
@@ -585,8 +581,10 @@ static std::vector<gsl::span<std::byte>> parseLOCA(gsl::span<std::byte> bytes, g
     return r;
 }
 
-static void parseHMTX(std::vector<Glyph> &glyphs, gsl::span<std::byte> horizontalMetricsData, size_t numberOfHMetrics, uint16_t unitsPerEm)
+static void parseHMTX(std::vector<Path> &glyphs, gsl::span<std::byte> horizontalMetricsData, HHEATable horizontalHeader, float xHeight, float HHeight, uint16_t unitsPerEm)
 {
+    let numberOfHMetrics = horizontalHeader.numberOfHMetrics.value();
+
     size_t offset = 0;
     let longHorizontalMetricTable = make_span<HMTXEntry>(horizontalMetricsData, offset, numberOfHMetrics);
     offset += numberOfHMetrics * sizeof(HMTXEntry);
@@ -604,9 +602,14 @@ static void parseHMTX(std::vector<Glyph> &glyphs, gsl::span<std::byte> horizonta
         }
 
         auto &glyph = glyphs.at(i);
-        glyph.advanceWidth = advanceWidth;
-        glyph.leftSideBearing = leftSideBearing;
-        glyph.rightSideBearing = advanceWidth - (leftSideBearing + glyph.boundingBox.extent.width());
+        glyph.advance = glm::vec2{advanceWidth, 0.0f};
+        glyph.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
+        glyph.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + glyph.boundingBox.extent.width()), 0.0f};
+        glyph.ascender = glm::vec2{0.0f, horizontalHeader.ascender.value(unitsPerEm)};
+        // XXX is descender actually negative?
+        glyph.descender = glm::vec2{0.0f, horizontalHeader.descender.value(unitsPerEm)};
+        glyph.xHeight = glm::vec2{0.0f, xHeight};
+        glyph.capHeight = glm::vec2{0.0f, HHeight};
     }
 }
 
@@ -633,7 +636,7 @@ Font parseTrueTypeFile(gsl::span<std::byte> bytes)
 
     let &fontDirectory = at<SFNTHeader>(bytes, 0);
     if (!(fontDirectory.scalerType.value() == fourcc("true") || fontDirectory.scalerType.value() == 0x00010000)) {
-        BOOST_THROW_EXCEPTION(TrueTypeError("sfnt.scalerType is not 'true' or 0x00010000"));
+        BOOST_THROW_EXCEPTION(ParseError("sfnt.scalerType is not 'true' or 0x00010000"));
     }
 
     let tableDirectory = make_span<SFNTEntry>(bytes, sizeof(SFNTHeader), fontDirectory.numTables.value());
@@ -664,11 +667,18 @@ Font parseTrueTypeFile(gsl::span<std::byte> bytes)
 
     font.glyphs = parseGLYF(glyphDataList, unitsPerEm);
 
+    let xGlyphIndex = font.characterMap.at('x');
+    let xGlyph = font.glyphs.at(xGlyphIndex);
+    let xHeight = xGlyph.boundingBox.extent.height();
+
+    let HGlyphIndex = font.characterMap.at('H');
+    let HGlyph = font.glyphs.at(HGlyphIndex);
+    let HHeight = HGlyph.boundingBox.extent.height();
+
     let horizontalHeader = getTable<HHEATable>(bytes, tableDirectory, fourcc("hhea"));
-    let numberOfHMetrics = horizontalHeader.numberOfHMetrics.value();
 
     let horizontalMetricsData = getSpanToTable(bytes, tableDirectory, fourcc("hmtx"));
-    parseHMTX(font.glyphs, horizontalMetricsData, numberOfHMetrics, unitsPerEm);
+    parseHMTX(font.glyphs, horizontalMetricsData, horizontalHeader, xHeight, HHeight, unitsPerEm);
 
     return font;
 }

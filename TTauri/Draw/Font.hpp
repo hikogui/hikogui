@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Glyph.hpp"
+#include "Path.hpp"
 #include "Glyphs.hpp"
 #include "TTauri/grapheme.hpp"
 #include "TTauri/required.hpp"
@@ -15,7 +15,7 @@ namespace TTauri::Draw {
 
 struct Font {
     std::map<char32_t,size_t> characterMap;
-    std::vector<Glyph> glyphs;
+    std::vector<Path> glyphs;
 
     Glyphs getGlyphs(gstring const &graphemes) const {
         Glyphs r;
@@ -26,7 +26,7 @@ struct Font {
             // XXX Try and find ligatures in font.
 
             // First try composed normalization
-            std::vector<Glyph> graphemeGlyphs;
+            std::vector<Path> graphemeGlyphs;
             for (let codePoint: grapheme.NFC()) {
                 let i = characterMap.find(codePoint);
                 if (i == characterMap.end()) {
@@ -35,10 +35,6 @@ struct Font {
                 }
 
                 let glyph = glyphs.at(i->second);
-                if (!glyph.valid) {
-                    graphemeGlyphs.clear();
-                    break;
-                }
 
                 graphemeGlyphs.push_back(std::move(glyph));
             }
@@ -53,10 +49,7 @@ struct Font {
                     }
 
                     let glyph = glyphs.at(i->second);
-                    if (!glyph.valid) {
-                        graphemeGlyphs.clear();
-                        break;
-                    }
+
                     graphemeGlyphs.push_back(std::move(glyph));
                 }
             }

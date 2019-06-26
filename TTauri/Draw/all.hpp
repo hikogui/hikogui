@@ -5,10 +5,8 @@
 
 #include "attributes.hpp"
 #include "BezierPoint.hpp"
-#include "exceptions.hpp"
 #include "Font.hpp"
 #include "Fonts.hpp"
-#include "Glyph.hpp"
 #include "Glyphs.hpp"
 #include "Path.hpp"
 #include "PixelMap.hpp"

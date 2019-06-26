@@ -166,6 +166,7 @@ class Path (object):
     def serialize(self):
         header = self.fillColor.serialize()
         header += self.strokeColor.serialize()
+        # False flag here means that the line join style is Miter, otherwise it is Bevel.
         header += float_to_fixedPoint1_13(self.strokeWidth, False)
         header += b"\0\0"
         header += struct.pack("<I", len(self.contours))
@@ -190,19 +191,13 @@ class Icon (object):
         return "<Icon bb=%s %s>" % (self.boundingBox, self.paths)
 
     def serialize(self):
-        encodedTitle = self.title.encode("UTF-8")
-
-        # Add 1 to 4 bytes of padding, this counts as zero termination of the string.
-        m = len(encodedTitle) % 4
-        padding = b"\0" * (4 - m)
-
-        header = struct.pack(
-            "<II",
-            len(encodedTitle),
+        header = b"TTIC"
+        header += struct.pack(
+            "<I",
             len(self.paths)
         )
         body = b"".join(x.serialize() for x in self.paths)
-        return header + encodedTitle + padding + body
+        return header + body
 
     def add(self, path):
         self.paths.append(path)

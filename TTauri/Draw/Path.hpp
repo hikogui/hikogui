@@ -1,18 +1,18 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
 #pragma once
 
 #include "BezierPoint.hpp"
 #include "attributes.hpp"
+#include "TTauri/Color.hpp"
 #include <glm/glm.hpp>
 #include <vector>
-
-namespace TTauri {
-struct wsRGBApm;
-}
 
 namespace TTauri::Draw {
 
 struct Bezier;
-struct Glyph;
+struct Glyphs;
 struct Font;
 template<typename T> struct PixelMap;
 
@@ -20,6 +20,55 @@ template<typename T> struct PixelMap;
 struct Path {
     std::vector<BezierPoint> points;
     std::vector<size_t> endPoints;
+
+    /*! Bounding box of the path.
+     */
+    rect2 boundingBox = {};
+
+    /*! This is the position where the left side of the glyph
+     * starts. This includes some leading white space so that the glyph
+     * will stand a small distance of the edge.
+     *
+     * For many glyphs the leftSideBearing is the origin.
+     */
+    glm::vec2 leftSideBearing = {0.0f, 0.0f};
+
+    /*! This is the position where the right side of the glyph
+     * ends. This includes some leading white space so that the glyph
+     * will stand a small distance of the edge.
+     */
+    glm::vec2 rightSideBearing = {0.0f, 0.0f};
+
+    /*! Distance from baseline of highest ascender.
+     */
+    glm::vec2 ascender = {0.0f, 0.0f};
+
+    /*! Distance from baseline of lowest descender.
+     */
+    glm::vec2 descender = {0.0f, 0.0f};
+
+    /*! Height of capital letter, or height of the letter 'H'.
+    */
+    glm::vec2 capHeight = {0.0f, 0.0f};
+
+    /*! Height of the small letter 'x'.
+    */
+    glm::vec2 xHeight = {0.0f, 0.0f};
+
+    /*! The distance to the next character.
+     */
+    glm::vec2 advance = {0.0f, 0.0f};
+
+
+    /*! The number of graphemes this glyph represents.
+     * This may be larger than one when the glyph is a ligature.
+     */
+    size_t numberOfGraphemes = 1;
+
+    /*! Get the advanceWidth for the specific grapheme of
+     * a potential ligature.
+     */
+    glm::vec2 advanceForGrapheme(size_t index) const;
 
     /*! Return the number of closed sub-paths.
      */
@@ -95,20 +144,19 @@ struct Path {
      */
     void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f});
 
-    /*! Add glyph to path.
-     * \param glyph Glyph to draw.
-     * \param position The position to draw the origin of the glyph.
-     * \param scale how much to scale the glyph by, the original glyph is 1Em high.
-     * \param rotation Rotation in radials clock wise.
+    /*! Add text to the path.
      */
-    void addGlyph(Glyph const &glyph, glm::vec2 position, float scale, float rotation = 0.0f);
+    void addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment);
 
-    void addText(std::string const &text, Font const &font, glm::vec2 position, float scale, float rotation = 0.0f, HorizontalAlignment alignment=HorizontalAlignment::Left);
+    /*! Contour with the given bezier curves.
+    * The first anchor will be ignored.
+    */
+    void addContour(std::vector<Bezier> const &contour);
 
     /*! Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<Bezier> const &contour);
+    void addContour(std::vector<BezierPoint> const &contour);
 
     /*! Add a path to stroke into this path.
      *
@@ -124,6 +172,15 @@ struct Path {
      */
     void addPathToStroke(Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f);
 };
+
+Path operator+(Path lhs, Path const &rhs);
+
+Path &operator+=(Path &lhs, Path const &rhs);
+
+Path operator*(glm::mat3x3 const &lhs, Path rhs);
+
+Path &operator*=(Path &lhs, glm::mat3x3 const &rhs);
+
 
 /*! Composit color onto the destination image where the mask is solid.
  *
@@ -174,5 +231,6 @@ void stroke(
     float strokeWidth=1.0f,
     SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown
 );
+
 
 }

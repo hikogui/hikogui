@@ -5,6 +5,7 @@
 
 #include "required.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtx/matrix_transform_2d.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <cstdint>
 #include <optional>
@@ -65,6 +66,7 @@ struct rect {
     }
 };
 
+
 using u32extent2 = extent<2, uint32_t, glm::defaultp>;
 using u64extent2 = extent<2, uint64_t, glm::defaultp>;
 using extent2 = extent<2, float, glm::defaultp>;
@@ -72,6 +74,14 @@ using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u32rect2 = rect<2, uint32_t, glm::defaultp>;
 using u64rect2 = rect<2, uint64_t, glm::defaultp>;
 using rect2 = rect<2, float, glm::defaultp>;
+
+inline rect2 &operator*=(rect2 &lhs, glm::mat3x3 const &rhs)
+{
+    lhs.offset = (rhs * glm::vec3(lhs.offset, 1.0f)).xy;
+    // XXX is this correct during rotation?
+    lhs.extent = extent2{(rhs * glm::vec3(lhs.extent, 0.0f)).xy};
+    return lhs;
+}
 
 template<typename T, typename U>
 inline T rect2_cast(U other)
@@ -233,6 +243,39 @@ inline std::optional<glm::vec2> getExtrapolatedIntersectionPoint(glm::vec2 A1, g
 
         return bezierPointAt(A1, A2, t);
     }
+}
+
+inline glm::mat3x3 T2D(glm::vec2 position, float scale=1.0f, float rotation=0.0f)
+{
+    auto M = mat3x3Identity;
+    M = glm::translate(M, position);
+    M = glm::rotate(M, rotation);
+    M = glm::scale(M, glm::vec2{scale, scale});
+    return M;
+}
+
+inline glm::mat3x3 T2D(glm::vec2 position, glm::vec2 scale, float rotation=0.0f)
+{
+    auto M = mat3x3Identity;
+    M = glm::translate(M, position);
+    M = glm::rotate(M, rotation);
+    M = glm::scale(M, scale);
+    return M;
+}
+
+inline glm::mat3x3 T2D(glm::vec2 position, glm::mat2x2 scale, float rotation=0.0f)
+{
+    let scale3x3 = glm::mat3x3{
+        scale[0][0], scale[0][1], 0.0f,
+        scale[1][0], scale[1][1], 0.0f,
+        0.0f, 0.0f, 1.0f
+    };
+
+    auto M = mat3x3Identity;
+    M = glm::translate(M, position);
+    M = glm::rotate(M, rotation);
+    M = scale3x3 * M;
+    return M;
 }
 
 }

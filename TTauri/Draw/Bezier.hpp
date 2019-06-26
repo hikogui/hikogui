@@ -38,69 +38,6 @@ struct Bezier {
 
     Bezier(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2) : type(Type::Cubic), P1(P1), C1(C1), C2(C2), P2(P2) {}
 
-    bool operator==(Bezier const &other) const {
-        if (type != other.type) {
-            return false;
-        }
-        switch (type) {
-        case Type::None:
-            return true;
-        case Type::Linear:
-            return (P1 == other.P1) && (P2 == other.P2);
-        case Type::Quadratic:
-            return (P1 == other.P1) && (C1 == other.C1) && (P2 == other.P2);
-        case Type::Cubic:
-            return (P1 == other.P1) && (C1 == other.C1) && (C2 == other.C2) && (P2 == other.P2);
-        default:
-            no_default;
-        }
-    }
-
-    Bezier operator*(glm::mat3x3 const &M) const {
-        return {
-            type,
-            (M * glm::vec3(P1, 1.0)).xy(),
-            (M * glm::vec3(C1, 1.0)).xy(),
-            (M * glm::vec3(C2, 1.0)).xy(),
-            (M * glm::vec3(P2, 1.0)).xy()
-        };
-    }
-
-    Bezier &operator*=(glm::mat3x3 const &M) {
-        P1 = (M * glm::vec3(P1, 1.0)).xy();
-        C1 = (M * glm::vec3(C1, 1.0)).xy();
-        C2 = (M * glm::vec3(C2, 1.0)).xy();
-        P2 = (M * glm::vec3(P2, 1.0)).xy();
-        return *this;
-    }
-
-    Bezier operator*(glm::vec2 const s) const {
-        return { type, P1 * s, C1 * s, C2 * s, P2 * s };
-    }
-
-    Bezier &operator*=(glm::vec2 const s) {
-        P1 *= s;
-        C1 *= s;
-        C2 *= s;
-        P2 *= s;
-        return *this;
-    }
-
-    Bezier operator+(glm::vec2 const t) const {
-        return { type, P1 + t, C1 + t, C2 + t, P2 + t };
-    }
-
-    Bezier operator+=(glm::vec2 const t) {
-        P1 += t;
-        C1 += t;
-        C2 += t;
-        P2 += t;
-    }
-
-    Bezier operator~() const {
-        return { type, P2, C2, C1, P1 };
-    }
-
     results2 quadraticSolveTByY(float y) const {
         let a = P1.y - 2.0f*C1.y + P2.y;
         let b = 2.0f*(C1.y - P1.y);
@@ -255,6 +192,62 @@ struct Bezier {
         return { newP1, newP2 };
     }
 };
+
+inline bool operator==(Bezier const &lhs, Bezier const &rhs) {
+    if (lhs.type != rhs.type) {
+        return false;
+    }
+    switch (lhs.type) {
+    case Bezier::Type::None:
+        return true;
+    case Bezier::Type::Linear:
+        return (lhs.P1 == rhs.P1) && (lhs.P2 == rhs.P2);
+    case Bezier::Type::Quadratic:
+        return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.P2 == rhs.P2);
+    case Bezier::Type::Cubic:
+        return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
+    default:
+        no_default;
+    }
+}
+
+inline Bezier operator*(glm::mat3x3 const &lhs, Bezier const &rhs) {
+    return {
+        rhs.type,
+        (lhs * glm::vec3(rhs.P1, 1.0)).xy(),
+        (lhs * glm::vec3(rhs.C1, 1.0)).xy(),
+        (lhs * glm::vec3(rhs.C2, 1.0)).xy(),
+        (lhs * glm::vec3(rhs.P2, 1.0)).xy()
+    };
+}
+
+inline Bezier operator*(Bezier const &lhs, glm::vec2 const rhs) {
+    return { lhs.type, lhs.P1 * rhs, lhs.C1 * rhs, lhs.C2 * rhs, lhs.P2 * rhs };
+}
+
+inline Bezier &operator*=(Bezier &lhs, glm::vec2 const rhs) {
+    lhs.P1 *= rhs;
+    lhs.C1 *= rhs;
+    lhs.C2 *= rhs;
+    lhs.P2 *= rhs;
+    return lhs;
+}
+
+inline Bezier operator+(Bezier const &lhs, glm::vec2 const rhs) {
+    return { lhs.type, lhs.P1 + rhs, lhs.C1 + rhs, lhs.C2 + rhs, lhs.P2 + rhs };
+}
+
+inline Bezier &operator+=(Bezier &lhs, glm::vec2 const rhs) {
+    lhs.P1 += rhs;
+    lhs.C1 += rhs;
+    lhs.C2 += rhs;
+    lhs.P2 += rhs;
+    return lhs;
+}
+
+inline Bezier operator~(Bezier const &rhs) {
+    return { rhs.type, rhs.P2, rhs.C2, rhs.C1, rhs.P1 };
+}
 
 /*! Make a contour of Bezier curves from a list of points.
  */

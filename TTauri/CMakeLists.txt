@@ -31,9 +31,12 @@ set(TTauri_srcs
     Draw/PNG.cpp
     Draw/PixelMap.cpp
     Draw/Path.cpp
+    Draw/Drawing.cpp
     Draw/Font.cpp
+    Draw/Glyphs.cpp
     Draw/Bezier.cpp
     Draw/TrueTypeParser.cpp
+    Draw/TTauriIconParser.cpp
     Draw/Theme.cpp
     GUI/Device_base.cpp
     GUI/Device_vulkan.cpp

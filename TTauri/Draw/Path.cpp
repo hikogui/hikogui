@@ -10,24 +10,37 @@
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
 
+#include <glm/gtx/matrix_transform_2d.hpp>
+
 namespace TTauri::Draw {
 
-size_t Path::numberOfContours() const {
+glm::vec2 Path::advanceForGrapheme(size_t index) const
+{
+    let ligatureRatio = 1.0f / numberOfGraphemes;
+
+    return (advance * ligatureRatio) * static_cast<float>(index);
+}
+
+size_t Path::numberOfContours() const
+{
     return endPoints.size();
 }
 
-std::vector<BezierPoint> Path::getBezierPointsOfContour(size_t subpathNr) const {
+std::vector<BezierPoint> Path::getBezierPointsOfContour(size_t subpathNr) const
+{
     let begin = points.begin() + (subpathNr == 0 ? 0 : endPoints.at(subpathNr - 1) + 1);
     let end = points.begin() + endPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<Bezier> Path::getBeziersOfContour(size_t subpathNr) const {
+std::vector<Bezier> Path::getBeziersOfContour(size_t subpathNr) const
+{
     let contourPoints = getBezierPointsOfContour(subpathNr);
     return makeContourFromPoints(contourPoints);
 }
 
-std::vector<Bezier> Path::getBeziers() const {
+std::vector<Bezier> Path::getBeziers() const
+{
     std::vector<Bezier> r;
     for (size_t subpathNr = 0; subpathNr < numberOfContours(); subpathNr++) {
         for (let bezier: getBeziersOfContour(subpathNr)) {
@@ -37,7 +50,8 @@ std::vector<Bezier> Path::getBeziers() const {
     return r;
 }
 
-bool Path::hasCurrentPosition() const {
+bool Path::hasCurrentPosition() const
+{
     if (points.size() == 0) {
         return false;
     } else if (endPoints.size() == 0) {
@@ -47,7 +61,8 @@ bool Path::hasCurrentPosition() const {
     }
 }
 
-glm::vec2 Path::currentPosition() const {
+glm::vec2 Path::currentPosition() const
+{
     if (hasCurrentPosition()) {
         return points.back().p;
     } else {
@@ -55,56 +70,66 @@ glm::vec2 Path::currentPosition() const {
     }
 }
 
-void Path::close() {
+void Path::close()
+{
     if (hasCurrentPosition()) {
         endPoints.push_back(points.size() - 1);
     }
 }
 
-void Path::moveTo(glm::vec2 position) {
+void Path::moveTo(glm::vec2 position)
+{
     close();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::moveRelativeTo(glm::vec2 direction) {
+void Path::moveRelativeTo(glm::vec2 direction)
+{
     let lastPosition = currentPosition();
     close();
     points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::lineTo(glm::vec2 position) {
+void Path::lineTo(glm::vec2 position)
+{
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::lineRelativeTo(glm::vec2 direction) {
+void Path::lineRelativeTo(glm::vec2 direction)
+{
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) {
+void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position)
+{
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) {
+void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction)
+{
     let p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) {
+void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position)
+{
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
     points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) {
+void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction)
+{
     let p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
     points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::arcTo(float radius, glm::vec2 position) {
+void Path::arcTo(float radius, glm::vec2 position)
+{
     let r = std::abs(radius);
     let P1 = currentPosition();
     let P2 = position;
@@ -139,7 +164,8 @@ void Path::arcTo(float radius, glm::vec2 position) {
     cubicCurveTo(C1, C2, P2);
 }
 
-void Path::addRectangle(rect2 rect, glm::vec4 corners) {
+void Path::addRectangle(rect2 rect, glm::vec4 corners)
+{
     glm::vec4 radii = glm::abs(corners);
 
     let blc = rect.offset;
@@ -187,29 +213,31 @@ void Path::addRectangle(rect2 rect, glm::vec4 corners) {
     close();
 }
 
-void Path::addGlyph(Glyph const &glyph, glm::vec2 position, float scale, float rotation) {
-    close();
-    let currentNrPoints = points.size();
-    for (let point: glyph.points) {
-        points.push_back(point.transform(position, scale, rotation));
-    }
-    for (let endPoint: glyph.endPoints) {
-        endPoints.push_back(currentNrPoints + endPoint);
-    }
-}
-
-void Path::addText(std::string const &text, Font const &font, glm::vec2 position, float scale, float rotation, HorizontalAlignment alignment) {
-    Glyphs glyphs = font.getGlyphs(text);
-
-    auto glyphPosition = glyphs.getStartPosition(position, scale, rotation, alignment);
+void Path::addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+{
+    auto glyphPosition = glyphs.getStartPosition(horizontalAlignment, verticalAlignment);
     for (size_t i = 0; i < glyphs.size(); i++) {
         let glyph = glyphs.at(i);
-        addGlyph(glyph, glyphPosition, scale, rotation);
-        glyphPosition += glyphs.glyphAdvanceVector(i, scale, rotation);
+
+        *this += T2D(glyphPosition) * glyph;
+
+        glyphPosition += glyphs.glyphAdvance(i);
     }
 }
 
-void Path::addContour(std::vector<Bezier> const &contour) {
+void Path::addContour(std::vector<BezierPoint> const &contour)
+{
+    close();
+
+    for (let &point: contour) {
+        points.push_back(point);
+    }
+
+    close();
+}
+
+void Path::addContour(std::vector<Bezier> const &contour)
+{
     close();
 
     for (let &curve: contour) {
@@ -235,7 +263,8 @@ void Path::addContour(std::vector<Bezier> const &contour) {
     close();
 }
 
-void Path::addPathToStroke(Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) {
+void Path::addPathToStroke(Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance)
+{
     float starboardOffset = strokeWidth / 2;
     float portOffset = -starboardOffset;
 
@@ -250,7 +279,49 @@ void Path::addPathToStroke(Path const &path, float strokeWidth, LineJoinStyle li
     }
 }
 
-void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, SubpixelOrientation subpixelOrientation) {
+Path operator+(Path lhs, Path const &rhs)
+{
+    return lhs += rhs;
+}
+
+Path &operator+=(Path &lhs, Path const &rhs)
+{
+    lhs.close();
+    let offset = lhs.points.size();
+
+    lhs.endPoints.reserve(lhs.endPoints.size() + rhs.endPoints.size());
+    for (let x: rhs.endPoints) {
+        lhs.endPoints.push_back(offset + x);
+    }
+
+    lhs.points.insert(lhs.points.end(), rhs.points.begin(), rhs.points.end());
+    return lhs;
+}
+
+Path &operator*=(Path &lhs, glm::mat3x3 const &rhs)
+{
+    lhs.boundingBox *= rhs;
+    lhs.leftSideBearing = (rhs * glm::vec3(lhs.leftSideBearing, 1.0f)).xy;
+    lhs.rightSideBearing = (rhs * glm::vec3(lhs.rightSideBearing, 1.0f)).xy;
+    lhs.advance = (rhs * glm::vec3(lhs.advance, 0.0f)).xy;
+    lhs.ascender = (rhs * glm::vec3(lhs.ascender, 0.0f)).xy;
+    lhs.descender = (rhs * glm::vec3(lhs.descender, 0.0f)).xy;
+    lhs.capHeight = (rhs * glm::vec3(lhs.capHeight, 0.0f)).xy;
+    lhs.xHeight = (rhs * glm::vec3(lhs.xHeight, 0.0f)).xy;
+
+    for (auto &point: lhs.points) {
+        point *= rhs;
+    }
+    return lhs;
+}
+
+Path operator*(glm::mat3x3 const &lhs, Path rhs)
+{
+    return rhs *= lhs;
+}
+
+void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, SubpixelOrientation subpixelOrientation)
+{
     let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
 
     auto curves = path.getBeziers();
@@ -275,7 +346,8 @@ void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, SubpixelOri
     }
 }
 
-void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, SubpixelOrientation subpixelOrientation) {
+void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, SubpixelOrientation subpixelOrientation)
+{
     Path fillPath{};
     fillPath.addPathToStroke(path, strokeWidth, lineJoinStyle);
     fill(dst, color, fillPath, subpixelOrientation);
@@ -287,10 +359,9 @@ void stroke(
     Path const &mask,
     float strokeWidth,
     SubpixelOrientation subpixelOrientation
-) {
+)
+{
     return stroke(dst, color, mask, strokeWidth, LineJoinStyle::Miter, subpixelOrientation);
 }
-
-
 
 }

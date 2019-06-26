@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Font.hpp"
-#include "Glyph.hpp"
+#include "Path.hpp"
 #include "Glyphs.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"

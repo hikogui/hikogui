@@ -77,18 +77,23 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
 #pragma warning(suppress: 6001)
-    let rectangle = rect2{{3.0f, 3.0f}, { static_cast<float>(image.extent.width()) - 6.0f, static_cast<float>(image.extent.height()) - 6.0f }};
-    let fontCenter = labelFontSize * 0.5f;
-    let labelLocation = midpoint(rectangle) + glm::vec2(0.0f, -fontCenter);
+    let rectangle = rect2{{1.0f, 1.0f}, { static_cast<float>(image.extent.width()) - 2.0f, static_cast<float>(image.extent.height()) - 2.0f }};
+    let labelLocation = midpoint(rectangle);
 
-    auto buttonBackgroundMask = Draw::Path();
-    buttonBackgroundMask.addRectangle(rectangle, backgroundShape);
-    fill(linearMap, backgroundColor, buttonBackgroundMask, Draw::SubpixelOrientation::RedLeft);
-    stroke(linearMap, borderColor, buttonBackgroundMask, 2.0, Draw::SubpixelOrientation::RedLeft);
+    auto drawing = Draw::Drawing();
 
-    auto textMask = Draw::Path();
-    textMask.addText(label, labelFont, labelLocation, labelFontSize, 0.0f, Draw::HorizontalAlignment::Center);
-    fill(linearMap, labelColor, textMask, Draw::SubpixelOrientation::RedLeft);
+    auto buttonPath = Draw::Path();
+    buttonPath.addRectangle(rectangle, backgroundShape);
+    drawing.addPath(buttonPath, backgroundColor);
+    drawing.addStroke(buttonPath, borderColor, 2.0);
+
+    auto textPath = Draw::Path();
+
+    let labelGlyphs = T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
+    textPath.addText(labelGlyphs, Draw::HorizontalAlignment::Center, Draw::VerticalAlignment::Middle);
+    drawing.addPath(textPath, labelColor);
+
+    draw(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     copyLinearToGamma(pixelMap, linearMap);

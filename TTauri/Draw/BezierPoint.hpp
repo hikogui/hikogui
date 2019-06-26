@@ -20,23 +20,6 @@ struct BezierPoint {
     BezierPoint(glm::vec2 p, Type type) : p(p), type(type) {}
     BezierPoint(float x, float y, Type type) : BezierPoint({x, y}, type) {}
 
-    bool operator==(BezierPoint const &other) const {
-        return (p == other.p) && (type == other.type);
-    }
-
-    BezierPoint operator*(glm::mat2x2 scale) const {
-        return { p * scale, type };
-    }
-
-    BezierPoint operator+(glm::vec2 offset) const {
-        return { p + offset, type };
-    }
-
-    BezierPoint transform(glm::vec2 position, float scale = 1.0f, float rotate = 0.0f) const {
-        let newP = glm::rotate(p * scale, rotate) + position;
-        return { newP, type };
-    }
-
     /*! Normalize points in a list.
      * The following normalizations are executed:
      *  - Missing anchor points between two quadratic-control-points are added.
@@ -102,5 +85,25 @@ struct BezierPoint {
     }
 };
 
+inline bool operator==(BezierPoint const &lhs, BezierPoint const &rhs) {
+    return (lhs.p == rhs.p) && (lhs.type == rhs.type);
+}
+
+inline BezierPoint operator*(glm::mat2x2 const &lhs, BezierPoint const &rhs) {
+    return { lhs * rhs.p, rhs.type };
+}
+
+inline BezierPoint operator*(glm::mat3x3 const &lhs, BezierPoint const &rhs) {
+    return { (lhs * glm::vec3{rhs.p, 1.0f}).xy, rhs.type };
+}
+
+inline BezierPoint &operator*=(BezierPoint &lhs, glm::mat3x3 const &rhs) {
+    lhs.p = (rhs * glm::vec3{lhs.p, 1.0f}).xy;
+    return lhs;
+}
+
+inline BezierPoint operator+(BezierPoint const &lhs, glm::vec2 rhs) {
+    return { lhs.p + rhs, lhs.type };
+}
 
 }
