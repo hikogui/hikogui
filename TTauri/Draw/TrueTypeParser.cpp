@@ -606,7 +606,6 @@ static void parseHMTX(std::vector<Path> &glyphs, gsl::span<std::byte> horizontal
         glyph.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
         glyph.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + glyph.boundingBox.extent.width()), 0.0f};
         glyph.ascender = glm::vec2{0.0f, horizontalHeader.ascender.value(unitsPerEm)};
-        // XXX is descender actually negative?
         glyph.descender = glm::vec2{0.0f, horizontalHeader.descender.value(unitsPerEm)};
         glyph.xHeight = glm::vec2{0.0f, xHeight};
         glyph.capHeight = glm::vec2{0.0f, HHeight};

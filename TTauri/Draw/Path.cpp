@@ -213,16 +213,27 @@ void Path::addRectangle(rect2 rect, glm::vec4 corners)
     close();
 }
 
-void Path::addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+void Path::addText(Glyphs const &glyphs, glm::vec2 position)
 {
-    auto glyphPosition = glyphs.getStartPosition(horizontalAlignment, verticalAlignment);
     for (size_t i = 0; i < glyphs.size(); i++) {
         let glyph = glyphs.at(i);
 
-        *this += T2D(glyphPosition) * glyph;
+        *this += T2D(position) * glyph;
 
-        glyphPosition += glyphs.glyphAdvance(i);
+        position += glyphs.glyphAdvance(i);
     }
+}
+
+void Path::addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
+{
+    let position = glyphs.getStartPosition(horizontalAlignment, verticalAlignment);
+    return addText(glyphs, position);
+}
+
+void Path::addText(Glyphs const &glyphs, Alignment alignment)
+{
+    let position = glyphs.getStartPosition(alignment);
+    return addText(glyphs, position);
 }
 
 void Path::addContour(std::vector<BezierPoint> const &contour)

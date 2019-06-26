@@ -50,6 +50,18 @@ struct Glyphs {
         return maxAscender;
     }
 
+    glm::vec2 descender() const {
+        glm::vec2 maxDescender = {0.0, 0.0};
+
+        for (size_t i = 0; i < size(); i++) {
+            if (glm::length(maxDescender) < glm::length(at(i).descender)) {
+                maxDescender = at(i).descender;
+            }
+        }
+
+        return maxDescender;
+    }
+
     glm::vec2 capHeight() const {
         glm::vec2 maxCapHeight = {0.0, 0.0};
 
@@ -64,8 +76,10 @@ struct Glyphs {
 
     /*! Find the start position with a specific alignment.
      */
-    glm::vec2 getStartPosition(HorizontalAlignment horizontalAlignment=HorizontalAlignment::Left, VerticalAlignment verticalAlignment=VerticalAlignment::Bottom) const {
-        
+    glm::vec2 getStartPosition(
+        HorizontalAlignment horizontalAlignment=HorizontalAlignment::Left,
+        VerticalAlignment verticalAlignment=VerticalAlignment::Base
+    ) const {
         glm::vec2 x;
 
         switch (horizontalAlignment) {
@@ -86,12 +100,33 @@ struct Glyphs {
         }
 
         switch (verticalAlignment) {
-        case VerticalAlignment::Bottom:
+        case VerticalAlignment::Base:
             return x;
+        case VerticalAlignment::Bottom:
+            return x - descender();
         case VerticalAlignment::Top:
-            return x - capHeight();
+            return x - ascender();
         case VerticalAlignment::Middle:
             return x - capHeight() * 0.5f;
+        default:
+            no_default;
+        }
+    }
+
+    glm::vec2 getStartPosition(Alignment alignment=Alignment::BaseLeft) const {
+        switch (alignment) {
+        case Alignment::TopLeft: return getStartPosition(HorizontalAlignment::Left, VerticalAlignment::Top);
+        case Alignment::TopCenter: return getStartPosition(HorizontalAlignment::Center, VerticalAlignment::Top);
+        case Alignment::TopRight: return getStartPosition(HorizontalAlignment::Right, VerticalAlignment::Top);
+        case Alignment::MiddleLeft: return getStartPosition(HorizontalAlignment::Left, VerticalAlignment::Middle);
+        case Alignment::MiddleCenter: return getStartPosition(HorizontalAlignment::Center, VerticalAlignment::Middle);
+        case Alignment::MiddleRight: return getStartPosition(HorizontalAlignment::Right, VerticalAlignment::Middle);
+        case Alignment::BaseLeft: return getStartPosition(HorizontalAlignment::Left, VerticalAlignment::Base);
+        case Alignment::BaseCenter: return getStartPosition(HorizontalAlignment::Center, VerticalAlignment::Base);
+        case Alignment::BaseRight: return getStartPosition(HorizontalAlignment::Right, VerticalAlignment::Base);
+        case Alignment::BottomLeft: return getStartPosition(HorizontalAlignment::Left, VerticalAlignment::Bottom);
+        case Alignment::BottomCenter: return getStartPosition(HorizontalAlignment::Center, VerticalAlignment::Bottom);
+        case Alignment::BottomRight: return getStartPosition(HorizontalAlignment::Right, VerticalAlignment::Bottom);
         default:
             no_default;
         }

@@ -8,6 +8,7 @@ namespace TTauri::Draw {
 enum class VerticalAlignment {
     Top,
     Middle,
+    Base,
     Bottom
 };
 
@@ -24,6 +25,9 @@ enum class Alignment {
     MiddleLeft,
     MiddleCenter,
     MiddleRight,
+    BaseLeft,
+    BaseCenter,
+    BaseRight,
     BottomLeft,
     BottomCenter,
     BottomRight

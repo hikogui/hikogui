@@ -145,8 +145,16 @@ struct Path {
     void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f});
 
     /*! Add text to the path.
-     */
-    void addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment);
+    */
+    void addText(Glyphs const &glyphs, glm::vec2 position);
+
+    /*! Add text to the path.
+    */
+    void addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment=VerticalAlignment::Base);
+
+    /*! Add text to the path.
+    */
+    void addText(Glyphs const &glyphs, Alignment alignment=Alignment::BaseLeft);
 
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
