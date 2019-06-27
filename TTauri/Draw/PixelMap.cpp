@@ -38,7 +38,7 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
     pixelMap[pixelMap.height - 1][pixelMap.width - 1] = pixelMap[pixelMap.height - 2][pixelMap.width - 2] & u32invisibleMask;
 }
 
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src)
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
 {
     assert(dst.width >= src.width);
     assert(dst.height >= src.height);
@@ -68,7 +68,7 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
     }
 }
 
-void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
+void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
 {
     assert(mask.height >= under.height);
     assert(mask.width >= under.width);
@@ -84,7 +84,7 @@ void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const&
     }
 }
 
-void subpixelComposit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask)
+void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
 {
     assert(mask.height >= under.height);
     assert((mask.width * 3) >= under.width);

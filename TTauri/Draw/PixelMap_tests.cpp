@@ -88,11 +88,11 @@ TEST(PixelMapTests, maskComposit) {
     mask[1][4] = 255;
     mask[1][5] = 255;
 
-    auto image = PixelMap<wsRGBApm>(3, 3);
+    auto image = PixelMap<wsRGBA>(3, 3);
     clear(image);
 
-    let transparent = wsRGBApm{ 0.0, 0.0, 0.0, 0.0 };
-    let white = wsRGBApm{ 1.0, 1.0, 1.0, 1.0 };
+    let transparent = wsRGBA{ 0.0, 0.0, 0.0, 0.0 };
+    let white = wsRGBA{ 1.0, 1.0, 1.0, 1.0 };
     subpixelComposit(image, white, mask);
 
     ASSERT_EQ(image[0][0], transparent);
@@ -113,10 +113,10 @@ TEST(PixelMapTests, maskComposit2) {
     mask[1][4] = 255;
     mask[1][5] = 255;
 
-    auto image = PixelMap<wsRGBApm>(3, 3);
+    auto image = PixelMap<wsRGBA>(3, 3);
     clear(image);
 
-    let color = wsRGBApm{ 0.25, 0.50, 0.75, 1.0 };
+    let color = wsRGBA{ 0.25, 0.50, 0.75, 1.0 };
     subpixelComposit(image, color, mask);
 
     ASSERT_EQ(image[1][1], color);
@@ -129,10 +129,10 @@ TEST(PixelMapTests, maskComposit3) {
     mask[1][4] = 0x44;
     mask[1][5] = 0x22;
 
-    auto image = PixelMap<wsRGBApm>(3, 3);
+    auto image = PixelMap<wsRGBA>(3, 3);
     clear(image);
 
-    let white = wsRGBApm{ 1.0, 1.0, 1.0, 1.0 };
+    let white = wsRGBA{ 1.0, 1.0, 1.0, 1.0 };
     subpixelComposit(image, white, mask);
 
     let alpha = ((0x88 + 0x44 + 0x22) / 3) / 255.0f;
@@ -140,7 +140,7 @@ TEST(PixelMapTests, maskComposit3) {
     let green = 0x44 / 255.0f;
     let blue = 0x22 / 255.0f;
 
-    let compositColor = wsRGBApm{ red / alpha, green / alpha, blue / alpha, alpha };
+    let compositColor = wsRGBA{ red / alpha, green / alpha, blue / alpha, alpha };
     ASSERT_EQ(image[1][1].string(), compositColor.string());
 }
 

@@ -197,7 +197,7 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs);
  * \param mask mask where the color will be composited on the destination.
  * \param subpixel orientation to improve resolution on LCD displays.
  */
-void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &mask, SubpixelOrientation subpixelOrientation);
+void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation);
 
 /*! Composit color onto the destination image on the edges of the mask.
  *
@@ -212,8 +212,8 @@ void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &mask, SubpixelOri
  * \param subpixel orientation to improve resolution on LCD displays.
  */
 void stroke(
-    PixelMap<wsRGBApm>& dst,
-    wsRGBApm color,
+    PixelMap<wsRGBA>& dst,
+    wsRGBA color,
     Path const &mask,
     float strokeWidth=1.0f,
     LineJoinStyle lineJoinStyle=LineJoinStyle::Miter,
@@ -233,8 +233,8 @@ void stroke(
 * \param subpixel orientation to improve resolution on LCD displays.
 */
 void stroke(
-    PixelMap<wsRGBApm>& dst,
-    wsRGBApm color,
+    PixelMap<wsRGBA>& dst,
+    wsRGBA color,
     Path const &mask,
     float strokeWidth=1.0f,
     SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown

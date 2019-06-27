@@ -5,12 +5,12 @@
 
 namespace TTauri::Draw {
 
-void Drawing::addPath(Path const &path, wsRGBApm const &color)
+void Drawing::addPath(Path const &path, wsRGBA const &color)
 {
     layers.emplace_back(path, color);
 }
 
-void Drawing::addStroke(Path const &path, wsRGBApm const &color, float strokeWidth, LineJoinStyle lineJoinStyle)
+void Drawing::addStroke(Path const &path, wsRGBA const &color, float strokeWidth, LineJoinStyle lineJoinStyle)
 {
     auto strokePath = Path{};
 
@@ -18,7 +18,7 @@ void Drawing::addStroke(Path const &path, wsRGBApm const &color, float strokeWid
     addPath(strokePath, color);
 }
 
-void draw(PixelMap<wsRGBApm> &dst, Drawing const &src, SubpixelOrientation subpixelOrientation)
+void draw(PixelMap<wsRGBA> &dst, Drawing const &src, SubpixelOrientation subpixelOrientation)
 {
     for (let &[path, color]: src.layers) {
         fill(dst, color, path, subpixelOrientation);

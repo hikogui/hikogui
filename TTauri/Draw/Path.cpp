@@ -331,7 +331,7 @@ Path operator*(glm::mat3x3 const &lhs, Path rhs)
     return rhs *= lhs;
 }
 
-void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, SubpixelOrientation subpixelOrientation)
+void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation)
 {
     let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
 
@@ -357,7 +357,7 @@ void fill(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, SubpixelOri
     }
 }
 
-void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, SubpixelOrientation subpixelOrientation)
+void stroke(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, SubpixelOrientation subpixelOrientation)
 {
     Path fillPath{};
     fillPath.addPathToStroke(path, strokeWidth, lineJoinStyle);
@@ -365,8 +365,8 @@ void stroke(PixelMap<wsRGBApm>& dst, wsRGBApm color, Path const &path, float str
 }
 
 void stroke(
-    PixelMap<wsRGBApm>& dst,
-    wsRGBApm color,
+    PixelMap<wsRGBA>& dst,
+    wsRGBA color,
     Path const &mask,
     float strokeWidth,
     SubpixelOrientation subpixelOrientation

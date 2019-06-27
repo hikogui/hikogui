@@ -7,7 +7,7 @@
 #include <filesystem>
 
 namespace TTauri {
-struct wsRGBApm;
+struct wsRGBA;
 }
 
 namespace TTauri::Draw {
@@ -27,6 +27,6 @@ struct PNGLibraryError : virtual PNGError {};
  *
  * \return A pixelMap the size of the actual PNG file, a submap() from pixelMap.
  */
-PixelMap<wsRGBApm> loadPNG(const PixelMap<wsRGBApm> &pixelMap, const std::filesystem::path &path);
+PixelMap<wsRGBA> loadPNG(const PixelMap<wsRGBA> &pixelMap, const std::filesystem::path &path);
 
 }

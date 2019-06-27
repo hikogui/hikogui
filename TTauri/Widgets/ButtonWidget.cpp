@@ -53,7 +53,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 
     auto vulkanDevice = device();
 
-    auto linearMap = Draw::PixelMap<wsRGBApm>{image.extent};
+    auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     clear(linearMap);
 
     // Draw something.
@@ -61,9 +61,9 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     let &labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
     let labelFontSize = 12.0;
 
-    wsRGBApm backgroundColor;
-    wsRGBApm labelColor;
-    wsRGBApm borderColor = {1.0, 1.0, 1.0, 1.0};
+    wsRGBA backgroundColor;
+    wsRGBA labelColor;
+    wsRGBA borderColor = {1.0, 1.0, 1.0, 1.0};
     if (value) {
         backgroundColor = { 0x4c4cffff };
         labelColor = {1.0, 1.0, 1.0, 1.0};

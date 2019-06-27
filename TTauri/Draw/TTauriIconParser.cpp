@@ -64,7 +64,7 @@ struct little_scRGB_buf_t {
     little_uint16_buf_t blue;
     little_uint16_buf_t alpha;
 
-    wsRGBApm value() const {
+    wsRGBA value() const {
         return {glm::vec4{
             (static_cast<float>(red.value()) - 4096.0f) / 8192.0f,
             (static_cast<float>(green.value()) - 4096.0f) / 8192.0f,
@@ -92,8 +92,8 @@ struct contour_buf_t {
 
 struct Layer {
     Path path;
-    wsRGBApm fillColor;
-    wsRGBApm strokeColor;
+    wsRGBA fillColor;
+    wsRGBA strokeColor;
     float strokeWidth;
     LineJoinStyle lineJoinStyle;
 };

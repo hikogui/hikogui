@@ -25,8 +25,8 @@ void ImageWidget::drawBackingImage()
 
     auto vulkanDevice = device();
 
-    auto linearMap = Draw::PixelMap<wsRGBApm>{ backingImage->extent };
-    fill(linearMap, wsRGBApm{0x0000'0000'0000'ffffULL});
+    auto linearMap = Draw::PixelMap<wsRGBA>{ backingImage->extent };
+    fill(linearMap, wsRGBA{0x0000'0000'0000'ffffULL});
 
     // Draw image in the fullPixelMap.
     // XXX This probably should allocate a PixelMap and add it to this class.
@@ -37,7 +37,7 @@ void ImageWidget::drawBackingImage()
     let glyph = myFont.glyphs.at(glyphIndex);
 
     // Draw something.
-    let color = wsRGBApm{ 0.5f, 1.0f, 0.5f, 1.0f };
+    let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
     let path1 = T2D({20.0, 30.0}, 8.0) * glyph;
     fill(linearMap, color, path1, Draw::SubpixelOrientation::Unknown);
 

@@ -151,7 +151,7 @@ struct Value {
 
     bool is_valid_type() const {
         return is_type<void>() || is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
-            is_type<wsRGBApm>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+            is_type<wsRGBA>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
     }
 
     template<typename T>
@@ -258,8 +258,8 @@ struct Value {
             } else {
                 return s;
             }
-        } else if (is_type<wsRGBApm>()) {
-            return value<wsRGBApm>().string();
+        } else if (is_type<wsRGBA>()) {
+            return value<wsRGBA>().string();
         } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
         } else if (is_type<std::filesystem::path>()) {
@@ -329,8 +329,8 @@ struct Value {
             return value<int64_t>() != 0;
         } else if (is_type<double>()) {
             return value<double>() != 0.0;
-        } else if (is_type<wsRGBApm>()) {
-            return !value<wsRGBApm>().isTransparent();
+        } else if (is_type<wsRGBA>()) {
+            return !value<wsRGBA>().isTransparent();
         } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
         } else if (is_type<std::filesystem::path>()) {

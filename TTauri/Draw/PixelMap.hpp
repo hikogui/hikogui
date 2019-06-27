@@ -11,7 +11,7 @@
 #include <algorithm>
 
 namespace TTauri {
-struct wsRGBApm;
+struct wsRGBA;
 }
 
 namespace TTauri::Draw {
@@ -194,17 +194,17 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap);
 /*! Copy a image with linear 16bit-per-color-component to a
  * gamma corrected 8bit-per-color-component image.
  */
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBApm> const& src);
+void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src);
 
 /*! Composit the color `over` onto the image `under` based on the pixel mask.
  * Mask should be passed to subpixelFilter() before use.
  */
-void composit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask);
+void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask);
 
 /*! Composit the color `over` onto the image `under` based on the subpixel mask.
  * Mask should be passed to subpixelFilter() before use.
  */
-void subpixelComposit(PixelMap<wsRGBApm>& under, wsRGBApm over, PixelMap<uint8_t> const& mask);
+void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask);
 
 /*! Execute a slight horiontal blur filter to reduce colour fringes with subpixel compositing.
  */

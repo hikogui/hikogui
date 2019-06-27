@@ -351,7 +351,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     auto _window = window.lock();
 
-    let backgroundColor = wsRGBApm(_window->widget->backgroundColor).to_sRGBA_vec4();
+    let backgroundColor = wsRGBA(_window->widget->backgroundColor).to_sRGBA_vec4();
     std::array<float, 4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
     std::array<vk::ClearValue, 1> const clearColors = { { _backgroundColor } };
 

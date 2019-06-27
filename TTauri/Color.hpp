@@ -75,7 +75,7 @@ inline int16_t linear_alpha_i16(uint8_t u)
  * sRGB gammut. Becuase it is linear and has pre-multiplied alpha it is easy to use
  * for compositing.
  */
-struct wsRGBApm {
+struct wsRGBA {
     glm::i16vec4 color;
 
     static constexpr int64_t I64_MAX_ALPHA = 32767;
@@ -86,31 +86,31 @@ struct wsRGBApm {
     static constexpr float F32_MAX_SRGB = I64_MAX_SRGB;
     static constexpr float F32_SRGB_MUL = 1.0f / F32_MAX_SRGB;
 
-    wsRGBApm() : color({0, 0, 0, 0}) {}
+    wsRGBA() : color({0, 0, 0, 0}) {}
 
     /*! Set the colour using the pixel value.
      * No conversion is done with the given value.
      */
-    wsRGBApm(glm::i16vec4 c) :
+    wsRGBA(glm::i16vec4 c) :
         color(c) {}
 
     /*! Set the colour with linear-sRGB values.
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
-    wsRGBApm(glm::vec4 c) :
+    wsRGBA(glm::vec4 c) :
         color(static_cast<glm::i16vec4>(glm::vec4{c.rgb * c.a * F32_MAX_SRGB, c.a * F32_MAX_ALPHA })) {}
 
     /*! Set the colour with linear-sRGB values.
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
-    wsRGBApm(double r, double g, double b, double a=1.0) :
-        wsRGBApm(glm::vec4{r, g, b, a}) {}
+    wsRGBA(double r, double g, double b, double a=1.0) :
+        wsRGBA(glm::vec4{r, g, b, a}) {}
 
     /*! Set the colour with gamma corrected sRGB values.
      */
-    wsRGBApm(uint32_t c) {
+    wsRGBA(uint32_t c) {
         let colorWithoutPreMultiply = glm::i64vec4{
             gamma_to_linear_i16((c >> 24) & 0xff),
             gamma_to_linear_i16((c >> 16) & 0xff),
@@ -126,7 +126,7 @@ struct wsRGBApm {
         );
     }
 
-    bool operator==(wsRGBApm const &other) const {
+    bool operator==(wsRGBA const &other) const {
         return color == other.color;
     }
 
@@ -232,7 +232,7 @@ struct wsRGBApm {
         }
     }
 
-    void composit(wsRGBApm over) {
+    void composit(wsRGBA over) {
         if (over.isTransparent()) {
             return;
         }
@@ -265,7 +265,7 @@ struct wsRGBApm {
         color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
     }
 
-    void composit(wsRGBApm over, uint8_t mask) {
+    void composit(wsRGBA over, uint8_t mask) {
         constexpr int64_t MASK_MAX = 255;
 
         if (mask == 0) {
@@ -279,12 +279,12 @@ struct wsRGBApm {
             let newOverV = static_cast<glm::i64vec4>(over.color) * static_cast<int64_t>(mask);
 
             constexpr int64_t NEWOVERV_DIVIDER = NEWOVERV_MAX / I64_MAX_COLOR;
-            let newOver = wsRGBApm{ static_cast<glm::i16vec4>(newOverV / NEWOVERV_DIVIDER) };
+            let newOver = wsRGBA{ static_cast<glm::i16vec4>(newOverV / NEWOVERV_DIVIDER) };
             return composit(newOver);
         }
     }
 
-    void subpixelComposit(wsRGBApm over, glm::u8vec3 mask) {
+    void subpixelComposit(wsRGBA over, glm::u8vec3 mask) {
         constexpr int64_t MASK_MAX = 255;
 
         if (mask.r == mask.g && mask.r == mask.b) {
