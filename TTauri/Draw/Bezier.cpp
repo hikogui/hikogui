@@ -9,9 +9,9 @@
 
 namespace TTauri::Draw {
 
-std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint> const& _points)
+std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end)
 {
-    let points = BezierPoint::normalizePoints(_points);
+    let points = BezierPoint::normalizePoints(begin, end);
 
     std::vector<Bezier> r;
 

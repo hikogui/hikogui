@@ -83,6 +83,12 @@ inline rect2 &operator*=(rect2 &lhs, glm::mat3x3 const &rhs)
     return lhs;
 }
 
+inline rect2 &operator+=(rect2 &lhs, glm::vec2 const &rhs)
+{
+    lhs.offset += rhs;
+    return lhs;
+}
+
 template<typename T, typename U>
 inline T rect2_cast(U other)
 {

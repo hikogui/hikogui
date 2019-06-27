@@ -7,7 +7,7 @@
 #include "BezierPoint.hpp"
 #include "Font.hpp"
 #include "Fonts.hpp"
-#include "Glyphs.hpp"
+#include "PathString.hpp"
 #include "Path.hpp"
 #include "PixelMap.hpp"
 #include "PNG.hpp"

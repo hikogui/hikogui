@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Path.hpp"
-#include "Glyphs.hpp"
+#include "PathString.hpp"
 #include "TTauri/grapheme.hpp"
 #include "TTauri/required.hpp"
 #include <vector>
@@ -17,8 +17,8 @@ struct Font {
     std::map<char32_t,size_t> characterMap;
     std::vector<Path> glyphs;
 
-    Glyphs getGlyphs(gstring const &graphemes) const {
-        Glyphs r;
+    PathString getGlyphs(gstring const &graphemes) const {
+        PathString r;
 
         for (size_t graphemeIndex = 0; graphemeIndex < graphemes.size(); graphemeIndex++) {
             let &grapheme = graphemes.at(graphemeIndex);
@@ -70,7 +70,7 @@ struct Font {
         return r;
     }
 
-    Glyphs getGlyphs(std::string const &s) const {
+    PathString getGlyphs(std::string const &s) const {
         return getGlyphs(translateString<gstring>(s));
     }
 };

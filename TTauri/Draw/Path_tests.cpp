@@ -10,13 +10,13 @@
 using namespace std;
 using namespace TTauri::Draw;
 
-TEST(PathTests, getBeziers) {
+TEST(PathTests, getBeziersOfLayer) {
     auto path = Path();
     path.moveTo({ 1, 1 });
     path.lineTo({ 2, 1 });
     path.lineTo({ 2, 2 });
     path.lineTo({ 1, 2 });
-    path.close();
+    path.closeContour();
 
     let beziers = path.getBeziers();
     ASSERT_EQ(beziers.size(), 4);
@@ -32,7 +32,7 @@ TEST(PathTests, getBezierPointsOfContour) {
     path.lineTo({ 2, 1 });
     path.lineTo({ 2, 2 });
     path.lineTo({ 1, 2 });
-    path.close();
+    path.closeContour();
 
     let points = path.getBezierPointsOfContour(0);
     ASSERT_EQ(points.size(), 4);

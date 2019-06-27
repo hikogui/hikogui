@@ -38,7 +38,7 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
     pixelMap[pixelMap.height - 1][pixelMap.width - 1] = pixelMap[pixelMap.height - 2][pixelMap.width - 2] & u32invisibleMask;
 }
 
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
+void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
 {
     assert(dst.width >= src.width);
     assert(dst.height >= src.height);

@@ -54,7 +54,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
-    clear(linearMap);
+    fill(linearMap);
 
     // Draw something.
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
@@ -81,23 +81,20 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     let labelLocation = midpoint(rectangle);
     //let labelLocation = glm::vec2{0.0, 0.0};
 
-    auto drawing = Draw::Drawing();
+    auto drawing = Draw::Path();
 
     auto buttonPath = Draw::Path();
     buttonPath.addRectangle(rectangle, backgroundShape);
     drawing.addPath(buttonPath, backgroundColor);
     drawing.addStroke(buttonPath, borderColor, 2.0);
 
-    auto textPath = Draw::Path();
+    let labelGlyphs = Draw::Alignment::MiddleCenter + T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
+    drawing += labelGlyphs.toPath(labelColor);
 
-    let labelGlyphs = T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
-    textPath.addText(labelGlyphs, Draw::Alignment::MiddleCenter);
-    drawing.addPath(textPath, labelColor);
-
-    draw(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
+    fill(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
-    copyLinearToGamma(pixelMap, linearMap);
+    fill(pixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
     image.drawn = true;
 }

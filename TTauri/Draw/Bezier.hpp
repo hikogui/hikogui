@@ -251,7 +251,7 @@ inline Bezier operator~(Bezier const &rhs) {
 
 /*! Make a contour of Bezier curves from a list of points.
  */
-std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint> const& points);
+std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end);
 
 /*! Inverse a contour.
  */

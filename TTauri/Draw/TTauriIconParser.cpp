@@ -1,6 +1,6 @@
 
 #include "TTauriIconParser.hpp"
-#include "Drawing.hpp"
+#include "Path.hpp"
 #include "TTauri/exceptions.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/FileView.hpp"
@@ -137,7 +137,7 @@ static Layer parsePath(gsl::span<std::byte> bytes, size_t &offset)
     return layer;
 }
 
-Drawing parseTTauriIcon(gsl::span<std::byte> bytes)
+Path parseTTauriIcon(gsl::span<std::byte> bytes)
 {
     size_t offset = 0;
 
@@ -155,7 +155,7 @@ Drawing parseTTauriIcon(gsl::span<std::byte> bytes)
 
     let nr_paths = header.nr_paths.value();
 
-    auto drawing = Drawing{};
+    auto drawing = Path{};
     for (size_t i = 0; i < nr_paths; i++) {
         let layer = parsePath(bytes, offset);
 
@@ -170,7 +170,7 @@ Drawing parseTTauriIcon(gsl::span<std::byte> bytes)
     return drawing;
 }
 
-Drawing parseTTauriIcon(std::filesystem::path& path)
+Path parseTTauriIcon(std::filesystem::path& path)
 {
     let view = FileView(path);
     try {

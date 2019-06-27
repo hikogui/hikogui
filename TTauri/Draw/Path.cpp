@@ -4,7 +4,7 @@
 #include "Path.hpp"
 #include "PixelMap.inl"
 #include "Bezier.hpp"
-#include "Glyphs.hpp"
+#include "PathString.hpp"
 #include "Font.hpp"
 #include "PixelMap.hpp"
 #include "TTauri/Color.hpp"
@@ -23,91 +23,173 @@ glm::vec2 Path::advanceForGrapheme(size_t index) const
 
 size_t Path::numberOfContours() const
 {
-    return endPoints.size();
+    return contourEndPoints.size();
+}
+
+size_t Path::numberOfLayers() const
+{
+    return layerEndContours.size();
+}
+
+bool Path::hasLayers() const {
+    return numberOfLayers() > 0;
+}
+
+std::vector<BezierPoint>::const_iterator Path::beginContour(size_t contourNr) const
+{
+    return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
+}
+
+std::vector<BezierPoint>::const_iterator Path::endContour(size_t contourNr) const
+{
+    return points.begin() + contourEndPoints.at(contourNr) + 1;
+}
+
+size_t Path::beginLayer(size_t layerNr) const
+{
+    return layerNr == 0 ? 0 : layerEndContours.at(layerNr - 1).first + 1;
+}
+
+size_t Path::endLayer(size_t layerNr) const
+{
+    return layerEndContours.at(layerNr).first + 1;
+}
+
+wsRGBA Path::getColorOfLayer(size_t layerNr) const
+{
+    return layerEndContours.at(layerNr).second;
+}
+
+void Path::setColorOfLayer(size_t layerNr, wsRGBA fillColor)
+{
+    layerEndContours.at(layerNr).second = fillColor;
+}
+
+std::pair<Path,wsRGBA> Path::getLayer(size_t layerNr) const
+{
+    required_assert(hasLayers());
+
+    auto path = Path{};
+
+    let begin = beginLayer(layerNr);
+    let end = endLayer(layerNr);
+    for (size_t contourNr = begin; contourNr != end; contourNr++) {
+        path.addContour(beginContour(contourNr), endContour(contourNr));
+    }
+
+    return {path, getColorOfLayer(layerNr)};
 }
 
 std::vector<BezierPoint> Path::getBezierPointsOfContour(size_t subpathNr) const
 {
-    let begin = points.begin() + (subpathNr == 0 ? 0 : endPoints.at(subpathNr - 1) + 1);
-    let end = points.begin() + endPoints.at(subpathNr) + 1;
+    let begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
+    let end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<Bezier> Path::getBeziersOfContour(size_t subpathNr) const
+std::vector<Bezier> Path::getBeziersOfContour(size_t contourNr) const
 {
-    let contourPoints = getBezierPointsOfContour(subpathNr);
-    return makeContourFromPoints(contourPoints);
+    return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
 
 std::vector<Bezier> Path::getBeziers() const
 {
+    required_assert(!hasLayers());
+
     std::vector<Bezier> r;
-    for (size_t subpathNr = 0; subpathNr < numberOfContours(); subpathNr++) {
-        for (let bezier: getBeziersOfContour(subpathNr)) {
-            r.push_back(std::move(bezier));
-        }
+
+    for (auto contourNr = 0; contourNr < numberOfContours(); contourNr++) {
+        let beziers = getBeziersOfContour(contourNr);
+        r.insert(r.end(), beziers.begin(), beziers.end());
     }
     return r;
 }
 
-bool Path::hasCurrentPosition() const
+bool Path::isContourOpen() const
 {
     if (points.size() == 0) {
         return false;
-    } else if (endPoints.size() == 0) {
+    } else if (contourEndPoints.size() == 0) {
         return true;
     } else {
-        return endPoints.back() != (points.size() - 1);
+        return contourEndPoints.back() != (points.size() - 1);
+    }
+}
+
+void Path::closeContour()
+{
+    if (isContourOpen()) {
+        contourEndPoints.push_back(points.size() - 1);
+    }
+}
+
+bool Path::isLayerOpen() const
+{
+    if (points.size() == 0) {
+        return false;
+    } else if (isContourOpen()) {
+        return true;
+    } else if (layerEndContours.size() == 0) {
+        return true;
+    } else {
+        return layerEndContours.back().first != (contourEndPoints.size() - 1);
+    }
+}
+
+void Path::closeLayer(wsRGBA fillColor)
+{
+    closeContour();
+    if (isLayerOpen()) {
+        layerEndContours.emplace_back(contourEndPoints.size() - 1, fillColor);
     }
 }
 
 glm::vec2 Path::currentPosition() const
 {
-    if (hasCurrentPosition()) {
+    if (isContourOpen()) {
         return points.back().p;
     } else {
         return {0.0f, 0.0f};
     }
 }
 
-void Path::close()
-{
-    if (hasCurrentPosition()) {
-        endPoints.push_back(points.size() - 1);
-    }
-}
-
 void Path::moveTo(glm::vec2 position)
 {
-    close();
+    closeContour();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::moveRelativeTo(glm::vec2 direction)
 {
+    required_assert(isContourOpen());
+
     let lastPosition = currentPosition();
-    close();
+    closeContour();
     points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
 }
 
 void Path::lineTo(glm::vec2 position)
 {
+    required_assert(isContourOpen());
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::lineRelativeTo(glm::vec2 direction)
 {
+    required_assert(isContourOpen());
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
 void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position)
 {
+    required_assert(isContourOpen());
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction)
 {
+    required_assert(isContourOpen());
     let p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
@@ -115,6 +197,7 @@ void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direct
 
 void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position)
 {
+    required_assert(isContourOpen());
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
     points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
     points.emplace_back(position, BezierPoint::Type::Anchor);
@@ -122,6 +205,7 @@ void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, 
 
 void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction)
 {
+    required_assert(isContourOpen());
     let p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
     points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
@@ -130,6 +214,8 @@ void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDi
 
 void Path::arcTo(float radius, glm::vec2 position)
 {
+    required_assert(isContourOpen());
+
     let r = std::abs(radius);
     let P1 = currentPosition();
     let P2 = position;
@@ -166,6 +252,8 @@ void Path::arcTo(float radius, glm::vec2 position)
 
 void Path::addRectangle(rect2 rect, glm::vec4 corners)
 {
+    required_assert(!isContourOpen());
+
     glm::vec4 radii = glm::abs(corners);
 
     let blc = rect.offset;
@@ -210,46 +298,24 @@ void Path::addRectangle(rect2 rect, glm::vec4 corners)
         lineTo(tlc2);
     }
 
-    close();
+    closeContour();
 }
 
-void Path::addText(Glyphs const &glyphs, glm::vec2 position)
+void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end)
 {
-    for (size_t i = 0; i < glyphs.size(); i++) {
-        let glyph = glyphs.at(i);
-
-        *this += T2D(position) * glyph;
-
-        position += glyphs.glyphAdvance(i);
-    }
-}
-
-void Path::addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
-{
-    let position = glyphs.getStartPosition(horizontalAlignment, verticalAlignment);
-    return addText(glyphs, position);
-}
-
-void Path::addText(Glyphs const &glyphs, Alignment alignment)
-{
-    let position = glyphs.getStartPosition(alignment);
-    return addText(glyphs, position);
+    required_assert(!isContourOpen());
+    points.insert(points.end(), begin, end);
+    closeContour();
 }
 
 void Path::addContour(std::vector<BezierPoint> const &contour)
 {
-    close();
-
-    for (let &point: contour) {
-        points.push_back(point);
-    }
-
-    close();
+    addContour(contour.begin(), contour.end());
 }
 
 void Path::addContour(std::vector<Bezier> const &contour)
 {
-    close();
+    required_assert(!isContourOpen());
 
     for (let &curve: contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
@@ -271,23 +337,42 @@ void Path::addContour(std::vector<Bezier> const &contour)
         }
     }
 
-    close();
+    closeContour();
 }
 
-void Path::addPathToStroke(Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance)
+void Path::addPath(Path const &path, wsRGBA fillColor)
 {
+    *this += path;
+    closeLayer(fillColor);
+}
+
+void Path::addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance)
+{
+    *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
+    closeLayer(strokeColor);
+}
+
+Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const
+{
+    required_assert(!hasLayers());
+    required_assert(!isContourOpen());
+
+    auto r = Path{};
+
     float starboardOffset = strokeWidth / 2;
     float portOffset = -starboardOffset;
 
-    for (size_t i = 0; i < path.numberOfContours(); i++) {
-        let baseContour = path.getBeziersOfContour(i);
+    for (size_t i = 0; i < numberOfContours(); i++) {
+        let baseContour = getBeziersOfContour(i);
 
         let starboardContour = makeParrallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
-        addContour(starboardContour);
+        r.addContour(starboardContour);
 
         let portContour = makeInverseContour(makeParrallelContour(baseContour, portOffset, lineJoinStyle, tolerance));
-        addContour(portContour);
+        r.addContour(portContour);
     }
+
+    return r;
 }
 
 Path operator+(Path lhs, Path const &rhs)
@@ -297,12 +382,23 @@ Path operator+(Path lhs, Path const &rhs)
 
 Path &operator+=(Path &lhs, Path const &rhs)
 {
-    lhs.close();
-    let offset = lhs.points.size();
+    required_assert(!lhs.isContourOpen());
+    required_assert(!rhs.isContourOpen());
 
-    lhs.endPoints.reserve(lhs.endPoints.size() + rhs.endPoints.size());
-    for (let x: rhs.endPoints) {
-        lhs.endPoints.push_back(offset + x);
+    // Left hand layer can only be open if the right hand side contains no layers.
+    required_assert(!rhs.hasLayers() || !lhs.isLayerOpen());
+
+    let pointOffset = lhs.points.size();
+    let contourOffset = lhs.contourEndPoints.size();
+
+    lhs.layerEndContours.reserve(lhs.layerEndContours.size() + rhs.layerEndContours.size());
+    for (let [x, fillColor]: rhs.layerEndContours) {
+        lhs.layerEndContours.emplace_back(contourOffset + x, fillColor);
+    }
+
+    lhs.contourEndPoints.reserve(lhs.contourEndPoints.size() + rhs.contourEndPoints.size());
+    for (let x: rhs.contourEndPoints) {
+        lhs.contourEndPoints.push_back(pointOffset + x);
     }
 
     lhs.points.insert(lhs.points.end(), rhs.points.begin(), rhs.points.end());
@@ -331,19 +427,45 @@ Path operator*(glm::mat3x3 const &lhs, Path rhs)
     return rhs *= lhs;
 }
 
+Path operator+(glm::vec2 const &lhs, Path rhs)
+{
+    return rhs += lhs;
+}
+
+Path operator+(Path lhs, glm::vec2 const &rhs)
+{
+    return lhs += rhs;
+}
+
+Path &operator+=(Path &lhs, glm::vec2 const &rhs)
+{
+    lhs.boundingBox += rhs;
+    lhs.leftSideBearing += rhs;
+    lhs.rightSideBearing += rhs;
+
+    for (auto &point: lhs.points) {
+        point += rhs;
+    }
+    return lhs;
+}
+
+
 void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation)
 {
+    required_assert(!path.hasLayers());
+    required_assert(!path.isContourOpen());
+
     let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
 
     auto curves = path.getBeziers();
     if (renderSubpixels) {
         curves = transform<std::vector<Bezier>>(curves, [](auto const &curve) {
             return curve * glm::vec2{3.0f, 1.0f};
-            });
+        });
     }
 
     auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
-    clear(mask);
+    fill(mask);
     Draw::fill(mask, curves);
 
     if (renderSubpixels) {
@@ -357,22 +479,15 @@ void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrienta
     }
 }
 
-void stroke(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle, SubpixelOrientation subpixelOrientation)
+void fill(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation)
 {
-    Path fillPath{};
-    fillPath.addPathToStroke(path, strokeWidth, lineJoinStyle);
-    fill(dst, color, fillPath, subpixelOrientation);
-}
+    required_assert(src.hasLayers() && !src.isLayerOpen());
 
-void stroke(
-    PixelMap<wsRGBA>& dst,
-    wsRGBA color,
-    Path const &mask,
-    float strokeWidth,
-    SubpixelOrientation subpixelOrientation
-)
-{
-    return stroke(dst, color, mask, strokeWidth, LineJoinStyle::Miter, subpixelOrientation);
+    for (size_t layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
+        let [layer, fillColor] = src.getLayer(layerNr);
+
+        fill(dst, fillColor, layer, subpixelOrientation);
+    }
 }
 
 }

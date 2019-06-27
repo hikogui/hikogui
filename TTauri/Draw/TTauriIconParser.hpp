@@ -8,10 +8,10 @@
 
 namespace TTauri::Draw {
 
-struct Drawing;
+struct Path;
 
-Drawing parseTTauriIcon(gsl::span<std::byte> bytes);
+Path parseTTauriIcon(gsl::span<std::byte> bytes);
 
-Drawing parseTTauriIcon(std::filesystem::path& path);
+Path parseTTauriIcon(std::filesystem::path& path);
 
 }

@@ -48,7 +48,7 @@ void ImageWidget::drawBackingImage()
     fill(linearMap, color, path3, Draw::SubpixelOrientation::RedRight);
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
-    copyLinearToGamma(fullPixelMap, linearMap);
+    fill(fullPixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
     backingImage->drawn = true;
 }

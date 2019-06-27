@@ -10,5 +10,4 @@
 #include "TTauri/Draw/PixelMap.inl"
 #include "TTauri/Draw/PNG.hpp"
 #include "TTauri/Draw/Fonts.hpp"
-#include "TTauri/Draw/Drawing.hpp"
 #include "TTauri/BinaryKey.hpp"

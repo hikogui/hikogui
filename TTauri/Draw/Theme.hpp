@@ -5,7 +5,7 @@
 
 #include "Font.hpp"
 #include "Path.hpp"
-#include "Glyphs.hpp"
+#include "PathString.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
 
@@ -31,7 +31,7 @@ struct Theme {
 
     std::vector<FontStyle> fontStyles;
 
-    Glyphs getGlyhs(gstring const &text, ThemeFontStyle font);
+    PathString getGlyhs(gstring const &text, ThemeFontStyle font);
     //void render(PixelMap<uint32_t> &pixels, gstring const &text, ThemeFontStyle font, float dpi, glm::vec2 position, float angle);
 
 	static void loadAllThemes(const std::filesystem::path &fontDirectory, const std::filesystem::path &iconDirectory);

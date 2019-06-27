@@ -12,14 +12,15 @@
 namespace TTauri::Draw {
 
 struct Bezier;
-struct Glyphs;
+struct PathString;
 struct Font;
 template<typename T> struct PixelMap;
 
 
 struct Path {
     std::vector<BezierPoint> points;
-    std::vector<size_t> endPoints;
+    std::vector<size_t> contourEndPoints;
+    std::vector<std::pair<size_t,wsRGBA>> layerEndContours;
 
     /*! Bounding box of the path.
      */
@@ -70,36 +71,75 @@ struct Path {
      */
     glm::vec2 advanceForGrapheme(size_t index) const;
 
-    /*! Return the number of closed sub-paths.
-     */
+    /*! Return the number of closed contours.
+    */
     size_t numberOfContours() const;
 
-    std::vector<BezierPoint> getBezierPointsOfContour(size_t subpathNr) const;
+    /*! Return the number of closed layers.
+    */
+    size_t numberOfLayers() const;
 
-    std::vector<Bezier> getBeziersOfContour(size_t subpathNr) const;
+    /*! Return an iterator to the start point of a contour.
+     */
+    std::vector<BezierPoint>::const_iterator beginContour(size_t contourNr) const;
+
+    /* Return and end-iterator beyond the end point of a contour.
+     */
+    std::vector<BezierPoint>::const_iterator endContour(size_t contourNr) const;
+
+    /* Return the first contour index of a layer.
+     */
+    size_t beginLayer(size_t layerNr) const;
+
+    /* Return beyond the last contour index of a layer.
+     */
+    size_t endLayer(size_t layerNr) const;
+
+    std::vector<BezierPoint> getBezierPointsOfContour(size_t contourNr) const;
+
+    std::vector<Bezier> getBeziersOfContour(size_t contourNr) const;
 
     std::vector<Bezier> getBeziers() const;
 
-    /*! Return true if there is an open sub-path.
-     */
-    bool hasCurrentPosition() const;
+    std::pair<Path,wsRGBA> getLayer(size_t layerNr) const;
 
-    /*! Get the currentPosition of the open sub-path.
-     * Returns {0, 0} when there is no sub-path open.
+    wsRGBA getColorOfLayer(size_t layerNr) const;
+
+    void setColorOfLayer(size_t layerNr, wsRGBA fillColor);
+
+    /*! Return true if there is an open contour.
+     */
+    bool isContourOpen() const;
+
+    /*! Close current contour.
+    * No operation if there is no open contour.
+    */
+    void closeContour();
+
+    /*! This path has layers.
+     */
+    bool hasLayers() const;
+
+    /*! Return true if there is an open layer.
+    */
+    bool isLayerOpen() const;
+
+    /*! Close current contour.
+    * No operation if there is no open layer.
+    */
+    void closeLayer(wsRGBA fillColor);
+
+    /*! Get the currentPosition of the open contour.
+     * Returns {0, 0} when there is no contour open.
      */
     glm::vec2 currentPosition() const;
 
-    /*! Close current sub-path.
-     * No operation if there is no open sub-path.
-     */
-    void close();
-
-    /*! Start a new sub-path at position.
+    /*! Start a new contour at position.
      * closes current subpath.
      */
     void moveTo(glm::vec2 position);
 
-    /*! Start a new sub-path relative to current position.
+    /*! Start a new contour relative to current position.
      * closes current subpath.
      */
     void moveRelativeTo(glm::vec2 direction);
@@ -144,18 +184,6 @@ struct Path {
      */
     void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f});
 
-    /*! Add text to the path.
-    */
-    void addText(Glyphs const &glyphs, glm::vec2 position);
-
-    /*! Add text to the path.
-    */
-    void addText(Glyphs const &glyphs, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment=VerticalAlignment::Base);
-
-    /*! Add text to the path.
-    */
-    void addText(Glyphs const &glyphs, Alignment alignment=Alignment::BaseLeft);
-
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
     */
@@ -164,21 +192,33 @@ struct Path {
     /*! Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
+    void addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end);
+
+    /*! Curve with the given bezier curve.
+    * The first anchor will be ignored.
+    */
     void addContour(std::vector<BezierPoint> const &contour);
 
-    /*! Add a path to stroke into this path.
+    /*! Add path and close layer.
+     */
+    void addPath(Path const &path, wsRGBA fillColor);
+
+    /*! Stroke a path and close layer.
+     */
+    void addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f);
+
+    /*! Convert path to stroke-path.
      *
      * This function will create contours that are offset from the original path
      * which creates a stroke. The path will first be subdivided until the curves
      * are mostly flat, then the curves are converted into lines and offset, then
      * the lines are connected to each other.
      *
-     * \param path path to stroke.
      * \param strokeWidth width of the stroke.
      * \param lineJoinStyle the style of how outside corners of a stroke are drawn.
      * \param tolerance Tolerance of how flat the curves in the path need to be.
      */
-    void addPathToStroke(Path const &path, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f);
+    Path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const;
 };
 
 Path operator+(Path lhs, Path const &rhs);
@@ -188,6 +228,12 @@ Path &operator+=(Path &lhs, Path const &rhs);
 Path operator*(glm::mat3x3 const &lhs, Path rhs);
 
 Path &operator*=(Path &lhs, glm::mat3x3 const &rhs);
+
+Path operator+(glm::vec2 const &lhs, Path rhs);
+
+Path operator+(Path lhs, glm::vec2 const &rhs);
+
+Path &operator+=(Path &lhs, glm::vec2 const &rhs);
 
 
 /*! Composit color onto the destination image where the mask is solid.
@@ -199,46 +245,14 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs);
  */
 void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation);
 
-/*! Composit color onto the destination image on the edges of the mask.
- *
- * This will internally create a new path; offset from the original mask, which in turn will
- * be filled.
- *
- * \param dst destination image.
- * \param color color to composit.
- * \param mask mask where the color will be composited on the destination.
- * \param strokeWidth the width of the edge of the mask.
- * \param lineJoinStyle the style of how outside corners of a stroke are drawn.
- * \param subpixel orientation to improve resolution on LCD displays.
- */
-void stroke(
-    PixelMap<wsRGBA>& dst,
-    wsRGBA color,
-    Path const &mask,
-    float strokeWidth=1.0f,
-    LineJoinStyle lineJoinStyle=LineJoinStyle::Miter,
-    SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown
-);
-
-/*! Composit color onto the destination image on the edges of the mask.
-*
-* This will internally create a new path; offset from the original mask, which in turn will
-* be filled.
+/*! Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
-* \param color color to composit.
 * \param mask mask where the color will be composited on the destination.
-* \param strokeWidth the width of the edge of the mask.
-* \param lineJoinStyle the style of how outside corners of a stroke are drawn.
 * \param subpixel orientation to improve resolution on LCD displays.
 */
-void stroke(
-    PixelMap<wsRGBA>& dst,
-    wsRGBA color,
-    Path const &mask,
-    float strokeWidth=1.0f,
-    SubpixelOrientation subpixelOrientation=SubpixelOrientation::Unknown
-);
+void fill(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation);
+
 
 
 }

@@ -317,7 +317,7 @@ static Path parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
     offset += numberOfContours * sizeof(uint16_t);
 
     for (let endPoint: endPoints) {
-        glyph.endPoints.push_back(endPoint.value());
+        glyph.contourEndPoints.push_back(endPoint.value());
     }
 
     let numberOfPoints = endPoints.at(numberOfContours - 1).value() + 1;

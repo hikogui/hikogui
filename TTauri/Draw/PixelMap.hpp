@@ -164,7 +164,7 @@ void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel);
 /*! Clear the pixels of this (sub)image.
  */
 template<typename T>
-void clear(PixelMap<T> &dst);
+void fill(PixelMap<T> &dst);
 
 /*! Fill with color.
  */
@@ -194,7 +194,7 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap);
 /*! Copy a image with linear 16bit-per-color-component to a
  * gamma corrected 8bit-per-color-component image.
  */
-void copyLinearToGamma(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src);
+void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src);
 
 /*! Composit the color `over` onto the image `under` based on the pixel mask.
  * Mask should be passed to subpixelFilter() before use.

@@ -27,14 +27,15 @@ struct BezierPoint {
      *  - The list of points will start with an anchor.
      *  - The list will close with the first anchor.
      */
-    static std::vector<BezierPoint> normalizePoints(std::vector<BezierPoint> originalPoints) {
+    static std::vector<BezierPoint> normalizePoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end) {
         std::vector<BezierPoint> r;
 
-        let numberOfPoints = static_cast<ptrdiff_t>(originalPoints.size());
-        for (ptrdiff_t i = 0; i < numberOfPoints; i++) {
-            let point = originalPoints[i];
-            let previousPoint = originalPoints[safe_modulo(i - 1, numberOfPoints)];
-            let previousPreviousPoint = originalPoints[safe_modulo(i - 2, numberOfPoints)];
+        required_assert((end - begin) >= 2);
+
+        auto previousPoint = *(end - 1);
+        auto previousPreviousPoint = *(end - 2);
+        for (auto i = begin; i != end; i++) {
+            let point = *i;
 
             switch (point.type) {
             case BezierPoint::Type::Anchor:
@@ -70,6 +71,9 @@ struct BezierPoint {
             default:
                 no_default;
             }
+
+            previousPreviousPoint = previousPoint;
+            previousPoint = point;
         }
 
         for (size_t i = 0; i < r.size(); i++) {
@@ -104,6 +108,11 @@ inline BezierPoint &operator*=(BezierPoint &lhs, glm::mat3x3 const &rhs) {
 
 inline BezierPoint operator+(BezierPoint const &lhs, glm::vec2 rhs) {
     return { lhs.p + rhs, lhs.type };
+}
+
+inline BezierPoint &operator+=(BezierPoint &lhs, glm::vec2 rhs) {
+    lhs.p += rhs;
+    return lhs;
 }
 
 }

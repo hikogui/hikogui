@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <exception>
+
 /*! Invariant should be the default for variables.
  * C++ does have an invariant but it requires you to enter the 'const' keyword which
  * is easy to forget. Using a single keyword 'let' for an invariant makes it easier to notice
@@ -10,6 +12,6 @@
  */
 #define let auto const
 
-#define required_assert(x) if (!(x)) { std::abort(); }
+#define required_assert(x) if (!(x)) { std::terminate(); }
 
-#define no_default { std::abort(); }
+#define no_default { std::terminate(); }

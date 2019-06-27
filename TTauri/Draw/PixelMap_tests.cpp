@@ -37,14 +37,14 @@ TEST(PixelMapTests, rotate270) {
 
 TEST(PixelMapTests, renderMaskFromPath) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    clear(mask);
+    fill(mask);
 
     auto path = Path();
     path.moveTo({1, 1});
     path.lineTo({2, 1});
     path.lineTo({2, 2});
     path.lineTo({1, 2});
-    path.close();
+    path.closeContour();
 
     auto beziers = path.getBeziers();
     for (auto &&bezier: beziers) {
@@ -83,13 +83,13 @@ TEST(PixelMapTests, renderMaskFromPath) {
 
 TEST(PixelMapTests, maskComposit) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    clear(mask);
+    fill(mask);
     mask[1][3] = 255;
     mask[1][4] = 255;
     mask[1][5] = 255;
 
     auto image = PixelMap<wsRGBA>(3, 3);
-    clear(image);
+    fill(image);
 
     let transparent = wsRGBA{ 0.0, 0.0, 0.0, 0.0 };
     let white = wsRGBA{ 1.0, 1.0, 1.0, 1.0 };
@@ -108,13 +108,13 @@ TEST(PixelMapTests, maskComposit) {
 
 TEST(PixelMapTests, maskComposit2) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    clear(mask);
+    fill(mask);
     mask[1][3] = 255;
     mask[1][4] = 255;
     mask[1][5] = 255;
 
     auto image = PixelMap<wsRGBA>(3, 3);
-    clear(image);
+    fill(image);
 
     let color = wsRGBA{ 0.25, 0.50, 0.75, 1.0 };
     subpixelComposit(image, color, mask);
@@ -124,13 +124,13 @@ TEST(PixelMapTests, maskComposit2) {
 
 TEST(PixelMapTests, maskComposit3) {
     auto mask = PixelMap<uint8_t>(9, 3);
-    clear(mask);
+    fill(mask);
     mask[1][3] = 0x88;
     mask[1][4] = 0x44;
     mask[1][5] = 0x22;
 
     auto image = PixelMap<wsRGBA>(3, 3);
-    clear(image);
+    fill(image);
 
     let white = wsRGBA{ 1.0, 1.0, 1.0, 1.0 };
     subpixelComposit(image, white, mask);

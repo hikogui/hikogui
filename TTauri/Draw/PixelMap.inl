@@ -57,7 +57,7 @@ inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) {
 }
 
 template<typename T>
-inline void clear(PixelMap<T> &dst)
+inline void fill(PixelMap<T> &dst)
 {
     for (size_t rowNr = 0; rowNr < dst.height; rowNr++) {
         auto row = dst.at(rowNr);
