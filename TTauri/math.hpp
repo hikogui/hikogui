@@ -134,7 +134,14 @@ using results2 = results<float,2>;
 using results3 = results<float,3>;
 
 /*! Solve line function.
- * a*x + b = 0;
+ * ax+b=0
+ *
+ * x=
+ * \begin{cases}
+ *  \frac{-b}{a}, & \text{if } a\ne0\\
+ *  \in\mathbb{R}, & \text{if } a=0,b=0\\
+ *  \o & \text{if } a=0,b\ne0
+ * \end{cases}
  */
 inline results1 solveLinear(float const a, float const b) {
     if (a != 0.0f) {
@@ -149,7 +156,15 @@ inline results1 solveLinear(float const a, float const b) {
 }
 
 /*! Solve quadratic function.
- * ax*x + bx + c = 0
+ * ax^{2}+bx+c=0
+ *
+ * D=b^{2}-4ac\\
+ * x=
+ * \begin{cases}
+ * \frac{-b}{2a}, & \text{if } D=0\\
+ * \frac{-b -\sqrt{D}}{2a}, \frac{-b +\sqrt{D}}{2a} & \text{if } D>0\\
+ * \o & \text{if } D<0
+ * \end{cases}
  */
 inline results2 solveQuadratic(float const a, float const b, float const c) {
     if (a == 0.0f) {
@@ -191,7 +206,18 @@ inline results3 solveDepressedCubicCardano(float const p, float const q, float c
 }
 
 /*! Solve cubic function in the form.
- * t*t*t + p*t + q = 0
+ * t^{3}+pt+q=0
+ *
+ * D=\frac{1}{4}q^{2}+\frac{1}{27}p^{3}\\
+ * U=\frac{1}{3}\arccos(\frac{3q}{2p})\sqrt{-\frac{3}{p}}\\
+ * V=2\sqrt{-\frac{1}{3}p}\\
+ * x=
+ * \begin{cases}
+ * 0 & \text{if } p=0 \text{ and }q=0\\
+ * \frac{3q}{p}, -\frac{3q}{2p} & \text{if } D=0\\
+ * \sqrt[3]{-\frac{1}{2}+\sqrt{D}} + \sqrt[3]{-\frac{1}{2}-\sqrt{D}} & \text{if } D>0\\
+ * V\cdot \cos(U), V\cdot\cos(U-\frac{2}{3}\pi),V\cdot\cos(U-\frac{4}{3}\pi) & \text{if } D<0
+ * \end{cases}
  */
 inline results3 solveDepressedCubic(float p, float q) {
     if (p != 0.0f || q != 0.0f) {
@@ -217,7 +243,12 @@ inline results3 solveDepressedCubic(float p, float q) {
 }
 
 /*! Solve cubic function.
- * a*x*x*x + b*x*x + c*x + d = 0
+ * ax^{3}+bx^{2}+cx+d=0
+ *
+ * p=\frac{3ac-b^{2}}{3a^{2}},
+ * q=\frac{2b^{3}-9abc+27a^{2}d}{27a^{3}}\\
+ * \\
+ * x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}
  */
 inline results3 solveCubic(float a, float b, float c, float d) {
     if (a == 0.0f) {

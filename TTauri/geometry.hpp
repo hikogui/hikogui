@@ -124,11 +124,13 @@ inline glm::vec2 normal(glm::vec2 const a)
 }
 
 
+// B(t)=(P_{2}-P_{1})t+P_{1}
 inline glm::vec2 bezierPointAt(glm::vec2 P1, glm::vec2 P2, float t) {
     let v = P2 - P1;
     return v * t + P1;
 }
 
+// B(t)=(P_{1}-2C+P_{2})t^{2}+2(C-P_{1})t+P_{1}
 inline glm::vec2 bezierPointAt(glm::vec2 P1, glm::vec2 C, glm::vec2 P2, float t)
 {
     let a = P1 - C * 2.0f + P2;
@@ -137,6 +139,7 @@ inline glm::vec2 bezierPointAt(glm::vec2 P1, glm::vec2 C, glm::vec2 P2, float t)
     return a*t*t + b*t + c;
 }
 
+// B(t)=(-P_{1} + 3C_{1}-3C_{2}+P_{2})t^{3} +(3P_{1}-6C_{1}+3C_{2})t^{2}+(-3P_{1}+3C_{1})t+P_{1}
 inline glm::vec2 bezierPointAt(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2, float t)
 {
     let a = -P1 + C1 * 3.0f - C2 * 3.0f + P2;
