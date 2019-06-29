@@ -77,7 +77,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
 #pragma warning(suppress: 6001)
-    let rectangle = rect2{{1.0f, 1.0f}, { static_cast<float>(image.extent.width()) - 2.0f, static_cast<float>(image.extent.height()) - 2.0f }};
+    let rectangle = rect2{{2.0f, 2.0f}, { static_cast<float>(image.extent.width()) - 4.0f, static_cast<float>(image.extent.height()) - 4.0f }};
     let labelLocation = midpoint(rectangle);
     //let labelLocation = glm::vec2{0.0, 0.0};
 
@@ -86,7 +86,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     auto buttonPath = Draw::Path();
     buttonPath.addRectangle(rectangle, backgroundShape);
     drawing.addPath(buttonPath, backgroundColor);
-    drawing.addStroke(buttonPath, borderColor, 2.0);
+    //drawing.addStroke(buttonPath, borderColor, 2.0);
 
     let labelGlyphs = Draw::Alignment::MiddleCenter + T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
     drawing += labelGlyphs.toPath(labelColor);

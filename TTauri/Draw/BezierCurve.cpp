@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Bezier.hpp"
+#include "BezierCurve.hpp"
 #include "BezierPoint.hpp"
 #include "PixelMap.inl"
 #include "TTauri/utils.hpp"
@@ -9,13 +9,13 @@
 
 namespace TTauri::Draw {
 
-std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end)
+std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end)
 {
     let points = BezierPoint::normalizePoints(begin, end);
 
-    std::vector<Bezier> r;
+    std::vector<BezierCurve> r;
 
-    auto type = Bezier::Type::None;
+    auto type = BezierCurve::Type::None;
     auto P1 = glm::vec2{};
     auto C1 = glm::vec2{};
     auto C2 = glm::vec2{};
@@ -24,24 +24,24 @@ std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint>::const_iterat
         switch (point.type) {
         case BezierPoint::Type::Anchor:
             switch (type) {
-            case Bezier::Type::None:
+            case BezierCurve::Type::None:
                 P1 = point.p;
-                type = Bezier::Type::Linear;
+                type = BezierCurve::Type::Linear;
                 break;
-            case Bezier::Type::Linear:
+            case BezierCurve::Type::Linear:
                 r.emplace_back(P1, point.p);
                 P1 = point.p;
-                type = Bezier::Type::Linear;
+                type = BezierCurve::Type::Linear;
                 break;
-            case Bezier::Type::Quadratic:
+            case BezierCurve::Type::Quadratic:
                 r.emplace_back(P1, C1, point.p);
                 P1 = point.p;
-                type = Bezier::Type::Linear;
+                type = BezierCurve::Type::Linear;
                 break;
-            case Bezier::Type::Cubic:
+            case BezierCurve::Type::Cubic:
                 r.emplace_back(P1, C1, C2, point.p);
                 P1 = point.p;
-                type = Bezier::Type::Linear;
+                type = BezierCurve::Type::Linear;
                 break;
             default:
                 no_default;
@@ -49,15 +49,15 @@ std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint>::const_iterat
             break;
         case BezierPoint::Type::QuadraticControl:
             C1 = point.p;
-            type = Bezier::Type::Quadratic;
+            type = BezierCurve::Type::Quadratic;
             break;
         case BezierPoint::Type::CubicControl1:
             C1 = point.p;
-            type = Bezier::Type::Cubic;
+            type = BezierCurve::Type::Cubic;
             break;
         case BezierPoint::Type::CubicControl2:
             C2 = point.p;
-            required_assert(type == Bezier::Type::Cubic);
+            required_assert(type == BezierCurve::Type::Cubic);
             break;
         default:
             no_default;
@@ -67,9 +67,9 @@ std::vector<Bezier> makeContourFromPoints(std::vector<BezierPoint>::const_iterat
     return r;
 }
 
-std::vector<Bezier> makeInverseContour(std::vector<Bezier> const &contour)
+std::vector<BezierCurve> makeInverseContour(std::vector<BezierCurve> const &contour)
 {
-    auto r = std::vector<Bezier>{};
+    auto r = std::vector<BezierCurve>{};
     r.reserve(contour.size());
 
     for (auto i = contour.rbegin(); i != contour.rend(); i++) {
@@ -79,9 +79,9 @@ std::vector<Bezier> makeInverseContour(std::vector<Bezier> const &contour)
     return r;
 }
 
-std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance)
+std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance)
 {
-    auto contourAtOffset = std::vector<Bezier>{};
+    auto contourAtOffset = std::vector<BezierCurve>{};
     for (let &curve: contour) {
         for (let &flatCurve: curve.subdivideUntilFlat(tolerance)) {
             contourAtOffset.push_back(flatCurve.toParrallelLine(offset));
@@ -91,7 +91,7 @@ std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, flo
     // The resulting path now consists purely of line-segments that may have gaps and overlaps.
     // This needs to be repaired.
     std::optional<glm::vec2> intersectPoint;
-    auto r = std::vector<Bezier>{};
+    auto r = std::vector<BezierCurve>{};
     for (let &curve: contourAtOffset) {
         if (r.size() == 0) {
             r.push_back(curve);
@@ -128,7 +128,7 @@ std::vector<Bezier> makeParrallelContour(std::vector<Bezier> const &contour, flo
     return r;
 }
 
-static std::vector<float> solveCurvesXByY(std::vector<Bezier> const &v, float y) {
+static std::vector<float> solveCurvesXByY(std::vector<BezierCurve> const &v, float y) {
     std::vector<float> r;
     r.reserve(v.size());
 
@@ -141,7 +141,9 @@ static std::vector<float> solveCurvesXByY(std::vector<Bezier> const &v, float y)
     return r;
 }
 
-static std::vector<std::pair<float, float>> getFillSpansAtY(std::vector<Bezier> const &v, float y) {
+
+static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::vector<BezierCurve> const &v, float y)
+{
     auto xValues = solveCurvesXByY(v, y);
 
     // Sort x values, each pair is a span.
@@ -152,7 +154,12 @@ static std::vector<std::pair<float, float>> getFillSpansAtY(std::vector<Bezier> 
 
     // After removing duplicates, we should end up with pairs of x values.
     size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
-    assert(uniqueValueCount % 2 == 0);
+
+    if (uniqueValueCount % 2 != 0) {
+        // Something is wrong in solving the curves. Probably numeric instability.
+        // In any case, just ignore this sample.
+        return {};
+    }
 
     // Create pairs of values.
     auto r = std::vector<std::pair<float, float>>{};
@@ -230,24 +237,27 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
     }
 }
 
-static void fillSubRow(PixelRow<uint8_t> row, float rowY, std::vector<Bezier> const& curves)
-{
-    let spans = getFillSpansAtY(curves, rowY);
-
-    for (let &span: spans) {
-        fillRowSpan(row, span.first, span.second);
-    }
-}
-
-static void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<Bezier> const& curves)
+static void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<BezierCurve> const& curves)
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
-        fillSubRow(row, y, curves);
+        auto optionalSpans = getFillSpansAtY(curves, y);
+        if (!optionalSpans) {
+            // try again, with a slight offset.
+            optionalSpans = getFillSpansAtY(curves, y + 0.01f);
+        }
+
+        if (optionalSpans) {
+            let &spans = optionalSpans.value();
+
+            for (let &span: spans) {
+                fillRowSpan(row, span.first, span.second);
+            }
+        }
     }
 }
 
-void fill(PixelMap<uint8_t> &image, std::vector<Bezier> const &curves)
+void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves)
 {
     for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);

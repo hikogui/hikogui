@@ -11,7 +11,7 @@
 #include "Path.hpp"
 #include "PixelMap.hpp"
 #include "PNG.hpp"
-#include "Bezier.hpp"
+#include "BezierCurve.hpp"
 #include "PixelMap.inl"
 #include "Theme.hpp"
 #include "TrueTypeParser.hpp"

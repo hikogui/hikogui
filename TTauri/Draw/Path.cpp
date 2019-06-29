@@ -3,7 +3,7 @@
 
 #include "Path.hpp"
 #include "PixelMap.inl"
-#include "Bezier.hpp"
+#include "BezierCurve.hpp"
 #include "PathString.hpp"
 #include "Font.hpp"
 #include "PixelMap.hpp"
@@ -87,16 +87,16 @@ std::vector<BezierPoint> Path::getBezierPointsOfContour(size_t subpathNr) const
     return std::vector(begin, end);
 }
 
-std::vector<Bezier> Path::getBeziersOfContour(size_t contourNr) const
+std::vector<BezierCurve> Path::getBeziersOfContour(size_t contourNr) const
 {
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
 
-std::vector<Bezier> Path::getBeziers() const
+std::vector<BezierCurve> Path::getBeziers() const
 {
     required_assert(!hasLayers());
 
-    std::vector<Bezier> r;
+    std::vector<BezierCurve> r;
 
     for (auto contourNr = 0; contourNr < numberOfContours(); contourNr++) {
         let beziers = getBeziersOfContour(contourNr);
@@ -313,21 +313,21 @@ void Path::addContour(std::vector<BezierPoint> const &contour)
     addContour(contour.begin(), contour.end());
 }
 
-void Path::addContour(std::vector<Bezier> const &contour)
+void Path::addContour(std::vector<BezierCurve> const &contour)
 {
     required_assert(!isContourOpen());
 
     for (let &curve: contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
         switch (curve.type) {
-        case Bezier::Type::Linear:
+        case BezierCurve::Type::Linear:
             points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
             break;
-        case Bezier::Type::Quadratic:
+        case BezierCurve::Type::Quadratic:
             points.emplace_back(curve.C1, BezierPoint::Type::QuadraticControl);
             points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
             break;
-        case Bezier::Type::Cubic:
+        case BezierCurve::Type::Cubic:
             points.emplace_back(curve.C1, BezierPoint::Type::CubicControl1);
             points.emplace_back(curve.C2, BezierPoint::Type::CubicControl2);
             points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
@@ -459,7 +459,7 @@ void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrienta
 
     auto curves = path.getBeziers();
     if (renderSubpixels) {
-        curves = transform<std::vector<Bezier>>(curves, [](auto const &curve) {
+        curves = transform<std::vector<BezierCurve>>(curves, [](auto const &curve) {
             return curve * glm::vec2{3.0f, 1.0f};
         });
     }

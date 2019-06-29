@@ -11,7 +11,7 @@
 
 namespace TTauri::Draw {
 
-struct Bezier;
+struct BezierCurve;
 struct PathString;
 struct Font;
 template<typename T> struct PixelMap;
@@ -97,9 +97,9 @@ struct Path {
 
     std::vector<BezierPoint> getBezierPointsOfContour(size_t contourNr) const;
 
-    std::vector<Bezier> getBeziersOfContour(size_t contourNr) const;
+    std::vector<BezierCurve> getBeziersOfContour(size_t contourNr) const;
 
-    std::vector<Bezier> getBeziers() const;
+    std::vector<BezierCurve> getBeziers() const;
 
     std::pair<Path,wsRGBA> getLayer(size_t layerNr) const;
 
@@ -187,7 +187,7 @@ struct Path {
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<Bezier> const &contour);
+    void addContour(std::vector<BezierCurve> const &contour);
 
     /*! Curve with the given bezier curve.
     * The first anchor will be ignored.
