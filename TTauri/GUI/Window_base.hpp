@@ -102,10 +102,6 @@ public:
         return state == State::NO_WINDOW;
     }
 
-    BoxModel &box() {
-        return widget->box;
-    }
-
     rhea::solver& addConstraint(rhea::constraint const& constraint) {
         auto &r = widgetSolver.add_constraint(constraint);
         calculateMinimumAndMaximumWindowExtent();
@@ -196,7 +192,7 @@ private:
     void addCurrentWindowExtentConstraints() {
         if (!currentWindowExtentConstraintActive) {
             auto widthEquation = widget->box.width == currentWindowExtent.width();
-            auto heightEquation = widget->box.width == currentWindowExtent.width();
+            auto heightEquation = widget->box.height == currentWindowExtent.height();
 
             currentWindowExtentWidthConstraint = rhea::constraint(widthEquation, rhea::strength::weak(), 1.0);
             currentWindowExtentHeightConstraint = rhea::constraint(heightEquation, rhea::strength::weak(), 1.0);

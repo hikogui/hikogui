@@ -9,6 +9,8 @@
 
 namespace TTauri::GUI {
 
+class ToolbarWidget;
+
 class WindowWidget : public Widget {
 public:
     enum class Type {
@@ -17,15 +19,19 @@ public:
         FULLSCREEN,
     };
 
+    ToolbarWidget *toolbar;
+
     wsRGBA backgroundColor;
 
-    WindowWidget(const std::weak_ptr<Window> window);
+    WindowWidget();
     ~WindowWidget(){};
 
     WindowWidget(const WindowWidget&) = delete;
     WindowWidget &operator=(const WindowWidget&) = delete;
     WindowWidget(WindowWidget&&) = delete;
     WindowWidget &operator=(WindowWidget&&) = delete;
+
+    void setParent(Window *window);
 };
 
 }

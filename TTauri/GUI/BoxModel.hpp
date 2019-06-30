@@ -14,10 +14,10 @@ struct BoxModel {
     float rightPadding = 0.0;
     float bottomPadding = 0.0;
     float topPadding = 0.0;
-    float leftMargin = 10.0;
-    float bottomMargin = 10.0;
-    float rightMargin = 10.0;
-    float topMargin = 10.0;
+    float leftMargin = 0.0;
+    float bottomMargin = 0.0;
+    float rightMargin = 0.0;
+    float topMargin = 0.0;
 
     mutable rhea::variable left;
     mutable rhea::variable bottom;

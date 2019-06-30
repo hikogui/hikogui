@@ -27,9 +27,9 @@ namespace TTauri::GUI {
 class Widget : public std::enable_shared_from_this<Widget>, public PipelineImage::Delegate {
 public:
     //! Convenient reference to the Window.
-    std::weak_ptr<Window> window;
+    Window *window;
 
-    std::weak_ptr<Widget> parent;
+    Widget *parent;
 
     std::vector<std::shared_ptr<Widget>> children;
 
@@ -57,7 +57,7 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
-    virtual void setParent(const std::shared_ptr<Widget> &parent);
+    virtual void setParent(Widget *parent);
 
     virtual void add(std::shared_ptr<Widget> widget);
 

@@ -22,3 +22,4 @@
 #include "Window.hpp"
 #include "WindowDelegate.hpp"
 #include "WindowWidget.hpp"
+#include "ToolbarWidget.hpp"

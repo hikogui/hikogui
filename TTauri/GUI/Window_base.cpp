@@ -37,8 +37,9 @@ void Window_base::initialize()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto window = std::dynamic_pointer_cast<Window>(shared_from_this());
-    widget = TTauri::make_shared<WindowWidget>(window);
+    Window *thisWindow = dynamic_cast<Window *>(this);
+    widget = TTauri::make_shared<WindowWidget>();
+    widget->setParent(thisWindow);
 
     openingWindow();
 }

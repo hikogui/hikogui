@@ -14,18 +14,18 @@ Widget::Widget()
 
 std::shared_ptr<Device> Widget::device()
 {
-    return window.lock()->device.lock();
+    return window->device.lock();
 }
 
-void Widget::setParent(const std::shared_ptr<Widget> &parent)
+void Widget::setParent(Widget *parent)
 {
     this->window = parent->window;
-    this->parent = move(parent);
+    this->parent = parent;
 }
 
 void Widget::add(std::shared_ptr<Widget> widget)
 {
-    widget->setParent(shared_from_this());
+    widget->setParent(this);
     children.push_back(move(widget));
 }
 
@@ -68,7 +68,7 @@ void Widget::handleMouseEvent(MouseEvent const event) {
             return widget->handleMouseEvent(event);
         }
     }
-    window.lock()->setCursor(Cursor::Default);
+    window->setCursor(Cursor::Default);
 }
 
 }

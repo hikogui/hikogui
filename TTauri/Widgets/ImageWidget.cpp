@@ -26,7 +26,7 @@ void ImageWidget::drawBackingImage()
     auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<wsRGBA>{ backingImage->extent };
-    fill(linearMap, wsRGBA{0x0000'0000'0000'ffffULL});
+    fill(linearMap, wsRGBA{ 0x000000ff });
 
     // Draw image in the fullPixelMap.
     // XXX This probably should allocate a PixelMap and add it to this class.

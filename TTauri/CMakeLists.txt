@@ -55,6 +55,8 @@ set(TTauri_srcs
     GUI/Window_vulkan_win32.cpp
     GUI/Widget.cpp
     GUI/WindowWidget.cpp
+    GUI/ToolbarWidget.cpp
+    GUI/WindowDecorationWidget.cpp
     Widgets/ImageWidget.cpp
     Widgets/ButtonWidget.cpp
     Application_base.cpp

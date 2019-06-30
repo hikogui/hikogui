@@ -24,9 +24,9 @@ public:
         window.widget->add(button1);
         window.addConstraint(button1->box.width == 100);
         window.addConstraint(button1->box.height == 30);
-        window.addConstraint(button1->box.outerLeft() == window.box().left);
-        window.addConstraint(button1->box.outerBottom() == window.box().bottom);
-        window.addConstraint(button1->box.outerTop() <= window.box().top());
+        window.addConstraint(button1->box.outerLeft() == window.widget->box.left);
+        window.addConstraint(button1->box.outerBottom() == window.widget->box.bottom);
+        window.addConstraint(button1->box.outerTop() <= window.widget->toolbar->box.bottom);
 
         auto button2 = TTauri::make_shared<Widgets::ButtonWidget>(u8"Foo Bar");
         window.widget->add(button2);
@@ -34,9 +34,9 @@ public:
         window.addConstraint(button2->box.width <= 1500);
         window.addConstraint(button2->box.height == 30);
         window.addConstraint(button2->box.outerLeft() == button1->box.right());
-        window.addConstraint(button2->box.outerBottom() == window.box().bottom);
-        window.addConstraint(button2->box.outerRight() == window.box().right());
-        window.addConstraint(button2->box.outerTop() <= window.box().top());
+        window.addConstraint(button2->box.outerBottom() == window.widget->box.bottom);
+        window.addConstraint(button2->box.outerRight() == window.widget->box.right());
+        window.addConstraint(button2->box.outerTop() <= window.widget->toolbar->box.bottom);
     }
 
     void closingWindow(const GUI::Window &window) override
