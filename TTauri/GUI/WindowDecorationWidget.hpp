@@ -28,7 +28,7 @@ public:
 
     std::shared_ptr<PipelineImage::Image> image;
 
-    WindowDecorationWidget(Draw::Alignment alignment);
+    WindowDecorationWidget(Draw::Alignment);
     ~WindowDecorationWidget() {}
 
     WindowDecorationWidget(const WindowDecorationWidget &) = delete;

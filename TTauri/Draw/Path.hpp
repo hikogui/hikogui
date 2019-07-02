@@ -184,6 +184,12 @@ struct Path {
      */
     void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f});
 
+    /*! Draw a circle.
+    * \param position position of the center of the circle.
+    * \param radius radius of the circle
+    */
+    void addCircle(glm::vec2 position, float radius);
+
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
     */

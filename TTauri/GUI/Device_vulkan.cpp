@@ -315,7 +315,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface)
     for (auto format : formats) {
         uint32_t score = 0;
 
-        LOG_INFO("    * colorSpace=%s, format=%s", vk::to_string(format.colorSpace), vk::to_string(format.format));
+        LOG_INFO("    * Found colorSpace=%s, format=%s", vk::to_string(format.colorSpace), vk::to_string(format.format));
 
         switch (format.colorSpace) {
         case vk::ColorSpaceKHR::eSrgbNonlinear: score += 1; break;
@@ -324,14 +324,22 @@ int Device_vulkan::score(vk::SurfaceKHR surface)
         }
 
         switch (format.format) {
-        case vk::Format::eR8G8B8A8Unorm: score += 2; break;
-        case vk::Format::eB8G8R8A8Unorm: score += 2; break;
         case vk::Format::eR16G16B16A16Sfloat: score += 12; break;
-        case vk::Format::eR8G8B8Unorm: score += 1; break;
         case vk::Format::eR16G16B16Sfloat: score += 11; break;
-        case vk::Format::eUndefined: score += 2; break;
+
+        case vk::Format::eR8G8B8A8Srgb: score += 4; break;
+        case vk::Format::eB8G8R8A8Srgb: score += 4; break;
+        case vk::Format::eR8G8B8Srgb: score += 3; break;
+        case vk::Format::eB8G8R8Srgb: score += 3; break;
+
+        case vk::Format::eB8G8R8A8Unorm: score += 2; break;
+        case vk::Format::eR8G8B8A8Unorm: score += 2; break;
+        case vk::Format::eB8G8R8Unorm: score += 1; break;
+        case vk::Format::eR8G8B8Unorm: score += 1; break;
         default: continue;
         }
+
+        LOG_INFO("    * Valid colorSpace=%s, format=%s, score=%d", vk::to_string(format.colorSpace), vk::to_string(format.format), score);
 
         if (score > bestSurfaceFormatScore) {
             bestSurfaceFormatScore = score;
@@ -339,6 +347,13 @@ int Device_vulkan::score(vk::SurfaceKHR surface)
         }
     }
     auto totalScore = bestSurfaceFormatScore;
+    LOG_INFO("    * bestColorSpace=%s, bestFormat=%s, score=%d",
+        vk::to_string(bestSurfaceFormat.colorSpace),
+        vk::to_string(bestSurfaceFormat.format),
+        bestSurfaceFormatScore
+    );
+
+
 
     if (bestSurfaceFormatScore == 0) {
         LOG_INFO(" - Does not have a suitable surface format.");

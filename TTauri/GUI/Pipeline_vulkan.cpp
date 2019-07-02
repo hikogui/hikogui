@@ -227,6 +227,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         VK_FALSE // alphaToOneEnable
     };
 
+    /* Pre-multiplied alpha blending.
     const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
         VK_TRUE, // blendEnable
         vk::BlendFactor::eOne, // srcColorBlendFactor
@@ -234,6 +235,18 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         vk::BlendOp::eAdd, // colorBlendOp
         vk::BlendFactor::eOne, // srcAlphaBlendFactor
         vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
+        vk::BlendOp::eAdd, // aphaBlendOp
+        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+    } };
+    */
+
+    const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
+        VK_TRUE, // blendEnable
+        vk::BlendFactor::eSrcAlpha, // srcColorBlendFactor
+        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
+        vk::BlendOp::eAdd, // colorBlendOp
+        vk::BlendFactor::eOne, // srcAlphaBlendFactor
+        vk::BlendFactor::eOne, // dstAlphaBlendFactor
         vk::BlendOp::eAdd, // aphaBlendOp
         vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
     } };
@@ -351,7 +364,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     auto _window = window.lock();
 
-    let backgroundColor = wsRGBA(_window->widget->backgroundColor).to_sRGBA_vec4();
+    let backgroundColor = wsRGBA(_window->widget->backgroundColor).to_Linear_sRGBA_vec4();
     std::array<float, 4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
     std::array<vk::ClearValue, 1> const clearColors = { { _backgroundColor } };
 

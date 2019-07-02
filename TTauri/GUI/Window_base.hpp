@@ -37,6 +37,12 @@ public:
         WINDOW_LOST, //!< The window was destroyed, need to cleanup.
     };
 
+    enum class Size {
+        NORMAL,
+        MINIMIZED,
+        MAXIMIZED
+    };
+
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
     State state = State::NO_DEVICE;
@@ -50,6 +56,15 @@ public:
      * is false again.
      */
     bool resizing = false;
+
+    /*! The window is currently active.
+     * Widgets may want to reduce redraws, or change colors.
+     */
+    bool active = false;
+
+    /*! Current size state of the window.
+     */
+    Size size = Size::NORMAL;
 
     std::shared_ptr<WindowDelegate> delegate;
 
@@ -115,6 +130,12 @@ public:
     }
 
     virtual void setCursor(Cursor cursor) = 0;
+
+    virtual void closeWindow() = 0;
+
+    virtual void minimizeWindow() = 0;
+    virtual void maximizeWindow() = 0;
+    virtual void normalizeWindow() = 0;
 
 protected:
     /*! The current rectangle which has been set by the operating system.

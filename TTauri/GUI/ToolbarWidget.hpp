@@ -15,12 +15,13 @@ struct Vertex;
 }
 
 class WindowDecorationWidget;
+class WindowTrafficLightsWidget;
 
 class ToolbarWidget : public Widget {
 public:
     std::shared_ptr<PipelineImage::Image> backingImage;
 
-    WindowDecorationWidget *leftDecorationWidget = nullptr;
+    WindowTrafficLightsWidget *leftDecorationWidget = nullptr;
     WindowDecorationWidget *rightDecorationWidget = nullptr;
 
     ToolbarWidget();

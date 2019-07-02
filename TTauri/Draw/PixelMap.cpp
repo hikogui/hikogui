@@ -47,7 +47,7 @@ void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
         let srcRow = src.at(rowNr);
         auto dstRow = dst.at(rowNr);
         for (size_t columnNr = 0; columnNr < src.width; columnNr++) {
-            dstRow[columnNr] = boost::endian::native_to_big(srcRow[columnNr].to_sRGBApm_u32());
+            dstRow[columnNr] = boost::endian::native_to_big(srcRow[columnNr].to_sRGBA_u32());
         }
     }
 }

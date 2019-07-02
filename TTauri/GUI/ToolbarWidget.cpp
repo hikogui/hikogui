@@ -3,6 +3,7 @@
 
 #include "ToolbarWidget.hpp"
 #include "WindowDecorationWidget.hpp"
+#include "WindowTrafficLightsWidget.hpp"
 #include "PipelineImage_Image.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "Device.hpp"
@@ -25,7 +26,7 @@ void ToolbarWidget::setParent(Widget *parent)
 {
     Widget::setParent(parent);
 
-    auto _leftDecorationWidget = make_shared<WindowDecorationWidget>(Draw::Alignment::TopLeft);
+    auto _leftDecorationWidget = make_shared<WindowTrafficLightsWidget>();
     add(_leftDecorationWidget);
     leftDecorationWidget = _leftDecorationWidget.get();
 
@@ -49,7 +50,7 @@ void ToolbarWidget::drawBackingImage()
     auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<wsRGBA>{ backingImage->extent };
-    fill(linearMap, wsRGBA{ 0x00000022 });
+    fill(linearMap, wsRGBA{ 0x00000000 });
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     fill(fullPixelMap, linearMap);

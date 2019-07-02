@@ -7,6 +7,10 @@
 #include <unordered_map>
 #include <Windows.h>
 
+namespace TTauri {
+class Application_win32;
+}
+
 namespace TTauri::GUI {
 
 class Window_vulkan_win32 final : public Window_vulkan {
@@ -22,9 +26,7 @@ public:
     Window_vulkan_win32 &operator=(Window_vulkan_win32 &&) = delete;
 
     void closingWindow() override;
-    void mainThreadClosingWindow();
     void openingWindow() override;
-    void mainThreadOpeningWindow();
 
     void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 extent);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -61,11 +63,31 @@ public:
         }
     }
 
+    void closeWindow() override;
+
+    void minimizeWindow() override;
+
+    void maximizeWindow() override;
+
+    void normalizeWindow() override;
 
 private:
+    void mainThreadClosingWindow();
+    void mainThreadOpeningWindow();
+
+    void mainThreadCloseWindow();
+    void mainThreadMinimizeWindow();
+    void mainThreadMaximizeWindow();
+    void mainThreadNormalizeWindow();
+
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
 
     static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+    /*! The application class will function as a main-thread trampoline for this class
+     * methods that start with `mainThread`.
+     */
+    friend TTauri::Application_win32;
 };
 }

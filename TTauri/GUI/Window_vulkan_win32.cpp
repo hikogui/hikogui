@@ -102,6 +102,58 @@ Window_vulkan_win32::~Window_vulkan_win32()
     }
 }
 
+void Window_vulkan_win32::closeWindow()
+{
+    // Don't lock mutex, no members of this are being accessed.
+    PostThreadMessageW(application->mainThreadID, WM_APP_CLOSE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+}
+
+void Window_vulkan_win32::mainThreadCloseWindow()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    DestroyWindow(win32Window);
+}
+
+void Window_vulkan_win32::minimizeWindow()
+{
+    // Don't lock mutex, no members of this are being accessed.
+    PostThreadMessageW(application->mainThreadID, WM_APP_MINIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+}
+
+void Window_vulkan_win32::mainThreadMinimizeWindow()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    ShowWindow(win32Window, SW_MINIMIZE);
+}
+
+void Window_vulkan_win32::maximizeWindow()
+{
+    // Don't lock mutex, no members of this are being accessed.
+    PostThreadMessageW(application->mainThreadID, WM_APP_MAXIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+}
+
+void Window_vulkan_win32::mainThreadMaximizeWindow()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    ShowWindow(win32Window, SW_MAXIMIZE);
+}
+
+void Window_vulkan_win32::normalizeWindow()
+{
+    // Don't lock mutex, no members of this are being accessed.
+    PostThreadMessageW(application->mainThreadID, WM_APP_NORMALIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+}
+
+void Window_vulkan_win32::mainThreadNormalizeWindow()
+{
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    ShowWindow(win32Window, SW_RESTORE);
+}
+
 void Window_vulkan_win32::closingWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
@@ -158,6 +210,22 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             state = State::WINDOW_LOST;
             break;
 
+        case WM_SIZE:
+            switch (wParam) {
+            case SIZE_MAXIMIZED:
+                size = Size::MAXIMIZED;
+                break;
+            case SIZE_MINIMIZED:
+                size = Size::MINIMIZED;
+                break;
+            case SIZE_RESTORED:
+                size = Size::NORMAL;
+                break;
+            default:
+                break;
+            }
+            break;
+
         case WM_SIZING:
             rect = to_ptr<RECT>(lParam);
             OSWindowRectangle.offset.x = rect->left;
@@ -175,6 +243,10 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             resizing = false;
             break;
     
+        case WM_ACTIVATEAPP:
+            active = (wParam == TRUE);
+            break;
+
         case WM_GETMINMAXINFO:
             minmaxinfo = to_ptr<MINMAXINFO>(lParam);
             // XXX - figure out size of decoration to remove these constants.

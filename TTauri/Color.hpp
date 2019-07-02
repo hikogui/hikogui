@@ -150,7 +150,7 @@ struct wsRGBA {
         return { floatColor.rgb * F32_SRGB_MUL, floatColor.a * F32_ALPHA_MUL };
     }
 
-    glm::vec4 to_wsRGBA_vec4() const {
+    glm::vec4 to_Linear_sRGBA_vec4() const {
         let floatColor = to_wsRGBApm_vec4();
 
         if (floatColor.a == 0) {
@@ -163,7 +163,7 @@ struct wsRGBA {
 
     /*! Return a gamma corrected sRGBA colour with normal alpha.
      */
-    glm::vec4 to_sRGBA_vec4() const {
+    /*glm::vec4 to_sRGBA_vec4() const {
         let linear = to_wsRGBApm_vec4();
         if (linear.a == 0.0) {
             return { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -175,21 +175,7 @@ struct wsRGBA {
                 linear.a
             };
         }
-    }
-
-    /*! Return a 32 bit gamma corrected sRGBA colour with pre-multiplied alpha.
-     */
-    uint32_t to_sRGBApm_u32() const {
-        let red = linear_to_gamma_u8(color.r);
-        let green = linear_to_gamma_u8(color.g);
-        let blue = linear_to_gamma_u8(color.b);
-        let alpha = linear_alpha_u8(color.a);
-        return
-            (static_cast<uint32_t>(red) << 24) |
-            (static_cast<uint32_t>(green) << 16) |
-            (static_cast<uint32_t>(blue) << 8) |
-            static_cast<uint32_t>(alpha);
-    }
+    }*/
 
     /*! Return a 32 bit gamma corrected sRGBA colour with normal alpha.
     */
@@ -215,7 +201,6 @@ struct wsRGBA {
             (static_cast<uint32_t>(blue) << 8) |
             static_cast<uint32_t>(alpha);
     }
-
 
     std::string string() const {
         let floatColor = to_wsRGBApm_vec4();

@@ -301,6 +301,18 @@ void Path::addRectangle(rect2 rect, glm::vec4 corners)
     closeContour();
 }
 
+void Path::addCircle(glm::vec2 position, float radius)
+{
+    required_assert(!isContourOpen());
+
+    moveTo({position.x, position.y - radius});
+    arcTo(radius, {position.x + radius, position.y});
+    arcTo(radius, {position.x, position.y + radius});
+    arcTo(radius, {position.x - radius, position.y});
+    arcTo(radius, {position.x, position.y - radius});
+    closeContour();
+}
+
 void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end)
 {
     required_assert(!isContourOpen());

@@ -70,6 +70,23 @@ int Application_win32::loop()
         case WM_APP_OPENING_WINDOW:
             reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadOpeningWindow();
             break;
+
+        case WM_APP_CLOSE_WINDOW:
+            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadCloseWindow();
+            break;
+
+        case WM_APP_MINIMIZE_WINDOW:
+            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadMinimizeWindow();
+            break;
+
+        case WM_APP_MAXIMIZE_WINDOW:
+            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadMaximizeWindow();
+            break;
+
+        case WM_APP_NORMALIZE_WINDOW:
+            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadNormalizeWindow();
+            break;
+
         }
 
         TranslateMessage(&msg);
