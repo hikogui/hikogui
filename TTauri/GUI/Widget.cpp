@@ -36,7 +36,18 @@ void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertic
     }
 }
 
-void Widget::handleMouseEvent(MouseEvent const event) {
+HitBox Widget::hitBoxTest(glm::vec2 position) const
+{
+    for (auto& widget : children) {
+        if (widget->box.contains(position)) {
+            return widget->hitBoxTest(position);
+        }
+    }
+    return HitBox::NoWhereInteresting;
+}
+
+void Widget::handleMouseEvent(MouseEvent const event)
+{
     assert(event.type != MouseEvent::Type::None);
 
     let targetWidget = currentMouseTarget.lock();

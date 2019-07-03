@@ -7,6 +7,19 @@
 
 namespace TTauri::GUI {
 
+enum class HitBox {
+    NoWhereInteresting,
+    BottomResizeBorder,
+    TopResizeBorder,
+    LeftResizeBorder,
+    RightResizeBorder,
+    BottomLeftResizeCorner,
+    BottomRightResizeCorner,
+    TopLeftResizeCorner,
+    TopRightResizeCorner,
+    MoveArea
+};
+
 enum class Cursor {
     None,
     Default,

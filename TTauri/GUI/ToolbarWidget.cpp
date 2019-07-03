@@ -82,4 +82,14 @@ void ToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> 
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
+HitBox ToolbarWidget::hitBoxTest(glm::vec2 position) const
+{
+    for (auto& widget : children) {
+        if (widget->box.contains(position)) {
+            return widget->hitBoxTest(position);
+        }
+    }
+    return HitBox::MoveArea;
+}
+
 }

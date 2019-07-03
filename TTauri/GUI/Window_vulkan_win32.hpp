@@ -80,6 +80,8 @@ private:
     void mainThreadMaximizeWindow();
     void mainThreadNormalizeWindow();
 
+    void setOSWindowRectangleFromRECT(RECT rect);
+
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
 

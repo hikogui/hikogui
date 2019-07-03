@@ -6,6 +6,9 @@
 #include "TTauri/Application.hpp"
 #include "TTauri/strings.hpp"
 #include <windowsx.h>
+#include <dwmapi.h>
+
+#pragma comment( lib, "dwmapi" )
 
 namespace TTauri::GUI {
 
@@ -48,15 +51,17 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
 
     auto u16title = translateString<wstring>(title);
 
+    // We are opening a popup window with a caption bar to cause drop-shadow to appear around
+    // the window.
     win32Window = CreateWindowExW(
         0, // Optional window styles.
         Window_vulkan_win32::win32WindowClassName, // Window class
         u16title.data(), // Window text
-        WS_OVERLAPPEDWINDOW, // Window style
+        WS_CAPTION| WS_POPUP, // Window style
 
         // Size and position
-        CW_USEDEFAULT,
-        CW_USEDEFAULT,
+        500,
+        500,
         extent.width(),
         extent.height(),
 
@@ -65,6 +70,13 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
         application->hInstance, // Instance handle
         this
     );
+
+    // Now we extend the drawable area over the titlebar and and border, excluding the drop shadow.
+    MARGINS m{ 0, 0, 0, 1 };
+    DwmExtendFrameIntoClientArea(win32Window, &m);
+
+    // Force WM_NCCALCSIZE to be send to the window.
+    SetWindowPos(win32Window, nullptr, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOOWNERZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
 
     if (win32Window == nullptr) {
         BOOST_THROW_EXCEPTION(Application::Error());
@@ -84,7 +96,8 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
 }
 
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    Window_vulkan(move(delegate), title), trackMouseLeaveEventParameters()
+    Window_vulkan(move(delegate), title),
+    trackMouseLeaveEventParameters()
 {
 }
 
@@ -193,47 +206,74 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface()
     });
 }
 
+void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect)
+{
+    // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
+    OSWindowRectangle.offset.x = rect.left;
+    OSWindowRectangle.offset.y = 0 - rect.bottom;
+    OSWindowRectangle.extent.width() = (rect.right - rect.left);
+    OSWindowRectangle.extent.height() = (rect.bottom - rect.top);
+}
+
 
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     {
         std::scoped_lock lock(TTauri::GUI::mutex);
 
-        RECT* rect;
-        MINMAXINFO* minmaxinfo;
-
         MouseEvent mouseEvent;
 
         switch (uMsg) {    
         case WM_DESTROY:
             win32Window = nullptr;
-            state = State::WINDOW_LOST;
+            state = State::WindowLost;
             break;
+
+        case WM_CREATE: {
+            let createstruct_ptr = to_ptr<CREATESTRUCT>(lParam);
+            RECT rect;
+            rect.left = createstruct_ptr->x;
+            rect.top = createstruct_ptr->y;
+            rect.right = createstruct_ptr->x + createstruct_ptr->cx;
+            rect.bottom = createstruct_ptr->y + createstruct_ptr->cy;
+            setOSWindowRectangleFromRECT(rect);
+            } break;
 
         case WM_SIZE:
             switch (wParam) {
             case SIZE_MAXIMIZED:
-                size = Size::MAXIMIZED;
+                size = Size::Maximized;
                 break;
             case SIZE_MINIMIZED:
-                size = Size::MINIMIZED;
+                size = Size::Minimized;
                 break;
             case SIZE_RESTORED:
-                size = Size::NORMAL;
+                size = Size::Normal;
                 break;
             default:
                 break;
             }
             break;
 
-        case WM_SIZING:
-            rect = to_ptr<RECT>(lParam);
-            OSWindowRectangle.offset.x = rect->left;
-            OSWindowRectangle.offset.y = 0; // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
-            // XXX - figure out size of decoration to remove these constants.
-            OSWindowRectangle.extent.x = (rect->right - rect->left) - 26;
-            OSWindowRectangle.extent.y = (rect->bottom - rect->top) - 39;
-            break;
+        case WM_SIZING: {
+            let rect_ptr = to_ptr<RECT>(lParam);
+            setOSWindowRectangleFromRECT(*rect_ptr);
+            } break;
+
+        case WM_MOVING: {
+            let rect_ptr = to_ptr<RECT>(lParam);
+            setOSWindowRectangleFromRECT(*rect_ptr);
+            } break;
+
+        case WM_WINDOWPOSCHANGED: {
+            let windowpos_ptr = to_ptr<WINDOWPOS>(lParam);
+            RECT rect;
+            rect.left = windowpos_ptr->x;
+            rect.top = windowpos_ptr->y;
+            rect.right = windowpos_ptr->x + windowpos_ptr->cx;
+            rect.bottom = windowpos_ptr->y + windowpos_ptr->cy;
+            setOSWindowRectangleFromRECT(rect);
+            } break;
 
         case WM_ENTERSIZEMOVE:
             resizing = true;
@@ -247,16 +287,16 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             active = (wParam == TRUE);
             break;
 
-        case WM_GETMINMAXINFO:
-            minmaxinfo = to_ptr<MINMAXINFO>(lParam);
+        case WM_GETMINMAXINFO: {
+            let minmaxinfo = to_ptr<MINMAXINFO>(lParam);
             // XXX - figure out size of decoration to remove these constants.
-            minmaxinfo->ptMaxSize.x = boost::numeric_cast<long>(maximumWindowExtent.width() + 26);
-            minmaxinfo->ptMaxSize.y = boost::numeric_cast<long>(maximumWindowExtent.height() + 39);
-            minmaxinfo->ptMinTrackSize.x = boost::numeric_cast<long>(minimumWindowExtent.width() + 26);
-            minmaxinfo->ptMinTrackSize.y = boost::numeric_cast<long>(minimumWindowExtent.height() + 39);
-            minmaxinfo->ptMaxTrackSize.x = boost::numeric_cast<long>(maximumWindowExtent.width() + 26);
-            minmaxinfo->ptMaxTrackSize.y = boost::numeric_cast<long>(maximumWindowExtent.height() + 39);
-            break;
+            minmaxinfo->ptMaxSize.x = boost::numeric_cast<long>(maximumWindowExtent.width());
+            minmaxinfo->ptMaxSize.y = boost::numeric_cast<long>(maximumWindowExtent.height());
+            minmaxinfo->ptMinTrackSize.x = boost::numeric_cast<long>(minimumWindowExtent.width());
+            minmaxinfo->ptMinTrackSize.y = boost::numeric_cast<long>(minimumWindowExtent.height());
+            minmaxinfo->ptMaxTrackSize.x = boost::numeric_cast<long>(maximumWindowExtent.width());
+            minmaxinfo->ptMaxTrackSize.y = boost::numeric_cast<long>(maximumWindowExtent.height());
+            } break;
 
         case WM_LBUTTONDOWN:
             mouseEvent.type = MouseEvent::Type::ButtonDown;
@@ -343,6 +383,42 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
             handleMouseEvent(ExitedMouseEvent());
             break;
+
+        case WM_NCCALCSIZE:
+            if (wParam == TRUE) {
+                // Return zero to preserve the extended client area on the window.
+
+                // Starting with Windows Vista, removing the standard frame by simply
+                // returning 0 when the wParam is TRUE does not affect frames that are
+                // extended into the client area using the DwmExtendFrameIntoClientArea function.
+                // Only the standard frame will be removed.
+                return 0;
+            }
+
+            break;
+
+        case WM_NCHITTEST: {
+            let screenPosition = glm::vec2{
+                boost::numeric_cast<float>(GET_X_LPARAM(lParam)),
+                0.0 - boost::numeric_cast<float>(GET_Y_LPARAM(lParam))
+            };
+
+            let insideWindowPosition = screenPosition - glm::vec2(OSWindowRectangle.offset);
+
+            switch (hitBoxTest(insideWindowPosition)) {
+            case HitBox::BottomResizeBorder: return HTBOTTOM;
+            case HitBox::TopResizeBorder: return HTTOP;
+            case HitBox::LeftResizeBorder: return HTLEFT;
+            case HitBox::RightResizeBorder: return HTRIGHT;
+            case HitBox::BottomLeftResizeCorner: return HTBOTTOMLEFT;
+            case HitBox::BottomRightResizeCorner: return HTBOTTOMRIGHT;
+            case HitBox::TopLeftResizeCorner: return HTTOPLEFT;
+            case HitBox::TopRightResizeCorner: return HTTOPRIGHT;
+            case HitBox::MoveArea: return HTCAPTION;
+            case HitBox::NoWhereInteresting: currentCursor = Cursor::None; return HTCLIENT;
+            default: no_default;
+            }
+            } break;
 
         default:
             break;

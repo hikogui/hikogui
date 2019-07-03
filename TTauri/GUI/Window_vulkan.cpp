@@ -61,17 +61,17 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
     case vk::Result::eSuboptimalKHR:
         LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
-        state = State::SWAPCHAIN_LOST;
+        state = State::SwapchainLost;
         return {};
 
     case vk::Result::eErrorOutOfDateKHR:
         LOG_INFO("acquireNextImageKHR() eErrorOutOfDateKHR");
-        state = State::SWAPCHAIN_LOST;
+        state = State::SwapchainLost;
         return {};
 
     case vk::Result::eErrorSurfaceLostKHR:
         LOG_INFO("acquireNextImageKHR() eErrorSurfaceLostKHR");
-        state = State::SURFACE_LOST;
+        state = State::SurfaceLost;
         return {};
 
     case vk::Result::eTimeout:
@@ -109,7 +109,7 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
 
         case vk::Result::eSuboptimalKHR:
             LOG_INFO("presentKHR() eSuboptimalKHR");
-            state = State::SWAPCHAIN_LOST;
+            state = State::SwapchainLost;
             return;
 
         default:
@@ -120,12 +120,12 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
     }
     catch (const vk::OutOfDateKHRError&) {
         LOG_INFO("presentKHR() eErrorOutOfDateKHR");
-        state = State::SWAPCHAIN_LOST;
+        state = State::SwapchainLost;
         return;
     }
     catch (const vk::SurfaceLostKHRError&) {
         LOG_INFO("presentKHR() eErrorSurfaceLostKHR");
-        state = State::SURFACE_LOST;
+        state = State::SurfaceLost;
         return;
     }
 
@@ -137,30 +137,30 @@ void Window_vulkan::build()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    if (state == State::NO_DEVICE) {
+    if (state == State::NoDevice) {
         if (!device.expired()) {
             imagePipeline->buildForNewDevice();
-            state = State::NO_SURFACE;
+            state = State::NoSurface;
         }
     }
 
-    if (state == State::NO_SURFACE) {
+    if (state == State::NoSurface) {
         if (!buildSurface()) {
-            state = State::DEVICE_LOST;
+            state = State::DeviceLost;
             return;
         }
         imagePipeline->buildForNewSurface();
-        state = State::NO_SWAPCHAIN;
+        state = State::NoSwapchain;
     }
 
-    if (state == State::NO_SWAPCHAIN) {
+    if (state == State::NoSwapchain) {
         if (!readSurfaceExtent()) {
             // Minimized window, can not build a new swapchain.
             return;
         }
 
         let s = buildSwapchain();
-        if (s != State::READY_TO_RENDER) {
+        if (s != State::ReadyToRender) {
             state = s;
             return;
         }
@@ -180,7 +180,7 @@ void Window_vulkan::build()
             boost::numeric_cast<float>(swapchainImageExtent.width),
             boost::numeric_cast<float>(swapchainImageExtent.height)
         });
-        state = State::READY_TO_RENDER;
+        state = State::ReadyToRender;
     }
 }
 
@@ -189,26 +189,26 @@ void Window_vulkan::teardown()
     std::scoped_lock lock(TTauri::GUI::mutex);
     auto nextState = state;
 
-    if (state >= State::SWAPCHAIN_LOST) {
+    if (state >= State::SwapchainLost) {
         waitIdle();
         imagePipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-        nextState = State::NO_SWAPCHAIN;
+        nextState = State::NoSwapchain;
 
-        if (state >= State::SURFACE_LOST) {
+        if (state >= State::SurfaceLost) {
             imagePipeline->teardownForSurfaceLost();
             teardownSurface();
-            nextState = State::NO_SURFACE;
+            nextState = State::NoSurface;
 
-            if (state >= State::DEVICE_LOST) {
+            if (state >= State::DeviceLost) {
                 imagePipeline->teardownForDeviceLost();
                 teardownDevice();
-                nextState = State::NO_DEVICE;
+                nextState = State::NoDevice;
 
-                if (state >= State::WINDOW_LOST) {
+                if (state >= State::WindowLost) {
                     imagePipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
@@ -227,7 +227,7 @@ void Window_vulkan::render()
     teardown();
     build();
 
-    if (state != State::READY_TO_RENDER) {
+    if (state != State::ReadyToRender) {
         return;
     }
 
@@ -300,7 +300,7 @@ bool Window_vulkan::readSurfaceExtent()
         std::tie(nrSwapchainImages, swapchainImageExtent) = getImageCountAndExtent();
 
     } catch (const vk::SurfaceLostKHRError&) {
-        state = State::SURFACE_LOST;
+        state = State::SurfaceLost;
         return false;
     }
 
@@ -314,7 +314,7 @@ bool Window_vulkan::checkSurfaceExtent()
         return (nrImages == nrSwapchainImages) && (extent == swapchainImageExtent);
 
     } catch (const vk::SurfaceLostKHRError&) {
-        state = State::SURFACE_LOST;
+        state = State::SurfaceLost;
         return false;
     }
 }
@@ -370,7 +370,7 @@ Window_base::State Window_vulkan::buildSwapchain()
         break;
 
     case vk::Result::eErrorSurfaceLostKHR:
-        return State::SURFACE_LOST;
+        return State::SurfaceLost;
 
     default:
         BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
@@ -380,7 +380,7 @@ Window_base::State Window_vulkan::buildSwapchain()
     LOG_INFO(" - extent=(%i, %i)", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);
     LOG_INFO(" - colorSpace=%s, format=%s", vk::to_string(swapchainCreateInfo.imageColorSpace), vk::to_string(swapchainCreateInfo.imageFormat));
     LOG_INFO(" - presentMode=%s, imageCount=%i", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
-    return State::READY_TO_RENDER;
+    return State::ReadyToRender;
 }
 
 void Window_vulkan::teardownSwapchain()

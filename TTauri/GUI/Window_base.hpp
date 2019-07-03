@@ -25,27 +25,27 @@ namespace TTauri::GUI {
 class Window_base : public std::enable_shared_from_this<Window_base> {
 public:
     enum class State {
-        INITIALIZING, //!< The window has not been initialized yet.
-        NO_WINDOW, //!< The window was destroyed, the device will drop the window on the next render cycle.
-        NO_DEVICE, //!< No device is associated with the Window and can therefor not be rendered on.
-        NO_SURFACE, //!< Need to request a new surface before building a swapchain
-        NO_SWAPCHAIN, //! Need to request a swapchain before rendering.
-        READY_TO_RENDER, //!< The swapchain is ready drawing is allowed.
-        SWAPCHAIN_LOST, //!< The window was resized, the swapchain needs to be rebuild and can not be rendered on.
-        SURFACE_LOST, //!< The Vulkan surface on the window was destroyed.
-        DEVICE_LOST, //!< The device was lost, but the window could move to a new device, or the device can be recreated.
-        WINDOW_LOST, //!< The window was destroyed, need to cleanup.
+        Initializing, //!< The window has not been initialized yet.
+        NoWindow, //!< The window was destroyed, the device will drop the window on the next render cycle.
+        NoDevice, //!< No device is associated with the Window and can therefor not be rendered on.
+        NoSurface, //!< Need to request a new surface before building a swapchain
+        NoSwapchain, //! Need to request a swapchain before rendering.
+        ReadyToRender, //!< The swapchain is ready drawing is allowed.
+        SwapchainLost, //!< The window was resized, the swapchain needs to be rebuild and can not be rendered on.
+        SurfaceLost, //!< The Vulkan surface on the window was destroyed.
+        DeviceLost, //!< The device was lost, but the window could move to a new device, or the device can be recreated.
+        WindowLost, //!< The window was destroyed, need to cleanup.
     };
 
     enum class Size {
-        NORMAL,
-        MINIMIZED,
-        MAXIMIZED
+        Normal,
+        Minimized,
+        Maximized
     };
 
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
-    State state = State::NO_DEVICE;
+    State state = State::NoDevice;
 
     /*! The current cursor that is being displayed.
      */
@@ -64,7 +64,7 @@ public:
 
     /*! Current size state of the window.
      */
-    Size size = Size::NORMAL;
+    Size size = Size::Normal;
 
     std::shared_ptr<WindowDelegate> delegate;
 
@@ -114,7 +114,7 @@ public:
 
     bool isClosed() {
         std::scoped_lock lock(TTauri::GUI::mutex);
-        return state == State::NO_WINDOW;
+        return state == State::NoWindow;
     }
 
     rhea::solver& addConstraint(rhea::constraint const& constraint) {
@@ -144,7 +144,7 @@ protected:
      * resize to determine the extent of the surface when the GPU library can
      * not figure this out by itself.
      */
-    u32rect2 OSWindowRectangle;
+    i32rect2 OSWindowRectangle;
 
     //! The minimum window extent as calculated by laying out all the widgets.
     extent2 minimumWindowExtent;
@@ -186,7 +186,13 @@ protected:
      * Most often this function is used to determine the mouse cursor.
      */
     void handleMouseEvent(MouseEvent event) {
-        widget->handleMouseEvent(event);
+        return widget->handleMouseEvent(event);
+    }
+
+    /*! Test where the certain features of a window are located.
+     */
+    HitBox hitBoxTest(glm::vec2 position) {
+        return widget->hitBoxTest(position);
     }
 
 private:

@@ -12,7 +12,7 @@ namespace TTauri::GUI {
 using namespace std;
 
 Window_base::Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    state(State::INITIALIZING),
+    state(State::Initializing),
     delegate(move(delegate)),
     title(move(title))
 {
@@ -22,7 +22,7 @@ Window_base::~Window_base()
 {
     try {
         [[gsl::suppress(f.6)]] {
-            if (state != State::NO_WINDOW) {
+            if (state != State::NoWindow) {
                 LOG_FATAL("Window '%s' was not properly teardown before destruction.", title);
                 abort();
             }
@@ -48,14 +48,14 @@ void Window_base::openingWindow() {
     Window *thisWindow = dynamic_cast<Window *>(this);
     assert(thisWindow);
     delegate->openingWindow(*thisWindow);
-    state = State::NO_DEVICE;
+    state = State::NoDevice;
 }
 
 void Window_base::closingWindow() {
     Window* thisWindow = dynamic_cast<Window*>(this);
     assert(thisWindow);
     delegate->closingWindow(*thisWindow);
-    state = State::NO_WINDOW;
+    state = State::NoWindow;
 }
 
 void Window_base::setDevice(const std::weak_ptr<Device> newDevice)
@@ -63,7 +63,7 @@ void Window_base::setDevice(const std::weak_ptr<Device> newDevice)
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     if (!device.expired()) {
-        state = State::DEVICE_LOST;
+        state = State::DeviceLost;
         teardown();
     }
 

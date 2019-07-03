@@ -23,7 +23,7 @@ void WindowDecorationWidget::setParent(Widget *parent)
 {
     Widget::setParent(parent);
 
-    this->window->addConstraint(box.height >= 20);
+    //this->window->addConstraint(box.height >= 20);
     this->window->addConstraint(box.outerBottom() == parent->box.bottom);
     this->window->addConstraint(box.outerTop() == parent->box.top());
 

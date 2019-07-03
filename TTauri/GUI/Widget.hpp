@@ -71,6 +71,8 @@ public:
      * Most often this function is used to determine the mouse cursor.
      */
     virtual void handleMouseEvent(MouseEvent event);
+
+    virtual HitBox hitBoxTest(glm::vec2 position) const;
 };
 
 }

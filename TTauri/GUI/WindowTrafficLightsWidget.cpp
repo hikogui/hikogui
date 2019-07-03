@@ -24,10 +24,10 @@ void WindowTrafficLightsWidget::setParent(Widget *parent)
 {
     Widget::setParent(parent);
 
-    this->window->addConstraint(box.height >= DIAMETER + 2.0 * MARGIN);
-    this->window->addConstraint(box.width >= DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING);
+    this->window->addConstraint(box.height == DIAMETER + 2.0 * MARGIN);
+    this->window->addConstraint(box.width == DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING);
 
-    this->window->addConstraint(box.outerBottom() == parent->box.bottom);
+    this->window->addConstraint(box.outerBottom() >= parent->box.bottom);
     this->window->addConstraint(box.outerTop() == parent->box.top());
     this->window->addConstraint(box.outerLeft() == parent->box.left);
 }
@@ -39,7 +39,7 @@ int WindowTrafficLightsWidget::state() const {
     r |= pressedRed ? 4 : 0;
     r |= pressedYellow ? 8 : 0;
     r |= pressedGreen ? 16 : 0;
-    r |= (window->size == Window::Size::MAXIMIZED) ? 32 : 0;
+    r |= (window->size == Window::Size::Maximized) ? 32 : 0;
     return r;
 }
 
@@ -193,7 +193,7 @@ void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
         drawing.addRectangle({{yellowCenter.x - RADIUS * 0.5 - 0.5, yellowCenter.y - 0.5}, {RADIUS * 1.0 + 1.0, 1.0}});
         drawing.closeLayer({ 0x7f5900ff });
 
-        if (window->size == Window::Size::MAXIMIZED) {
+        if (window->size == Window::Size::Maximized) {
             drawTrianglesInward(drawing, greenCenter, RADIUS);
         } else {
             drawTrianglesOutward(drawing, greenCenter, RADIUS);
@@ -242,10 +242,10 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
             window->minimizeWindow();
         } else {
             switch (window->size) {
-            case Window::Size::NORMAL:
+            case Window::Size::Normal:
                 window->maximizeWindow();
                 break;
-            case Window::Size::MAXIMIZED:
+            case Window::Size::Maximized:
                 window->normalizeWindow();
                 break;
             default:

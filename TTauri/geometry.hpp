@@ -72,6 +72,7 @@ using u64extent2 = extent<2, uint64_t, glm::defaultp>;
 using extent2 = extent<2, float, glm::defaultp>;
 using u16rect2 = rect<2, uint16_t, glm::defaultp>;
 using u32rect2 = rect<2, uint32_t, glm::defaultp>;
+using i32rect2 = rect<2, int32_t, glm::defaultp>;
 using u64rect2 = rect<2, uint64_t, glm::defaultp>;
 using rect2 = rect<2, float, glm::defaultp>;
 

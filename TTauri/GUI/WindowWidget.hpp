@@ -32,6 +32,8 @@ public:
     WindowWidget &operator=(WindowWidget&&) = delete;
 
     void setParent(Window *window);
+
+    HitBox hitBoxTest(glm::vec2 position) const override;
 };
 
 }

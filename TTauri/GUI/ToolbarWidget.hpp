@@ -37,6 +37,9 @@ public:
     void drawBackingImage();
 
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
+
+    HitBox hitBoxTest(glm::vec2 position) const override;
+
 };
 
 }
