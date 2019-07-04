@@ -4,9 +4,6 @@
 #pragma once
 
 #include "Widget.hpp"
-#include "Mouse.hpp"
-#include "TTauri/Draw/attributes.hpp"
-#include "TTauri/BinaryKey.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -15,12 +12,7 @@ namespace TTauri::Draw {
 struct Path;
 }
 
-namespace TTauri::GUI {
-
-namespace PipelineImage {
-struct Image;
-struct Vertex;
-}
+namespace TTauri::GUI::Widgets {
 
 class WindowTrafficLightsWidget : public Widget {
 public:
@@ -52,11 +44,13 @@ public:
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, size_t& offset) override;
 
     void handleMouseEvent(MouseEvent event) override;
+    HitBox hitBoxTest(glm::vec2 position) const override;
 
 protected:
     void drawImage(PipelineImage::Image &image);
+
 private:
-    std::tuple<rect2, rect2, rect2> getButtonBoxes() const;
+    std::tuple<rect2, rect2, rect2> getButtonRectangles() const;
 
     static void drawCross(Draw::Path &path, glm::vec2 position, float radius);
     static void drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius);

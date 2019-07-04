@@ -5,7 +5,6 @@
 #include "Window.hpp"
 #include "Instance.hpp"
 #include "Device.hpp"
-#include "WindowWidget.hpp"
 #include "PipelineImage.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 #include <vector>
@@ -190,6 +189,7 @@ void Window_vulkan::teardown()
     auto nextState = state;
 
     if (state >= State::SwapchainLost) {
+        LOG_INFO("Tearing down because the window lost the swapchain.");
         waitIdle();
         imagePipeline->teardownForSwapchainLost();
         teardownSemaphores();
@@ -199,16 +199,21 @@ void Window_vulkan::teardown()
         nextState = State::NoSwapchain;
 
         if (state >= State::SurfaceLost) {
+            LOG_INFO("Tearing down because the window lost the drawable surface.");
             imagePipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = State::NoSurface;
 
             if (state >= State::DeviceLost) {
+                LOG_INFO("Tearing down because the window lost the vulkan device.");
+
                 imagePipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = State::NoDevice;
 
                 if (state >= State::WindowLost) {
+                    LOG_INFO("Tearing down because the window doesn't exist anymore.");
+
                     imagePipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
@@ -266,6 +271,13 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     surfaceCapabilities = device.lock()->getSurfaceCapabilitiesKHR(intrinsic);
 
+    LOG_INFO("minimumExtent=(%i, %i), maximumExtent=(%i, %i), currentExtent=(%i, %i), osExtent=(%i, %i)",
+        surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height,
+        surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height,
+        surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height,
+        OSWindowRectangle.extent.width(), OSWindowRectangle.extent.height()
+    );
+
     let currentExtentSet =
         (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
         (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
@@ -304,7 +316,33 @@ bool Window_vulkan::readSurfaceExtent()
         return false;
     }
 
-    return swapchainImageExtent.width > 0 && swapchainImageExtent.height > 0;
+    if (
+        swapchainImageExtent.width < minimumWindowExtent.width() ||
+        swapchainImageExtent.height < minimumWindowExtent.height()
+    ) {
+        // Due to vulkan surface being extended across the window decoration;
+        // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
+        // it is 160x28 pixels.
+
+        //LOG_INFO("Window too small to draw current=(%d, %d), minimum=(%d, %d)",
+        //    swapchainImageExtent.width, swapchainImageExtent.height,
+        //    minimumWindowExtent.width(), minimumWindowExtent.height()
+        //);
+        return false;
+    }
+
+    if (
+        swapchainImageExtent.width > maximumWindowExtent.width() ||
+        swapchainImageExtent.height < maximumWindowExtent.height()
+        ) {
+        LOG_ERROR("Window too large to draw current=(%d, %d), maximum=(%d, %d)",
+            swapchainImageExtent.width, swapchainImageExtent.height,
+            maximumWindowExtent.width(), maximumWindowExtent.height()
+        );
+        return false;
+    }
+
+    return true;
 }
 
 bool Window_vulkan::checkSurfaceExtent()

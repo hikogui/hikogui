@@ -7,7 +7,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <typeinfo>
 
-namespace TTauri::Widgets {
+namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 

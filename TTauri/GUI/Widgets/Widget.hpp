@@ -3,21 +3,25 @@
 
 #pragma once
 
-#include "PipelineImage_Delegate.hpp"
 #include "BoxModel.hpp"
-#include "Window_forward.hpp"
-#include "Device_forward.hpp"
-#include "Mouse.hpp"
+#include "../PipelineImage_Delegate.hpp"
+#include "../Window_forward.hpp"
+#include "../Device_forward.hpp"
+#include "../Mouse.hpp"
+#include "TTauri/Color.hpp"
 #include "TTauri/geometry.hpp"
+#include "TTauri/BinaryKey.hpp"
+#include "TTauri/Draw/attributes.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
 
 namespace TTauri::GUI::PipelineImage {
 struct Image;
+struct Vertex;
 }
 
-namespace TTauri::GUI {
+namespace TTauri::GUI::Widgets {
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -31,9 +35,9 @@ public:
 
     Widget *parent;
 
-    std::vector<std::shared_ptr<Widget>> children;
+    std::vector<std::unique_ptr<Widget>> children;
 
-    std::weak_ptr<Widget> currentMouseTarget;
+    Widget *currentMouseTarget = nullptr;
 
     //! Location of the frame compared to the window.
     BoxModel box;
@@ -59,7 +63,16 @@ public:
 
     virtual void setParent(Widget *parent);
 
-    virtual void add(std::shared_ptr<Widget> widget);
+    template<typename T, typename... Args>
+    T *addWidget(Args... args) {
+        auto widget = std::make_unique<T>(args...);
+        auto widget_ptr = widget.get();
+
+        widget->setParent(this);
+
+        children.push_back(move(widget));
+        return widget_ptr;
+    }
 
     std::shared_ptr<Device> device();
 

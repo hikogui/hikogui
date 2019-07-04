@@ -2,12 +2,11 @@
 // All rights reserved.
 
 #include "ImageWidget.hpp"
-#include "TTauri/Draw/PixelMap.inl"
 #include "utils.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 
-namespace TTauri::Widgets {
+namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 

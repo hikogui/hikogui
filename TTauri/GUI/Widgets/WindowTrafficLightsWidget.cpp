@@ -2,18 +2,12 @@
 // All rights reserved.
 
 #include "WindowTrafficLightsWidget.hpp"
-#include "PipelineImage_Image.hpp"
-#include "PipelineImage_Vertex.hpp"
-#include "Device.hpp"
-#include "TTauri/Draw/PixelMap.inl"
-#include "TTauri/Draw/Path.hpp"
+#include "utils.hpp"
 #include <cmath>
 #include <boost/math/constants/constants.hpp>
 #include <typeinfo>
 
-namespace TTauri::GUI {
-
-using namespace std::literals;
+namespace TTauri::GUI::Widgets {
 
 WindowTrafficLightsWidget::WindowTrafficLightsWidget() :
     Widget()
@@ -26,10 +20,6 @@ void WindowTrafficLightsWidget::setParent(Widget *parent)
 
     this->window->addConstraint(box.height == DIAMETER + 2.0 * MARGIN);
     this->window->addConstraint(box.width == DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING);
-
-    this->window->addConstraint(box.outerBottom() >= parent->box.bottom);
-    this->window->addConstraint(box.outerTop() == parent->box.top());
-    this->window->addConstraint(box.outerLeft() == parent->box.left);
 }
 
 int WindowTrafficLightsWidget::state() const {
@@ -211,36 +201,48 @@ void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
     image.drawn = true;
 }
 
+std::tuple<rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const
+{
+    let left = box.left.value();
+    let bottom = box.bottom.value();
+
+    let redButtonBox = rect2{
+        {left + MARGIN, bottom + MARGIN},
+        {DIAMETER, DIAMETER}
+    };
+
+    let yellowButtonBox = rect2{
+        {left + MARGIN + DIAMETER + SPACING, bottom + MARGIN},
+        {DIAMETER, DIAMETER}
+    };
+
+    let greenButtonBox = rect2{
+        {left + MARGIN + DIAMETER * 2.0 + SPACING * 2.0, bottom + MARGIN},
+        {DIAMETER, DIAMETER}
+    };
+
+    return {redButtonBox, yellowButtonBox, greenButtonBox};    
+}
 
 void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
 {
-    let left = box.left.value();
+    window->setCursor(Cursor::Clickable);
 
-    window->setCursor(GUI::Cursor::Clickable);
-
+    // Due to HitBox checking by Windows 10, every time cursor is on a
+    // non client-area the WM_MOUSELEAVE event is send to the window.
+    // The WM_MOUSELEAVE event does not include the mouse position,
+    // neither inside the window, nor on the screen.
+    // We can therefor not determine that the mouse is on the Widget.
     hover = event.type != MouseEvent::Type::Exited;
 
-    if (event.down.leftButton) {
-        if (event.position.x < (left + MARGIN + DIAMETER + SPACING / 2.0)) {
-            pressedRed = true;
-        } else if (event.position.x < (left + MARGIN + DIAMETER + SPACING + DIAMETER + SPACING / 2.0)) {
-            pressedYellow = true;
-        } else {
-            pressedGreen = true;
-        }
+    let [redButtonRect, yellowButtonRect, greenButtonRect] = getButtonRectangles();
 
-    } else {
-        pressedRed = false;
-        pressedYellow = false;
-        pressedGreen = false;
-    }
-
-    if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-        if (event.position.x < (left + MARGIN + DIAMETER + SPACING / 2.0)) {
+    if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+        if (pressedRed) {
             window->closeWindow();
-        } else if (event.position.x < (left + MARGIN + DIAMETER + SPACING + DIAMETER + SPACING / 2.0)) {
+        } else if (pressedYellow) {
             window->minimizeWindow();
-        } else {
+        } else if (pressedGreen) {
             switch (window->size) {
             case Window::Size::Normal:
                 window->maximizeWindow();
@@ -252,6 +254,35 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
                 no_default;
             }
         }
+    }
+
+    // Only change the pressed state after checking for Button Up, the
+    // button up will check which button was pressed from button down.
+    pressedRed = false;
+    pressedYellow = false;
+    pressedGreen = false;
+    if (event.down.leftButton) {
+        if (redButtonRect.contains(event.position)) {
+            pressedRed = true;
+        } else if (yellowButtonRect.contains(event.position)) {
+            pressedYellow = true;
+        } else if (greenButtonRect.contains(event.position)) {
+            pressedGreen = true;
+        }
+    }
+}
+
+HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const
+{
+    let [redButtonRect, yellowButtonRect, greenButtonRect] = getButtonRectangles();
+
+    if (redButtonRect.contains(position) ||
+        yellowButtonRect.contains(position) ||
+        greenButtonRect.contains(position)
+    ) {
+        return HitBox::NoWhereInteresting;
+    } else {
+        return HitBox::MoveArea;
     }
 }
 

@@ -18,8 +18,5 @@
 #include "PipelineImage_TextureMap.hpp"
 #include "PipelineImage_Vertex.hpp"
 #include "VerticalSync.hpp"
-#include "Widget.hpp"
 #include "Window.hpp"
 #include "WindowDelegate.hpp"
-#include "WindowWidget.hpp"
-#include "ToolbarWidget.hpp"

@@ -4,7 +4,7 @@
 #include "Window_base.hpp"
 #include "Window.hpp"
 #include "Device.hpp"
-#include "WindowWidget.hpp"
+#include "Widgets/WindowWidget.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {
@@ -38,7 +38,7 @@ void Window_base::initialize()
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     Window *thisWindow = dynamic_cast<Window *>(this);
-    widget = TTauri::make_shared<WindowWidget>();
+    widget = TTauri::make_shared<Widgets::WindowWidget>();
     widget->setParent(thisWindow);
 
     openingWindow();

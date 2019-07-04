@@ -4,7 +4,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
-#include "WindowWidget.hpp"
+//#include "WindowWidget.hpp"
 #include "Device.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 

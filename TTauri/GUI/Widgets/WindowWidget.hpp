@@ -4,12 +4,11 @@
 #pragma once
 
 #include "Widget.hpp"
-#include "Window_forward.hpp"
-#include "TTauri/Color.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri::GUI::Widgets {
 
-class ToolbarWidget;
+class WindowToolbarWidget;
+class WindowTrafficLightsWidget;
 
 class WindowWidget : public Widget {
 public:
@@ -19,7 +18,8 @@ public:
         FULLSCREEN,
     };
 
-    ToolbarWidget *toolbar;
+    WindowTrafficLightsWidget *leftDecorationWidget = nullptr;
+    WindowToolbarWidget *toolbar = nullptr;
 
     wsRGBA backgroundColor;
 

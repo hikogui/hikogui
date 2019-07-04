@@ -68,8 +68,9 @@ struct MouseEvent {
     }
 };
 
-inline MouseEvent ExitedMouseEvent() {
+inline MouseEvent ExitedMouseEvent(glm::vec2 position={0.0, 0.0}) {
     MouseEvent event;
+    event.position = position;
     event.type = MouseEvent::Type::Exited;
     return event;
 }

@@ -3,16 +3,14 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
-#include "TTauri/GUI/Mouse.hpp"
-#include "TTauri/BinaryKey.hpp"
+#include "Widget.hpp"
 #include <memory>
 #include <string>
 #include <array>
 
-namespace TTauri::Widgets {
+namespace TTauri::GUI::Widgets {
 
-class ButtonWidget : public GUI::Widget {
+class ButtonWidget : public Widget {
 public:
     bool value = false;
     bool enabled = true;

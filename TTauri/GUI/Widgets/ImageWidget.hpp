@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
+#include "Widget.hpp"
 #include <filesystem>
 #include <memory>
 
-namespace TTauri::Widgets {
+namespace TTauri::GUI::Widgets {
 
-class ImageWidget : public GUI::Widget {
+class ImageWidget : public Widget {
 public:
     const std::filesystem::path path;
 

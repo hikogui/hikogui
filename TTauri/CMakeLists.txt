@@ -53,13 +53,12 @@ set(TTauri_srcs
     GUI/Window_base.cpp
     GUI/Window_vulkan.cpp
     GUI/Window_vulkan_win32.cpp
-    GUI/Widget.cpp
-    GUI/WindowWidget.cpp
-    GUI/ToolbarWidget.cpp
-    GUI/WindowDecorationWidget.cpp
-    GUI/WindowTrafficLightsWidget.cpp
-    Widgets/ImageWidget.cpp
-    Widgets/ButtonWidget.cpp
+    GUI/Widgets/Widget.cpp
+    GUI/Widgets/WindowWidget.cpp
+    GUI/Widgets/WindowToolbarWidget.cpp
+    GUI/Widgets/WindowTrafficLightsWidget.cpp
+    GUI/Widgets/ImageWidget.cpp
+    GUI/Widgets/ButtonWidget.cpp
     Application_base.cpp
     Application_win32.cpp
     logging.cpp

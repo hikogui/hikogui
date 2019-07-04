@@ -5,3 +5,6 @@
 
 #include "ImageWidget.hpp"
 #include "ButtonWidget.hpp"
+#include "WindowWidget.hpp"
+#include "WindowTrafficLightsWidget.hpp"
+#include "WindowToolbarWidget.hpp"

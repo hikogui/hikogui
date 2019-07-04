@@ -5,7 +5,7 @@
 
 #include "globals.hpp"
 #include "WindowDelegate.hpp"
-#include "WindowWidget.hpp"
+#include "Widgets/WindowWidget.hpp"
 #include "Device_forward.hpp"
 #include "Mouse.hpp"
 #include "TTauri/geometry.hpp"
@@ -86,7 +86,7 @@ public:
     float ppp = 1.0;
 
     //! The widget covering the complete window.
-    std::shared_ptr<WindowWidget> widget;
+    std::shared_ptr<Widgets::WindowWidget> widget;
 
     Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     virtual ~Window_base();
