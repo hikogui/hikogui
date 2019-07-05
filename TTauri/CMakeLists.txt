@@ -59,6 +59,7 @@ set(TTauri_srcs
     GUI/Widgets/WindowTrafficLightsWidget.cpp
     GUI/Widgets/ImageWidget.cpp
     GUI/Widgets/ButtonWidget.cpp
+    GUI/Widgets/ToolbarButtonWidget.cpp
     Application_base.cpp
     Application_win32.cpp
     logging.cpp

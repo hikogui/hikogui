@@ -38,13 +38,13 @@ void ImageWidget::drawBackingImage()
     // Draw something.
     let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
     let path1 = T2D({20.0, 30.0}, 8.0) * glyph;
-    fill(linearMap, color, path1, Draw::SubpixelOrientation::Unknown);
+    composit(linearMap, color, path1, Draw::SubpixelOrientation::Unknown);
 
     let path2 = T2D({30.0, 30.0}, 8.0) * glyph;
-    fill(linearMap, color, path2, Draw::SubpixelOrientation::RedLeft);
+    composit(linearMap, color, path2, Draw::SubpixelOrientation::RedLeft);
 
     let path3 = T2D({40.0, 30.0}, 8.0) * glyph;
-    fill(linearMap, color, path3, Draw::SubpixelOrientation::RedRight);
+    composit(linearMap, color, path3, Draw::SubpixelOrientation::RedRight);
 
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     fill(fullPixelMap, linearMap);

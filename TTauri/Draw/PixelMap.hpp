@@ -196,10 +196,18 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap);
  */
 void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src);
 
+/*! Composit the image `over` onto the image `under`.
+ */
+void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over);
+
 /*! Composit the color `over` onto the image `under` based on the pixel mask.
- * Mask should be passed to subpixelFilter() before use.
  */
 void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask);
+
+/*! Desaturate an image.
+ * \param brightness The image colours are multiplied by the brightness.
+ */
+void desaturate(PixelMap<wsRGBA> &dst, float brightness=1.0);
 
 /*! Composit the color `over` onto the image `under` based on the subpixel mask.
  * Mask should be passed to subpixelFilter() before use.

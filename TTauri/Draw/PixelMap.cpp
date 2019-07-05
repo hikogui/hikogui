@@ -68,6 +68,22 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
     }
 }
 
+void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over)
+{
+    assert(over.height >= under.height);
+    assert(over.width >= under.width);
+
+    for (size_t rowNr = 0; rowNr < under.height; rowNr++) {
+        let overRow = over.at(rowNr);
+        auto underRow = under.at(rowNr);
+        for (size_t columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++) {
+            let overPixel = overRow[columnNr];
+            auto& underPixel = underRow[columnNr];
+            underPixel.composit(overPixel);
+        }
+    }
+}
+
 void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
 {
     assert(mask.height >= under.height);
@@ -101,6 +117,19 @@ void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> co
 
             auto& pixel = underRow[columnNr];
             pixel.subpixelComposit(over, maskRGBValue);
+        }
+    }
+}
+
+void desaturate(PixelMap<wsRGBA> &dst, float brightness)
+{
+    let _brightness = boost::numeric_cast<int16_t>(brightness * 32767.0); 
+
+    for (size_t rowNr = 0; rowNr < dst.height; rowNr++) {
+        auto dstRow = dst.at(rowNr);
+        for (size_t columnNr = 0; columnNr < dstRow.width; columnNr++) {
+            auto &dstPixel = dstRow[columnNr];
+            dstPixel.desaturate(_brightness);
         }
     }
 }

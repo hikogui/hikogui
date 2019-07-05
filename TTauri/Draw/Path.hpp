@@ -249,7 +249,7 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs);
  * \param mask mask where the color will be composited on the destination.
  * \param subpixel orientation to improve resolution on LCD displays.
  */
-void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation);
+void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation);
 
 /*! Composit color onto the destination image where the mask is solid.
 *
@@ -257,7 +257,7 @@ void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrienta
 * \param mask mask where the color will be composited on the destination.
 * \param subpixel orientation to improve resolution on LCD displays.
 */
-void fill(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation);
+void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation);
 
 
 

@@ -4,37 +4,29 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "TTauri/Draw/Path.hpp"
 #include <memory>
 #include <string>
 #include <array>
+#include <variant>
 
 namespace TTauri::GUI::Widgets {
 
-class ButtonWidget : public Widget {
+class ToolbarButtonWidget : public Widget {
 public:
-    bool value = false;
     bool enabled = true;
-    bool focus = false;
+    bool hover = false;
     bool pressed = false;
 
-    std::string label;
+    std::variant<Draw::Path> icon;
 
-    ButtonWidget(std::string const label);
-    ~ButtonWidget() {}
+    ToolbarButtonWidget(Draw::Path const icon);
+    ~ToolbarButtonWidget() {}
 
-    ButtonWidget(const ButtonWidget &) = delete;
-    ButtonWidget &operator=(const ButtonWidget &) = delete;
-    ButtonWidget(ButtonWidget&&) = delete;
-    ButtonWidget &operator=(ButtonWidget &&) = delete;
-
-    int state() {
-        int r = 0;
-        r |= value ? 1 : 0;
-        r |= enabled ? 2 : 0;
-        r |= focus ? 4 : 0;
-        r |= pressed ? 8 : 0;
-        return r;
-    }
+    ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;
+    ToolbarButtonWidget &operator=(const ToolbarButtonWidget &) = delete;
+    ToolbarButtonWidget(ToolbarButtonWidget &&) = delete;
+    ToolbarButtonWidget &operator=(ToolbarButtonWidget &&) = delete;
 
     void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset) override;
 
@@ -42,8 +34,9 @@ public:
 
 protected:
     void drawImage(GUI::PipelineImage::Image &image);
-
 private:
+    int state() const;
+
     std::shared_ptr<GUI::PipelineImage::Image> image;
 
     // Shared key to reduce number of allocations.

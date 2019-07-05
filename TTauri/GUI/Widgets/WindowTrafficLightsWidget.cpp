@@ -191,9 +191,7 @@ void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
         drawing.closeLayer({ 0x006600ff });
     }
 
-    fill(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
-
-    //fill(linearMap, wsRGBA{ 0xffffffff });
+    composit(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     fill(pixelMap, linearMap);

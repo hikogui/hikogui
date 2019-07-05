@@ -13,6 +13,24 @@ struct PathString {
 
     Alignment alignment = Alignment::BaseLeft;
 
+    PathString() {}
+
+    PathString(std::initializer_list<Path> l) : paths(l) {}
+
+    PathString(PathString const &other) : paths(other.paths), alignment(other.alignment) {}
+
+    PathString(PathString &&other) : paths(std::move(other.paths)), alignment(other.alignment) {}
+
+    void operator=(PathString const &other) {
+        paths = other.paths;
+        alignment = other.alignment;
+    }
+
+    void operator=(PathString &&other) {
+        paths = std::move(other.paths);
+        alignment = other.alignment;
+    }
+
     size_t size() const {
         return paths.size();
     }

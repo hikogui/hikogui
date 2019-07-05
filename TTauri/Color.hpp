@@ -9,6 +9,7 @@
 #include <boost/format.hpp>
 #include <boost/endian/conversion.hpp>
 #include <string>
+#include <algorithm>
 
 namespace TTauri {
 
@@ -161,22 +162,6 @@ struct wsRGBA {
         }
     }
 
-    /*! Return a gamma corrected sRGBA colour with normal alpha.
-     */
-    /*glm::vec4 to_sRGBA_vec4() const {
-        let linear = to_wsRGBApm_vec4();
-        if (linear.a == 0.0) {
-            return { 0.0f, 0.0f, 0.0f, 0.0f };
-        } else {
-            return {
-                linear_to_gamma_f32(linear.r / linear.a),
-                linear_to_gamma_f32(linear.g / linear.a),
-                linear_to_gamma_f32(linear.b / linear.a),
-                linear.a
-            };
-        }
-    }*/
-
     /*! Return a 32 bit gamma corrected sRGBA colour with normal alpha.
     */
     uint32_t to_sRGBA_u32() const {
@@ -215,6 +200,20 @@ struct wsRGBA {
         } else {
             return (boost::format("<%.3f, %.3f, %.3f, %.3f>") % floatColor.r % floatColor.g % floatColor.b % floatColor.a).str();
         }
+    }
+
+    void desaturate(int16_t brightness) {
+        constexpr int64_t RY = static_cast<int64_t>(0.2126 * 32767.0);
+        constexpr int64_t RG = static_cast<int64_t>(0.7152 * 32767.0);
+        constexpr int64_t RB = static_cast<int64_t>(0.0722 * 32767.0);
+        constexpr int64_t SCALE = static_cast<int64_t>(32767.0 * 2);
+
+        int64_t y = ((RY * r() + RG * g() + RB * b()) * brightness) / SCALE;
+        r() = g() = b() = static_cast<int16_t>(std::clamp(
+            y,
+            static_cast<int64_t>(std::numeric_limits<int16_t>::min()),
+            static_cast<int64_t>(std::numeric_limits<int16_t>::max())
+        ));
     }
 
     void composit(wsRGBA over) {

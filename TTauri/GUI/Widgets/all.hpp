@@ -8,3 +8,4 @@
 #include "WindowWidget.hpp"
 #include "WindowTrafficLightsWidget.hpp"
 #include "WindowToolbarWidget.hpp"
+#include "ToolbarButtonWidget.hpp"

@@ -462,7 +462,7 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs)
 }
 
 
-void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation)
+void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation)
 {
     required_assert(!path.hasLayers());
     required_assert(!path.isContourOpen());
@@ -491,14 +491,14 @@ void fill(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrienta
     }
 }
 
-void fill(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation)
+void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation)
 {
     required_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (size_t layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
         let [layer, fillColor] = src.getLayer(layerNr);
 
-        fill(dst, fillColor, layer, subpixelOrientation);
+        composit(dst, fillColor, layer, subpixelOrientation);
     }
 }
 
