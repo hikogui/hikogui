@@ -199,7 +199,7 @@ void Window_vulkan_win32::mainThreadOpeningWindow()
 
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
-    return instance->createWin32SurfaceKHR({
+    return singleton<Instance>->createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
         singleton<Application>->hInstance,
         win32Window

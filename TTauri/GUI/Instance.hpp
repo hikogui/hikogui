@@ -11,8 +11,6 @@ namespace TTauri::GUI {
 
 using Instance = Instance_vulkan_win32;
 
-inline std::unique_ptr<Instance> instance;
-
 }
 #endif
 

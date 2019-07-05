@@ -109,7 +109,7 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
     Device_base(),
     physicalIntrinsic(std::move(physicalDevice))
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(instance->loader());
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(singleton<Instance>->loader());
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
@@ -176,7 +176,7 @@ void Device_vulkan::initializeDevice(Window const &window)
         boost::numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         boost::numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-        &(instance->requiredFeatures)
+        &(singleton<Instance>->requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
@@ -279,12 +279,12 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: %s", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, instance->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, singleton<Instance>->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, instance->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, singleton<Instance>->requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -404,7 +404,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
 int Device_vulkan::score(Window const &window) const {
     auto surface = window.getSurface();
     let s = score(surface);
-    instance->destroySurfaceKHR(surface);
+    singleton<Instance>->destroySurfaceKHR(surface);
     return s;
 }
 

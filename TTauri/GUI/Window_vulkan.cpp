@@ -577,7 +577,7 @@ void Window_vulkan::teardownSurface()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    instance->destroySurfaceKHR(intrinsic);
+    singleton<Instance>->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()

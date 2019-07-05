@@ -52,8 +52,7 @@ public:
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
-        instance->addWindow<Window>(myWindowDelegate, "Hello World 1");
-        //GUI::instance->createWindow(myWindowDelegate, "Hello World 2");
+        singleton<Instance>->addWindow<Window>(myWindowDelegate, "Hello World 1");
     }
 
     void lastWindowClosed() override
@@ -72,8 +71,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     fonts = std::make_unique<Fonts>();
     let font = parseTrueTypeFile(std::filesystem::path("../TTauri/Draw/TestFiles/Roboto-Regular.ttf"));
 
-    instance = std::make_unique<Instance>();
-    instance->initialize();
+    singleton<Instance>->initialize();
 
     return singleton<Application>->loop();
 }
