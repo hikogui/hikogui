@@ -39,7 +39,7 @@ public:
     static std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
-    vk::SurfaceKHR getSurface() override;
+    vk::SurfaceKHR getSurface() const override;
 
     void setCursor(Cursor cursor) override {
         if (cursor == currentCursor) {

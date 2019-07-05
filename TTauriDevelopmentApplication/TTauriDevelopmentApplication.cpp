@@ -50,9 +50,9 @@ class MyApplicationDelegate : public ApplicationDelegate {
 public:
     void startingLoop() override
     {
-        auto myWindowDelegate = TTauri::make_shared<MyWindowDelegate>();
+        auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
-        instance->createWindow(myWindowDelegate, "Hello World 1");
+        instance->addWindow<Window>(myWindowDelegate, "Hello World 1");
         //GUI::instance->createWindow(myWindowDelegate, "Hello World 2");
     }
 
@@ -65,10 +65,9 @@ public:
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
-    auto myApplicationDelegate = TTauri::make_shared<MyApplicationDelegate>();
+    auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
-    application = std::make_unique<Application_win32>(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
-    application->initialize();
+    singleton<Application>->initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
 
     fonts = std::make_unique<Fonts>();
     let font = parseTrueTypeFile(std::filesystem::path("../TTauri/Draw/TestFiles/Roboto-Regular.ttf"));
@@ -76,5 +75,5 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     instance = std::make_unique<Instance>();
     instance->initialize();
 
-    return application->loop();
+    return singleton<Application>->loop();
 }

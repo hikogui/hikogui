@@ -37,9 +37,11 @@ void Window_base::initialize()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    Window *thisWindow = dynamic_cast<Window *>(this);
-    widget = TTauri::make_shared<Widgets::WindowWidget>();
-    widget->setParent(thisWindow);
+    widget = std::make_shared<Widgets::WindowWidget>();
+
+    auto _window = dynamic_cast<Window *>(this);
+    required_assert(_window);
+    widget->setParent(_window);
 
     openingWindow();
 }
@@ -58,11 +60,11 @@ void Window_base::closingWindow() {
     state = State::NoWindow;
 }
 
-void Window_base::setDevice(const std::weak_ptr<Device> newDevice)
+void Window_base::setDevice(Device *newDevice)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    if (!device.expired()) {
+    if (device) {
         state = State::DeviceLost;
         teardown();
     }

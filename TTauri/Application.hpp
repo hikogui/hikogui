@@ -15,9 +15,3 @@ using Application = Application_win32;
 }
 
 #endif
-
-namespace TTauri {
-
-inline std::unique_ptr<Application> application;
-
-}

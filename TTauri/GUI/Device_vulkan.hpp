@@ -38,7 +38,7 @@ public:
     vk::CommandPool presentCommandPool;
     vk::CommandPool computeCommandPool;
 
-    std::shared_ptr<PipelineImage::DeviceShared> imagePipeline;
+    std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
 
     /*! List if extension required on this device.
      */
@@ -47,17 +47,17 @@ public:
     /*! Sorted list of queueFamilies and their capabilities.
      * score(window) must be called before initializeDevice(window);
      */
-    std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndCapabilities;
+    mutable std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndCapabilities;
 
     /*! Best surfae format.
      * score(window) must be called before initializeDevice(window);
      */
-    vk::SurfaceFormatKHR bestSurfaceFormat = {};
+    mutable vk::SurfaceFormatKHR bestSurfaceFormat = {};
 
     /*! Best surfae format.
      * score(window) must be called before initializeDevice(window);
      */
-    vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
+    mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
     Device_vulkan(vk::PhysicalDevice physicalDevice);
     ~Device_vulkan();
@@ -67,12 +67,12 @@ public:
     Device_vulkan(Device_vulkan &&) = delete;
     Device_vulkan &operator=(Device_vulkan &&) = delete;
 
-    void initializeDevice(std::shared_ptr<Window> window) override;
+    void initializeDevice(Window const &window) override;
 
 
-    int score(vk::SurfaceKHR surface);
+    int score(vk::SurfaceKHR surface) const;
 
-    int score(std::shared_ptr<Window> window) override;
+    int score(Window const &window) const override;
 
     /*! Find the minimum number of queue families to instantiate for a window.
      * This will give priority for having the Graphics and Present in the same
@@ -81,14 +81,14 @@ public:
      * It is possible this method returns an incomplete queue family set. For
      * example without Present.
      */
-    std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(vk::SurfaceKHR surface);
+    std::vector<std::pair<uint32_t, uint8_t>> findBestQueueFamilyIndices(vk::SurfaceKHR surface) const;
 
-    std::pair<vk::Buffer, VmaAllocation> createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo);
+    std::pair<vk::Buffer, VmaAllocation> createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const;
 
-    void destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation);
+    void destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const;
 
-    std::pair<vk::Image, VmaAllocation> createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo);
-    void destroyImage(const vk::Image &image, const VmaAllocation &allocation);
+    std::pair<vk::Image, VmaAllocation> createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const;
+    void destroyImage(const vk::Image &image, const VmaAllocation &allocation) const;
 
     vk::CommandBuffer beginSingleTimeCommands() const;
     void endSingleTimeCommands(vk::CommandBuffer commandBuffer) const;
@@ -97,7 +97,7 @@ public:
     void copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, std::vector<vk::ImageCopy> regions) const;
 
     template <typename T>
-    gsl::span<T> mapMemory(const VmaAllocation &allocation) {
+    gsl::span<T> mapMemory(const VmaAllocation &allocation) const {
         std::scoped_lock lock(TTauri::GUI::mutex);
 
         void *mapping;
@@ -112,7 +112,7 @@ public:
         return vk::createResultValue(result, mappingSpan, "TTauri::GUI::Device_vulkan::mapMemory");
     }
 
-    void unmapMemory(const VmaAllocation &allocation);
+    void unmapMemory(const VmaAllocation &allocation) const;
 
     void flushAllocation(const VmaAllocation &allocation, VkDeviceSize offset, VkDeviceSize size) const {
         std::scoped_lock lock(TTauri::GUI::mutex);

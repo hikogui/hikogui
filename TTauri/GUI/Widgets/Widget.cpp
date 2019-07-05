@@ -12,9 +12,12 @@ Widget::Widget()
 {
 }
 
-std::shared_ptr<Device> Widget::device()
+Device *Widget::device() const
 {
-    return window->device.lock();
+    required_assert(window);
+    auto device = window->device;
+    required_assert(device);
+    return device;
 }
 
 void Widget::setParent(Widget *parent)
@@ -22,7 +25,6 @@ void Widget::setParent(Widget *parent)
     this->window = parent->window;
     this->parent = parent;
 }
-
 
 void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
 {

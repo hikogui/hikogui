@@ -8,11 +8,12 @@ namespace TTauri {
 
 using namespace std;
 
-Application_base::Application_base(std::shared_ptr<ApplicationDelegate> delegate) :
-    delegate(move(delegate))
-{
+
+void Application_base::initialize(std::shared_ptr<ApplicationDelegate> applicationDelegate) {
     initializeLogging();
     LOG_INFO("Starting application.");
+
+    this->delegate = std::move(applicationDelegate);
 }
 
 void Application_base::startingLoop()

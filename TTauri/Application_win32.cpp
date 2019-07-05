@@ -10,14 +10,12 @@
 
 namespace TTauri {
 
-Application_win32::Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
-    Application_base(move(delegate)),
-    hInstance(hInstance),
-    hPrevInstance(hPrevInstance),
-    pCmdLine(pCmdLine),
-    nCmdShow(nCmdShow),
-    mainThreadID(GetCurrentThreadId())
+void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
+    this->hInstance = hInstance;
+    this->hPrevInstance = hPrevInstance;
+    this->pCmdLine = pCmdLine;
+    this->nCmdShow = nCmdShow;
 
     // Resource path, is the same directory as where the executable lives.
     wchar_t modulePathWChar[MAX_PATH];
@@ -28,6 +26,8 @@ Application_win32::Application_win32(const std::shared_ptr<ApplicationDelegate> 
     let modulePath = std::filesystem::path(modulePathWChar);
 
     resourceDir = modulePath.parent_path();
+
+    Application_base::initialize(move(delegate));
 }
 
 void Application_win32::lastWindowClosed()

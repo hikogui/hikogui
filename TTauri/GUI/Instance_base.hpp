@@ -29,7 +29,7 @@ public:
     std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
-    std::vector<std::shared_ptr<Device>> devices;
+    std::vector<std::unique_ptr<Device>> devices;
 
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
@@ -49,19 +49,26 @@ public:
 
     virtual void initialize() {}
 
-    virtual void add(std::shared_ptr<Window> window);
+    template<typename T, typename... Args>
+    T *addWindow(Args... args)
+    {
+        auto window = std::make_unique<T>(args...);
+        auto window_ptr = window.get();
+        window->initialize();
+
+        auto device = findBestDeviceForWindow(*window);
+        if (!device) {
+            BOOST_THROW_EXCEPTION(ErrorNoDeviceForWindow());
+        }
+
+        device->add(std::move(window));
+        return window_ptr;
+    }
+
 
     /*! Count the number of windows managed by the GUI.
      */
     size_t getNumberOfWindows();
-
-    /*! Open a new window.
-     *
-     * \param windowDelegate window delegate to use to manage the window.
-     * \param title Title for the new window
-     * \return the window that was created
-     */
-    virtual void createWindow(std::shared_ptr<GUI::WindowDelegate> windowDelegate, const std::string &title) = 0;
 
     void render() {
         for (auto &device: devices) {
@@ -69,7 +76,7 @@ public:
         }
         let currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            application->lastWindowClosed();
+            singleton<Application>->lastWindowClosed();
         }
         previousNumberOfWindows = currentNumberOfWindows;
     }
@@ -83,7 +90,7 @@ public:
     static void _handleVerticalSync(void *data);
 
 protected:
-    std::shared_ptr<Device> findBestDeviceForWindow(const std::shared_ptr<Window> &window);
+    Device *findBestDeviceForWindow(Window const &window);
 };
 
 }

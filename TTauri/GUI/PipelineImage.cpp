@@ -4,7 +4,6 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
-//#include "WindowWidget.hpp"
 #include "Device.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
@@ -14,22 +13,19 @@ using namespace TTauri;
 using namespace std;
 using namespace gsl;
 
-PipelineImage::PipelineImage(const std::shared_ptr<Window> window) :
-    Pipeline_vulkan(move(window))
+PipelineImage::PipelineImage(Window const &window) :
+    Pipeline_vulkan(window)
 {
 }
 
 vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
 {
-    let vulkanDevice = device();
-
     size_t tmpNumberOfVertices = 0;
-    window.lock()->widget->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
+    window.widget->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
 
-    vulkanDevice->flushAllocation(vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 
-    let sharedImagePipeline = vulkanDevice->imagePipeline;
-    sharedImagePipeline->prepareAtlasForRendering();
+    device().imagePipeline->prepareAtlasForRendering();
    
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers();
@@ -45,7 +41,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    device()->imagePipeline->drawInCommandBuffer(commandBuffer);
+    device().imagePipeline->drawInCommandBuffer(commandBuffer);
 
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
@@ -74,7 +70,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineImage::createShaderStages() const {
-    return device()->imagePipeline->shaderStages;
+    return device().imagePipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLayoutBindings() const {
@@ -93,8 +89,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
 
 vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t imageIndex) const
 {
-    let vulkanDevice = device();
-    let sharedImagePipeline = vulkanDevice->imagePipeline;
+    let &sharedImagePipeline = device().imagePipeline;
     let &frameBufferObject = frameBufferObjects.at(imageIndex);
 
     return { {
@@ -120,7 +115,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
 
 uint64_t PipelineImage::getDescriptorSetVersion() const
 {
-    return device()->imagePipeline->atlasTextures.size();
+    return device().imagePipeline->atlasTextures.size();
 }
 
 std::vector<vk::PushConstantRange> PipelineImage::createPushConstantRanges() const
@@ -139,8 +134,6 @@ std::vector<vk::VertexInputAttributeDescription> PipelineImage::createVertexInpu
 
 void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
 {
-    auto vulkanDevice = device();
-
     BOOST_ASSERT(vertexBuffers.size() == 0);
     BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
     BOOST_ASSERT(vertexBuffersData.size() == 0);
@@ -154,8 +147,8 @@ void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        let [vertexBuffer, vertexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
-        let vertexBufferData = vulkanDevice->mapMemory<Vertex>(vertexBufferAllocation);
+        let [vertexBuffer, vertexBufferAllocation] = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+        let vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
 
         vertexBuffers.push_back(vertexBuffer);
         vertexBuffersAllocation.push_back(vertexBufferAllocation);
@@ -165,15 +158,13 @@ void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
 
 void PipelineImage::teardownVertexBuffers()
 {
-    auto vulkanDevice = device();
-
     BOOST_ASSERT(vertexBuffers.size() == vertexBuffersAllocation.size());
     for (size_t i = 0; i < vertexBuffers.size(); i++) {
         auto vertexBuffer = vertexBuffers.at(i);
         auto vertexBufferAllocation = vertexBuffersAllocation.at(i);
 
-        vulkanDevice->unmapMemory(vertexBufferAllocation);
-        vulkanDevice->destroyBuffer(vertexBuffer, vertexBufferAllocation);
+        device().unmapMemory(vertexBufferAllocation);
+        device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
     }
     vertexBuffers.clear();
     vertexBuffersAllocation.clear();

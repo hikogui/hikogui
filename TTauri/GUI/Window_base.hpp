@@ -70,7 +70,7 @@ public:
 
     std::string title;
 
-    std::weak_ptr<Device> device;
+    Device *device = nullptr;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as
@@ -101,7 +101,7 @@ public:
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
-    void setDevice(const std::weak_ptr<Device> device);
+    void setDevice(Device *device);
 
     /*! Remove the GPU device from the window, making it an orphan.
      */

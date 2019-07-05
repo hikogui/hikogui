@@ -23,7 +23,7 @@ public:
     static constexpr size_t maximumNumberOfTriangles = maximumNumberOfSquares * 2;
     static constexpr size_t maximumNumberOfIndices = maximumNumberOfTriangles * 3;
     
-    PipelineImage(const std::shared_ptr<Window> window);
+    PipelineImage(Window const &window);
     ~PipelineImage() {};
 
     PipelineImage(const PipelineImage &) = delete;

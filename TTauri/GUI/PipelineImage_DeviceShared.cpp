@@ -20,8 +20,8 @@ namespace TTauri::GUI::PipelineImage {
 
 using namespace std;
 
-DeviceShared::DeviceShared(const std::shared_ptr<Device_vulkan> device) :
-    device(move(device))
+DeviceShared::DeviceShared(Device const &device) :
+    device(device)
 {
     buildIndexBuffer();
     buildShaders();
@@ -32,7 +32,7 @@ DeviceShared::~DeviceShared()
 {
 }
 
-void DeviceShared::destroy(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
 {
     teardownIndexBuffer(vulkanDevice);
     teardownShaders(vulkanDevice);
@@ -69,7 +69,7 @@ std::shared_ptr<Image> DeviceShared::retainImage(BinaryKey const &key, u64extent
     };
 
     let pages = getFreePages(pageExtent.x * pageExtent.y);
-    auto image = TTauri::make_shared<Image>(key, extent, pageExtent, pages);
+    auto image = std::make_shared<Image>(key, extent, pageExtent, pages);
     viewImages.insert_or_assign(key, image);
     return image;
 }
@@ -101,8 +101,7 @@ void DeviceShared::exchangeImage(std::shared_ptr<Image> &image, BinaryKey const 
 
 TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 {
-    auto vulkanDevice = device.lock();
-    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
+    stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
 
     return stagingTexture.pixelMap.submap(
         Page::border, Page::border,
@@ -112,8 +111,6 @@ TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
-    let vulkanDevice = device.lock();
-
     // Start with the actual image inside the stagingImage.
     auto rectangle = u64rect2{
         {Page::border, Page::border},
@@ -130,13 +127,13 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     }
 
     // Flush the given image, included the border.
-    vulkanDevice->flushAllocation(
+    device.flushAllocation(
         stagingTexture.allocation,
         0,
         ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
     );
     
-    stagingTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
+    stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
     for (size_t index = 0 ; index < image.pages.size(); index++) {
@@ -175,33 +172,27 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         }
 
         auto &atlasTexture = atlasTextures.at(atlasTextureIndex);
-        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal);
 
-        vulkanDevice->copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
+        device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
     }
 }
 
 void DeviceShared::prepareAtlasForRendering()
 {
-    let vulkanDevice = device.lock();
-
     for (auto &atlasTexture: atlasTextures) {
-        atlasTexture.transitionLayout(*vulkanDevice, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eShaderReadOnlyOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
 void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {
-    let vulkanDevice = device.lock();
-
     commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
 }
 
 
 void DeviceShared::buildIndexBuffer()
 {
-    let vulkanDevice = device.lock();
-
     // Create vertex index buffer
     {
         vk::BufferCreateInfo const bufferCreateInfo = {
@@ -212,7 +203,7 @@ void DeviceShared::buildIndexBuffer()
         };
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        tie(indexBuffer, indexBufferAllocation) = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        tie(indexBuffer, indexBufferAllocation) = device.createBuffer(bufferCreateInfo, allocationCreateInfo);
     }
 
     // Fill in the vertex index buffer, using a staging buffer, then copying.
@@ -226,10 +217,10 @@ void DeviceShared::buildIndexBuffer()
         };
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        let [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = vulkanDevice->createBuffer(bufferCreateInfo, allocationCreateInfo);
+        let [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = device.createBuffer(bufferCreateInfo, allocationCreateInfo);
 
         // Initialize indices.
-        let stagingVertexIndexBufferData = vulkanDevice->mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
+        let stagingVertexIndexBufferData = device.mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
         for (size_t i = 0; i < PipelineImage::PipelineImage::maximumNumberOfIndices; i++) {
             let vertexInRectangle = i % 6;
             let rectangleNr = i / 6;
@@ -244,12 +235,12 @@ void DeviceShared::buildIndexBuffer()
             case 5: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 3); break;
             }
         }
-        vulkanDevice->flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
-        vulkanDevice->unmapMemory(stagingVertexIndexBufferAllocation);
+        device.flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
+        device.unmapMemory(stagingVertexIndexBufferAllocation);
 
         // Copy indices to vertex index buffer.
-        auto commands = vulkanDevice->allocateCommandBuffers({
-            vulkanDevice->graphicsCommandPool, 
+        auto commands = device.allocateCommandBuffers({
+            device.graphicsCommandPool, 
             vk::CommandBufferLevel::ePrimary, 
             1
             }).at(0);
@@ -259,11 +250,11 @@ void DeviceShared::buildIndexBuffer()
 
         vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
         vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
-        vulkanDevice->graphicsQueue.submit(submitInfo, vk::Fence());
-        vulkanDevice->graphicsQueue.waitIdle();
+        device.graphicsQueue.submit(submitInfo, vk::Fence());
+        device.graphicsQueue.waitIdle();
 
-        vulkanDevice->freeCommandBuffers(vulkanDevice->graphicsCommandPool, {commands});
-        vulkanDevice->destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
+        device.freeCommandBuffers(device.graphicsCommandPool, {commands});
+        device.destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
     }
 }
 
@@ -274,10 +265,8 @@ void DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevi
 
 void DeviceShared::buildShaders()
 {
-    auto vulkanDevice = device.lock();
-
-    vertexShaderModule = vulkanDevice->loadShader(BinaryAssets::u32PipelineImage_vert_spv, sizeof(BinaryAssets::PipelineImage_vert_spv));
-    fragmentShaderModule = vulkanDevice->loadShader(BinaryAssets::u32PipelineImage_frag_spv, sizeof(BinaryAssets::PipelineImage_frag_spv));
+    vertexShaderModule = device.loadShader(BinaryAssets::u32PipelineImage_vert_spv, sizeof(BinaryAssets::PipelineImage_vert_spv));
+    fragmentShaderModule = device.loadShader(BinaryAssets::u32PipelineImage_frag_spv, sizeof(BinaryAssets::PipelineImage_frag_spv));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
@@ -293,7 +282,6 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    auto vulkanDevice = device.lock();
     let currentImageIndex = atlasTextures.size();
 
     // Create atlas image
@@ -314,9 +302,9 @@ void DeviceShared::addAtlasImage()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    let [atlasImage, atlasImageAllocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
+    let [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
 
-    let atlasImageView = vulkanDevice->createImageView({
+    let atlasImageView = device.createImageView({
         vk::ImageViewCreateFlags(),
         atlasImage,
         vk::ImageViewType::e2D,
@@ -353,8 +341,6 @@ void DeviceShared::addAtlasImage()
 
 void DeviceShared::buildAtlas()
 {
-    auto vulkanDevice = device.lock();
-
     // Create staging image
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
@@ -372,8 +358,8 @@ void DeviceShared::buildAtlas()
     };
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    let [image, allocation] = vulkanDevice->createImage(imageCreateInfo, allocationCreateInfo);
-    let data = vulkanDevice->mapMemory<uint32_t>(allocation);
+    let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    let data = device.mapMemory<uint32_t>(allocation);
 
     stagingTexture = {
         image,
@@ -400,7 +386,7 @@ void DeviceShared::buildAtlas()
         vk::BorderColor::eFloatTransparentBlack,
         FALSE // unnormazlizedCoordinates
     };
-    atlasSampler = vulkanDevice->createSampler(samplerCreateInfo);
+    atlasSampler = device.createSampler(samplerCreateInfo);
 
     atlasSamplerDescriptorImageInfo = {
         atlasSampler,

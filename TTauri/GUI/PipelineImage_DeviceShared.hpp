@@ -33,7 +33,7 @@ struct DeviceShared final {
     static constexpr size_t stagingImageWidth = 2048;
     static constexpr size_t stagingImageHeight = 1024;
 
-    std::weak_ptr<Device> device;
+    Device const &device;
 
     vk::Buffer indexBuffer;
     VmaAllocation indexBufferAllocation = {};
@@ -52,7 +52,7 @@ struct DeviceShared final {
 
     std::unordered_map<BinaryKey, std::shared_ptr<Image>> viewImages;
 
-    DeviceShared(std::shared_ptr<Device_vulkan> const device);
+    DeviceShared(Device const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -63,7 +63,7 @@ struct DeviceShared final {
     /*! Deallocate vulkan resources.
     * This is called in the destructor of Device_vulkan, therefor we can not use our `std::weak_ptr<Device_vulkan> device`.
     */
-    void destroy(gsl::not_null<Device_vulkan *> vulkanDevice);
+    void destroy(gsl::not_null<Device *> vulkanDevice);
 
     /*! Get the coordinate in the atlast from a page index.
      * \param page number in the atlas

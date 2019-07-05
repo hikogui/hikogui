@@ -106,8 +106,7 @@ void Instance_vulkan::initialize()
 #endif
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        auto device = TTauri::make_shared<Device_vulkan>(_physicalDevice);
-        devices.push_back(device);
+        devices.push_back(std::make_unique<Device>(_physicalDevice));
     }
 }
 

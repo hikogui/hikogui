@@ -10,12 +10,12 @@ namespace TTauri::GUI {
 using namespace std;
 using namespace gsl;
 
-shared_ptr<Device> Instance_base::findBestDeviceForWindow(const shared_ptr<Window> &window)
+Device *Instance_base::findBestDeviceForWindow(Window const &window)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     int bestScore = -1;
-    shared_ptr<Device> bestDevice;
+    Device *bestDevice = nullptr;
 
     for (let &device : devices) {
         let score = device->score(window);
@@ -23,7 +23,7 @@ shared_ptr<Device> Instance_base::findBestDeviceForWindow(const shared_ptr<Windo
 
         if (score >= bestScore) {
             bestScore = score;
-            bestDevice = device;
+            bestDevice = device.get();
         }
     }
 
@@ -36,18 +36,6 @@ shared_ptr<Device> Instance_base::findBestDeviceForWindow(const shared_ptr<Windo
     default:
         return bestDevice;
     }
-}
-
-void Instance_base::add(shared_ptr<Window> window)
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    auto device = findBestDeviceForWindow(window);
-    if (!device) {
-        BOOST_THROW_EXCEPTION(ErrorNoDeviceForWindow());
-    }
-
-    device->add(window);
 }
 
 size_t Instance_base::getNumberOfWindows()

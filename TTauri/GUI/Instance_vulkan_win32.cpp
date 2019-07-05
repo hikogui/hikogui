@@ -20,12 +20,5 @@ Instance_vulkan_win32::~Instance_vulkan_win32()
 {
 }
 
-void Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::WindowDelegate> windowDelegate, const std::string &title)
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    auto window = TTauri::make_shared<GUI::Window>(windowDelegate, title);
-    add(window);
-}
 
 }

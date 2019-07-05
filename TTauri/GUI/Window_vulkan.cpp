@@ -27,18 +27,16 @@ void Window_vulkan::initialize()
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     Window_base::initialize();
-    auto window = std::dynamic_pointer_cast<Window>(shared_from_this());
-    assert(window);
-    imagePipeline = TTauri::make_shared<PipelineImage::PipelineImage>(window);
+    imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
 }
 
 void Window_vulkan::waitIdle()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-    vulkanDevice->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
-    vulkanDevice->waitIdle();
+    required_assert(device);
+    device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    device->waitIdle();
     LOG_INFO("/waitIdle");
 }
 
@@ -46,12 +44,11 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-
     // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t imageIndex = 0;
     //LOG_DEBUG("acquireNextImage '%s'", title);
-    let result = vulkanDevice->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
+    required_assert(device);
+    let result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
     //LOG_DEBUG("acquireNextImage %i", imageIndex);
 
     switch (result) {
@@ -85,6 +82,8 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
 void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore renderFinishedSemaphore)
 {
+    required_assert(device);
+
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { renderFinishedSemaphore };
@@ -92,12 +91,9 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
     std::array<uint32_t, 1> const presentImageIndices = { imageIndex };
     BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
 
-    auto vulkanDevice = device.lock();
-
     try {
         //LOG_DEBUG("presentQueue %i", presentImageIndices.at(0));
-
-        let result = vulkanDevice->presentQueue.presentKHR({
+        let result = device->presentQueue.presentKHR({
             boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
             boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
             });
@@ -129,7 +125,7 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
     }
 
     // Make sure that resources are released by Vulkan by calling
-    vulkanDevice->waitIdle();
+    device->waitIdle();
 }
 
 void Window_vulkan::build()
@@ -137,7 +133,7 @@ void Window_vulkan::build()
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     if (state == State::NoDevice) {
-        if (!device.expired()) {
+        if (device) {
             imagePipeline->buildForNewDevice();
             state = State::NoSurface;
         }
@@ -243,20 +239,19 @@ void Window_vulkan::render()
         return;
     }
 
-    auto vulkanDevice = device.lock();
-
     // Wait until previous rendering has finished, before the next rendering.
     // XXX maybe use one for each swapchain image or go to single command buffer.
-    vulkanDevice->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
+    required_assert(device);
+    device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
-    vulkanDevice->resetFences({ renderFinishedFence });
+    device->resetFences({ renderFinishedFence });
 
     let renderFinishedSemaphore = imagePipeline->render(imageIndex.value(), imageAvailableSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
-    vulkanDevice->graphicsQueue.submit(0, nullptr, renderFinishedFence);
+    device->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
     presentImageToQueue(imageIndex.value(), renderFinishedSemaphore);
 
@@ -269,7 +264,8 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-    surfaceCapabilities = device.lock()->getSurfaceCapabilitiesKHR(intrinsic);
+    required_assert(device);
+    surfaceCapabilities = device->getSurfaceCapabilitiesKHR(intrinsic);
 
     LOG_INFO("minimumExtent=(%i, %i), maximumExtent=(%i, %i), currentExtent=(%i, %i), osExtent=(%i, %i)",
         surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height,
@@ -365,24 +361,25 @@ bool Window_vulkan::buildSurface()
 {
     intrinsic = getSurface();
 
-    return device.lock()->score(intrinsic) > 0;
+    required_assert(device);
+    return device->score(intrinsic) > 0;
 }
 
 Window_base::State Window_vulkan::buildSwapchain()
 {
+    required_assert(device);
+
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     LOG_INFO("Building swap chain");
 
-    auto vulkanDevice = device.lock();
-
-    let sharingMode = vulkanDevice->graphicsQueueFamilyIndex == vulkanDevice->presentQueueFamilyIndex ?
+    let sharingMode = device->graphicsQueueFamilyIndex == device->presentQueueFamilyIndex ?
         vk::SharingMode::eExclusive :
         vk::SharingMode::eConcurrent;
 
-    std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = { vulkanDevice->graphicsQueueFamilyIndex, vulkanDevice->presentQueueFamilyIndex };
+    std::array<uint32_t, 2> const sharingQueueFamilyAllIndices = { device->graphicsQueueFamilyIndex, device->presentQueueFamilyIndex };
 
-    swapchainImageFormat = vulkanDevice->bestSurfaceFormat;
+    swapchainImageFormat = device->bestSurfaceFormat;
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
@@ -397,12 +394,12 @@ Window_base::State Window_vulkan::buildSwapchain()
         sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
-        vulkanDevice->bestSurfacePresentMode,
+        device->bestSurfacePresentMode,
         VK_TRUE, // clipped
         nullptr
     };
         
-    vk::Result const result = vulkanDevice->createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
+    vk::Result const result = device->createSwapchainKHR(&swapchainCreateInfo, nullptr, &swapchain);
     switch (result) {
     case vk::Result::eSuccess:
         break;
@@ -425,18 +422,18 @@ void Window_vulkan::teardownSwapchain()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    device.lock()->destroy(swapchain);
+    required_assert(device);
+    device->destroy(swapchain);
 }
 
 void Window_vulkan::buildFramebuffers()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-
-    swapchainImages = vulkanDevice->getSwapchainImagesKHR(swapchain);
+    required_assert(device);
+    swapchainImages = device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
-        auto imageView = vulkanDevice->createImageView({
+        auto imageView = device->createImageView({
             vk::ImageViewCreateFlags(),
             image,
             vk::ImageViewType::e2D,
@@ -449,7 +446,7 @@ void Window_vulkan::buildFramebuffers()
 
         std::array<vk::ImageView, 1> attachments = { imageView };
 
-        auto framebuffer = vulkanDevice->createFramebuffer({
+        auto framebuffer = device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             firstRenderPass,
             boost::numeric_cast<uint32_t>(attachments.size()),
@@ -469,15 +466,14 @@ void Window_vulkan::teardownFramebuffers()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-
+    required_assert(device);
     for (auto frameBuffer : swapchainFramebuffers) {
-        vulkanDevice->destroy(frameBuffer);
+        device->destroy(frameBuffer);
     }
     swapchainFramebuffers.clear();
 
     for (auto imageView : swapchainImageViews) {
-        vulkanDevice->destroy(imageView);
+        device->destroy(imageView);
     }
     swapchainImageViews.clear();
 }
@@ -539,9 +535,8 @@ void Window_vulkan::buildRenderPasses()
         subpassDependency.data()
     };
 
-    auto vulkanDevice = device.lock();
-
-    firstRenderPass = vulkanDevice->createRenderPass(renderPassCreateInfo);
+    required_assert(device);
+    firstRenderPass = device->createRenderPass(renderPassCreateInfo);
     //attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
     //followUpRenderPass = vulkanDevice->createRenderPass(renderPassCreateInfo);
     // XXX also add lastRenderPass.
@@ -551,42 +546,45 @@ void Window_vulkan::teardownRenderPasses()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-    vulkanDevice->destroy(firstRenderPass);
-    vulkanDevice->destroy(followUpRenderPass);
+    required_assert(device);
+    device->destroy(firstRenderPass);
+    device->destroy(followUpRenderPass);
 }
 
 void Window_vulkan::buildSemaphores()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-
-    imageAvailableSemaphore = vulkanDevice->createSemaphore({});
+    required_assert(device);
+    imageAvailableSemaphore = device->createSemaphore({});
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
     // It should therefor be signed at the start so that when no rendering has been
     // done it is still idle.
-    renderFinishedFence = vulkanDevice->createFence({ vk::FenceCreateFlagBits::eSignaled });
+    renderFinishedFence = device->createFence({ vk::FenceCreateFlagBits::eSignaled });
 }
 
 void Window_vulkan::teardownSemaphores()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    auto vulkanDevice = device.lock();
-    vulkanDevice->destroy(imageAvailableSemaphore);
-    vulkanDevice->destroy(renderFinishedFence);
+    required_assert(device);
+    device->destroy(imageAvailableSemaphore);
+    device->destroy(renderFinishedFence);
 }
 
 void Window_vulkan::teardownSurface()
 {
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
     instance->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()
 {
-    device.reset();
+    std::scoped_lock lock(TTauri::GUI::mutex);
+
+    device = nullptr;
 }
 
 }

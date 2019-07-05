@@ -25,7 +25,7 @@ public:
 
     /*! Application delegate
      */
-    const std::shared_ptr<ApplicationDelegate> delegate;
+    std::shared_ptr<ApplicationDelegate> delegate;
 
     bool loopStarted = false;
 
@@ -33,14 +33,8 @@ public:
      */
     std::filesystem::path resourceDir;
 
-    /*! Constructor
-     * \param applicationDelegate application delegate to use to manage the application
-     * \param vulkanExtensions Vulkan extensions that are needed to use Vulkan on this operating system.
-     */
-    Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate);
-
-    virtual ~Application_base() = default;
-
+    Application_base() = default;
+    ~Application_base() = default;
     Application_base(const Application_base &) = delete;
     Application_base &operator=(const Application_base &) = delete;
     Application_base(Application_base &&) = delete;
@@ -48,7 +42,7 @@ public:
 
     /*! Initialize the application.
      */
-    virtual void initialize() {}
+    virtual void initialize(std::shared_ptr<ApplicationDelegate> applicationDelegate);
 
     /*! Called right before a loop is started.
      */

@@ -5,6 +5,7 @@
 
 #include "Device_forward.hpp"
 #include "Window_forward.hpp"
+#include "TTauri/required.hpp"
 #include <boost/exception/exception.hpp>
 #include <memory>
 
@@ -14,9 +15,9 @@ class Pipeline_base {
 public:
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    std::weak_ptr<Window> window;
+    Window const &window;
 
-    Pipeline_base(const std::shared_ptr<Window> window);
+    Pipeline_base(Window const &window);
 
     virtual ~Pipeline_base() = default;
     Pipeline_base(const Pipeline_base &) = delete;
@@ -24,7 +25,8 @@ public:
     Pipeline_base(Pipeline_base &&) = delete;
     Pipeline_base &operator=(Pipeline_base &&) = delete;
 
-    std::shared_ptr<Device> device() const;
+    Device const &device() const;
+
 };
 
 }

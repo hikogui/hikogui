@@ -32,7 +32,7 @@ public:
     vk::Semaphore imageAvailableSemaphore;
     vk::Fence renderFinishedFence;
 
-    std::shared_ptr<PipelineImage::PipelineImage> imagePipeline;
+    std::unique_ptr<PipelineImage::PipelineImage> imagePipeline;
 
     Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan();
@@ -51,7 +51,7 @@ protected:
 
     /*! Query the surface from the operating-system window.
      */
-    virtual vk::SurfaceKHR getSurface() = 0;
+    virtual vk::SurfaceKHR getSurface() const = 0;
     
 private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();

@@ -159,7 +159,7 @@ Device_vulkan::~Device_vulkan()
     }
 }
 
-void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
+void Device_vulkan::initializeDevice(Window const &window)
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
@@ -212,13 +212,13 @@ void Device_vulkan::initializeDevice(std::shared_ptr<Window> window)
         index++;
     }
 
-    imagePipeline = TTauri::make_shared<PipelineImage::DeviceShared>(dynamic_pointer_cast<Device_vulkan>(shared_from_this()));
+    imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
 
     Device_base::initializeDevice(window);
 }
 
 
-std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface)
+std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
@@ -270,7 +270,7 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
     return queueFamilyIndicesAndQueueCapabilitiess;
 }
 
-int Device_vulkan::score(vk::SurfaceKHR surface)
+int Device_vulkan::score(vk::SurfaceKHR surface) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
@@ -401,14 +401,14 @@ int Device_vulkan::score(vk::SurfaceKHR surface)
     return totalScore;
 }
 
-int Device_vulkan::score(std::shared_ptr<Window> window) {
-    auto surface = window->getSurface();
+int Device_vulkan::score(Window const &window) const {
+    auto surface = window.getSurface();
     let s = score(surface);
     instance->destroySurfaceKHR(surface);
     return s;
 }
 
-std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo)
+std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
@@ -422,14 +422,14 @@ std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::Buffe
     return vk::createResultValue(result, value, "TTauri::GUI::Device_vulkan::createBuffer");
 }
 
-void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation)
+void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
     vmaDestroyBuffer(allocator, buffer, allocation);
 }
 
-std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo)
+std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
@@ -443,14 +443,14 @@ std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCr
     return vk::createResultValue(result, value, "TTauri::GUI::Device_vulkan::createImage");
 }
 
-void Device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation)
+void Device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
     vmaDestroyImage(allocator, image, allocation);
 }
 
-void Device_vulkan::unmapMemory(const VmaAllocation &allocation)
+void Device_vulkan::unmapMemory(const VmaAllocation &allocation) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 

@@ -37,7 +37,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClassName = L"TTauri Window Class";
 
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
-        Window_vulkan_win32::win32WindowClass.hInstance = application->hInstance;
+        Window_vulkan_win32::win32WindowClass.hInstance = singleton<Application>->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
         Window_vulkan_win32::win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -67,7 +67,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
 
         NULL, // Parent window
         NULL, // Menu
-        application->hInstance, // Instance handle
+        singleton<Application>->hInstance, // Instance handle
         this
     );
 
@@ -83,7 +83,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
     }
 
     if (!Window_vulkan_win32::firstWindowHasBeenOpened) {
-        ShowWindow(win32Window, application->nCmdShow);
+        ShowWindow(win32Window, singleton<Application>->nCmdShow);
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
 
@@ -118,7 +118,7 @@ Window_vulkan_win32::~Window_vulkan_win32()
 void Window_vulkan_win32::closeWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(application->mainThreadID, WM_APP_CLOSE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(singleton<Application>->mainThreadID, WM_APP_CLOSE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadCloseWindow()
@@ -131,7 +131,7 @@ void Window_vulkan_win32::mainThreadCloseWindow()
 void Window_vulkan_win32::minimizeWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(application->mainThreadID, WM_APP_MINIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(singleton<Application>->mainThreadID, WM_APP_MINIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadMinimizeWindow()
@@ -144,7 +144,7 @@ void Window_vulkan_win32::mainThreadMinimizeWindow()
 void Window_vulkan_win32::maximizeWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(application->mainThreadID, WM_APP_MAXIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(singleton<Application>->mainThreadID, WM_APP_MAXIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadMaximizeWindow()
@@ -157,7 +157,7 @@ void Window_vulkan_win32::mainThreadMaximizeWindow()
 void Window_vulkan_win32::normalizeWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(application->mainThreadID, WM_APP_NORMALIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(singleton<Application>->mainThreadID, WM_APP_NORMALIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadNormalizeWindow()
@@ -170,7 +170,7 @@ void Window_vulkan_win32::mainThreadNormalizeWindow()
 void Window_vulkan_win32::closingWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(application->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(singleton<Application>->mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadClosingWindow()
@@ -182,7 +182,7 @@ void Window_vulkan_win32::mainThreadClosingWindow()
 void Window_vulkan_win32::openingWindow()
 {
     // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(application->mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
+    PostThreadMessageW(singleton<Application>->mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
 }
 
 void Window_vulkan_win32::mainThreadOpeningWindow()
@@ -197,11 +197,11 @@ void Window_vulkan_win32::mainThreadOpeningWindow()
     createWindow(title, windowExtent);
 }
 
-vk::SurfaceKHR Window_vulkan_win32::getSurface()
+vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
     return instance->createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
-        application->hInstance,
+        singleton<Application>->hInstance,
         win32Window
     });
 }

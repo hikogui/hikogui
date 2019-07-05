@@ -9,13 +9,17 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-Pipeline_base::Pipeline_base(const std::shared_ptr<Window> window) :
-    window(std::move(window))
+Pipeline_base::Pipeline_base(Window const &window) :
+    window(window)
 {
 }
 
-std::shared_ptr<Device> Pipeline_base::device() const {
-    return window.lock()->device.lock();
+Device const &Pipeline_base::device() const
+{
+    let device = window.device;
+    required_assert(device);
+    return *device;
 }
+
 
 }

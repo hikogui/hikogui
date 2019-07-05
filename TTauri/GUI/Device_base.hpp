@@ -32,7 +32,7 @@ public:
 
     /*! A list of windows managed by this device.
      */
-    std::vector<std::shared_ptr<Window>> windows;
+    std::vector<std::unique_ptr<Window>> windows;
 
     std::string string() const;
 
@@ -51,28 +51,28 @@ public:
      *
      * \returns -1 When not viable, 0 when not presentable, postive values for increasing score.
      */
-    virtual int score(std::shared_ptr<Window> window) = 0;
+    virtual int score(Window const &window) const = 0;
 
     /*! Initialise the logical device.
      *
      * \param window is used as prototype for queue allocation.
      */
-    virtual void initializeDevice(std::shared_ptr<Window> window);
+    virtual void initializeDevice(Window const &window);
 
     size_t getNumberOfWindows() const {
         return windows.size();
     }
 
-    void add(std::shared_ptr<Window> window);
+    void add(std::unique_ptr<Window> window);
 
-    void remove(std::shared_ptr<Window> window);
+    void remove(Window &window);
 
     void render() {
         for (auto &window: windows) {
             window->render();
 
             if (window->isClosed()) {
-                remove(window);
+                remove(*window);
             }
         }
     }

@@ -74,7 +74,7 @@ public:
         return widget_ptr;
     }
 
-    std::shared_ptr<Device> device();
+    Device *device() const;
 
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
 

@@ -31,37 +31,8 @@ constexpr T safe_modulo(T x, M m)
     }
 }
 
-template<typename T, bool result = std::is_same<decltype(((T *)nullptr)->initialize()), void>::value>
-constexpr bool hasInitializeHelper(int)
-{
-    return result;
-}
-
 template<typename T>
-constexpr bool hasInitializeHelper(...)
-{
-    return false;
-}
-
-template<typename T>
-constexpr bool hasInitialize()
-{
-    return hasInitializeHelper<T>(0);
-}
-
-template<typename T, typename... Args, typename std::enable_if_t<TTauri::hasInitialize<T>(), int> = 0>
-inline std::shared_ptr<T> make_shared(Args... args)
-{
-    auto tmp = std::make_shared<T>(args...);
-    tmp->initialize();
-    return tmp;
-}
-
-template<typename T, typename... Args, typename std::enable_if_t<!TTauri::hasInitialize<T>(), int> = 0>
-inline std::shared_ptr<T> make_shared(Args... args)
-{
-    return std::make_shared<T>(args...);
-}
+inline auto singleton = std::make_unique<T>();
 
 template<typename T>
 inline T &at(gsl::span<std::byte> bytes, size_t offset)

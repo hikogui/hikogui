@@ -19,19 +19,21 @@ constexpr UINT WM_APP_NORMALIZE_WINDOW = WM_APP + 7;
 
 class Application_win32 final : public Application_base {
 public:
-    HINSTANCE hInstance;
-    HINSTANCE hPrevInstance;
-    PWSTR pCmdLine;
-    int nCmdShow;
-    DWORD mainThreadID;
+    HINSTANCE hInstance = nullptr;
+    HINSTANCE hPrevInstance = nullptr;
+    PWSTR pCmdLine = nullptr;
+    int nCmdShow = 0;
+    DWORD mainThreadID = 0;
 
-    Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow);
-    ~Application_win32() {}
+    Application_win32() : mainThreadID(GetCurrentThreadId()) {}
+    ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;
     Application_win32 &operator=(const Application_win32 &) = delete;
     Application_win32(Application_win32 &&) = delete;
     Application_win32 &operator=(Application_win32 &&) = delete;
+
+    void initialize(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow);
 
     void lastWindowClosed() override;
     void mainThreadLastWindowClosed();

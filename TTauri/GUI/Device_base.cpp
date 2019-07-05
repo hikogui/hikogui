@@ -29,34 +29,36 @@ std::string Device_base::string() const
     return (boost::format("%04x:%04x %s %s") % vendorID % deviceID % deviceName % deviceUUID).str();
 }
 
-void Device_base::initializeDevice(std::shared_ptr<Window> window)
+void Device_base::initializeDevice(Window const &window)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
     
     state = State::READY_TO_DRAW;
 }
 
-void Device_base::add(std::shared_ptr<Window> window)
+void Device_base::add(std::unique_ptr<Window> window)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     if (state == State::NO_DEVICE) {
-        initializeDevice(window);
+        initializeDevice(*window);
     }
 
-    windows.push_back(window);
+    auto _device = dynamic_cast<Device *>(this);
+    required_assert(_device);
+    window->setDevice(_device);
 
-    auto device = std::dynamic_pointer_cast<Device>(shared_from_this());
-    assert(device);
-    window->setDevice(device);
+    windows.push_back(std::move(window));
 }
 
-void Device_base::remove(std::shared_ptr<Window> window)
+void Device_base::remove(Window &window)
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    window->unsetDevice();
-    windows.erase(find(windows.begin(), windows.end(), window));
+    window.unsetDevice();
+    windows.erase(std::find_if(windows.begin(), windows.end(), [&](auto &x) {
+        return x.get() == &window;
+    }));
 }
 
 }
