@@ -31,7 +31,7 @@ void ImageWidget::drawBackingImage()
     // XXX This probably should allocate a PixelMap and add it to this class.
     Draw::loadPNG(linearMap, path);
 
-    let myFont = Draw::fonts->get(URL("file:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
+    let myFont = get_singleton<Resources>().get<Draw::Font>(URL("file:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
     let glyphIndex = myFont.characterMap.at('g');
     let glyph = myFont.glyphs.at(glyphIndex);
 

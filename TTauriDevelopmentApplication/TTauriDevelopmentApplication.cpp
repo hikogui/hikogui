@@ -68,10 +68,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 
     get_singleton<Application>().initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
 
-    fonts = std::make_unique<Fonts>();
-    let view = ResourceView(URL("file:../TTauri/Draw/TestFiles/Roboto-Regular.ttf"));
-    let font = parseTrueTypeFile(view.bytes());
-
     get_singleton<Instance>().initialize();
 
     return get_singleton<Application>().loop();

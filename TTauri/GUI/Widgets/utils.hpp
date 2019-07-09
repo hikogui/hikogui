@@ -9,6 +9,7 @@
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/Draw/PixelMap.inl"
 #include "TTauri/Draw/PNG.hpp"
-#include "TTauri/Draw/Fonts.hpp"
 #include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Draw/PathString.hpp"
 #include "TTauri/BinaryKey.hpp"
+#include "TTauri/Resources.hpp"

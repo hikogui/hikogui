@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "TrueTypeParser.hpp"
-#include "Fonts.hpp"
-#include "TTauri/URL.hpp"
+#include "Font.hpp"
 #include "TTauri/required.hpp"
+#include "TTauri/ResourceView.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

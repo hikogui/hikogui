@@ -11,7 +11,7 @@ Resource parseResource(URL const &location)
 {
     let view = ResourceView(location);
 
-    if (location.extension() == ".ttf") {
+    if (location.extension() == "ttf") {
         try {
             return TTauri::Draw::parseTrueTypeFile(view.bytes());
         } catch (boost::exception &e) {

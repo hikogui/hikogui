@@ -22,15 +22,15 @@ struct Resources {
     /*! Return parsed resource.
     */
     template <typename T>
-    T const &get(URL const &location) const {
+    T &get(URL const &location) {
         let i = resourceCache.find(location);
         if (i != resourceCache.end()) {
-            return std::get<T &>(i->second);
+            return std::get<T>(i->second);
         }
 
-        let &&newResource = resourceCache[path] = parseResource(location);
+        let [newResource, wasAdded] = resourceCache.try_emplace(location, parseResource(location));
 
-        return std::get<T &>(newResource);
+        return std::get<T>(newResource->second);
     }
 };
 

@@ -6,7 +6,6 @@
 #include "attributes.hpp"
 #include "BezierPoint.hpp"
 #include "Font.hpp"
-#include "Fonts.hpp"
 #include "PathString.hpp"
 #include "Path.hpp"
 #include "PixelMap.hpp"
