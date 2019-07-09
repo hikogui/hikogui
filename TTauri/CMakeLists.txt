@@ -1,3 +1,5 @@
+# Copyright 2019 Pokitec
+# All rights reserved.
 
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0074 NEW)
@@ -6,10 +8,10 @@ project(TTauri CXX)
 
 include(CMakeIncludes/AddShader.cmake)
 include(CMakeIncludes/AddIcon.cmake)
+include(CMakeIncludes/AddStaticResource.cmake)
 
 find_package(Boost REQUIRED)
 find_package(Vulkan REQUIRED)
-
 
 # Visual Studio likes to know about all header files.
 file(GLOB_RECURSE TTauri_hdrs *.hpp *.inl)
@@ -22,6 +24,22 @@ BISON_TARGET(TTauriConfigParser Config/TTauriConfig.y ${CMAKE_CURRENT_BINARY_DIR
 FLEX_TARGET(TTauriConfigScanner Config/TTauriConfig.l ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.cpp COMPILE_FLAGS "-P TTauriConfig_yy" DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.hpp)
 ADD_FLEX_BISON_DEPENDENCY(TTauriConfigScanner TTauriConfigParser)
 
+add_shader(Shader_objs
+    GUI/PipelineImage.vert
+    GUI/PipelineImage.frag
+)
+
+add_icon(Icon_objs 
+    "Themes/Icons/Close Window.svg"
+    "Themes/Icons/Maximize Window.svg"
+    "Themes/Icons/Minimize Window.svg"
+)
+
+set(TTauri_resources
+    ${Shader_objs}
+    ${Icon_objs}
+    Themes/Fonts/Roboto/Roboto-Regular.ttf
+)
 
 set(TTauri_srcs
     ${BISON_TTauriConfigParser_OUTPUTS}
@@ -63,6 +81,10 @@ set(TTauri_srcs
     Application_base.cpp
     Application_win32.cpp
     logging.cpp
+    URL.cpp
+    StaticResources.cpp
+    StaticResourceView.cpp
+    Resources.cpp
     File.cpp
     FileMapping.cpp
     FileView.cpp
@@ -70,13 +92,13 @@ set(TTauri_srcs
     Time.cpp
 )
 
-
 if(MSVC)
     add_compile_options(/wd4996 /wd4005)
 endif()
 
-
 add_library(TTauri STATIC ${TTauri_srcs})
+target_static_resource(TTauri ${TTauri_resources})
+    
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
 target_link_directories(TTauri PUBLIC ${Boost_LIBRARY_DIRS})
@@ -86,22 +108,7 @@ if (MSVC)
     target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
 endif()
 
-set(TTauri_GUI_shaders
-	GUI/PipelineImage.vert
-	GUI/PipelineImage.frag
-)
-foreach(shader ${TTauri_GUI_shaders})
-	target_add_shader(TTauri ${shader})
-endforeach(shader)
 
-set(TTauri_GUI_icons
-	"Themes/Icons/Close Window.svg"
-	"Themes/Icons/Maximize Window.svg"
-	"Themes/Icons/Minimize Window.svg"
-)
-foreach(icon ${TTauri_GUI_icons})
-	target_add_icon(TTauri ${icon})
-endforeach(icon)
 
 set(TTauriTests_srcs
     Config/parser_tests.cpp
@@ -115,6 +122,8 @@ set(TTauriTests_srcs
     FileView_tests.cpp
     strings_tests.cpp
     polynomial_tests.cpp
+    URL_tests.cpp
+    utils_tests.cpp
 )
 
 add_executable(TTauriTests ${TTauriTests_srcs})

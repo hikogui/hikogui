@@ -8,10 +8,10 @@
 
 namespace TTauri {
 
-std::map<std::filesystem::path, std::vector<std::weak_ptr<File>>> FileMapping::mappedFiles;
+std::map<URL, std::vector<std::weak_ptr<File>>> FileMapping::mappedFiles;
 
 FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
-    file(file), size(size > 0 ? size : std::filesystem::file_size(file->path))
+    file(file), size(size > 0 ? size : file_size(file->location))
 {
 #ifdef WIN32
     DWORD protect;
@@ -23,7 +23,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     }
     else {
         BOOST_THROW_EXCEPTION(FileError("Illigal access mode WRONLY/0 when mapping file.") <<
-            boost::errinfo_file_name(path().string())
+            errinfo_url(location())
         );
     }
 
@@ -32,14 +32,14 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
 
     if ((intrinsic = CreateFileMappingA(file->intrinsic, NULL, protect, maximumSizeHigh, maximumSizeLow, NULL)) == NULL) {
         BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            boost::errinfo_file_name(path().string())
+            errinfo_url(location())
         );
     }
 #endif
 }
 
-FileMapping::FileMapping(const std::filesystem::path & path, AccessMode accessMode, size_t size) :
-    FileMapping(findOrCreateFile(path, accessMode), size) {}
+FileMapping::FileMapping(URL const &location, AccessMode accessMode, size_t size) :
+    FileMapping(findOrCreateFile(location, accessMode), size) {}
 
 FileMapping::~FileMapping()
 {
@@ -48,13 +48,12 @@ FileMapping::~FileMapping()
     }
 }
 
-std::shared_ptr<File> FileMapping::findOrCreateFile(std::filesystem::path const& path, AccessMode accessMode)
+std::shared_ptr<File> FileMapping::findOrCreateFile(URL const& location, AccessMode accessMode)
 {
     cleanup();
 
-    let absolutePath = std::filesystem::absolute(path);
-
-    auto& files = mappedFiles[absolutePath];
+    // We want files to be freshly created if it did not exist before.
+    auto& files = mappedFiles[location];
     for (let weak_file : files) {
         if (auto file = weak_file.lock()) {
             if (file->accessMode >= accessMode) {
@@ -63,7 +62,7 @@ std::shared_ptr<File> FileMapping::findOrCreateFile(std::filesystem::path const&
         }
     }
 
-    auto file = std::make_shared<File>(path, accessMode);
+    auto file = std::make_shared<File>(location, accessMode);
     files.push_back(file);
     return file;
 }

@@ -6,6 +6,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
+#include "TTauri/ResourceView.hpp"
 #include <gsl/gsl>
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
@@ -109,7 +110,7 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
     Device_base(),
     physicalIntrinsic(std::move(physicalDevice))
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(singleton<Instance>->loader());
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(get_singleton<Instance>().loader());
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
@@ -176,7 +177,7 @@ void Device_vulkan::initializeDevice(Window const &window)
         boost::numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         boost::numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-        &(singleton<Instance>->requiredFeatures)
+        &(get_singleton<Instance>().requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
@@ -279,12 +280,12 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: %s", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, singleton<Instance>->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, get_singleton<Instance>().requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, singleton<Instance>->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, get_singleton<Instance>().requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -404,7 +405,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
 int Device_vulkan::score(Window const &window) const {
     auto surface = window.getSurface();
     let s = score(surface);
-    singleton<Instance>->destroySurfaceKHR(surface);
+    get_singleton<Instance>().destroySurfaceKHR(surface);
     return s;
 }
 
@@ -562,7 +563,7 @@ void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk:
     endSingleTimeCommands(commandBuffer);
 }
 
-vk::ShaderModule Device_vulkan::loadShader(const uint32_t *data, size_t size) const
+vk::ShaderModule Device_vulkan::loadShader(uint32_t const *data, size_t size) const
 {
     auto lock = scoped_lock(TTauri::GUI::mutex);
 
@@ -572,6 +573,22 @@ vk::ShaderModule Device_vulkan::loadShader(const uint32_t *data, size_t size) co
     BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
 
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
+}
+
+vk::ShaderModule Device_vulkan::loadShader(gsl::span<std::byte const> shaderObjectBytes) const
+{
+    // Make sure the address is aligned to uint32_t;
+    let address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
+    required_assert((address & 2) == 0);
+
+    let shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
+    return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
+}
+
+vk::ShaderModule Device_vulkan::loadShader(URL const &shaderObjectLocation) const
+{
+    auto shaderObjectView = ResourceView(shaderObjectLocation);
+    return loadShader(shaderObjectView.bytes());
 }
 
 }

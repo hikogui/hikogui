@@ -10,11 +10,11 @@ namespace TTauri {
 
 
 
-File::File(const std::filesystem::path &path, AccessMode accessMode) :
-    path(path), accessMode(accessMode)
+File::File(URL const &location, AccessMode accessMode) :
+    location(location), accessMode(accessMode)
 {
 #ifdef WIN32
-    auto fileName = path.wstring();
+    auto fileName = location.wstring_path();
 
     DWORD desiredAccess = 0;
     if (accessMode >= AccessMode::RDONLY) {
@@ -59,7 +59,7 @@ File::File(const std::filesystem::path &path, AccessMode accessMode) :
 
     if ((intrinsic = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) == INVALID_HANDLE_VALUE) {
         BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            boost::errinfo_file_name(path.string())
+            boost::errinfo_file_name(to_string(location))
         );
     }
 #endif

@@ -170,15 +170,4 @@ Path parseTTauriIcon(gsl::span<std::byte> bytes)
     return drawing;
 }
 
-Path parseTTauriIcon(std::filesystem::path& path)
-{
-    let view = FileView(path);
-    try {
-        return parseTTauriIcon(view.bytes);
-    } catch (boost::exception &e) {
-        e << boost::errinfo_file_name(path.string());
-        throw;
-    }
-}
-
 }

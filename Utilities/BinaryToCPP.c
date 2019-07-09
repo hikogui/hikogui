@@ -46,12 +46,13 @@ long get_file_length(FILE *file)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 3) {
-        return usage(argv[0], "Expected two arguments.");
+    if (argc != 4) {
+        return usage(argv[0], "Expected three arguments.");
     }
 
     char *input_filename = argv[1];
     char *output_filename = argv[2];
+    char *resource_url = argv[3];
 
     FILE *input_file = fopen(input_filename, "rb");
     FILE *output_file = fopen(output_filename, "wb");
@@ -62,12 +63,11 @@ int main(int argc, char *argv[])
     get_cooked_filename(name, input_filename);
 
     fprintf(output_file, "#pragma once\n\n");
+
+    fprintf(output_file, "#include \"TTauri/URL.hpp\"\n");
     fprintf(output_file, "#include <cstdint>\n\n");
-    fprintf(output_file, "namespace BinaryAssets {\n\n");
-    fprintf(output_file, "extern const uint8_t %s[%lli];\n", name, (long long int)input_file_length);
-    fprintf(output_file, "extern const uint32_t *u32%s;\n\n", name);
-    fprintf(output_file, "#ifdef BINARY_ASSETS_%s_IMPL\n", name);
-    fprintf(output_file, "alignas(4) const uint8_t %s[%lli] = {\n", name, (long long int)input_file_length);
+
+    fprintf(output_file, "alignas(8) static const uint8_t %s_data[%llu] = {\n", name, (long long unsigned)input_file_length);
 
     uint8_t buffer[4096];
     size_t buffer_size;
@@ -84,14 +84,13 @@ int main(int argc, char *argv[])
                 fprintf(output_file, "\n");
             }
         }
-
-        fprintf(stderr, "buffer_size %lli\n", (long long int)buffer_size);
     } while (buffer_size == sizeof(buffer));
 
-    fprintf(output_file, "};\n");
-    fprintf(output_file, "const uint32_t *u32%s = reinterpret_cast<const uint32_t *>(%s);\n", name, name);
-    fprintf(output_file, "#endif\n");
-    fprintf(output_file, "}\n");
+    fprintf(output_file, "};\n\n");
+
+    fprintf(output_file, "static const gsl::span<std::byte const> %s_bytes = {reinterpret_cast<std::byte const *>(%s_data), sizeof(%s_data)};\n",
+        name, name, name);
+    fprintf(output_file, "static const TTauri::URL %s_url = {\"%s\"};\n", name, resource_url);
 
     fclose(input_file);
     fclose(output_file);

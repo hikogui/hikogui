@@ -9,6 +9,10 @@
 #include <vma/vk_mem_alloc.h>
 #include <filesystem>
 
+namespace TTauri {
+struct URL;
+}
+
 namespace TTauri::GUI {
 
 class Device_vulkan final : public Device_base {
@@ -119,7 +123,12 @@ public:
         vmaFlushAllocation(allocator, allocation, offset, size);
     }
 
-    vk::ShaderModule loadShader(const uint32_t *data, size_t size) const;
+    vk::ShaderModule loadShader(uint32_t const *data, size_t size) const;
+
+    vk::ShaderModule loadShader(gsl::span<std::byte const> shaderObjectBytes) const;
+
+    vk::ShaderModule Device_vulkan::loadShader(URL const &shaderObjectLocation) const;
+
 
     void waitIdle() const {
         std::scoped_lock lock(TTauri::GUI::mutex);

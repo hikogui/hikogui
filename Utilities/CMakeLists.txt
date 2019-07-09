@@ -1,4 +1,4 @@
 
 
 
-add_executable(BinaryToHPP BinaryToHPP.c)
+add_executable(BinaryToCPP BinaryToCPP.c)

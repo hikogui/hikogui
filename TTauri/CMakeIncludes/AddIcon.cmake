@@ -1,33 +1,25 @@
-function(target_add_icon TARGET ICON)
+function(add_icon RET)
     find_package(python COMPONENTS Interpreter)
-
     set(SVG2TTICON_PY ${CMAKE_SOURCE_DIR}/Utilities/SVG2TTIcon.py)
 
-	# All shaders for a sample are found here.
-	set(current-input-path ${CMAKE_CURRENT_SOURCE_DIR}/${ICON})
+    foreach(SOURCE_FILE IN LISTS ARGN)
+        get_filename_component(INPUT_PATH ${SOURCE_FILE} ABSOLUTE)
+        get_filename_component(INPUT_FILENAME ${SOURCE_FILE} NAME)
+        get_filename_component(INPUT_BASENAME ${SOURCE_FILE} NAME_WLE)
 
-	get_filename_component(icon-filename ${ICON} NAME)
-	set(current-intermediate-path ${CMAKE_CURRENT_BINARY_DIR}/${icon-filename}.tticon)
+        set(OUTPUT_FILENAME "${INPUT_BASENAME}.tticon")
+        get_filename_component(OUTPUT_PATH ${OUTPUT_FILENAME} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-	set(current-output-path ${CMAKE_CURRENT_BINARY_DIR}/${icon-filename}.tticon.hpp)
 
-	# Add a custom command to compile GLSL to SPIR-V.
-	add_custom_command(
-		OUTPUT ${current-intermediate-path}
-		COMMAND ${Python_EXECUTABLE} ${SVG2TTICON_PY} -o ${current-intermediate-path} ${current-input-path}
-		DEPENDS ${current-input-path}
-		IMPLICIT_DEPENDS CXX ${current-input-path}
-		VERBATIM)
+	    # Add a custom command to compile GLSL to SPIR-V.
+	    add_custom_command(
+		    OUTPUT ${OUTPUT_PATH}
+		    COMMAND ${Python_EXECUTABLE} ${SVG2TTICON_PY} -o ${OUTPUT_PATH} ${INPUT_PATH}
+		    DEPENDS ${INPUT_PATH} ${SVG2TTICON_PY}
+		    VERBATIM)
 
-	add_custom_command(
-		OUTPUT ${current-output-path}
-		COMMAND BinaryToHPP ${current-intermediate-path} ${current-output-path}
-		DEPENDS ${current-intermediate-path} BinaryToHPP
-		IMPLICIT_DEPENDS CXX ${current-intermediate-path}
-		VERBATIM
-	)
+        set(OUTPUT_PATHS ${OUTPUT_PATHS} ${OUTPUT_PATH})
+    endforeach()
 
-	# Make sure our native build depends on this output.
-	set_source_files_properties(${current-output-path} PROPERTIES GENERATED TRUE)
-	target_sources(${TARGET} PRIVATE ${current-output-path})
-endfunction(target_add_icon)
+    set(${RET} ${OUTPUT_PATHS} PARENT_SCOPE)
+endfunction()

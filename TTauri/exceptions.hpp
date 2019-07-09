@@ -9,6 +9,11 @@
 
 namespace TTauri {
 
+struct URL;
+
+using errinfo_parse_string = boost::error_info<struct tag_parse_string,std::string>;
+using errinfo_url = boost::error_info<struct tag_url,URL>;
+
 struct Error : virtual boost::exception, virtual std::exception {
     std::string _what;
 
@@ -22,6 +27,24 @@ struct Error : virtual boost::exception, virtual std::exception {
 
 struct ParseError : Error {
     ParseError(const std::string& msg) : Error(msg) {}
+};
+
+struct URLError : Error {
+    URLError(const std::string& msg) : Error(msg) {}
+};
+
+struct FileError : Error {
+    FileError(const std::string& msg) : Error(msg) {}
+};
+
+struct NotImplementedError : Error {
+    NotImplementedError(const std::string& msg) : Error(msg) {}
+    NotImplementedError() : Error("") {}
+};
+
+struct OutOfBoundsError : Error {
+    OutOfBoundsError(const std::string& msg) : Error(msg) {}
+    OutOfBoundsError() : Error("") {}
 };
 
 }

@@ -62,7 +62,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 
     // Draw something.
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-    let &labelFont = Draw::fonts->get("Themes/Fonts/Roboto/Roboto-Regular.ttf");
+    let &labelFont = Draw::fonts->get(URL("file:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
     let labelFontSize = 12.0;
 
     wsRGBA backgroundColor;

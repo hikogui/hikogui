@@ -3,14 +3,12 @@
 
 #pragma once
 
-#include <filesystem>
 #include <gsl/gsl>
 
 namespace TTauri::Draw {
 
 struct Font;
 
-Font parseTrueTypeFile(gsl::span<std::byte> bytes);
-Font parseTrueTypeFile(std::filesystem::path& path);
+Font parseTrueTypeFile(gsl::span<std::byte const> bytes);
 
 }

@@ -76,7 +76,7 @@ public:
         }
         let currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            singleton<Application>->lastWindowClosed();
+            get_singleton<Application>().lastWindowClosed();
         }
         previousNumberOfWindows = currentNumberOfWindows;
     }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "exceptions.hpp"
 #include <boost/throw_exception.hpp>
 #include <gsl/gsl>
 #include <cstddef>
@@ -15,9 +16,6 @@
 #include <atomic>
 
 namespace TTauri {
-
-    struct NotImplementedError : virtual boost::exception, virtual std::exception {};
-    struct OutOfBoundsError : virtual boost::exception, virtual std::exception {};
 
 #define TTAURI_ASSERT(x) if (!(x)) { abort(); }
 
@@ -32,7 +30,11 @@ constexpr T safe_modulo(T x, M m)
 }
 
 template<typename T>
-inline auto singleton = std::make_unique<T>();
+inline T &get_singleton()
+{
+    static auto x = std::make_unique<T>();
+    return *x;
+}
 
 template<typename T>
 inline T &at(gsl::span<std::byte> bytes, size_t offset)
@@ -46,6 +48,16 @@ inline T &at(gsl::span<std::byte> bytes, size_t offset)
 }
 
 template<typename T>
+inline T const &at(gsl::span<std::byte const> bytes, size_t offset)
+{
+    if (offset + sizeof(T) > static_cast<size_t>(bytes.size())) {
+        BOOST_THROW_EXCEPTION(OutOfBoundsError());
+    }
+
+    return *reinterpret_cast<T const *>(&bytes[offset]);
+}
+
+template<typename T>
 inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset, size_t count)
 {
     size_t size = count * sizeof(T);
@@ -54,8 +66,21 @@ inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset, size_t 
         BOOST_THROW_EXCEPTION(OutOfBoundsError());
     }
 
-    T* ptr = reinterpret_cast<T *>(&bytes[offset]);
+    T *ptr = reinterpret_cast<T *>(&bytes[offset]);
     return gsl::span<T>(ptr, count);
+}
+
+template<typename T>
+inline gsl::span<T const> make_span(gsl::span<std::byte const> bytes, size_t offset, size_t count)
+{
+    size_t size = count * sizeof(T);
+
+    if (offset + size > static_cast<size_t>(bytes.size())) {
+        BOOST_THROW_EXCEPTION(OutOfBoundsError());
+    }
+
+    T const *ptr = reinterpret_cast<T const *>(&bytes[offset]);
+    return gsl::span<T const>(ptr, count);
 }
 
 template<typename T>
@@ -63,9 +88,19 @@ inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset=0)
 {
     size_t count = bytes.size() / sizeof(T);
 
-    T* ptr = reinterpret_cast<T *>(&bytes[offset]);
+    T *ptr = reinterpret_cast<T *>(&bytes[offset]);
     return gsl::span<T>(ptr, count);
 }
+
+template<typename T>
+inline gsl::span<T const> make_span(gsl::span<std::byte const> bytes, size_t offset=0)
+{
+    size_t count = bytes.size() / sizeof(T);
+
+    T const* ptr = reinterpret_cast<T const *>(&bytes[offset]);
+    return gsl::span<T const>(ptr, count);
+}
+
 
 template<typename R, typename T>
 inline R align(T ptr, size_t alignment) 
@@ -116,17 +151,18 @@ inline typename T::value_type pop_back(T &v)
     return x;
 }
 
-inline std::vector<std::string> split(std::string haystack, char needle)
+template <typename T>
+inline std::vector<T> split(T haystack, char needle)
 {
-    std::vector<std::string> r;
+    std::vector<T> r;
 
     size_t offset = 0;
-    size_t pos = haystack.find('.', offset);
+    size_t pos = haystack.find(needle, offset);
     while (pos != haystack.npos) {
         r.push_back(haystack.substr(offset, pos - offset));
 
         offset = pos + 1;
-        pos = haystack.find('.', offset);
+        pos = haystack.find(needle, offset);
     }
 
     r.push_back(haystack.substr(offset, haystack.size() - offset));
@@ -195,6 +231,44 @@ inline void erase_if(T &v, F operation)
             return;
         }
         v.erase(i);
+    }
+}
+
+template <class To, class From>
+typename std::enable_if<(sizeof(To) == sizeof(From)) && std::is_trivially_copyable<From>::value && std::is_trivial<To>::value,
+// this implementation requires that To is trivially default constructible
+To>::type
+// constexpr support needs compiler magic
+bit_cast(const From &src) noexcept
+{
+    To dst;
+    std::memcpy(&dst, &src, sizeof(To));
+    return dst;
+}
+
+inline char nibble_to_char(uint8_t nibble)
+{
+    if (nibble <= 9) {
+        return '0' + nibble;
+    } else if (nibble <= 15) {
+        return 'a' + nibble - 10;
+    } else {
+        no_default;
+    }
+}
+
+inline uint8_t char_to_nibble(char c)
+{
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return (c - 'a') + 10;
+    } else if (c >= 'A' && c <= 'F') {
+        return (c - 'A') + 10;
+    } else {
+        BOOST_THROW_EXCEPTION(ParseError("Could not parse hexadecimal digit")
+            << errinfo_parse_string(std::string(1, c))
+        );
     }
 }
 

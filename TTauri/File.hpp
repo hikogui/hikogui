@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "URL.hpp"
+
 #ifdef WIN32
 #include <Windows.h>
 #endif
@@ -16,26 +18,10 @@
 namespace TTauri {
 
 
-
-struct FileError : virtual boost::exception, virtual std::exception {
-    std::string _what;
-
-    FileError() : _what("unknown FileError") {}
-    FileError(const std::string& what) : _what(what) {}
-
-    const char* what() const noexcept override {
-        return _what.data();
-    }
-};
-
 struct AccessMode {
     uint64_t value;
 
     AccessMode(uint64_t v) : value(v) {}
-
-    //bool operator>=(uint64_t v) {
-    //    return (value & v) == v;
-    //}
 
     bool operator>=(AccessMode m) {
         return (value & m.value) == m.value;
@@ -56,14 +42,19 @@ struct AccessMode {
 
 struct File {
     AccessMode accessMode;
-    std::filesystem::path path;
+    URL location;
 
 #ifdef WIN32
     HANDLE intrinsic;
 #endif
 
-    File(std::filesystem::path const& path, AccessMode accessMode);
+    File(URL const& location, AccessMode accessMode);
     ~File();
+
+    File(File const &other) = delete;
+    File(File &&other) = delete;
+    File &operator=(File const &other) = delete;
+    File &operator=(File &&other) = delete;
 };
 
 }

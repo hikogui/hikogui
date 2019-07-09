@@ -52,7 +52,7 @@ public:
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
-        singleton<Instance>->addWindow<Window>(myWindowDelegate, "Hello World 1");
+        get_singleton<Instance>().addWindow<Window>(myWindowDelegate, "Hello World 1");
     }
 
     void lastWindowClosed() override
@@ -66,12 +66,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
-    singleton<Application>->initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
+    get_singleton<Application>().initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
 
     fonts = std::make_unique<Fonts>();
-    let font = parseTrueTypeFile(std::filesystem::path("../TTauri/Draw/TestFiles/Roboto-Regular.ttf"));
+    let view = ResourceView(URL("file:../TTauri/Draw/TestFiles/Roboto-Regular.ttf"));
+    let font = parseTrueTypeFile(view.bytes());
 
-    singleton<Instance>->initialize();
+    get_singleton<Instance>().initialize();
 
-    return singleton<Application>->loop();
+    return get_singleton<Application>().loop();
 }

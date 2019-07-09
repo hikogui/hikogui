@@ -3,14 +3,17 @@
 
 #include "TrueTypeParser.hpp"
 #include "Fonts.hpp"
+#include "TTauri/URL.hpp"
 #include "TTauri/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 
 using namespace std;
+using namespace TTauri;
 using namespace TTauri::Draw;
 
 TEST(TrueTypeParserTest, ParseTest) {
-    let font = parseTrueTypeFile(std::filesystem::path("Draw/TestFiles/Roboto-Regular.ttf"));
+    let view = ResourceView(URL("file:Draw/TestFiles/Roboto-Regular.ttf"));
+    let font = parseTrueTypeFile(view.bytes());
 }

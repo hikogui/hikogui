@@ -5,18 +5,20 @@
 
 #include "Font.hpp"
 #include "TrueTypeParser.hpp"
+#include "TTauri/ResourceView.hpp"
 #include <filesystem>
 #include <map>
 
 namespace TTauri::Draw {
 
 struct Fonts {
-    std::map<std::filesystem::path, Font> fonts;
+    std::map<URL, Font> fonts;
 
-    Font const &get(std::filesystem::path path) {
-        let i = fonts.find(path);
+    Font const &get(URL const &location) {
+        let i = fonts.find(location);
         if (i == fonts.end()) {
-            return fonts[path] = parseTrueTypeFile(path);
+            let view = ResourceView{location};
+            return fonts[location] = parseTrueTypeFile(view.bytes());
         } else {
             return i->second;
         }

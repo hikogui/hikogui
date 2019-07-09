@@ -5,8 +5,10 @@
 #include "utils.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
+#include "strings.hpp"
 #include <vulkan/vulkan.hpp>
 #include <thread>
+#include <string>
 
 namespace TTauri {
 
@@ -23,9 +25,7 @@ void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> de
         BOOST_THROW_EXCEPTION(Application_base::ResourceDirError());
     }
 
-    let modulePath = std::filesystem::path(modulePathWChar);
-
-    resourceDir = modulePath.parent_path();
+    resourceLocation = URL("file", URLPath::fromWin32Path(modulePathWChar));
 
     Application_base::initialize(move(delegate));
 }
@@ -40,7 +40,7 @@ void Application_win32::mainThreadLastWindowClosed()
     // Let the application have a change to open new windows from the main thread.
     Application_base::lastWindowClosed();
 
-    if (singleton<GUI::Instance>->getNumberOfWindows() == 0) {
+    if (get_singleton<GUI::Instance>().getNumberOfWindows() == 0) {
         LOG_INFO("Application quiting due to all windows having been closed.");
         PostQuitMessage(0);
     }

@@ -6,15 +6,11 @@
 #include "PipelineImage_Image.hpp"
 #include "Device.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/URL.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/range/combine.hpp>
 #include <array>
-
-#define BINARY_ASSETS_PipelineImage_frag_spv_IMPL
-#include "PipelineImage.frag.spv.hpp"
-#define BINARY_ASSETS_PipelineImage_vert_spv_IMPL
-#include "PipelineImage.vert.spv.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -265,8 +261,8 @@ void DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevi
 
 void DeviceShared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(BinaryAssets::u32PipelineImage_vert_spv, sizeof(BinaryAssets::PipelineImage_vert_spv));
-    fragmentShaderModule = device.loadShader(BinaryAssets::u32PipelineImage_frag_spv, sizeof(BinaryAssets::PipelineImage_frag_spv));
+    vertexShaderModule = device.loadShader(URL("static-resource:PipelineImage.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("static-resource:PipelineImage.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

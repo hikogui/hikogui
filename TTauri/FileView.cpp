@@ -2,21 +2,23 @@
 // All rights reserved.
 
 #include "FileView.hpp"
+#include "URL.hpp"
 #include "required.hpp"
 #include "logging.hpp"
 #include "utils.hpp"
 
 namespace TTauri {
 
-std::map<std::filesystem::path, std::vector<std::weak_ptr<FileMapping>>> FileView::mappedFileObjects;
+std::map<URL, std::vector<std::weak_ptr<FileMapping>>> FileView::mappedFileObjects;
 
 FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t offset, size_t size) :
     fileMappingObject(fileMappingObject),
     offset(offset)
 {
     if (size == 0) {
-        size = std::filesystem::file_size(fileMappingObject->path());
+        size = fileMappingObject->size - offset;
     }
+    required_assert(offset + size <= fileMappingObject->size);
 
 #ifdef WIN32
     DWORD desiredAccess;
@@ -27,8 +29,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         desiredAccess = FILE_MAP_READ;
     }
     else {
-        BOOST_THROW_EXCEPTION(FileError("Illigal access mode WRONLY/0 when viewing file.") <<
-            boost::errinfo_file_name(path().string())
+        BOOST_THROW_EXCEPTION(FileError("Illegal access mode WRONLY/0 when viewing file.") <<
+            errinfo_url(location())
         );
     }
 
@@ -38,7 +40,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     void *data;
     if ((data = MapViewOfFile(fileMappingObject->intrinsic, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
         BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            boost::errinfo_file_name(path().string())
+            errinfo_url(location())
         );
     }
 
@@ -46,17 +48,28 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
 #endif
 }
 
-FileView::FileView(const std::filesystem::path & path, AccessMode accessMode, size_t offset, size_t size) :
-    FileView(findOrCreateFileMappingObject(path, accessMode, offset + size), offset, size) {}
+FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
+    FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size) {}
+
+FileView::FileView(FileView &&other) :
+    fileMappingObject(std::move(other.fileMappingObject)),
+    offset(other.offset),
+    bytes(other.bytes)
+{
+    // Make sure the other destructor does not deallocate.
+    other.bytes = {};
+}
 
 FileView::~FileView()
 {
+    if (bytes.size() > 0) {
 #ifdef WIN32
-    void *data = bytes.data();
-    if (!UnmapViewOfFile(data)) {
-        LOG_ERROR("Could not unmap view on file '%s'", getLastErrorMessage());
-    }
+        void *data = bytes.data();
+        if (!UnmapViewOfFile(data)) {
+            LOG_ERROR("Could not unmap view on file '%s'", getLastErrorMessage());
+        }
 #endif
+    }
 }
 
 void FileView::flush(void* base, size_t size)
@@ -64,19 +77,17 @@ void FileView::flush(void* base, size_t size)
 #ifdef WIN32
     if (!FlushViewOfFile(base, size)) {
         BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            boost::errinfo_file_name(path().string())
+            errinfo_url(location())
         );
     }
 #endif
 }
 
-std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(std::filesystem::path const& path, AccessMode accessMode, size_t size)
+std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& location, AccessMode accessMode, size_t size)
 {
     cleanup();
 
-    let absolutePath = std::filesystem::absolute(path);
-
-    auto& mappings = mappedFileObjects[absolutePath];
+    auto& mappings = mappedFileObjects[location];
 
     for (auto weak_fileMappingObject : mappings) {
         if (auto fileMappingObject = weak_fileMappingObject.lock()) {
@@ -86,7 +97,7 @@ std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(std::filesy
         }
     }
 
-    auto fileMappingObject = std::make_shared<FileMapping>(path, accessMode, size);
+    auto fileMappingObject = std::make_shared<FileMapping>(location, accessMode, size);
     mappings.push_back(fileMappingObject);
     return fileMappingObject;
 }

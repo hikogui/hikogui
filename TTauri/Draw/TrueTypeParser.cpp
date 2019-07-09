@@ -175,9 +175,9 @@ struct MAXPTable {
     big_uint16_buf_t maxComponentDepth;
 };
 
-static Path parseGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm);
+static Path parseGlyph(std::vector<gsl::span<std::byte const>> const& glyphDataList, size_t i, uint16_t unitsPerEm);
 
-static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte const> bytes)
 {
     let &entry = at<CMAPFormat4>(bytes, 0);
     let segCount = static_cast<size_t>(entry.segCountX2.value()) / 2;
@@ -216,9 +216,9 @@ static std::map<char32_t, size_t> parseCMAPFormat4(gsl::span<std::byte> bytes)
     return characterToGlyph;
 }
 
-static std::map<char32_t, size_t> parseCMAPFormat6(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAPFormat6(gsl::span<std::byte const> bytes)
 {
-    let& entry = at<CMAPFormat6>(bytes, 0);
+    let& entry = at<CMAPFormat6 const>(bytes, 0);
     let firstCode = entry.firstCode.value();
     let entryCount = entry.entryCount.value();
 
@@ -232,7 +232,7 @@ static std::map<char32_t, size_t> parseCMAPFormat6(gsl::span<std::byte> bytes)
     return characterToGlyph;
 }
 
-static std::map<char32_t, size_t> parseCMAPFormat12(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAPFormat12(gsl::span<std::byte const> bytes)
 {
     let& entry = at<CMAPFormat12>(bytes, 0);
 
@@ -250,7 +250,7 @@ static std::map<char32_t, size_t> parseCMAPFormat12(gsl::span<std::byte> bytes)
     return characterToGlyph;
 }
 
-static gsl::span<CMAPEntry>::iterator findBestCMAPEntry(gsl::span<CMAPEntry> entries)
+static gsl::span<CMAPEntry const>::iterator findBestCMAPEntry(gsl::span<CMAPEntry const> entries)
 {
     std::vector<std::pair<uint16_t, uint16_t>> bestPlatforms = {
         {0, 4},
@@ -270,7 +270,7 @@ static gsl::span<CMAPEntry>::iterator findBestCMAPEntry(gsl::span<CMAPEntry> ent
     return entries.end();
 }
 
-static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte> bytes)
+static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte const> bytes)
 {
     let& header = at<CMAPHeader>(bytes, 0);
     if (!(header.version.value() == 0)) {
@@ -303,7 +303,7 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-static Path parseSimpleGlyph(gsl::span<std::byte> bytes, uint16_t unitsPerEm)
+static Path parseSimpleGlyph(gsl::span<std::byte const> bytes, uint16_t unitsPerEm)
 {
     let scale = 1.0f / static_cast<float>(unitsPerEm);
     size_t offset = 0;
@@ -425,7 +425,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-static Path parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDataList, size_t i, uint16_t unitsPerEm)
+static Path parseCompoundGlyph(std::vector<gsl::span<std::byte const>> const& glyphDataList, size_t i, uint16_t unitsPerEm)
 {
     let bytes = glyphDataList.at(i);
     size_t offset = 0;
@@ -513,7 +513,7 @@ static Path parseCompoundGlyph(std::vector<gsl::span<std::byte>> const& glyphDat
     return glyph;
 }
 
-static Path parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, size_t i, uint16_t unitsPerEm)
+static Path parseGlyph(std::vector<gsl::span<std::byte const>> const &glyphDataList, size_t i, uint16_t unitsPerEm)
 {
     let bytes = glyphDataList.at(i);
     if (bytes.size() == 0) {
@@ -544,7 +544,7 @@ static Path parseGlyph(std::vector<gsl::span<std::byte>> const &glyphDataList, s
     return glyph;
 }
 
-static std::vector<Path> parseGLYF(std::vector<gsl::span<std::byte>> const &glyphDataList, uint16_t unitsPerEm)
+static std::vector<Path> parseGLYF(std::vector<gsl::span<std::byte const>> const &glyphDataList, uint16_t unitsPerEm)
 {
     std::vector<Path> glyphs;
 
@@ -556,9 +556,9 @@ static std::vector<Path> parseGLYF(std::vector<gsl::span<std::byte>> const &glyp
     return glyphs;
 }
 
-static std::vector<gsl::span<std::byte>> parseLOCA(gsl::span<std::byte> bytes, gsl::span<std::byte> glyfBytes, size_t numberOfGlyphs, bool longFormat)
+static std::vector<gsl::span<std::byte const>> parseLOCA(gsl::span<std::byte const> bytes, gsl::span<std::byte const> glyfBytes, size_t numberOfGlyphs, bool longFormat)
 {
-    std::vector<gsl::span<std::byte>> r;
+    std::vector<gsl::span<std::byte const>> r;
 
     if (longFormat) {
         let longTable = make_span<big_uint32_buf_t>(bytes, 0, numberOfGlyphs + 1);
@@ -581,7 +581,7 @@ static std::vector<gsl::span<std::byte>> parseLOCA(gsl::span<std::byte> bytes, g
     return r;
 }
 
-static void parseHMTX(std::vector<Path> &glyphs, gsl::span<std::byte> horizontalMetricsData, HHEATable horizontalHeader, float xHeight, float HHeight, uint16_t unitsPerEm)
+static void parseHMTX(std::vector<Path> &glyphs, gsl::span<std::byte const> horizontalMetricsData, HHEATable horizontalHeader, float xHeight, float HHeight, uint16_t unitsPerEm)
 {
     let numberOfHMetrics = horizontalHeader.numberOfHMetrics.value();
 
@@ -613,7 +613,7 @@ static void parseHMTX(std::vector<Path> &glyphs, gsl::span<std::byte> horizontal
 }
 
 template<typename T=std::byte>
-static gsl::span<T> getSpanToTable(gsl::span<std::byte> bytes, gsl::span<SFNTEntry> const entries, uint32_t tag)
+static gsl::span<T const> getSpanToTable(gsl::span<std::byte const> bytes, gsl::span<SFNTEntry const> const entries, uint32_t tag)
 {
     for (let &entry: entries) {
         if (entry.tag.value() == tag) {
@@ -624,12 +624,12 @@ static gsl::span<T> getSpanToTable(gsl::span<std::byte> bytes, gsl::span<SFNTEnt
 }
 
 template<typename T = std::byte>
-static T getTable(gsl::span<std::byte> bytes, gsl::span<SFNTEntry> const entries, uint32_t tag)
+static T const getTable(gsl::span<std::byte const> bytes, gsl::span<SFNTEntry const> const entries, uint32_t tag)
 {
     return getSpanToTable<T>(bytes, entries, tag).at(0);
 }
 
-Font parseTrueTypeFile(gsl::span<std::byte> bytes)
+Font parseTrueTypeFile(gsl::span<std::byte const> bytes)
 {
     Font font;
 
@@ -680,17 +680,6 @@ Font parseTrueTypeFile(gsl::span<std::byte> bytes)
     parseHMTX(font.glyphs, horizontalMetricsData, horizontalHeader, xHeight, HHeight, unitsPerEm);
 
     return font;
-}
-
-Font parseTrueTypeFile(std::filesystem::path& path)
-{
-    let view = FileView(path);
-    try {
-        return parseTrueTypeFile(view.bytes);
-    } catch (boost::exception &e) {
-        e << boost::errinfo_file_name(path.string());
-        throw;
-    }
 }
 
 }

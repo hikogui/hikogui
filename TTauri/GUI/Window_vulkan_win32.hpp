@@ -36,7 +36,7 @@ public:
     static const wchar_t *win32WindowClassName;
     static WNDCLASSW win32WindowClass;
     static bool win32WindowClassIsRegistered;
-    static std::shared_ptr<std::unordered_map<HWND, Window_vulkan_win32 *>> win32WindowMap;
+    static std::unordered_map<HWND, Window_vulkan_win32 *> win32WindowMap;
     static bool firstWindowHasBeenOpened;
 
     vk::SurfaceKHR getSurface() const override;

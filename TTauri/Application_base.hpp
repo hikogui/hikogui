@@ -5,10 +5,14 @@
 
 #include "utils.hpp"
 #include "ApplicationDelegate.hpp"
+#include "URL.hpp"
 #include <boost/exception/all.hpp>
+#include <gsl/gsl>
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <any>
+#include <map>
 
 namespace TTauri {
 
@@ -19,7 +23,6 @@ namespace TTauri {
  */
 class Application_base {
 public:
-
     struct Error : virtual boost::exception, virtual std::exception {};
     struct ResourceDirError : virtual Error {};
 
@@ -31,7 +34,7 @@ public:
 
     /*! Directory where resources are located.
      */
-    std::filesystem::path resourceDir;
+    URL resourceLocation;
 
     Application_base() = default;
     ~Application_base() = default;
@@ -56,6 +59,7 @@ public:
     /*! Called by the GUI when the last window was closed.
     */
     virtual void lastWindowClosed();
+
 };
 
 }
