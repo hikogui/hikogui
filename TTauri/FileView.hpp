@@ -29,7 +29,7 @@ struct FileView {
 
     static std::shared_ptr<FileMapping> findOrCreateFileMappingObject(URL const& path, AccessMode accessMode, size_t size);
     static void cleanup();
-    static std::map<URL, std::vector<std::weak_ptr<FileMapping>>> mappedFileObjects;
+    static inline std::unordered_map<URL, std::vector<std::weak_ptr<FileMapping>>> mappedFileObjects;
 };
 
 }

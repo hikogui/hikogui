@@ -9,8 +9,6 @@
 
 namespace TTauri {
 
-std::map<URL, std::vector<std::weak_ptr<FileMapping>>> FileView::mappedFileObjects;
-
 FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t offset, size_t size) :
     fileMappingObject(fileMappingObject),
     offset(offset)

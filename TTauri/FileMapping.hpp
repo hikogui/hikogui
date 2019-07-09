@@ -5,6 +5,7 @@
 
 #include "File.hpp"
 #include <memory>
+#include <unordered_map>
 
 namespace TTauri {
 
@@ -29,7 +30,7 @@ struct FileMapping {
 
     static std::shared_ptr<File> findOrCreateFile(URL const& path, AccessMode accessMode);
     static void cleanup();
-    static std::map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
+    static inline std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
 };
 
 }

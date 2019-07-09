@@ -8,8 +8,6 @@
 
 namespace TTauri {
 
-std::map<URL, std::vector<std::weak_ptr<File>>> FileMapping::mappedFiles;
-
 FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     file(file), size(size > 0 ? size : file_size(file->location))
 {
