@@ -83,7 +83,8 @@ void FileView::flush(void* base, size_t size)
 
 std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& location, AccessMode accessMode, size_t size)
 {
-    cleanup();
+    static std::unordered_map<URL, std::vector<std::weak_ptr<FileMapping>>> mappedFileObjects;
+    cleanupWeakPointers(mappedFileObjects);
 
     auto& mappings = mappedFileObjects[location];
 
@@ -98,19 +99,6 @@ std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& 
     auto fileMappingObject = std::make_shared<FileMapping>(location, accessMode, size);
     mappings.push_back(fileMappingObject);
     return fileMappingObject;
-}
-
-void FileView::cleanup()
-{
-    for (auto& [key, mappings] : mappedFileObjects) {
-        erase_if(mappings, [](auto x) {
-            return x.expired();
-        });
-    }
-
-    erase_if(mappedFileObjects, [](auto x) {
-        return x.second.size() == 0;
-    });
 }
 
 }

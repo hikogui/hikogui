@@ -101,6 +101,8 @@ struct PixelMap {
     }
 
     PixelMap<T> submap(u64rect2 rect) const {
+        required_assert(rect.extent.x > 0 && rect.extent.y > 0);
+
         if ((rect.offset.x + rect.extent.x > width) || (rect.offset.y + rect.extent.y > height)) {
             throw std::out_of_range("(rect.offset.x + rect.extent.x > width) || (rect.offset.y + rect.extent.y > height)");
         }

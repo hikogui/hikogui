@@ -11,9 +11,18 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 
-ToolbarButtonWidget::ToolbarButtonWidget(Draw::Path const icon) :
-    icon(std::move(icon)), Widget()
+ToolbarButtonWidget::ToolbarButtonWidget(Draw::Path icon, std::function<void()> delegate) :
+    Widget(), delegate(delegate)
 {
+    icon.tryRemoveLayers();
+    this->icon = std::move(icon);
+}
+
+void ToolbarButtonWidget::setParent(Widget *parent)
+{
+    Widget::setParent(parent);
+
+    window->addConstraint(box.height == box.width);
 }
 
 int ToolbarButtonWidget::state() const {
@@ -63,14 +72,14 @@ void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     if (pressed) {
-        fill(linearMap, wsRGBA{ 0xffffff88 });
+        fill(linearMap, pressedBackgroundColor);
     } else if (hover && enabled) {
-        fill(linearMap, wsRGBA{ 0xffffff44 });
+        fill(linearMap, hoverBackgroundColor);
     } else {
         fill(linearMap);
     }
 
-    let iconSize = std::min(image.extent.width(), image.extent.height()) - 5.0f;
+    let iconSize = boost::numeric_cast<float>(std::min(image.extent.width(), image.extent.height()));
     let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
 
     auto iconImage = Draw::PixelMap<wsRGBA>{image.extent};
@@ -84,7 +93,7 @@ void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
     if (!(hover || window->active)) {
-        desaturate(iconImage, 0.8f);
+        desaturate(iconImage, 0.5f);
     }
 
     composit(linearMap, iconImage);
@@ -103,6 +112,7 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) {
         pressed = event.down.leftButton;
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+            delegate();
         }
 
     } else {

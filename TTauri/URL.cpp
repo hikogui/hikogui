@@ -147,7 +147,7 @@ std::string URL::extension() const
 
 URL URL::urlByAppendingPath(URL const &other) const
 {
-    URL r = *this;
+    auto r = *this;
 
     if (other.path.absolute) {
         // replace path completely.
@@ -160,8 +160,24 @@ URL URL::urlByAppendingPath(URL const &other) const
     return r;
 }
 
+URL URL::urlByRemovingFilename() const
+{
+    auto r = *this;
+
+    if (r.path.segments.size() > 0) {
+        r.path.segments.pop_back();
+    }
+
+    return r;
+}
+
+URL URL::urlFromWin32Path(std::wstring_view const path)
+{
+    return URL("file", URLPath::urlPathFromWin32Path(path));
+}
+
 std::string to_string(URL const &url) {
-    auto s = url_encode(url.scheme, TTAURI_URL_ALPHA TTAURI_URL_DIGIT "+-.");
+    auto s = url_encode(url.scheme, TTAURI_URL_ALPHA TTAURI_URL_DIGIT "+-.") + ":";
 
     if (url.authority) {
         s += to_string(url.authority.value());
@@ -174,7 +190,7 @@ std::string to_string(URL const &url) {
     }
 
     if (url.fragment) {
-        s += "?" + url_encode(*url.fragment, TTAURI_URL_PCHAR "/?");
+        s += "#" + url_encode(*url.fragment, TTAURI_URL_PCHAR "/?");
     }
 
     return s;

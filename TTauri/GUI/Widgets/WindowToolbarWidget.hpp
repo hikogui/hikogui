@@ -9,10 +9,18 @@
 
 namespace TTauri::GUI::Widgets {
 
+class ToolbarButtonWidget;
+class WindowTrafficLightsWidget;
 
 class WindowToolbarWidget : public Widget {
 public:
     std::shared_ptr<PipelineImage::Image> backingImage;
+
+    WindowTrafficLightsWidget *trafficLightButtons = nullptr;
+    ToolbarButtonWidget *closeWindowButton = nullptr;
+    ToolbarButtonWidget *maximizeWindowButton = nullptr;
+    ToolbarButtonWidget *minimizeWindowButton = nullptr;
+
 
     WindowToolbarWidget();
     ~WindowToolbarWidget() {}

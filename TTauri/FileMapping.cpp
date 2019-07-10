@@ -48,7 +48,8 @@ FileMapping::~FileMapping()
 
 std::shared_ptr<File> FileMapping::findOrCreateFile(URL const& location, AccessMode accessMode)
 {
-    cleanup();
+    static std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
+    cleanupWeakPointers(mappedFiles);
 
     // We want files to be freshly created if it did not exist before.
     auto& files = mappedFiles[location];
@@ -63,19 +64,6 @@ std::shared_ptr<File> FileMapping::findOrCreateFile(URL const& location, AccessM
     auto file = std::make_shared<File>(location, accessMode);
     files.push_back(file);
     return file;
-}
-
-void FileMapping::cleanup()
-{
-    for (auto& [key, files] : mappedFiles) {
-        erase_if(files, [](auto x) {
-            return x.expired();
-        });
-    }
-
-    erase_if(mappedFiles, [](auto x) {
-        return x.second.size() == 0;
-    });
 }
 
 }

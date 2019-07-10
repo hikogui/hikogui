@@ -33,6 +33,7 @@ add_icon(Icon_objs
     "Themes/Icons/Close Window.svg"
     "Themes/Icons/Maximize Window.svg"
     "Themes/Icons/Minimize Window.svg"
+    "Themes/Icons/MultiColor.svg"
 )
 
 set(TTauri_resources
@@ -87,7 +88,6 @@ set(TTauri_srcs
     URL.cpp
     StaticResources.cpp
     StaticResourceView.cpp
-    Resources.cpp
     File.cpp
     FileMapping.cpp
     FileView.cpp

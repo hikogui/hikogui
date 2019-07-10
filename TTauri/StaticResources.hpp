@@ -13,11 +13,11 @@
 namespace TTauri {
 
 struct StaticResources {
-    std::unordered_map<URL,gsl::span<std::byte const>> intrinsic;
+    std::unordered_map<std::string,gsl::span<std::byte const>> intrinsic;
 
     StaticResources();
 
-    gsl::span<std::byte const> const &get(URL const &location) const;
+    gsl::span<std::byte const> const &get(std::string const &filename) const;
 };
 
 }

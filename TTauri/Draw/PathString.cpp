@@ -100,26 +100,30 @@ Path PathString::toPath(wsRGBA defaultColor) const
 {
     auto r = Path{};
 
-    auto position = getStartPosition();
-
     // First merge all the non-layered glyphs into a single layer with
     // the default color.
-    for (size_t i = 0; i < paths.size(); i++) {
-        let path = paths.at(i);
-        if (!path.hasLayers()) {
-            r += position + path;
+    {
+        auto position = getStartPosition();
+        for (size_t i = 0; i < paths.size(); i++) {
+            let path = paths.at(i);
+            if (!path.hasLayers()) {
+                r += position + path;
+            }
+            position += glyphAdvance(i);
         }
-        position += glyphAdvance(i);
+        r.closeLayer(defaultColor);
     }
-    r.closeLayer(defaultColor);
 
     // Next add all the layered glyphs, which have their own colours.
-    for (size_t i = 0; i < paths.size(); i++) {
-        let path = paths.at(i);
-        if (path.hasLayers()) {
-            r += position + path;
+    {
+        auto position = getStartPosition();
+        for (size_t i = 0; i < paths.size(); i++) {
+            let path = paths.at(i);
+            if (path.hasLayers()) {
+                r += position + path;
+            }
+            position += glyphAdvance(i);
         }
-        position += glyphAdvance(i);
     }
 
     return r;

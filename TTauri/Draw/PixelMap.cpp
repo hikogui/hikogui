@@ -123,7 +123,7 @@ void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> co
 
 void desaturate(PixelMap<wsRGBA> &dst, float brightness)
 {
-    let _brightness = boost::numeric_cast<int16_t>(brightness * 32767.0); 
+    let _brightness = boost::numeric_cast<uint16_t>(brightness * 32768.0); 
 
     for (size_t rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst.at(rowNr);

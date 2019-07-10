@@ -11,5 +11,5 @@
 #include "TTauri/Draw/PNG.hpp"
 #include "TTauri/Draw/attributes.hpp"
 #include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Draw/Font.hpp"
 #include "TTauri/BinaryKey.hpp"
-#include "TTauri/Resources.hpp"

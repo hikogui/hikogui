@@ -35,6 +35,35 @@ bool Path::hasLayers() const {
     return numberOfLayers() > 0;
 }
 
+bool Path::allLayersHaveSameColor() const
+{
+    if (!hasLayers()) {
+        return true;
+    }
+
+    let &firstColor = layerEndContours.front().second;
+
+    for (let &[endContour, color] : layerEndContours) {
+        if (color != firstColor) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void Path::tryRemoveLayers()
+{
+    if (!hasLayers()) {
+        return;
+    }
+
+    if (!allLayersHaveSameColor()) {
+        return;
+    }
+
+    layerEndContours.clear();
+}
+
 std::vector<BezierPoint>::const_iterator Path::beginContour(size_t contourNr) const
 {
     return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
@@ -434,10 +463,33 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs)
     return lhs;
 }
 
+Path &operator*=(Path &lhs, float const rhs)
+{
+    lhs.boundingBox *= rhs;
+    lhs.leftSideBearing = (rhs * glm::vec3(lhs.leftSideBearing, 1.0f)).xy;
+    lhs.rightSideBearing = (rhs * glm::vec3(lhs.rightSideBearing, 1.0f)).xy;
+    lhs.advance = (rhs * glm::vec3(lhs.advance, 0.0f)).xy;
+    lhs.ascender = (rhs * glm::vec3(lhs.ascender, 0.0f)).xy;
+    lhs.descender = (rhs * glm::vec3(lhs.descender, 0.0f)).xy;
+    lhs.capHeight = (rhs * glm::vec3(lhs.capHeight, 0.0f)).xy;
+    lhs.xHeight = (rhs * glm::vec3(lhs.xHeight, 0.0f)).xy;
+
+    for (auto &point: lhs.points) {
+        point *= rhs;
+    }
+    return lhs;
+}
+
 Path operator*(glm::mat3x3 const &lhs, Path rhs)
 {
     return rhs *= lhs;
 }
+
+Path operator*(float const lhs, Path rhs)
+{
+    return rhs *= lhs;
+}
+
 
 Path operator+(glm::vec2 const &lhs, Path rhs)
 {

@@ -84,6 +84,13 @@ inline rect2 &operator*=(rect2 &lhs, glm::mat3x3 const &rhs)
     return lhs;
 }
 
+inline rect2 &operator*=(rect2 &lhs, float const rhs)
+{
+    lhs.offset *= rhs;
+    lhs.extent = extent2{rhs * lhs.extent};
+    return lhs;
+}
+
 inline rect2 &operator+=(rect2 &lhs, glm::vec2 const &rhs)
 {
     lhs.offset += rhs;

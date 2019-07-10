@@ -12,5 +12,19 @@ endif()
 add_executable(TTauriDevelopmentApplication ${GUI_TYPE} TTauriDevelopmentApplication.cpp)
 target_link_libraries(TTauriDevelopmentApplication TTauri)
 set_property(TARGET TTauriDevelopmentApplication PROPERTY CXX_STANDARD 17)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/camera.png DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${CMAKE_SOURCE_DIR}/TTauri/Themes DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
+# Copy library resource files to application.
+add_custom_command(
+  TARGET TTauriDevelopmentApplication POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory 
+    ${CMAKE_SOURCE_DIR}/TTauri/Themes 
+    $<TARGET_FILE_DIR:TTauriDevelopmentApplication>/Themes)
+add_custom_command(
+  TARGET TTauriDevelopmentApplication POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory 
+    ${CMAKE_BINARY_DIR}/TTauri/Themes 
+    $<TARGET_FILE_DIR:TTauriDevelopmentApplication>/Themes)
+
+
+#file(COPY ${CMAKE_SOURCE_DIR}/TTauri/Themes DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+#file(COPY ${CMAKE_BINARY_DIR}/TTauri/Themes DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

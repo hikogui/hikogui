@@ -6,6 +6,7 @@
 #include "FileView.hpp"
 #include "StaticResourceView.hpp"
 #include "Application.hpp"
+#include "Logging.hpp"
 #include <variant>
 
 namespace TTauri {
@@ -14,14 +15,28 @@ using ResourceView_intrinsic = std::variant<FileView,StaticResourceView>;
 
 static inline ResourceView_intrinsic loadView(URL const &location)
 {
-    if (location.scheme == "static-resource") {
-        return StaticResourceView{ location };
-
-    } else if (location.scheme == "resource") {
-        return FileView{ get_singleton<Application>().resourceLocation.urlByAppendingPath(location) };
+    if (location.scheme == "resource") {
+        try {
+            let view = StaticResourceView(location.filename());
+            LOG_INFO("Loaded resource %s from executable.", location);
+            return view;
+        } catch (FileError) {
+            let absoluteLocation = get_singleton<Application>().resourceLocation.urlByAppendingPath(location);
+            auto view = FileView{ absoluteLocation };
+            LOG_INFO("Loaded resource %s from filesystem at %s.", location, absoluteLocation);
+            return view;
+        }
 
     } else if (location.scheme == "file") {
-        return FileView{ location };
+        if (!location.path.absolute) {
+            BOOST_THROW_EXCEPTION(FileError("file-URLs must be absolute.")
+                << errinfo_url(location)
+            );
+        }
+
+        auto view = FileView{ location };
+        LOG_INFO("Loaded resource %s from filesystem.", location);
+        return view;
 
     } else {
         BOOST_THROW_EXCEPTION(FileError("Unknown scheme for loading a resource")

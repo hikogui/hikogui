@@ -261,8 +261,8 @@ void DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevi
 
 void DeviceShared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("static-resource:PipelineImage.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("static-resource:PipelineImage.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineImage.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineImage.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

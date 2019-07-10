@@ -106,6 +106,15 @@ inline BezierPoint &operator*=(BezierPoint &lhs, glm::mat3x3 const &rhs) {
     return lhs;
 }
 
+inline BezierPoint operator*(float const lhs, BezierPoint const &rhs) {
+    return { (lhs * glm::vec3{rhs.p, 1.0f}).xy, rhs.type };
+}
+
+inline BezierPoint &operator*=(BezierPoint &lhs, float const rhs) {
+    lhs.p = (rhs * glm::vec3{lhs.p, 1.0f}).xy;
+    return lhs;
+}
+
 inline BezierPoint operator+(BezierPoint const &lhs, glm::vec2 rhs) {
     return { lhs.p + rhs, lhs.type };
 }

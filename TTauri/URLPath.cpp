@@ -31,7 +31,7 @@ URLPath::URLPath(std::filesystem::path const &path)
     }
 }
 
-URLPath URLPath::fromWin32Path(std::wstring_view const &path_wstring)
+URLPath URLPath::urlPathFromWin32Path(std::wstring_view const &path_wstring)
 {
     let path = std::filesystem::path(path_wstring);
     return URLPath(path);

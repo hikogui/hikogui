@@ -29,8 +29,6 @@ struct FileMapping {
     URL const &location() { return file->location; }
 
     static std::shared_ptr<File> findOrCreateFile(URL const& path, AccessMode accessMode);
-    static void cleanup();
-    static inline std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
 };
 
 }

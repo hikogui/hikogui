@@ -127,10 +127,6 @@ struct wsRGBA {
         );
     }
 
-    bool operator==(wsRGBA const &other) const {
-        return color == other.color;
-    }
-
     int16_t const &r() const { return color.r; }
     int16_t const &g() const { return color.g; }
     int16_t const &b() const { return color.b; }
@@ -202,13 +198,21 @@ struct wsRGBA {
         }
     }
 
-    void desaturate(int16_t brightness) {
-        constexpr int64_t RY = static_cast<int64_t>(0.2126 * 32767.0);
-        constexpr int64_t RG = static_cast<int64_t>(0.7152 * 32767.0);
-        constexpr int64_t RB = static_cast<int64_t>(0.0722 * 32767.0);
-        constexpr int64_t SCALE = static_cast<int64_t>(32767.0 * 2);
+    void desaturate(uint16_t brightness) {
+        constexpr int64_t RY = static_cast<int64_t>(0.2126 * 32768.0);
+        constexpr int64_t RG = static_cast<int64_t>(0.7152 * 32768.0);
+        constexpr int64_t RB = static_cast<int64_t>(0.0722 * 32768.0);
+        constexpr int64_t SCALE = static_cast<int64_t>(32768 * 32768);
 
-        int64_t y = ((RY * r() + RG * g() + RB * b()) * brightness) / SCALE;
+        let _r = static_cast<int64_t>(r());
+        let _g = static_cast<int64_t>(g());
+        let _b = static_cast<int64_t>(b());
+
+        int64_t y = ((
+            RY * _r +
+            RG * _g +
+            RB * _b
+        ) * brightness) / SCALE;
         r() = g() = b() = static_cast<int16_t>(std::clamp(
             y,
             static_cast<int64_t>(std::numeric_limits<int16_t>::min()),
@@ -319,6 +323,17 @@ struct wsRGBA {
         color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
     }
 };
+
+inline bool operator==(wsRGBA const &lhs, wsRGBA const &rhs)
+{
+    return lhs.color == rhs.color;
+}
+
+inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs)
+{
+    return !(lhs == rhs);
+}
+
 
 // http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
 const glm::mat3x3 matrix_sRGB_to_XYZ = {

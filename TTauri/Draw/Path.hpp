@@ -5,7 +5,9 @@
 
 #include "BezierPoint.hpp"
 #include "attributes.hpp"
+#include "TTauriIconParser.hpp"
 #include "TTauri/Color.hpp"
+#include "TTauri/ResourceView.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -78,6 +80,16 @@ struct Path {
     /*! Return the number of closed layers.
     */
     size_t numberOfLayers() const;
+
+    /*! Check if all layers have the same color.
+     */
+    bool allLayersHaveSameColor() const;
+
+    /*! Try to move the layers in a path.
+     * Layers are removed if there are layers, and all the layers have
+     * the same color.
+     */
+    void tryRemoveLayers();
 
     /*! Return an iterator to the start point of a contour.
      */
@@ -235,6 +247,10 @@ Path operator*(glm::mat3x3 const &lhs, Path rhs);
 
 Path &operator*=(Path &lhs, glm::mat3x3 const &rhs);
 
+Path operator*(float const lhs, Path rhs);
+
+Path &operator*=(Path &lhs, float const rhs);
+
 Path operator+(glm::vec2 const &lhs, Path rhs);
 
 Path operator+(Path lhs, glm::vec2 const &rhs);
@@ -260,5 +276,30 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOri
 void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation);
 
 
+
+}
+
+namespace TTauri {
+
+template<>
+inline Draw::Path parseResource(URL const &location)
+{
+    let view = ResourceView(location);
+
+    if (location.extension() == "tticon") {
+        try {
+            let bytes = view.bytes();
+            return Draw::parseTTauriIcon(bytes);
+        } catch (boost::exception &e) {
+            e << errinfo_url(location);
+            throw;
+        }
+
+    } else {
+        BOOST_THROW_EXCEPTION(FileError("Unknown extension")
+            << errinfo_url(location)
+        );
+    }
+}
 
 }

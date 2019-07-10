@@ -12,7 +12,7 @@ int usage(char *program, char *str)
     return 2;
 }
 
-void get_cooked_filename(char *dst, char *src)
+void get_filename(char *dst, char *src)
 {
     char *last_slash_location = strrchr(src, '/');
 
@@ -21,7 +21,11 @@ void get_cooked_filename(char *dst, char *src)
     } else {
         strcpy(dst, src);
     }
+}
 
+void get_c_identifier(char *dst, char *src)
+{
+    strcpy(dst, src);
     size_t dst_length = strlen(dst);
     for (size_t i = 0; i < dst_length; i++) {
         char c = dst[i];
@@ -46,25 +50,26 @@ long get_file_length(FILE *file)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 4) {
-        return usage(argv[0], "Expected three arguments.");
+    if (argc != 3) {
+        return usage(argv[0], "Expected two arguments.");
     }
 
-    char *input_filename = argv[1];
-    char *output_filename = argv[2];
-    char *resource_url = argv[3];
+    char *input_path = argv[1];
+    char *output_path = argv[2];
 
-    FILE *input_file = fopen(input_filename, "rb");
-    FILE *output_file = fopen(output_filename, "wb");
+    FILE *input_file = fopen(input_path, "rb");
+    FILE *output_file = fopen(output_path, "wb");
 
     long input_file_length = get_file_length(input_file);
 
+    char input_filename[256];
+    get_filename(input_filename, input_path);
     char name[256];
-    get_cooked_filename(name, input_filename);
+    get_c_identifier(name, input_filename);
 
     fprintf(output_file, "#pragma once\n\n");
 
-    fprintf(output_file, "#include \"TTauri/URL.hpp\"\n");
+    fprintf(output_file, "#include <gsl/gsl>\n");
     fprintf(output_file, "#include <cstdint>\n\n");
 
     fprintf(output_file, "alignas(8) static const uint8_t %s_data[%llu] = {\n", name, (long long unsigned)input_file_length);
@@ -90,7 +95,7 @@ int main(int argc, char *argv[])
 
     fprintf(output_file, "static const gsl::span<std::byte const> %s_bytes = {reinterpret_cast<std::byte const *>(%s_data), sizeof(%s_data)};\n",
         name, name, name);
-    fprintf(output_file, "static const TTauri::URL %s_url = {\"%s\"};\n", name, resource_url);
+    fprintf(output_file, "static const char *%s_filename = \"%s\";\n", name, input_filename);
 
     fclose(input_file);
     fclose(output_file);

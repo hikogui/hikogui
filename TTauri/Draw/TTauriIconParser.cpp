@@ -98,7 +98,7 @@ struct Layer {
     LineJoinStyle lineJoinStyle;
 };
 
-static std::vector<BezierPoint> parseContour(gsl::span<std::byte> bytes, size_t &offset)
+static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, size_t &offset)
 {
     let &header = at<contour_buf_t>(bytes, offset);
     offset += sizeof(contour_buf_t);
@@ -118,7 +118,7 @@ static std::vector<BezierPoint> parseContour(gsl::span<std::byte> bytes, size_t 
     return contour;
 }
 
-static Layer parsePath(gsl::span<std::byte> bytes, size_t &offset)
+static Layer parsePath(gsl::span<std::byte const> bytes, size_t &offset)
 {
     let &header = at<path_buf_t>(bytes, offset);
     offset += sizeof(path_buf_t);
@@ -137,7 +137,7 @@ static Layer parsePath(gsl::span<std::byte> bytes, size_t &offset)
     return layer;
 }
 
-Path parseTTauriIcon(gsl::span<std::byte> bytes)
+Path parseTTauriIcon(gsl::span<std::byte const> bytes)
 {
     size_t offset = 0;
 
@@ -166,6 +166,12 @@ Path parseTTauriIcon(gsl::span<std::byte> bytes)
             drawing.addStroke(layer.path, layer.strokeColor, layer.strokeWidth, layer.lineJoinStyle);
         }
     }
+
+    drawing.advance = {1.0, 0.0};
+    drawing.ascender = {0.0, 1.0};
+    drawing.descender = {0.0, 0.0};
+    drawing.capHeight = {0.0, 1.0};
+    drawing.xHeight = {1.0, 0.0};
 
     return drawing;
 }

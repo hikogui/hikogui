@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <thread>
 #include <atomic>
+#include <type_traits>
 
 namespace TTauri {
 
@@ -269,6 +270,58 @@ inline uint8_t char_to_nibble(char c)
         BOOST_THROW_EXCEPTION(ParseError("Could not parse hexadecimal digit")
             << errinfo_parse_string(std::string(1, c))
         );
+    }
+}
+
+template<typename T>
+inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v)
+{
+    using iterator = std::remove_reference_t<decltype(v)>::const_iterator;
+    auto expiredIterators = std::vector<iterator>{};
+
+    for (auto i = v.begin(); i != v.end(); i++) {
+        if (i->expired()) {
+            expiredIterators.push_back(i);
+        }
+    }
+
+    for (let &i : expiredIterators) {
+        v.erase(i); 
+    }
+}
+
+template<typename K, typename T>
+inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v)
+{
+    using iterator = std::remove_reference_t<decltype(v)>::const_iterator;
+    auto expiredIterators = std::vector<iterator>{};
+
+    for (auto i = v.begin(); i != v.end(); i++) {
+        if (i->second.expired() == 0) {
+            expiredIterators.push_back(i);
+        }
+    }
+
+    for (let &i : expiredIterators) {
+        v.erase(i); 
+    }
+}
+
+template<typename K, typename T>
+inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T>>> &v)
+{
+    using iterator = std::remove_reference_t<decltype(v)>::const_iterator;
+    auto expiredIterators = std::vector<iterator>{};
+
+    for (auto i = v.begin(); i != v.end(); i++) {
+        cleanupWeakPointers(i->second);
+        if (i->second.size() == 0) {
+            expiredIterators.push_back(i);
+        }
+    }
+
+    for (let &i : expiredIterators) {
+        v.erase(i); 
     }
 }
 

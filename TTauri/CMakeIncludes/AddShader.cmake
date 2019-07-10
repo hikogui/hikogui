@@ -1,4 +1,5 @@
 
+include(CMakeIncludes/GetRelativePath.cmake)
 
 function(add_shader RET)
 	# Find glslc shader compiler.
@@ -14,9 +15,12 @@ function(add_shader RET)
         message("add_shader: ${SOURCE_FILE}")
 	    get_filename_component(INPUT_PATH ${SOURCE_FILE} ABSOLUTE)
         get_filename_component(INPUT_FILENAME ${SOURCE_FILE} NAME)
+        get_relative_path(INPUT_RELPATH ${INPUT_PATH})
 
+        get_filename_component(OUTPUT_RELDIR ${INPUT_RELPATH} DIRECTORY)
         set(OUTPUT_FILENAME "${INPUT_FILENAME}.spv")
-        get_filename_component(OUTPUT_PATH ${OUTPUT_FILENAME} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
+        set(OUTPUT_RELPATH "${OUTPUT_RELDIR}/${OUTPUT_FILENAME}")
+        get_filename_component(OUTPUT_PATH ${OUTPUT_RELPATH} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 	    # Add a custom command to compile GLSL to SPIR-V.
 	    add_custom_command(

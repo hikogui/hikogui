@@ -8,7 +8,6 @@
 namespace TTauri::GUI::Widgets {
 
 class WindowToolbarWidget;
-class WindowTrafficLightsWidget;
 
 class WindowWidget : public Widget {
 public:
@@ -18,7 +17,6 @@ public:
         FULLSCREEN,
     };
 
-    WindowTrafficLightsWidget *leftDecorationWidget = nullptr;
     WindowToolbarWidget *toolbar = nullptr;
 
     wsRGBA backgroundColor;

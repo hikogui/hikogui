@@ -5,21 +5,21 @@
 
 namespace TTauri {
 
-#include "PipelineImage.vert.spv.inl"
-#include "PipelineImage.frag.spv.inl"
+#include "GUI/PipelineImage.vert.spv.inl"
+#include "GUI/PipelineImage.frag.spv.inl"
 
 StaticResources::StaticResources()
 {
-    intrinsic.try_emplace(PipelineImage_vert_spv_url, PipelineImage_vert_spv_bytes);
-    intrinsic.try_emplace(PipelineImage_frag_spv_url, PipelineImage_frag_spv_bytes);
+    intrinsic.try_emplace(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
+    intrinsic.try_emplace(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
 }
 
-gsl::span<std::byte const> const &StaticResources::get(URL const &location) const
+gsl::span<std::byte const> const &StaticResources::get(std::string const &filename) const
 {
-    let i = intrinsic.find(location);
+    let i = intrinsic.find(filename);
     if (i == intrinsic.end()) {
         BOOST_THROW_EXCEPTION(FileError("Could not find static resource")
-            << errinfo_url(location)
+            << boost::errinfo_file_name(filename)
         );
     }
     return i->second;

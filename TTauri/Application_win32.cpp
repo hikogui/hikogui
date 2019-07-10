@@ -25,7 +25,7 @@ void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> de
         BOOST_THROW_EXCEPTION(Application_base::ResourceDirError());
     }
 
-    resourceLocation = URL("file", URLPath::fromWin32Path(modulePathWChar));
+    resourceLocation = URL::urlFromWin32Path(modulePathWChar).urlByRemovingFilename();
 
     Application_base::initialize(move(delegate));
 }

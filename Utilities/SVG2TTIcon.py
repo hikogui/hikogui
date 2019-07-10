@@ -48,6 +48,12 @@ def parseHexColor(s):
     if len(h) == 6:
         h += "ff"
 
+    if len(h) == 3:
+        h += "f"
+
+    if len(h) == 4:
+        h = h[0]+h[0] + h[1]+h[1] + h[2]+h[2] + h[3]+h[3] 
+
     if len(h) != 8:
         raise RuntimeError("Expect hex color '%s' format with 6 or 8 hex digits." % s)
 
@@ -60,7 +66,7 @@ def parseHexColor(s):
 
 class Color (object):
     def __init__(self, s=None):
-        # Color is stored as linear-sRGB, with wide-gammut semantics. 
+        # Color is stored as scRGBA. 
         if s:
             s = color_names.get(s.lower(), s)
             if s.startswith("#"):
@@ -78,29 +84,29 @@ class Color (object):
         g = self.greenInt16()
         b = self.blueInt16()
         a = self.alphaInt16()
-        return struct.pack("<hhhh", r, g, b, a)
+        return struct.pack("<HHHH", r, g, b, a)
 
     def redInt16(self):
-        x = int(self.color[0] * 4095.0 + 0.5)
-        if x < -4096 or x > 4095:
+        x = int(self.color[0] * 8192.0 + 4096.0)
+        if x < -32768 or x > 32767:
             raise OverflowError("Color component value %f should be between -0.5 and 7.5" % self.color[0])
         return x
         
     def greenInt16(self):
-        x = int(self.color[1] * 4095.0 + 0.5)
-        if x < -4096 or x > 4095:
+        x = int(self.color[1] * 8192.0 + 4096.0)
+        if x < -32768 or x > 32767:
             raise OverflowError("Color component value %f should be between -0.5 and 7.5" % self.color[1])
         return x
 
     def blueInt16(self):
-        x = int(self.color[2] * 4095.0 + 0.5)
-        if x < -4096 or x > 4095:
+        x = int(self.color[2] * 8192.0 + 4096.0)
+        if x < -32768 or x > 32767:
             raise OverflowError("Color component value %f should be between -0.5 and 7.5" % self.color[2])
         return x
 
     def alphaInt16(self):
-        x = int(self.color[3] * 32767.0)
-        if x < 0 or x > 32767:
+        x = int(self.color[3] * 65535.0)
+        if x < 0 or x > 65535:
             raise OverflowError("Alpha value %f should be between 0.0 and 1.0" % self.color[3])
         return x
     
@@ -137,7 +143,7 @@ class Contour (object):
         return "<Contour %s>" % (self.points)
 
     def serialize(self):
-        header = struct.pack("<I", len(self.points))
+        header = struct.pack("<H", len(self.points))
         body = b"".join(x.serialize() for x in self.points)
         return header + body
 
@@ -168,8 +174,7 @@ class Path (object):
         header += self.strokeColor.serialize()
         # False flag here means that the line join style is Miter, otherwise it is Bevel.
         header += float_to_fixedPoint1_13(self.strokeWidth, False)
-        header += b"\0\0"
-        header += struct.pack("<I", len(self.contours))
+        header += struct.pack("<H", len(self.contours))
         body = b"".join(x.serialize() for x in self.contours)
         return header + body
 
@@ -193,7 +198,7 @@ class Icon (object):
     def serialize(self):
         header = b"TTIC"
         header += struct.pack(
-            "<I",
+            "<H",
             len(self.paths)
         )
         body = b"".join(x.serialize() for x in self.paths)
@@ -231,21 +236,6 @@ class Icon (object):
             self.boundingBox[2] * widthScale,
             -self.boundingBox[3] * heightScale
         )
-
-class Icons (object):
-    def __init__(self):
-        self.icons = []
-
-    def __repr__(self):
-        return "<Icons %s>" % (self.icons)
-
-    def serialize(self):
-        header = struct.pack("<8sI", b"TT Icons", len(self.icons))
-        body = b"".join(x.serialize() for x in self.icons)
-        return header + body
-
-    def add(self, icon):
-        self.icons.append(icon)
 
 def splitPathTokens(s):
     float_token = ""
@@ -379,20 +369,24 @@ def main():
     )
     (options, input_filenames) = parser.parse_args()
 
-    icons = Icons()
-    for input_filename in input_filenames:
-        if options.verbose:
-            print("Parsing '%s'" % (input_filename))
-        icon = parseSVGIcon(input_filename)
-        icon.normalize()
-        icons.add(icon)
+    if len(input_filenames) != 1:
+        print("Expecting exactly 1 input file.", file=sys.stderr)
+        sys.exit(2)
+
+    input_filename = input_filenames[0]
+
+    if options.verbose:
+        print("Parsing '%s'" % (input_filename))
+
+    icon = parseSVGIcon(input_filename)
+    icon.normalize()
 
     if options.output_filename:
         if options.verbose:
-            print("Writing %i icons to '%s'" % (len(icons.icons), options.output_filename))
+            print("Writing icon to '%s'" % (options.output_filename,), file=sys.stderr)
 
         fd = open(options.output_filename, "wb")
-        fd.write(icons.serialize())
+        fd.write(icon.serialize())
         fd.close()
 
 

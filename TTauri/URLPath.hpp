@@ -25,13 +25,14 @@ struct URLPath {
     URLPath() = default;
     URLPath(std::string const &path);
     URLPath::URLPath(std::filesystem::path const &path);
-    static URLPath fromWin32Path(std::wstring_view const &path_wstring);
 
     std::string string_path() const;
 
     std::string const &filename() const;
 
     std::string extension() const;
+
+    static URLPath urlPathFromWin32Path(std::wstring_view const &path_wstring);
 };
 
 std::string to_string(URLPath const &path);

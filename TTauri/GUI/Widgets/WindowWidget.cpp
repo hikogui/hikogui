@@ -19,15 +19,10 @@ void WindowWidget::setParent(Window *window)
 {
     this->window = window;
 
-    leftDecorationWidget = addWidget<WindowTrafficLightsWidget>();
-    window->addConstraint(leftDecorationWidget->box.outerTop() == box.top());
-    window->addConstraint(leftDecorationWidget->box.outerLeft() == box.left);
-
     toolbar = addWidget<WindowToolbarWidget>();
-    window->addConstraint(toolbar->box.outerLeft() == leftDecorationWidget->box.right());
+    window->addConstraint(toolbar->box.outerLeft() == box.left);
     window->addConstraint(toolbar->box.outerRight() == box.right());
     window->addConstraint(toolbar->box.outerTop() == box.top());
-    window->addConstraint(toolbar->box.outerBottom() >= leftDecorationWidget->box.outerBottom());
 
     window->addConstraint(box.left == 0);
     window->addConstraint(box.bottom == 0);
@@ -66,10 +61,6 @@ HitBox WindowWidget::hitBoxTest(glm::vec2 position) const
     } else if (toolbar->box.contains(position)) {
         // The toolbar will say HitBox::MoveArea where there are no widgets.
         return toolbar->hitBoxTest(position);
-
-    } else if (leftDecorationWidget->box.contains(position)) {
-        // The leftDecorationWidget will say HitBox::MoveArea where there are no lights.
-        return leftDecorationWidget->hitBoxTest(position);
 
     } else {
         // Don't send hitbox tests to the rest of the widgets.

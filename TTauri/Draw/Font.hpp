@@ -5,8 +5,11 @@
 
 #include "Path.hpp"
 #include "PathString.hpp"
+#include "TrueTypeParser.hpp"
 #include "TTauri/grapheme.hpp"
 #include "TTauri/required.hpp"
+#include "TTauri/URL.hpp"
+#include "TTauri/ResourceView.hpp"
 #include <vector>
 #include <map>
 #include <gsl/gsl>
@@ -75,5 +78,28 @@ struct Font {
     }
 };
 
+}
+
+namespace TTauri {
+
+template<>
+inline Draw::Font parseResource(URL const &location)
+{
+    let view = ResourceView(location);
+
+    if (location.extension() == "ttf") {
+        try {
+            return Draw::parseTrueTypeFile(view.bytes());
+        } catch (boost::exception &e) {
+            e << errinfo_url(location);
+            throw;
+        }
+
+    } else {
+        BOOST_THROW_EXCEPTION(FileError("Unknown extension")
+            << errinfo_url(location)
+        );
+    }
+}
 
 }
