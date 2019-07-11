@@ -17,6 +17,7 @@ enum class HitBox {
     BottomRightResizeCorner,
     TopLeftResizeCorner,
     TopRightResizeCorner,
+    ApplicationIcon,
     MoveArea
 };
 

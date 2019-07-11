@@ -9,8 +9,8 @@
 
 namespace TTauri::GUI::Widgets {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget() :
-    Widget()
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Draw::Path applicationIcon) :
+    Widget(), applicationIcon(std::move(applicationIcon))
 {
 }
 
@@ -18,18 +18,20 @@ void WindowTrafficLightsWidget::setParent(Widget *parent)
 {
     Widget::setParent(parent);
 
-    this->window->addConstraint(box.height == DIAMETER + 2.0 * MARGIN);
-    this->window->addConstraint(box.width == DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING);
+    this->window->addConstraint(box.height == HEIGHT);
+    this->window->addConstraint(box.width == WIDTH);
 }
 
 int WindowTrafficLightsWidget::state() const {
     int r = 0;
     r |= window->active ? 1 : 0;
-    r |= hover ? 2 : 0;
-    r |= pressedRed ? 4 : 0;
-    r |= pressedYellow ? 8 : 0;
-    r |= pressedGreen ? 16 : 0;
-    r |= (window->size == Window::Size::Maximized) ? 32 : 0;
+    if constexpr (operatingSystem == OperatingSystem::MacOS) {
+        r |= hover ? 2 : 0;
+        r |= pressedRed ? 4 : 0;
+        r |= pressedYellow ? 8 : 0;
+        r |= pressedGreen ? 16 : 0;
+        r |= (window->size == Window::Size::Maximized) ? 32 : 0;
+    }
     return r;
 }
 
@@ -119,12 +121,31 @@ void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, 
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
+void WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image)
 {
-    if (image.drawn) {
-        return;
+    auto vulkanDevice = device();
+
+    auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
+    fill(linearMap);
+
+    let iconSize = boost::numeric_cast<float>(image.extent.height());
+    let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
+    let iconString = Draw::Alignment::MiddleCenter + T2D(iconLocation, iconSize) * Draw::PathString{applicationIcon};
+
+    fill(linearMap);
+    composit(linearMap, iconString.toPath(wsRGBA{ 0xffffffff }), window->subpixelOrientation);
+
+    if (!window->active) {
+        desaturate(linearMap, 0.5f);
     }
 
+    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
+    fill(pixelMap, linearMap);
+    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
+}
+
+void WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image)
+{
     auto vulkanDevice = device();
 
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
@@ -191,18 +212,40 @@ void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
         drawing.closeLayer({ 0x006600ff });
     }
 
-    composit(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
+    composit(linearMap, drawing, window->subpixelOrientation);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     fill(pixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
+}
+
+void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
+{
+    if (image.drawn) {
+        return;
+    }
+
+    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+        drawApplicationIconImage(image);
+    } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
+        drawTrafficLightsImage(image);
+    } else {
+        no_default;
+    }
+
     image.drawn = true;
 }
 
-std::tuple<rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const
+std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const
 {
     let left = box.left.value();
     let bottom = box.bottom.value();
+    let height = box.height.value();
+
+    let sysmenuButtonBox = rect2{
+        {left, bottom},
+        {height, height}
+    };
 
     let redButtonBox = rect2{
         {left + MARGIN, bottom + MARGIN},
@@ -219,68 +262,88 @@ std::tuple<rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles()
         {DIAMETER, DIAMETER}
     };
 
-    return {redButtonBox, yellowButtonBox, greenButtonBox};    
+    return {redButtonBox, yellowButtonBox, greenButtonBox, sysmenuButtonBox};    
 }
 
 void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
 {
     window->setCursor(Cursor::Clickable);
 
-    // Due to HitBox checking by Windows 10, every time cursor is on a
-    // non client-area the WM_MOUSELEAVE event is send to the window.
-    // The WM_MOUSELEAVE event does not include the mouse position,
-    // neither inside the window, nor on the screen.
-    // We can therefor not determine that the mouse is on the Widget.
-    hover = event.type != MouseEvent::Type::Exited;
+    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+        return;
 
-    let [redButtonRect, yellowButtonRect, greenButtonRect] = getButtonRectangles();
+    } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
+        // Due to HitBox checking by Windows 10, every time cursor is on a
+        // non client-area the WM_MOUSELEAVE event is send to the window.
+        // The WM_MOUSELEAVE event does not include the mouse position,
+        // neither inside the window, nor on the screen.
+        // We can therefor not determine that the mouse is on the Widget.
+        hover = event.type != MouseEvent::Type::Exited;
 
-    if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-        if (pressedRed) {
-            window->closeWindow();
-        } else if (pressedYellow) {
-            window->minimizeWindow();
-        } else if (pressedGreen) {
-            switch (window->size) {
-            case Window::Size::Normal:
-                window->maximizeWindow();
-                break;
-            case Window::Size::Maximized:
-                window->normalizeWindow();
-                break;
-            default:
-                no_default;
+        let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
+
+        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+            if (pressedRed) {
+                window->closeWindow();
+            } else if (pressedYellow) {
+                window->minimizeWindow();
+            } else if (pressedGreen) {
+                switch (window->size) {
+                case Window::Size::Normal:
+                    window->maximizeWindow();
+                    break;
+                case Window::Size::Maximized:
+                    window->normalizeWindow();
+                    break;
+                default:
+                    no_default;
+                }
             }
         }
-    }
 
-    // Only change the pressed state after checking for Button Up, the
-    // button up will check which button was pressed from button down.
-    pressedRed = false;
-    pressedYellow = false;
-    pressedGreen = false;
-    if (event.down.leftButton) {
-        if (redButtonRect.contains(event.position)) {
-            pressedRed = true;
-        } else if (yellowButtonRect.contains(event.position)) {
-            pressedYellow = true;
-        } else if (greenButtonRect.contains(event.position)) {
-            pressedGreen = true;
+        // Only change the pressed state after checking for Button Up, the
+        // button up will check which button was pressed from button down.
+        pressedRed = false;
+        pressedYellow = false;
+        pressedGreen = false;
+        if (event.down.leftButton) {
+            if (redButtonRect.contains(event.position)) {
+                pressedRed = true;
+            } else if (yellowButtonRect.contains(event.position)) {
+                pressedYellow = true;
+            } else if (greenButtonRect.contains(event.position)) {
+                pressedGreen = true;
+            }
         }
+
+    } else {
+        no_default;
     }
 }
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const
 {
-    let [redButtonRect, yellowButtonRect, greenButtonRect] = getButtonRectangles();
+    let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
-    if (redButtonRect.contains(position) ||
-        yellowButtonRect.contains(position) ||
-        greenButtonRect.contains(position)
-    ) {
-        return HitBox::NoWhereInteresting;
+    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+        if (sysmenuButtonBox.contains(position)) {
+            return HitBox::ApplicationIcon;
+        } else {
+            return HitBox::MoveArea;
+        }
+
+    } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
+        if (redButtonRect.contains(position) ||
+            yellowButtonRect.contains(position) ||
+            greenButtonRect.contains(position)
+        ) {
+            return HitBox::NoWhereInteresting;
+        } else {
+            return HitBox::MoveArea;
+        }
+
     } else {
-        return HitBox::MoveArea;
+        no_default;
     }
 }
 

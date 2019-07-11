@@ -8,6 +8,7 @@
 #include "Widgets/WindowWidget.hpp"
 #include "Device_forward.hpp"
 #include "Mouse.hpp"
+#include "TTauri/Draw/attributes.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/logging.hpp"
 #include <rhea/simplex_solver.hpp>
@@ -71,6 +72,10 @@ public:
     std::string title;
 
     Device *device = nullptr;
+
+    /*! Orientation of the RGB subpixels.
+     */
+    Draw::SubpixelOrientation subpixelOrientation = Draw::SubpixelOrientation::RedLeft;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as

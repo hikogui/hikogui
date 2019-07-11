@@ -15,3 +15,17 @@
 #define required_assert(x) if (!(x)) { std::terminate(); }
 
 #define no_default { std::terminate(); }
+
+namespace TTauri {
+
+enum class OperatingSystem {
+    Windows10,
+    MacOS
+};
+
+/*! Used for describing the look and feel of the application.
+ * Use operating supplied macros for detecting APIs
+ */
+constexpr auto operatingSystem = OperatingSystem::MacOS;
+
+}

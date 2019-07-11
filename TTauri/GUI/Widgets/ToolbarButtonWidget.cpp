@@ -79,7 +79,7 @@ void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
         fill(linearMap);
     }
 
-    let iconSize = boost::numeric_cast<float>(std::min(image.extent.width(), image.extent.height()));
+    let iconSize = boost::numeric_cast<float>(image.extent.height());
     let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
 
     auto iconImage = Draw::PixelMap<wsRGBA>{image.extent};

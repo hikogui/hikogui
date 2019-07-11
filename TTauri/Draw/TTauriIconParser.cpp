@@ -45,8 +45,8 @@ struct little_point_buf_t {
         switch (type) {
         case 0b00: return BezierPoint::Type::Anchor;
         case 0b11: return BezierPoint::Type::QuadraticControl;
-        case 0x01: return BezierPoint::Type::CubicControl1;
-        case 0x10: return BezierPoint::Type::CubicControl2;
+        case 0b01: return BezierPoint::Type::CubicControl1;
+        case 0b10: return BezierPoint::Type::CubicControl2;
         default: no_default;
         }
     }

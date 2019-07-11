@@ -95,7 +95,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     let labelGlyphs = Draw::Alignment::MiddleCenter + T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
     drawing += labelGlyphs.toPath(labelColor);
 
-    composit(linearMap, drawing, Draw::SubpixelOrientation::RedLeft);
+    composit(linearMap, drawing, window->subpixelOrientation);
 
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     fill(pixelMap, linearMap);

@@ -23,6 +23,7 @@ class MyWindowDelegate : public WindowDelegate {
 public:
     void openingWindow(Window &window) override
     {
+
         auto button1 = window.widget->addWidget<ButtonWidget>(u8"Hëllö Wörld");
         window.addConstraint(button1->box.width == 100);
         window.addConstraint(button1->box.height == 30);

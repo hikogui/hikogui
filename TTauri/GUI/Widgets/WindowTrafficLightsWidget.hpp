@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "TTauri/Draw/Path.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -21,15 +22,20 @@ public:
     static constexpr float MARGIN = 10.0;
     static constexpr float SPACING = 8.0;
 
+    static constexpr float WIDTH = DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING;
+    static constexpr float HEIGHT = DIAMETER + 2.0 * MARGIN;
+
     bool windowFocus = true;
     bool hover = false;
     bool pressedRed = false;
     bool pressedYellow = false;
     bool pressedGreen = false;
 
+    Draw::Path applicationIcon;
+
     std::shared_ptr<PipelineImage::Image> image;
 
-    WindowTrafficLightsWidget();
+    WindowTrafficLightsWidget(Draw::Path applicationIcon);
     ~WindowTrafficLightsWidget() {}
 
     WindowTrafficLightsWidget(const WindowTrafficLightsWidget &) = delete;
@@ -50,7 +56,10 @@ protected:
     void drawImage(PipelineImage::Image &image);
 
 private:
-    std::tuple<rect2, rect2, rect2> getButtonRectangles() const;
+    std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const;
+
+    void drawApplicationIconImage(PipelineImage::Image &image);
+    void drawTrafficLightsImage(PipelineImage::Image &image);
 
     static void drawCross(Draw::Path &path, glm::vec2 position, float radius);
     static void drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius);

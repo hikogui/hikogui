@@ -57,8 +57,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 exte
         0, // Optional window styles.
         Window_vulkan_win32::win32WindowClassName, // Window class
         u16title.data(), // Window text
-        WS_CAPTION| WS_POPUP, // Window style
-
+        WS_OVERLAPPEDWINDOW, // Window style
         // Size and position
         500,
         500,
@@ -414,6 +413,7 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             case HitBox::BottomRightResizeCorner: return HTBOTTOMRIGHT;
             case HitBox::TopLeftResizeCorner: return HTTOPLEFT;
             case HitBox::TopRightResizeCorner: return HTTOPRIGHT;
+            case HitBox::ApplicationIcon: return HTSYSMENU;
             case HitBox::MoveArea: return HTCAPTION;
             case HitBox::NoWhereInteresting: currentCursor = Cursor::None; return HTCLIENT;
             default: no_default;

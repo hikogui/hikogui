@@ -30,6 +30,7 @@ add_shader(Shader_objs
 )
 
 add_icon(Icon_objs 
+    "Themes/Icons/Application Icon.svg"
     "Themes/Icons/Close Window.svg"
     "Themes/Icons/Maximize Window.svg"
     "Themes/Icons/Minimize Window.svg"
