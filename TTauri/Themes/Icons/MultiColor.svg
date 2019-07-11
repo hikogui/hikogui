@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
   <defs/>
   <metadata> Produced by OmniGraffle 7.9.4 
-    <dc:date>2019-06-24 12:04:04 +0000</dc:date>
+    <dc:date>2019-07-11 09:53:36 +0000</dc:date>
   </metadata>
-  <g id="MultiColor" stroke="none" stroke-dasharray="none" stroke-opacity="1" fill-opacity="1" fill="none">
+  <g id="Canvas_5" stroke-opacity="1" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1">
     <title>MultiColor</title>
-    <g id="MultiColor: __TTauriIconBounds">
+    <g id="Canvas_5: __TTauriIconBounds">
       <title>__TTauriIconBounds</title>
       <g id="Graphic_5">
         <title>__TTauriIconBounds</title>
         <rect x="-1690.9291" y="-1781.9291" width="1133.8583" height="1133.8583" stroke="red" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
       </g>
     </g>
-    <g id="MultiColor: Layer 3">
+    <g id="Canvas_5: Layer 3">
       <title>Layer 3</title>
       <g id="Graphic_7">
         <rect x="-1114.0158" y="-1488.189" width="28.346457" height="28.346457" fill="blue"/>

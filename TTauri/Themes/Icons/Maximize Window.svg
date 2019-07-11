@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
   <defs/>
   <metadata> Produced by OmniGraffle 7.9.4 
-    <dc:date>2019-06-24 12:04:04 +0000</dc:date>
+    <dc:date>2019-07-11 09:53:36 +0000</dc:date>
   </metadata>
-  <g id="Maximize_Window" stroke="none" stroke-dasharray="none" stroke-opacity="1" fill-opacity="1" fill="none">
+  <g id="Maximize_Window" stroke-opacity="1" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1">
     <title>Maximize Window</title>
     <g id="Maximize_Window: __TTauriIconBounds">
       <title>__TTauriIconBounds</title>
@@ -16,8 +16,8 @@
     </g>
     <g id="Maximize_Window: Layer 3">
       <title>Layer 3</title>
-      <g id="Graphic_6">
-        <path d="M -1124 -1441.7717 L -1124 -1243.3465 L -1124 -1243.3465 L -1124 -1215 L -1124 -1215 L -1095.6535 -1215 L -868.8819 -1215 L -840.5354 -1215 L -840.5354 -1243.3465 L -840.5354 -1441.7717 L -840.5354 -1441.7717 L -840.5354 -1498.4646 L -840.5354 -1498.4646 L -868.8819 -1498.4646 L -1095.6535 -1498.4646 L -1124 -1498.4646 Z M -1095.6535 -1441.7717 L -868.8819 -1441.7717 L -868.8819 -1243.3465 L -1095.6535 -1243.3465 Z" fill="white"/>
+      <g id="Graphic_11">
+        <path d="M -1124 -1484.2913 L -1124 -1229.1732 L -1124 -1215 L -1109.8268 -1215 L -854.7087 -1215 L -840.5354 -1215 L -840.5354 -1229.1732 L -840.5354 -1484.2913 L -840.5354 -1498.4646 L -854.7087 -1498.4646 L -1109.8268 -1498.4646 L -1124 -1498.4646 Z M -1109.8268 -1484.2913 L -854.7087 -1484.2913 L -854.7087 -1229.1732 L -1109.8268 -1229.1732 Z" fill="white"/>
       </g>
     </g>
   </g>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xl="http://www.w3.org/1999/xlink" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:dc="http://purl.org/dc/elements/1.1/" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" viewBox="-1692 -1783 1136 1136" width="1136" height="1136">
   <defs/>
   <metadata> Produced by OmniGraffle 7.9.4 
-    <dc:date>2019-06-24 12:04:04 +0000</dc:date>
+    <dc:date>2019-07-11 09:53:36 +0000</dc:date>
   </metadata>
-  <g id="Minimize_Window" stroke="none" stroke-dasharray="none" stroke-opacity="1" fill-opacity="1" fill="none">
+  <g id="Minimize_Window" stroke-opacity="1" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1">
     <title>Minimize Window</title>
     <g id="Minimize_Window: __TTauriIconBounds">
       <title>__TTauriIconBounds</title>
@@ -17,7 +17,7 @@
     <g id="Minimize_Window: Layer 3">
       <title>Layer 3</title>
       <g id="Graphic_6">
-        <rect x="-1124" y="-1385.0787" width="283.46457" height="56.69291" fill="white"/>
+        <rect x="-1124" y="-1370.9055" width="283.46457" height="28.346457" fill="white"/>
       </g>
     </g>
   </g>
