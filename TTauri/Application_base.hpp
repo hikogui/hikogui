@@ -47,6 +47,10 @@ public:
      */
     virtual void initialize(std::shared_ptr<ApplicationDelegate> applicationDelegate);
 
+    /*! Run the given function on the main thread.
+     */
+    virtual void runOnMainThread(std::function<void()> function) = 0;
+
     /*! Called right before a loop is started.
      */
     virtual void startingLoop();

@@ -44,9 +44,10 @@ void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineIma
     }
     let currentScale = box.currentExtent() / currentExtent;
 
-    key.update("WindowTrafficLightsWidget", currentExtent, state());
+    key.clear();
+    key ^ "WindowTrafficLightsWidget" ^ currentExtent ^ state();
 
-    vulkanDevice->imagePipeline->exchangeImage(image, key, currentExtent);
+    image = vulkanDevice->imagePipeline->getImage(key, currentExtent);
 
     drawImage(*image);
 
@@ -221,7 +222,7 @@ void WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &ima
 
 void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
 {
-    if (image.drawn) {
+    if (image.state == GUI::PipelineImage::Image::State::Uploaded) {
         return;
     }
 
@@ -233,7 +234,7 @@ void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
         no_default;
     }
 
-    image.drawn = true;
+    image.state = GUI::PipelineImage::Image::State::Uploaded;
 }
 
 std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const

@@ -5,6 +5,7 @@
 #include "required.hpp"
 #include "logging.hpp"
 #include "utils.hpp"
+#include <mutex>
 
 namespace TTauri {
 
@@ -48,7 +49,11 @@ FileMapping::~FileMapping()
 
 std::shared_ptr<File> FileMapping::findOrCreateFile(URL const& location, AccessMode accessMode)
 {
+    static std::mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
+
+    let lock = std::scoped_lock(mutex);
+
     cleanupWeakPointers(mappedFiles);
 
     // We want files to be freshly created if it did not exist before.

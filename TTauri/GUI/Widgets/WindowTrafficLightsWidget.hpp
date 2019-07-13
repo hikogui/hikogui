@@ -66,7 +66,7 @@ private:
     static void drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius);
 
     // Shared key to reduce number of allocations.
-    BinaryKey key;
+    std::string key;
 };
 
 }

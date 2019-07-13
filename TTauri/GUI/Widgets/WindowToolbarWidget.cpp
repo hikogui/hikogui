@@ -71,7 +71,7 @@ void WindowToolbarWidget::setParent(Widget *parent)
 
 void WindowToolbarWidget::drawBackingImage()
 {
-    if (backingImage->drawn) {
+    if (backingImage->state == GUI::PipelineImage::Image::State::Uploaded) {
         return;
     }
 
@@ -83,7 +83,7 @@ void WindowToolbarWidget::drawBackingImage()
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     fill(fullPixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
-    backingImage->drawn = true;
+    backingImage->state = GUI::PipelineImage::Image::State::Uploaded;
 }
 
 void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
@@ -91,12 +91,13 @@ void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Ve
     let rectangle = box.currentRectangle();
     required_assert(rectangle.extent.width() > 0 && rectangle.extent.height() > 0);
 
-    let key = BinaryKey("WindowToolbarWidget", rectangle.extent);
+    std::string key;
+    key ^ "WindowToolbarWidget" ^ rectangle.extent;
 
     auto vulkanDevice = device();
 
     // backingImage keeps track of use count.
-    vulkanDevice->imagePipeline->exchangeImage(backingImage, key, rectangle.extent);
+    backingImage = vulkanDevice->imagePipeline->getImage(key, rectangle.extent);
     drawBackingImage();
 
     GUI::PipelineImage::ImageLocation location;

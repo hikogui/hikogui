@@ -20,22 +20,58 @@ ButtonWidget::ButtonWidget(std::string const label) :
     box.topMargin = 10.0;
 }
 
-
-
 void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset)
 {
-    auto vulkanDevice = device();
+    if (pixelMapFuture && pixelMapFuture->valid()) {
+        auto [newImage, newPixelMap] = pixelMapFuture->get();
+
+        if (newPixelMap) {
+            auto stagingMap = device()->imagePipeline->getStagingPixelMap(newImage->extent);
+            fill(stagingMap, newPixelMap);
+            device()->imagePipeline->updateAtlasWithStagingPixelMap(*newImage);
+            newImage->state = GUI::PipelineImage::Image::State::Uploaded;
+        }
+
+        if (newImage->state == GUI::PipelineImage::Image::State::Uploaded) {
+            image = newImage;
+            pixelMapFuture = {};
+        }
+    }
 
     if (!window->resizing) {
         currentExtent = box.currentExtent();
+
+        pickle(key, "Button", currentExtent, label, state());
+
+        if ((image == nullptr || image->key != key) && !pixelMapFuture) {
+            auto newImage = device()->imagePipeline->getImage(key, currentExtent);
+
+            switch (newImage->state) {
+            case GUI::PipelineImage::Image::State::Uploaded:
+                image = newImage;
+                break;
+
+            case GUI::PipelineImage::Image::State::Drawing: {
+                auto p = std::promise<ImagePixelMap>();
+                pixelMapFuture = p.get_future();
+                p.set_value({image, Draw::PixelMap<wsRGBA>{}});
+                } break;
+
+            case GUI::PipelineImage::Image::State::Uninitialized:
+                // Try and draw the image, multiple calls will be dropped by the callee.
+                pixelMapFuture = std::async([=]() {
+                    return drawImage(newImage);
+                });
+                break;
+            }
+        }
     }
-    let currentScale = box.currentExtent() / currentExtent;
 
-    key.update("Button", currentExtent, label, state());
+    if (image == nullptr) {
+        return;
+    }
 
-    vulkanDevice->imagePipeline->exchangeImage(image, key, currentExtent);
-
-    drawImage(*image);
+    let currentScale = box.currentExtent() / extent2{image->extent};
 
     GUI::PipelineImage::ImageLocation location;
     location.depth = depth + 0.0f;
@@ -49,15 +85,15 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     image->placeVertices(location, vertices, offset);
 }
 
-void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
+ButtonWidget::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
 {
-    if (image.drawn) {
-        return;
+    auto expected = GUI::PipelineImage::Image::State::Uninitialized;
+    if (!image->state.compare_exchange_strong(expected, GUI::PipelineImage::Image::State::Drawing)) {
+        // Another thread has started drawing.
+        return {image, Draw::PixelMap<wsRGBA>{}};
     }
 
-    auto vulkanDevice = device();
-
-    auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
+    auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
 
     // Draw something.
@@ -81,7 +117,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
 #pragma warning(suppress: 6001)
-    let rectangle = rect2{{0.5f, 0.5f}, { static_cast<float>(image.extent.width()) - 1.0f, static_cast<float>(image.extent.height()) - 1.0f }};
+    let rectangle = rect2{{0.5f, 0.5f}, { static_cast<float>(image->extent.width()) - 1.0f, static_cast<float>(image->extent.height()) - 1.0f }};
     let labelLocation = midpoint(rectangle);
     //let labelLocation = glm::vec2{0.0, 0.0};
 
@@ -97,10 +133,7 @@ void ButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 
     composit(linearMap, drawing, window->subpixelOrientation);
 
-    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
-    fill(pixelMap, linearMap);
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
-    image.drawn = true;
+    return { std::move(image), std::move(linearMap) };
 }
 
 void ButtonWidget::handleMouseEvent(GUI::MouseEvent event) {

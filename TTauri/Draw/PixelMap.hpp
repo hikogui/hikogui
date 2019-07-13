@@ -62,9 +62,27 @@ struct PixelMap {
 
     PixelMap() : pixels(nullptr), width(0), height(0), stride(0) {}
 
-    PixelMap(T *pixels, size_t width, size_t height, size_t stride) : pixels(pixels), width(width), height(height), stride(stride) {} 
+    PixelMap(T *pixels, size_t width, size_t height, size_t stride) : pixels(pixels), width(width), height(height), stride(stride) {
+        if (pixels) {
+            required_assert(stride >= width);
+            required_assert(width > 0);
+            required_assert(height > 0);
+        } else {
+            required_assert(width == 0);
+            required_assert(height == 0);
+        }
+    } 
 
-    PixelMap(size_t width, size_t height) : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {}
+    PixelMap(size_t width, size_t height) : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
+        if (pixels) {
+            required_assert(stride >= width);
+            required_assert(width > 0);
+            required_assert(height > 0);
+        } else {
+            required_assert(width == 0);
+            required_assert(height == 0);
+        }
+    }
 
     PixelMap(u64extent2 extent) : PixelMap(extent.width(), extent.height()) {}
     PixelMap(T *pixels, size_t width, size_t height) : PixelMap(pixels, width, height, width) {}
@@ -82,6 +100,10 @@ struct PixelMap {
     PixelMap(PixelMap const &other) = delete;
     PixelMap(PixelMap &&other) : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
         other.selfAllocated = false;
+    }
+
+    operator bool() const {
+        return pixels;
     }
 
     /*! Disallowing copying so that life-time of selfAllocated pixels is easy to understand.

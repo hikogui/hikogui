@@ -116,84 +116,51 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closeWindow()
 {
-    // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(get_singleton<Application>().mainThreadID, WM_APP_CLOSE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
-}
-
-void Window_vulkan_win32::mainThreadCloseWindow()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    DestroyWindow(win32Window);
+    get_singleton<Application>().runOnMainThread([&]() {
+        DestroyWindow(win32Window);
+    });
 }
 
 void Window_vulkan_win32::minimizeWindow()
 {
-    // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(get_singleton<Application>().mainThreadID, WM_APP_MINIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
-}
-
-void Window_vulkan_win32::mainThreadMinimizeWindow()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    ShowWindow(win32Window, SW_MINIMIZE);
+    get_singleton<Application>().runOnMainThread([&]() {
+        ShowWindow(win32Window, SW_MINIMIZE);
+    });
 }
 
 void Window_vulkan_win32::maximizeWindow()
 {
-    // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(get_singleton<Application>().mainThreadID, WM_APP_MAXIMIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
-}
-
-void Window_vulkan_win32::mainThreadMaximizeWindow()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    ShowWindow(win32Window, SW_MAXIMIZE);
+    get_singleton<Application>().runOnMainThread([&]() {
+        ShowWindow(win32Window, SW_MAXIMIZE);
+    });
 }
 
 void Window_vulkan_win32::normalizeWindow()
 {
-    // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(get_singleton<Application>().mainThreadID, WM_APP_NORMALIZE_WINDOW, 0, reinterpret_cast<LPARAM>(this));
-}
-
-void Window_vulkan_win32::mainThreadNormalizeWindow()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
-
-    ShowWindow(win32Window, SW_RESTORE);
+    get_singleton<Application>().runOnMainThread([&]() {
+        ShowWindow(win32Window, SW_RESTORE);
+    });
 }
 
 void Window_vulkan_win32::closingWindow()
 {
-    // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(get_singleton<Application>().mainThreadID, WM_APP_CLOSING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
-}
-
-void Window_vulkan_win32::mainThreadClosingWindow()
-{
-    // Don't lock mutex, the window is about to be destructed.
-    Window_vulkan::closingWindow();
+    get_singleton<Application>().runOnMainThread([&]() {
+        Window_vulkan::closingWindow();
+    });
 }
 
 void Window_vulkan_win32::openingWindow()
 {
-    // Don't lock mutex, no members of this are being accessed.
-    PostThreadMessageW(get_singleton<Application>().mainThreadID, WM_APP_OPENING_WINDOW, 0, reinterpret_cast<LPARAM>(this));
-}
+    get_singleton<Application>().runOnMainThread([&]() {
+        std::scoped_lock lock(TTauri::GUI::mutex);
 
-void Window_vulkan_win32::mainThreadOpeningWindow()
-{
-    std::scoped_lock lock(TTauri::GUI::mutex);
+        Window_vulkan::openingWindow();
 
-    Window_vulkan::openingWindow();
-
-    // Delegate has been called, layout of widgets has been calculated for the
-    // minimum and maximum size of the window.
-    u32extent2 windowExtent = minimumWindowExtent;
-    createWindow(title, windowExtent);
+        // Delegate has been called, layout of widgets has been calculated for the
+        // minimum and maximum size of the window.
+        u32extent2 windowExtent = minimumWindowExtent;
+        createWindow(title, windowExtent);
+    });
 }
 
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const

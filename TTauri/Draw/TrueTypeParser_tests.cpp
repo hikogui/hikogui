@@ -14,6 +14,6 @@ using namespace TTauri;
 using namespace TTauri::Draw;
 
 TEST(TrueTypeParserTest, ParseTest) {
-    let view = ResourceView(URL("file:Draw/TestFiles/Roboto-Regular.ttf"));
+    let view = ResourceView(URL("resource:Draw/TestFiles/Roboto-Regular.ttf"));
     let font = parseTrueTypeFile(view.bytes());
 }

@@ -11,6 +11,12 @@
 
 namespace TTauri::GUI::PipelineImage {
 
+
+Image::~Image()
+{
+    parent->returnPages(pages);
+}
+
 u64rect2 Image::indexToRect(size_t const pageIndex) const
 {
     let indexY = pageIndex / pageExtent.x;

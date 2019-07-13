@@ -12,13 +12,9 @@
 
 namespace TTauri {
 
-void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+Application_win32::Application_win32() :
+    mainThreadID(GetCurrentThreadId())
 {
-    this->hInstance = hInstance;
-    this->hPrevInstance = hPrevInstance;
-    this->pCmdLine = pCmdLine;
-    this->nCmdShow = nCmdShow;
-
     // Resource path, is the same directory as where the executable lives.
     wchar_t modulePathWChar[MAX_PATH];
     if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
@@ -26,24 +22,38 @@ void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> de
     }
 
     resourceLocation = URL::urlFromWin32Path(modulePathWChar).urlByRemovingFilename();
+}
+
+void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+{
+    this->hInstance = hInstance;
+    this->hPrevInstance = hPrevInstance;
+    this->pCmdLine = pCmdLine;
+    this->nCmdShow = nCmdShow;
 
     Application_base::initialize(move(delegate));
 }
 
 void Application_win32::lastWindowClosed()
 {
-    PostThreadMessageW(mainThreadID, WM_APP_LAST_WINDOW_CLOSED, 0, 0);
+    runOnMainThread([&]() {
+        // Let the application have a change to open new windows from the main thread.
+        Application_base::lastWindowClosed();
+
+        if (get_singleton<GUI::Instance>().getNumberOfWindows() == 0) {
+            LOG_INFO("Application quiting due to all windows having been closed.");
+            PostQuitMessage(0);
+        }
+    });
 }
 
-void Application_win32::mainThreadLastWindowClosed()
+void Application_win32::runOnMainThread(std::function<void()> function)
 {
-    // Let the application have a change to open new windows from the main thread.
-    Application_base::lastWindowClosed();
+    let functionP = new std::function<void()>(std::move(function));
+    required_assert(functionP);
 
-    if (get_singleton<GUI::Instance>().getNumberOfWindows() == 0) {
-        LOG_INFO("Application quiting due to all windows having been closed.");
-        PostQuitMessage(0);
-    }
+    auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
+    required_assert(r != 0);
 }
 
 void Application_win32::startingLoop()
@@ -59,34 +69,11 @@ int Application_win32::loop()
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0)) {
         switch (msg.message) {
-        case WM_APP_LAST_WINDOW_CLOSED:
-            mainThreadLastWindowClosed();
-            break;
-
-        case WM_APP_CLOSING_WINDOW:
-            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadClosingWindow();
-            break;
-
-        case WM_APP_OPENING_WINDOW:
-            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadOpeningWindow();
-            break;
-
-        case WM_APP_CLOSE_WINDOW:
-            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadCloseWindow();
-            break;
-
-        case WM_APP_MINIMIZE_WINDOW:
-            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadMinimizeWindow();
-            break;
-
-        case WM_APP_MAXIMIZE_WINDOW:
-            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadMaximizeWindow();
-            break;
-
-        case WM_APP_NORMALIZE_WINDOW:
-            reinterpret_cast<GUI::Window *>(msg.lParam)->mainThreadNormalizeWindow();
-            break;
-
+        case WM_APP_CALL_FUNCTION: {
+            let functionP = reinterpret_cast<std::function<void()> *>(msg.lParam);
+            (*functionP)();
+            delete functionP;
+            } break;
         }
 
         TranslateMessage(&msg);

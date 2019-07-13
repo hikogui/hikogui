@@ -18,7 +18,7 @@ ImageWidget::ImageWidget(const std::filesystem::path path) :
 
 void ImageWidget::drawBackingImage()
 {
-    if (backingImage->drawn) {
+    if (backingImage->state == GUI::PipelineImage::Image::State::Uploaded) {
         return;
     }
 
@@ -49,17 +49,18 @@ void ImageWidget::drawBackingImage()
     auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
     fill(fullPixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
-    backingImage->drawn = true;
+    backingImage->state = GUI::PipelineImage::Image::State::Uploaded;
 }
 
 void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset)
 {
-    let key = BinaryKey("ImageView"s, box.currentExtent(), path.u8string());
+    std::string key;
+    key ^ "ImageView" ^ box.currentExtent() ^ path.u8string();
 
     auto vulkanDevice = device();
 
     // backingImage keeps track of use count.
-    vulkanDevice->imagePipeline->exchangeImage(backingImage, key, box.currentExtent());
+    backingImage = vulkanDevice->imagePipeline->getImage(key, box.currentExtent());
     drawBackingImage();
 
     //rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);

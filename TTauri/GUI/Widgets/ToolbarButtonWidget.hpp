@@ -47,7 +47,7 @@ private:
     std::shared_ptr<GUI::PipelineImage::Image> image;
 
     // Shared key to reduce number of allocations.
-    BinaryKey key;
+    std::string key;
 };
 
 }

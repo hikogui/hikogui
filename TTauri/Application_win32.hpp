@@ -9,13 +9,7 @@
 
 namespace TTauri {
 
-constexpr UINT WM_APP_LAST_WINDOW_CLOSED = WM_APP + 1;
-constexpr UINT WM_APP_OPENING_WINDOW = WM_APP + 2;
-constexpr UINT WM_APP_CLOSING_WINDOW = WM_APP + 3;
-constexpr UINT WM_APP_CLOSE_WINDOW = WM_APP + 4;
-constexpr UINT WM_APP_MINIMIZE_WINDOW = WM_APP + 5;
-constexpr UINT WM_APP_MAXIMIZE_WINDOW = WM_APP + 6;
-constexpr UINT WM_APP_NORMALIZE_WINDOW = WM_APP + 7;
+constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
 
 class Application_win32 final : public Application_base {
 public:
@@ -25,7 +19,7 @@ public:
     int nCmdShow = 0;
     DWORD mainThreadID = 0;
 
-    Application_win32() : mainThreadID(GetCurrentThreadId()) {}
+    Application_win32();
     ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;
@@ -36,7 +30,8 @@ public:
     void initialize(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow);
 
     void lastWindowClosed() override;
-    void mainThreadLastWindowClosed();
+
+    void runOnMainThread(std::function<void()> function) override;
 
     void startingLoop() override;
 

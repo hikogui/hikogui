@@ -6,12 +6,12 @@
 #include "PipelineImage_TextureMap.hpp"
 #include "PipelineImage_Page.hpp"
 #include "Device_forward.hpp"
-#include "TTauri/BinaryKey.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <boost/exception/exception.hpp>
+#include <mutex>
 
 namespace TTauri::Draw {
 template<typename T> struct PixelMap;
@@ -45,12 +45,12 @@ struct DeviceShared final {
     TextureMap stagingTexture;
     std::vector<TextureMap> atlasTextures;
 
-    std::vector<Page> atlasFreePages;
     std::array<vk::DescriptorImageInfo, atlasMaximumNrImages> atlasDescriptorImageInfos;
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
-    std::unordered_map<BinaryKey, std::shared_ptr<Image>> viewImages;
+    std::vector<Page> atlasFreePages;
+    std::unordered_map<std::string, std::weak_ptr<Image>> imageCache;
 
     DeviceShared(Device const &device);
     ~DeviceShared();
@@ -84,18 +84,16 @@ struct DeviceShared final {
 
     std::vector<Page> getFreePages(size_t const nrPages);
 
-    std::shared_ptr<Image> retainImage(BinaryKey const &key, u64extent2 extent);
-    void releaseImage(const std::shared_ptr<Image> &image);
+    void returnPages(std::vector<Page> const &pages);
 
-    /*! Exchange an image when the key is different.
-     * \param image A shared pointer to an image, which may be reseated.
+    /*! Get an image, possibly from the cache.
      * \param key of the image.
      * \param extent of the image.
      */
-    void exchangeImage(std::shared_ptr<Image>& image, BinaryKey const &key, u64extent2 extent);
+    std::shared_ptr<Image> getImage(std::string const &key, u64extent2 extent);
 
-    void exchangeImage(std::shared_ptr<Image>& image, BinaryKey const &key, extent2 extent) {
-        return exchangeImage(image, key, u64extent2{extent.width(), extent.height()});
+    std::shared_ptr<Image> getImage(std::string const &key, extent2 extent) {
+        return getImage(key, u64extent2{extent.width(), extent.height()});
     }
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);

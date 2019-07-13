@@ -26,6 +26,6 @@ enum class OperatingSystem {
 /*! Used for describing the look and feel of the application.
  * Use operating supplied macros for detecting APIs
  */
-constexpr auto operatingSystem = OperatingSystem::MacOS;
+constexpr auto operatingSystem = OperatingSystem::Windows10;
 
 }

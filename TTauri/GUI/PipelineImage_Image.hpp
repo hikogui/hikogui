@@ -4,23 +4,29 @@
 #pragma once
 
 #include "TTauri/geometry.hpp"
-#include "TTauri/BinaryKey.hpp"
 #include <boost/exception/exception.hpp>
 #include <gsl/gsl>
+#include <atomic>
+#include <string>
 
 namespace TTauri::GUI::PipelineImage {
 
 struct Page;
 struct Vertex;
 struct ImageLocation;
+struct DeviceShared;
 
 struct Image {
+    enum class State { Uninitialized, Drawing, Uploaded };
+
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    bool drawn = false;
+    std::atomic<State> state = State::Uninitialized;
     size_t retainCount = 1;
 
-    BinaryKey key;
+    DeviceShared *parent;
+
+    std::string key;
     u64extent2 extent;
 
     //! Number of pages in width and height.
@@ -28,11 +34,20 @@ struct Image {
 
     std::vector<Page> pages;
 
-    Image(BinaryKey key, u64extent2 extent, u64extent2 pageExtent, std::vector<Page> pages) :
+    Image(DeviceShared *parent, std::string key, u64extent2 extent, u64extent2 pageExtent, std::vector<Page> pages) :
+        parent(parent),
         key(std::move(key)),
         extent(std::move(extent)),
         pageExtent(std::move(pageExtent)),
         pages(std::move(pages)) {}
+
+    ~Image();
+
+    Image() = delete;
+    Image(Image const &other) = delete;
+    Image(Image &&other) = delete;
+    Image &operator=(Image const &other) = delete;
+    Image &operator=(Image &&other) = delete;
 
     /*! Find the image coordinates of a page in the image.
      * \param pageIndex Index in the pages-vector.

@@ -171,6 +171,10 @@ void VerticalSync_win32::wait()
 
 void VerticalSync_win32::verticalSyncThread(VerticalSync_win32* self)
 {
+#ifdef _WIN32
+    SetThreadDescription(GetCurrentThread(), L"VerticalSync");
+#endif
+
     while (!self->stop) {
         self->wait();
         self->callback(self->callbackData);

@@ -72,14 +72,6 @@ public:
     void normalizeWindow() override;
 
 private:
-    void mainThreadClosingWindow();
-    void mainThreadOpeningWindow();
-
-    void mainThreadCloseWindow();
-    void mainThreadMinimizeWindow();
-    void mainThreadMaximizeWindow();
-    void mainThreadNormalizeWindow();
-
     void setOSWindowRectangleFromRECT(RECT rect);
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;

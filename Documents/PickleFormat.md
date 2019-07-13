@@ -12,7 +12,7 @@ bit encoding an integer is encoded by at least two groups.
 A positive integer between 0x00 - 0x20 can be directly send to the output.
 
 
-## Strings
+## UTF-8 Strings
 ### ASCII String
 If a text string:
  * Has two or more characters.
@@ -23,7 +23,7 @@ Then the string can be directly send to the output, with the last character's bi
 
  0b0CCCCCCC 0b0CCCCCCC ... 0b1CCCCCCC
 
-### UTF String
+### UTF-8 String
 If a text string:
  * Has zero or more characters
  * Does not contain a zero (0x00) value.
@@ -32,7 +32,7 @@ Then the string can be directly send to the output after a 0x2f byte and ending 
 
  0x2f 0bCCCCCCCC 0bCCCCCCCC ... 0x00
 
-### Binary string
+## Binary string
 If a binary string:
  * has zero or more characters
  * Contains zero or more zero (0x00) values

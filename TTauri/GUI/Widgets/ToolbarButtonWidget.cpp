@@ -44,9 +44,10 @@ void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImag
     }
     let currentScale = box.currentExtent() / currentExtent;
 
-    key.update("ToolbarButtonWidget", currentExtent, this, state());
+    key.clear();
+    key ^ "ToolbarButtonWidget" ^ currentExtent ^ this ^ state();
 
-    vulkanDevice->imagePipeline->exchangeImage(image, key, currentExtent);
+    image = vulkanDevice->imagePipeline->getImage(key, currentExtent);
 
     drawImage(*image);
 
@@ -64,7 +65,7 @@ void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImag
 
 void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
 {
-    if (image.drawn) {
+    if (image.state == GUI::PipelineImage::Image::State::Uploaded) {
         return;
     }
 
@@ -101,7 +102,7 @@ void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
     fill(pixelMap, linearMap);
     vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
-    image.drawn = true;
+    image.state = GUI::PipelineImage::Image::State::Uploaded;
 }
 
 void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) {

@@ -50,14 +50,24 @@ std::vector<Page> DeviceShared::getFreePages(size_t const nrPages)
     return pages;
 }
 
-std::shared_ptr<Image> DeviceShared::retainImage(BinaryKey const &key, u64extent2 const extent)
+void DeviceShared::returnPages(std::vector<Page> const &pages)
 {
-    let i = viewImages.find(key);
-    if (i != viewImages.end()) {
-        auto image = (*i).second;
-        image->retainCount++;
-        return image;
+
+    atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
+}
+
+std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const u64extent2 extent)
+{
+
+    let i = imageCache.find(key);
+    if (i != imageCache.end()) {
+        if (let image = i->second.lock()) {
+            return image;
+        }
     }
+
+    // Cleanup only after the happy flow failed.
+    cleanupWeakPointers(imageCache);
 
     let pageExtent = u64extent2{
         (extent.width() + (Page::width - 1)) / Page::width,
@@ -65,38 +75,15 @@ std::shared_ptr<Image> DeviceShared::retainImage(BinaryKey const &key, u64extent
     };
 
     let pages = getFreePages(pageExtent.x * pageExtent.y);
-    auto image = std::make_shared<Image>(key, extent, pageExtent, pages);
-    viewImages.insert_or_assign(key, image);
+    let image = std::make_shared<Image>(this, key, extent, pageExtent, pages);
+
+    imageCache.try_emplace(key, image);
     return image;
-}
-
-void DeviceShared::releaseImage(const std::shared_ptr<Image> &image)
-{
-    if (--image->retainCount == 0) {
-        let i = viewImages.find(image->key);
-        if (i != viewImages.end()) {
-            viewImages.erase(i);
-        } else {
-            BOOST_THROW_EXCEPTION(Error());
-        }
-    }
-}
-
-void DeviceShared::exchangeImage(std::shared_ptr<Image> &image, BinaryKey const &key, const u64extent2 extent)
-{
-    if (image && image->key == key) {
-        return;
-    }
-
-    if (image) {
-        releaseImage(image);
-    }
-    
-    image = retainImage(key, extent);
 }
 
 TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 {
+
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
 
     return stagingTexture.pixelMap.submap(
@@ -172,6 +159,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
         device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
     }
+
 }
 
 void DeviceShared::prepareAtlasForRendering()

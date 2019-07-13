@@ -7,6 +7,16 @@
 #include <memory>
 #include <string>
 #include <array>
+#include <optional>
+#include <future>
+
+namespace TTauri {
+struct wsRGBA;
+}
+namespace TTauri::Draw {
+template<typename T>
+struct PixelMap;
+}
 
 namespace TTauri::GUI::Widgets {
 
@@ -40,14 +50,16 @@ public:
 
     void handleMouseEvent(GUI::MouseEvent event) override;
 
-protected:
-    void drawImage(GUI::PipelineImage::Image &image);
-
 private:
+    using ImagePixelMap = std::pair<std::shared_ptr<GUI::PipelineImage::Image>,Draw::PixelMap<wsRGBA>>;
+
+    ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+        
+    std::optional<std::future<ImagePixelMap>> pixelMapFuture;
     std::shared_ptr<GUI::PipelineImage::Image> image;
 
     // Shared key to reduce number of allocations.
-    BinaryKey key;
+    std::string key;
 };
 
 }

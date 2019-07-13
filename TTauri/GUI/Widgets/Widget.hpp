@@ -10,11 +10,11 @@
 #include "../Mouse.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/geometry.hpp"
-#include "TTauri/BinaryKey.hpp"
 #include "TTauri/Draw/attributes.hpp"
 #include <limits>
 #include <memory>
 #include <vector>
+#include <mutex>
 
 namespace TTauri::GUI::PipelineImage {
 struct Image;
