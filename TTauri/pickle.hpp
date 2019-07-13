@@ -12,16 +12,17 @@
 
 namespace TTauri {
 
-constexpr char PICKLE_END_MARK = 0x7f;
-constexpr char PICKLE_SMALL_NATURAL_MAX = 0x20;
-constexpr char PICKLE_BINARY_STRING = 0x21;
-constexpr char PICKLE_FALSE = 0x22;
-constexpr char PICKLE_TRUE = 0x23;
-constexpr char PICKLE_NULL = 0x24;
-constexpr char PICKLE_DOUBLE = 0x25;
-constexpr char PICKLE_VECTOR = 0x26;
-constexpr char PICKLE_MAP = 0x27;
-constexpr char PICKLE_GLM_VEC = 0x28;
+constexpr char PICKLE_END_MARK = 0x70;
+constexpr char PICKLE_FALSE = 0x71;
+constexpr char PICKLE_TRUE = 0x72;
+constexpr char PICKLE_NULL = 0x73;
+constexpr char PICKLE_DOUBLE = 0x74;
+constexpr char PICKLE_VECTOR = 0x75;
+constexpr char PICKLE_MAP = 0x76;
+constexpr char PICKLE_OBJECT = 0x77;
+constexpr char PICKLE_GLM_VEC = 0x78;
+constexpr char PICKLE_STRING = 0x79;
+
 
 struct end_pickle_t {};
 
@@ -56,7 +57,7 @@ inline std::string &operator^(std::string &lhs, double rhs)
 
 inline std::string &operator^(std::string &lhs, uint64_t rhs)
 {
-    if (rhs <= PICKLE_SMALL_NATURAL_MAX) {
+    if (rhs < PICKLE_END_MARK) {
         lhs.push_back(static_cast<char>(rhs));
         return lhs;
     }
@@ -116,35 +117,14 @@ inline std::string &operator^(std::string &lhs, void *rhs)
     return lhs ^ reinterpret_cast<size_t>(rhs);
 }
 
-inline std::string &pickleBinaryString(std::string &lhs, std::string_view const &rhs)
-{
-    lhs.push_back(PICKLE_BINARY_STRING);
-    lhs ^ rhs.size();
-    lhs += rhs;
-    return lhs;
-}
-
-inline std::string &pickleASCIIString(std::string &lhs, std::string_view const &rhs)
-{
-    lhs += rhs;
-    lhs.back() = static_cast<char>(0x80 + static_cast<uint8_t>(rhs.back()));
-    return lhs;
-}
-
 /*! Pickle a string.
  */
 inline std::string &operator^(std::string &lhs, std::string_view const &rhs)
 {
-    if (rhs.size() < 2 || rhs.front() < 0x30 || rhs.front() >= PICKLE_END_MARK) {
-        return pickleBinaryString(lhs, rhs);
-    }
-    for (let c: rhs) {
-        let c_ = static_cast<uint8_t>(c);
-        if (c_ == 0 || c_ > 0x7f) {
-            return pickleBinaryString(lhs, rhs);
-        }
-    }
-    return pickleASCIIString(lhs, rhs);
+    lhs.push_back(PICKLE_STRING);
+    lhs ^ rhs.size();
+    lhs += rhs;
+    return lhs;
 }
 
 inline std::string &operator^(std::string &lhs, char const rhs[]) {
