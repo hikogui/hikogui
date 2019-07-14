@@ -12,16 +12,19 @@
 
 namespace TTauri {
 
-constexpr char PICKLE_END_MARK = 0x70;
-constexpr char PICKLE_FALSE = 0x71;
-constexpr char PICKLE_TRUE = 0x72;
-constexpr char PICKLE_NULL = 0x73;
-constexpr char PICKLE_DOUBLE = 0x74;
-constexpr char PICKLE_VECTOR = 0x75;
-constexpr char PICKLE_MAP = 0x76;
-constexpr char PICKLE_OBJECT = 0x77;
-constexpr char PICKLE_GLM_VEC = 0x78;
-constexpr char PICKLE_STRING = 0x79;
+constexpr char PICKLE_SMALL_NATURAL_MAX = 0x3f;
+constexpr char PICKLE_SMALL_STRING_MIN = 0xc0;
+
+constexpr char PICKLE_END_MARK = 0xff;
+constexpr char PICKLE_NULL = 0xfe;
+constexpr char PICKLE_TRUE = 0xfd;
+constexpr char PICKLE_FALSE = 0xfc;
+constexpr char PICKLE_STRING = 0xfb;
+constexpr char PICKLE_OBJECT = 0xfa;
+constexpr char PICKLE_MAP = 0xf9;
+constexpr char PICKLE_VECTOR = 0xf8;
+constexpr char PICKLE_DOUBLE = 0xf7;
+constexpr char PICKLE_GLM_VEC = 0xf6;
 
 
 struct end_pickle_t {};
@@ -57,30 +60,27 @@ inline std::string &operator^(std::string &lhs, double rhs)
 
 inline std::string &operator^(std::string &lhs, uint64_t rhs)
 {
-    if (rhs < PICKLE_END_MARK) {
-        lhs.push_back(static_cast<char>(rhs));
-        return lhs;
-    }
-
-    // Integers are always encoded in at least two bytes.
-    lhs.push_back(rhs & 0x7f | 0x80);
-    rhs >>= 7;
-
     while (true) {
         uint8_t const last_value = rhs & 0x7f;
         rhs >>= 7;
 
         if (rhs == 0 && last_value < 0x40) {
             // rhs is fully shifted in, and the sign-bit is clear.
-            lhs.push_back(last_value);
+            // Add a stop bit to mark the last byte.
+            lhs.push_back(last_value | 0x80);
             return lhs;
         } else {
-            // Add the continue-bit.
-            lhs.push_back(last_value | 0x80);
+            lhs.push_back(last_value);
         }
     }
 }
 
+/*! An integer is encoded as a stop-bit encoded as a little endian
+ * two's compliment integer.
+ *
+ * Negative integers are encoded with at least two bytes. This
+ * way the codes for 
+ */
 inline std::string &operator^(std::string &lhs, int64_t rhs)
 {
     if (rhs >= 0) {
@@ -91,16 +91,16 @@ inline std::string &operator^(std::string &lhs, int64_t rhs)
     rhs >>= 7;
 
     while (true) {
-        uint8_t const last_value = static_cast<uint8_t>(rhs) & 0x7f;
+        uint8_t const last_value = rhs & 0x7f;
         rhs >>= 7;
 
         if (rhs == -1 && last_value >= 0x40) {
             // rhs is fully shifted in, and the sign-bit is set.
-            lhs.push_back(last_value);
+            // Add a stop bit to mark the last byte.
+            lhs.push_back(last_value | 0x80);
             return lhs;
         } else {
-            // Add the continue-bit.
-            lhs.push_back(last_value | 0x80);
+            lhs.push_back(last_value);
         }
     }
 }
@@ -121,8 +121,13 @@ inline std::string &operator^(std::string &lhs, void *rhs)
  */
 inline std::string &operator^(std::string &lhs, std::string_view const &rhs)
 {
-    lhs.push_back(PICKLE_STRING);
-    lhs ^ rhs.size();
+    if (rhs.size() <= 0x1f) {
+        lhs.push_back(static_cast<uint8_t>(rhs.size()) | PICKLE_SMALL_STRING_MIN);
+    } else {
+        lhs.push_back(PICKLE_STRING);
+        lhs ^ rhs.size();
+    }
+
     lhs += rhs;
     return lhs;
 }
