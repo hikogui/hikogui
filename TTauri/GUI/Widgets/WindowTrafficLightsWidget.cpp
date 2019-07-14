@@ -37,30 +37,27 @@ int WindowTrafficLightsWidget::state() const {
 
 void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, size_t& offset)
 {
-    auto vulkanDevice = device();
+    required_assert(window);
+    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+        return drawImage(image);
+        }, "WindowTrafficLightsWidget", state());
 
-    if (!window->resizing) {
-        currentExtent = box.currentExtent();
+    if (backingImage.image) {
+        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
+
+        GUI::PipelineImage::ImageLocation location;
+        location.depth = depth + 0.0f;
+        location.origin = {0.0, 0.0};
+        location.position = box.currentPosition() + location.origin;
+        location.scale = currentScale;
+        location.rotation = 0.0;
+        location.alpha = 1.0;
+        location.clippingRectangle = box.currentRectangle();
+
+        backingImage.image->placeVertices(location, vertices, offset);
     }
-    let currentScale = box.currentExtent() / currentExtent;
 
-    key.clear();
-    key ^ "WindowTrafficLightsWidget" ^ currentExtent ^ state();
-
-    image = vulkanDevice->imagePipeline->getImage(key, currentExtent);
-
-    drawImage(*image);
-
-    GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0f;
-    location.origin = {0.0, 0.0};
-    location.position = box.currentPosition() + location.origin;
-    location.scale = currentScale;
-    location.rotation = 0.0;
-    location.alpha = 1.0;
-    location.clippingRectangle = box.currentRectangle();
-
-    image->placeVertices(location, vertices, offset);
+    Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius)
@@ -122,10 +119,8 @@ void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, 
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image)
+Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image)
 {
-    auto vulkanDevice = device();
-
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
@@ -139,16 +134,11 @@ void WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &i
     if (!window->active) {
         desaturate(linearMap, 0.5f);
     }
-
-    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
-    fill(pixelMap, linearMap);
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
+    return linearMap;
 }
 
-void WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image)
+Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image)
 {
-    auto vulkanDevice = device();
-
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
@@ -214,27 +204,18 @@ void WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &ima
     }
 
     composit(linearMap, drawing, window->subpixelOrientation);
-
-    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
-    fill(pixelMap, linearMap);
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
+    return linearMap;
 }
 
-void WindowTrafficLightsWidget::drawImage(PipelineImage::Image &image)
+PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
 {
-    if (image.state == GUI::PipelineImage::Image::State::Uploaded) {
-        return;
-    }
-
     if constexpr (operatingSystem == OperatingSystem::Windows10) {
-        drawApplicationIconImage(image);
+        return { std::move(image), std::move(drawApplicationIconImage(*image)) };
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
-        drawTrafficLightsImage(image);
+        return { std::move(image), std::move(drawTrafficLightsImage(*image)) };
     } else {
         no_default;
     }
-
-    image.state = GUI::PipelineImage::Image::State::Uploaded;
 }
 
 std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const

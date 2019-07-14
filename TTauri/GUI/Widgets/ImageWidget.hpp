@@ -28,6 +28,9 @@ public:
     void drawBackingImage();
 
     void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset) override;
+
+private:
+    std::string key;
 };
 
 }

@@ -100,14 +100,17 @@ struct DeviceShared final {
 
     TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap();
 
+    void uploadPixmapToAtlas(Image const &image, Draw::PixelMap<wsRGBA> const &pixelMap);
+
+    void prepareAtlasForRendering();
+
+private:
     TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap(u64extent2 extent) {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 
     void updateAtlasWithStagingPixelMap(Image const &image);
-    void prepareAtlasForRendering();
 
-private:
     void buildIndexBuffer();
     void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
     void buildShaders();

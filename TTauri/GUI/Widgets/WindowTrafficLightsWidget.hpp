@@ -33,8 +33,6 @@ public:
 
     Draw::Path applicationIcon;
 
-    std::shared_ptr<PipelineImage::Image> image;
-
     WindowTrafficLightsWidget(Draw::Path applicationIcon);
     ~WindowTrafficLightsWidget() {}
 
@@ -52,21 +50,19 @@ public:
     void handleMouseEvent(MouseEvent event) override;
     HitBox hitBoxTest(glm::vec2 position) const override;
 
-protected:
-    void drawImage(PipelineImage::Image &image);
-
 private:
     std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const;
 
-    void drawApplicationIconImage(PipelineImage::Image &image);
-    void drawTrafficLightsImage(PipelineImage::Image &image);
+    Draw::PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image);
+    Draw::PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image);
 
     static void drawCross(Draw::Path &path, glm::vec2 position, float radius);
     static void drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius);
     static void drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius);
 
-    // Shared key to reduce number of allocations.
-    std::string key;
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+
+    PipelineImage::Backing backingImage; 
 };
 
 }

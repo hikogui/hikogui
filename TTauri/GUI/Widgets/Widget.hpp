@@ -5,6 +5,7 @@
 
 #include "BoxModel.hpp"
 #include "../PipelineImage_Delegate.hpp"
+#include "../PipelineImage_Backing.hpp"
 #include "../Window_forward.hpp"
 #include "../Device_forward.hpp"
 #include "../Mouse.hpp"

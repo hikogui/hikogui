@@ -22,77 +22,31 @@ ButtonWidget::ButtonWidget(std::string const label) :
 
 void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset)
 {
-    if (pixelMapFuture && pixelMapFuture->valid()) {
-        auto [newImage, newPixelMap] = pixelMapFuture->get();
+    required_assert(window);
+    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+        return drawImage(image);
+    }, "Button", label, state());
+ 
+    if (backingImage.image) {
+        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
 
-        if (newPixelMap) {
-            auto stagingMap = device()->imagePipeline->getStagingPixelMap(newImage->extent);
-            fill(stagingMap, newPixelMap);
-            device()->imagePipeline->updateAtlasWithStagingPixelMap(*newImage);
-            newImage->state = GUI::PipelineImage::Image::State::Uploaded;
-        }
+        GUI::PipelineImage::ImageLocation location;
+        location.depth = depth + 0.0f;
+        location.origin = {0.0, 0.0};
+        location.position = box.currentPosition() + location.origin;
+        location.scale = currentScale;
+        location.rotation = 0.0;
+        location.alpha = 1.0;
+        location.clippingRectangle = box.currentRectangle();
 
-        if (newImage->state == GUI::PipelineImage::Image::State::Uploaded) {
-            image = newImage;
-            pixelMapFuture = {};
-        }
+        backingImage.image->placeVertices(location, vertices, offset);
     }
 
-    if (!window->resizing) {
-        currentExtent = box.currentExtent();
-
-        pickle(key, "Button", currentExtent, label, state());
-
-        if ((image == nullptr || image->key != key) && !pixelMapFuture) {
-            auto newImage = device()->imagePipeline->getImage(key, currentExtent);
-
-            switch (newImage->state) {
-            case GUI::PipelineImage::Image::State::Uploaded:
-                image = newImage;
-                break;
-
-            case GUI::PipelineImage::Image::State::Drawing: {
-                auto p = std::promise<ImagePixelMap>();
-                pixelMapFuture = p.get_future();
-                p.set_value({image, Draw::PixelMap<wsRGBA>{}});
-                } break;
-
-            case GUI::PipelineImage::Image::State::Uninitialized:
-                // Try and draw the image, multiple calls will be dropped by the callee.
-                pixelMapFuture = std::async([=]() {
-                    return drawImage(newImage);
-                });
-                break;
-            }
-        }
-    }
-
-    if (image == nullptr) {
-        return;
-    }
-
-    let currentScale = box.currentExtent() / extent2{image->extent};
-
-    GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0f;
-    location.origin = {0.0, 0.0};
-    location.position = box.currentPosition() + location.origin;
-    location.scale = currentScale;
-    location.rotation = 0.0;
-    location.alpha = 1.0;
-    location.clippingRectangle = box.currentRectangle();
-
-    image->placeVertices(location, vertices, offset);
+    Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-ButtonWidget::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
+PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
 {
-    auto expected = GUI::PipelineImage::Image::State::Uninitialized;
-    if (!image->state.compare_exchange_strong(expected, GUI::PipelineImage::Image::State::Drawing)) {
-        // Another thread has started drawing.
-        return {image, Draw::PixelMap<wsRGBA>{}};
-    }
-
     auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
 

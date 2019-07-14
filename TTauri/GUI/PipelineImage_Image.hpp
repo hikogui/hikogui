@@ -21,8 +21,7 @@ struct Image {
 
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    std::atomic<State> state = State::Uninitialized;
-    size_t retainCount = 1;
+    mutable std::atomic<State> state = State::Uninitialized;
 
     DeviceShared *parent;
 

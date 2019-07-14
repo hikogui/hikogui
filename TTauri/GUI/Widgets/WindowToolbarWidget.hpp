@@ -14,13 +14,10 @@ class WindowTrafficLightsWidget;
 
 class WindowToolbarWidget : public Widget {
 public:
-    std::shared_ptr<PipelineImage::Image> backingImage;
-
     WindowTrafficLightsWidget *trafficLightButtons = nullptr;
     ToolbarButtonWidget *closeWindowButton = nullptr;
     ToolbarButtonWidget *maximizeWindowButton = nullptr;
     ToolbarButtonWidget *minimizeWindowButton = nullptr;
-
 
     WindowToolbarWidget();
     ~WindowToolbarWidget() {}
@@ -32,12 +29,14 @@ public:
 
     virtual void setParent(Widget *parent);
 
-    void drawBackingImage();
-
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
 
     HitBox hitBoxTest(glm::vec2 position) const override;
 
+private:
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+
+    PipelineImage::Backing backingImage; 
 };
 
 }

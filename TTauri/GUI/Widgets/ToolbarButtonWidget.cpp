@@ -37,41 +37,32 @@ int ToolbarButtonWidget::state() const {
 
 void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset)
 {
-    auto vulkanDevice = device();
+    required_assert(window);
+    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+        return drawImage(image);
+    }, "ToolbarButtonWidget", this, state());
 
-    if (!window->resizing) {
-        currentExtent = box.currentExtent();
+    if (backingImage.image) {
+        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
+
+        GUI::PipelineImage::ImageLocation location;
+        location.depth = depth + 0.0f;
+        location.origin = {0.0, 0.0};
+        location.position = box.currentPosition() + location.origin;
+        location.scale = currentScale;
+        location.rotation = 0.0;
+        location.alpha = 1.0;
+        location.clippingRectangle = box.currentRectangle();
+
+        backingImage.image->placeVertices(location, vertices, offset);
     }
-    let currentScale = box.currentExtent() / currentExtent;
 
-    key.clear();
-    key ^ "ToolbarButtonWidget" ^ currentExtent ^ this ^ state();
-
-    image = vulkanDevice->imagePipeline->getImage(key, currentExtent);
-
-    drawImage(*image);
-
-    GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0f;
-    location.origin = {0.0, 0.0};
-    location.position = box.currentPosition() + location.origin;
-    location.scale = currentScale;
-    location.rotation = 0.0;
-    location.alpha = 1.0;
-    location.clippingRectangle = box.currentRectangle();
-
-    image->placeVertices(location, vertices, offset);
+    Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
+PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
 {
-    if (image.state == GUI::PipelineImage::Image::State::Uploaded) {
-        return;
-    }
-
-    auto vulkanDevice = device();
-
-    auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
+    auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
     if (pressed) {
         fill(linearMap, pressedBackgroundColor);
     } else if (hover && enabled) {
@@ -80,10 +71,10 @@ void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
         fill(linearMap);
     }
 
-    let iconSize = boost::numeric_cast<float>(image.extent.height());
-    let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
+    let iconSize = boost::numeric_cast<float>(image->extent.height());
+    let iconLocation = glm::vec2{image->extent.width() / 2.0f, image->extent.height() / 2.0f};
 
-    auto iconImage = Draw::PixelMap<wsRGBA>{image.extent};
+    auto iconImage = Draw::PixelMap<wsRGBA>{image->extent};
     if (std::holds_alternative<Draw::Path>(icon)) {
         let p = Draw::Alignment::MiddleCenter + T2D(iconLocation, iconSize) * Draw::PathString{std::get<Draw::Path>(icon)};
 
@@ -98,11 +89,7 @@ void ToolbarButtonWidget::drawImage(GUI::PipelineImage::Image &image)
     }
 
     composit(linearMap, iconImage);
-
-    auto pixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(image.extent);
-    fill(pixelMap, linearMap);
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(image);
-    image.state = GUI::PipelineImage::Image::State::Uploaded;
+    return { std::move(image), std::move(linearMap) };
 }
 
 void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) {

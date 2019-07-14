@@ -159,7 +159,16 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
         device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
     }
+}
 
+void DeviceShared::uploadPixmapToAtlas(Image const &image, Draw::PixelMap<wsRGBA> const &pixelMap)
+{
+    if (image.state == GUI::PipelineImage::Image::State::Drawing && pixelMap) {
+        auto stagingMap = getStagingPixelMap(image.extent);
+        fill(stagingMap, pixelMap);
+        updateAtlasWithStagingPixelMap(image);
+        image.state = GUI::PipelineImage::Image::State::Uploaded;
+    }
 }
 
 void DeviceShared::prepareAtlasForRendering()

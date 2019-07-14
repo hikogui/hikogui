@@ -21,6 +21,7 @@ void ImageWidget::drawBackingImage()
     if (backingImage->state == GUI::PipelineImage::Image::State::Uploaded) {
         return;
     }
+    backingImage->state = GUI::PipelineImage::Image::State::Drawing;
 
     auto vulkanDevice = device();
 
@@ -46,16 +47,12 @@ void ImageWidget::drawBackingImage()
     let path3 = T2D({40.0, 30.0}, 8.0) * glyph;
     composit(linearMap, color, path3, Draw::SubpixelOrientation::RedRight);
 
-    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
-    fill(fullPixelMap, linearMap);
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
-    backingImage->state = GUI::PipelineImage::Image::State::Uploaded;
+    vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
 void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset)
 {
-    std::string key;
-    key ^ "ImageView" ^ box.currentExtent() ^ path.u8string();
+    clearAndPickleAppend(key, "ImageView", box.currentExtent(), path.u8string());
 
     auto vulkanDevice = device();
 

@@ -69,47 +69,35 @@ void WindowToolbarWidget::setParent(Widget *parent)
     }
 }
 
-void WindowToolbarWidget::drawBackingImage()
+PipelineImage::Backing::ImagePixelMap WindowToolbarWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
 {
-    if (backingImage->state == GUI::PipelineImage::Image::State::Uploaded) {
-        return;
-    }
-
-    auto vulkanDevice = device();
-
-    auto linearMap = Draw::PixelMap<wsRGBA>{ backingImage->extent };
+    auto linearMap = Draw::PixelMap<wsRGBA>{ image->extent };
     fill(linearMap, wsRGBA{ 0x00000088 });
 
-    auto fullPixelMap = vulkanDevice->imagePipeline->getStagingPixelMap(backingImage->extent);
-    fill(fullPixelMap, linearMap);
-    vulkanDevice->imagePipeline->updateAtlasWithStagingPixelMap(*backingImage);
-    backingImage->state = GUI::PipelineImage::Image::State::Uploaded;
+    return { std::move(image), std::move(linearMap) };
 }
 
 void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
 {
-    let rectangle = box.currentRectangle();
-    required_assert(rectangle.extent.width() > 0 && rectangle.extent.height() > 0);
+    required_assert(window);
+    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+        return drawImage(image);
+    }, "WindowToolbarWidget");
 
-    std::string key;
-    key ^ "WindowToolbarWidget" ^ rectangle.extent;
+    if (backingImage.image) {
+        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
 
-    auto vulkanDevice = device();
+        GUI::PipelineImage::ImageLocation location;
+        location.depth = depth + 0.0f;
+        location.origin = {0.0, 0.0};
+        location.position = box.currentPosition() + location.origin;
+        location.scale = currentScale;
+        location.rotation = 0.0;
+        location.alpha = 1.0;
+        location.clippingRectangle = box.currentRectangle();
 
-    // backingImage keeps track of use count.
-    backingImage = vulkanDevice->imagePipeline->getImage(key, rectangle.extent);
-    drawBackingImage();
-
-    GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0f;
-    location.origin = {0.0, 0.0};
-    location.position = rectangle.offset + location.origin;
-    location.rotation = 0.0;
-    location.scale = {1.0, 1.0};
-    location.alpha = 1.0;
-    location.clippingRectangle = rectangle;
-
-    backingImage->placeVertices(location, vertices, offset);
+        backingImage.image->placeVertices(location, vertices, offset);
+    }
 
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }

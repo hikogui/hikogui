@@ -39,15 +39,12 @@ public:
 
     void handleMouseEvent(GUI::MouseEvent event) override;
 
-protected:
-    void drawImage(GUI::PipelineImage::Image &image);
 private:
     int state() const;
 
-    std::shared_ptr<GUI::PipelineImage::Image> image;
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
 
-    // Shared key to reduce number of allocations.
-    std::string key;
+    PipelineImage::Backing backingImage; 
 };
 
 }
