@@ -5,17 +5,20 @@
 
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
+#include "TTauri/indirect_value.hpp"
 #include "exceptions.hpp"
 #include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>
+#include <variant>
 #include <any>
 #include <map>
 #include <vector>
 #include <cstdint>
 #include <cmath>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <typeinfo>
 #include <string>
+#include <memory>
 
 namespace TTauri::Config {
 
@@ -23,14 +26,10 @@ struct Value;
 
 struct Undefined {};
 
-using Object = std::map<std::string, Value>;
-using Array = std::vector<Value>;
+using Object = std::map<std::string, indirect_value<Value>>;
+using Array = std::vector<indirect_value<Value>>;
 
-enum class CompareResult {
-    LOWER,
-    SAME,
-    HIGHER
-};
+enum class CompareResult { LOWER, SAME, HIGHER };
 
 inline CompareResult compare(std::string l, std::string r)
 {
@@ -101,84 +100,99 @@ inline CompareResult compare(double l, double r)
 /*! A generic value type which will handle intra type operations.
  */
 struct Value {
-    // XXX std::any allocates, use std::variant instead.
-    std::any intrinsic;
+    using all_types = std::variant<std::monostate,bool,int64_t,double,std::string,boost::filesystem::path,wsRGBA,Object,Array,Undefined>;
 
-    Value() : intrinsic(Undefined{}) {}
+    all_types intrinsic;
 
-    Value(std::any value) : intrinsic(value) {
-        if (!is_valid_type()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Assigning a value of type %s is not implemented") %
-                type_name()).str())
-            );
-        }
-    }
+    Value() : intrinsic() {}
+    Value(bool value) : intrinsic(value) {}
+    Value(int64_t value) : intrinsic(value) {}
+    Value(double value) : intrinsic(value) {}
+    Value(std::string value) : intrinsic(std::move(value)) {}
+    Value(boost::filesystem::path value) : intrinsic(std::move(value)) {}
+    Value(wsRGBA value) : intrinsic(value) {}
+    Value(Object value) : intrinsic(std::move(value)) {}
+    Value(Array value) : intrinsic(std::move(value)) {}
+    Value(Undefined value) : intrinsic(std::move(value)) {}
 
     Value(const Value &) = default;
-
     Value(Value &&) = default;
-
     ~Value() = default;
-
     Value &operator=(const Value &) = default;
-
     Value &operator=(Value &&) = default;
 
-    Value &operator=(std::any value) {
-        intrinsic = std::move(value);
-
-        if (!is_valid_type()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Assigning a value of type %s is not implemented") %
-                type_name()).str())
-            );
-        }
-
-        return *this;
-    }
+    Value &operator=(bool value) { intrinsic = value; return *this; }
+    Value &operator=(int64_t value) { intrinsic = value; return *this; }
+    Value &operator=(double value) { intrinsic = value; return *this; }
+    Value &operator=(std::string value) { intrinsic = std::move(value); return *this; }
+    Value &operator=(boost::filesystem::path value) { intrinsic = std::move(value); return *this; }
+    Value &operator=(wsRGBA value) { intrinsic = value; return *this; }
+    Value &operator=(Object value) { intrinsic = std::move(value); return *this; }
+    Value &operator=(Array value) { intrinsic = std::move(value); return *this; }
+    Value &operator=(Undefined value) { intrinsic = std::move(value); return *this; }
 
     bool has_value() const {
-        return intrinsic.has_value();
+        return std::holds_alternative<std::monostate>(intrinsic);
     }
 
     std::type_info const &type() const noexcept {
-        return intrinsic.type();
+        if (std::holds_alternative<std::monostate>(intrinsic)) {
+            return typeid(void);
+        } else if (std::holds_alternative<bool>(intrinsic)) {
+            return typeid(bool);
+        } else if (std::holds_alternative<int64_t>(intrinsic)) {
+            return typeid(int64_t);
+        } else if (std::holds_alternative<double>(intrinsic)) {
+            return typeid(double);
+        } else if (std::holds_alternative<std::string>(intrinsic)) {
+            return typeid(std::string);
+        } else if (std::holds_alternative<boost::filesystem::path>(intrinsic)) {
+            return typeid(boost::filesystem::path);
+        } else if (std::holds_alternative<wsRGBA>(intrinsic)) {
+            return typeid(wsRGBA);
+        } else if (std::holds_alternative<Object>(intrinsic)) {
+            return typeid(Object);
+        } else if (std::holds_alternative<Array>(intrinsic)) {
+            return typeid(Array);
+        } else if (std::holds_alternative<Undefined>(intrinsic)) {
+            return typeid(Undefined);
+        } else {
+            no_default;
+        }
     }
 
     template<typename T>
     bool is_type() const {
-        return type() == typeid(T);
-    }
-
-    bool is_valid_type() const {
-        return is_type<void>() || is_type<bool>() || is_type<int64_t>() || is_type<double>() || is_type<std::string>() || is_type<std::filesystem::path>() ||
-            is_type<wsRGBA>() || is_type<Object>() || is_type<Array>() || is_type<Undefined>();
+        return std::holds_alternative<T>(intrinsic);
     }
 
     template<typename T>
     bool is_promotable_to() const {
-        return (
-            (typeid(T) == typeid(double) && is_type<uint64_t>()) ||
-            (typeid(T) == typeid(std::filesystem::path) && is_type<std::string>()) ||
-            is_type<T>()
-        );
+        if constexpr (std::is_same_v<std::remove_const_t<T>, double>) {
+            return is_type<int64_t>();
+        } else if constexpr (std::is_same_v<std::remove_const_t<T>, boost::filesystem::path>) {
+            return is_type<std::string>();
+        } else {
+            return is_type<T>();
+        }
     }
 
     template<typename T>
     T &value() {
-        return std::any_cast<T &>(intrinsic);
+        return std::get<T>(intrinsic);
     }
 
     template<typename T>
     T value() const {
-        return std::any_cast<T>(intrinsic);
+        return std::get<T>(intrinsic);
     }
 
     template<>
     double value() const {
         if (is_type<int64_t>()) {
-            return static_cast<double>(std::any_cast<int64_t>(intrinsic));
+            return static_cast<double>(std::get<int64_t>(intrinsic));
         } else {
-            return std::any_cast<double>(intrinsic);
+            return std::get<double>(intrinsic);
         }
     }
 
@@ -188,11 +202,11 @@ struct Value {
     }
 
     template<>
-    std::filesystem::path value() const {
+    boost::filesystem::path value() const {
         if (is_type<std::string>()) {
-            return std::filesystem::path{std::any_cast<std::string>(intrinsic)};
+            return boost::filesystem::path{std::get<std::string>(intrinsic)};
         } else {
-            return std::any_cast<std::filesystem::path>(intrinsic);
+            return std::get<boost::filesystem::path>(intrinsic);
         }
     }
 
@@ -262,8 +276,8 @@ struct Value {
             return value<wsRGBA>().string();
         } else if (is_type<std::string>()) {
             return "\"" + value<std::string>() + "\"";
-        } else if (is_type<std::filesystem::path>()) {
-            return "\"" + value<std::filesystem::path>().string() + "\"";
+        } else if (is_type<boost::filesystem::path>()) {
+            return "\"" + value<boost::filesystem::path>().string() + "\"";
         } else if (is_type<Array>()) {
             std::string s = "[";
             auto first = true;
@@ -271,7 +285,7 @@ struct Value {
                 if (!first) {
                     s += ",";
                 }
-                s += x.string();
+                s += x->string();
                 first = false;
             }
             return s + "]";
@@ -279,11 +293,11 @@ struct Value {
             std::string s = "{";
             auto first = true;
             for (let &[k, v]: value<Object>()) {
-                if (!v.is_type<Undefined>()) {
+                if (!v->is_type<Undefined>()) {
                     if (!first) {
                         s += ",";
                     }
-                    s += k + ":" + v.string();
+                    s += k + ":" + v->string();
                     first = false;
                 }
             }
@@ -294,23 +308,22 @@ struct Value {
         );
     }
 
-    /*! Return the internal any-value.
-     * The returned any-value is potentially simplified for Arrays and Objects.
-     * \return the std:any value,
+    /*! Return the internal value as a std::any
+     * \return the std::any value
      */
     std::any any() const {
         if (is_type<Array>()) {
             std::vector<std::any> r;
             for (let &x: value<Array>()) {
-                r.push_back(x.any());
+                r.push_back(x->any());
             }
             return r;
 
         } else if (is_type<Object>()) {
             std::map<std::string, std::any> r;
             for (let &[k, v]: value<Object>()) {
-                if (!v.is_type<Undefined>()) {
-                    r[k] = v.any();
+                if (!v->is_type<Undefined>()) {
+                    r[k] = v->any();
                 }
             }
             return r;
@@ -333,7 +346,7 @@ struct Value {
             return !value<wsRGBA>().isTransparent();
         } else if (is_type<std::string>()) {
             return value<std::string>().size() > 0;
-        } else if (is_type<std::filesystem::path>()) {
+        } else if (is_type<boost::filesystem::path>()) {
             return true;
         } else if (is_type<Array>()) {
             return value<Array>().size() > 0;
@@ -348,16 +361,13 @@ struct Value {
             return compare(value<std::string>(), other.value<std::string>());
 
         } else if (is_type<Array>() && other.is_type<Array>()) {
-            auto l = value<Array>();
-            auto r = other.value<Array>();
+            let &l = value<Array>();
+            let &r = other.value<Array>();
 
             auto l_iterator = l.begin();
             auto r_iterator = r.begin();
             while (l_iterator != l.end() && r_iterator != r.end()) {
-                let l_value = *l_iterator;
-                let r_value = *r_iterator;
-
-                switch (l_value.cmp(r_value)) {
+                switch ((*l_iterator)->cmp(*r_iterator)) {
                 case CompareResult::LOWER: return CompareResult::LOWER;
                 case CompareResult::HIGHER: return CompareResult::HIGHER;
                 case CompareResult::SAME:;
@@ -376,22 +386,19 @@ struct Value {
             }
 
         } else if (is_type<Object>() && other.is_type<Object>()) {
-            auto l = value<Object>();
-            auto r = other.value<Object>();
+            let &l = value<Object>();
+            let &r = other.value<Object>();
 
             auto l_iterator = l.begin();
             auto r_iterator = r.begin();
             while (l_iterator != l.end() && r_iterator != r.end()) {
-                let [l_key, l_value] = *l_iterator;
-                let [r_key, r_value] = *r_iterator;
-
-                switch (compare(l_key, r_key)) {
+                switch (compare(l_iterator->first, r_iterator->first)) {
                 case CompareResult::LOWER: return CompareResult::LOWER;
                 case CompareResult::HIGHER: return CompareResult::HIGHER;
                 case CompareResult::SAME:;
                 }
 
-                switch (l_value.cmp(r_value)) {
+                switch (l_iterator->second->cmp(*r_iterator->second)) {
                 case CompareResult::LOWER: return CompareResult::LOWER;
                 case CompareResult::HIGHER: return CompareResult::HIGHER;
                 case CompareResult::SAME:;
@@ -482,19 +489,20 @@ struct Value {
     }
 
     Value operator+(Value const &other) const {
-        if (is_type<std::filesystem::path>() || other.is_type<std::filesystem::path>()) {
-            return value<std::filesystem::path>() / other.value<std::filesystem::path>();
+        if (is_type<boost::filesystem::path>() || other.is_type<boost::filesystem::path>()) {
+            return value<boost::filesystem::path>() / other.value<boost::filesystem::path>();
         } else if (is_type<std::string>() && other.is_type<std::string>()) {
             return value<std::string>() + other.value<std::string>();
         } else if (is_type<Array>() && other.is_type<Array>()) {
             Array r;
-            for (let x: value<Array>()) { r.push_back(x); }
-            for (let x: other.value<Array>()) { r.push_back(x); }
+            for (let &x: value<Array>()) { r.push_back(x); }
+            for (let &x: other.value<Array>()) { r.push_back(x); }
             return r;
         } else if (is_type<Object>() && other.is_type<Object>()) {
             Object r;
-            for (let [k, v]: value<Object>()) { r[k] = v; }
-            for (let [k, v]: other.value<Object>()) { r[k] = v; }
+            for (let &[k, v]: other.value<Object>()) { r.emplace(k, v); }
+            // emplace() will only insert if it doesn't exist.
+            for (let &[k, v]: value<Object>()) { r.emplace(k, v); }
             return r;
         } else if (is_type<double>() || other.is_type<double>()) {
             return value<double>() + other.value<double>();
@@ -624,8 +632,8 @@ struct Value {
 
         if (is_type<Object>()) {
             auto &obj = value<Object>();
-            obj.try_emplace(other, Undefined{});
-            return obj[other];
+            auto [i, didInsert] = obj.try_emplace(other, Undefined{});
+            return *(i->second);
         }
 
         BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get member .%s of type %s") %
@@ -658,7 +666,7 @@ struct Value {
             auto &_array = value<Array>();
 
             if (index < _array.size()) {
-                return _array[index];
+                return *(_array[index]);
             } else {
                 BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Index %i out of range, size of array is %i") %
                     index % _array.size()).str())
@@ -676,7 +684,7 @@ struct Value {
             auto _array = value<Array>();
             
             if (index < _array.size()) {
-                return _array[index];
+                return *(_array[index]);
             } else {
                 BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Index %i out of range, size of array is %i") %
                     index % _array.size()).str())
@@ -698,7 +706,7 @@ struct Value {
         if (is_type<Array>()) {
             auto &_array = value<Array>();
             _array.emplace_back(Undefined{});
-            return _array.back();
+            return *(_array.back());
         }
 
         BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot append new item onto type %s") %

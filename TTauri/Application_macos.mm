@@ -6,10 +6,7 @@
 
 namespace TTauri {
 
-Application_macos::Application_macos(const std::shared_ptr<ApplicationDelegate> &delegate, int argc, const char **argv) :
-    Application(delegate),
-    argc(argc),
-    argv(argv)
+Application_macos::Application_macos() :
 {
     @autoreleasepool {
         [NSApplication sharedApplication];
@@ -46,6 +43,25 @@ Application_macos::Application_macos(const std::shared_ptr<ApplicationDelegate> 
 
 Application_macos::~Application_macos()
 {
+}
+
+void Application_macos::initialize(const std::shared_ptr<ApplicationDelegate> delegate, int argc, char **argv)
+{
+    this->argc = argc;
+    this->argv = argv;
+
+    Application_base::initialize(move(delegate));
+}
+
+void Application_macos::runOnMainThread(std::function<void()> function)
+{
+
+    let functionP = new std::function<void()>(std::move(function));
+    required_assert(functionP);
+
+    // XXX post a message to the main thread loop.
+    //auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
+    required_assert(r != 0);
 }
 
 int Application_macos::loop()

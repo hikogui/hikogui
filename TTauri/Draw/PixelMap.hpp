@@ -9,6 +9,7 @@
 #include <gsl/gsl>
 #include <string>
 #include <algorithm>
+#include <vector>
 
 namespace TTauri {
 struct wsRGBA;
@@ -18,36 +19,32 @@ namespace TTauri::Draw {
 
 template <typename T>
 struct PixelRow {
-    T * const pixels;
-    size_t const width;
+    T *pixels;
+    int width;
 
-    T const* data() const {
+    T const *data() const {
         return pixels;
     }
 
-    T * data() {
+    T *data() {
         return pixels;
     }
 
-    T const &operator[](size_t columnNr) const {
+    T const &operator[](int columnNr) const {
         return pixels[columnNr];
     }
 
-    T &operator[](size_t columnNr) {
+    T &operator[](int columnNr) {
         return pixels[columnNr];
     }
 
-    T const &at(size_t columnNr) const {
-        if (columnNr >= width) {
-            throw std::out_of_range("columnNr >= height");
-        }
+    T const &at(int columnNr) const {
+        required_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 
-    T &at(size_t columnNr) {
-        if (columnNr >= width) {
-            throw std::out_of_range("columnNr >= height");
-        }
+    T &at(int columnNr) {
+        required_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 };
@@ -55,14 +52,14 @@ struct PixelRow {
 template <typename T>
 struct PixelMap {
     T *pixels;
-    size_t width;
-    size_t height;
-    size_t stride;
+    int width;
+    int height;
+    int stride;
     bool selfAllocated = false;
 
     PixelMap() : pixels(nullptr), width(0), height(0), stride(0) {}
 
-    PixelMap(T *pixels, size_t width, size_t height, size_t stride) : pixels(pixels), width(width), height(height), stride(stride) {
+    PixelMap(T *pixels, int width, int height, int stride) : pixels(pixels), width(width), height(height), stride(stride) {
         if (pixels) {
             required_assert(stride >= width);
             required_assert(width > 0);
@@ -73,7 +70,7 @@ struct PixelMap {
         }
     } 
 
-    PixelMap(size_t width, size_t height) : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
+    PixelMap(int width, int height) : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
         if (pixels) {
             required_assert(stride >= width);
             required_assert(width > 0);
@@ -84,10 +81,10 @@ struct PixelMap {
         }
     }
 
-    PixelMap(u64extent2 extent) : PixelMap(extent.width(), extent.height()) {}
-    PixelMap(T *pixels, size_t width, size_t height) : PixelMap(pixels, width, height, width) {}
-    PixelMap(T *pixels, u64extent2 extent) : PixelMap(pixels, extent.width(), extent.height()) {}
-    PixelMap(T *pixels, u64extent2 extent, size_t stride) : PixelMap(pixels, extent.width(), extent.height(), stride) {}
+    PixelMap(iextent2 extent) : PixelMap(extent.width(), extent.height()) {}
+    PixelMap(T *pixels, int width, int height) : PixelMap(pixels, width, height, width) {}
+    PixelMap(T *pixels, iextent2 extent) : PixelMap(pixels, extent.width(), extent.height()) {}
+    PixelMap(T *pixels, iextent2 extent, int stride) : PixelMap(pixels, extent.width(), extent.height(), stride) {}
 
     ~PixelMap() {
         if (selfAllocated) {
@@ -122,46 +119,47 @@ struct PixelMap {
         return *this;
     }
 
-    PixelMap<T> submap(u64rect2 rect) const {
-        required_assert(rect.extent.x > 0 && rect.extent.y > 0);
+    PixelMap<T> submap(irect2 rect) const {
+        required_assert(
+            (rect.offset.x >= 0) &&
+            (rect.offset.y >= 0) &&
+            (rect.extent.width() >= 0) &&
+            (rect.extent.height() >= 0)
+        );
+        required_assert(
+            (rect.offset.x + rect.extent.width() <= width) &&
+            (rect.offset.y + rect.extent.height() <= height)
+        );
 
-        if ((rect.offset.x + rect.extent.x > width) || (rect.offset.y + rect.extent.y > height)) {
-            throw std::out_of_range("(rect.offset.x + rect.extent.x > width) || (rect.offset.y + rect.extent.y > height)");
-        }
-        
-        size_t const offset = rect.offset.y * stride + rect.offset.x;
+        let offset = rect.offset.y * stride + rect.offset.x;
 
-        if (rect.extent.y == 0 || rect.extent.x == 0) {
+        if (rect.extent.width() == 0 || rect.extent.height() == 0) {
             // Image of zero width or height needs zero pixels returned.
             return { };
+        } else {
+            return { pixels + offset, rect.extent.x, rect.extent.y, stride };
         }
-
-        return { pixels + offset, rect.extent.x, rect.extent.y, stride };
     }
     
-    PixelMap<T> submap(size_t const x, size_t const y, size_t const width, size_t const height) const {
-        return submap({{x, y}, {width, height}});
+    PixelMap<T> submap(int const x, int const y, int const width, int const height) const {
+        return submap(irect2{{x, y}, {width, height}});
     }
 
-    PixelRow<T> const operator[](size_t const rowNr) const {
+    PixelRow<T> const operator[](int const rowNr) const {
         return { pixels + (rowNr * stride), width };
     }
 
-    PixelRow<T> operator[](size_t const rowNr) {
+    PixelRow<T> operator[](int const rowNr) {
         return { pixels + (rowNr * stride), width };
     }
 
-    PixelRow<T> const at(const size_t rowNr) const {
-        if (rowNr >= height) {
-            throw std::out_of_range("rowNr >= height");
-        }
+    PixelRow<T> const at(int const rowNr) const {
+        required_assert(rowNr < height);
         return (*this)[rowNr];
     }
 
-    PixelRow<T> at(const size_t rowNr) {
-        if (rowNr >= height) {
-            throw std::out_of_range("rowNr >= height");
-        }
+    PixelRow<T> at(int const rowNr) {
+        required_assert(rowNr < height);
         return (*this)[rowNr];
     }
 
@@ -169,7 +167,7 @@ struct PixelMap {
         std::vector<void *> r;
         r.reserve(height);
 
-        for (size_t row = 0; row < height; row++) {
+        for (auto row = 0; row < height; row++) {
             void *ptr = at(row).data();
             r.push_back(ptr);
         }

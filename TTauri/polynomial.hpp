@@ -37,10 +37,8 @@ struct results {
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
     results(results<T,O> const &other) : count(other.count), value() {
-        if constexpr (other.maxCount > 0) {
-            for (size_t i = 0; i < other.maxCount; i++) {
-                value[i] = other.value[i];
-            }
+        for (size_t i = 0; i < other.maxCount; i++) {
+            value[i] = other.value[i];
         }
     }
 

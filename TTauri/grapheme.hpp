@@ -88,11 +88,11 @@ struct gstring {
         return graphemes.at(i);
     }
 
-    typename const_iterator begin() const {
+    auto begin() const {
         return graphemes.begin();
     }
 
-    typename const_iterator end() const {
+    auto end() const {
         return graphemes.end();
     }
 

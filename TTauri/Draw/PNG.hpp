@@ -4,7 +4,7 @@
 #pragma once
 
 #include <boost/exception/exception.hpp>
-#include <filesystem>
+#include <boost/filesystem.hpp>
 
 namespace TTauri {
 struct wsRGBA;
@@ -27,6 +27,6 @@ struct PNGLibraryError : virtual PNGError {};
  *
  * \return A pixelMap the size of the actual PNG file, a submap() from pixelMap.
  */
-PixelMap<wsRGBA> loadPNG(const PixelMap<wsRGBA> &pixelMap, const std::filesystem::path &path);
+PixelMap<wsRGBA> loadPNG(const PixelMap<wsRGBA> &pixelMap, const boost::filesystem::path &path);
 
 }

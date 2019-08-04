@@ -3,15 +3,22 @@
 
 #pragma once
 
-#ifdef _WIN32
+#include "required.hpp"
+
+#ifdef TTAURI_WINDOWS
 
 #include "Application_win32.hpp"
-#include <memory>
-
 namespace TTauri {
-
 using Application = Application_win32;
-
 }
 
+#elif TTAURI_MACOS
+
+#include "Application_macos.hpp"
+namespace TTauri {
+using Application = Application_macos;
+}
+
+#else
+#error "No Application implementation for this operating system."
 #endif

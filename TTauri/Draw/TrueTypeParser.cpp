@@ -259,7 +259,7 @@ static gsl::span<CMAPEntry const>::iterator findBestCMAPEntry(gsl::span<CMAPEntr
     };
 
     for (let [ID, specificID] : bestPlatforms) {
-        let i = std::find_if(entries.begin(), entries.end(), [ID, specificID](let& x) {
+        let i = std::find_if(entries.begin(), entries.end(), [ID=ID,specificID=specificID](let& x) {
             return x.platformID.value() == ID && x.platformSpecificID.value() == specificID;
         });
 

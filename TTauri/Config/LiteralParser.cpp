@@ -4,6 +4,7 @@
 #include "LiteralParser.hpp"
 #include <vector>
 #include <functional>
+#include <string>
 
 namespace TTauri::Config {
 
@@ -19,7 +20,7 @@ int64_t parseInteger(const char *text, int radix, bool negative)
             value *= radix;
             value += (static_cast<int64_t>(c) - '0');
             offset++;
-        } else if (c >= 'a' && c <= 'f' || c >= 'A' && c <='F') {
+        } else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <='F')) {
             value *= radix;
             value += ((static_cast<int64_t>(c) | 0x20) - 'a' + 10);
             offset++;

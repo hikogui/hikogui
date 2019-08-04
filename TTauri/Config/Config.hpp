@@ -13,7 +13,7 @@ namespace TTauri::Config {
  * 
  */
 struct Config {
-    std::filesystem::path path;
+    boost::filesystem::path path;
     ASTObject *ast = nullptr;
     Value root = {};
 
@@ -23,9 +23,9 @@ struct Config {
      * See the README.md file is this directory for the file format of the configuration file.
      * \param path path to the configuration file.
      */
-    Config(std::filesystem::path const &path) : path(path) {
+    Config(boost::filesystem::path path) : path(std::move(path)) {
         try {
-            ast = parseConfigFile(path);
+            ast = parseConfigFile(this->path);
             root = ast->execute();
 
         } catch (ConfigError &e) {
@@ -98,11 +98,11 @@ struct Config {
      * and arrays.
      *
      * The following types are supported:
-     * - bool, int64_t, double, std::string, std::filesystem::path, Color_XYZ
+     * - bool, int64_t, double, std::string, boost::filesystem::path, Color_XYZ
      * - std::vector<std::any>, std::map<std::string, std::any>
      *
      * int64_t can be promoted to double.
-     * std::string can be promoted to std::filesystem::path
+     * std::string can be promoted to boost::filesystem::path
      *
      * \param key A configuration key.
      */
@@ -115,8 +115,8 @@ struct Config {
     /*! Get the root object.
      * \see value() for the different kinds of types that are supported.
      */
-    std::map<std::string,std::any> rootObject() {
-        return root.value<std::map<std::string,std::any>>();
+    Object rootObject() {
+        return root.value<Object>();
     }
 };
 

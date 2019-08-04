@@ -19,6 +19,7 @@ source_group("Headers" FILES ${TTauri_hdrs})
 
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Config)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 BISON_TARGET(TTauriConfigParser Config/TTauriConfig.y ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigParser.cpp COMPILE_FLAGS "-p TTauriConfig_yy" DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigParser.hpp)
 FLEX_TARGET(TTauriConfigScanner Config/TTauriConfig.l ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.cpp COMPILE_FLAGS "-P TTauriConfig_yy" DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/Config/TTauriConfigScanner.hpp)
@@ -93,7 +94,6 @@ set(TTauri_srcs
     FileMapping.cpp
     FileView.cpp
     strings.cpp
-    Time.cpp
 )
 
 if(MSVC)
@@ -107,7 +107,7 @@ set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
 target_link_directories(TTauri PUBLIC ${Boost_LIBRARY_DIRS})
 target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
-target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_SWIZZLE -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
+target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
 if (MSVC)
     target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
 endif()

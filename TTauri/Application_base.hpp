@@ -6,10 +6,8 @@
 #include "utils.hpp"
 #include "ApplicationDelegate.hpp"
 #include "URL.hpp"
-#include "Time.hpp"
 #include <boost/exception/all.hpp>
 #include <gsl/gsl>
-#include <filesystem>
 #include <memory>
 #include <string>
 #include <any>
@@ -25,8 +23,6 @@ namespace TTauri {
  */
 class Application_base {
 public:
-    using clock = clock_sync<tai_system_clock,rdtsc_clock>;
-
     struct Error : virtual boost::exception, virtual std::exception {};
     struct ResourceDirError : virtual Error {};
 
@@ -39,9 +35,6 @@ public:
     /*! Directory where resources are located.
      */
     URL resourceLocation;
-
-    bool stopClockCalibration = false;
-    std::thread clockCalibrationThreadID;
 
     Application_base() = default;
     virtual ~Application_base();
@@ -70,8 +63,6 @@ public:
     /*! Called by the GUI when the last window was closed.
     */
     virtual void lastWindowClosed();
-
-    static void clockCalibrationThread();
 };
 
 }

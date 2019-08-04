@@ -152,10 +152,10 @@ inline bool operator==(BezierCurve const &lhs, BezierCurve const &rhs) {
 inline BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve const &rhs) {
     return {
         rhs.type,
-        (lhs * glm::vec3(rhs.P1, 1.0)).xy(),
-        (lhs * glm::vec3(rhs.C1, 1.0)).xy(),
-        (lhs * glm::vec3(rhs.C2, 1.0)).xy(),
-        (lhs * glm::vec3(rhs.P2, 1.0)).xy()
+        glm::xy(lhs * glm::vec3(rhs.P1, 1.0)),
+        glm::xy(lhs * glm::vec3(rhs.C1, 1.0)),
+        glm::xy(lhs * glm::vec3(rhs.C2, 1.0)),
+        glm::xy(lhs * glm::vec3(rhs.P2, 1.0))
     };
 }
 

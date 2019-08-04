@@ -12,7 +12,6 @@
 #include <boost/exception/all.hpp>
 
 #include <cstdint>
-#include <filesystem>
 #include <map>
 
 namespace TTauri {

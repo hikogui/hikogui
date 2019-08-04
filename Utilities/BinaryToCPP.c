@@ -58,7 +58,16 @@ int main(int argc, char *argv[])
     char *output_path = argv[2];
 
     FILE *input_file = fopen(input_path, "rb");
+    if (input_file == NULL) {
+        fprintf(stderr, "Could not open input file '%s'.\n", input_path);
+        return 1;
+    }
+
     FILE *output_file = fopen(output_path, "wb");
+    if (output_file == NULL) {
+        fprintf(stderr, "Could not open output file '%s'.\n", output_path);
+        return 1;
+    }
 
     long input_file_length = get_file_length(input_file);
 

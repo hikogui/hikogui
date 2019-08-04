@@ -1,3 +1,8 @@
+set(GLM_TEST_ENABLE_CXX_17 ON)
+set(GLM_TEST_ENABLE OFF)
+set(GLM_TEST_ENABLE_SIMD_AVX2 ON)
+set(gtest_force_shared_crt ON)
+
 add_subdirectory(googletest)
 add_subdirectory(GSL)
 add_subdirectory(zlib)

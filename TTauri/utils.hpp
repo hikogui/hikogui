@@ -15,6 +15,7 @@
 #include <thread>
 #include <atomic>
 #include <type_traits>
+#include <unordered_map>
 
 namespace TTauri {
 
@@ -122,7 +123,7 @@ inline R align_end(T ptr, size_t alignment)
     return reinterpret_cast<R>(alignedByteOffset);
 }
 
-inline constexpr uint32_t fourcc(char *txt)
+inline constexpr uint32_t fourcc(char const txt[5])
 {
     return (
         (static_cast<uint32_t>(txt[0]) << 24) |
@@ -276,7 +277,7 @@ inline uint8_t char_to_nibble(char c)
 template<typename T>
 inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v)
 {
-    using iterator = std::remove_reference_t<decltype(v)>::const_iterator;
+    using iterator = typename std::remove_reference_t<decltype(v)>::const_iterator;
     auto expiredIterators = std::vector<iterator>{};
 
     for (auto i = v.begin(); i != v.end(); i++) {
@@ -293,7 +294,7 @@ inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v)
 template<typename K, typename T>
 inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v)
 {
-    using iterator = std::remove_reference_t<decltype(v)>::const_iterator;
+    using iterator = typename std::remove_reference_t<decltype(v)>::const_iterator;
     auto expiredIterators = std::vector<iterator>{};
 
     for (auto i = v.begin(); i != v.end(); i++) {
@@ -310,7 +311,7 @@ inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v)
 template<typename K, typename T>
 inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T>>> &v)
 {
-    using iterator = std::remove_reference_t<decltype(v)>::const_iterator;
+    using iterator = typename std::remove_reference_t<decltype(v)>::const_iterator;
     auto expiredIterators = std::vector<iterator>{};
 
     for (auto i = v.begin(); i != v.end(); i++) {

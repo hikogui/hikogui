@@ -27,7 +27,7 @@ constexpr char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
 constexpr char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
 constexpr char32_t UNICODE_Reverse_BOM = 0xfffe;
 
-inline char32_t CP1252ToCodePoint(char inputCharacter)
+inline char32_t CP1252ToCodePoint(uint8_t inputCharacter)
 {
     if (inputCharacter >= 0 && inputCharacter <= 0x7f) {
         return inputCharacter;
@@ -99,8 +99,8 @@ struct TranslateStringOptions {
 template<typename T, typename U>
 inline T translateString(const U &inputString, TranslateStringOptions options = {})
 {
-    if constexpr (sizeof (T::value_type) == sizeof (U::value_type)) {
-        return transform<T>(inputString, [](const U::value_type &inputCharacter) { return inputCharacter; });
+    if constexpr (sizeof (typename T::value_type) == sizeof (typename U::value_type)) {
+        return transform<T>(inputString, [](let &inputCharacter) { return inputCharacter; });
     } else {
         const auto intermediateString = translateString<std::u32string>(inputString, options);
         return translateString<T>(intermediateString, options);
@@ -116,7 +116,7 @@ inline std::u32string translateString(const std::string &inputString, TranslateS
     size_t backtrackPosition = 0;
 
     for (size_t i = 0; i < inputString.size(); i++) {
-        auto inputCharacter = inputString.at(i);
+        let inputCharacter = static_cast<uint8_t>(inputString.at(i));
 
         if (codePointToDo == 1) {
             backtrackPosition = i;

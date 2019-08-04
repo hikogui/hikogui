@@ -7,7 +7,6 @@
 #include "StaticResources.hpp"
 #include "utils.hpp"
 #include <gsl/gsl>
-#include <filesystem>
 #include <cstddef>
 #include <unordered_map>
 

@@ -11,6 +11,10 @@ function(target_static_resource TARGET)
         set(OUTPUT_RELPATH "${OUTPUT_RELDIR}/${OUTPUT_FILENAME}")
         get_filename_component(OUTPUT_PATH ${OUTPUT_RELPATH} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
+        # Create the output directory.
+        get_filename_component(OUTPUT_DIR ${OUTPUT_PATH} DIRECTORY)
+        file(MAKE_DIRECTORY ${OUTPUT_DIR})
+
 	    add_custom_command(
 		    OUTPUT ${OUTPUT_PATH}
 		    COMMAND BinaryToCPP ${INPUT_PATH} ${OUTPUT_PATH}

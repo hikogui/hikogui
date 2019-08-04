@@ -5,6 +5,7 @@
 
 #include "required.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <cstdint>
@@ -67,20 +68,16 @@ struct rect {
 };
 
 
-using u32extent2 = extent<2, uint32_t, glm::defaultp>;
-using u64extent2 = extent<2, uint64_t, glm::defaultp>;
 using extent2 = extent<2, float, glm::defaultp>;
-using u16rect2 = rect<2, uint16_t, glm::defaultp>;
-using u32rect2 = rect<2, uint32_t, glm::defaultp>;
-using i32rect2 = rect<2, int32_t, glm::defaultp>;
-using u64rect2 = rect<2, uint64_t, glm::defaultp>;
+using iextent2 = extent<2, int, glm::defaultp>;
+using irect2 = rect<2, int, glm::defaultp>;
 using rect2 = rect<2, float, glm::defaultp>;
 
 inline rect2 &operator*=(rect2 &lhs, glm::mat3x3 const &rhs)
 {
-    lhs.offset = (rhs * glm::vec3(lhs.offset, 1.0f)).xy;
+    lhs.offset = glm::xy(rhs * glm::vec3(lhs.offset, 1.0f));
     // XXX is this correct during rotation?
-    lhs.extent = extent2{(rhs * glm::vec3(lhs.extent, 0.0f)).xy};
+    lhs.extent = extent2{glm::xy(rhs * glm::vec3(lhs.extent, 0.0f))};
     return lhs;
 }
 

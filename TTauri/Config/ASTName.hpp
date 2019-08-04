@@ -60,7 +60,7 @@ struct ASTName : ASTExpression {
     /*! Include a configuration file.
      */
     Value executeIncludeCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
-        auto path = getArgument<std::filesystem::path>(arguments, 0, true);
+        auto path = getArgument<boost::filesystem::path>(arguments, 0, true);
 
         // The included file is relative to the directory of this configuration file.
         if (path.is_relative()) {
@@ -101,7 +101,7 @@ struct ASTName : ASTExpression {
             return location.file->parent_path();
         } else {
             // Suffix the given argument with the directory where this configuration file is located.
-            let path = getArgument<std::filesystem::path>(arguments, 0, true);
+            let path = getArgument<boost::filesystem::path>(arguments, 0, true);
 
             if (path.is_relative()) {
                 return location.file->parent_path() / path;
@@ -116,14 +116,14 @@ struct ASTName : ASTExpression {
     Value executeCwdCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without argument return the current working directory.
-            return std::filesystem::current_path();
+            return boost::filesystem::current_path();
 
         } else {
             // Suffix the given argument with the current working directory.
-            let path = getArgument<std::filesystem::path>(arguments, 0, true);
+            let path = getArgument<boost::filesystem::path>(arguments, 0, true);
 
             if (path.is_relative()) {
-                return std::filesystem::current_path() / path;
+                return boost::filesystem::current_path() / path;
             } else {
                 BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Expecting relative path argument to function '%s' got '%s'")
                     % name % path.string()).str())

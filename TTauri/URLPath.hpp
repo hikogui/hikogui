@@ -6,6 +6,7 @@
 #include "URLAuthority.hpp"
 #include "URLPath.hpp"
 #include "required.hpp"
+#include <boost/filesystem.hpp>
 #include <string>
 #include <string_view>
 #include <optional>
@@ -24,7 +25,7 @@ struct URLPath {
 
     URLPath() = default;
     URLPath(std::string const &path);
-    URLPath::URLPath(std::filesystem::path const &path);
+    URLPath(boost::filesystem::path const &path);
 
     std::string string_path() const;
 

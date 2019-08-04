@@ -16,7 +16,7 @@ struct ASTNull : ASTExpression {
     }
 
     Value execute(ExecutionContext *context) const override { 
-        return {{}};
+        return {};
     } 
 
 };

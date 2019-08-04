@@ -23,7 +23,7 @@ namespace TTauri::Config {
 using namespace std;
 
 
-ASTObject *parseConfigFile(const std::filesystem::path &path)
+ASTObject *parseConfigFile(boost::filesystem::path const &path)
 {
     yyscan_t scanner;
     FILE *file;

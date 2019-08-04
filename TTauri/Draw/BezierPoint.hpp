@@ -8,6 +8,8 @@
 #include "TTauri/utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
+#include <vector>
 
 namespace TTauri::Draw {
 
@@ -98,20 +100,20 @@ inline BezierPoint operator*(glm::mat2x2 const &lhs, BezierPoint const &rhs) {
 }
 
 inline BezierPoint operator*(glm::mat3x3 const &lhs, BezierPoint const &rhs) {
-    return { (lhs * glm::vec3{rhs.p, 1.0f}).xy, rhs.type };
+    return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
 }
 
 inline BezierPoint &operator*=(BezierPoint &lhs, glm::mat3x3 const &rhs) {
-    lhs.p = (rhs * glm::vec3{lhs.p, 1.0f}).xy;
+    lhs.p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
     return lhs;
 }
 
 inline BezierPoint operator*(float const lhs, BezierPoint const &rhs) {
-    return { (lhs * glm::vec3{rhs.p, 1.0f}).xy, rhs.type };
+    return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
 }
 
 inline BezierPoint &operator*=(BezierPoint &lhs, float const rhs) {
-    lhs.p = (rhs * glm::vec3{lhs.p, 1.0f}).xy;
+    lhs.p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
     return lhs;
 }
 

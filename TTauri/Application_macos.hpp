@@ -3,19 +3,23 @@
 
 #pragma once
 
-#include "Application.hpp"
+#include "Application_base.hpp"
 
 namespace TTauri {
 
-class Application_macos: public Application {
+class Application_macos final : public Application_base {
 public:
     int argc;
     const char **argv;
 
-    Application_macos(const std::shared_ptr<ApplicationDelegate> &delegate, int argc, const char **arg);
+    Application_macos();
     ~Application_macos();
 
-    virtual int loop();
+    void initialize(const std::shared_ptr<ApplicationDelegate> delegate, int argc, char **argv);
+
+    void runOnMainThread(std::function<void()> function) override;
+
+    int loop() override;
 };
 
 }

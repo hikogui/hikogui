@@ -1,8 +1,6 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#pragma once
-
 #include "PixelMap.inl"
 #include "TTauri/Color.hpp"
 #include <algorithm>
@@ -19,14 +17,14 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
     let topRow = pixelMap.at(1);
     let bottomRow = pixelMap.at(pixelMap.height - 2);
     auto bottomBorder = pixelMap.at(pixelMap.height - 1);
-    for (size_t x = 1; x < pixelMap.width - 1; x++) {
+    for (auto x = 1; x < pixelMap.width - 1; x++) {
         topBorder[x] = topRow[x] & u32invisibleMask;
         bottomBorder[x] = bottomRow[x] & u32invisibleMask;
     }
 
     let rightBorderY = pixelMap.width - 1;
     let rightY = pixelMap.width - 2;
-    for (size_t y = 1; y < pixelMap.height - 1; y++) {
+    for (auto y = 1; y < pixelMap.height - 1; y++) {
         auto row = pixelMap[y];
         row[0] = row[1] & u32invisibleMask;
         row[rightBorderY] = row[rightY] & u32invisibleMask;
@@ -40,13 +38,13 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
 
 void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
 {
-    assert(dst.width >= src.width);
-    assert(dst.height >= src.height);
+    required_assert(dst.width >= src.width);
+    required_assert(dst.height >= src.height);
 
-    for (size_t rowNr = 0; rowNr < src.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < src.height; rowNr++) {
         let srcRow = src.at(rowNr);
         auto dstRow = dst.at(rowNr);
-        for (size_t columnNr = 0; columnNr < src.width; columnNr++) {
+        for (auto columnNr = 0; columnNr < src.width; columnNr++) {
             dstRow[columnNr] = boost::endian::native_to_big(srcRow[columnNr].to_sRGBA_u32());
         }
     }
@@ -54,13 +52,13 @@ void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
 
 void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
 {
-    assert(src.width >= dst.width);
-    assert(src.height >= dst.height);
+    required_assert(src.width >= dst.width);
+    required_assert(src.height >= dst.height);
 
-    for (size_t rowNr = 0; rowNr < dst.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst[rowNr];
         let srcRow = src[rowNr];
-        for (size_t columnNr = 0; columnNr < dstRow.width; columnNr++) {
+        for (auto columnNr = 0; columnNr < dstRow.width; columnNr++) {
             auto &dstPixel = dstRow[columnNr];
             let srcPixel = srcRow[columnNr];
             dstPixel = std::max(dstPixel, srcPixel);
@@ -70,13 +68,13 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
 
 void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over)
 {
-    assert(over.height >= under.height);
-    assert(over.width >= under.width);
+    required_assert(over.height >= under.height);
+    required_assert(over.width >= under.width);
 
-    for (size_t rowNr = 0; rowNr < under.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < under.height; rowNr++) {
         let overRow = over.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (size_t columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++) {
+        for (auto columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++) {
             let overPixel = overRow[columnNr];
             auto& underPixel = underRow[columnNr];
             underPixel.composit(overPixel);
@@ -86,13 +84,13 @@ void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over)
 
 void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
 {
-    assert(mask.height >= under.height);
-    assert(mask.width >= under.width);
+    required_assert(mask.height >= under.height);
+    required_assert(mask.width >= under.width);
 
-    for (size_t rowNr = 0; rowNr < under.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < under.height; rowNr++) {
         let maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (size_t columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++) {
+        for (auto columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++) {
             let maskPixel = maskRow[columnNr];
             auto& pixel = underRow[columnNr];
             pixel.composit(over, maskPixel);
@@ -102,13 +100,13 @@ void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mas
 
 void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
 {
-    assert(mask.height >= under.height);
-    assert((mask.width * 3) >= under.width);
+    required_assert(mask.height >= under.height);
+    required_assert((mask.width * 3) >= under.width);
 
-    for (size_t rowNr = 0; rowNr < under.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < under.height; rowNr++) {
         let maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
-        for (size_t maskColumnNr = 0, columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++, maskColumnNr += 3) {
+        for (auto maskColumnNr = 0, columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++, maskColumnNr += 3) {
             let maskRGBValue = glm::u8vec3{
                 maskRow[maskColumnNr],
                 maskRow[maskColumnNr + 1],
@@ -125,9 +123,9 @@ void desaturate(PixelMap<wsRGBA> &dst, float brightness)
 {
     let _brightness = boost::numeric_cast<uint16_t>(brightness * 32768.0); 
 
-    for (size_t rowNr = 0; rowNr < dst.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst.at(rowNr);
-        for (size_t columnNr = 0; columnNr < dstRow.width; columnNr++) {
+        for (auto columnNr = 0; columnNr < dstRow.width; columnNr++) {
             auto &dstPixel = dstRow[columnNr];
             dstPixel.desaturate(_brightness);
         }
@@ -150,11 +148,11 @@ void subpixelFilter(PixelMap<uint8_t> &image)
 
 void subpixelFlip(PixelMap<uint8_t> &image)
 {
-    assert(image.width % 3 == 0);
+    required_assert(image.width % 3 == 0);
 
-    for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
+    for (auto rowNr = 0; rowNr < image.height; rowNr++) {
         auto row = image.at(rowNr);
-        for (size_t columnNr = 0; columnNr < static_cast<size_t>(row.width); columnNr += 3) {
+        for (auto columnNr = 0; columnNr < static_cast<size_t>(row.width); columnNr += 3) {
             std::swap(row[columnNr], row[columnNr + 2]);
         }
     }

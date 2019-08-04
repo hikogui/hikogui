@@ -5,6 +5,7 @@
 
 #include "Window.hpp"
 #include "globals.hpp"
+#include "TTauri/exceptions.hpp"
 #include <unordered_set>
 #include <boost/uuid/uuid.hpp>
 #include <mutex>

@@ -6,6 +6,7 @@
 #include "geometry.hpp"
 #include "utils.hpp"
 #include <glm/glm.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
 #include <boost/format.hpp>
 #include <boost/endian/conversion.hpp>
 #include <string>
@@ -100,7 +101,9 @@ struct wsRGBA {
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
     wsRGBA(glm::vec4 c) :
-        color(static_cast<glm::i16vec4>(glm::vec4{c.rgb * c.a * F32_MAX_SRGB, c.a * F32_MAX_ALPHA })) {}
+        color(static_cast<glm::i16vec4>(glm::vec4{
+            glm::xyz(c) * c.a * F32_MAX_SRGB,
+            c.a * F32_MAX_ALPHA })) {}
 
     /*! Set the colour with linear-sRGB values.
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
@@ -121,7 +124,7 @@ struct wsRGBA {
 
         color = static_cast<glm::i16vec4>(
             glm::i64vec4(
-                (colorWithoutPreMultiply.rgb * colorWithoutPreMultiply.a) / I64_MAX_ALPHA,
+                (glm::xyz(colorWithoutPreMultiply) * colorWithoutPreMultiply.a) / I64_MAX_ALPHA,
                 colorWithoutPreMultiply.a
             )
         );
@@ -144,7 +147,10 @@ struct wsRGBA {
      */
     glm::vec4 to_wsRGBApm_vec4() const {
         let floatColor = static_cast<glm::vec4>(color);
-        return { floatColor.rgb * F32_SRGB_MUL, floatColor.a * F32_ALPHA_MUL };
+        return {
+            glm::xyz(floatColor) * F32_SRGB_MUL,
+            floatColor.a * F32_ALPHA_MUL
+        };
     }
 
     glm::vec4 to_Linear_sRGBA_vec4() const {
@@ -154,7 +160,10 @@ struct wsRGBA {
             return { 0.0, 0.0, 0.0, 0.0 };
         } else {
             let oneOverAlpha = 1.0f / floatColor.a;
-            return { floatColor.rgb * oneOverAlpha, floatColor.a };
+            return {
+                glm::xyz(floatColor) * oneOverAlpha,
+                floatColor.a
+            };
         }
     }
 
@@ -167,7 +176,7 @@ struct wsRGBA {
 
         let i64colorPM = static_cast<glm::i64vec4>(color);
         let i64color = glm::i64vec4{
-            (i64colorPM.rgb * I64_MAX_ALPHA) / i64colorPM.a,
+            (glm::xyz(i64colorPM) * I64_MAX_ALPHA) / i64colorPM.a,
             i64colorPM.a
         };
         let i16color = static_cast<glm::i16vec4>(i64color);

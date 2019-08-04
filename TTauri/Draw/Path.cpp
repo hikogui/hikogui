@@ -449,13 +449,13 @@ Path &operator+=(Path &lhs, Path const &rhs)
 Path &operator*=(Path &lhs, glm::mat3x3 const &rhs)
 {
     lhs.boundingBox *= rhs;
-    lhs.leftSideBearing = (rhs * glm::vec3(lhs.leftSideBearing, 1.0f)).xy;
-    lhs.rightSideBearing = (rhs * glm::vec3(lhs.rightSideBearing, 1.0f)).xy;
-    lhs.advance = (rhs * glm::vec3(lhs.advance, 0.0f)).xy;
-    lhs.ascender = (rhs * glm::vec3(lhs.ascender, 0.0f)).xy;
-    lhs.descender = (rhs * glm::vec3(lhs.descender, 0.0f)).xy;
-    lhs.capHeight = (rhs * glm::vec3(lhs.capHeight, 0.0f)).xy;
-    lhs.xHeight = (rhs * glm::vec3(lhs.xHeight, 0.0f)).xy;
+    lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
+    lhs.rightSideBearing = glm::xy(rhs * glm::vec3(lhs.rightSideBearing, 1.0f));
+    lhs.advance = glm::xy(rhs * glm::vec3(lhs.advance, 0.0f));
+    lhs.ascender = glm::xy(rhs * glm::vec3(lhs.ascender, 0.0f));
+    lhs.descender = glm::xy(rhs * glm::vec3(lhs.descender, 0.0f));
+    lhs.capHeight = glm::xy(rhs * glm::vec3(lhs.capHeight, 0.0f));
+    lhs.xHeight = glm::xy(rhs * glm::vec3(lhs.xHeight, 0.0f));
 
     for (auto &point: lhs.points) {
         point *= rhs;
@@ -466,13 +466,13 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs)
 Path &operator*=(Path &lhs, float const rhs)
 {
     lhs.boundingBox *= rhs;
-    lhs.leftSideBearing = (rhs * glm::vec3(lhs.leftSideBearing, 1.0f)).xy;
-    lhs.rightSideBearing = (rhs * glm::vec3(lhs.rightSideBearing, 1.0f)).xy;
-    lhs.advance = (rhs * glm::vec3(lhs.advance, 0.0f)).xy;
-    lhs.ascender = (rhs * glm::vec3(lhs.ascender, 0.0f)).xy;
-    lhs.descender = (rhs * glm::vec3(lhs.descender, 0.0f)).xy;
-    lhs.capHeight = (rhs * glm::vec3(lhs.capHeight, 0.0f)).xy;
-    lhs.xHeight = (rhs * glm::vec3(lhs.xHeight, 0.0f)).xy;
+    lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
+    lhs.rightSideBearing = glm::xy(rhs * glm::vec3(lhs.rightSideBearing, 1.0f));
+    lhs.advance = glm::xy(rhs * glm::vec3(lhs.advance, 0.0f));
+    lhs.ascender = glm::xy(rhs * glm::vec3(lhs.ascender, 0.0f));
+    lhs.descender = glm::xy(rhs * glm::vec3(lhs.descender, 0.0f));
+    lhs.capHeight = glm::xy(rhs * glm::vec3(lhs.capHeight, 0.0f));
+    lhs.xHeight = glm::xy(rhs * glm::vec3(lhs.xHeight, 0.0f));
 
     for (auto &point: lhs.points) {
         point *= rhs;

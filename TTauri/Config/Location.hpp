@@ -3,23 +3,23 @@
 
 #pragma once
 
-#include <filesystem>
 #include <memory>
 #include <iostream>
 #include <boost/format.hpp>
+#include <boost/filesystem.hpp>
 
 namespace TTauri::Config {
 
 /*! Location inside a configuration file.
  */
 struct Location {
-    std::shared_ptr<std::filesystem::path> file;
+    std::shared_ptr<boost::filesystem::path> file;
     int line;
     int column;
 
     Location() : file({}), line(0), column(0) {}
 
-    Location(std::shared_ptr<std::filesystem::path> const &file, int line, int column) : file(file), line(line), column(column) {}
+    Location(std::shared_ptr<boost::filesystem::path> const &file, int line, int column) : file(file), line(line), column(column) {}
 
     std::string string() const {
         return (boost::format("%s:%i:%i") % file->generic_string() % line % column).str();
