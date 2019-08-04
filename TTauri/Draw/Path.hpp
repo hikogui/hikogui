@@ -21,8 +21,8 @@ template<typename T> struct PixelMap;
 
 struct Path {
     std::vector<BezierPoint> points;
-    std::vector<size_t> contourEndPoints;
-    std::vector<std::pair<size_t,wsRGBA>> layerEndContours;
+    std::vector<int> contourEndPoints;
+    std::vector<std::pair<int,wsRGBA>> layerEndContours;
 
     /*! Bounding box of the path.
      */
@@ -66,20 +66,20 @@ struct Path {
     /*! The number of graphemes this glyph represents.
      * This may be larger than one when the glyph is a ligature.
      */
-    size_t numberOfGraphemes = 1;
+    int numberOfGraphemes = 1;
 
     /*! Get the advanceWidth for the specific grapheme of
      * a potential ligature.
      */
-    glm::vec2 advanceForGrapheme(size_t index) const;
+    glm::vec2 advanceForGrapheme(int index) const;
 
     /*! Return the number of closed contours.
     */
-    size_t numberOfContours() const;
+    int numberOfContours() const;
 
     /*! Return the number of closed layers.
     */
-    size_t numberOfLayers() const;
+    int numberOfLayers() const;
 
     /*! Check if all layers have the same color.
      */
@@ -93,31 +93,31 @@ struct Path {
 
     /*! Return an iterator to the start point of a contour.
      */
-    std::vector<BezierPoint>::const_iterator beginContour(size_t contourNr) const;
+    std::vector<BezierPoint>::const_iterator beginContour(int contourNr) const;
 
     /* Return and end-iterator beyond the end point of a contour.
      */
-    std::vector<BezierPoint>::const_iterator endContour(size_t contourNr) const;
+    std::vector<BezierPoint>::const_iterator endContour(int contourNr) const;
 
     /* Return the first contour index of a layer.
      */
-    size_t beginLayer(size_t layerNr) const;
+    int beginLayer(int layerNr) const;
 
     /* Return beyond the last contour index of a layer.
      */
-    size_t endLayer(size_t layerNr) const;
+    int endLayer(int layerNr) const;
 
-    std::vector<BezierPoint> getBezierPointsOfContour(size_t contourNr) const;
+    std::vector<BezierPoint> getBezierPointsOfContour(int contourNr) const;
 
-    std::vector<BezierCurve> getBeziersOfContour(size_t contourNr) const;
+    std::vector<BezierCurve> getBeziersOfContour(int contourNr) const;
 
     std::vector<BezierCurve> getBeziers() const;
 
-    std::pair<Path,wsRGBA> getLayer(size_t layerNr) const;
+    std::pair<Path,wsRGBA> getLayer(int layerNr) const;
 
-    wsRGBA getColorOfLayer(size_t layerNr) const;
+    wsRGBA getColorOfLayer(int layerNr) const;
 
-    void setColorOfLayer(size_t layerNr, wsRGBA fillColor);
+    void setColorOfLayer(int layerNr, wsRGBA fillColor);
 
     /*! Return true if there is an open contour.
      */

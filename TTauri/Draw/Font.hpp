@@ -23,7 +23,7 @@ struct Font {
     PathString getGlyphs(gstring const &graphemes) const {
         PathString r;
 
-        for (size_t graphemeIndex = 0; graphemeIndex < graphemes.size(); graphemeIndex++) {
+        for (int graphemeIndex = 0; graphemeIndex < graphemes.size(); graphemeIndex++) {
             let &grapheme = graphemes.at(graphemeIndex);
 
             // XXX Try and find ligatures in font.

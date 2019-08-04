@@ -4,14 +4,14 @@
 #pragma once
 
 #include "Widget.hpp"
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <memory>
 
 namespace TTauri::GUI::Widgets {
 
 class ImageWidget : public Widget {
 public:
-    const std::filesystem::path path;
+    const boost::filesystem::path path;
 
     float rotation = 0.0;
 
@@ -27,7 +27,7 @@ public:
 
     void drawBackingImage();
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset) override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset) override;
 
 private:
     std::string key;

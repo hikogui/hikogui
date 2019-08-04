@@ -76,8 +76,8 @@ struct gstring {
     using const_iterator = std::vector<grapheme>::const_iterator;
     using value_type = grapheme;
 
-    size_t size() const {
-        return graphemes.size();
+    int size() const {
+        return to_int(graphemes.size());
     }
 
     grapheme const &at(size_t i) const {
@@ -110,7 +110,7 @@ struct gstring {
 };
 
 template<>
-inline gstring translateString(const std::u32string& inputString, TranslateStringOptions options)
+inline gstring translateString(std::u32string_view const inputString, TranslateStringOptions options)
 {
     gstring outputString;
     std::u32string cluster;

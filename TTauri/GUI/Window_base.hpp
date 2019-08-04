@@ -149,7 +149,7 @@ protected:
      * resize to determine the extent of the surface when the GPU library can
      * not figure this out by itself.
      */
-    i32rect2 OSWindowRectangle;
+    irect2 OSWindowRectangle;
 
     //! The minimum window extent as calculated by laying out all the widgets.
     extent2 minimumWindowExtent;

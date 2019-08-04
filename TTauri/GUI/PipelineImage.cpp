@@ -18,12 +18,12 @@ PipelineImage::PipelineImage(Window const &window) :
 {
 }
 
-vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
+vk::Semaphore PipelineImage::render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore)
 {
-    size_t tmpNumberOfVertices = 0;
-    window.widget->pipelineImagePlaceVertices(vertexBuffersData.at(imageIndex), tmpNumberOfVertices);
+    int tmpNumberOfVertices = 0;
+    window.widget->pipelineImagePlaceVertices(vertexBuffersData.at(frameBufferIndex), tmpNumberOfVertices);
 
-    device().flushAllocation(vertexBuffersAllocation.at(imageIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBuffersAllocation.at(frameBufferIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 
     device().imagePipeline->prepareAtlasForRendering();
    
@@ -32,12 +32,12 @@ vk::Semaphore PipelineImage::render(uint32_t imageIndex, vk::Semaphore inputSema
         numberOfVertices = tmpNumberOfVertices;
     }
 
-    return Pipeline_vulkan::render(imageIndex, inputSemaphore);
+    return Pipeline_vulkan::render(frameBufferIndex, inputSemaphore);
 }
 
-void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex)
+void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t frameBufferIndex)
 {
-    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(imageIndex) };
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(frameBufferIndex) };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
@@ -87,10 +87,10 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
     } };
 }
 
-vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t imageIndex) const
+vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t frameBufferIndex) const
 {
     let &sharedImagePipeline = device().imagePipeline;
-    let &frameBufferObject = frameBufferObjects.at(imageIndex);
+    let &frameBufferObject = frameBufferObjects.at(frameBufferIndex);
 
     return { {
         frameBufferObject.descriptorSet,
@@ -113,9 +113,9 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
     } };
 }
 
-uint64_t PipelineImage::getDescriptorSetVersion() const
+int PipelineImage::getDescriptorSetVersion() const
 {
-    return device().imagePipeline->atlasTextures.size();
+    return to_int(device().imagePipeline->atlasTextures.size());
 }
 
 std::vector<vk::PushConstantRange> PipelineImage::createPushConstantRanges() const
@@ -132,7 +132,7 @@ std::vector<vk::VertexInputAttributeDescription> PipelineImage::createVertexInpu
     return Vertex::inputAttributeDescriptions();
 }
 
-void PipelineImage::buildVertexBuffers(size_t nrFrameBuffers)
+void PipelineImage::buildVertexBuffers(int nrFrameBuffers)
 {
     BOOST_ASSERT(vertexBuffers.size() == 0);
     BOOST_ASSERT(vertexBuffersAllocation.size() == 0);

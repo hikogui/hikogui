@@ -9,11 +9,11 @@ namespace TTauri {
 
 template<typename T, int N>
 struct results {
-    static constexpr size_t maxCount = N;
+    static constexpr int maxCount = N;
     using element_type = T;
     using const_iterator = typename std::array<T,N>::const_iterator;
 
-    ptrdiff_t count;
+    int count;
     std::array<T,N> value;
 
     results() : count(0), value() {}
@@ -37,12 +37,12 @@ struct results {
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
     results(results<T,O> const &other) : count(other.count), value() {
-        for (size_t i = 0; i < other.maxCount; i++) {
+        for (int i = 0; i < other.maxCount; i++) {
             value[i] = other.value[i];
         }
     }
 
-    size_t size() const {
+    int size() const {
         return (count >= 0) ? count : 0;
     }
 
@@ -71,7 +71,7 @@ struct results {
 template<typename T, int N, typename U>
 inline results<T, N> operator-(results<T, N> lhs, U const &rhs)
 {
-    for (size_t i = 0; i < lhs.maxCount; i++) {
+    for (int i = 0; i < lhs.maxCount; i++) {
         lhs.value[i] -= rhs;
     }
     return lhs;
@@ -89,7 +89,7 @@ inline std::ostream& operator<<(std::ostream& os, results<T,N> const &r)
 {
     os << "[";
     assert(r.count <= r.maxCount);
-    for (ptrdiff_t i = 0; i < r.count; i++) {
+    for (int i = 0; i < r.count; i++) {
         if (i > 0) {
             os << ", ";
         }

@@ -50,9 +50,9 @@ void ImageWidget::drawBackingImage()
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, size_t &offset)
+void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset)
 {
-    clearAndPickleAppend(key, "ImageView", box.currentExtent(), path.u8string());
+    clearAndPickleAppend(key, "ImageView", box.currentExtent(), path.string());
 
     auto vulkanDevice = device();
 

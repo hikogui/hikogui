@@ -31,11 +31,11 @@ struct PathString {
         alignment = other.alignment;
     }
 
-    size_t size() const {
-        return paths.size();
+    int size() const {
+        return to_int(paths.size());
     }
 
-    Path const &at(size_t i) const {
+    Path const &at(int i) const {
         return paths.at(i);
     }
 
@@ -43,7 +43,7 @@ struct PathString {
         paths.push_back(std::move(glyph));
     }
 
-    glm::vec2 glyphAdvance(size_t i) const {
+    glm::vec2 glyphAdvance(int i) const {
         return at(i).advance;
     }
 
@@ -64,7 +64,7 @@ struct PathString {
 
     /*! Get the cursor position at grapheme index.
      */
-    glm::vec2 cursorAdvance(size_t graphemeIndex) const;
+    glm::vec2 cursorAdvance(int graphemeIndex) const;
 
     Path toPath(wsRGBA defaultColor={0.0, 0.0, 0.0, 1.0}) const;
 };

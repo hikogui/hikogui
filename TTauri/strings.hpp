@@ -7,6 +7,7 @@
 #include "utils.hpp"
 #include <utf8proc/utf8proc.h>
 #include <string>
+#include <string_view>
 
 namespace TTauri {
 
@@ -97,18 +98,23 @@ struct TranslateStringOptions {
 };
 
 template<typename T, typename U>
-inline T translateString(const U &inputString, TranslateStringOptions options = {})
+inline T translateString(U const inputString, TranslateStringOptions options = {})
 {
     if constexpr (sizeof (typename T::value_type) == sizeof (typename U::value_type)) {
         return transform<T>(inputString, [](let &inputCharacter) { return inputCharacter; });
     } else {
-        const auto intermediateString = translateString<std::u32string>(inputString, options);
+        let intermediateString = translateString<std::u32string>(inputString, options);
         return translateString<T>(intermediateString, options);
     }
 }
 
+template<typename T, typename U>
+inline T translateString(std::basic_string<U> const inputString, TranslateStringOptions options = {}) {
+    return translateString<T>(std::basic_string_view<U>(inputString), options);
+}
+
 template<>
-inline std::u32string translateString(const std::string &inputString, TranslateStringOptions options)
+inline std::u32string translateString(std::string_view const inputString, TranslateStringOptions options)
 {
     std::u32string outputString;
     char32_t codePoint = 0;
@@ -179,7 +185,7 @@ inline std::u32string translateString(const std::string &inputString, TranslateS
 }
 
 template<>
-inline std::u32string translateString(const std::u16string &inputString, TranslateStringOptions options)
+inline std::u32string translateString(std::u16string_view const inputString, TranslateStringOptions options)
 {
     bool byteSwap = options._byteSwap;
     std::u32string outputString;
@@ -234,14 +240,14 @@ inline std::u32string translateString(const std::u16string &inputString, Transla
 }
 
 template<>
-inline std::u32string translateString(const std::wstring &inputString, TranslateStringOptions options)
+inline std::u32string translateString(std::wstring_view const inputString, TranslateStringOptions options)
 {
     auto tmp = translateString<std::u16string>(inputString, options);
     return translateString<std::u32string>(tmp, options);
 }
 
 template<>
-inline std::u16string translateString(const std::u32string &inputString, TranslateStringOptions options)
+inline std::u16string translateString(std::u32string_view const inputString, TranslateStringOptions options)
 {
     std::u16string outputString;
 
@@ -272,14 +278,14 @@ inline std::u16string translateString(const std::u32string &inputString, Transla
 }
 
 template<>
-inline std::wstring translateString(const std::u32string &inputString, TranslateStringOptions options)
+inline std::wstring translateString(std::u32string_view const inputString, TranslateStringOptions options)
 {
     auto tmp = translateString<std::u16string>(inputString, options);
     return translateString<std::wstring>(tmp, options);
 }
 
 template<>
-inline std::string translateString(const std::u32string &inputString, TranslateStringOptions options)
+inline std::string translateString(std::u32string_view const inputString, TranslateStringOptions options)
 {
     std::string outputString;
 
@@ -313,35 +319,35 @@ inline std::string translateString(const std::u32string &inputString, TranslateS
     return outputString;
 }
 
-inline std::string normalizeNFC(std::string str) {
+inline std::string normalizeNFC(std::string_view const str) {
     let s = utf8proc_NFC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFD(std::string str) {
+inline std::string normalizeNFD(std::string_view const str) {
     let s = utf8proc_NFD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFKD(std::string str) {
+inline std::string normalizeNFKD(std::string_view const str) {
     let s = utf8proc_NFKD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFKC(std::string str) {
+inline std::string normalizeNFKC(std::string_view const str) {
     let s = utf8proc_NFKC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFKCCasefold(std::string str) {
+inline std::string normalizeNFKCCasefold(std::string_view const str) {
     let s = utf8proc_NFKC_Casefold(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);

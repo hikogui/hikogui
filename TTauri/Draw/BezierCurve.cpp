@@ -170,7 +170,7 @@ static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::v
     return r;
 }
 
-static void fillPartialPixels(PixelRow<uint8_t> row, size_t i, float const startX, float const endX)
+static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const startX, float const endX)
 {
     let pixelCoverage =
         std::clamp(endX, i + 0.0f, i + 1.0f) -
@@ -180,11 +180,11 @@ static void fillPartialPixels(PixelRow<uint8_t> row, size_t i, float const start
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
 }
 
-static void fillFullPixels(PixelRow<uint8_t> row, size_t start, size_t size)
+static void fillFullPixels(PixelRow<uint8_t> row, int const start, int const size)
 {
     if (size < 16) {
         let end = start + size;
-        for (size_t i = start; i < end; i++) {
+        for (int i = start; i < end; i++) {
             row[i] += 0x33;
         }
     } else {
@@ -221,11 +221,11 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
         return;
     }
 
-    let startX_int = static_cast<int64_t>(startX);
+    let startX_int = static_cast<int>(startX);
     let endXplusOne = endX + 1.0f;
-    let endX_int = static_cast<int64_t>(endXplusOne);
-    let startColumn = std::max(startX_int, static_cast<int64_t>(0));
-    let endColumn = std::min(endX_int, static_cast<int64_t>(row.width));
+    let endX_int = static_cast<int>(endXplusOne);
+    let startColumn = std::max(startX_int, 0);
+    let endColumn = std::min(endX_int, row.width);
     let nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
@@ -237,7 +237,7 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
     }
 }
 
-static void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<BezierCurve> const& curves)
+static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCurve> const& curves)
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -259,7 +259,7 @@ static void fillRow(PixelRow<uint8_t> row, size_t rowY, std::vector<BezierCurve>
 
 void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves)
 {
-    for (size_t rowNr = 0; rowNr < image.height; rowNr++) {
+    for (int rowNr = 0; rowNr < image.height; rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
     }
 }

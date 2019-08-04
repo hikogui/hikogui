@@ -34,7 +34,7 @@ public:
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
      */
-    size_t previousNumberOfWindows = 0;
+    int previousNumberOfWindows = 0;
 
     Instance_base() {
         verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
@@ -68,7 +68,7 @@ public:
 
     /*! Count the number of windows managed by the GUI.
      */
-    size_t getNumberOfWindows();
+    int getNumberOfWindows();
 
     void render() {
         for (auto &device: devices) {

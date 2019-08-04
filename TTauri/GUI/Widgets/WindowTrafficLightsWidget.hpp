@@ -45,7 +45,7 @@ public:
 
     int state() const;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, size_t& offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, int& offset) override;
 
     void handleMouseEvent(MouseEvent event) override;
     HitBox hitBoxTest(glm::vec2 position) const override;

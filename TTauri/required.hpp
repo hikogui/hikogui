@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/numeric/conversion/cast.hpp>
 #include <exception>
 
 
@@ -56,5 +57,10 @@ enum class OperatingSystem {
  * Use operating supplied macros for detecting APIs
  */
 constexpr auto operatingSystem = OperatingSystem::MacOS;
+
+template<typename T>
+inline int to_int(T const &x) {
+    return boost::numeric_cast<int>(x);
+}
 
 }

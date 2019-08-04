@@ -45,7 +45,7 @@ void Window_vulkan_win32::createWindowClass()
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::string &title, u32extent2 extent)
+void Window_vulkan_win32::createWindow(const std::string &title, iextent2 extent)
 {
     Window_vulkan_win32::createWindowClass();
 
@@ -158,7 +158,7 @@ void Window_vulkan_win32::openingWindow()
 
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
-        u32extent2 windowExtent = minimumWindowExtent;
+        iextent2 windowExtent = minimumWindowExtent;
         createWindow(title, windowExtent);
     });
 }

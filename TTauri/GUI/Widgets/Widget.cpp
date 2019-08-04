@@ -26,7 +26,7 @@ void Widget::setParent(Widget *parent)
     this->parent = parent;
 }
 
-void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
+void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset)
 {
     for (auto &child : children) {
         child->pipelineImagePlaceVertices(vertices, offset);

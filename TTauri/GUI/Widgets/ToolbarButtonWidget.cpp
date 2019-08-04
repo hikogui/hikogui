@@ -35,7 +35,7 @@ int ToolbarButtonWidget::state() const {
 }
 
 
-void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset)
+void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset)
 {
     required_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {

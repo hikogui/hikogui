@@ -60,8 +60,8 @@ public:
      */
     virtual void initializeDevice(Window const &window);
 
-    size_t getNumberOfWindows() const {
-        return windows.size();
+    int getNumberOfWindows() const {
+        return to_int(windows.size());
     }
 
     void add(std::unique_ptr<Window> window);

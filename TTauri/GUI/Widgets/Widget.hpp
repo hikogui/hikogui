@@ -77,7 +77,7 @@ public:
 
     Device *device() const;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) override;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.

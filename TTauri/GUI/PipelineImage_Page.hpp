@@ -8,15 +8,15 @@
 namespace TTauri::GUI::PipelineImage {
 
 struct Page {
-    static constexpr size_t width = 64;
-    static constexpr size_t height = 64;
-    static constexpr size_t border = 1;
-    static constexpr size_t widthIncludingBorder = width + 2 * border;
-    static constexpr size_t heightIncludingBorder = height + 2 * border;
+    static constexpr int width = 64;
+    static constexpr int height = 64;
+    static constexpr int border = 1;
+    static constexpr int widthIncludingBorder = width + 2 * border;
+    static constexpr int heightIncludingBorder = height + 2 * border;
 
-    size_t nr;
+    int nr;
 
-    bool isFullyTransparent() const { return nr == std::numeric_limits<size_t>::max(); }
+    bool isFullyTransparent() const { return nr == std::numeric_limits<int>::max(); }
 };
 
 }

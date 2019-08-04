@@ -17,7 +17,7 @@ Image::~Image()
     parent->returnPages(pages);
 }
 
-u64rect2 Image::indexToRect(size_t const pageIndex) const
+irect2 Image::indexToRect(int const pageIndex) const
 {
     let indexY = pageIndex / pageExtent.x;
     let indexX = pageIndex % pageExtent.x;
@@ -26,8 +26,8 @@ u64rect2 Image::indexToRect(size_t const pageIndex) const
     let top = indexY * Page::height;
     let right = left + Page::width;
     let bottom = top + Page::height;
-    let rightOverflow = right - std::min(right, static_cast<size_t>(extent.x));
-    let bottomOverflow = bottom - std::min(bottom, static_cast<size_t>(extent.y));
+    let rightOverflow = right - std::min(right, extent.x);
+    let bottomOverflow = bottom - std::min(bottom, extent.y);
     let width = Page::width - rightOverflow;
     let height = Page::height - bottomOverflow;
 
@@ -49,7 +49,7 @@ static bool anyInside(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, re
     return inside(p1, clip) || inside(p2, clip) || inside(p3, clip) || inside(p4, clip);
 }
 
-static std::tuple<glm::vec2, u64extent2, bool>calculatePosition(size_t x, size_t y, size_t width, size_t height, const ImageLocation &location)
+static std::tuple<glm::vec2, iextent2, bool>calculatePosition(int x, int y, int width, int height, const ImageLocation &location)
 {
     auto p = glm::vec2{x, y};
     p -= location.origin;
@@ -69,21 +69,21 @@ void Image::calculateVertexPositions(const ImageLocation &location)
     let lastWidth = restWidth ? restWidth : Page::width;
     let lastHeight = restHeight ? restHeight : Page::height;
 
-    for (size_t y = 0; y < extent.height(); y += Page::height) {
-        for (size_t x = 0; x < extent.width(); x += Page::width) {
+    for (int y = 0; y < extent.height(); y += Page::height) {
+        for (int x = 0; x < extent.width(); x += Page::width) {
             tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, Page::height, location));
         }
         tmpVertexPositions.push_back(calculatePosition(extent.width(), y, lastWidth, Page::height, location));
     }
 
-    size_t const y = extent.height();
-    for (size_t x = 0; x < extent.width(); x += Page::width) {
+    int const y = extent.height();
+    for (int x = 0; x < extent.width(); x += Page::width) {
         tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, lastHeight, location));
     }
     tmpVertexPositions.push_back(calculatePosition(extent.width(), y, lastWidth, lastHeight, location));
 }
 
-void Image::placePageVertices(size_t const index, const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset) const {
+void Image::placePageVertices(int const index, const ImageLocation &location, gsl::span<Vertex> &vertices, int &offset) const {
     let page = pages.at(index);
 
     if (page.isFullyTransparent()) {
@@ -122,16 +122,16 @@ void Image::placePageVertices(size_t const index, const ImageLocation &location,
 * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
 * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
-void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset)
+void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, int &offset)
 {
     calculateVertexPositions(location);
 
-    if (offset + pages.size() * 4 > static_cast<size_t>(vertices.size())) {
+    if (offset + pages.size() * 4 > to_int(vertices.size())) {
         LOG_FATAL("vertices don't fit");
         abort();
     }
 
-    for (size_t index = 0; index < pages.size(); index++) {
+    for (int index = 0; index < to_int(pages.size()); index++) {
         placePageVertices(index, location, vertices, offset);
     }
 }

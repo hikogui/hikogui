@@ -77,7 +77,7 @@ PipelineImage::Backing::ImagePixelMap WindowToolbarWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset)
+void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset)
 {
     required_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {

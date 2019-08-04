@@ -24,14 +24,14 @@ struct Image;
 struct DeviceShared final {
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    static constexpr size_t atlasNrHorizontalPages = 60;
-    static constexpr size_t atlasNrVerticalPages = 60;
-    static constexpr size_t atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
-    static constexpr size_t atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
-    static constexpr size_t atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
-    static constexpr size_t atlasMaximumNrImages = 16;
-    static constexpr size_t stagingImageWidth = 2048;
-    static constexpr size_t stagingImageHeight = 1024;
+    static constexpr int atlasNrHorizontalPages = 60;
+    static constexpr int atlasNrVerticalPages = 60;
+    static constexpr int atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
+    static constexpr int atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
+    static constexpr int atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
+    static constexpr int atlasMaximumNrImages = 16;
+    static constexpr int stagingImageWidth = 2048;
+    static constexpr int stagingImageHeight = 1024;
 
     Device const &device;
 
@@ -69,7 +69,7 @@ struct DeviceShared final {
      * \param page number in the atlas
      * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
      */
-    static glm::u64vec3 getAtlasPositionFromPage(Page page) {
+    static glm::ivec3 getAtlasPositionFromPage(Page page) {
         let imageIndex = page.nr / atlasNrPagesPerImage;
         let pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 
@@ -82,7 +82,7 @@ struct DeviceShared final {
         return {x, y, imageIndex};
     }
 
-    std::vector<Page> getFreePages(size_t const nrPages);
+    std::vector<Page> getFreePages(int const nrPages);
 
     void returnPages(std::vector<Page> const &pages);
 
@@ -90,10 +90,10 @@ struct DeviceShared final {
      * \param key of the image.
      * \param extent of the image.
      */
-    std::shared_ptr<Image> getImage(std::string const &key, u64extent2 extent);
+    std::shared_ptr<Image> getImage(std::string const &key, iextent2 extent);
 
     std::shared_ptr<Image> getImage(std::string const &key, extent2 extent) {
-        return getImage(key, u64extent2{extent.width(), extent.height()});
+        return getImage(key, iextent2{extent.width(), extent.height()});
     }
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
@@ -105,7 +105,7 @@ struct DeviceShared final {
     void prepareAtlasForRendering();
 
 private:
-    TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap(u64extent2 extent) {
+    TTauri::Draw::PixelMap<uint32_t> getStagingPixelMap(iextent2 extent) {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 

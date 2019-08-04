@@ -8,7 +8,7 @@ namespace TTauri::Draw {
 glm::vec2 PathString::advance() const
 {
     glm::vec2 totalAdvance = {0.0, 0.0};
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < size(); i++) {
         totalAdvance += glyphAdvance(i);
     }
     return totalAdvance;
@@ -18,7 +18,7 @@ glm::vec2 PathString::ascender() const
 {
     glm::vec2 maxAscender = {0.0, 0.0};
 
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < size(); i++) {
         if (glm::length(maxAscender) < glm::length(at(i).ascender)) {
             maxAscender = at(i).ascender;
         }
@@ -31,7 +31,7 @@ glm::vec2 PathString::descender() const
 {
     glm::vec2 maxDescender = {0.0, 0.0};
 
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < size(); i++) {
         if (glm::length(maxDescender) < glm::length(at(i).descender)) {
             maxDescender = at(i).descender;
         }
@@ -44,7 +44,7 @@ glm::vec2 PathString::capHeight() const
 {
     glm::vec2 maxCapHeight = {0.0, 0.0};
 
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < size(); i++) {
         if (glm::length(maxCapHeight) < glm::length(at(i).capHeight)) {
             maxCapHeight = at(i).capHeight;
         }
@@ -80,11 +80,11 @@ glm::vec2 PathString::getStartPosition() const
     }
 }
 
-glm::vec2 PathString::cursorAdvance(size_t graphemeIndex) const
+glm::vec2 PathString::cursorAdvance(int graphemeIndex) const
 {
     auto totalAdvance = glm::vec2{0.0f, 0.0f};
 
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < size(); i++) {
         let &glyph = at(i);
         if (graphemeIndex < glyph.numberOfGraphemes) {
             return totalAdvance + glyph.advanceForGrapheme(graphemeIndex);
@@ -104,7 +104,7 @@ Path PathString::toPath(wsRGBA defaultColor) const
     // the default color.
     {
         auto position = getStartPosition();
-        for (size_t i = 0; i < paths.size(); i++) {
+        for (int i = 0; i < paths.size(); i++) {
             let path = paths.at(i);
             if (!path.hasLayers()) {
                 r += position + path;
@@ -117,7 +117,7 @@ Path PathString::toPath(wsRGBA defaultColor) const
     // Next add all the layered glyphs, which have their own colours.
     {
         auto position = getStartPosition();
-        for (size_t i = 0; i < paths.size(); i++) {
+        for (int i = 0; i < paths.size(); i++) {
             let path = paths.at(i);
             if (path.hasLayers()) {
                 r += position + path;

@@ -19,7 +19,7 @@ public:
 
     vk::SwapchainKHR swapchain;
 
-    uint32_t nrSwapchainImages;
+    int nrSwapchainImages;
     vk::Extent2D swapchainImageExtent;
     vk::SurfaceFormatKHR swapchainImageFormat;
     std::vector<vk::Image> swapchainImages;
@@ -55,7 +55,7 @@ protected:
     
 private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();
-    void presentImageToQueue(uint32_t imageIndex, vk::Semaphore renderFinishedSemaphore);
+    void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
     bool readSurfaceExtent();
     bool checkSurfaceExtent();

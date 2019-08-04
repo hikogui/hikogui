@@ -29,7 +29,7 @@ public:
 
     virtual void setParent(Widget *parent);
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, size_t &offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) override;
 
     HitBox hitBoxTest(glm::vec2 position) const override;
 

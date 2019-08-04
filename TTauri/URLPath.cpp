@@ -19,7 +19,7 @@ URLPath::URLPath(std::string const &path)
         });
 }
 
-URLPath::URLPath(std::filesystem::path const &path)
+URLPath::URLPath(boost::filesystem::path const &path)
 {
     absolute = false;
     for (let &segment: path) {
@@ -33,7 +33,8 @@ URLPath::URLPath(std::filesystem::path const &path)
 
 URLPath URLPath::urlPathFromWin32Path(std::wstring_view const &path_wstring)
 {
-    let path = std::filesystem::path(path_wstring);
+    let path_u8string = translateString<std::string>(path_wstring);
+    let path = boost::filesystem::path(path_u8string);
     return URLPath(path);
 }
 

@@ -18,18 +18,18 @@ Pipeline_vulkan::~Pipeline_vulkan()
 {
 }
 
-vk::Semaphore Pipeline_vulkan::render(uint32_t imageIndex, vk::Semaphore inputSemaphore)
+vk::Semaphore Pipeline_vulkan::render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore)
 {
-    auto &imageObject = frameBufferObjects.at(imageIndex);
+    auto &imageObject = frameBufferObjects.at(frameBufferIndex);
 
     if (imageObject.descriptorSetVersion < getDescriptorSetVersion()) {
-        let writeDescriptorSets = createWriteDescriptorSet(imageIndex);
+        let writeDescriptorSets = createWriteDescriptorSet(frameBufferIndex);
         device().updateDescriptorSets(writeDescriptorSets, {});
 
         imageObject.descriptorSetVersion = getDescriptorSetVersion();
     }
 
-    validateCommandBuffer(imageIndex);
+    validateCommandBuffer(frameBufferIndex);
 
     std::array<vk::Semaphore, 1> const waitSemaphores = { inputSemaphore };
     std::array<vk::PipelineStageFlags, 1> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
@@ -59,9 +59,9 @@ void Pipeline_vulkan::buildCommandBuffers()
         boost::numeric_cast<uint32_t>(frameBufferObjects.size())
     });
 
-    for (size_t imageIndex = 0; imageIndex < frameBufferObjects.size(); imageIndex++) {
-        auto &frameBufferObject = frameBufferObjects.at(imageIndex);
-        frameBufferObject.commandBuffer = commandBuffers.at(imageIndex);
+    for (int i = 0; i < to_int(frameBufferObjects.size()); i++) {
+        auto &frameBufferObject = frameBufferObjects.at(i);
+        frameBufferObject.commandBuffer = commandBuffers.at(i);
         frameBufferObject.commandBufferValid = false;
     }
 
@@ -109,9 +109,9 @@ void Pipeline_vulkan::buildDescriptorSets()
         boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
 
-    for (size_t imageIndex = 0; imageIndex < frameBufferObjects.size(); imageIndex++) {
-        auto &frameBufferObject = frameBufferObjects.at(imageIndex);
-        frameBufferObject.descriptorSet = descriptorSets.at(imageIndex);
+    for (int i = 0; i < frameBufferObjects.size(); i++) {
+        auto &frameBufferObject = frameBufferObjects.at(i);
+        frameBufferObject.descriptorSet = descriptorSets.at(i);
         frameBufferObject.descriptorSetVersion = 0;
     }
 }
@@ -281,7 +281,7 @@ void Pipeline_vulkan::buildForNewSurface()
 {
 }
 
-void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers)
+void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent, int nrFrameBuffers)
 {
     if (nrFrameBuffers != frameBufferObjects.size()) {
         if (frameBufferObjects.size() > 0) {
@@ -332,15 +332,15 @@ void Pipeline_vulkan::invalidateCommandBuffers()
     }
 }
 
-void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
+void Pipeline_vulkan::validateCommandBuffer(uint32_t frameBufferIndex)
 {
-    auto &frameBufferObject = frameBufferObjects.at(imageIndex);
+    auto &frameBufferObject = frameBufferObjects.at(frameBufferIndex);
 
     if (frameBufferObject.commandBufferValid) {
         return;
     }
 
-    LOG_INFO("validateCommandBuffer %i (%i, %i)", imageIndex, extent.width, extent.height);
+    LOG_INFO("validateCommandBuffer %i (%i, %i)", frameBufferIndex, extent.width, extent.height);
 
     auto commandBuffer = frameBufferObject.commandBuffer;
 
@@ -352,7 +352,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffer.beginRenderPass({
             renderPass, 
-            window.swapchainFramebuffers.at(imageIndex),
+            window.swapchainFramebuffers.at(frameBufferIndex),
             scissor, 
             boost::numeric_cast<uint32_t>(clearColors.size()),
             clearColors.data()
@@ -363,7 +363,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t imageIndex)
 
     commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {frameBufferObject.descriptorSet}, {});
 
-    drawInCommandBuffer(commandBuffer, imageIndex);
+    drawInCommandBuffer(commandBuffer, frameBufferIndex);
 
     commandBuffer.endRenderPass();
 

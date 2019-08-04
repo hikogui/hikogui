@@ -30,7 +30,7 @@ public:
      * This method should be called from sub-classes after completing their own rendering (placing vertices and
      * updating texture maps).
      */
-    virtual vk::Semaphore render(uint32_t imageIndex, vk::Semaphore inputSemaphore);
+    virtual vk::Semaphore render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore);
 
     /*! Invalidate all command buffers.
      * This is used when the command buffer needs to be recreated due to changes in views.
@@ -41,15 +41,15 @@ public:
 
     /*! Validate/create a command buffer.
      *
-     * \param imageIndex The index of the command buffer to validate.
+     * \param frameBufferIndex The index of the command buffer to validate.
      */
-    void validateCommandBuffer(uint32_t imageIndex);
+    void validateCommandBuffer(uint32_t frameBufferIndex);
 
     void buildForNewDevice();
     void teardownForDeviceLost();
     void buildForNewSurface();
     void teardownForSurfaceLost();
-    void buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent, size_t nrFrameBuffers);
+    void buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent, int nrFrameBuffers);
     void teardownForSwapchainLost();
     void teardownForWindowLost();
 
@@ -71,16 +71,16 @@ protected:
     vk::PipelineLayout pipelineLayout;
     vk::DescriptorPool descriptorPool;
 
-    virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t imageIndex) = 0;
+    virtual void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t frameBufferIndex) = 0;
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
     virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
-    virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t imageIndex) const = 0;
-    virtual uint64_t getDescriptorSetVersion() const = 0;
+    virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t frameBufferIndex) const = 0;
+    virtual int getDescriptorSetVersion() const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
 
-    virtual void buildVertexBuffers(size_t nrFrameBuffers) = 0;
+    virtual void buildVertexBuffers(int nrFrameBuffers) = 0;
     virtual void teardownVertexBuffers() = 0;
     virtual void buildCommandBuffers();
     virtual void teardownCommandBuffers();

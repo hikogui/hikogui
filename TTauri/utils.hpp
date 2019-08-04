@@ -19,8 +19,6 @@
 
 namespace TTauri {
 
-#define TTAURI_ASSERT(x) if (!(x)) { abort(); }
-
 template<typename T, typename M>
 constexpr T safe_modulo(T x, M m)
 {

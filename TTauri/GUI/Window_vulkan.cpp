@@ -45,15 +45,15 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     std::scoped_lock lock(TTauri::GUI::mutex);
 
     // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
-    uint32_t imageIndex = 0;
+    uint32_t frameBufferIndex = 0;
     //LOG_DEBUG("acquireNextImage '%s'", title);
     required_assert(device);
-    let result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &imageIndex);
-    //LOG_DEBUG("acquireNextImage %i", imageIndex);
+    let result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
+    //LOG_DEBUG("acquireNextImage %i", frameBufferIndex);
 
     switch (result) {
     case vk::Result::eSuccess:
-        return {imageIndex};
+        return {frameBufferIndex};
 
     case vk::Result::eSuboptimalKHR:
         LOG_INFO("acquireNextImageKHR() eSuboptimalKHR");
@@ -80,7 +80,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     }
 }
 
-void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore renderFinishedSemaphore)
+void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore)
 {
     required_assert(device);
 
@@ -88,7 +88,7 @@ void Window_vulkan::presentImageToQueue(uint32_t imageIndex, vk::Semaphore rende
 
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { renderFinishedSemaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
-    std::array<uint32_t, 1> const presentImageIndices = { imageIndex };
+    std::array<uint32_t, 1> const presentImageIndices = { frameBufferIndex };
     BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
 
     try {
@@ -232,8 +232,8 @@ void Window_vulkan::render()
         return;
     }
 
-    let imageIndex = acquireNextImageFromSwapchain();
-    if (!imageIndex) {
+    let frameBufferIndex = acquireNextImageFromSwapchain();
+    if (!frameBufferIndex) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
         return;
@@ -247,13 +247,13 @@ void Window_vulkan::render()
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     device->resetFences({ renderFinishedFence });
 
-    let renderFinishedSemaphore = imagePipeline->render(imageIndex.value(), imageAvailableSemaphore);
+    let renderFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
     device->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
-    presentImageToQueue(imageIndex.value(), renderFinishedSemaphore);
+    presentImageToQueue(frameBufferIndex.value(), renderFinishedSemaphore);
 
     // Do an early teardown of invalid vulkan objects.
     teardown();
@@ -383,7 +383,7 @@ Window_base::State Window_vulkan::buildSwapchain()
     vk::SwapchainCreateInfoKHR swapchainCreateInfo{
         vk::SwapchainCreateFlagsKHR(),
         intrinsic,
-        nrSwapchainImages,
+        static_cast<uint32_t>(nrSwapchainImages),
         swapchainImageFormat.format,
         swapchainImageFormat.colorSpace,
         swapchainImageExtent,

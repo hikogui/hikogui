@@ -35,7 +35,7 @@ public:
 
     void setParent(Widget *parent) override;
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, size_t& offset) override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) override;
 
     void handleMouseEvent(GUI::MouseEvent event) override;
 

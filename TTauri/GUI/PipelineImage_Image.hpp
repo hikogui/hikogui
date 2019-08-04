@@ -26,14 +26,14 @@ struct Image {
     DeviceShared *parent;
 
     std::string key;
-    u64extent2 extent;
+    iextent2 extent;
 
     //! Number of pages in width and height.
-    u64extent2 pageExtent;
+    iextent2 pageExtent;
 
     std::vector<Page> pages;
 
-    Image(DeviceShared *parent, std::string key, u64extent2 extent, u64extent2 pageExtent, std::vector<Page> pages) :
+    Image(DeviceShared *parent, std::string key, iextent2 extent, iextent2 pageExtent, std::vector<Page> pages) :
         parent(parent),
         key(std::move(key)),
         extent(std::move(extent)),
@@ -51,7 +51,7 @@ struct Image {
     /*! Find the image coordinates of a page in the image.
      * \param pageIndex Index in the pages-vector.
      */
-    u64rect2 indexToRect(size_t const pageIndex) const;
+    irect2 indexToRect(int const pageIndex) const;
 
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.
@@ -60,15 +60,15 @@ struct Image {
      * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
      * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
      */
-    void placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset);
+    void placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, int &offset);
 
 private:
     //! Temporary memory used for pre calculating vertices.
-    std::vector<std::tuple<glm::vec2, u64extent2, bool>> tmpVertexPositions;
+    std::vector<std::tuple<glm::vec2, iextent2, bool>> tmpVertexPositions;
 
     void calculateVertexPositions(const ImageLocation &location);
 
-    void placePageVertices(size_t const index, const ImageLocation &location, gsl::span<Vertex> &vertices, size_t &offset) const;
+    void placePageVertices(int const index, const ImageLocation &location, gsl::span<Vertex> &vertices, int &offset) const;
 
 };
 

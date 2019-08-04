@@ -35,14 +35,14 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-std::vector<Page> DeviceShared::getFreePages(size_t const nrPages)
+std::vector<Page> DeviceShared::getFreePages(int const nrPages)
 {
     while (nrPages > atlasFreePages.size()) {
         addAtlasImage();
     }
 
     auto pages = std::vector<Page>();
-    for (size_t i = 0; i < nrPages; i++) {
+    for (int i = 0; i < nrPages; i++) {
         let page = atlasFreePages.back();
         pages.push_back(page);
         atlasFreePages.pop_back();
@@ -56,7 +56,7 @@ void DeviceShared::returnPages(std::vector<Page> const &pages)
     atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
 }
 
-std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const u64extent2 extent)
+std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const iextent2 extent)
 {
 
     let i = imageCache.find(key);
@@ -69,7 +69,7 @@ std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const u64e
     // Cleanup only after the happy flow failed.
     cleanupWeakPointers(imageCache);
 
-    let pageExtent = u64extent2{
+    let pageExtent = iextent2{
         (extent.width() + (Page::width - 1)) / Page::width,
         (extent.height() + (Page::height - 1)) / Page::height
     };
@@ -95,15 +95,15 @@ TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     // Start with the actual image inside the stagingImage.
-    auto rectangle = u64rect2{
+    auto rectangle = irect2{
         {Page::border, Page::border},
         image.extent
     };
     // Add one pixel of border around the actual image and keep extending
     // until the full border with is finished.
-    for (size_t b = 0; b < Page::border; b++) {
-        rectangle.offset -= glm::u64vec2(1, 1);
-        rectangle.extent += glm::u64vec2(2, 2);
+    for (int b = 0; b < Page::border; b++) {
+        rectangle.offset -= glm::ivec2(1, 1);
+        rectangle.extent += glm::ivec2(2, 2);
 
         auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
         Draw::addTransparentBorder(pixelMap);
@@ -119,7 +119,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
-    for (size_t index = 0 ; index < image.pages.size(); index++) {
+    for (int index = 0; index < to_int(image.pages.size()); index++) {
         let page = image.pages.at(index);
 
         if (page.isFullyTransparent()) {
@@ -129,14 +129,14 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
         auto imageRect = image.indexToRect(index);
         // Adjust the position to be inside the stagingImage, excluding its border.
-        imageRect.offset += glm::u64vec2(Page::border, Page::border);
+        imageRect.offset += glm::ivec2(Page::border, Page::border);
         let atlasPosition = getAtlasPositionFromPage(page);
 
         // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbour sampling
         // on the edge of a page.
-        imageRect.offset -= glm::u64vec2(Page::border, Page::border);
-        imageRect.extent += glm::u64vec2(Page::border*2, Page::border*2);
-        let atlasOffset = xy(atlasPosition) - glm::u64vec2(Page::border, Page::border);
+        imageRect.offset -= glm::ivec2(Page::border, Page::border);
+        imageRect.extent += glm::ivec2(Page::border*2, Page::border*2);
+        let atlasOffset = xy(atlasPosition) - glm::ivec2(Page::border, Page::border);
 
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
         regionsToCopy.push_back({
@@ -148,7 +148,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         });
     }
 
-    for (size_t atlasTextureIndex = 0; atlasTextureIndex < atlasTextures.size(); atlasTextureIndex++) {
+    for (int atlasTextureIndex = 0; atlasTextureIndex < to_int(atlasTextures.size()); atlasTextureIndex++) {
         let &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
         if (regionsToCopy.size() == 0) {
             continue;
@@ -275,7 +275,7 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    let currentImageIndex = atlasTextures.size();
+    let currentImageIndex = to_int(atlasTextures.size());
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -315,13 +315,13 @@ void DeviceShared::addAtlasImage()
     atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
  
     // Add pages for this image to free list.
-    size_t const pageOffset = currentImageIndex * atlasNrPagesPerImage;
-    for (size_t i = 0; i < atlasNrPagesPerImage; i++) {
+    let pageOffset = currentImageIndex * atlasNrPagesPerImage;
+    for (int i = 0; i < atlasNrPagesPerImage; i++) {
             atlasFreePages.push_back({pageOffset + i});
     }
 
     // Build image descriptor info.
-    for (size_t i = 0; i < atlasDescriptorImageInfos.size(); i++) {
+    for (int i = 0; i < to_int(atlasDescriptorImageInfos.size()); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {
@@ -358,7 +358,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::Draw::PixelMap<uint32_t>{data.data(), imageCreateInfo.extent.width, imageCreateInfo.extent.height}
+        TTauri::Draw::PixelMap<uint32_t>{data.data(), to_int(imageCreateInfo.extent.width), to_int(imageCreateInfo.extent.height)}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

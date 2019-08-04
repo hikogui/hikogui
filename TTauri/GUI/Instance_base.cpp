@@ -38,11 +38,11 @@ Device *Instance_base::findBestDeviceForWindow(Window const &window)
     }
 }
 
-size_t Instance_base::getNumberOfWindows()
+int Instance_base::getNumberOfWindows()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    size_t numberOfWindows = 0;
+    int numberOfWindows = 0;
     for (const auto &device: devices) {
         numberOfWindows+= device->getNumberOfWindows();
     }

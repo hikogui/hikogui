@@ -21,7 +21,7 @@ TEST(TTauriConfigConfig, ConfigTest) {
 
         // Promoting
         ASSERT_EQ(config.value<double>("a"), 1.0);
-        ASSERT_EQ(config.value<std::filesystem::path>("foo.bar.d.2.value"), std::filesystem::path("nein"));
+        ASSERT_EQ(config.value<boost::filesystem::path>("foo.bar.d.2.value"), boost::filesystem::path("nein"));
 
         // Modifying
         config["foo.bar.d.0.value"] = "hello"s;

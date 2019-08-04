@@ -13,7 +13,7 @@ struct Vertex;
 struct Delegate {
     struct Error : virtual boost::exception, virtual std::exception {};
 
-    virtual void pipelineImagePlaceVertices(gsl::span<Vertex> &vertices, size_t &offset) = 0;
+    virtual void pipelineImagePlaceVertices(gsl::span<Vertex> &vertices, int &offset) = 0;
 };
 
 }

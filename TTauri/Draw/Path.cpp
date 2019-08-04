@@ -14,21 +14,21 @@
 
 namespace TTauri::Draw {
 
-glm::vec2 Path::advanceForGrapheme(size_t index) const
+glm::vec2 Path::advanceForGrapheme(int index) const
 {
     let ligatureRatio = 1.0f / numberOfGraphemes;
 
     return (advance * ligatureRatio) * static_cast<float>(index);
 }
 
-size_t Path::numberOfContours() const
+int Path::numberOfContours() const
 {
-    return contourEndPoints.size();
+    return to_int(contourEndPoints.size());
 }
 
-size_t Path::numberOfLayers() const
+int Path::numberOfLayers() const
 {
-    return layerEndContours.size();
+    return to_int(layerEndContours.size());
 }
 
 bool Path::hasLayers() const {
@@ -64,37 +64,37 @@ void Path::tryRemoveLayers()
     layerEndContours.clear();
 }
 
-std::vector<BezierPoint>::const_iterator Path::beginContour(size_t contourNr) const
+std::vector<BezierPoint>::const_iterator Path::beginContour(int contourNr) const
 {
     return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
 }
 
-std::vector<BezierPoint>::const_iterator Path::endContour(size_t contourNr) const
+std::vector<BezierPoint>::const_iterator Path::endContour(int contourNr) const
 {
     return points.begin() + contourEndPoints.at(contourNr) + 1;
 }
 
-size_t Path::beginLayer(size_t layerNr) const
+int Path::beginLayer(int layerNr) const
 {
     return layerNr == 0 ? 0 : layerEndContours.at(layerNr - 1).first + 1;
 }
 
-size_t Path::endLayer(size_t layerNr) const
+int Path::endLayer(int layerNr) const
 {
     return layerEndContours.at(layerNr).first + 1;
 }
 
-wsRGBA Path::getColorOfLayer(size_t layerNr) const
+wsRGBA Path::getColorOfLayer(int layerNr) const
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(size_t layerNr, wsRGBA fillColor)
+void Path::setColorOfLayer(int layerNr, wsRGBA fillColor)
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,wsRGBA> Path::getLayer(size_t layerNr) const
+std::pair<Path,wsRGBA> Path::getLayer(int layerNr) const
 {
     required_assert(hasLayers());
 
@@ -102,21 +102,21 @@ std::pair<Path,wsRGBA> Path::getLayer(size_t layerNr) const
 
     let begin = beginLayer(layerNr);
     let end = endLayer(layerNr);
-    for (size_t contourNr = begin; contourNr != end; contourNr++) {
+    for (int contourNr = begin; contourNr != end; contourNr++) {
         path.addContour(beginContour(contourNr), endContour(contourNr));
     }
 
     return {path, getColorOfLayer(layerNr)};
 }
 
-std::vector<BezierPoint> Path::getBezierPointsOfContour(size_t subpathNr) const
+std::vector<BezierPoint> Path::getBezierPointsOfContour(int subpathNr) const
 {
     let begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
     let end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<BezierCurve> Path::getBeziersOfContour(size_t contourNr) const
+std::vector<BezierCurve> Path::getBeziersOfContour(int contourNr) const
 {
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
@@ -141,14 +141,14 @@ bool Path::isContourOpen() const
     } else if (contourEndPoints.size() == 0) {
         return true;
     } else {
-        return contourEndPoints.back() != (points.size() - 1);
+        return contourEndPoints.back() != (to_int(points.size()) - 1);
     }
 }
 
 void Path::closeContour()
 {
     if (isContourOpen()) {
-        contourEndPoints.push_back(points.size() - 1);
+        contourEndPoints.push_back(to_int(points.size()) - 1);
     }
 }
 
@@ -169,7 +169,7 @@ void Path::closeLayer(wsRGBA fillColor)
 {
     closeContour();
     if (isLayerOpen()) {
-        layerEndContours.emplace_back(contourEndPoints.size() - 1, fillColor);
+        layerEndContours.emplace_back(to_int(contourEndPoints.size()) - 1, fillColor);
     }
 }
 
@@ -403,7 +403,7 @@ Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolera
     float starboardOffset = strokeWidth / 2;
     float portOffset = -starboardOffset;
 
-    for (size_t i = 0; i < numberOfContours(); i++) {
+    for (int i = 0; i < numberOfContours(); i++) {
         let baseContour = getBeziersOfContour(i);
 
         let starboardContour = makeParrallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
@@ -429,8 +429,8 @@ Path &operator+=(Path &lhs, Path const &rhs)
     // Left hand layer can only be open if the right hand side contains no layers.
     required_assert(!rhs.hasLayers() || !lhs.isLayerOpen());
 
-    let pointOffset = lhs.points.size();
-    let contourOffset = lhs.contourEndPoints.size();
+    let pointOffset = to_int(lhs.points.size());
+    let contourOffset = to_int(lhs.contourEndPoints.size());
 
     lhs.layerEndContours.reserve(lhs.layerEndContours.size() + rhs.layerEndContours.size());
     for (let [x, fillColor]: rhs.layerEndContours) {
@@ -547,7 +547,7 @@ void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpix
 {
     required_assert(src.hasLayers() && !src.isLayerOpen());
 
-    for (size_t layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
+    for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
         let [layer, fillColor] = src.getLayer(layerNr);
 
         composit(dst, fillColor, layer, subpixelOrientation);
