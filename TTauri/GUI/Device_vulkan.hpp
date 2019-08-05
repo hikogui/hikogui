@@ -7,7 +7,6 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
-#include <filesystem>
 
 namespace TTauri {
 struct URL;
