@@ -15,7 +15,7 @@ struct ASTVariableObject : ASTExpression {
         return "$";
     }
 
-    Value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext *context) const override {
         return context->variableObject();
     } 
 };

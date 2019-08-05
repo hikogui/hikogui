@@ -141,6 +141,6 @@ TEST(PixelMapTests, maskComposit3) {
     let blue = 0x22 / 255.0f;
 
     let compositColor = wsRGBA{ red / alpha, green / alpha, blue / alpha, alpha };
-    ASSERT_EQ(image[1][1].string(), compositColor.string());
+    ASSERT_EQ(to_string(image[1][1]), to_string(compositColor));
 }
 

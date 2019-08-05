@@ -209,7 +209,7 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(Pipelin
 
 PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
 {
-    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+    if constexpr (operatingSystem == OperatingSystem::Windows) {
         return { std::move(image), std::move(drawApplicationIconImage(*image)) };
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
         return { std::move(image), std::move(drawTrafficLightsImage(*image)) };
@@ -251,7 +251,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
 {
     window->setCursor(Cursor::Clickable);
 
-    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+    if constexpr (operatingSystem == OperatingSystem::Windows) {
         return;
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
@@ -307,7 +307,7 @@ HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const
 {
     let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
-    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+    if constexpr (operatingSystem == OperatingSystem::Windows) {
         if (sysmenuButtonBox.contains(position)) {
             return HitBox::ApplicationIcon;
         } else {

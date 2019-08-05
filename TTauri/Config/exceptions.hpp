@@ -28,10 +28,6 @@ struct ParseError : ConfigError {
     ParseError(const std::string &msg) : ConfigError(msg) {}
 };
 
-struct InvalidOperationError : ConfigError {
-    InvalidOperationError(const std::string &msg) : ConfigError(msg) {}
-};
-
 struct IOError : ConfigError {
     IOError(const std::string &msg) : ConfigError(msg) {}
 };

@@ -17,7 +17,7 @@ struct ASTInteger : ASTExpression {
         return (boost::format("%i") % value).str();
     }
 
-    Value execute(ExecutionContext *context) const override { 
+    universal_value execute(ExecutionContext *context) const override { 
         return value;
     } 
 

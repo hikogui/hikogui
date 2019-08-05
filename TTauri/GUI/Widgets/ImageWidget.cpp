@@ -11,7 +11,7 @@ namespace TTauri::GUI::Widgets {
 using namespace std::literals;
 
 
-ImageWidget::ImageWidget(const std::filesystem::path path) :
+ImageWidget::ImageWidget(boost::filesystem::path path) :
     Widget(), path(std::move(path))
 {
 }

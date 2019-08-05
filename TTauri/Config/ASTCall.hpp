@@ -81,8 +81,8 @@ struct ASTCall : ASTExpression {
         return s + ")";
     }
 
-    Value execute(ExecutionContext *context) const override {
-        let values = transform<std::vector<Value>>(arguments, [context](let x) {
+    universal_value execute(ExecutionContext *context) const override {
+        let values = transform<std::vector<universal_value>>(arguments, [context](let x) {
             return x->execute(context);
         });
 
@@ -95,7 +95,7 @@ struct ASTCall : ASTExpression {
             auto &lv = context->currentObject();
             auto v = lv;
 
-            if (v.is_type<Undefined>()) {
+            if (holds_alternative<Undefined>(v)) {
                 // An undefined value is replaced with the result of the call.
                 // For example when including a file directly after a section.
                 lv = result;

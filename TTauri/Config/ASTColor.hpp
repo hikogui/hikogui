@@ -17,10 +17,10 @@ struct ASTColor : ASTExpression {
     ASTColor(Location location, uint32_t value) : ASTExpression(location), value(value) {}
 
     std::string string() const override {
-        return value.string();
+        return to_string(value);
     }
 
-    Value execute(ExecutionContext *context) const override { 
+    universal_value execute(ExecutionContext *context) const override { 
         return value;
     } 
 

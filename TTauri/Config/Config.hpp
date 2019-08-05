@@ -4,7 +4,7 @@
 #pragma once
 
 #include "parser.hpp"
-#include "Value.hpp"
+#include "TTauri/universal_value.hpp"
 #include "ASTObject.hpp"
 
 namespace TTauri::Config {
@@ -15,7 +15,7 @@ namespace TTauri::Config {
 struct Config {
     boost::filesystem::path path;
     ASTObject *ast = nullptr;
-    Value root = {};
+    universal_value root = {};
 
     std::string errorMessage;
 
@@ -49,7 +49,7 @@ struct Config {
     /*! Parsing the configuration file was succesfull.
      */
     bool success() const {
-        return !root.is_type<Undefined>();
+        return !holds_alternative<Undefined>(root);
     }
 
     /*! Retreive error message
@@ -72,24 +72,14 @@ struct Config {
         }
     }
 
-    /*! string representation of the configuration.
-     */
-    std::string string() const {
-        if (success()) {
-            return root.string();
-        } else {
-            return error();
-        }
+    universal_value operator[](std::string const &key) const {
+        let splitKey = split(key, '.');
+        return root.get_by_path(splitKey);
     }
 
-    Value operator[](std::string const &key) const {
+    universal_value &operator[](std::string const &key) {
         let splitKey = split(key, '.');
-        return root.get(splitKey);
-    }
-
-    Value &operator[](std::string const &key) {
-        let splitKey = split(key, '.');
-        return root.get(splitKey);
+        return root.get_by_path(splitKey);
     }
 
     /*! Get a value from the configuration.
@@ -109,15 +99,26 @@ struct Config {
     template<typename T>
     T value(std::string const &key) const {
         let obj = (*this)[key];
-        return obj.value<T>();
+        return get<T>(obj);
     }
 
     /*! Get the root object.
      * \see value() for the different kinds of types that are supported.
      */
     Object rootObject() {
-        return root.value<Object>();
+        return get<Object>(root);
     }
 };
+
+/*! string representation of the configuration.
+*/
+inline std::string to_string(Config const &config) {
+    if (config.success()) {
+        return to_string(config.root);
+    } else {
+        return config.error();
+    }
+}
+
 
 }

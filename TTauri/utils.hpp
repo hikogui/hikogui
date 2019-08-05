@@ -19,15 +19,6 @@
 
 namespace TTauri {
 
-template<typename T, typename M>
-constexpr T safe_modulo(T x, M m)
-{
-    if (x >= 0) {
-        return x % m;
-    } else {
-        return m - (-x % m);
-    }
-}
 
 template<typename T>
 inline T &get_singleton()

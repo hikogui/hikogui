@@ -33,15 +33,15 @@ struct ASTIndex : ASTExpression {
      * An array can be indexed by a int64_t.
      * An non-index can be used to append to an array.
      */
-    Value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext *context) const override {
         auto &object_ = object->executeLValue(context);
 
         if (index) {
             let index_ = index->execute(context);
 
-            if ((object_.is_type<Undefined>() || object_.is_type<Object>()) && index_.is_type<std::string>()) {
+            if ((holds_alternative<Undefined>(object_) || holds_alternative<Object>(object_)) && holds_alternative<std::string>(index_)) {
                 // Use a string to index into an object.
-                let index__ = index_.value<std::string>();
+                let index__ = get<std::string>(index_);
                 try {
                     return object_[index__];
                 } catch (boost::exception &e) {
@@ -49,9 +49,9 @@ struct ASTIndex : ASTExpression {
                     throw;
                 }
 
-            } else if ((object_.is_type<Undefined>() || object_.is_type<Array>()) && index_.is_type<int64_t>()) {
+            } else if ((holds_alternative<Undefined>(object_) || holds_alternative<Array>(object_)) && holds_alternative<int64_t>(index_)) {
                 // Use a integer to index into an array.
-                size_t const index__ = index_.value<size_t>();
+                int64_t const index__ = get<int64_t>(index_);
                 try {
                     return object_[index__];
                 } catch (boost::exception &e) {
@@ -69,7 +69,7 @@ struct ASTIndex : ASTExpression {
                 );
             }
 
-        } else if (object_.is_type<Undefined>() || object_.is_type<Array>()) {
+        } else if (holds_alternative<Undefined>(object_) || holds_alternative<Array>(object_)) {
             // Append to an array because no index was specified.
             try {
                 return object_.append();
@@ -86,7 +86,7 @@ struct ASTIndex : ASTExpression {
         }
     }
 
-    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+    universal_value &executeAssignment(ExecutionContext *context, universal_value other) const override {
         auto &lv = executeLValue(context);
         lv = std::move(other);
         return lv;

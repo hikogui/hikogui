@@ -4,15 +4,16 @@
 #pragma once
 
 #include "required.hpp"
+#include "os_detect.hpp"
 
-#ifdef TTAURI_WINDOWS
+#if OPERATING_SYSTEM == OS_WINDOWS
 
 #include "Application_win32.hpp"
 namespace TTauri {
 using Application = Application_win32;
 }
 
-#elif TTAURI_MACOS
+#elif OPERATING_SYSTEM == OS_MACOS
 
 #include "Application_macos.hpp"
 namespace TTauri {

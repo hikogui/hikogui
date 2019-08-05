@@ -17,7 +17,7 @@ public:
 
     std::shared_ptr<GUI::PipelineImage::Image> backingImage;
 
-    ImageWidget(const std::filesystem::path path);
+    ImageWidget(const boost::filesystem::path path);
     ~ImageWidget() {}
 
     ImageWidget(const ImageWidget&) = delete;

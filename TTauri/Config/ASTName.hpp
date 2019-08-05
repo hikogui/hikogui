@@ -20,18 +20,18 @@ struct ASTName : ASTExpression {
         return name;
     }
 
-    Value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext *context) const override {
         return context->currentObject()[name];
     } 
 
-    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+    universal_value &executeAssignment(ExecutionContext *context, universal_value other) const override {
         auto &lv = context->currentObject()[name];
         lv = std::move(other);
         return lv;
     }
 
     template<typename T>
-    T getArgument(std::vector<Value> const &arguments, size_t i, bool lastArgument=false) const {
+    T getArgument(std::vector<universal_value> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
             BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
                 % name % (i + 1) % typeid(T).name()).str())
@@ -54,12 +54,12 @@ struct ASTName : ASTExpression {
             );
         }
 
-        return argument.value<T>();
+        return get<T>(argument);
     }
 
     /*! Include a configuration file.
      */
-    Value executeIncludeCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
+    universal_value executeIncludeCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
         auto path = getArgument<boost::filesystem::path>(arguments, 0, true);
 
         // The included file is relative to the directory of this configuration file.
@@ -95,7 +95,7 @@ struct ASTName : ASTExpression {
 
     /*! Return a absolute path relative to the directory where this configuration file is located.
     */
-    Value executePathCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
+    universal_value executePathCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without arguments return the directory where this configuration file is located.
             return location.file->parent_path();
@@ -113,7 +113,7 @@ struct ASTName : ASTExpression {
 
     /*! Return a absolute path relative to the current working directory.
      */
-    Value executeCwdCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
+    universal_value executeCwdCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without argument return the current working directory.
             return boost::filesystem::current_path();
@@ -136,7 +136,7 @@ struct ASTName : ASTExpression {
     /*! A function call.
      * The expression is a identifier followed by a call; therefor this is a normal function call.
      */
-    Value executeCall(ExecutionContext *context, std::vector<Value> const &arguments) const override {
+    universal_value executeCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const override {
         if (name == "include") {
             return executeIncludeCall(context, arguments);
 

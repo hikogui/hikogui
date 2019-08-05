@@ -57,7 +57,7 @@ struct ASTObject : ASTExpression {
         return s;
     }
 
-    Value execute(ExecutionContext *context) const override {
+    universal_value execute(ExecutionContext *context) const override {
         context->pushObject();
 
         for (let expression: expressions) {
@@ -67,11 +67,15 @@ struct ASTObject : ASTExpression {
         return context->popObject();
     }
 
-    Value execute() const {
+    universal_value execute() const {
         ExecutionContext context;
         return execute(&context);
     }
-
 };
+
+inline std::string to_string(ASTObject const &obj)
+{
+    return obj.string();
+}
 
 }

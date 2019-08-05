@@ -192,21 +192,6 @@ struct wsRGBA {
             static_cast<uint32_t>(alpha);
     }
 
-    std::string string() const {
-        let floatColor = to_wsRGBApm_vec4();
-        if (
-            floatColor.r >= 0.0 && floatColor.r <= 1.0 &&
-            floatColor.g >= 0.0 && floatColor.g <= 1.0 &&
-            floatColor.b >= 0.0 && floatColor.b <= 1.0
-        ) {
-            // This color is inside the sRGB gamut.
-            return (boost::format("#%08x") % to_sRGBA_u32()).str();
-
-        } else {
-            return (boost::format("<%.3f, %.3f, %.3f, %.3f>") % floatColor.r % floatColor.g % floatColor.b % floatColor.a).str();
-        }
-    }
-
     void desaturate(uint16_t brightness) {
         constexpr int64_t RY = static_cast<int64_t>(0.2126 * 32768.0);
         constexpr int64_t RG = static_cast<int64_t>(0.7152 * 32768.0);
@@ -343,6 +328,21 @@ inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs)
     return !(lhs == rhs);
 }
 
+inline std::string to_string(wsRGBA const &x)
+{
+    let floatColor = x.to_wsRGBApm_vec4();
+    if (
+        floatColor.r >= 0.0 && floatColor.r <= 1.0 &&
+        floatColor.g >= 0.0 && floatColor.g <= 1.0 &&
+        floatColor.b >= 0.0 && floatColor.b <= 1.0
+        ) {
+        // This color is inside the sRGB gamut.
+        return (boost::format("#%08x") % x.to_sRGBA_u32()).str();
+
+    } else {
+        return (boost::format("<%.3f, %.3f, %.3f, %.3f>") % floatColor.r % floatColor.g % floatColor.b % floatColor.a).str();
+    }
+}
 
 // http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
 const glm::mat3x3 matrix_sRGB_to_XYZ = {

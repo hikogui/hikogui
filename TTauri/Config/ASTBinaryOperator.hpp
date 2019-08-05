@@ -69,7 +69,7 @@ struct ASTBinaryOperator : ASTExpression {
         return s + right->string();
     }
 
-    virtual Value execute(ExecutionContext *context) const override {
+    virtual universal_value execute(ExecutionContext *context) const override {
         try {
             switch (op) {
             case Operator::MUL: return left->execute(context) * right->execute(context);
@@ -89,7 +89,7 @@ struct ASTBinaryOperator : ASTExpression {
             case Operator::XOR: return left->execute(context) ^ right->execute(context);
             case Operator::OR: return left->execute(context) | right->execute(context);
             case Operator::LOGICAL_AND: return left->execute(context) && right->execute(context);
-            case Operator::LOGICAL_XOR: return left->execute(context).operator_xor(right->execute(context));
+            case Operator::LOGICAL_XOR: return static_cast<bool>(left->execute(context)) != static_cast<bool>(right->execute(context));
             case Operator::LOGICAL_OR: return left->execute(context) || right->execute(context);
             }
             abort(); // Compiler doesn't recognize that switch is complete.

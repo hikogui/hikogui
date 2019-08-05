@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Value.hpp"
+#include "TTauri/universal_value.hpp"
 #include <optional>
 
 namespace TTauri::Config {
@@ -15,11 +15,11 @@ namespace TTauri::Config {
  */
 struct ExecutionContext {
     struct Item {
-        Value object = Object{};
-        Value *section = nullptr;
+        universal_value object = Object{};
+        std::vector<std::string> section;
     };
 
-    Value _variableObject = Object{};
+    universal_value _variableObject = Object{};
     std::vector<Item> objectStack;
 
     /*! Create an empty object on the stack.
@@ -33,15 +33,15 @@ struct ExecutionContext {
      * Override the active object whenever a section-statement
      * is encountered in an object-literal.
      */
-    void setSection(Value *section) {
+    void setSection(std::vector<std::string> section) {
         auto &item = objectStack.back();
-        item.section = section;
+        item.section = std::move(section);
     }
 
     /*! Pop object.
      * This method is caled at the end of a object-literal.
      */
-    Value popObject() {
+    universal_value popObject() {
         return pop_back(objectStack).object;
     }
 
@@ -49,7 +49,7 @@ struct ExecutionContext {
      * When assignments are done, this is the first object that
      * is accessed.
      */
-    Value &currentObject() {
+    universal_value &currentObject() {
         auto &item = objectStack.back();
         
         if (item.section) {
@@ -62,7 +62,7 @@ struct ExecutionContext {
     /*! Get root object.
      * This method is called when the root-accesor operator is used.
      */
-    Value &rootObject() {
+    universal_value &rootObject() {
         auto &item = objectStack.front();
 
         return item.object;
@@ -71,7 +71,7 @@ struct ExecutionContext {
     /*! Get variable object
      * This method is called when the variable-accessor operator is used.
      */
-    Value &variableObject() {
+    universal_value &variableObject() {
         return _variableObject;
     }
 };

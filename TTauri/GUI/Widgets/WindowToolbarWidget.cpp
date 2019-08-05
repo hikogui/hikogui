@@ -28,7 +28,7 @@ void WindowToolbarWidget::setParent(Widget *parent)
     window->addConstraint(trafficLightButtons->box.outerLeft() == box.left);
     window->addConstraint(trafficLightButtons->box.outerBottom() == box.bottom);
 
-    if constexpr (operatingSystem == OperatingSystem::Windows10) {
+    if constexpr (operatingSystem == OperatingSystem::Windows) {
         closeWindowButton = addWidget<ToolbarButtonWidget>(
             0.33f * getResource<Draw::Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window->closeWindow(); }

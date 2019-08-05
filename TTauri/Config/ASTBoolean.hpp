@@ -16,7 +16,7 @@ struct ASTBoolean : ASTExpression {
         return value ? "true" : "false";
     }
 
-    Value execute(ExecutionContext *context) const override { 
+    universal_value execute(ExecutionContext *context) const override { 
         return value;
     } 
 

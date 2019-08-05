@@ -1,11 +1,11 @@
 
-a = 1;
+//a = 1;
 
 [foo.bar]
-b = 2;
-c = [1,2,3];
+//b = 2;
+//c = [1,2,3];
 d = [
-    {name:"foo", value:3},
-    {name:"bar", value:5.4},
+//    {name:"foo", value:3},
+//    {name:"bar", value:5.4},
     {name:"baz", value:"nein"}
 ];

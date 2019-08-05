@@ -47,4 +47,10 @@ struct OutOfBoundsError : Error {
     OutOfBoundsError() : Error("") {}
 };
 
+struct InvalidOperationError : Error {
+    InvalidOperationError(const std::string& msg) : Error(msg) {}
+    InvalidOperationError() : Error("") {}
+};
+
+
 }

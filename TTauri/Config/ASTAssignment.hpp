@@ -21,10 +21,10 @@ struct ASTAssignment : ASTExpression {
         return key->string() + ":" + expression->string();
     }
 
-    Value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext *context) const override {
         let value = expression->execute(context);
 
-        if (value.is_type<Undefined>()) {
+        if (holds_alternative<Undefined>(value)) {
             BOOST_THROW_EXCEPTION(InvalidOperationError("right hand side value of assignment is Undefined")
                 << errinfo_location(location)
             );

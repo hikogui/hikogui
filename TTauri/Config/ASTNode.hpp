@@ -5,7 +5,7 @@
 
 #include "Location.hpp"
 #include "ExecutionContext.hpp"
-#include "Value.hpp"
+#include "TTauri/universal_value.hpp"
 #include "exceptions.hpp"
 #include <boost/format.hpp>
 #include <string>
@@ -29,7 +29,7 @@ struct ASTNode {
 
     /*! Execute the expression and return a value that can be modifed by the caller.
      */
-    virtual Value &executeLValue(ExecutionContext *context) const {
+    virtual universal_value &executeLValue(ExecutionContext *context) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expected a lvalue expression")
             << errinfo_location(location)
         );
@@ -37,13 +37,13 @@ struct ASTNode {
 
     /*! Execute the expression.
     */
-    virtual Value execute(ExecutionContext *context) const {
+    virtual universal_value execute(ExecutionContext *context) const {
         return executeLValue(context);
     }
 
     /*! Execute a function or method call.
      */
-    virtual Value executeCall(ExecutionContext *context, std::vector<Value> const &arguments) const {
+    virtual universal_value executeCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError("result of expression does not support being used as a function")
             << errinfo_location(location)
         );
@@ -51,7 +51,7 @@ struct ASTNode {
 
     /*! Execute an assignment of a value to an modifiable value.
      */
-    virtual Value &executeAssignment(ExecutionContext *context, Value other) const {
+    virtual universal_value &executeAssignment(ExecutionContext *context, universal_value other) const {
         BOOST_THROW_EXCEPTION(InvalidOperationError("result of expression does not support assignment")
             << errinfo_location(location)
         );

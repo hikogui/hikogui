@@ -18,16 +18,6 @@ public:
         }
     }
 
-    indirect_value(T const &value) {
-        ptr = new T;
-        *ptr = value;
-    }
-
-    indirect_value(T &&value) {
-        ptr = new T;
-        *ptr = std::move(value);
-    }
-
     indirect_value(indirect_value const &other) {
         ptr = new T;
         *ptr = *(other.ptr);
@@ -46,6 +36,16 @@ public:
     indirect_value &operator=(T &&value) {
         *ptr = std::move(value);
         return *this;
+    }
+
+    indirect_value(T const &value) {
+        ptr = new T;
+        *ptr = value;
+    }
+
+    indirect_value(T &&value) {
+        ptr = new T;
+        *ptr = std::move(value);
     }
 
     indirect_value &operator=(indirect_value const &other) {

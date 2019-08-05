@@ -18,11 +18,11 @@ struct ASTString : ASTExpression {
         return "\"" + value + "\"";
     }
 
-    Value execute(ExecutionContext *context) const override {
+    universal_value execute(ExecutionContext *context) const override {
         return value;
     } 
 
-    Value &executeAssignment(ExecutionContext *context, Value other) const override {
+    universal_value &executeAssignment(ExecutionContext *context, universal_value other) const override {
         auto &lv = context->currentObject()[value];
         lv = std::move(other);
         return lv;

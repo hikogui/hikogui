@@ -41,13 +41,13 @@ struct ASTArray : ASTExpression {
         return s;
     }
 
-    Value execute(ExecutionContext *context) const override {
+    universal_value execute(ExecutionContext *context) const override {
         Array values;
 
         for (let expression: expressions) {
             values.push_back(expression->execute(context));
         }
-        return {values};
+        return values;
     }
 
     /*! Execute an array-literal inside an object literal.
@@ -76,7 +76,7 @@ struct ASTArray : ASTExpression {
             context->setSection(nullptr);
             auto &lv = expressions.at(0)->executeLValue(context);
 
-            if (!(lv.is_type<Undefined>() || lv.is_type<Object>())) {
+            if (!(holds_alternative<Undefined>(lv) || holds_alternative<Object>(lv))) {
                 BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("select statement must select an object, found type %s instead") %
                         lv.type_name()
                     ).str())
