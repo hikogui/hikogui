@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Widget.hpp"
-#include <boost/filesystem.hpp>
 #include <memory>
 
 namespace TTauri::GUI::Widgets {
