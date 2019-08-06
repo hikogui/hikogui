@@ -15,7 +15,7 @@ namespace TTauri::Config {
 struct Config {
     boost::filesystem::path path;
     ASTObject *ast = nullptr;
-    universal_value root = {};
+    universal_value root = Undefined{};
 
     std::string errorMessage;
 
@@ -28,7 +28,7 @@ struct Config {
             ast = parseConfigFile(this->path);
             root = ast->execute();
 
-        } catch (ConfigError &e) {
+        } catch (Error &e) {
             if (let previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
                 errorMessage += *previousErrorMessage + "\n";
             }
@@ -99,7 +99,7 @@ struct Config {
     template<typename T>
     T value(std::string const &key) const {
         let obj = (*this)[key];
-        return get<T>(obj);
+        return get_and_promote<T>(obj);
     }
 
     /*! Get the root object.

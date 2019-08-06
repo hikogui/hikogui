@@ -13,7 +13,7 @@
 #include <vector>
 #include <numeric>
 
-namespace std::filesystem {
+namespace boost::filesystem {
     class path;
 }
 

@@ -5,6 +5,7 @@
 #include "ASTObject.hpp"
 #include "ParseContext.hpp"
 #include "exceptions.hpp"
+#include "TTauri/logging.hpp"
 #include <cstdio>
 #include <vector>
 #include <string>
@@ -31,14 +32,14 @@ ASTObject *parseConfigFile(boost::filesystem::path const &path)
     ParseContext context(path);
 
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
-        BOOST_THROW_EXCEPTION(IOError("Could not open file")
+        BOOST_THROW_EXCEPTION(FileError("Could not open file")
             << boost::errinfo_file_name(path.string())
             << boost::errinfo_errno(errno)
         );
     }
 
     if (TTauriConfig_yylex_init(&scanner) != 0) {
-        BOOST_THROW_EXCEPTION(InternalParserError("Failed to allocate memory using TTauriConfig_yylex_init()"));
+        LOG_FATAL("Failed to allocate memory using TTauriConfig_yylex_init()");
     }
 
     TTauriConfig_yyset_in(file, scanner);
@@ -47,7 +48,7 @@ ASTObject *parseConfigFile(boost::filesystem::path const &path)
 
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {
-        BOOST_THROW_EXCEPTION(IOError("Could not close file")
+        BOOST_THROW_EXCEPTION(FileError("Could not close file")
             << boost::errinfo_file_name(path.string())
             << boost::errinfo_errno(errno)
         );

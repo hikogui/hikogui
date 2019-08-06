@@ -5,8 +5,8 @@
 #include "utils.hpp"
 #include "strings.hpp"
 #include "exceptions.hpp"
+#include <boost/filesystem.hpp>
 #include <regex>
-#include <filesystem>
 
 namespace TTauri {
 
@@ -196,14 +196,14 @@ std::string to_string(URL const &url) {
     return s;
 }
 
-std::filesystem::path path(URL const &url)
+boost::filesystem::path path(URL const &url)
 {
     return { url.string_path() };
 }
 
 size_t file_size(URL const &url)
 {
-    return std::filesystem::file_size(path(url));    
+    return boost::filesystem::file_size(path(url));    
 }
 
 bool operator==(URL const &lhs, URL const &rhs)

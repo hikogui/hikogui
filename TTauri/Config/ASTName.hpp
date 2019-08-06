@@ -20,6 +20,10 @@ struct ASTName : ASTExpression {
         return name;
     }
 
+    virtual std::vector<std::string> getFQName() {
+        return { name };
+    }
+
     universal_value &executeLValue(ExecutionContext *context) const override {
         return context->currentObject()[name];
     } 
@@ -54,7 +58,7 @@ struct ASTName : ASTExpression {
             );
         }
 
-        return get<T>(argument);
+        return get_and_promote<T>(argument);
     }
 
     /*! Include a configuration file.
@@ -71,7 +75,7 @@ struct ASTName : ASTExpression {
             let ast = std::unique_ptr<ASTObject>{parseConfigFile(path)};
             return ast->execute();
 
-        } catch (ConfigError &e) {
+        } catch (Error &e) {
             // An error was captured from recursive parsing.
             // Assemble the error message from this error and throw it.
             std::string errorMessage;

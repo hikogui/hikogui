@@ -46,11 +46,17 @@ public:
 
     struct SwapChainError : virtual boost::exception, virtual std::exception {};
 
+    static constexpr long long resizeFrameRateDivider = 2;
+
     State state = State::NoDevice;
 
     /*! The current cursor that is being displayed.
      */
     Cursor currentCursor = Cursor::None;
+
+    /*! The current frame number that is being rendered.
+     */
+    long long frameCount = 0; 
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this

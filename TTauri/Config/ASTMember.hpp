@@ -24,6 +24,12 @@ struct ASTMember : ASTExpression {
         return object->string() + "." + name;
     }
 
+    virtual std::vector<std::string> getFQName() {
+        auto r = object->getFQName();
+        r.push_back(name);
+        return r;
+    }
+
     universal_value &executeLValue(ExecutionContext *context) const override {
         return object->executeLValue(context)[name];
     }
