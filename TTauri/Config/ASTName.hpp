@@ -64,11 +64,11 @@ struct ASTName : ASTExpression {
     /*! Include a configuration file.
      */
     universal_value executeIncludeCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
-        auto path = getArgument<boost::filesystem::path>(arguments, 0, true);
+        auto path = getArgument<URL>(arguments, 0, true);
 
         // The included file is relative to the directory of this configuration file.
-        if (path.is_relative()) {
-            path = location.file->parent_path() / path;
+        if (path.isRelative()) {
+            path = location.file->urlByRemovingFilename() / path;
         }
 
         try {
@@ -90,7 +90,7 @@ struct ASTName : ASTExpression {
             errorMessage += e.what();
             errorMessage += ".";
 
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Could not include file '%s'") % path.generic_string()).str())
+            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Could not include file '%s'") % path).str())
                 << errinfo_location(location)
                 << errinfo_previous_error_message(errorMessage)
             );
@@ -102,13 +102,13 @@ struct ASTName : ASTExpression {
     universal_value executePathCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without arguments return the directory where this configuration file is located.
-            return location.file->parent_path();
+            return location.file->urlByRemovingFilename();
         } else {
             // Suffix the given argument with the directory where this configuration file is located.
-            let path = getArgument<boost::filesystem::path>(arguments, 0, true);
+            let path = getArgument<URL>(arguments, 0, true);
 
-            if (path.is_relative()) {
-                return location.file->parent_path() / path;
+            if (path.isRelative()) {
+                return location.file->urlByRemovingFilename() / path;
             } else {
                 return path;
             }
@@ -120,17 +120,17 @@ struct ASTName : ASTExpression {
     universal_value executeCwdCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without argument return the current working directory.
-            return boost::filesystem::current_path();
+            return URL::urlFromCurrentWorkingDirectory();
 
         } else {
             // Suffix the given argument with the current working directory.
-            let path = getArgument<boost::filesystem::path>(arguments, 0, true);
+            let path = getArgument<URL>(arguments, 0, true);
 
-            if (path.is_relative()) {
-                return boost::filesystem::current_path() / path;
+            if (path.isRelative()) {
+                return URL::urlFromCurrentWorkingDirectory() / path;
             } else {
                 BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Expecting relative path argument to function '%s' got '%s'")
-                    % name % path.string()).str())
+                    % name % path).str())
                     << errinfo_location(location)
                 );
             }

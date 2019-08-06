@@ -8,6 +8,7 @@
 #include "exceptions.hpp"
 #include "math.hpp"
 #include "Color.hpp"
+#include "URL.hpp"
 #include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <variant>
@@ -16,7 +17,6 @@
 #include <vector>
 #include <cstdint>
 #include <cmath>
-#include <boost/filesystem.hpp>
 #include <typeinfo>
 #include <string>
 #include <memory>
@@ -40,9 +40,7 @@ template<typename T> inline T get_and_promote(universal_value const & v);
 /*! A generic value type which will handle intra type operations.
  */
 struct universal_value {
-    using all_types = std::variant<std::monostate,bool,int64_t,double,std::string,boost::filesystem::path,wsRGBA,Object,Array,Undefined>;
-
-    all_types intrinsic;
+    std::variant<std::monostate,bool,int64_t,double,std::string,URL,wsRGBA,Object,Array,Undefined> intrinsic;
 
     universal_value() = default;
     ~universal_value() = default;
@@ -55,7 +53,7 @@ struct universal_value {
     universal_value(int64_t value) : intrinsic(value) {}
     universal_value(double value) : intrinsic(value) {}
     universal_value(std::string value) : intrinsic(std::move(value)) {}
-    universal_value(boost::filesystem::path value) : intrinsic(std::move(value)) {}
+    universal_value(URL value) : intrinsic(std::move(value)) {}
     universal_value(wsRGBA value) : intrinsic(value) {}
     universal_value(Object value) : intrinsic(std::move(value)) {}
     universal_value(Array value) : intrinsic(std::move(value)) {}
@@ -65,7 +63,7 @@ struct universal_value {
     universal_value &operator=(int64_t value) { intrinsic = value; return *this; }
     universal_value &operator=(double value) { intrinsic = value; return *this; }
     universal_value &operator=(std::string value) { intrinsic = std::move(value); return *this; }
-    universal_value &operator=(boost::filesystem::path value) { intrinsic = std::move(value); return *this; }
+    universal_value &operator=(URL value) { intrinsic = std::move(value); return *this; }
     universal_value &operator=(wsRGBA value) { intrinsic = value; return *this; }
     universal_value &operator=(Object value) { intrinsic = std::move(value); return *this; }
     universal_value &operator=(Array value) { intrinsic = std::move(value); return *this; }
@@ -78,7 +76,7 @@ struct universal_value {
         case 2: return typeid(int64_t);
         case 3: return typeid(double);
         case 4: return typeid(std::string);
-        case 5: return typeid(boost::filesystem::path);
+        case 5: return typeid(URL);
         case 6: return typeid(wsRGBA);
         case 7: return typeid(Object);
         case 8: return typeid(Array);
@@ -93,9 +91,13 @@ struct universal_value {
 
     template<typename T>
     bool is_promotable_to() const {
+        if (holds_alternative<T>(intrinsic)) {
+            return true;
+        }
+
         if constexpr (std::is_same_v<std::remove_const_t<T>, double>) {
             return holds_alternative<int64_t>(intrinsic);
-        } else if constexpr (std::is_same_v<std::remove_const_t<T>, boost::filesystem::path>) {
+        } else if constexpr (std::is_same_v<std::remove_const_t<T>, URL>) {
             return holds_alternative<std::string>(intrinsic);
         } else {
             return holds_alternative<T>(intrinsic);
@@ -391,8 +393,8 @@ inline universal_value operator%(universal_value const &lhs, universal_value con
 }
 
 inline universal_value operator+(universal_value const &lhs, universal_value const &rhs) {
-    if (holds_alternative<boost::filesystem::path>(lhs) || holds_alternative<boost::filesystem::path>(rhs)) {
-        return get_and_promote<boost::filesystem::path>(lhs) / get_and_promote<boost::filesystem::path>(rhs);
+    if (holds_alternative<URL>(lhs) || holds_alternative<URL>(rhs)) {
+        return get_and_promote<URL>(lhs) / get_and_promote<URL>(rhs);
     } else if (holds_alternative<std::string>(lhs) && holds_alternative<std::string>(rhs)) {
         return get<std::string>(lhs) + get<std::string>(rhs);
     } else if (holds_alternative<Array>(lhs) && holds_alternative<Array>(rhs)) {
@@ -512,9 +514,9 @@ inline T &&get(universal_value && v)
 template<typename T>
 inline T get_and_promote(universal_value const& v)
 {
-    if constexpr (std::is_same_v<std::remove_const_t<T>, boost::filesystem::path>) {
+    if constexpr (std::is_same_v<std::remove_const_t<T>, URL>) {
         if (holds_alternative<std::string>(v)) {
-            return boost::filesystem::path{get<std::string>(v)};
+            return URL{get<std::string>(v)};
         } else {
             return get<T>(v);
         }
@@ -561,7 +563,7 @@ inline std::string to_string(universal_value const &x)
         return "\"" + get<std::string>(x) + "\"";
 
     case 5:
-        return "\"" + get<boost::filesystem::path>(x).string() + "\"";
+        return "\"" + to_string(get<URL>(x)) + "\"";
 
     case 6:
         return to_string(get<wsRGBA>(x));

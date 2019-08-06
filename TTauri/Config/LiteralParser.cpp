@@ -104,6 +104,18 @@ char *parseString(const char *text)
     return strdup(value.data());
 }
 
+URL *parseURL(const char *text)
+{
+    auto s = std::string{text};
+    if (s.front() == '<' && s.back() == '>') {
+        s = s.substr(1, s.size() - 2);
+    }
+
+    auto *url = new URL;
+    (*url) = s;
+    return url;
+}
+
 char *parseIdentifier(const char *text) 
 {
     return strdup(text);

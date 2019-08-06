@@ -82,10 +82,6 @@ std::string url_decode(std::string_view const &input, bool plusToSpace)
     return s;
 }
 
-
-
-
-
 const auto URL_re = std::regex{R"raw(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)raw", std::regex::extended};
 URL::URL(std::string const &url)
 {
@@ -104,22 +100,32 @@ URL::URL(std::string const &url)
     let query_sm = m[7];
     let fragment_sm = m[9];
 
-    scheme = url_decode(scheme_sm.str());
+    if (scheme_sm.length()) {
+        scheme = url_decode(scheme_sm.str());
+    } else {
+        scheme = "file";
+    }
+    
     if (authority_sm.length()) {
         authority = URLAuthority{authority_sm.str()};
     }
+    
     path = URLPath{path_sm.str()};
+    
     if (query_sm.length()) {
         query = url_decode(query_sm.str(), true);
     }
+
     if (fragment_sm.length()) {
         fragment = url_decode(fragment_sm.str(), true);
     }
 }
 
-URL::URL(std::string scheme, URLPath path) : scheme(std::move(scheme)), path(std::move(path)) {}
+URL::URL(char const *url) : URL(std::string(url)) {}
 
-std::string URL::string_path() const
+URL::URL(std::string const scheme, URLPath path) : scheme(std::move(scheme)), path(std::move(path)) {}
+
+std::string URL::path_string() const
 {
     if (scheme != "file") {
         BOOST_THROW_EXCEPTION(URLError("URL is not a file.")
@@ -127,12 +133,12 @@ std::string URL::string_path() const
         );
     }
 
-    return path.string_path();
+    return path.path_string();
 }
 
-std::wstring URL::wstring_path() const
+std::wstring URL::path_wstring() const
 {
-    return translateString<std::wstring>(string_path());
+    return translateString<std::wstring>(path_string());
 }
 
 std::string const &URL::filename() const
@@ -143,6 +149,16 @@ std::string const &URL::filename() const
 std::string URL::extension() const
 {
     return path.extension();
+}
+
+bool URL::isAbsolute() const
+{
+    return path.absolute;
+}
+
+bool URL::isRelative() const
+{
+    return !path.absolute;
 }
 
 URL URL::urlByAppendingPath(URL const &other) const
@@ -176,6 +192,11 @@ URL URL::urlFromWin32Path(std::wstring_view const path)
     return URL("file", URLPath::urlPathFromWin32Path(path));
 }
 
+URL URL::urlFromCurrentWorkingDirectory()
+{
+    return URL("file", URLPath{ boost::filesystem::current_path() });
+}
+
 std::string to_string(URL const &url) {
     auto s = url_encode(url.scheme, TTAURI_URL_ALPHA TTAURI_URL_DIGIT "+-.") + ":";
 
@@ -198,7 +219,7 @@ std::string to_string(URL const &url) {
 
 boost::filesystem::path path(URL const &url)
 {
-    return { url.string_path() };
+    return { url.path_string() };
 }
 
 size_t file_size(URL const &url)

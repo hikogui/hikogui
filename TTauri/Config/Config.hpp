@@ -13,7 +13,7 @@ namespace TTauri::Config {
  * 
  */
 struct Config {
-    boost::filesystem::path path;
+    URL path;
     ASTObject *ast = nullptr;
     universal_value root = Undefined{};
 
@@ -23,7 +23,7 @@ struct Config {
      * See the README.md file is this directory for the file format of the configuration file.
      * \param path path to the configuration file.
      */
-    Config(boost::filesystem::path path) : path(std::move(path)) {
+    Config(URL path) : path(std::move(path)) {
         try {
             ast = parseConfigFile(this->path);
             root = ast->execute();
@@ -88,11 +88,11 @@ struct Config {
      * and arrays.
      *
      * The following types are supported:
-     * - bool, int64_t, double, std::string, boost::filesystem::path, Color_XYZ
+     * - bool, int64_t, double, std::string, URL, Color_XYZ
      * - std::vector<std::any>, std::map<std::string, std::any>
      *
      * int64_t can be promoted to double.
-     * std::string can be promoted to boost::filesystem::path
+     * std::string can be promoted to URL
      *
      * \param key A configuration key.
      */

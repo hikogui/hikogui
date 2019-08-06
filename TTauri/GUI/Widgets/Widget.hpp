@@ -10,6 +10,7 @@
 #include "../Device_forward.hpp"
 #include "../Mouse.hpp"
 #include "TTauri/Color.hpp"
+#include "TTauri/URL.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/Draw/attributes.hpp"
 #include <limits>

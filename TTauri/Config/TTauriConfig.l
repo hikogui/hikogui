@@ -47,9 +47,6 @@ WS              [ \t\f\r\n]
 <LFEND_STATE>\n             BEGIN(INITIAL); return ';';
 <LFEND_STATE>.              BEGIN(INITIAL); yyless(0); yylloc_param->last_column--;
 
-[=:]                        return '=';
-[;,]                        return ';';
-
 "not"                       return TTauriConfig_yyfind_token(yytext);
 "<<"                        return TTauriConfig_yyfind_token(yytext);
 ">>"                        return TTauriConfig_yyfind_token(yytext);
@@ -63,6 +60,16 @@ WS              [ \t\f\r\n]
 "true"                      return TTauriConfig_yyfind_token(yytext);
 "false"                     return TTauriConfig_yyfind_token(yytext);
 "null"                      return TTauriConfig_yyfind_token(yytext);
+
+[a-zA-Z][a-zA-Z0-9+.-]+:[a-zA-Z/][a-zA-Z0-9;/?:@=&$_.+!*'(),-]*[a-zA-Z0-9/?:@=&$_.+!*'(-] {
+    yylval->url = TTauri::Config::parseURL(yytext);
+    return T_URL;
+}
+
+"<"[a-zA-Z][a-zA-Z0-9+.-]+:[a-zA-Z0-9;/?:@=&$_.+!*'(),-]*">" {
+    yylval->url = TTauri::Config::parseURL(yytext);
+    return T_URL;
+}
 
 [_a-zA-Z][_a-zA-Z0-9]*      yylval->string = strdup(yytext); return T_IDENTIFIER;
 
@@ -87,6 +94,8 @@ WS              [ \t\f\r\n]
 "//".*?\n                   ; // Comment is ignored.
 {WS}                        ; // Whitespace is ignored.
 
+[=:]                        return '=';
+[;,]                        return ';';
 .                           return yytext[0];
 
 %%

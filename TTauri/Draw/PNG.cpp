@@ -5,6 +5,7 @@
 #include "PixelMap.hpp"
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
+#include "TTauri/URL.hpp"
 #include <png.h>
 #include <stdio.h>
 
@@ -12,10 +13,10 @@ namespace TTauri::Draw {
 
 using namespace std;
 
-PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const boost::filesystem::path &path)
+PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
 {
     // XXX Replace with memory mapped IO.
-    string stringPath = path.string();
+    string stringPath = path.path_string();
 
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;

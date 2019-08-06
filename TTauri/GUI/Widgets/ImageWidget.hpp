@@ -4,20 +4,19 @@
 #pragma once
 
 #include "Widget.hpp"
-#include <boost/filesystem.hpp>
 #include <memory>
 
 namespace TTauri::GUI::Widgets {
 
 class ImageWidget : public Widget {
 public:
-    const boost::filesystem::path path;
+    const URL path;
 
     float rotation = 0.0;
 
     std::shared_ptr<GUI::PipelineImage::Image> backingImage;
 
-    ImageWidget(const boost::filesystem::path path);
+    ImageWidget(const URL path);
     ~ImageWidget() {}
 
     ImageWidget(const ImageWidget&) = delete;

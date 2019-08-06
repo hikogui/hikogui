@@ -21,7 +21,7 @@ static inline ResourceView_intrinsic loadView(URL const &location)
             LOG_INFO("Loaded resource %s from executable.", location);
             return view;
         } catch (FileError) {
-            let absoluteLocation = get_singleton<Application>().resourceLocation.urlByAppendingPath(location);
+            let absoluteLocation = get_singleton<Application>().resourceLocation / location;
             auto view = FileView{ absoluteLocation };
             LOG_INFO("Loaded resource %s from filesystem at %s.", location, absoluteLocation);
             return view;

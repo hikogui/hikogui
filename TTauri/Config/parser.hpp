@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include "TTauri/URL.hpp"
 #include <boost/exception/all.hpp>
 
 namespace TTauri::Config {
 
 struct ASTObject;
 
-ASTObject *parseConfigFile(const boost::filesystem::path &path);
+ASTObject *parseConfigFile(URL const &path);
 
 }
 

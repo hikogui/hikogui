@@ -22,5 +22,6 @@
 #include "ASTRootObject.hpp"
 #include "ASTString.hpp"
 #include "ASTUnaryOperator.hpp"
+#include "ASTURL.hpp"
 #include "ASTVariableObject.hpp"
 

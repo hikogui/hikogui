@@ -151,7 +151,7 @@ TEST(Config_Parser, FloatExpressions) {
 TEST(Config_Parser, IncludeFiles) {
     auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/includer.txt"));
 
-    auto parse_r = "{include(\"included.txt\"),a:{include(\"included.txt\")},[b],include(\"included.txt\")}"s;
+    auto parse_r = "{include(\"included.txt\"),a:{include(\"included.txt\")},[b],include(file:included.txt)}"s;
     ASSERT_EQ(to_string(*o), parse_r);
 
     auto exec_r = "{a:{foo:\"bar\"},b:{foo:\"bar\"},foo:\"bar\"}"s;

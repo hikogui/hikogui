@@ -22,6 +22,7 @@
   #include <string>
   #include <cstdint>
   #include <memory>
+  #include "TTauri/URL.hpp"
   #include "TTauri/Config/AST.hpp"
   #include "TTauri/Config/ParseContext.hpp"
   #include "TTauri/Config/parser.hpp"
@@ -42,6 +43,7 @@
     char *string;
     int64_t integer;
     double real;
+    TTauri::URL *url;
     TTauri::Config::ASTExpression *expression;
     TTauri::Config::ASTExpressionList *expression_list;
     TTauri::Config::ASTObject *object;
@@ -54,6 +56,7 @@
 %token <real> T_FLOAT
 %token <string> T_STRING
 %token <integer> T_COLOR
+%token <url> T_URL
 
 // Same precedence order as C++ operators.
 %left ';'
@@ -103,6 +106,7 @@ expression:
     | T_INTEGER                                                     { $$ = NEW_NODE(ASTInteger, @1, $1); }
     | T_FLOAT                                                       { $$ = NEW_NODE(ASTFloat, @1, $1); }
     | T_COLOR                                                       { $$ = NEW_NODE(ASTColor, @1, static_cast<uint32_t>($1)); }
+    | T_URL                                                         { $$ = NEW_NODE(ASTURL, @1, $1); }
     | "true"                                                        { $$ = NEW_NODE(ASTBoolean, @1, true); }
     | "false"                                                       { $$ = NEW_NODE(ASTBoolean, @1, false); }
     | "null"                                                        { $$ = NEW_NODE(ASTNull, @1); }

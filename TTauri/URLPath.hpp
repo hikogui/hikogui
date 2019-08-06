@@ -27,7 +27,7 @@ struct URLPath {
     URLPath(std::string const &path);
     URLPath(boost::filesystem::path const &path);
 
-    std::string string_path() const;
+    std::string path_string() const;
 
     std::string const &filename() const;
 

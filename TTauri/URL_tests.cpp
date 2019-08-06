@@ -27,5 +27,5 @@ TEST(URLTests, parsing) {
 TEST(URLTests, relativePath) {
     let a = URL("file:foo/bar.txt");
 
-    ASSERT_EQ(a.string_path(), "foo/bar.txt");
+    ASSERT_EQ(a.path_string(), "foo/bar.txt");
 }
