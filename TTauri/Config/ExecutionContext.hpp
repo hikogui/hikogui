@@ -50,13 +50,13 @@ struct ExecutionContext {
      * is accessed.
      */
     universal_value &currentObject() {
-        auto &item = objectStack.back();
-        
-        if (item.section) {
-            return *(item.section);
-        } else {
-            return item.object;
+        universal_value &item = objectStack.back();
+       
+        for (let &key: item.section) {
+            item = get<Object>(item)[key];
         }
+
+        return item;
     }
 
     /*! Get root object.

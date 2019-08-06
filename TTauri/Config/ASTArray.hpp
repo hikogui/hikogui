@@ -67,13 +67,13 @@ struct ASTArray : ASTExpression {
     void executeStatement(ExecutionContext *context) const override {
         if (expressions.size() == 0) {
             // empty section-statement; reset the currently active object.
-            context->setSection(nullptr);
+            context->setSection({});
 
         } else if (expressions.size() == 1) {
             // section-statement with one expression; reset the currently active object.
             // Then find/create an object based on the expression, then select it as the
             // active object.
-            context->setSection(nullptr);
+            context->setSection({});
             auto &lv = expressions.at(0)->executeLValue(context);
 
             if (!(holds_alternative<Undefined>(lv) || holds_alternative<Object>(lv))) {
