@@ -14,7 +14,7 @@ File::File(URL const &location, AccessMode accessMode) :
     location(location), accessMode(accessMode)
 {
 #ifdef WIN32
-    auto fileName = location.wstring_path();
+    auto fileName = location.path_wstring();
 
     DWORD desiredAccess = 0;
     if (accessMode >= AccessMode::RDONLY) {

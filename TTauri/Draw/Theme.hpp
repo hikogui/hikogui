@@ -9,7 +9,6 @@
 #include "TTauri/Color.hpp"
 #include "TTauri/required.hpp"
 
-#include <boost/filesystem.hpp>
 #include <string>
 #include <vector>
 #include <memory>
@@ -34,7 +33,7 @@ struct Theme {
     PathString getGlyhs(gstring const &text, ThemeFontStyle font);
     //void render(PixelMap<uint32_t> &pixels, gstring const &text, ThemeFontStyle font, float dpi, glm::vec2 position, float angle);
 
-	static void loadAllThemes(const boost::filesystem::path &fontDirectory, const std::filesystem::path &iconDirectory);
+	static void loadAllThemes(const URL &fontDirectory, const URL &iconDirectory);
 };
 
 extern Theme *selectedTheme;

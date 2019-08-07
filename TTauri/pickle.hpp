@@ -5,6 +5,7 @@
 
 #include "utils.hpp"
 #include "exceptions.hpp"
+#include "URL.hpp"
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@ enum class pickle_type_t {
     Vector,
     Double,
     GLMVec,
+    URL,
     Reserved
 };
 
@@ -43,9 +45,10 @@ constexpr uint8_t PICKLE_MAP = 0xf9;
 constexpr uint8_t PICKLE_VECTOR = 0xf8;
 constexpr uint8_t PICKLE_DOUBLE = 0xf7;
 constexpr uint8_t PICKLE_GLM_VEC = 0xf6;
+constexpr uint8_t PICKLE_URL = 0xf5;
 
 constexpr uint8_t PICKLE_RESERVED_MIN = 0x40;
-constexpr uint8_t PICKLE_RESERVED_MAX = 0xf5;
+constexpr uint8_t PICKLE_RESERVED_MAX = 0xf4;
 
 template<typename Iter>
 inline pickle_type_t pickle_type(Iter &i, Iter const &end)
@@ -65,6 +68,7 @@ inline pickle_type_t pickle_type(Iter &i, Iter const &end)
     case PICKLE_VECTOR: return pickle_type_t::Vector;
     case PICKLE_DOUBLE: return pickle_type_t::Double;
     case PICKLE_GLM_VEC: return pickle_type_t::GLMVec;
+    case PICKLE_URL: return pickle_type_t::URL;
     default:
         if (c_ >= PICKLE_SMALL_STRING_MIN && c_ <= PICKLE_SMALL_STRING_MAX) {
             return pickle_type_t::String;
@@ -81,7 +85,6 @@ inline R unpickle(Iter &&i, Iter &&end)
 {
     BOOST_THROW_EXCEPTION(NotImplementedError("unpickle"));
 }
-
 
 template<typename Iter>
 inline int64_t unpickle(Iter &i, Iter const &end)
@@ -219,14 +222,15 @@ inline std::string unpickle(Iter &i, Iter const &end)
     switch (pickle_type(i, end)) {
     case pickle_type_t::String:
         goto impl;
-
+    case pickle_type_t::URL:
+        goto impl;
     default:
         BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
     }
 
 impl:
     size_t stringLength = 0;
-    if (static_cast<uint8_t>(*i) == PICKLE_STRING) {
+    if (static_cast<uint8_t>(*i) == PICKLE_STRING || static_cast<uint8_t>(*i) == PICKLE_URL) {
         i++;
         stringLength = unpickle<size_t>(i, begin);
     } else {
@@ -241,6 +245,12 @@ impl:
 
     i = endOfString;
     return {beginOfString, endOfString};
+}
+
+template<typename Iter>
+inline URL unpickle(Iter &i, Iter const &end)
+{
+    return URL{unpickle<std::string>(i, end)};
 }
 
 template<typename Iter>
@@ -413,6 +423,16 @@ inline std::string &pickleAppend(std::string &lhs, uint16_t rhs) { return pickle
 inline std::string &pickleAppend(std::string &lhs, uint8_t rhs) { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
 inline std::string &pickleAppend(std::string &lhs, void *rhs) { return pickleAppend(lhs, reinterpret_cast<size_t>(rhs)); }
 
+inline std::string &pickleAppend(std::string &lhs, URL const &rhs)
+{
+    auto s = to_string(rhs);
+
+    lhs.push_back(PICKLE_URL);
+    pickleAppend(lhs, s.size());
+    lhs += s;
+    return lhs;
+}
+
 /*! Pickle a string.
  */
 inline std::string &pickleAppend(std::string &lhs, std::string_view const &rhs)
@@ -432,6 +452,9 @@ inline std::string &pickleAppend(std::string &lhs, char const rhs[]) {
     return pickleAppend(lhs, std::string_view(rhs));
 }
 
+inline std::string &pickleAppend(std::string &lhs, std::string const &rhs) {
+    return pickleAppend(lhs, std::string_view(rhs));
+}
 
 template<int S, typename T, glm::qualifier Q>
 inline std::string &pickleAppend(std::string &lhs, glm::vec<S,T,Q> const &rhs)

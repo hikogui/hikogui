@@ -14,7 +14,7 @@
 #include <numeric>
 #include <iostream>
 
-namespace std::filesystem {
+namespace boost::filesystem {
 class path;
 }
 
@@ -40,18 +40,23 @@ struct URL {
     std::optional<std::string> fragment = {};
 
     URL() = default;
+    URL(char const *url);
     URL(std::string const &url);
-    URL(std::string scheme, URLPath path);
+    URL(std::string const scheme, URLPath path);
 
-    std::string string_path() const;
-    std::wstring wstring_path() const;
+    std::string path_string() const;
+    std::wstring path_wstring() const;
     std::string const &filename() const;
     std::string extension() const;
+
+    bool isAbsolute() const;
+    bool isRelative() const;
 
     URL urlByAppendingPath(URL const &other) const;
     URL urlByRemovingFilename() const;
 
     static URL urlFromWin32Path(std::wstring_view const path);
+    static URL urlFromCurrentWorkingDirectory();
 };
 
 std::string to_string(URL const &url);
@@ -62,6 +67,8 @@ inline bool operator>(URL const &lhs, URL const &rhs) { return rhs < lhs; }
 inline bool operator!=(URL const &lhs, URL const &rhs) { return !(lhs == rhs); }
 inline bool operator>=(URL const &lhs, URL const &rhs) { return !(lhs < rhs); }
 inline bool operator<=(URL const &lhs, URL const &rhs) { return !(lhs > rhs); }
+
+inline URL operator/(URL const &lhs, URL const &rhs) { return lhs.urlByAppendingPath(rhs); }
 
 inline std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
 {

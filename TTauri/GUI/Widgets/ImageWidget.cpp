@@ -11,7 +11,7 @@ namespace TTauri::GUI::Widgets {
 using namespace std::literals;
 
 
-ImageWidget::ImageWidget(boost::filesystem::path path) :
+ImageWidget::ImageWidget(URL path) :
     Widget(), path(std::move(path))
 {
 }
@@ -52,7 +52,7 @@ void ImageWidget::drawBackingImage()
 
 void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset)
 {
-    clearAndPickleAppend(key, "ImageView", box.currentExtent(), path.string());
+    clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 
     auto vulkanDevice = device();
 

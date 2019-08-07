@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Widget.hpp"
-#include <filesystem>
 #include <memory>
 
 namespace TTauri::GUI::Widgets {

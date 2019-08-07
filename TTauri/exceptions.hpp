@@ -27,14 +27,17 @@ struct Error : virtual boost::exception, virtual std::exception {
 
 struct ParseError : Error {
     ParseError(const std::string& msg) : Error(msg) {}
+    ParseError() : Error("") {}
 };
 
 struct URLError : Error {
     URLError(const std::string& msg) : Error(msg) {}
+    URLError() : Error("") {}
 };
 
 struct FileError : Error {
     FileError(const std::string& msg) : Error(msg) {}
+    FileError() : Error("") {}
 };
 
 struct NotImplementedError : Error {

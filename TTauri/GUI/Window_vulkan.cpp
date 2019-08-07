@@ -224,6 +224,11 @@ void Window_vulkan::render()
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
+    // While resizing lower the frame rate to reduce CPU usage.
+    if (resizing && (frameCount++ % resizeFrameRateDivider) != 0) {
+        return;
+    }
+
     // Teardown then buildup from the vulkan objects that where invalid.
     teardown();
     build();

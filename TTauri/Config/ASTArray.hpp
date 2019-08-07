@@ -74,17 +74,8 @@ struct ASTArray : ASTExpression {
             // Then find/create an object based on the expression, then select it as the
             // active object.
             context->setSection({});
-            auto &lv = expressions.at(0)->executeLValue(context);
-
-            if (!(holds_alternative<Undefined>(lv) || holds_alternative<Object>(lv))) {
-                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("select statement must select an object, found type %s instead") %
-                        lv.type_name()
-                    ).str())
-                    << errinfo_location(location)
-                );
-            }
-
-            context->setSection(&lv);
+            let selector = expressions.at(0)->getFQName();
+            context->setSection(selector);
 
         } else {
             BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expected 0 or 1 expression in section statement")

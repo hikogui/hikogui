@@ -6,4 +6,4 @@ a = {
 };
 
 [b]
-include("included.txt");
+include(file:included.txt);

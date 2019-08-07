@@ -5,7 +5,7 @@
 #include "URL.hpp"
 #include "strings.hpp"
 #include "utils.hpp"
-#include <filesystem>
+#include <boost/filesystem.hpp>
 
 namespace TTauri {
 
@@ -38,7 +38,7 @@ URLPath URLPath::urlPathFromWin32Path(std::wstring_view const &path_wstring)
     return URLPath(path);
 }
 
-std::string URLPath::string_path() const
+std::string URLPath::path_string() const
 {
     auto s = std::string{};
     s.reserve(std::accumulate(segments.begin(), segments.end(), segments.size() + 1, [](auto a, auto x) {

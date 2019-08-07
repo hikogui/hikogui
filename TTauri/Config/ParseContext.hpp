@@ -14,7 +14,7 @@ struct ParseContext {
     ASTObject *object;
 
     //! File being parsed.
-    std::shared_ptr<boost::filesystem::path> file;
+    std::shared_ptr<URL> file;
 
     //! Location of an error detected by bison.
     Location errorLocation;
@@ -22,8 +22,8 @@ struct ParseContext {
     //! Error message from bison.
     std::string errorMessage;
 
-    ParseContext(const boost::filesystem::path &path) :
-        object(nullptr), file(std::make_shared<boost::filesystem::path>(std::move(path))) {}
+    ParseContext(const URL &path) :
+        object(nullptr), file(std::make_shared<URL>(std::move(path))) {}
 
     /*! Set the error during parsing.
      * Called by bison during parsing on error.
