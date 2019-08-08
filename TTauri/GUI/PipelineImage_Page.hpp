@@ -16,7 +16,7 @@ struct Page {
 
     int nr;
 
-    bool isFullyTransparent() const { return nr == std::numeric_limits<int>::max(); }
+    bool isFullyTransparent() const noexcept { return nr == std::numeric_limits<int>::max(); }
 };
 
 }

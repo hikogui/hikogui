@@ -22,10 +22,10 @@ struct URLAuthority {
     URLAuthority(std::string const &authority);
 };
 
-std::string to_string(URLAuthority const &authority);
+std::string to_string(URLAuthority const &authority) noexcept;
 
-bool operator==(URLAuthority const &lhs, URLAuthority const &rhs);
-bool operator<(URLAuthority const &lhs, URLAuthority const &rhs);
+bool operator==(URLAuthority const &lhs, URLAuthority const &rhs) noexcept;
+bool operator<(URLAuthority const &lhs, URLAuthority const &rhs) noexcept;
 
 }
 

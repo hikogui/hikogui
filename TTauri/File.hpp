@@ -20,9 +20,9 @@ namespace TTauri {
 struct AccessMode {
     uint64_t value;
 
-    AccessMode(uint64_t v) : value(v) {}
+    AccessMode(uint64_t v) noexcept : value(v) {}
 
-    bool operator>=(AccessMode m) {
+    bool operator>=(AccessMode m) noexcept {
         return (value & m.value) == m.value;
     }
 

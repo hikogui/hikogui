@@ -3,7 +3,7 @@
 
 #include "PNG.hpp"
 #include "PixelMap.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include "TTauri/required.hpp"
 #include "TTauri/URL.hpp"
 #include <png.h>
@@ -57,7 +57,7 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
 
     png_init_io(png_ptr, fp);
     png_set_sig_bytes(png_ptr, PNGHeader_size);
-    png_set_user_limits(png_ptr, boost::numeric_cast<png_uint_32>(pixelMap.width), boost::numeric_cast<png_uint_32>(pixelMap.height));
+    png_set_user_limits(png_ptr, numeric_cast<png_uint_32>(pixelMap.width), numeric_cast<png_uint_32>(pixelMap.height));
 
     png_color_8 sig_bit;
     sig_bit.red = 16;

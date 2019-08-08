@@ -6,7 +6,7 @@
 #include "Window.hpp"
 #include "PipelineImage_Image.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include "TTauri/pickle.hpp"
 
 namespace TTauri::GUI::PipelineImage {

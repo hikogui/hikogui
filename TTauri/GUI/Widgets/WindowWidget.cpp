@@ -10,12 +10,12 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std;
 
-WindowWidget::WindowWidget() :
+WindowWidget::WindowWidget() noexcept :
     Widget()
 {
 }
 
-void WindowWidget::setParent(Window *window)
+void WindowWidget::setParent(Window *window) noexcept
 {
     this->window = window;
 
@@ -30,7 +30,7 @@ void WindowWidget::setParent(Window *window)
     backgroundColor = wsRGBA{ 0x444f19ff };
 }
 
-HitBox WindowWidget::hitBoxTest(glm::vec2 position) const
+HitBox WindowWidget::hitBoxTest(glm::vec2 position) const noexcept
 {
     constexpr float BORDER_WIDTH = 5.0;
 

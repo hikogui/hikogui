@@ -23,7 +23,7 @@ struct Config {
      * See the README.md file is this directory for the file format of the configuration file.
      * \param path path to the configuration file.
      */
-    Config(URL path) : path(std::move(path)) {
+    Config(URL path) noexcept : path(std::move(path)) {
         try {
             ast = parseConfigFile(this->path);
             root = ast->execute();
@@ -48,13 +48,13 @@ struct Config {
 
     /*! Parsing the configuration file was succesfull.
      */
-    bool success() const {
+    bool success() const noexcept {
         return !holds_alternative<Undefined>(root);
     }
 
     /*! Retreive error message
      */
-    std::string error() const {
+    std::string error() const noexcept {
         if (success()) {
             return "";
         } else {
@@ -64,7 +64,7 @@ struct Config {
 
     /*! string representation of the abstract-syntax-tree.
      */
-    std::string astString() const {
+    std::string astString() const noexcept {
         if (ast) {
             return ast->string();
         } else {
@@ -105,7 +105,7 @@ struct Config {
     /*! Get the root object.
      * \see value() for the different kinds of types that are supported.
      */
-    Object rootObject() {
+    Object rootObject() noexcept {
         return get<Object>(root);
     }
 };

@@ -14,7 +14,7 @@ namespace TTauri::Config {
 struct ASTExpressionList : ASTNode {
     std::vector<ASTExpression *> expressions;
 
-    ASTExpressionList(Location location, ASTExpression *firstExpression) : ASTNode(location), expressions({firstExpression}) {}
+    ASTExpressionList(Location location, ASTExpression *firstExpression) noexcept : ASTNode(location), expressions({firstExpression}) {}
 
     ~ASTExpressionList() {
         for (auto expression: expressions) {
@@ -22,7 +22,7 @@ struct ASTExpressionList : ASTNode {
         }
     }
 
-    void add(ASTExpression *x) {
+    void add(ASTExpression *x) noexcept {
         expressions.push_back(x);
     }
 };

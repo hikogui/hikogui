@@ -11,9 +11,9 @@ namespace TTauri::Config {
 struct ASTArray : ASTExpression {
     std::vector<ASTExpression *> expressions;
 
-    ASTArray(Location location) : ASTExpression(location), expressions() { }
+    ASTArray(Location location) noexcept : ASTExpression(location), expressions() { }
 
-    ASTArray(Location location, ASTExpressionList *expressions) : ASTExpression(location), expressions(expressions->expressions) {
+    ASTArray(Location location, ASTExpressionList *expressions) noexcept : ASTExpression(location), expressions(expressions->expressions) {
         // We copied the pointers of the expression, so they must not be destructed when expressions is deleted.
         expressions->expressions.clear();
         delete expressions;
@@ -25,7 +25,7 @@ struct ASTArray : ASTExpression {
         }
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         std::string s = "[";
 
         bool first = true;

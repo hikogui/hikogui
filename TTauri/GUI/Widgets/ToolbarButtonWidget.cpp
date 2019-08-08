@@ -11,21 +11,21 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 
-ToolbarButtonWidget::ToolbarButtonWidget(Draw::Path icon, std::function<void()> delegate) :
+ToolbarButtonWidget::ToolbarButtonWidget(Draw::Path icon, std::function<void()> delegate) noexcept :
     Widget(), delegate(delegate)
 {
     icon.tryRemoveLayers();
     this->icon = std::move(icon);
 }
 
-void ToolbarButtonWidget::setParent(Widget *parent)
+void ToolbarButtonWidget::setParent(Widget *parent) noexcept
 {
     Widget::setParent(parent);
 
     window->addConstraint(box.height == box.width);
 }
 
-int ToolbarButtonWidget::state() const {
+int ToolbarButtonWidget::state() const noexcept {
     int r = 0;
     r |= window->active ? 1 : 0;
     r |= hover ? 2 : 0;
@@ -35,7 +35,7 @@ int ToolbarButtonWidget::state() const {
 }
 
 
-void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset)
+void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept
 {
     required_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
@@ -60,7 +60,7 @@ void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImag
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
+PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
     if (pressed) {
@@ -71,7 +71,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
         fill(linearMap);
     }
 
-    let iconSize = boost::numeric_cast<float>(image->extent.height());
+    let iconSize = numeric_cast<float>(image->extent.height());
     let iconLocation = glm::vec2{image->extent.width() / 2.0f, image->extent.height() / 2.0f};
 
     auto iconImage = Draw::PixelMap<wsRGBA>{image->extent};
@@ -92,7 +92,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) {
+void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) noexcept {
     hover = event.type != MouseEvent::Type::Exited;
 
     if (enabled) {

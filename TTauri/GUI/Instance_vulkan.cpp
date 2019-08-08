@@ -52,14 +52,14 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
     }
 
     auto instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo);
-    instanceCreateInfo.setEnabledExtensionCount(boost::numeric_cast<uint32_t>(requiredExtensions.size()));
+    instanceCreateInfo.setEnabledExtensionCount(numeric_cast<uint32_t>(requiredExtensions.size()));
     instanceCreateInfo.setPpEnabledExtensionNames(requiredExtensions.data());
 
 #if defined(_WIN32) && !defined(NDEBUG)
     requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
     //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
 #endif
-    instanceCreateInfo.setEnabledLayerCount(boost::numeric_cast<uint32_t>(requiredLayers.size()));
+    instanceCreateInfo.setEnabledLayerCount(numeric_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
 
     LOG_INFO("Creating Vulkan instance.");
@@ -84,11 +84,9 @@ Instance_vulkan::~Instance_vulkan()
 #endif
 }
 
-void Instance_vulkan::initialize()
+void Instance_vulkan::initialize() noexcept(false)
 {
     scoped_lock lock(TTauri::GUI::mutex);
-
-    Instance_base::initialize();
 
 #if defined(_WIN32) && !defined(NDEBUG)
     debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({

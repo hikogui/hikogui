@@ -7,7 +7,7 @@ namespace GUI {
 Instance_vulkan_macos::Instance_vulkan_macos() :
     Instance_vulkan({ VK_MVK_MACOS_SURFACE_EXTENSION_NAME })
 {
-    hostFrequency = boost::numeric_cast<uint64_t>(CVGetHostClockFrequency());
+    hostFrequency = numeric_cast<uint64_t>(CVGetHostClockFrequency());
 
     // Start update loop.
     CVDisplayLinkCreateWithActiveCGDisplays(&updateAndRenderThread);
@@ -47,7 +47,7 @@ CVReturn Instance_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink
     outputHostTime /= self->hostFrequency;
 
     @autoreleasepool {
-        self->updateAndRender(boost::numeric_cast<uint64_t>(currentHostTime), boost::numeric_cast<uint64_t>(outputHostTime), false);
+        self->updateAndRender(numeric_cast<uint64_t>(currentHostTime), numeric_cast<uint64_t>(outputHostTime), false);
     }
 
     return kCVReturnSuccess;

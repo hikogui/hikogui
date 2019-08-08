@@ -35,7 +35,8 @@ URLAuthority::URLAuthority(std::string const &authority)
     }
 }
 
-std::string to_string(URLAuthority const &authority) {
+std::string to_string(URLAuthority const &authority) noexcept
+{
     auto s = std::string{};
 
     if (authority.userinfo) {
@@ -55,12 +56,12 @@ std::string to_string(URLAuthority const &authority) {
     return s;
 }
 
-bool operator==(URLAuthority const &lhs, URLAuthority const &rhs)
+bool operator==(URLAuthority const &lhs, URLAuthority const &rhs) noexcept
 {
     return std::tie(lhs.userinfo, lhs.host, lhs.port) == std::tie(rhs.userinfo, rhs.host, rhs.port);
 }
 
-bool operator<(URLAuthority const &lhs, URLAuthority const &rhs)
+bool operator<(URLAuthority const &lhs, URLAuthority const &rhs) noexcept
 {
     return std::tie(lhs.userinfo, lhs.host, lhs.port) < std::tie(rhs.userinfo, rhs.host, rhs.port);
 }

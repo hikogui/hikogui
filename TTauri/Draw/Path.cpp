@@ -7,35 +7,36 @@
 #include "PathString.hpp"
 #include "Font.hpp"
 #include "PixelMap.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include "TTauri/required.hpp"
 
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace TTauri::Draw {
 
-glm::vec2 Path::advanceForGrapheme(int index) const
+glm::vec2 Path::advanceForGrapheme(int index) const noexcept
 {
     let ligatureRatio = 1.0f / numberOfGraphemes;
 
     return (advance * ligatureRatio) * static_cast<float>(index);
 }
 
-int Path::numberOfContours() const
+int Path::numberOfContours() const noexcept
 {
     return to_int(contourEndPoints.size());
 }
 
-int Path::numberOfLayers() const
+int Path::numberOfLayers() const noexcept
 {
     return to_int(layerEndContours.size());
 }
 
-bool Path::hasLayers() const {
+bool Path::hasLayers() const noexcept
+{
     return numberOfLayers() > 0;
 }
 
-bool Path::allLayersHaveSameColor() const
+bool Path::allLayersHaveSameColor() const noexcept
 {
     if (!hasLayers()) {
         return true;
@@ -51,7 +52,7 @@ bool Path::allLayersHaveSameColor() const
     return true;
 }
 
-void Path::tryRemoveLayers()
+void Path::tryRemoveLayers() noexcept
 {
     if (!hasLayers()) {
         return;
@@ -64,37 +65,37 @@ void Path::tryRemoveLayers()
     layerEndContours.clear();
 }
 
-std::vector<BezierPoint>::const_iterator Path::beginContour(int contourNr) const
+std::vector<BezierPoint>::const_iterator Path::beginContour(int contourNr) const noexcept
 {
     return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
 }
 
-std::vector<BezierPoint>::const_iterator Path::endContour(int contourNr) const
+std::vector<BezierPoint>::const_iterator Path::endContour(int contourNr) const noexcept
 {
     return points.begin() + contourEndPoints.at(contourNr) + 1;
 }
 
-int Path::beginLayer(int layerNr) const
+int Path::beginLayer(int layerNr) const noexcept
 {
     return layerNr == 0 ? 0 : layerEndContours.at(layerNr - 1).first + 1;
 }
 
-int Path::endLayer(int layerNr) const
+int Path::endLayer(int layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).first + 1;
 }
 
-wsRGBA Path::getColorOfLayer(int layerNr) const
+wsRGBA Path::getColorOfLayer(int layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(int layerNr, wsRGBA fillColor)
+void Path::setColorOfLayer(int layerNr, wsRGBA fillColor) noexcept
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,wsRGBA> Path::getLayer(int layerNr) const
+std::pair<Path,wsRGBA> Path::getLayer(int layerNr) const noexcept
 {
     required_assert(hasLayers());
 
@@ -109,19 +110,19 @@ std::pair<Path,wsRGBA> Path::getLayer(int layerNr) const
     return {path, getColorOfLayer(layerNr)};
 }
 
-std::vector<BezierPoint> Path::getBezierPointsOfContour(int subpathNr) const
+std::vector<BezierPoint> Path::getBezierPointsOfContour(int subpathNr) const noexcept
 {
     let begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
     let end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<BezierCurve> Path::getBeziersOfContour(int contourNr) const
+std::vector<BezierCurve> Path::getBeziersOfContour(int contourNr) const noexcept
 {
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
 
-std::vector<BezierCurve> Path::getBeziers() const
+std::vector<BezierCurve> Path::getBeziers() const noexcept
 {
     required_assert(!hasLayers());
 
@@ -134,7 +135,7 @@ std::vector<BezierCurve> Path::getBeziers() const
     return r;
 }
 
-bool Path::isContourOpen() const
+bool Path::isContourOpen() const noexcept
 {
     if (points.size() == 0) {
         return false;
@@ -145,14 +146,14 @@ bool Path::isContourOpen() const
     }
 }
 
-void Path::closeContour()
+void Path::closeContour() noexcept
 {
     if (isContourOpen()) {
         contourEndPoints.push_back(to_int(points.size()) - 1);
     }
 }
 
-bool Path::isLayerOpen() const
+bool Path::isLayerOpen() const noexcept
 {
     if (points.size() == 0) {
         return false;
@@ -165,7 +166,7 @@ bool Path::isLayerOpen() const
     }
 }
 
-void Path::closeLayer(wsRGBA fillColor)
+void Path::closeLayer(wsRGBA fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
@@ -173,7 +174,7 @@ void Path::closeLayer(wsRGBA fillColor)
     }
 }
 
-glm::vec2 Path::currentPosition() const
+glm::vec2 Path::currentPosition() const noexcept
 {
     if (isContourOpen()) {
         return points.back().p;
@@ -182,13 +183,13 @@ glm::vec2 Path::currentPosition() const
     }
 }
 
-void Path::moveTo(glm::vec2 position)
+void Path::moveTo(glm::vec2 position) noexcept
 {
     closeContour();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::moveRelativeTo(glm::vec2 direction)
+void Path::moveRelativeTo(glm::vec2 direction) noexcept
 {
     required_assert(isContourOpen());
 
@@ -197,26 +198,26 @@ void Path::moveRelativeTo(glm::vec2 direction)
     points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::lineTo(glm::vec2 position)
+void Path::lineTo(glm::vec2 position) noexcept
 {
     required_assert(isContourOpen());
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::lineRelativeTo(glm::vec2 direction)
+void Path::lineRelativeTo(glm::vec2 direction) noexcept
 {
     required_assert(isContourOpen());
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position)
+void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) noexcept
 {
     required_assert(isContourOpen());
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction)
+void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) noexcept
 {
     required_assert(isContourOpen());
     let p = currentPosition();
@@ -224,7 +225,7 @@ void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direct
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position)
+void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) noexcept
 {
     required_assert(isContourOpen());
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
@@ -232,7 +233,7 @@ void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, 
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction)
+void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) noexcept
 {
     required_assert(isContourOpen());
     let p = currentPosition();
@@ -241,7 +242,7 @@ void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDi
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::arcTo(float radius, glm::vec2 position)
+void Path::arcTo(float radius, glm::vec2 position) noexcept
 {
     required_assert(isContourOpen());
 
@@ -279,7 +280,7 @@ void Path::arcTo(float radius, glm::vec2 position)
     cubicCurveTo(C1, C2, P2);
 }
 
-void Path::addRectangle(rect2 rect, glm::vec4 corners)
+void Path::addRectangle(rect2 rect, glm::vec4 corners) noexcept
 {
     required_assert(!isContourOpen());
 
@@ -330,7 +331,7 @@ void Path::addRectangle(rect2 rect, glm::vec4 corners)
     closeContour();
 }
 
-void Path::addCircle(glm::vec2 position, float radius)
+void Path::addCircle(glm::vec2 position, float radius) noexcept
 {
     required_assert(!isContourOpen());
 
@@ -342,19 +343,19 @@ void Path::addCircle(glm::vec2 position, float radius)
     closeContour();
 }
 
-void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end)
+void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept
 {
     required_assert(!isContourOpen());
     points.insert(points.end(), begin, end);
     closeContour();
 }
 
-void Path::addContour(std::vector<BezierPoint> const &contour)
+void Path::addContour(std::vector<BezierPoint> const &contour) noexcept
 {
     addContour(contour.begin(), contour.end());
 }
 
-void Path::addContour(std::vector<BezierCurve> const &contour)
+void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
 {
     required_assert(!isContourOpen());
 
@@ -381,19 +382,19 @@ void Path::addContour(std::vector<BezierCurve> const &contour)
     closeContour();
 }
 
-void Path::addPath(Path const &path, wsRGBA fillColor)
+void Path::addPath(Path const &path, wsRGBA fillColor) noexcept
 {
     *this += path;
     closeLayer(fillColor);
 }
 
-void Path::addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance)
+void Path::addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
     closeLayer(strokeColor);
 }
 
-Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const
+Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const noexcept
 {
     required_assert(!hasLayers());
     required_assert(!isContourOpen());
@@ -416,12 +417,12 @@ Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolera
     return r;
 }
 
-Path operator+(Path lhs, Path const &rhs)
+Path operator+(Path lhs, Path const &rhs) noexcept
 {
     return lhs += rhs;
 }
 
-Path &operator+=(Path &lhs, Path const &rhs)
+Path &operator+=(Path &lhs, Path const &rhs) noexcept
 {
     required_assert(!lhs.isContourOpen());
     required_assert(!rhs.isContourOpen());
@@ -446,7 +447,7 @@ Path &operator+=(Path &lhs, Path const &rhs)
     return lhs;
 }
 
-Path &operator*=(Path &lhs, glm::mat3x3 const &rhs)
+Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept
 {
     lhs.boundingBox *= rhs;
     lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
@@ -463,7 +464,7 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs)
     return lhs;
 }
 
-Path &operator*=(Path &lhs, float const rhs)
+Path &operator*=(Path &lhs, float const rhs) noexcept
 {
     lhs.boundingBox *= rhs;
     lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
@@ -480,28 +481,28 @@ Path &operator*=(Path &lhs, float const rhs)
     return lhs;
 }
 
-Path operator*(glm::mat3x3 const &lhs, Path rhs)
+Path operator*(glm::mat3x3 const &lhs, Path rhs) noexcept
 {
     return rhs *= lhs;
 }
 
-Path operator*(float const lhs, Path rhs)
+Path operator*(float const lhs, Path rhs) noexcept
 {
     return rhs *= lhs;
 }
 
 
-Path operator+(glm::vec2 const &lhs, Path rhs)
+Path operator+(glm::vec2 const &lhs, Path rhs) noexcept
 {
     return rhs += lhs;
 }
 
-Path operator+(Path lhs, glm::vec2 const &rhs)
+Path operator+(Path lhs, glm::vec2 const &rhs) noexcept
 {
     return lhs += rhs;
 }
 
-Path &operator+=(Path &lhs, glm::vec2 const &rhs)
+Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept
 {
     lhs.boundingBox += rhs;
     lhs.leftSideBearing += rhs;
@@ -514,7 +515,7 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs)
 }
 
 
-void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation)
+void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation) noexcept
 {
     required_assert(!path.hasLayers());
     required_assert(!path.isContourOpen());
@@ -543,7 +544,7 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOri
     }
 }
 
-void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation)
+void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation) noexcept
 {
     required_assert(src.hasLayers() && !src.isLayerOpen());
 

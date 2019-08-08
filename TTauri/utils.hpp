@@ -5,7 +5,6 @@
 
 #include "required.hpp"
 #include "exceptions.hpp"
-#include <boost/throw_exception.hpp>
 #include <gsl/gsl>
 #include <cstddef>
 #include <cstdint>
@@ -19,85 +18,74 @@
 
 namespace TTauri {
 
-
 template<typename T>
-inline T &get_singleton()
+inline T &get_singleton() noexcept
 {
     static auto x = std::make_unique<T>();
     return *x;
 }
 
 template<typename T>
-inline T &at(gsl::span<std::byte> bytes, size_t offset)
+gsl_suppress(type.1)
+inline T &at(gsl::span<std::byte> bytes, size_t offset) noexcept
 {
-    if (offset + sizeof(T) > static_cast<size_t>(bytes.size())) {
-        BOOST_THROW_EXCEPTION(OutOfBoundsError());
-    }
-
-    T *ptr = reinterpret_cast<T *>(&bytes[offset]);
-    return *ptr;
+    required_assert(to_int64(offset + sizeof(T)) <= to_int64(bytes.size()));
+    return *reinterpret_cast<T *>(&bytes[offset]);
 }
 
 template<typename T>
-inline T const &at(gsl::span<std::byte const> bytes, size_t offset)
+gsl_suppress(type.1)
+inline T const &at(gsl::span<std::byte const> bytes, size_t offset) noexcept
 {
-    if (offset + sizeof(T) > static_cast<size_t>(bytes.size())) {
-        BOOST_THROW_EXCEPTION(OutOfBoundsError());
-    }
-
+    required_assert(to_int64(offset + sizeof(T)) <= to_int64(bytes.size()));
     return *reinterpret_cast<T const *>(&bytes[offset]);
 }
 
 template<typename T>
-inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset, size_t count)
+gsl_suppress(type.1)
+inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset, size_t count) noexcept
 {
-    size_t size = count * sizeof(T);
-
-    if (offset + size > static_cast<size_t>(bytes.size())) {
-        BOOST_THROW_EXCEPTION(OutOfBoundsError());
-    }
-
-    T *ptr = reinterpret_cast<T *>(&bytes[offset]);
-    return gsl::span<T>(ptr, count);
+    let size = count * sizeof(T);
+    required_assert(to_int64(offset + size) <= to_int64(bytes.size()));
+    return gsl::span<T>(reinterpret_cast<T *>(&bytes[offset]), count);
 }
 
 template<typename T>
-inline gsl::span<T const> make_span(gsl::span<std::byte const> bytes, size_t offset, size_t count)
+gsl_suppress(type.1)
+inline gsl::span<T const> make_span(gsl::span<std::byte const> bytes, size_t offset, size_t count) noexcept
 {
-    size_t size = count * sizeof(T);
-
-    if (offset + size > static_cast<size_t>(bytes.size())) {
-        BOOST_THROW_EXCEPTION(OutOfBoundsError());
-    }
-
-    T const *ptr = reinterpret_cast<T const *>(&bytes[offset]);
-    return gsl::span<T const>(ptr, count);
+    let size = count * sizeof(T);
+    required_assert(to_int64(offset + size) <= to_int64(bytes.size()));
+    return gsl::span<T const>(reinterpret_cast<T const *>(&bytes[offset]), count);
 }
 
 template<typename T>
+gsl_suppress(type.1)
 inline gsl::span<T> make_span(gsl::span<std::byte> bytes, size_t offset=0)
 {
-    size_t count = bytes.size() / sizeof(T);
-
-    T *ptr = reinterpret_cast<T *>(&bytes[offset]);
-    return gsl::span<T>(ptr, count);
+    let size = numeric_cast<size_t>(bytes.size());
+    let count = size / sizeof(T);
+    required_assert(size % sizeof(T) == 0);
+    return gsl::span<T>(reinterpret_cast<T *>(&bytes[offset]), count);
 }
 
 template<typename T>
+gsl_suppress(type.1)
 inline gsl::span<T const> make_span(gsl::span<std::byte const> bytes, size_t offset=0)
 {
-    size_t count = bytes.size() / sizeof(T);
-
-    T const* ptr = reinterpret_cast<T const *>(&bytes[offset]);
-    return gsl::span<T const>(ptr, count);
+    let size = numeric_cast<size_t>(bytes.size());
+    let count = size / sizeof(T);
+    required_assert(size % sizeof(T) == 0);
+    return gsl::span<T const>(reinterpret_cast<T const *>(&bytes[offset]), count);
 }
 
-
 template<typename R, typename T>
-inline R align(T ptr, size_t alignment) 
+gsl_suppress3(type.1,26487,lifetime.4)
+inline R align(T ptr, size_t alignment) noexcept
 {
     let byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
     let alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;
+
     return reinterpret_cast<R>(alignedByteOffset);
 }
 
@@ -105,14 +93,17 @@ inline R align(T ptr, size_t alignment)
  * This lowers the end interator so that it the last read is can be done fully.
  */
 template<typename R, typename T>
-inline R align_end(T ptr, size_t alignment)
+gsl_suppress5(f.23,bounds.3,type.1,26487,lifetime.4)
+inline R align_end(T ptr, size_t alignment) noexcept
 {
     let byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
     let alignedByteOffset = (byteOffset / alignment) * alignment;
+
     return reinterpret_cast<R>(alignedByteOffset);
 }
 
-inline constexpr uint32_t fourcc(char const txt[5])
+gsl_suppress3(f.23,bounds.1,bounds.3)
+inline constexpr uint32_t fourcc(char const txt[5]) noexcept
 {
     return (
         (static_cast<uint32_t>(txt[0]) << 24) |
@@ -122,20 +113,21 @@ inline constexpr uint32_t fourcc(char const txt[5])
    );
 }
 
-inline std::string fourcc_to_string(uint32_t x)
+gsl_suppress(bounds.3)
+inline std::string fourcc_to_string(uint32_t x) noexcept
 {
     char c_str[5];
-    c_str[0] = static_cast<char>((x >> 24) & 0xff);
-    c_str[1] = static_cast<char>((x >> 16) & 0xff);
-    c_str[2] = static_cast<char>((x >> 8) & 0xff);
-    c_str[3] = static_cast<char>(x & 0xff);
+    c_str[0] = numeric_cast<char>((x >> 24) & 0xff);
+    c_str[1] = numeric_cast<char>((x >> 16) & 0xff);
+    c_str[2] = numeric_cast<char>((x >> 8) & 0xff);
+    c_str[3] = numeric_cast<char>(x & 0xff);
     c_str[4] = 0;
 
     return {c_str};
 }
 
 template<typename T>
-inline typename T::value_type pop_back(T &v)
+inline typename T::value_type pop_back(T &v) noexcept
 {
     typename T::value_type x = std::move(v.back());
     v.pop_back();
@@ -143,7 +135,7 @@ inline typename T::value_type pop_back(T &v)
 }
 
 template <typename T>
-inline std::vector<T> split(T haystack, char needle)
+inline std::vector<T> split(T haystack, char needle) noexcept
 {
     std::vector<T> r;
 
@@ -160,23 +152,20 @@ inline std::vector<T> split(T haystack, char needle)
     return r;
 }
 
-struct GetSharedCastError : virtual boost::exception, virtual std::exception {};
-struct MakeSharedNotNull : virtual boost::exception, virtual std::exception {};
-
 template<typename T>
-inline std::enable_if_t<!std::is_pointer_v<T>, T> middle(T begin, T end)
+inline std::enable_if_t<!std::is_pointer_v<T>, T> middle(T begin, T end) noexcept
 {
     return begin + std::distance(begin, end) / 2;
 }
 
 template<typename T>
-inline std::enable_if_t<std::is_pointer_v<T>, T> middle(T begin, T end)
+inline std::enable_if_t<std::is_pointer_v<T>, T> middle(T begin, T end) noexcept
 {
     return reinterpret_cast<T>((reinterpret_cast<intptr_t>(begin) + reinterpret_cast<intptr_t>(end)) / 2);;
 }
 
 template<typename T, typename U>
-inline T binary_nearest_find(T begin, T end, U value)
+inline T binary_nearest_find(T begin, T end, U value) noexcept
 {
     while (begin < end) {
         let m = middle(begin, end);
@@ -207,7 +196,7 @@ constexpr std::array<T, N> generate_array(F operation)
     std::array<T, N> a{};
 
     for (size_t i = 0; i < N; i++) {
-        a[i] = operation(i);
+        a.at(i) = operation(i);
     }
 
     return a;
@@ -237,7 +226,7 @@ bit_cast(const From &src) noexcept
     return dst;
 }
 
-inline char nibble_to_char(uint8_t nibble)
+constexpr char nibble_to_char(uint8_t nibble) noexcept
 {
     if (nibble <= 9) {
         return '0' + nibble;
@@ -248,7 +237,7 @@ inline char nibble_to_char(uint8_t nibble)
     }
 }
 
-inline uint8_t char_to_nibble(char c)
+constexpr uint8_t char_to_nibble(char c)
 {
     if (c >= '0' && c <= '9') {
         return c - '0';
@@ -264,54 +253,42 @@ inline uint8_t char_to_nibble(char c)
 }
 
 template<typename T>
-inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v)
+inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept
 {
-    using iterator = typename std::remove_reference_t<decltype(v)>::const_iterator;
-    auto expiredIterators = std::vector<iterator>{};
-
-    for (auto i = v.begin(); i != v.end(); i++) {
+    auto i = v.begin();
+    while (i != v.end()) {
         if (i->expired()) {
-            expiredIterators.push_back(i);
+            i = v.erase(i);
+        } else {
+            i++;
         }
-    }
-
-    for (let &i : expiredIterators) {
-        v.erase(i); 
     }
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v)
+inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v) noexcept
 {
-    using iterator = typename std::remove_reference_t<decltype(v)>::const_iterator;
-    auto expiredIterators = std::vector<iterator>{};
-
-    for (auto i = v.begin(); i != v.end(); i++) {
+    auto i = v.begin();
+    while (i != v.end()) {
         if (i->second.expired() == 0) {
-            expiredIterators.push_back(i);
+            i = v.erase(i);
+        } else {
+            i++;
         }
-    }
-
-    for (let &i : expiredIterators) {
-        v.erase(i); 
     }
 }
 
 template<typename K, typename T>
-inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T>>> &v)
+inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T>>> &v) noexcept
 {
-    using iterator = typename std::remove_reference_t<decltype(v)>::const_iterator;
-    auto expiredIterators = std::vector<iterator>{};
-
-    for (auto i = v.begin(); i != v.end(); i++) {
+    auto i = v.begin();
+    while (i != v.end()) {
         cleanupWeakPointers(i->second);
         if (i->second.size() == 0) {
-            expiredIterators.push_back(i);
+            i = v.erase(i);
+        } else {
+            i++;
         }
-    }
-
-    for (let &i : expiredIterators) {
-        v.erase(i); 
     }
 }
 

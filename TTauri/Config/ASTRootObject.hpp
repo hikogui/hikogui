@@ -9,9 +9,9 @@ namespace TTauri::Config {
 
 struct ASTRootObject : ASTExpression {
 
-    ASTRootObject(Location location) : ASTExpression(location)  {}
+    ASTRootObject(Location location) noexcept : ASTExpression(location)  {}
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return "/";
     }
 

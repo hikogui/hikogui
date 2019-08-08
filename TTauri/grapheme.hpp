@@ -14,19 +14,19 @@ struct grapheme {
     //! codePoints representing the grapheme, normalized to NFC.
     std::u32string codePoints;
 
-    grapheme() : codePoints({}) {}
+    grapheme() noexcept : codePoints({}) {}
 
-    grapheme(std::u32string codePoints) :
+    grapheme(std::u32string codePoints) noexcept :
         codePoints(translateString<std::u32string>(normalizeNFC(translateString<std::string>(codePoints)))) {}
 
     ~grapheme() {
     }
 
-    grapheme(const grapheme& other) {
+    grapheme(const grapheme& other) noexcept {
         codePoints = other.codePoints;
     }
 
-    grapheme& operator=(const grapheme& other) {
+    grapheme& operator=(const grapheme& other) noexcept {
         codePoints = other.codePoints;
         return *this;
     }
@@ -40,33 +40,33 @@ struct grapheme {
         return *this;
     }
 
-    std::u32string NFC() const {
+    std::u32string NFC() const noexcept {
         return codePoints;
     }
 
-    std::u32string NFD() const {
+    std::u32string NFD() const noexcept {
         return translateString<std::u32string>(normalizeNFD(translateString<std::string>(codePoints)));
     }
 
-    std::u32string NFKC() const {
+    std::u32string NFKC() const noexcept {
         return translateString<std::u32string>(normalizeNFKC(translateString<std::string>(codePoints)));
     }
 
-    std::u32string NFKD() const {
+    std::u32string NFKD() const noexcept {
         return translateString<std::u32string>(normalizeNFKD(translateString<std::string>(codePoints)));
     }
 
-    std::u32string NFKCCasefold() const {
+    std::u32string NFKCCasefold() const noexcept {
         return translateString<std::u32string>(normalizeNFKCCasefold(translateString<std::string>(codePoints)));
     }
 
 };
 
-inline bool operator<(grapheme const& a, grapheme const& b) {
+inline bool operator<(grapheme const& a, grapheme const& b) noexcept {
     return a.NFKCCasefold() < b.NFKCCasefold();
 }
 
-inline bool operator==(grapheme const& a, grapheme const& b) {
+inline bool operator==(grapheme const& a, grapheme const& b) noexcept {
     return a.NFKCCasefold() == b.NFKCCasefold();
 }
 
@@ -76,7 +76,7 @@ struct gstring {
     using const_iterator = std::vector<grapheme>::const_iterator;
     using value_type = grapheme;
 
-    int size() const {
+    int size() const noexcept {
         return to_int(graphemes.size());
     }
 
@@ -88,29 +88,29 @@ struct gstring {
         return graphemes.at(i);
     }
 
-    auto begin() const {
+    auto begin() const noexcept {
         return graphemes.begin();
     }
 
-    auto end() const {
+    auto end() const noexcept {
         return graphemes.end();
     }
 
-    gstring &operator+=(gstring const &str) {
-        for (let grapheme: graphemes) {
-            graphemes.push_back(std::move(grapheme));
+    gstring &operator+=(gstring const &rhs) noexcept {
+        for (let &rhs_grapheme: rhs.graphemes) {
+            graphemes.push_back(rhs_grapheme);
         }
         return *this;
     }
 
-    gstring &operator+=(grapheme const grapheme) {
-        graphemes.push_back(std::move(grapheme));
+    gstring &operator+=(grapheme const &grapheme) noexcept {
+        graphemes.push_back(grapheme);
         return *this;
     }
 };
 
 template<>
-inline gstring translateString(std::u32string_view const inputString, TranslateStringOptions options)
+inline gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     gstring outputString;
     std::u32string cluster;
@@ -144,7 +144,7 @@ inline gstring translateString(std::u32string_view const inputString, TranslateS
 }
 
 template<>
-inline std::u32string translateString(const gstring& inputString, TranslateStringOptions options)
+inline std::u32string translateString(const gstring& inputString, TranslateStringOptions options) noexcept
 {
     std::u32string outputString;
 

@@ -26,7 +26,7 @@ namespace TTauri {
 #ifdef _WIN32
 typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > sink_t;
 
-void initializeLogging()
+void initializeLogging() noexcept
 {
     boost::shared_ptr< boost::log::core > core = boost::log::core::get();
 
@@ -47,6 +47,7 @@ void initializeLogging()
     core->add_sink(sink);
 }
 
+gsl_suppress(i.11)
 std::string getLastErrorMessage()
 {
     DWORD const errorCode = GetLastError();

@@ -16,19 +16,22 @@ struct results {
     int count;
     std::array<T,N> value;
 
-    results() : count(0), value() {}
+    results() noexcept : count(0), value() {}
 
-    results(T a) : count(1), value() {
+    gsl_suppress(bounds.4)
+    results(T a) noexcept : count(1), value() {
         value[0] = a;
     }
 
-    results(T a, T b) : count(2), value() {
+    gsl_suppress(bounds.4)
+    results(T a, T b) noexcept : count(2), value() {
         value[0] = a;
         value[1] = b;
         sort();
     }
 
-    results(T a, T b, T c) : count(3), value() {
+    gsl_suppress(bounds.4)
+    results(T a, T b, T c) noexcept : count(3), value() {
         value[0] = a;
         value[1] = b;
         value[2] = c;
@@ -36,40 +39,45 @@ struct results {
     }
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
-    results(results<T,O> const &other) : count(other.count), value() {
-        for (int i = 0; i < other.maxCount; i++) {
-            value[i] = other.value[i];
+    gsl_suppress2(bounds.2,bounds.4)
+    results(results<T,O> const &other) noexcept : count(other.count), value() {
+        if constexpr (O > 0) {
+            for (int i = 0; i < other.maxCount; i++) {
+                value[i] = other.value[i];
+            }
         }
     }
 
-    int size() const {
+    int size() const noexcept {
         return (count >= 0) ? count : 0;
     }
 
-    bool hasInfiniteResults() const {
+    bool hasInfiniteResults() const noexcept {
         return count < 0;
     }
 
-    const_iterator begin() const {
+    const_iterator begin() const noexcept {
         return value.begin();
     }
 
-    const_iterator end() const {
+    const_iterator end() const noexcept {
         return value.begin() + size();
     }
 
-    void sort() {
+    
+    void sort() noexcept {
         std::sort(value.begin(), value.begin() + size());
     }
 
-    void add(T a) {
+    void add(T a) noexcept {
         value.at(count++) = a;
         sort();
     }
 };
 
 template<typename T, int N, typename U>
-inline results<T, N> operator-(results<T, N> lhs, U const &rhs)
+gsl_suppress2(bounds.2,bounds.4)
+inline results<T, N> operator-(results<T, N> lhs, U const &rhs) noexcept
 {
     for (int i = 0; i < lhs.maxCount; i++) {
         lhs.value[i] -= rhs;
@@ -78,7 +86,7 @@ inline results<T, N> operator-(results<T, N> lhs, U const &rhs)
 }
 
 template<typename T>
-inline results<T,0> infinitResults() {
+inline results<T,0> infinitResults() noexcept {
     results<T,0> r;
     r.count = -1;
     return r;
@@ -93,7 +101,7 @@ inline std::ostream& operator<<(std::ostream& os, results<T,N> const &r)
         if (i > 0) {
             os << ", ";
         }
-        os << r.value[i];
+        os << r.value.at(i);
     }
     os << "]";
     return os;
@@ -110,7 +118,7 @@ inline std::ostream& operator<<(std::ostream& os, results<T,N> const &r)
 * \end{cases}
 */
 template<typename T>
-inline results<T,1> solvePolynomial(T const &a, T const &b) {
+inline results<T,1> solvePolynomial(T const &a, T const &b) noexcept {
     if (a != 0) {
         return { -(b / a) };
     } else if (b == 0) {
@@ -134,7 +142,7 @@ inline results<T,1> solvePolynomial(T const &a, T const &b) {
 * \end{cases}
 */
 template<typename T>
-inline results<T,2> solvePolynomial(T const &a, T const &b, T const &c) {
+inline results<T,2> solvePolynomial(T const &a, T const &b, T const &c) noexcept {
     if (a == 0) {
         return solvePolynomial(b, c);
     } else {
@@ -156,7 +164,7 @@ inline results<T,2> solvePolynomial(T const &a, T const &b, T const &c) {
 /*! Trigonometric solution for three real roots
 */
 template<typename T>
-inline results<T,3> solveDepressedCubicTrig(T const &p, T const &q) {
+inline results<T,3> solveDepressedCubicTrig(T const &p, T const &q) noexcept {
     constexpr T oneThird = static_cast<T>(1) / static_cast<T>(3);
     constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * static_cast<T>(pi);
     constexpr T pi4_3 = (static_cast<T>(4) / static_cast<T>(3)) * static_cast<T>(pi);
@@ -171,7 +179,7 @@ inline results<T,3> solveDepressedCubicTrig(T const &p, T const &q) {
 }
 
 template<typename T>
-inline results<T,3> solveDepressedCubicCardano(T const &p, T const &q, T const &D) {
+inline results<T,3> solveDepressedCubicCardano(T const &p, T const &q, T const &D) noexcept {
     let sqrtD = sqrt(D);
     let minusHalfQ = static_cast<T>(-0.5) * q;
     let v = cbrt(minusHalfQ + sqrtD);
@@ -194,7 +202,7 @@ inline results<T,3> solveDepressedCubicCardano(T const &p, T const &q, T const &
 * \end{cases}
 */
 template<typename T>
-inline results<T,3> solveDepressedCubic(T const &p, T const &q) {
+inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
     constexpr T oneForth = static_cast<T>(1) / static_cast<T>(4);
     constexpr T oneTwentySeventh = static_cast<T>(1) / static_cast<T>(27);
 
@@ -229,7 +237,7 @@ inline results<T,3> solveDepressedCubic(T const &p, T const &q) {
 * x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}
 */
 template<typename T>
-inline results<T,3> solvePolynomial(T const &a, T const &b, T const &c, T const &d) {
+inline results<T,3> solvePolynomial(T const &a, T const &b, T const &c, T const &d) noexcept {
     if (a == 0) {
         return solvePolynomial(b, c, d);
 

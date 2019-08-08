@@ -13,70 +13,71 @@ struct PathString {
 
     Alignment alignment = Alignment::BaseLeft;
 
-    PathString() {}
+    PathString() = default;
+    ~PathString() = default;
 
-    PathString(std::initializer_list<Path> l) : paths(l) {}
+    PathString(std::initializer_list<Path> l) noexcept: paths(l) {}
 
-    PathString(PathString const &other) : paths(other.paths), alignment(other.alignment) {}
+    PathString(PathString const &other) noexcept : paths(other.paths), alignment(other.alignment) {}
 
-    PathString(PathString &&other) : paths(std::move(other.paths)), alignment(other.alignment) {}
+    PathString(PathString &&other) noexcept : paths(std::move(other.paths)), alignment(other.alignment) {}
 
-    void operator=(PathString const &other) {
+    void operator=(PathString const &other) noexcept {
         paths = other.paths;
         alignment = other.alignment;
     }
 
-    void operator=(PathString &&other) {
+    void operator=(PathString &&other) noexcept {
         paths = std::move(other.paths);
         alignment = other.alignment;
     }
 
-    int size() const {
+    int size() const noexcept {
         return to_int(paths.size());
     }
 
-    Path const &at(int i) const {
+    Path const &at(int i) const noexcept {
         return paths.at(i);
     }
 
-    void add(Path glyph) {
+    void add(Path glyph) noexcept {
         paths.push_back(std::move(glyph));
     }
 
-    glm::vec2 glyphAdvance(int i) const {
+    glm::vec2 glyphAdvance(int i) const noexcept {
         return at(i).advance;
     }
 
     /*! Total width of the text.
      * can be called before positionGlyphs().
      */
-    glm::vec2 advance() const;
+    glm::vec2 advance() const noexcept;
 
-    glm::vec2 ascender() const;
+    glm::vec2 ascender() const noexcept;
 
-    glm::vec2 descender() const;
+    glm::vec2 descender() const noexcept;
 
-    glm::vec2 capHeight() const;
+    glm::vec2 capHeight() const noexcept;
 
     /*! Find the start position with a specific alignment.
      */
-    glm::vec2 getStartPosition() const;
+    glm::vec2 getStartPosition() const noexcept;
 
     /*! Get the cursor position at grapheme index.
      */
-    glm::vec2 cursorAdvance(int graphemeIndex) const;
+    glm::vec2 cursorAdvance(int graphemeIndex) const noexcept;
 
-    Path toPath(wsRGBA defaultColor={0.0, 0.0, 0.0, 1.0}) const;
+    Path toPath(wsRGBA defaultColor={0.0, 0.0, 0.0, 1.0}) const noexcept;
 };
 
-PathString operator*(glm::mat3x3 const &lhs, PathString rhs);
+PathString operator*(glm::mat3x3 const &lhs, PathString rhs) noexcept;
 
-PathString &operator*=(PathString &lhs, glm::mat3x3 const &rhs);
+PathString &operator*=(PathString &lhs, glm::mat3x3 const &rhs) noexcept;
 
-PathString operator+(Alignment lhs, PathString rhs);
+PathString operator+(Alignment lhs, PathString rhs) noexcept;
 
-PathString operator+(PathString lhs, Alignment rhs);
+PathString operator+(PathString lhs, Alignment rhs) noexcept;
 
-PathString &operator+=(PathString &lhs, Alignment rhs);
+PathString &operator+=(PathString &lhs, Alignment rhs) noexcept;
 
 }

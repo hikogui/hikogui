@@ -17,7 +17,7 @@ Image::~Image()
     parent->returnPages(pages);
 }
 
-irect2 Image::indexToRect(int const pageIndex) const
+irect2 Image::indexToRect(int const pageIndex) const noexcept
 {
     let indexY = pageIndex / pageExtent.x;
     let indexX = pageIndex % pageExtent.x;
@@ -34,7 +34,7 @@ irect2 Image::indexToRect(int const pageIndex) const
     return {{left, top}, {width, height}};
 }
 
-static bool inside(glm::vec2 point, rect2 clip)
+static bool inside(glm::vec2 point, rect2 clip) noexcept
 {
     return (
         (point.x >= clip.offset.x) &&

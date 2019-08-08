@@ -9,12 +9,12 @@
 
 namespace TTauri::GUI::Widgets {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Draw::Path applicationIcon) :
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Draw::Path applicationIcon) noexcept :
     Widget(), applicationIcon(std::move(applicationIcon))
 {
 }
 
-void WindowTrafficLightsWidget::setParent(Widget *parent)
+void WindowTrafficLightsWidget::setParent(Widget *parent) noexcept
 {
     Widget::setParent(parent);
 
@@ -22,7 +22,7 @@ void WindowTrafficLightsWidget::setParent(Widget *parent)
     this->window->addConstraint(box.width == WIDTH);
 }
 
-int WindowTrafficLightsWidget::state() const {
+int WindowTrafficLightsWidget::state() const noexcept {
     int r = 0;
     r |= window->active ? 1 : 0;
     if constexpr (operatingSystem == OperatingSystem::MacOS) {
@@ -35,7 +35,7 @@ int WindowTrafficLightsWidget::state() const {
     return r;
 }
 
-void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, int& offset)
+void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, int& offset) noexcept
 {
     required_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
@@ -60,7 +60,7 @@ void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineIma
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-void WindowTrafficLightsWidget::drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius)
+void WindowTrafficLightsWidget::drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius) noexcept
 {
     let L = radius * 0.5;
     let W = radius * 0.3;
@@ -76,7 +76,7 @@ void WindowTrafficLightsWidget::drawTrianglesOutward(Draw::Path &path, glm::vec2
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius)
+void WindowTrafficLightsWidget::drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius) noexcept
 {
     let L = radius * 0.8;
 
@@ -91,7 +91,7 @@ void WindowTrafficLightsWidget::drawTrianglesInward(Draw::Path &path, glm::vec2 
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, float radius)
+void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, float radius) noexcept
 {
     let W = sqrt(0.5);
     let L = radius * 0.5;
@@ -119,12 +119,12 @@ void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, 
     path.closeContour();
 }
 
-Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image)
+Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image) noexcept
 {
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
-    let iconSize = boost::numeric_cast<float>(image.extent.height());
+    let iconSize = numeric_cast<float>(image.extent.height());
     let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
     let iconString = Draw::Alignment::MiddleCenter + T2D(iconLocation, iconSize) * Draw::PathString{applicationIcon};
 
@@ -137,7 +137,7 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(Pipel
     return linearMap;
 }
 
-Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image)
+Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
 {
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
@@ -207,7 +207,7 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(Pipelin
     return linearMap;
 }
 
-PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
+PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         return { std::move(image), std::move(drawApplicationIconImage(*image)) };
@@ -218,7 +218,7 @@ PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::
     }
 }
 
-std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const
+std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
 {
     let left = box.left.value();
     let bottom = box.bottom.value();
@@ -247,7 +247,7 @@ std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRecta
     return {redButtonBox, yellowButtonBox, greenButtonBox, sysmenuButtonBox};    
 }
 
-void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
+void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event) noexcept
 {
     window->setCursor(Cursor::Clickable);
 
@@ -303,7 +303,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event)
     }
 }
 
-HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const
+HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const noexcept
 {
     let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 

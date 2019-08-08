@@ -15,7 +15,7 @@ struct ASTCall : ASTExpression {
     ASTExpression *object;
     std::vector<ASTExpression *> arguments;
 
-    ASTCall(Location location, ASTExpression *object, ASTExpressionList *arguments) :
+    ASTCall(Location location, ASTExpression *object, ASTExpressionList *arguments) noexcept :
         ASTExpression(location),
         object(object),
         arguments(arguments->expressions)
@@ -25,7 +25,7 @@ struct ASTCall : ASTExpression {
         delete arguments;
     }
 
-    ASTCall(Location location, ASTExpression *object, char *name, ASTExpressionList *arguments) :
+    ASTCall(Location location, ASTExpression *object, char *name, ASTExpressionList *arguments) noexcept :
         ASTExpression(location),
         object(new ASTMember(object->location, object, name)),
         arguments(arguments->expressions)
@@ -35,7 +35,7 @@ struct ASTCall : ASTExpression {
         delete arguments;
     }
 
-    ASTCall(Location location, char *name, ASTExpressionList *arguments) :
+    ASTCall(Location location, char *name, ASTExpressionList *arguments) noexcept :
         ASTExpression(location),
         object(new ASTName(location, name)),
         arguments(arguments->expressions)
@@ -45,14 +45,14 @@ struct ASTCall : ASTExpression {
         delete arguments;
     }
 
-    ASTCall(Location location, ASTExpression *object, char *name, ASTExpression *argument) :
+    ASTCall(Location location, ASTExpression *object, char *name, ASTExpression *argument) noexcept :
         ASTExpression(location),
         object(new ASTMember(object->location, object, name)),
         arguments({argument})
     {
     }
 
-    ASTCall(Location location, ASTExpression *object, char *name) :
+    ASTCall(Location location, ASTExpression *object, char *name) noexcept :
         ASTExpression(location),
         object(new ASTMember(object->location, object, name)),
         arguments({})
@@ -66,7 +66,7 @@ struct ASTCall : ASTExpression {
         }
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         std::string s = object->string() + "(";
 
         bool first = true;

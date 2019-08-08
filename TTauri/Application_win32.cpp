@@ -47,6 +47,7 @@ void Application_win32::lastWindowClosed()
     });
 }
 
+gsl_suppress(r.11)
 void Application_win32::runOnMainThread(std::function<void()> function)
 {
     let functionP = new std::function<void()>(std::move(function));

@@ -9,7 +9,7 @@
 
 namespace TTauri {
 
-URLPath::URLPath(std::string const &path)
+URLPath::URLPath(std::string const &path) noexcept
 {
     absolute = (path.front() == '/');
 
@@ -19,7 +19,7 @@ URLPath::URLPath(std::string const &path)
         });
 }
 
-URLPath::URLPath(boost::filesystem::path const &path)
+URLPath::URLPath(boost::filesystem::path const &path) noexcept
 {
     absolute = false;
     for (let &segment: path) {
@@ -31,14 +31,14 @@ URLPath::URLPath(boost::filesystem::path const &path)
     }
 }
 
-URLPath URLPath::urlPathFromWin32Path(std::wstring_view const &path_wstring)
+URLPath URLPath::urlPathFromWin32Path(std::wstring_view const &path_wstring) noexcept
 {
     let path_u8string = translateString<std::string>(path_wstring);
     let path = boost::filesystem::path(path_u8string);
     return URLPath(path);
 }
 
-std::string URLPath::path_string() const
+std::string URLPath::path_string() const noexcept
 {
     auto s = std::string{};
     s.reserve(std::accumulate(segments.begin(), segments.end(), segments.size() + 1, [](auto a, auto x) {
@@ -87,7 +87,7 @@ std::string URLPath::extension() const
     }
 }
 
-std::string to_string(URLPath const &path)
+std::string to_string(URLPath const &path) noexcept
 {
     auto s = std::string{};
     s.reserve(std::accumulate(path.segments.begin(), path.segments.end(), path.segments.size() + 1, [](auto a, auto x) {
@@ -108,12 +108,12 @@ std::string to_string(URLPath const &path)
     return s;
 }
 
-bool operator==(URLPath const &lhs, URLPath const &rhs)
+bool operator==(URLPath const &lhs, URLPath const &rhs) noexcept
 {
     return std::tie(lhs.absolute, lhs.segments) == std::tie(rhs.absolute, rhs.segments);
 }
 
-bool operator<(URLPath const &lhs, URLPath const &rhs)
+bool operator<(URLPath const &lhs, URLPath const &rhs) noexcept
 {
     return std::tie(lhs.absolute, lhs.segments) < std::tie(rhs.absolute, rhs.segments);
 }

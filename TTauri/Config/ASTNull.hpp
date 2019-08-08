@@ -9,13 +9,13 @@ namespace TTauri::Config {
 
 struct ASTNull : ASTExpression {
 
-    ASTNull(Location location) : ASTExpression(location) {}
+    ASTNull(Location location) noexcept : ASTExpression(location) {}
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return "null";
     }
 
-    universal_value execute(ExecutionContext *context) const override { 
+    universal_value execute(ExecutionContext *context) const noexcept override { 
         return {};
     } 
 

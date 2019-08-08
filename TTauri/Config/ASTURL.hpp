@@ -10,11 +10,11 @@ namespace TTauri::Config {
 struct ASTURL : ASTExpression {
     URL value;
 
-    ASTURL(Location location, URL *value) : ASTExpression(location), value(*value) {
+    ASTURL(Location location, URL *value) noexcept : ASTExpression(location), value(*value) {
         delete value;
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return to_string(value);
     }
 

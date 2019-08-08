@@ -41,7 +41,7 @@ public:
 
     vk::SurfaceKHR getSurface() const override;
 
-    void setCursor(Cursor cursor) override {
+    void setCursor(Cursor cursor) noexcept override {
         if (cursor == currentCursor) {
             return;
         }
@@ -72,7 +72,7 @@ public:
     void normalizeWindow() override;
 
 private:
-    void setOSWindowRectangleFromRECT(RECT rect);
+    void setOSWindowRectangleFromRECT(RECT rect) noexcept;
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;

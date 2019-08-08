@@ -58,7 +58,7 @@ public:
     ResourceView &operator=(ResourceView const &other) = delete;
     ResourceView &operator=(ResourceView &&other) = delete;
 
-    size_t offset() const {
+    size_t offset() const noexcept {
         if (std::holds_alternative<FileView>(intrinsic)) {
             let &_view = std::get<FileView>(intrinsic);
             return _view.offset;
@@ -67,7 +67,7 @@ public:
         }
     }
 
-    gsl::span<std::byte const> bytes() const {
+    gsl::span<std::byte const> bytes() const noexcept {
         if (std::holds_alternative<FileView>(intrinsic)) {
             let &_intrinsic = std::get<FileView>(intrinsic);
             return _intrinsic.bytes;
@@ -79,7 +79,7 @@ public:
         }
     }
 
-    gsl::span<std::byte> writableBytes() {
+    gsl::span<std::byte> writableBytes() noexcept {
         if (std::holds_alternative<FileView>(intrinsic)) {
             let &_intrinsic = std::get<FileView>(intrinsic);
             return _intrinsic.bytes;
@@ -88,14 +88,13 @@ public:
         }
     }
 
-    size_t size() const {
+    size_t size() const noexcept {
         return bytes().size();
     }
 
-    void const *data() const {
+    void const *data() const noexcept {
         return bytes().data();
     }
-
 };
 
 }

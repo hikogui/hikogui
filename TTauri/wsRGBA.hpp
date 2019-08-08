@@ -14,7 +14,7 @@
 
 namespace TTauri {
 
-inline float linear_to_gamma_f32(float u)
+inline float linear_to_gamma_f32(float u) noexcept
 {
     if (u <= 0.0031308f) {
         return u * 12.92f;
@@ -23,7 +23,7 @@ inline float linear_to_gamma_f32(float u)
     }
 }
 
-inline float gamma_to_linear_f32(float u)
+inline float gamma_to_linear_f32(float u) noexcept
 {
     if (u <= 0.04045f) {
         return u / 12.92f;
@@ -37,7 +37,8 @@ inline const auto gamma_to_linear_i16_table = generate_array<int16_t, 256>([](au
     return static_cast<int16_t>(gamma_to_linear_f32(u) * 4095.0f + 0.5f);
 });
 
-inline int16_t gamma_to_linear_i16(uint8_t u)
+gsl_suppress2(bounds.2,bounds.4)
+inline int16_t gamma_to_linear_i16(uint8_t u) noexcept
 {
     return gamma_to_linear_i16_table[u];
 }
@@ -47,7 +48,8 @@ inline const auto linear_to_gamma_u8_table = generate_array<uint8_t, 4096>([](au
     return static_cast<uint8_t>(linear_to_gamma_f32(u) * 255.0f + 0.5f);
 });
 
-inline uint8_t linear_to_gamma_u8(int16_t u)
+gsl_suppress2(bounds.2,bounds.4)
+inline uint8_t linear_to_gamma_u8(int16_t u) noexcept
 {
     if (u >= 4096) {
         return 255;
@@ -58,7 +60,7 @@ inline uint8_t linear_to_gamma_u8(int16_t u)
     }
 }
 
-inline uint8_t linear_alpha_u8(int16_t u)
+inline uint8_t linear_alpha_u8(int16_t u) noexcept
 {
     if (u < 0) {
         return 0;
@@ -67,9 +69,9 @@ inline uint8_t linear_alpha_u8(int16_t u)
     }
 }
 
-inline int16_t linear_alpha_i16(uint8_t u)
+inline int16_t linear_alpha_i16(uint8_t u) noexcept
 {
-    return static_cast<int16_t>((static_cast<int32_t>(u) * 32767 + 128) / 255);
+    return int16_t{(int32_t{u} * 32767 + 128) / 255};
 }
 
 /*! Wide Gammut linear sRGB with pre-mulitplied alpha.
@@ -88,19 +90,20 @@ struct wsRGBA {
     static constexpr float F32_MAX_SRGB = I64_MAX_SRGB;
     static constexpr float F32_SRGB_MUL = 1.0f / F32_MAX_SRGB;
 
-    wsRGBA() : color({0, 0, 0, 0}) {}
+    wsRGBA() noexcept : color({0, 0, 0, 0}) {}
 
     /*! Set the colour using the pixel value.
      * No conversion is done with the given value.
      */
-    wsRGBA(glm::i16vec4 c) :
+    wsRGBA(glm::i16vec4 c) noexcept :
         color(c) {}
 
     /*! Set the colour with linear-sRGB values.
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
-    wsRGBA(glm::vec4 c) :
+    
+    wsRGBA(glm::vec4 c) noexcept :
         color(static_cast<glm::i16vec4>(glm::vec4{
             glm::xyz(c) * c.a * F32_MAX_SRGB,
             c.a * F32_MAX_ALPHA })) {}
@@ -109,12 +112,13 @@ struct wsRGBA {
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
-    wsRGBA(double r, double g, double b, double a=1.0) :
+    wsRGBA(double r, double g, double b, double a=1.0) noexcept :
         wsRGBA(glm::vec4{r, g, b, a}) {}
 
     /*! Set the colour with gamma corrected sRGB values.
      */
-    wsRGBA(uint32_t c) {
+    
+    wsRGBA(uint32_t c) noexcept {
         let colorWithoutPreMultiply = glm::i64vec4{
             gamma_to_linear_i16((c >> 24) & 0xff),
             gamma_to_linear_i16((c >> 16) & 0xff),
@@ -130,22 +134,23 @@ struct wsRGBA {
         );
     }
 
-    int16_t const &r() const { return color.r; }
-    int16_t const &g() const { return color.g; }
-    int16_t const &b() const { return color.b; }
-    int16_t const &a() const { return color.a; }
+    int16_t const &r() const noexcept { return color.r; }
+    int16_t const &g() const noexcept { return color.g; }
+    int16_t const &b() const noexcept { return color.b; }
+    int16_t const &a() const noexcept { return color.a; }
 
-    int16_t &r() { return color.r; }
-    int16_t &g() { return color.g; }
-    int16_t &b() { return color.b; }
-    int16_t &a() { return color.a; }
+    int16_t &r() noexcept { return color.r; }
+    int16_t &g() noexcept { return color.g; }
+    int16_t &b() noexcept { return color.b; }
+    int16_t &a() noexcept { return color.a; }
 
-    bool isTransparent() const { return color.a <= 0; }
-    bool isOpaque() const { return color.a == I64_MAX_ALPHA; }
+    bool isTransparent() const noexcept { return color.a <= 0; }
+    bool isOpaque() const noexcept { return color.a == I64_MAX_ALPHA; }
 
     /*! Return a linear wsRGBA float vector with pre multiplied alpha.
      */
-    glm::vec4 to_wsRGBApm_vec4() const {
+    
+    glm::vec4 to_wsRGBApm_vec4() const noexcept {
         let floatColor = static_cast<glm::vec4>(color);
         return {
             glm::xyz(floatColor) * F32_SRGB_MUL,
@@ -153,7 +158,8 @@ struct wsRGBA {
         };
     }
 
-    glm::vec4 to_Linear_sRGBA_vec4() const {
+    
+    glm::vec4 to_Linear_sRGBA_vec4() const noexcept {
         let floatColor = to_wsRGBApm_vec4();
 
         if (floatColor.a == 0) {
@@ -169,12 +175,13 @@ struct wsRGBA {
 
     /*! Return a 32 bit gamma corrected sRGBA colour with normal alpha.
     */
-    uint32_t to_sRGBA_u32() const {
-        if (color.a == 0) {
+    
+    uint32_t to_sRGBA_u32() const noexcept {
+        let i64colorPM = static_cast<glm::i64vec4>(color);
+        if (i64colorPM.a == 0) {
             return 0;
         }
 
-        let i64colorPM = static_cast<glm::i64vec4>(color);
         let i64color = glm::i64vec4{
             (glm::xyz(i64colorPM) * I64_MAX_ALPHA) / i64colorPM.a,
             i64colorPM.a
@@ -192,7 +199,7 @@ struct wsRGBA {
             static_cast<uint32_t>(alpha);
     }
 
-    void desaturate(uint16_t brightness) {
+    void desaturate(uint16_t brightness) noexcept {
         constexpr int64_t RY = static_cast<int64_t>(0.2126 * 32768.0);
         constexpr int64_t RG = static_cast<int64_t>(0.7152 * 32768.0);
         constexpr int64_t RB = static_cast<int64_t>(0.0722 * 32768.0);
@@ -214,7 +221,7 @@ struct wsRGBA {
         ));
     }
 
-    void composit(wsRGBA over) {
+    void composit(wsRGBA over) noexcept {
         if (over.isTransparent()) {
             return;
         }
@@ -247,7 +254,7 @@ struct wsRGBA {
         color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
     }
 
-    void composit(wsRGBA over, uint8_t mask) {
+    void composit(wsRGBA over, uint8_t mask) noexcept {
         constexpr int64_t MASK_MAX = 255;
 
         if (mask == 0) {
@@ -266,7 +273,7 @@ struct wsRGBA {
         }
     }
 
-    void subpixelComposit(wsRGBA over, glm::u8vec3 mask) {
+    void subpixelComposit(wsRGBA over, glm::u8vec3 mask) noexcept {
         constexpr int64_t MASK_MAX = 255;
 
         if (mask.r == mask.g && mask.r == mask.b) {
@@ -318,17 +325,18 @@ struct wsRGBA {
     }
 };
 
-inline bool operator==(wsRGBA const &lhs, wsRGBA const &rhs)
+inline bool operator==(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
 {
     return lhs.color == rhs.color;
 }
 
-inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs)
+inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
 {
     return !(lhs == rhs);
 }
 
-inline std::string to_string(wsRGBA const &x)
+
+inline std::string to_string(wsRGBA const &x) noexcept
 {
     let floatColor = x.to_wsRGBApm_vec4();
     if (

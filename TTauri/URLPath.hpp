@@ -24,23 +24,23 @@ struct URLPath {
     std::vector<std::string> segments = {};
 
     URLPath() = default;
-    URLPath(std::string const &path);
-    URLPath(boost::filesystem::path const &path);
+    URLPath(std::string const &path) noexcept;
+    URLPath(boost::filesystem::path const &path) noexcept;
 
-    std::string path_string() const;
+    std::string path_string() const noexcept;
 
     std::string const &filename() const;
 
     std::string extension() const;
 
-    static URLPath urlPathFromWin32Path(std::wstring_view const &path_wstring);
+    static URLPath urlPathFromWin32Path(std::wstring_view const &path_wstring) noexcept;
 };
 
-std::string to_string(URLPath const &path);
+std::string to_string(URLPath const &path) noexcept;
 size_t file_size(URLPath const &path);
 
-bool operator==(URLPath const &lhs, URLPath const &rhs);
-bool operator<(URLPath const &lhs, URLPath const &rhs);
+bool operator==(URLPath const &lhs, URLPath const &rhs) noexcept;
+bool operator<(URLPath const &lhs, URLPath const &rhs) noexcept;
 
 }
 
@@ -50,6 +50,8 @@ template<>
 struct hash<TTauri::URLPath> {
     typedef TTauri::URLPath argument_type;
     typedef std::size_t result_type;
+
+    
     result_type operator()(argument_type const& path) const noexcept {
         auto h = std::accumulate(path.segments.begin(), path.segments.end(), static_cast<size_t>(0), [](auto a, auto x) {
             return a ^ std::hash<decltype(x)>{}(x);

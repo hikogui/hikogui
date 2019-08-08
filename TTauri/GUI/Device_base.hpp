@@ -35,9 +35,9 @@ public:
      */
     std::vector<std::unique_ptr<Window>> windows;
 
-    std::string string() const;
+    std::string string() const noexcept;
 
-    Device_base();
+    Device_base() noexcept;
     virtual ~Device_base();
 
     Device_base(const Device_base &) = delete;
@@ -60,15 +60,15 @@ public:
      */
     virtual void initializeDevice(Window const &window);
 
-    int getNumberOfWindows() const {
+    int getNumberOfWindows() const noexcept {
         return to_int(windows.size());
     }
 
     void add(std::unique_ptr<Window> window);
 
-    void remove(Window &window);
+    void remove(Window &window) noexcept;
 
-    void render() {
+    void render() noexcept {
         for (auto &window: windows) {
             window->render();
 

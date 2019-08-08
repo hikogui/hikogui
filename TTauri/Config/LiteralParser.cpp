@@ -8,14 +8,16 @@
 
 namespace TTauri::Config {
 
-int64_t parseInteger(const char *text, int radix, bool negative)
+int64_t parseInteger(const char *text, int radix, bool negative) noexcept
 {
-    size_t size = strlen(text);
+    required_assert(text);
+
+    let size = strlen(text);
     size_t offset = 0;
     int64_t value = 0;
 
-    while (offset < size) {
-        auto c = text[offset];
+    while (offset < size) gsl_suppress(bounds.1) {
+        let c = text[offset];
         if (c >= '0' && c <= '9') {
             value *= radix;
             value += (static_cast<int64_t>(c) - '0');
@@ -34,8 +36,10 @@ int64_t parseInteger(const char *text, int radix, bool negative)
     return negative ? -value : value;
 }
 
-double parseFloat(const char *text) {
-    size_t size = strlen(text);
+double parseFloat(const char *text) noexcept {
+    required_assert(text);
+
+    let size = strlen(text);
     size_t offset = 0;
     int64_t value = 0;
     int64_t fractional = 0;
@@ -48,8 +52,8 @@ double parseFloat(const char *text) {
         } 
     }
 
-    while (offset < size) {
-        auto c = text[offset];
+    while (offset < size) gsl_suppress(bounds.1) {
+        let c = text[offset];
         if (c >= '0' && c <= '9') {
             value *= 10;
             value += (static_cast<int64_t>(c) - '0');
@@ -67,20 +71,23 @@ double parseFloat(const char *text) {
         }
     }
 
-    double fvalue = static_cast<double>(value) / static_cast<double>(fractional);
-    double fvalue_ = isNegative ? -fvalue : fvalue;
+    let fvalue = static_cast<double>(value) / static_cast<double>(fractional);
+    let fvalue_ = isNegative ? -fvalue : fvalue;
     return fvalue_;
 }
 
-char *parseString(const char *text)
+gsl_suppress2(f.6,r.11)
+char *parseString(const char *text) noexcept
 {
-    size_t size = strlen(text) - 1; // Ignore the last '"' or '>' character.
+    required_assert(text);
+
+    let size = strlen(text) - 1; // Ignore the last '"' or '>' character.
     size_t offset = 1; // Skip over first '"' or '<' character.
     std::string value;
     bool foundEscape = false;
 
-    while (offset < size) {
-        auto c = text[offset];
+    while (offset < size) gsl_suppress(bounds.1) {
+        let c = text[offset];
 
         if (foundEscape) {
             foundEscape = false;
@@ -101,28 +108,34 @@ char *parseString(const char *text)
         }
     }
 
-    return strdup(value.data());
+    let r = strdup(value.data());
+    required_assert(r);
+    gsl_suppress2(lifetime.4,26487) return r;
 }
 
 URL *parseURL(const char *text)
 {
+    required_assert(text);
+
     auto s = std::string{text};
     if (s.front() == '<' && s.back() == '>') {
         s = s.substr(1, s.size() - 2);
     }
 
-    auto *url = new URL;
-    (*url) = s;
-    return url;
+    gsl_suppress3(r.11,lifetime.4,26487) return new URL(s);
 }
 
-char *parseIdentifier(const char *text) 
+char *parseIdentifier(const char *text) noexcept 
 {
+    required_assert(text);
+
     return strdup(text);
 }
 
-bool parseBoolean(const char *text)
+bool parseBoolean(const char *text) noexcept
 {
+    required_assert(text);
+
     return strcmp(text, "true") == 0;
 }
 

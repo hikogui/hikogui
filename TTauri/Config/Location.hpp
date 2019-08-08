@@ -17,12 +17,13 @@ struct Location {
     int line;
     int column;
 
-    Location() : file({}), line(0), column(0) {}
+    Location() noexcept : file({}), line(0), column(0) {}
 
-    Location(std::shared_ptr<URL> const &file, int line, int column) : file(file), line(line), column(column) {}
+    Location(std::shared_ptr<URL> const &file, int line, int column) noexcept : file(file), line(line), column(column) {}
 
-    std::string string() const {
-        return (boost::format("%s:%i:%i") % file->path_string() % line % column).str();
+    
+    std::string string() const noexcept {
+        return (boost::format("%s:%i:%i") % (*file) % line % column).str();
     }
 };
 

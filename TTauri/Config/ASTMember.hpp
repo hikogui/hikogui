@@ -12,7 +12,7 @@ struct ASTMember : ASTExpression {
     ASTExpression *object;
     std::string name;
 
-    ASTMember(Location location, ASTExpression *object, char *name) : ASTExpression(location), object(object), name(name) {
+    ASTMember(Location location, ASTExpression *object, char *name) noexcept : ASTExpression(location), object(object), name(name) {
         free(name);
     }
 
@@ -20,7 +20,7 @@ struct ASTMember : ASTExpression {
         delete object;
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return object->string() + "." + name;
     }
 

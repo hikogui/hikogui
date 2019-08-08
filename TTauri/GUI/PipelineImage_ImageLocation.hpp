@@ -31,7 +31,7 @@ struct ImageLocation {
     //! Transparency of the image.
     float alpha = 0.0;
 
-    bool operator==(const ImageLocation &other) {
+    bool operator==(const ImageLocation &other) noexcept {
         return (
             position == other.position &&
             origin == other.origin &&
@@ -42,7 +42,7 @@ struct ImageLocation {
         );
     }
 
-    bool operator!=(const ImageLocation &other) { return !((*this) == other); }
+    bool operator!=(const ImageLocation &other) noexcept { return !((*this) == other); }
 };
 
 }

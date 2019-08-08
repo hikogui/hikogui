@@ -25,7 +25,7 @@ public:
 
     std::function<void()> delegate;
 
-    ToolbarButtonWidget(Draw::Path const icon, std::function<void()> delegate);
+    ToolbarButtonWidget(Draw::Path const icon, std::function<void()> delegate) noexcept;
     ~ToolbarButtonWidget() {}
 
     ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;
@@ -33,16 +33,16 @@ public:
     ToolbarButtonWidget(ToolbarButtonWidget &&) = delete;
     ToolbarButtonWidget &operator=(ToolbarButtonWidget &&) = delete;
 
-    void setParent(Widget *parent) override;
+    void setParent(Widget *parent) noexcept override;
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept override;
 
-    void handleMouseEvent(GUI::MouseEvent event) override;
+    void handleMouseEvent(GUI::MouseEvent event) noexcept override;
 
 private:
-    int state() const;
+    int state() const noexcept;
 
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
 
     PipelineImage::Backing backingImage; 
 };

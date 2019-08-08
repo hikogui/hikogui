@@ -33,7 +33,7 @@ struct Vertex {
     uint8_t dummy2;
     uint8_t dummy3;
 
-    Vertex(const ImageLocation &location, glm::vec2 position, glm::u16vec3 atlasPosition) :
+    Vertex(const ImageLocation &location, glm::vec2 position, glm::u16vec3 atlasPosition) noexcept :
         position(position),
         atlasPosition(atlasPosition),
         clippingRectangle({

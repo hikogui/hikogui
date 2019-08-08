@@ -20,7 +20,7 @@ struct Font {
     std::map<char32_t,size_t> characterMap;
     std::vector<Path> glyphs;
 
-    PathString getGlyphs(gstring const &graphemes) const {
+    PathString getGlyphs(gstring const &graphemes) const noexcept {
         PathString r;
 
         for (int graphemeIndex = 0; graphemeIndex < graphemes.size(); graphemeIndex++) {
@@ -73,7 +73,7 @@ struct Font {
         return r;
     }
 
-    PathString getGlyphs(std::string const &s) const {
+    PathString getGlyphs(std::string const &s) const noexcept {
         return getGlyphs(translateString<gstring>(s));
     }
 };

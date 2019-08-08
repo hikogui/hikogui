@@ -11,16 +11,16 @@ struct ASTIndex : ASTExpression {
     ASTExpression *object;
     ASTExpression *index;
 
-    ASTIndex(Location location, ASTExpression *object) : ASTExpression(location), object(object), index(nullptr) {}
+    ASTIndex(Location location, ASTExpression *object) noexcept : ASTExpression(location), object(object), index(nullptr) {}
 
-    ASTIndex(Location location, ASTExpression *object, ASTExpression *index) : ASTExpression(location), object(object), index(index) {}
+    ASTIndex(Location location, ASTExpression *object, ASTExpression *index) noexcept : ASTExpression(location), object(object), index(index) {}
 
     ~ASTIndex() {
         delete object;
         delete index;
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         if (index) {
             return object->string() + "[" + index->string() + "]";
         } else {

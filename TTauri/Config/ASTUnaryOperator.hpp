@@ -17,13 +17,13 @@ struct ASTUnaryOperator : ASTExpression {
     Operator op;
     ASTExpression *right;
 
-    ASTUnaryOperator(Location location, Operator op, ASTExpression *right) : ASTExpression(location), op(op), right(right) {}
+    ASTUnaryOperator(Location location, Operator op, ASTExpression *right) noexcept : ASTExpression(location), op(op), right(right) {}
 
     ~ASTUnaryOperator() {
         delete right;
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         std::string s;
 
         switch (op) {

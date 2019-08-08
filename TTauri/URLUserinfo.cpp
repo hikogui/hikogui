@@ -6,7 +6,7 @@
 
 namespace TTauri {
 
-URLUserinfo::URLUserinfo(std::string const &userinfo)
+URLUserinfo::URLUserinfo(std::string const &userinfo) noexcept
 {
     auto i = userinfo.find(':');
     if (i != std::string_view::npos) {
@@ -18,7 +18,8 @@ URLUserinfo::URLUserinfo(std::string const &userinfo)
     }
 }
 
-std::string to_string(URLUserinfo const &userinfo) {
+std::string to_string(URLUserinfo const &userinfo) noexcept
+{
     auto s = url_encode(userinfo.username, TTAURI_URL_UNRESERVED TTAURI_URL_SUB_DELIMS);
 
     if (userinfo.password) {
@@ -27,12 +28,12 @@ std::string to_string(URLUserinfo const &userinfo) {
     return s;
 }
 
-bool operator==(URLUserinfo const &lhs, URLUserinfo const &rhs)
+bool operator==(URLUserinfo const &lhs, URLUserinfo const &rhs) noexcept
 {
     return std::tie(lhs.username, lhs.password) == std::tie(rhs.username, rhs.password);
 }
 
-bool operator<(URLUserinfo const &lhs, URLUserinfo const &rhs)
+bool operator<(URLUserinfo const &lhs, URLUserinfo const &rhs) noexcept
 {
     return std::tie(lhs.username, lhs.password) < std::tie(rhs.username, rhs.password);
 }

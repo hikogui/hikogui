@@ -11,13 +11,13 @@ namespace TTauri::Config {
 struct ASTInteger : ASTExpression {
     int64_t value;
 
-    ASTInteger(Location location, int64_t value) : ASTExpression(location), value(value) {}
+    ASTInteger(Location location, int64_t value) noexcept : ASTExpression(location), value(value) {}
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return (boost::format("%i") % value).str();
     }
 
-    universal_value execute(ExecutionContext *context) const override { 
+    universal_value execute(ExecutionContext *context) const noexcept override { 
         return value;
     } 
 

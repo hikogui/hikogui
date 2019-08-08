@@ -8,15 +8,15 @@
 
 namespace TTauri::Config {
 
-char *parseIdentifier(const char *text);
+char *parseIdentifier(const char *text) noexcept;
 
-char *parseString(const char *text);
+char *parseString(const char *text) noexcept;
 
-double parseFloat(const char *text);
+double parseFloat(const char *text) noexcept;
 
-int64_t parseInteger(const char *text, int radix, bool negative);
+int64_t parseInteger(const char *text, int radix, bool negative) noexcept;
 
-bool parseBoolean(const char *text);
+bool parseBoolean(const char *text) noexcept;
 
 URL *parseURL(const char *text);
 

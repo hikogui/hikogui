@@ -18,7 +18,7 @@ public:
     ToolbarButtonWidget *maximizeWindowButton = nullptr;
     ToolbarButtonWidget *minimizeWindowButton = nullptr;
 
-    WindowToolbarWidget();
+    WindowToolbarWidget() noexcept;
     ~WindowToolbarWidget() {}
 
     WindowToolbarWidget(const WindowToolbarWidget &) = delete;
@@ -26,14 +26,14 @@ public:
     WindowToolbarWidget(WindowToolbarWidget &&) = delete;
     WindowToolbarWidget &operator=(WindowToolbarWidget &&) = delete;
 
-    virtual void setParent(Widget *parent);
+    void setParent(Widget *parent) noexcept override;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
 
-    HitBox hitBoxTest(glm::vec2 position) const override;
+    HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 
 private:
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
 
     PipelineImage::Backing backingImage; 
 };

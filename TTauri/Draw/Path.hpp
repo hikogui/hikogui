@@ -6,7 +6,7 @@
 #include "BezierPoint.hpp"
 #include "attributes.hpp"
 #include "TTauriIconParser.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include "TTauri/ResourceView.hpp"
 #include <glm/glm.hpp>
 #include <vector>
@@ -71,110 +71,110 @@ struct Path {
     /*! Get the advanceWidth for the specific grapheme of
      * a potential ligature.
      */
-    glm::vec2 advanceForGrapheme(int index) const;
+    glm::vec2 advanceForGrapheme(int index) const noexcept;
 
     /*! Return the number of closed contours.
     */
-    int numberOfContours() const;
+    int numberOfContours() const noexcept;
 
     /*! Return the number of closed layers.
     */
-    int numberOfLayers() const;
+    int numberOfLayers() const noexcept;
 
     /*! Check if all layers have the same color.
      */
-    bool allLayersHaveSameColor() const;
+    bool allLayersHaveSameColor() const noexcept;
 
     /*! Try to move the layers in a path.
      * Layers are removed if there are layers, and all the layers have
      * the same color.
      */
-    void tryRemoveLayers();
+    void tryRemoveLayers() noexcept;
 
     /*! Return an iterator to the start point of a contour.
      */
-    std::vector<BezierPoint>::const_iterator beginContour(int contourNr) const;
+    std::vector<BezierPoint>::const_iterator beginContour(int contourNr) const noexcept;
 
     /* Return and end-iterator beyond the end point of a contour.
      */
-    std::vector<BezierPoint>::const_iterator endContour(int contourNr) const;
+    std::vector<BezierPoint>::const_iterator endContour(int contourNr) const noexcept;
 
     /* Return the first contour index of a layer.
      */
-    int beginLayer(int layerNr) const;
+    int beginLayer(int layerNr) const noexcept;
 
     /* Return beyond the last contour index of a layer.
      */
-    int endLayer(int layerNr) const;
+    int endLayer(int layerNr) const noexcept;
 
-    std::vector<BezierPoint> getBezierPointsOfContour(int contourNr) const;
+    std::vector<BezierPoint> getBezierPointsOfContour(int contourNr) const noexcept;
 
-    std::vector<BezierCurve> getBeziersOfContour(int contourNr) const;
+    std::vector<BezierCurve> getBeziersOfContour(int contourNr) const noexcept;
 
-    std::vector<BezierCurve> getBeziers() const;
+    std::vector<BezierCurve> getBeziers() const noexcept;
 
-    std::pair<Path,wsRGBA> getLayer(int layerNr) const;
+    std::pair<Path,wsRGBA> getLayer(int layerNr) const noexcept;
 
-    wsRGBA getColorOfLayer(int layerNr) const;
+    wsRGBA getColorOfLayer(int layerNr) const noexcept;
 
-    void setColorOfLayer(int layerNr, wsRGBA fillColor);
+    void setColorOfLayer(int layerNr, wsRGBA fillColor) noexcept;
 
     /*! Return true if there is an open contour.
      */
-    bool isContourOpen() const;
+    bool isContourOpen() const noexcept;
 
     /*! Close current contour.
     * No operation if there is no open contour.
     */
-    void closeContour();
+    void closeContour() noexcept;
 
     /*! This path has layers.
      */
-    bool hasLayers() const;
+    bool hasLayers() const noexcept;
 
     /*! Return true if there is an open layer.
     */
-    bool isLayerOpen() const;
+    bool isLayerOpen() const noexcept;
 
     /*! Close current contour.
     * No operation if there is no open layer.
     */
-    void closeLayer(wsRGBA fillColor);
+    void closeLayer(wsRGBA fillColor) noexcept;
 
     /*! Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
      */
-    glm::vec2 currentPosition() const;
+    glm::vec2 currentPosition() const noexcept;
 
     /*! Start a new contour at position.
      * closes current subpath.
      */
-    void moveTo(glm::vec2 position);
+    void moveTo(glm::vec2 position) noexcept;
 
     /*! Start a new contour relative to current position.
      * closes current subpath.
      */
-    void moveRelativeTo(glm::vec2 direction);
+    void moveRelativeTo(glm::vec2 direction) noexcept;
 
-    void lineTo(glm::vec2 position);
+    void lineTo(glm::vec2 position) noexcept;
 
-    void lineRelativeTo(glm::vec2 direction);
+    void lineRelativeTo(glm::vec2 direction) noexcept;
 
-    void quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position);
-
-    /*! Draw curve from the current position to the new direction.
-     * \param controlDirection control point of the curve relative from the start of the curve.
-     * \param direction end point of the curve relative from the start of the curve.
-     */
-    void quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction);
-
-    void cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position);
+    void quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) noexcept;
 
     /*! Draw curve from the current position to the new direction.
      * \param controlDirection control point of the curve relative from the start of the curve.
      * \param direction end point of the curve relative from the start of the curve.
      */
-    void cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction);
+    void quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) noexcept;
+
+    void cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) noexcept;
+
+    /*! Draw curve from the current position to the new direction.
+     * \param controlDirection control point of the curve relative from the start of the curve.
+     * \param direction end point of the curve relative from the start of the curve.
+     */
+    void cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) noexcept;
 
     /*! Draw an circular arc.
      * The arc is drawn from the current position to the position given
@@ -187,43 +187,43 @@ struct Path {
      * \param radius postive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.
      */
-    void arcTo(float radius, glm::vec2 position);
+    void arcTo(float radius, glm::vec2 position) noexcept;
 
     /*! Draw a rectangle.
      * \param rect the offset and size of the rectangle.
      * \param corner radius of <bottom-left, bottom-right, top-right, top-left>
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f});
+    void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /*! Draw a circle.
     * \param position position of the center of the circle.
     * \param radius radius of the circle
     */
-    void addCircle(glm::vec2 position, float radius);
+    void addCircle(glm::vec2 position, float radius) noexcept;
 
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<BezierCurve> const &contour);
+    void addContour(std::vector<BezierCurve> const &contour) noexcept;
 
     /*! Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end);
+    void addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept;
 
     /*! Curve with the given bezier curve.
     * The first anchor will be ignored.
     */
-    void addContour(std::vector<BezierPoint> const &contour);
+    void addContour(std::vector<BezierPoint> const &contour) noexcept;
 
     /*! Add path and close layer.
      */
-    void addPath(Path const &path, wsRGBA fillColor);
+    void addPath(Path const &path, wsRGBA fillColor) noexcept;
 
     /*! Stroke a path and close layer.
      */
-    void addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f);
+    void addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
 
     /*! Convert path to stroke-path.
      *
@@ -236,26 +236,26 @@ struct Path {
      * \param lineJoinStyle the style of how outside corners of a stroke are drawn.
      * \param tolerance Tolerance of how flat the curves in the path need to be.
      */
-    Path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const;
+    Path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const noexcept;
 };
 
-Path operator+(Path lhs, Path const &rhs);
+Path operator+(Path lhs, Path const &rhs) noexcept;
 
-Path &operator+=(Path &lhs, Path const &rhs);
+Path &operator+=(Path &lhs, Path const &rhs) noexcept;
 
-Path operator*(glm::mat3x3 const &lhs, Path rhs);
+Path operator*(glm::mat3x3 const &lhs, Path rhs) noexcept;
 
-Path &operator*=(Path &lhs, glm::mat3x3 const &rhs);
+Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept;
 
-Path operator*(float const lhs, Path rhs);
+Path operator*(float const lhs, Path rhs) noexcept;
 
-Path &operator*=(Path &lhs, float const rhs);
+Path &operator*=(Path &lhs, float const rhs) noexcept;
 
-Path operator+(glm::vec2 const &lhs, Path rhs);
+Path operator+(glm::vec2 const &lhs, Path rhs) noexcept;
 
-Path operator+(Path lhs, glm::vec2 const &rhs);
+Path operator+(Path lhs, glm::vec2 const &rhs) noexcept;
 
-Path &operator+=(Path &lhs, glm::vec2 const &rhs);
+Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept;
 
 
 /*! Composit color onto the destination image where the mask is solid.
@@ -265,7 +265,7 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs);
  * \param mask mask where the color will be composited on the destination.
  * \param subpixel orientation to improve resolution on LCD displays.
  */
-void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation);
+void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
 
 /*! Composit color onto the destination image where the mask is solid.
 *
@@ -273,7 +273,7 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOri
 * \param mask mask where the color will be composited on the destination.
 * \param subpixel orientation to improve resolution on LCD displays.
 */
-void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation);
+void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
 
 
 

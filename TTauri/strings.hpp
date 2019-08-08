@@ -28,7 +28,7 @@ constexpr char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
 constexpr char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
 constexpr char32_t UNICODE_Reverse_BOM = 0xfffe;
 
-inline char32_t CP1252ToCodePoint(uint8_t inputCharacter)
+inline char32_t CP1252ToCodePoint(uint8_t inputCharacter) noexcept
 {
     if (inputCharacter >= 0 && inputCharacter <= 0x7f) {
         return inputCharacter;
@@ -79,26 +79,26 @@ struct TranslateStringOptions {
     bool _byteSwap = false;
     bool _addBOM = false;
 
-    TranslateStringOptions &allowCP1252(bool allowCP1252_value = true) {
+    TranslateStringOptions &allowCP1252(bool allowCP1252_value = true) noexcept {
         _allowCP1252 = allowCP1252_value;
         return *this;
     }
-    TranslateStringOptions &allowSurrogate(bool allowSurrogate_value = true) {
+    TranslateStringOptions &allowSurrogate(bool allowSurrogate_value = true) noexcept {
         _allowSurrogate = allowSurrogate_value;
         return *this;
     }
-    TranslateStringOptions &byteSwap(bool byteSwap_value = true) {
+    TranslateStringOptions &byteSwap(bool byteSwap_value = true) noexcept {
         _byteSwap = byteSwap_value;
         return *this;
     }
-    TranslateStringOptions &addBOM(bool addBOM_value = true) {
+    TranslateStringOptions &addBOM(bool addBOM_value = true) noexcept {
         _addBOM = addBOM_value;
         return *this;
     }
 };
 
 template<typename T, typename U>
-inline T translateString(U const inputString, TranslateStringOptions options = {})
+inline T translateString(U const inputString, TranslateStringOptions options = {}) noexcept
 {
     if constexpr (sizeof (typename T::value_type) == sizeof (typename U::value_type)) {
         return transform<T>(inputString, [](let &inputCharacter) { return inputCharacter; });
@@ -109,12 +109,12 @@ inline T translateString(U const inputString, TranslateStringOptions options = {
 }
 
 template<typename T, typename U>
-inline T translateString(std::basic_string<U> const inputString, TranslateStringOptions options = {}) {
+inline T translateString(std::basic_string<U> const inputString, TranslateStringOptions options = {}) noexcept {
     return translateString<T>(std::basic_string_view<U>(inputString), options);
 }
 
 template<>
-inline std::u32string translateString(std::string_view const inputString, TranslateStringOptions options)
+inline std::u32string translateString(std::string_view const inputString, TranslateStringOptions options) noexcept
 {
     std::u32string outputString;
     char32_t codePoint = 0;
@@ -185,7 +185,7 @@ inline std::u32string translateString(std::string_view const inputString, Transl
 }
 
 template<>
-inline std::u32string translateString(std::u16string_view const inputString, TranslateStringOptions options)
+inline std::u32string translateString(std::u16string_view const inputString, TranslateStringOptions options) noexcept
 {
     bool byteSwap = options._byteSwap;
     std::u32string outputString;
@@ -240,14 +240,14 @@ inline std::u32string translateString(std::u16string_view const inputString, Tra
 }
 
 template<>
-inline std::u32string translateString(std::wstring_view const inputString, TranslateStringOptions options)
+inline std::u32string translateString(std::wstring_view const inputString, TranslateStringOptions options) noexcept
 {
     auto tmp = translateString<std::u16string>(inputString, options);
     return translateString<std::u32string>(tmp, options);
 }
 
 template<>
-inline std::u16string translateString(std::u32string_view const inputString, TranslateStringOptions options)
+inline std::u16string translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     std::u16string outputString;
 
@@ -278,14 +278,14 @@ inline std::u16string translateString(std::u32string_view const inputString, Tra
 }
 
 template<>
-inline std::wstring translateString(std::u32string_view const inputString, TranslateStringOptions options)
+inline std::wstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     auto tmp = translateString<std::u16string>(inputString, options);
     return translateString<std::wstring>(tmp, options);
 }
 
 template<>
-inline std::string translateString(std::u32string_view const inputString, TranslateStringOptions options)
+inline std::string translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     std::string outputString;
 
@@ -319,42 +319,48 @@ inline std::string translateString(std::u32string_view const inputString, Transl
     return outputString;
 }
 
-inline std::string normalizeNFC(std::string_view const str) {
+inline std::string normalizeNFC(std::string_view const str) noexcept
+{
     let s = utf8proc_NFC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFD(std::string_view const str) {
+inline std::string normalizeNFD(std::string_view const str) noexcept
+{
     let s = utf8proc_NFD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFKD(std::string_view const str) {
+inline std::string normalizeNFKD(std::string_view const str) noexcept
+{
     let s = utf8proc_NFKD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFKC(std::string_view const str) {
+inline std::string normalizeNFKC(std::string_view const str) noexcept
+{
     let s = utf8proc_NFKC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::string normalizeNFKCCasefold(std::string_view const str) {
+inline std::string normalizeNFKCCasefold(std::string_view const str) noexcept
+{
     let s = utf8proc_NFKC_Casefold(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
     let r = std::string(reinterpret_cast<char*>(s));
     free(s);
     return r;
 }
 
-inline std::u32string splitLigature(char32_t x) {
+inline std::u32string splitLigature(char32_t x) noexcept
+{
     switch (x) {
     case 0xfb00: return { 0x0066, 0x0066 }; // ff
     case 0xfb01: return { 0x0066, 0x0069 }; // fi

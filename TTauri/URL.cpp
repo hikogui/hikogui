@@ -10,7 +10,7 @@
 
 namespace TTauri {
 
-static std::string percent_encode(char c)
+static std::string percent_encode(char c) noexcept
 {
     auto _c = bit_cast<uint8_t>(c);
 
@@ -20,7 +20,7 @@ static std::string percent_encode(char c)
     return s;
 }
 
-std::string url_encode(std::string const &input, std::string_view const unreservedCharacters)
+std::string url_encode(std::string const &input, std::string_view const unreservedCharacters) noexcept
 {
     std::string s;
     s.reserve(input.size());
@@ -37,7 +37,7 @@ std::string url_encode(std::string const &input, std::string_view const unreserv
     return s;
 }
 
-std::string url_decode(std::string_view const &input, bool plusToSpace)
+std::string url_decode(std::string_view const &input, bool plusToSpace) noexcept
 {
     enum class state_t {Idle, FirstNibble, SecondNibble};
 
@@ -123,7 +123,7 @@ URL::URL(std::string const &url)
 
 URL::URL(char const *url) : URL(std::string(url)) {}
 
-URL::URL(std::string const scheme, URLPath path) : scheme(std::move(scheme)), path(std::move(path)) {}
+URL::URL(std::string const scheme, URLPath path) noexcept : scheme(std::move(scheme)), path(std::move(path)) {}
 
 std::string URL::path_string() const
 {
@@ -151,17 +151,17 @@ std::string URL::extension() const
     return path.extension();
 }
 
-bool URL::isAbsolute() const
+bool URL::isAbsolute() const noexcept
 {
     return path.absolute;
 }
 
-bool URL::isRelative() const
+bool URL::isRelative() const noexcept
 {
     return !path.absolute;
 }
 
-URL URL::urlByAppendingPath(URL const &other) const
+URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
     auto r = *this;
 
@@ -176,7 +176,7 @@ URL URL::urlByAppendingPath(URL const &other) const
     return r;
 }
 
-URL URL::urlByRemovingFilename() const
+URL URL::urlByRemovingFilename() const noexcept
 {
     auto r = *this;
 
@@ -187,17 +187,18 @@ URL URL::urlByRemovingFilename() const
     return r;
 }
 
-URL URL::urlFromWin32Path(std::wstring_view const path)
+URL URL::urlFromWin32Path(std::wstring_view const path) noexcept
 {
     return URL("file", URLPath::urlPathFromWin32Path(path));
 }
 
-URL URL::urlFromCurrentWorkingDirectory()
+URL URL::urlFromCurrentWorkingDirectory() noexcept
 {
     return URL("file", URLPath{ boost::filesystem::current_path() });
 }
 
-std::string to_string(URL const &url) {
+std::string to_string(URL const &url) noexcept
+{
     auto s = url_encode(url.scheme, TTAURI_URL_ALPHA TTAURI_URL_DIGIT "+-.") + ":";
 
     if (url.authority) {
@@ -227,14 +228,14 @@ size_t file_size(URL const &url)
     return boost::filesystem::file_size(path(url));    
 }
 
-bool operator==(URL const &lhs, URL const &rhs)
+bool operator==(URL const &lhs, URL const &rhs) noexcept
 {
     return
         std::tie(lhs.scheme, lhs.authority, lhs.path, lhs.query, lhs.fragment) ==
         std::tie(rhs.scheme, rhs.authority, rhs.path, rhs.query, rhs.fragment);
 }
 
-bool operator<(URL const &lhs, URL const &rhs)
+bool operator<(URL const &lhs, URL const &rhs) noexcept
 {
     return
         std::tie(lhs.scheme, lhs.authority, lhs.path, lhs.query, lhs.fragment) <

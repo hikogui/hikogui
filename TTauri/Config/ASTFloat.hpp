@@ -11,9 +11,9 @@ namespace TTauri::Config {
 struct ASTFloat : ASTExpression {
     double value;
 
-    ASTFloat(Location location, double value) : ASTExpression(location), value(value) {}
+    ASTFloat(Location location, double value) noexcept : ASTExpression(location), value(value) {}
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         auto s = (boost::format("%g") % value).str();
         if (s.find('.') == s.npos) {
             return s + ".";
@@ -22,7 +22,7 @@ struct ASTFloat : ASTExpression {
         }
     }
 
-    universal_value execute(ExecutionContext *context) const override { 
+    universal_value execute(ExecutionContext *context) const noexcept override { 
         return value;
     } 
 

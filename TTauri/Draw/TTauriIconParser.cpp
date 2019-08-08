@@ -2,7 +2,7 @@
 #include "TTauriIconParser.hpp"
 #include "Path.hpp"
 #include "TTauri/exceptions.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
 #include <boost/format.hpp>
@@ -15,7 +15,7 @@ namespace TTauri::Draw {
 struct little_fixed1_14_buf_t {
     little_int16_buf_t v;
 
-    float value() const {
+    float value() const noexcept {
         return (v.value()) / 16384.0f;
     }
 };
@@ -23,11 +23,11 @@ struct little_fixed1_14_buf_t {
 struct little_fixed1_13_buf_t {
     little_int16_buf_t v;
 
-    float value() const {
+    float value() const noexcept {
         return (v.value() >> 1) / 8192.0f;
     }
 
-    bool flag() const {
+    bool flag() const noexcept {
         return (v.value() & 1) > 0;
     }
 };
@@ -36,11 +36,11 @@ struct little_point_buf_t {
     little_fixed1_13_buf_t x;
     little_fixed1_13_buf_t y;
 
-    glm::vec2 coord() const {
+    glm::vec2 coord() const noexcept {
         return { x.value(), y.value() };
     }
 
-    BezierPoint::Type type() const {
+    BezierPoint::Type type() const noexcept {
         let type = (x.flag() ? 1 : 0) | (y.flag() ? 2 : 0);
         switch (type) {
         case 0b00: return BezierPoint::Type::Anchor;
@@ -51,7 +51,7 @@ struct little_point_buf_t {
         }
     }
 
-    BezierPoint value() const {
+    BezierPoint value() const noexcept {
         return {coord(), type()};
     }
 };
@@ -64,7 +64,7 @@ struct little_scRGB_buf_t {
     little_uint16_buf_t blue;
     little_uint16_buf_t alpha;
 
-    wsRGBA value() const {
+    wsRGBA value() const noexcept {
         return {glm::vec4{
             (static_cast<float>(red.value()) - 4096.0f) / 8192.0f,
             (static_cast<float>(green.value()) - 4096.0f) / 8192.0f,
@@ -98,7 +98,7 @@ struct Layer {
     LineJoinStyle lineJoinStyle;
 };
 
-static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, size_t &offset)
+static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, size_t &offset) noexcept
 {
     let &header = at<contour_buf_t>(bytes, offset);
     offset += sizeof(contour_buf_t);
@@ -118,7 +118,7 @@ static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, s
     return contour;
 }
 
-static Layer parsePath(gsl::span<std::byte const> bytes, size_t &offset)
+static Layer parsePath(gsl::span<std::byte const> bytes, size_t &offset) noexcept
 {
     let &header = at<path_buf_t>(bytes, offset);
     offset += sizeof(path_buf_t);

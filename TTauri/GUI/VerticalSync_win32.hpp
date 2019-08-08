@@ -30,14 +30,14 @@ class VerticalSync_win32 {
     std::function<void(void *)> callback;
     void *callbackData;
 
-    void openAdapter();
-    void closeAdapter();
-    void wait();
+    void openAdapter() noexcept;
+    void closeAdapter() noexcept;
+    void wait() noexcept;
 
-    static void verticalSyncThread(VerticalSync_win32 *self);
+    static void verticalSyncThread(VerticalSync_win32 *self) noexcept;
 
 public:
-    VerticalSync_win32(std::function<void(void *)> callback, void *callbackData);
+    VerticalSync_win32(std::function<void(void *)> callback, void *callbackData) noexcept;
     ~VerticalSync_win32();
 };
 

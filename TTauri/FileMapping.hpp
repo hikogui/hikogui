@@ -25,8 +25,8 @@ struct FileMapping {
     FileMapping &operator=(FileMapping const &other) = delete;
     FileMapping &operator=(FileMapping &&other) = delete;
 
-    AccessMode accessMode() { return file->accessMode; }
-    URL const &location() { return file->location; }
+    AccessMode accessMode() const noexcept{ return file->accessMode; }
+    URL const &location() const noexcept { return file->location; }
 
     static std::shared_ptr<File> findOrCreateFile(URL const& path, AccessMode accessMode);
 };

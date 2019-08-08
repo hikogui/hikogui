@@ -6,7 +6,7 @@
 #include "required.hpp"
 #include "Application.hpp"
 #include "pickle.hpp"
-#include "Color.hpp"
+#include "wsRGBA.hpp"
 #include "File.hpp"
 #include "FileMapping.hpp"
 #include "FileView.hpp"

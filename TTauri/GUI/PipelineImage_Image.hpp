@@ -33,7 +33,7 @@ struct Image {
 
     std::vector<Page> pages;
 
-    Image(DeviceShared *parent, std::string key, iextent2 extent, iextent2 pageExtent, std::vector<Page> pages) :
+    Image(DeviceShared *parent, std::string key, iextent2 extent, iextent2 pageExtent, std::vector<Page> pages) noexcept :
         parent(parent),
         key(std::move(key)),
         extent(std::move(extent)),
@@ -51,7 +51,7 @@ struct Image {
     /*! Find the image coordinates of a page in the image.
      * \param pageIndex Index in the pages-vector.
      */
-    irect2 indexToRect(int const pageIndex) const;
+    irect2 indexToRect(int const pageIndex) const noexcept;
 
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.

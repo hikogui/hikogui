@@ -10,7 +10,7 @@ namespace TTauri {
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 template<typename T>
-inline std::array<T,2> bezierToPolynomial(T P1, T P2)
+inline std::array<T,2> bezierToPolynomial(T P1, T P2) noexcept
 {
     return {
         P2 - P1,
@@ -20,7 +20,7 @@ inline std::array<T,2> bezierToPolynomial(T P1, T P2)
 
 // B(t)=(P_{1}-2C+P_{2})t^{2}+2(C-P_{1})t+P_{1}
 template<typename T>
-inline std::array<T,3> bezierToPolynomial(T P1, T C, T P2)
+inline std::array<T,3> bezierToPolynomial(T P1, T C, T P2) noexcept
 {
     return {
         P1 - C * 2.0f + P2,
@@ -31,7 +31,7 @@ inline std::array<T,3> bezierToPolynomial(T P1, T C, T P2)
 
 // B(t)=(P_{1}-2C+P_{2})t^{2}+2(C-P_{1})t+P_{1}
 template<typename T>
-inline std::array<T,4> bezierToPolynomial(T P1, T C1, T C2, T P2)
+inline std::array<T,4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 {
     return {
         -P1 + C1 * 3.0f - C2 * 3.0f + P2,
@@ -42,41 +42,41 @@ inline std::array<T,4> bezierToPolynomial(T P1, T C1, T C2, T P2)
 }
 
 template<typename T, typename U>
-inline T bezierPointAt(T P1, T P2, U t) {
+inline T bezierPointAt(T P1, T P2, U t) noexcept {
     let [a, b] = bezierToPolynomial(P1, P2);
     return a*t + b;
 }
 
 template<typename T, typename U>
-inline T bezierPointAt(T P1, T C, T P2, U t)
+inline T bezierPointAt(T P1, T C, T P2, U t) noexcept
 {
     let [a, b, c] = bezierToPolynomial(P1, C, P2);
     return a*t*t + b*t + c;
 }
 
 template<typename T, typename U>
-inline T bezierPointAt(T P1, T C1, T C2, T P2, U t)
+inline T bezierPointAt(T P1, T C1, T C2, T P2, U t) noexcept
 {
     let [a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return a*t*t*t + b*t*t + c*t + d;
 }
 
 template<typename T>
-inline results<T,1> bezierFindT(T P1, T P2, T x)
+inline results<T,1> bezierFindT(T P1, T P2, T x) noexcept
 {
     let [a, b] = bezierToPolynomial(P1, P2);
     return solvePolynomial(a, b - x);
 }
 
 template<typename T>
-inline results<T,2> bezierFindT(T P1, T C, T P2, T x)
+inline results<T,2> bezierFindT(T P1, T C, T P2, T x) noexcept
 {
     let [a, b, c] = bezierToPolynomial(P1, C, P2);
     return solvePolynomial(a, b, c - x);
 }
 
 template<typename T>
-inline results<T,3> bezierFindT(T P1, T C1, T C2, T P2, T x)
+inline results<T,3> bezierFindT(T P1, T C1, T C2, T P2, T x) noexcept
 {
     let [a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     return solvePolynomial(a, b, c, d - x);
@@ -91,7 +91,7 @@ inline results<T,3> bezierFindT(T P1, T C1, T C2, T P2, T x)
  * it from the result.
  */
 template <typename T, typename U>
-inline results<U,1> bezierFindX(T P1, T P2, U y)
+inline results<U,1> bezierFindX(T P1, T P2, U y) noexcept
 {
     if (y < std::min({P1.y, P2.y}) || y > std::max({P1.y, P2.y})) {
         return {};
@@ -115,7 +115,7 @@ inline results<U,1> bezierFindX(T P1, T P2, U y)
 * it from the result.
 */
 template <typename T, typename U>
-inline results<U,2> bezierFindX(T P1, T C, T P2, U y)
+inline results<U,2> bezierFindX(T P1, T C, T P2, U y) noexcept
 {
     if (y < std::min({P1.y, C.y, P2.y}) || y > std::max({P1.y, C.y, P2.y})) {
         return {};
@@ -139,7 +139,7 @@ inline results<U,2> bezierFindX(T P1, T C, T P2, U y)
 * it from the result.
 */
 template <typename T, typename U>
-results<U,3> bezierFindX(T P1, T C1, T C2, T P2, U y)
+results<U,3> bezierFindX(T P1, T C1, T C2, T P2, U y) noexcept
 {
     if (y < std::min({ P1.y, C1.y, C2.y, P2.y }) || y > std::max({ P1.y, C1.y, C2.y, P2.y })) {
         return {};
@@ -158,7 +158,7 @@ results<U,3> bezierFindX(T P1, T C1, T C2, T P2, U y)
 /*! Return the flatness of a curve.
 * \return 1.0 when completely flat, < 1.0 when curved.
 */
-inline float bezierFlatness(glm::vec2 P1, glm::vec2 P2)
+inline float bezierFlatness(glm::vec2 P1, glm::vec2 P2) noexcept
 {
     return 1.0f;
 }
@@ -166,7 +166,8 @@ inline float bezierFlatness(glm::vec2 P1, glm::vec2 P2)
 /*! Return the flatness of a curve.
 * \return 1.0 when completely flat, < 1.0 when curved.
 */
-inline float bezierFlatness(glm::vec2 P1, glm::vec2 C, glm::vec2 P2)
+
+inline float bezierFlatness(glm::vec2 P1, glm::vec2 C, glm::vec2 P2) noexcept
 {
     let P1P2 = glm::length(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -181,7 +182,8 @@ inline float bezierFlatness(glm::vec2 P1, glm::vec2 C, glm::vec2 P2)
 /*! Return the flatness of a curve.
 * \return 1.0 when completely flat, < 1.0 when curved.
 */
-inline float bezierFlatness(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2)
+
+inline float bezierFlatness(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2) noexcept
 {
     let P1P2 = glm::length(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -194,7 +196,7 @@ inline float bezierFlatness(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 
     return P1P2 / (P1C1 + C1C2 + C2P2);
 }
 
-inline std::pair<glm::vec2, glm::vec2> parrallelLine(glm::vec2 P1, glm::vec2 P2, float distance)
+inline std::pair<glm::vec2, glm::vec2> parrallelLine(glm::vec2 P1, glm::vec2 P2, float distance) noexcept
 {
     let v = P2 - P1;
     let n = normal(v);
@@ -206,7 +208,7 @@ inline std::pair<glm::vec2, glm::vec2> parrallelLine(glm::vec2 P1, glm::vec2 P2,
 
 /*! Find the intersect points between two line segments.
 */
-inline std::optional<glm::vec2> getIntersectionPoint(glm::vec2 A1, glm::vec2 A2, glm::vec2 B1, glm::vec2 B2)
+inline std::optional<glm::vec2> getIntersectionPoint(glm::vec2 A1, glm::vec2 A2, glm::vec2 B1, glm::vec2 B2) noexcept
 {
     // convert points to vectors.
     let p = A1;
@@ -237,7 +239,7 @@ inline std::optional<glm::vec2> getIntersectionPoint(glm::vec2 A1, glm::vec2 A2,
 
 /*! Find the intersect points between two line segments.
 */
-inline std::optional<glm::vec2> getExtrapolatedIntersectionPoint(glm::vec2 A1, glm::vec2 A2, glm::vec2 B1, glm::vec2 B2)
+inline std::optional<glm::vec2> getExtrapolatedIntersectionPoint(glm::vec2 A1, glm::vec2 A2, glm::vec2 B1, glm::vec2 B2) noexcept
 {
     // convert points to vectors.
     let p = A1;

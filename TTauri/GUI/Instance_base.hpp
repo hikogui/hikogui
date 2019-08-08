@@ -36,7 +36,7 @@ public:
      */
     int previousNumberOfWindows = 0;
 
-    Instance_base() {
+    Instance_base() noexcept {
         verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
     }
 
@@ -47,7 +47,7 @@ public:
     Instance_base(Instance_base &&) = delete;
     Instance_base &operator=(Instance_base &&) = delete;
 
-    virtual void initialize() {}
+    virtual void initialize() noexcept(false) = 0;
 
     template<typename T, typename... Args>
     T *addWindow(Args... args)

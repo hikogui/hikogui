@@ -9,7 +9,8 @@
 
 namespace TTauri::Draw {
 
-std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end)
+
+std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end) noexcept
 {
     let points = BezierPoint::normalizePoints(begin, end);
 
@@ -67,7 +68,8 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
     return r;
 }
 
-std::vector<BezierCurve> makeInverseContour(std::vector<BezierCurve> const &contour)
+
+std::vector<BezierCurve> makeInverseContour(std::vector<BezierCurve> const &contour) noexcept
 {
     auto r = std::vector<BezierCurve>{};
     r.reserve(contour.size());
@@ -79,7 +81,8 @@ std::vector<BezierCurve> makeInverseContour(std::vector<BezierCurve> const &cont
     return r;
 }
 
-std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance)
+
+std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     auto contourAtOffset = std::vector<BezierCurve>{};
     for (let &curve: contour) {
@@ -128,7 +131,8 @@ std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &co
     return r;
 }
 
-static std::vector<float> solveCurvesXByY(std::vector<BezierCurve> const &v, float y) {
+
+static std::vector<float> solveCurvesXByY(std::vector<BezierCurve> const &v, float y) noexcept {
     std::vector<float> r;
     r.reserve(v.size());
 
@@ -142,7 +146,7 @@ static std::vector<float> solveCurvesXByY(std::vector<BezierCurve> const &v, flo
 }
 
 
-static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::vector<BezierCurve> const &v, float y)
+static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::vector<BezierCurve> const &v, float y) noexcept
 {
     auto xValues = solveCurvesXByY(v, y);
 
@@ -170,7 +174,7 @@ static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::v
     return r;
 }
 
-static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const startX, float const endX)
+static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const startX, float const endX) noexcept
 {
     let pixelCoverage =
         std::clamp(endX, i + 0.0f, i + 1.0f) -
@@ -180,7 +184,8 @@ static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const st
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
 }
 
-static void fillFullPixels(PixelRow<uint8_t> row, int const start, int const size)
+gsl_suppress(26489,lifetime.1)
+static void fillFullPixels(PixelRow<uint8_t> row, int const start, int const size) noexcept
 {
     if (size < 16) {
         let end = start + size;
@@ -215,7 +220,7 @@ static void fillFullPixels(PixelRow<uint8_t> row, int const start, int const siz
 /*! Render pixels in a row between two x values.
  * Fully covered sub-pixel will have the value 51.
  */
-static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const endX)
+static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const endX) noexcept
 {
     if (startX >= row.width || endX < 0.0f) {
         return;
@@ -237,7 +242,7 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
     }
 }
 
-static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCurve> const& curves)
+static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCurve> const& curves) noexcept
 {
     // 5 times super sampling.
     for (float y = rowY + 0.1f; y < (rowY + 1); y += 0.2f) {
@@ -257,7 +262,7 @@ static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCur
     }
 }
 
-void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves)
+void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noexcept
 {
     for (int rowNr = 0; rowNr < image.height; rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);

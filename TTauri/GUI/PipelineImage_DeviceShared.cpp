@@ -141,10 +141,10 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
         regionsToCopy.push_back({
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { boost::numeric_cast<int32_t>(imageRect.offset.x), boost::numeric_cast<int32_t>(imageRect.offset.y), 0 },
+            { numeric_cast<int32_t>(imageRect.offset.x), numeric_cast<int32_t>(imageRect.offset.y), 0 },
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { boost::numeric_cast<int32_t>(atlasOffset.x), boost::numeric_cast<int32_t>(atlasOffset.y), 0 },
-            { boost::numeric_cast<uint32_t>(imageRect.extent.width()), boost::numeric_cast<uint32_t>(imageRect.extent.height()), 1}
+            { numeric_cast<int32_t>(atlasOffset.x), numeric_cast<int32_t>(atlasOffset.y), 0 },
+            { numeric_cast<uint32_t>(imageRect.extent.width()), numeric_cast<uint32_t>(imageRect.extent.height()), 1}
         });
     }
 
@@ -220,12 +220,13 @@ void DeviceShared::buildIndexBuffer()
             let rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
-            case 0: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 0); break;
-            case 1: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 1); break;
-            case 2: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 2); break;
-            case 3: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 2); break;
-            case 4: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 1); break;
-            case 5: gsl::at(stagingVertexIndexBufferData, i) = boost::numeric_cast<uint16_t>(rectangleBase + 3); break;
+            case 0: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<uint16_t>(rectangleBase + 0); break;
+            case 1: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<uint16_t>(rectangleBase + 1); break;
+            case 2: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<uint16_t>(rectangleBase + 2); break;
+            case 3: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<uint16_t>(rectangleBase + 2); break;
+            case 4: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<uint16_t>(rectangleBase + 1); break;
+            case 5: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<uint16_t>(rectangleBase + 3); break;
+            default: no_default;
             }
         }
         device.flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
@@ -242,7 +243,7 @@ void DeviceShared::buildIndexBuffer()
         commands.end();
 
         vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
-        vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
+        vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
         device.graphicsQueue.submit(submitInfo, vk::Fence());
         device.graphicsQueue.waitIdle();
 

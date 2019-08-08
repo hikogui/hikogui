@@ -16,7 +16,7 @@ using namespace std;
 using namespace TTauri;
 
 template<typename T>
-inline gsl::not_null<T *>to_ptr(LPARAM lParam)
+inline gsl::not_null<T *>to_ptr(LPARAM lParam) noexcept
 {
     T *ptr;
     memcpy(&ptr, &lParam, sizeof(T *));
@@ -172,7 +172,7 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface() const
     });
 }
 
-void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect)
+void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 {
     // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
     OSWindowRectangle.offset.x = rect.left;
@@ -256,12 +256,12 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
         case WM_GETMINMAXINFO: {
             let minmaxinfo = to_ptr<MINMAXINFO>(lParam);
             // XXX - figure out size of decoration to remove these constants.
-            minmaxinfo->ptMaxSize.x = boost::numeric_cast<long>(maximumWindowExtent.width());
-            minmaxinfo->ptMaxSize.y = boost::numeric_cast<long>(maximumWindowExtent.height());
-            minmaxinfo->ptMinTrackSize.x = boost::numeric_cast<long>(minimumWindowExtent.width());
-            minmaxinfo->ptMinTrackSize.y = boost::numeric_cast<long>(minimumWindowExtent.height());
-            minmaxinfo->ptMaxTrackSize.x = boost::numeric_cast<long>(maximumWindowExtent.width());
-            minmaxinfo->ptMaxTrackSize.y = boost::numeric_cast<long>(maximumWindowExtent.height());
+            minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximumWindowExtent.width());
+            minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximumWindowExtent.height());
+            minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimumWindowExtent.width());
+            minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimumWindowExtent.height());
+            minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximumWindowExtent.width());
+            minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximumWindowExtent.height());
             } break;
 
         case WM_LBUTTONDOWN:
@@ -327,8 +327,8 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
             goto parseMouseEvent;
 
         parseMouseEvent:
-            mouseEvent.position.x = boost::numeric_cast<float>(GET_X_LPARAM(lParam));
-            mouseEvent.position.y = boost::numeric_cast<float>(currentWindowExtent.height() - GET_Y_LPARAM(lParam));
+            mouseEvent.position.x = numeric_cast<float>(GET_X_LPARAM(lParam));
+            mouseEvent.position.y = numeric_cast<float>(currentWindowExtent.height() - GET_Y_LPARAM(lParam));
             mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
             mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
             mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
@@ -365,8 +365,8 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
         case WM_NCHITTEST: {
             let screenPosition = glm::vec2{
-                boost::numeric_cast<float>(GET_X_LPARAM(lParam)),
-                0.0 - boost::numeric_cast<float>(GET_Y_LPARAM(lParam))
+                numeric_cast<float>(GET_X_LPARAM(lParam)),
+                0.0 - numeric_cast<float>(GET_Y_LPARAM(lParam))
             };
 
             let insideWindowPosition = screenPosition - glm::vec2(OSWindowRectangle.offset);
@@ -395,17 +395,14 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
+gsl_suppress3(26489,lifetime.1,type.1)
 LRESULT CALLBACK Window_vulkan_win32::_WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_NCCREATE && lParam) {
-        [[gsl::suppress(type.1)]] {
-            let createData = reinterpret_cast<CREATESTRUCT *>(lParam);
+        let createData = reinterpret_cast<CREATESTRUCT *>(lParam);
 
-            if (createData->lpCreateParams) {
-                [[gsl::suppress(lifetime.1)]] {
-                    Window_vulkan_win32::win32WindowMap[hwnd] = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
-                }
-            }
+        if (createData->lpCreateParams) {
+            Window_vulkan_win32::win32WindowMap[hwnd] = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
         }
     }
 

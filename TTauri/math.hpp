@@ -17,7 +17,7 @@ namespace TTauri {
 constexpr long double pi = 3.141592653589793238462643383279502884L;
 
 template<typename T, typename M>
-constexpr T modulo(T x, M m)
+constexpr T modulo(T x, M m) noexcept
 {
     if (x >= 0) {
         return x % m;

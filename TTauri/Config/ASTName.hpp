@@ -12,11 +12,11 @@ namespace TTauri::Config {
 struct ASTName : ASTExpression {
     std::string name;
 
-    ASTName(Location location, char *name) : ASTExpression(location), name(name) {
+    ASTName(Location location, char *name) noexcept : ASTExpression(location), name(name) {
         free(name);
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return name;
     }
 

@@ -47,7 +47,7 @@ enum class SubpixelOrientation {
     Unknown
 };
 
-inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs)
+inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexcept
 {
     switch (lhs) {
     case VerticalAlignment::Top:
@@ -82,12 +82,12 @@ inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs)
     }
 }
 
-inline Alignment operator|(HorizontalAlignment lhs, VerticalAlignment rhs)
+inline Alignment operator|(HorizontalAlignment lhs, VerticalAlignment rhs) noexcept
 {
     return rhs | lhs;
 }
 
-inline bool operator==(Alignment lhs, HorizontalAlignment rhs)
+inline bool operator==(Alignment lhs, HorizontalAlignment rhs) noexcept
 {
     switch (rhs) {
     case HorizontalAlignment::Left:
@@ -115,7 +115,7 @@ inline bool operator==(Alignment lhs, HorizontalAlignment rhs)
     }
 }
 
-inline bool operator==(Alignment lhs, VerticalAlignment rhs)
+inline bool operator==(Alignment lhs, VerticalAlignment rhs) noexcept
 {
     switch (rhs) {
     case VerticalAlignment::Top:
@@ -147,12 +147,12 @@ inline bool operator==(Alignment lhs, VerticalAlignment rhs)
     }
 }
 
-inline bool operator!=(Alignment lhs, HorizontalAlignment rhs)
+inline bool operator!=(Alignment lhs, HorizontalAlignment rhs) noexcept
 {
     return !(lhs == rhs);
 }
 
-inline bool operator!=(Alignment lhs, VerticalAlignment rhs)
+inline bool operator!=(Alignment lhs, VerticalAlignment rhs) noexcept
 {
     return !(lhs == rhs);
 }

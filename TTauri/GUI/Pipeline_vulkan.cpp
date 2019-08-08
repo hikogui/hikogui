@@ -40,9 +40,9 @@ vk::Semaphore Pipeline_vulkan::render(uint32_t frameBufferIndex, vk::Semaphore i
 
     std::array<vk::SubmitInfo, 1> const submitInfo = {
         vk::SubmitInfo{
-            boost::numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
-            boost::numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
-            boost::numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
+            numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
+            numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
+            numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
         }
     };
 
@@ -56,7 +56,7 @@ void Pipeline_vulkan::buildCommandBuffers()
     let commandBuffers = device().allocateCommandBuffers({
         device().graphicsCommandPool, 
         vk::CommandBufferLevel::ePrimary, 
-        boost::numeric_cast<uint32_t>(frameBufferObjects.size())
+        numeric_cast<uint32_t>(frameBufferObjects.size())
     });
 
     for (int i = 0; i < to_int(frameBufferObjects.size()); i++) {
@@ -81,7 +81,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
     const vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {
         vk::DescriptorSetLayoutCreateFlags(),
-        boost::numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
+        numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
     };
 
     descriptorSetLayout = device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
@@ -91,22 +91,22 @@ void Pipeline_vulkan::buildDescriptorSets()
         [this](auto x) -> vk::DescriptorPoolSize {
             return {
                 x.descriptorType,
-                boost::numeric_cast<uint32_t>(x.descriptorCount * this->frameBufferObjects.size())
+                numeric_cast<uint32_t>(x.descriptorCount * this->frameBufferObjects.size())
             };
         }
     );
   
     descriptorPool = device().createDescriptorPool({
         vk::DescriptorPoolCreateFlags(),
-        boost::numeric_cast<uint32_t>(frameBufferObjects.size()), // maxSets
-        boost::numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
+        numeric_cast<uint32_t>(frameBufferObjects.size()), // maxSets
+        numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
     });
 
     std::vector<vk::DescriptorSetLayout> const descriptorSetLayouts(frameBufferObjects.size(), descriptorSetLayout);
     
     let descriptorSets = device().allocateDescriptorSets({
         descriptorPool,
-        boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
+        numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
 
     for (int i = 0; i < frameBufferObjects.size(); i++) {
@@ -156,14 +156,14 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     pipelineLayout = device().createPipelineLayout({
         vk::PipelineLayoutCreateFlags(),
-        boost::numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
-        boost::numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
+        numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data(),
+        numeric_cast<uint32_t>(pushConstantRanges.size()), pushConstantRanges.data()
     });
 
     const vk::PipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo = {
         vk::PipelineVertexInputStateCreateFlags(),
         1, &vertexInputBindingDescription,
-        boost::numeric_cast<uint32_t>(vertexInputAttributeDescriptions.size()), vertexInputAttributeDescriptions.data()
+        numeric_cast<uint32_t>(vertexInputAttributeDescriptions.size()), vertexInputAttributeDescriptions.data()
     };
 
     const vk::PipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo = {
@@ -175,7 +175,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     const std::array<vk::Viewport, 1> viewports = {
         vk::Viewport{
             0.0f, 0.0f,
-            boost::numeric_cast<float>(extent.width), boost::numeric_cast<float>(extent.height),
+            numeric_cast<float>(extent.width), numeric_cast<float>(extent.height),
             0.0f, 1.0f
         }
     };
@@ -184,8 +184,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
-        boost::numeric_cast<uint32_t>(viewports.size()), viewports.data(),
-        boost::numeric_cast<uint32_t>(scissors.size()), scissors.data()
+        numeric_cast<uint32_t>(viewports.size()), viewports.data(),
+        numeric_cast<uint32_t>(scissors.size()), scissors.data()
     };
 
     const vk::PipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo =  {
@@ -240,12 +240,12 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         vk::PipelineColorBlendStateCreateFlags(),
         VK_FALSE, // logicOpenable
         vk::LogicOp::eCopy,
-        boost::numeric_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
+        numeric_cast<uint32_t>(pipelineColorBlendAttachmentStates.size()), pipelineColorBlendAttachmentStates.data()
     };
 
     const vk::GraphicsPipelineCreateInfo graphicsPipelineCreateInfo = {
         vk::PipelineCreateFlags(),
-        boost::numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
+        numeric_cast<uint32_t>(shaderStages.size()), shaderStages.data(),
         &pipelineVertexInputStateCreateInfo,
         &pipelineInputAssemblyStateCreateInfo,
         nullptr, // tesselationStateCreateInfo
@@ -354,7 +354,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t frameBufferIndex)
             renderPass, 
             window.swapchainFramebuffers.at(frameBufferIndex),
             scissor, 
-            boost::numeric_cast<uint32_t>(clearColors.size()),
+            numeric_cast<uint32_t>(clearColors.size()),
             clearColors.data()
         }, vk::SubpassContents::eInline
     );

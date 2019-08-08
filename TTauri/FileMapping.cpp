@@ -29,7 +29,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     DWORD maximumSizeHigh = this->size >> 32;
     DWORD maximumSizeLow = this->size & 0xffffffff;
 
-    if ((intrinsic = CreateFileMappingA(file->intrinsic, NULL, protect, maximumSizeHigh, maximumSizeLow, NULL)) == NULL) {
+    if ((intrinsic = CreateFileMappingA(file->intrinsic, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
         BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
             errinfo_url(location())
         );

@@ -38,7 +38,7 @@ namespace TTauri::GUI {
 using namespace std;
 using namespace gsl;
 
-VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void* callbackData) :
+VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void* callbackData) noexcept :
     callback(callback), callbackData(callbackData)
 {
     state = State::ADAPTER_CLOSED;
@@ -51,7 +51,6 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void
 
     if (!(gdi = LoadLibraryW(L"Gdi32.dll"))) {
         LOG_FATAL("Error opening Gdi32.dll %s", getLastErrorMessage());
-        abort();
     }
 
     pfnD3DKMTWaitForVerticalBlankEvent = (PFND3DKMT_WAITFORVERTICALBLANKEVENT) GetProcAddress(gdi, "D3DKMTWaitForVerticalBlankEvent");
@@ -60,17 +59,14 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void
 
     if (!pfnD3DKMTOpenAdapterFromHdc) {
         LOG_FATAL("Error locating function D3DKMTOpenAdapterFromHdc");
-        abort();
     }
 
     if (!pfnD3DKMTCloseAdapter) {
         LOG_FATAL("Error locating function D3DKMTCloseAdapter");
-        abort();
     }
 
     if (!pfnD3DKMTWaitForVerticalBlankEvent) {
         LOG_FATAL("Error locating function D3DKMTWaitForVerticalBlankEvent!");
-        abort();
     }
 
     verticalSyncThreadID = std::thread{ verticalSyncThread, this };
@@ -83,7 +79,7 @@ VerticalSync_win32::~VerticalSync_win32() {
     FreeLibrary(gdi);
 }
 
-void VerticalSync_win32::openAdapter()
+void VerticalSync_win32::openAdapter() noexcept
 {
     // Search for primary display device.
     DISPLAY_DEVICEW dd;
@@ -120,7 +116,7 @@ void VerticalSync_win32::openAdapter()
     }
 }
 
-void VerticalSync_win32::closeAdapter()
+void VerticalSync_win32::closeAdapter() noexcept
 {
     D3DKMT_CLOSEADAPTER ca;
 
@@ -135,7 +131,7 @@ void VerticalSync_win32::closeAdapter()
     }
 }
 
-void VerticalSync_win32::wait()
+void VerticalSync_win32::wait() noexcept
 {
     if (state == State::ADAPTER_CLOSED) {
         openAdapter();
@@ -169,7 +165,7 @@ void VerticalSync_win32::wait()
     }
 }
 
-void VerticalSync_win32::verticalSyncThread(VerticalSync_win32* self)
+void VerticalSync_win32::verticalSyncThread(VerticalSync_win32* self) noexcept
 {
 #ifdef _WIN32
     SetThreadDescription(GetCurrentThread(), L"VerticalSync");

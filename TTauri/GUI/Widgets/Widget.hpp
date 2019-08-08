@@ -9,7 +9,7 @@
 #include "../Window_forward.hpp"
 #include "../Device_forward.hpp"
 #include "../Mouse.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include "TTauri/URL.hpp"
 #include "TTauri/geometry.hpp"
 #include "TTauri/Draw/attributes.hpp"
@@ -55,7 +55,7 @@ public:
 
     /*! Constructor for creating subviews.
      */
-    Widget();
+    Widget() noexcept;
     virtual ~Widget() {}
 
     Widget(const Widget &) = delete;
@@ -63,10 +63,10 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
-    virtual void setParent(Widget *parent);
+    virtual void setParent(Widget *parent) noexcept;
 
     template<typename T, typename... Args>
-    T *addWidget(Args... args) {
+    T *addWidget(Args... args) noexcept {
         auto widget = std::make_unique<T>(args...);
         auto widget_ptr = widget.get();
 
@@ -76,18 +76,18 @@ public:
         return widget_ptr;
     }
 
-    Device *device() const;
+    Device *device() const noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    virtual void handleMouseEvent(MouseEvent event);
+    virtual void handleMouseEvent(MouseEvent event) noexcept;
 
-    virtual HitBox hitBoxTest(glm::vec2 position) const;
+    virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
 };
 
 }

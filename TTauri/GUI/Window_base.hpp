@@ -196,13 +196,13 @@ protected:
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    void handleMouseEvent(MouseEvent event) {
+    void handleMouseEvent(MouseEvent event) noexcept {
         return widget->handleMouseEvent(event);
     }
 
     /*! Test where the certain features of a window are located.
      */
-    HitBox hitBoxTest(glm::vec2 position) {
+    HitBox hitBoxTest(glm::vec2 position) noexcept {
         return widget->hitBoxTest(position);
     }
 

@@ -18,13 +18,13 @@ struct URLUserinfo {
     std::optional<std::string> password = {};
 
     URLUserinfo() = default;
-    URLUserinfo(std::string const &userinfo);
+    URLUserinfo(std::string const &userinfo) noexcept;
 };
 
-std::string to_string(URLUserinfo const &userinfo);
+std::string to_string(URLUserinfo const &userinfo) noexcept;
 
-bool operator==(URLUserinfo const &lhs, URLUserinfo const &rhs);
-bool operator<(URLUserinfo const &lhs, URLUserinfo const &rhs);
+bool operator==(URLUserinfo const &lhs, URLUserinfo const &rhs) noexcept;
+bool operator<(URLUserinfo const &lhs, URLUserinfo const &rhs) noexcept;
 
 }
 

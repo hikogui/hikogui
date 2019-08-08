@@ -96,8 +96,35 @@ set(TTauri_srcs
     strings.cpp
 )
 
+set(TTauriTests_srcs
+    Config/parser_tests.cpp
+    Config/Config_tests.cpp
+    Draw/BezierCurve_tests.cpp
+    Draw/TrueTypeParser_tests.cpp
+    Draw/Path_tests.cpp
+    Draw/PixelMap_tests.cpp
+    wsRGBA_tests.cpp
+    FileView_tests.cpp
+    strings_tests.cpp
+    polynomial_tests.cpp
+    URL_tests.cpp
+    utils_tests.cpp
+    pickle_tests.cpp
+)
+
+set(TTauri_do_not_analyze
+    ${BISON_TTauriConfigParser_OUTPUTS}
+    ${FLEX_TTauriConfigScanner_OUTPUTS}
+    ${TTauriTests_srcs}
+)
+
 if(MSVC)
     add_compile_options(/wd4996 /wd4005)
+    if(TTAURI_ENABLE_CODE_ANALYSIS)
+        set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
+        add_compile_options(/analyze /analyze:plugin EspXEngine.dll)
+        add_compile_options(/wd26447)
+    endif()
 endif()
 
 add_library(TTauri STATIC ${TTauri_srcs})
@@ -114,21 +141,6 @@ endif()
 
 
 
-set(TTauriTests_srcs
-    Config/parser_tests.cpp
-    Config/Config_tests.cpp
-    Draw/BezierCurve_tests.cpp
-    Draw/TrueTypeParser_tests.cpp
-    Draw/Path_tests.cpp
-    Draw/PixelMap_tests.cpp
-    Color_tests.cpp
-    FileView_tests.cpp
-    strings_tests.cpp
-    polynomial_tests.cpp
-    URL_tests.cpp
-    utils_tests.cpp
-    pickle_tests.cpp
-)
 
 add_executable(TTauriTests ${TTauriTests_srcs})
 target_link_libraries(TTauriTests TTauri gtest_main)

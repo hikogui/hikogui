@@ -174,9 +174,9 @@ void Device_vulkan::initializeDevice(Window const &window)
 
     intrinsic = physicalIntrinsic.createDevice({
         vk::DeviceCreateFlags(),
-        boost::numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
+        numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
-        boost::numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
+        numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
         &(get_singleton<Instance>().requiredFeatures)
     });
 
@@ -479,7 +479,7 @@ void Device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
 
     graphicsQueue.submit({{
         0, nullptr, nullptr, // wait semaphores, wait stages
-        boost::numeric_cast<uint32_t>(commandBuffers.size()), commandBuffers.data(),
+        numeric_cast<uint32_t>(commandBuffers.size()), commandBuffers.data(),
         0, nullptr // signal semaphores
     }}, vk::Fence());
 
@@ -542,7 +542,7 @@ void Device_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::Ima
         vk::DependencyFlags(),
         0, nullptr,
         0, nullptr,
-        boost::numeric_cast<uint32_t>(barriers.size()), barriers.data()
+        numeric_cast<uint32_t>(barriers.size()), barriers.data()
     );
 
     endSingleTimeCommands(commandBuffer);

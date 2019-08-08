@@ -55,9 +55,9 @@ public:
     Instance_vulkan(Instance_vulkan &&) = delete;
     Instance_vulkan &operator=(Instance_vulkan &&) = delete;
 
-    void initialize() override;
+    void initialize() noexcept(false) override;
 
-    vk::DispatchLoaderDynamic loader() const {
+    vk::DispatchLoaderDynamic loader() const noexcept {
         return _loader;
     }
 

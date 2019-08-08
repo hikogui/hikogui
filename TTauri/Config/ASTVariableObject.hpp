@@ -9,9 +9,9 @@ namespace TTauri::Config {
 
 struct ASTVariableObject : ASTExpression {
 
-    ASTVariableObject(Location location) : ASTExpression(location)  {}
+    ASTVariableObject(Location location) noexcept : ASTExpression(location)  {}
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return "$";
     }
 

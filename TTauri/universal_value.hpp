@@ -7,7 +7,7 @@
 #include "indirect_value.hpp"
 #include "exceptions.hpp"
 #include "math.hpp"
-#include "Color.hpp"
+#include "wsRGBA.hpp"
 #include "URL.hpp"
 #include <boost/format.hpp>
 #include <boost/numeric/conversion/cast.hpp>
@@ -30,11 +30,11 @@ struct Undefined {};
 using Object = std::map<std::string, indirect_value<universal_value>>;
 using Array = std::vector<indirect_value<universal_value>>;
 
-template<typename T> constexpr bool holds_alternative(universal_value const &x);
-template<typename T> inline T const &get(universal_value const & v);
-template<typename T> inline T const &&get(universal_value const && v);
-template<typename T> inline T &get(universal_value & v);
-template<typename T> inline T &&get(universal_value && v);
+template<typename T> constexpr bool holds_alternative(universal_value const &x) noexcept;
+template<typename T> inline T const &get(universal_value const & v) noexcept;
+template<typename T> inline T const &&get(universal_value const && v) noexcept;
+template<typename T> inline T &get(universal_value & v) noexcept;
+template<typename T> inline T &&get(universal_value && v) noexcept;
 template<typename T> inline T get_and_promote(universal_value const & v);
 
 /*! A generic value type which will handle intra type operations.
@@ -49,25 +49,25 @@ struct universal_value {
     universal_value &operator=(const universal_value &) = default;
     universal_value &operator=(universal_value &&) = default;
 
-    universal_value(bool value) : intrinsic(value) {}
-    universal_value(int64_t value) : intrinsic(value) {}
-    universal_value(double value) : intrinsic(value) {}
-    universal_value(std::string value) : intrinsic(std::move(value)) {}
-    universal_value(URL value) : intrinsic(std::move(value)) {}
-    universal_value(wsRGBA value) : intrinsic(value) {}
-    universal_value(Object value) : intrinsic(std::move(value)) {}
-    universal_value(Array value) : intrinsic(std::move(value)) {}
-    universal_value(Undefined value) : intrinsic(std::move(value)) {}
+    universal_value(bool value) noexcept : intrinsic(value) {}
+    universal_value(int64_t value) noexcept : intrinsic(value) {}
+    universal_value(double value) noexcept : intrinsic(value) {}
+    universal_value(std::string value) noexcept : intrinsic(std::move(value)) {}
+    universal_value(URL value) noexcept : intrinsic(std::move(value)) {}
+    universal_value(wsRGBA value) noexcept : intrinsic(value) {}
+    universal_value(Object value) noexcept : intrinsic(std::move(value)) {}
+    universal_value(Array value) noexcept : intrinsic(std::move(value)) {}
+    universal_value(Undefined value) noexcept : intrinsic(std::move(value)) {}
 
-    universal_value &operator=(bool value) { intrinsic = value; return *this; }
-    universal_value &operator=(int64_t value) { intrinsic = value; return *this; }
-    universal_value &operator=(double value) { intrinsic = value; return *this; }
-    universal_value &operator=(std::string value) { intrinsic = std::move(value); return *this; }
-    universal_value &operator=(URL value) { intrinsic = std::move(value); return *this; }
-    universal_value &operator=(wsRGBA value) { intrinsic = value; return *this; }
-    universal_value &operator=(Object value) { intrinsic = std::move(value); return *this; }
-    universal_value &operator=(Array value) { intrinsic = std::move(value); return *this; }
-    universal_value &operator=(Undefined value) { intrinsic = std::move(value); return *this; }
+    universal_value &operator=(bool value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(int64_t value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(double value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(std::string const &value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(URL const &value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(wsRGBA const &value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(Object const &value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(Array const &value) noexcept { intrinsic = value; return *this; }
+    universal_value &operator=(Undefined const &value) noexcept { intrinsic = value; return *this; }
 
     std::type_info const &type() const noexcept {
         switch (intrinsic.index()) {
@@ -85,12 +85,13 @@ struct universal_value {
         }
     }
 
-    std::string type_name() const {
+    
+    std::string type_name() const noexcept {
         return type().name();
     }
 
     template<typename T>
-    bool is_promotable_to() const {
+    bool is_promotable_to() const noexcept {
         if (holds_alternative<T>(intrinsic)) {
             return true;
         }
@@ -108,12 +109,14 @@ struct universal_value {
         if (key.size() > 0 && holds_alternative<Object>(*this)) {
             let index = key.at(0);
             auto &next = (*this)[index];
-            return next.get_by_path({key.begin() + 1, key.end()});
+            let next_key = std::vector<std::string>{key.begin() + 1, key.end()};
+            return next.get_by_path(next_key);
 
         } else if (key.size() > 0 && holds_alternative<Array>(*this)) {
             size_t const index = std::stoll(key.at(0));
             auto &next = (*this)[index];
-            return next.get_by_path({key.begin() + 1, key.end()});
+            let next_key = std::vector<std::string>{key.begin() + 1, key.end()};
+            return next.get_by_path(next_key);
 
         } else if (key.size() > 0) {
             BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not support get() with '%s'")
@@ -147,7 +150,8 @@ struct universal_value {
     /*! Return the internal value as a std::any
      * \return the std::any value
      */
-    std::any any() const {
+    
+    std::any any() const noexcept {
         if (holds_alternative<Array>(*this)) {
             std::vector<std::any> r;
             for (let &x: get<Array>(*this)) {
@@ -169,7 +173,7 @@ struct universal_value {
         }
     }
 
-    operator bool() const {
+    operator bool() const noexcept {
         switch (intrinsic.index()) {
         case 0: return false;
         case 1: return get<bool>(*this);
@@ -276,12 +280,12 @@ struct universal_value {
     }
 };
 
-inline bool operator!(universal_value const &rhs)
+inline bool operator!(universal_value const &rhs) noexcept
 {
     return !static_cast<bool>(rhs);
 }
 
-inline bool operator==(universal_value const &lhs, universal_value const &rhs)
+inline bool operator==(universal_value const &lhs, universal_value const &rhs) noexcept
 {
     if (holds_alternative<std::string>(lhs) && holds_alternative<std::string>(rhs)) {
         return get<std::string>(lhs) == get<std::string>(rhs);
@@ -300,12 +304,12 @@ inline bool operator==(universal_value const &lhs, universal_value const &rhs)
     }
 }
 
-inline bool operator!=(universal_value const &lhs, universal_value const &rhs)
+inline bool operator!=(universal_value const &lhs, universal_value const &rhs) noexcept
 {
     return !(lhs == rhs);
 }
 
-inline bool operator<(universal_value const &lhs, universal_value const &rhs)
+inline bool operator<(universal_value const &lhs, universal_value const &rhs) noexcept
 {
     if (holds_alternative<std::string>(lhs) && holds_alternative<std::string>(rhs)) {
         return get<std::string>(lhs) < get<std::string>(rhs);
@@ -325,23 +329,23 @@ inline bool operator<(universal_value const &lhs, universal_value const &rhs)
     }
 }
 
-inline bool operator>(universal_value const &lhs, universal_value const &rhs)
+inline bool operator>(universal_value const &lhs, universal_value const &rhs) noexcept
 {
     return rhs < lhs;
 }
 
-inline bool operator>=(universal_value const &lhs, universal_value const &rhs)
+inline bool operator>=(universal_value const &lhs, universal_value const &rhs) noexcept
 {
     return !(lhs < rhs);
 }
 
-
-inline bool operator<=(universal_value const &lhs, universal_value const &rhs)
+inline bool operator<=(universal_value const &lhs, universal_value const &rhs) noexcept
 {
     return !(lhs > rhs);
 }
 
-inline universal_value operator-(universal_value const &rhs) {
+inline universal_value operator-(universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(rhs)) {
         return -get<int64_t>(rhs);
     } else if (holds_alternative<double>(rhs)) {
@@ -350,7 +354,8 @@ inline universal_value operator-(universal_value const &rhs) {
     BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot make value of type %s negative") % rhs.type_name()).str()));
 }
 
-inline universal_value operator~(universal_value const &rhs) {
+inline universal_value operator~(universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(rhs)) {
         return ~get<int64_t>(rhs);
     } else if (holds_alternative<bool>(rhs)) {
@@ -359,7 +364,8 @@ inline universal_value operator~(universal_value const &rhs) {
     BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot invert value of type %s") % rhs.type_name()).str()));
 }
 
-inline universal_value operator*(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator*(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<double>(lhs) || holds_alternative<double>(rhs)) {
         return get_and_promote<double>(lhs) * get_and_promote<double>(rhs);
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
@@ -370,7 +376,8 @@ inline universal_value operator*(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator/(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator/(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<double>(lhs) || holds_alternative<double>(rhs)) {
         return get_and_promote<double>(lhs) / get_and_promote<double>(rhs);
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
@@ -381,7 +388,8 @@ inline universal_value operator/(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator%(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator%(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<double>(lhs) || holds_alternative<double>(rhs)) {
         return fmod(get_and_promote<double>(lhs), get_and_promote<double>(rhs));
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
@@ -392,7 +400,8 @@ inline universal_value operator%(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator+(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator+(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<URL>(lhs) || holds_alternative<URL>(rhs)) {
         return get_and_promote<URL>(lhs) / get_and_promote<URL>(rhs);
     } else if (holds_alternative<std::string>(lhs) && holds_alternative<std::string>(rhs)) {
@@ -418,7 +427,8 @@ inline universal_value operator+(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator-(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator-(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<double>(lhs) || holds_alternative<double>(rhs)) {
         return get_and_promote<double>(lhs) - get_and_promote<double>(rhs);
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
@@ -429,7 +439,8 @@ inline universal_value operator-(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator<<(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator<<(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) << get<int64_t>(rhs);
     }
@@ -438,7 +449,8 @@ inline universal_value operator<<(universal_value const &lhs, universal_value co
     );
 }
 
-inline universal_value operator>>(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator>>(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) >> get<int64_t>(rhs);
     }
@@ -447,7 +459,8 @@ inline universal_value operator>>(universal_value const &lhs, universal_value co
     );
 }
 
-inline universal_value operator&(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator&(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) & get<int64_t>(rhs);
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
@@ -458,7 +471,8 @@ inline universal_value operator&(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator^(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator^(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) ^ get<int64_t>(rhs);
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
@@ -469,7 +483,8 @@ inline universal_value operator^(universal_value const &lhs, universal_value con
     );
 }
 
-inline universal_value operator|(universal_value const &lhs, universal_value const &rhs) {
+inline universal_value operator|(universal_value const &lhs, universal_value const &rhs)
+{
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) | get<int64_t>(rhs);
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
@@ -481,32 +496,31 @@ inline universal_value operator|(universal_value const &lhs, universal_value con
 }
 
 template<typename T>
-constexpr bool holds_alternative(universal_value const &x)
+constexpr bool holds_alternative(universal_value const &x) noexcept
 {
     return std::holds_alternative<T>(x.intrinsic);
 }
 
-
 template<typename T>
-inline T const &get(universal_value const & v)
+inline T const &get(universal_value const & v) noexcept
 {
     return std::get<T>(v.intrinsic);
 }
 
 template<typename T>
-inline T const &&get(universal_value const && v)
+inline T const &&get(universal_value const && v) noexcept
 {
     return std::get<T>(v.intrinsic);
 }
 
 template<typename T>
-inline T &get(universal_value & v)
+inline T &get(universal_value & v) noexcept
 {
     return std::get<T>(v.intrinsic);
 }
 
 template<typename T>
-inline T &&get(universal_value && v)
+inline T &&get(universal_value && v) noexcept
 {
     return std::get<T>(v.intrinsic);
 }
@@ -533,12 +547,10 @@ inline T get_and_promote(universal_value const& v)
     }
 }
 
-
-
 /*! Return a string representation of the value.
 * \return a string representing the value.
 */
-inline std::string to_string(universal_value const &x)
+inline std::string to_string(universal_value const &x) noexcept
 {
     switch (x.intrinsic.index()) {
     case 0:

@@ -11,12 +11,12 @@ namespace TTauri::GUI::Widgets {
 using namespace std::literals;
 
 
-ImageWidget::ImageWidget(URL path) :
+ImageWidget::ImageWidget(URL path) noexcept :
     Widget(), path(std::move(path))
 {
 }
 
-void ImageWidget::drawBackingImage()
+void ImageWidget::drawBackingImage() noexcept
 {
     if (backingImage->state == GUI::PipelineImage::Image::State::Uploaded) {
         return;
@@ -50,7 +50,7 @@ void ImageWidget::drawBackingImage()
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset)
+void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset) noexcept
 {
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 

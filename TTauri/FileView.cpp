@@ -50,7 +50,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
 FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
     FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size) {}
 
-FileView::FileView(FileView &&other) :
+FileView::FileView(FileView &&other) noexcept:
     fileMappingObject(std::move(other.fileMappingObject)),
     offset(other.offset),
     bytes(other.bytes)

@@ -94,9 +94,9 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
     try {
         //LOG_DEBUG("presentQueue %i", presentImageIndices.at(0));
         let result = device->presentQueue.presentKHR({
-            boost::numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
-            boost::numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
-            });
+            numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
+            numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
+        });
 
         switch (result) {
         case vk::Result::eSuccess:
@@ -172,8 +172,8 @@ void Window_vulkan::build()
         imagePipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
 
         windowChangedSize({
-            boost::numeric_cast<float>(swapchainImageExtent.width),
-            boost::numeric_cast<float>(swapchainImageExtent.height)
+            numeric_cast<float>(swapchainImageExtent.width),
+            numeric_cast<float>(swapchainImageExtent.height)
         });
         state = State::ReadyToRender;
     }
@@ -395,7 +395,7 @@ Window_base::State Window_vulkan::buildSwapchain()
         1, // imageArrayLayers
         vk::ImageUsageFlagBits::eColorAttachment,
         sharingMode,
-        sharingMode == vk::SharingMode::eConcurrent ? boost::numeric_cast<uint32_t>(sharingQueueFamilyAllIndices.size()) : 0,
+        sharingMode == vk::SharingMode::eConcurrent ? numeric_cast<uint32_t>(sharingQueueFamilyAllIndices.size()) : 0,
         sharingMode == vk::SharingMode::eConcurrent ? sharingQueueFamilyAllIndices.data() : nullptr,
         vk::SurfaceTransformFlagBitsKHR::eIdentity,
         vk::CompositeAlphaFlagBitsKHR::eOpaque,
@@ -454,7 +454,7 @@ void Window_vulkan::buildFramebuffers()
         auto framebuffer = device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             firstRenderPass,
-            boost::numeric_cast<uint32_t>(attachments.size()),
+            numeric_cast<uint32_t>(attachments.size()),
             attachments.data(),
             swapchainImageExtent.width,
             swapchainImageExtent.height,
@@ -512,9 +512,9 @@ void Window_vulkan::buildRenderPasses()
         vk::SubpassDescription{
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            boost::numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
             inputAttachmentReferences.data(),
-            boost::numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data()
         }
     };
@@ -532,11 +532,11 @@ void Window_vulkan::buildRenderPasses()
 
     vk::RenderPassCreateInfo const renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),
-        boost::numeric_cast<uint32_t>(attachmentDescriptions.size()),
+        numeric_cast<uint32_t>(attachmentDescriptions.size()),
         attachmentDescriptions.data(),
-        boost::numeric_cast<uint32_t>(subpassDescriptions.size()),
+        numeric_cast<uint32_t>(subpassDescriptions.size()),
         subpassDescriptions.data(),
-        boost::numeric_cast<uint32_t>(subpassDependency.size()),
+        numeric_cast<uint32_t>(subpassDependency.size()),
         subpassDependency.data()
     };
 

@@ -12,12 +12,12 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std;
 
-WindowToolbarWidget::WindowToolbarWidget() :
+WindowToolbarWidget::WindowToolbarWidget() noexcept :
     Widget()
 {
 }
 
-void WindowToolbarWidget::setParent(Widget *parent)
+void WindowToolbarWidget::setParent(Widget *parent) noexcept
 {
     Widget::setParent(parent);
 
@@ -69,7 +69,7 @@ void WindowToolbarWidget::setParent(Widget *parent)
     }
 }
 
-PipelineImage::Backing::ImagePixelMap WindowToolbarWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
+PipelineImage::Backing::ImagePixelMap WindowToolbarWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     auto linearMap = Draw::PixelMap<wsRGBA>{ image->extent };
     fill(linearMap, wsRGBA{ 0x00000088 });
@@ -77,7 +77,7 @@ PipelineImage::Backing::ImagePixelMap WindowToolbarWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset)
+void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept
 {
     required_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
@@ -102,7 +102,7 @@ void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Ve
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const
+HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const noexcept
 {
     if (trafficLightButtons->box.contains(position)) {
         return trafficLightButtons->hitBoxTest(position);

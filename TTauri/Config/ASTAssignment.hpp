@@ -11,13 +11,13 @@ struct ASTAssignment : ASTExpression {
     ASTExpression *key;
     ASTExpression *expression;
 
-    ASTAssignment(Location location, ASTExpression *key, ASTExpression *expression) : ASTExpression(location), key(key), expression(expression) {}
+    ASTAssignment(Location location, ASTExpression *key, ASTExpression *expression) noexcept : ASTExpression(location), key(key), expression(expression) {}
     ~ASTAssignment() {
         delete key;
         delete expression;
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         return key->string() + ":" + expression->string();
     }
 

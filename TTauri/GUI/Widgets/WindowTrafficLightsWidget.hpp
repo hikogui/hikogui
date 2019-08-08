@@ -33,7 +33,7 @@ public:
 
     Draw::Path applicationIcon;
 
-    WindowTrafficLightsWidget(Draw::Path applicationIcon);
+    WindowTrafficLightsWidget(Draw::Path applicationIcon) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     WindowTrafficLightsWidget(const WindowTrafficLightsWidget &) = delete;
@@ -41,26 +41,26 @@ public:
     WindowTrafficLightsWidget(WindowTrafficLightsWidget &&) = delete;
     WindowTrafficLightsWidget &operator=(WindowTrafficLightsWidget &&) = delete;
 
-    virtual void setParent(Widget *parent);
+    virtual void setParent(Widget *parent) noexcept;
 
-    int state() const;
+    int state() const noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, int& offset) override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, int& offset) noexcept override;
 
-    void handleMouseEvent(MouseEvent event) override;
-    HitBox hitBoxTest(glm::vec2 position) const override;
+    void handleMouseEvent(MouseEvent event) noexcept override;
+    HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 
 private:
-    std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const;
+    std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const noexcept;
 
-    Draw::PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image);
-    Draw::PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image);
+    Draw::PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
+    Draw::PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;
 
-    static void drawCross(Draw::Path &path, glm::vec2 position, float radius);
-    static void drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius);
-    static void drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius);
+    static void drawCross(Draw::Path &path, glm::vec2 position, float radius) noexcept;
+    static void drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius) noexcept;
+    static void drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius) noexcept;
 
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
 
     PipelineImage::Backing backingImage; 
 };

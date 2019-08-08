@@ -36,7 +36,7 @@ struct MouseButtons {
     bool controlKey:1;
     bool shiftKey:1;
 
-    MouseButtons() :
+    MouseButtons() noexcept :
         leftButton(false),
         middleButton(false),
         rightButton(false),
@@ -60,7 +60,7 @@ struct MouseEvent {
     //! Buttons that are pressed/held down.
     MouseButtons down;
 
-    MouseEvent() :
+    MouseEvent() noexcept :
         type(Type::None),
         position(),
         cause(),
@@ -69,7 +69,7 @@ struct MouseEvent {
     }
 };
 
-inline MouseEvent ExitedMouseEvent(glm::vec2 position={0.0, 0.0}) {
+inline MouseEvent ExitedMouseEvent(glm::vec2 position={0.0, 0.0}) noexcept {
     MouseEvent event;
     event.position = position;
     event.type = MouseEvent::Type::Exited;

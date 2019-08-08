@@ -61,7 +61,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32
     let numberOfRectangles = numberOfVertices / 4;
     let numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
-        boost::numeric_cast<uint32_t>(numberOfTriangles * 3),
+        numeric_cast<uint32_t>(numberOfTriangles * 3),
         1,
         0,
         0,
@@ -82,7 +82,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
     }, {
         1, // binding
         vk::DescriptorType::eSampledImage,
-        boost::numeric_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
+        numeric_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
         vk::ShaderStageFlagBits::eFragment
     } };
 }
@@ -105,7 +105,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
         frameBufferObject.descriptorSet,
         1, // destBinding
         0, // arrayElement
-        boost::numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
+        numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
         vk::DescriptorType::eSampledImage,
         sharedImagePipeline->atlasDescriptorImageInfos.data(),
         nullptr, // bufferInfo

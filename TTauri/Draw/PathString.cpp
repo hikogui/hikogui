@@ -5,7 +5,7 @@
 
 namespace TTauri::Draw {
 
-glm::vec2 PathString::advance() const
+glm::vec2 PathString::advance() const noexcept
 {
     glm::vec2 totalAdvance = {0.0, 0.0};
     for (int i = 0; i < size(); i++) {
@@ -14,7 +14,7 @@ glm::vec2 PathString::advance() const
     return totalAdvance;
 }
 
-glm::vec2 PathString::ascender() const
+glm::vec2 PathString::ascender() const noexcept
 {
     glm::vec2 maxAscender = {0.0, 0.0};
 
@@ -27,7 +27,7 @@ glm::vec2 PathString::ascender() const
     return maxAscender;
 }
 
-glm::vec2 PathString::descender() const
+glm::vec2 PathString::descender() const noexcept
 {
     glm::vec2 maxDescender = {0.0, 0.0};
 
@@ -40,7 +40,7 @@ glm::vec2 PathString::descender() const
     return maxDescender;
 }
 
-glm::vec2 PathString::capHeight() const
+glm::vec2 PathString::capHeight() const noexcept
 {
     glm::vec2 maxCapHeight = {0.0, 0.0};
 
@@ -53,34 +53,23 @@ glm::vec2 PathString::capHeight() const
     return maxCapHeight;
 }
 
-glm::vec2 PathString::getStartPosition() const
+glm::vec2 PathString::getStartPosition() const noexcept
 {
-    glm::vec2 v;
+    let v =
+        (alignment == HorizontalAlignment::Left) ? glm::vec2{0.0, 0.0} :
+        (alignment == HorizontalAlignment::Right) ? -advance() :
+        (alignment == HorizontalAlignment::Center) ? advance() * -0.5f :
+        (no_default, glm::vec2{});
 
-    if (alignment == HorizontalAlignment::Left) {
-        v = {0.0, 0.0};
-    } else if (alignment == HorizontalAlignment::Right) {
-        v = -advance();
-    } else if (alignment == HorizontalAlignment::Center) {
-        v = advance() * -0.5f;
-    } else {
-        no_default;
-    }
-
-    if (alignment == VerticalAlignment::Base) {
-        return v;
-    } else if (alignment == VerticalAlignment::Bottom) {
-        return v - descender();
-    } else if (alignment == VerticalAlignment::Top) {
-        return v - ascender();
-    } else if (alignment == VerticalAlignment::Middle) {
-        return v - capHeight() * 0.5f;
-    } else {
-        no_default;
-    }
+    return
+        (alignment == VerticalAlignment::Base) ? v :
+        (alignment == VerticalAlignment::Bottom) ? v - descender() :
+        (alignment == VerticalAlignment::Top) ? v - ascender() :
+        (alignment == VerticalAlignment::Middle) ? v - capHeight() * 0.5f :
+        (no_default, glm::vec2{});
 }
 
-glm::vec2 PathString::cursorAdvance(int graphemeIndex) const
+glm::vec2 PathString::cursorAdvance(int graphemeIndex) const noexcept
 {
     auto totalAdvance = glm::vec2{0.0f, 0.0f};
 
@@ -96,7 +85,7 @@ glm::vec2 PathString::cursorAdvance(int graphemeIndex) const
     return totalAdvance;
 }
 
-Path PathString::toPath(wsRGBA defaultColor) const
+Path PathString::toPath(wsRGBA defaultColor) const noexcept
 {
     auto r = Path{};
 
@@ -129,12 +118,12 @@ Path PathString::toPath(wsRGBA defaultColor) const
     return r;
 }
 
-PathString operator*(glm::mat3x3 const &lhs, PathString rhs)
+PathString operator*(glm::mat3x3 const &lhs, PathString rhs) noexcept
 {
     return rhs *= lhs;
 }
 
-PathString &operator*=(PathString &lhs, glm::mat3x3 const &rhs)
+PathString &operator*=(PathString &lhs, glm::mat3x3 const &rhs) noexcept
 {
     for (auto &glyph: lhs.paths) {
         glyph *= rhs;
@@ -142,17 +131,17 @@ PathString &operator*=(PathString &lhs, glm::mat3x3 const &rhs)
     return lhs;
 }
 
-PathString operator+(Alignment lhs, PathString rhs)
+PathString operator+(Alignment lhs, PathString rhs) noexcept
 {
     return rhs += lhs;
 }
 
-PathString operator+(PathString lhs, Alignment rhs)
+PathString operator+(PathString lhs, Alignment rhs) noexcept
 {
     return lhs += rhs;
 }
 
-PathString &operator+=(PathString &lhs, Alignment rhs)
+PathString &operator+=(PathString &lhs, Alignment rhs) noexcept
 {
     lhs.alignment = rhs;
     return lhs;

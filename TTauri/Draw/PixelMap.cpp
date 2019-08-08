@@ -2,12 +2,13 @@
 // All rights reserved.
 
 #include "PixelMap.inl"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include <algorithm>
 
 namespace TTauri::Draw {
 
-void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
+gsl_suppress(bounds.4)
+void addTransparentBorder(PixelMap<uint32_t>& pixelMap) noexcept
 {
     uint8_t const u8invisibleMask[4] = { 0xff, 0xff, 0xff, 0 };
     uint32_t u32invisibleMask;
@@ -36,7 +37,7 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap)
     pixelMap[pixelMap.height - 1][pixelMap.width - 1] = pixelMap[pixelMap.height - 2][pixelMap.width - 2] & u32invisibleMask;
 }
 
-void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
+void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src) noexcept
 {
     required_assert(dst.width >= src.width);
     required_assert(dst.height >= src.height);
@@ -50,7 +51,7 @@ void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src)
     }
 }
 
-void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
+void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
 {
     required_assert(src.width >= dst.width);
     required_assert(src.height >= dst.height);
@@ -66,7 +67,7 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src)
     }
 }
 
-void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over)
+void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over) noexcept
 {
     required_assert(over.height >= under.height);
     required_assert(over.width >= under.width);
@@ -82,7 +83,7 @@ void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over)
     }
 }
 
-void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
+void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask) noexcept
 {
     required_assert(mask.height >= under.height);
     required_assert(mask.width >= under.width);
@@ -98,7 +99,7 @@ void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mas
     }
 }
 
-void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask)
+void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask) noexcept
 {
     required_assert(mask.height >= under.height);
     required_assert((mask.width * 3) >= under.width);
@@ -119,9 +120,10 @@ void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> co
     }
 }
 
-void desaturate(PixelMap<wsRGBA> &dst, float brightness)
+void desaturate(PixelMap<wsRGBA> &dst, float brightness) noexcept
 {
-    let _brightness = boost::numeric_cast<uint16_t>(brightness * 32768.0); 
+    required_assert(brightness > 0.0 && brightness <= 1.0);
+    let _brightness = static_cast<uint16_t>(brightness * 32768.0); 
 
     for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst.at(rowNr);
@@ -132,7 +134,7 @@ void desaturate(PixelMap<wsRGBA> &dst, float brightness)
     }
 }
 
-void subpixelFilter(PixelMap<uint8_t> &image)
+void subpixelFilter(PixelMap<uint8_t> &image) noexcept
 {
     horizontalFilter<5>(image, [](auto values) {
         return static_cast<uint8_t>((
@@ -146,7 +148,7 @@ void subpixelFilter(PixelMap<uint8_t> &image)
     );
 }
 
-void subpixelFlip(PixelMap<uint8_t> &image)
+void subpixelFlip(PixelMap<uint8_t> &image) noexcept
 {
     required_assert(image.width % 3 == 0);
 

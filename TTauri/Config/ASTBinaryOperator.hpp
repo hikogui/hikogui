@@ -34,14 +34,14 @@ struct ASTBinaryOperator : ASTExpression {
     ASTExpression *left;
     ASTExpression *right;
 
-    ASTBinaryOperator(Location location, Operator op, ASTExpression *left, ASTExpression *right) : ASTExpression(location), op(op), left(left), right(right) {}
+    ASTBinaryOperator(Location location, Operator op, ASTExpression *left, ASTExpression *right) noexcept : ASTExpression(location), op(op), left(left), right(right) {}
 
     ~ASTBinaryOperator() {
         delete left;
         delete right;
     }
 
-    std::string string() const override {
+    std::string string() const noexcept override {
         std::string s = left->string();
 
         switch (op) {

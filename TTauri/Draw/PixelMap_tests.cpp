@@ -4,7 +4,7 @@
 #include "PixelMap.inl"
 #include "Path.hpp"
 #include "BezierCurve.hpp"
-#include "TTauri/Color.hpp"
+#include "TTauri/wsRGBA.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

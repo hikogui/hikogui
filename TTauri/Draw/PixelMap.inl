@@ -8,16 +8,17 @@
 namespace TTauri::Draw {
 
 template<int KERNEL_SIZE, typename KERNEL>
-inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) {
+inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept
+{
     constexpr auto LOOK_AHEAD_SIZE = KERNEL_SIZE / 2;
 
     uint64_t values = 0;
-    int x;
+    auto x = -KERNEL_SIZE;
 
     // Start beyond the left pixel. Then lookahead upto
     // the point we can start the kernel.
     let leftEdgeValue = row[0];
-    for (x = -KERNEL_SIZE; x < 0; x++) {
+    for (; x < 0; x++) {
         values <<= 8;
 
         if ((LOOK_AHEAD_SIZE + x) < 0) {
@@ -49,7 +50,8 @@ inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) {
 }
 
 template<int KERNEL_SIZE, typename T, typename KERNEL>
-inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) {
+inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) noexcept
+{
     for (int rowNr = 0; rowNr < pixels.height; rowNr++) {
         auto row = pixels.at(rowNr);
         horizontalFilterRow<KERNEL_SIZE>(row, kernel);
@@ -57,7 +59,7 @@ inline void horizontalFilter(PixelMap<T>& pixels, KERNEL kernel) {
 }
 
 template<typename T>
-inline void fill(PixelMap<T> &dst)
+inline void fill(PixelMap<T> &dst) noexcept
 {
     for (int rowNr = 0; rowNr < dst.height; rowNr++) {
         auto row = dst.at(rowNr);
@@ -67,7 +69,7 @@ inline void fill(PixelMap<T> &dst)
 }
 
 template<typename T>
-inline void fill(PixelMap<T> &dst, T color)
+inline void fill(PixelMap<T> &dst, T color) noexcept
 {
     for (int rowNr = 0; rowNr < dst.height; rowNr++) {
         auto row = dst.at(rowNr);
@@ -78,7 +80,7 @@ inline void fill(PixelMap<T> &dst, T color)
 }
 
 template<typename T>
-inline void rotate90(PixelMap<T> &dst, PixelMap<T> const &src)
+inline void rotate90(PixelMap<T> &dst, PixelMap<T> const &src) noexcept
 {
     assert(dst.width >= src.height);
     assert(dst.height >= src.width);
@@ -94,7 +96,7 @@ inline void rotate90(PixelMap<T> &dst, PixelMap<T> const &src)
 }
 
 template<typename T>
-inline void rotate270(PixelMap<T> &dst, PixelMap<T> const &src)
+inline void rotate270(PixelMap<T> &dst, PixelMap<T> const &src) noexcept
 {
     assert(dst.width >= src.height);
     assert(dst.height >= src.width);

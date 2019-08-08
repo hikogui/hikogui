@@ -99,7 +99,7 @@ inline int64_t unpickle(Iter &i, Iter const &end)
         return (static_cast<uint8_t>(*(i++)) == PICKLE_TRUE) ? 1 : 0;
 
     case pickle_type_t::Double:
-        return boost::numeric_cast<int64_t>(unpickle<double>(i, end));
+        return numeric_cast<int64_t>(unpickle<double>(i, end));
 
     case pickle_type_t::Integer:
         goto impl;
@@ -145,7 +145,7 @@ inline uint64_t unpickle(Iter &i, Iter const &end)
         return (static_cast<uint8_t>(*(i++)) == PICKLE_TRUE) ? 1 : 0;
 
     case pickle_type_t::Double:
-        return boost::numeric_cast<uint64_t>(unpickle<double>(i, end));
+        return numeric_cast<uint64_t>(unpickle<double>(i, end));
 
     case pickle_type_t::Integer:
         goto impl;
@@ -185,7 +185,7 @@ inline double unpickle(Iter &i, Iter const &end)
         goto impl;
 
     case pickle_type_t::Integer:
-        return boost::numeric_cast<double>(unpickle<int64_t>(i, end));
+        return numeric_cast<double>(unpickle<int64_t>(i, end));
 
     default:
         BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
@@ -207,13 +207,13 @@ impl:
     return bit_cast<double>(u64value);
 }
 
-template<typename Iter> inline uint32_t unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<int32_t>(unpickle<uint64_t>(i, end)); }
-template<typename Iter> inline uint16_t unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<int16_t>(unpickle<uint64_t>(i, end)); }
-template<typename Iter> inline uint8_t unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<int8_t>(unpickle<uint64_t>(i, end)); }
-template<typename Iter> inline int32_t unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<int32_t>(unpickle<int64_t>(i, end)); }
-template<typename Iter> inline int16_t unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<int16_t>(unpickle<int64_t>(i, end)); }
-template<typename Iter> inline int8_t unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<int8_t>(unpickle<int64_t>(i, end)); }
-template<typename Iter> inline float unpickle(Iter &i, Iter const &end) { return boost::numeric_cast<float>(unpickle<double>(i, end)); }
+template<typename Iter> inline uint32_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int32_t>(unpickle<uint64_t>(i, end)); }
+template<typename Iter> inline uint16_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int16_t>(unpickle<uint64_t>(i, end)); }
+template<typename Iter> inline uint8_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int8_t>(unpickle<uint64_t>(i, end)); }
+template<typename Iter> inline int32_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int32_t>(unpickle<int64_t>(i, end)); }
+template<typename Iter> inline int16_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int16_t>(unpickle<int64_t>(i, end)); }
+template<typename Iter> inline int8_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int8_t>(unpickle<int64_t>(i, end)); }
+template<typename Iter> inline float unpickle(Iter &i, Iter const &end) { return numeric_cast<float>(unpickle<double>(i, end)); }
 
 template<typename Iter>
 inline std::string unpickle(Iter &i, Iter const &end)
@@ -344,19 +344,17 @@ inline R unpickle(std::string const &stream)
     return unpickle<R>(stream.begin(), stream.end());
 }
 
-inline std::string &pickleAppend(std::string &lhs, bool rhs)
+inline void pickleAppend(std::string &lhs, bool rhs) noexcept
 {
     lhs.push_back(rhs ? PICKLE_TRUE : PICKLE_FALSE);
-    return lhs;
 }
 
-inline std::string &pickleAppend(std::string &lhs, nullptr_t rhs)
+inline void pickleAppend(std::string &lhs, nullptr_t rhs) noexcept
 {
     lhs.push_back(PICKLE_NULL);
-    return lhs;
 }
 
-inline std::string &pickleAppend(std::string &lhs, double rhs)
+inline void pickleAppend(std::string &lhs, double rhs) noexcept
 {
     lhs.push_back(PICKLE_DOUBLE);
 
@@ -365,10 +363,9 @@ inline std::string &pickleAppend(std::string &lhs, double rhs)
         lhs.push_back(static_cast<char>(u64rhs & 0xff));
         u64rhs >>= 8;
     }
-    return lhs;
 }
 
-inline std::string &pickleAppend(std::string &lhs, uint64_t rhs)
+inline void pickleAppend(std::string &lhs, uint64_t rhs) noexcept
 {
     while (true) {
         uint8_t const last_value = rhs & 0x7f;
@@ -378,7 +375,7 @@ inline std::string &pickleAppend(std::string &lhs, uint64_t rhs)
             // rhs is fully shifted in, and the sign-bit is clear.
             // Add a stop bit to mark the last byte.
             lhs.push_back(last_value | 0x80);
-            return lhs;
+            return;
         } else {
             lhs.push_back(last_value);
         }
@@ -391,10 +388,10 @@ inline std::string &pickleAppend(std::string &lhs, uint64_t rhs)
  * Negative integers are encoded with at least two bytes. This
  * way the codes for 
  */
-inline std::string &pickleAppend(std::string &lhs, int64_t rhs)
+inline void pickleAppend(std::string &lhs, int64_t rhs) noexcept
 {
     if (rhs >= 0) {
-        return pickleAppend(lhs, static_cast<uint64_t>(rhs));
+        return;
     }
 
     lhs.push_back(rhs & 0x7f);
@@ -408,34 +405,33 @@ inline std::string &pickleAppend(std::string &lhs, int64_t rhs)
             // rhs is fully shifted in, and the sign-bit is set.
             // Add a stop bit to mark the last byte.
             lhs.push_back(last_value | 0x80);
-            return lhs;
+            return;
         } else {
             lhs.push_back(last_value);
         }
     }
 }
 
-inline std::string &pickleAppend(std::string &lhs, int32_t rhs) { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
-inline std::string &pickleAppend(std::string &lhs, int16_t rhs) { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
-inline std::string &pickleAppend(std::string &lhs, int8_t rhs) { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
-inline std::string &pickleAppend(std::string &lhs, uint32_t rhs) { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
-inline std::string &pickleAppend(std::string &lhs, uint16_t rhs) { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
-inline std::string &pickleAppend(std::string &lhs, uint8_t rhs) { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
-inline std::string &pickleAppend(std::string &lhs, void *rhs) { return pickleAppend(lhs, reinterpret_cast<size_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, int32_t rhs) noexcept { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, int16_t rhs) noexcept { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, int8_t rhs) noexcept { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, uint32_t rhs) noexcept { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, uint16_t rhs) noexcept { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, uint8_t rhs) noexcept { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, void *rhs) noexcept { return pickleAppend(lhs, reinterpret_cast<size_t>(rhs)); }
 
-inline std::string &pickleAppend(std::string &lhs, URL const &rhs)
+inline void pickleAppend(std::string &lhs, URL const &rhs) noexcept
 {
     auto s = to_string(rhs);
 
     lhs.push_back(PICKLE_URL);
     pickleAppend(lhs, s.size());
     lhs += s;
-    return lhs;
 }
 
 /*! Pickle a string.
  */
-inline std::string &pickleAppend(std::string &lhs, std::string_view const &rhs)
+inline void pickleAppend(std::string &lhs, std::string_view const &rhs) noexcept
 {
     if (rhs.size() <= 0x1f) {
         lhs.push_back(static_cast<uint8_t>(rhs.size()) | PICKLE_SMALL_STRING_MIN);
@@ -445,19 +441,20 @@ inline std::string &pickleAppend(std::string &lhs, std::string_view const &rhs)
     }
 
     lhs += rhs;
-    return lhs;
 }
 
-inline std::string &pickleAppend(std::string &lhs, char const rhs[]) {
+inline void pickleAppend(std::string &lhs, char const rhs[]) noexcept
+{
     return pickleAppend(lhs, std::string_view(rhs));
 }
 
-inline std::string &pickleAppend(std::string &lhs, std::string const &rhs) {
+inline void pickleAppend(std::string &lhs, std::string const &rhs) noexcept
+{
     return pickleAppend(lhs, std::string_view(rhs));
 }
 
 template<int S, typename T, glm::qualifier Q>
-inline std::string &pickleAppend(std::string &lhs, glm::vec<S,T,Q> const &rhs)
+inline void pickleAppend(std::string &lhs, glm::vec<S,T,Q> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_GLM_VEC);
 
@@ -466,11 +463,10 @@ inline std::string &pickleAppend(std::string &lhs, glm::vec<S,T,Q> const &rhs)
     }
 
     lhs.push_back(PICKLE_END_MARK);
-    return lhs;
 }
 
 template<typename T>
-inline std::string &pickleAppend(std::string &lhs, std::vector<T> const &rhs)
+inline void pickleAppend(std::string &lhs, std::vector<T> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_VECTOR);
 
@@ -479,11 +475,10 @@ inline std::string &pickleAppend(std::string &lhs, std::vector<T> const &rhs)
     }
 
     lhs.push_back(PICKLE_END_MARK);
-    return lhs;
 }
 
 template<typename K, typename V>
-inline std::string &pickleAppend(std::string &lhs, std::map<K,V> const &rhs)
+inline void pickleAppend(std::string &lhs, std::map<K,V> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_MAP);
 
@@ -493,11 +488,10 @@ inline std::string &pickleAppend(std::string &lhs, std::map<K,V> const &rhs)
     }
 
     lhs.push_back(PICKLE_END_MARK);
-    return lhs;
 }
 
 template<typename K, typename V>
-inline std::string &pickleAppend(std::string &lhs, std::unordered_map<K,V> const &rhs)
+inline void pickleAppend(std::string &lhs, std::unordered_map<K,V> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_MAP);
 
@@ -507,34 +501,32 @@ inline std::string &pickleAppend(std::string &lhs, std::unordered_map<K,V> const
     }
 
     lhs.push_back(PICKLE_END_MARK);
-    return lhs;
 }
 
 template<typename T, typename U, typename... Args>
-inline std::string &pickleAppend(std::string& dst, T&& firstArg, U&& secondArg, Args&&... args)
+inline void pickleAppend(std::string& dst, T&& firstArg, U&& secondArg, Args&&... args) noexcept
 {
     pickleAppend(dst, firstArg);
     pickleAppend(dst, secondArg);
 
     if constexpr (sizeof...(args) > 0) {
-        return pickleAppend(dst, args...);
-    } else {
-        return dst;
+        pickleAppend(dst, args...);
     }
 }
 
 template<typename... Args>
-inline std::string &clearAndPickleAppend(std::string &dst, Args&&... args)
+inline void clearAndPickleAppend(std::string &dst, Args&&... args) noexcept
 {
     dst.clear();
-    return pickleAppend(dst, args...);
+    pickleAppend(dst, args...);
 }
 
 template<typename... Args>
-[[nodiscard]] inline std::string pickle(Args&&... args) 
+[[nodiscard]] inline std::string pickle(Args&&... args) noexcept
 {
     auto dst = std::string{};
-    return pickleAppend(dst, args...);
+    pickleAppend(dst, args...);
+    return dst;
 }
 
 

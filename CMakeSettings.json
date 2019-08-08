@@ -1,6 +1,49 @@
 ﻿{
     "configurations": [
         {
+            "name": "x64-Analysis",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+            "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+            "cmakeCommandArgs": "",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "-C Debug",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "TTAURI_ENABLE_CODE_ANALYSIS",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "GLM_TEST_ENABLE_CXX_17",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "BUILD_SHARED_LIBS",
+                    "value": "OFF",
+                    "type": "STRING"
+                },
+                {
+                    "name": "GLM_TEST_ENABLE",
+                    "value": "OFF",
+                    "type": "STRING"
+                },
+                {
+                    "name": "GLM_TEST_ENABLE_SIMD_AVX2",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "gtest_force_shared_crt",
+                    "value": "ON",
+                    "type": "STRING"
+                }
+            ]
+        },
+        {
             "name": "x64-Debug",
             "generator": "Ninja",
             "configurationType": "Debug",

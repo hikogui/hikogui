@@ -8,11 +8,11 @@
 
 namespace TTauri::GUI::Widgets {
 
-Widget::Widget()
+Widget::Widget() noexcept
 {
 }
 
-Device *Widget::device() const
+Device *Widget::device() const noexcept
 {
     required_assert(window);
     auto device = window->device;
@@ -20,20 +20,20 @@ Device *Widget::device() const
     return device;
 }
 
-void Widget::setParent(Widget *parent)
+void Widget::setParent(Widget *parent) noexcept
 {
     this->window = parent->window;
     this->parent = parent;
 }
 
-void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset)
+void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept
 {
     for (auto &child : children) {
         child->pipelineImagePlaceVertices(vertices, offset);
     }
 }
 
-HitBox Widget::hitBoxTest(glm::vec2 position) const
+HitBox Widget::hitBoxTest(glm::vec2 position) const noexcept
 {
     for (auto& widget : children) {
         if (widget->box.contains(position)) {
@@ -43,7 +43,7 @@ HitBox Widget::hitBoxTest(glm::vec2 position) const
     return HitBox::NoWhereInteresting;
 }
 
-void Widget::handleMouseEvent(MouseEvent const event)
+void Widget::handleMouseEvent(MouseEvent const event) noexcept
 {
     assert(event.type != MouseEvent::Type::None);
 

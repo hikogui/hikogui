@@ -25,7 +25,7 @@ struct ExecutionContext {
     /*! Create an empty object on the stack.
      * This method is called at the start of a object-literal.
      */
-    void pushObject() {
+    void pushObject() noexcept {
         objectStack.emplace_back();
     }
 
@@ -33,7 +33,7 @@ struct ExecutionContext {
      * Override the active object whenever a section-statement
      * is encountered in an object-literal.
      */
-    void setSection(std::vector<std::string> section) {
+    void setSection(std::vector<std::string> section) noexcept {
         auto &item = objectStack.back();
         item.section = std::move(section);
     }
@@ -41,7 +41,7 @@ struct ExecutionContext {
     /*! Pop object.
      * This method is caled at the end of a object-literal.
      */
-    universal_value popObject() {
+    universal_value popObject() noexcept {
         return pop_back(objectStack).object;
     }
 
@@ -49,7 +49,7 @@ struct ExecutionContext {
      * When assignments are done, this is the first object that
      * is accessed.
      */
-    universal_value &currentObject() {
+    universal_value &currentObject() noexcept {
         auto &item = objectStack.back();
 
         auto *object = &(item.object);
@@ -63,7 +63,7 @@ struct ExecutionContext {
     /*! Get root object.
      * This method is called when the root-accesor operator is used.
      */
-    universal_value &rootObject() {
+    universal_value &rootObject() noexcept {
         auto &item = objectStack.front();
 
         return item.object;
@@ -72,7 +72,7 @@ struct ExecutionContext {
     /*! Get variable object
      * This method is called when the variable-accessor operator is used.
      */
-    universal_value &variableObject() {
+    universal_value &variableObject() noexcept {
         return _variableObject;
     }
 };

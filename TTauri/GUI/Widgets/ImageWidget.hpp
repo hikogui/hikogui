@@ -16,7 +16,7 @@ public:
 
     std::shared_ptr<GUI::PipelineImage::Image> backingImage;
 
-    ImageWidget(const URL path);
+    ImageWidget(const URL path) noexcept;
     ~ImageWidget() {}
 
     ImageWidget(const ImageWidget&) = delete;
@@ -24,9 +24,9 @@ public:
     ImageWidget(ImageWidget&&) = delete;
     ImageWidget&operator=(ImageWidget&&) = delete;
 
-    void drawBackingImage();
+    void drawBackingImage() noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset) override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset) noexcept override;
 
 private:
     std::string key;

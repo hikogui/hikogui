@@ -21,7 +21,7 @@ public:
 
     std::string label;
 
-    ButtonWidget(std::string const label);
+    ButtonWidget(std::string const label) noexcept;
     ~ButtonWidget() {}
 
     ButtonWidget(const ButtonWidget &) = delete;
@@ -29,7 +29,7 @@ public:
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
-    int state() {
+    int state() const noexcept{
         int r = 0;
         r |= value ? 1 : 0;
         r |= enabled ? 2 : 0;
@@ -38,13 +38,13 @@ public:
         return r;
     }
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept override;
 
-    void handleMouseEvent(GUI::MouseEvent event) override;
+    void handleMouseEvent(GUI::MouseEvent event) noexcept override;
 
 
 private:
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image);
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
 
     PipelineImage::Backing backingImage; 
 };

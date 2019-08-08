@@ -69,7 +69,7 @@ struct DeviceShared final {
      * \param page number in the atlas
      * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
      */
-    static glm::ivec3 getAtlasPositionFromPage(Page page) {
+    static glm::ivec3 getAtlasPositionFromPage(Page page) noexcept {
         let imageIndex = page.nr / atlasNrPagesPerImage;
         let pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 

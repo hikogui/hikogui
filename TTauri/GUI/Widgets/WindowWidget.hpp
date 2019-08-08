@@ -21,17 +21,16 @@ public:
 
     wsRGBA backgroundColor;
 
-    WindowWidget();
-    ~WindowWidget(){};
+    WindowWidget() noexcept;
 
     WindowWidget(const WindowWidget&) = delete;
     WindowWidget &operator=(const WindowWidget&) = delete;
     WindowWidget(WindowWidget&&) = delete;
     WindowWidget &operator=(WindowWidget&&) = delete;
 
-    void setParent(Window *window);
+    void setParent(Window *window) noexcept;
 
-    HitBox hitBoxTest(glm::vec2 position) const override;
+    HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 };
 
 }

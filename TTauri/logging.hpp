@@ -13,7 +13,7 @@ namespace TTauri {
 std::string getLastErrorMessage();
 #endif
 
-void initializeLogging();
+void initializeLogging() noexcept;
 
 template<typename F>
 inline std::string sformat(F format)

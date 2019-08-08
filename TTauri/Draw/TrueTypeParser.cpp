@@ -20,27 +20,27 @@ namespace TTauri::Draw {
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;
-    float value() const { return static_cast<float>(x.value()) / 65536.0f; }
+    float value() const noexcept { return static_cast<float>(x.value()) / 65536.0f; }
 };
 
 struct shortFrac_buf_t {
     big_int16_buf_t x;
-    float value() const { return static_cast<float>(x.value()) / 32768.0f; }
+    float value() const noexcept { return static_cast<float>(x.value()) / 32768.0f; }
 };
 
 struct FWord_buf_t {
     big_int16_buf_t x;
-    float value(uint16_t unitsPerEm) const { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
+    float value(uint16_t unitsPerEm) const noexcept { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
 };
 
 struct FByte_buf_t {
     int8_t x;
-    float value(uint16_t unitsPerEm) const { return static_cast<float>(x) / static_cast<float>(unitsPerEm); }
+    float value(uint16_t unitsPerEm) const noexcept { return static_cast<float>(x) / static_cast<float>(unitsPerEm); }
 };
 
 struct uFWord_buf_t {
     big_uint16_buf_t x;
-    float value(uint16_t unitsPerEm) const { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
+    float value(uint16_t unitsPerEm) const noexcept { return static_cast<float>(x.value()) / static_cast<float>(unitsPerEm); }
 };
 
 struct SFNTHeader {

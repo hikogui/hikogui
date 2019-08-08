@@ -11,7 +11,7 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 
-ButtonWidget::ButtonWidget(std::string const label) :
+ButtonWidget::ButtonWidget(std::string const label) noexcept :
     label(std::move(label)), Widget()
 {
     box.leftMargin = 10.0;
@@ -20,7 +20,7 @@ ButtonWidget::ButtonWidget(std::string const label) :
     box.topMargin = 10.0;
 }
 
-void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset)
+void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept
 {
     required_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
@@ -45,7 +45,7 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image)
+PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
@@ -90,7 +90,7 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
     return { std::move(image), std::move(linearMap) };
 }
 
-void ButtonWidget::handleMouseEvent(GUI::MouseEvent event) {
+void ButtonWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {
     if (enabled) {
         window->setCursor(GUI::Cursor::Clickable);
         pressed = event.down.leftButton;

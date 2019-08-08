@@ -13,9 +13,10 @@ namespace TTauri::Config {
 struct ASTObject : ASTExpression {
     std::vector<ASTExpression *> expressions;
 
-    ASTObject(Location location) : ASTExpression(location), expressions() { }
+    ASTObject(Location location) noexcept : ASTExpression(location), expressions() { }
 
-    ASTObject(Location location, ASTExpressionList *expressionList) : ASTExpression(location), expressions() {
+    gsl_suppress4(26489,lifetime.1,26486,lifetime.3)
+    ASTObject(Location location, ASTExpressionList *expressionList) noexcept : ASTExpression(location), expressions() {
         for (auto expression: expressionList->expressions) {
             if (auto obj = dynamic_cast<ASTObject *>(expression)) {
                 // An object will be merged with this.
@@ -35,17 +36,21 @@ struct ASTObject : ASTExpression {
         delete expressionList;
     }
 
+    gsl_suppress2(26486,lifetime.3)
     ~ASTObject() {
         for (auto expression: expressions) {
+            required_assert(expression != nullptr);
             delete expression;
         }
     }
 
-    std::string string() const override {
+    gsl_suppress2(26486,lifetime.3)
+    std::string string() const noexcept override {
         std::string s = "{";
 
         bool first = true;
         for (let expression: expressions) {
+            required_assert(expression != nullptr);
             if (!first) {
                 s += ",";
             }
@@ -57,10 +62,12 @@ struct ASTObject : ASTExpression {
         return s;
     }
 
+    gsl_suppress2(26486,lifetime.3)
     universal_value execute(ExecutionContext *context) const override {
         context->pushObject();
 
         for (let expression: expressions) {
+            required_assert(expression != nullptr);
             expression->executeStatement(context);
         }
 
@@ -73,7 +80,7 @@ struct ASTObject : ASTExpression {
     }
 };
 
-inline std::string to_string(ASTObject const &obj)
+inline std::string to_string(ASTObject const &obj) noexcept
 {
     return obj.string();
 }

@@ -28,9 +28,8 @@ namespace TTauri {
 #define TTAURI_URL_SUB_DELIMS "!$&'()*+,;="
 #define TTAURI_URL_PCHAR TTAURI_URL_UNRESERVED TTAURI_URL_SUB_DELIMS ":@"
 
-std::string url_encode(std::string const &input, std::string_view const unreservedCharacters=TTAURI_URL_UNRESERVED);
-std::string url_decode(std::string_view const &input, bool plusToSpace=false);
-
+std::string url_encode(std::string const &input, std::string_view const unreservedCharacters=TTAURI_URL_UNRESERVED) noexcept;
+std::string url_decode(std::string_view const &input, bool plusToSpace=false) noexcept;
 
 struct URL {
     std::string scheme = {};
@@ -42,33 +41,33 @@ struct URL {
     URL() = default;
     URL(char const *url);
     URL(std::string const &url);
-    URL(std::string const scheme, URLPath path);
+    URL(std::string const scheme, URLPath path) noexcept;
 
     std::string path_string() const;
     std::wstring path_wstring() const;
     std::string const &filename() const;
     std::string extension() const;
 
-    bool isAbsolute() const;
-    bool isRelative() const;
+    bool isAbsolute() const noexcept;
+    bool isRelative() const noexcept;
 
-    URL urlByAppendingPath(URL const &other) const;
-    URL urlByRemovingFilename() const;
+    URL urlByAppendingPath(URL const &other) const noexcept;
+    URL urlByRemovingFilename() const noexcept;
 
-    static URL urlFromWin32Path(std::wstring_view const path);
-    static URL urlFromCurrentWorkingDirectory();
+    static URL urlFromWin32Path(std::wstring_view const path) noexcept;
+    static URL urlFromCurrentWorkingDirectory() noexcept;
 };
 
-std::string to_string(URL const &url);
+std::string to_string(URL const &url) noexcept;
 
-bool operator==(URL const &lhs, URL const &rhs);
-bool operator<(URL const &lhs, URL const &rhs);
-inline bool operator>(URL const &lhs, URL const &rhs) { return rhs < lhs; }
-inline bool operator!=(URL const &lhs, URL const &rhs) { return !(lhs == rhs); }
-inline bool operator>=(URL const &lhs, URL const &rhs) { return !(lhs < rhs); }
-inline bool operator<=(URL const &lhs, URL const &rhs) { return !(lhs > rhs); }
+bool operator==(URL const &lhs, URL const &rhs) noexcept;
+bool operator<(URL const &lhs, URL const &rhs) noexcept;
+inline bool operator>(URL const &lhs, URL const &rhs) noexcept { return rhs < lhs; }
+inline bool operator!=(URL const &lhs, URL const &rhs) noexcept { return !(lhs == rhs); }
+inline bool operator>=(URL const &lhs, URL const &rhs) noexcept { return !(lhs < rhs); }
+inline bool operator<=(URL const &lhs, URL const &rhs) noexcept { return !(lhs > rhs); }
 
-inline URL operator/(URL const &lhs, URL const &rhs) { return lhs.urlByAppendingPath(rhs); }
+inline URL operator/(URL const &lhs, URL const &rhs) noexcept { return lhs.urlByAppendingPath(rhs); }
 
 inline std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
 {
@@ -87,6 +86,7 @@ inline T parseResource(URL const &location)
 }
 
 template <typename T>
+gsl_suppress2(26489,lifetime.1)
 inline T &getResource(URL const &location)
 {
     static std::unordered_map<URL,T> resourceCache = {};

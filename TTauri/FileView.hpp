@@ -18,12 +18,12 @@ struct FileView {
     ~FileView();
 
     FileView(FileView const &other) = delete;
-    FileView(FileView &&other);
+    FileView(FileView &&other) noexcept;
     FileView &operator=(FileView const &other) = delete;
     FileView &operator=(FileView &&other) = delete;
 
-    AccessMode accessMode() { return fileMappingObject->accessMode(); }
-    URL const &location() { return fileMappingObject->location(); }
+    AccessMode accessMode() const noexcept { return fileMappingObject->accessMode(); }
+    URL const &location() const noexcept { return fileMappingObject->location(); }
 
     void flush(void* base, size_t size);
 

@@ -13,7 +13,7 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-Device_base::Device_base()
+Device_base::Device_base() noexcept
 {
 }
 
@@ -22,7 +22,7 @@ Device_base::~Device_base()
     windows.clear();
 }
 
-std::string Device_base::string() const
+std::string Device_base::string() const noexcept
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
@@ -51,7 +51,7 @@ void Device_base::add(std::unique_ptr<Window> window)
     windows.push_back(std::move(window));
 }
 
-void Device_base::remove(Window &window)
+void Device_base::remove(Window &window) noexcept
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 

@@ -18,9 +18,11 @@ struct ASTNode {
     //! Location of node in the source file.
     Location location;
  
-    ASTNode(Location location) : location(location) {}
+    ASTNode(Location location) noexcept : location(location) {}
 
-    virtual std::string string() const {
+    virtual ~ASTNode() = default;
+
+    virtual std::string string() const noexcept {
         BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("string() not implemented for %s") %
             typeid(*this).name()).str())
             << errinfo_location(location)
