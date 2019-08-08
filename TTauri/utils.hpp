@@ -270,7 +270,7 @@ inline void cleanupWeakPointers(std::unordered_map<K,std::weak_ptr<T>> &v) noexc
 {
     auto i = v.begin();
     while (i != v.end()) {
-        if (i->second.expired() == 0) {
+        if (i->second.expired()) {
             i = v.erase(i);
         } else {
             i++;

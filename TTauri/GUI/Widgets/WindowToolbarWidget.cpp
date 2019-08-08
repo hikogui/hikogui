@@ -69,37 +69,11 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     }
 }
 
-PipelineImage::Backing::ImagePixelMap WindowToolbarWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
+void WindowToolbarWidget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept
 {
-    auto linearMap = Draw::PixelMap<wsRGBA>{ image->extent };
-    fill(linearMap, wsRGBA{ 0x00000088 });
+    PipelineFlat::Vertex::placeBox(vertices, offset, box.currentRectangle(), glm::vec4{0.0,0.0,0.0,0.5}, box.currentRectangle());
 
-    return { std::move(image), std::move(linearMap) };
-}
-
-void WindowToolbarWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept
-{
-    required_assert(window);
-    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
-        return drawImage(image);
-    }, "WindowToolbarWidget");
-
-    if (backingImage.image) {
-        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
-
-        GUI::PipelineImage::ImageLocation location;
-        location.depth = depth + 0.0f;
-        location.origin = {0.0, 0.0};
-        location.position = box.currentPosition() + location.origin;
-        location.scale = currentScale;
-        location.rotation = 0.0;
-        location.alpha = 1.0;
-        location.clippingRectangle = box.currentRectangle();
-
-        backingImage.image->placeVertices(location, vertices, offset);
-    }
-
-    Widget::pipelineImagePlaceVertices(vertices, offset);
+    Widget::pipelineFlatPlaceVertices(vertices, offset);
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const noexcept

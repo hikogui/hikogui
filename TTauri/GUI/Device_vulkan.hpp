@@ -5,6 +5,7 @@
 
 #include "Device_base.hpp"
 #include "PipelineImage_DeviceShared.hpp"
+#include "PipelineFlat_DeviceShared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
@@ -42,6 +43,7 @@ public:
     vk::CommandPool computeCommandPool;
 
     std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
+    std::unique_ptr<PipelineFlat::DeviceShared> flatPipeline;
 
     /*! List if extension required on this device.
      */

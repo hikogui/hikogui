@@ -23,6 +23,7 @@ ButtonWidget::ButtonWidget(std::string const label) noexcept :
 void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept
 {
     required_assert(window);
+
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
     }, "Button", label, state());

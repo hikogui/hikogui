@@ -7,11 +7,15 @@ namespace TTauri {
 
 #include "GUI/PipelineImage.vert.spv.inl"
 #include "GUI/PipelineImage.frag.spv.inl"
+#include "GUI/PipelineFlat.vert.spv.inl"
+#include "GUI/PipelineFlat.frag.spv.inl"
 
 StaticResources::StaticResources() noexcept
 {
     intrinsic.try_emplace(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
     intrinsic.try_emplace(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
+    intrinsic.try_emplace(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
+    intrinsic.try_emplace(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
 }
 
 gsl::span<std::byte const> const StaticResources::get(std::string const &filename) const

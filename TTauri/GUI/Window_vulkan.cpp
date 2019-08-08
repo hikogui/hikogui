@@ -6,6 +6,7 @@
 #include "Instance.hpp"
 #include "Device.hpp"
 #include "PipelineImage.hpp"
+#include "PipelineFlat.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 #include <vector>
 
@@ -28,6 +29,7 @@ void Window_vulkan::initialize()
 
     Window_base::initialize();
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
+    flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
 }
 
 void Window_vulkan::waitIdle()
@@ -135,6 +137,7 @@ void Window_vulkan::build()
     if (state == State::NoDevice) {
         if (device) {
             imagePipeline->buildForNewDevice();
+            flatPipeline->buildForNewDevice();
             state = State::NoSurface;
         }
     }
@@ -145,6 +148,7 @@ void Window_vulkan::build()
             return;
         }
         imagePipeline->buildForNewSurface();
+        flatPipeline->buildForNewSurface();
         state = State::NoSwapchain;
     }
 
@@ -169,7 +173,8 @@ void Window_vulkan::build()
         buildRenderPasses();
         buildFramebuffers();
         buildSemaphores();
-        imagePipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
+        flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
+        imagePipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
 
         windowChangedSize({
             numeric_cast<float>(swapchainImageExtent.width),
@@ -188,6 +193,7 @@ void Window_vulkan::teardown()
         LOG_INFO("Tearing down because the window lost the swapchain.");
         waitIdle();
         imagePipeline->teardownForSwapchainLost();
+        flatPipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownFramebuffers();
         teardownRenderPasses();
@@ -197,6 +203,7 @@ void Window_vulkan::teardown()
         if (state >= State::SurfaceLost) {
             LOG_INFO("Tearing down because the window lost the drawable surface.");
             imagePipeline->teardownForSurfaceLost();
+            flatPipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = State::NoSurface;
 
@@ -204,6 +211,7 @@ void Window_vulkan::teardown()
                 LOG_INFO("Tearing down because the window lost the vulkan device.");
 
                 imagePipeline->teardownForDeviceLost();
+                flatPipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = State::NoDevice;
 
@@ -211,6 +219,7 @@ void Window_vulkan::teardown()
                     LOG_INFO("Tearing down because the window doesn't exist anymore.");
 
                     imagePipeline->teardownForWindowLost();
+                    flatPipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
                 }
@@ -252,7 +261,10 @@ void Window_vulkan::render()
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     device->resetFences({ renderFinishedFence });
 
-    let renderFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
+    // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
+    // images with alpha-channel.
+    let flatPipelineFinishedSemaphore = flatPipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
+    let renderFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
@@ -498,7 +510,8 @@ void Window_vulkan::buildRenderPasses()
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
             // XXX ePresentSrcKHR should only be used on the last pass.
-            vk::ImageLayout::ePresentSrcKHR // finalLayout
+            // Must eColorAttachmentOptimal with multiple-passes.
+            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
         }
     };
 
@@ -542,9 +555,16 @@ void Window_vulkan::buildRenderPasses()
 
     required_assert(device);
     firstRenderPass = device->createRenderPass(renderPassCreateInfo);
-    //attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
-    //followUpRenderPass = vulkanDevice->createRenderPass(renderPassCreateInfo);
-    // XXX also add lastRenderPass.
+
+    attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
+    attachmentDescriptions.at(0).initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    attachmentDescriptions.at(0).finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    followUpRenderPass = device->createRenderPass(renderPassCreateInfo);
+
+    attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
+    attachmentDescriptions.at(0).initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    attachmentDescriptions.at(0).finalLayout = vk::ImageLayout::ePresentSrcKHR;
+    lastRenderPass = device->createRenderPass(renderPassCreateInfo);
 }
 
 void Window_vulkan::teardownRenderPasses()
@@ -554,6 +574,7 @@ void Window_vulkan::teardownRenderPasses()
     required_assert(device);
     device->destroy(firstRenderPass);
     device->destroy(followUpRenderPass);
+    device->destroy(lastRenderPass);
 }
 
 void Window_vulkan::buildSemaphores()

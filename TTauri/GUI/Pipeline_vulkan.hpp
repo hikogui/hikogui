@@ -66,6 +66,7 @@ protected:
     vk::RenderPass renderPass;
     vk::Extent2D extent;
     vk::Rect2D scissor;
+    bool hasDescriptorSets = false;
     vk::DescriptorSetLayout descriptorSetLayout;
     vk::PipelineLayout pipelineLayout;
     vk::DescriptorPool descriptorPool;

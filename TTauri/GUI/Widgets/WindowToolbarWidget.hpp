@@ -28,14 +28,9 @@ public:
 
     void setParent(Widget *parent) noexcept override;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
 
     HitBox hitBoxTest(glm::vec2 position) const noexcept override;
-
-private:
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
-
-    PipelineImage::Backing backingImage; 
 };
 
 }

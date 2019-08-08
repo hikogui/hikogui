@@ -79,6 +79,11 @@ void Pipeline_vulkan::buildDescriptorSets()
 {
     let descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
+    hasDescriptorSets = descriptorSetLayoutBindings.size() > 0;
+    if (!hasDescriptorSets) {
+        return;
+    }
+
     const vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {
         vk::DescriptorSetLayoutCreateFlags(),
         numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
@@ -118,7 +123,9 @@ void Pipeline_vulkan::buildDescriptorSets()
 
 void Pipeline_vulkan::teardownDescriptorSets()
 {
-    let descriptorSets = transform<vector<vk::DescriptorSet>>(frameBufferObjects, [](auto x) { return x.descriptorSet; });
+    if (!hasDescriptorSets) {
+        return;
+    }
 
     device().destroy(descriptorPool);
     device().destroy(descriptorSetLayout);
@@ -152,7 +159,10 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     const auto vertexInputAttributeDescriptions = createVertexInputAttributeDescriptions();
     const auto shaderStages = createShaderStages();
 
-    const std::array<vk::DescriptorSetLayout, 1> descriptorSetLayouts = {descriptorSetLayout};
+    std::vector<vk::DescriptorSetLayout> descriptorSetLayouts;
+    if (hasDescriptorSets) {
+        descriptorSetLayouts.push_back(descriptorSetLayout);
+    }
 
     pipelineLayout = device().createPipelineLayout({
         vk::PipelineLayoutCreateFlags(),
@@ -211,19 +221,6 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         VK_FALSE, // alphaToCoverageEnable
         VK_FALSE // alphaToOneEnable
     };
-
-    /* Pre-multiplied alpha blending.
-    const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
-        VK_TRUE, // blendEnable
-        vk::BlendFactor::eOne, // srcColorBlendFactor
-        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
-        vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eOneMinusSrcAlpha, // dstAlphaBlendFactor
-        vk::BlendOp::eAdd, // aphaBlendOp
-        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    } };
-    */
 
     const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
         VK_TRUE, // blendEnable
@@ -361,7 +358,9 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t frameBufferIndex)
 
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {frameBufferObject.descriptorSet}, {});
+    if (hasDescriptorSets) {
+        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {frameBufferObject.descriptorSet}, {});
+    }
 
     drawInCommandBuffer(commandBuffer, frameBufferIndex);
 

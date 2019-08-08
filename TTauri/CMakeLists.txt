@@ -28,6 +28,8 @@ ADD_FLEX_BISON_DEPENDENCY(TTauriConfigScanner TTauriConfigParser)
 add_shader(Shader_objs
     GUI/PipelineImage.vert
     GUI/PipelineImage.frag
+    GUI/PipelineFlat.vert
+    GUI/PipelineFlat.frag
 )
 
 add_icon(Icon_objs 
@@ -66,6 +68,8 @@ set(TTauri_srcs
     GUI/VerticalSync_win32.cpp
     GUI/Pipeline_base.cpp
     GUI/Pipeline_vulkan.cpp
+    GUI/PipelineFlat.cpp
+    GUI/PipelineFlat_DeviceShared.cpp
     GUI/PipelineImage.cpp
     GUI/PipelineImage_DeviceShared.cpp
     GUI/PipelineImage_Image.cpp
@@ -138,9 +142,6 @@ target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERI
 if (MSVC)
     target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
 endif()
-
-
-
 
 add_executable(TTauriTests ${TTauriTests_srcs})
 target_link_libraries(TTauriTests TTauri gtest_main)

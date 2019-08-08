@@ -130,9 +130,11 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
 Device_vulkan::~Device_vulkan()
 {
     try {
-        [[gsl::suppress(f.6)]] {
+        gsl_suppress(f.6) {
             imagePipeline->destroy(gsl::make_not_null(this));
             imagePipeline = nullptr;
+            flatPipeline->destroy(gsl::make_not_null(this));
+            flatPipeline = nullptr;
 
             vmaDestroyAllocator(allocator);
 
@@ -214,6 +216,7 @@ void Device_vulkan::initializeDevice(Window const &window)
     }
 
     imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
+    flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(dynamic_cast<Device &>(*this));
 
     Device_base::initializeDevice(window);
 }

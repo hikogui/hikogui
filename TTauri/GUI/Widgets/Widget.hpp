@@ -4,6 +4,7 @@
 #pragma once
 
 #include "BoxModel.hpp"
+#include "../PipelineFlat_Delegate.hpp"
 #include "../PipelineImage_Delegate.hpp"
 #include "../PipelineImage_Backing.hpp"
 #include "../Window_forward.hpp"
@@ -30,7 +31,7 @@ namespace TTauri::GUI::Widgets {
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class Widget : public std::enable_shared_from_this<Widget>, public PipelineImage::Delegate {
+class Widget : public PipelineImage::Delegate, public PipelineFlat::Delegate {
 public:
     //! Convenient reference to the Window.
     Window *window;
@@ -79,6 +80,7 @@ public:
     Device *device() const noexcept;
 
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.

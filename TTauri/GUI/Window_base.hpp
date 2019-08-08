@@ -23,7 +23,7 @@ namespace TTauri::GUI {
  * The Window should not have any decorations, which are to be drawn by the GUI, because
  * modern design requires drawing of user interface elements in the border.
  */
-class Window_base : public std::enable_shared_from_this<Window_base> {
+class Window_base {
 public:
     enum class State {
         Initializing, //!< The window has not been initialized yet.

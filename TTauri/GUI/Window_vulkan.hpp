@@ -12,6 +12,9 @@ namespace TTauri::GUI {
 namespace PipelineImage {
 class PipelineImage;
 }
+namespace PipelineFlat {
+class PipelineFlat;
+}
 
 class Window_vulkan : public Window_base {
 public:
@@ -28,11 +31,13 @@ public:
 
     vk::RenderPass firstRenderPass;
     vk::RenderPass followUpRenderPass;
+    vk::RenderPass lastRenderPass;
 
     vk::Semaphore imageAvailableSemaphore;
     vk::Fence renderFinishedFence;
 
     std::unique_ptr<PipelineImage::PipelineImage> imagePipeline;
+    std::unique_ptr<PipelineFlat::PipelineFlat> flatPipeline;
 
     Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan();

@@ -8,6 +8,7 @@
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/GUI/PipelineImage_Backing.inl"
+#include "TTauri/GUI/PipelineFlat_Vertex.hpp"
 #include "TTauri/Draw/PixelMap.inl"
 #include "TTauri/Draw/PNG.hpp"
 #include "TTauri/Draw/attributes.hpp"

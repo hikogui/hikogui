@@ -15,7 +15,7 @@ namespace TTauri::GUI {
 
 /*! A Device that handles a set of windows.
  */
-class Device_base : public std::enable_shared_from_this<Device_base> {
+class Device_base {
 public:
     enum class State {
         NO_DEVICE,

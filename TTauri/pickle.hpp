@@ -391,7 +391,7 @@ inline void pickleAppend(std::string &lhs, uint64_t rhs) noexcept
 inline void pickleAppend(std::string &lhs, int64_t rhs) noexcept
 {
     if (rhs >= 0) {
-        return;
+        return pickleAppend(lhs, static_cast<uint64_t>(rhs));
     }
 
     lhs.push_back(rhs & 0x7f);
