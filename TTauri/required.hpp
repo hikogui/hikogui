@@ -13,6 +13,8 @@
  */
 #define let auto const
 
+/*! required assert will always abort and can not be disabled in production code.
+ */
 #define required_assert(x) if (!(x)) { std::terminate(); }
 
 #define no_default std::terminate()
