@@ -8,9 +8,13 @@
 #include <exception>
 #include <string>
 #include <atomic>
+#include <any>
+#include <unordered_map>
 
 namespace TTauri {
 struct URL;
+
+
 
 struct error : public std::exception {
     std::string _what;
@@ -74,7 +78,7 @@ struct error : public std::exception {
     }
 };
 
-#include TTAURI_THROW(x) throw (x).add("line", __LINE__).add("file", __FILE__)
+#define TTAURI_THROW(x) throw (x).add("line", __LINE__).add("file", __FILE__)
 
 /*! Error to throw when parsing some kind of document.
  * This should be the primary exception to throw when there is an error in the document.

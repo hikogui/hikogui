@@ -1,4 +1,8 @@
 
+
+#include "required.hpp"
+#include <atomic>
+
 #pragma once
 
 namespace TTauri {
@@ -6,118 +10,128 @@ namespace TTauri {
 inline void start_trace(char const *name);
 inline void stop_trace();
 
-struct trace_span {
+thread_local trace_span_current_id = 0;
+thread_local trace_span_depth = 0;
+thread_local trace_span_log_depth = 0;
+
+inline uint64_t trace_span_get_unique_id()
+{
+    static std::atomic<uint64_t> id = 0;
+    return id.fetch_add(1, std::memory_order_relaxed) + 1;
+}
+
+struct trace_span_base {
     using clock = hiperf_utc_clock;
 
+    /*! id of the current trace_span.
+     * zero means inactive trace_span
+     */
     uint64_t id;
-    const char *name;
-    std::unique_ptr<trace> parent;
-    bool _want_to_log = false;
 
-    typename hiperf_utc_clock::timepoint start_timestamp;
-    typename hiperf_utc_clock::timepoint stop_timestamp;
+    /*! id of the parent trace_span.
+     * zero means inactive trace_span
+     */
+    uint64_t parent_id;
 
-private:
+    /*! Depth of the parent stack.
+     */
+    uint64_t depth;
+
+    /*! Start timestamp when the trace was started.
+     */
+    typename hiperf_utc_clock::timepoint timestamp;
+
+    /*! The default constructor makes the trace inactive.
+     */
+    trace_span_base() :
+        id(0),
+        parent_id(0),
+        depth(0),
+        timestamp()
+    {
+    }
+
     /*! The constructor will make the start of a trace.
      *
      * start_trace() should be the only function that will cause this constructor to
      * be executed. start_trace will place this onto current_trace and set this' parent.
      */
-    trace_span(const char *name) : parent(), name(name) {
-        id = get_unique_id();
-        start_timestamp = now();
+    trace_span_base(bool) :
+        id(trace_span_get_unique_id()),
+        parent_id(trace_span_current_id),
+        depth(++trace_span_depth);
+        timestamp(hiperf_utc_clock::now())
+    {
+        std::atomic_thread_fence(std::memory_order_seq_cst);
     }
 
-    trace_span() = delete;
-    trace_span(trace_span const &other) = delete;
-    trace_span(trace_span &&other) = default;
-    trace_span &operator=(trace_span const &opther) = delete;
-    trace_span &operator=(trace_span &&other) = default;
-    ~trace_span() = default;
+    ~trace_span_base() {
+        if (id > 0) {
+            std::atomic_thread_fence(std::memory_order_seq_cst);
 
-    /*! Stop a trace.
-     *
-     */
-    stop() {
-        stop_timestamp = now();
+            let duration = hiperf_utc_clock::now() - timestamp;
 
-        if (want_to_log())
-    }
+            required_assert(trace_span_depth == depth);
+            --trace_span_depth;
+            if (trace_span_depth <= trace_span_log_depth) {
+                trace_span_log_depth = trace_span_depth;
+            }
 
-    bool want_to_log() {
-        if (_want_to_log) {
-            return true;
+            trace_span_current_id = parent_id;
         }
-
-        if (parent && parent->want_to_log()) {
-            return true;
-        }
-
     }
 
-    static typename hiperf_utc_clock::timepoint now() {
-        return hiperf_utc_clock::now();
+    trace_span_base(trace_span_base const &other) = delete;
+
+    trace_span_base(trace_span_base &&other) :
+        id(other.id),
+        parent_id(other.parent_id),
+        timestamp(other.timestamp)
+    {
+        other.id = 0;    
     }
 
-    static uint64_t get_unique_id() {
-        static std::atomic<uint64_t> id = 1;
-        return { i++ };
-    }
+    trace_span_base &operator=(trace_span_base const &opther) = delete;
 
-    friend void start_trace(char const *name);
-    friend void stop_trace();
-};
-
-inline thread_local auto current_trace = {};
-
-/*! Start a trace_span.
- * XXX static member.
- */
-inline void start_trace(char const *name) {
-    auto tmp = std::make_unique<trace_span>(name);
-    tmp->parent = move(current_trace);
-    current_trace = move(tmp);
-}
-
-/*! Stop a trace_span.
- */
-inline void stop_trace() {
-    current_trace->stop();
-    current_trace = std::move(current_trace->parent);
-}
-
-struct scoped_trace {
-    bool holds_trace;
-
-    /*! Private, so only literal strings can use it.
-     */
-    scoped_trace(char const *name) : holds_trace(true) {
-        start_trace(name);
-    }
-
-    scoped_trace() = delete;
-    scoped_trace(scoped_trace const &other) = delete;
-    scoped_trace(scoped_trace &&other) : holds_trace(other.holds_trace) {
-        other.holds_trace = false;
-    }
-
-    scoped_trace &operator=(scoped_trace const &other) = delete;
-    scoped_trace &operator=(scoped_trace &&other)  {
-        holds_trace = other.holds_trace;
-        other.holds_trace = false;
+    trace_span_base &operator=(trace_span_base &&other) {
+        id = other.id;
+        parent_id = other.parent_id;
+        timestamp = other.timestamp;
+        other.id = 0;
         return *this;
     }
 
-    ~scoped_trace() {
-        if (holds_trace) {
-            stop_trace();
+    /*! Check if this span needs to be logged.
+     * A parent will log when enable_logging() is called on its child.
+     * But any childs after of this parent afterwards need not log.
+     */
+    void is_logging_enabled const {
+        return depth <= trace_span_log_depth;
+    }
+
+    /*! Enable logging for this span, and all parents below it.
+     */
+    void enable_logging() const {
+        if (depth > trace_span_log_depth) {
+            trace_span_log_depth = depth;
         }
+    }
+
+    virtual std::string name() const noexcept = 0;
+};
+
+template<char... chars>
+struct trace_span final : public trace_span_base {
+    using tag = string_tag<chars...>;
+
+    std::string name() const noexcept override {
+        return { chars... };
     }
 };
 
-scoped_trace operator"" _trace(const char *name, size_t name_length)
-{
-    return scoped_trace(name);
+template<char... chars>
+trace_span<chars...> operator""_trace() {
+    return trace_span<chars...>{true};
 }
 
 }
