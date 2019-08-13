@@ -11,12 +11,6 @@ namespace TTauri {
 constexpr int MAX_NR_COUNTERS = 1000;
 
 template<char... chars>
-using string_tag = std::integer_sequence<char, chars...>;
-
-template<char... chars>
-constexpr string_tag<chars...> operator""_tag() { return { }; }
-
-template<char... chars>
 inline auto &get_counter_ref(string_tag<chars...>) noexcept
 {
     static std::atomic<uint64_t> counter = 0;

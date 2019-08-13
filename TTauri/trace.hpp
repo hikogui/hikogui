@@ -20,6 +20,8 @@ inline uint64_t trace_span_get_unique_id()
     return id.fetch_add(1, std::memory_order_relaxed) + 1;
 }
 
+struct 
+
 struct trace_span_base {
     using clock = hiperf_utc_clock;
 
@@ -39,7 +41,11 @@ struct trace_span_base {
 
     /*! Start timestamp when the trace was started.
      */
-    typename hiperf_utc_clock::timepoint timestamp;
+    typename clock::timepoint timestamp;
+
+    /*! Duration of the trace-span.
+     */
+    typename clock::duration duration;
 
     /*! The default constructor makes the trace inactive.
      */
@@ -60,17 +66,24 @@ struct trace_span_base {
         id(trace_span_get_unique_id()),
         parent_id(trace_span_current_id),
         depth(++trace_span_depth);
-        timestamp(hiperf_utc_clock::now())
+        timestamp(clock::now())
     {
-        std::atomic_thread_fence(std::memory_order_seq_cst);
     }
 
-    ~trace_span_base() {
+    virtual ~trace_span_base() {
         if (id > 0) {
-            std::atomic_thread_fence(std::memory_order_seq_cst);
+            duration = clock::now() - timestamp;
 
-            let duration = hiperf_utc_clock::now() - timestamp;
+            // Send the log to the log thread.
+            if (is_logging_enabled()) {
+                log_param<chars....>(id);
+                log_param(id, parent_id);
+                log_param(id, timestamp);
+                log_param(id, duration);
 
+            }
+
+            // Update global-thread state for the end of this trace-span.
             required_assert(trace_span_depth == depth);
             --trace_span_depth;
             if (trace_span_depth <= trace_span_log_depth) {
@@ -116,18 +129,13 @@ struct trace_span_base {
             trace_span_log_depth = depth;
         }
     }
-
-    virtual std::string name() const noexcept = 0;
 };
 
 template<char... chars>
 struct trace_span final : public trace_span_base {
     using tag = string_tag<chars...>;
-
-    std::string name() const noexcept override {
-        return { chars... };
-    }
 };
+
 
 template<char... chars>
 trace_span<chars...> operator""_trace() {
