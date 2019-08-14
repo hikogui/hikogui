@@ -26,7 +26,7 @@ struct ASTAssignment : ASTExpression {
 
         if (holds_alternative<Undefined>(value)) {
             TTAURI_THROW(invalid_operation_error("right hand side value of assignment is Undefined")
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
 

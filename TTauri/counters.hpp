@@ -14,23 +14,23 @@ constexpr int MAX_NR_COUNTERS = 1000;
 
 inline auto &get_counter_map() noexcept
 {
-    static wfree_unordered_map<MAX_NR_COUNTERS, string_tag, gsl::not_null<std::atomic<uint64_t> *>> counter_map = {};
+    static wfree_unordered_map<MAX_NR_COUNTERS, string_tag, std::atomic<int64_t> *> counter_map = {};
     return counter_map;
 }
 
-inline std::vector<string_tag> get_counter_tags()
-{
-    auto counter_map = get_counter_map();
-    return counter_map.keys();
-}
+//inline std::vector<string_tag> get_counter_tags()
+//{
+//    auto counter_map = get_counter_map();
+//    return counter_map.keys();
+//}
 
 template<string_tag TAG>
 struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.
     alignas(std::hardware_destructive_interference_size)
-    static std::atomic<int64_t> counter = 0;
+    inline static std::atomic<int64_t> counter = 0;
 
-    int64_t increment() noexcept {
+    int64_t increment() const noexcept {
         let value = counter.fetch_add(1, std::memory_order_relaxed);
 
         if (value == 0) {
@@ -44,6 +44,8 @@ struct counter_functor {
     int64_t read() const noexcept {
         return counter.load(std::memory_order_relaxed);
     }
+
+    // Don't implement readAndSet, a set to zero would cause the counters to be reinserted.
 };
 
 template<string_tag TAG>
@@ -60,16 +62,20 @@ inline int64_t read_counter() noexcept
 
 inline int64_t read_counter(string_tag tag) noexcept
 {
-    auto counter_map = get_counter_map();
-    auto i = counter_map.find(tag);
-    if (i == counter_map.end()) {
+    auto &counter_map = get_counter_map();
+    if (let value = counter_map.get(tag)) {
+        return (*value)->load(std::memory_order_relaxed);
+    } else {
         // The counter may have not been incremented yet,
         // thus it was not yet added to the map.
         // which means the counter value is still zero.
-        return 0;
-    } else {
-        return i->second->load(std::memory_order_relaxed);
+        return 0;    
     }
+}
+
+inline int64_t read_counter(std::string_view name) noexcept
+{
+    return read_counter(string_to_tag(name));
 }
 
 }

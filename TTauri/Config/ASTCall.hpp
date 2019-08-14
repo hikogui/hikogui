@@ -105,7 +105,7 @@ struct ASTCall : ASTExpression {
                 lv = v + result;
             }
         } catch (error &e) {
-            e << error_info("location", location);
+            e << error_info<"location"_tag>(location);
             throw;
         }
 

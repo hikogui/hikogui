@@ -247,7 +247,7 @@ constexpr uint8_t char_to_nibble(char c)
         return (c - 'A') + 10;
     } else {
         TTAURI_THROW(parse_error("Could not parse hexadecimal digit")
-            << error_info("parse_string", std::string(1, c))
+            << error_info<"parse_string"_tag>(std::string(1, c))
         );
     }
 }

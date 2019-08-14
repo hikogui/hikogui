@@ -33,8 +33,8 @@ ASTObject *parseConfigFile(URL const &path)
 
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
         TTAURI_THROW(io_error("Could not open file")
-            << error_info("url", path)
-            << error_info("errno", errno)
+            << error_info<"url"_tag>(path)
+            << error_info<"errno"_tag>(errno)
         );
     }
 
@@ -49,14 +49,14 @@ ASTObject *parseConfigFile(URL const &path)
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {
         TTAURI_THROW(io_error("Could not close file")
-            << error_info("url", path)
-            << error_info("errno", errno)
+            << error_info<"url"_tag>(path)
+            << error_info<"errno"_tag>(errno)
         );
     }
 
     if (r != 0) {
         TTAURI_THROW(parse_error(context.errorMessage)
-            << error_info("location", context.errorLocation)
+            << error_info<"location"_tag>(context.errorLocation)
         );
     }
 

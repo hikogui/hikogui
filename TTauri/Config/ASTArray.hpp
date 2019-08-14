@@ -79,7 +79,7 @@ struct ASTArray : ASTExpression {
 
         } else {
             TTAURI_THROW(invalid_operation_error("syntax error, expected 0 or 1 expression in section statement")
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
     }

@@ -57,8 +57,8 @@ File::File(URL const &location, AccessMode accessMode) :
 
     if ((intrinsic = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) == INVALID_HANDLE_VALUE) {
         TTAURI_THROW(io_error("Could not open file")
-            << error_info("error-message", getLastErrorMessage())
-            << error_info("url", location)
+            << error_info<"error-message"_tag>(getLastErrorMessage())
+            << error_info<"url"_tag>(location)
         );
     }
 #endif
@@ -74,8 +74,8 @@ void File::close()
     if (intrinsic != INVALID_HANDLE_VALUE) {
         if (!CloseHandle(intrinsic)) {
             TTAURI_THROW(io_error("Could not close file")
-                << error_info("error-message", getLastErrorMessage())
-                << error_info("url", location)
+                << error_info<"error-message"_tag>(getLastErrorMessage())
+                << error_info<"url"_tag>(location)
             );
         }
         intrinsic = INVALID_HANDLE_VALUE;

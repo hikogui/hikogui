@@ -6,11 +6,11 @@
 #include "required.hpp"
 #include <atomic>
 #include <array>
+#include <optional>
 
 namespace TTauri {
 
 template<typename K, typename V>
-alignas(16)
 struct wait_free_unordered_map_item {
     /*! Hash for quick comparison and for state.
      * Special values:
@@ -20,6 +20,7 @@ struct wait_free_unordered_map_item {
      *
      * Natural hash values 0, 1, 2 must be mapped to 3, 4, 5.
      */
+    alignas(16)
     std::atomic<V> value;
     std::atomic<size_t> hash = 0;
     K key;
@@ -32,9 +33,9 @@ public:
     using mapped_type = V;
 
 private:
-    constexpr size_t CAPACITY = MAX_NR_ITEMS * 2;
+    static constexpr size_t CAPACITY = MAX_NR_ITEMS * 2;
 
-    std::array<CAPACITY, wait_free_unordered_map_item> items;
+    std::array<wait_free_unordered_map_item<K,V>, CAPACITY> items;
 
 public:
     void insert(K key, V value) {
@@ -54,7 +55,7 @@ public:
 
             } else if (item_hash == 0) {
                 // Empty item.
-                if (item.hash.compare_exchange(item_hash, 1, std::memory_order_acquire)) { // Set to busy
+                if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order_acquire)) { // Set to busy
                     item.key = std::move(key);
                     item.value.store(value, std::memory_order_relaxed);
                     item.hash.store(hash_compare, std::memory_order_release);
@@ -68,7 +69,7 @@ public:
         }
     }
 
-    std::optional<K> get(K const &key) const {
+    std::optional<V> get(K const &key) const {
         let hash = std::hash<K>{}(key);
         let hash_compare = hash >= 3 ? hash : hash + 3;
 
@@ -90,7 +91,7 @@ public:
         }
     }
 
-    std::optional<K> erase(K const &key) {
+    std::optional<V> erase(K const &key) {
         let hash = std::hash<K>{}(key);
         let hash_compare = hash >= 3 ? hash : hash + 3;
 

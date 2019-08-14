@@ -40,7 +40,7 @@ struct ASTName : ASTExpression {
         if (i >= arguments.size()) {
             TTAURI_THROW(invalid_operation_error((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
                 % name % (i + 1) % typeid(T).name()).str())
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
 
@@ -48,14 +48,14 @@ struct ASTName : ASTExpression {
         if (!argument.is_promotable_to<T>()) {
             TTAURI_THROW(invalid_operation_error((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
                 % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
 
         if (lastArgument && i != (arguments.size() - 1)) {
             TTAURI_THROW(invalid_operation_error((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
                 % name % (i + 1) % arguments.size()).str())
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
 
@@ -80,11 +80,11 @@ struct ASTName : ASTExpression {
             // An error was captured from recursive parsing.
             // Assemble the error message from this error and throw it.
             std::string errorMessage;
-            if (let previousErrorMessage = e.get<std::string>("previous_error_message")) {
+            if (let previousErrorMessage = e.get<std::string, "previous-msg"_tag>()) {
                 errorMessage += *previousErrorMessage + "\n";
             }
 
-            if (let location = e.get<Location>("location")) {
+            if (let location = e.get<Location, "location"_tag>()) {
                 errorMessage += location->string() + ": ";
             }
 
@@ -92,8 +92,8 @@ struct ASTName : ASTExpression {
             errorMessage += ".";
 
             TTAURI_THROW(invalid_operation_error((boost::format("Could not include file '%s'") % path).str())
-                << error_info("location", location)
-                << error_info("previous_error_message", errorMessage)
+                << error_info<"location"_tag>(location)
+                << error_info<"previous-msg"_tag>(errorMessage)
             );
         }
     }
@@ -132,7 +132,7 @@ struct ASTName : ASTExpression {
             } else {
                 TTAURI_THROW(invalid_operation_error((boost::format("Expecting relative path argument to function '%s' got '%s'")
                     % name % path).str())
-                    << error_info("location", location)
+                    << error_info<"location"_tag>(location)
                 );
             }
         }
@@ -153,7 +153,7 @@ struct ASTName : ASTExpression {
 
         } else {
             TTAURI_THROW(invalid_operation_error((boost::format("Unknown function '%'") % name).str())
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
     }

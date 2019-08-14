@@ -94,7 +94,7 @@ URL::URL(std::string const &url)
 
     if (!std::regex_match(url.begin(), url.end(), m, URL_re)) {
         TTAURI_THROW(url_error("Could not parse URL")
-            << error_info("parse_string", url)
+            << error_info<"parse-string"_tag>(url)
         );
     }
 
@@ -134,7 +134,7 @@ std::string URL::path_string() const
 {
     if (scheme != "file") {
         TTAURI_THROW(url_error("URL is not a file.")
-            << error_info("url", *this)
+            << error_info<"url"_tag>(*this)
         );
     }
 

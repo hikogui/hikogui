@@ -8,7 +8,7 @@ namespace TTauri {
 
 void io_error::prepare_what() const noexcept {
     error::prepare_what();
-    if (let url = get<URL>("url")) {
+    if (let url = get<URL,"url"_tag>()) {
         _what += fmt::format(" (url={0})", to_string(*url));
     }
 }

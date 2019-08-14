@@ -45,7 +45,7 @@ struct ASTIndex : ASTExpression {
                 try {
                     return object_[index__];
                 } catch (error &e) {
-                    e << error_info("location", location);
+                    e << error_info<"location"_tag>(location);
                     throw;
                 }
 
@@ -55,7 +55,7 @@ struct ASTIndex : ASTExpression {
                 try {
                     return object_[index__];
                 } catch (error &e) {
-                    e << error_info("location", location);
+                    e << error_info<"location"_tag>(location);
                     throw;
                 }
 
@@ -65,7 +65,7 @@ struct ASTIndex : ASTExpression {
                         object_.type_name() %
                         index_.type_name()
                     ).str())
-                    << error_info("location", location)
+                    << error_info<"location"_tag>(location)
                 );
             }
 
@@ -74,14 +74,14 @@ struct ASTIndex : ASTExpression {
             try {
                 return object_.append();
             } catch (error &e) {
-                e << error_info("location", location);
+                e << error_info<"location"_tag>(location);
                 throw;
             }
 
         } else {
             TTAURI_THROW(invalid_operation_error(
                 (boost::format("Can not append to object of type %s") % object_.type_name()).str())
-                << error_info("location", location)
+                << error_info<"location"_tag>(location)
             );
         }
     }

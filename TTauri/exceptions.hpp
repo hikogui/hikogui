@@ -4,6 +4,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "string_tag.hpp"
 #include <boost/format.hpp>
 #include <fmt/format.h>
 #include <exception>
@@ -15,16 +16,28 @@
 
 namespace TTauri {
 
+template<string_tag TAG, typename T>
+struct error_info_t {
+    static constexpr string_tag tag = TAG;
+    T value;
+
+    error_info_t(T value) : value(std::move(value)) {}
+};
+
+template<string_tag TAG, typename T>
+inline auto error_info(T value) {
+    return error_info_t<TAG,T>(value);
+}
+
 class error : public std::exception {
     std::string _message;
-    std::unordered_map<std::string,std::any> _error_info = {};
+    std::unordered_map<string_tag,std::any> _error_info = {};
 
 protected:
     mutable std::string _what;
 
 public:
     error(std::string message) noexcept : _message(std::move(message)) {}
-    error() noexcept : _message() {}
 
     /*! Return the name of the exception.
      */
@@ -33,8 +46,8 @@ public:
     virtual void prepare_what() const noexcept {
         // XXX Strip off project directory from file.
         _what = fmt::format("{0},{1}:{2}: {3}.",
-            get("file", "<unknown>"),
-            get("line", 0),
+            get<"file"_tag>("<unknown>"),
+            get<"line"_tag>(0),
             name(),
             _message
         );
@@ -50,14 +63,14 @@ public:
     }
 
     /*! Get a value from the exception.
-     */
-    template<typename T>
-    std::optional<T> get(std::string const &name) const noexcept {
-        let i = _error_info.find(name);
+    */
+    template<typename T, string_tag TAG>
+    std::optional<T> get() const noexcept {
+        let i = _error_info.find(TAG);
         if (i == _error_info.end()) {
             return {};
         }
-        
+
         let &any_value = i->second;
         try {
             return std::any_cast<T>(any_value);
@@ -68,33 +81,28 @@ public:
 
     /*! Get a value from the exception.
     */
-    template<typename T>
-    T get(std::string const &name, T default_value) const noexcept {
-        if (let value = get<T>(name)) {
+    template<string_tag TAG, typename T>
+    T get(T default_value) const noexcept {
+        if (let value = get<T,TAG>()) {
             return *value;
         } else {
             return default_value;
         }
     }
 
-    template<typename T, typename O>
-    friend std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, std::pair<std::string,O> const &rhs) ;
+    template<typename T, string_tag TAG, typename O>
+    friend std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<TAG,O> const &rhs);
 };
 
-template<typename T>
-std::pair<std::string,T> error_info(std::string key, T value)
-{
-    return { std::move(key), std::move(value) };
-}
 
-template<typename T, typename O>
-std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, std::pair<std::string,O> const &rhs)
+template<typename T, string_tag TAG, typename O>
+inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<TAG,O> const &rhs)
 {
-    lhs._error_info[rhs.first] = rhs.second;
+    lhs._error_info[rhs.tag] = rhs.value;
     return lhs;
 }
 
-#define TTAURI_THROW(x) throw x << error_info("line", to_int(__LINE__)) << error_info("file", __FILE__)
+#define TTAURI_THROW(x) throw x << error_info<"line"_tag>(int{__LINE__}) << error_info<"file"_tag>(__FILE__)
 
 /*! Error to throw when parsing some kind of document.
  * This should be the primary exception to throw when there is an error in the document.
