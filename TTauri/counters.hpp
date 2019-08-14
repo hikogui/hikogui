@@ -4,65 +4,72 @@
 #pragma once
 
 #include "required.hpp"
+#include "string_tag.hpp"
 #include "wfree_unordered_map.hpp"
+#include <gsl/gsl>
 
 namespace TTauri {
 
 constexpr int MAX_NR_COUNTERS = 1000;
 
-template<char... chars>
-inline auto &get_counter_ref(string_tag<chars...>) noexcept
-{
-    static std::atomic<uint64_t> counter = 0;
-    return counter;
-}
-
 inline auto &get_counter_map() noexcept
 {
-    static wfree_unordered_map<MAX_NR_COUNTERS, std::string, std::atomic<uint64_t> *> counter_map = {};
+    static wfree_unordered_map<MAX_NR_COUNTERS, string_tag, gsl::not_null<std::atomic<uint64_t> *>> counter_map = {};
     return counter_map;
 }
 
-template<char... chars>
-inline void add_counter(std::atomic<uint64_t> &counter, string_tag<chars...>) noexcept
+inline std::vector<string_tag> get_counter_tags()
 {
     auto counter_map = get_counter_map();
-    let tag = std::string{chars...};
-    counter_map.insert(tag, &counter);
+    return counter_map.keys();
 }
 
-template<char... chars>
-inline uint64_t get_counter(string_tag<chars...>) noexcept
+template<string_tag TAG>
+struct counter_functor {
+    // Make sure non of the counters are false sharing cache-lines.
+    alignas(std::hardware_destructive_interference_size)
+    static std::atomic<int64_t> counter = 0;
+
+    int64_t increment() noexcept {
+        let value = counter.fetch_add(1, std::memory_order_relaxed);
+
+        if (value == 0) {
+            auto &counter_map = get_counter_map();
+            counter_map.insert(TAG, &counter);
+        }
+
+        return value + 1;
+    }
+
+    int64_t read() const noexcept {
+        return counter.load(std::memory_order_relaxed);
+    }
+};
+
+template<string_tag TAG>
+inline int64_t increment_counter() noexcept 
 {
-    auto counter = get_counter_ref<chars...>();
-    return counter.load(std::memory_order_relaxed);
+    return counter_functor<TAG>{}.increment();
 }
 
-inline uint64_t get_counter(std::string tag) noexcept
+template<string_tag TAG>
+inline int64_t read_counter() noexcept
 {
-    auto counter_map = get_counter_map();
-    auto counter = counter_map.get(tag);
-    required_assert(counter != nullptr);
-    return counter->load(std::memory_order_relaxed);
+    return counter_functor<TAG>{}.read();
 }
 
-inline bool has_counter(std::string tag) noexcept
+inline int64_t read_counter(string_tag tag) noexcept
 {
     auto counter_map = get_counter_map();
     auto i = counter_map.find(tag);
-    return i != counter_map.end();
-}
-
-template<char... chars>
-inline uint64_t increment_counter(string_tag<chars...>) noexcept
-{
-    auto &counter = get_counter_ref<chars...>();
-    auto value = counter.fetch_add(1, std::memory_order_relaxed);
-
-    if (value == 0) {
-        add_counter<chars...>(counter);
+    if (i == counter_map.end()) {
+        // The counter may have not been incremented yet,
+        // thus it was not yet added to the map.
+        // which means the counter value is still zero.
+        return 0;
+    } else {
+        return i->second->load(std::memory_order_relaxed);
     }
-    return value;
 }
 
 }
