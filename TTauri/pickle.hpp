@@ -54,7 +54,7 @@ template<typename Iter>
 inline pickle_type_t pickle_type(Iter &i, Iter const &end)
 {
     if (i == end) {
-        BOOST_THROW_EXCEPTION(ParseError("End of stream"));
+        TTAURI_THROW(parse_error("End of stream"));
     }
 
     switch (let c_ = static_cast<uint8_t>(*i)) {
@@ -83,7 +83,7 @@ inline pickle_type_t pickle_type(Iter &i, Iter const &end)
 template<typename R, typename Iter>
 inline R unpickle(Iter &&i, Iter &&end)
 {
-    BOOST_THROW_EXCEPTION(NotImplementedError("unpickle"));
+    TTAURI_THROW(not_implemented_error("unpickle"));
 }
 
 template<typename Iter>
@@ -105,7 +105,7 @@ inline int64_t unpickle(Iter &i, Iter const &end)
         goto impl;
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 
 impl:
@@ -151,7 +151,7 @@ inline uint64_t unpickle(Iter &i, Iter const &end)
         goto impl;
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 
 impl:
@@ -188,14 +188,14 @@ inline double unpickle(Iter &i, Iter const &end)
         return numeric_cast<double>(unpickle<int64_t>(i, end));
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 
 impl:
     i++;
 
     if ((end - i) < sizeof(u64value)) {
-        BOOST_THROW_EXCEPTION(ParseError("End of stream"));
+        TTAURI_THROW(parse_error("End of stream"));
     }
 
     uint64_t u64value = 0;
@@ -225,7 +225,7 @@ inline std::string unpickle(Iter &i, Iter const &end)
     case pickle_type_t::URL:
         goto impl;
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 
 impl:
@@ -240,7 +240,7 @@ impl:
     let beginOfString = i;
     let endOfString = beginOfString + stringLength;
     if (end - i < stringLength) {
-        BOOST_THROW_EXCEPTION(ParseError("End of stream"));
+        TTAURI_THROW(parse_error("End of stream"));
     }
 
     i = endOfString;
@@ -271,7 +271,7 @@ inline bool unpickle(Iter &i, Iter const &end)
         return unpickle<int64_t>(i, end) > 0;
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 }
 
@@ -292,7 +292,7 @@ inline std::vector<T> unpickle(Iter &i, Iter const &end)
         }
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 }
 
@@ -313,7 +313,7 @@ inline std::map<K,T> unpickle(Iter &i, Iter const &end)
     }
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 }
 
@@ -334,7 +334,7 @@ inline std::unordered_map<K,T> unpickle(Iter &i, Iter const &end)
     }
 
     default:
-        BOOST_THROW_EXCEPTION(ParseError("Unexpected type in stream."));
+        TTAURI_THROW(parse_error("Unexpected type in stream."));
     }
 }
 

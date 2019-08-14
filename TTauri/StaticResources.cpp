@@ -18,12 +18,12 @@ StaticResources::StaticResources() noexcept
     intrinsic.try_emplace(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
 }
 
-gsl::span<std::byte const> const StaticResources::get(std::string const &filename) const
+gsl::span<std::byte const> const StaticResources::get(std::string const &key) const
 {
-    let i = intrinsic.find(filename);
+    let i = intrinsic.find(key);
     if (i == intrinsic.end()) {
-        BOOST_THROW_EXCEPTION(FileError("Could not find static resource")
-            << boost::errinfo_file_name(filename)
+        TTAURI_THROW(key_error("Could not find static resource")
+            << error_info("key", key)
         );
     }
     return i->second;

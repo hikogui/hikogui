@@ -30,11 +30,11 @@ struct ASTMember : ASTExpression {
         return r;
     }
 
-    universal_value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext &context) const override {
         return object->executeLValue(context)[name];
     }
 
-    universal_value &executeAssignment(ExecutionContext *context, universal_value other) const override {
+    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
         auto &lv = object->executeLValue(context)[name];
         lv = std::move(other);
         return lv;

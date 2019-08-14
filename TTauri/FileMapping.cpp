@@ -21,8 +21,8 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
         protect = PAGE_READONLY;
     }
     else {
-        BOOST_THROW_EXCEPTION(FileError("Illigal access mode WRONLY/0 when mapping file.") <<
-            errinfo_url(location())
+        TTAURI_THROW(io_error("Illigal access mode WRONLY/0 when mapping file.")
+            << error_info("url", location())
         );
     }
 
@@ -30,8 +30,9 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     DWORD maximumSizeLow = this->size & 0xffffffff;
 
     if ((intrinsic = CreateFileMappingA(file->intrinsic, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
-        BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            errinfo_url(location())
+        TTAURI_THROW(io_error("Could not create file mapping")
+            << error_info("error-message", getLastErrorMessage())
+            << error_info("url", location())
         );
     }
 #endif

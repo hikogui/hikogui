@@ -21,19 +21,19 @@ struct ASTAssignment : ASTExpression {
         return key->string() + ":" + expression->string();
     }
 
-    universal_value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext &context) const override {
         let value = expression->execute(context);
 
         if (holds_alternative<Undefined>(value)) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError("right hand side value of assignment is Undefined")
-                << errinfo_location(location)
+            TTAURI_THROW(invalid_operation_error("right hand side value of assignment is Undefined")
+                << error_info("location", location)
             );
         }
 
         return key->executeAssignment(context, value);
     }
 
-    void executeStatement(ExecutionContext *context) const override {
+    void executeStatement(ExecutionContext &context) const override {
         // We are ignoring the return value here, not fast, but a lot simpler.
         static_cast<void>(execute(context));
     }

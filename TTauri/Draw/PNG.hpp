@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <boost/exception/exception.hpp>
-
 namespace TTauri {
 struct wsRGBA;
 struct URL;
@@ -13,14 +11,6 @@ struct URL;
 namespace TTauri::Draw {
 
 template<typename T> struct PixelMap;
-
-struct PNGError : virtual boost::exception, virtual std::exception {};
-struct PNGFileOpenError : virtual PNGError {};
-struct PNGReadError : virtual PNGError {};
-struct PNGHeaderError : virtual PNGError {};
-struct PNGInitializationError : virtual PNGError {};
-struct PNGParseError : virtual PNGError {};
-struct PNGLibraryError : virtual PNGError {};
 
 /*! Load a PNG image into the pixel map.
  * pixelMap is required to be large enough to load the png file into.

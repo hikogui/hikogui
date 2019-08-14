@@ -23,9 +23,6 @@ namespace TTauri::GUI {
  */
 class Instance_base {
 public:
-    struct Error : virtual boost::exception, virtual std::exception {};
-    struct ErrorNoDeviceForWindow : virtual Error {};
-
     std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
@@ -58,7 +55,7 @@ public:
 
         auto device = findBestDeviceForWindow(*window);
         if (!device) {
-            BOOST_THROW_EXCEPTION(ErrorNoDeviceForWindow());
+            TTAURI_THROW(gui_error("Could not find a vulkan-device matching this window"));
         }
 
         device->add(std::move(window));

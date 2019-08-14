@@ -48,7 +48,7 @@ Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames)
 #endif
 
     if (!hasRequiredExtensions(requiredExtensions)) {
-        BOOST_THROW_EXCEPTION(MissingRequiredExtensionsError());
+        TTAURI_THROW(gui_error("Vulkan instance does not have the required extensions"));
     }
 
     auto instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo);

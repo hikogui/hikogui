@@ -28,8 +28,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         desiredAccess = FILE_MAP_READ;
     }
     else {
-        BOOST_THROW_EXCEPTION(FileError("Illegal access mode WRONLY/0 when viewing file.") <<
-            errinfo_url(location())
+        TTAURI_THROW(io_error("Illegal access mode WRONLY/0 when viewing file.")
+            << error_info("url", location())
         );
     }
 
@@ -38,8 +38,9 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
 
     void *data;
     if ((data = MapViewOfFile(fileMappingObject->intrinsic, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-        BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            errinfo_url(location())
+        TTAURI_THROW(io_error("Could not map view of file.")
+            << error_info("error-message", getLastErrorMessage())
+            << error_info("url", location())
         );
     }
 
@@ -75,8 +76,9 @@ void FileView::flush(void* base, size_t size)
 {
 #ifdef WIN32
     if (!FlushViewOfFile(base, size)) {
-        BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            errinfo_url(location())
+        TTAURI_THROW(io_error("Could not flush file")
+            << error_info("error-message", getLastErrorMessage())
+            << error_info("url", location())
         );
     }
 #endif

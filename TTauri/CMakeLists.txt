@@ -98,6 +98,7 @@ set(TTauri_srcs
     FileMapping.cpp
     FileView.cpp
     strings.cpp
+    exceptions.cpp
 )
 
 set(TTauriTests_srcs
@@ -110,6 +111,7 @@ set(TTauriTests_srcs
     wsRGBA_tests.cpp
     FileView_tests.cpp
     strings_tests.cpp
+    polymorphic_value_tests.cpp
     polynomial_tests.cpp
     URL_tests.cpp
     utils_tests.cpp
@@ -137,7 +139,7 @@ target_static_resource(TTauri ${TTauri_resources})
 set_property(TARGET TTauri PROPERTY CXX_STANDARD 17)
 target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
 target_link_directories(TTauri PUBLIC ${Boost_LIBRARY_DIRS})
-target_link_libraries(TTauri GSL zlib png glm ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
+target_link_libraries(TTauri GSL zlib png glm fmt ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
 target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
 if (MSVC)
     target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)

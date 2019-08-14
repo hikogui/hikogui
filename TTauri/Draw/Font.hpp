@@ -90,14 +90,14 @@ inline Draw::Font parseResource(URL const &location)
     if (location.extension() == "ttf") {
         try {
             return Draw::parseTrueTypeFile(view.bytes());
-        } catch (boost::exception &e) {
-            e << errinfo_url(location);
+        } catch (error &e) {
+            e << error_info("url", location);
             throw;
         }
 
     } else {
-        BOOST_THROW_EXCEPTION(FileError("Unknown extension")
-            << errinfo_url(location)
+        TTAURI_THROW(url_error("Unknown extension")
+            << error_info("url", location)
         );
     }
 }

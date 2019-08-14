@@ -4,7 +4,7 @@
 #include "parser.hpp"
 #include "ASTObject.hpp"
 #include "ParseContext.hpp"
-#include "exceptions.hpp"
+#include "TTauri/exceptions.hpp"
 #include "TTauri/logging.hpp"
 #include <cstdio>
 #include <vector>
@@ -32,9 +32,9 @@ ASTObject *parseConfigFile(URL const &path)
     ParseContext context(path);
 
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
-        BOOST_THROW_EXCEPTION(FileError("Could not open file")
-            << boost::errinfo_file_name(path.path_string())
-            << boost::errinfo_errno(errno)
+        TTAURI_THROW(io_error("Could not open file")
+            << error_info("url", path)
+            << error_info("errno", errno)
         );
     }
 
@@ -48,15 +48,15 @@ ASTObject *parseConfigFile(URL const &path)
 
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {
-        BOOST_THROW_EXCEPTION(FileError("Could not close file")
-            << boost::errinfo_file_name(path.path_string())
-            << boost::errinfo_errno(errno)
+        TTAURI_THROW(io_error("Could not close file")
+            << error_info("url", path)
+            << error_info("errno", errno)
         );
     }
 
     if (r != 0) {
-        BOOST_THROW_EXCEPTION(ParseError(context.errorMessage)
-            << errinfo_location(context.errorLocation)
+        TTAURI_THROW(parse_error(context.errorMessage)
+            << error_info("location", context.errorLocation)
         );
     }
 

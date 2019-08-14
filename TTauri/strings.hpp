@@ -319,6 +319,7 @@ inline std::string translateString(std::u32string_view const inputString, Transl
     return outputString;
 }
 
+gsl_suppress(r.10)
 inline std::string normalizeNFC(std::string_view const str) noexcept
 {
     let s = utf8proc_NFC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
@@ -327,6 +328,7 @@ inline std::string normalizeNFC(std::string_view const str) noexcept
     return r;
 }
 
+gsl_suppress(r.10)
 inline std::string normalizeNFD(std::string_view const str) noexcept
 {
     let s = utf8proc_NFD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
@@ -335,6 +337,7 @@ inline std::string normalizeNFD(std::string_view const str) noexcept
     return r;
 }
 
+gsl_suppress(r.10)
 inline std::string normalizeNFKD(std::string_view const str) noexcept
 {
     let s = utf8proc_NFKD(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
@@ -343,6 +346,7 @@ inline std::string normalizeNFKD(std::string_view const str) noexcept
     return r;
 }
 
+gsl_suppress(r.10)
 inline std::string normalizeNFKC(std::string_view const str) noexcept
 {
     let s = utf8proc_NFKC(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));
@@ -351,6 +355,7 @@ inline std::string normalizeNFKC(std::string_view const str) noexcept
     return r;
 }
 
+gsl_suppress(r.10)
 inline std::string normalizeNFKCCasefold(std::string_view const str) noexcept
 {
     let s = utf8proc_NFKC_Casefold(reinterpret_cast<utf8proc_uint8_t const*>(str.data()));

@@ -33,7 +33,7 @@ struct ASTIndex : ASTExpression {
      * An array can be indexed by a int64_t.
      * An non-index can be used to append to an array.
      */
-    universal_value &executeLValue(ExecutionContext *context) const override {
+    universal_value &executeLValue(ExecutionContext &context) const override {
         auto &object_ = object->executeLValue(context);
 
         if (index) {
@@ -44,8 +44,8 @@ struct ASTIndex : ASTExpression {
                 let index__ = get<std::string>(index_);
                 try {
                     return object_[index__];
-                } catch (boost::exception &e) {
-                    e << errinfo_location(location);
+                } catch (error &e) {
+                    e << error_info("location", location);
                     throw;
                 }
 
@@ -54,18 +54,18 @@ struct ASTIndex : ASTExpression {
                 int64_t const index__ = get<int64_t>(index_);
                 try {
                     return object_[index__];
-                } catch (boost::exception &e) {
-                    e << errinfo_location(location);
+                } catch (error &e) {
+                    e << error_info("location", location);
                     throw;
                 }
 
             } else {
-                BOOST_THROW_EXCEPTION(InvalidOperationError(
+                TTAURI_THROW(invalid_operation_error(
                     (boost::format("Can not index object of type %s with index of type %s") %
                         object_.type_name() %
                         index_.type_name()
                     ).str())
-                    << errinfo_location(location)
+                    << error_info("location", location)
                 );
             }
 
@@ -73,20 +73,20 @@ struct ASTIndex : ASTExpression {
             // Append to an array because no index was specified.
             try {
                 return object_.append();
-            } catch (boost::exception &e) {
-                e << errinfo_location(location);
+            } catch (error &e) {
+                e << error_info("location", location);
                 throw;
             }
 
         } else {
-            BOOST_THROW_EXCEPTION(InvalidOperationError(
+            TTAURI_THROW(invalid_operation_error(
                 (boost::format("Can not append to object of type %s") % object_.type_name()).str())
-                << errinfo_location(location)
+                << error_info("location", location)
             );
         }
     }
 
-    universal_value &executeAssignment(ExecutionContext *context, universal_value other) const override {
+    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
         auto &lv = executeLValue(context);
         lv = std::move(other);
         return lv;

@@ -13,7 +13,6 @@
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/sinks/debug_output_backend.hpp>
-#include <boost/exception/all.hpp>
 #include <exception>
 #include <memory>
 

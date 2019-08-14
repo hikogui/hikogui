@@ -11,3 +11,5 @@ add_subdirectory(glm)
 add_subdirectory(VulkanMemoryAllocator)
 add_subdirectory(utf8proc)
 add_subdirectory(rhea)
+add_subdirectory(fmt)
+

@@ -6,6 +6,7 @@
 #include "ASTExpression.hpp"
 #include "ASTObject.hpp"
 #include "parser.hpp"
+#include "TTauri/exceptions.hpp"
 
 namespace TTauri::Config {
 
@@ -24,12 +25,12 @@ struct ASTName : ASTExpression {
         return { name };
     }
 
-    universal_value &executeLValue(ExecutionContext *context) const override {
-        return context->currentObject()[name];
+    universal_value &executeLValue(ExecutionContext &context) const override {
+        return context.currentObject()[name];
     } 
 
-    universal_value &executeAssignment(ExecutionContext *context, universal_value other) const override {
-        auto &lv = context->currentObject()[name];
+    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
+        auto &lv = context.currentObject()[name];
         lv = std::move(other);
         return lv;
     }
@@ -37,24 +38,24 @@ struct ASTName : ASTExpression {
     template<typename T>
     T getArgument(std::vector<universal_value> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
+            TTAURI_THROW(invalid_operation_error((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
                 % name % (i + 1) % typeid(T).name()).str())
-                << errinfo_location(location)
+                << error_info("location", location)
             );
         }
 
         let argument = arguments.at(0);
         if (!argument.is_promotable_to<T>()) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
+            TTAURI_THROW(invalid_operation_error((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
                 % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
-                << errinfo_location(location)
+                << error_info("location", location)
             );
         }
 
         if (lastArgument && i != (arguments.size() - 1)) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
+            TTAURI_THROW(invalid_operation_error((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
                 % name % (i + 1) % arguments.size()).str())
-                << errinfo_location(location)
+                << error_info("location", location)
             );
         }
 
@@ -63,7 +64,7 @@ struct ASTName : ASTExpression {
 
     /*! Include a configuration file.
      */
-    universal_value executeIncludeCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
+    universal_value executeIncludeCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
         auto path = getArgument<URL>(arguments, 0, true);
 
         // The included file is relative to the directory of this configuration file.
@@ -75,31 +76,31 @@ struct ASTName : ASTExpression {
             let ast = std::unique_ptr<ASTObject>{parseConfigFile(path)};
             return ast->execute();
 
-        } catch (Error &e) {
+        } catch (error &e) {
             // An error was captured from recursive parsing.
             // Assemble the error message from this error and throw it.
             std::string errorMessage;
-            if (let previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
+            if (let previousErrorMessage = e.get<std::string>("previous_error_message")) {
                 errorMessage += *previousErrorMessage + "\n";
             }
 
-            if (let location = boost::get_error_info<errinfo_location>(e)) {
+            if (let location = e.get<Location>("location")) {
                 errorMessage += location->string() + ": ";
             }
 
-            errorMessage += e.what();
+            errorMessage += e.message();
             errorMessage += ".";
 
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Could not include file '%s'") % path).str())
-                << errinfo_location(location)
-                << errinfo_previous_error_message(errorMessage)
+            TTAURI_THROW(invalid_operation_error((boost::format("Could not include file '%s'") % path).str())
+                << error_info("location", location)
+                << error_info("previous_error_message", errorMessage)
             );
         }
     }
 
     /*! Return a absolute path relative to the directory where this configuration file is located.
     */
-    universal_value executePathCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
+    universal_value executePathCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without arguments return the directory where this configuration file is located.
             return location.file->urlByRemovingFilename();
@@ -117,7 +118,7 @@ struct ASTName : ASTExpression {
 
     /*! Return a absolute path relative to the current working directory.
      */
-    universal_value executeCwdCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const {
+    universal_value executeCwdCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
         if (arguments.size() == 0) {
             // Without argument return the current working directory.
             return URL::urlFromCurrentWorkingDirectory();
@@ -129,9 +130,9 @@ struct ASTName : ASTExpression {
             if (path.isRelative()) {
                 return URL::urlFromCurrentWorkingDirectory() / path;
             } else {
-                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Expecting relative path argument to function '%s' got '%s'")
+                TTAURI_THROW(invalid_operation_error((boost::format("Expecting relative path argument to function '%s' got '%s'")
                     % name % path).str())
-                    << errinfo_location(location)
+                    << error_info("location", location)
                 );
             }
         }
@@ -140,7 +141,7 @@ struct ASTName : ASTExpression {
     /*! A function call.
      * The expression is a identifier followed by a call; therefor this is a normal function call.
      */
-    universal_value executeCall(ExecutionContext *context, std::vector<universal_value> const &arguments) const override {
+    universal_value executeCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const override {
         if (name == "include") {
             return executeIncludeCall(context, arguments);
 
@@ -151,8 +152,8 @@ struct ASTName : ASTExpression {
             return executeCwdCall(context, arguments);
 
         } else {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Unknown function '%'") % name).str())
-                << errinfo_location(location)
+            TTAURI_THROW(invalid_operation_error((boost::format("Unknown function '%'") % name).str())
+                << error_info("location", location)
             );
         }
     }

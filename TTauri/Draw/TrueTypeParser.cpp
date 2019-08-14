@@ -9,7 +9,6 @@
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
 #include <boost/format.hpp>
-#include <boost/exception/all.hpp>
 #include <map>
 #include <array>
 
@@ -274,14 +273,14 @@ static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte const> bytes)
 {
     let& header = at<CMAPHeader>(bytes, 0);
     if (!(header.version.value() == 0)) {
-        BOOST_THROW_EXCEPTION(ParseError("cmap.version is not 0"));
+        TTAURI_THROW(parse_error("cmap.version is not 0"));
     }
 
     let entries = make_span<CMAPEntry>(bytes, sizeof(CMAPHeader), header.numTables.value());
     
     let i = findBestCMAPEntry(entries);
     if (i == entries.end()) {
-        BOOST_THROW_EXCEPTION(ParseError("Could not find a proper unicode character map"));
+        TTAURI_THROW(parse_error("Could not find a proper unicode character map"));
     }
 
     let tableOffset = i->offset.value();
@@ -293,7 +292,7 @@ static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte const> bytes)
     case 6: return parseCMAPFormat6(tableSpan);
     case 12: return parseCMAPFormat12(tableSpan);
     default:
-        BOOST_THROW_EXCEPTION(ParseError((boost::format("Unexpected character map format %i") % table.format.value()).str()));
+        TTAURI_THROW(parse_error((boost::format("Unexpected character map format %i") % table.format.value()).str()));
     }
 }
 
@@ -635,7 +634,7 @@ Font parseTrueTypeFile(gsl::span<std::byte const> bytes)
 
     let &fontDirectory = at<SFNTHeader>(bytes, 0);
     if (!(fontDirectory.scalerType.value() == fourcc("true") || fontDirectory.scalerType.value() == 0x00010000)) {
-        BOOST_THROW_EXCEPTION(ParseError("sfnt.scalerType is not 'true' or 0x00010000"));
+        TTAURI_THROW(parse_error("sfnt.scalerType is not 'true' or 0x00010000"));
     }
 
     let tableDirectory = make_span<SFNTEntry>(bytes, sizeof(SFNTHeader), fontDirectory.numTables.value());

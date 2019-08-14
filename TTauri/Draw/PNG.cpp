@@ -3,6 +3,7 @@
 
 #include "PNG.hpp"
 #include "PixelMap.hpp"
+#include "TTauri/logging.hpp"
 #include "TTauri/wsRGBA.hpp"
 #include "TTauri/required.hpp"
 #include "TTauri/URL.hpp"
@@ -26,33 +27,41 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
 #define PNG_THROW_EXCEPTION(e) \
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info); \
     if (fp != nullptr) { fclose(fp); } \
-    BOOST_THROW_EXCEPTION(e);
+    TTAURI_THROW(e);
 
     fp = fopen(stringPath.data(), "rb");
     if (fp == nullptr) {
-        PNG_THROW_EXCEPTION(PNGFileOpenError());
+        PNG_THROW_EXCEPTION(io_error("Could not open .png file")
+            << error_info("url", path)
+        );
     }
 
     size_t const PNGHeader_size = 8;
     png_byte PNGHeader[PNGHeader_size] = {0, 0, 0, 0, 0, 0, 0, 0};
     if (fread(PNGHeader, sizeof(*PNGHeader), PNGHeader_size, fp) != PNGHeader_size) {
-        PNG_THROW_EXCEPTION(PNGReadError());
+        PNG_THROW_EXCEPTION(io_error("Could not read .png file")
+            << error_info("url", path)
+        );
     }
 
     if (png_sig_cmp(PNGHeader, 0, PNGHeader_size) != 0) {
-        PNG_THROW_EXCEPTION(PNGHeaderError());
+        PNG_THROW_EXCEPTION(parse_error("Could not parse .png header")
+            << error_info("url", path)
+        );
     }
 
     if (!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr))) {
-        PNG_THROW_EXCEPTION(PNGInitializationError());
+        LOG_FATAL("Call to png_create_read_struct() failed.");
     }
 
     if (!(info_ptr = png_create_info_struct(png_ptr))) {
-        PNG_THROW_EXCEPTION(PNGInitializationError());
+        LOG_FATAL("Call to png_create_info_struct() failed.");
     }
 
     if (setjmp(png_jmpbuf(png_ptr))) {
-        PNG_THROW_EXCEPTION(PNGParseError());
+        PNG_THROW_EXCEPTION(parse_error("Could not parse .png header")
+            << error_info("url", path)
+        );
     }
 
     png_init_io(png_ptr, fp);

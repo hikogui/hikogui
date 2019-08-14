@@ -28,7 +28,7 @@ public:
     WindowWidget(WindowWidget&&) = delete;
     WindowWidget &operator=(WindowWidget&&) = delete;
 
-    void setParent(Window *window) noexcept;
+    void setParent(gsl::not_null<Window *> window) noexcept;
 
     HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 };

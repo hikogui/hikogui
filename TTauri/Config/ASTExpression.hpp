@@ -11,8 +11,8 @@ struct ASTExpression : ASTNode {
     ASTExpression(Location location) noexcept : ASTNode(location) {}
 
     virtual std::vector<std::string> getFQName() {
-        BOOST_THROW_EXCEPTION(InvalidOperationError("Expression does not represent a fully qualified name.")
-            << errinfo_location(location)
+        TTAURI_THROW(invalid_operation_error("Expression does not represent a fully qualified name.")
+            << error_info("location", location)
         );
     }
 };

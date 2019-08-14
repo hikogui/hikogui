@@ -22,10 +22,6 @@ protected:
     VmaAllocator allocator;
 
 public:
-    struct AllocateMemoryError : virtual Error {};
-    struct NonVulkanWindowError : virtual Error {};
-    struct ImageLayoutTransitionError : virtual Error {};
-
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
 

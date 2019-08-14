@@ -119,7 +119,7 @@ struct universal_value {
             return next.get_by_path(next_key);
 
         } else if (key.size() > 0) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not support get() with '%s'")
+            TTAURI_THROW(invalid_operation_error((boost::format("type %s does not support get() with '%s'")
                 % type_name() % key.at(0)).str())
             );
         } else {
@@ -139,7 +139,7 @@ struct universal_value {
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
-            BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("type %s does not support get() with '%s'")
+            TTAURI_THROW(invalid_operation_error((boost::format("type %s does not support get() with '%s'")
                 % type_name() % key.at(0)).str())
             );
         } else {
@@ -201,7 +201,7 @@ struct universal_value {
             return *(i->second);
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get member .%s of type %s") %
+        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get member .%s of type %s") %
             other % type_name()).str())
         );
     }
@@ -216,7 +216,7 @@ struct universal_value {
             }
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get member .%s of type %s") %
+        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get member .%s of type %s") %
             other % type_name()).str())
         );
     }
@@ -233,13 +233,13 @@ struct universal_value {
             if (index < _array.size()) {
                 return *(_array[index]);
             } else {
-                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Index %i out of range, size of array is %i") %
+                TTAURI_THROW(invalid_operation_error((boost::format("Index %i out of range, size of array is %i") %
                     index % _array.size()).str())
                 );
             }
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get item at index %i of type %s") %
+        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get item at index %i of type %s") %
             index % type_name()).str())
         );
     }
@@ -251,13 +251,13 @@ struct universal_value {
             if (index < _array.size()) {
                 return *(_array[index]);
             } else {
-                BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Index %i out of range, size of array is %i") %
+                TTAURI_THROW(invalid_operation_error((boost::format("Index %i out of range, size of array is %i") %
                     index % _array.size()).str())
                 );
             }
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot get item at index %i of type %s") %
+        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get item at index %i of type %s") %
             index % type_name()).str())
         );
     }
@@ -274,7 +274,7 @@ struct universal_value {
             return *(_array.back());
         }
 
-        BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot append new item onto type %s") %
+        TTAURI_THROW(invalid_operation_error((boost::format("Cannot append new item onto type %s") %
             type_name()).str())
         );
     }
@@ -351,7 +351,7 @@ inline universal_value operator-(universal_value const &rhs)
     } else if (holds_alternative<double>(rhs)) {
         return -get<double>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot make value of type %s negative") % rhs.type_name()).str()));
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot make value of type %s negative") % rhs.type_name()).str()));
 }
 
 inline universal_value operator~(universal_value const &rhs)
@@ -361,7 +361,7 @@ inline universal_value operator~(universal_value const &rhs)
     } else if (holds_alternative<bool>(rhs)) {
         return !get<bool>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot invert value of type %s") % rhs.type_name()).str()));
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot invert value of type %s") % rhs.type_name()).str()));
 }
 
 inline universal_value operator*(universal_value const &lhs, universal_value const &rhs)
@@ -371,7 +371,7 @@ inline universal_value operator*(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) * get<int64_t>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot multiple value of type %s with value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot multiple value of type %s with value of type %s") %
         lhs.type_name() % rhs.type_name()).str())
     );
 }
@@ -383,7 +383,7 @@ inline universal_value operator/(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) / get<int64_t>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot divide value of type %s with value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot divide value of type %s with value of type %s") %
         lhs.type_name() % rhs.type_name()).str())
     );
 }
@@ -395,7 +395,7 @@ inline universal_value operator%(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return modulo(get<int64_t>(lhs), get<int64_t>(rhs));
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot take modulo of value of type %s with value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot take modulo of value of type %s with value of type %s") %
         lhs.type_name() % rhs.type_name()).str())
     );
 }
@@ -422,7 +422,7 @@ inline universal_value operator+(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) + get<int64_t>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot add value of type %s to a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot add value of type %s to a value of type %s") %
         rhs.type_name() % lhs.type_name()).str())
     );
 }
@@ -434,7 +434,7 @@ inline universal_value operator-(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) - get<int64_t>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot subtract value of type %s from a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot subtract value of type %s from a value of type %s") %
         rhs.type_name() % lhs.type_name()).str())
     );
 }
@@ -444,7 +444,7 @@ inline universal_value operator<<(universal_value const &lhs, universal_value co
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) << get<int64_t>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot left shift a of value of type %s with a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot left shift a of value of type %s with a value of type %s") %
         lhs.type_name() % rhs.type_name()).str())
     );
 }
@@ -454,7 +454,7 @@ inline universal_value operator>>(universal_value const &lhs, universal_value co
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) >> get<int64_t>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot right shift a of value of type %s with a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot right shift a of value of type %s with a value of type %s") %
         lhs.type_name() % rhs.type_name()).str())
     );
 }
@@ -466,7 +466,7 @@ inline universal_value operator&(universal_value const &lhs, universal_value con
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
         return get<bool>(lhs) && get<bool>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot binary-and a of value of type %s to a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot binary-and a of value of type %s to a value of type %s") %
         rhs.type_name() % lhs.type_name() ).str())
     );
 }
@@ -478,7 +478,7 @@ inline universal_value operator^(universal_value const &lhs, universal_value con
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
         return static_cast<bool>(get<bool>(lhs) ^ get<bool>(rhs));
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot binary-xor a of value of type %s to a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot binary-xor a of value of type %s to a value of type %s") %
         rhs.type_name() % lhs.type_name() ).str())
     );
 }
@@ -490,7 +490,7 @@ inline universal_value operator|(universal_value const &lhs, universal_value con
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
         return get<bool>(lhs) || get<bool>(rhs);
     }
-    BOOST_THROW_EXCEPTION(InvalidOperationError((boost::format("Cannot binary-or a of value of type %s to a value of type %s") %
+    TTAURI_THROW(invalid_operation_error((boost::format("Cannot binary-or a of value of type %s to a value of type %s") %
         rhs.type_name() % lhs.type_name() ).str())
     );
 }

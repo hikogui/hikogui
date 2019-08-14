@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/URL.hpp"
-#include <boost/exception/all.hpp>
 
 namespace TTauri::Config {
 

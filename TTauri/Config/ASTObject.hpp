@@ -11,7 +11,7 @@
 namespace TTauri::Config {
 
 struct ASTObject : ASTExpression {
-    std::vector<ASTExpression *> expressions;
+    std::vector<gsl::not_null<ASTExpression *>> expressions;
 
     ASTObject(Location location) noexcept : ASTExpression(location), expressions() { }
 
@@ -39,10 +39,15 @@ struct ASTObject : ASTExpression {
     gsl_suppress2(26486,lifetime.3)
     ~ASTObject() {
         for (auto expression: expressions) {
-            required_assert(expression != nullptr);
             delete expression;
         }
     }
+
+    ASTObject() = delete;
+    ASTObject(ASTObject const &node) = delete;
+    ASTObject(ASTObject &&node) = delete;
+    ASTObject &operator=(ASTObject const &node) = delete;
+    ASTObject &operator=(ASTObject &&node) = delete;
 
     gsl_suppress2(26486,lifetime.3)
     std::string string() const noexcept override {
@@ -63,20 +68,20 @@ struct ASTObject : ASTExpression {
     }
 
     gsl_suppress2(26486,lifetime.3)
-    universal_value execute(ExecutionContext *context) const override {
-        context->pushObject();
+    universal_value execute(ExecutionContext &context) const override {
+        context.pushObject();
 
         for (let expression: expressions) {
             required_assert(expression != nullptr);
             expression->executeStatement(context);
         }
 
-        return context->popObject();
+        return context.popObject();
     }
 
     universal_value execute() const {
         ExecutionContext context;
-        return execute(&context);
+        return execute(context);
     }
 };
 

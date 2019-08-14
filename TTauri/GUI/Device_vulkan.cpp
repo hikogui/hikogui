@@ -490,7 +490,7 @@ void Device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
     intrinsic.freeCommandBuffers(graphicsCommandPool, commandBuffers);
 }
 
-static pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayout(vk::ImageLayout layout)
+static pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayout(vk::ImageLayout layout) noexcept
 {
     switch (layout) {
     case vk::ImageLayout::eUndefined:
@@ -511,7 +511,7 @@ static pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayout(vk
         return { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer };
 
     default:
-        BOOST_THROW_EXCEPTION(Device_vulkan::ImageLayoutTransitionError());
+        no_default;
     }
 }
 

@@ -165,7 +165,7 @@ int TrueTypeFont::searchCharacterMap(char32_t c)
     case 6: return searchCharacterMapFormat6(c);
     case 12: return searchCharacterMapFormat12(c);
     default:
-        BOOST_THROW_EXCEPTION(ParseError((boost::format("Unknown cmap format %i") % format.value()).str()));
+        TTAURI_THROW(parse_error((boost::format("Unknown cmap format %i") % format.value()).str()));
     }
 }
 
@@ -258,7 +258,7 @@ void TrueTypeFont::parseFontDirectory()
     let &header = at<SFNTHeader>(bytes, 0);
 
     if (!(header.scalerType.value() == fourcc("true") || header.scalerType.value() == 0x00010000)) {
-        BOOST_THROW_EXCEPTION(ParseError("sfnt.scalerType is not 'true' or 0x00010000"));
+        TTAURI_THROW(parse_error("sfnt.scalerType is not 'true' or 0x00010000"));
     }
 
     let entries = make_span<SFNTEntry>(bytes, sizeof(SFNTHeader), header.numTables.value());
@@ -267,7 +267,7 @@ void TrueTypeFont::parseFontDirectory()
         int64_t length = entry.length.value();
 
         if (offset + length > to_int64(bytes.size())) {
-            BOOST_THROW_EXCEPTION(ParseError("sfnt table-entry is out of range"));
+            TTAURI_THROW(parse_error("sfnt table-entry is out of range"));
         }
 
         switch (entry.tag.value()) {

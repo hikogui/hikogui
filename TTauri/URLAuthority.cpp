@@ -16,8 +16,8 @@ URLAuthority::URLAuthority(std::string const &authority)
     std::smatch m;
 
     if (!std::regex_match(authority.begin(), authority.end(), m, URLAuthority_re)) {
-        BOOST_THROW_EXCEPTION(URLError("Could not parse URLAuthority")
-            << errinfo_parse_string(authority)
+        TTAURI_THROW(url_error("Could not parse URLAuthority")
+            << error_info("parse_string", authority)
         );
     }
 

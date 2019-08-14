@@ -5,6 +5,7 @@
 
 #include "parser.hpp"
 #include "TTauri/universal_value.hpp"
+#include "TTauri/exceptions.hpp"
 #include "ASTObject.hpp"
 
 namespace TTauri::Config {
@@ -17,7 +18,7 @@ struct Config {
     ASTObject *ast = nullptr;
     universal_value root = Undefined{};
 
-    std::string errorMessage;
+    std::string _errorMessage;
 
     /*! Load a configuration file.
      * See the README.md file is this directory for the file format of the configuration file.
@@ -28,17 +29,17 @@ struct Config {
             ast = parseConfigFile(this->path);
             root = ast->execute();
 
-        } catch (Error &e) {
-            if (let previousErrorMessage = boost::get_error_info<errinfo_previous_error_message>(e)) {
-                errorMessage += *previousErrorMessage + "\n";
+        } catch (error &e) {
+            if (let previousErrorMessage = e.get<std::string>("previous_error_message")) {
+                _errorMessage += *previousErrorMessage + "\n";
             }
 
-            if (let location = boost::get_error_info<errinfo_location>(e)) {
-                errorMessage += location->string() + ": ";
+            if (let location = e.get<Location>("location")) {
+                _errorMessage += location->string() + ": ";
             }
 
-            errorMessage += e.what();
-            errorMessage += ".";
+            _errorMessage += e.message();
+            _errorMessage += ".";
         }
     }
 
@@ -54,11 +55,11 @@ struct Config {
 
     /*! Retreive error message
      */
-    std::string error() const noexcept {
+    std::string errorMessage() const noexcept {
         if (success()) {
             return "";
         } else {
-            return errorMessage;
+            return _errorMessage;
         }
     }
 
@@ -116,7 +117,7 @@ inline std::string to_string(Config const &config) {
     if (config.success()) {
         return to_string(config.root);
     } else {
-        return config.error();
+        return config.errorMessage();
     }
 }
 

@@ -184,7 +184,7 @@ static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const st
     pixel = static_cast<uint8_t>(std::min(pixelCoverage * 51.0f + pixel, 255.0f));
 }
 
-gsl_suppress(26489,lifetime.1)
+gsl_suppress2(26489,lifetime.1)
 static void fillFullPixels(PixelRow<uint8_t> row, int const start, int const size) noexcept
 {
     if (size < 16) {

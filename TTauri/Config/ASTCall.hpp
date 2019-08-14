@@ -81,18 +81,18 @@ struct ASTCall : ASTExpression {
         return s + ")";
     }
 
-    universal_value execute(ExecutionContext *context) const override {
-        let values = transform<std::vector<universal_value>>(arguments, [context](let x) {
+    universal_value execute(ExecutionContext &context) const override {
+        let values = transform<std::vector<universal_value>>(arguments, [&](let x) {
             return x->execute(context);
         });
 
         return object->executeCall(context, values);
     } 
 
-    void executeStatement(ExecutionContext *context) const override {
+    void executeStatement(ExecutionContext &context) const override {
         auto result = execute(context);
         try {
-            auto &lv = context->currentObject();
+            auto &lv = context.currentObject();
             auto v = lv;
 
             if (holds_alternative<Undefined>(v)) {
@@ -104,8 +104,8 @@ struct ASTCall : ASTExpression {
                 // of the call. For example including a file inside an object-literal.
                 lv = v + result;
             }
-        } catch (boost::exception &e) {
-            e << errinfo_location(location);
+        } catch (error &e) {
+            e << error_info("location", location);
             throw;
         }
 

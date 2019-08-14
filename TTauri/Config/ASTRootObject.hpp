@@ -15,8 +15,8 @@ struct ASTRootObject : ASTExpression {
         return "/";
     }
 
-    universal_value &executeLValue(ExecutionContext *context) const override {
-        return context->rootObject();
+    universal_value &executeLValue(ExecutionContext &context) const override {
+        return context.rootObject();
     } 
 };
 

@@ -20,8 +20,8 @@ static inline ResourceView_intrinsic loadView(URL const &location)
             let view = StaticResourceView(location.filename());
             LOG_INFO("Loaded resource %s from executable.", location);
             return view;
-        } catch (FileError) {
-            let absoluteLocation = get_singleton<Application>().resourceLocation / location;
+        } catch (key_error) {
+            let absoluteLocation = URL::urlFromResourceDirectory() / location;
             auto view = FileView{ absoluteLocation };
             LOG_INFO("Loaded resource %s from filesystem at %s.", location, absoluteLocation);
             return view;
@@ -29,8 +29,8 @@ static inline ResourceView_intrinsic loadView(URL const &location)
 
     } else if (location.scheme == "file") {
         if (!location.path.absolute) {
-            BOOST_THROW_EXCEPTION(FileError("file-URLs must be absolute.")
-                << errinfo_url(location)
+            TTAURI_THROW(url_error("file-URLs must be absolute.")
+                << error_info("url", location)
             );
         }
 
@@ -39,8 +39,8 @@ static inline ResourceView_intrinsic loadView(URL const &location)
         return view;
 
     } else {
-        BOOST_THROW_EXCEPTION(FileError("Unknown scheme for loading a resource")
-            << errinfo_url(location)
+        TTAURI_THROW(url_error("Unknown scheme for loading a resource")
+            << error_info("url", location)
         );
     }
 }

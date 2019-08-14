@@ -24,8 +24,6 @@ public:
 
     State state = State::NO_DEVICE;
 
-    struct Error : virtual boost::exception, virtual std::exception {};
-
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;

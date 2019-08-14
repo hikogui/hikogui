@@ -9,8 +9,6 @@
 #include <Windows.h>
 #endif
 
-#include <boost/exception/all.hpp>
-
 #include <cstdint>
 #include <map>
 
@@ -48,12 +46,14 @@ struct File {
 #endif
 
     File(URL const& location, AccessMode accessMode);
-    ~File();
+    ~File() noexcept;
 
     File(File const &other) = delete;
     File(File &&other) = delete;
     File &operator=(File const &other) = delete;
     File &operator=(File &&other) = delete;
+
+    void close();
 };
 
 }

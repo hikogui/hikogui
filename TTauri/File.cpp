@@ -8,8 +8,6 @@
 
 namespace TTauri {
 
-
-
 File::File(URL const &location, AccessMode accessMode) :
     location(location), accessMode(accessMode)
 {
@@ -58,17 +56,29 @@ File::File(URL const &location, AccessMode accessMode) :
     }
 
     if ((intrinsic = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) == INVALID_HANDLE_VALUE) {
-        BOOST_THROW_EXCEPTION(FileError(getLastErrorMessage()) <<
-            boost::errinfo_file_name(to_string(location))
+        TTAURI_THROW(io_error("Could not open file")
+            << error_info("error-message", getLastErrorMessage())
+            << error_info("url", location)
         );
     }
 #endif
 }
 
-File::~File()
+File::~File() noexcept
 {
-    if (!CloseHandle(intrinsic)) {
-        LOG_ERROR("Could not close file '%s'", getLastErrorMessage());
+    close();
+}
+
+void File::close()
+{
+    if (intrinsic != INVALID_HANDLE_VALUE) {
+        if (!CloseHandle(intrinsic)) {
+            TTAURI_THROW(io_error("Could not close file")
+                << error_info("error-message", getLastErrorMessage())
+                << error_info("url", location)
+            );
+        }
+        intrinsic = INVALID_HANDLE_VALUE;
     }
 }
 

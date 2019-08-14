@@ -22,6 +22,16 @@ struct ASTExpressionList : ASTNode {
         }
     }
 
+    ASTExpressionList() = delete;
+    ASTExpressionList(ASTExpressionList const &node) = delete;
+    ASTExpressionList(ASTExpressionList &&node) = delete;
+    ASTExpressionList &operator=(ASTExpressionList const &node) = delete;
+    ASTExpressionList &operator=(ASTExpressionList &&node) = delete;
+
+    std::string string() const noexcept override {
+        no_default;
+    }
+
     void add(ASTExpression *x) noexcept {
         expressions.push_back(x);
     }

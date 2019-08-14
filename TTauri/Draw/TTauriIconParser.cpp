@@ -6,7 +6,6 @@
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
 #include <boost/format.hpp>
-#include <boost/exception/all.hpp>
 
 using namespace boost::endian;
 
@@ -150,7 +149,7 @@ Path parseTTauriIcon(gsl::span<std::byte const> bytes)
         header.magic[2] == 'I' &&
         header.magic[3] == 'C'
     )) {
-        BOOST_THROW_EXCEPTION(ParseError("Expected 'TTIC' magic in header"));
+        TTAURI_THROW(parse_error("Expected 'TTIC' magic in header"));
     }
 
     let nr_paths = to_int(header.nr_paths.value());

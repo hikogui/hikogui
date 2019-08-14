@@ -246,8 +246,8 @@ constexpr uint8_t char_to_nibble(char c)
     } else if (c >= 'A' && c <= 'F') {
         return (c - 'A') + 10;
     } else {
-        BOOST_THROW_EXCEPTION(ParseError("Could not parse hexadecimal digit")
-            << errinfo_parse_string(std::string(1, c))
+        TTAURI_THROW(parse_error("Could not parse hexadecimal digit")
+            << error_info("parse_string", std::string(1, c))
         );
     }
 }

@@ -20,7 +20,7 @@ struct ASTColor : ASTExpression {
         return to_string(value);
     }
 
-    universal_value execute(ExecutionContext *context) const noexcept override { 
+    universal_value execute(ExecutionContext &context) const noexcept override { 
         return value;
     } 
 

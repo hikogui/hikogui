@@ -35,7 +35,7 @@ struct ASTUnaryOperator : ASTExpression {
         return s + right->string();
     }
 
-    universal_value execute(ExecutionContext *context) const override {
+    universal_value execute(ExecutionContext &context) const override {
         try {
             switch (op) {
             case Operator::NOT: return ~right->execute(context);
@@ -43,8 +43,8 @@ struct ASTUnaryOperator : ASTExpression {
             case Operator::LOGICAL_NOT: return !right->execute(context);
             }
             abort(); // Compiler doesn't recognize that switch is complete.
-        } catch (boost::exception &e) {
-            e << errinfo_location(location);
+        } catch (error &e) {
+            e << error_info("location", location);
             throw;
         }
     }

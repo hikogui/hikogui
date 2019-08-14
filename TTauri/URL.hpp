@@ -56,6 +56,9 @@ struct URL {
 
     static URL urlFromWin32Path(std::wstring_view const path) noexcept;
     static URL urlFromCurrentWorkingDirectory() noexcept;
+    static URL urlFromResourceDirectory() noexcept;
+    static URL urlFromExecutableDirectory() noexcept;
+    static URL urlFromExecutableFile() noexcept;
 };
 
 std::string to_string(URL const &url) noexcept;
@@ -80,7 +83,7 @@ size_t file_size(URL const &url);
 template <typename T>
 inline T parseResource(URL const &location)
 {
-    BOOST_THROW_EXCEPTION(NotImplementedError("parseResource for this type is not implemented")
+    TTAURI_THROW(not_implemented_error("parseResource for this type is not implemented")
         << errinfo_url(location)
     );
 }

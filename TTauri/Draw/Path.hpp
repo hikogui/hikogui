@@ -290,14 +290,14 @@ inline Draw::Path parseResource(URL const &location)
         try {
             let bytes = view.bytes();
             return Draw::parseTTauriIcon(bytes);
-        } catch (boost::exception &e) {
-            e << errinfo_url(location);
+        } catch (error &e) {
+            e << error_info("url", location);
             throw;
         }
 
     } else {
-        BOOST_THROW_EXCEPTION(FileError("Unknown extension")
-            << errinfo_url(location)
+        TTAURI_THROW(url_error("Unknown extension")
+            << error_info("url", location)
         );
     }
 }

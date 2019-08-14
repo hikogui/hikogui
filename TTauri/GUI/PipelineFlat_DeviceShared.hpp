@@ -8,7 +8,6 @@
 #include "TTauri/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
-#include <boost/exception/exception.hpp>
 #include <mutex>
 
 namespace TTauri::Draw {
@@ -20,8 +19,6 @@ namespace TTauri::GUI::PipelineFlat {
 struct Image;
 
 struct DeviceShared final {
-    struct Error : virtual boost::exception, virtual std::exception {};
-
     Device const &device;
 
     vk::Buffer indexBuffer;

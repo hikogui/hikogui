@@ -12,16 +12,10 @@
 
 namespace TTauri {
 
+
 Application_win32::Application_win32() :
     mainThreadID(GetCurrentThreadId())
 {
-    // Resource path, is the same directory as where the executable lives.
-    wchar_t modulePathWChar[MAX_PATH];
-    if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
-        BOOST_THROW_EXCEPTION(Application_base::ResourceDirError());
-    }
-
-    resourceLocation = URL::urlFromWin32Path(modulePathWChar).urlByRemovingFilename();
 }
 
 void Application_win32::initialize(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)

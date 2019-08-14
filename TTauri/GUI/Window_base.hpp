@@ -44,8 +44,6 @@ public:
         Maximized
     };
 
-    struct SwapChainError : virtual boost::exception, virtual std::exception {};
-
     static constexpr long long resizeFrameRateDivider = 2;
 
     State state = State::NoDevice;

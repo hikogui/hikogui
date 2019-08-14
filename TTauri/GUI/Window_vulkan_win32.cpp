@@ -78,7 +78,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, iextent2 extent
     SetWindowPos(win32Window, nullptr, 0, 0, 0, 0, SWP_NOZORDER|SWP_NOOWNERZORDER|SWP_NOMOVE|SWP_NOSIZE|SWP_FRAMECHANGED);
 
     if (win32Window == nullptr) {
-        BOOST_THROW_EXCEPTION(Application::Error());
+        TTAURI_THROW(gui_error("Could not open a win32 window."));
     }
 
     if (!Window_vulkan_win32::firstWindowHasBeenOpened) {

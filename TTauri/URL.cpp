@@ -5,8 +5,13 @@
 #include "utils.hpp"
 #include "strings.hpp"
 #include "exceptions.hpp"
+#include "os_detect.hpp"
 #include <boost/filesystem.hpp>
 #include <regex>
+
+#if OPERATING_SYSTEM == OS_WINDOWS
+#include <Windows.h>
+#endif
 
 namespace TTauri {
 
@@ -88,8 +93,8 @@ URL::URL(std::string const &url)
     std::smatch m;
 
     if (!std::regex_match(url.begin(), url.end(), m, URL_re)) {
-        BOOST_THROW_EXCEPTION(URLError("Could not parse URL")
-            << errinfo_parse_string(url)
+        TTAURI_THROW(url_error("Could not parse URL")
+            << error_info("parse_string", url)
         );
     }
 
@@ -128,8 +133,8 @@ URL::URL(std::string const scheme, URLPath path) noexcept : scheme(std::move(sch
 std::string URL::path_string() const
 {
     if (scheme != "file") {
-        BOOST_THROW_EXCEPTION(URLError("URL is not a file.")
-            << errinfo_url(*this)
+        TTAURI_THROW(url_error("URL is not a file.")
+            << error_info("url", *this)
         );
     }
 
@@ -196,6 +201,33 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
 {
     return URL("file", URLPath{ boost::filesystem::current_path() });
 }
+
+#if OPERATING_SYSTEM == OS_WINDOWS
+URL URL::urlFromExecutableFile() noexcept
+{
+    wchar_t modulePathWChar[MAX_PATH];
+    if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
+        // Can only cause error if there is not enough room in modulePathWChar.
+        std::terminate();
+    }
+    return URL::urlFromWin32Path(modulePathWChar);
+}
+
+URL URL::urlFromExecutableDirectory() noexcept
+{
+    static auto r = urlFromExecutableFile().urlByRemovingFilename();
+    return r;
+}
+
+URL URL::urlFromResourceDirectory() noexcept
+{
+    // Resource path, is the same directory as where the executable lives.
+    static auto r = urlFromExecutableDirectory();
+    return r;
+}
+#else
+#error "Not Implemented for this operating system."
+#endif
 
 std::string to_string(URL const &url) noexcept
 {

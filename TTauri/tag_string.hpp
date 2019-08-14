@@ -11,14 +11,16 @@ using string_tag = int64_t;
 
 constexpr string_tag char_to_tag(char c)
 {
-    required_assert((c == 0 || (c >= 'a' && c <= 'z') || c == '-');
-
     if (c == 0) {
         return 0;
     } else if (c >= 'a' && c <= 'z') {
         return (c - 'a') + 1;
-    } else {
+    } else if (c >= 'A' && c <= 'Z') {
+        return (c - 'A') + 1;
+    } else if (c == '-' || c == '_' || c == ' ') {
         return 27;
+    } else {
+        no_default;
     }
 }
 

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "Config.hpp"
-#include "exceptions.hpp"
 #include "ExecutionContext.hpp"
 #include "LiteralParser.hpp"
 #include "Location.hpp"

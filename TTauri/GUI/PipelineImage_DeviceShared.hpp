@@ -10,7 +10,6 @@
 #include "TTauri/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
-#include <boost/exception/exception.hpp>
 #include <mutex>
 
 namespace TTauri::Draw {
@@ -22,8 +21,6 @@ namespace TTauri::GUI::PipelineImage {
 struct Image;
 
 struct DeviceShared final {
-    struct Error : virtual boost::exception, virtual std::exception {};
-
     static constexpr int atlasNrHorizontalPages = 60;
     static constexpr int atlasNrVerticalPages = 60;
     static constexpr int atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;

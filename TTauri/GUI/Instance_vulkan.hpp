@@ -23,8 +23,6 @@ protected:
     vk::DebugUtilsMessengerEXT debugUtilsMessager;
 
 public:
-    struct MissingRequiredExtensionsError : virtual Instance_base::Error {};
-
     //! List of extension that where requested when the instance was created.
     std::vector<const char *> requiredExtensions;
 

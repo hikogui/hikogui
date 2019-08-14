@@ -6,7 +6,6 @@
 #include "utils.hpp"
 #include "ApplicationDelegate.hpp"
 #include "URL.hpp"
-#include <boost/exception/all.hpp>
 #include <gsl/gsl>
 #include <memory>
 #include <string>
@@ -23,18 +22,11 @@ namespace TTauri {
  */
 class Application_base {
 public:
-    struct Error : virtual boost::exception, virtual std::exception {};
-    struct ResourceDirError : virtual Error {};
-
     /*! Application delegate
      */
     std::shared_ptr<ApplicationDelegate> delegate;
 
     bool loopStarted = false;
-
-    /*! Directory where resources are located.
-     */
-    URL resourceLocation;
 
     Application_base() = default;
     virtual ~Application_base();

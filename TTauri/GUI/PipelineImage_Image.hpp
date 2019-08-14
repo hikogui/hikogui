@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/geometry.hpp"
-#include <boost/exception/exception.hpp>
 #include <gsl/gsl>
 #include <atomic>
 #include <string>
@@ -18,8 +17,6 @@ struct DeviceShared;
 
 struct Image {
     enum class State { Uninitialized, Drawing, Uploaded };
-
-    struct Error : virtual boost::exception, virtual std::exception {};
 
     mutable std::atomic<State> state = State::Uninitialized;
 

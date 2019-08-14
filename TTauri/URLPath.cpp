@@ -69,7 +69,7 @@ std::string URLPath::path_string() const noexcept
 std::string const &URLPath::filename() const
 {
     if (segments.size() == 0) {
-        BOOST_THROW_EXCEPTION(URLError("URLPath does not contain a filename"));
+        TTAURI_THROW(url_error("URLPath does not contain a filename"));
     }
 
     return segments.back();

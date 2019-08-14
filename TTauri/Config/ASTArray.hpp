@@ -41,7 +41,7 @@ struct ASTArray : ASTExpression {
         return s;
     }
 
-    universal_value execute(ExecutionContext *context) const override {
+    universal_value execute(ExecutionContext &context) const override {
         Array values;
 
         for (let expression: expressions) {
@@ -64,22 +64,22 @@ struct ASTArray : ASTExpression {
      *
      * An empty section-statement will reset the current active object to the encapsulating object.
      */
-    void executeStatement(ExecutionContext *context) const override {
+    void executeStatement(ExecutionContext &context) const override {
         if (expressions.size() == 0) {
             // empty section-statement; reset the currently active object.
-            context->setSection({});
+            context.setSection({});
 
         } else if (expressions.size() == 1) {
             // section-statement with one expression; reset the currently active object.
             // Then find/create an object based on the expression, then select it as the
             // active object.
-            context->setSection({});
+            context.setSection({});
             let selector = expressions.at(0)->getFQName();
-            context->setSection(selector);
+            context.setSection(selector);
 
         } else {
-            BOOST_THROW_EXCEPTION(InvalidOperationError("syntax error, expected 0 or 1 expression in section statement")
-                << errinfo_location(location)
+            TTAURI_THROW(invalid_operation_error("syntax error, expected 0 or 1 expression in section statement")
+                << error_info("location", location)
             );
         }
     }

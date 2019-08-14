@@ -13,8 +13,6 @@ namespace TTauri::GUI {
 
 class Pipeline_vulkan : public Pipeline_base {
 public:
-    struct NonVulkanWindowError : virtual Error {};
-
     vk::Pipeline intrinsic;
 
     Pipeline_vulkan(Window const &window);

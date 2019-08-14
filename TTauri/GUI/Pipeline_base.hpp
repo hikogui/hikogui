@@ -6,15 +6,12 @@
 #include "Device_forward.hpp"
 #include "Window_forward.hpp"
 #include "TTauri/required.hpp"
-#include <boost/exception/exception.hpp>
 #include <memory>
 
 namespace TTauri::GUI {
 
 class Pipeline_base {
 public:
-    struct Error : virtual boost::exception, virtual std::exception {};
-
     Window const &window;
 
     Pipeline_base(Window const &window);

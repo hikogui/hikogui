@@ -78,7 +78,9 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
         return {};
 
     default:
-        BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
+        TTAURI_THROW(gui_error("Unknown result from acquireNextImageKHR()")
+            << error_info("vk-result", result)
+        );
     }
 }
 
@@ -110,8 +112,9 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
             return;
 
         default:
-            BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
-            return;
+            TTAURI_THROW(gui_error("Unknown result from presentKHR()")
+                << error_info("vk-result", result)
+            );
         }
 
     }
@@ -425,7 +428,9 @@ Window_base::State Window_vulkan::buildSwapchain()
         return State::SurfaceLost;
 
     default:
-        BOOST_THROW_EXCEPTION(Window_base::SwapChainError());
+        TTAURI_THROW(gui_error("Unknown result from createSwapchainKHR()")
+            << error_info("vk-result", result)
+        );
     }
 
     LOG_INFO("Finished building swap chain");

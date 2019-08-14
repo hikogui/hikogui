@@ -52,7 +52,7 @@ struct ExecutionContext {
     universal_value &currentObject() noexcept {
         auto &item = objectStack.back();
 
-        auto *object = &(item.object);
+        gsl::not_null<universal_value *> object = &(item.object);
         for (let &key: item.section) {
             object = &((*object)[key]);
         }
