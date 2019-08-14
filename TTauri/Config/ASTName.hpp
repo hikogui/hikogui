@@ -38,8 +38,8 @@ struct ASTName : ASTExpression {
     template<typename T>
     T getArgument(std::vector<universal_value> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
-            TTAURI_THROW(invalid_operation_error((boost::format("syntax error, not enough arguments to function '%', expecting argument number %i of type %s")
-                % name % (i + 1) % typeid(T).name()).str())
+            TTAURI_THROW(invalid_operation_error("syntax error, not enough arguments to function '{0}', expecting argument number {1} of type {2}",
+                name, (i + 1), typeid(T).name())
                 << error_info<"location"_tag>(location)
             );
         }

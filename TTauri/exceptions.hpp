@@ -37,7 +37,9 @@ protected:
     mutable std::string _what;
 
 public:
-    error(std::string message) noexcept : _message(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    error(Fmt const &fmt, Args const &... args) noexcept :
+        _message(fmt::format(fmt, args...)) {}
 
     /*! Return the name of the exception.
      */
@@ -115,42 +117,59 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
  */
 class parse_error : public error {
 public:
-    parse_error(std::string message) noexcept: error(std::move(message)) {}
-    std::string name() const noexcept override { return "parse_error"; };
+    template<typename Fmt, typename... Args>
+    parse_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
 
+    std::string name() const noexcept override { return "parse_error"; };
 };
 
-#define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error( #x )); }
+#define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{0}", #x )); }
 #define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
 
 class url_error : public error {
 public:
-    url_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    url_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "url_error"; };
 };
 
 class io_error : public error {
 public:
-    io_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    io_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "io_error"; };
     void prepare_what() const noexcept override;
 };
 
 class key_error : public error {
 public:
-    key_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    key_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "key_error"; };
 };
 
 class index_error : public error {
 public:
-    index_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    index_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "index_error"; };
 };
 
 class gui_error : public error {
 public:
-    gui_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    gui_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "gui_error"; };
 };
 
@@ -158,13 +177,19 @@ public:
  */
 class not_implemented_error : public error {
 public:
-    not_implemented_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    not_implemented_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "not_implemented_error"; };
 };
 
 class out_of_bounds_error : public error {
 public:
-    out_of_bounds_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    out_of_bounds_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "out_of_bounds_error"; };
 };
 
@@ -173,7 +198,10 @@ public:
  */
 class invalid_operation_error : public error {
 public:
-    invalid_operation_error(std::string message) noexcept: error(std::move(message)) {}
+    template<typename Fmt, typename... Args>
+    invalid_operation_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
     std::string name() const noexcept override { return "invalid_operation_error"; };
 };
 
