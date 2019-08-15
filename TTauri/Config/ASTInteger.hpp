@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include <boost/format.hpp>
+#include <string>
 
 namespace TTauri::Config {
 
@@ -14,7 +14,7 @@ struct ASTInteger : ASTExpression {
     ASTInteger(Location location, int64_t value) noexcept : ASTExpression(location), value(value) {}
 
     std::string string() const noexcept override {
-        return (boost::format("%i") % value).str();
+        return std::to_string(value);
     }
 
     universal_value execute(ExecutionContext &context) const noexcept override { 

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "ASTExpression.hpp"
-#include <boost/format.hpp>
 
 namespace TTauri::Config {
 
@@ -14,7 +13,7 @@ struct ASTFloat : ASTExpression {
     ASTFloat(Location location, double value) noexcept : ASTExpression(location), value(value) {}
 
     std::string string() const noexcept override {
-        auto s = (boost::format("%g") % value).str();
+        auto s = fmt::format("{:g}", value);
         if (s.find('.') == s.npos) {
             return s + ".";
         } else {
@@ -24,8 +23,7 @@ struct ASTFloat : ASTExpression {
 
     universal_value execute(ExecutionContext &context) const noexcept override { 
         return value;
-    } 
-
+    }
 };
 
 }

@@ -38,24 +38,37 @@ struct ASTName : ASTExpression {
     template<typename T>
     T getArgument(std::vector<universal_value> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
-            TTAURI_THROW(invalid_operation_error("syntax error, not enough arguments to function '{0}', expecting argument number {1} of type {2}",
-                name, (i + 1), typeid(T).name())
-                << error_info<"location"_tag>(location)
+            TTAURI_THROW(
+                invalid_operation_error(
+                    "syntax error, not enough arguments to function '{0}', expecting argument number {1} of type {2}",
+                    name,
+                    (i + 1),
+                    typeid(T).name()
+                ) << error_info<"location"_tag>(location)
             );
         }
 
         let argument = arguments.at(0);
         if (!argument.is_promotable_to<T>()) {
-            TTAURI_THROW(invalid_operation_error((boost::format("syntax error, invalid argument to function '%s', expecting argument number %i of type %s got %s")
-                % name % (i + 1) % typeid(T).name() % argument.type().name()).str())
-                << error_info<"location"_tag>(location)
+            TTAURI_THROW(
+                invalid_operation_error(
+                    "syntax error, invalid argument to function '{0}', expecting argument number {1} of type {2} got {3}",
+                    name,
+                    (i + 1),
+                    typeid(T).name(),
+                    argument.type().name()
+                ) << error_info<"location"_tag>(location)
             );
         }
 
         if (lastArgument && i != (arguments.size() - 1)) {
-            TTAURI_THROW(invalid_operation_error((boost::format("syntax error, too many arguments to function '%', expecting %i arguments got %i")
-                % name % (i + 1) % arguments.size()).str())
-                << error_info<"location"_tag>(location)
+            TTAURI_THROW(
+                invalid_operation_error(
+                    "syntax error, too many arguments to function '{0}', expecting {1} arguments got {2}",
+                    name,
+                    (i + 1),
+                    arguments.size()
+                ) << error_info<"location"_tag>(location)
             );
         }
 
@@ -91,7 +104,7 @@ struct ASTName : ASTExpression {
             errorMessage += e.message();
             errorMessage += ".";
 
-            TTAURI_THROW(invalid_operation_error((boost::format("Could not include file '%s'") % path).str())
+            TTAURI_THROW(invalid_operation_error("Could not include file '{0}'", path)
                 << error_info<"location"_tag>(location)
                 << error_info<"previous_msg"_tag>(errorMessage)
             );
@@ -130,9 +143,12 @@ struct ASTName : ASTExpression {
             if (path.isRelative()) {
                 return URL::urlFromCurrentWorkingDirectory() / path;
             } else {
-                TTAURI_THROW(invalid_operation_error((boost::format("Expecting relative path argument to function '%s' got '%s'")
-                    % name % path).str())
-                    << error_info<"location"_tag>(location)
+                TTAURI_THROW(
+                    invalid_operation_error(
+                        "Expecting relative path argument to function '{0}' got '{1}'",
+                        name,
+                        path
+                    ) << error_info<"location"_tag>(location)
                 );
             }
         }
@@ -152,8 +168,11 @@ struct ASTName : ASTExpression {
             return executeCwdCall(context, arguments);
 
         } else {
-            TTAURI_THROW(invalid_operation_error((boost::format("Unknown function '%'") % name).str())
-                << error_info<"location"_tag>(location)
+            TTAURI_THROW(
+                invalid_operation_error(
+                    "Unknown function '{0}'",
+                    name
+                ) << error_info<"location"_tag>(location)
             );
         }
     }

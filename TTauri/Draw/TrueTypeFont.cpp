@@ -165,7 +165,7 @@ int TrueTypeFont::searchCharacterMap(char32_t c)
     case 6: return searchCharacterMapFormat6(c);
     case 12: return searchCharacterMapFormat12(c);
     default:
-        TTAURI_THROW(parse_error((boost::format("Unknown cmap format %i") % format.value()).str()));
+        TTAURI_THROW(parse_error("Unknown cmap format {0}", format.value()));
     }
 }
 

@@ -4,9 +4,9 @@
 #pragma once
 
 #include "TTauri/URL.hpp"
+#include <fmt/format.h>
 #include <memory>
 #include <iostream>
-#include <boost/format.hpp>
 
 namespace TTauri::Config {
 
@@ -23,7 +23,7 @@ struct Location {
 
     
     std::string string() const noexcept {
-        return (boost::format("%s:%i:%i") % (*file) % line % column).str();
+        return fmt::format("{0}:{1}:{2}", *file, line, column);
     }
 };
 

@@ -8,7 +8,6 @@
 #include "TTauri/exceptions.hpp"
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
-#include <boost/format.hpp>
 #include <map>
 #include <array>
 
@@ -292,7 +291,7 @@ static std::map<char32_t, size_t> parseCMAP(gsl::span<std::byte const> bytes)
     case 6: return parseCMAPFormat6(tableSpan);
     case 12: return parseCMAPFormat12(tableSpan);
     default:
-        TTAURI_THROW(parse_error((boost::format("Unexpected character map format %i") % table.format.value()).str()));
+        TTAURI_THROW(parse_error("Unexpected character map format {0}", table.format.value()));
     }
 }
 

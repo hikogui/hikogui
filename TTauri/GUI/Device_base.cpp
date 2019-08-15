@@ -5,6 +5,7 @@
 #include "Device.hpp"
 #include "Instance.hpp"
 #include "Window.hpp"
+#include <fmt/format.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <tuple>
 #include <vector>
@@ -26,7 +27,7 @@ std::string Device_base::string() const noexcept
 {
     std::scoped_lock lock(TTauri::GUI::mutex);
 
-    return (boost::format("%04x:%04x %s %s") % vendorID % deviceID % deviceName % deviceUUID).str();
+    return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID);
 }
 
 void Device_base::initializeDevice(Window const &window)

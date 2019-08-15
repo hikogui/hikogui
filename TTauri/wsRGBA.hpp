@@ -7,7 +7,6 @@
 #include "utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
-#include <boost/format.hpp>
 #include <boost/endian/conversion.hpp>
 #include <string>
 #include <algorithm>
@@ -345,10 +344,10 @@ inline std::string to_string(wsRGBA const &x) noexcept
         floatColor.b >= 0.0 && floatColor.b <= 1.0
         ) {
         // This color is inside the sRGB gamut.
-        return (boost::format("#%08x") % x.to_sRGBA_u32()).str();
+        return fmt::format("#{:08x}", x.to_sRGBA_u32());
 
     } else {
-        return (boost::format("<%.3f, %.3f, %.3f, %.3f>") % floatColor.r % floatColor.g % floatColor.b % floatColor.a).str();
+        return fmt::format("<{:.3f}, {:.3f}, {:.3f}, {:.3f}>", floatColor.r, floatColor.g, floatColor.b, floatColor.a);
     }
 }
 

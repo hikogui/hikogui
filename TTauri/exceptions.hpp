@@ -9,8 +9,8 @@
 #include "logging.hpp"
 #include "any_repr.hpp"
 #include "counters.hpp"
-#include <boost/format.hpp>
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <exception>
 #include <string>
 #include <atomic>

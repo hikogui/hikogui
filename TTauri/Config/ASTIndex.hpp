@@ -60,11 +60,7 @@ struct ASTIndex : ASTExpression {
                 }
 
             } else {
-                TTAURI_THROW(invalid_operation_error(
-                    (boost::format("Can not index object of type %s with index of type %s") %
-                        object_.type_name() %
-                        index_.type_name()
-                    ).str())
+                TTAURI_THROW(invalid_operation_error("Can not index object of type {0} with index of type {1}", object_.type_name(), index_.type_name())
                     << error_info<"location"_tag>(location)
                 );
             }
@@ -79,8 +75,7 @@ struct ASTIndex : ASTExpression {
             }
 
         } else {
-            TTAURI_THROW(invalid_operation_error(
-                (boost::format("Can not append to object of type %s") % object_.type_name()).str())
+            TTAURI_THROW(invalid_operation_error("Can not append to object of type {0}", object_.type_name())
                 << error_info<"location"_tag>(location)
             );
         }

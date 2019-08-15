@@ -5,7 +5,6 @@
 #include "TTauri/wsRGBA.hpp"
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>
-#include <boost/format.hpp>
 
 using namespace boost::endian;
 

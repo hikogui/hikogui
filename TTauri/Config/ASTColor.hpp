@@ -5,7 +5,6 @@
 
 #include "ASTExpression.hpp"
 #include "TTauri/wsRGBA.hpp"
-#include <boost/format.hpp>
 #include <glm/glm.hpp>
 
 namespace TTauri::Config {

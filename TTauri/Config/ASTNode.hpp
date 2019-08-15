@@ -7,7 +7,6 @@
 #include "ExecutionContext.hpp"
 #include "TTauri/universal_value.hpp"
 #include "TTauri/exceptions.hpp"
-#include <boost/format.hpp>
 #include <string>
 
 namespace TTauri::Config {

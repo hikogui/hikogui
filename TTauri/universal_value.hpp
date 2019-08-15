@@ -9,7 +9,7 @@
 #include "math.hpp"
 #include "wsRGBA.hpp"
 #include "URL.hpp"
-#include <boost/format.hpp>
+#include <fmt/format.h>
 #include <boost/numeric/conversion/cast.hpp>
 #include <variant>
 #include <any>
@@ -119,9 +119,7 @@ struct universal_value {
             return next.get_by_path(next_key);
 
         } else if (key.size() > 0) {
-            TTAURI_THROW(invalid_operation_error((boost::format("type %s does not support get() with '%s'")
-                % type_name() % key.at(0)).str())
-            );
+            TTAURI_THROW(invalid_operation_error("type {0} does not support get() with '{1}'", type_name(), key.at(0)));
         } else {
             return *this;
         }
@@ -139,9 +137,7 @@ struct universal_value {
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
-            TTAURI_THROW(invalid_operation_error((boost::format("type %s does not support get() with '%s'")
-                % type_name() % key.at(0)).str())
-            );
+            TTAURI_THROW(invalid_operation_error("type {0} does not support get() with '{1}'", type_name(), key.at(0)));
         } else {
             return *this;
         }
@@ -201,9 +197,7 @@ struct universal_value {
             return *(i->second);
         }
 
-        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get member .%s of type %s") %
-            other % type_name()).str())
-        );
+        TTAURI_THROW(invalid_operation_error("Cannot get member .%s of type %s", other, type_name()));
     }
 
     universal_value operator[](std::string const &other) const {
@@ -216,9 +210,7 @@ struct universal_value {
             }
         }
 
-        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get member .%s of type %s") %
-            other % type_name()).str())
-        );
+        TTAURI_THROW(invalid_operation_error("Cannot get member .{0} of type {1}", other, type_name()));
     }
 
     universal_value &operator[](size_t const index) {
@@ -233,15 +225,11 @@ struct universal_value {
             if (index < _array.size()) {
                 return *(_array[index]);
             } else {
-                TTAURI_THROW(invalid_operation_error((boost::format("Index %i out of range, size of array is %i") %
-                    index % _array.size()).str())
-                );
+                TTAURI_THROW(invalid_operation_error("Index {0} out of range, size of array is {1}", index, _array.size()));
             }
         }
 
-        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get item at index %i of type %s") %
-            index % type_name()).str())
-        );
+        TTAURI_THROW(invalid_operation_error("Cannot get item at index {0} of type {1}", index, type_name()));
     }
 
     universal_value operator[](size_t const index) const {
@@ -251,15 +239,11 @@ struct universal_value {
             if (index < _array.size()) {
                 return *(_array[index]);
             } else {
-                TTAURI_THROW(invalid_operation_error((boost::format("Index %i out of range, size of array is %i") %
-                    index % _array.size()).str())
-                );
+                TTAURI_THROW(invalid_operation_error("Index {0} out of range, size of array is {1}", index, _array.size()));
             }
         }
 
-        TTAURI_THROW(invalid_operation_error((boost::format("Cannot get item at index %i of type %s") %
-            index % type_name()).str())
-        );
+        TTAURI_THROW(invalid_operation_error("Cannot get item at index {0} of type {1}", index, type_name()));
     }
 
     universal_value &append() {
@@ -274,9 +258,7 @@ struct universal_value {
             return *(_array.back());
         }
 
-        TTAURI_THROW(invalid_operation_error((boost::format("Cannot append new item onto type %s") %
-            type_name()).str())
-        );
+        TTAURI_THROW(invalid_operation_error("Cannot append new item onto type {0}", type_name()));
     }
 };
 
@@ -351,7 +333,7 @@ inline universal_value operator-(universal_value const &rhs)
     } else if (holds_alternative<double>(rhs)) {
         return -get<double>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot make value of type %s negative") % rhs.type_name()).str()));
+    TTAURI_THROW(invalid_operation_error("Cannot make value of type {0} negative", rhs.type_name()));
 }
 
 inline universal_value operator~(universal_value const &rhs)
@@ -361,7 +343,7 @@ inline universal_value operator~(universal_value const &rhs)
     } else if (holds_alternative<bool>(rhs)) {
         return !get<bool>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot invert value of type %s") % rhs.type_name()).str()));
+    TTAURI_THROW(invalid_operation_error("Cannot invert value of type {0}", rhs.type_name()));
 }
 
 inline universal_value operator*(universal_value const &lhs, universal_value const &rhs)
@@ -371,9 +353,7 @@ inline universal_value operator*(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) * get<int64_t>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot multiple value of type %s with value of type %s") %
-        lhs.type_name() % rhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot multiple value of type {0} with value of type {1}", lhs.type_name(), rhs.type_name()));
 }
 
 inline universal_value operator/(universal_value const &lhs, universal_value const &rhs)
@@ -383,9 +363,7 @@ inline universal_value operator/(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) / get<int64_t>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot divide value of type %s with value of type %s") %
-        lhs.type_name() % rhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot divide value of type {0} with value of type {1}", lhs.type_name(), rhs.type_name()));
 }
 
 inline universal_value operator%(universal_value const &lhs, universal_value const &rhs)
@@ -395,9 +373,7 @@ inline universal_value operator%(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return modulo(get<int64_t>(lhs), get<int64_t>(rhs));
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot take modulo of value of type %s with value of type %s") %
-        lhs.type_name() % rhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot take modulo of value of type {0} with value of type {1}", lhs.type_name(), rhs.type_name()));
 }
 
 inline universal_value operator+(universal_value const &lhs, universal_value const &rhs)
@@ -422,9 +398,7 @@ inline universal_value operator+(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) + get<int64_t>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot add value of type %s to a value of type %s") %
-        rhs.type_name() % lhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot add value of type {0} to a value of type {1}", rhs.type_name(), lhs.type_name()));
 }
 
 inline universal_value operator-(universal_value const &lhs, universal_value const &rhs)
@@ -434,9 +408,7 @@ inline universal_value operator-(universal_value const &lhs, universal_value con
     } else if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) - get<int64_t>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot subtract value of type %s from a value of type %s") %
-        rhs.type_name() % lhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot subtract value of type {0} from a value of type {1}", rhs.type_name(), lhs.type_name()));
 }
 
 inline universal_value operator<<(universal_value const &lhs, universal_value const &rhs)
@@ -444,9 +416,7 @@ inline universal_value operator<<(universal_value const &lhs, universal_value co
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) << get<int64_t>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot left shift a of value of type %s with a value of type %s") %
-        lhs.type_name() % rhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot left shift a of value of type {0} with a value of type {1}", lhs.type_name(), rhs.type_name()));
 }
 
 inline universal_value operator>>(universal_value const &lhs, universal_value const &rhs)
@@ -454,9 +424,7 @@ inline universal_value operator>>(universal_value const &lhs, universal_value co
     if (holds_alternative<int64_t>(lhs) && holds_alternative<int64_t>(rhs)) {
         return get<int64_t>(lhs) >> get<int64_t>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot right shift a of value of type %s with a value of type %s") %
-        lhs.type_name() % rhs.type_name()).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot right shift a of value of type {0} with a value of type {1}", lhs.type_name(), rhs.type_name()));
 }
 
 inline universal_value operator&(universal_value const &lhs, universal_value const &rhs)
@@ -466,9 +434,7 @@ inline universal_value operator&(universal_value const &lhs, universal_value con
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
         return get<bool>(lhs) && get<bool>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot binary-and a of value of type %s to a value of type %s") %
-        rhs.type_name() % lhs.type_name() ).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot binary-and a of value of type {0} to a value of type {1}", rhs.type_name(), lhs.type_name()));
 }
 
 inline universal_value operator^(universal_value const &lhs, universal_value const &rhs)
@@ -478,9 +444,7 @@ inline universal_value operator^(universal_value const &lhs, universal_value con
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
         return static_cast<bool>(get<bool>(lhs) ^ get<bool>(rhs));
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot binary-xor a of value of type %s to a value of type %s") %
-        rhs.type_name() % lhs.type_name() ).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot binary-xor a of value of type {0} to a value of type {1}", rhs.type_name(), lhs.type_name()));
 }
 
 inline universal_value operator|(universal_value const &lhs, universal_value const &rhs)
@@ -490,9 +454,7 @@ inline universal_value operator|(universal_value const &lhs, universal_value con
     } else if (holds_alternative<bool>(lhs) && holds_alternative<bool>(rhs)) {
         return get<bool>(lhs) || get<bool>(rhs);
     }
-    TTAURI_THROW(invalid_operation_error((boost::format("Cannot binary-or a of value of type %s to a value of type %s") %
-        rhs.type_name() % lhs.type_name() ).str())
-    );
+    TTAURI_THROW(invalid_operation_error("Cannot binary-or a of value of type {0} to a value of type {1}", rhs.type_name(), lhs.type_name()));
 }
 
 template<typename T>
@@ -563,7 +525,7 @@ inline std::string to_string(universal_value const &x) noexcept
         return std::to_string(get<int64_t>(x));
 
     case 3: {
-            auto s = (boost::format("%g") % get<double>(x)).str();
+            auto s = fmt::format("{:g}", get<double>(x));
             if (s.find('.') == s.npos) {
                 return s + ".";
             } else {

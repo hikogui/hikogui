@@ -7,6 +7,7 @@
 #include "URLPath.hpp"
 #include "required.hpp"
 #include "exceptions.hpp"
+#include <fmt/format.h>
 #include <string>
 #include <string_view>
 #include <optional>
@@ -105,6 +106,7 @@ inline T &getResource(URL const &location)
 }
 
 namespace std {
+
 
 template<>
 struct hash<TTauri::URL> {
