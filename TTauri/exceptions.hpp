@@ -35,10 +35,8 @@ inline auto error_info(T value) {
 
 class error : public std::exception {
 private:
-    static constexpr int error_info_capacity = 16;
-
     std::string _message;
-    small_map<string_tag,std::any,error_info_capacity> _error_info = {};
+    small_map<string_tag,std::any,16> _error_info = {};
 
 protected:
     mutable std::string _what;
@@ -133,6 +131,7 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
     return lhs;
 }
 
+// XXX Should also log and cause traces to be logged.
 #define TTAURI_THROW(x)\
     do {\
         auto e = (x);\

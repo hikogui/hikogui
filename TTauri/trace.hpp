@@ -1,43 +1,96 @@
 
 
 #include "required.hpp"
+#include "counters.hpp"
+#include "small_map.hpp"
+#include "wfree_mpsc_message_queue.hpp"
 #include <atomic>
+#include <array>
+#include <utility>
 
 #pragma once
 
 namespace TTauri {
 
-inline void start_trace(char const *name);
-inline void stop_trace();
+using trace_id = int64_t;
 
-thread_local trace_span_current_id = 0;
-thread_local trace_span_depth = 0;
-thread_local trace_span_log_depth = 0;
+struct scoped_span_base;
 
-inline uint64_t trace_span_get_unique_id()
-{
-    static std::atomic<uint64_t> id = 0;
-    return id.fetch_add(1, std::memory_order_relaxed) + 1;
-}
+struct trace_message {
+    string_tag tag;
+    trace_id id;
+    trace_id parent_id;
+    hiperf_utc_clock::timepoint timestamp;
+    hiperf_utc_clock::duration duration;
+    small_map<string_tag,int64_t,16> trace_info;
 
-struct 
+    trace_message(scoped_span_base const &span);
+};
 
-struct trace_span_base {
+class trace {
+private:
+    thread_local int depth = 0;
+    thread_local int record_depth = 0;
+    static std::atomic<trace_id> id = 0;
+
+    wfree_mpsc_message_queue<trace_message,2048> messages;
+public:
+    thread_local trace_id current_id = 0;
+
+    static trace_id get_unique_id() noexcept {
+        return id.fetch_add(1, std::memory_order_relaxed) + 1;
+    }
+
+    static std::pair<trace_id,trace_id> push() noexcept {
+        let id = get_unique_id();
+        let parent_id = current_id;
+        current_id = id;
+        depth++;
+        return {id, parent_id};
+    }
+
+    static void pop(trace_id parent_id) noexcept {
+        required_assert(depth > 0);
+        if (record_depth > --depth) {
+            record_depth = depth;
+        }
+
+        current_id = parent_id;
+    }
+
+    /*! Check if the current trace is being recorded into a log.
+     */
+    static bool is_recording() noexcept {
+        return depth <= record_depth;
+    }
+
+    /*! Tell the system to record current trace and all its parents into a log.
+     */
+    static void record() noexcept {
+        if (!is_recording()) {
+            record_depth = depth;
+        }
+    }
+
+    /*! Record a message into the log.
+     */
+    static void record_message(trace_messsage const &message) {
+        messages.push_back(message);
+    }
+};
+
+struct scoped_span_base {
     using clock = hiperf_utc_clock;
 
     /*! id of the current trace_span.
      * zero means inactive trace_span
      */
-    uint64_t id;
+    trace_id id;
 
     /*! id of the parent trace_span.
      * zero means inactive trace_span
      */
-    uint64_t parent_id;
-
-    /*! Depth of the parent stack.
-     */
-    uint64_t depth;
+    trace_id parent_id;
 
     /*! Start timestamp when the trace was started.
      */
@@ -47,99 +100,81 @@ struct trace_span_base {
      */
     typename clock::duration duration;
 
-    /*! The default constructor makes the trace inactive.
+    /*! Information added to a trace during its lifetime.
+     * int64_t as values for wait-free value transfer.
      */
-    trace_span_base() :
-        id(0),
-        parent_id(0),
-        depth(0),
-        timestamp()
-    {
-    }
+    small_map<string_tag,int64_t,16> trace_info;
 
     /*! The constructor will make the start of a trace.
      *
      * start_trace() should be the only function that will cause this constructor to
      * be executed. start_trace will place this onto current_trace and set this' parent.
      */
-    trace_span_base(bool) :
-        id(trace_span_get_unique_id()),
-        parent_id(trace_span_current_id),
-        depth(++trace_span_depth);
+    scoped_span_base() :
         timestamp(clock::now())
     {
+        std::tie(id, parent_id) = trace::push();
     }
 
-    virtual ~trace_span_base() {
+    virtual ~scoped_span_base() {
+        trace::pop(parent_id);
+    }
+
+    scoped_span_base(scoped_span_base const &) = delete;
+    scoped_span_base(scoped_span_base &&) = delete;
+    scoped_span_base &operator=(scoped_span_base const &) = delete;
+    scoped_span_base &operator=(scoped_span_base &&) = delete;
+
+    template<string_tag tag>
+    bool insert(int64_t value) {
+        trace_info.push(tag, value);
+    }
+
+    template<string_tag tag>
+    std::optional<int64_t> get() {
+        return trace_info.get(tag);
+    }
+
+    template<string_tag tag>
+    int64_t get(int64_t default_value) {
+        return trace_info.get(tag, default_value);
+    }
+
+    virtual string_tag tag() const noexcept = 0;
+};
+
+template<string_tag _TAG>
+struct scoped_span final : public scoped_span_base {
+    static constexpr string_tag TAG = _TAG;
+
+    scoped_span() {
+        increment_counter<TAG>();
+    }
+
+    ~scoped_span() {
         if (id > 0) {
             duration = clock::now() - timestamp;
 
             // Send the log to the log thread.
-            if (is_logging_enabled()) {
-                log_param<chars....>(id);
-                log_param(id, parent_id);
-                log_param(id, timestamp);
-                log_param(id, duration);
-
+            if (trace::is_recording()) {
+                let message = trace_message(TAG, *this);
+                trace::log_message(message);
             }
-
-            // Update global-thread state for the end of this trace-span.
-            required_assert(trace_span_depth == depth);
-            --trace_span_depth;
-            if (trace_span_depth <= trace_span_log_depth) {
-                trace_span_log_depth = trace_span_depth;
-            }
-
-            trace_span_current_id = parent_id;
         }
     }
 
-    trace_span_base(trace_span_base const &other) = delete;
-
-    trace_span_base(trace_span_base &&other) :
-        id(other.id),
-        parent_id(other.parent_id),
-        timestamp(other.timestamp)
-    {
-        other.id = 0;    
-    }
-
-    trace_span_base &operator=(trace_span_base const &opther) = delete;
-
-    trace_span_base &operator=(trace_span_base &&other) {
-        id = other.id;
-        parent_id = other.parent_id;
-        timestamp = other.timestamp;
-        other.id = 0;
-        return *this;
-    }
-
-    /*! Check if this span needs to be logged.
-     * A parent will log when enable_logging() is called on its child.
-     * But any childs after of this parent afterwards need not log.
-     */
-    void is_logging_enabled const {
-        return depth <= trace_span_log_depth;
-    }
-
-    /*! Enable logging for this span, and all parents below it.
-     */
-    void enable_logging() const {
-        if (depth > trace_span_log_depth) {
-            trace_span_log_depth = depth;
-        }
-    }
+    string_tag tag() const noexcept override { return TAG; }
 };
 
-template<char... chars>
-struct trace_span final : public trace_span_base {
-    using tag = string_tag<chars...>;
-};
-
-
-template<char... chars>
-trace_span<chars...> operator""_trace() {
-    return trace_span<chars...>{true};
+trace_message::trace_message(string_tag tag, scoped_span_base const &span) :
+    tag(tag),
+    id(trace.id),
+    parent_id(trace.parent_id),
+    timestamp(trace.timestamp),
+    duration(trace.duration),
+    trace_info(trace.trace_info)
+{
 }
+
 
 }

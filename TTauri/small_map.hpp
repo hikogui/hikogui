@@ -34,6 +34,15 @@ public:
     decltype(auto) end() const { return items.begin() + nr_items; }
     decltype(auto) end() { return items.begin() + nr_items; }
 
+    bool push(K key, V value) {
+        if (nr_items < capacity) {
+            items[nr_items++] = { std::move(key), std::move(value) };
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     bool insert(K key, V value) {
         for (auto i = 0; i < nr_items; i++) {
             auto &item = items[i];
@@ -42,12 +51,7 @@ public:
                 return true;
             }
         }
-        if (nr_items < capacity) {
-            items[nr_items++] = { std::move(key), std::move(value) };
-            return true;
-        } else {
-            return false;
-        }
+        return push(key, value);
     }
 
     std::optional<V> get(K const &key) const noexcept {
