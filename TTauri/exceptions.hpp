@@ -8,6 +8,7 @@
 #include "small_map.hpp"
 #include "logging.hpp"
 #include "any_repr.hpp"
+#include "counters.hpp"
 #include <boost/format.hpp>
 #include <fmt/format.h>
 #include <exception>
@@ -132,18 +133,24 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
     return lhs;
 }
 
-#define TTAURI_THROW(x) throw x << error_info<"line"_tag>(int{__LINE__}) << error_info<"file"_tag>(__FILE__)
+#define TTAURI_THROW(x)\
+    do {\
+        auto e = (x);\
+        e << error_info<"line"_tag>(int{__LINE__}) << error_info<"file"_tag>(__FILE__);\
+        increment_counter<e.TAG>();\
+        throw e;\
+    } while(false)
 
-template<string_tag TAG>
+template<string_tag _TAG>
 class sub_error : public error {
 public:
-    static constexpr string_tag _tag = TAG;
+    static constexpr string_tag TAG = _TAG;
 
     template<typename Fmt, typename... Args>
     sub_error(Fmt const &fmt, Args const &... args) noexcept :
         error(fmt, args...) {}
 
-    string_tag tag() const noexcept override { return _tag; }
+    string_tag tag() const noexcept override { return TAG; }
 };
 
 /*! Error to throw when parsing some kind of document.
