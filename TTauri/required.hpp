@@ -18,6 +18,7 @@
 #define required_assert(x) if (!(x)) { std::terminate(); }
 
 #define no_default std::terminate()
+#define not_implemented std::terminate()
 
 namespace TTauri {
 template<typename T, typename U>

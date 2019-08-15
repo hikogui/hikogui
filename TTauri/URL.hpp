@@ -83,9 +83,7 @@ size_t file_size(URL const &url);
 template <typename T>
 inline T parseResource(URL const &location)
 {
-    TTAURI_THROW(not_implemented_error("parseResource for this type is not implemented")
-        << errinfo_url(location)
-    );
+    not_implemented;
 }
 
 template <typename T>

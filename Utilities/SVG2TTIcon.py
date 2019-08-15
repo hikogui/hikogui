@@ -289,7 +289,7 @@ def convertContours(s):
             contour = None
             i += 1
         else:
-            raise not_implemented_error("Does not implement '%s' command" % command)
+            raise NotImplementedError("Does not implement '%s' command" % command)
     
     return contours
 

@@ -5,6 +5,9 @@
 
 #include "required.hpp"
 #include "string_tag.hpp"
+#include "small_map.hpp"
+#include "logging.hpp"
+#include "any_repr.hpp"
 #include <boost/format.hpp>
 #include <fmt/format.h>
 #include <exception>
@@ -30,8 +33,11 @@ inline auto error_info(T value) {
 }
 
 class error : public std::exception {
+private:
+    static constexpr int error_info_capacity = 16;
+
     std::string _message;
-    std::unordered_map<string_tag,std::any> _error_info = {};
+    small_map<string_tag,std::any,error_info_capacity> _error_info = {};
 
 protected:
     mutable std::string _what;
@@ -41,17 +47,37 @@ public:
     error(Fmt const &fmt, Args const &... args) noexcept :
         _message(fmt::format(fmt, args...)) {}
 
+    virtual string_tag tag() const noexcept = 0;
+
     /*! Return the name of the exception.
      */
-    virtual std::string name() const noexcept = 0;
+    std::string name() const noexcept {
+        return tag_to_string(tag());
+    }
 
-    virtual void prepare_what() const noexcept {
+    std::string error_info_string(bool showLineAndFile=true) const noexcept {
+        std::string r;
+
+        int i = 0;
+        for (let &info: _error_info) {
+            if (!showLineAndFile && (info.first == "line"_tag || info.first == "file"_tag)) {
+                continue;
+            }
+
+            if (i++ > 0) { r += " ,"; };
+            r += fmt::format("({0}: {1})", tag_to_string(info.first), any_repr(info.second));   
+        }
+        return r;
+    }
+
+    void prepare_what() const noexcept {
         // XXX Strip off project directory from file.
-        _what = fmt::format("{0},{1}:{2}: {3}.",
+        _what = fmt::format("{0},{1}:{2}: {3}. {4}",
             get<"file"_tag>("<unknown>"),
             get<"line"_tag>(0),
             name(),
-            _message
+            _message,
+            error_info_string(false)
         );
     }
 
@@ -66,17 +92,17 @@ public:
 
     /*! Get a value from the exception.
     */
-    template<typename T, string_tag TAG>
+    template<string_tag TAG, typename T>
     std::optional<T> get() const noexcept {
-        let i = _error_info.find(TAG);
-        if (i == _error_info.end()) {
-            return {};
-        }
+        if (let optional_info = _error_info.get(TAG)) {
+            let &info = *optional_info;
+            try {
+                return std::any_cast<T>(info);
+            } catch (std::bad_any_cast) {
+                return {};
+            }
 
-        let &any_value = i->second;
-        try {
-            return std::any_cast<T>(any_value);
-        } catch (std::bad_any_cast) {
+        } else {
             return {};
         }
     }
@@ -85,7 +111,7 @@ public:
     */
     template<string_tag TAG, typename T>
     T get(T default_value) const noexcept {
-        if (let value = get<T,TAG>()) {
+        if (let value = get<TAG,T>()) {
             return *value;
         } else {
             return default_value;
@@ -100,11 +126,25 @@ public:
 template<typename T, string_tag TAG, typename O>
 inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<TAG,O> const &rhs)
 {
-    lhs._error_info[rhs.tag] = rhs.value;
+    if (!lhs._error_info.insert(rhs.tag, rhs.value)) {
+        LOG_ERROR("Too many error_info values added to exception.");
+    }
     return lhs;
 }
 
 #define TTAURI_THROW(x) throw x << error_info<"line"_tag>(int{__LINE__}) << error_info<"file"_tag>(__FILE__)
+
+template<string_tag TAG>
+class sub_error : public error {
+public:
+    static constexpr string_tag _tag = TAG;
+
+    template<typename Fmt, typename... Args>
+    sub_error(Fmt const &fmt, Args const &... args) noexcept :
+        error(fmt, args...) {}
+
+    string_tag tag() const noexcept override { return _tag; }
+};
 
 /*! Error to throw when parsing some kind of document.
  * This should be the primary exception to throw when there is an error in the document.
@@ -115,94 +155,20 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
  *
  * For this reasons ParserErrors should not be ignored by the callees of a parser.
  */
-class parse_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    parse_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "parse_error"; };
-};
+using parse_error = sub_error<"parse_error"_tag>;
 
 #define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{0}", #x )); }
 #define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
 
-class url_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    url_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "url_error"; };
-};
-
-class io_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    io_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "io_error"; };
-    void prepare_what() const noexcept override;
-};
-
-class key_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    key_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "key_error"; };
-};
-
-class index_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    index_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "index_error"; };
-};
-
-class gui_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    gui_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "gui_error"; };
-};
-
-/*! Error to throw when functionality was not implemented.
- */
-class not_implemented_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    not_implemented_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "not_implemented_error"; };
-};
-
-class out_of_bounds_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    out_of_bounds_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "out_of_bounds_error"; };
-};
+using url_error = sub_error<"url_error"_tag>;
+using io_error = sub_error<"io_error"_tag>;
+using key_error = sub_error<"key_error"_tag>;
+using gui_error = sub_error<"gui_error"_tag>;
+using bounds_error = sub_error<"bounds_error"_tag>;
 
 /*! Error to throw when an operation can not be executed due to the type of its operants.
- * This is for example used in universal_type.
- */
-class invalid_operation_error : public error {
-public:
-    template<typename Fmt, typename... Args>
-    invalid_operation_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
-
-    std::string name() const noexcept override { return "invalid_operation_error"; };
-};
+* This is for example used in universal_type.
+*/
+using invalid_operation_error = sub_error<"invalid_op"_tag>;
 
 }

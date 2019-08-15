@@ -30,11 +30,11 @@ struct Config {
             root = ast->execute();
 
         } catch (error &e) {
-            if (let previousErrorMessage = e.get<std::string, "previous-msg"_tag>()) {
+            if (let previousErrorMessage = e.get<"previous_msg"_tag,std::string>()) {
                 _errorMessage += *previousErrorMessage + "\n";
             }
 
-            if (let location = e.get<Location, "location"_tag>()) {
+            if (let location = e.get<"location"_tag,Location>()) {
                 _errorMessage += location->string() + ": ";
             }
 

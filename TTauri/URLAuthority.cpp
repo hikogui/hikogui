@@ -17,7 +17,7 @@ URLAuthority::URLAuthority(std::string const &authority)
 
     if (!std::regex_match(authority.begin(), authority.end(), m, URLAuthority_re)) {
         TTAURI_THROW(url_error("Could not parse URLAuthority")
-            << error_info<"parse-string"_tag>(authority)
+            << error_info<"parse_string"_tag>(authority)
         );
     }
 

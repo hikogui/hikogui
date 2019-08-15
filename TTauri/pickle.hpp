@@ -83,7 +83,7 @@ inline pickle_type_t pickle_type(Iter &i, Iter const &end)
 template<typename R, typename Iter>
 inline R unpickle(Iter &&i, Iter &&end)
 {
-    TTAURI_THROW(not_implemented_error("unpickle"));
+    not_implemented;
 }
 
 template<typename Iter>

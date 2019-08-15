@@ -17,9 +17,7 @@ constexpr string_tag char_to_tag(char c) noexcept
         return 0;
     } else if (c >= 'a' && c <= 'z') {
         return (c - 'a') + 1;
-    } else if (c >= 'A' && c <= 'Z') {
-        return (c - 'A') + 1;
-    } else if (c == '-' || c == '_' || c == ' ') {
+    } else if (c == '_') {
         return 27;
     } else {
         no_default;

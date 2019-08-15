@@ -79,7 +79,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
     default:
         TTAURI_THROW(gui_error("Unknown result from acquireNextImageKHR()")
-            << error_info<"vk-result"_tag>(result)
+            << error_info<"vk_result"_tag>(result)
         );
     }
 }
@@ -113,7 +113,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
         default:
             TTAURI_THROW(gui_error("Unknown result from presentKHR()")
-                << error_info<"vk-result"_tag>(result)
+                << error_info<"vk_result"_tag>(result)
             );
         }
 
@@ -429,7 +429,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 
     default:
         TTAURI_THROW(gui_error("Unknown result from createSwapchainKHR()")
-            << error_info<"vk-result"_tag>(result)
+            << error_info<"vk_result"_tag>(result)
         );
     }
 

@@ -98,7 +98,7 @@ set(TTauri_srcs
     FileMapping.cpp
     FileView.cpp
     strings.cpp
-    exceptions.cpp
+    any_repr.cpp
 )
 
 set(TTauriTests_srcs
@@ -108,6 +108,7 @@ set(TTauriTests_srcs
     Draw/TrueTypeParser_tests.cpp
     Draw/Path_tests.cpp
     Draw/PixelMap_tests.cpp
+    any_repr_tests.cpp
     counters_tests.cpp
     string_tag_tests.cpp
     wsRGBA_tests.cpp
@@ -118,6 +119,8 @@ set(TTauriTests_srcs
     URL_tests.cpp
     utils_tests.cpp
     pickle_tests.cpp
+    small_map_tests.cpp
+    exceptions_tests.cpp
 )
 
 set(TTauri_do_not_analyze
