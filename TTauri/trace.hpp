@@ -156,7 +156,7 @@ struct scoped_span final : public scoped_span_base {
             duration = clock::now() - timestamp;
 
             // Send the log to the log thread.
-            if (trace::is_recording()) {
+            if (ttauri_unlikely(trace::is_recording())) {
                 let message = trace_message(TAG, *this);
                 trace::log_message(message);
             }

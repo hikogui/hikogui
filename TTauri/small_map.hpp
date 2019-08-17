@@ -27,13 +27,13 @@ public:
 
     small_map(small_map const &other) : nr_items(0) {
         for (let &item: other) {
-            items[nr_items++] = { key, value };
+            items[nr_items++] = { item.first, item.second };
         }
     }
 
     small_map(small_map &&other) : nr_items(0) {
         for (let &item: other) {
-            items[nr_items++] = { std::move(key), std::move(value) };
+            items[nr_items++] = { std::move(item.first), std::move(item.second) };
         }
         other.nr_items = 0;
     }
@@ -41,7 +41,7 @@ public:
     small_map &operator=(small_map const &other) {
         nr_items = 0;
         for (let &item: other) {
-            items[nr_items++] = { key, value };
+            items[nr_items++] = { item.first, item.second };
         }
         return *this;
     }
@@ -49,7 +49,7 @@ public:
     small_map &operator=(small_map &&other) {
         nr_items = 0;
         for (let &item: other) {
-            items[nr_items++] = { std::move(key), std::move(value) };
+            items[nr_items++] = { std::move(item.first), std::move(item.second) };
         }
         other.nr_items = 0;
         return *this;
@@ -64,12 +64,20 @@ public:
     decltype(auto) end() const { return items.begin() + nr_items; }
     decltype(auto) end() { return items.begin() + nr_items; }
 
-    bool push(K key, V value) {
+    bool push(K key, V value) noexcept {
         if (nr_items < capacity) {
             items[nr_items++] = { std::move(key), std::move(value) };
             return true;
         } else {
             return false;
+        }
+    }
+
+    std::optional<item_type> pop() noexcept {
+        if (nr_items > 0) {
+            return std::move(items[--nr_items]);
+        } else {
+            return {};
         }
     }
 

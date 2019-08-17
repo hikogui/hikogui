@@ -87,7 +87,7 @@ set(TTauri_srcs
     GUI/Widgets/ToolbarButtonWidget.cpp
     Application_base.cpp
     Application_win32.cpp
-    logging.cpp
+    logger.cpp
     URLUserinfo.cpp
     URLAuthority.cpp
     URLPath.cpp

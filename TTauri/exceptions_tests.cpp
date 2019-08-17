@@ -19,12 +19,12 @@ TEST(Exceptions, Default) {
         ASSERT_EQ(e.name(), "key-error"s);
 
         let optional_line = e.get<"line"_tag,int>();
-        ASSERT_EQ(*optional_line, 17);
+        ASSERT_EQ(e.source_line, 17);
 
         let optional_key = e.get<"key"_tag,std::string>();
         ASSERT_EQ(*optional_key, "foo"s);
 
-        ASSERT_EQ(e.error_info_string(false), "(key: \"foo\")"s);
+        ASSERT_EQ(e.error_info_string(), "(key: \"foo\")"s);
     }
 
     ASSERT_EQ(read_counter<key_error::TAG>(), current_count + 1);

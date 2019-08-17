@@ -32,6 +32,20 @@ T numeric_cast(U value) noexcept {
 #define to_int64(x) TTauri::numeric_cast<int64_t>(x)
 
 #if defined(_MSC_VER)
+#define ttauri_likely(condition) condition
+#define ttauri_unlikely(condition) condition
+#elif defined(__clang__)
+#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
+#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#elif defined(__gcc__)
+#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
+#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#else
+#define ttauri_likely(condition) condition
+#define ttauri_unlikely(condition) condition
+#endif
+
+#if defined(_MSC_VER)
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]

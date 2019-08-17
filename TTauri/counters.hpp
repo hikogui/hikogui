@@ -18,12 +18,6 @@ inline auto &get_counter_map() noexcept
     return counter_map;
 }
 
-//inline std::vector<string_tag> get_counter_tags()
-//{
-//    auto counter_map = get_counter_map();
-//    return counter_map.keys();
-//}
-
 template<string_tag TAG>
 struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.

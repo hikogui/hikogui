@@ -6,9 +6,10 @@
 #include "required.hpp"
 #include "string_tag.hpp"
 #include "small_map.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 #include "any_repr.hpp"
 #include "counters.hpp"
+#include "logger.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>
@@ -34,6 +35,10 @@ inline auto error_info(T value) {
 }
 
 class error : public std::exception {
+public:
+    char const *source_file;
+    int source_line;
+
 private:
     std::string _message;
     small_map<string_tag,std::any,16> _error_info = {};
@@ -54,15 +59,11 @@ public:
         return tag_to_string(tag());
     }
 
-    std::string error_info_string(bool showLineAndFile=true) const noexcept {
+    std::string error_info_string() const noexcept {
         std::string r;
 
         int i = 0;
         for (let &info: _error_info) {
-            if (!showLineAndFile && (info.first == "line"_tag || info.first == "file"_tag)) {
-                continue;
-            }
-
             if (i++ > 0) { r += " ,"; };
             r += fmt::format("({0}: {1})", tag_to_string(info.first), any_repr(info.second));   
         }
@@ -72,11 +73,11 @@ public:
     void prepare_what() const noexcept {
         // XXX Strip off project directory from file.
         _what = fmt::format("{0},{1}:{2}: {3}. {4}",
-            get<"file"_tag>("<unknown>"),
-            get<"line"_tag>(0),
+            source_file,
+            source_line,
             name(),
             _message,
-            error_info_string(false)
+            error_info_string()
         );
     }
 
@@ -135,8 +136,10 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
 #define TTAURI_THROW(x)\
     do {\
         auto e = (x);\
-        e << error_info<"line"_tag>(int{__LINE__}) << error_info<"file"_tag>(__FILE__);\
+        e.source_file = __FILE__;\
+        e.source_line = int{__LINE__};\
         increment_counter<e.TAG>();\
+        logger::log(log_level_t::Warning, __FILE__, int{__LINE__}, e.message());\
         throw e;\
     } while(false)
 

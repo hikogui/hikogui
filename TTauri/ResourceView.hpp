@@ -6,7 +6,7 @@
 #include "FileView.hpp"
 #include "StaticResourceView.hpp"
 #include "Application.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 #include <variant>
 
 namespace TTauri {

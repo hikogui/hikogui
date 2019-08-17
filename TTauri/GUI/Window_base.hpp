@@ -10,7 +10,7 @@
 #include "Mouse.hpp"
 #include "TTauri/Draw/attributes.hpp"
 #include "TTauri/geometry.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/logger.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>

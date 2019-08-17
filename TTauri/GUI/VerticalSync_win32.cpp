@@ -1,6 +1,6 @@
 
 #include "VerticalSync_win32.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/logger.hpp"
 #include "TTauri/strings.hpp"
 #include <ntstatus.h>
 

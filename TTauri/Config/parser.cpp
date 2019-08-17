@@ -5,7 +5,7 @@
 #include "ASTObject.hpp"
 #include "ParseContext.hpp"
 #include "TTauri/exceptions.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/logger.hpp"
 #include <cstdio>
 #include <vector>
 #include <string>

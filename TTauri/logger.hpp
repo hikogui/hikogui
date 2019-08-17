@@ -3,9 +3,13 @@
 
 #pragma once
 
+#include "required.hpp"
+#include "polymorphic_value.hpp"
+#include "wfree_mpsc_message_queue.hpp"
 #include <fmt/format.h>
 #include <boost/log/trivial.hpp>
 #include <string>
+#include <tuple>
 
 namespace TTauri {
 
@@ -37,7 +41,7 @@ struct log_message_base {
     char const *file;
     int line;
 
-    logger_message_base(log_level_t level, char const *file, int line) noexcept :
+    log_message_base(log_level_t level, char const *file, int line) noexcept :
         level(level), file(file), line(line) {}
 
     virtual std::string string() const noexcept = 0;
@@ -45,10 +49,10 @@ struct log_message_base {
 
 template<typename... Args>
 struct log_message: public log_message_base {
-    std::tupple<Args...> format_args;
+    std::tuple<Args...> format_args;
 
-    logger_message(log_level_t level, char const *file, int line, Args const&... formats_args) noexcept :
-        logger_message_base(level, file, line), format(format), formats_args(formats_args) {}
+    log_message(log_level_t level, char const *file, int line, Args const&... formats_args) noexcept :
+        log_message_base(level, file, line), format_args(formats_args...) {}
 
     std::string string() const noexcept override {
         let msg = std::apply([](auto const&... args) {
@@ -56,23 +60,29 @@ struct log_message: public log_message_base {
             },
             format_args
         );
-
+        return msg;
     }
 };
 
+
 class logger {
-    static constexpr size_t MAX_MESSAGE_SIZE = 64;
+    static constexpr size_t MAX_MESSAGE_SIZE = 128;
     static constexpr size_t MAX_NR_MESSAGES = 256;
 
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
+    using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES>;
 
-    wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES> messages;
+    static message_queue_type &message_queue() {
+        static message_queue_type intrinsic = {};
+        return intrinsic;
+    }
 
 public:
 
     template<typename... Args>
     static void log(log_level_t level, char const *source_file, int source_line, Args const &... format_args) noexcept {
-        messages.emplace<log_message<format_args...>>(level, source_file, source_line, format_args);;
+        let message = log_message{level, source_file, source_line, format_args...};
+        message_queue().push(message);
     }
 };
 

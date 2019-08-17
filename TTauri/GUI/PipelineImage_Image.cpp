@@ -5,7 +5,7 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineImage_ImageLocation.hpp"
 #include "PipelineImage_Vertex.hpp"
-#include "TTauri/logging.hpp"
+#include "TTauri/logger.hpp"
 #include "TTauri/required.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 

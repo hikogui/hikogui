@@ -40,32 +40,6 @@ public:
     polymorphic_value &operator=(polymorphic_value &&other) = delete;
 
     template<typename O>
-    polymorphic_value(O const &other, std::enable_if_t<std::is_base_of_v<base_type, O>> = 0) :
-        _size(sizeof(O))
-    {
-        static_assert(sizeof(O) <= capacity);
-        new(data()) O(other);
-    }
-
-    template<typename O>
-    polymorphic_value(O &&other, std::enable_if_t<std::is_base_of_v<base_type, O>> = 0) :
-        _size(sizeof(O))
-    {
-        static_assert(sizeof(O) <= capacity);
-        new(data()) O(std::forward<O>(other));
-    }
-
-    template<typename O, typename... Args>
-    polymorphic_value(Args&&... args) :
-        _size(sizeof(O))
-    {
-        static_assert(std::is_base_of_v<base_type, O>);
-        static_assert(sizeof(O) <= capacity);
-
-        new(data()) O(std::forward<Args>(args)...);
-    }
-
-    template<typename O>
     std::enable_if_t<std::is_base_of_v<base_type, O>, polymorphic_value> &operator=(O const &other) {
         static_assert(sizeof(O) <= capacity);
         reset();

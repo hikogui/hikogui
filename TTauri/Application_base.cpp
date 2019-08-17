@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "Application.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 
 namespace TTauri {
 

@@ -4,7 +4,7 @@
 #include "File.hpp"
 #include "strings.hpp"
 #include "utils.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 
 namespace TTauri {
 

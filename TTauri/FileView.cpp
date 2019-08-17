@@ -4,7 +4,7 @@
 #include "FileView.hpp"
 #include "URL.hpp"
 #include "required.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 #include "utils.hpp"
 #include <mutex>
 

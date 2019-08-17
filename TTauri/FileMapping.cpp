@@ -3,7 +3,7 @@
 
 #include "FileMapping.hpp"
 #include "required.hpp"
-#include "logging.hpp"
+#include "logger.hpp"
 #include "utils.hpp"
 #include <mutex>
 

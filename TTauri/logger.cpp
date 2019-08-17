@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "logging.hpp"
+#include "logger.hpp"
 #include "strings.hpp"
 
 #include <boost/log/trivial.hpp>
