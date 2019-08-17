@@ -25,6 +25,36 @@ private:
 public:
     small_map() : nr_items(0) {}
 
+    small_map(small_map const &other) : nr_items(0) {
+        for (let &item: other) {
+            items[nr_items++] = { key, value };
+        }
+    }
+
+    small_map(small_map &&other) : nr_items(0) {
+        for (let &item: other) {
+            items[nr_items++] = { std::move(key), std::move(value) };
+        }
+        other.nr_items = 0;
+    }
+
+    small_map &operator=(small_map const &other) {
+        nr_items = 0;
+        for (let &item: other) {
+            items[nr_items++] = { key, value };
+        }
+        return *this;
+    }
+
+    small_map &operator=(small_map &&other) {
+        nr_items = 0;
+        for (let &item: other) {
+            items[nr_items++] = { std::move(key), std::move(value) };
+        }
+        other.nr_items = 0;
+        return *this;
+    }
+
     int size() const {
         return nr_items;
     }
