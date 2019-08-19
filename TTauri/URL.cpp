@@ -205,12 +205,15 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
 #if OPERATING_SYSTEM == OS_WINDOWS
 URL URL::urlFromExecutableFile() noexcept
 {
-    wchar_t modulePathWChar[MAX_PATH];
-    if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
-        // Can only cause error if there is not enough room in modulePathWChar.
-        std::terminate();
-    }
-    return URL::urlFromWin32Path(modulePathWChar);
+    static auto r = []() {
+        wchar_t modulePathWChar[MAX_PATH];
+        if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
+            // Can only cause error if there is not enough room in modulePathWChar.
+            no_default;
+        }
+        return URL::urlFromWin32Path(modulePathWChar);
+    }();
+    return r;
 }
 
 URL URL::urlFromExecutableDirectory() noexcept
@@ -225,6 +228,24 @@ URL URL::urlFromResourceDirectory() noexcept
     static auto r = urlFromExecutableDirectory();
     return r;
 }
+
+URL URL::urlFromApplicationDataDirectory() noexcept
+{
+    static auto r = []() {
+        PWSTR wchar_localAppData
+
+        // Use application name for the directory inside the application-data directory.
+        if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wchar_localAppData) != S_OK) {
+            // This should really never happen.
+            no_default;
+        }
+
+        let base_localAppData = URL::fromWin32Path(std::wstring(wchar_localAppData));
+        let localAppData / get_singleton<Application>().name;
+    }();
+    return r;
+}
+
 #else
 #error "Not Implemented for this operating system."
 #endif

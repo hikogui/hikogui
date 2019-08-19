@@ -60,6 +60,7 @@ struct URL {
     static URL urlFromResourceDirectory() noexcept;
     static URL urlFromExecutableDirectory() noexcept;
     static URL urlFromExecutableFile() noexcept;
+    static URL urlFromApplicationDataDirectory() noexcept;
 };
 
 std::string to_string(URL const &url) noexcept;

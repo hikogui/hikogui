@@ -3,47 +3,47 @@
 
 #include "logger.hpp"
 #include "strings.hpp"
-
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/support/date_time.hpp>
-#include <boost/log/utility/setup/console.hpp>
-#include <boost/log/sinks/debug_output_backend.hpp>
+#include "os_detect.hpp"
 #include <exception>
 #include <memory>
+#include <iostream>
 
-#ifdef _WIN32
+#if OPERATING_SYSTEM == OS_WINDOWS
 #include <Windows.h>
 #endif
 
 namespace TTauri {
 
-#ifdef _WIN32
-typedef boost::log::sinks::synchronous_sink< boost::log::sinks::debug_output_backend > sink_t;
+void logger::writeToFile(std::string_view str) noexcept {
 
-void initializeLogging() noexcept
-{
-    boost::shared_ptr< boost::log::core > core = boost::log::core::get();
+}
 
-    // Create the sink. The backend requires synchronization in the frontend.
-    boost::shared_ptr< sink_t > sink = boost::make_shared<sink_t>();
+void logger::writeToConsole(std::string_view str) noexcept {
+#if OPERATING_SYSTEM == OS_WINDOWS
+#else
+    cerr << str << endl;
+#endif
+}
 
-    // Set the special filter to the frontend
-    // in order to skip the sink when no debugger is available
-    sink->set_filter(boost::log::expressions::is_debugger_present());
-    sink->set_formatter
-    (
-        boost::log::expressions::format("%1%: [%2%] - %3%\r\n")
-        % boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S")
-        % boost::log::trivial::severity
-        % boost::log::expressions::smessage
-    );
+/*! Write to a log file and console.
+ * This will write to the console if one is open.
+ * It will also create a log file in the application-data directory.
+ */
+void logger::write(std::string_view str) noexcept {
 
-    core->add_sink(sink);
+}
+
+void logger::loop() noexcept {
+    while (!logger_thread_stop) {
+            while(message_queue.size() > 0) {
+            let message = message_queue.pop();
+            let str = message.string();
+
+            write(std);
+        }
+
+        std::this_thread.sleep_for(100ms);
+    }
 }
 
 gsl_suppress(i.11)
@@ -68,12 +68,6 @@ std::string getLastErrorMessage()
 
     return message;
 }
-
-#else
-void initializeLogging()
-{
-}
-#endif
 
 }
  

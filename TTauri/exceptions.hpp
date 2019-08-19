@@ -132,14 +132,28 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
     return lhs;
 }
 
-// XXX Should also log and cause traces to be logged.
+template<typename T, typename O>
+inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<"source_file"_tag,O> const &rhs)
+{
+    lhs.source_file = rhs;
+    return lhs;
+}
+
+template<typename T, typename O>
+inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<"source_line"_tag,O> const &rhs)
+{
+    lhs.source_line = rhs;
+    return lhs;
+}
+
 #define TTAURI_THROW(x)\
     do {\
-        auto e = (x);\
-        e.source_file = __FILE__;\
-        e.source_line = int{__LINE__};\
+        auto e = (x)
+            << error_info("source_file"_tag, TTAURI_SOURCE_FILE) 
+            << error_info("source_line"_tag, __LINE__) 
+        ;\
         increment_counter<e.TAG>();\
-        logger::log(log_level_t::Warning, __FILE__, int{__LINE__}, e.message());\
+        logger::log(log_level_t::Warning, TTAURI_SOURCE_FILE, int{__LINE__}, e.message());\
         throw e;\
     } while(false)
 
