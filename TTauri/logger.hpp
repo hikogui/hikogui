@@ -80,8 +80,8 @@ template<typename... Args>
 struct log_message: public log_message_base {
     std::tuple<Args...> format_args;
 
-    log_message(log_level level, char const *file, int line, Args const&... formats_args) noexcept :
-        log_message_base(level, file, line), format_args(formats_args...) {}
+    log_message(log_level level, char const *file, int line, Args... format_args) noexcept :
+        log_message_base(level, file, line), format_args({std::move(format_args)...}) {}
 
     std::string string() const noexcept override {
         let msg = std::apply([](auto const&... args) {
@@ -121,7 +121,7 @@ public:
     }
 
     ~logger() {
-        if (loggingThread.joinable()) {
+        if (logger_thread.joinable()) {
             logger_thread_stop = true;
             logger_thread.join();
         }

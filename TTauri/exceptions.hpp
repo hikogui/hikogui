@@ -135,25 +135,25 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
 template<typename T, typename O>
 inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<"source_file"_tag,O> const &rhs)
 {
-    lhs.source_file = rhs;
+    lhs.source_file = rhs.value;
     return lhs;
 }
 
 template<typename T, typename O>
 inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<"source_line"_tag,O> const &rhs)
 {
-    lhs.source_line = rhs;
+    lhs.source_line = rhs.value;
     return lhs;
 }
 
 #define TTAURI_THROW(x)\
     do {\
-        auto e = (x)
-            << error_info("source_file"_tag, TTAURI_SOURCE_FILE) 
-            << error_info("source_line"_tag, __LINE__) 
+        auto e = (x)\
+            << error_info<"source_file"_tag>(TTAURI_SOURCE_FILE)\
+            << error_info<"source_line"_tag>(__LINE__)\
         ;\
         increment_counter<e.TAG>();\
-        logger::log(log_level_t::Warning, TTAURI_SOURCE_FILE, int{__LINE__}, e.message());\
+        get_singleton<logger>().log(log_level::Warning, TTAURI_SOURCE_FILE, int{__LINE__}, e.message());\
         throw e;\
     } while(false)
 

@@ -87,109 +87,268 @@ std::string url_decode(std::string_view const &input, bool plusToSpace) noexcept
     return s;
 }
 
-const auto URL_re = std::regex{R"raw(^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)raw", std::regex::extended};
-URL::URL(std::string const &url)
+struct URLParts {
+    bool hasScheme;
+    string::iterator beginScheme;
+    string::iterator endScheme;
+
+    string::iterator beginHierarchy;
+    string::iterator endHierarchy;
+
+    bool hasAuthority;
+    string::iterator beginAuthority;
+    string::iterator endAuthority;
+
+    string::iterator beginPath;
+    string::iterator endPath;
+
+    bool hasQuery;
+    string::iterator beginQuery;
+    string::iterator endQuery;
+
+    bool hasFragment;
+    string::iterator beginFragment;
+    string::iterator endFragment;
+};
+
+static void split_url_hierarchy(URLParsts &parts) noexcept
 {
-    std::smatch m;
+    parts.hasAuthority =
+        (parts.endHierarchy - parts.beginHierarchy) >= 2 &&
+        *(parts.beginHierarchy) == '/' &&
+        *(parts.beginHierarchy + 1) == '/';
 
-    if (!std::regex_match(url.begin(), url.end(), m, URL_re)) {
-        TTAURI_THROW(url_error("Could not parse URL")
-            << error_info<"parse_string"_tag>(url)
-        );
-    }
+    parts.beginAuthority = parts.beginHierarchy;
 
-    required_assert(m.ready());
-    let scheme_sm = m[2];
-    let authority_sm = m[4];
-    let path_sm = m[5];
-    let query_sm = m[7];
-    let fragment_sm = m[9];
-
-    if (scheme_sm.length()) {
-        scheme = url_decode(scheme_sm.str());
+    if (parts.hasAuthority) {
+        let pathMark = std::find(parts.beginHierarchy, parts.endHierarchy, '/');
+        if (pathMark != parts.endHierarchy) {
+            parts.endAuthority = pathMark;
+            parts.beginPath = pathMark;
+        } else {
+            parts.endAuthority = parts.endHierarchy;
+            parts.beginPath = parts.endHierarchy;
+        }
     } else {
-        scheme = "file";
+        parts.beginPath = beginHierarchy;
     }
+
+    parts.endPath = endHierarchy;
+}
+
+static URLParts split_url(std::string const &value) noexcept
+{
+    URLParts parts;
+
+    let schemeMark = value.find(':');
+    if (schemeMark != string::npos && schemeMark != value.begin()) {
+        parts.hasScheme = true;
+        for (auto i = value.begin(); i != schemeMark; i++) {
+            if (!(isalnum(*i) || *i == '+' || *i == '-' || *i == '.')) {
+                parts.hasScheme = false;
+                break;
+            }
+        }
+    } else {
+        parts.hasScheme = false;
+    }
+    parts.beginScheme = value.begin();
+    parts.endScheme = schemeMark;
+
+    let fragmentMark = value.find('#');
+    parts.hasFragment = fragmentMark != string::npos;
+    parts.beginFragment = fragmentMark + 1;
+    parts.endFragment = value.end();
+
+    let queryMark = value.find('?');
+    parts.hasQuery = queryMark != string::npos && (!parts.hasFragment || queryMark < fragmentMark);
+    parts.beginQuery = queryMark + 1;
+    parts.endQuery = parts.hasFragment ? parts.beginFragment : value.end();
+
+    parts.beginHierarchy = parts.hasScheme ? parts.endScheme + 1 : value.begin();
+    parts.endHierarchy = parts.hasQuery ? parts.beginQuery : parts.hasFragment ? parts.beginFragment : value.end();
+
+    split_url_hierarchy(parts);
+    return parts;
+};
+
+void join_url_hierarchy(std::string &r, URLParts const &parts) noexcept
+{
+    if (parts.hasAuthority) {
+        r.append('/');
+        r.append('/');
+        r.append(parts.beginAuthority, parts.endAuthority);
+    }
+
+    r.append(parts.beginPath, parts.endPath);
+}
+
+std::string join_url(URLParts const &parts) noexcept
+{
+    std::string r;
+
+    if (parts.hasScheme) {
+        r.append(parts.beginScheme, parts.endScheme);
+        r.append(':');
+    }
+
+    join_url_hierarchy(r, parts);
+
+    if (parts.hasQuery) {
+        r.append('?');
+        r.append(parts.beginQuery, parts.endQuery);
+    }
+
+    if (parts.hasFragment) {
+        r.append('#');
+        r.append(parts.beginFragment, parts.endFragment);
+    }
+
+    return r;
+}
+
+std::optional<std::string_view> URL::scheme() const noexcept
+{
+    let parts = split_url(value);
+    if (parts.hasScheme) {
+        required_assert(parts.beginScheme != parts.endScheme);
+        return std::string_view{&(*(parts.beginScheme)), parts.endScheme - parts.beginScheme};
+    } else {
+        return {};
+    }
+}
+
+std::string_view URL::encodedPath() const noexcept
+{
+    let parts = split_url(value);
+    if (parts.beginPath == parts.endPath) {
+        return {};
+    } else {
+        return { &(*(parts.beginPath)), parts.endPath - parts.beginPath };
+    }
+}
+
+std::string_view URL::encodedFilename() const noexcept
+{
+    let path = encodedPath();
     
-    if (authority_sm.length()) {
-        authority = URLAuthority{authority_sm.str()};
-    }
-    
-    path = URLPath{path_sm.str()};
-    
-    if (query_sm.length()) {
-        query = url_decode(query_sm.str(), true);
-    }
-
-    if (fragment_sm.length()) {
-        fragment = url_decode(fragment_sm.str(), true);
+    i = path::rfind('/');
+    if (i == path.npos) {
+        return path;
+    } else {
+        return path.substr(i + 1); 
     }
 }
 
-URL::URL(char const *url) : URL(std::string(url)) {}
-
-URL::URL(std::string const scheme, URLPath path) noexcept : scheme(std::move(scheme)), path(std::move(path)) {}
-
-std::string URL::path_string() const
+std::string URL::filename() const noexcept
 {
-    if (scheme != "file") {
-        TTAURI_THROW(url_error("URL is not a file.")
-            << error_info<"url"_tag>(*this)
-        );
+    return url_decode(encodedFilename(), false);
+}
+
+std::string_view URL::encodedExtension() const noexcept
+{
+    let filename = encodedFilename();
+
+    i = filename::rfind('.');
+    if (i == filename.npos) {
+        return filename;
+    } else {
+        return filename.substr(i + 1); 
+    }
+}
+
+std::string URL::extension() const noexcept
+{
+    return url_decode(encodedExtension(), false);
+}
+
+std::vector<std::string_view> URL::encodedPathSegments() const noexcept
+{
+    return split(encodedPath(), '/');
+}
+
+std::vector<std::string> URL:pathSegments() const noexcept
+{
+    auto r = transform<std::vector<std::string>>(encodedPathSegment, [](auto x) {
+        return url_decode(x);
+    });
+
+    // Except for the leading empty segment (leading slash in absolute paths)
+    // remove all empty segments (including trailing slash).
+    if (r.size() > 1) {
+        let end = std::remove_if(r.begin + 1, r.end, [](auto x) {
+            return x.size() == 0;
+        });
+        r.erase(end);
     }
 
-    return path.path_string();
-}
-
-std::wstring URL::path_wstring() const
-{
-    return translateString<std::wstring>(path_string());
-}
-
-std::string const &URL::filename() const
-{
-    return path.filename();
-}
-
-std::string URL::extension() const
-{
-    return path.extension();
+    return r;
 }
 
 bool URL::isAbsolute() const noexcept
 {
-    return path.absolute;
+    let parts = split_url(value);
+    return parts.beginPath != parts.endPath && *(parse.beginPath) == '/';
 }
 
-bool URL::isRelative() const noexcept
+std::string URL::generic_path_string() const
 {
-    return !path.absolute;
+    return join(pathSegments, '/');
+}
+
+std::string URL::native_path_string() const
+{
+#if OPERATING_SYSTEM == OS_WINDOWS
+    return join(pathSegments, '\\');
+#else
+    return join(pathSegments, '/');
+#endif
+}
+
+std::wstring URL::generic_path_wstring() const
+{
+    return translateString<std::wstring>(generic_path_string());
+}
+
+std::wstring URL::native_path_wstring() const
+{
+    return translateString<std::wstring>(native_path_string());
 }
 
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
-    auto r = *this;
+    auto parts = split_url(value);
+    let other_parts = split_url(other.value);
 
-    if (other.path.absolute) {
+    if (other.isAbsolute()) {
         // replace path completely.
-        r.path.segments = other.path.segments;
-    } else {
-        // append path segments.
-        r.path.segments.insert(r.path.segments.end(), other.path.segments.begin(), other.path.segments.end());
-    }
+        parts.beginPath = other_parts.beginPath;
+        parts.endPath = other_parts.endPath;
+        return {join_url(parts)};
 
-    return r;
+    } else {
+        // Concatonate the path segments together.
+        let mergedEncodedPathSegments = encodedPathSegments() + other.encodedPathSegments();
+        let newPath = join(mergedEncodedPathSegments, '/');
+
+        parts.beginPath = newPath.begin();
+        parts.endPath = newPath.end();
+        return {join_url(parts)};
+    }
 }
 
 URL URL::urlByRemovingFilename() const noexcept
 {
-    auto r = *this;
+    auto parts = split_url(value);
 
-    if (r.path.segments.size() > 0) {
-        r.path.segments.pop_back();
+    let i = rfind(parts.beginPath, parts.endPath, '/');
+    if (i == parts.endPath) {
+        // No slash found, don't change the url.
+        return *this;
+    } else {
+        parts.endPath = i;
+        return {join_url(parts)};
     }
-
-    return r;
 }
 
 URL URL::urlFromWin32Path(std::wstring_view const path) noexcept
@@ -281,18 +440,5 @@ size_t file_size(URL const &url)
     return boost::filesystem::file_size(path(url));    
 }
 
-bool operator==(URL const &lhs, URL const &rhs) noexcept
-{
-    return
-        std::tie(lhs.scheme, lhs.authority, lhs.path, lhs.query, lhs.fragment) ==
-        std::tie(rhs.scheme, rhs.authority, rhs.path, rhs.query, rhs.fragment);
-}
-
-bool operator<(URL const &lhs, URL const &rhs) noexcept
-{
-    return
-        std::tie(lhs.scheme, lhs.authority, lhs.path, lhs.query, lhs.fragment) <
-        std::tie(rhs.scheme, rhs.authority, rhs.path, rhs.query, rhs.fragment);
-}
 
 }

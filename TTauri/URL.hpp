@@ -14,6 +14,7 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
+#include <cctype>
 
 namespace boost::filesystem {
 class path;
@@ -32,25 +33,24 @@ namespace TTauri {
 std::string url_encode(std::string const &input, std::string_view const unreservedCharacters=TTAURI_URL_UNRESERVED) noexcept;
 std::string url_decode(std::string_view const &input, bool plusToSpace=false) noexcept;
 
-struct URL {
-    std::string scheme = {};
-    std::optional<URLAuthority> authority = {};
-    URLPath path = {};
-    std::optional<std::string> query = {};
-    std::optional<std::string> fragment = {};
+class URL {
+private:
+    std::string value;
 
+public:
     URL() = default;
-    URL(char const *url);
-    URL(std::string const &url);
-    URL(std::string const scheme, URLPath path) noexcept;
+    URL(char const *url) : value(url) {}
+    URL(std::string url) : value(std::move(url)) {}
+
+    size_t hash() const noexcept { return hash<std::string>{}(value); }
+
+    bool isAbsolute() const noexcept;
+    bool isRelative() const noexcept { return !isAbsolute(); }
 
     std::string path_string() const;
     std::wstring path_wstring() const;
     std::string const &filename() const;
     std::string extension() const;
-
-    bool isAbsolute() const noexcept;
-    bool isRelative() const noexcept;
 
     URL urlByAppendingPath(URL const &other) const noexcept;
     URL urlByRemovingFilename() const noexcept;
@@ -65,8 +65,8 @@ struct URL {
 
 std::string to_string(URL const &url) noexcept;
 
-bool operator==(URL const &lhs, URL const &rhs) noexcept;
-bool operator<(URL const &lhs, URL const &rhs) noexcept;
+inline bool operator==(URL const &lhs, URL const &rhs) noexcept { return lhs.value == rhs.value; }
+inline bool operator<(URL const &lhs, URL const &rhs) noexcept { return lhs.value < rhs.value; }
 inline bool operator>(URL const &lhs, URL const &rhs) noexcept { return rhs < lhs; }
 inline bool operator!=(URL const &lhs, URL const &rhs) noexcept { return !(lhs == rhs); }
 inline bool operator>=(URL const &lhs, URL const &rhs) noexcept { return !(lhs < rhs); }
@@ -111,15 +111,8 @@ namespace std {
 
 template<>
 struct hash<TTauri::URL> {
-    typedef TTauri::URL argument_type;
-    typedef std::size_t result_type;
-    result_type operator()(argument_type const& url) const noexcept {
-        return
-            std::hash<decltype(url.scheme)>{}(url.scheme) ^
-            std::hash<decltype(url.authority)>{}(url.authority) ^
-            std::hash<decltype(url.path)>{}(url.path) ^
-            std::hash<decltype(url.query)>{}(url.query) ^
-            std::hash<decltype(url.fragment)>{}(url.fragment);
+    size_t operator()(TTauri::URL const& url) const noexcept {
+        return url.hash();
     }
 };
 

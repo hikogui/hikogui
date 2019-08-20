@@ -41,7 +41,7 @@ public:
 
     template<typename O>
     std::enable_if_t<std::is_base_of_v<base_type, O>, polymorphic_value> &operator=(O const &other) {
-        static_assert(sizeof(O) <= capacity);
+        static_assert(sizeof(O) <= capacity, "Assignment of a type larger than capacity of polymorphic_value");
         reset();
         new(data()) O(other);
         _size = sizeof(O);
@@ -50,7 +50,7 @@ public:
 
     template<typename O>
     std::enable_if_t<std::is_base_of_v<base_type, O>, polymorphic_value> &operator=(O &&other) {
-        static_assert(sizeof(O) <= capacity);
+        static_assert(sizeof(O) <= capacity, "Assignment of a type larger than capacity of polymorphic_value");
         reset();
         new(data()) O(std::forward<O>(other));
         _size = sizeof(O);
