@@ -110,7 +110,6 @@ class logger {
     bool logger_thread_stop = false;
     std::thread logger_thread;
 
-
 public:
     logger(bool test=false) {
         if (!test) {
