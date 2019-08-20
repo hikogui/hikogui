@@ -15,7 +15,7 @@ using ResourceView_intrinsic = std::variant<FileView,StaticResourceView>;
 
 static inline ResourceView_intrinsic loadView(URL const &location)
 {
-    if (location.scheme == "resource") {
+    if (location.scheme() == "resource") {
         try {
             let view = StaticResourceView(location.filename());
             LOG_INFO("Loaded resource %s from executable.", location);
@@ -27,8 +27,8 @@ static inline ResourceView_intrinsic loadView(URL const &location)
             return view;
         }
 
-    } else if (location.scheme == "file") {
-        if (!location.path.absolute) {
+    } else if (location.scheme() == "file") {
+        if (!location.isAbsolute()) {
             TTAURI_THROW(url_error("file-URLs must be absolute.")
                 << error_info<"url"_tag>(location)
             );

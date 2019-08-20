@@ -10,7 +10,7 @@
 #include <vma/vk_mem_alloc.h>
 
 namespace TTauri {
-struct URL;
+class URL;
 }
 
 namespace TTauri::GUI {

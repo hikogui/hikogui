@@ -12,8 +12,6 @@ File::File(URL const &location, AccessMode accessMode) :
     location(location), accessMode(accessMode)
 {
 #ifdef WIN32
-    auto fileName = location.path_wstring();
-
     DWORD desiredAccess = 0;
     if (accessMode >= AccessMode::RDONLY) {
         desiredAccess |= GENERIC_READ;
@@ -55,6 +53,7 @@ File::File(URL const &location, AccessMode accessMode) :
         flagsAndAttributes |= FILE_FLAG_WRITE_THROUGH;
     }
 
+    let fileName = location.nativeWPath();
     if ((intrinsic = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) == INVALID_HANDLE_VALUE) {
         TTAURI_THROW(io_error("Could not open file")
             << error_info<"error_message"_tag>(getLastErrorMessage())

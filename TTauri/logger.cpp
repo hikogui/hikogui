@@ -7,6 +7,7 @@
 #include <exception>
 #include <memory>
 #include <iostream>
+#include <chrono>
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 #include <Windows.h>
@@ -14,8 +15,9 @@
 
 namespace TTauri {
 
-void logger::writeToFile(std::string_view str) noexcept {
+using namespace std::literals::chrono_literals;
 
+void logger::writeToFile(std::string_view str) noexcept {
 }
 
 void logger::writeToConsole(std::string_view str) noexcept {
@@ -30,19 +32,20 @@ void logger::writeToConsole(std::string_view str) noexcept {
  * It will also create a log file in the application-data directory.
  */
 void logger::write(std::string_view str) noexcept {
-
+    writeToFile(str);
+    writeToConsole(str);
 }
 
 void logger::loop() noexcept {
     while (!logger_thread_stop) {
-            while(message_queue.size() > 0) {
-            let message = message_queue.pop();
-            let str = message.string();
-
-            write(std);
+        while (message_queue.size() > 0) {
+            let &message = message_queue.peek();
+            let str = message->string();
+            message_queue.pop();
+            write(str);
         }
 
-        std::this_thread.sleep_for(100ms);
+        std::this_thread::sleep_for(100ms);
     }
 }
 
@@ -70,4 +73,3 @@ std::string getLastErrorMessage()
 }
 
 }
- 

@@ -5,7 +5,7 @@
 
 namespace TTauri {
 struct wsRGBA;
-struct URL;
+class URL;
 }
 
 namespace TTauri::Draw {

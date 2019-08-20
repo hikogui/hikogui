@@ -6,9 +6,11 @@
 #include "required.hpp"
 #include "polymorphic_value.hpp"
 #include "wfree_mpsc_message_queue.hpp"
+#include "singleton.hpp"
 #include <fmt/format.h>
 #include <boost/log/trivial.hpp>
 #include <string>
+#include <string_view>
 #include <tuple>
 
 namespace TTauri {
@@ -136,13 +138,18 @@ public:
 
         // XXX add timestamp.
         let message = log_message{level, source_file, source_line, format_args...};
-        message_queue.push(message);
+        message_queue.insert(message);
 
         if (level == log_level::Fatal) {
             // XXX Make sureeverything gets logged
             std::terminate();
         }
     }
+
+private:
+    void write(std::string_view str) noexcept;
+    void writeToFile(std::string_view str) noexcept;
+    void writeToConsole(std::string_view str) noexcept;
 };
 
 }

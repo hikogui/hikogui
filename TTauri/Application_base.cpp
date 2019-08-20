@@ -10,7 +10,6 @@ using namespace std;
 
 
 void Application_base::initialize(std::shared_ptr<ApplicationDelegate> applicationDelegate) {
-    initializeLogging();
     LOG_INFO("Starting application.");
 
     delegate = std::move(applicationDelegate);

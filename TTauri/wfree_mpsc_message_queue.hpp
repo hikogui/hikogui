@@ -10,12 +10,13 @@
 #include <memory>
 #include <thread>
 #include <optional>
+#include <type_traits>
 
 namespace TTauri {
 
 template<typename T, int64_t N>
 class wfree_mpsc_message_queue {
-    enum class message_state { Empty, Copying, Ready, Deleting };
+    enum class message_state { Empty, Copying, Ready };
 
     struct message_type {
         T value;
@@ -43,7 +44,7 @@ public:
     * Blocks until queue is not full.
     */
     template<typename O>
-    void push(O &&value) noexcept {
+    void insert(O &&value) noexcept {
         let index = head.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
 
@@ -54,16 +55,33 @@ public:
         message.state.store(message_state::Ready, std::memory_order_release);
     }
 
-    std::optional<T> pop() noexcept {
-        if (size() <= 0) {
-            return {};
-        }
-
-        let index = tail.add_fetch(1, std::memory_order_acquire);
+    T &peek() noexcept {
+        let index = tail.load(std::memory_order_acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        transition(message.state, message_state::Ready, message_state::Deleting, std::memory_order_acquire);
+        wait_for_transition(message.state, message_state::Ready, std::memory_order_acquire);
+        return message.value;
+    }
+
+    void pop() noexcept {
+        let index = tail.fetch_add(1, std::memory_order_acquire);
+        auto &message = messages[index % capacity];
+
+        // We acquired the index before we knew if the message was ready.
+        transition(message.state, message_state::Ready, message_state::Empty, std::memory_order_release);
+        // The message itself does not need to be destructed.
+        // This will happen automatically when wrapping around the ring buffer overwrites the message.
+    }
+
+    T pop_value() noexcept {
+        static_assert(std::is_move_constructible_v<T>, "messages inside the message queue must be move-constructable for pop_value().");
+
+        let index = tail.fetch_add(1, std::memory_order_acquire);
+        auto &message = messages[index % capacity];
+
+        // We acquired the index before we knew if the message was ready.
+        wait_for_transition(message.state, message_state::Ready, std::memory_order_acquire);
         let value = std::move(message.value);
         message.state.store(message_state::Empty, std::memory_order_release);
         return std::move(value);

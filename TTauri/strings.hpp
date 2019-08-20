@@ -8,8 +8,83 @@
 #include <utf8proc/utf8proc.h>
 #include <string>
 #include <string_view>
+#include <iterator>
 
 namespace TTauri {
+
+inline std::string_view make_string_view(
+    typename std::string::const_iterator b,
+    typename std::string::const_iterator e
+) noexcept
+{
+    return (b != e) ?
+        std::string_view{&(*b), numeric_cast<size_t>(std::distance(b, e))} :
+        std::string_view{};
+}
+
+template<typename T, typename... Args>
+inline std::vector<T> split(T haystack, Args... needle) noexcept
+{
+    std::vector<T> r;
+
+    size_t offset = 0;
+    size_t pos = std::min({haystack.find(needle, offset)...});
+    while (pos != haystack.npos) {
+        r.push_back(haystack.substr(offset, pos - offset));
+
+        offset = pos + 1;
+        pos = std::min({haystack.find(needle, offset)...});
+    }
+
+    r.push_back(haystack.substr(offset, haystack.size() - offset));
+    return r;
+}
+
+template<typename CharT>
+inline typename std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const &list, std::basic_string<CharT> const &joiner = {}) noexcept
+{
+    std::basic_string<CharT> r;
+
+    if (list.size() > 1) {
+        size_t final_size = (list.size() - 1) * joiner.size();
+        for (let &item: list) {
+            final_size += item.size();
+        }
+        r.capacity(final_size);
+    }
+
+    int64_t i = 0;
+    for (let &item: list) {
+        if (i++ > 0) {
+            r.push_back(joiner);
+        }
+        r.push_back(item);
+    }
+    return r;
+}
+
+template<typename CharT>
+inline typename std::basic_string<CharT> join(std::vector<std::basic_string_view<CharT>> const &list, std::basic_string<CharT> const &joiner = {}) noexcept
+{
+    std::basic_string<CharT> r;
+
+    if (list.size() > 1) {
+        size_t final_size = (list.size() - 1) * joiner.size();
+        for (let &item: list) {
+            final_size += item.size();
+        }
+        r.capacity(final_size);
+    }
+
+    int64_t i = 0;
+    for (let &item: list) {
+        if (i++ > 0) {
+            r.push_back(joiner);
+        }
+        r.push_back(item);
+    }
+    return r;
+}
 
 constexpr char32_t UNICODE_Replacement_Character = 0xfffd;
 constexpr char32_t UNICODE_Surrogates_BEGIN = 0xd800;

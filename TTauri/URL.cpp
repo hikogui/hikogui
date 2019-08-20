@@ -25,7 +25,7 @@ static std::string percent_encode(char c) noexcept
     return s;
 }
 
-std::string url_encode(std::string const &input, std::string_view const unreservedCharacters) noexcept
+std::string url_encode(std::string_view const input, std::string_view const unreservedCharacters) noexcept
 {
     std::string s;
     s.reserve(input.size());
@@ -88,30 +88,30 @@ std::string url_decode(std::string_view const &input, bool plusToSpace) noexcept
 }
 
 struct URLParts {
-    bool hasScheme;
-    string::iterator beginScheme;
-    string::iterator endScheme;
+    bool hasScheme = false;
+    std::string::const_iterator beginScheme;
+    std::string::const_iterator endScheme;
 
-    string::iterator beginHierarchy;
-    string::iterator endHierarchy;
+    std::string::const_iterator beginHierarchy;
+    std::string::const_iterator endHierarchy;
 
-    bool hasAuthority;
-    string::iterator beginAuthority;
-    string::iterator endAuthority;
+    bool hasAuthority = false;
+    std::string::const_iterator beginAuthority;
+    std::string::const_iterator endAuthority;
 
-    string::iterator beginPath;
-    string::iterator endPath;
+    std::string::const_iterator beginPath;
+    std::string::const_iterator endPath;
 
-    bool hasQuery;
-    string::iterator beginQuery;
-    string::iterator endQuery;
+    bool hasQuery = false;
+    std::string::const_iterator beginQuery;
+    std::string::const_iterator endQuery;
 
-    bool hasFragment;
-    string::iterator beginFragment;
-    string::iterator endFragment;
+    bool hasFragment = false;
+    std::string::const_iterator beginFragment;
+    std::string::const_iterator endFragment;
 };
 
-static void split_url_hierarchy(URLParsts &parts) noexcept
+static void split_url_hierarchy(URLParts &parts) noexcept
 {
     parts.hasAuthority =
         (parts.endHierarchy - parts.beginHierarchy) >= 2 &&
@@ -130,18 +130,18 @@ static void split_url_hierarchy(URLParsts &parts) noexcept
             parts.beginPath = parts.endHierarchy;
         }
     } else {
-        parts.beginPath = beginHierarchy;
+        parts.beginPath = parts.beginHierarchy;
     }
 
-    parts.endPath = endHierarchy;
+    parts.endPath = parts.endHierarchy;
 }
 
 static URLParts split_url(std::string const &value) noexcept
 {
     URLParts parts;
 
-    let schemeMark = value.find(':');
-    if (schemeMark != string::npos && schemeMark != value.begin()) {
+    let schemeMark = std::find(value.begin(), value.end(), ':');
+    if (schemeMark != value.end() && schemeMark != value.begin()) {
         parts.hasScheme = true;
         for (auto i = value.begin(); i != schemeMark; i++) {
             if (!(isalnum(*i) || *i == '+' || *i == '-' || *i == '.')) {
@@ -155,13 +155,13 @@ static URLParts split_url(std::string const &value) noexcept
     parts.beginScheme = value.begin();
     parts.endScheme = schemeMark;
 
-    let fragmentMark = value.find('#');
-    parts.hasFragment = fragmentMark != string::npos;
+    let fragmentMark = std::find(value.begin(), value.end(), '#');
+    parts.hasFragment = fragmentMark != value.end();
     parts.beginFragment = fragmentMark + 1;
     parts.endFragment = value.end();
 
-    let queryMark = value.find('?');
-    parts.hasQuery = queryMark != string::npos && (!parts.hasFragment || queryMark < fragmentMark);
+    let queryMark = std::find(value.begin(), value.end(), '?');
+    parts.hasQuery = queryMark != value.end() && (!parts.hasFragment || queryMark < fragmentMark);
     parts.beginQuery = queryMark + 1;
     parts.endQuery = parts.hasFragment ? parts.beginFragment : value.end();
 
@@ -175,8 +175,7 @@ static URLParts split_url(std::string const &value) noexcept
 void join_url_hierarchy(std::string &r, URLParts const &parts) noexcept
 {
     if (parts.hasAuthority) {
-        r.append('/');
-        r.append('/');
+        r.append(2, '/');
         r.append(parts.beginAuthority, parts.endAuthority);
     }
 
@@ -189,18 +188,18 @@ std::string join_url(URLParts const &parts) noexcept
 
     if (parts.hasScheme) {
         r.append(parts.beginScheme, parts.endScheme);
-        r.append(':');
+        r.append(1, ':');
     }
 
     join_url_hierarchy(r, parts);
 
     if (parts.hasQuery) {
-        r.append('?');
+        r.append(1, '?');
         r.append(parts.beginQuery, parts.endQuery);
     }
 
     if (parts.hasFragment) {
-        r.append('#');
+        r.append(1, '#');
         r.append(parts.beginFragment, parts.endFragment);
     }
 
@@ -211,8 +210,45 @@ std::optional<std::string_view> URL::scheme() const noexcept
 {
     let parts = split_url(value);
     if (parts.hasScheme) {
-        required_assert(parts.beginScheme != parts.endScheme);
-        return std::string_view{&(*(parts.beginScheme)), parts.endScheme - parts.beginScheme};
+        return make_string_view(parts.beginScheme, parts.endScheme);
+    } else {
+        return {};
+    }
+}
+
+std::optional<std::string_view> URL::encodedQuery() const noexcept
+{
+    let parts = split_url(value);
+    if (parts.hasQuery) {
+        return make_string_view(parts.beginQuery, parts.endQuery);
+    } else {
+        return {};
+    }
+}
+
+std::optional<std::string> URL::query() const noexcept
+{
+    if (let view = encodedQuery()) {
+        return url_decode(*view);
+    } else {
+        return {};
+    }
+}
+
+std::optional<std::string_view> URL::encodedFragment() const noexcept
+{
+    let parts = split_url(value);
+    if (parts.hasFragment) {
+        return make_string_view(parts.beginFragment, parts.endFragment);
+    } else {
+        return {};
+    }
+}
+
+std::optional<std::string> URL::fragment() const noexcept
+{
+    if (let view = encodedFragment()) {
+        return url_decode(*view);
     } else {
         return {};
     }
@@ -232,7 +268,7 @@ std::string_view URL::encodedFilename() const noexcept
 {
     let path = encodedPath();
     
-    i = path::rfind('/');
+    let i = path::rfind('/');
     if (i == path.npos) {
         return path;
     } else {
@@ -249,7 +285,7 @@ std::string_view URL::encodedExtension() const noexcept
 {
     let filename = encodedFilename();
 
-    i = filename::rfind('.');
+    let i = filename::rfind('.');
     if (i == filename.npos) {
         return filename;
     } else {
@@ -267,9 +303,9 @@ std::vector<std::string_view> URL::encodedPathSegments() const noexcept
     return split(encodedPath(), '/');
 }
 
-std::vector<std::string> URL:pathSegments() const noexcept
+std::vector<std::string> URL::pathSegments() const noexcept
 {
-    auto r = transform<std::vector<std::string>>(encodedPathSegment, [](auto x) {
+    auto r = transform<std::vector<std::string>>(encodedPathSegments(), [](auto x) {
         return url_decode(x);
     });
 
@@ -288,15 +324,22 @@ std::vector<std::string> URL:pathSegments() const noexcept
 bool URL::isAbsolute() const noexcept
 {
     let parts = split_url(value);
-    return parts.beginPath != parts.endPath && *(parse.beginPath) == '/';
+    return parts.beginPath != parts.endPath && *(parts.beginPath) == '/';
 }
 
-std::string URL::generic_path_string() const
+std::string URL::directory() const noexcept
 {
-    return join(pathSegments, '/');
+    auto segments = pathSegments();
+    segments.pop_back();
+    return join(segments, '/');
 }
 
-std::string URL::native_path_string() const
+std::string URL::path() const noexcept
+{
+    return join(pathSegments(), '/');
+}
+
+std::string URL::nativePath() const noexcept
 {
 #if OPERATING_SYSTEM == OS_WINDOWS
     return join(pathSegments, '\\');
@@ -305,12 +348,7 @@ std::string URL::native_path_string() const
 #endif
 }
 
-std::wstring URL::generic_path_wstring() const
-{
-    return translateString<std::wstring>(generic_path_string());
-}
-
-std::wstring URL::native_path_wstring() const
+std::wstring URL::nativeWPath() const noexcept
 {
     return translateString<std::wstring>(native_path_string());
 }
@@ -351,14 +389,111 @@ URL URL::urlByRemovingFilename() const noexcept
     }
 }
 
-URL URL::urlFromWin32Path(std::wstring_view const path) noexcept
+std::tuple<std::string_view, std::string_view, bool, std::vector<std::string_view>>normalize_path(std::vector<std::string_view> segments) noexcept
 {
-    return URL("file", URLPath::urlPathFromWin32Path(path));
+    std::string_view server;
+    if (segments.size() >= 3 && segments.at(0).size() == 0 && segments.at(1).size() == 0) {
+        // Start with two slashes: UNC filename starting with a server.
+        server = segments.at(3);
+        
+        // Remove the server-name and leading double slash. But keep a leading slash in,
+        // because what follows is an absolute path.
+        segments.erase(segments.begin() + 1, segments.begin() + 3);
+    }
+
+    std::string_view drive;
+    if (segments.size() >= 2 && segments.at(0).size() == 0 && segments.at(1).find(':') != std::string_view::npos) {
+        // Due to how file URLs with authority requires absolute paths, it may be that the
+        // drive letter follows a leading slash, but this does not mean it is an absolute path.
+        let i = segments.at(1).find(':');
+        drive = segments.at(1).substr(0, i);
+        segments.at(1) = segments.at(1).substr(i + 1);
+    } else if (segments.size() >= 1 && segments.at(0).find(':') != std::string_view::npos) {
+        // This is more sane, a drive letter as the first segment of a path.
+        let i = segments.at(0).find(':');
+        drive = segments.at(0).substr(0, i);
+        segments.at(0) = segments.at(0).substr(i + 1);
+    }
+
+    bool absolute = segments.size() >= 1 && segments.at(0).size() == 0;
+    if (absolute) {
+        segments.erase(segments.begin(), segments.begin() + 1);
+    }
+
+    // Strip out:
+    //  * double slashes "foo//bar" -> "foo/bar"
+    //  * dot names "foo/./bar" -> "foo/bar"
+    //  * and trailing slash "foo/" -> "foo"
+    let new_end = std::remove_if(segments.begin(), segments.end(), [](auto x) {
+        return x.size() == 0 || x == ".";
+    });
+    segments.erase(new_end);
+
+    let first_non_ddot = std::find_if(segments.begin(), segments.end(), [](auto x) {
+        return x != "..";
+    });
+
+    if (absolute) {
+        // Strip off all double dots at the start of an absolute path "/../foo" -> "/foo".
+        segments.erase(segments.begin(), first_non_ddot);
+    }
+
+    // Strip out double dots after a normal directory "foo/bar/../baz" -> "/foo/baz".
+    auto i = segments.begin();
+    while (i != segments.end()) {
+        if (absolute && i == segments.begin() && *i == "..") {
+            // Strip off the double dot at the start of an absolute path.
+            i = segments.erase(i, i + 1);
+            continue;
+        }
+
+        if (*i != ".." && (i+1) != segments.end() && *(i+1) == "..") {
+            // Remove both when a name is followed by a double dot
+            i = segments.erase(i, i + 2);
+            // Backtrack, because the previous could be a name and the next a double dot.
+            if (i != segments.begin()) {
+                i--;
+            }
+            continue;
+        }
+        i++;
+    }
+
+    return {server, drive, absolute, segments};
+}
+
+URL URL::urlFromPath(std::string_view const path) noexcept
+{
+    URLParts parts;
+
+    let scheme = std::string("file");
+    parts.hasScheme = true;
+    parts.beginScheme = scheme.begin();
+    parts.endScheme = scheme.end();
+
+    auto segments = split(path, '/', '\\');
+
+    std::string authority;
+    if (segments.size() >= 3 && segments.at(0).size() == 0 && segments.at(1).size() == 0) {
+        // Start with two slashes: UNC filename starting with a server.
+        authority = url_encode(segments.at(3), TTAURI_URL_HOST);
+        parts.hasAuthority = true;
+        parts.beginAuthority = authority.begin();
+        parts.endAuthority = authority.end();
+        // Remove the server-name and leading double slash. But keep a leading slash in,
+        // because what follows is an absolute path.
+        segments.erase(segments.begin() + 1, segments.begin() + 3);
+    }
+}
+
+URL URL::urlFromWPath(std::wstring_view const path) noexcept
+{
+    return urlFromPath(translateString<std::string>(path));
 }
 
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {
-    return URL("file", URLPath{ boost::filesystem::current_path() });
+    return URL{ std::string("file:") + boost::filesystem::current_path().generic_string() };
 }
 
 #if OPERATING_SYSTEM == OS_WINDOWS
@@ -409,35 +544,10 @@ URL URL::urlFromApplicationDataDirectory() noexcept
 #error "Not Implemented for this operating system."
 #endif
 
-std::string to_string(URL const &url) noexcept
-{
-    auto s = url_encode(url.scheme, TTAURI_URL_ALPHA TTAURI_URL_DIGIT "+-.") + ":";
-
-    if (url.authority) {
-        s += to_string(url.authority.value());
-    }
-
-    s += to_string(url.path);
-
-    if (url.query) {
-        s += "?" + url_encode(*url.query, TTAURI_URL_PCHAR "/?");
-    }
-
-    if (url.fragment) {
-        s += "#" + url_encode(*url.fragment, TTAURI_URL_PCHAR "/?");
-    }
-
-    return s;
-}
-
-boost::filesystem::path path(URL const &url)
-{
-    return { url.path_string() };
-}
 
 size_t file_size(URL const &url)
 {
-    return boost::filesystem::file_size(path(url));    
+    return boost::filesystem::file_size(boost::filesystem::path(url.path()));    
 }
 
 

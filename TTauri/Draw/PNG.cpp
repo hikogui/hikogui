@@ -16,9 +16,6 @@ using namespace std;
 
 PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
 {
-    // XXX Replace with memory mapped IO.
-    string stringPath = path.path_string();
-
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;
     png_infop end_info = nullptr;
@@ -29,6 +26,8 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
     if (fp != nullptr) { fclose(fp); } \
     TTAURI_THROW(e);
 
+    // XXX Replace with memory mapped IO.
+    let stringPath = path.nativePath();
     fp = fopen(stringPath.data(), "rb");
     if (fp == nullptr) {
         PNG_THROW_EXCEPTION(io_error("Could not open .png file")

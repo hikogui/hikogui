@@ -6,7 +6,7 @@
 #include <gsl/gsl>
 
 namespace TTauri {
-struct URL;
+class URL;
 }
 
 namespace TTauri::Draw {

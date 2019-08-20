@@ -17,6 +17,31 @@ inline void pause_cpu()
 }
 
 template<typename T>
+void wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst)
+{
+    using namespace std::literals::chrono_literals;
+
+    for (auto i = 0; i < 5; i++) {
+        if (ttauri_likely(state.load(order) == from)) {
+            return;
+        }
+        pause_cpu();
+    }
+
+    auto backoff = 10ms;
+    while (true) {
+        if (state.load(order) == from) {
+            return;
+        }
+
+        std::this_thread::sleep_for(backoff);
+        if ((backoff *= 2) > 1s) {
+            backoff = 1s;
+        }
+    }
+}
+
+template<typename T>
 void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;

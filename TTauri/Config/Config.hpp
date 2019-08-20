@@ -6,6 +6,7 @@
 #include "parser.hpp"
 #include "TTauri/universal_value.hpp"
 #include "TTauri/exceptions.hpp"
+#include "TTauri/strings.hpp"
 #include "ASTObject.hpp"
 
 namespace TTauri::Config {

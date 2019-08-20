@@ -28,9 +28,9 @@ ASTObject *parseConfigFile(URL const &path)
 {
     yyscan_t scanner;
     FILE *file;
-    string path_string = path.path_string();
     ParseContext context(path);
 
+    let path_string = path.nativePath();
     if ((file = fopen(path_string.data(), "rb")) == nullptr) {
         TTAURI_THROW(io_error("Could not open file")
             << error_info<"url"_tag>(path)
