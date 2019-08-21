@@ -389,78 +389,110 @@ URL URL::urlByRemovingFilename() const noexcept
     }
 }
 
-std::tuple<std::string_view, std::string_view, bool, std::vector<std::string_view>>normalize_path(std::vector<std::string_view> segments) noexcept
-{
+struct PathParts {
     std::string_view server;
+    std::string_view drive;
+    bool absolute;
+    std::vector<std::string_view> segments;
+};
+
+PathParts parse_path(std::vector<std::string_view> segments) noexcept
+{
+    PathParts parts;
+
+    // Extract optional server from file path.
     if (segments.size() >= 3 && segments.at(0).size() == 0 && segments.at(1).size() == 0) {
         // Start with two slashes: UNC filename starting with a server.
-        server = segments.at(3);
+        parts.server = segments.at(3);
         
         // Remove the server-name and leading double slash. But keep a leading slash in,
         // because what follows is an absolute path.
         segments.erase(segments.begin() + 1, segments.begin() + 3);
     }
 
-    std::string_view drive;
+    // Extract optional drive from file path.
     if (segments.size() >= 2 && segments.at(0).size() == 0 && segments.at(1).find(':') != std::string_view::npos) {
         // Due to how file URLs with authority requires absolute paths, it may be that the
         // drive letter follows a leading slash, but this does not mean it is an absolute path.
         let i = segments.at(1).find(':');
-        drive = segments.at(1).substr(0, i);
+        parts.drive = segments.at(1).substr(0, i);
         segments.at(1) = segments.at(1).substr(i + 1);
+
     } else if (segments.size() >= 1 && segments.at(0).find(':') != std::string_view::npos) {
         // This is more sane, a drive letter as the first segment of a path.
         let i = segments.at(0).find(':');
-        drive = segments.at(0).substr(0, i);
+        parts.drive = segments.at(0).substr(0, i);
         segments.at(0) = segments.at(0).substr(i + 1);
     }
 
-    bool absolute = segments.size() >= 1 && segments.at(0).size() == 0;
-    if (absolute) {
-        segments.erase(segments.begin(), segments.begin() + 1);
-    }
+    // Check for a leading slash '/' meaning an absolute path.
+    parts.absolute = segments.size() >= 1 && segments.at(0).size() == 0;
 
-    // Strip out:
-    //  * double slashes "foo//bar" -> "foo/bar"
-    //  * dot names "foo/./bar" -> "foo/bar"
-    //  * and trailing slash "foo/" -> "foo"
-    let new_end = std::remove_if(segments.begin(), segments.end(), [](auto x) {
-        return x.size() == 0 || x == ".";
-    });
-    segments.erase(new_end);
-
-    let first_non_ddot = std::find_if(segments.begin(), segments.end(), [](auto x) {
-        return x != "..";
-    });
-
-    if (absolute) {
-        // Strip off all double dots at the start of an absolute path "/../foo" -> "/foo".
-        segments.erase(segments.begin(), first_non_ddot);
-    }
-
-    // Strip out double dots after a normal directory "foo/bar/../baz" -> "/foo/baz".
-    auto i = segments.begin();
-    while (i != segments.end()) {
-        if (absolute && i == segments.begin() && *i == "..") {
-            // Strip off the double dot at the start of an absolute path.
+    // Normalize the rest of the path.
+    for (auto i = segments.begin(); i != segments.end(); i++) {
+        if (i.size() == 0 || *i == '.' || (absolute && i == segments.begin() && *i == "..")) {
+            // Strip out:
+            //  * remove the leading slash "/foo/bar" -> "foo/bar"
+            //  * double slashes "foo//bar" -> "foo/bar"
+            //  * dot names "foo/./bar" -> "foo/bar"
+            //  * and trailing slash "foo/" -> "foo"
+            //  * and double dot at the start of an absolute path. "/../foo" -> "/foo"
             i = segments.erase(i, i + 1);
-            continue;
-        }
-
-        if (*i != ".." && (i+1) != segments.end() && *(i+1) == "..") {
-            // Remove both when a name is followed by a double dot
+            
+        } else if (*i != ".." && (i+1) != segments.end() && *(i+1) == "..") {
+            // Remove both when a name is followed by a double dot:
+            //  * "foo/bar/../baz" -> "foo/baz"
             i = segments.erase(i, i + 2);
-            // Backtrack, because the previous could be a name and the next a double dot.
-            if (i != segments.begin()) {
-                i--;
-            }
-            continue;
+
+            // Backtrack, because the previous could now be a name and the new next a double dot.
+            //  * "hoi/foo/bar/../../baz" -> "hoi/foo/../baz" -> "hoi/baz"
+            i = (i == segments.begin()) ? i : i - 1;
         }
-        i++;
     }
 
-    return {server, drive, absolute, segments};
+    parts.segments = std::move(segments);
+    return parts;
 }
+
+PathParts parse_path(std::vector<std::string_view> segments) noexcept
+{
+    return parse_path(split(path, '/', '\\'));
+}
+
+std::string generate_path(PathParts const &parts) noexcept
+{
+    let size_guess = std::accumulate(
+        parts.segments.begin(), parts.segments.end(),
+        parts.server.size() + parts.drive.size() + parts.segments.size() + 4,
+        [](size_t a, auto b) {
+            return a + b.size();
+        }
+    );
+
+    std::string r;
+    r.capacity(size_guess);
+
+    if (parts.server.size() > 0) {
+        r.append(2, '/');
+        r.append(parts.server);
+    }
+
+    if (parts.drive.size() > 0) {
+        if (parts.server.size()) {
+            r.append(1, '/');
+        }
+        r.append(parts.drive);
+        r.append(1, ':');
+    }
+
+    if (parts.absolute) {
+        r.append(1, '/');
+    }
+
+    r.append(join(parts.segments, '/'));
+    return r;
+}
+
 
 URL URL::urlFromPath(std::string_view const path) noexcept
 {
