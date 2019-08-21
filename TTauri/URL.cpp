@@ -8,7 +8,6 @@
 #include "os_detect.hpp"
 #include "url_parser.hpp"
 #include "Application.hpp"
-#include <boost/filesystem.hpp>
 #include <regex>
 
 #if OPERATING_SYSTEM == OS_WINDOWS

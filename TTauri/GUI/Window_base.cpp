@@ -5,7 +5,6 @@
 #include "Window.hpp"
 #include "Device.hpp"
 #include "Widgets/WindowWidget.hpp"
-#include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {
 

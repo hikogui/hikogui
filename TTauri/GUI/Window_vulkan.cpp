@@ -7,7 +7,6 @@
 #include "Device.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineFlat.hpp"
-#include <boost/numeric/conversion/cast.hpp>
 #include <vector>
 
 namespace TTauri::GUI {

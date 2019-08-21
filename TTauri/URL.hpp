@@ -29,6 +29,12 @@ public:
     URL(std::string const &url) : value(normalize_url(url)) {}
     URL(url_parts const &parts) : value(generate_url(parts)) {}
 
+    URL(URL const &other) = default;
+    URL(URL &&other) = default;
+    ~URL() = default;
+    URL &operator=(URL const &other) = default;
+    URL &operator=(URL &&other) = default;
+
     size_t hash() const noexcept { return std::hash<std::string>{}(value); }
     std::string string() const noexcept { return value; }
 

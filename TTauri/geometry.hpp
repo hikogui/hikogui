@@ -7,7 +7,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
-#include <boost/numeric/conversion/cast.hpp>
 #include <cstdint>
 #include <optional>
 

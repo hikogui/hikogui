@@ -8,8 +8,6 @@
 #include "Window.hpp"
 #include "TTauri/ResourceView.hpp"
 #include <gsl/gsl>
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
 
 namespace TTauri::GUI {
 
@@ -251,7 +249,7 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
             score += capabilities == QUEUE_CAPABILITY_COMPUTE ? 1 : 0;
             score += capabilities == QUEUE_CAPABILITY_PRESENT ? 1 : 0;
 
-            LOG_INFO("    * %i: capabilities=%03b, score=%i", index, capabilities, score);
+            LOG_INFO("    * {0}: capabilities={1:03b}, score={2}", index, capabilities, score);
 
             queueFamilieScores.push_back({ index, capabilities, score });
             index++;

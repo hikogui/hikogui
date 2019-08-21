@@ -8,7 +8,6 @@
 #include <complex>
 #include <cmath>
 #include <limits>
-#include <boost/assert.hpp>
 #include <glm/glm.hpp>
 #include <gsl/gsl>
 

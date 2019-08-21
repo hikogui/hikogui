@@ -7,8 +7,6 @@
 #include "TTauri/Draw/PixelMap.hpp"
 #include "TTauri/URL.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
-#include <boost/numeric/conversion/cast.hpp>
-#include <boost/range/combine.hpp>
 #include <array>
 
 namespace TTauri::GUI::PipelineFlat {

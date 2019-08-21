@@ -3,7 +3,6 @@
 
 #include "Widget.hpp"
 #include "utils.hpp"
-#include <boost/assert.hpp>
 #include <TTauri/utils.hpp>
 
 namespace TTauri::GUI::Widgets {

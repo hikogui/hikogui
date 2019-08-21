@@ -4,8 +4,6 @@
 #include "Pipeline_vulkan.hpp"
 #include "Device.hpp"
 #include "Window.hpp"
-#include <boost/assert.hpp>
-#include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI {
 

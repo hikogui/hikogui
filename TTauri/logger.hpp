@@ -8,7 +8,6 @@
 #include "wfree_mpsc_message_queue.hpp"
 #include "singleton.hpp"
 #include <fmt/format.h>
-#include <boost/log/trivial.hpp>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -147,9 +146,9 @@ public:
     }
 
 private:
-    void write(std::string_view str) noexcept;
-    void writeToFile(std::string_view str) noexcept;
-    void writeToConsole(std::string_view str) noexcept;
+    void write(std::string const &str) noexcept;
+    void writeToFile(std::string str) noexcept;
+    void writeToConsole(std::string str) noexcept;
 };
 
 }

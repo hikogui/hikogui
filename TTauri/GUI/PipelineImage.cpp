@@ -5,7 +5,6 @@
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
 #include "Device.hpp"
-#include <boost/numeric/conversion/cast.hpp>
 
 namespace TTauri::GUI::PipelineImage {
 

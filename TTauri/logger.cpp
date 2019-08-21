@@ -11,17 +11,20 @@
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 #include <Windows.h>
+#include <debugapi.h>
 #endif
 
 namespace TTauri {
 
 using namespace std::literals::chrono_literals;
 
-void logger::writeToFile(std::string_view str) noexcept {
+void logger::writeToFile(std::string str) noexcept {
 }
 
-void logger::writeToConsole(std::string_view str) noexcept {
+void logger::writeToConsole(std::string str) noexcept {
 #if OPERATING_SYSTEM == OS_WINDOWS
+    str += "\r\n";
+    OutputDebugStringW(translateString<std::wstring>(str).data());
 #else
     cerr << str << endl;
 #endif
@@ -31,7 +34,7 @@ void logger::writeToConsole(std::string_view str) noexcept {
  * This will write to the console if one is open.
  * It will also create a log file in the application-data directory.
  */
-void logger::write(std::string_view str) noexcept {
+void logger::write(std::string const &str) noexcept {
     writeToFile(str);
     writeToConsole(str);
 }

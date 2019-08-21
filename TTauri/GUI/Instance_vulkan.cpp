@@ -4,7 +4,6 @@
 #include "Instance_vulkan.hpp"
 #include "Instance.hpp"
 #include "Device.hpp"
-#include <boost/numeric/conversion/cast.hpp>
 #include <chrono>
 
 namespace TTauri::GUI {

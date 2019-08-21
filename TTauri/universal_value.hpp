@@ -10,7 +10,6 @@
 #include "wsRGBA.hpp"
 #include "URL.hpp"
 #include <fmt/format.h>
-#include <boost/numeric/conversion/cast.hpp>
 #include <variant>
 #include <any>
 #include <map>
