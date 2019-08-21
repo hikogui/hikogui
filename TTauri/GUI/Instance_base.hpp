@@ -9,7 +9,6 @@
 #include "VerticalSync.hpp"
 #include "TTauri/Application.hpp"
 #include <gsl/gsl>
-#include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <mutex>
 #include <thread>

@@ -4,7 +4,6 @@
 #include "ImageWidget.hpp"
 #include "utils.hpp"
 #include <cmath>
-#include <boost/math/constants/constants.hpp>
 
 namespace TTauri::GUI::Widgets {
 
@@ -59,8 +58,6 @@ void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Verte
     // backingImage keeps track of use count.
     backingImage = vulkanDevice->imagePipeline->getImage(key, box.currentExtent());
     drawBackingImage();
-
-    //rotation = fmod(rotation + 0.001, boost::math::constants::pi<double>() * 2.0);
 
     GUI::PipelineImage::ImageLocation location;
     location.depth = depth + 0.0f;

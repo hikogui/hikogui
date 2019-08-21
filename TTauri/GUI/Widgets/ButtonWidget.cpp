@@ -4,7 +4,6 @@
 #include "ButtonWidget.hpp"
 #include "utils.hpp"
 #include <cmath>
-#include <boost/math/constants/constants.hpp>
 #include <typeinfo>
 
 namespace TTauri::GUI::Widgets {

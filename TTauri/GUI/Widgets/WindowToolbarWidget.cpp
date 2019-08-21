@@ -6,7 +6,6 @@
 #include "ToolbarButtonWidget.hpp"
 #include "utils.hpp"
 #include <cmath>
-#include <boost/math/constants/constants.hpp>
 
 namespace TTauri::GUI::Widgets {
 

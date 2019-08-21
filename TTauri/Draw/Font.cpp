@@ -3,7 +3,6 @@
 
 #include "Font.hpp"
 
-#include <boost/endian/buffers.hpp>
 
 namespace TTauri::Draw {
 
