@@ -19,7 +19,7 @@ Device *Instance_base::findBestDeviceForWindow(Window const &window)
 
     for (let &device : devices) {
         let score = device->score(window);
-        LOG_INFO("Device has score=%i.", score);
+        LOG_INFO("Device has score={0}.", score);
 
         if (score >= bestScore) {
             bestScore = score;

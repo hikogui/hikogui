@@ -22,10 +22,10 @@ Window_base::~Window_base()
     try {
         [[gsl::suppress(f.6)]] {
             if (state != State::NoWindow) {
-                LOG_FATAL("Window '%s' was not properly teardown before destruction.", title);
+                LOG_FATAL("Window '{0}' was not properly teardown before destruction.", title);
                 abort();
             }
-            LOG_INFO("Window '%s' has been propertly destructed.", title);
+            LOG_INFO("Window '{0}' has been propertly destructed.", title);
         }
     } catch (...) {
         abort();

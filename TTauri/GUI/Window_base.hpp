@@ -249,7 +249,7 @@ private:
         widgetSolver.suggest(widget->box.height, static_cast<double>(std::numeric_limits<uint32_t>::max()));
         maximumWindowExtent = widget->box.currentExtent();
 
-        LOG_INFO("Window '%s' minimumExtent(%i,%i) maximumExtent(%i,%i)",
+        LOG_INFO("Window '{0}' minimumExtent({1},{2}) maximumExtent({3},{4})",
             title,
             minimumWindowExtent.width(), minimumWindowExtent.height(),
             maximumWindowExtent.width(), maximumWindowExtent.height()

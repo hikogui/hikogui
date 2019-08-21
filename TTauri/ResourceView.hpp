@@ -18,12 +18,12 @@ static inline ResourceView_intrinsic loadView(URL const &location)
     if (location.scheme() == "resource") {
         try {
             let view = StaticResourceView(location.filename());
-            LOG_INFO("Loaded resource %s from executable.", location);
+            LOG_INFO("Loaded resource {0} from executable.", location);
             return view;
         } catch (key_error) {
             let absoluteLocation = URL::urlFromResourceDirectory() / location;
             auto view = FileView{ absoluteLocation };
-            LOG_INFO("Loaded resource %s from filesystem at %s.", location, absoluteLocation);
+            LOG_INFO("Loaded resource {0} from filesystem at {1}.", location, absoluteLocation);
             return view;
         }
 
@@ -35,7 +35,7 @@ static inline ResourceView_intrinsic loadView(URL const &location)
         }
 
         auto view = FileView{ location };
-        LOG_INFO("Loaded resource %s from filesystem.", location);
+        LOG_INFO("Loaded resource {0} from filesystem.", location);
         return view;
 
     } else {

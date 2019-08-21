@@ -22,7 +22,7 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
 #if OPERATING_SYSTEM == OS_WINDOWS
     wchar_t currentDirectory[MAX_PATH];
     if (GetCurrentDirectoryW(MAX_PATH, currentDirectory) == 0) {
-        LOG_FATAL("GetCurrentDirectoryW() failed.");
+        LOG_FATAL("GetCurrentDirectoryW() failed. {0}", getLastErrorMessage());
     }
     return URL::urlFromWPath(currentDirectory);
 #else
