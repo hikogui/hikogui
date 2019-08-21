@@ -5,6 +5,9 @@
 
 #include "required.hpp"
 #include "exceptions.hpp"
+#include "url_parser.hpp"
+#include "utils.hpp"
+#include "strings.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <string_view>
@@ -12,26 +15,8 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
-#include <cctype>
-
-namespace boost::filesystem {
-class path;
-}
 
 namespace TTauri {
-
-#define TTAURI_URL_ALPHA "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define TTAURI_URL_DIGIT "0123456789"
-#define TTAURI_URL_HEXDIGIT "0123456789abcdefABCDEF"
-#define TTAURI_URL_UNRESERVED TTAURI_URL_ALPHA TTAURI_URL_DIGIT "-._~"
-#define TTAURI_URL_GEN_DELIMS ":/?#[]@"
-#define TTAURI_URL_SUB_DELIMS "!$&'()*+,;="
-#define TTAURI_URL_PCHAR TTAURI_URL_UNRESERVED TTAURI_URL_SUB_DELIMS ":@"
-#define TTAURI_URL_REG_NAME TTAURI_URL_UNRESERVED TTAURI_URL_SUB_DELIMS
-#define TTAURI_URL_HOST TTAURI_URL_REG_NAME "[]"
-
-std::string url_encode(std::string const &input, std::string_view const unreservedCharacters=TTAURI_URL_UNRESERVED) noexcept;
-std::string url_decode(std::string_view const &input, bool plusToSpace=false) noexcept;
 
 class URL {
 private:
@@ -39,46 +24,120 @@ private:
 
 public:
     URL() = default;
-    URL(char const *url) : value(url) {}
-    URL(std::string url) : value(std::move(url)) {}
+    URL(std::string_view url) : value(normalize_url(url)) {}
+    URL(char const *url) : value(normalize_url(url)) {}
+    URL(std::string const &url) : value(normalize_url(url)) {}
+    URL(url_parts const &parts) : value(generate_url(parts)) {}
 
     size_t hash() const noexcept { return std::hash<std::string>{}(value); }
     std::string string() const noexcept { return value; }
 
-    std::optional<std::string_view> scheme() const noexcept;
-    std::optional<std::string> query() const noexcept;
-    std::optional<std::string> fragment() const noexcept;
+    std::string_view scheme() const noexcept {
+        return parse_url(value).scheme;
+    }
 
-    std::string filename() const noexcept;
-    std::string directory() const noexcept;
-    std::string extension() const noexcept;
-    std::vector<std::string> pathSegments() const noexcept;
-    std::string path() const noexcept;
-    std::string nativePath() const noexcept;
-    std::wstring nativeWPath() const noexcept;
+    std::string query() const noexcept {
+        return url_decode(parse_url(value).query, true);
+    }
 
-    bool isAbsolute() const noexcept;
+    std::string fragment() const noexcept {
+        return url_decode(parse_url(value).fragment);
+    }
+
+    std::string filename() const noexcept {
+        let parts = parse_url(value);
+        if (parts.segments.size() > 0) {
+            return url_decode(parts.segments.back());
+        } else {
+            return {};
+        }
+    }
+
+    std::string directory() const noexcept {
+        auto parts = parse_url(value);
+        if (parts.segments.size() > 0) {
+            parts.segments.pop_back();
+        }
+        return generate_path(parts);
+    }
+
+    std::string nativeDirectory() const noexcept {
+        auto parts = parse_url(value);
+        if (parts.segments.size() > 0) {
+            parts.segments.pop_back();
+        }
+        return generate_native_path(parts);
+    }
+
+    std::string extension() const noexcept {
+        let fn = filename();
+        let i = fn.rfind('.');
+        return fn.substr((i != fn.npos) ? (i + 1) : fn.size());
+    }
+
+    std::vector<std::string> pathSegments() const noexcept {
+        let parts = parse_url(value);
+        return transform<std::vector<std::string>>(parts.segments, [](auto x) {
+            return url_decode(x);
+        });
+    }
+
+    std::string path() const noexcept {
+        return generate_path(parse_url(value));
+    }
+
+    std::string nativePath() const noexcept {
+        return generate_native_path(parse_url(value));
+    }
+
+    std::wstring nativeWPath() const noexcept {
+        return translateString<std::wstring>(nativePath());
+    }
+
+    bool isAbsolute() const noexcept { return parse_url(value).absolute; }
     bool isRelative() const noexcept { return !isAbsolute(); }
 
-    URL urlByAppendingPath(URL const &other) const noexcept;
-    URL urlByRemovingFilename() const noexcept;
+    URL urlByAppendingPath(URL const &other) const noexcept {
+        let this_parts = parse_url(value);
+        let other_parts = parse_url(other.value);
+        let new_parts = concatenate_url_parts(this_parts, other_parts);
+        return URL(new_parts);
+    }
 
-    static URL urlFromPath(std::string_view const path) noexcept;
-    static URL urlFromWPath(std::wstring_view const path) noexcept;
+    URL urlByAppendingPath(std::string_view const other) const noexcept {
+        return urlByAppendingPath(URL::urlFromPath(other));
+    }
+
+    URL urlByAppendingPath(std::wstring_view const other) const noexcept {
+        return urlByAppendingPath(URL::urlFromWPath(other));
+    }
+
+    URL urlByRemovingFilename() const noexcept {
+        auto parts = parse_url(value);
+        if (parts.segments.size() > 0) {
+            parts.segments.pop_back();
+        }
+        return URL(parts);
+    }
+
+    static URL urlFromPath(std::string_view const path) noexcept {
+        std::string tmp;
+        let parts = parse_path(path, tmp);
+        return URL(parts);
+    }
+
+    static URL urlFromWPath(std::wstring_view const path) noexcept {
+        return urlFromPath(translateString<std::string>(path));
+    }
+
     static URL urlFromCurrentWorkingDirectory() noexcept;
     static URL urlFromResourceDirectory() noexcept;
     static URL urlFromExecutableDirectory() noexcept;
     static URL urlFromExecutableFile() noexcept;
-    static URL urlFromApplicationDataDirectory() noexcept;
+    static std::optional<URL> urlFromApplicationDataDirectory() noexcept;
+    static std::optional<URL> urlFromApplicationLogDirectory() noexcept;
 
 private:
-    std::string_view encodedPath() const noexcept;
-    std::string_view encodedFilename() const noexcept;
-    std::string_view encodedExtension() const noexcept;
-    std::vector<std::string_view> encodedPathSegments() const noexcept;
-    std::optional<std::string_view> encodedQuery() const noexcept;
-    std::optional<std::string_view> encodedFragment() const noexcept;
-
     friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
     friend bool operator<(URL const &lhs, URL const &rhs) noexcept;
 };
@@ -90,7 +149,7 @@ inline bool operator!=(URL const &lhs, URL const &rhs) noexcept { return !(lhs =
 inline bool operator>=(URL const &lhs, URL const &rhs) noexcept { return !(lhs < rhs); }
 inline bool operator<=(URL const &lhs, URL const &rhs) noexcept { return !(lhs > rhs); }
 inline URL operator/(URL const &lhs, URL const &rhs) noexcept { return lhs.urlByAppendingPath(rhs); }
-std::string to_string(URL const &url) noexcept { return url.string(); }
+inline std::string to_string(URL const &url) noexcept { return url.string(); }
 
 inline std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
 {
@@ -98,7 +157,7 @@ inline std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
     return lhs;
 }
 
-size_t file_size(URL const &url);
+int64_t fileSize(URL const &url);
 
 template <typename T>
 inline T parseResource(URL const &location)

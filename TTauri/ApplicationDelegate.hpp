@@ -19,6 +19,10 @@ public:
     ApplicationDelegate(ApplicationDelegate&&) = delete;
     ApplicationDelegate& operator=(ApplicationDelegate&&) = delete;
 
+    /*! Called when an application name is needed.
+     */
+    virtual std::string applicationName() const noexcept = 0;
+
     /*! Called right before the application loop is started.
      */
     virtual void startingLoop() = 0;

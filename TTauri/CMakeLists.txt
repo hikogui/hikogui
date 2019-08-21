@@ -88,6 +88,7 @@ set(TTauri_srcs
     Application_base.cpp
     Application_win32.cpp
     logger.cpp
+    url_parser.cpp
     URL.cpp
     StaticResources.cpp
     StaticResourceView.cpp

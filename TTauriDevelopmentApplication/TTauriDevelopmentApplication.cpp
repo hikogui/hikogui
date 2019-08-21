@@ -47,6 +47,10 @@ public:
 
 class MyApplicationDelegate : public ApplicationDelegate {
 public:
+    std::string applicationName() const noexcept override {
+        return "TTauri Development Application";
+    }
+
     void startingLoop() override
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();

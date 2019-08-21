@@ -1,12 +1,19 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include <TTauri/strings.hpp>
+#include "TTauri/strings.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 
 using namespace std;
+using namespace TTauri;
+
+TEST(TTauriString, Split) {
+    let result = split(std::string{"path1/path2"}, '/');
+    let check_value = std::vector<std::string>{"path1", "path2"};
+    ASSERT_EQ(result, check_value);
+}
 
 TEST(TTauriString, UTF8toUTF32) {
     ASSERT_EQ(TTauri::translateString<std::u32string>(u8"Hello World"s), U"Hello World"s);

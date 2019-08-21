@@ -40,48 +40,46 @@ inline std::vector<T> split(T haystack, Args... needle) noexcept
     return r;
 }
 
-template<typename CharT>
-inline typename std::basic_string<CharT> join(std::vector<std::basic_string<CharT>> const &list, std::basic_string<CharT> const &joiner = {}) noexcept
+inline std::string join(std::vector<std::string> const &list, std::string_view const joiner = {}) noexcept
 {
-    std::basic_string<CharT> r;
+    std::string r;
 
     if (list.size() > 1) {
         size_t final_size = (list.size() - 1) * joiner.size();
         for (let &item: list) {
             final_size += item.size();
         }
-        r.capacity(final_size);
+        r.reserve(final_size);
     }
 
     int64_t i = 0;
     for (let &item: list) {
         if (i++ > 0) {
-            r.push_back(joiner);
+            r += joiner;
         }
-        r.push_back(item);
+        r += item;
     }
     return r;
 }
 
-template<typename CharT>
-inline typename std::basic_string<CharT> join(std::vector<std::basic_string_view<CharT>> const &list, std::basic_string<CharT> const &joiner = {}) noexcept
+inline std::string join(std::vector<std::string_view> const &list, std::string_view const joiner = {}) noexcept
 {
-    std::basic_string<CharT> r;
+    std::string r;
 
     if (list.size() > 1) {
         size_t final_size = (list.size() - 1) * joiner.size();
         for (let &item: list) {
             final_size += item.size();
         }
-        r.capacity(final_size);
+        r.reserve(final_size);
     }
 
     int64_t i = 0;
     for (let &item: list) {
         if (i++ > 0) {
-            r.push_back(joiner);
+            r += joiner;
         }
-        r.push_back(item);
+        r += item;
     }
     return r;
 }
