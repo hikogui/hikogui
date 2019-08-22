@@ -149,11 +149,11 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
 #define TTAURI_THROW(x)\
     do {\
         auto e = (x)\
-            << error_info<"source_file"_tag>(TTAURI_SOURCE_FILE)\
+            << error_info<"source_file"_tag>(__FILE__)\
             << error_info<"source_line"_tag>(__LINE__)\
         ;\
         increment_counter<e.TAG>();\
-        get_singleton<logger>().log(log_level::Warning, TTAURI_SOURCE_FILE, int{__LINE__}, e.message());\
+        get_singleton<logger>().log(log_level::Exception, __FILE__, int{__LINE__}, e.message());\
         throw e;\
     } while(false)
 

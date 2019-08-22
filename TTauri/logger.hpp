@@ -7,7 +7,11 @@
 #include "polymorphic_value.hpp"
 #include "wfree_mpsc_message_queue.hpp"
 #include "singleton.hpp"
+#include "url_parser.hpp"
+#include "atomic.hpp"
+#include "counters.hpp"
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -19,6 +23,8 @@ enum class log_level {
     Debug,
     //! Informational messages used debugging problems in production by users of the application.
     Info,
+    //! An exception was throw, probably isn't a problem.
+    Exception,
     //! Messages for auditing purposes.
     Audit,
     //! An error was detected which is recoverable by the application.
@@ -31,6 +37,22 @@ enum class log_level {
     Fatal
 };
 
+constexpr char const *to_const_string(log_level level) noexcept
+{
+    switch (level) {
+    case log_level::Debug:     return "DEBUG";
+    case log_level::Info:      return "INFO";
+    case log_level::Exception: return "THROW";
+    case log_level::Audit:     return "AUDIT";
+    case log_level::Warning:   return "WARN";
+    case log_level::Error:     return "ERROR";
+    case log_level::Critical:  return "CRIT";
+    case log_level::Fatal:     return "FATAL";
+    default: no_default;
+    }
+}
+
+inline std::ostream &operator<<(std::ostream &lhs, log_level rhs) noexcept { return lhs << to_const_string(rhs); }
 constexpr bool operator<(log_level lhs, log_level rhs) { return static_cast<int>(lhs) < static_cast<int>(rhs); }
 constexpr bool operator>(log_level lhs, log_level rhs) { return rhs < lhs; }
 constexpr bool operator<=(log_level lhs, log_level rhs) { return !(lhs > rhs); }
@@ -39,32 +61,6 @@ constexpr bool operator>=(log_level lhs, log_level rhs) { return !(lhs < rhs); }
 #ifdef _WIN32
 std::string getLastErrorMessage();
 #endif
-
-/*! Count number of path seperators in constant string,
- */
-constexpr char const *make_relative_path(char const *base_path, char const *absolute_path)
-{
-    auto relative_path = absolute_path;
-
-    while (*base_path != '\0' && *absolute_path != '\0' && *base_path != *absolute_path) {
-        if (*base_path == '/' || *base_path == '\\') {
-            relative_path = absolute_path + 1;
-        }
-
-        base_path++;
-        absolute_path++;
-    }
-
-
-    return relative_path;
-}
-
-constexpr char const *make_relative_source_path(char const *source_path) {
-    return make_relative_path(__FILE__, source_path);
-}
-
-#define TTAURI_SOURCE_FILE make_relative_source_path(__FILE__)
-
 
 struct log_message_base {
     log_level level;
@@ -90,7 +86,10 @@ struct log_message: public log_message_base {
             },
             format_args
         );
-        return msg;
+
+        let filename = filename_from_path(file);
+
+        return fmt::format("{0:14};{1:4} {2:5} {3}", filename, line, level, msg);
     }
 };
 
@@ -104,6 +103,8 @@ class logger {
 
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
     using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES>;
+
+    std::atomic<bool> logged_fatal_message = false;
 
     std::atomic<log_level> level = log_level::Debug;
     message_queue_type message_queue = {};
@@ -135,12 +136,18 @@ public:
             return;
         }
 
-        // XXX add timestamp.
-        let message = log_message{level, source_file, source_line, format_args...};
-        message_queue.insert(message);
+        if (!message_queue.full()) {
+            auto message = message_queue.write();
+            // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
+            *message = log_message{level, source_file, source_line, format_args...};
 
-        if (level == log_level::Fatal) {
-            // XXX Make sureeverything gets logged
+        } else {
+            increment_counter<"log_overflow"_tag>();
+        }
+
+        if (level >= log_level::Fatal) {
+            // Wait until the logger-thread is finished.
+            wait_for_transition(logged_fatal_message, true);
             std::terminate();
         }
     }
@@ -153,11 +160,11 @@ private:
 
 }
 
-#define LOG_DEBUG(...) get_singleton<logger>().log(log_level::Debug, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
-#define LOG_INFO(...) get_singleton<logger>().log(log_level::Info, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
-#define LOG_AUDIT(...) get_singleton<logger>().log(log_level::Audit, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
-#define LOG_WARNING(...) get_singleton<logger>().log(log_level::Warning, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...) get_singleton<logger>().log(log_level::Error, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
-#define LOG_CRITICAL(...) get_singleton<logger>().log(log_level::Critical, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
-#define LOG_FATAL(...) get_singleton<logger>().log(log_level::Fatal, TTAURI_SOURCE_FILE, __LINE__, __VA_ARGS__)
+#define LOG_DEBUG(...) get_singleton<logger>().log(log_level::Debug, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_INFO(...) get_singleton<logger>().log(log_level::Info, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_AUDIT(...) get_singleton<logger>().log(log_level::Audit, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_WARNING(...) get_singleton<logger>().log(log_level::Warning, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...) get_singleton<logger>().log(log_level::Error, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_CRITICAL(...) get_singleton<logger>().log(log_level::Critical, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_FATAL(...) get_singleton<logger>().log(log_level::Fatal, __FILE__, __LINE__, __VA_ARGS__)
 

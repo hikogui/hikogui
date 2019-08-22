@@ -269,6 +269,7 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
     return parts;
 }
 
+
 void normalize_url_parts(url_parts &parts) noexcept
 {
     auto &segments = parts.segments;
@@ -322,6 +323,20 @@ std::string concatenate_url(std::string_view const lhs, std::string_view const r
     let rhs_parts = parse_url(rhs);
     let merged_parts = concatenate_url_parts(lhs_parts, rhs_parts);
     return generate_url(merged_parts);
+}
+
+std::string filename_from_path(std::string_view path) noexcept
+{
+    let i_fwd = path.rfind('/');
+    let i_bwd = path.rfind('\\');
+
+    if (i_fwd != path.npos && (i_bwd == path.npos || i_bwd < i_fwd)) {
+        return std::string{path.substr(i_fwd + 1)};
+    } else if (i_bwd != path.npos && (i_fwd == path.npos || i_fwd < i_bwd)) {
+        return std::string{path.substr(i_bwd + 1)};
+    } else {
+        return std::string{path};
+    }
 }
 
 }

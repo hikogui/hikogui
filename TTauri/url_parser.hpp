@@ -124,4 +124,8 @@ url_parts concatenate_url_parts(url_parts const &lhs, url_parts const &rhs) noex
 */
 std::string concatenate_url(std::string_view const lhs, std::string_view const rhs) noexcept;
 
+/*! Extract a filename from a path.
+ */
+std::string filename_from_path(std::string_view path) noexcept;
+
 }

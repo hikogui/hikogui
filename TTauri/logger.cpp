@@ -41,13 +41,21 @@ void logger::write(std::string const &str) noexcept {
 
 void logger::loop() noexcept {
     while (!logger_thread_stop) {
-        while (message_queue.size() > 0) {
-            let &message = message_queue.peek();
-            let str = message->string();
-            message_queue.pop();
+        auto found_fatal_message = false;
+        while (!message_queue.empty()) {
+            auto message = message_queue.read();
+
+            let str = (*message)->string();
+            if ((*message)->level >= log_level::Fatal) {
+                found_fatal_message = true;
+            }
+
             write(str);
         }
 
+        if (found_fatal_message) {
+            logged_fatal_message.store(true);
+        }
         std::this_thread::sleep_for(100ms);
     }
 }

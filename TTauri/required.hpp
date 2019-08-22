@@ -4,7 +4,6 @@
 #pragma once
 
 #include <boost/numeric/conversion/cast.hpp>
-#include <exception>
 
 /*! Invariant should be the default for variables.
  * C++ does have an invariant but it requires you to enter the 'const' keyword which
