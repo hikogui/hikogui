@@ -57,6 +57,14 @@ public:
         return *this;
     }
 
+    template<typename O, typename... Args>
+    std::enable_if_t<std::is_base_of_v<base_type, O>, void> emplace(Args &&... args) {
+        static_assert(sizeof(O) <= capacity, "Assignment of a type larger than capacity of polymorphic_value");
+        reset();
+        new(data()) O(std::forward<Args>(args)...);
+        _size = sizeof(O);
+    }
+
     void reset() noexcept {
         if (_size > 0) {
             std::destroy_at(this->operator->());

@@ -15,17 +15,17 @@
 
 namespace TTauri {
 
-template<typename T, int64_t N>
+template<typename T, size_t Capacity, size_t Align>
 class wfree_mpsc_message_queue;
 
-template<typename T, int64_t N, bool WriteOperation>
+template<typename T, size_t Capacity, size_t Align, bool WriteOperation>
 class wfree_mpsc_message_queue_operation {
-    wfree_mpsc_message_queue<T,N> *parent;
-    int64_t index;
+    wfree_mpsc_message_queue<T,Capacity,Align> *parent;
+    size_t index;
 
 public:
     wfree_mpsc_message_queue_operation() noexcept : parent(nullptr), index(0) {}
-    wfree_mpsc_message_queue_operation(wfree_mpsc_message_queue<T,N> *parent, int64_t index) noexcept : parent(parent), index(index) {}
+    wfree_mpsc_message_queue_operation(wfree_mpsc_message_queue<T,Capacity,Align> *parent, size_t index) noexcept : parent(parent), index(index) {}
 
     wfree_mpsc_message_queue_operation(wfree_mpsc_message_queue_operation const &other) = delete;
 
@@ -65,26 +65,30 @@ public:
 
     T &operator*() noexcept
     {
-        required_assert(parent != nullptr);
         return (*parent)[index];
+    }
+
+    T *operator->() noexcept
+    {
+        return &(*parent)[index];
     }
 };
 
-template<typename T, int64_t N>
+template<typename T, size_t Capacity, size_t Align=sizeof(T)+sizeof(int)>
 class wfree_mpsc_message_queue {
-    using index_type = int64_t;
+    using index_type = size_t;
     using value_type = T;
-    using scoped_write_operation = wfree_mpsc_message_queue_operation<T,N,true>;
-    using scoped_read_operation = wfree_mpsc_message_queue_operation<T,N,false>;
+    using scoped_write_operation = wfree_mpsc_message_queue_operation<T,Capacity,Align,true>;
+    using scoped_read_operation = wfree_mpsc_message_queue_operation<T,Capacity,Align,false>;
 
     enum class message_state { Empty, Copying, Ready };
 
     struct message_type {
-        value_type value;
+        alignas(Align) value_type value;
         std::atomic<message_state> state = message_state::Empty;
     };
     
-    static constexpr index_type capacity = N;
+    static constexpr index_type capacity = Capacity;
 
     /*! Maximum number of concurent threads that can write into the queue at once.
     */
@@ -112,11 +116,11 @@ public:
     }
 
     bool empty() const noexcept {
-        return size() == 0;
+        return head.load(std::memory_order_relaxed) <= tail.load(std::memory_order_relaxed);
     }
 
     bool full() const noexcept {
-        return size() >= (capacity - slack);
+        return head.load(std::memory_order_relaxed) >= (tail.load(std::memory_order_relaxed) + (capacity - slack));
     }
 
     /*! Write a message into the queue.

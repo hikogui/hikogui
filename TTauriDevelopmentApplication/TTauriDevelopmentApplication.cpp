@@ -67,6 +67,8 @@ public:
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
+    LOG_INFO("test {}", 0x42);
+
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
     get_singleton<Application>().initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);

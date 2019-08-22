@@ -33,15 +33,19 @@ T numeric_cast(U value) noexcept {
 #if defined(_MSC_VER)
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
+#define force_inline __forceinline
 #elif defined(__clang__)
 #define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
 #define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#define force_inline inline __attribute__((always_inline))
 #elif defined(__gcc__)
 #define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
 #define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#define force_inline inline __attribute__((always_inline))
 #else
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
+#define force_inline inline
 #endif
 
 #if defined(_MSC_VER)

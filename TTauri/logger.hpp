@@ -75,10 +75,14 @@ struct log_message_base {
 
 template<typename... Args>
 struct log_message: public log_message_base {
-    std::tuple<Args...> format_args;
+    std::tuple<std::decay_t<Args>...> format_args;
 
-    log_message(log_level level, char const *file, int line, Args... format_args) noexcept :
-        log_message_base(level, file, line), format_args({std::move(format_args)...}) {}
+    //log_message(log_level level, char const *file, int line, std::decay_t<Args>... format_args) noexcept :
+    //    log_message_base(level, file, line), format_args(std::move(format_args)...)
+    log_message(log_level level, char const *file, int line, Args &&... args) noexcept :
+        log_message_base(level, file, line), format_args(std::forward<Args>(args)...)
+    {
+    }
 
     std::string string() const noexcept override {
         let msg = std::apply([](auto const&... args) {
@@ -98,11 +102,12 @@ struct log_message: public log_message_base {
  * This will primarilly used with get_singleton<>().
  */
 class logger {
-    static constexpr size_t MAX_MESSAGE_SIZE = 256;
+    static constexpr size_t MAX_MESSAGE_SIZE = 236;
+    static constexpr size_t MESSAGE_ALIGNMENT = 256;
     static constexpr size_t MAX_NR_MESSAGES = 4096;
 
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
-    using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES>;
+    using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES,MESSAGE_ALIGNMENT>;
 
     std::atomic<bool> logged_fatal_message = false;
 
@@ -131,7 +136,7 @@ public:
     void loop() noexcept;
 
     template<typename... Args>
-    void log(log_level level, char const *source_file, int source_line, Args const &... format_args) noexcept {
+    void log(log_level level, char const *source_file, int source_line, Args &&... format_args) noexcept {
         if (level < logger::level) {
             return;
         }
@@ -139,7 +144,7 @@ public:
         if (!message_queue.full()) {
             auto message = message_queue.write();
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
-            *message = log_message{level, source_file, source_line, format_args...};
+            message->emplace<log_message<Args...>>(level, source_file, source_line, std::forward<Args>(format_args)...);
 
         } else {
             increment_counter<"log_overflow"_tag>();
