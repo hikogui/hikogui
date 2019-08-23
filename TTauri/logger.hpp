@@ -95,7 +95,7 @@ struct log_message: public log_message_base {
  * This will primarilly used with get_singleton<>().
  */
 class logger_type {
-    static constexpr size_t MAX_MESSAGE_SIZE = 236;
+    static constexpr size_t MAX_MESSAGE_SIZE = 224;
     static constexpr size_t MESSAGE_ALIGNMENT = 256;
     static constexpr size_t MAX_NR_MESSAGES = 4096;
 
@@ -174,7 +174,7 @@ constexpr char const *foo(char const *str)
     do {\
         static char const SourceFile[] = __FILE__;\
         static char const FormatStr[] = fmt;\
-        logger.log<log_level_Debug, SourceFile, __LINE__, FormatStr>(__VA_ARGS__);\
+        logger.log<level, SourceFile, __LINE__, FormatStr>(__VA_ARGS__);\
     } while(false)
 
 #define LOG_DEBUG(fmt, ...) LOGGER_LOG(log_level_Debug, fmt, __VA_ARGS__)

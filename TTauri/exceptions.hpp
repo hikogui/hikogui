@@ -34,17 +34,14 @@ inline auto error_info(T value) {
     return error_info_t<TAG,T>(value);
 }
 
-class error : public std::exception {
+class error {
 public:
     char const *source_file;
     int source_line;
 
-private:
-    std::string _message;
-    small_map<string_tag,std::any,16> _error_info = {};
-
 protected:
-    mutable std::string _what;
+    std::string _message;
+    small_map<string_tag,std::any,4> _error_info = {};
 
 public:
     template<typename Fmt, typename... Args>
@@ -70,20 +67,15 @@ public:
         return r;
     }
 
-    void prepare_what() const noexcept {
+    std::string string() const noexcept {
         // XXX Strip off project directory from file.
-        _what = fmt::format("{0},{1}:{2}: {3}. {4}",
+        return fmt::format("{0},{1}:{2}: {3}. {4}",
             source_file,
             source_line,
             name(),
             _message,
             error_info_string()
         );
-    }
-
-    const char* what() const noexcept override {
-        prepare_what();
-        return _what.data();
     }
 
     std::string message() const {
@@ -155,7 +147,7 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
         increment_counter<e.TAG>();\
         static char const source_file[] = __FILE__;\
         static char const format_str[] = "{}";\
-        logger.log<log_level_Exception, source_file, __LINE__, format_str>(e.message());\
+        logger.log<log_level_Exception, source_file, __LINE__, format_str>(e.test());\
         throw e;\
     } while(false)
 
@@ -169,6 +161,10 @@ public:
         error(fmt, args...) {}
 
     string_tag tag() const noexcept override { return TAG; }
+
+    size_t test() {
+        return sizeof(_error_info);
+    }
 };
 
 /*! Error to throw when parsing some kind of document.
