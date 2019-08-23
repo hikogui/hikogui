@@ -153,7 +153,9 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
             << error_info<"source_line"_tag>(__LINE__)\
         ;\
         increment_counter<e.TAG>();\
-        logger.log(log_level::Exception, __FILE__, int{__LINE__}, "{}", e.message());\
+        static char const source_file[] = __FILE__;\
+        static char const format_str[] = "{}";\
+        logger.log<log_level_Exception, source_file, __LINE__, format_str>(e.message());\
         throw e;\
     } while(false)
 

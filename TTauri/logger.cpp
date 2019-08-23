@@ -18,10 +18,10 @@ namespace TTauri {
 
 using namespace std::literals::chrono_literals;
 
-void logger::writeToFile(std::string str) noexcept {
+void logger_type::writeToFile(std::string str) noexcept {
 }
 
-void logger::writeToConsole(std::string str) noexcept {
+void logger_type::writeToConsole(std::string str) noexcept {
 #if OPERATING_SYSTEM == OS_WINDOWS
     str += "\r\n";
     OutputDebugStringW(translateString<std::wstring>(str).data());
@@ -34,19 +34,19 @@ void logger::writeToConsole(std::string str) noexcept {
  * This will write to the console if one is open.
  * It will also create a log file in the application-data directory.
  */
-void logger::write(std::string const &str) noexcept {
+void logger_type::write(std::string const &str) noexcept {
     writeToFile(str);
     writeToConsole(str);
 }
 
-void logger::loop() noexcept {
+void logger_type::loop() noexcept {
     while (!logger_thread_stop) {
         auto found_fatal_message = false;
         while (!message_queue.empty()) {
             auto message = message_queue.read();
 
             let str = (*message)->string();
-            if ((*message)->level >= log_level::Fatal) {
+            if ((*message)->level() >= log_level_Fatal) {
                 found_fatal_message = true;
             }
 

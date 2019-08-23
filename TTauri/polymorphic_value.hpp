@@ -15,13 +15,14 @@ private:
     using base_type = T;
     static constexpr size_t capacity = S;
 
-    std::array<std::byte,capacity> _data;
+    // Size is first, to improve cache-line and prefetch.
 
     /*! Size of the object stored in the item.
     * Special values:
     *  * 0 - Empty
     */
     size_t _size;
+    alignas(16) std::array<std::byte,capacity> _data;
 
 public:
     polymorphic_value() : _size(0) {
