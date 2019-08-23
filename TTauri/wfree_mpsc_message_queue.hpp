@@ -87,8 +87,7 @@ class wfree_mpsc_message_queue {
         // State is first, to improve cache-line and prefetch.
         // There should not be much false sharing since the thread that uses the message is
         // also the one that updates the state.
-        alignas(Align);
-        std::atomic<message_state> state = message_state::Empty;
+        alignas(Align) std::atomic<message_state> state = message_state::Empty;
         value_type value;
     };
     

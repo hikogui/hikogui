@@ -153,7 +153,7 @@ inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error
             << error_info<"source_line"_tag>(__LINE__)\
         ;\
         increment_counter<e.TAG>();\
-        get_singleton<logger>().log(log_level::Exception, __FILE__, int{__LINE__}, e.message());\
+        logger.log(log_level::Exception, __FILE__, int{__LINE__}, "{}", e.message());\
         throw e;\
     } while(false)
 

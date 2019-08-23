@@ -19,14 +19,6 @@
 #define no_default std::terminate()
 #define not_implemented std::terminate()
 
-namespace TTauri {
-template<typename T, typename U>
-[[gsl::suppress(f.6)]]
-T numeric_cast(U value) noexcept {
-    return boost::numeric_cast<T>(value);
-}
-}
-
 #define to_int(x) TTauri::numeric_cast<int>(x)
 #define to_int64(x) TTauri::numeric_cast<int64_t>(x)
 
@@ -67,3 +59,12 @@ T numeric_cast(U value) noexcept {
 #define gsl_suppress4(a,b,c,d)
 #define gsl_suppress5(a,b,c,d,e)
 #endif
+
+namespace TTauri {
+template<typename T, typename U>
+gsl_suppress(f.6)
+T numeric_cast(U value) noexcept {
+    return boost::numeric_cast<T>(value);
+}
+}
+

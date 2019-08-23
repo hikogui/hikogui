@@ -16,7 +16,6 @@ using counter_map_type = wfree_unordered_map<MAX_NR_COUNTERS,string_tag,std::ato
 
 // To reduce number of executed instruction this is a global varable.
 // The wfree_unordered_map does not need to be initialized.
-static_assert(is_trivially_constructible_v<counter_map_type>);
 inline counter_map_type counter_map;
 
 template<string_tag TAG>

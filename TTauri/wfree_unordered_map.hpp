@@ -11,7 +11,7 @@
 namespace TTauri {
 
 template<typename K, typename V>
-struct wait_free_unordered_map_item {
+struct wfree_unordered_map_item {
     /*! The value.
      * It comes first because it is of unknown size
      * at should be aligned to 128 bits so it stays atomic
@@ -30,12 +30,12 @@ struct wait_free_unordered_map_item {
     std::atomic<size_t> hash = 0;
     K key = {};
 
-    constexpr wait_free_unordered_map_item() noexcept = default;
-    constexpr wait_free_unordered_map_item(wait_free_unordered_map_item const &) noexcept = default;
-    constexpr wait_free_unordered_map_item(wait_free_unordered_map_item &&) noexcept = default;
-    constexpr ~wait_free_unordered_map_item() noexcept = default;
-    constexpr wait_free_unordered_map_item &operator=(wait_free_unordered_map_item const &) noexcept = default;
-    constexpr wait_free_unordered_map_item &operator=(wait_free_unordered_map_item &&) noexcept = default;
+    constexpr wfree_unordered_map_item() noexcept = default;
+    constexpr wfree_unordered_map_item(wfree_unordered_map_item const &) noexcept = delete;
+    constexpr wfree_unordered_map_item(wfree_unordered_map_item &&) noexcept = delete;
+    ~wfree_unordered_map_item() noexcept = default;
+    constexpr wfree_unordered_map_item &operator=(wfree_unordered_map_item const &) noexcept = delete;
+    constexpr wfree_unordered_map_item &operator=(wfree_unordered_map_item &&) noexcept = delete;
 };
 
 /*! Unordered map with wait-free insert, get and erase.
@@ -52,17 +52,17 @@ public:
 private:
     static constexpr size_t CAPACITY = MAX_NR_ITEMS * 2;
 
-    std::array<wait_free_unordered_map_item<K,V>, CAPACITY> items = {};
+    std::array<wfree_unordered_map_item<K,V>, CAPACITY> items = {};
 
 public:
-    constexpr wait_free_unordered_map() noexcept = default;
-    constexpr wait_free_unordered_map(wait_free_unordered_map const &) noexcept = default;
-    constexpr wait_free_unordered_map(wait_free_unordered_map &&) noexcept = default;
-    constexpr ~wait_free_unordered_map() noexcept = default;
-    constexpr wait_free_unordered_map &operator=(wait_free_unordered_map const &) noexcept = default;
-    constexpr wait_free_unordered_map &operator=(wait_free_unordered_map &&) noexcept = default;
+    constexpr wfree_unordered_map() noexcept = default;
+    constexpr wfree_unordered_map(wfree_unordered_map const &) noexcept = delete;
+    constexpr wfree_unordered_map(wfree_unordered_map &&) noexcept = delete;
+    ~wfree_unordered_map() noexcept = default;
+    constexpr wfree_unordered_map &operator=(wfree_unordered_map const &) noexcept = delete;
+    constexpr wfree_unordered_map &operator=(wfree_unordered_map &&) noexcept = delete;
 
-    static size_t make_hash(K const &value) noexcept {
+    static size_t make_hash(K const &key) noexcept {
         let hash = std::hash<K>{}(key);
         return hash >= 3 ? hash : hash + 3;
     }
