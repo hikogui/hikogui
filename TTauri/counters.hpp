@@ -12,11 +12,12 @@ namespace TTauri {
 
 constexpr int MAX_NR_COUNTERS = 1000;
 
-inline auto &get_counter_map() noexcept
-{
-    static wfree_unordered_map<MAX_NR_COUNTERS, string_tag, std::atomic<int64_t> *> counter_map = {};
-    return counter_map;
-}
+using counter_map_type = wfree_unordered_map<MAX_NR_COUNTERS,string_tag,std::atomic<int64_t> *>;
+
+// To reduce number of executed instruction this is a global varable.
+// The wfree_unordered_map does not need to be initialized.
+static_assert(is_trivially_constructible_v<counter_map_type>);
+inline counter_map_type counter_map;
 
 template<string_tag TAG>
 struct counter_functor {
@@ -28,7 +29,6 @@ struct counter_functor {
         let value = counter.fetch_add(1, std::memory_order_relaxed);
 
         if (value == 0) {
-            auto &counter_map = get_counter_map();
             counter_map.insert(TAG, &counter);
         }
 
@@ -56,7 +56,6 @@ inline int64_t read_counter() noexcept
 
 inline int64_t read_counter(string_tag tag) noexcept
 {
-    auto &counter_map = get_counter_map();
     if (let value = counter_map.get(tag)) {
         return (*value)->load(std::memory_order_relaxed);
     } else {

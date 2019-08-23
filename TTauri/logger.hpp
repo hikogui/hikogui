@@ -101,7 +101,7 @@ struct log_message: public log_message_base {
 /*! A class with which to log messages to a file or console.
  * This will primarilly used with get_singleton<>().
  */
-class logger {
+class logger_type {
     static constexpr size_t MAX_MESSAGE_SIZE = 236;
     static constexpr size_t MESSAGE_ALIGNMENT = 256;
     static constexpr size_t MAX_NR_MESSAGES = 4096;
@@ -109,16 +109,19 @@ class logger {
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
     using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES,MESSAGE_ALIGNMENT>;
 
+
     std::atomic<bool> logged_fatal_message = false;
 
     std::atomic<log_level> level = log_level::Debug;
-    message_queue_type message_queue = {};
+
+    //! the message queue must work correctly before main() is executed.
+    message_queue_type message_queue;
 
     bool logger_thread_stop = false;
     std::thread logger_thread;
 
 public:
-    logger(bool test=false) {
+    logger_type(bool test=false) {
         if (!test) {
             logger_thread = std::thread([&]() {
                 this->loop();
@@ -126,7 +129,7 @@ public:
         }
     }
 
-    ~logger() {
+    ~logger_type() {
         if (logger_thread.joinable()) {
             logger_thread_stop = true;
             logger_thread.join();
@@ -163,13 +166,17 @@ private:
     void writeToConsole(std::string str) noexcept;
 };
 
+// The constructor of logger only starts the logging thread.
+// The ring buffer of the logger is trivaliy constructed and can be used before the logger's constructor is stared.
+inline logger_type logger = {};
+
 }
 
-#define LOG_DEBUG(...) get_singleton<logger>().log(log_level::Debug, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_INFO(...) get_singleton<logger>().log(log_level::Info, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_AUDIT(...) get_singleton<logger>().log(log_level::Audit, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_WARNING(...) get_singleton<logger>().log(log_level::Warning, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...) get_singleton<logger>().log(log_level::Error, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_CRITICAL(...) get_singleton<logger>().log(log_level::Critical, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_FATAL(...) get_singleton<logger>().log(log_level::Fatal, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_DEBUG(...) logger.log(log_level::Debug, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_INFO(...) logger.log(log_level::Info, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_AUDIT(...) logger.log(log_level::Audit, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_WARNING(...) loggerlog(log_level::Warning, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...) logger.log(log_level::Error, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_CRITICAL(...) logger.log(log_level::Critical, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_FATAL(...) logger.log(log_level::Fatal, __FILE__, __LINE__, __VA_ARGS__)
 

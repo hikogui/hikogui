@@ -84,8 +84,12 @@ class wfree_mpsc_message_queue {
     enum class message_state { Empty, Copying, Ready };
 
     struct message_type {
-        alignas(Align) value_type value;
+        // State is first, to improve cache-line and prefetch.
+        // There should not be much false sharing since the thread that uses the message is
+        // also the one that updates the state.
+        alignas(Align);
         std::atomic<message_state> state = message_state::Empty;
+        value_type value;
     };
     
     static constexpr index_type capacity = Capacity;
