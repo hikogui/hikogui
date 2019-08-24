@@ -127,17 +127,16 @@ public:
     }
 
     /*! Write a message into the queue.
-    * This function should only be called when not full().
     * This function is wait-free when the queue is not full().
     *
     * \return A scoped write operation which can be derefenced to access the message value.
     */
+    template<string_tag BlockCounterTag=0>
     scoped_write_operation write() noexcept {
-        return {this, write_start()};
+        return {this, write_start<BlockCounterTag>()};
     }
 
     /*! Read a message from the queue.
-    * This function should only be called when not empty().
     * This function will block until the message being read is completed by the writing thread.
     *
     * \return A scoped read operation which can be derefenced to access the message value.
@@ -155,19 +154,19 @@ public:
     }
 
     /*! Start a write into the message queue.
-     * This function should only be called when not full().
      * This function is wait-free when the queue is not full().
      * Every write_start() must be accompanied by a write_finish().
      *
      * \return The index of the message.
      */
+    template<string_tag BlockCounterTag=0>
     index_type write_start() noexcept {
         let index = head.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the queue was full.
         // It is assumed that the capacity of the queue is less than the number of threads.
-        transition(message.state, message_state::Empty, message_state::Copying, std::memory_order_acquire);
+        transition<BlockCounterTag>(message.state, message_state::Empty, message_state::Copying, std::memory_order_acquire);
         return index;
     }
 
@@ -182,7 +181,6 @@ public:
     }
 
     /*! Start a read from the message queue.
-     * This function should only be called when not empty().
      * This function will block until the message being read is completed by the writing thread.
      * Every read_start() must be accompanied by a read_finish().
      *

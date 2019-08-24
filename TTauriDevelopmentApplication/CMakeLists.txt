@@ -8,7 +8,6 @@ elseif(APPLE)
   set(GUI_TYPE MACOSX_BUNDLE)
 endif()
 
-
 add_executable(TTauriDevelopmentApplication ${GUI_TYPE} TTauriDevelopmentApplication.cpp)
 target_link_libraries(TTauriDevelopmentApplication TTauri)
 set_property(TARGET TTauriDevelopmentApplication PROPERTY CXX_STANDARD 17)

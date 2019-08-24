@@ -5,9 +5,9 @@
 
 #include "hires_utc_clock.hpp"
 
-namespace TTauri::Time {
+namespace TTauri {
 
-static timepoint hires_utc_clock::now() {
+hires_utc_clock::time_point hires_utc_clock::now() {
     struct timespec ts;
 
     // This should never return an error, but it needs to be fast too.
@@ -16,7 +16,7 @@ static timepoint hires_utc_clock::now() {
     auto utc_ts = static_cast<int64_t>(ts.tv_sec) * 1000000;
     utc_ts += ts.tv_nsec;
 
-    return timepoint(duration(utc_ts));
+    return time_point(duration(utc_ts));
 }
 
 }

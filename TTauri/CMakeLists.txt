@@ -87,6 +87,7 @@ set(TTauri_srcs
     GUI/Widgets/ToolbarButtonWidget.cpp
     Application_base.cpp
     Application_win32.cpp
+    hires_utc_clock_win32.cpp
     logger.cpp
     url_parser.cpp
     URL.cpp

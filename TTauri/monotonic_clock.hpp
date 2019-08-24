@@ -7,7 +7,7 @@
 #include <atomic>
 #include <chrono>
 
-namespace TTauri::Time {
+namespace TTauri {
 
 template<typename C>
 struct monotonic_clock {

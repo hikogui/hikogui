@@ -4,9 +4,9 @@
 #include "hires_utc_clock.hpp"
 #include <Windows.h>
 
-namespace TTauri::Time {
+namespace TTauri {
 
-static timepoint hires_utc_clock::now() {
+hires_utc_clock::time_point hires_utc_clock::now() {
     FILETIME ts; 
 
     GetSystemTimePreciseAsFileTime(&ts);
@@ -21,7 +21,7 @@ static timepoint hires_utc_clock::now() {
     // Convert to 1ns format.
     utc_ts *= 100;
 
-    return timepoint(duration(utc_ts));
+    return time_point(duration(utc_ts));
 }
 
 }

@@ -46,7 +46,7 @@ void logger_type::loop() noexcept {
             auto message = message_queue.read();
 
             let str = (*message)->string();
-            if ((*message)->level() >= log_level_Fatal) {
+            if ((*message)->level() >= log_level::Fatal) {
                 found_fatal_message = true;
             }
 

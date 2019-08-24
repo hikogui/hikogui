@@ -3,11 +3,14 @@
 
 #pragma once
 
+#include "hires_utc_clock.hpp"
+#include "cpu_counter_clock.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 #include <chrono>
 
-namespace TTauri::Time {
+using namespace std::literals::chrono_literals;
 
+namespace TTauri {
 
 template<typename C1, typename C2>
 class sync_clock_impl {
@@ -16,21 +19,20 @@ class sync_clock_impl {
 
     /*! For lock-free access, this should be 128 bit in size
      */
-    alignas(16)
     struct calibration_t {
         static constexpr int gainShift = 60;
         static constexpr double gainMultiplier = static_cast<double>(1ULL << gainShift);
 
-        uint64_t gain = 0;
-        slow_clock::duration bias = 0;
+        int64_t gain = 0;
+        typename slow_clock::duration bias = 0ns;
     };
 
-    std::atomic<calibration_t> calibration;
+    alignas(16) std::atomic<calibration_t> calibration;
 
     /*! Previous time point so we can calculate the gain value over the period since the last
      * calibration.
      */
-    std::pair<typename slow_clock::timepoint, typename fast_clock::timepoint> previousTimepoints;
+    std::pair<typename slow_clock::time_point, typename fast_clock::time_point> previousTimepoints;
 
     /*! A list of previous gain calibration values. This list is averaged (through IQR arithmatic mean)
      * and then used as the calibration value. Because of using the IQR we can ignore anomalies due to
@@ -41,16 +43,17 @@ class sync_clock_impl {
 
     /*! When during calibration we detect a leap second, we will update this offset (in ns).
      */
-    slow_clock::duration leapsecond_offsest = 0;
+    typename slow_clock::duration leapsecond_offset = 0ns;
 
     std::thread calibrate_loop_id;
     bool calibrate_loop_stop = false;
     size_t calibrate_loop_count = 0;
 
+public:
     /*! Construct a sync clock.
      * \param create_thread can be set to false when testing.
      */
-    sync_clock_impl(bool create_thread=true) {
+    sync_clock_impl(bool create_thread=true) noexcept {
         if (create_thread) {
             calibrate_loop_id = std::thread([&]() {
                 return this->calibrate_loop();
@@ -65,7 +68,12 @@ class sync_clock_impl {
         }
     }
 
-    void calibrate_loop() {
+    typename slow_clock::time_point convert(typename fast_clock::time_point fast_time) const noexcept {
+        return convert(calibration.load(), fast_time);
+    }
+
+private:
+    void calibrate_loop() noexcept {
         while (!calibrate_loop_stop) {
             if (
                 (calibrate_loop_count < 10) ||
@@ -81,7 +89,7 @@ class sync_clock_impl {
         return;
     }
 
-    calibration_t calibrate(typename slow_clock::timepoint now_slow, typename fast_clock::timepoint now_fast) {
+    calibration_t calibrate(typename slow_clock::time_point now_slow, typename fast_clock::time_point now_fast) noexcept {
         let [prev_slow, prev_fast] = previousTimepoints;
         previousTimepoints = {now_slow, now_fast};
 
@@ -117,7 +125,7 @@ class sync_clock_impl {
             (
                 static_cast<boost::multiprecision::int128_t>(now_fast.time_since_epoch().count()) *
                 new_gain
-            ) >> sync_clock_calibration_t::gainShift
+            ) >> calibration_t::gainShift
         ));
 
         let new_bias = (now_slow.time_since_epoch() + leapsecond_offset) - now_fast_after_gain;
@@ -138,21 +146,20 @@ class sync_clock_impl {
         return { new_gain, new_bias + adjustment };
     }
 
-    typename slow_clock::timepoint convert(sync_clock_calibration_t const c, typename fast_clock::timepoint fast_time) const {
+    typename slow_clock::time_point convert(calibration_t const c, typename fast_clock::time_point fast_time) const noexcept {
         auto u128_count = static_cast<boost::multiprecision::int128_t>(fast_time.time_since_epoch().count());
         u128_count *= c.gain;
         u128_count >>= calibration_t::gainShift;
-        u128_count += c.bias;
 
-        let i64_count = static_cast<typename rep>(u128_count);
-        let slow_period = duration(i64_count);
-        let slow_timepoint = timepoint(slow_period);
-        return slow_timepoint;
+        let slow_period = c.bias + slow_clock::duration(static_cast<slow_clock::rep>(u128_count));
+        let slow_time_point = slow_clock::time_point(slow_period);
+        return slow_time_point;
     }
 
-    typename slow_clock::timepoint convert(typename fast_clock::timepoint fast_time) const {
-        return convert(calibration.load(), fast_time);
-    }
+
+
+    template<typename C1, typename C2> 
+    friend struct sync_clock;
 };
 
 
@@ -170,15 +177,15 @@ template<typename C1, typename C2>
 struct sync_clock {
     using slow_clock = C1;
     using fast_clock = C2;
-    using impl = sync_clock_impl<C1,C2>
+    using impl = sync_clock_impl<C1,C2>;
 
     using rep = typename slow_clock::rep;
     using period = typename slow_clock::period;
     using duration = typename slow_clock::duration;
-    using timepoint = timepoint<sync_clock>;
+    using time_point = typename slow_clock::time_point;
     static const bool is_steady = slow_clock::is_steady;
 
-    static duration checkCalibration() {
+    static duration checkCalibration() noexcept {
         let now_slow = slow_clock::now();
         let now_fast = fast_clock::now();
         let now_fast_as_slow = convert(now_fast);
@@ -187,13 +194,15 @@ struct sync_clock {
 
     /*! Return a timestamp from a clock.
      */
-    static timepoint convert(typename fast_clock::timepoint fast_time) {
+    static time_point convert(typename fast_clock::time_point fast_time) noexcept {
         return get_singleton<impl>().convert(fast_time);
     }
 
-    static timepoint now() {
+    static time_point now() noexcept {
         return clock_sync::convert(fast_clock::now());
     }
 };
+
+using hiperf_utc_clock = sync_clock<hires_utc_clock,cpu_counter_clock>;
 
 }

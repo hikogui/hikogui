@@ -7,11 +7,11 @@
 #include "hires_utc_clock.hpp"
 #include "leapsecond_db.hpp"
 
-namespace TTauri::Time {
+namespace TTauri {
 
 /*! Get a timestamp based on a high resolution system clock.
  */
-static timepoint hires_tai_clock::now() {
+static time_point hires_tai_clock::now() {
     return get_singleton<leapsecond_db>().UTC_to_TAI(hires_utc_clock::now());
 }
 

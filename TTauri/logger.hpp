@@ -10,6 +10,8 @@
 #include "url_parser.hpp"
 #include "atomic.hpp"
 #include "counters.hpp"
+#include "cpu_counter_clock.hpp"
+#include "sync_clock.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <string>
@@ -18,47 +20,59 @@
 
 namespace TTauri {
 
-using log_level = int;
-//! Messages that are used for debugging during developmet.
-static constexpr log_level log_level_Debug = 0;
-//! Informational messages used debugging problems in production by users of the application.
-static constexpr log_level log_level_Info = 1;
-//! An exception was throw, probably isn't a problem.
-static constexpr log_level log_level_Exception = 2;
-//! Messages for auditing purposes.
-static constexpr log_level log_level_Audit = 3;
-//! An error was detected which is recoverable by the application.
-static constexpr log_level log_level_Warning = 4;
-//! An error was detected and is recoverable by the user.
-static constexpr log_level log_level_Error = 5;
-//! An error has caused data to be corrupted.
-static constexpr log_level log_level_Critical = 6;
-//! Unrecoverable error, need to terminate the application to reduce impact.
-static constexpr log_level log_level_Fatal = 7;
-
-constexpr char const *log_level_to_const_string(log_level level) noexcept
-{
-    switch (level) {
-    case log_level_Debug:     return "DEBUG";
-    case log_level_Info:      return "INFO";
-    case log_level_Exception: return "THROW";
-    case log_level_Audit:     return "AUDIT";
-    case log_level_Warning:   return "WARN";
-    case log_level_Error:     return "ERROR";
-    case log_level_Critical:  return "CRIT";
-    case log_level_Fatal:     return "FATAL";
-    default: no_default;
-    }
-}
-
 #ifdef _WIN32
 std::string getLastErrorMessage();
 #endif
 
+enum class log_level {
+    //! Messages that are used for debugging during developmet.
+    Debug,
+    //! Informational messages used debugging problems in production by users of the application.
+    Info,
+    //! An exception was throw, probably isn't a problem.
+    Exception,
+    //! Messages for auditing purposes.
+    Audit,
+    //! An error was detected which is recoverable by the application.
+    Warning,
+    //! An error was detected and is recoverable by the user.
+    Error,
+    //! An error has caused data to be corrupted.
+    Critical,
+    //! Unrecoverable error, need to terminate the application to reduce impact.
+    Fatal,
+};
+
+constexpr char const *to_const_string(log_level level) noexcept
+{
+    switch (level) {
+    case log_level::Debug:     return "DEBUG";
+    case log_level::Info:      return "INFO";
+    case log_level::Exception: return "THROW";
+    case log_level::Audit:     return "AUDIT";
+    case log_level::Warning:   return "WARN";
+    case log_level::Error:     return "ERROR";
+    case log_level::Critical:  return "CRIT";
+    case log_level::Fatal:     return "FATAL";
+    default: no_default;
+    }
+}
+
+constexpr bool operator<(log_level lhs, log_level rhs) noexcept { return static_cast<int>(lhs) < static_cast<int>(rhs); }
+constexpr bool operator>(log_level lhs, log_level rhs) noexcept { return rhs < lhs; }
+constexpr bool operator==(log_level lhs, log_level rhs) noexcept { return static_cast<int>(lhs) == static_cast<int>(rhs); }
+constexpr bool operator!=(log_level lhs, log_level rhs) noexcept { return !(lhs == rhs); }
+constexpr bool operator<=(log_level lhs, log_level rhs) noexcept { return !(lhs > rhs); }
+constexpr bool operator>=(log_level lhs, log_level rhs) noexcept { return !(lhs < rhs); }
+
 struct log_message_base {
     char const *source_path;
     int source_line;
+    cpu_counter_clock::time_point timestamp;
     char const *format;
+
+    log_message_base(char const *source_path, int source_line, cpu_counter_clock::time_point timestamp, char const *format) noexcept :
+        source_path(source_path), source_line(source_line), timestamp(timestamp), format(format) {}
 
     virtual std::string string() const noexcept = 0;
     virtual log_level level() const noexcept = 0;
@@ -66,31 +80,30 @@ struct log_message_base {
 
 template<log_level Level, typename... Args>
 struct log_message: public log_message_base {
-    static constexpr char const *LogLevelName = log_level_to_const_string(Level);
+    static constexpr char const *LogLevelName = to_const_string(Level);
 
     std::tuple<std::decay_t<Args>...> format_args;
 
-    //log_message(log_level level, char const *file, int line, std::decay_t<Args>... format_args) noexcept :
-    //    log_message_base(level, file, line), format_args(std::move(format_args)...)
-    log_message(char const *source_path, int source_line, char const *format, Args &&... args) noexcept :
-        log_message(source_path, source_line, format), format_args(std::forward<Args>(args)...)
-    {
-    }
+    log_message(char const * const source_path, int const source_line, cpu_counter_clock::time_point const timestamp, char const *const format, Args &&... args) noexcept :
+        log_message_base(source_path, source_line, timestamp, format), format_args(std::forward<Args>(args)...) {}
 
     log_level level() const noexcept override {
         return Level;
     }
 
     std::string string() const noexcept override {
-        let msg = std::apply([](auto const&... args) {
-              return fmt::format(format, args...);
-            },
-            format_args
-        );
+        auto f = [format=this->format](auto const&... args) {
+            return fmt::format(format, args...);
+        };
+
+        let msg = std::apply(f, format_args);
 
         let source_filename = filename_from_path(source_path);
 
-        return fmt::format("{0:14};{1:4} {2:5} {3}", source_filename, source_line, LogLevelName, msg);
+        let utc_timestamp = hiperf_utc_clock::convert(timestamp);
+        let utc_timestamp_str = hires_utc_clock::local_time_string(utc_timestamp);
+
+        return fmt::format("{} {:5} {}.    {}:{}", utc_timestamp_str, LogLevelName, msg, source_filename, source_line);
     }
 };
 
@@ -109,7 +122,7 @@ class logger_type {
 
     std::atomic<bool> logged_fatal_message = false;
 
-    log_level level = log_level_Debug;
+    log_level level = log_level::Debug;
 
     //! the message queue must work correctly before main() is executed.
     message_queue_type message_queue;
@@ -135,27 +148,32 @@ public:
 
     void loop() noexcept;
 
-    template<log_level Level, char const *SourceFile, int SourceLine, char const *Format, typename... Args>
-    void log(Args &&... args) noexcept {
+    template<log_level Level, typename... Args>
+    void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
         if (Level < logger.level) {
             return;
         }
 
-        if (!message_queue.full()) {
-            auto message = message_queue.write();
-            // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
-            message->emplace<log_message<Level, SourceFile, SourceLine, Format, Args...>>(std::forward<Args>(args)...);
+        // Add messages in the queue, block when full.
+        // * This reduces amount of instructions needed to be executed during logging.
+        // * Simplifies logged_fatal_message logic.
+        // * Will make sure everything gets logged.
+        // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
+        {
+            let timestamp = cpu_counter_clock::now();
 
-        } else {
-            increment_counter<"log_overflow"_tag>();
+            auto message = message_queue.write<"logger_block"_tag>();
+            // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
+            message->emplace<log_message<Level, Args...>>(source_file, source_line, timestamp, format, std::forward<Args>(args)...);
         }
 
-        if constexpr (Level >= log_level_Fatal) {
+        if constexpr (Level >= log_level::Fatal) {
             // Wait until the logger-thread is finished.
             wait_for_transition(logged_fatal_message, true);
             std::terminate();
         }
     }
+
 
 private:
     void write(std::string const &str) noexcept;
@@ -175,17 +193,13 @@ constexpr char const *foo(char const *str)
 }
 
 #define LOGGER_LOG(level, fmt, ...)\
-    do {\
-        static char const SourceFile[] = __FILE__;\
-        static char const FormatStr[] = fmt;\
-        logger.log<level, SourceFile, __LINE__, FormatStr>(__VA_ARGS__);\
-    } while(false)
+    logger.log<level>(__FILE__, __LINE__, fmt, __VA_ARGS__);\
 
-#define LOG_DEBUG(fmt, ...) LOGGER_LOG(log_level_Debug, fmt, __VA_ARGS__)
-#define LOG_INFO(fmt, ...) LOGGER_LOG(log_level_Info, fmt, __VA_ARGS__)
-#define LOG_AUDIT(fmt, ...) LOGGER_LOG(log_level_Audit, fmt, __VA_ARGS__)
-#define LOG_WARNING(fmt, ...) LOGGER_LOG(log_level_Warning, fmt, __VA_ARGS__)
-#define LOG_ERROR(fmt, ...) LOGGER_LOG(log_level_Error, fmt, __VA_ARGS__)
-#define LOG_CRITICAL(fmt, ...) LOGGER_LOG(log_level_Critical, fmt, __VA_ARGS__)
-#define LOG_FATAL(fmt, ...) LOGGER_LOG(log_level_Fatal, fmt, __VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) LOGGER_LOG(log_level::Debug, fmt, __VA_ARGS__)
+#define LOG_INFO(fmt, ...) LOGGER_LOG(log_level::Info, fmt, __VA_ARGS__)
+#define LOG_AUDIT(fmt, ...) LOGGER_LOG(log_level::Audit, fmt, __VA_ARGS__)
+#define LOG_WARNING(fmt, ...) LOGGER_LOG(log_level::Warning, fmt, __VA_ARGS__)
+#define LOG_ERROR(fmt, ...) LOGGER_LOG(log_level::Error, fmt, __VA_ARGS__)
+#define LOG_CRITICAL(fmt, ...) LOGGER_LOG(log_level::Critical, fmt, __VA_ARGS__)
+#define LOG_FATAL(fmt, ...) LOGGER_LOG(log_level::Fatal, fmt, __VA_ARGS__)
 

@@ -5,6 +5,8 @@
 
 #include "required.hpp"
 #include "os_detect.hpp"
+#include "string_tag.hpp"
+#include "counters.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>
@@ -46,10 +48,14 @@ force_inline void wait_for_transition(std::atomic<T> &state, T from, std::memory
     }
 }
 
-template<typename T>
+template<string_tag BlockCounterTag=0,typename T>
 inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
+
+    if constexpr (BlockCounterTag != 0) {
+        increment_counter<BlockCounterTag>();
+    }
 
     auto backoff = 10ms;
     while (true) {
@@ -65,14 +71,14 @@ inline void contended_transition(std::atomic<T> &state, T from, T to, std::memor
     }
 }
 
-template<typename T>
+template<string_tag BlockCounterTag=0,typename T>
 force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     auto expect = from;
     if (state.compare_exchange_strong(expect, to, order)) {
         return;
     }
-    contended_transition(state, from, to, order);
+    contended_transition<BlockCounterTag>(state, from, to, order);
 }
 
 

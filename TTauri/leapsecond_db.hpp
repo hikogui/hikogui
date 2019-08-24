@@ -6,7 +6,7 @@
 #include "hires_utc_clock.hpp"
 #include "hires_tai_clock.hpp"
 
-namespace TTauri::Time {
+namespace TTauri {
 
 /*! Create a tai clock from a utc-clock.
  */
