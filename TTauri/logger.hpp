@@ -56,11 +56,15 @@ std::string getLastErrorMessage();
 #endif
 
 struct log_message_base {
+    char const *source_path;
+    int source_line;
+    char const *format;
+
     virtual std::string string() const noexcept = 0;
     virtual log_level level() const noexcept = 0;
 };
 
-template<log_level Level, char const *SourceFile, int SourceLine, char const *Format, typename... Args>
+template<log_level Level, typename... Args>
 struct log_message: public log_message_base {
     static constexpr char const *LogLevelName = log_level_to_const_string(Level);
 
@@ -68,8 +72,8 @@ struct log_message: public log_message_base {
 
     //log_message(log_level level, char const *file, int line, std::decay_t<Args>... format_args) noexcept :
     //    log_message_base(level, file, line), format_args(std::move(format_args)...)
-    log_message(Args &&... args) noexcept :
-        format_args(std::forward<Args>(args)...)
+    log_message(char const *source_path, int source_line, char const *format, Args &&... args) noexcept :
+        log_message(source_path, source_line, format), format_args(std::forward<Args>(args)...)
     {
     }
 
@@ -79,14 +83,14 @@ struct log_message: public log_message_base {
 
     std::string string() const noexcept override {
         let msg = std::apply([](auto const&... args) {
-              return fmt::format(Format, args...);
+              return fmt::format(format, args...);
             },
             format_args
         );
 
-        let source_filename = filename_from_path(SourceFile);
+        let source_filename = filename_from_path(source_path);
 
-        return fmt::format("{0:14};{1:4} {2:5} {3}", source_filename, SourceLine, LogLevelName, msg);
+        return fmt::format("{0:14};{1:4} {2:5} {3}", source_filename, source_line, LogLevelName, msg);
     }
 };
 
