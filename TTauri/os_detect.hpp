@@ -70,16 +70,16 @@ constexpr auto operatingSystem = OperatingSystem::Posix;
 #endif
 
 
-#define COMPILER_MSVC 'm'
-#define COMPILER_GCC 'g'
-#define COMPILER_CLANG 'c'
+#define CC_MSVC 'm'
+#define CC_GCC 'g'
+#define CC_CLANG 'c'
 
 #if defined(_MSC_BUILD)
-#define COMPILER COMPILER_MSVC
+#define COMPILER CC_MSVC
 #elif defined(__GNUC__)
-#define COMPILER COMPILER_GCC
+#define COMPILER CC_GCC
 #elif defined(__clang__)
-#define COMPILER COMPILER_CLANG
+#define COMPILER CC_CLANG
 #endif
 
 enum class Compiler {
@@ -91,11 +91,11 @@ enum class Compiler {
 /*! Used for describing the look and feel of the application.
 * Use operating supplied macros for detecting APIs
 */
-#if COMPILER == COMPILER_MSVC
+#if COMPILER == CC_MSVC
 constexpr auto compiler = Compiler::MSVC;
-#elif COMPILER == COMPILER_GCC
+#elif COMPILER == CC_GCC
 constexpr auto compiler = Compiler::gcc;
-#elif COMPILER == COMPILER_CLANG
+#elif COMPILER == CC_CLANG
 constexpr auto compiler = Compiler::clang;
 #else
 #error "Could not detect the compiler."

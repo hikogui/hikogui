@@ -192,14 +192,11 @@ constexpr char const *foo(char const *str)
     return static_cast<char const *>(str);
 }
 
-#define LOGGER_LOG(level, fmt, ...)\
-    logger.log<level>(__FILE__, __LINE__, fmt, __VA_ARGS__);\
-
-#define LOG_DEBUG(fmt, ...) LOGGER_LOG(log_level::Debug, fmt, __VA_ARGS__)
-#define LOG_INFO(fmt, ...) LOGGER_LOG(log_level::Info, fmt, __VA_ARGS__)
-#define LOG_AUDIT(fmt, ...) LOGGER_LOG(log_level::Audit, fmt, __VA_ARGS__)
-#define LOG_WARNING(fmt, ...) LOGGER_LOG(log_level::Warning, fmt, __VA_ARGS__)
-#define LOG_ERROR(fmt, ...) LOGGER_LOG(log_level::Error, fmt, __VA_ARGS__)
-#define LOG_CRITICAL(fmt, ...) LOGGER_LOG(log_level::Critical, fmt, __VA_ARGS__)
-#define LOG_FATAL(fmt, ...) LOGGER_LOG(log_level::Fatal, fmt, __VA_ARGS__)
+#define LOG_DEBUG(...) logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_INFO(...) logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_AUDIT(...) logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_WARNING(...) logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_ERROR(...) logger.log<log_level::Error>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_CRITICAL(...) logger.log<log_level::Critical>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_FATAL(...) logger.log<log_level::Fatal>(__FILE__, __LINE__, __VA_ARGS__);
 

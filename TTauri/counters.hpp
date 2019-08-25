@@ -21,8 +21,7 @@ inline counter_map_type counter_map;
 template<string_tag TAG>
 struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.
-    alignas(std::hardware_destructive_interference_size)
-    inline static std::atomic<int64_t> counter = 0;
+    alignas(cache_line_size) inline static std::atomic<int64_t> counter = 0;
 
     int64_t increment() const noexcept {
         let value = counter.fetch_add(1, std::memory_order_relaxed);

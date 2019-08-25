@@ -22,9 +22,13 @@ struct hires_utc_clock {
 
     std::chrono::system_clock::time_point convert_to_system_clock(TTauri::hires_utc_clock::time_point x) {
         if constexpr (std::is_same_v<std::chrono::system_clock::period, std::nano>) {
-            return { std::chrono::system_clock::duration(x.time_since_epoch().count()) };
+            return std::chrono::system_clock::time_point{
+                std::chrono::system_clock::duration(x.time_since_epoch().count())
+            };
         } else if constexpr (std::is_same_v<std::chrono::system_clock::period, std::micro>) {
-            return { std::chrono::system_clock::duration(x.time_since_epoch().count() / 1000) };
+            return std::chrono::system_clock::time_point{
+                std::chrono::system_clock::duration(x.time_since_epoch().count() / 1000)
+            };
         } else {
             no_default;
         }

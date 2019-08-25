@@ -60,6 +60,8 @@
 #define gsl_suppress5(a,b,c,d,e)
 #endif
 
+constexpr size_t cache_line_size = 128;
+
 namespace TTauri {
 template<typename T, typename U>
 gsl_suppress(f.6)

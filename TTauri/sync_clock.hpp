@@ -155,11 +155,6 @@ private:
         let slow_time_point = slow_clock::time_point(slow_period);
         return slow_time_point;
     }
-
-
-
-    template<typename C1, typename C2> 
-    friend struct sync_clock;
 };
 
 
