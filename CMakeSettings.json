@@ -40,6 +40,16 @@
                     "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
+                },
+                {
+                    "name": "USE_SYSTEM_TZ_DB",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "ENABLE_DATE_TESTING",
+                    "value": "OFF",
+                    "type": "STRING"
                 }
             ]
         },
@@ -78,6 +88,16 @@
                     "name": "gtest_force_shared_crt",
                     "value": "ON",
                     "type": "STRING"
+                },
+                {
+                    "name": "USE_SYSTEM_TZ_DB",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "ENABLE_DATE_TESTING",
+                    "value": "OFF",
+                    "type": "STRING"
                 }
             ]
         },
@@ -115,6 +135,16 @@
                 {
                     "name": "gtest_force_shared_crt",
                     "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "USE_SYSTEM_TZ_DB",
+                    "value": "ON",
+                    "type": "STRING"
+                },
+                {
+                    "name": "ENABLE_DATE_TESTING",
+                    "value": "OFF",
                     "type": "STRING"
                 }
             ]

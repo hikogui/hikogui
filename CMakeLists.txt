@@ -6,7 +6,7 @@ if (MSVC)
     add_link_options(/nologo)
 	add_definitions(-DWIN32 -D_WINDOWS -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 
-    if (NOT CMAKE_BUILD_TYPE EQUAL Debug)
+    if (NOT (${CMAKE_BUILD_TYPE} MATCHES Debug))
         # Whole program optimization.
         add_compile_options(/GL)
         add_link_options(/LTCG)

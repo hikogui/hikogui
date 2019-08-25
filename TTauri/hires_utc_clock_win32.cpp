@@ -6,7 +6,7 @@
 
 namespace TTauri {
 
-hires_utc_clock::time_point hires_utc_clock::now() {
+hires_utc_clock::time_point hires_utc_clock::now() noexcept {
     FILETIME ts; 
 
     GetSystemTimePreciseAsFileTime(&ts);

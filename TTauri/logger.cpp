@@ -4,6 +4,7 @@
 #include "logger.hpp"
 #include "strings.hpp"
 #include "os_detect.hpp"
+#include "URL.hpp"
 #include <exception>
 #include <memory>
 #include <iostream>
@@ -17,6 +18,30 @@
 namespace TTauri {
 
 using namespace std::literals::chrono_literals;
+
+logger_type::logger_type(bool test) noexcept {
+    // The logger is the first object that will use the timezone database.
+    // Zo we will initialize it here.
+#if USE_OS_TZDB == 0
+    let tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
+    date::set_install(tzdata_location.nativePath());
+#endif
+    time_zone = date::current_zone();
+
+    if (!test) {
+        logger_thread = std::thread([&]() {
+            this->loop();
+            });
+    }
+}
+
+logger_type::~logger_type() {
+    if (logger_thread.joinable()) {
+        logger_thread_stop = true;
+        logger_thread.join();
+    }
+}
+
 
 void logger_type::writeToFile(std::string str) noexcept {
 }
@@ -40,7 +65,15 @@ void logger_type::write(std::string const &str) noexcept {
 }
 
 void logger_type::loop() noexcept {
-    while (!logger_thread_stop) {
+    bool last_iteration = false;
+
+    do {
+        if (logger_thread_stop) {
+            // We need to check the message queue one more time to log all messages
+            // left in the queue before completely finishing.
+            last_iteration = true;
+        }
+
         auto found_fatal_message = false;
         while (!message_queue.empty()) {
             auto message = message_queue.read();
@@ -57,7 +90,8 @@ void logger_type::loop() noexcept {
             logged_fatal_message.store(true);
         }
         std::this_thread::sleep_for(100ms);
-    }
+
+    } while (!last_iteration);
 }
 
 gsl_suppress(i.11)

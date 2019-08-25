@@ -15,7 +15,7 @@ namespace TTauri {
 
 inline void pause_cpu()
 {
-#if (COMPILER == COMPILER_MSVC)
+#if COMPILER == CC_MSVC
     //_mm_pause();
 #else
     asm("pause");

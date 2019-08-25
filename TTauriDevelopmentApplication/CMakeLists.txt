@@ -16,6 +16,12 @@ set_property(TARGET TTauriDevelopmentApplication PROPERTY CXX_STANDARD 17)
 add_custom_command(
   TARGET TTauriDevelopmentApplication POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory 
+    ${CMAKE_SOURCE_DIR}/ThirdPartyLibraries/tzdata 
+    $<TARGET_FILE_DIR:TTauriDevelopmentApplication>/tzdata)
+
+add_custom_command(
+  TARGET TTauriDevelopmentApplication POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory 
     ${CMAKE_SOURCE_DIR}/TTauri/Themes 
     $<TARGET_FILE_DIR:TTauriDevelopmentApplication>/Themes)
 add_custom_command(

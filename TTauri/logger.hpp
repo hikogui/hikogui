@@ -12,6 +12,7 @@
 #include "counters.hpp"
 #include "cpu_counter_clock.hpp"
 #include "sync_clock.hpp"
+#include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <string>
@@ -101,9 +102,9 @@ struct log_message: public log_message_base {
         let source_filename = filename_from_path(source_path);
 
         let utc_timestamp = hiperf_utc_clock::convert(timestamp);
-        let utc_timestamp_str = hires_utc_clock::local_time_string(utc_timestamp);
+        let local_timestring = format_full_datetime(utc_timestamp, logger.time_zone);
 
-        return fmt::format("{} {:5} {}.    {}:{}", utc_timestamp_str, LogLevelName, msg, source_filename, source_line);
+        return fmt::format("{} {:5} {}.    {}:{}", local_timestring, LogLevelName, msg, source_filename, source_line);
     }
 };
 
@@ -119,10 +120,7 @@ class logger_type {
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
     using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES,MESSAGE_ALIGNMENT>;
 
-
     std::atomic<bool> logged_fatal_message = false;
-
-    log_level level = log_level::Debug;
 
     //! the message queue must work correctly before main() is executed.
     message_queue_type message_queue;
@@ -131,26 +129,18 @@ class logger_type {
     std::thread logger_thread;
 
 public:
-    logger_type(bool test=false) {
-        if (!test) {
-            logger_thread = std::thread([&]() {
-                this->loop();
-            });
-        }
-    }
+    date::time_zone const *time_zone;
+    log_level minimum_log_level = log_level::Debug;
 
-    ~logger_type() {
-        if (logger_thread.joinable()) {
-            logger_thread_stop = true;
-            logger_thread.join();
-        }
-    }
+    logger_type(bool test=false) noexcept;
+
+    ~logger_type();
 
     void loop() noexcept;
 
     template<log_level Level, typename... Args>
     void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
-        if (Level < logger.level) {
+        if (Level < minimum_log_level) {
             return;
         }
 
