@@ -91,13 +91,13 @@ inline Draw::Font parseResource(URL const &location)
         try {
             return Draw::parseTrueTypeFile(view.bytes());
         } catch (error &e) {
-            e << error_info<"url"_tag>(location);
+            e.set<"url"_tag>(location);
             throw;
         }
 
     } else {
         TTAURI_THROW(url_error("Unknown extension")
-            << error_info<"url"_tag>(location)
+            .set<"url"_tag>(location)
         );
     }
 }

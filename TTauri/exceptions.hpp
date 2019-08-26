@@ -28,7 +28,7 @@ public:
 
 protected:
     std::string _message;
-    small_map<string_tag,std::any,4> _error_info = {};
+    small_map<string_tag,std::any,4> error_info = {};
 
 public:
     template<typename Fmt, typename... Args>
@@ -47,7 +47,7 @@ public:
         std::string r;
 
         int i = 0;
-        for (let &info: _error_info) {
+        for (let &info: error_info) {
             if (i++ > 0) { r += " ,"; };
             r += fmt::format("({0}: {1})", tag_to_string(info.first), any_repr(info.second));   
         }
@@ -75,7 +75,7 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     error &set(InfoValueType const &infoValue) noexcept {
-        if (!_error_info.insert(InfoTag, infoValue)) {
+        if (!error_info.insert(InfoTag, infoValue)) {
             LOG_ERROR("Too many error_info values added to exception.");
         }
         return *this;
@@ -85,7 +85,7 @@ public:
     */
     template<string_tag InfoTag, typename InfoValueType>
     std::optional<InfoValueType> get() const noexcept {
-        if (let optional_info = _error_info.get(InfoTag)) {
+        if (let optional_info = error_info.get(InfoTag)) {
             let &info = *optional_info;
             try {
                 return std::any_cast<InfoValueType>(info);
@@ -125,7 +125,7 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     sub_error &set(InfoValueType const &info_value) noexcept {
-        if (!_error_info.insert(InfoTag, info_value)) {
+        if (!error_info.insert(InfoTag, info_value)) {
             LOG_ERROR("Too many error_info values added to exception.");
         }
         return *this;
@@ -134,7 +134,7 @@ public:
     string_tag tag() const noexcept override { return TAG; }
 
     size_t test() {
-        return sizeof(_error_info);
+        return sizeof(error_info);
     }
 };
 

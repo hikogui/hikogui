@@ -44,7 +44,7 @@ struct ASTUnaryOperator : ASTExpression {
             }
             abort(); // Compiler doesn't recognize that switch is complete.
         } catch (error &e) {
-            e << error_info<"location"_tag>(location);
+            e.set<"location"_tag>(location);
             throw;
         }
     }

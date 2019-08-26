@@ -31,7 +31,7 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
     fp = fopen(stringPath.data(), "rb");
     if (fp == nullptr) {
         PNG_THROW_EXCEPTION(io_error("Could not open .png file")
-            << error_info<"url"_tag>(path)
+            .set<"url"_tag>(path)
         );
     }
 
@@ -39,13 +39,13 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
     png_byte PNGHeader[PNGHeader_size] = {0, 0, 0, 0, 0, 0, 0, 0};
     if (fread(PNGHeader, sizeof(*PNGHeader), PNGHeader_size, fp) != PNGHeader_size) {
         PNG_THROW_EXCEPTION(io_error("Could not read .png file")
-            << error_info<"url"_tag>(path)
+            .set<"url"_tag>(path)
         );
     }
 
     if (png_sig_cmp(PNGHeader, 0, PNGHeader_size) != 0) {
         PNG_THROW_EXCEPTION(parse_error("Could not parse .png header")
-            << error_info<"url"_tag>(path)
+            .set<"url"_tag>(path)
         );
     }
 
@@ -59,7 +59,7 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
 
     if (setjmp(png_jmpbuf(png_ptr))) {
         PNG_THROW_EXCEPTION(parse_error("Could not parse .png header")
-            << error_info<"url"_tag>(path)
+            .set<"url"_tag>(path)
         );
     }
 

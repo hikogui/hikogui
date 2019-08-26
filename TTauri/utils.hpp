@@ -227,7 +227,7 @@ constexpr char nibble_to_char(uint8_t nibble) noexcept
     }
 }
 
-uint8_t char_to_nibble(char c)
+inline uint8_t char_to_nibble(char c)
 {
     if (c >= '0' && c <= '9') {
         return c - '0';

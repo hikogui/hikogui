@@ -45,7 +45,7 @@ struct ASTIndex : ASTExpression {
                 try {
                     return object_[index__];
                 } catch (error &e) {
-                    e << error_info<"location"_tag>(location);
+                    e.set<"location"_tag>(location);
                     throw;
                 }
 
@@ -55,13 +55,13 @@ struct ASTIndex : ASTExpression {
                 try {
                     return object_[index__];
                 } catch (error &e) {
-                    e << error_info<"location"_tag>(location);
+                    e.set<"location"_tag>(location);
                     throw;
                 }
 
             } else {
                 TTAURI_THROW(invalid_operation_error("Can not index object of type {0} with index of type {1}", object_.type_name(), index_.type_name())
-                    << error_info<"location"_tag>(location)
+                    .set<"location"_tag>(location)
                 );
             }
 
@@ -70,13 +70,13 @@ struct ASTIndex : ASTExpression {
             try {
                 return object_.append();
             } catch (error &e) {
-                e << error_info<"location"_tag>(location);
+                e.set<"location"_tag>(location);
                 throw;
             }
 
         } else {
             TTAURI_THROW(invalid_operation_error("Can not append to object of type {0}", object_.type_name())
-                << error_info<"location"_tag>(location)
+                .set<"location"_tag>(location)
             );
         }
     }

@@ -291,13 +291,13 @@ inline Draw::Path parseResource(URL const &location)
             let bytes = view.bytes();
             return Draw::parseTTauriIcon(bytes);
         } catch (error &e) {
-            e << error_info<"url"_tag>(location);
+            e.set<"url"_tag>(location);
             throw;
         }
 
     } else {
         TTAURI_THROW(url_error("Unknown extension")
-            << error_info<"url"_tag>(location)
+            .set<"url"_tag>(location)
         );
     }
 }

@@ -12,7 +12,7 @@ struct ASTExpression : ASTNode {
 
     virtual std::vector<std::string> getFQName() {
         TTAURI_THROW(invalid_operation_error("Expression does not represent a fully qualified name.")
-            << error_info<"location"_tag>(location)
+            .set<"location"_tag>(location)
         );
     }
 };

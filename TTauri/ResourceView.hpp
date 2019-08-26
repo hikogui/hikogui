@@ -30,7 +30,7 @@ static inline ResourceView_intrinsic loadView(URL const &location)
     } else if (location.scheme() == "file") {
         if (!location.isAbsolute()) {
             TTAURI_THROW(url_error("file-URLs must be absolute.")
-                << error_info<"url"_tag>(location)
+                .set<"url"_tag>(location)
             );
         }
 
@@ -40,7 +40,7 @@ static inline ResourceView_intrinsic loadView(URL const &location)
 
     } else {
         TTAURI_THROW(url_error("Unknown scheme for loading a resource")
-            << error_info<"url"_tag>(location)
+            .set<"url"_tag>(location)
         );
     }
 }

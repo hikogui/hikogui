@@ -56,8 +56,8 @@ File::File(URL const &location, AccessMode accessMode) :
     let fileName = location.nativeWPath();
     if ((intrinsic = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) == INVALID_HANDLE_VALUE) {
         TTAURI_THROW(io_error("Could not open file")
-            << error_info<"error_message"_tag>(getLastErrorMessage())
-            << error_info<"url"_tag>(location)
+            .set<"error_message"_tag>(getLastErrorMessage())
+            .set<"url"_tag>(location)
         );
     }
 #endif
@@ -73,8 +73,8 @@ void File::close()
     if (intrinsic != INVALID_HANDLE_VALUE) {
         if (!CloseHandle(intrinsic)) {
             TTAURI_THROW(io_error("Could not close file")
-                << error_info<"error_message"_tag>(getLastErrorMessage())
-                << error_info<"url"_tag>(location)
+                .set<"error_message"_tag>(getLastErrorMessage())
+                .set<"url"_tag>(location)
             );
         }
         intrinsic = INVALID_HANDLE_VALUE;

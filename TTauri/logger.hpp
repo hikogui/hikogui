@@ -66,7 +66,7 @@ constexpr bool operator!=(log_level lhs, log_level rhs) noexcept { return !(lhs 
 constexpr bool operator<=(log_level lhs, log_level rhs) noexcept { return !(lhs > rhs); }
 constexpr bool operator>=(log_level lhs, log_level rhs) noexcept { return !(lhs < rhs); }
 
-date::time_zone const *current_time_zone;
+inline date::time_zone const *current_time_zone;
 
 struct log_message_base {
     char const *source_path;

@@ -23,7 +23,7 @@ gsl::span<std::byte const> const StaticResources::get(std::string const &key) co
     let i = intrinsic.find(key);
     if (i == intrinsic.end()) {
         TTAURI_THROW(key_error("Could not find static resource")
-            << error_info<"key"_tag>(key)
+            .set<"key"_tag>(key)
         );
     }
     return i->second;

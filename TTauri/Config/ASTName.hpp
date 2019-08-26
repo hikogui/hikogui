@@ -44,7 +44,7 @@ struct ASTName : ASTExpression {
                     name,
                     (i + 1),
                     typeid(T).name()
-                ) << error_info<"location"_tag>(location)
+                ).set<"location"_tag>(location)
             );
         }
 
@@ -57,7 +57,7 @@ struct ASTName : ASTExpression {
                     (i + 1),
                     typeid(T).name(),
                     argument.type().name()
-                ) << error_info<"location"_tag>(location)
+                ).set<"location"_tag>(location)
             );
         }
 
@@ -68,7 +68,7 @@ struct ASTName : ASTExpression {
                     name,
                     (i + 1),
                     arguments.size()
-                ) << error_info<"location"_tag>(location)
+                ).set<"location"_tag>(location)
             );
         }
 
@@ -105,8 +105,8 @@ struct ASTName : ASTExpression {
             errorMessage += ".";
 
             TTAURI_THROW(invalid_operation_error("Could not include file '{0}'", path)
-                << error_info<"location"_tag>(location)
-                << error_info<"previous_msg"_tag>(errorMessage)
+                .set<"location"_tag>(location)
+                .set<"previous_msg"_tag>(errorMessage)
             );
         }
     }
@@ -148,7 +148,7 @@ struct ASTName : ASTExpression {
                         "Expecting relative path argument to function '{0}' got '{1}'",
                         name,
                         path
-                    ) << error_info<"location"_tag>(location)
+                    ).set<"location"_tag>(location)
                 );
             }
         }
@@ -172,7 +172,7 @@ struct ASTName : ASTExpression {
                 invalid_operation_error(
                     "Unknown function '{0}'",
                     name
-                ) << error_info<"location"_tag>(location)
+                ).set<"location"_tag>(location)
             );
         }
     }

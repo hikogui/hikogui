@@ -38,7 +38,7 @@ inline Time::LeapSecondDB parseResource(URL const &location)
 
     } else {
         TTAURI_THROW(url_error("Unknown extension")
-            << error_info("url", location)
+            .add("url", location)
         );
     }
 }

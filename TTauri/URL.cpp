@@ -98,7 +98,7 @@ int64_t fileSize(URL const &url)
 
     WIN32_FILE_ATTRIBUTE_DATA attributes;
     if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
-        TTAURI_THROW(io_error("Could not retrieve file attributes") << error_info<"url"_tag>(url));
+        TTAURI_THROW(io_error("Could not retrieve file attributes").set<"url"_tag>(url));
     }
 
     LARGE_INTEGER size;
