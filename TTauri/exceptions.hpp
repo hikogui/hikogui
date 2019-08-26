@@ -21,19 +21,6 @@
 
 namespace TTauri {
 
-template<string_tag TAG, typename T>
-struct error_info_t {
-    static constexpr string_tag tag = TAG;
-    T value;
-
-    error_info_t(T value) : value(std::move(value)) {}
-};
-
-template<string_tag TAG, typename T>
-inline auto error_info(T value) {
-    return error_info_t<TAG,T>(value);
-}
-
 class error {
 public:
     char const *source_file;
@@ -82,14 +69,26 @@ public:
         return _message;
     }
 
+    /*!
+     * A non-virtual method like this will return the actual class instance
+     * which means throw knows exactly which class is being thrown.
+     */
+    template<string_tag InfoTag, typename InfoValueType>
+    error &set(InfoValueType const &infoValue) noexcept {
+        if (!_error_info.insert(InfoTag, infoValue)) {
+            LOG_ERROR("Too many error_info values added to exception.");
+        }
+        return *this;
+    }
+
     /*! Get a value from the exception.
     */
-    template<string_tag TAG, typename T>
-    std::optional<T> get() const noexcept {
-        if (let optional_info = _error_info.get(TAG)) {
+    template<string_tag InfoTag, typename InfoValueType>
+    std::optional<InfoValueType> get() const noexcept {
+        if (let optional_info = _error_info.get(InfoTag)) {
             let &info = *optional_info;
             try {
-                return std::any_cast<T>(info);
+                return std::any_cast<InfoValueType>(info);
             } catch (std::bad_any_cast) {
                 return {};
             }
@@ -101,53 +100,15 @@ public:
 
     /*! Get a value from the exception.
     */
-    template<string_tag TAG, typename T>
-    T get(T default_value) const noexcept {
-        if (let value = get<TAG,T>()) {
+    template<string_tag InfoTag, typename InfoValueType>
+    InfoValueType get(InfoValueType default_value) const noexcept {
+        if (let value = get<InfoTag,InfoValueType>()) {
             return *value;
         } else {
             return default_value;
         }
     }
-
-    template<typename T, string_tag TAG, typename O>
-    friend std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<TAG,O> const &rhs);
 };
-
-
-template<typename T, string_tag TAG, typename O>
-inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<TAG,O> const &rhs)
-{
-    if (!lhs._error_info.insert(rhs.tag, rhs.value)) {
-        LOG_ERROR("Too many error_info values added to exception.");
-    }
-    return lhs;
-}
-
-template<typename T, typename O>
-inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<"source_file"_tag,O> const &rhs)
-{
-    lhs.source_file = rhs.value;
-    return lhs;
-}
-
-template<typename T, typename O>
-inline std::enable_if_t<std::is_base_of_v<error,T>, T> &operator<<(T &lhs, error_info_t<"source_line"_tag,O> const &rhs)
-{
-    lhs.source_line = rhs.value;
-    return lhs;
-}
-
-#define TTAURI_THROW(x)\
-    do {\
-        auto e = (x)\
-            << error_info<"source_file"_tag>(__FILE__)\
-            << error_info<"source_line"_tag>(__LINE__)\
-        ;\
-        increment_counter<e.TAG>();\
-        logger.log<log_level::Exception>(__FILE__, __LINE__, "{}", e.test());\
-        throw e;\
-    } while(false)
 
 template<string_tag _TAG>
 class sub_error : public error {
@@ -157,6 +118,18 @@ public:
     template<typename Fmt, typename... Args>
     sub_error(Fmt const &fmt, Args const &... args) noexcept :
         error(fmt, args...) {}
+
+    /*!
+     * A non-virtual method like this will return the actual class instance
+     * which means throw knows exactly which class is being thrown.
+     */
+    template<string_tag InfoTag, typename InfoValueType>
+    sub_error &set(InfoValueType const &info_value) noexcept {
+        if (!_error_info.insert(InfoTag, info_value)) {
+            LOG_ERROR("Too many error_info values added to exception.");
+        }
+        return *this;
+    }
 
     string_tag tag() const noexcept override { return TAG; }
 
@@ -176,9 +149,6 @@ public:
  */
 using parse_error = sub_error<"parse_error"_tag>;
 
-#define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{0}", #x )); }
-#define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
-
 using url_error = sub_error<"url_error"_tag>;
 using io_error = sub_error<"io_error"_tag>;
 using key_error = sub_error<"key_error"_tag>;
@@ -189,5 +159,19 @@ using bounds_error = sub_error<"bounds_error"_tag>;
 * This is for example used in universal_type.
 */
 using invalid_operation_error = sub_error<"invalid_op"_tag>;
+
+#define TTAURI_THROW(x)\
+    do {\
+        auto e = (x);\
+        e.source_file = __FILE__;\
+        e.source_line = __LINE__;\
+        increment_counter<e.TAG>();\
+        logger.log<log_level::Exception>(__FILE__, __LINE__, "{}", e.test());\
+        throw e;\
+    } while(false)
+
+
+#define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{0}", #x )); }
+#define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
 
 }

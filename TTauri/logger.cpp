@@ -26,7 +26,7 @@ logger_type::logger_type(bool test) noexcept {
     let tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
     date::set_install(tzdata_location.nativePath());
 #endif
-    time_zone = date::current_zone();
+    current_time_zone = date::current_zone();
 
     if (!test) {
         logger_thread = std::thread([&]() {

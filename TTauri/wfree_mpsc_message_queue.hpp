@@ -113,7 +113,7 @@ public:
     /*! Return the number of items in the message queue.
     * For the consumer this may show less items in the queue then there realy are.
     */
-    typename index_type size() const noexcept {
+    index_type size() const noexcept {
         // head and tail are extremelly large integers, they will never wrap arround.
         return head.load(std::memory_order_relaxed) - tail.load(std::memory_order_relaxed);
     }

@@ -70,7 +70,7 @@ inline uint8_t linear_alpha_u8(int16_t u) noexcept
 
 inline int16_t linear_alpha_i16(uint8_t u) noexcept
 {
-    return int16_t{(int32_t{u} * 32767 + 128) / 255};
+    return static_cast<int16_t>((int32_t{u} * 32767 + 128) / 255);
 }
 
 /*! Wide Gammut linear sRGB with pre-mulitplied alpha.

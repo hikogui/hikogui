@@ -32,7 +32,7 @@ struct ASTNode {
      */
     virtual universal_value &executeLValue(ExecutionContext &context) const {
         TTAURI_THROW(invalid_operation_error("syntax error, expected a lvalue expression")
-            << error_info<"location"_tag>(location)
+            .set<"location"_tag>(location)
         );
     }
 
@@ -46,7 +46,7 @@ struct ASTNode {
      */
     virtual universal_value executeCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
         TTAURI_THROW(invalid_operation_error("result of expression does not support being used as a function")
-            << error_info<"location"_tag>(location)
+            .set<"location"_tag>(location)
         );
     }
 
@@ -54,7 +54,7 @@ struct ASTNode {
      */
     virtual universal_value &executeAssignment(ExecutionContext &context, universal_value other) const {
         TTAURI_THROW(invalid_operation_error("result of expression does not support assignment")
-            << error_info<"location"_tag>(location)
+            .set<"location"_tag>(location)
         );
     }
 
@@ -62,7 +62,7 @@ struct ASTNode {
      */
     virtual void executeStatement(ExecutionContext &context) const {
         TTAURI_THROW(invalid_operation_error("syntax error, expression can not be used as a statement inside an object")
-            << error_info<"location"_tag>(location)
+            .set<"location"_tag>(location)
         );
     }
 };

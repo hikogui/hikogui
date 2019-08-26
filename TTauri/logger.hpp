@@ -66,6 +66,8 @@ constexpr bool operator!=(log_level lhs, log_level rhs) noexcept { return !(lhs 
 constexpr bool operator<=(log_level lhs, log_level rhs) noexcept { return !(lhs > rhs); }
 constexpr bool operator>=(log_level lhs, log_level rhs) noexcept { return !(lhs < rhs); }
 
+date::time_zone const *current_time_zone;
+
 struct log_message_base {
     char const *source_path;
     int source_line;
@@ -102,7 +104,7 @@ struct log_message: public log_message_base {
         let source_filename = filename_from_path(source_path);
 
         let utc_timestamp = hiperf_utc_clock::convert(timestamp);
-        let local_timestring = format_full_datetime(utc_timestamp, logger.time_zone);
+        let local_timestring = format_full_datetime(utc_timestamp, current_time_zone);
 
         return fmt::format("{} {:5} {}.    {}:{}", local_timestring, LogLevelName, msg, source_filename, source_line);
     }
@@ -129,7 +131,6 @@ class logger_type {
     std::thread logger_thread;
 
 public:
-    date::time_zone const *time_zone;
     log_level minimum_log_level = log_level::Debug;
 
     logger_type(bool test=false) noexcept;

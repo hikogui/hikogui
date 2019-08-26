@@ -151,7 +151,7 @@ private:
         u128_count *= c.gain;
         u128_count >>= calibration_t::gainShift;
 
-        let slow_period = c.bias + slow_clock::duration(static_cast<slow_clock::rep>(u128_count));
+        let slow_period = c.bias + slow_clock::duration(static_cast<typename slow_clock::rep>(u128_count));
         let slow_time_point = slow_clock::time_point(slow_period);
         return slow_time_point;
     }
@@ -194,7 +194,7 @@ struct sync_clock {
     }
 
     static time_point now() noexcept {
-        return clock_sync::convert(fast_clock::now());
+        return convert(fast_clock::now());
     }
 };
 
