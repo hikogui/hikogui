@@ -20,7 +20,7 @@ Window_base::Window_base(const std::shared_ptr<WindowDelegate> delegate, const s
 Window_base::~Window_base()
 {
     try {
-        [[gsl::suppress(f.6)]] {
+        gsl_suppress(f.6) {
             if (state != State::NoWindow) {
                 LOG_FATAL("Window '{0}' was not properly teardown before destruction.", title);
                 abort();

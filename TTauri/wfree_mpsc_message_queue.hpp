@@ -99,8 +99,8 @@ class wfree_mpsc_message_queue {
     static_assert(capacity > (slack * 2), "The capacity of the message queue should be much larger than its slack.");
 
     std::array<message_type,capacity> messages;
-    std::atomic<index_type> head = 0;
-    std::atomic<index_type> tail = 0;
+    alignas(cache_line_size) std::atomic<index_type> head = 0;
+    alignas(cache_line_size) std::atomic<index_type> tail = 0;
 
 public:
     wfree_mpsc_message_queue() = default;

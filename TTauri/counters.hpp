@@ -26,7 +26,7 @@ struct counter_functor {
     int64_t increment() const noexcept {
         let value = counter.fetch_add(1, std::memory_order_relaxed);
 
-        if (value == 0) {
+        if (ttauri_unlikely(value == 0)) {
             counter_map.insert(TAG, &counter);
         }
 

@@ -11,7 +11,6 @@
 #include "atomic.hpp"
 #include "counters.hpp"
 #include "cpu_counter_clock.hpp"
-#include "sync_clock.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -77,14 +76,13 @@ struct log_message_base {
     log_message_base(char const *source_path, int source_line, cpu_counter_clock::time_point timestamp, char const *format) noexcept :
         source_path(source_path), source_line(source_line), timestamp(timestamp), format(format) {}
 
-    virtual std::string string() const noexcept = 0;
+    std::string string() const noexcept;
+    virtual std::string message() const noexcept = 0;
     virtual log_level level() const noexcept = 0;
 };
 
 template<log_level Level, typename... Args>
 struct log_message: public log_message_base {
-    static constexpr char const *LogLevelName = to_const_string(Level);
-
     std::tuple<std::decay_t<Args>...> format_args;
 
     log_message(char const * const source_path, int const source_line, cpu_counter_clock::time_point const timestamp, char const *const format, Args &&... args) noexcept :
@@ -94,19 +92,12 @@ struct log_message: public log_message_base {
         return Level;
     }
 
-    std::string string() const noexcept override {
+    std::string message() const noexcept override {
         auto f = [format=this->format](auto const&... args) {
             return fmt::format(format, args...);
         };
 
-        let msg = std::apply(f, format_args);
-
-        let source_filename = filename_from_path(source_path);
-
-        let utc_timestamp = hiperf_utc_clock::convert(timestamp);
-        let local_timestring = format_full_datetime(utc_timestamp, current_time_zone);
-
-        return fmt::format("{} {:5} {}.    {}:{}", local_timestring, LogLevelName, msg, source_filename, source_line);
+        return std::apply(f, format_args);
     }
 };
 
@@ -129,6 +120,8 @@ class logger_type {
 
     bool logger_thread_stop = false;
     std::thread logger_thread;
+    bool gather_thread_stop = false;
+    std::thread gather_thread;
 
 public:
     log_level minimum_log_level = log_level::Debug;
@@ -137,7 +130,8 @@ public:
 
     ~logger_type();
 
-    void loop() noexcept;
+    void logger_loop() noexcept;
+    void gather_loop() noexcept;
 
     template<log_level Level, typename... Args>
     void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
@@ -151,11 +145,9 @@ public:
         // * Will make sure everything gets logged.
         // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
         {
-            let timestamp = cpu_counter_clock::now();
-
             auto message = message_queue.write<"logger_block"_tag>();
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
-            message->emplace<log_message<Level, Args...>>(source_file, source_line, timestamp, format, std::forward<Args>(args)...);
+            message->emplace<log_message<Level, Args...>>(source_file, source_line, cpu_counter_clock::now(), format, std::forward<Args>(args)...);
         }
 
         if constexpr (Level >= log_level::Fatal) {
@@ -186,6 +178,7 @@ constexpr char const *foo(char const *str)
 #define LOG_DEBUG(...) logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_INFO(...) logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_AUDIT(...) logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_EXCEPTION(...) logger.log<log_level::Exception>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_WARNING(...) logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_ERROR(...) logger.log<log_level::Error>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_CRITICAL(...) logger.log<log_level::Critical>(__FILE__, __LINE__, __VA_ARGS__);

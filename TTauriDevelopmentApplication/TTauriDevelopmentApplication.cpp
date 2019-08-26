@@ -22,7 +22,7 @@ public:
     void openingWindow(Window &window) override
     {
 
-        auto button1 = window.widget->addWidget<ButtonWidget>(u8"Hëllö Wörld");
+        auto button1 = window.widget->addWidget<ButtonWidget>(u8"H\u00eb""ll\u00f6 W\u00f6""rld");
         window.addConstraint(button1->box.width == 100);
         window.addConstraint(button1->box.height == 30);
         window.addConstraint(button1->box.outerLeft() == window.widget->box.left);
@@ -67,8 +67,6 @@ public:
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
-    LOG_INFO("test {}", 0x42);
-
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
     get_singleton<Application>().initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);

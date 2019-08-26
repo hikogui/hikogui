@@ -12,6 +12,8 @@ using namespace TTauri;
 struct A {
     int hello = 10;
 
+    virtual ~A() {}
+
     virtual int foo() const noexcept {
         return 1;
     }

@@ -75,7 +75,7 @@ template<string_tag BlockCounterTag=0,typename T>
 force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     auto expect = from;
-    if (state.compare_exchange_strong(expect, to, order)) {
+    if (ttauri_likely(state.compare_exchange_strong(expect, to, order))) {
         return;
     }
     contended_transition<BlockCounterTag>(state, from, to, order);

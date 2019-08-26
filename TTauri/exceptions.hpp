@@ -22,10 +22,6 @@
 namespace TTauri {
 
 class error {
-public:
-    char const *source_file;
-    int source_line;
-
 protected:
     std::string _message;
     small_map<string_tag,std::any,4> error_info = {};
@@ -56,9 +52,7 @@ public:
 
     std::string string() const noexcept {
         // XXX Strip off project directory from file.
-        return fmt::format("{0},{1}:{2}: {3}. {4}",
-            source_file,
-            source_line,
+        return fmt::format("{2}: {3}. {4}",
             name(),
             _message,
             error_info_string()
@@ -132,10 +126,6 @@ public:
     }
 
     string_tag tag() const noexcept override { return TAG; }
-
-    size_t test() {
-        return sizeof(error_info);
-    }
 };
 
 /*! Error to throw when parsing some kind of document.
@@ -163,10 +153,8 @@ using invalid_operation_error = sub_error<"invalid_op"_tag>;
 #define TTAURI_THROW(x)\
     do {\
         auto e = (x);\
-        e.source_file = __FILE__;\
-        e.source_line = __LINE__;\
         increment_counter<e.TAG>();\
-        logger.log<log_level::Exception>(__FILE__, __LINE__, "{}", e.test());\
+        LOG_EXCEPTION("{}", e.message());\
         throw e;\
     } while(false)
 

@@ -5,6 +5,8 @@
 
 #include "hires_utc_clock.hpp"
 #include "cpu_counter_clock.hpp"
+#include "logger.hpp"
+#include "counters.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 #include <chrono>
 
@@ -69,7 +71,7 @@ public:
     }
 
     typename slow_clock::time_point convert(typename fast_clock::time_point fast_time) const noexcept {
-        return convert(calibration.load(), fast_time);
+        return convert(calibration.load(std::memory_order_relaxed), fast_time);
     }
 
 private:
@@ -80,13 +82,22 @@ private:
                 (calibrate_loop_count < 120 && (calibrate_loop_count % 10) == 0) ||
                 (calibrate_loop_count % 60 == 0)
             ) {
-                calibration.store(calibrate(slow_clock::now(), fast_clock::now()));
+                let iteration = increment_counter<"calibrate_clk"_tag>();
+                LOG_AUDIT("Clock calibration: iteration={}, offset={} ns", iteration, checkCalibration().count());
+                calibration.store(calibrate(slow_clock::now(), fast_clock::now()), std::memory_order_relaxed);
             }
 
             calibrate_loop_count++;
             std::this_thread::sleep_for(1s);
         }
         return;
+    }
+
+    typename slow_clock::duration checkCalibration() noexcept {
+        let now_slow = slow_clock::now();
+        let now_fast = fast_clock::now();
+        let now_fast_as_slow = convert(now_fast);
+        return now_fast_as_slow - now_slow;
     }
 
     calibration_t calibrate(typename slow_clock::time_point now_slow, typename fast_clock::time_point now_fast) noexcept {
@@ -179,13 +190,6 @@ struct sync_clock {
     using duration = typename slow_clock::duration;
     using time_point = typename slow_clock::time_point;
     static const bool is_steady = slow_clock::is_steady;
-
-    static duration checkCalibration() noexcept {
-        let now_slow = slow_clock::now();
-        let now_fast = fast_clock::now();
-        let now_fast_as_slow = convert(now_fast);
-        return now_fast_as_slow - now_slow;
-    }
 
     /*! Return a timestamp from a clock.
      */

@@ -150,7 +150,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     renderPass = move(_renderPass);
     extent = move(_extent);
-    scissor = {vk::Offset2D{ 0, 0 }, extent};
+    scissor = vk::Rect2D{vk::Offset2D{ 0, 0 }, extent};
 
     const auto pushConstantRanges = createPushConstantRanges();
     const auto vertexInputBindingDescription = createVertexInputBindingDescription();

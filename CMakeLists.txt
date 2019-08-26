@@ -8,8 +8,8 @@ if (MSVC)
 
     if (NOT (${CMAKE_BUILD_TYPE} MATCHES Debug))
         # Whole program optimization.
-        add_compile_options(/GL)
-        add_link_options(/LTCG)
+        #add_compile_options(/GL)
+        #add_link_options(/LTCG)
     endif()
 
 endif ()

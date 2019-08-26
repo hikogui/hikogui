@@ -99,6 +99,18 @@ public:
         }
     }
 
+    std::vector<K> keys() const noexcept {
+        std::vector<K> r;
+        // XXX - with counting items, we could reserve capacity.
+
+        for (let &item: items) {
+            if (item.hash >= 3) {
+                r.push_back(item.key);
+            }
+        }
+        return r;
+    }
+
     std::optional<V> get(K const &key) const noexcept {
         let hash = make_hash(key);
 
@@ -119,6 +131,14 @@ public:
             } else {
                 index = (index + 1) % CAPACITY;
             }
+        }
+    }
+
+    V get(K const &key, V const &default_value) const noexcept {
+        if (let optional_value = get(key)) {
+            return *optional_value;
+        } else {
+            return default_value;
         }
     }
 

@@ -18,9 +18,6 @@ TEST(Exceptions, Default) {
     } catch (error const &e) {
         ASSERT_EQ(e.name(), "key-error"s);
 
-        let optional_line = e.get<"line"_tag,int>();
-        ASSERT_EQ(e.source_line, 17);
-
         let optional_key = e.get<"key"_tag,std::string>();
         ASSERT_EQ(*optional_key, "foo"s);
 

@@ -36,6 +36,11 @@ template<typename T> inline T &get(universal_value & v) noexcept;
 template<typename T> inline T &&get(universal_value && v) noexcept;
 template<typename T> inline T get_and_promote(universal_value const & v);
 
+struct universal_value;
+
+template<typename T>
+constexpr bool holds_alternative(universal_value const &x) noexcept;
+
 /*! A generic value type which will handle intra type operations.
  */
 struct universal_value {
@@ -261,6 +266,12 @@ struct universal_value {
     }
 };
 
+template<typename T>
+constexpr bool holds_alternative(universal_value const &x) noexcept
+{
+    return std::holds_alternative<T>(x.intrinsic);
+}
+
 inline bool operator!(universal_value const &rhs) noexcept
 {
     return !static_cast<bool>(rhs);
@@ -456,11 +467,6 @@ inline universal_value operator|(universal_value const &lhs, universal_value con
     TTAURI_THROW(invalid_operation_error("Cannot binary-or a of value of type {0} to a value of type {1}", rhs.type_name(), lhs.type_name()));
 }
 
-template<typename T>
-constexpr bool holds_alternative(universal_value const &x) noexcept
-{
-    return std::holds_alternative<T>(x.intrinsic);
-}
 
 template<typename T>
 inline T const &get(universal_value const & v) noexcept

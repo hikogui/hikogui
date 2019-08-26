@@ -5,6 +5,7 @@
 #include "strings.hpp"
 #include "os_detect.hpp"
 #include "URL.hpp"
+#include "sync_clock.hpp"
 #include <exception>
 #include <memory>
 #include <iostream>
@@ -19,6 +20,18 @@ namespace TTauri {
 
 using namespace std::literals::chrono_literals;
 
+
+std::string log_message_base::string() const noexcept
+{
+    let source_filename = filename_from_path(source_path);
+
+    let utc_timestamp = hiperf_utc_clock::convert(timestamp);
+    let local_timestring = format_full_datetime(utc_timestamp, current_time_zone);
+
+    return fmt::format("{} {:5} {}.    {}:{}", local_timestring, to_const_string(level()), message(), source_filename, source_line);
+}
+
+
 logger_type::logger_type(bool test) noexcept {
     // The logger is the first object that will use the timezone database.
     // Zo we will initialize it here.
@@ -30,12 +43,21 @@ logger_type::logger_type(bool test) noexcept {
 
     if (!test) {
         logger_thread = std::thread([&]() {
-            this->loop();
-            });
+            this->logger_loop();
+        });
+
+        gather_thread = std::thread([&]() {
+            this->gather_loop();
+        });
     }
 }
 
 logger_type::~logger_type() {
+    if (gather_thread.joinable()) {
+        gather_thread_stop = true;
+        gather_thread.join();
+    }
+
     if (logger_thread.joinable()) {
         logger_thread_stop = true;
         logger_thread.join();
@@ -64,7 +86,23 @@ void logger_type::write(std::string const &str) noexcept {
     writeToConsole(str);
 }
 
-void logger_type::loop() noexcept {
+void logger_type::gather_loop() noexcept {
+    while (!gather_thread_stop) {
+        let keys = counter_map.keys();
+        LOG_INFO("Counter: displaying {} counter over the last 30 seconds.", keys.size());
+
+        for (let &tag: keys) {
+            auto counter = counter_map.get(tag, 0);
+            LOG_INFO("Counter: {:13}={}", tag_to_string(tag), counter->load(std::memory_order_relaxed));
+        }
+
+        // XXX This doesn't work with clang on windows.
+        std::this_thread::sleep_for(10s);
+    }
+}
+
+
+void logger_type::logger_loop() noexcept {
     bool last_iteration = false;
 
     do {
