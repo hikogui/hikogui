@@ -124,7 +124,7 @@ public:
 
     vk::ShaderModule loadShader(gsl::span<std::byte const> shaderObjectBytes) const;
 
-    vk::ShaderModule Device_vulkan::loadShader(URL const &shaderObjectLocation) const;
+    vk::ShaderModule loadShader(URL const &shaderObjectLocation) const;
 
 
     void waitIdle() const {

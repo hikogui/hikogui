@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#pragma once;
+#pragma once
 
 #include "Device_forward.hpp"
 #include "TTauri/Draw/PixelMap.hpp"

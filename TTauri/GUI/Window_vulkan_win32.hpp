@@ -28,7 +28,7 @@ public:
     void closingWindow() override;
     void openingWindow() override;
 
-    void Window_vulkan_win32::createWindow(const std::string &title, iextent2 extent);
+    void createWindow(const std::string &title, extent2 extent);
     LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();

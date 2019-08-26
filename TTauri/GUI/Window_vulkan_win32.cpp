@@ -45,7 +45,7 @@ void Window_vulkan_win32::createWindowClass()
     Window_vulkan_win32::win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::string &title, iextent2 extent)
+void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
 {
     Window_vulkan_win32::createWindowClass();
 
@@ -61,8 +61,8 @@ void Window_vulkan_win32::createWindow(const std::string &title, iextent2 extent
         // Size and position
         500,
         500,
-        extent.width(),
-        extent.height(),
+        numeric_cast<int>(extent.width()),
+        numeric_cast<int>(extent.height()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -103,7 +103,7 @@ Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> d
 Window_vulkan_win32::~Window_vulkan_win32()
 {
     try {
-        [[gsl::suppress(f.6)]] {
+        gsl_suppress(f.6) {
             if (win32Window != nullptr) {
                 LOG_FATAL("win32Window was not destroyed before Window '{0}' was destructed.", title);
                 abort();
@@ -158,7 +158,7 @@ void Window_vulkan_win32::openingWindow()
 
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
-        iextent2 windowExtent = minimumWindowExtent;
+        extent2 windowExtent = minimumWindowExtent;
         createWindow(title, windowExtent);
     });
 }

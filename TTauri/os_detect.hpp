@@ -74,12 +74,12 @@ constexpr auto operatingSystem = OperatingSystem::Posix;
 #define CC_GCC 'g'
 #define CC_CLANG 'c'
 
-#if defined(_MSC_BUILD)
+#if defined(__clang__)
+#define COMPILER CC_CLANG
+#elif defined(_MSC_BUILD)
 #define COMPILER CC_MSVC
 #elif defined(__GNUC__)
 #define COMPILER CC_GCC
-#elif defined(__clang__)
-#define COMPILER CC_CLANG
 #endif
 
 enum class Compiler {

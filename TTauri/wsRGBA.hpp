@@ -13,28 +13,8 @@
 
 namespace TTauri {
 
-inline float linear_to_gamma_f32(float u) noexcept
-{
-    if (u <= 0.0031308f) {
-        return u * 12.92f;
-    } else {
-        return std::pow(u, 1.0f/2.4f) * 1.055f - 0.055f;
-    }
-}
 
-inline float gamma_to_linear_f32(float u) noexcept
-{
-    if (u <= 0.04045f) {
-        return u / 12.92f;
-    } else {
-        return std::pow((u + 0.055f) / 1.055f, 2.4f);
-    }
-}
-
-inline const auto gamma_to_linear_i16_table = generate_array<int16_t, 256>([](auto i) {
-    let u = i / 255.0f;
-    return static_cast<int16_t>(gamma_to_linear_f32(u) * 4095.0f + 0.5f);
-});
+extern const std::array<int16_t,256> gamma_to_linear_i16_table;
 
 gsl_suppress2(bounds.2,bounds.4)
 inline int16_t gamma_to_linear_i16(uint8_t u) noexcept
@@ -42,10 +22,7 @@ inline int16_t gamma_to_linear_i16(uint8_t u) noexcept
     return gamma_to_linear_i16_table[u];
 }
 
-inline const auto linear_to_gamma_u8_table = generate_array<uint8_t, 4096>([](auto i) {
-    let u = i / 4095.0f;
-    return static_cast<uint8_t>(linear_to_gamma_f32(u) * 255.0f + 0.5f);
-});
+extern const std::array<uint8_t,4096> linear_to_gamma_u8_table;
 
 gsl_suppress2(bounds.2,bounds.4)
 inline uint8_t linear_to_gamma_u8(int16_t u) noexcept

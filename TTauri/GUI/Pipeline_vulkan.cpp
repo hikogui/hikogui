@@ -150,7 +150,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
 
     renderPass = move(_renderPass);
     extent = move(_extent);
-    scissor = {{ 0, 0 }, extent};
+    scissor = {vk::Offset2D{ 0, 0 }, extent};
 
     const auto pushConstantRanges = createPushConstantRanges();
     const auto vertexInputBindingDescription = createVertexInputBindingDescription();
@@ -343,7 +343,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t frameBufferIndex)
 
     let backgroundColor = wsRGBA(window.widget->backgroundColor).to_Linear_sRGBA_vec4();
     std::array<float, 4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
-    std::array<vk::ClearValue, 1> const clearColors = { { _backgroundColor } };
+    std::array<vk::ClearValue, 1> const clearColors = { vk::ClearValue{ _backgroundColor } };
 
     commandBuffer.beginRenderPass({
             renderPass, 

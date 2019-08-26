@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "os_detect.hpp"
 #include <boost/numeric/conversion/cast.hpp>
 
 /*! Invariant should be the default for variables.
@@ -22,42 +23,46 @@
 #define to_int(x) TTauri::numeric_cast<int>(x)
 #define to_int64(x) TTauri::numeric_cast<int64_t>(x)
 
-#if defined(_MSC_VER)
+#if COMPILER == CC_MSVC
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
 #define force_inline __forceinline
-#elif defined(__clang__)
-#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
-#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
-#define force_inline inline __attribute__((always_inline))
-#elif defined(__gcc__)
-#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
-#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
-#define force_inline inline __attribute__((always_inline))
-#else
-#define ttauri_likely(condition) condition
-#define ttauri_unlikely(condition) condition
-#define force_inline inline
-#endif
-
-#if defined(_MSC_VER)
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]
 #define gsl_suppress4(a,b,c,d) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]] [[gsl::suppress(d)]]
 #define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]] [[gsl::suppress(d)]] [[gsl::suppress(e)]]
-#elif defined(__clang__)
+
+#elif COMPILER == CC_CLANG
+#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
+#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#define force_inline inline __attribute__((always_inline))
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
 #define gsl_suppress4(a,b,c,d) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]]
 #define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]] [[gsl::suppress(#e)]]
+
+#elif COMPILER == CC_GCC
+#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
+#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#define force_inline inline __attribute__((always_inline))
+#define gsl_suppress(a) [[gsl::suppress(#a)]]
+#define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
+#define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
+#define gsl_suppress4(a,b,c,d) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]]
+#define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]] [[gsl::suppress(#e)]]
+
 #else
+#define ttauri_likely(condition) condition
+#define ttauri_unlikely(condition) condition
+#define force_inline inline
 #define gsl_suppress(a)
 #define gsl_suppress2(a,b)
 #define gsl_suppress3(a,b,c)
 #define gsl_suppress4(a,b,c,d)
 #define gsl_suppress5(a,b,c,d,e)
+
 #endif
 
 constexpr size_t cache_line_size = 128;

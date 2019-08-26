@@ -417,7 +417,8 @@ std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::Buffe
     VkBuffer buffer;
     VmaAllocation allocation;
 
-    let result = static_cast<vk::Result>(vmaCreateBuffer(allocator, &(static_cast<VkBufferCreateInfo>(bufferCreateInfo)), &allocationCreateInfo, &buffer, &allocation, nullptr));
+    let bufferCreateInfo_ = static_cast<VkBufferCreateInfo>(bufferCreateInfo);
+    let result = static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferCreateInfo_, &allocationCreateInfo, &buffer, &allocation, nullptr));
 
     std::pair<vk::Buffer, VmaAllocation> const value = {buffer, allocation};
 
@@ -438,7 +439,8 @@ std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCr
     VkImage image;
     VmaAllocation allocation;
 
-    let result = static_cast<vk::Result>(vmaCreateImage(allocator, &(static_cast<VkImageCreateInfo>(imageCreateInfo)), &allocationCreateInfo, &image, &allocation, nullptr));
+    let imageCreateInfo_ = static_cast<VkImageCreateInfo>(imageCreateInfo);
+    let result = static_cast<vk::Result>(vmaCreateImage(allocator, &imageCreateInfo_, &allocationCreateInfo, &image, &allocation, nullptr));
 
     std::pair<vk::Image, VmaAllocation> const value = {image, allocation};
 

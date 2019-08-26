@@ -98,6 +98,7 @@ set(TTauri_srcs
     FileView.cpp
     strings.cpp
     any_repr.cpp
+    wsRGBA.cpp
 )
 
 set(TTauriTests_srcs

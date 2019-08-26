@@ -121,7 +121,7 @@ private:
         // Calculate the new calibration values.
         let new_gain = static_cast<int64_t>(mean_gain * calibration_t::gainMultiplier + 0.5);
 
-        let now_fast_after_gain = slow_clock::duration(static_cast<int64_t>(
+        let now_fast_after_gain = typename slow_clock::duration(static_cast<int64_t>(
             (
                 static_cast<boost::multiprecision::int128_t>(now_fast.time_since_epoch().count()) *
                 new_gain
@@ -151,8 +151,8 @@ private:
         u128_count *= c.gain;
         u128_count >>= calibration_t::gainShift;
 
-        let slow_period = c.bias + slow_clock::duration(static_cast<typename slow_clock::rep>(u128_count));
-        let slow_time_point = slow_clock::time_point(slow_period);
+        let slow_period = c.bias + typename slow_clock::duration(static_cast<typename slow_clock::rep>(u128_count));
+        let slow_time_point = typename slow_clock::time_point(slow_period);
         return slow_time_point;
     }
 };

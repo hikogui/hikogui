@@ -6,6 +6,7 @@
 #include "required.hpp"
 #include <array>
 #include <memory>
+#include <type_traits>
 
 namespace TTauri {
 
@@ -67,8 +68,11 @@ public:
     }
 
     void reset() noexcept {
+        static_assert(std::is_polymorphic_v<T> && !std::has_virtual_destructor_v<T>, "A polymorphic embeded type must have a virtual destructor.");
         if (_size > 0) {
-            std::destroy_at(this->operator->());
+            if constexpr (std::is_destructible_v<T>) {
+                std::destroy_at(this->operator->());
+            }
         }
         _size = 0;
     }
