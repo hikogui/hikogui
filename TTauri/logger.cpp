@@ -5,6 +5,7 @@
 #include "strings.hpp"
 #include "os_detect.hpp"
 #include "URL.hpp"
+#include "hires_utc_clock.hpp"
 #include "sync_clock.hpp"
 #include <exception>
 #include <memory>
@@ -28,9 +29,12 @@ std::string log_message_base::string() const noexcept
     let utc_timestamp = hiperf_utc_clock::convert(timestamp);
     let local_timestring = format_full_datetime(utc_timestamp, current_time_zone);
 
-    return fmt::format("{} {:5} {}.    {}:{}", local_timestring, to_const_string(level()), message(), source_filename, source_line);
+    if (level() == log_level::Counter) {
+        return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());
+    } else {
+        return fmt::format("{} {:5} {}.    {}:{}", local_timestring, to_const_string(level()), message(), source_filename, source_line);
+    }
 }
-
 
 logger_type::logger_type(bool test) noexcept {
     // The logger is the first object that will use the timezone database.
@@ -40,6 +44,9 @@ logger_type::logger_type(bool test) noexcept {
     date::set_install(tzdata_location.nativePath());
 #endif
     current_time_zone = date::current_zone();
+
+    // Compiler bug: inline global variables should be constructed only once.
+    required_assert(increment_counter<"logger_ctor"_tag>() == 1);
 
     if (!test) {
         logger_thread = std::thread([&]() {
@@ -52,18 +59,23 @@ logger_type::logger_type(bool test) noexcept {
     }
 }
 
-logger_type::~logger_type() {
+void logger_type::finish_logging() noexcept {
+    // Make sure that all counter and statistics are logged.
     if (gather_thread.joinable()) {
         gather_thread_stop = true;
         gather_thread.join();
     }
 
+    // Make sure all messages have been logged to log-file or console.
     if (logger_thread.joinable()) {
         logger_thread_stop = true;
         logger_thread.join();
     }
 }
 
+logger_type::~logger_type() {
+    finish_logging();
+}
 
 void logger_type::writeToFile(std::string str) noexcept {
 }
@@ -87,18 +99,30 @@ void logger_type::write(std::string const &str) noexcept {
 }
 
 void logger_type::gather_loop() noexcept {
-    while (!gather_thread_stop) {
+    constexpr auto gather_interval = 30s;
+    bool last_iteration = false;
+
+    do {
+        let now_rounded_to_interval = hires_utc_clock::now().time_since_epoch() / gather_interval;
+        let next_dump_time = typename hires_utc_clock::time_point(gather_interval * (now_rounded_to_interval + 1));
+
+        do {
+            std::this_thread::sleep_for(100ms);
+
+            if (gather_thread_stop) {
+                // We need to log all counter before finishing.
+                last_iteration = true;
+            }
+        } while (hires_utc_clock::now() < next_dump_time && !last_iteration);
+
         let keys = counter_map.keys();
-        LOG_INFO("Counter: displaying {} counter over the last 30 seconds.", keys.size());
+        LOG_INFO("Counter: displaying {} counters over the last {} seconds.", keys.size(), gather_interval / 1s);
 
         for (let &tag: keys) {
-            auto counter = counter_map.get(tag, 0);
-            LOG_INFO("Counter: {:13}={}", tag_to_string(tag), counter->load(std::memory_order_relaxed));
+            let [count, count_since_last_read] = read_counter(tag);
+            LOG_COUNTER("{:13} {:18} {:+9}", tag_to_string(tag), count, count_since_last_read);
         }
-
-        // XXX This doesn't work with clang on windows.
-        std::this_thread::sleep_for(10s);
-    }
+    } while (!last_iteration);
 }
 
 
@@ -106,9 +130,10 @@ void logger_type::logger_loop() noexcept {
     bool last_iteration = false;
 
     do {
+        std::this_thread::sleep_for(100ms);
+
         if (logger_thread_stop) {
-            // We need to check the message queue one more time to log all messages
-            // left in the queue before completely finishing.
+            // We need to log everything to the logfile and console before finishing.
             last_iteration = true;
         }
 
@@ -123,12 +148,6 @@ void logger_type::logger_loop() noexcept {
 
             write(str);
         }
-
-        if (found_fatal_message) {
-            logged_fatal_message.store(true);
-        }
-        std::this_thread::sleep_for(100ms);
-
     } while (!last_iteration);
 }
 

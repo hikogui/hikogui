@@ -6,6 +6,7 @@
 #include "required.hpp"
 #include "polymorphic_value.hpp"
 #include "wfree_mpsc_message_queue.hpp"
+#include "wfree_unordered_map.hpp"
 #include "singleton.hpp"
 #include "url_parser.hpp"
 #include "atomic.hpp"
@@ -29,6 +30,8 @@ enum class log_level {
     Debug,
     //! Informational messages used debugging problems in production by users of the application.
     Info,
+    //! A counter.
+    Counter,
     //! An exception was throw, probably isn't a problem.
     Exception,
     //! Messages for auditing purposes.
@@ -48,6 +51,7 @@ constexpr char const *to_const_string(log_level level) noexcept
     switch (level) {
     case log_level::Debug:     return "DEBUG";
     case log_level::Info:      return "INFO";
+    case log_level::Counter:   return "COUNT";
     case log_level::Exception: return "THROW";
     case log_level::Audit:     return "AUDIT";
     case log_level::Warning:   return "WARN";
@@ -113,8 +117,6 @@ class logger_type {
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
     using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES,MESSAGE_ALIGNMENT>;
 
-    std::atomic<bool> logged_fatal_message = false;
-
     //! the message queue must work correctly before main() is executed.
     message_queue_type message_queue;
 
@@ -151,14 +153,14 @@ public:
         }
 
         if constexpr (Level >= log_level::Fatal) {
-            // Wait until the logger-thread is finished.
-            wait_for_transition(logged_fatal_message, true);
+            // Make sure everything including this message and counters are logged.
+            finish_logging();
             std::terminate();
         }
     }
 
-
 private:
+    void finish_logging() noexcept;
     void write(std::string const &str) noexcept;
     void writeToFile(std::string str) noexcept;
     void writeToConsole(std::string str) noexcept;
@@ -166,17 +168,14 @@ private:
 
 // The constructor of logger only starts the logging thread.
 // The ring buffer of the logger is trivaliy constructed and can be used before the logger's constructor is stared.
-inline logger_type logger = {};
+inline logger_type logger = {}; 
 
 }
 
-constexpr char const *foo(char const *str)
-{
-    return static_cast<char const *>(str);
-}
 
 #define LOG_DEBUG(...) logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_INFO(...) logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_COUNTER(...) logger.log<log_level::Counter>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_AUDIT(...) logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_EXCEPTION(...) logger.log<log_level::Exception>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_WARNING(...) logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);

@@ -12,7 +12,12 @@ namespace TTauri {
 
 constexpr int MAX_NR_COUNTERS = 1000;
 
-using counter_map_type = wfree_unordered_map<MAX_NR_COUNTERS,string_tag,std::atomic<int64_t> *>;
+struct counter_map_value_type {
+    std::atomic<int64_t> *counter;
+    int64_t previous_value;
+};
+
+using counter_map_type = wfree_unordered_map<string_tag,counter_map_value_type,MAX_NR_COUNTERS>;
 
 // To reduce number of executed instruction this is a global varable.
 // The wfree_unordered_map does not need to be initialized.
@@ -27,7 +32,7 @@ struct counter_functor {
         let value = counter.fetch_add(1, std::memory_order_relaxed);
 
         if (ttauri_unlikely(value == 0)) {
-            counter_map.insert(TAG, &counter);
+            counter_map.insert(TAG, counter_map_value_type{&counter, 0});
         }
 
         return value + 1;
@@ -52,19 +57,21 @@ inline int64_t read_counter() noexcept
     return counter_functor<TAG>{}.read();
 }
 
-inline int64_t read_counter(string_tag tag) noexcept
+/*!
+ * \return The current count, count since last read.
+ */
+inline std::pair<int64_t, int64_t> read_counter(string_tag tag) noexcept
 {
-    if (let value = counter_map.get(tag)) {
-        return (*value)->load(std::memory_order_relaxed);
-    } else {
-        // The counter may have not been incremented yet,
-        // thus it was not yet added to the map.
-        // which means the counter value is still zero.
-        return 0;    
-    }
+    auto &item = counter_map[tag];
+
+    let count_ptr = item.counter;
+    let count = count_ptr != nullptr ? item.counter->load(std::memory_order_relaxed) : 0;
+    let count_since_last_read = count - item.previous_value;
+    item.previous_value = count;
+    return {count, count_since_last_read};
 }
 
-inline int64_t read_counter(std::string_view name) noexcept
+inline std::pair<int64_t, int64_t> read_counter(std::string_view name) noexcept
 {
     return read_counter(string_to_tag(name));
 }

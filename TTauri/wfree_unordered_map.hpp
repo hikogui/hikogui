@@ -14,10 +14,8 @@ template<typename K, typename V>
 struct wfree_unordered_map_item {
     /*! The value.
      * It comes first because it is of unknown size
-     * at should be aligned to 128 bits so it stays atomic
-     * up to 128 bits in size.
      */
-    alignas(16) std::atomic<V> value = {};
+    V value = {};
 
     /*! Hash for quick comparison and for state.
      * Special values:
@@ -43,7 +41,7 @@ struct wfree_unordered_map_item {
  * This class can be instantiated as a global variable without
  * needing initialization.
  */
-template<size_t MAX_NR_ITEMS,typename K, typename V>
+template<typename K, typename V, size_t MAX_NR_ITEMS>
 class wfree_unordered_map {
 public:
     using key_type = K;
@@ -79,13 +77,13 @@ public:
             if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order_acquire)) {
                 // Success, we found an empty entry, we marked it as busy (1).
                 item.key = std::move(key);
-                item.value.store(value, std::memory_order_relaxed);
+                item.value = value;
                 item.hash.store(hash, std::memory_order_release);
                 return;
 
             } else if (item_hash == hash && key == item.key) {
                 // Key was already in map, replace the value.
-                item.value.store(value, std::memory_order_release);
+                item.value = value;
                 return;
 
             } else {
@@ -111,6 +109,43 @@ public:
         return r;
     }
 
+    V& operator[](K const &key) noexcept {
+        let hash = make_hash(key);
+
+        auto index = hash % CAPACITY;
+        while (true) {
+            auto &item = items[index];
+
+            // First look for an empty (0) item, highly likely when doing insert.
+            size_t item_hash = 0;
+            if (item.hash.compare_exchange_strong(item_hash, 1, std::memory_order_acquire)) {
+                // Success, we found an empty entry, we marked it as busy (1).
+                item.key = std::move(key);
+                item.hash.store(hash, std::memory_order_release);
+
+                if constexpr (std::is_default_constructible_v<V>) {
+                    item.value = {};
+                } else {
+                    // Make sure we default initialize the memory.
+                    std::memset(&(item.value), 0, sizeof(item.value));
+                }
+                return item.value;
+
+            } else if (item_hash == hash && key == item.key) {
+                // Key was already in map, replace the value.
+                return item.value;
+
+            } else {
+                // Either this item was already in use by another key, or
+                // Another thread was ahead of us with claiming this item (hopefully the other
+                // thread doesn't insert the same key).
+                // Even though compare_exchange was used here, this algorithm is wait-free since all threads
+                // including the one here are making normal progress.
+                index = (index + 1) % CAPACITY;
+            }
+        }
+    }
+
     std::optional<V> get(K const &key) const noexcept {
         let hash = make_hash(key);
 
@@ -122,7 +157,7 @@ public:
 
             if (item_hash == hash && key == item.key) {
                 // Found key
-                return { item.value.load(std::memory_order_relaxed) };
+                return { item.value };
 
             } else if (item_hash == 0) {
                 // Item is empty.
@@ -153,7 +188,7 @@ public:
             if (item_hash == hash && key == item.key) {
                 // Set tombstone. Don't actually delete the key or value.
                 item.hash.store(1, std::memory_order_release);
-                return { item.value.load(std::memory_order_relaxed) };
+                return { item.value };
 
             } else if (item_hash == 0) {
                 // Item is empty.

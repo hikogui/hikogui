@@ -31,7 +31,7 @@ constexpr char tag_to_char(string_tag tag) noexcept
     } else if (tag < 27) {
         return static_cast<char>(tag - 1) + 'a';
     } else {
-        return '-';
+        return '_';
     }
 }
 
