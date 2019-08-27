@@ -21,9 +21,7 @@ namespace TTauri {
 #define OPERATING_SYSTEM OS_WINDOWS
 #elif defined(__APPLE__)
   #include "TargetConditionals.h"
-  #if defined(TARGET_OS_IPHONE) && defined(TARGET_IPHONE_SIMULATOR)
-  #define OPERATING_SYSTEM OS_IOS
-  #elif defined(TARGET_OS_IPHONE)
+  #if TARGET_OS_IPHONE == 1
   #define OPERATING_SYSTEM OS_IOS
   #else
   #define OPERATING_SYSTEM OS_MACOS

@@ -41,27 +41,7 @@ public:
 
     vk::SurfaceKHR getSurface() const override;
 
-    void setCursor(Cursor cursor) noexcept override {
-        if (cursor == currentCursor) {
-            return;
-        }
-        currentCursor = cursor;
-
-        switch (cursor) {
-        case Cursor::None:
-            SetCursor(LoadCursorW(nullptr, IDC_APPSTARTING));
-            break;
-        case Cursor::Default:
-            SetCursor(LoadCursorW(nullptr, IDC_ARROW));
-            break;
-        case Cursor::Clickable:
-            SetCursor(LoadCursorW(nullptr, IDC_HAND));
-            break;
-        default:
-            SetCursor(LoadCursorW(nullptr, IDC_NO));
-            break;
-        }
-    }
+    void setCursor(Cursor cursor) noexcept override;
 
     void closeWindow() override;
 

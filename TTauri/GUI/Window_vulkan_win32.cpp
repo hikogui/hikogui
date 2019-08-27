@@ -181,6 +181,27 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
     OSWindowRectangle.extent.height() = (rect.bottom - rect.top);
 }
 
+void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
+    if (cursor == currentCursor) {
+        return;
+    }
+    currentCursor = cursor;
+
+    switch (cursor) {
+    case Cursor::None:
+        SetCursor(LoadCursorW(nullptr, IDC_APPSTARTING));
+        break;
+    case Cursor::Default:
+        SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+        break;
+    case Cursor::Clickable:
+        SetCursor(LoadCursorW(nullptr, IDC_HAND));
+        break;
+    default:
+        SetCursor(LoadCursorW(nullptr, IDC_NO));
+        break;
+    }
+}
 
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
