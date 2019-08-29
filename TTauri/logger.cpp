@@ -43,7 +43,11 @@ logger_type::logger_type(bool test) noexcept {
     let tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
     date::set_install(tzdata_location.nativePath());
 #endif
-    current_time_zone = date::current_zone();
+    try {
+        current_time_zone = date::current_zone();
+    } catch (std::runtime_error &e) {
+        LOG_ERROR("Could not get the current time zone, all times shown as UTC: '{}'", e.what());
+    }
 
     // Compiler bug: inline global variables should be constructed only once.
     required_assert(increment_counter<"logger_ctor"_tag>() == 1);
@@ -83,7 +87,7 @@ void logger_type::writeToFile(std::string str) noexcept {
 void logger_type::writeToConsole(std::string str) noexcept {
 #if OPERATING_SYSTEM == OS_WINDOWS
     str += "\r\n";
-    OutputDebugStringW(translateString<std::wstring>(str).data());
+    //OutputDebugStringW(translateString<std::wstring>(str).data());
 #else
     cerr << str << endl;
 #endif

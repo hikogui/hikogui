@@ -217,7 +217,8 @@ inline T &getResource(URL const &location)
 namespace std {
 
 template<>
-struct hash<TTauri::URL> {
+class hash<TTauri::URL> {
+public:
     size_t operator()(TTauri::URL const& url) const noexcept {
         return url.hash();
     }

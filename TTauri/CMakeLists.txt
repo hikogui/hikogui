@@ -87,6 +87,7 @@ set(TTauri_srcs
     GUI/Widgets/ToolbarButtonWidget.cpp
     Application_base.cpp
     Application_win32.cpp
+    datum.cpp
     hires_utc_clock_win32.cpp
     logger.cpp
     url_parser.cpp
@@ -108,6 +109,7 @@ set(TTauriTests_srcs
     Draw/TrueTypeParser_tests.cpp
     Draw/Path_tests.cpp
     Draw/PixelMap_tests.cpp
+    datum_tests.cpp
     any_repr_tests.cpp
     counters_tests.cpp
     string_tag_tests.cpp

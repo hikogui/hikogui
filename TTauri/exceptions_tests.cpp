@@ -16,7 +16,7 @@ TEST(Exceptions, Default) {
     try {
         TTAURI_THROW(key_error("This is a key error").set<"key"_tag>("foo"s));
     } catch (error const &e) {
-        ASSERT_EQ(e.name(), "key-error"s);
+        ASSERT_EQ(e.name(), "key_error"s);
 
         let optional_key = e.get<"key"_tag,std::string>();
         ASSERT_EQ(*optional_key, "foo"s);
