@@ -84,7 +84,7 @@ void logger_type::writeToFile(std::string str) noexcept {
 void logger_type::writeToConsole(std::string str) noexcept {
 #if OPERATING_SYSTEM == OS_WINDOWS
     str += "\r\n";
-    //OutputDebugStringW(translateString<std::wstring>(str).data());
+    OutputDebugStringW(translateString<std::wstring>(str).data());
 #else
     cerr << str << endl;
 #endif
@@ -138,15 +138,10 @@ void logger_type::logger_loop() noexcept {
             last_iteration = true;
         }
 
-        auto found_fatal_message = false;
         while (!message_queue.empty()) {
             auto message = message_queue.read();
 
             let str = (*message)->string();
-            if ((*message)->level() >= log_level::Fatal) {
-                found_fatal_message = true;
-            }
-
             write(str);
         }
     } while (!last_iteration);

@@ -52,8 +52,7 @@ public:
     }
 
     std::string string() const noexcept {
-        // XXX Strip off project directory from file.
-        return fmt::format("{2}: {3}. {4}",
+        return fmt::format("{}: {}. {}",
             name(),
             _message,
             error_info_string()

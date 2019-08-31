@@ -21,7 +21,7 @@ class sync_clock_calibration_type {
     static constexpr int gainShift = 60;
     static constexpr double gainMultiplier = static_cast<double>(1ULL << gainShift);
     static constexpr size_t shared_time_points_size = 32;
-    static constexpr int calibration_iterations_until_stable_gain = 32;
+    static constexpr int minimum_time_points_until_stable_gain = 8;
 
     std::atomic<int64_t> gain = 0;
     std::atomic<typename slow_clock::duration> bias = 0ns;
@@ -84,18 +84,12 @@ public:
 private:
     void calibrate_loop() noexcept {
         while (!calibrate_loop_stop) {
-            if (
-                (calibrate_loop_count < 10) ||
-                (calibrate_loop_count < 120 && (calibrate_loop_count % 10) == 0) ||
-                (calibrate_loop_count % 60 == 0)
-            ) {
-                let iteration = increment_counter<"calibrate_clk"_tag>();
-                LOG_AUDIT("Clock calibration: iteration={}, offset={:+} ns", iteration, checkCalibration().count());
-                calibrate(slow_clock::now(), fast_clock::now());
-            }
+            let iteration = increment_counter<"calibrate_clk"_tag>();
+            LOG_AUDIT("Clock calibration: iteration={}, offset={:+} ns", iteration, checkCalibration().count());
+            calibrate(slow_clock::now(), fast_clock::now());
 
-            calibrate_loop_count++;
-            std::this_thread::sleep_for(1s);
+            let backoff = calibrate_loop_count++ * 10s;
+            std::this_thread::sleep_for(backoff < 120s ? backoff : 120s);
         }
         return;
     }
@@ -148,7 +142,7 @@ private:
             std::accumulate(iqr_begin, iqr_end, 0.0) / static_cast<double>(iqr_length) :
             std::accumulate(gains.begin(), gains.begin() + gain_count, 0.0) / static_cast<double>(gain_count);
 
-        LOG_INFO("Calibrating clock: gain={:+.15} nanosecond/cpu-tick.", mean_gain); 
+        LOG_INFO("Calibrating clock: gain={:+.15} nanosecond/cpu-tick", mean_gain); 
         return static_cast<int64_t>(mean_gain * gainMultiplier + 0.5);
     }
 
@@ -182,7 +176,7 @@ private:
     void calibrate(typename slow_clock::time_point now_slow, typename fast_clock::time_point now_fast) noexcept {
         add_shared_time_point(now_slow, now_fast);
 
-        let new_gain = (shared_time_points_count < calibration_iterations_until_stable_gain) ? calibrate_gain() : gain.load(std::memory_order_relaxed);
+        let new_gain = (shared_time_points_count <= minimum_time_points_until_stable_gain) ? calibrate_gain() : gain.load(std::memory_order_relaxed);
         let new_bias = calibrate_bias(new_gain, now_slow, now_fast);
         let leapsecond_adjustment = calibrate_leapsecond_adjustment(new_gain, new_bias, now_fast);
 
