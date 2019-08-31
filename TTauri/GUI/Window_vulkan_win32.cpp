@@ -37,7 +37,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClassName = L"TTauri Window Class";
 
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
-        Window_vulkan_win32::win32WindowClass.hInstance = get_singleton<Application>().hInstance;
+        Window_vulkan_win32::win32WindowClass.hInstance = application().hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
         Window_vulkan_win32::win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -66,7 +66,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
 
         NULL, // Parent window
         NULL, // Menu
-        get_singleton<Application>().hInstance, // Instance handle
+        application().hInstance, // Instance handle
         this
     );
 
@@ -82,7 +82,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
     }
 
     if (!Window_vulkan_win32::firstWindowHasBeenOpened) {
-        ShowWindow(win32Window, get_singleton<Application>().nCmdShow);
+        ShowWindow(win32Window, application().nCmdShow);
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
 
@@ -116,42 +116,42 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closeWindow()
 {
-    get_singleton<Application>().runOnMainThread([&]() {
+    application().runOnMainThread([&]() {
         DestroyWindow(win32Window);
     });
 }
 
 void Window_vulkan_win32::minimizeWindow()
 {
-    get_singleton<Application>().runOnMainThread([&]() {
+    application().runOnMainThread([&]() {
         ShowWindow(win32Window, SW_MINIMIZE);
     });
 }
 
 void Window_vulkan_win32::maximizeWindow()
 {
-    get_singleton<Application>().runOnMainThread([&]() {
+    application().runOnMainThread([&]() {
         ShowWindow(win32Window, SW_MAXIMIZE);
     });
 }
 
 void Window_vulkan_win32::normalizeWindow()
 {
-    get_singleton<Application>().runOnMainThread([&]() {
+    application().runOnMainThread([&]() {
         ShowWindow(win32Window, SW_RESTORE);
     });
 }
 
 void Window_vulkan_win32::closingWindow()
 {
-    get_singleton<Application>().runOnMainThread([&]() {
+    application().runOnMainThread([&]() {
         Window_vulkan::closingWindow();
     });
 }
 
 void Window_vulkan_win32::openingWindow()
 {
-    get_singleton<Application>().runOnMainThread([&]() {
+    application().runOnMainThread([&]() {
         std::scoped_lock lock(TTauri::GUI::mutex);
 
         Window_vulkan::openingWindow();
@@ -167,7 +167,7 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
     return get_singleton<Instance>().createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
-        get_singleton<Application>().hInstance,
+        application().hInstance,
         win32Window
     });
 }

@@ -257,6 +257,14 @@ datum::operator std::string() const noexcept {
         return std::string(buffer, length);
     }
     case datum_physical_type::StringPointer: return *get_pointer<std::string>();
+    case datum_physical_type::Float: {
+        auto str = fmt::format("{:g}", static_cast<double>(*this));
+        if (str.find('.') == str.npos) {
+            str += ".0";
+        }
+        return str;
+    }
+
     case datum_physical_type::URLPointer: return get_pointer<URL>()->string();
     case datum_physical_type::Boolean: return static_cast<bool>(*this) ? "true" : "false";
     case datum_physical_type::Null: return "null";
@@ -328,6 +336,7 @@ void datum::reset() noexcept {
 
 uint8_t datum::type_id() const noexcept {
     constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
+    constexpr uint16_t exponent_inv_mask = ~exponent_mask;
     constexpr uint16_t type_mask = 0b0000'0000'0000'1111;
 
     // We use bit_cast<> on this to get access to the
@@ -337,16 +346,19 @@ uint8_t datum::type_id() const noexcept {
     std::byte bytes[sizeof(datum)];
     std::memcpy(bytes, this, sizeof(bytes));
 
-    let ms_word =
+    uint16_t const ms_word =
         (static_cast<uint16_t>(bytes[7]) << 8) |
         static_cast<uint16_t>(bytes[6]);
 
     if ((ms_word & exponent_mask) != exponent_mask) {
+        // If the not all exponent bits are set then this is a normal floating point number.
         return 0;
     }
 
+    uint16_t const type_bits = ms_word & exponent_inv_mask;
+
     // Get the type, lower 4 bits + the sign bit.
-    return static_cast<uint8_t>((ms_word & type_mask) | (ms_word >> 11));
+    return static_cast<uint8_t>(type_bits | (type_bits >> 11));
 }
 
 char const *datum::type_name() const noexcept {
@@ -398,6 +410,11 @@ size_t datum::hash() const noexcept {
     case datum_physical_type::Float: return std::hash<double>{}(f64);
     default: return std::hash<uint64_t>{}(u64);
     }
+}
+
+std::ostream &operator<<(std::ostream &os, datum const &d)
+{
+    return os << static_cast<std::string>(d);
 }
 
 bool operator<(datum::map const &lhs, datum::map const &rhs) noexcept

@@ -10,21 +10,22 @@
 #include "any_repr.hpp"
 #include "counters.hpp"
 #include "logger.hpp"
+#include "datum.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>
 #include <string>
 #include <atomic>
-#include <any>
 #include <unordered_map>
 #include <optional>
+#include <ostream>
 
 namespace TTauri {
 
 class error {
 protected:
     std::string _message;
-    small_map<string_tag,std::any,4> error_info = {};
+    small_map<string_tag,datum,4> error_info = {};
 
 public:
     template<typename Fmt, typename... Args>
@@ -45,7 +46,7 @@ public:
         int i = 0;
         for (let &info: error_info) {
             if (i++ > 0) { r += " ,"; };
-            r += fmt::format("({0}: {1})", tag_to_string(info.first), any_repr(info.second));   
+            r += fmt::format("({}: {})", tag_to_string(info.first), info.second.repr());   
         }
         return r;
     }
@@ -69,7 +70,7 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     error &set(InfoValueType const &infoValue) noexcept {
-        if (!error_info.insert(InfoTag, infoValue)) {
+        if (!error_info.insert(InfoTag, datum(infoValue))) {
             LOG_ERROR("Too many error_info values added to exception.");
         }
         return *this;
@@ -81,9 +82,10 @@ public:
     std::optional<InfoValueType> get() const noexcept {
         if (let optional_info = error_info.get(InfoTag)) {
             let &info = *optional_info;
+
             try {
-                return std::any_cast<InfoValueType>(info);
-            } catch (std::bad_any_cast) {
+                return static_cast<InfoValueType>(info);
+            } catch (...) {
                 return {};
             }
 
@@ -104,6 +106,11 @@ public:
     }
 };
 
+inline std::ostream &operator<<(std::ostream &os, error const &x)
+{
+    return os << x.string();
+}
+
 template<string_tag _TAG>
 class sub_error : public error {
 public:
@@ -119,7 +126,7 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     sub_error &set(InfoValueType const &info_value) noexcept {
-        if (!error_info.insert(InfoTag, info_value)) {
+        if (!error_info.insert(InfoTag, datum(info_value))) {
             LOG_ERROR("Too many error_info values added to exception.");
         }
         return *this;
@@ -127,6 +134,7 @@ public:
 
     string_tag tag() const noexcept override { return TAG; }
 };
+
 
 /*! Error to throw when parsing some kind of document.
  * This should be the primary exception to throw when there is an error in the document.
@@ -154,7 +162,7 @@ using invalid_operation_error = sub_error<"invalid_op"_tag>;
     do {\
         auto e = (x);\
         increment_counter<e.TAG>();\
-        LOG_EXCEPTION("{}", e.message());\
+        LOG_EXCEPTION("{}", e);\
         throw e;\
     } while(false)
 

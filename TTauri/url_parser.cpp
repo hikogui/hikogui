@@ -1,4 +1,7 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
+#include "required.hpp"
 #include "url_parser.hpp"
 #include "os_detect.hpp"
 #include "utils.hpp"

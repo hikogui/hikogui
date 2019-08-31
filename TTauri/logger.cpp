@@ -5,8 +5,8 @@
 #include "strings.hpp"
 #include "os_detect.hpp"
 #include "URL.hpp"
-#include "hires_utc_clock.hpp"
-#include "sync_clock.hpp"
+#include "hiperf_utc_clock.hpp"
+#include "Application.hpp"
 #include <exception>
 #include <memory>
 #include <iostream>
@@ -27,7 +27,7 @@ std::string log_message_base::string() const noexcept
     let source_filename = filename_from_path(source_path);
 
     let utc_timestamp = hiperf_utc_clock::convert(timestamp);
-    let local_timestring = format_full_datetime(utc_timestamp, current_time_zone);
+    let local_timestring = format_full_datetime(utc_timestamp, application().time_zone);
 
     if (level() == log_level::Counter) {
         return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());
@@ -36,40 +36,19 @@ std::string log_message_base::string() const noexcept
     }
 }
 
-logger_type::logger_type(bool test) noexcept {
-    // The logger is the first object that will use the timezone database.
-    // Zo we will initialize it here.
-#if USE_OS_TZDB == 0
-    let tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
-    date::set_install(tzdata_location.nativePath());
-#endif
-    try {
-        current_time_zone = date::current_zone();
-    } catch (std::runtime_error &e) {
-        LOG_ERROR("Could not get the current time zone, all times shown as UTC: '{}'", e.what());
-    }
-
-    // Compiler bug: inline global variables should be constructed only once.
-    required_assert(increment_counter<"logger_ctor"_tag>() == 1);
-
-    if (!test) {
-        logger_thread = std::thread([&]() {
-            this->logger_loop();
-        });
-
-        gather_thread = std::thread([&]() {
-            this->gather_loop();
-        });
-    }
+/*! Start logging to file and console.
+*/
+void logger_type::startLogging() noexcept
+{
+    logger_thread = std::thread([&]() {
+        this->logger_loop();
+    });
 }
 
-void logger_type::finish_logging() noexcept {
-    // Make sure that all counter and statistics are logged.
-    if (gather_thread.joinable()) {
-        gather_thread_stop = true;
-        gather_thread.join();
-    }
-
+/*! Stop logging to file and console.
+*/
+void logger_type::stopLogging() noexcept
+{
     // Make sure all messages have been logged to log-file or console.
     if (logger_thread.joinable()) {
         logger_thread_stop = true;
@@ -77,9 +56,27 @@ void logger_type::finish_logging() noexcept {
     }
 }
 
-logger_type::~logger_type() {
-    finish_logging();
+/*! Start logging of counters.
+*/
+void logger_type::startStatisticsLogging() noexcept
+{
+    gather_thread = std::thread([&]() {
+        this->gather_loop();
+    });
 }
+
+/*! Stop logging of counters.
+*/
+void logger_type::stopStatisticsLogging() noexcept
+{
+    // Make sure that all counter and statistics are logged.
+    if (gather_thread.joinable()) {
+        gather_thread_stop = true;
+        gather_thread.join();
+    }
+}
+
+
 
 void logger_type::writeToFile(std::string str) noexcept {
 }

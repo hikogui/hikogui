@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "hires_utc_clock.hpp"
-#include "cpu_counter_clock.hpp"
 #include "logger.hpp"
 #include "counters.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
@@ -232,7 +230,7 @@ struct sync_clock {
      */
     static time_point convert(typename fast_clock::time_point fast_time) noexcept {
         return sync_clock_calibration<slow_clock,fast_clock> != nullptr ?
-            sync_clock_calibration->convert(fast_time) :
+            sync_clock_calibration<slow_clock,fast_clock>->convert(fast_time) :
             time_point(duration(0ns));
     }
 
@@ -240,7 +238,5 @@ struct sync_clock {
         return convert(fast_clock::now());
     }
 };
-
-using hiperf_utc_clock = sync_clock<hires_utc_clock,cpu_counter_clock>;
 
 }

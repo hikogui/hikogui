@@ -6,17 +6,16 @@
 #include "required.hpp"
 #include "utils.hpp"
 #include "URL.hpp"
-#include "sync_clock.hpp"
+#include "ApplicationDelegate.hpp"
 #include <gsl/gsl>
 #include <memory>
 #include <string>
 #include <any>
 #include <map>
 #include <thread>
+#include <date/tz.h>
 
 namespace TTauri {
-
-#define application (*Application_base::singleton)
 
 /*! A singleton that represents the application.
  * An Application should be instantiated in a local variable in main.
@@ -27,24 +26,20 @@ namespace TTauri {
  */
 class Application_base {
 public:
-    static Application_base *singleton = nullptr;
-
     /*! Application delegate
      */
     std::shared_ptr<ApplicationDelegate> delegate;
 
     bool loopStarted = false;
 
-    Application_base() = default;
+    date::time_zone const *time_zone = nullptr;
+
+    Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate);
     virtual ~Application_base();
     Application_base(const Application_base &) = delete;
     Application_base &operator=(const Application_base &) = delete;
     Application_base(Application_base &&) = delete;
     Application_base &operator=(Application_base &&) = delete;
-
-    /*! Initialize the application.
-     */
-    virtual void initialize(std::shared_ptr<ApplicationDelegate> applicationDelegate);
 
     /*! Get application name.
      * At certain points of the application there may not be a name yet.
@@ -74,5 +69,7 @@ public:
     */
     virtual void lastWindowClosed();
 };
+
+inline Application_base *_application = nullptr;
 
 }

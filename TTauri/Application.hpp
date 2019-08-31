@@ -25,7 +25,15 @@ using Application = Application_macos;
 #endif
 
 namespace TTauri {
-inline Application *application = nullptr;
+
+inline Application &application()
+{
+    required_assert(_application != nullptr);
+    Application *p = dynamic_cast<Application *>(_application);
+    required_assert(p != nullptr);
+    return *p;
+}
+
 }
 
 

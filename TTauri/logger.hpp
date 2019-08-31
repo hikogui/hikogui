@@ -69,8 +69,6 @@ constexpr bool operator!=(log_level lhs, log_level rhs) noexcept { return !(lhs 
 constexpr bool operator<=(log_level lhs, log_level rhs) noexcept { return !(lhs > rhs); }
 constexpr bool operator>=(log_level lhs, log_level rhs) noexcept { return !(lhs < rhs); }
 
-inline date::time_zone const *current_time_zone = nullptr;
-
 struct log_message_base {
     char const *source_path;
     int source_line;
@@ -128,39 +126,50 @@ class logger_type {
 public:
     log_level minimum_log_level = log_level::Debug;
 
-    logger_type(bool test=false) noexcept;
+    /*! Start logging to file and console.
+     */
+    void startLogging() noexcept;
 
-    ~logger_type();
+    /*! Stop logging to file and console.
+     */
+    void stopLogging() noexcept;
+
+    /*! Start logging of counters.
+     */
+    void startStatisticsLogging() noexcept;
+
+    /*! Stop logging of counters.
+     */
+    void stopStatisticsLogging() noexcept;
 
     void logger_loop() noexcept;
     void gather_loop() noexcept;
 
     template<log_level Level, typename... Args>
     void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
-        if (Level < minimum_log_level) {
-            return;
-        }
-
-        // Add messages in the queue, block when full.
-        // * This reduces amount of instructions needed to be executed during logging.
-        // * Simplifies logged_fatal_message logic.
-        // * Will make sure everything gets logged.
-        // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
-        {
+        if (Level >= minimum_log_level) {
+            // Add messages in the queue, block when full.
+            // * This reduces amount of instructions needed to be executed during logging.
+            // * Simplifies logged_fatal_message logic.
+            // * Will make sure everything gets logged.
+            // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
             auto message = message_queue.write<"logger_block"_tag>();
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
             message->emplace<log_message<Level, Args...>>(source_file, source_line, cpu_counter_clock::now(), format, std::forward<Args>(args)...);
+
+        } else {
+            return;
         }
 
         if constexpr (Level >= log_level::Fatal) {
             // Make sure everything including this message and counters are logged.
-            finish_logging();
+            stopStatisticsLogging();
+            stopLogging();
             std::terminate();
         }
     }
 
 private:
-    void finish_logging() noexcept;
     void write(std::string const &str) noexcept;
     void writeToFile(std::string str) noexcept;
     void writeToConsole(std::string str) noexcept;

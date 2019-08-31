@@ -14,6 +14,8 @@
 #include <variant>
 #include <limits>
 #include <type_traits>
+#include <ostream>
+#include <numeric>
 
 namespace TTauri {
 struct datum;
@@ -100,7 +102,7 @@ enum class datum_physical_type {
 
 constexpr uint64_t datum_type_id_to_mask(uint8_t x)
 {
-    return ((uint64_t{x} & 0x10) << 59) | ((uint64_t{x} & 0xf) << 48);
+    return 0x7ff0'0000'0000'0000 | ((uint64_t{x} & 0x10) << 59) | ((uint64_t{x} & 0xf) << 48);
 }
 
 constexpr uint8_t datum_physical_type_to_type_id(datum_physical_type x)
@@ -319,26 +321,46 @@ struct datum {
 };
 
 template<typename T> inline bool holds_alternative(datum const &) { return false; }
-template<> inline bool holds_alternative<int64_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<int32_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<int16_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<int8_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<uint64_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<uint32_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<uint16_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<uint8_t>(datum const &d) { return d.logical_type() == datum_logical_type::Integer; }
-template<> inline bool holds_alternative<bool>(datum const &d) { return d.logical_type() == datum_logical_type::Boolean; }
-template<> inline bool holds_alternative<nullptr_t>(datum const &d) { return d.logical_type() == datum_logical_type::Null; }
-template<> inline bool holds_alternative<datum::undefined>(datum const &d) { return d.logical_type() == datum_logical_type::Null; }
-template<> inline bool holds_alternative<double>(datum const &d) { return d.logical_type() == datum_logical_type::Float; }
-template<> inline bool holds_alternative<float>(datum const &d) { return d.logical_type() == datum_logical_type::Float; }
-template<> inline bool holds_alternative<std::string>(datum const &d) { return d.logical_type() == datum_logical_type::String; }
-template<> inline bool holds_alternative<URL>(datum const &d) { return d.logical_type() == datum_logical_type::URL; }
-template<> inline bool holds_alternative<datum::vector>(datum const &d) { return d.logical_type() == datum_logical_type::Vector; }
-template<> inline bool holds_alternative<datum::map>(datum const &d) { return d.logical_type() == datum_logical_type::Map; }
+template<> inline bool holds_alternative<int64_t>(datum const &d) { return d.is_integer(); }
+template<> inline bool holds_alternative<int32_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<int16_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<int8_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<uint64_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<uint32_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<uint16_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<uint8_t>(datum const &d) { return holds_alternative<int64_t>(d); }
+template<> inline bool holds_alternative<bool>(datum const &d) { return d.is_boolean(); }
+template<> inline bool holds_alternative<nullptr_t>(datum const &d) { return d.is_null(); }
+template<> inline bool holds_alternative<datum::undefined>(datum const &d) { return d.is_undefined(); }
+template<> inline bool holds_alternative<double>(datum const &d) { return d.is_float(); }
+template<> inline bool holds_alternative<float>(datum const &d) { return holds_alternative<double>(d); }
+template<> inline bool holds_alternative<std::string>(datum const &d) { return d.is_string(); }
+template<> inline bool holds_alternative<URL>(datum const &d) { return d.is_url(); }
+template<> inline bool holds_alternative<datum::vector>(datum const &d) { return d.is_vector(); }
+template<> inline bool holds_alternative<datum::map>(datum const &d) { return d.is_map(); }
 
+template<typename T> inline bool will_cast_to(datum const &) { return false; }
+template<> inline bool will_cast_to<int64_t>(datum const &d) { return d.is_numeric(); }
+template<> inline bool will_cast_to<int32_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<int16_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<int8_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<uint64_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<uint32_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<uint16_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<uint8_t>(datum const &d) { return will_cast_to<int64_t>(d); }
+template<> inline bool will_cast_to<bool>(datum const &d) { return true; }
+template<> inline bool will_cast_to<nullptr_t>(datum const &d) { return d.is_null(); }
+template<> inline bool will_cast_to<datum::undefined>(datum const &d) { return d.is_undefined(); }
+template<> inline bool will_cast_to<double>(datum const &d) { return d.is_numeric(); }
+template<> inline bool will_cast_to<float>(datum const &d) { return will_cast_to<double>(d); }
+template<> inline bool will_cast_to<std::string>(datum const &d) { return true; }
+template<> inline bool will_cast_to<URL>(datum const &d) { return d.is_url() || d.is_string(); }
+template<> inline bool will_cast_to<datum::vector>(datum const &d) { return d.is_vector(); }
+template<> inline bool will_cast_to<datum::map>(datum const &d) { return d.is_map(); }
 
 template<typename T> T get(datum const &) { TTAURI_THROW(invalid_operation_error("get<{}>()", typeid(T).name())); }
+
+std::ostream &operator<<(std::ostream &os, datum const &d);
 
 bool operator<(datum::map const &lhs, datum::map const &rhs) noexcept;
 
@@ -351,8 +373,12 @@ datum operator+(datum const &lhs, datum const &rhs);
     template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(datum const &lhs, T const &rhs) { return lhs op datum{rhs}; }\
     template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(T const &lhs, datum const &rhs) { return datum{lhs} op datum{rhs}; }
 
-BI_OPERATOR_CONVERSION(==)
-BI_OPERATOR_CONVERSION(<)
+#define BI_BOOL_OPERATOR_CONVERSION(op)\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(datum const &lhs, T const &rhs) { return lhs op datum{rhs}; }\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(T const &lhs, datum const &rhs) { return datum{lhs} op datum{rhs}; }
+
+BI_BOOL_OPERATOR_CONVERSION(==)
+BI_BOOL_OPERATOR_CONVERSION(<)
 BI_OPERATOR_CONVERSION(+)
 
 #undef BI_OPERATOR_CONVERSION

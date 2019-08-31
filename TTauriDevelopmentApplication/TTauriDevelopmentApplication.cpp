@@ -69,9 +69,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 {
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
-    get_singleton<Application>().initialize(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
+    auto app = Application(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
 
     get_singleton<Instance>().initialize();
 
-    return get_singleton<Application>().loop();
+    return app.loop();
 }
