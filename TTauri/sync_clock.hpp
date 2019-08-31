@@ -16,7 +16,7 @@ namespace TTauri {
 
 
 template<typename C1, typename C2>
-class sync_clock_impl {
+class sync_clock_calibration_type {
     using slow_clock = C1;
     using fast_clock = C2;
 
@@ -61,7 +61,7 @@ public:
     /*! Construct a sync clock.
      * \param create_thread can be set to false when testing.
      */
-    sync_clock_impl(bool create_thread=true) noexcept {
+    sync_clock_calibration_type(bool create_thread=true) noexcept {
         calibrate(slow_clock::now(), fast_clock::now());
         calibrate(slow_clock::now(), fast_clock::now());
 
@@ -72,7 +72,7 @@ public:
         }
     }
 
-    ~sync_clock_impl() {
+    ~sync_clock_calibration_type() {
         calibrate_loop_stop = true;
         if (calibrate_loop_id.joinable()) {
             calibrate_loop_id.join();
@@ -204,6 +204,8 @@ private:
     }
 };
 
+template<typename C1, typename C2>
+inline sync_clock_calibration_type<C1,C2> *sync_clock_calibration = nullptr;
 
 /*! A clock which converts one clock to another clock.
  * The new clock is simular to C1 (slow clock), except that leap seconds from C1 are filtered out.
@@ -219,7 +221,6 @@ template<typename C1, typename C2>
 struct sync_clock {
     using slow_clock = C1;
     using fast_clock = C2;
-    using impl = sync_clock_impl<C1,C2>;
 
     using rep = typename slow_clock::rep;
     using period = typename slow_clock::period;
@@ -230,7 +231,9 @@ struct sync_clock {
     /*! Return a timestamp from a clock.
      */
     static time_point convert(typename fast_clock::time_point fast_time) noexcept {
-        return get_singleton<impl>().convert(fast_time);
+        return sync_clock_calibration<slow_clock,fast_clock> != nullptr ?
+            sync_clock_calibration->convert(fast_time) :
+            time_point(duration(0ns));
     }
 
     static time_point now() noexcept {

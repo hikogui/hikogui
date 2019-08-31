@@ -23,3 +23,9 @@ using Application = Application_macos;
 #else
 #error "No Application implementation for this operating system."
 #endif
+
+namespace TTauri {
+inline Application *application = nullptr;
+}
+
+

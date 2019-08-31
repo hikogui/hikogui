@@ -3,9 +3,10 @@
 
 #pragma once
 
+#include "required.hpp"
 #include "utils.hpp"
-#include "ApplicationDelegate.hpp"
 #include "URL.hpp"
+#include "sync_clock.hpp"
 #include <gsl/gsl>
 #include <memory>
 #include <string>
@@ -15,13 +16,19 @@
 
 namespace TTauri {
 
+#define application (*Application_base::singleton)
+
 /*! A singleton that represents the application.
- * There should only be one Application instance.
- * It should be constructed in main() or equivilant and assigned to Application::shared.
+ * An Application should be instantiated in a local variable in main.
+ * This will allow the appliation to destruct Application systems in the
+ * correct order when main() goes out of scope and before the global varaibles
+ * are destructed.
  *
  */
 class Application_base {
 public:
+    static Application_base *singleton = nullptr;
+
     /*! Application delegate
      */
     std::shared_ptr<ApplicationDelegate> delegate;
