@@ -55,6 +55,7 @@ public:
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
+        get_singleton<Instance>().initialize();
         get_singleton<Instance>().addWindow<Window>(myWindowDelegate, "Hello World 1");
     }
 
@@ -67,10 +68,10 @@ public:
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
+    TTAURI_THROW(parse_error("test {}", 0x42).set<"foo"_tag>(0xcafebabe));
+
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
     auto app = Application(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
-    app.startGUI();
-
     return app.loop();
 }

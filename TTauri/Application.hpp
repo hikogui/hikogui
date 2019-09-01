@@ -28,8 +28,9 @@ namespace TTauri {
 
 inline Application &application()
 {
-    required_assert(_application != nullptr);
-    Application *p = dynamic_cast<Application *>(_application);
+    // We are sure that the Application is the only possible instance of _application.
+    // But we can't use dynamic_cast<> as it will fail during destruction of the Application.
+    auto *p = static_cast<Application *>(_application);
     required_assert(p != nullptr);
     return *p;
 }

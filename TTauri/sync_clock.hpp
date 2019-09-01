@@ -7,6 +7,7 @@
 #include "counters.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 #include <chrono>
+#include <algorithm>
 
 using namespace std::literals::chrono_literals;
 
@@ -88,8 +89,17 @@ private:
             LOG_AUDIT("Clock calibration: iteration={}, offset={:+} ns", iteration, checkCalibration().count());
             calibrate(slow_clock::now(), fast_clock::now());
 
-            let backoff = calibrate_loop_count++ * 10s;
-            std::this_thread::sleep_for(backoff < 120s ? backoff : 120s);
+            auto backoff = calibrate_loop_count++ * 10s;
+            if (backoff > 120s) {
+                backoff = 120s;
+            }
+
+            for (int i = 0; i < (backoff / 100ms); i++) {
+                if (calibrate_loop_stop) {
+                    break;
+                }
+                std::this_thread::sleep_for(100ms);
+            }
         }
         return;
     }

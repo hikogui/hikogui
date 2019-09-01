@@ -117,7 +117,11 @@ void logger_type::gather_loop() noexcept {
         } while (hires_utc_clock::now() < next_dump_time && !last_iteration);
 
         let keys = counter_map.keys();
-        LOG_INFO("Counter: displaying {} counters over the last {} seconds.", keys.size(), gather_interval / 1s);
+        if (last_iteration) {
+            LOG_INFO("Counter: displaying {} counters at end of program", keys.size());
+        } else {
+            LOG_INFO("Counter: displaying {} counters over the last {} seconds", keys.size(), gather_interval / 1s);
+        }
 
         for (let &tag: keys) {
             let [count, count_since_last_read] = read_counter(tag);

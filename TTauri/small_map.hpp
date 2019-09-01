@@ -81,11 +81,11 @@ public:
         }
     }
 
-    bool insert(K key, V value) {
+    bool insert(K key, V &&value) {
         for (auto i = 0; i < nr_items; i++) {
             auto &item = items[i];
             if (item.first == key) {
-                item.second = std::move(value);
+                item.second = std::forward<V>(value);
                 return true;
             }
         }

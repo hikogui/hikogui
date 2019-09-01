@@ -77,8 +77,9 @@ force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_or
     auto expect = from;
     if (ttauri_likely(state.compare_exchange_strong(expect, to, order))) {
         return;
+    } else {
+        return contended_transition<BlockCounterTag>(state, from, to, order);
     }
-    contended_transition<BlockCounterTag>(state, from, to, order);
 }
 
 
