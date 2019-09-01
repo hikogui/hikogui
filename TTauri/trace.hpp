@@ -4,6 +4,7 @@
 #include "counters.hpp"
 #include "small_map.hpp"
 #include "wfree_mpsc_message_queue.hpp"
+#include "datum.hpp"
 #include <atomic>
 #include <array>
 #include <utility>
@@ -22,7 +23,7 @@ struct trace_message {
     trace_id parent_id;
     hiperf_utc_clock::timepoint timestamp;
     hiperf_utc_clock::duration duration;
-    small_map<string_tag,int64_t,16> trace_info;
+    small_map<string_tag,datum,16> trace_info;
 
     trace_message(scoped_span_base const &span);
 };
