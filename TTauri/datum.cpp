@@ -8,87 +8,47 @@
 
 namespace TTauri {
 
-datum::datum(datum const &other) noexcept {
+void datum::delete_pointer() noexcept {
     switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1:
-        f64 = other.f64;
-        break;
+    case phy_integer_ptr_id: delete get_pointer<int64_t>(); break;
+    case phy_string_ptr_id: delete get_pointer<std::string>(); break;
+    case phy_url_ptr_id: delete get_pointer<URL>(); break;
+    case phy_vector_ptr_id: delete get_pointer<datum::vector>(); break;
+    case phy_map_ptr_id: delete get_pointer<datum::map>(); break;
+    default: no_default;
+    }
+    u64 = undefined_mask;
+}
 
+void datum::copy_pointer(datum const &other) noexcept {
+    switch (other.type_id()) {
     case phy_integer_ptr_id: {
         auto *p = new int64_t(*other.get_pointer<int64_t>());
-        u64 = integer_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = integer_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_string_ptr_id: {
         auto *p = new std::string(*other.get_pointer<std::string>());
-        u64 = string_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = string_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_url_ptr_id: {
         auto *p = new URL(*other.get_pointer<URL>());
-        u64 = url_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = url_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_vector_ptr_id: {
         auto *p = new datum::vector(*other.get_pointer<datum::vector>());
-        u64 = vector_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_map_ptr_id: {
         auto *p = new datum::map(*other.get_pointer<datum::map>());
-        u64 = map_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     default:
-        u64 = other.u64;
-    }
-}
-
-datum &datum::operator=(datum const &other) noexcept {
-    reset();
-    switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1:
-        f64 = other.f64;
-        break;
-
-    case phy_integer_ptr_id: {
-        auto *p = new int64_t(*other.get_pointer<int64_t>());
-        u64 = integer_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        } break;
-
-    case phy_string_ptr_id: {
-        auto *p = new std::string(*other.get_pointer<std::string>());
-        u64 = string_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        } break;
-
-    case phy_url_ptr_id: {
-        auto *p = new URL(*other.get_pointer<URL>());
-        u64 = url_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        } break;
-
-    case phy_vector_ptr_id: {
-        auto *p = new datum::vector(*other.get_pointer<datum::vector>());
-        u64 = vector_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        } break;
-
-    case phy_map_ptr_id: {
-        auto *p = new datum::map(*other.get_pointer<datum::map>());
-        u64 = map_pointer_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
-        } break;
-
-    default:
-        u64 = other.u64;
-    }
-    return *this;
-}
-
-datum::datum(int64_t value) noexcept : u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
-    if (value < datum_min_int || value > datum_max_int) {
-        // Overflow.
-        auto p = new int64_t(value);
-        u64 = integer_pointer_mask | reinterpret_cast<uint64_t>(p);
+        no_default;
     }
 }
 
@@ -96,39 +56,34 @@ datum::datum(std::string_view value) noexcept : u64(make_string(value)) {
     if (value.size() > 6) {
         // Overflow.
         auto p = new std::string(value);
-        u64 = string_pointer_mask | reinterpret_cast<uint64_t>(p);
+        u64 = string_ptr_mask | reinterpret_cast<uint64_t>(p);
     }
 }
 
 datum::datum(URL const &value) noexcept {
     auto p = new URL(value);
-    u64 = url_pointer_mask | reinterpret_cast<uint64_t>(p);
+    u64 = url_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
 datum::datum(datum::vector const &value) noexcept {
     auto p = new datum::vector(value);
-    u64 = vector_pointer_mask | reinterpret_cast<uint64_t>(p);
+    u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
 datum::datum(datum::map const &value) noexcept {
     auto p = new datum::map(value);
-    u64 = map_pointer_mask | reinterpret_cast<uint64_t>(p);
+    u64 = map_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
 datum::operator double() const {
-    switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: return f64;
-    case phy_integer_id0:
-    case phy_integer_id1:
-    case phy_integer_id2:
-    case phy_integer_id3:
-    case phy_integer_id4:
-    case phy_integer_id5:
-    case phy_integer_id6:
-    case phy_integer_id7: return static_cast<double>(get_signed_integer());
-    case phy_integer_ptr_id: return static_cast<double>(*get_pointer<int64_t>());
-    default: TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a double", this->repr(), this->type_name()));
+    if (is_phy_float()) {
+        return f64;
+    } else if (is_phy_integer()) {
+        return static_cast<double>(get_signed_integer());
+    } else if (is_phy_integer_ptr()) {
+        return static_cast<double>(*get_pointer<int64_t>());
+    } else {
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a double", this->repr(), this->type_name()));
     }
 }
 
@@ -137,20 +92,16 @@ datum::operator float() const {
 }
 
 datum::operator int64_t() const {
-    switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: return static_cast<int64_t>(f64);
-    case phy_boolean_id: return get_unsigned_integer();
-    case phy_integer_id0:
-    case phy_integer_id1:
-    case phy_integer_id2:
-    case phy_integer_id3:
-    case phy_integer_id4:
-    case phy_integer_id5:
-    case phy_integer_id6:
-    case phy_integer_id7: return get_signed_integer();
-    case phy_integer_ptr_id: return *get_pointer<int64_t>();
-    default: TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a int64_t", this->repr(), this->type_name()));
+    if (is_phy_integer()) {
+        return get_signed_integer();
+    } else if (is_phy_integer_ptr()) {
+        return *get_pointer<int64_t>();
+    } else if (is_phy_float()) {
+        return static_cast<int64_t>(f64);
+    } else if (is_phy_boolean()) {
+        return get_unsigned_integer() > 0 ? 1 : 0;
+    } else {
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a int64_t", this->repr(), this->type_name()));
     }
 }
 
@@ -193,7 +144,7 @@ datum::operator uint32_t() const {
 
 datum::operator uint16_t() const {
     let v = static_cast<uint64_t>(*this);
-    if ( v > std::numeric_limits<uint16_t>::max()) {
+    if (v > std::numeric_limits<uint16_t>::max()) {
         TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a uint16_t", this->repr(), this->type_name()));
     }
     return static_cast<uint16_t>(v);
@@ -201,7 +152,7 @@ datum::operator uint16_t() const {
 
 datum::operator uint8_t() const {
     let v = static_cast<uint64_t>(*this);
-    if ( v > std::numeric_limits<uint8_t>::max()) {
+    if (v > std::numeric_limits<uint8_t>::max()) {
         TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a uint8_t", this->repr(), this->type_name()));
     }
     return static_cast<uint8_t>(v);
@@ -209,8 +160,6 @@ datum::operator uint8_t() const {
 
 datum::operator bool() const noexcept {
     switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: return static_cast<double>(*this) != 0.0;
     case phy_boolean_id: return get_unsigned_integer() > 0;
     case phy_null_id: return false;
     case phy_undefined_id: return false;
@@ -234,30 +183,27 @@ datum::operator bool() const noexcept {
     case phy_url_ptr_id: return true;
     case phy_vector_ptr_id: return this->size() > 0;
     case phy_map_ptr_id: return this->size() > 0;
-    default: no_default;
+    default:
+        if (ttauri_likely(is_phy_float())) {
+            return static_cast<double>(*this) != 0.0;
+        } else {
+            no_default;
+        };
     }
 }
 
 datum::operator char() const {
     if (is_phy_string() && size() == 1) {
         return u64 & 0xff;
-    }
-    if (is_phy_string_ptr() && size() == 1) {
+    } else if (is_phy_string_ptr() && size() == 1) {
         return get_pointer<std::string>()->at(0);
+    } else {
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
     }
-    TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
 }
 
 datum::operator std::string() const noexcept {
     switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: {
-        auto str = fmt::format("{:g}", static_cast<double>(*this));
-        if (str.find('.') == str.npos) {
-            str += ".0";
-        }
-        return str;
-    }
     case phy_boolean_id: return static_cast<bool>(*this) ? "true" : "false";
     case phy_null_id: return "null";
     case phy_undefined_id: return "undefined";
@@ -312,7 +258,16 @@ datum::operator std::string() const noexcept {
         r += "}";
         return r;
     }
-    default: no_default;
+    default:
+        if (is_phy_float()) {
+            auto str = fmt::format("{:g}", static_cast<double>(*this));
+            if (str.find('.') == str.npos) {
+                str += ".0";
+            }
+            return str;
+        } else {
+            no_default;
+        }
     }
 }
 
@@ -329,46 +284,25 @@ datum::operator URL() const {
 datum::operator datum::vector() const {
     if (is_vector()) {
         return *get_pointer<datum::vector>();
+    } else {
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
     }
-
-    TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
 }
 
 datum::operator datum::map() const {
     if (is_map()) {
         return *get_pointer<datum::map>();
-    }
-
-    TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
-}
-
-void datum::reset() noexcept {
-    if (holds_pointer()) {
-        switch (type_id()) {
-        case phy_integer_ptr_id: delete get_pointer<int64_t>(); break;
-        case phy_string_ptr_id: delete get_pointer<std::string>(); break;
-        case phy_url_ptr_id: delete get_pointer<URL>(); break;
-        case phy_vector_ptr_id: delete get_pointer<datum::vector>(); break;
-        case phy_map_ptr_id: delete get_pointer<datum::map>(); break;
-        default: no_default;
-        }
-        delete get_pointer<void>();
-        u64 = undefined_mask;
+    } else {
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
     }
 }
 
 char const *datum::type_name() const noexcept
 {
     switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: return "Float";
     case phy_boolean_id: return "Boolean";
     case phy_null_id: return "Null";
     case phy_undefined_id: return "Undefined";
-    case phy_reserved_id0: no_default;
-    case phy_reserved_id1: no_default;
-    case phy_reserved_id2: no_default;
-    case phy_reserved_id3: no_default;
     case phy_integer_id0:
     case phy_integer_id1:
     case phy_integer_id2:
@@ -389,25 +323,21 @@ char const *datum::type_name() const noexcept
     case phy_url_ptr_id: return "URL";
     case phy_vector_ptr_id: return "Vector";
     case phy_map_ptr_id: return "Map";
-    case phy_reserved_ptr_id0: no_default;
-    case phy_reserved_ptr_id1: no_default;
-    case phy_reserved_ptr_id2: no_default;
-    default: no_default;
+    default:
+        if (ttauri_likely(is_phy_float())) {
+            return "Float";
+        } else {
+            no_default;
+        }
     }
 }
 
 std::string datum::repr() const noexcept
 {
     switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: return static_cast<std::string>(*this);
     case phy_boolean_id: return static_cast<std::string>(*this);
     case phy_null_id: return static_cast<std::string>(*this);
     case phy_undefined_id: return static_cast<std::string>(*this);
-    case phy_reserved_id0: no_default;
-    case phy_reserved_id1: no_default;
-    case phy_reserved_id2: no_default;
-    case phy_reserved_id3: no_default;
     case phy_integer_id0:
     case phy_integer_id1:
     case phy_integer_id2:
@@ -428,10 +358,12 @@ std::string datum::repr() const noexcept
     case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
     case phy_vector_ptr_id: return static_cast<std::string>(*this);
     case phy_map_ptr_id: return static_cast<std::string>(*this);
-    case phy_reserved_ptr_id0: no_default;
-    case phy_reserved_ptr_id1: no_default;
-    case phy_reserved_ptr_id2: no_default;
-    default: no_default;
+    default:
+        if (ttauri_likely(is_phy_float())) {
+            return static_cast<std::string>(*this);
+        } else {
+            no_default;
+        }
     }
 }
 
@@ -454,14 +386,18 @@ size_t datum::size() const
 
 size_t datum::hash() const noexcept
 {
-    switch (type_id()) {
-    case phy_float_id0:
-    case phy_float_id1: return std::hash<double>{}(f64);
-    case phy_string_ptr_id: return std::hash<std::string>{}(*get_pointer<std::string>());
-    case phy_url_ptr_id: return std::hash<URL>{}(*get_pointer<URL>());
-    case phy_vector_ptr_id: return std::hash<datum::vector>{}(*get_pointer<datum::vector>());
-    case phy_map_ptr_id: return std::hash<double>{}(f64);
-    default: return std::hash<uint64_t>{}(u64);
+    if (is_phy_float()) {
+        return std::hash<double>{}(f64);
+    } else if (ttauri_unlikely(is_phy_pointer())) {
+        switch (type_id()) {
+        case phy_string_ptr_id: return std::hash<std::string>{}(*get_pointer<std::string>());
+        case phy_url_ptr_id: return std::hash<URL>{}(*get_pointer<URL>());
+        case phy_vector_ptr_id: return std::hash<datum::vector>{}(*get_pointer<datum::vector>());
+        case phy_map_ptr_id: return std::hash<double>{}(f64);
+        default: no_default;
+        }
+    } else {
+        return std::hash<uint64_t>{}(u64);
     }
 }
 
@@ -474,10 +410,6 @@ std::ostream &operator<<(std::ostream &os, datum const &d)
 bool operator==(datum const &lhs, datum const &rhs) noexcept
 {
     switch (lhs.type_id()) {
-    case datum::phy_float_id0:
-    case datum::phy_float_id1:
-        return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
-
     case datum::phy_boolean_id:
         return rhs.is_boolean() && static_cast<bool>(lhs) == static_cast<bool>(rhs);
 
@@ -517,10 +449,13 @@ bool operator==(datum const &lhs, datum const &rhs) noexcept
     case datum::phy_map_ptr_id:
         return rhs.is_vector() && *lhs.get_pointer<datum::map>() == *rhs.get_pointer<datum::map>();
     default:
-        no_default;
+        if (lhs.is_phy_float()) {
+            return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
+        } else {
+            no_default;
+        }
     }
 }
-
 
 bool operator<(datum::map const &lhs, datum::map const &rhs) noexcept
 {
@@ -546,23 +481,16 @@ bool operator<(datum::map const &lhs, datum::map const &rhs) noexcept
 bool operator<(datum const &lhs, datum const &rhs) noexcept
 {
     switch (lhs.type_id()) {
-    case datum::phy_float_id0:
-    case datum::phy_float_id1:
-        if (rhs.is_numeric()) {
-            return static_cast<double>(lhs) < static_cast<double>(rhs);
-        } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
-        }
     case datum::phy_boolean_id:
         if (rhs.is_boolean()) {
             return static_cast<bool>(lhs) < static_cast<bool>(rhs);
         } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+            return lhs.type_order() < rhs.type_order();
         }
     case datum::phy_null_id:
-        return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+        return lhs.type_order() < rhs.type_order();
     case datum::phy_undefined_id:
-        return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+        return lhs.type_order() < rhs.type_order();
     case datum::phy_integer_id0:
     case datum::phy_integer_id1:
     case datum::phy_integer_id2:
@@ -577,7 +505,7 @@ bool operator<(datum const &lhs, datum const &rhs) noexcept
         } else if (rhs.is_integer()) {
             return static_cast<int64_t>(lhs) < static_cast<int64_t>(rhs);
         } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+            return lhs.type_order() < rhs.type_order();
         }
     case datum::phy_string_id0:
     case datum::phy_string_id1:
@@ -592,27 +520,36 @@ bool operator<(datum const &lhs, datum const &rhs) noexcept
         } else if (rhs.is_url()) {
             return static_cast<URL>(lhs) < static_cast<URL>(rhs);
         } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+            return lhs.type_order() < rhs.type_order();
         }
     case datum::phy_url_ptr_id:
         if (rhs.is_url() || rhs.is_string()) {
             return static_cast<URL>(lhs) < static_cast<URL>(rhs);
         } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+            return lhs.type_order() < rhs.type_order();
         }
     case datum::phy_vector_ptr_id:
         if (rhs.is_vector()) {
             return *lhs.get_pointer<datum::vector>() < *rhs.get_pointer<datum::vector>();
         } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+            return lhs.type_order() < rhs.type_order();
         }
     case datum::phy_map_ptr_id:
         if (rhs.is_map()) {
             return *lhs.get_pointer<datum::map>() < *rhs.get_pointer<datum::map>();
         } else {
-            return datum::phy_to_value(lhs.type_id()) < datum::phy_to_value(rhs.type_id());
+            return lhs.type_order() < rhs.type_order();
         }
-    default: no_default;
+    default:
+        if (lhs.is_phy_float()) {
+            if (rhs.is_numeric()) {
+                return static_cast<double>(lhs) < static_cast<double>(rhs);
+            } else {
+                return lhs.type_order() < rhs.type_order();
+            }
+        } else {
+            no_default;
+        }
     }
 }
 

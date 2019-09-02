@@ -10,7 +10,7 @@
 namespace TTauri {
 
 template<typename T>
-force_inline T &get_singleton() noexcept
+force_inline T &get_singleton() noexcept force_inline_attr
 {
     //static_assert(std::is_default_constructible_v<T>, "Singletons must be default constructible");
     static auto x = std::make_unique<T>();

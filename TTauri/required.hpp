@@ -27,6 +27,9 @@
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
 #define force_inline __forceinline
+#define no_inline __declspec(noinline)
+#define force_inline_attr
+#define no_inline_attr
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]
@@ -37,6 +40,9 @@
 #define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
 #define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
 #define force_inline inline __attribute__((always_inline))
+#define no_inline inline __attribute__((noinline))
+#define force_inline_attr
+#define no_inline_attr 
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
@@ -47,6 +53,9 @@
 #define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
 #define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
 #define force_inline inline __attribute__((always_inline))
+#define no_inline inline __attribute__((noinline))
+#define force_inline_attr
+#define no_inline_attr
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]

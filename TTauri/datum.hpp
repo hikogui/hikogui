@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <ostream>
 #include <numeric>
+#include <string_view>
 
 #define BI_OPERATOR_CONVERSION(op)\
     template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(datum const &lhs, T const &rhs) { return lhs op datum{rhs}; }\
@@ -41,9 +42,6 @@ public:
 
 namespace TTauri {
 
-
-
-
 constexpr int64_t datum_min_int = 0xfffe'0000'0000'0000LL;
 constexpr int64_t datum_max_int = 0x0007'ffff'ffff'ffffLL;
 
@@ -53,8 +51,12 @@ bool holds_alternative(datum const &);
 template<typename T>
 T get(datum const &);
 
-constexpr uint64_t datum_phy_to_mask(uint64_t id) {
-    return 0x7ff0'0000'0000'0000 | ((id & 0x10) << 59) | ((id & 0xf) << 48);
+constexpr uint64_t datum_id_to_mask(uint64_t id) {
+    return id << 48;
+}
+
+constexpr uint16_t datum_make_id(uint16_t id) {
+    return ((id & 0x10) << 11) | (id & 0xf) | 0x7ff0;
 }
 
 /*! A fixed size (64 bits) class for a generic value type.
@@ -85,64 +87,51 @@ struct datum {
         return (string_mask + (len << 48)) | x;
     }
 
-    
-
-    static constexpr int phy_to_value(uint8_t x) {
-        if (x == phy_float_id0 || x == phy_integer_ptr_id) {
-            // Fold all numeric values into a single value.
-            return phy_integer_id0;
-        } else {
-            return x;
-        }
-    }
-
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
 
-    static constexpr uint8_t phy_float_id0        = 0b00000;
-    static constexpr uint8_t phy_boolean_id       = 0b00001;
-    static constexpr uint8_t phy_null_id          = 0b00010;
-    static constexpr uint8_t phy_undefined_id     = 0b00011;
-    static constexpr uint8_t phy_reserved_id0     = 0b00100;
-    static constexpr uint8_t phy_reserved_id1     = 0b00101;
-    static constexpr uint8_t phy_reserved_id2     = 0b00110;
-    static constexpr uint8_t phy_reserved_id3     = 0b00111;
-    static constexpr uint8_t phy_integer_id0      = 0b01000;
-    static constexpr uint8_t phy_integer_id1      = 0b01001;
-    static constexpr uint8_t phy_integer_id2      = 0b01010;
-    static constexpr uint8_t phy_integer_id3      = 0b01011;
-    static constexpr uint8_t phy_integer_id4      = 0b01100;
-    static constexpr uint8_t phy_integer_id5      = 0b01101;
-    static constexpr uint8_t phy_integer_id6      = 0b01110;
-    static constexpr uint8_t phy_integer_id7      = 0b01111;
-    static constexpr uint8_t phy_float_id1        = 0b10000;
-    static constexpr uint8_t phy_string_id0       = 0b10001;
-    static constexpr uint8_t phy_string_id1       = 0b10010;
-    static constexpr uint8_t phy_string_id2       = 0b10011;
-    static constexpr uint8_t phy_string_id3       = 0b10100;
-    static constexpr uint8_t phy_string_id4       = 0b10101;
-    static constexpr uint8_t phy_string_id5       = 0b10110;
-    static constexpr uint8_t phy_string_id6       = 0b10111;
-    static constexpr uint8_t phy_string_ptr_id    = 0b11000;
-    static constexpr uint8_t phy_url_ptr_id       = 0b11001;
-    static constexpr uint8_t phy_integer_ptr_id   = 0b11010;
-    static constexpr uint8_t phy_vector_ptr_id    = 0b11011;
-    static constexpr uint8_t phy_map_ptr_id       = 0b11100;
-    static constexpr uint8_t phy_reserved_ptr_id0 = 0b11101;
-    static constexpr uint8_t phy_reserved_ptr_id1 = 0b11110;
-    static constexpr uint8_t phy_reserved_ptr_id2 = 0b11111;
+    static constexpr uint16_t phy_boolean_id       = datum_make_id(0b00001);
+    static constexpr uint16_t phy_null_id          = datum_make_id(0b00010);
+    static constexpr uint16_t phy_undefined_id     = datum_make_id(0b00011);
+    static constexpr uint16_t phy_reserved_id0     = datum_make_id(0b00100);
+    static constexpr uint16_t phy_reserved_id1     = datum_make_id(0b00101);
+    static constexpr uint16_t phy_reserved_id2     = datum_make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id3     = datum_make_id(0b00111);
+    static constexpr uint16_t phy_integer_id0      = datum_make_id(0b01000);
+    static constexpr uint16_t phy_integer_id1      = datum_make_id(0b01001);
+    static constexpr uint16_t phy_integer_id2      = datum_make_id(0b01010);
+    static constexpr uint16_t phy_integer_id3      = datum_make_id(0b01011);
+    static constexpr uint16_t phy_integer_id4      = datum_make_id(0b01100);
+    static constexpr uint16_t phy_integer_id5      = datum_make_id(0b01101);
+    static constexpr uint16_t phy_integer_id6      = datum_make_id(0b01110);
+    static constexpr uint16_t phy_integer_id7      = datum_make_id(0b01111);
 
-    static constexpr uint64_t float_mask = datum_phy_to_mask(phy_float_id0);
-    static constexpr uint64_t boolean_mask = datum_phy_to_mask(phy_boolean_id);
-    static constexpr uint64_t null_mask = datum_phy_to_mask(phy_null_id);
-    static constexpr uint64_t undefined_mask = datum_phy_to_mask(phy_undefined_id);
-    static constexpr uint64_t string_mask = datum_phy_to_mask(phy_string_id0);
-    static constexpr uint64_t integer_mask = datum_phy_to_mask(phy_integer_id0);
-    static constexpr uint64_t string_pointer_mask = datum_phy_to_mask(phy_string_id0);
-    static constexpr uint64_t url_pointer_mask = datum_phy_to_mask(phy_url_ptr_id);
-    static constexpr uint64_t integer_pointer_mask = datum_phy_to_mask(phy_integer_ptr_id);
-    static constexpr uint64_t vector_pointer_mask = datum_phy_to_mask(phy_vector_ptr_id);
-    static constexpr uint64_t map_pointer_mask = datum_phy_to_mask(phy_map_ptr_id);
+    static constexpr uint16_t phy_string_id0       = datum_make_id(0b10001);
+    static constexpr uint16_t phy_string_id1       = datum_make_id(0b10010);
+    static constexpr uint16_t phy_string_id2       = datum_make_id(0b10011);
+    static constexpr uint16_t phy_string_id3       = datum_make_id(0b10100);
+    static constexpr uint16_t phy_string_id4       = datum_make_id(0b10101);
+    static constexpr uint16_t phy_string_id5       = datum_make_id(0b10110);
+    static constexpr uint16_t phy_string_id6       = datum_make_id(0b10111);
+    static constexpr uint16_t phy_string_ptr_id    = datum_make_id(0b11000);
+    static constexpr uint16_t phy_url_ptr_id       = datum_make_id(0b11001);
+    static constexpr uint16_t phy_integer_ptr_id   = datum_make_id(0b11010);
+    static constexpr uint16_t phy_vector_ptr_id    = datum_make_id(0b11011);
+    static constexpr uint16_t phy_map_ptr_id       = datum_make_id(0b11100);
+    static constexpr uint16_t phy_reserved_ptr_id0 = datum_make_id(0b11101);
+    static constexpr uint16_t phy_reserved_ptr_id1 = datum_make_id(0b11110);
+    static constexpr uint16_t phy_reserved_ptr_id2 = datum_make_id(0b11111);
+
+    static constexpr uint64_t boolean_mask = datum_id_to_mask(phy_boolean_id);
+    static constexpr uint64_t null_mask = datum_id_to_mask(phy_null_id);
+    static constexpr uint64_t undefined_mask = datum_id_to_mask(phy_undefined_id);
+    static constexpr uint64_t string_mask = datum_id_to_mask(phy_string_id0);
+    static constexpr uint64_t integer_mask = datum_id_to_mask(phy_integer_id0);
+    static constexpr uint64_t string_ptr_mask = datum_id_to_mask(phy_string_ptr_id);
+    static constexpr uint64_t url_ptr_mask = datum_id_to_mask(phy_url_ptr_id);
+    static constexpr uint64_t integer_ptr_mask = datum_id_to_mask(phy_integer_ptr_id);
+    static constexpr uint64_t vector_ptr_mask = datum_id_to_mask(phy_vector_ptr_id);
+    static constexpr uint64_t map_ptr_mask = datum_id_to_mask(phy_map_ptr_id);
 
 
     using vector = std::vector<datum>;
@@ -155,25 +144,46 @@ struct datum {
     };
 
     datum() noexcept : u64(undefined_mask) {}
-    ~datum() noexcept { reset(); }
-    datum(datum const &other) noexcept;
-    datum &operator=(datum const &other) noexcept;
-
-    datum(datum &&other) noexcept {
-        std::memcpy(this, &other, sizeof(*this));
-        other.u64 = undefined_mask;
+    ~datum() noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
     }
 
-    datum &operator=(datum &&other) noexcept {
-        if (holds_pointer()) {
-            reset();
+    datum(datum const &other) noexcept {
+        std::memcpy(this, &other, sizeof(*this));
+        if (ttauri_unlikely(other.is_phy_pointer())) {
+            copy_pointer(other);
+        }
+    }
+
+    datum &operator=(datum const &other) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
         }
         std::memcpy(this, &other, sizeof(*this));
-        other.u64 = undefined_mask;
+        if (ttauri_unlikely(other.is_phy_pointer())) {
+            copy_pointer(other);
+        }
         return *this;
     }
 
-    void reset() noexcept;
+    datum(datum &&other) noexcept :
+        u64(undefined_mask)
+    {
+        uint64_t t;
+        std::memcpy(&t, &other, sizeof(t));
+        std::memcpy(&other, this, sizeof(other));
+        std::memcpy(this, &t, sizeof(*this));
+    }
+
+    datum &operator=(datum &&other) noexcept {
+        uint64_t t;
+        std::memcpy(&t, &other, sizeof(t));
+        std::memcpy(&other, this, sizeof(other));
+        std::memcpy(this, &t, sizeof(*this));
+        return *this;
+    }
 
     explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
     explicit datum(float value) noexcept : datum(static_cast<double>(value)) {}
@@ -181,7 +191,13 @@ struct datum {
     explicit datum(uint32_t value) noexcept : u64(integer_mask | value) {}
     explicit datum(uint16_t value) noexcept : u64(integer_mask | value) {}
     explicit datum(uint8_t value) noexcept : u64(integer_mask | value) {}
-    explicit datum(int64_t value) noexcept;
+    explicit datum(int64_t value) noexcept : u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
+        if (ttauri_unlikely(value < datum_min_int || value > datum_max_int)) {
+            // Overflow.
+            auto p = new int64_t(value);
+            u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
+        }
+    }
     explicit datum(int32_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
     explicit datum(int16_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
     explicit datum(int8_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
@@ -233,7 +249,7 @@ struct datum {
     explicit operator datum::map() const;
     std::string repr() const noexcept;
 
-    uint8_t type_id() const noexcept {
+    uint16_t type_id() const noexcept {
         // We use bit_cast<> on this to get access to the
         // actual bytes for determining the stored type.
         // This gets arround C++ undefined behavour of type-punning
@@ -241,26 +257,42 @@ struct datum {
         uint64_t data;
         std::memcpy(&data, this, sizeof(data));
 
-        auto hi_word = static_cast<uint16_t>(data >> 48);
-
-        if ((hi_word & exponent_mask) != exponent_mask) {
-            // If the not all exponent bits are set then this is a normal floating point number.
-            return 0;
-        }
-
-        hi_word &= ~exponent_mask;
-        hi_word |= hi_word >> 11;
-
-        // Get the type, lower 4 bits + the sign bit.
-        return static_cast<uint8_t>(hi_word);
+        return static_cast<uint16_t>(data >> 48);
     }
 
-    bool is_phy_float() const noexcept { return (type_id() & 0b01111) == phy_float_id0; }
+    /*! Return ordering of types.
+     * Used in less-than comparison between different types.
+     */
+    int type_order() const noexcept {
+        if (is_float() || is_phy_integer_ptr()) {
+            // Fold all numeric values into the same group (literal integers).
+            return phy_integer_id0;
+        } else {
+            return type_id();
+        }
+    }
+
+    bool is_phy_float() const noexcept {
+        let id = type_id();
+        return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
+    }
+
+    bool is_phy_integer() const noexcept {
+        return (type_id() & 0xfff8) == 0x7ff8;
+    }
+
+    bool is_phy_string() const noexcept {
+        let id = type_id();
+        return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
+    }
+
+    bool is_phy_pointer() const noexcept {
+        return (type_id() & 0xfff8) == 0xfff8;
+    }
+
     bool is_phy_boolean() const noexcept { return type_id() == phy_boolean_id; }
     bool is_phy_null() const noexcept { return type_id() == phy_null_id; }
     bool is_phy_undefined() const noexcept { return type_id() == phy_undefined_id; }
-    bool is_phy_integer() const noexcept { return (type_id() & 0b11000) == phy_integer_id0; }
-    bool is_phy_string() const noexcept { let id = type_id(); return ((id & 0b11000) == 0b10000) && ((id & 0b00111) > 0); }
     bool is_phy_string_ptr() const noexcept { return type_id() == phy_string_ptr_id; }
     bool is_phy_url_ptr() const noexcept { return type_id() == phy_url_ptr_id; }
     bool is_phy_integer_ptr() const noexcept { return type_id() == phy_integer_ptr_id; }
@@ -280,7 +312,6 @@ struct datum {
 
     char const *type_name() const noexcept;
 
-    bool holds_pointer() const noexcept { return (type_id() & 0b1'1000) == 0b1'1000; }
     uint64_t get_unsigned_integer() const noexcept { return u64 & 0x0000ffff'ffffffff; }
     int64_t get_signed_integer() const noexcept { return static_cast<int64_t>((u64 << 16) / 65536); }
 
@@ -292,6 +323,9 @@ struct datum {
 
     size_t size() const;
     size_t hash() const noexcept;
+private:
+    void delete_pointer() noexcept;
+    void copy_pointer(datum const &other) noexcept;
 };
 
 template<typename T> inline bool holds_alternative(datum const &) { return false; }

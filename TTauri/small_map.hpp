@@ -15,7 +15,10 @@ class small_map {
 public:
     using key_type = K;
     using value_type = V;
-    using item_type = std::pair<K,V>;
+    struct item_type {
+        K key;
+        V value;
+    };
     static constexpr int capacity = N;
 
 private:
@@ -27,13 +30,15 @@ public:
 
     small_map(small_map const &other) : nr_items(0) {
         for (let &item: other) {
-            items[nr_items++] = { item.first, item.second };
+            items[nr_items++] = { item.key, item.value };
         }
     }
 
     small_map(small_map &&other) : nr_items(0) {
-        for (let &item: other) {
-            items[nr_items++] = { std::move(item.first), std::move(item.second) };
+        using namespace std;
+  
+        for (auto &item: other) {
+            swap(items[nr_items++], item);
         }
         other.nr_items = 0;
     }
@@ -41,15 +46,17 @@ public:
     small_map &operator=(small_map const &other) {
         nr_items = 0;
         for (let &item: other) {
-            items[nr_items++] = { item.first, item.second };
+            items[nr_items++] = item;
         }
         return *this;
     }
 
     small_map &operator=(small_map &&other) {
+        using namespace std;
+
         nr_items = 0;
         for (let &item: other) {
-            items[nr_items++] = { std::move(item.first), std::move(item.second) };
+            swap([nr_items++], item);
         }
         other.nr_items = 0;
         return *this;
@@ -64,9 +71,9 @@ public:
     decltype(auto) end() const { return items.begin() + nr_items; }
     decltype(auto) end() { return items.begin() + nr_items; }
 
-    bool push(K key, V value) noexcept {
+    bool push(K &&key, V &&value) noexcept {
         if (nr_items < capacity) {
-            items[nr_items++] = { std::move(key), std::move(value) };
+            items[nr_items++] = { std::forward<K>(key), std::forward<V>(value) };
             return true;
         } else {
             return false;
@@ -81,22 +88,22 @@ public:
         }
     }
 
-    bool insert(K key, V &&value) {
+    bool insert(K &&key, V &&value) {
         for (auto i = 0; i < nr_items; i++) {
             auto &item = items[i];
-            if (item.first == key) {
-                item.second = std::forward<V>(value);
+            if (item.key == key) {
+                item.value = std::forward<V>(value);
                 return true;
             }
         }
-        return push(key, value);
+        return push(std::forward<K>(key), std::forward<V>(value));
     }
 
     std::optional<V> get(K const &key) const noexcept {
         for (auto i = 0; i < nr_items; i++) {
             let &item = items[i];
-            if (item.first == key) {
-                return item.second;
+            if (item.key == key) {
+                return item.value;
             }
         }
         return {};

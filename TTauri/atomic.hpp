@@ -23,7 +23,7 @@ inline void pause_cpu()
 }
 
 template<typename T>
-inline void contended_wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst)
+no_inline void contended_wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst) no_inline_attr
 {
     using namespace std::literals::chrono_literals;
 
@@ -41,7 +41,7 @@ inline void contended_wait_for_transition(std::atomic<T> &state, T from, std::me
 }
 
 template<typename T>
-force_inline void wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst)
+force_inline void wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst) force_inline_attr
 {
     if (state.load(order) != from) {
         contended_wait_for_transition(state, from, order);
@@ -49,7 +49,7 @@ force_inline void wait_for_transition(std::atomic<T> &state, T from, std::memory
 }
 
 template<string_tag BlockCounterTag=0,typename T>
-inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst) no_inline_attr
 {
     using namespace std::literals::chrono_literals;
 
@@ -72,7 +72,7 @@ inline void contended_transition(std::atomic<T> &state, T from, T to, std::memor
 }
 
 template<string_tag BlockCounterTag=0,typename T>
-force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst) force_inline_attr
 {
     auto expect = from;
     if (ttauri_likely(state.compare_exchange_strong(expect, to, order))) {

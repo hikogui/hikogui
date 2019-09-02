@@ -29,8 +29,8 @@ protected:
 
 public:
     template<typename Fmt, typename... Args>
-    error(Fmt const &fmt, Args const &... args) noexcept :
-        _message(fmt::format(fmt, args...)) {}
+    error(Fmt const &fmt, Args &&... args) noexcept :
+        _message(fmt::format(fmt, std::forward<Args>(args)...)) {}
 
     virtual string_tag tag() const noexcept = 0;
 
@@ -46,7 +46,7 @@ public:
         int i = 0;
         for (let &info: error_info) {
             if (i++ > 0) { r += " ,"; };
-            r += fmt::format("({}: {})", tag_to_string(info.first), info.second.repr());   
+            r += fmt::format("({}: {})", tag_to_string(info.key), info.value.repr());   
         }
         return r;
     }
@@ -68,8 +68,8 @@ public:
      * which means throw knows exactly which class is being thrown.
      */
     template<string_tag InfoTag, typename InfoValueType>
-    error &set(InfoValueType const &infoValue) noexcept {
-        if (!error_info.insert(InfoTag, datum(infoValue))) {
+    error &set(InfoValueType &&info_value) noexcept {
+        if (!error_info.insert(InfoTag, datum(std::forward<InfoValueType>(info_value)))) {
             LOG_ERROR("Too many error_info values added to exception.");
         }
         return *this;
@@ -116,18 +116,24 @@ public:
     static constexpr string_tag TAG = _TAG;
 
     template<typename Fmt, typename... Args>
-    sub_error(Fmt const &fmt, Args const &... args) noexcept :
-        error(fmt, args...) {}
+    sub_error(Fmt const &fmt, Args &&... args) noexcept :
+        error(fmt, std::forward<Args>(args)...) {}
 
     /*!
      * A non-virtual method like this will return the actual class instance
      * which means throw knows exactly which class is being thrown.
      */
     template<string_tag InfoTag, typename InfoValueType>
-    sub_error &set(InfoValueType const &info_value) noexcept {
-        if (!error_info.insert(InfoTag, datum(info_value))) {
+    sub_error &set(InfoValueType &&info_value) noexcept {
+        if (!error_info.insert(InfoTag, datum(std::forward<InfoValueType>(info_value)))) {
             LOG_ERROR("Too many error_info values added to exception.");
         }
+        return *this;
+    }
+
+    sub_error &log(char const *source_file, int source_line) {
+        logger.log<log_level::Exception>(source_file, source_line, "{}", *this);
+        increment_counter<TAG>();
         return *this;
     }
 
@@ -157,13 +163,8 @@ using bounds_error = sub_error<"bounds_error"_tag>;
 */
 using invalid_operation_error = sub_error<"invalid_op"_tag>;
 
-#define TTAURI_THROW(x)\
-    do {\
-        auto e = (x);\
-        increment_counter<e.TAG>();\
-        LOG_EXCEPTION("{}", e);\
-        throw e;\
-    } while(false)
+#define TTAURI_THROW(x) throw std::move((x).log(__FILE__, __LINE__));
+    
 
 
 #define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{0}", #x )); }

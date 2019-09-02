@@ -79,3 +79,9 @@ TEST(Datum, FloatOperations) {
     ASSERT_EQ(a == 45.0, true);
 
 }
+
+TEST(Datum, StringOperations) {
+    let v = datum{"Hello World"};
+
+    ASSERT_EQ(static_cast<std::string>(v), "Hello World"s);
+}

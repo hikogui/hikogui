@@ -19,7 +19,7 @@ struct BezierPoint {
     Type type;
     glm::vec2 p;
 
-    BezierPoint(glm::vec2 p, Type type) noexcept : p(p), type(type) {}
+    BezierPoint(glm::vec2 p, Type type) noexcept : type(type), p(p) {}
     BezierPoint(float x, float y, Type type) noexcept : BezierPoint({x, y}, type) {}
 
     /*! Normalize points in a list.

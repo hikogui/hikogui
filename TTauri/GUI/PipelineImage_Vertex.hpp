@@ -35,11 +35,11 @@ struct Vertex {
 
     Vertex(const ImageLocation &location, glm::vec2 position, glm::u16vec3 atlasPosition) noexcept :
         position(position),
-        atlasPosition(atlasPosition),
         clippingRectangle({
             {location.clippingRectangle.offset.x, location.clippingRectangle.offset.y},
             {location.clippingRectangle.extent.width(), location.clippingRectangle.extent.height()}
         }),
+        atlasPosition(atlasPosition),
         depth(static_cast<uint16_t>(location.depth)),
         alpha(static_cast<uint8_t>(location.alpha * 255.0)), dummy1(0), dummy2(0), dummy3(0) {}
 
