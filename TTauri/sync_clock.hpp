@@ -27,8 +27,9 @@ class sync_clock_calibration_type {
     };
 
     time_point_pair first_pair;
+    time_point_pair prev_pair;
     time_point_pair last_pair;
-    int nr_calibrations = 0;
+    int calibration_nr = 0;
 
     static constexpr int gainShift = 60;
     static constexpr double gainMultiplier = static_cast<double>(1ULL << gainShift);
@@ -42,7 +43,6 @@ class sync_clock_calibration_type {
 
     std::thread calibrate_loop_id;
     bool calibrate_loop_stop = false;
-    size_t calibrate_loop_count = 0;
 
 public:
     /*! Construct a sync clock.
@@ -73,6 +73,10 @@ public:
         return convert(gain.load(std::memory_order_relaxed), bias.load(std::memory_order_relaxed), fast_time);
     }
 
+    typename slow_clock::duration convert(typename fast_clock::duration fast_duration) const noexcept {
+        return convert(gain.load(std::memory_order_relaxed), fast_duration);
+    }
+
 private:
     static time_point_pair makeCalibrationPoint() noexcept {
         // We are going to read the slow clock twice sandwiched by fast clocks,
@@ -92,9 +96,10 @@ private:
 
     void addCalibrationPoint() noexcept {
         auto tp = makeCalibrationPoint();
-        if (nr_calibrations++ == 0) {
+        if (calibration_nr++ == 0) {
             first_pair = tp;
         }
+        prev_pair = last_pair;
         last_pair = tp;
     }
 
@@ -103,21 +108,28 @@ private:
         let diff_slow = static_cast<double>((last_pair.slow - first_pair.slow).count());
         let diff_fast = static_cast<double>((last_pair.fast - first_pair.fast).count());
     
-        if (nr_calibrations < 2 || diff_fast == 0.0) {
+        if (calibration_nr < 2 || diff_fast == 0.0) {
             return static_cast<int64_t>(gainMultiplier);
         } else {
             auto new_gain = diff_slow / diff_fast;
-            return static_cast<int64_t>(new_gain * gainMultiplier);
+            return static_cast<int64_t>(std::round(new_gain * gainMultiplier));
         }
     }
 
     typename slow_clock::duration getBias(int64_t new_gain) noexcept {
-        // Calculate the new calibration values.
-        let now_fast_after_gain = typename slow_clock::duration(static_cast<int64_t>((
-            static_cast<boost::multiprecision::int128_t>(last_pair.fast.time_since_epoch().count()) *
-            new_gain
-            ) >> gainShift
-        ));
+        // Get a large integer cpu_clock_value.
+        auto tmp = static_cast<boost::multiprecision::int128_t>(last_pair.fast.time_since_epoch() / 1ns);
+
+        // Multiply with the integer gain, that is pre-multiplied.
+        tmp *= new_gain;
+
+        // Add half of the lost precission for propper rounding.
+        tmp += (1LL << (gainShift - 1));
+
+        // Remove gain-pre-multiplier.
+        tmp >>= gainShift;
+
+        let now_fast_after_gain = typename slow_clock::duration(static_cast<slow_clock::rep>(tmp));
 
         return (last_pair.slow.time_since_epoch() + leapsecond_offset) - now_fast_after_gain;
     }
@@ -137,41 +149,51 @@ private:
             0s;
     }
 
-    typename slow_clock::duration getCalibrationDifference() noexcept {
-        let now_fast_as_slow = convert(last_pair.fast);
-        return now_fast_as_slow - last_pair.slow;
+    /*! Return the amount of drift from fast to slow clock, since last calibration.
+     * This function must be called before the new gain and bias are set.
+     */
+    double getDrift() noexcept {
+        // Compare the new calibration point, with the old calibration data.
+        let fast_to_slow_offset = convert(last_pair.fast) - last_pair.slow;
+        let fast_to_slow_offset_ns = static_cast<double>(fast_to_slow_offset / 1ns);
+
+        let duration_since_calibration = last_pair.slow - prev_pair.slow;
+        let duration_since_calibration_ns = static_cast<double>(duration_since_calibration / 1ns);
+        return fast_to_slow_offset_ns / duration_since_calibration_ns;
     }
 
     void calibrate() noexcept {
         addCalibrationPoint();
-        let diff = getCalibrationDifference();
 
-        let do_gain_calibration = nr_calibrations < 5;
+        let drift = getDrift();
 
-        let new_gain = do_gain_calibration ? getGain() : gain;
-        let new_bias = getBias(new_bias);
+        let do_gain_calibration = calibration_nr <= 5;
+
+        let new_gain = do_gain_calibration ? getGain() : gain.load(std::memory_order_relaxed);
+        let new_bias = getBias(new_gain);
         let leap_adjustment = getLeapAdjustment(new_gain, new_bias);
+        //XXX log leap adjustment.
 
         if (do_gain_calibration) {
-            LOG_AUDIT("Clock '{}' calibration {}: offset={:+} ns gain={:+.15} ns/tick",
-                name, calibration_nr, diff / 1ns, new_gain / gainMultiplier
+            LOG_AUDIT("Clock '{}' calibration {}: drift={:+} ns/s gain={:+.15} ns/tick",
+                name, calibration_nr, drift * 1000000000.0, new_gain / gainMultiplier
             );
         } else {
-            LOG_AUDIT("Clock '{}' calibration {}: offset={:+} ns",
-                name, calibration_nr, diff / 1ns
+            LOG_AUDIT("Clock '{}' calibration {}: drift={:+} ns/s",
+                name, calibration_nr, drift * 1000000000.0
             );
         }
         
-        gain.store(new_gain, std::memory_order_relaxed);
+        if (do_gain_calibration) {
+            gain.store(new_gain, std::memory_order_relaxed);
+        }
         bias.store(new_bias + leap_adjustment, std::memory_order_relaxed);
         leapsecond_offset += leap_adjustment;
     }
 
     void calibrate_loop() noexcept {
         while (!calibrate_loop_stop) {
-            calibrate();
-
-            auto backoff = calibrate_loop_count++ * 10s;
+            auto backoff = calibration_nr * 10s;
             if (backoff > 120s) {
                 backoff = 120s;
             }
@@ -182,18 +204,24 @@ private:
                 }
                 std::this_thread::sleep_for(100ms);
             }
+
+            calibrate();
         }
         return;
     }
 
-    typename slow_clock::time_point convert(int64_t new_gain, typename slow_clock::duration new_bias, typename fast_clock::time_point fast_time) const noexcept {
-        auto u128_count = static_cast<boost::multiprecision::int128_t>(fast_time.time_since_epoch().count());
+    typename slow_clock::duration convert(int64_t new_gain, typename fast_clock::duration fast_duration) const noexcept {
+        auto u128_count = static_cast<boost::multiprecision::int128_t>(fast_duration.count());
         u128_count *= new_gain;
+        u128_count += (1LL << (gainShift - 1));
         u128_count >>= gainShift;
 
-        let slow_period = new_bias + typename slow_clock::duration(static_cast<typename slow_clock::rep>(u128_count));
-        let slow_time_point = typename slow_clock::time_point(slow_period);
-        return slow_time_point;
+        return typename slow_clock::duration(static_cast<typename slow_clock::rep>(u128_count));
+    }
+
+    typename slow_clock::time_point convert(int64_t new_gain, typename slow_clock::duration new_bias, typename fast_clock::time_point fast_time) const noexcept {
+        let slow_period = convert(new_gain, fast_time.time_since_epoch());
+        return typename slow_clock::time_point(slow_period) + new_bias;
     }
 };
 
@@ -228,6 +256,13 @@ struct sync_clock {
             sync_clock_calibration<slow_clock,fast_clock>->convert(fast_time) :
             time_point(duration(0ns));
     }
+
+    static duration convert(typename fast_clock::duration fast_duration) noexcept {
+        return sync_clock_calibration<slow_clock,fast_clock> != nullptr ?
+            sync_clock_calibration<slow_clock,fast_clock>->convert(fast_duration) :
+            duration(0ns);
+    }
+
 
     static time_point now() noexcept {
         return convert(fast_clock::now());
