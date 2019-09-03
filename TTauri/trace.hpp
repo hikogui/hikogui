@@ -4,6 +4,7 @@
 #include "counters.hpp"
 #include "small_map.hpp"
 #include "wfree_mpsc_message_queue.hpp"
+#include "hiperf_utc_clock.hpp"
 #include "datum.hpp"
 #include <atomic>
 #include <array>

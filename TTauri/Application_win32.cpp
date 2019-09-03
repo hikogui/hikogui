@@ -15,8 +15,8 @@ namespace TTauri {
 
 Application_win32::Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
     Application_base(std::move(delegate)),
-    mainThreadID(GetCurrentThreadId()),
-    hInstance(hInstance), hPrevInstance(hPrevInstance), pCmdLine(pCmdLine), nCmdShow(nCmdShow)
+    hInstance(hInstance), hPrevInstance(hPrevInstance), pCmdLine(pCmdLine), nCmdShow(nCmdShow),
+    mainThreadID(GetCurrentThreadId())
 {
 }
 

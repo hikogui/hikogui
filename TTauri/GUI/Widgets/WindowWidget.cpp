@@ -15,7 +15,7 @@ WindowWidget::WindowWidget() noexcept :
 {
 }
 
-void WindowWidget::setParent(gsl::not_null<Window *> window) noexcept
+void WindowWidget::setParentWindow(gsl::not_null<Window *> window) noexcept
 {
     this->window = window;
 

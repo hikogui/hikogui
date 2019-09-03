@@ -129,7 +129,7 @@ private:
         // Remove gain-pre-multiplier.
         tmp >>= gainShift;
 
-        let now_fast_after_gain = typename slow_clock::duration(static_cast<slow_clock::rep>(tmp));
+        let now_fast_after_gain = typename slow_clock::duration(static_cast<typename slow_clock::rep>(tmp));
 
         return (last_pair.slow.time_since_epoch() + leapsecond_offset) - now_fast_after_gain;
     }
@@ -172,7 +172,11 @@ private:
         let new_gain = do_gain_calibration ? getGain() : gain.load(std::memory_order_relaxed);
         let new_bias = getBias(new_gain);
         let leap_adjustment = getLeapAdjustment(new_gain, new_bias);
-        //XXX log leap adjustment.
+
+        // XXX implement leap second testing.
+        if (leap_adjustment != 0ns) {
+            LOG_AUDIT("Clock '{}' detected leap-second {} s", name, leap_adjustment / 1s);
+        }
 
         if (do_gain_calibration) {
             LOG_AUDIT("Clock '{}' calibration {}: drift={:+} ns/s gain={:+.15} ns/tick",

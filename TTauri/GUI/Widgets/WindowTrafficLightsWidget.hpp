@@ -41,7 +41,7 @@ public:
     WindowTrafficLightsWidget(WindowTrafficLightsWidget &&) = delete;
     WindowTrafficLightsWidget &operator=(WindowTrafficLightsWidget &&) = delete;
 
-    virtual void setParent(Widget *parent) noexcept;
+    void setParent(Widget *parent) noexcept override;
 
     int state() const noexcept;
 

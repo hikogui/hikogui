@@ -21,7 +21,7 @@ struct ASTName : ASTExpression {
         return name;
     }
 
-    virtual std::vector<std::string> getFQName() {
+    std::vector<std::string> getFQName() override {
         return { name };
     }
 

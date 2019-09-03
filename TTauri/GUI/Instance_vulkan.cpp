@@ -136,6 +136,8 @@ VkBool32 Instance_vulkan::debugUtilsMessageCallback(
             LOG_ERROR("Vulkan: {0}", pCallbackData->pMessage);
         }
         std::abort();
+    default:
+        no_default;
     }
 
     return VK_FALSE;

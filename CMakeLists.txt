@@ -6,13 +6,17 @@ if (MSVC)
     add_link_options(/nologo)
 	add_definitions(-DWIN32 -D_WINDOWS -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 
-    if (NOT (${CMAKE_BUILD_TYPE} MATCHES Debug))
-        # Whole program optimization.
-        #add_compile_options(/GL)
-        #add_link_options(/LTCG)
+    if (NOT (${CMAKE_CXX_COMPILER_ID} MATCHES Clang))
+        if (NOT (${CMAKE_BUILD_TYPE} MATCHES Debug))
+            # Whole program optimization.
+            add_compile_options(-GL)
+            add_link_options(-LTCG)
+        endif()
     endif()
-
 endif ()
+
+# std::result_of used by fmt.
+add_definitions(-D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
 
 add_subdirectory(Utilities)
 add_subdirectory(ThirdPartyLibraries)

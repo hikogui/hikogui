@@ -99,7 +99,6 @@ set(TTauri_srcs
     FileMapping.cpp
     FileView.cpp
     strings.cpp
-    any_repr.cpp
     wsRGBA.cpp
 )
 
@@ -111,7 +110,6 @@ set(TTauriTests_srcs
     Draw/Path_tests.cpp
     Draw/PixelMap_tests.cpp
     datum_tests.cpp
-    any_repr_tests.cpp
     counters_tests.cpp
     string_tag_tests.cpp
     wsRGBA_tests.cpp
@@ -149,6 +147,7 @@ target_include_directories(TTauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/.. ${Boost_
 target_link_directories(TTauri PUBLIC ${Boost_LIBRARY_DIRS})
 target_link_libraries(TTauri GSL zlib png glm fmt tz ${Boost_LIBRARIES} ${Vulkan_LIBRARIES} VMA utf8proc rhea)
 target_compile_definitions(TTauri PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
+
 if (MSVC)
     target_compile_definitions(TTauri PUBLIC -D_WIN64 -DVK_USE_PLATFORM_WIN32_KHR)
 endif()

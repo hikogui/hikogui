@@ -24,7 +24,7 @@ struct ASTMember : ASTExpression {
         return object->string() + "." + name;
     }
 
-    virtual std::vector<std::string> getFQName() {
+    std::vector<std::string> getFQName() override {
         auto r = object->getFQName();
         r.push_back(name);
         return r;

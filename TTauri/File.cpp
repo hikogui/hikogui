@@ -9,7 +9,7 @@
 namespace TTauri {
 
 File::File(URL const &location, AccessMode accessMode) :
-    location(location), accessMode(accessMode)
+    accessMode(accessMode), location(location)
 {
 #ifdef WIN32
     DWORD desiredAccess = 0;

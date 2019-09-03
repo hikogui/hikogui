@@ -141,8 +141,6 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(Pipelin
     auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
-    let width = box.width.value();
-    let buttonWidth = width / 3.0;
     let height = box.height.value();
 
     let redCenter = glm::vec2{
@@ -209,9 +207,9 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(Pipelin
 PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     if constexpr (operatingSystem == OperatingSystem::Windows) {
-        return { std::move(image), std::move(drawApplicationIconImage(*image)) };
+        return { std::move(image), drawApplicationIconImage(*image) };
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
-        return { std::move(image), std::move(drawTrafficLightsImage(*image)) };
+        return { std::move(image), drawTrafficLightsImage(*image) };
     } else {
         no_default;
     }

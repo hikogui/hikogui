@@ -40,7 +40,7 @@ void Window_base::initialize()
 
     auto _window = dynamic_cast<Window *>(this);
     required_assert(_window);
-    widget->setParent(_window);
+    widget->setParentWindow(_window);
 
     openingWindow();
 }

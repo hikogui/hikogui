@@ -7,7 +7,6 @@
 #include "string_tag.hpp"
 #include "small_map.hpp"
 #include "logger.hpp"
-#include "any_repr.hpp"
 #include "counters.hpp"
 #include "logger.hpp"
 #include "datum.hpp"

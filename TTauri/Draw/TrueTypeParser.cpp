@@ -413,22 +413,21 @@ static Path parseSimpleGlyph(gsl::span<std::byte const> bytes, uint16_t unitsPer
 
 constexpr uint16_t FLAG_ARG_1_AND_2_ARE_WORDS = 0x0001;
 constexpr uint16_t FLAG_ARGS_ARE_XY_VALUES = 0x0002;
-constexpr uint16_t FLAG_ROUND_XY_TO_GRID = 0x0004;
+[[maybe_unused]] constexpr uint16_t FLAG_ROUND_XY_TO_GRID = 0x0004;
 constexpr uint16_t FLAG_WE_HAVE_A_SCALE = 0x0008;
 constexpr uint16_t FLAG_MORE_COMPONENTS = 0x0020;
 constexpr uint16_t FLAG_WE_HAVE_AN_X_AND_Y_SCALE = 0x0040;
 constexpr uint16_t FLAG_WE_HAVE_A_TWO_BY_TWO = 0x0080;
-constexpr uint16_t FLAG_WE_HAVE_INSTRUCTIONS = 0x0100;
+[[maybe_unused]] constexpr uint16_t FLAG_WE_HAVE_INSTRUCTIONS = 0x0100;
 constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
-constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
+[[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
-constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
+[[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
 static Path parseCompoundGlyph(std::vector<gsl::span<std::byte const>> const& glyphDataList, size_t i, uint16_t unitsPerEm)
 {
     let bytes = glyphDataList.at(i);
     size_t offset = 0;
 
-    let& entry = at<GLYFEntry>(bytes, offset);
     offset += sizeof(GLYFEntry);
 
     Path glyph;

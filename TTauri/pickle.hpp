@@ -458,7 +458,7 @@ inline void pickleAppend(std::string &lhs, glm::vec<S,T,Q> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_GLM_VEC);
 
-    for (glm::vec<S,T,Q>::length_type i = 0; i < S; i++) {
+    for (typename glm::vec<S,T,Q>::length_type i = 0; i < S; i++) {
         pickleAppend(lhs, rhs[i]);
     }
 

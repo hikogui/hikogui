@@ -44,11 +44,6 @@ static bool inside(glm::vec2 point, rect2 clip) noexcept
     );
 }
 
-static bool anyInside(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3, glm::vec2 p4, rect2 clip)
-{
-    return inside(p1, clip) || inside(p2, clip) || inside(p3, clip) || inside(p4, clip);
-}
-
 static std::tuple<glm::vec2, iextent2, bool>calculatePosition(int x, int y, int width, int height, const ImageLocation &location)
 {
     auto p = glm::vec2{x, y};

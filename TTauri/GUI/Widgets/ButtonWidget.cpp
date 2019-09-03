@@ -11,7 +11,7 @@ namespace TTauri::GUI::Widgets {
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(std::string const label) noexcept :
-    label(std::move(label)), Widget()
+    Widget(), label(std::move(label))
 {
     box.leftMargin = 10.0;
     box.bottomMargin = 10.0;
