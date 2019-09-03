@@ -19,6 +19,8 @@ class sync_clock_calibration_type {
     using slow_clock = C1;
     using fast_clock = C2;
 
+    std::string name;
+
     struct time_point_pair {
         typename slow_clock::time_point slow;
         typename fast_clock::time_point fast;
@@ -46,9 +48,12 @@ public:
     /*! Construct a sync clock.
      * \param create_thread can be set to false when testing.
      */
-    sync_clock_calibration_type(bool create_thread=true) noexcept {
-        calibrate(slow_clock::now(), fast_clock::now());
-        calibrate(slow_clock::now(), fast_clock::now());
+    sync_clock_calibration_type(std::string_view name, bool create_thread=true) noexcept :
+        name(name) 
+    {
+        // Do a first calibration of the clock.
+        // Second calibration is done by the calibrate_loop thread.
+        calibrate();
 
         if (create_thread) {
             calibrate_loop_id = std::thread([&]() {
@@ -148,12 +153,12 @@ private:
         let leap_adjustment = getLeapAdjustment(new_gain, new_bias);
 
         if (do_gain_calibration) {
-            LOG_AUDIT("Clock calibration {}: offset={:+} ns gain={:+.15} ns/tick",
-                calibration_nr, diff / 1ns, new_gain / gainMultiplier
+            LOG_AUDIT("Clock '{}' calibration {}: offset={:+} ns gain={:+.15} ns/tick",
+                name, calibration_nr, diff / 1ns, new_gain / gainMultiplier
             );
         } else {
-            LOG_AUDIT("Clock calibration {}: offset={:+} ns",
-                calibration_nr, diff / 1ns
+            LOG_AUDIT("Clock '{}' calibration {}: offset={:+} ns",
+                name, calibration_nr, diff / 1ns
             );
         }
         
