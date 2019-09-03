@@ -14,6 +14,7 @@
 #include <variant>
 #include <limits>
 #include <type_traits>
+#include <typeinfo>
 #include <ostream>
 #include <numeric>
 #include <string_view>
@@ -338,7 +339,6 @@ template<> inline bool holds_alternative<uint32_t>(datum const &d) { return hold
 template<> inline bool holds_alternative<uint16_t>(datum const &d) { return holds_alternative<int64_t>(d); }
 template<> inline bool holds_alternative<uint8_t>(datum const &d) { return holds_alternative<int64_t>(d); }
 template<> inline bool holds_alternative<bool>(datum const &d) { return d.is_boolean(); }
-template<> inline bool holds_alternative<nullptr_t>(datum const &d) { return d.is_null(); }
 template<> inline bool holds_alternative<datum::undefined>(datum const &d) { return d.is_undefined(); }
 template<> inline bool holds_alternative<double>(datum const &d) { return d.is_float(); }
 template<> inline bool holds_alternative<float>(datum const &d) { return holds_alternative<double>(d); }
@@ -357,7 +357,6 @@ template<> inline bool will_cast_to<uint32_t>(datum const &d) { return will_cast
 template<> inline bool will_cast_to<uint16_t>(datum const &d) { return will_cast_to<int64_t>(d); }
 template<> inline bool will_cast_to<uint8_t>(datum const &d) { return will_cast_to<int64_t>(d); }
 template<> inline bool will_cast_to<bool>(datum const &d) { return true; }
-template<> inline bool will_cast_to<nullptr_t>(datum const &d) { return d.is_null(); }
 template<> inline bool will_cast_to<datum::undefined>(datum const &d) { return d.is_undefined(); }
 template<> inline bool will_cast_to<double>(datum const &d) { return d.is_numeric(); }
 template<> inline bool will_cast_to<float>(datum const &d) { return will_cast_to<double>(d); }
@@ -366,7 +365,7 @@ template<> inline bool will_cast_to<URL>(datum const &d) { return d.is_url() || 
 template<> inline bool will_cast_to<datum::vector>(datum const &d) { return d.is_vector(); }
 template<> inline bool will_cast_to<datum::map>(datum const &d) { return d.is_map(); }
 
-template<typename T> T get(datum const &) { TTAURI_THROW(invalid_operation_error("get<{}>()", typeid(T).name())); }
+template<typename T> inline T get(datum const &) { throw std::bad_cast(); }
 
 std::ostream &operator<<(std::ostream &os, datum const &d);
 

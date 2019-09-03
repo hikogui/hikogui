@@ -8,6 +8,7 @@
 #include <string_view>
 #include <optional>
 #include <vector>
+#include <unordered_map>
 
 namespace TTauri {
 struct url_parts;

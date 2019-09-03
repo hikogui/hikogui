@@ -56,7 +56,7 @@ public:
 
         nr_items = 0;
         for (let &item: other) {
-            swap([nr_items++], item);
+            swap(items[nr_items++], item);
         }
         other.nr_items = 0;
         return *this;
