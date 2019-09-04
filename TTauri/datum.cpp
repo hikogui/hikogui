@@ -15,6 +15,7 @@ void datum::delete_pointer() noexcept {
     case phy_url_ptr_id: delete get_pointer<URL>(); break;
     case phy_vector_ptr_id: delete get_pointer<datum::vector>(); break;
     case phy_map_ptr_id: delete get_pointer<datum::map>(); break;
+    case phy_wsrgba_ptr_id: delete get_pointer<wsRGBA>(); break;
     default: no_default;
     }
     u64 = undefined_mask;
@@ -47,6 +48,11 @@ void datum::copy_pointer(datum const &other) noexcept {
         u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
+    case phy_wsrgba_ptr_id: {
+        auto *p = new datum::map(*other.get_pointer<wsRGBA>());
+        u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+    } break;
+
     default:
         no_default;
     }
@@ -73,6 +79,11 @@ datum::datum(datum::vector const &value) noexcept {
 datum::datum(datum::map const &value) noexcept {
     auto p = new datum::map(value);
     u64 = map_ptr_mask | reinterpret_cast<uint64_t>(p);
+}
+
+datum::datum(wsRGBA const &value) noexcept {
+    auto p = new wsRGBA(value);
+    u64 = wsrgba_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
 datum::operator double() const {
@@ -183,6 +194,7 @@ datum::operator bool() const noexcept {
     case phy_url_ptr_id: return true;
     case phy_vector_ptr_id: return this->size() > 0;
     case phy_map_ptr_id: return this->size() > 0;
+    case phy_wsRGBA_ptr_id: return !(get_pointer<wsRGBA>()->isTransparent());
     default:
         if (ttauri_likely(is_phy_float())) {
             return static_cast<double>(*this) != 0.0;
@@ -258,6 +270,7 @@ datum::operator std::string() const noexcept {
         r += "}";
         return r;
     }
+    case phy_wsrgba_ptr_id: return to_string(*get_pointer<wsRGBA>());
     default:
         if (is_phy_float()) {
             auto str = fmt::format("{:g}", static_cast<double>(*this));
@@ -285,7 +298,7 @@ datum::operator datum::vector() const {
     if (is_vector()) {
         return *get_pointer<datum::vector>();
     } else {
-        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a Vector", this->repr(), this->type_name()));
     }
 }
 
@@ -293,7 +306,15 @@ datum::operator datum::map() const {
     if (is_map()) {
         return *get_pointer<datum::map>();
     } else {
-        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a char", this->repr(), this->type_name()));
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a Map", this->repr(), this->type_name()));
+    }
+}
+
+datum::operator wsRGBA() const {
+    if (is_wsrgba()) {
+        return *get_pointer<wsRGBA>();
+    } else {
+        TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a wsRGBA", this->repr(), this->type_name()));
     }
 }
 
@@ -323,6 +344,7 @@ char const *datum::type_name() const noexcept
     case phy_url_ptr_id: return "URL";
     case phy_vector_ptr_id: return "Vector";
     case phy_map_ptr_id: return "Map";
+    case phy_wsrgba_ptr_id: return "wsRGBA";
     default:
         if (ttauri_likely(is_phy_float())) {
             return "Float";
@@ -358,6 +380,7 @@ std::string datum::repr() const noexcept
     case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
     case phy_vector_ptr_id: return static_cast<std::string>(*this);
     case phy_map_ptr_id: return static_cast<std::string>(*this);
+    case phy_wsRGBA_ptr_id: return static_cast<std::string>(*this);
     default:
         if (ttauri_likely(is_phy_float())) {
             return static_cast<std::string>(*this);
@@ -394,6 +417,7 @@ size_t datum::hash() const noexcept
         case phy_url_ptr_id: return std::hash<URL>{}(*get_pointer<URL>());
         case phy_vector_ptr_id: return std::hash<datum::vector>{}(*get_pointer<datum::vector>());
         case phy_map_ptr_id: return std::hash<double>{}(f64);
+        case phy_wsrgba_ptr_id: return std::hash<wsRGBA>{}(*get_pointer<wsRGBA>());
         default: no_default;
         }
     } else {
@@ -412,7 +436,6 @@ bool operator==(datum const &lhs, datum const &rhs) noexcept
     switch (lhs.type_id()) {
     case datum::phy_boolean_id:
         return rhs.is_boolean() && static_cast<bool>(lhs) == static_cast<bool>(rhs);
-
     case datum::phy_null_id:
         return rhs.is_null();
     case datum::phy_undefined_id:
@@ -447,7 +470,9 @@ bool operator==(datum const &lhs, datum const &rhs) noexcept
     case datum::phy_vector_ptr_id:
         return rhs.is_vector() && *lhs.get_pointer<datum::vector>() == *rhs.get_pointer<datum::vector>();
     case datum::phy_map_ptr_id:
-        return rhs.is_vector() && *lhs.get_pointer<datum::map>() == *rhs.get_pointer<datum::map>();
+        return rhs.is_map() && *lhs.get_pointer<datum::map>() == *rhs.get_pointer<datum::map>();
+    case datum::phy_wsrgba_ptr_id:
+        return rhs.is_wsrgba() && *lhs.get_pointer<wsRGBA>() == *rhs.get_pointer<wsRGBA>();
     default:
         if (lhs.is_phy_float()) {
             return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
@@ -540,6 +565,12 @@ bool operator<(datum const &lhs, datum const &rhs) noexcept
         } else {
             return lhs.type_order() < rhs.type_order();
         }
+    case datum::phy_wsrgba_ptr_id:
+        if (rhs.is_wsrgba()) {
+            return *lhs.get_pointer<wsRGBA>() < *rhs.get_pointer<wsRGBA>();
+        } else {
+            return lhs.type_order() < rhs.type_order();
+        }
     default:
         if (lhs.is_phy_float()) {
             if (rhs.is_numeric()) {
@@ -583,6 +614,11 @@ datum operator+(datum const &lhs, datum const &rhs)
             rhs_.try_emplace(item.first, item.second);
         }
         return datum{std::move(rhs_)};
+
+    } else if (lhs.is_wsrgba() && rhs.is_wsrgba()) {
+        auto lhs_ = static_cast<wsRGBA>(lhs);
+        lhs_.composit(*(rhs.get_pointer<wsRGBA>()));
+        return datum{lhs_};
 
     } else {
         TTAURI_THROW(invalid_operation_error("Can't add '+' value {} of type {} to value {} of type {}",

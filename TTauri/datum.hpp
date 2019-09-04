@@ -6,6 +6,7 @@
 #include "required.hpp"
 #include "os_detect.hpp"
 #include "URL.hpp"
+#include "wsRGBA.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -119,7 +120,7 @@ struct datum {
     static constexpr uint16_t phy_integer_ptr_id   = datum_make_id(0b11010);
     static constexpr uint16_t phy_vector_ptr_id    = datum_make_id(0b11011);
     static constexpr uint16_t phy_map_ptr_id       = datum_make_id(0b11100);
-    static constexpr uint16_t phy_reserved_ptr_id0 = datum_make_id(0b11101);
+    static constexpr uint16_t phy_wsrgba_ptr_id    = datum_make_id(0b11101);
     static constexpr uint16_t phy_reserved_ptr_id1 = datum_make_id(0b11110);
     static constexpr uint16_t phy_reserved_ptr_id2 = datum_make_id(0b11111);
 
@@ -133,6 +134,7 @@ struct datum {
     static constexpr uint64_t integer_ptr_mask = datum_id_to_mask(phy_integer_ptr_id);
     static constexpr uint64_t vector_ptr_mask = datum_id_to_mask(phy_vector_ptr_id);
     static constexpr uint64_t map_ptr_mask = datum_id_to_mask(phy_map_ptr_id);
+    static constexpr uint64_t wsrgba_ptr_mask = datum_id_to_mask(phy_wsrgba_ptr_id);
 
 
     using vector = std::vector<datum>;
@@ -210,6 +212,7 @@ struct datum {
     explicit datum(URL const &value) noexcept;
     explicit datum(datum::vector const &value) noexcept;
     explicit datum(datum::map const &value) noexcept;
+    explicit datum(wsRGBA const &value) noexcept;
 
     datum &operator=(double rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(float rhs) noexcept { return (*this = datum{rhs}); }
@@ -229,6 +232,7 @@ struct datum {
     datum &operator=(URL const &rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(datum::vector const &rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(datum::map const &rhs) noexcept { return (*this = datum{rhs}); }
+    datum &operator=(wsRGBA const &rhs) noexcept { return (*this = datum{rhs}); }
 
     //datum &operator+=(datum const &rhs) { return *this = *this + rhs; }
 
@@ -248,6 +252,8 @@ struct datum {
     explicit operator URL() const;
     explicit operator datum::vector() const;
     explicit operator datum::map() const;
+    explicit operator wsRGBA() const;
+
     std::string repr() const noexcept;
 
     uint16_t type_id() const noexcept {
@@ -299,6 +305,7 @@ struct datum {
     bool is_phy_integer_ptr() const noexcept { return type_id() == phy_integer_ptr_id; }
     bool is_phy_vector_ptr() const noexcept { return type_id() == phy_vector_ptr_id; }
     bool is_phy_map_ptr() const noexcept { return type_id() == phy_map_ptr_id; }
+    bool is_phy_wsrgba_ptr() const noexcept { return type_id() == phy_wsrgba_ptr_id; }
 
     bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
     bool is_float() const noexcept { return is_phy_float(); }
@@ -309,7 +316,9 @@ struct datum {
     bool is_url() const noexcept { return is_phy_url_ptr(); }
     bool is_vector() const noexcept { return is_phy_vector_ptr(); }
     bool is_map() const noexcept { return is_phy_map_ptr(); }
+    bool is_wsrgba() const noexcept { return is_phy_wsrgba_ptr(); }
     bool is_numeric() const noexcept { return is_integer() || is_float(); }
+    bool is_color() const noexcept { return is_wsrgba(); }
 
     char const *type_name() const noexcept;
 
@@ -346,6 +355,7 @@ template<> inline bool holds_alternative<std::string>(datum const &d) { return d
 template<> inline bool holds_alternative<URL>(datum const &d) { return d.is_url(); }
 template<> inline bool holds_alternative<datum::vector>(datum const &d) { return d.is_vector(); }
 template<> inline bool holds_alternative<datum::map>(datum const &d) { return d.is_map(); }
+template<> inline bool holds_alternative<wsRGBA>(datum const &d) { return d.is_wsrgba(); }
 
 template<typename T> inline bool will_cast_to(datum const &) { return false; }
 template<> inline bool will_cast_to<int64_t>(datum const &d) { return d.is_numeric(); }
@@ -364,6 +374,7 @@ template<> inline bool will_cast_to<std::string>(datum const &d) { return true; 
 template<> inline bool will_cast_to<URL>(datum const &d) { return d.is_url() || d.is_string(); }
 template<> inline bool will_cast_to<datum::vector>(datum const &d) { return d.is_vector(); }
 template<> inline bool will_cast_to<datum::map>(datum const &d) { return d.is_map(); }
+template<> inline bool will_cast_to<wsRGBA>(datum const &d) { return d.is_wsrgba(); }
 
 template<typename T> inline T get(datum const &) { throw std::bad_cast(); }
 

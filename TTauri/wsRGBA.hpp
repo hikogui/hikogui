@@ -4,12 +4,14 @@
 #pragma once
 
 #include "geometry.hpp"
-#include "utils.hpp"
+#include "algorithm.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
+#include <fmt/format.h>
 #include <boost/endian/conversion.hpp>
 #include <string>
 #include <algorithm>
+#include <array>
 
 namespace TTauri {
 
