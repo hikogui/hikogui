@@ -30,14 +30,24 @@ struct ASTMember : ASTExpression {
         return r;
     }
 
-    universal_value &executeLValue(ExecutionContext &context) const override {
-        return object->executeLValue(context)[name];
+    datum &executeLValue(ExecutionContext &context) const override {
+        try {
+            return object->executeLValue(context)[name];
+        } catch (error &e) {
+            e.set<"location"_tag>(location);
+            throw;
+        }
     }
 
-    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
-        auto &lv = object->executeLValue(context)[name];
-        lv = std::move(other);
-        return lv;
+    datum &executeAssignment(ExecutionContext &context, datum other) const override {
+        try {
+            auto &lv = object->executeLValue(context)[name];
+            lv = std::move(other);
+            return lv;
+        } catch (error &e) {
+            e.set<"location"_tag>(location);
+            throw;
+        }
     }
 };
 

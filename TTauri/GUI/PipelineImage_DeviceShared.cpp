@@ -7,6 +7,7 @@
 #include "Device.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
 #include "TTauri/URL.hpp"
+#include "TTauri/memory.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 

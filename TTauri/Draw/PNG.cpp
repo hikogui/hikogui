@@ -4,6 +4,7 @@
 #include "PNG.hpp"
 #include "PixelMap.hpp"
 #include "TTauri/logger.hpp"
+#include "TTauri/exceptions.hpp"
 #include "TTauri/wsRGBA.hpp"
 #include "TTauri/required.hpp"
 #include "TTauri/URL.hpp"

@@ -45,6 +45,13 @@ TEST(Datum, IntOperations) {
 
 }
 
+TEST(Datum, NegativeIntOperations) {
+    let v = datum{-1};
+
+    ASSERT_EQ(static_cast<int>(v), -1);
+    ASSERT_EQ(static_cast<std::string>(v), "-1"s);
+}
+
 TEST(Datum, FloatOperations) {
     let v = datum{42.0};
 

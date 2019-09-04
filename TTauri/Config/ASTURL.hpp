@@ -18,8 +18,8 @@ struct ASTURL : ASTExpression {
         return to_string(value);
     }
 
-    universal_value execute(ExecutionContext &context) const override {
-        return value;
+    datum execute(ExecutionContext &context) const override {
+        return datum{value};
     } 
 };
 

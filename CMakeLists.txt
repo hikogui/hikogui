@@ -25,6 +25,7 @@ add_subdirectory(TTauriDevelopmentApplication)
  
 enable_testing()
 
-add_test(NAME TTauriTests COMMAND TTauri/TTauriTests --gtest_break_on_failure --gtest_catch_exceptions=0)
- 
+#add_test(NAME TTauriTests COMMAND TTauri/TTauriTests --gtest_break_on_failure --gtest_catch_exceptions=0)
+add_test(NAME TTauriTests COMMAND TTauri/TTauriTests --gtest_catch_exceptions=0)
+
  

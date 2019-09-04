@@ -35,12 +35,12 @@ struct ASTUnaryOperator : ASTExpression {
         return s + right->string();
     }
 
-    universal_value execute(ExecutionContext &context) const override {
+    datum execute(ExecutionContext &context) const override {
         try {
             switch (op) {
             case Operator::NOT: return ~right->execute(context);
             case Operator::NEG: return -right->execute(context);
-            case Operator::LOGICAL_NOT: return !right->execute(context);
+            case Operator::LOGICAL_NOT: return datum{!right->execute(context)};
             }
             abort(); // Compiler doesn't recognize that switch is complete.
         } catch (error &e) {

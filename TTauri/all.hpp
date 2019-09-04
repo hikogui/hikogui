@@ -15,5 +15,4 @@
 #include "grapheme.hpp"
 #include "math.hpp"
 #include "strings.hpp"
-#include "utils.hpp"
 #include "logger.hpp"

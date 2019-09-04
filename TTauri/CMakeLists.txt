@@ -118,7 +118,6 @@ set(TTauriTests_srcs
     polymorphic_value_tests.cpp
     polynomial_tests.cpp
     URL_tests.cpp
-    utils_tests.cpp
     pickle_tests.cpp
     small_map_tests.cpp
     exceptions_tests.cpp

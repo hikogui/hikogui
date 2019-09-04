@@ -17,8 +17,8 @@ struct ASTInteger : ASTExpression {
         return std::to_string(value);
     }
 
-    universal_value execute(ExecutionContext &context) const noexcept override { 
-        return value;
+    datum execute(ExecutionContext &context) const noexcept override { 
+        return datum{value};
     } 
 
 };

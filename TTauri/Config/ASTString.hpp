@@ -18,14 +18,19 @@ struct ASTString : ASTExpression {
         return "\"" + value + "\"";
     }
 
-    universal_value execute(ExecutionContext &context) const override {
-        return value;
+    datum execute(ExecutionContext &context) const override {
+        return datum{value};
     } 
 
-    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
-        auto &lv = context.currentObject()[value];
-        lv = std::move(other);
-        return lv;
+    datum &executeAssignment(ExecutionContext &context, datum other) const override {
+        try {
+            auto &lv = context.currentObject()[value];
+            lv = std::move(other);
+            return lv;
+        } catch (error &e) {
+            e.set<"location"_tag>(location);
+            throw;
+        }
     }
 };
 

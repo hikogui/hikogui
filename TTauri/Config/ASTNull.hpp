@@ -15,8 +15,8 @@ struct ASTNull : ASTExpression {
         return "null";
     }
 
-    universal_value execute(ExecutionContext &context) const noexcept override { 
-        return {};
+    datum execute(ExecutionContext &context) const noexcept override { 
+        return datum{datum::null{}};
     } 
 
 };

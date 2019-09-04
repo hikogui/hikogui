@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "URL.hpp"
-#include "utils.hpp"
 #include "strings.hpp"
 #include "exceptions.hpp"
 #include "os_detect.hpp"

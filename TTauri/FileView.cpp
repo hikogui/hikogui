@@ -4,8 +4,9 @@
 #include "FileView.hpp"
 #include "URL.hpp"
 #include "required.hpp"
+#include "exceptions.hpp"
 #include "logger.hpp"
-#include "utils.hpp"
+#include "memory.hpp"
 #include <mutex>
 
 namespace TTauri {

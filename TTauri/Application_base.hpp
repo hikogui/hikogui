@@ -4,7 +4,6 @@
 #pragma once
 
 #include "required.hpp"
-#include "utils.hpp"
 #include "URL.hpp"
 #include "ApplicationDelegate.hpp"
 #include <gsl/gsl>

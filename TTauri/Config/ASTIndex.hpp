@@ -33,55 +33,24 @@ struct ASTIndex : ASTExpression {
      * An array can be indexed by a int64_t.
      * An non-index can be used to append to an array.
      */
-    universal_value &executeLValue(ExecutionContext &context) const override {
+    datum &executeLValue(ExecutionContext &context) const override {
         auto &object_ = object->executeLValue(context);
 
-        if (index) {
-            let index_ = index->execute(context);
-
-            if ((holds_alternative<Undefined>(object_) || holds_alternative<Object>(object_)) && holds_alternative<std::string>(index_)) {
-                // Use a string to index into an object.
-                let index__ = get<std::string>(index_);
-                try {
-                    return object_[index__];
-                } catch (error &e) {
-                    e.set<"location"_tag>(location);
-                    throw;
-                }
-
-            } else if ((holds_alternative<Undefined>(object_) || holds_alternative<Array>(object_)) && holds_alternative<int64_t>(index_)) {
-                // Use a integer to index into an array.
-                int64_t const index__ = get<int64_t>(index_);
-                try {
-                    return object_[index__];
-                } catch (error &e) {
-                    e.set<"location"_tag>(location);
-                    throw;
-                }
+        try {
+            if (index) {
+                let index_ = index->execute(context);
+                return object_[index_];
 
             } else {
-                TTAURI_THROW(invalid_operation_error("Can not index object of type {0} with index of type {1}", object_.type_name(), index_.type_name())
-                    .set<"location"_tag>(location)
-                );
-            }
-
-        } else if (holds_alternative<Undefined>(object_) || holds_alternative<Array>(object_)) {
-            // Append to an array because no index was specified.
-            try {
                 return object_.append();
-            } catch (error &e) {
-                e.set<"location"_tag>(location);
-                throw;
             }
-
-        } else {
-            TTAURI_THROW(invalid_operation_error("Can not append to object of type {0}", object_.type_name())
-                .set<"location"_tag>(location)
-            );
+        } catch (error &e) {
+            e.set<"location"_tag>(location);
+            throw;
         }
     }
 
-    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
+    datum &executeAssignment(ExecutionContext &context, datum other) const override {
         auto &lv = executeLValue(context);
         lv = std::move(other);
         return lv;

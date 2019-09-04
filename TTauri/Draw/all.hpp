@@ -14,4 +14,3 @@
 #include "PixelMap.inl"
 #include "Theme.hpp"
 #include "TrueTypeParser.hpp"
-#include "utils.hpp"

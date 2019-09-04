@@ -4,7 +4,7 @@
 #pragma once
 
 #include "parser.hpp"
-#include "TTauri/universal_value.hpp"
+#include "TTauri/datum.hpp"
 #include "TTauri/exceptions.hpp"
 #include "TTauri/strings.hpp"
 #include "ASTObject.hpp"
@@ -17,7 +17,7 @@ namespace TTauri::Config {
 struct Config {
     URL path;
     ASTObject *ast = nullptr;
-    universal_value root = Undefined{};
+    datum root;
 
     std::string _errorMessage;
 
@@ -51,7 +51,7 @@ struct Config {
     /*! Parsing the configuration file was succesfull.
      */
     bool success() const noexcept {
-        return !holds_alternative<Undefined>(root);
+        return !root.is_undefined();
     }
 
     /*! Retreive error message
@@ -74,12 +74,12 @@ struct Config {
         }
     }
 
-    universal_value operator[](std::string const &key) const {
+    datum operator[](std::string const &key) const {
         let splitKey = split(key, '.');
         return root.get_by_path(splitKey);
     }
 
-    universal_value &operator[](std::string const &key) {
+    datum &operator[](std::string const &key) {
         let splitKey = split(key, '.');
         return root.get_by_path(splitKey);
     }
@@ -101,14 +101,14 @@ struct Config {
     template<typename T>
     T value(std::string const &key) const {
         let obj = (*this)[key];
-        return get_and_promote<T>(obj);
+        return static_cast<T>(obj);
     }
 
     /*! Get the root object.
      * \see value() for the different kinds of types that are supported.
      */
-    Object rootObject() noexcept {
-        return get<Object>(root);
+    datum::map rootObject() noexcept {
+        return static_cast<datum::map>(root);
     }
 };
 
@@ -116,7 +116,7 @@ struct Config {
 */
 inline std::string to_string(Config const &config) {
     if (config.success()) {
-        return to_string(config.root);
+        return config.root.repr();
     } else {
         return config.errorMessage();
     }

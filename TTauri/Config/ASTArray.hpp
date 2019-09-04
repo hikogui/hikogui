@@ -41,13 +41,13 @@ struct ASTArray : ASTExpression {
         return s;
     }
 
-    universal_value execute(ExecutionContext &context) const override {
-        Array values;
+    datum execute(ExecutionContext &context) const override {
+        datum::vector values;
 
         for (let expression: expressions) {
             values.push_back(expression->execute(context));
         }
-        return values;
+        return datum{values};
     }
 
     /*! Execute an array-literal inside an object literal.

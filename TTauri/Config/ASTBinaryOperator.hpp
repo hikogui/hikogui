@@ -69,7 +69,7 @@ struct ASTBinaryOperator : ASTExpression {
         return s + right->string();
     }
 
-    virtual universal_value execute(ExecutionContext &context) const override {
+    virtual datum execute(ExecutionContext &context) const override {
         try {
             switch (op) {
             case Operator::MUL: return left->execute(context) * right->execute(context);
@@ -79,18 +79,18 @@ struct ASTBinaryOperator : ASTExpression {
             case Operator::SUB: return left->execute(context) - right->execute(context);
             case Operator::SHL: return left->execute(context) << right->execute(context);
             case Operator::SHR: return left->execute(context) >> right->execute(context);
-            case Operator::LT: return left->execute(context) < right->execute(context);
-            case Operator::GT: return left->execute(context) > right->execute(context);
-            case Operator::LE: return left->execute(context) <= right->execute(context);
-            case Operator::GE: return left->execute(context) >= right->execute(context);
-            case Operator::EQ: return left->execute(context) == right->execute(context);
-            case Operator::NE: return left->execute(context) != right->execute(context);
+            case Operator::LT: return datum{left->execute(context) < right->execute(context)};
+            case Operator::GT: return datum{left->execute(context) > right->execute(context)};
+            case Operator::LE: return datum{left->execute(context) <= right->execute(context)};
+            case Operator::GE: return datum{left->execute(context) >= right->execute(context)};
+            case Operator::EQ: return datum{left->execute(context) == right->execute(context)};
+            case Operator::NE: return datum{left->execute(context) != right->execute(context)};
             case Operator::AND: return left->execute(context) & right->execute(context);
             case Operator::XOR: return left->execute(context) ^ right->execute(context);
             case Operator::OR: return left->execute(context) | right->execute(context);
-            case Operator::LOGICAL_AND: return left->execute(context) && right->execute(context);
-            case Operator::LOGICAL_XOR: return static_cast<bool>(left->execute(context)) != static_cast<bool>(right->execute(context));
-            case Operator::LOGICAL_OR: return left->execute(context) || right->execute(context);
+            case Operator::LOGICAL_AND: return datum{static_cast<bool>(left->execute(context)) && static_cast<bool>(right->execute(context))};
+            case Operator::LOGICAL_XOR: return datum{static_cast<bool>(left->execute(context)) != static_cast<bool>(right->execute(context))};
+            case Operator::LOGICAL_OR: return datum{static_cast<bool>(left->execute(context)) || static_cast<bool>(right->execute(context))};
             }
             abort(); // Compiler doesn't recognize that switch is complete.
         } catch (error &e) {

@@ -5,7 +5,6 @@
 
 #include "TTauri/geometry.hpp"
 #include "TTauri/required.hpp"
-#include "TTauri/utils.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vec_swizzle.hpp>

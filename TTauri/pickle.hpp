@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "utils.hpp"
 #include "exceptions.hpp"
 #include "URL.hpp"
+#include "memory.hpp"
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>

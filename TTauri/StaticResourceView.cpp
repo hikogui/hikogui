@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "StaticResourceView.hpp"
-#include "TTauri/utils.hpp"
 
 namespace TTauri {
 

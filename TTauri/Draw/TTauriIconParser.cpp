@@ -2,6 +2,7 @@
 #include "TTauriIconParser.hpp"
 #include "Path.hpp"
 #include "TTauri/exceptions.hpp"
+#include "TTauri/span.hpp"
 #include "TTauri/wsRGBA.hpp"
 #include "TTauri/FileView.hpp"
 #include <boost/endian/buffers.hpp>

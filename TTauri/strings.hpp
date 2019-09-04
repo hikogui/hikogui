@@ -4,7 +4,7 @@
 #pragma once
 
 #include "required.hpp"
-#include "utils.hpp"
+#include "exceptions.hpp"
 #include <utf8proc/utf8proc.h>
 #include <string>
 #include <string_view>
@@ -12,6 +12,55 @@
 
 namespace TTauri {
 
+gsl_suppress3(f.23,bounds.1,bounds.3)
+    inline constexpr uint32_t fourcc(char const txt[5]) noexcept
+{
+    return (
+        (static_cast<uint32_t>(txt[0]) << 24) |
+        (static_cast<uint32_t>(txt[1]) << 16) |
+        (static_cast<uint32_t>(txt[2]) <<  8) |
+        static_cast<uint32_t>(txt[3])
+        );
+}
+
+gsl_suppress(bounds.3)
+    inline std::string fourcc_to_string(uint32_t x) noexcept
+{
+    char c_str[5];
+    c_str[0] = numeric_cast<char>((x >> 24) & 0xff);
+    c_str[1] = numeric_cast<char>((x >> 16) & 0xff);
+    c_str[2] = numeric_cast<char>((x >> 8) & 0xff);
+    c_str[3] = numeric_cast<char>(x & 0xff);
+    c_str[4] = 0;
+
+    return {c_str};
+}
+
+constexpr char nibble_to_char(uint8_t nibble) noexcept
+{
+    if (nibble <= 9) {
+        return '0' + nibble;
+    } else if (nibble <= 15) {
+        return 'a' + nibble - 10;
+    } else {
+        no_default;
+    }
+}
+
+inline uint8_t char_to_nibble(char c)
+{
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'a' && c <= 'f') {
+        return (c - 'a') + 10;
+    } else if (c >= 'A' && c <= 'F') {
+        return (c - 'A') + 10;
+    } else {
+        TTAURI_THROW(parse_error("Could not parse hexadecimal digit")
+            .set<"parse_string"_tag>(std::string(1, c))
+        );
+    }
+}
 inline std::string_view make_string_view(
     typename std::string::const_iterator b,
     typename std::string::const_iterator e

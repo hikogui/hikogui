@@ -122,6 +122,14 @@ struct wsRGBA {
     int16_t &b() noexcept { return color.b; }
     int16_t &a() noexcept { return color.a; }
 
+    int16_t operator[](size_t i) const {
+        return color[static_cast<typename decltype(color)::length_type>(i)];
+    }
+
+    int16_t &operator[](size_t i) {
+        return color[static_cast<typename decltype(color)::length_type>(i)];
+    }
+
     bool isTransparent() const noexcept { return color.a <= 0; }
     bool isOpaque() const noexcept { return color.a == I64_MAX_ALPHA; }
 
@@ -308,11 +316,25 @@ inline bool operator==(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
     return lhs.color == rhs.color;
 }
 
-inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
+inline bool operator<(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
 {
-    return !(lhs == rhs);
+    if (lhs.color[0] != rhs.color[0]) {
+        return lhs.color[0] < rhs.color[0];
+    } else if (lhs.color[1] != rhs.color[1]) {
+        return lhs.color[1] < rhs.color[1];
+    } else if (lhs.color[2] != rhs.color[2]) {
+        return lhs.color[2] < rhs.color[2];
+    } else if (lhs.color[3] != rhs.color[3]) {
+        return lhs.color[3] < rhs.color[3];
+    } else {
+        return false;
+    }
 }
 
+inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs == rhs); }
+inline bool operator>(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return rhs < lhs; }
+inline bool operator<=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs > rhs); }
+inline bool operator>=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs < rhs); }
 
 inline std::string to_string(wsRGBA const &x) noexcept
 {
@@ -343,6 +365,21 @@ const glm::mat3x3 matrix_XYZ_to_sRGB = {
     0.0556434, -0.2040259,  1.0572252
 };
 
+}
+
+namespace std {
+
+template<>
+class hash<TTauri::wsRGBA> {
+public:
+    size_t operator()(TTauri::wsRGBA const &v) const {
+        return
+            hash<int16_t>{}(v[0]) ^
+            hash<int16_t>{}(v[1]) ^
+            hash<int16_t>{}(v[2]) ^
+            hash<int16_t>{}(v[3]);
+    }
+};
 
 }
 

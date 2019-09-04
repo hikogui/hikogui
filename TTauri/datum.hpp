@@ -28,6 +28,12 @@
     template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(datum const &lhs, T const &rhs) { return lhs op datum{rhs}; }\
     template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(T const &lhs, datum const &rhs) { return datum{lhs} op datum{rhs}; }
 
+#define MONO_OPERATOR_CONVERSION(op)\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(T const &rhs) { return lhs op datum{rhs}; }\
+
+#define MONO_BOOL_OPERATOR_CONVERSION(op)\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(T const &rhs) { return lhs op datum{rhs}; }\
+
 namespace TTauri {
 struct datum;
 }
@@ -46,12 +52,6 @@ namespace TTauri {
 
 constexpr int64_t datum_min_int = 0xfffe'0000'0000'0000LL;
 constexpr int64_t datum_max_int = 0x0007'ffff'ffff'ffffLL;
-
-template<typename T>
-bool holds_alternative(datum const &);
-
-template<typename T>
-T get(datum const &);
 
 constexpr uint64_t datum_id_to_mask(uint64_t id) {
     return id << 48;
@@ -140,6 +140,7 @@ struct datum {
     using vector = std::vector<datum>;
     using map = std::unordered_map<datum,datum>;
     struct undefined {};
+    struct null {};
 
     union {
         double f64;
@@ -188,6 +189,7 @@ struct datum {
         return *this;
     }
 
+    explicit datum(datum::null) noexcept : u64(null_mask) {}
     explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
     explicit datum(float value) noexcept : datum(static_cast<double>(value)) {}
     explicit datum(uint64_t value) noexcept : datum(static_cast<int64_t>(value)) {}
@@ -254,6 +256,25 @@ struct datum {
     explicit operator datum::map() const;
     explicit operator wsRGBA() const;
 
+    bool operator!() const noexcept { return !static_cast<bool>(*this); }
+    datum operator~() const;
+    datum operator-() const;
+    datum &operator[](datum const &rhs);
+    datum operator[](datum const &rhs) const;
+    datum &append();
+
+    template<typename T>
+    std::enable_if_t<!std::is_same_v<T, datum>, datum>
+    &operator[](T const &rhs) {
+        return (*this)[datum{rhs}];
+    }
+
+    template<typename T>
+    std::enable_if_t<!std::is_same_v<T, datum>, datum>
+    operator[](T const &rhs) const {
+        return (*this)[datum{rhs}];
+    }
+
     std::string repr() const noexcept;
 
     uint16_t type_id() const noexcept {
@@ -278,6 +299,9 @@ struct datum {
             return type_id();
         }
     }
+
+    datum &get_by_path(std::vector<std::string> const &key);
+    datum get_by_path(std::vector<std::string> const &key) const;
 
     bool is_phy_float() const noexcept {
         let id = type_id();
@@ -323,7 +347,7 @@ struct datum {
     char const *type_name() const noexcept;
 
     uint64_t get_unsigned_integer() const noexcept { return u64 & 0x0000ffff'ffffffff; }
-    int64_t get_signed_integer() const noexcept { return static_cast<int64_t>((u64 << 16) / 65536); }
+    int64_t get_signed_integer() const noexcept { return static_cast<int64_t>(u64 << 16) >> 16; }
 
     template<typename O>
     O *get_pointer() const {
@@ -337,25 +361,6 @@ private:
     void delete_pointer() noexcept;
     void copy_pointer(datum const &other) noexcept;
 };
-
-template<typename T> inline bool holds_alternative(datum const &) { return false; }
-template<> inline bool holds_alternative<int64_t>(datum const &d) { return d.is_integer(); }
-template<> inline bool holds_alternative<int32_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<int16_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<int8_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<uint64_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<uint32_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<uint16_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<uint8_t>(datum const &d) { return holds_alternative<int64_t>(d); }
-template<> inline bool holds_alternative<bool>(datum const &d) { return d.is_boolean(); }
-template<> inline bool holds_alternative<datum::undefined>(datum const &d) { return d.is_undefined(); }
-template<> inline bool holds_alternative<double>(datum const &d) { return d.is_float(); }
-template<> inline bool holds_alternative<float>(datum const &d) { return holds_alternative<double>(d); }
-template<> inline bool holds_alternative<std::string>(datum const &d) { return d.is_string(); }
-template<> inline bool holds_alternative<URL>(datum const &d) { return d.is_url(); }
-template<> inline bool holds_alternative<datum::vector>(datum const &d) { return d.is_vector(); }
-template<> inline bool holds_alternative<datum::map>(datum const &d) { return d.is_map(); }
-template<> inline bool holds_alternative<wsRGBA>(datum const &d) { return d.is_wsrgba(); }
 
 template<typename T> inline bool will_cast_to(datum const &) { return false; }
 template<> inline bool will_cast_to<int64_t>(datum const &d) { return d.is_numeric(); }
@@ -376,8 +381,7 @@ template<> inline bool will_cast_to<datum::vector>(datum const &d) { return d.is
 template<> inline bool will_cast_to<datum::map>(datum const &d) { return d.is_map(); }
 template<> inline bool will_cast_to<wsRGBA>(datum const &d) { return d.is_wsrgba(); }
 
-template<typename T> inline T get(datum const &) { throw std::bad_cast(); }
-
+std::string to_string(datum const &d);
 std::ostream &operator<<(std::ostream &os, datum const &d);
 
 bool operator<(datum::map const &lhs, datum::map const &rhs) noexcept;

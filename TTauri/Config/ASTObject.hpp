@@ -68,7 +68,7 @@ struct ASTObject : ASTExpression {
     }
 
     gsl_suppress2(26486,lifetime.3)
-    universal_value execute(ExecutionContext &context) const override {
+        datum execute(ExecutionContext &context) const override {
         context.pushObject();
 
         for (let expression: expressions) {
@@ -79,7 +79,7 @@ struct ASTObject : ASTExpression {
         return context.popObject();
     }
 
-    universal_value execute() const {
+    datum execute() const {
         ExecutionContext context;
         return execute(context);
     }

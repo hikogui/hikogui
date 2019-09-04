@@ -25,18 +25,18 @@ struct ASTName : ASTExpression {
         return { name };
     }
 
-    universal_value &executeLValue(ExecutionContext &context) const override {
+    datum &executeLValue(ExecutionContext &context) const override {
         return context.currentObject()[name];
     } 
 
-    universal_value &executeAssignment(ExecutionContext &context, universal_value other) const override {
+    datum &executeAssignment(ExecutionContext &context, datum other) const override {
         auto &lv = context.currentObject()[name];
         lv = std::move(other);
         return lv;
     }
 
     template<typename T>
-    T getArgument(std::vector<universal_value> const &arguments, size_t i, bool lastArgument=false) const {
+    T getArgument(std::vector<datum> const &arguments, size_t i, bool lastArgument=false) const {
         if (i >= arguments.size()) {
             TTAURI_THROW(
                 invalid_operation_error(
@@ -49,14 +49,14 @@ struct ASTName : ASTExpression {
         }
 
         let argument = arguments.at(0);
-        if (!argument.is_promotable_to<T>()) {
+        if (!will_cast_to<T>(argument)) {
             TTAURI_THROW(
                 invalid_operation_error(
                     "syntax error, invalid argument to function '{0}', expecting argument number {1} of type {2} got {3}",
                     name,
                     (i + 1),
                     typeid(T).name(),
-                    argument.type().name()
+                    argument.type_name()
                 ).set<"location"_tag>(location)
             );
         }
@@ -72,12 +72,12 @@ struct ASTName : ASTExpression {
             );
         }
 
-        return get_and_promote<T>(argument);
+        return static_cast<T>(argument);
     }
 
     /*! Include a configuration file.
      */
-    universal_value executeIncludeCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
+    datum executeIncludeCall(ExecutionContext &context, std::vector<datum> const &arguments) const {
         auto path = getArgument<URL>(arguments, 0, true);
 
         // The included file is relative to the directory of this configuration file.
@@ -113,35 +113,35 @@ struct ASTName : ASTExpression {
 
     /*! Return a absolute path relative to the directory where this configuration file is located.
     */
-    universal_value executePathCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
+    datum executePathCall(ExecutionContext &context, std::vector<datum> const &arguments) const {
         if (arguments.size() == 0) {
             // Without arguments return the directory where this configuration file is located.
-            return location.file->urlByRemovingFilename();
+            return datum{location.file->urlByRemovingFilename()};
         } else {
             // Suffix the given argument with the directory where this configuration file is located.
             let path = getArgument<URL>(arguments, 0, true);
 
             if (path.isRelative()) {
-                return location.file->urlByRemovingFilename() / path;
+                return datum{location.file->urlByRemovingFilename() / path};
             } else {
-                return path;
+                return datum{path};
             }
         }
     }
 
     /*! Return a absolute path relative to the current working directory.
      */
-    universal_value executeCwdCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
+    datum executeCwdCall(ExecutionContext &context, std::vector<datum> const &arguments) const {
         if (arguments.size() == 0) {
             // Without argument return the current working directory.
-            return URL::urlFromCurrentWorkingDirectory();
+            return datum{URL::urlFromCurrentWorkingDirectory()};
 
         } else {
             // Suffix the given argument with the current working directory.
             let path = getArgument<URL>(arguments, 0, true);
 
             if (path.isRelative()) {
-                return URL::urlFromCurrentWorkingDirectory() / path;
+                return datum{URL::urlFromCurrentWorkingDirectory() / path};
             } else {
                 TTAURI_THROW(
                     invalid_operation_error(
@@ -157,7 +157,7 @@ struct ASTName : ASTExpression {
     /*! A function call.
      * The expression is a identifier followed by a call; therefor this is a normal function call.
      */
-    universal_value executeCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const override {
+    datum executeCall(ExecutionContext &context, std::vector<datum> const &arguments) const override {
         if (name == "include") {
             return executeIncludeCall(context, arguments);
 

@@ -5,7 +5,7 @@
 
 #include "Location.hpp"
 #include "ExecutionContext.hpp"
-#include "TTauri/universal_value.hpp"
+#include "TTauri/datum.hpp"
 #include "TTauri/exceptions.hpp"
 #include <string>
 
@@ -30,7 +30,7 @@ struct ASTNode {
 
     /*! Execute the expression and return a value that can be modifed by the caller.
      */
-    virtual universal_value &executeLValue(ExecutionContext &context) const {
+    virtual datum &executeLValue(ExecutionContext &context) const {
         TTAURI_THROW(invalid_operation_error("syntax error, expected a lvalue expression")
             .set<"location"_tag>(location)
         );
@@ -38,13 +38,13 @@ struct ASTNode {
 
     /*! Execute the expression.
     */
-    virtual universal_value execute(ExecutionContext &context) const {
+    virtual datum execute(ExecutionContext &context) const {
         return executeLValue(context);
     }
 
     /*! Execute a function or method call.
      */
-    virtual universal_value executeCall(ExecutionContext &context, std::vector<universal_value> const &arguments) const {
+    virtual datum executeCall(ExecutionContext &context, std::vector<datum> const &arguments) const {
         TTAURI_THROW(invalid_operation_error("result of expression does not support being used as a function")
             .set<"location"_tag>(location)
         );
@@ -52,7 +52,7 @@ struct ASTNode {
 
     /*! Execute an assignment of a value to an modifiable value.
      */
-    virtual universal_value &executeAssignment(ExecutionContext &context, universal_value other) const {
+    virtual datum &executeAssignment(ExecutionContext &context, datum other) const {
         TTAURI_THROW(invalid_operation_error("result of expression does not support assignment")
             .set<"location"_tag>(location)
         );

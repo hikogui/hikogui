@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/universal_value.hpp"
+#include "TTauri/datum.hpp"
 #include <optional>
 
 namespace TTauri::Config {
@@ -15,11 +15,11 @@ namespace TTauri::Config {
  */
 struct ExecutionContext {
     struct Item {
-        universal_value object = Object{};
+        datum object = datum{datum::map{}};
         std::vector<std::string> section;
     };
 
-    universal_value _variableObject = Object{};
+    datum _variableObject = datum{datum::map{}};
     std::vector<Item> objectStack;
 
     /*! Create an empty object on the stack.
@@ -41,18 +41,20 @@ struct ExecutionContext {
     /*! Pop object.
      * This method is caled at the end of a object-literal.
      */
-    universal_value popObject() noexcept {
-        return pop_back(objectStack).object;
+    datum popObject() noexcept {
+        let x = std::move(objectStack.back());
+        objectStack.pop_back();
+        return x.object;
     }
 
     /*! Get the current active object.
      * When assignments are done, this is the first object that
      * is accessed.
      */
-    universal_value &currentObject() noexcept {
+    datum &currentObject() noexcept {
         auto &item = objectStack.back();
 
-        gsl::not_null<universal_value *> object = &(item.object);
+        gsl::not_null<datum *> object = &(item.object);
         for (let &key: item.section) {
             object = &((*object)[key]);
         }
@@ -63,7 +65,7 @@ struct ExecutionContext {
     /*! Get root object.
      * This method is called when the root-accesor operator is used.
      */
-    universal_value &rootObject() noexcept {
+    datum &rootObject() noexcept {
         auto &item = objectStack.front();
 
         return item.object;
@@ -72,7 +74,7 @@ struct ExecutionContext {
     /*! Get variable object
      * This method is called when the variable-accessor operator is used.
      */
-    universal_value &variableObject() noexcept {
+    datum &variableObject() noexcept {
         return _variableObject;
     }
 };

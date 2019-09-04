@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "datum.hpp"
-#include "utils.hpp"
+#include "exceptions.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
@@ -49,8 +49,8 @@ void datum::copy_pointer(datum const &other) noexcept {
     } break;
 
     case phy_wsrgba_ptr_id: {
-        auto *p = new datum::map(*other.get_pointer<wsRGBA>());
-        u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        auto *p = new wsRGBA(*other.get_pointer<wsRGBA>());
+        u64 = wsrgba_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     default:
@@ -194,7 +194,7 @@ datum::operator bool() const noexcept {
     case phy_url_ptr_id: return true;
     case phy_vector_ptr_id: return this->size() > 0;
     case phy_map_ptr_id: return this->size() > 0;
-    case phy_wsRGBA_ptr_id: return !(get_pointer<wsRGBA>()->isTransparent());
+    case phy_wsrgba_ptr_id: return !(get_pointer<wsRGBA>()->isTransparent());
     default:
         if (ttauri_likely(is_phy_float())) {
             return static_cast<double>(*this) != 0.0;
@@ -246,26 +246,36 @@ datum::operator std::string() const noexcept {
     case phy_url_ptr_id: return get_pointer<URL>()->string();
     case phy_vector_ptr_id: {
         std::string r = "[";
-        auto i = 0;
+        auto count = 0;
         for (let &v: *get_pointer<datum::vector>()) {
-            if (i++ > 0) {
+            if (count++ > 0) {
                 r += ", ";
             }
-            r += static_cast<std::string>(v);
+            r += v.repr();
         }
         r += "]";
         return r;
     }
     case phy_map_ptr_id: {
+        let *m = get_pointer<datum::map>();
+        auto keys = transform<datum::vector>(*m, [](let &x) {
+            return x.first;
+        }); 
+        std::sort(keys.begin(), keys.end());
+
         std::string r = "{";
-        auto i = 0;
-        for (let &[k, v]: *get_pointer<datum::map>()) {
-            if (i++ > 0) {
+        auto count = 0;
+        for (let &key: keys) {
+            let it = m->find(key);
+            required_assert(it != m->end());
+            let &value = it->second;
+
+            if (count++ > 0) {
                 r += ", ";
             }
-            r += static_cast<std::string>(k);
+            r += key.repr();
             r += ": ";
-            r += static_cast<std::string>(v);
+            r += value.repr();
         }
         r += "}";
         return r;
@@ -315,6 +325,93 @@ datum::operator wsRGBA() const {
         return *get_pointer<wsRGBA>();
     } else {
         TTAURI_THROW(invalid_operation_error("Value {} of type {} can not be converted to a wsRGBA", this->repr(), this->type_name()));
+    }
+}
+
+datum datum::operator~() const {
+    if (is_integer()) {
+        return datum{~static_cast<int64_t>(*this)};
+    } else {
+        TTAURI_THROW(invalid_operation_error("Can't bit-wise negate '~' value {} of type {}",
+            repr(), type_name()
+        ));
+    }
+}
+datum datum::operator-() const {
+    if (is_integer()) {
+        return datum{-static_cast<int64_t>(*this)};
+    } else if (is_float()) {
+        return datum{-static_cast<double>(*this)};
+    } else {
+        TTAURI_THROW(invalid_operation_error("Can't arithmatic negate '-' value {} of type {}",
+            repr(), type_name()
+        ));
+    }
+}
+
+datum &datum::operator[](datum const &rhs) {
+    if (is_undefined()) {
+        // When accessing a name on an undefined it means we need replace it with an empty map.
+        auto *p = new datum::map();
+        u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+    }
+
+    if (is_map()) {
+        auto *m = get_pointer<datum::map>();
+        auto [i, did_insert] = m->try_emplace(rhs);
+        return i->second;
+
+    } else if (is_vector() && rhs.is_integer()) {
+        let index = static_cast<int64_t>(rhs);
+        auto *v = get_pointer<datum::vector>();
+
+        if (index < 0 || index >= to_int64(v->size())) {
+            TTAURI_THROW(invalid_operation_error("Index {} out of range to access value in vector of size {}", index, v->size()));
+        } else {
+            return (*v)[index];
+        }
+    } else {
+        TTAURI_THROW(invalid_operation_error("Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name()));
+    }
+}
+
+datum datum::operator[](datum const &rhs) const {
+    if (is_map()) {
+        auto *m = get_pointer<datum::map>();
+        let i = m->find(rhs);
+        if (i == m->end()) {
+            TTAURI_THROW(invalid_operation_error("Could not find key {} in map of size {}", rhs.repr(), m->size()));
+        }
+        return i->second;
+
+    } else if (is_vector() && rhs.is_integer()) {
+        let index = static_cast<int64_t>(rhs);
+        auto *v = get_pointer<datum::vector>();
+
+        if (index < 0 || index >= to_int64(v->size())) {
+            TTAURI_THROW(invalid_operation_error("Index {} out of range to access value in vector of size {}", index, v->size()));
+        } else {
+            return (*v)[index];
+        }
+    } else {
+        TTAURI_THROW(invalid_operation_error("Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name()));
+    }
+}
+
+datum &datum::append() {
+    if (is_undefined()) {
+        // When appending on undefined it means we need replace it with an empty vector.
+        auto *p = new datum::vector();
+        u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+    }
+
+    if (is_vector()) {
+        auto *v = get_pointer<datum::vector>();
+        v->emplace_back();
+        return v->back();
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Cannot append new item onto type {}", type_name()));
     }
 }
 
@@ -380,7 +477,7 @@ std::string datum::repr() const noexcept
     case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
     case phy_vector_ptr_id: return static_cast<std::string>(*this);
     case phy_map_ptr_id: return static_cast<std::string>(*this);
-    case phy_wsRGBA_ptr_id: return static_cast<std::string>(*this);
+    case phy_wsrgba_ptr_id: return fmt::format("<wsRGBA {}>", static_cast<std::string>(*this));
     default:
         if (ttauri_likely(is_phy_float())) {
             return static_cast<std::string>(*this);
@@ -403,6 +500,7 @@ size_t datum::size() const
     case phy_string_ptr_id: return get_pointer<std::string>()->size();
     case phy_vector_ptr_id: return get_pointer<datum::vector>()->size();
     case phy_map_ptr_id: return get_pointer<datum::map>()->size();
+    case phy_wsrgba_ptr_id: return 4;
     default: TTAURI_THROW(invalid_operation_error("Can't get size of value {} of type {}.", this->repr(), this->type_name()));
     }
 }
@@ -423,6 +521,49 @@ size_t datum::hash() const noexcept
     } else {
         return std::hash<uint64_t>{}(u64);
     }
+}
+
+datum &datum::get_by_path(std::vector<std::string> const &key) {
+    if (key.size() > 0 && is_map()) {
+        let index = key.at(0);
+        auto &next = (*this)[index];
+        let next_key = std::vector<std::string>{key.begin() + 1, key.end()};
+        return next.get_by_path(next_key);
+
+    } else if (key.size() > 0 && is_vector()) {
+        size_t const index = std::stoll(key.at(0));
+        auto &next = (*this)[index];
+        let next_key = std::vector<std::string>{key.begin() + 1, key.end()};
+        return next.get_by_path(next_key);
+
+    } else if (key.size() > 0) {
+        TTAURI_THROW(invalid_operation_error("type {0} does not support get() with '{1}'", type_name(), key.at(0)));
+    } else {
+        return *this;
+    }
+}
+
+datum datum::get_by_path(std::vector<std::string> const &key) const {
+    if (key.size() > 0 && is_map()) {
+        let index = key.at(0);
+        let next = (*this)[index];
+        return next.get_by_path({key.begin() + 1, key.end()});
+
+    } else if (key.size() > 0 && is_vector()) {
+        size_t const index = std::stoll(key.at(0));
+        let next = (*this)[index];
+        return next.get_by_path({key.begin() + 1, key.end()});
+
+    } else if (key.size() > 0) {
+        TTAURI_THROW(invalid_operation_error("type {0} does not support get() with '{1}'", type_name(), key.at(0)));
+    } else {
+        return *this;
+    }
+}
+
+std::string to_string(datum const &d)
+{
+    return static_cast<std::string>(d);
 }
 
 std::ostream &operator<<(std::ostream &os, datum const &d)

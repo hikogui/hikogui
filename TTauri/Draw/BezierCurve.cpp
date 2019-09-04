@@ -4,7 +4,7 @@
 #include "BezierCurve.hpp"
 #include "BezierPoint.hpp"
 #include "PixelMap.inl"
-#include "TTauri/utils.hpp"
+#include "TTauri/memory.hpp"
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace TTauri::Draw {

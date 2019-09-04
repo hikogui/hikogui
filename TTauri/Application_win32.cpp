@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Application_win32.hpp"
-#include "utils.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "strings.hpp"

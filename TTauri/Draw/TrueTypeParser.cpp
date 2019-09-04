@@ -7,6 +7,7 @@
 #include "Font.hpp"
 #include "TTauri/exceptions.hpp"
 #include "TTauri/FileView.hpp"
+#include "TTauri/span.hpp"
 #include <boost/endian/buffers.hpp>
 #include <map>
 #include <array>
