@@ -7,6 +7,7 @@
 #include "os_detect.hpp"
 #include "URL.hpp"
 #include "wsRGBA.hpp"
+#include "memory.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -71,8 +72,15 @@ constexpr uint16_t datum_make_id(uint16_t id) {
  *  - String
  *  - Vector of datum
  *  - Unordered map of datum:datum.
+ *  - wsRGBA color.
+ *
+ * Due to the recursive nature of the datum type (through vector and map)
+ * you can serialize your own types by adding conversion constructor and
+ * operator to and from the datum on your type.
+ *
+ * XXX should add pickle and unpickle to datum.
  */
-struct datum {
+class datum {
     static constexpr uint64_t make_string(std::string_view str)
     {
         uint64_t len = str.size();
@@ -136,18 +144,64 @@ struct datum {
     static constexpr uint64_t map_ptr_mask = datum_id_to_mask(phy_map_ptr_id);
     static constexpr uint64_t wsrgba_ptr_mask = datum_id_to_mask(phy_wsrgba_ptr_id);
 
-
-    using vector = std::vector<datum>;
-    using map = std::unordered_map<datum,datum>;
-    struct undefined {};
-    struct null {};
-
     union {
         double f64;
         uint64_t u64;
     };
 
+    uint16_t type_id() const noexcept {
+        // We use memcpy on this to get access to the
+        // actual bytes for determining the stored type.
+        // This gets arround C++ undefined behavour of type-punning
+        // through a union.
+        // Technically you should memcpy to std::bytes[] but the
+        // implementation was really slow compared to this, since
+        // the native-endian presentation of the uint64_t destination
+        // helps a lot.
+
+        // The following is implemented as a simple direct uint16_t
+        // memory load.
+        uint64_t data;
+        std::memcpy(&data, this, sizeof(data));
+        return static_cast<uint16_t>(data >> 48);
+    }
+
+    bool is_phy_float() const noexcept {
+        let id = type_id();
+        return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
+    }
+
+    bool is_phy_integer() const noexcept {
+        return (type_id() & 0xfff8) == 0x7ff8;
+    }
+
+    bool is_phy_string() const noexcept {
+        let id = type_id();
+        return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
+    }
+
+    bool is_phy_pointer() const noexcept {
+        return (type_id() & 0xfff8) == 0xfff8;
+    }
+
+    bool is_phy_boolean() const noexcept { return type_id() == phy_boolean_id; }
+    bool is_phy_null() const noexcept { return type_id() == phy_null_id; }
+    bool is_phy_undefined() const noexcept { return type_id() == phy_undefined_id; }
+    bool is_phy_string_ptr() const noexcept { return type_id() == phy_string_ptr_id; }
+    bool is_phy_url_ptr() const noexcept { return type_id() == phy_url_ptr_id; }
+    bool is_phy_integer_ptr() const noexcept { return type_id() == phy_integer_ptr_id; }
+    bool is_phy_vector_ptr() const noexcept { return type_id() == phy_vector_ptr_id; }
+    bool is_phy_map_ptr() const noexcept { return type_id() == phy_map_ptr_id; }
+    bool is_phy_wsrgba_ptr() const noexcept { return type_id() == phy_wsrgba_ptr_id; }
+
+public:
+    using vector = std::vector<datum>;
+    using map = std::unordered_map<datum,datum>;
+    struct undefined {};
+    struct null {};
+
     datum() noexcept : u64(undefined_mask) {}
+
     ~datum() noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
@@ -172,22 +226,8 @@ struct datum {
         return *this;
     }
 
-    datum(datum &&other) noexcept :
-        u64(undefined_mask)
-    {
-        uint64_t t;
-        std::memcpy(&t, &other, sizeof(t));
-        std::memcpy(&other, this, sizeof(other));
-        std::memcpy(this, &t, sizeof(*this));
-    }
-
-    datum &operator=(datum &&other) noexcept {
-        uint64_t t;
-        std::memcpy(&t, &other, sizeof(t));
-        std::memcpy(&other, this, sizeof(other));
-        std::memcpy(this, &t, sizeof(*this));
-        return *this;
-    }
+    datum(datum &&other) noexcept : u64(undefined_mask) { memswap(*this, other); }
+    datum &operator=(datum &&other) noexcept { memswap(*this, other); return *this; }
 
     explicit datum(datum::null) noexcept : u64(null_mask) {}
     explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
@@ -196,13 +236,16 @@ struct datum {
     explicit datum(uint32_t value) noexcept : u64(integer_mask | value) {}
     explicit datum(uint16_t value) noexcept : u64(integer_mask | value) {}
     explicit datum(uint8_t value) noexcept : u64(integer_mask | value) {}
-    explicit datum(int64_t value) noexcept : u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
+
+    explicit datum(int64_t value) noexcept :
+        u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
         if (ttauri_unlikely(value < datum_min_int || value > datum_max_int)) {
             // Overflow.
             auto p = new int64_t(value);
             u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
         }
     }
+
     explicit datum(int32_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
     explicit datum(int16_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
     explicit datum(int8_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
@@ -277,16 +320,6 @@ struct datum {
 
     std::string repr() const noexcept;
 
-    uint16_t type_id() const noexcept {
-        // We use bit_cast<> on this to get access to the
-        // actual bytes for determining the stored type.
-        // This gets arround C++ undefined behavour of type-punning
-        // through a union.
-        uint64_t data;
-        std::memcpy(&data, this, sizeof(data));
-
-        return static_cast<uint16_t>(data >> 48);
-    }
 
     /*! Return ordering of types.
      * Used in less-than comparison between different types.
@@ -302,34 +335,6 @@ struct datum {
 
     datum &get_by_path(std::vector<std::string> const &key);
     datum get_by_path(std::vector<std::string> const &key) const;
-
-    bool is_phy_float() const noexcept {
-        let id = type_id();
-        return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
-    }
-
-    bool is_phy_integer() const noexcept {
-        return (type_id() & 0xfff8) == 0x7ff8;
-    }
-
-    bool is_phy_string() const noexcept {
-        let id = type_id();
-        return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
-    }
-
-    bool is_phy_pointer() const noexcept {
-        return (type_id() & 0xfff8) == 0xfff8;
-    }
-
-    bool is_phy_boolean() const noexcept { return type_id() == phy_boolean_id; }
-    bool is_phy_null() const noexcept { return type_id() == phy_null_id; }
-    bool is_phy_undefined() const noexcept { return type_id() == phy_undefined_id; }
-    bool is_phy_string_ptr() const noexcept { return type_id() == phy_string_ptr_id; }
-    bool is_phy_url_ptr() const noexcept { return type_id() == phy_url_ptr_id; }
-    bool is_phy_integer_ptr() const noexcept { return type_id() == phy_integer_ptr_id; }
-    bool is_phy_vector_ptr() const noexcept { return type_id() == phy_vector_ptr_id; }
-    bool is_phy_map_ptr() const noexcept { return type_id() == phy_map_ptr_id; }
-    bool is_phy_wsrgba_ptr() const noexcept { return type_id() == phy_wsrgba_ptr_id; }
 
     bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
     bool is_float() const noexcept { return is_phy_float(); }

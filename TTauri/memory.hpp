@@ -7,9 +7,18 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 namespace TTauri {
 
+template<typename T, typename U>
+void memswap(T &dst, U &src) {
+    static_assert(sizeof(T) == sizeof(U), "memswap requires both objects of equal size");
+    std::byte tmp[sizeof(T)];
+    memcpy(tmp, &src, sizeof(T));
+    memcpy(&src, &dst, sizeof(U));
+    memcpy(&dst, tmp, sizeof(T));
+}
 
 template<typename R, typename T>
 gsl_suppress3(type.1,26487,lifetime.4)
