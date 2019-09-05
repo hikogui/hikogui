@@ -30,6 +30,8 @@ enum class log_level {
     Debug,
     //! Informational messages used debugging problems in production by users of the application.
     Info,
+    //! Trace message.
+    Trace,
     //! A counter.
     Counter,
     //! An exception was throw, probably isn't a problem.
@@ -51,6 +53,7 @@ constexpr char const *to_const_string(log_level level) noexcept
     switch (level) {
     case log_level::Debug:     return "DEBUG";
     case log_level::Info:      return "INFO";
+    case log_level::Trace:     return "TRACE";
     case log_level::Counter:   return "COUNT";
     case log_level::Exception: return "THROW";
     case log_level::Audit:     return "AUDIT";
@@ -179,16 +182,18 @@ private:
 // The ring buffer of the logger is trivaliy constructed and can be used before the logger's constructor is stared.
 inline logger_type logger = {}; 
 
+// Forward without including trace.hpp
+void trace_record() noexcept;
+
 }
 
-
-#define LOG_DEBUG(...) logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_INFO(...) logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_COUNTER(...) logger.log<log_level::Counter>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_AUDIT(...) logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_EXCEPTION(...) logger.log<log_level::Exception>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_WARNING(...) logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_ERROR(...) logger.log<log_level::Error>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_CRITICAL(...) logger.log<log_level::Critical>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_FATAL(...) logger.log<log_level::Fatal>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_DEBUG(...) ::TTauri::logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_INFO(...) ::TTauri::logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_COUNTER(...) ::TTauri::logger.log<log_level::Counter>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_AUDIT(...) ::TTauri::logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_EXCEPTION(...) ::TTauri::logger.log<log_level::Exception>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_WARNING(...) ::TTauri::logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);
+#define LOG_ERROR(...) ::TTauri::logger.log<log_level::Error>(__FILE__, __LINE__, __VA_ARGS__); ::TTauri::trace_record();
+#define LOG_CRITICAL(...) ::TTauri::logger.log<log_level::Critical>(__FILE__, __LINE__, __VA_ARGS__); ::TTauri::trace_record();
+#define LOG_FATAL(...) ::TTauri::logger.log<log_level::Fatal>(__FILE__, __LINE__, __VA_ARGS__);
 

@@ -7,6 +7,7 @@
 #include "Device.hpp"
 #include "PipelineImage.hpp"
 #include "PipelineFlat.hpp"
+#include "TTauri/trace.hpp"
 #include <vector>
 
 namespace TTauri::GUI {
@@ -233,9 +234,13 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render()
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    auto tr = TTAURI_TRACE("window_render"_tag, "resizing"_tag, bool, "state"_tag, int, "frame_buffer"_tag, int);
+    auto lock = std::scoped_lock{TTauri::GUI::mutex};
+
+    trace_record();
 
     // While resizing lower the frame rate to reduce CPU usage.
+    tr.set<"resizing"_tag>(resizing);
     if (resizing && (frameCount++ % resizeFrameRateDivider) != 0) {
         return;
     }
@@ -244,6 +249,7 @@ void Window_vulkan::render()
     teardown();
     build();
 
+    tr.set<"state"_tag>(static_cast<int>(state));
     if (state != State::ReadyToRender) {
         return;
     }
@@ -254,6 +260,7 @@ void Window_vulkan::render()
         // is not working correctly.
         return;
     }
+    tr.set<"frame_buffer"_tag>(*frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
     // XXX maybe use one for each swapchain image or go to single command buffer.

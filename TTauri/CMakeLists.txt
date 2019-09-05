@@ -91,6 +91,7 @@ set(TTauri_srcs
     hires_utc_clock.cpp
     hires_utc_clock_win32.cpp
     logger.cpp
+    trace.cpp
     url_parser.cpp
     URL.cpp
     StaticResources.cpp

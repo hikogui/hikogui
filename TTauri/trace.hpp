@@ -6,177 +6,166 @@
 #include "wfree_mpsc_message_queue.hpp"
 #include "hiperf_utc_clock.hpp"
 #include "datum.hpp"
+#include "logger.hpp"
 #include <atomic>
 #include <array>
 #include <utility>
+#include <ostream>
 
 #pragma once
 
 namespace TTauri {
 
-using trace_id = int64_t;
 
-struct scoped_span_base;
+inline std::atomic<int64_t> trace_id = 0;
 
-struct trace_message {
-    string_tag tag;
-    trace_id id;
-    trace_id parent_id;
-    hiperf_utc_clock::timepoint timestamp;
-    hiperf_utc_clock::duration duration;
-    small_map<string_tag,datum,16> trace_info;
+struct trace_stack_type {
+    /*! The number of currently active traces on this thread.
+    */
+    int depth = 0;
 
-    trace_message(scoped_span_base const &span);
-};
+    /*! Keeps track of the traces that need to record itself into the log.
+    */
+    int record_depth = 0;
 
-class trace {
-private:
-    thread_local int depth = 0;
-    thread_local int record_depth = 0;
-    static std::atomic<trace_id> id = 0;
+    /*! The trace id of the trace at the top of the thread's stack.
+    */
+    int64_t top_trace_id = 0;
 
-    wfree_mpsc_message_queue<trace_message,2048> messages;
-public:
-    thread_local trace_id current_id = 0;
-
-    static trace_id get_unique_id() noexcept {
-        return id.fetch_add(1, std::memory_order_relaxed) + 1;
-    }
-
-    static std::pair<trace_id,trace_id> push() noexcept {
-        let id = get_unique_id();
-        let parent_id = current_id;
-        current_id = id;
+    /*! Push a trace on the trace stack.
+    * Traces are in reality already on the thread's actual stack.
+    * This function will update a virtual stack of traces.
+    */
+    inline std::pair<int64_t,int64_t> push() noexcept {
+        let id = trace_id.fetch_add(1, std::memory_order_relaxed) + 1;
+        let parent_id = top_trace_id;
+        top_trace_id = id;
         depth++;
         return {id, parent_id};
     }
 
-    static void pop(trace_id parent_id) noexcept {
-        required_assert(depth > 0);
-        if (record_depth > --depth) {
-            record_depth = depth;
-        }
-
-        current_id = parent_id;
-    }
-
     /*! Check if the current trace is being recorded into a log.
-     */
-    static bool is_recording() noexcept {
+    */
+    bool is_recording() const noexcept {
         return depth <= record_depth;
     }
 
-    /*! Tell the system to record current trace and all its parents into a log.
-     */
-    static void record() noexcept {
-        if (!is_recording()) {
+    /*! pop a trace from the trace stack.
+    * Traces are in reality already on the thread's actual stack.
+    * This function will update a virtual stack of traces.
+    *
+    * \return The trace that pops should record itself in the log file.
+    */
+    inline bool pop(int64_t parent_id) noexcept {
+        bool is_recording = record_depth > --depth;
+        if (is_recording) {
             record_depth = depth;
         }
-    }
 
-    /*! Record a message into the log.
-     */
-    static void record_message(trace_messsage const &message) {
-        messages.push_back(message);
+        top_trace_id = parent_id;
+        return is_recording;
     }
 };
 
-struct scoped_span_base {
-    using clock = hiperf_utc_clock;
+inline thread_local trace_stack_type trace_stack;
 
-    /*! id of the current trace_span.
-     * zero means inactive trace_span
-     */
-    trace_id id;
+/*! Tell the system to record current trace and all its parents into a log.
+*/
+void trace_record() noexcept;
 
-    /*! id of the parent trace_span.
-     * zero means inactive trace_span
-     */
-    trace_id parent_id;
+struct trace_data {
+    string_tag tag = 0;
+
+    /*! id of the current trace.
+    * zero means inactive trace
+    */
+    int64_t id = 0;
+
+    /*! id of the parent trace.
+    * zero means inactive trace
+    */
+    int64_t parent_id = 0;
 
     /*! Start timestamp when the trace was started.
-     */
-    typename clock::timepoint timestamp;
-
-    /*! Duration of the trace-span.
-     */
-    typename clock::duration duration;
+    */
+    typename cpu_counter_clock::time_point timestamp;
 
     /*! Information added to a trace during its lifetime.
-     * int64_t as values for wait-free value transfer.
-     */
-    small_map<string_tag,int64_t,16> trace_info;
+    */
+    small_map<string_tag,datum,8> trace_info;
 
+    trace_data(string_tag tag, typename cpu_counter_clock::time_point timestamp) :
+        tag(tag), timestamp(timestamp) {}
+
+    trace_data() = default;
+    ~trace_data() = default;
+    trace_data(trace_data const &other) = default;
+    trace_data &operator=(trace_data const &other) = default;
+    trace_data(trace_data &&other) = default;
+    trace_data &operator=(trace_data &&other) = default;
+
+    template<string_tag InfoTag, typename T>
+    trace_data &set(T &&value) {
+        trace_info.push(InfoTag, std::forward<T>(value));
+        return *this;
+    }
+
+    template<string_tag InfoTag>
+    std::optional<datum> get() {
+        return trace_info.get(InfoTag);
+    }
+
+    template<string_tag InfoTag>
+    datum get(datum default_value) {
+        return trace_info.get(InfoTag, default_value);
+    }
+};
+
+std::ostream &operator<<(std::ostream &lhs, trace_data const &rhs);
+
+template<string_tag Tag>
+class trace final {
+    trace_stack_type *stack;
+    trace_data data;
+    char const *source_file = nullptr;
+    int source_line = 0;
+
+public:
     /*! The constructor will make the start of a trace.
      *
      * start_trace() should be the only function that will cause this constructor to
      * be executed. start_trace will place this onto current_trace and set this' parent.
      */
-    scoped_span_base() :
-        timestamp(clock::now())
+    trace(char const *source_file, int source_line) :
+        stack(&trace_stack), data(Tag, cpu_counter_clock::now()), source_file(source_file), source_line(source_line)
     {
-        std::tie(id, parent_id) = trace::push();
+        std::tie(data.id, data.parent_id) = stack->push();
+
+        increment_counter<Tag>();
     }
 
-    virtual ~scoped_span_base() {
-        trace::pop(parent_id);
-    }
+    ~trace() {
+        let is_recording = stack->pop(data.parent_id);
 
-    scoped_span_base(scoped_span_base const &) = delete;
-    scoped_span_base(scoped_span_base &&) = delete;
-    scoped_span_base &operator=(scoped_span_base const &) = delete;
-    scoped_span_base &operator=(scoped_span_base &&) = delete;
-
-    template<string_tag tag>
-    bool insert(int64_t value) {
-        trace_info.push(tag, value);
-    }
-
-    template<string_tag tag>
-    std::optional<int64_t> get() {
-        return trace_info.get(tag);
-    }
-
-    template<string_tag tag>
-    int64_t get(int64_t default_value) {
-        return trace_info.get(tag, default_value);
-    }
-
-    virtual string_tag tag() const noexcept = 0;
-};
-
-template<string_tag _TAG>
-struct scoped_span final : public scoped_span_base {
-    static constexpr string_tag TAG = _TAG;
-
-    scoped_span() {
-        increment_counter<TAG>();
-    }
-
-    ~scoped_span() {
-        if (id > 0) {
-            duration = clock::now() - timestamp;
-
-            // Send the log to the log thread.
-            if (ttauri_unlikely(trace::is_recording())) {
-                let message = trace_message(TAG, *this);
-                trace::log_message(message);
-            }
+        // Send the log to the log thread.
+        if (ttauri_unlikely(is_recording)) {
+            logger.log<log_level::Trace>(source_file, source_line, "{}", std::move(data));
         }
     }
 
-    string_tag tag() const noexcept override { return TAG; }
+    trace(trace const &) = delete;
+    trace(trace &&) = delete;
+    trace &operator=(trace const &) = delete;
+    trace &operator=(trace &&) = delete;
+
+    template<string_tag InfoTag, typename T>
+    trace &set(T &&value) {
+        data.set<InfoTag>(std::forward<T>(value));
+        return *this;
+    }
 };
 
-trace_message::trace_message(string_tag tag, scoped_span_base const &span) :
-    tag(tag),
-    id(trace.id),
-    parent_id(trace.parent_id),
-    timestamp(trace.timestamp),
-    duration(trace.duration),
-    trace_info(trace.trace_info)
-{
-}
 
+#define TTAURI_TRACE(Tag) ::TTauri::trace<Tag>(__FILE__, __LINE__);
 
 }

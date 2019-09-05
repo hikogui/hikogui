@@ -4,7 +4,7 @@
 #pragma once
 
 #include "required.hpp"
-#include <GSL/gsl>
+#include <gsl/gsl>
 
 namespace TTauri {
 

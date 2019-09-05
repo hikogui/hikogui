@@ -68,8 +68,8 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     error &set(InfoValueType &&info_value) noexcept {
-        if (!error_info.insert(InfoTag, datum(std::forward<InfoValueType>(info_value)))) {
-            LOG_ERROR("Too many error_info values added to exception.");
+        if (!error_info.push(InfoTag, std::forward<InfoValueType>(info_value))) {
+            LOG_WARNING("Too many error_info values added to exception.");
         }
         return *this;
     }
@@ -110,7 +110,7 @@ inline std::ostream &operator<<(std::ostream &os, error const &x)
 }
 
 template<string_tag _TAG>
-class sub_error : public error {
+class sub_error final : public error {
 public:
     static constexpr string_tag TAG = _TAG;
 
@@ -124,8 +124,8 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     sub_error &set(InfoValueType &&info_value) noexcept {
-        if (!error_info.insert(InfoTag, datum(std::forward<InfoValueType>(info_value)))) {
-            LOG_ERROR("Too many error_info values added to exception.");
+        if (!error_info.push(InfoTag, std::forward<InfoValueType>(info_value))) {
+            LOG_WARNING("Too many error_info values added to exception.");
         }
         return *this;
     }

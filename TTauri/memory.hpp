@@ -12,7 +12,7 @@
 namespace TTauri {
 
 template<typename T, typename U>
-void memswap(T &dst, U &src) {
+force_inline void memswap(T &dst, U &src) {
     static_assert(sizeof(T) == sizeof(U), "memswap requires both objects of equal size");
     std::byte tmp[sizeof(T)];
     memcpy(tmp, &src, sizeof(T));

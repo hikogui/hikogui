@@ -20,60 +20,77 @@ public:
         V value;
     };
     static constexpr int capacity = N;
+    using array_type = std::array<item_type, capacity>;
 
 private:
-    std::array<item_type, capacity> items;
-    int nr_items;
+    typename array_type::iterator _end;
+    array_type items = {};
 
 public:
-    small_map() : nr_items(0) {}
+    small_map() {
+        _end = items.begin();
+    }
 
-    small_map(small_map const &other) : nr_items(0) {
-        for (let &item: other) {
-            items[nr_items++] = { item.key, item.value };
+    small_map(small_map const &other) {
+        _end = items.begin();
+        for (let &other_item: other) {
+            auto &this_item = *(_end++);
+            this_item = other_item;
         }
     }
 
-    small_map(small_map &&other) : nr_items(0) {
-        using namespace std;
+    small_map(small_map &&other) {
+        using std::swap;
   
-        for (auto &item: other) {
-            swap(items[nr_items++], item);
+        _end = items.begin();
+        for (auto &other_item: other) {
+            auto &this_item = *(_end++);
+            swap(this_item, other_item);
         }
-        other.nr_items = 0;
+        // All items in other are valid, no reason to set other._end.
     }
 
     small_map &operator=(small_map const &other) {
-        nr_items = 0;
-        for (let &item: other) {
-            items[nr_items++] = item;
+        _end = items.begin();
+        for (let &other_item: other) {
+            auto &this_item = *(_end++);
+            this_item = other_item;
         }
         return *this;
     }
 
     small_map &operator=(small_map &&other) {
-        using namespace std;
+        using std::swap;
 
-        nr_items = 0;
-        for (let &item: other) {
-            swap(items[nr_items++], item);
+        _end = items.begin();
+        for (let &other_item: other) {
+            auto &this_item = *(_end++);
+            this_item = other_item;
         }
-        other.nr_items = 0;
+        // All items in other are valid, no reason to set other._end.
         return *this;
     }
 
-    int size() const {
-        return nr_items;
+    size_t size() const {
+        return _end - items.begin();
     }
 
     decltype(auto) begin() const { return items.begin(); }
     decltype(auto) begin() { return items.begin(); }
-    decltype(auto) end() const { return items.begin() + nr_items; }
-    decltype(auto) end() { return items.begin() + nr_items; }
+    decltype(auto) end() const { return _end; }
+    decltype(auto) end() { return _end; }
 
-    bool push(K &&key, V &&value) noexcept {
-        if (nr_items < capacity) {
-            items[nr_items++] = { std::forward<K>(key), std::forward<V>(value) };
+    decltype(auto) rbegin() const { return items.rend() - size(); }
+    decltype(auto) rbegin() { return items.rend() - size(); }
+    decltype(auto) rend() const { return items.rend(); }
+    decltype(auto) rend() { return items.rend(); }
+
+    template<typename O, typename P>
+    bool push(O &&key, P &&value) noexcept {
+        if (_end != items.end()) {
+            auto &item = *(_end++);
+            item.key = std::forward<O>(key);
+            item.value = std::forward<P>(value);
             return true;
         } else {
             return false;
@@ -81,27 +98,17 @@ public:
     }
 
     std::optional<item_type> pop() noexcept {
-        if (nr_items > 0) {
-            return std::move(items[--nr_items]);
+        if (_end != items.begin()) {
+            auto &item = *(--_end);
+            return std::move(item);
         } else {
             return {};
         }
     }
 
-    bool insert(K &&key, V &&value) {
-        for (auto i = 0; i < nr_items; i++) {
-            auto &item = items[i];
-            if (item.key == key) {
-                item.value = std::forward<V>(value);
-                return true;
-            }
-        }
-        return push(std::forward<K>(key), std::forward<V>(value));
-    }
-
     std::optional<V> get(K const &key) const noexcept {
-        for (auto i = 0; i < nr_items; i++) {
-            let &item = items[i];
+        for (auto i = rbegin(); i != rend(); i++) {
+            let item = *i;
             if (item.key == key) {
                 return item.value;
             }

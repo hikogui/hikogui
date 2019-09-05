@@ -36,7 +36,7 @@
     template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(T const &rhs) { return lhs op datum{rhs}; }\
 
 namespace TTauri {
-struct datum;
+class datum;
 }
 
 namespace std {
@@ -51,8 +51,6 @@ public:
 
 namespace TTauri {
 
-constexpr int64_t datum_min_int = 0xfffe'0000'0000'0000LL;
-constexpr int64_t datum_max_int = 0x0007'ffff'ffff'ffffLL;
 
 constexpr uint64_t datum_id_to_mask(uint64_t id) {
     return id << 48;
@@ -61,6 +59,9 @@ constexpr uint64_t datum_id_to_mask(uint64_t id) {
 constexpr uint16_t datum_make_id(uint16_t id) {
     return ((id & 0x10) << 11) | (id & 0xf) | 0x7ff0;
 }
+
+void swap(datum &lhs, datum &rhs) noexcept;
+
 
 /*! A fixed size (64 bits) class for a generic value type.
  * A datum can hold and do calculations with the following types:
@@ -96,6 +97,9 @@ class datum {
         }
         return (string_mask + (len << 48)) | x;
     }
+
+    static constexpr int64_t minimum_int = 0xfffe'0000'0000'0000LL;
+    static constexpr int64_t maximum_int = 0x0007'ffff'ffff'ffffLL;
 
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
@@ -194,6 +198,9 @@ class datum {
     bool is_phy_map_ptr() const noexcept { return type_id() == phy_map_ptr_id; }
     bool is_phy_wsrgba_ptr() const noexcept { return type_id() == phy_wsrgba_ptr_id; }
 
+    void delete_pointer() noexcept;
+    void copy_pointer(datum const &other) noexcept;
+
 public:
     using vector = std::vector<datum>;
     using map = std::unordered_map<datum,datum>;
@@ -226,8 +233,8 @@ public:
         return *this;
     }
 
-    datum(datum &&other) noexcept : u64(undefined_mask) { memswap(*this, other); }
-    datum &operator=(datum &&other) noexcept { memswap(*this, other); return *this; }
+    datum(datum &&other) noexcept : u64(undefined_mask) { swap(*this, other); }
+    datum &operator=(datum &&other) noexcept { swap(*this, other); return *this; }
 
     explicit datum(datum::null) noexcept : u64(null_mask) {}
     explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
@@ -239,7 +246,7 @@ public:
 
     explicit datum(int64_t value) noexcept :
         u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
-        if (ttauri_unlikely(value < datum_min_int || value > datum_max_int)) {
+        if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
             // Overflow.
             auto p = new int64_t(value);
             u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
@@ -269,7 +276,13 @@ public:
     datum &operator=(int32_t rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(int16_t rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(int8_t rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(bool rhs) noexcept { return (*this = datum{rhs}); } 
+    datum &operator=(bool rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+        u64 = boolean_mask | int64_t{rhs};
+        return *this;
+    } 
     datum &operator=(char rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(std::string_view rhs) noexcept { return (*this = datum{rhs}); }
     datum &operator=(std::string const &rhs) noexcept { return (*this = datum{rhs}); }
@@ -362,9 +375,9 @@ public:
 
     size_t size() const;
     size_t hash() const noexcept;
-private:
-    void delete_pointer() noexcept;
-    void copy_pointer(datum const &other) noexcept;
+
+    friend bool operator==(datum const &lhs, datum const &rhs) noexcept;
+    friend bool operator<(datum const &lhs, datum const &rhs) noexcept;
 };
 
 template<typename T> inline bool will_cast_to(datum const &) { return false; }
@@ -388,6 +401,10 @@ template<> inline bool will_cast_to<wsRGBA>(datum const &d) { return d.is_wsrgba
 
 std::string to_string(datum const &d);
 std::ostream &operator<<(std::ostream &os, datum const &d);
+
+inline void swap(datum &lhs, datum &rhs) noexcept {
+    memswap(lhs, rhs);
+}
 
 bool operator<(datum::map const &lhs, datum::map const &rhs) noexcept;
 
