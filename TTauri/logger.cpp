@@ -24,14 +24,13 @@ using namespace std::literals::chrono_literals;
 
 std::string log_message_base::string() const noexcept
 {
-    let source_filename = filename_from_path(source_path);
-
     let utc_timestamp = hiperf_utc_clock::convert(timestamp);
-    let local_timestring = format_full_datetime(utc_timestamp, application().time_zone);
+    let local_timestring = format_iso8601(utc_timestamp);
 
-    if (level() == log_level::Counter) {
+    if (source_path == nullptr) {
         return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());
     } else {
+        let source_filename = filename_from_path(source_path);
         return fmt::format("{} {:5} {}.    {}:{}", local_timestring, to_const_string(level()), message(), source_filename, source_line);
     }
 }
@@ -125,7 +124,7 @@ void logger_type::gather_loop() noexcept {
 
         for (let &tag: keys) {
             let [count, count_since_last_read] = read_counter(tag);
-            LOG_COUNTER("{:13} {:18} {:+9}", tag_to_string(tag), count, count_since_last_read);
+            logger.log<log_level::Counter>(nullptr, 0, "{:13} {:18} {:+9}", tag_to_string(tag), count, count_since_last_read);
         }
     } while (!last_iteration);
 }

@@ -18,7 +18,6 @@ void datum::delete_pointer() noexcept {
     case phy_wsrgba_ptr_id: delete get_pointer<wsRGBA>(); break;
     default: no_default;
     }
-    u64 = undefined_mask;
 }
 
 void datum::copy_pointer(datum const &other) noexcept {

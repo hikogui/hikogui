@@ -33,9 +33,13 @@ struct hires_utc_clock {
     }
 };
 
-/*! Return a string representation of the time_point as a "year-month-day hour:minute:second.nanoseconds".
- * \param time_zone If time_zone is a nullptr then UTC is used.
- */
-std::string format_full_datetime(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone=nullptr);
+/*! Return a ISO-8601 formated date-time.
+*/
+std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp);
+
+/*! Return a ISO-8601 formated date-time.
+* \param time_zone If time_zone is a nullptr then the current timezone is used.
+*/
+std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone=nullptr);
 
 }

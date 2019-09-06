@@ -87,4 +87,27 @@ inline std::string tag_to_string(string_tag tag) noexcept
     return {tmp};
 }
 
+
+template<string_tag Head, string_tag... Tail>
+constexpr string_tag tag_at_index(size_t index) noexcept
+{
+    if constexpr (sizeof...(Tail) > 0) {
+        return index == 0 ? Head : tag_at_index<Tail...>(index - 1);
+    } else {
+        required_assert(index == 0);
+        return Head;
+    }
+}
+
+template<string_tag Head, string_tag... Tail>
+constexpr size_t index_of_tag(string_tag tag, size_t index = 0) noexcept
+{
+    if constexpr (sizeof...(Tail) > 0) {
+        return tag == Head ? index : index_of_tag<Tail...>(tag, index + 1);
+    } else {
+        required_assert(tag == Head);
+        return index;
+    }
+}
+
 };

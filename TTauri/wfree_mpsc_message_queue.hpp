@@ -81,7 +81,7 @@ class wfree_mpsc_message_queue {
     using scoped_write_operation = wfree_mpsc_message_queue_operation<T,Capacity,Align,true>;
     using scoped_read_operation = wfree_mpsc_message_queue_operation<T,Capacity,Align,false>;
 
-    enum class message_state { Empty, Copying, Ready };
+    enum class message_state: uint8_t { Empty, Copying, Ready };
 
     struct message_type {
         // State is first, to improve cache-line and prefetch.

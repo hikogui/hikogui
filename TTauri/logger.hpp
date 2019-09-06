@@ -25,7 +25,7 @@ namespace TTauri {
 std::string getLastErrorMessage();
 #endif
 
-enum class log_level {
+enum class log_level: uint8_t {
     //! Messages that are used for debugging during developmet.
     Debug,
     //! Informational messages used debugging problems in production by users of the application.
@@ -149,7 +149,7 @@ public:
     void gather_loop() noexcept;
 
     template<log_level Level, typename... Args>
-    void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
+    force_inline void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
         if (Level >= minimum_log_level) {
             // Add messages in the queue, block when full.
             // * This reduces amount of instructions needed to be executed during logging.
@@ -189,7 +189,6 @@ void trace_record() noexcept;
 
 #define LOG_DEBUG(...) ::TTauri::logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_INFO(...) ::TTauri::logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_COUNTER(...) ::TTauri::logger.log<log_level::Counter>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_AUDIT(...) ::TTauri::logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_EXCEPTION(...) ::TTauri::logger.log<log_level::Exception>(__FILE__, __LINE__, __VA_ARGS__);
 #define LOG_WARNING(...) ::TTauri::logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);

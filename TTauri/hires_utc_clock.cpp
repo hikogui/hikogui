@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "hires_utc_clock.hpp"
+#include "Application.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
@@ -9,7 +10,7 @@ namespace TTauri {
 
 using namespace std::chrono_literals;
 
-static std::string format_full_datetime_utc(hires_utc_clock::time_point utc_timestamp)
+std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp)
 {
     let nanoseconds = utc_timestamp.time_since_epoch().count() % 1000000000;
 
@@ -29,10 +30,14 @@ static std::string format_full_datetime_utc(hires_utc_clock::time_point utc_time
     );
 }
 
-std::string format_full_datetime(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone)
+std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone)
 {
     if (time_zone == nullptr) {
-        return format_full_datetime_utc(utc_timestamp);
+        time_zone = application().time_zone;
+    }
+
+    if (time_zone == nullptr) {
+        return format_iso8601_utc(utc_timestamp);
     }
 
     let nanoseconds = utc_timestamp.time_since_epoch().count() % 1000000000;
@@ -77,7 +82,7 @@ std::string format_full_datetime(hires_utc_clock::time_point utc_timestamp, date
         return fmt::format("{}:{:02}.{:09}{}", local_timestring, seconds, nanoseconds, tz_offset_string);
 
     } catch (...) {
-        return format_full_datetime_utc(utc_timestamp);
+        return format_iso8601_utc(utc_timestamp);
     }
 }
 

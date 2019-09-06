@@ -234,7 +234,7 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render()
 {
-    auto tr = TTAURI_TRACE("window_render"_tag, "resizing"_tag, bool, "state"_tag, int, "frame_buffer"_tag, int);
+    auto tr = trace<"window_render"_tag, "resizing"_tag, "state"_tag, "frame_buffer"_tag>();
     auto lock = std::scoped_lock{TTauri::GUI::mutex};
 
     trace_record();
