@@ -7,6 +7,7 @@
 #include "hiperf_utc_clock.hpp"
 #include "sdatum.hpp"
 #include "logger.hpp"
+#include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <atomic>
 #include <array>
@@ -16,6 +17,9 @@
 #pragma once
 
 namespace TTauri {
+
+constexpr int MAX_NR_TRACES = 1024;
+
 
 inline std::atomic<int64_t> trace_id = 0;
 
@@ -68,7 +72,7 @@ inline thread_local trace_stack_type trace_stack;
 */
 void trace_record() noexcept;
 
-template<string_tag... InfoTags>
+template<string_tag Tag, string_tag... InfoTags>
 struct trace_data {
     /*! id of the parent trace.
     * zero means inactive trace
@@ -102,8 +106,8 @@ struct trace_data {
     }
 };
 
-template<string_tag... InfoTags>
-std::ostream &operator<<(std::ostream &lhs, trace_data<InfoTags...> const &rhs) {
+template<string_tag Tag, string_tag... InfoTags>
+std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &rhs) {
     auto info_string = std::string{};
 
     auto counter = 0;
@@ -116,18 +120,45 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<InfoTags...> const &rhs) 
         info_string += static_cast<std::string>(rhs.info[i]);
     }
 
-    lhs << fmt::format("parent={} start={} {}",
+    lhs << fmt::format("parent={} tag={} start={} {}",
         rhs.parent_id,
+        Tag,
         format_iso8601(hiperf_utc_clock::convert(rhs.timestamp)),
         info_string
     );
     return lhs;
 }
 
+struct trace_statistics_type {
+    std::atomic<int64_t> count = 0;
+    cpu_counter_clock::duration duration;
+    cpu_counter_clock::duration peak_duration;
+    std::atomic<int64_t> version = 0;
+
+    // Variables used by logger.
+    int64_t prev_count = 0;
+    cpu_counter_clock::duration prev_duration;
+    std::atomic<bool> reset = false;
+};
+
+template<string_tag Tag>
+inline trace_statistics_type trace_statistics;
+
+inline wfree_unordered_map<string_tag,trace_statistics_type *,MAX_NR_TRACES> trace_statistics_map;
+
+
 template<string_tag Tag, string_tag... InfoTags>
 class trace final {
-    trace_stack_type *stack;
+    // If this pointer is not an volatile, clang will optimize it away and replacing it
+    // with direct access to the trace_stack variable. This trace_stack variable is in local storage,
+    // so a lot of instructions and memory accesses are emited by the compiler multiple times.
+    trace_stack_type * volatile stack;
+
     trace_data<Tag, InfoTags...> data;
+
+    no_inline static void add_to_map() {
+        trace_statistics_map.insert(Tag, &trace_statistics<Tag>);
+    }
 
 public:
     /*! The constructor will make the start of a trace.
@@ -141,16 +172,38 @@ public:
         // We don't need to know our own id, until the destructor is called.
         // Our id will be at the top of the stack.
         data.parent_id = stack->push();
-
-        increment_counter<Tag>();
     }
 
     force_inline ~trace() {
+        let end_timestamp = cpu_counter_clock::now();
+        let duration = end_timestamp - data.timestamp;
+
+        auto &stat = trace_statistics<Tag>;
+        let count = stat.count.load(std::memory_order_relaxed);
+        let version = count + 1;
+
+        // In the logging thread we can check if count and version are equal
+        // to read the statistics.
+        stat.count.store(version, std::memory_order_acquire);
+        stat.duration += duration;
+
+        let reset = stat.reset.load(std::memory_order_relaxed);
+        if (reset || duration > stat.peak_duration) {
+            stat.peak_duration = duration;
+            stat.reset.store(false, std::memory_order_relaxed);
+        }
+
+        stat.version.store(version, std::memory_order_release);
+
+        if (ttauri_unlikely(count == 0)) {
+            add_to_map();
+        }
+
         let [id, is_recording] = stack->pop(data.parent_id);
 
         // Send the log to the log thread.
         if (ttauri_unlikely(is_recording)) {
-            logger.log<log_level::Trace>("tag={}, id={} {}", Tag, id, std::move(data));
+            logger.log<log_level::Trace>(end_timestamp, "id={} {}", id, std::move(data));
         }
     }
 

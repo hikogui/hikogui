@@ -237,7 +237,7 @@ void Window_vulkan::render()
     auto tr = trace<"window_render"_tag, "resizing"_tag, "state"_tag, "frame_buffer"_tag>();
     auto lock = std::scoped_lock{TTauri::GUI::mutex};
 
-    trace_record();
+    //trace_record();
 
     // While resizing lower the frame rate to reduce CPU usage.
     tr.set<"resizing"_tag>(resizing);

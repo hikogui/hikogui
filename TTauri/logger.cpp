@@ -7,6 +7,7 @@
 #include "URL.hpp"
 #include "hiperf_utc_clock.hpp"
 #include "Application.hpp"
+#include "trace.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>
@@ -103,6 +104,60 @@ void logger_type::write(std::string const &str) noexcept {
     writeToConsole(str);
 }
 
+void logger_type::display_counters() noexcept {
+    let keys = counter_map.keys();
+    for (let &tag: keys) {
+        let [count, count_since_last_read] = read_counter(tag);
+        logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18} {:+9}", tag_to_string(tag), count, count_since_last_read);
+    }
+}
+
+void logger_type::display_trace_statistics() noexcept {
+    let keys = trace_statistics_map.keys();
+    for (let &tag: keys) {
+        auto *stat = trace_statistics_map.get(tag, nullptr);
+        required_assert(stat != nullptr);
+
+        int64_t count;
+        int64_t version;
+        typename cpu_counter_clock::duration duration;
+        typename cpu_counter_clock::duration peak_duration;
+
+        let prev_count = stat->prev_count;
+        let prev_duration = stat->prev_duration;
+
+        do {
+            count = stat->count.load(std::memory_order_acquire);
+            duration = stat->duration;
+            peak_duration = stat->peak_duration;
+            version = stat->version.load(std::memory_order_release);
+        } while (count != version);
+        stat->reset.store(true, std::memory_order_relaxed);
+
+        let last_count = count - prev_count;
+        let last_duration = duration - prev_duration;
+
+        if (last_count <= 0) {
+            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:18n}",
+                tag_to_string(tag),
+                count,
+                last_count
+            );
+
+        } else {
+            // XXX not perfect at all.
+            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:+9n} mean: {:n} ns/iter, peak: {:n} ns/iter",
+                tag_to_string(tag),
+                count,
+                last_count, (last_duration / last_count) / 1ns, peak_duration / 1ns
+            );
+        }
+
+        stat->prev_count = count;
+        stat->prev_duration = duration;
+    }
+}
+
 void logger_type::gather_loop() noexcept {
     constexpr auto gather_interval = 30s;
     bool last_iteration = false;
@@ -120,17 +175,15 @@ void logger_type::gather_loop() noexcept {
             }
         } while (hires_utc_clock::now() < next_dump_time && !last_iteration);
 
-        let keys = counter_map.keys();
         if (last_iteration) {
-            LOG_INFO("Counter: displaying {} counters at end of program", keys.size());
+            LOG_INFO("Counter: displaying counters and statistics at end of program");
         } else {
-            LOG_INFO("Counter: displaying {} counters over the last {} seconds", keys.size(), gather_interval / 1s);
+            LOG_INFO("Counter: displaying counters and statistics over the last {} seconds", gather_interval / 1s);
         }
 
-        for (let &tag: keys) {
-            let [count, count_since_last_read] = read_counter(tag);
-            logger.log<log_level::Counter>("{:13} {:18} {:+9}", tag_to_string(tag), count, count_since_last_read);
-        }
+        display_counters();
+        display_trace_statistics();
+
     } while (!last_iteration);
 }
 

@@ -10,7 +10,7 @@
 
 namespace TTauri {
 
-constexpr int MAX_NR_COUNTERS = 1000;
+constexpr int MAX_NR_COUNTERS = 1024;
 
 struct counter_map_value_type {
     std::atomic<int64_t> *counter;

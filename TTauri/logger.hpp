@@ -178,7 +178,7 @@ public:
     void gather_loop() noexcept;
 
     template<log_level Level, typename... Args>
-    force_inline void log(char const * const format, Args &&... args) noexcept {
+    force_inline void log(typename cpu_counter_clock::time_point timestamp, char const *format, Args &&... args) noexcept {
         if (Level >= minimum_log_level) {
             // Add messages in the queue, block when full.
             // * This reduces amount of instructions needed to be executed during logging.
@@ -187,7 +187,7 @@ public:
             // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
             auto message = message_queue.write<"logger_block"_tag>();
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
-            message->emplace<log_message<Level, Args...>>(cpu_counter_clock::now(), format, std::forward<Args>(args)...);
+            message->emplace<log_message<Level, Args...>>(timestamp, format, std::forward<Args>(args)...);
 
         } else {
             return;
@@ -209,6 +209,8 @@ private:
     void write(std::string const &str) noexcept;
     void writeToFile(std::string str) noexcept;
     void writeToConsole(std::string str) noexcept;
+    void display_counters() noexcept;
+    void display_trace_statistics() noexcept;
 };
 
 // The constructor of logger only starts the logging thread.
@@ -217,7 +219,7 @@ inline logger_type logger = {};
 
 }
 
-#define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(__VA_ARGS__, source_code_ptr(__FILE__, __LINE__))
+#define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(cpu_counter_clock::now(), __VA_ARGS__, source_code_ptr(__FILE__, __LINE__))
 
 #define LOG_DEBUG(...) TTAURI_LOG(log_level::Debug, __VA_ARGS__)
 #define LOG_INFO(...) TTAURI_LOG(log_level::Info, __VA_ARGS__)

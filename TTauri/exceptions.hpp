@@ -131,7 +131,7 @@ public:
     }
 
     sub_error &log(char const *source_file, int source_line) {
-        logger.log<log_level::Exception>("{}", *this, source_code_ptr(source_file, source_line));
+        logger.log<log_level::Exception>(cpu_counter_clock::now(), "{}", *this, source_code_ptr(source_file, source_line));
         increment_counter<TAG>();
         return *this;
     }
