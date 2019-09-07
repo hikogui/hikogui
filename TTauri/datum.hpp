@@ -225,6 +225,10 @@ public:
     }
 
     datum &operator=(datum const &other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
@@ -242,13 +246,7 @@ public:
     }
 
     datum &operator=(datum &&other) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
-            swap(*this, other);
-        } else {
-            std::memcpy(this, &other, sizeof(*this));
-            other.u64 = undefined_mask;
-        }
-        return *this;
+        swap(*this, other);
     }
 
     explicit datum(datum::null) noexcept : u64(null_mask) {}

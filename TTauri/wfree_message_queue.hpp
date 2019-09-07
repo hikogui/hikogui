@@ -15,21 +15,21 @@
 
 namespace TTauri {
 
-template<typename T, size_t Capacity, size_t Align>
-class wfree_mpsc_message_queue;
+template<typename T, size_t Capacity>
+class wfree_message_queue;
 
-template<typename T, size_t Capacity, size_t Align, bool WriteOperation>
-class wfree_mpsc_message_queue_operation {
-    wfree_mpsc_message_queue<T,Capacity,Align> *parent;
+template<typename T, size_t Capacity, bool WriteOperation>
+class wfree_message_queue_operation {
+    wfree_message_queue<T,Capacity> *parent;
     size_t index;
 
 public:
-    wfree_mpsc_message_queue_operation() noexcept : parent(nullptr), index(0) {}
-    wfree_mpsc_message_queue_operation(wfree_mpsc_message_queue<T,Capacity,Align> *parent, size_t index) noexcept : parent(parent), index(index) {}
+    wfree_message_queue_operation() noexcept : parent(nullptr), index(0) {}
+    wfree_message_queue_operation(wfree_message_queue<T,Capacity> *parent, size_t index) noexcept : parent(parent), index(index) {}
 
-    wfree_mpsc_message_queue_operation(wfree_mpsc_message_queue_operation const &other) = delete;
+    wfree_message_queue_operation(wfree_message_queue_operation const &other) = delete;
 
-    wfree_mpsc_message_queue_operation(wfree_mpsc_message_queue_operation && other) :
+    wfree_message_queue_operation(wfree_message_queue_operation && other) :
         parent(other.parent), index(other.index)
     {
         if (this == &other) {
@@ -38,7 +38,7 @@ public:
         other.parent = nullptr;
     }
 
-    ~wfree_mpsc_message_queue_operation()
+    ~wfree_message_queue_operation()
     {
         if (parent == nullptr) {
             return;
@@ -51,9 +51,9 @@ public:
         }
     }
 
-    wfree_mpsc_message_queue_operation& operator=(wfree_mpsc_message_queue_operation const &other) = delete;
+    wfree_message_queue_operation& operator=(wfree_message_queue_operation const &other) = delete;
 
-    wfree_mpsc_message_queue_operation& operator=(wfree_mpsc_message_queue_operation && other)
+    wfree_message_queue_operation& operator=(wfree_message_queue_operation && other)
     {
         if (this == &other) {
             return;
@@ -74,20 +74,18 @@ public:
     }
 };
 
-template<typename T, size_t Capacity, size_t Align=sizeof(T)+sizeof(int)>
-class wfree_mpsc_message_queue {
+template<typename T, size_t Capacity>
+class wfree_message_queue {
     using index_type = size_t;
     using value_type = T;
-    using scoped_write_operation = wfree_mpsc_message_queue_operation<T,Capacity,Align,true>;
-    using scoped_read_operation = wfree_mpsc_message_queue_operation<T,Capacity,Align,false>;
-
-    enum class message_state: uint8_t { Empty, Copying, Ready };
+    using scoped_write_operation = wfree_message_queue_operation<T,Capacity,true>;
+    using scoped_read_operation = wfree_message_queue_operation<T,Capacity,false>;
 
     struct message_type {
-        // State is first, to improve cache-line and prefetch.
+        // The in_use atomic is first, to improve cache-line and prefetch.
         // There should not be much false sharing since the thread that uses the message is
-        // also the one that updates the state.
-        alignas(Align) std::atomic<message_state> state = message_state::Empty;
+        // also the one that updates the in_use atomic.
+        std::atomic<bool> in_use = false;
         value_type value;
     };
     
@@ -103,12 +101,12 @@ class wfree_mpsc_message_queue {
     alignas(cache_line_size) std::atomic<index_type> tail = 0;
 
 public:
-    wfree_mpsc_message_queue() = default;
-    wfree_mpsc_message_queue(wfree_mpsc_message_queue const &) = delete;
-    wfree_mpsc_message_queue(wfree_mpsc_message_queue &&) = delete;
-    wfree_mpsc_message_queue &operator=(wfree_mpsc_message_queue const &) = delete;
-    wfree_mpsc_message_queue &operator=(wfree_mpsc_message_queue &&) = delete;
-    ~wfree_mpsc_message_queue() = default;
+    wfree_message_queue() = default;
+    wfree_message_queue(wfree_message_queue const &) = delete;
+    wfree_message_queue(wfree_message_queue &&) = delete;
+    wfree_message_queue &operator=(wfree_message_queue const &) = delete;
+    wfree_message_queue &operator=(wfree_message_queue &&) = delete;
+    ~wfree_message_queue() = default;
 
     /*! Return the number of items in the message queue.
     * For the consumer this may show less items in the queue then there realy are.
@@ -165,8 +163,10 @@ public:
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the queue was full.
-        // It is assumed that the capacity of the queue is less than the number of threads.
-        transition<BlockCounterTag>(message.state, message_state::Empty, message_state::Copying, std::memory_order_acquire);
+        // So we have to wait until the message is empty, however when it is empty we are
+        // the only one that holds the message, so we only need to mark it that we are done with
+        // writing the message.
+        wait_for_transition(message.in_use, false, std::memory_order_acquire);
         return index;
     }
 
@@ -177,7 +177,9 @@ public:
      */
     void write_finish(index_type index) noexcept {
         auto &message = messages[index % capacity];
-        message.state.store(message_state::Ready, std::memory_order_release);
+
+        // Mark that the message is finished with writing.
+        message.in_use.store(true, std::memory_order_release);
     }
 
     /*! Start a read from the message queue.
@@ -191,7 +193,7 @@ public:
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        wait_for_transition(message.state, message_state::Ready, std::memory_order_acquire);
+        wait_for_transition(message.is_use, true, std::memory_order_acquire);
         return index;
     }
 
@@ -204,7 +206,7 @@ public:
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        message.state.store(message_state::Empty, std::memory_order_release);
+        message.in_use.store(false, std::memory_order_release);
 
         // The message itself does not need to be destructed.
         // This will happen automatically when wrapping around the ring buffer overwrites the message.

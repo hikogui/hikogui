@@ -5,7 +5,7 @@
 
 #include "required.hpp"
 #include "polymorphic_value.hpp"
-#include "wfree_mpsc_message_queue.hpp"
+#include "wfree_message_queue.hpp"
 #include "wfree_unordered_map.hpp"
 #include "singleton.hpp"
 #include "url_parser.hpp"
@@ -24,6 +24,19 @@ namespace TTauri {
 #ifdef _WIN32
 std::string getLastErrorMessage();
 #endif
+
+// Forward without including trace.hpp
+void trace_record() noexcept;
+
+struct source_code_ptr {
+    const char *source_path;
+    int source_line;
+
+    constexpr source_code_ptr(const char *source_path, int source_line) :
+        source_path(source_path), source_line(source_line) {}
+};
+
+std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs);
 
 enum class log_level: uint8_t {
     //! Messages that are used for debugging during developmet.
@@ -73,13 +86,11 @@ constexpr bool operator<=(log_level lhs, log_level rhs) noexcept { return !(lhs 
 constexpr bool operator>=(log_level lhs, log_level rhs) noexcept { return !(lhs < rhs); }
 
 struct log_message_base {
-    char const *source_path;
-    int source_line;
     cpu_counter_clock::time_point timestamp;
     char const *format;
 
-    log_message_base(char const *source_path, int source_line, cpu_counter_clock::time_point timestamp, char const *format) noexcept :
-        source_path(source_path), source_line(source_line), timestamp(timestamp), format(format) {}
+    log_message_base(cpu_counter_clock::time_point timestamp, char const *format) noexcept :
+        timestamp(timestamp), format(format) {}
 
     std::string string() const noexcept;
     virtual std::string message() const noexcept = 0;
@@ -90,8 +101,8 @@ template<log_level Level, typename... Args>
 struct log_message: public log_message_base {
     std::tuple<std::decay_t<Args>...> format_args;
 
-    log_message(char const * const source_path, int const source_line, cpu_counter_clock::time_point const timestamp, char const *const format, Args &&... args) noexcept :
-        log_message_base(source_path, source_line, timestamp, format), format_args(std::forward<Args>(args)...) {}
+    log_message(cpu_counter_clock::time_point const timestamp, char const *const format, Args &&... args) noexcept :
+        log_message_base(timestamp, format), format_args(std::forward<Args>(args)...) {}
 
     log_level level() const noexcept override {
         return Level;
@@ -116,7 +127,7 @@ class logger_type {
     static constexpr size_t MAX_NR_MESSAGES = 4096;
 
     using message_type = polymorphic_value<log_message_base,MAX_MESSAGE_SIZE>;
-    using message_queue_type = wfree_mpsc_message_queue<message_type,MAX_NR_MESSAGES,MESSAGE_ALIGNMENT>;
+    using message_queue_type = wfree_message_queue<message_type,MAX_NR_MESSAGES>;
 
     //! the message queue must work correctly before main() is executed.
     message_queue_type message_queue;
@@ -149,7 +160,7 @@ public:
     void gather_loop() noexcept;
 
     template<log_level Level, typename... Args>
-    force_inline void log(char const * const source_file, int const source_line, char const * const format, Args &&... args) noexcept {
+    force_inline void log(char const * const format, Args &&... args) noexcept {
         if (Level >= minimum_log_level) {
             // Add messages in the queue, block when full.
             // * This reduces amount of instructions needed to be executed during logging.
@@ -158,10 +169,14 @@ public:
             // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
             auto message = message_queue.write<"logger_block"_tag>();
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
-            message->emplace<log_message<Level, Args...>>(source_file, source_line, cpu_counter_clock::now(), format, std::forward<Args>(args)...);
+            message->emplace<log_message<Level, Args...>>(cpu_counter_clock::now(), format, std::forward<Args>(args)...);
 
         } else {
             return;
+        }
+
+        if constexpr (Level >= log_level::Error) {
+            trace_record();
         }
 
         if constexpr (Level >= log_level::Fatal) {
@@ -182,17 +197,17 @@ private:
 // The ring buffer of the logger is trivaliy constructed and can be used before the logger's constructor is stared.
 inline logger_type logger = {}; 
 
-// Forward without including trace.hpp
-void trace_record() noexcept;
-
 }
 
-#define LOG_DEBUG(...) ::TTauri::logger.log<log_level::Debug>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_INFO(...) ::TTauri::logger.log<log_level::Info>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_AUDIT(...) ::TTauri::logger.log<log_level::Audit>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_EXCEPTION(...) ::TTauri::logger.log<log_level::Exception>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_WARNING(...) ::TTauri::logger.log<log_level::Warning>(__FILE__, __LINE__, __VA_ARGS__);
-#define LOG_ERROR(...) ::TTauri::logger.log<log_level::Error>(__FILE__, __LINE__, __VA_ARGS__); ::TTauri::trace_record();
-#define LOG_CRITICAL(...) ::TTauri::logger.log<log_level::Critical>(__FILE__, __LINE__, __VA_ARGS__); ::TTauri::trace_record();
-#define LOG_FATAL(...) ::TTauri::logger.log<log_level::Fatal>(__FILE__, __LINE__, __VA_ARGS__);
+#define TTAURI_LOG(level, fmt, ...) ::TTauri::logger.log<level>(fmt " ({})", ##__VA_ARGS__, source_code_ptr(__FILE__, __LINE__))
+
+#define LOG_DEBUG(fmt, ...) TTAURI_LOG(log_level::Debug, fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...) TTAURI_LOG(log_level::Info, fmt, ##__VA_ARGS__)
+#define LOG_AUDIT(fmt, ...) TTAURI_LOG(log_level::Audit, fmt, ##__VA_ARGS__)
+#define LOG_EXCEPTION(fmt, ...) TTAURI_LOG(log_level::Exception, fmt, ##__VA_ARGS__)
+#define LOG_WARNING(fmt, ...) TTAURI_LOG(log_level::Warning, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) TTAURI_LOG(log_level::Error, fmt, ##__VA_ARGS__)
+#define LOG_CRITICAL(fmt, ...) TTAURI_LOG(log_level::Critical, fmt, ##__VA_ARGS__)
+#define LOG_FATAL(fmt, ...) TTAURI_LOG(log_level::Fatal, fmt, ##__VA_ARGS__)
+
 

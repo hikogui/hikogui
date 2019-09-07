@@ -138,6 +138,8 @@ public:
     trace() :
         stack(&trace_stack), data(cpu_counter_clock::now())
     {
+        // We don't need to know our own id, until the destructor is called.
+        // Our id will be at the top of the stack.
         data.parent_id = stack->push();
 
         increment_counter<Tag>();
@@ -148,7 +150,7 @@ public:
 
         // Send the log to the log thread.
         if (ttauri_unlikely(is_recording)) {
-            logger.log<log_level::Trace>(nullptr, 0, "tag={}, id={} {}", Tag, id, std::move(data));
+            logger.log<log_level::Trace>("tag={}, id={} {}", Tag, id, std::move(data));
         }
     }
 
