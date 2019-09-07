@@ -88,6 +88,7 @@ set(TTauri_srcs
     Application_base.cpp
     Application_win32.cpp
     datum.cpp
+    sdatum.cpp
     hires_utc_clock.cpp
     hires_utc_clock_win32.cpp
     logger.cpp

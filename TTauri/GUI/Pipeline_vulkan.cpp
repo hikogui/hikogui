@@ -146,7 +146,7 @@ void Pipeline_vulkan::teardownSemaphores()
 
 void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _extent)
 {
-    LOG_INFO("buildPipeline previous size ({0}, {1})", extent.width, extent.height);
+    LOG_INFO("buildPipeline previous size ({}, {})", extent.width, extent.height);
 
     renderPass = move(_renderPass);
     extent = move(_extent);
@@ -258,7 +258,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
     };
 
     intrinsic = device().createGraphicsPipeline(vk::PipelineCache(), graphicsPipelineCreateInfo);
-    LOG_INFO("/buildPipeline new size ({0}, {1})", extent.width, extent.height);
+    LOG_INFO("/buildPipeline new size ({}, {})", extent.width, extent.height);
 }
 
 void Pipeline_vulkan::teardownPipeline()
@@ -335,7 +335,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t frameBufferIndex)
         return;
     }
 
-    LOG_INFO("validateCommandBuffer {0} ({1}, {2})", frameBufferIndex, extent.width, extent.height);
+    LOG_INFO("validateCommandBuffer {} ({}, {})", frameBufferIndex, extent.width, extent.height);
 
     auto commandBuffer = frameBufferObject.commandBuffer;
 

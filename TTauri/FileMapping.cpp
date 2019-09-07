@@ -45,7 +45,7 @@ FileMapping::FileMapping(URL const &location, AccessMode accessMode, size_t size
 FileMapping::~FileMapping()
 {
     if (!CloseHandle(intrinsic)) {
-        LOG_ERROR("Could not close file mapping object on file '{0}'", getLastErrorMessage());
+        LOG_ERROR("Could not close file mapping object on file '{}'", getLastErrorMessage());
     }
 }
 

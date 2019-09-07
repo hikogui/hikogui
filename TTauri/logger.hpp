@@ -12,6 +12,8 @@
 #include "atomic.hpp"
 #include "counters.hpp"
 #include "cpu_counter_clock.hpp"
+#include "meta.hpp"
+#include "format.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -109,11 +111,27 @@ struct log_message: public log_message_base {
     }
 
     std::string message() const noexcept override {
-        auto f = [format=this->format](auto const&... args) {
-            return fmt::format(format, args...);
+        std::string format_str = format;
+
+        if constexpr (count_if<source_code_ptr, Args...>() > 0) {
+            if (format_uses_arg_ids(format)) {
+                constexpr size_t source_index = index_of<source_code_ptr, Args...>();
+
+                format_str += " ({" + std::to_string(source_index) + "})";
+            } else {
+                format_str += " ({})";
+            }
+        }
+
+        auto f = [format_str=format_str](auto const&... args) {
+                return fmt::format(format_str, args...);
         };
 
-        return std::apply(f, format_args);
+        try {
+            return std::apply(f, format_args);
+        } catch (fmt::format_error &e) {
+            return std::string("ERROR: Could not format '") + format_str + std::string("': ") + e.what();
+        }
     }
 };
 
@@ -199,15 +217,15 @@ inline logger_type logger = {};
 
 }
 
-#define TTAURI_LOG(level, fmt, ...) ::TTauri::logger.log<level>(fmt " ({})", ##__VA_ARGS__, source_code_ptr(__FILE__, __LINE__))
+#define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(__VA_ARGS__, source_code_ptr(__FILE__, __LINE__))
 
-#define LOG_DEBUG(fmt, ...) TTAURI_LOG(log_level::Debug, fmt, ##__VA_ARGS__)
-#define LOG_INFO(fmt, ...) TTAURI_LOG(log_level::Info, fmt, ##__VA_ARGS__)
-#define LOG_AUDIT(fmt, ...) TTAURI_LOG(log_level::Audit, fmt, ##__VA_ARGS__)
-#define LOG_EXCEPTION(fmt, ...) TTAURI_LOG(log_level::Exception, fmt, ##__VA_ARGS__)
-#define LOG_WARNING(fmt, ...) TTAURI_LOG(log_level::Warning, fmt, ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...) TTAURI_LOG(log_level::Error, fmt, ##__VA_ARGS__)
-#define LOG_CRITICAL(fmt, ...) TTAURI_LOG(log_level::Critical, fmt, ##__VA_ARGS__)
-#define LOG_FATAL(fmt, ...) TTAURI_LOG(log_level::Fatal, fmt, ##__VA_ARGS__)
+#define LOG_DEBUG(...) TTAURI_LOG(log_level::Debug, __VA_ARGS__)
+#define LOG_INFO(...) TTAURI_LOG(log_level::Info, __VA_ARGS__)
+#define LOG_AUDIT(...) TTAURI_LOG(log_level::Audit, __VA_ARGS__)
+#define LOG_EXCEPTION(...) TTAURI_LOG(log_level::Exception, __VA_ARGS__)
+#define LOG_WARNING(...) TTAURI_LOG(log_level::Warning, __VA_ARGS__)
+#define LOG_ERROR(...) TTAURI_LOG(log_level::Error, __VA_ARGS__)
+#define LOG_CRITICAL(...) TTAURI_LOG(log_level::Critical, __VA_ARGS__)
+#define LOG_FATAL(...) TTAURI_LOG(log_level::Fatal, __VA_ARGS__)
 
 

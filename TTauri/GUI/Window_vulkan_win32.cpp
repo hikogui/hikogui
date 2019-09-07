@@ -105,7 +105,7 @@ Window_vulkan_win32::~Window_vulkan_win32()
     try {
         gsl_suppress(f.6) {
             if (win32Window != nullptr) {
-                LOG_FATAL("win32Window was not destroyed before Window '{0}' was destructed.", title);
+                LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title);
                 abort();
             }
         }
@@ -340,7 +340,7 @@ LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
         case WM_MOUSEMOVE:
             if (!trackingMouseLeaveEvent) {
                 if (!TrackMouseEvent(&trackMouseLeaveEventParameters)) {
-                    LOG_ERROR("Could not track leave event '{0}'", getLastErrorMessage());
+                    LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
                 }
                 trackingMouseLeaveEvent = true;
             }

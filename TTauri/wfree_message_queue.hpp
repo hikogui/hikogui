@@ -193,7 +193,7 @@ public:
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        wait_for_transition(message.is_use, true, std::memory_order_acquire);
+        wait_for_transition(message.in_use, true, std::memory_order_acquire);
         return index;
     }
 

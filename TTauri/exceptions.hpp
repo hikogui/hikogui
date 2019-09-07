@@ -131,7 +131,7 @@ public:
     }
 
     sub_error &log(char const *source_file, int source_line) {
-        logger.log<log_level::Exception>("{} ({})", *this, source_code_ptr(source_file, source_line));
+        logger.log<log_level::Exception>("{}", *this, source_code_ptr(source_file, source_line));
         increment_counter<TAG>();
         return *this;
     }
@@ -164,7 +164,7 @@ using invalid_operation_error = sub_error<"invalid_op"_tag>;
 
 #define TTAURI_THROW(x) throw std::move((x).log(__FILE__, __LINE__));
 
-#define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{0}", #x )); }
+#define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{}", #x )); }
 #define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
 
 }

@@ -43,7 +43,7 @@ no_inline void contended_wait_for_transition(std::atomic<T> &state, T from, std:
 template<typename T>
 force_inline void wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst) force_inline_attr
 {
-    if (state.load(order) != from) {
+    if (ttauri_unlikely(state.load(order) != from)) {
         contended_wait_for_transition(state, from, order);
     }
 }

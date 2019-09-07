@@ -61,6 +61,7 @@ inline uint8_t char_to_nibble(char c)
         );
     }
 }
+
 inline std::string_view make_string_view(
     typename std::string::const_iterator b,
     typename std::string::const_iterator e

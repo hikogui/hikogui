@@ -118,22 +118,22 @@ VkBool32 Instance_vulkan::debugUtilsMessageCallback(
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
         if (!self->stopDebugUtilsMessagerLogging) {
-            LOG_DEBUG("Vulkan: {0}", pCallbackData->pMessage);
+            LOG_DEBUG("Vulkan: {}", pCallbackData->pMessage);
         }
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
         if (!self->stopDebugUtilsMessagerLogging) {
-            LOG_INFO("Vulkan: {0}", pCallbackData->pMessage);
+            LOG_INFO("Vulkan: {}", pCallbackData->pMessage);
         }
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
         if (!self->stopDebugUtilsMessagerLogging) {
-            LOG_WARNING("Vulkan: {0}", pCallbackData->pMessage);
+            LOG_WARNING("Vulkan: {}", pCallbackData->pMessage);
         }
         std::abort();
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
         if (!self->stopDebugUtilsMessagerLogging) {
-            LOG_ERROR("Vulkan: {0}", pCallbackData->pMessage);
+            LOG_ERROR("Vulkan: {}", pCallbackData->pMessage);
         }
         std::abort();
     default:

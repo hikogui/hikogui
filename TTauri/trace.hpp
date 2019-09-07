@@ -3,9 +3,9 @@
 #include "required.hpp"
 #include "counters.hpp"
 #include "tagged_map.hpp"
-#include "wfree_mpsc_message_queue.hpp"
+#include "wfree_message_queue.hpp"
 #include "hiperf_utc_clock.hpp"
-#include "datum.hpp"
+#include "sdatum.hpp"
 #include "logger.hpp"
 #include <fmt/format.h>
 #include <atomic>
@@ -79,7 +79,7 @@ struct trace_data {
     */
     typename cpu_counter_clock::time_point timestamp;
 
-    tagged_map<datum, InfoTags...> info;
+    tagged_map<sdatum, InfoTags...> info;
 
     trace_data(typename cpu_counter_clock::time_point timestamp) :
         timestamp(timestamp) {}
@@ -92,12 +92,12 @@ struct trace_data {
     trace_data &operator=(trace_data &&other) = default;
 
     template<string_tag InfoTag>
-    datum &get() noexcept {
+    sdatum &get() noexcept {
         return info.template get<InfoTag>();
     }
 
     template<string_tag InfoTag>
-    datum const &get() const noexcept {
+    sdatum const &get() const noexcept {
         return info.get<InfoTag>();
     }
 };

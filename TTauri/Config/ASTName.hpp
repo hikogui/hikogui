@@ -104,7 +104,7 @@ struct ASTName : ASTExpression {
             errorMessage += e.message();
             errorMessage += ".";
 
-            TTAURI_THROW(invalid_operation_error("Could not include file '{0}'", path)
+            TTAURI_THROW(invalid_operation_error("Could not include file '{}'", path)
                 .set<"location"_tag>(location)
                 .set<"previous_msg"_tag>(errorMessage)
             );

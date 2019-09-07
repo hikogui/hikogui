@@ -249,7 +249,7 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
             score += capabilities == QUEUE_CAPABILITY_COMPUTE ? 1 : 0;
             score += capabilities == QUEUE_CAPABILITY_PRESENT ? 1 : 0;
 
-            LOG_INFO("    * {0}: capabilities={1:03b}, score={2}", index, capabilities, score);
+            LOG_INFO("    * {}: capabilities={:03b}, score={}", index, capabilities, score);
 
             queueFamilieScores.push_back({ index, capabilities, score });
             index++;
@@ -280,7 +280,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
-    LOG_INFO("Scoring device: {0}", string());
+    LOG_INFO("Scoring device: {}", string());
     if (!hasRequiredFeatures(physicalIntrinsic, get_singleton<Instance>().requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
@@ -300,7 +300,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
         deviceCapabilities |= queueFamilyIndexAndCapabilities.second;
     }
-    LOG_INFO(" - Capabilities={0:03b}", deviceCapabilities);
+    LOG_INFO(" - Capabilities={:03b}", deviceCapabilities);
 
     if ((deviceCapabilities & QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) != QUEUE_CAPABILITY_GRAPHICS_AND_PRESENT) {
         LOG_INFO(" - Does not have both the graphics and compute queues.");
@@ -317,7 +317,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
     for (auto format : formats) {
         uint32_t score = 0;
 
-        LOG_INFO("    * Found colorSpace={0}, format={1}", vk::to_string(format.colorSpace), vk::to_string(format.format));
+        LOG_INFO("    * Found colorSpace={}, format={}", vk::to_string(format.colorSpace), vk::to_string(format.format));
 
         switch (format.colorSpace) {
         case vk::ColorSpaceKHR::eSrgbNonlinear: score += 1; break;
@@ -341,7 +341,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
         default: continue;
         }
 
-        LOG_INFO("    * Valid colorSpace={0}, format={1}, score={2}", vk::to_string(format.colorSpace), vk::to_string(format.format), score);
+        LOG_INFO("    * Valid colorSpace={}, format={}, score={}", vk::to_string(format.colorSpace), vk::to_string(format.format), score);
 
         if (score > bestSurfaceFormatScore) {
             bestSurfaceFormatScore = score;
@@ -349,7 +349,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
         }
     }
     auto totalScore = bestSurfaceFormatScore;
-    LOG_INFO("    * bestColorSpace={0}, bestFormat={1}, score={2}",
+    LOG_INFO("    * bestColorSpace={}, bestFormat={}, score={}",
         vk::to_string(bestSurfaceFormat.colorSpace),
         vk::to_string(bestSurfaceFormat.format),
         bestSurfaceFormatScore
@@ -367,7 +367,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
     for (let &presentMode : presentModes) {
         uint32_t score = 0;
 
-        LOG_INFO("    * presentMode={0}", vk::to_string(presentMode));
+        LOG_INFO("    * presentMode={}", vk::to_string(presentMode));
 
         switch (presentMode) {
         case vk::PresentModeKHR::eImmediate: score += 1; break;
@@ -391,7 +391,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
 
     // Give score based on the perfomance of the device.
     let properties = physicalIntrinsic.getProperties();
-    LOG_INFO(" - Type of device: {0}", vk::to_string(properties.deviceType));
+    LOG_INFO(" - Type of device: {}", vk::to_string(properties.deviceType));
     switch (properties.deviceType) {
     case vk::PhysicalDeviceType::eCpu: totalScore += 1; break;
     case vk::PhysicalDeviceType::eOther: totalScore += 1; break;

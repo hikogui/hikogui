@@ -247,6 +247,7 @@ public:
 
     datum &operator=(datum &&other) noexcept {
         swap(*this, other);
+        return *this;
     }
 
     explicit datum(datum::null) noexcept : u64(null_mask) {}
