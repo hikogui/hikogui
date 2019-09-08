@@ -71,5 +71,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
     auto app = Application(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
+
     return app.loop();
 }

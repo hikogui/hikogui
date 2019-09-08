@@ -113,9 +113,9 @@ struct log_message: public log_message_base {
     std::string message() const noexcept override {
         std::string format_str = format;
 
-        if constexpr (count_if<source_code_ptr, Args...>() > 0) {
+        if constexpr (count_type_if<source_code_ptr, Args...>() > 0) {
             if (format_uses_arg_ids(format)) {
-                constexpr size_t source_index = index_of<source_code_ptr, Args...>();
+                constexpr size_t source_index = index_of_type<source_code_ptr, Args...>();
 
                 format_str += " ({" + std::to_string(source_index) + "})";
             } else {

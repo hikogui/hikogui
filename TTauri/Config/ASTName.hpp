@@ -93,12 +93,14 @@ struct ASTName : ASTExpression {
             // An error was captured from recursive parsing.
             // Assemble the error message from this error and throw it.
             std::string errorMessage;
-            if (let previousErrorMessage = e.get<"previous_msg"_tag,std::string>()) {
-                errorMessage += *previousErrorMessage + "\n";
+            if (e.has<"previous_msg"_tag>()) {
+                let previousErrorMessage = static_cast<std::string>(e.get<"previous_msg"_tag>());
+                errorMessage += previousErrorMessage + "\n";
             }
 
-            if (let location = e.get<"location"_tag,Location>()) {
-                errorMessage += location->string() + ": ";
+            if (e.has<"location"_tag>()) {
+                let location = static_cast<Location>(e.get<"location"_tag>());
+                errorMessage += location.string() + ": ";
             }
 
             errorMessage += e.message();

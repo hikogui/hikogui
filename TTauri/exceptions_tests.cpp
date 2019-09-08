@@ -18,10 +18,10 @@ TEST(Exceptions, Default) {
     } catch (error const &e) {
         ASSERT_EQ(e.name(), "key_error"s);
 
-        let optional_key = e.get<"key"_tag,std::string>();
-        ASSERT_EQ(*optional_key, "foo"s);
+        let key = e.get<"key"_tag>();
+        ASSERT_EQ(key, "foo"s);
 
-        ASSERT_EQ(e.error_info_string(), "(key: \"foo\")"s);
+        ASSERT_EQ(e.error_info_string(), "key=\"foo\""s);
     }
 
     ASSERT_EQ(read_counter<key_error::TAG>(), current_count + 1);

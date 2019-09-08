@@ -31,12 +31,14 @@ struct Config {
             root = ast->execute();
 
         } catch (error &e) {
-            if (let previousErrorMessage = e.get<"previous_msg"_tag,std::string>()) {
-                _errorMessage += *previousErrorMessage + "\n";
+            if (e.has<"previous_msg"_tag>()) {
+                let previousErrorMessage = static_cast<std::string>(e.get<"previous_msg"_tag>());
+                _errorMessage += previousErrorMessage + "\n";
             }
 
-            if (let location = e.get<"location"_tag,Location>()) {
-                _errorMessage += location->string() + ": ";
+            if (e.has<"location"_tag>()) {
+                let location = static_cast<Location>(e.get<"location"_tag>());
+                _errorMessage += location.string() + ": ";
             }
 
             _errorMessage += e.message();
