@@ -42,6 +42,11 @@ private:
     gsl::span<std::byte const> postTableBytes;
 
 public:
+    /*! Load a true type font.
+     * The methods in this class will parse the true-type font at run time.
+     * This also means that the bytes passed into this constructor will need to
+     * remain available.
+     */
     TrueTypeFont(gsl::span<std::byte const> bytes);
 
     /*! Find a glyph in the font based on an unicode code-point.
@@ -50,15 +55,15 @@ public:
      * \param c Unicode code point to look up.
      * \return a glyph-index if a glyph has been found. glyph 0 means "not found".
      */
-    int searchCharacterMap(char32_t c);
+    int searchCharacterMap(char32_t c) const noexcept;
 
     /*! Load a glyph into a path.
-     * The glyph is directly loaded from the font fie.
+     * The glyph is directly loaded from the font file.
      * 
      * \param glyphIndex the index of a glyph inside the font.
      * \return A path representing the glyph.
      */
-    Path loadGlyph(int glyphIndex);
+    Path loadGlyph(int glyphIndex) const noexcept;
 
 private:
     void parseFontDirectory();
