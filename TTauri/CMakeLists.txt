@@ -57,7 +57,7 @@ set(TTauri_srcs
     Draw/Font.cpp
     Draw/PathString.cpp
     Draw/BezierCurve.cpp
-    Draw/TrueTypeParser.cpp
+    Draw/TrueTypeFont.cpp
     Draw/TTauriIconParser.cpp
     Draw/Theme.cpp
     GUI/Device_base.cpp
@@ -108,7 +108,6 @@ set(TTauriTests_srcs
     Config/parser_tests.cpp
     Config/Config_tests.cpp
     Draw/BezierCurve_tests.cpp
-    Draw/TrueTypeParser_tests.cpp
     Draw/Path_tests.cpp
     Draw/PixelMap_tests.cpp
     datum_tests.cpp

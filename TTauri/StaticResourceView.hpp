@@ -13,9 +13,19 @@ namespace TTauri {
 
 
 struct StaticResourceView {
-    gsl::span<std::byte const> bytes;
+    // Borrowed reference from a byte array inside StaticResources.
+    gsl::span<std::byte const> _bytes;
 
-    StaticResourceView(std::string const &filename) : bytes(get_singleton<StaticResources>().get(filename)) {}
+    StaticResourceView(std::string const &filename) : _bytes(get_singleton<StaticResources>().get(filename)) {}
+
+    StaticResourceView() = delete;
+    ~StaticResourceView() = default;
+    StaticResourceView(StaticResourceView const &other) = default;
+    StaticResourceView &operator=(StaticResourceView const &other) = default;
+    StaticResourceView(StaticResourceView &&other) = default;
+    StaticResourceView &operator=(StaticResourceView &&other) = default;
+
+    gsl::span<std::byte const> bytes() const noexcept { return _bytes; }
 };
 
 

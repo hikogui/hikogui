@@ -130,7 +130,8 @@ void logger_type::display_trace_statistics() noexcept {
             count = stat->count.load(std::memory_order_acquire);
             duration = stat->duration;
             peak_duration = stat->peak_duration;
-            version = stat->version.load(std::memory_order_release);
+            version = stat->version.load(std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_release);
         } while (count != version);
         stat->reset.store(true, std::memory_order_relaxed);
 

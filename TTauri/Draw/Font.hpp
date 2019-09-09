@@ -5,7 +5,6 @@
 
 #include "Path.hpp"
 #include "PathString.hpp"
-#include "TrueTypeParser.hpp"
 #include "TTauri/grapheme.hpp"
 #include "TTauri/required.hpp"
 #include "TTauri/URL.hpp"
@@ -17,8 +16,22 @@
 namespace TTauri::Draw {
 
 struct Font {
-    std::map<char32_t,size_t> characterMap;
-    std::vector<Path> glyphs;
+    /*! Find a glyph in the font based on an unicode code-point.
+    * This is seperated from loading a glyph so that graphemes and ligatures can be found.
+    *
+    * \param c Unicode code point to look up.
+    * \return a glyph-index if a glyph has been found. 0 means "not found", -1 means "parse error".
+    */
+    virtual int searchCharacterMap(char32_t c) const noexcept = 0;
+
+    /*! Load a glyph into a path.
+    * The glyph is directly loaded from the font file.
+    * 
+    * \param glyphIndex the index of a glyph inside the font.
+    * \param path The path constructed by the loader.
+    * \return true on success, false on error.
+    */
+    virtual bool loadGlyph(int glyphIndex, Path &path) const noexcept = 0;
 
     PathString getGlyphs(gstring const &graphemes) const noexcept {
         PathString r;
@@ -31,13 +44,19 @@ struct Font {
             // First try composed normalization
             std::vector<Path> graphemeGlyphs;
             for (let codePoint: grapheme.NFC()) {
-                let i = characterMap.find(codePoint);
-                if (i == characterMap.end()) {
+                let glyphIndex = searchCharacterMap(codePoint);
+                if (glyphIndex <= 0) {
+                    // The codePoint was not found in the font, or a parse error occured.
                     graphemeGlyphs.clear();
                     break;
                 }
 
-                let glyph = glyphs.at(i->second);
+                Path glyph;
+                if (!loadGlyph(glyphIndex, glyph)) {
+                    // Some kind of parsing error, causes the glyph not to be loaded.
+                    graphemeGlyphs.clear();
+                    break;
+                }
 
                 graphemeGlyphs.push_back(std::move(glyph));
             }
@@ -45,13 +64,18 @@ struct Font {
             if (graphemeGlyphs.size() == 0) {
                 // Try again with decomposed normalization.
                 for (let codePoint: grapheme.NFD()) {
-                    let i = characterMap.find(codePoint);
-                    if (i == characterMap.end()) {
+                    let glyphIndex = searchCharacterMap(codePoint);
+                    if (glyphIndex <= 0) {
                         graphemeGlyphs.clear();
                         break;
                     }
 
-                    let glyph = glyphs.at(i->second);
+                    Path glyph;
+                    if (!loadGlyph(glyphIndex, glyph)) {
+                        // Some kind of parsing error, causes the glyph not to be loaded.
+                        graphemeGlyphs.clear();
+                        break;
+                    }
 
                     graphemeGlyphs.push_back(std::move(glyph));
                 }
@@ -61,7 +85,13 @@ struct Font {
 
             if (graphemeGlyphs.size() == 0) {
                 // Replace with not-found-glyph at index 0.
-                graphemeGlyphs.push_back(glyphs.at(0));
+                Path glyph;
+                if (!loadGlyph(0, glyph)) {
+                    // Some kind of parsing error, causes the glyph not to be loaded.
+                    LOG_FATAL("Could not load glyph 0 from font file.");
+                }
+
+                graphemeGlyphs.push_back(std::move(glyph));
             }
 
             // Add graphemeGlyphs.
@@ -83,23 +113,6 @@ struct Font {
 namespace TTauri {
 
 template<>
-inline Draw::Font parseResource(URL const &location)
-{
-    let view = ResourceView(location);
-
-    if (location.extension() == "ttf") {
-        try {
-            return Draw::parseTrueTypeFile(view.bytes());
-        } catch (error &e) {
-            e.set<"url"_tag>(location);
-            throw;
-        }
-
-    } else {
-        TTAURI_THROW(url_error("Unknown extension")
-            .set<"url"_tag>(location)
-        );
-    }
-}
+std::unique_ptr<Draw::Font> parseResource(URL const &location);
 
 }

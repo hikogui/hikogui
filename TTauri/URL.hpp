@@ -121,7 +121,7 @@ std::ostream& operator<<(std::ostream& lhs, const URL& rhs);
 int64_t fileSize(URL const &url);
 
 template <typename T>
-inline T parseResource(URL const &location)
+inline std::unique_ptr<T> parseResource(URL const &location)
 {
     not_implemented;
 }
@@ -130,16 +130,16 @@ template <typename T>
 gsl_suppress2(26489,lifetime.1)
 inline T &getResource(URL const &location)
 {
-    static std::unordered_map<URL,T> resourceCache = {};
+    static std::unordered_map<URL,std::unique_ptr<T>> resourceCache = {};
 
     let oldResource = resourceCache.find(location);
     if (oldResource != resourceCache.end()) {
-        return oldResource->second;
+        return *(oldResource->second);
     }
 
-    [[maybe_unused]] let [newResource, dummy] = resourceCache.try_emplace(location, parseResource<T>(location));
+    [[maybe_unused]] let [newResource, dummy] = resourceCache.try_emplace(location, std::move(parseResource<T>(location)));
 
-    return newResource->second;
+    return *(newResource->second);
 }
 
 }

@@ -13,4 +13,4 @@
 #include "BezierCurve.hpp"
 #include "PixelMap.inl"
 #include "Theme.hpp"
-#include "TrueTypeParser.hpp"
+#include "TrueTypeFont.hpp"

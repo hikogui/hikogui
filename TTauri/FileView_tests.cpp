@@ -13,6 +13,6 @@ using namespace TTauri;
 TEST(FileView, ViewFileForRead) {
     let view = FileView(URL("file:TestFiles/file_view.txt"));
 
-    char *test = reinterpret_cast<char *>(view.bytes.data());
+    let *test = reinterpret_cast<char const *>(view.bytes().data());
     ASSERT_TRUE(strncmp(test, "The quick brown", 15) == 0);
 }

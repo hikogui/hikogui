@@ -184,7 +184,8 @@ public:
 
         // In the logging thread we can check if count and version are equal
         // to read the statistics.
-        stat.count.store(version, std::memory_order_acquire);
+        stat.count.store(version, std::memory_order_relaxed);
+        std::atomic_thread_fence(std::memory_order_acquire);
         stat.duration += duration;
 
         let reset = stat.reset.load(std::memory_order_relaxed);

@@ -52,11 +52,12 @@ private:
 public:
     ResourceView(URL const &location) : intrinsic(loadView(location)) {}
 
+    ResourceView() = delete;
     ~ResourceView() = default;
-    ResourceView(ResourceView const &other) = delete;
-    ResourceView(ResourceView &&other) = delete;
-    ResourceView &operator=(ResourceView const &other) = delete;
-    ResourceView &operator=(ResourceView &&other) = delete;
+    ResourceView(ResourceView const &other) = default;
+    ResourceView(ResourceView &&other) = default;
+    ResourceView &operator=(ResourceView const &other) = default;
+    ResourceView &operator=(ResourceView &&other) = default;
 
     size_t offset() const noexcept {
         if (std::holds_alternative<FileView>(intrinsic)) {
@@ -70,23 +71,24 @@ public:
     gsl::span<std::byte const> bytes() const noexcept {
         if (std::holds_alternative<FileView>(intrinsic)) {
             let &_intrinsic = std::get<FileView>(intrinsic);
-            return _intrinsic.bytes;
+            return _intrinsic.bytes();
         } else if (std::holds_alternative<StaticResourceView>(intrinsic)) {
             let &_intrinsic = std::get<StaticResourceView>(intrinsic);
-            return _intrinsic.bytes;
+            return _intrinsic.bytes();
         } else {
             no_default;
         }
     }
 
+    /*
     gsl::span<std::byte> writableBytes() noexcept {
         if (std::holds_alternative<FileView>(intrinsic)) {
             let &_intrinsic = std::get<FileView>(intrinsic);
-            return _intrinsic.bytes;
+            return _intrinsic.bytes();
         } else {
             no_default;
         }
-    }
+    }*/
 
     size_t size() const noexcept {
         return bytes().size();

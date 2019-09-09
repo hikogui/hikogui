@@ -45,31 +45,56 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         );
     }
 
-    bytes = gsl::span<std::byte>(static_cast<std::byte *>(data), size);
+    auto *bytes_ptr = new gsl::span<std::byte>(static_cast<std::byte *>(data), size);
+    _bytes = std::shared_ptr<gsl::span<std::byte>>(bytes_ptr, FileView::unmap);
 #endif
 }
 
 FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
     FileView(findOrCreateFileMappingObject(location, accessMode, offset + size), offset, size) {}
 
+FileView::FileView(FileView const &other) noexcept:
+    fileMappingObject(other.fileMappingObject),
+    offset(other.offset),
+    _bytes(other._bytes)
+{
+}
+
+FileView &FileView::operator=(FileView const &other) noexcept
+{
+    fileMappingObject = other.fileMappingObject;
+    offset = other.offset;
+    _bytes = other._bytes;
+    return *this;
+}
+
 FileView::FileView(FileView &&other) noexcept:
     fileMappingObject(std::move(other.fileMappingObject)),
     offset(other.offset),
-    bytes(other.bytes)
+    _bytes(std::move(other._bytes))
 {
-    // Make sure the other destructor does not deallocate.
-    other.bytes = {};
 }
 
-FileView::~FileView()
+FileView &FileView::operator=(FileView &&other) noexcept
 {
-    if (bytes.size() > 0) {
-#ifdef WIN32
-        void *data = bytes.data();
-        if (!UnmapViewOfFile(data)) {
-            LOG_ERROR("Could not unmap view on file '{}'", getLastErrorMessage());
+    fileMappingObject = std::move(other.fileMappingObject);
+    offset = other.offset;
+    _bytes = std::move(other._bytes);
+    return *this;
+}
+
+void FileView::unmap(gsl::span<std::byte> *bytes) noexcept
+{
+    if (bytes != nullptr) {
+        if (bytes->size() > 0) {
+    #ifdef WIN32
+            void *data = bytes->data();
+            if (!UnmapViewOfFile(data)) {
+                LOG_ERROR("Could not unmap view on file '{}'", getLastErrorMessage());
+            }
+    #endif
         }
-#endif
+        delete bytes;
     }
 }
 

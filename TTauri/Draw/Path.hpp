@@ -282,14 +282,14 @@ void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpi
 namespace TTauri {
 
 template<>
-inline Draw::Path parseResource(URL const &location)
+inline std::unique_ptr<Draw::Path> parseResource(URL const &location)
 {
     let view = ResourceView(location);
 
     if (location.extension() == "tticon") {
         try {
             let bytes = view.bytes();
-            return Draw::parseTTauriIcon(bytes);
+            return std::make_unique<Draw::Path>(Draw::parseTTauriIcon(bytes));
         } catch (error &e) {
             e.set<"url"_tag>(location);
             throw;
