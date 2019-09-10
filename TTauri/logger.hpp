@@ -20,6 +20,7 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <mutex>
 
 namespace TTauri {
 
@@ -150,6 +151,7 @@ class logger_type {
     //! the message queue must work correctly before main() is executed.
     message_queue_type message_queue;
 
+    mutable std::mutex mutex;
     bool logger_thread_stop = false;
     std::thread logger_thread;
     bool gather_thread_stop = false;
@@ -157,6 +159,10 @@ class logger_type {
 
 public:
     log_level minimum_log_level = log_level::Debug;
+
+    ~logger_type() {
+        stopThreads();
+    }
 
     /*! Start logging to file and console.
      */
@@ -173,6 +179,12 @@ public:
     /*! Stop logging of counters.
      */
     void stopStatisticsLogging() noexcept;
+
+    void stopThreads() noexcept {
+        auto lock = std::scoped_lock(mutex);
+        stopStatisticsLogging();
+        stopLogging();
+    }
 
     void logger_loop() noexcept;
     void gather_loop() noexcept;
@@ -199,8 +211,7 @@ public:
 
         if constexpr (Level >= log_level::Fatal) {
             // Make sure everything including this message and counters are logged.
-            stopStatisticsLogging();
-            stopLogging();
+            stopThreads();
             std::terminate();
         }
     }

@@ -5,6 +5,8 @@
 #include "TTauri/span.hpp"
 #include "TTauri/strings.hpp"
 #include <boost/endian/buffers.hpp>
+#include <cstddef>
+
 
 #define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return (y); }
 
@@ -59,7 +61,7 @@ static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t 
     size_t offset = 0;
 
     assert_or_return(sizeof(CMAPFormat4) <= bytes.size(), -1);
-    let header = at<CMAPFormat4>(bytes, 0);
+    let &header = at<CMAPFormat4>(bytes, 0);
     offset += sizeof(CMAPFormat4);
 
     let length = header.length.value();
@@ -132,7 +134,7 @@ static int searchCharacterMapFormat6(gsl::span<std::byte const> bytes, char32_t 
     size_t offset = 0;
 
     assert_or_return(sizeof(CMAPFormat6) <= bytes.size(), -1);
-    let header = at<CMAPFormat6>(bytes, 0);
+    let &header = at<CMAPFormat6>(bytes, 0);
     offset += sizeof(CMAPFormat6);
 
     let firstCode = header.firstCode.value();
@@ -160,42 +162,45 @@ struct CMAPFormat12 {
 struct CMAPFormat12Group {
     big_uint32_buf_t startCharCode;
     big_uint32_buf_t endCharCode;
-    big_uint32_buf_t startGlyphCode;
+    big_uint32_buf_t startGlyphID;
 };
 
 static int searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char32_t c) noexcept
 {
-    auto offset = 0;
     assert_or_return(sizeof(CMAPFormat12) <= bytes.size(), -1);
-    let header = at<CMAPFormat12>(bytes, 0);
-    offset += sizeof(CMAPFormat12);
+    let &header = at<CMAPFormat12>(bytes, 0);
+    auto offset = sizeof(CMAPFormat12);
 
     let numGroups = header.numGroups.value();
     assert_or_return(offset + (numGroups * sizeof(CMAPFormat12Group)) <= bytes.size(), -1);
 
     let entries = make_span<CMAPFormat12Group>(bytes, offset, numGroups);
-    for (let &entry: entries) {
-        let endCharCode = static_cast<char32_t>(entry.endCharCode.value());
-        if (c <= endCharCode) {
-            let startCharCode = static_cast<char32_t>(entry.startCharCode.value());
-            if (c >= startCharCode) {
-                let charOffset = c - startCharCode;
-                let startGlyphCode = entry.startGlyphCode.value();
-                return startGlyphCode + charOffset;
-            } else {
-                // Character not found.
-                return 0;
-            }
+
+    let i = std::lower_bound(entries.begin(), entries.end(), c, [](let &element, char32_t value) {
+        return element.endCharCode.value() < value;
+    });
+
+    if (i != entries.end()) {
+        let &entry = *i;
+        let startCharCode = entry.startCharCode.value();
+        if (c >= startCharCode) {
+            c -= startCharCode;
+            return entry.startGlyphID.value() + c; 
+        } else {
+            // Character was not in this group.
+            return 0;
         }
+
+    } else {
+        // Character was not in map.
+        return 0;
     }
-    // Character not found.
-    return 0;
 }
 
 int TrueTypeFont::searchCharacterMap(char32_t c) const noexcept
 {
     assert_or_return(sizeof(uint16_t) <= cmapBytes.size(), -1);
-    let format = at<big_uint16_buf_t>(cmapBytes, 0);
+    let &format = at<big_uint16_buf_t>(cmapBytes, 0);
 
     switch (format.value()) {
     case 4: return searchCharacterMapFormat4(cmapBytes, c);
@@ -387,19 +392,33 @@ void TrueTypeFont::parseMaxpTable(gsl::span<std::byte const> bytes)
     numGlyphs = table.numGlyphs.value();
 }
 
-int64_t TrueTypeFont::getGlyphOffset(int glyphIndex) const noexcept
+bool TrueTypeFont::getGlyphBytes(int glyphIndex, gsl::span<std::byte const> &bytes) const noexcept
 {
-    assert_or_return(glyphIndex > 0 && glyphIndex < numGlyphs, -1);
+    assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
 
+    size_t startOffset = 0;
+    size_t endOffset = 0;
     if (locaTableIsOffset32) {
         let entries = make_span<big_uint32_buf_t>(locaTableBytes);
-        assert_or_return(glyphIndex < entries.size(), -1);
-        return entries.at(glyphIndex).value();
+        assert_or_return(glyphIndex + 1 < entries.size(), false);
+
+        startOffset = entries.at(glyphIndex).value();
+        endOffset = entries.at(glyphIndex + 1).value();
+
     } else {
         let entries = make_span<big_uint16_buf_t>(locaTableBytes);
-        assert_or_return(glyphIndex < entries.size(), -1);
-        return static_cast<int64_t>(entries.at(glyphIndex).value()) * 2;
+        assert_or_return(glyphIndex + 1 < entries.size(), false);
+
+        startOffset = entries.at(glyphIndex).value();
+        endOffset = entries.at(glyphIndex + 1).value();
     }
+
+    assert_or_return(startOffset <= endOffset, false);
+    let size = endOffset - startOffset;
+
+    assert_or_return(endOffset <= glyfTableBytes.size(), false);
+    bytes = glyfTableBytes.subspan(startOffset, size);
+    return true;
 }
 
 struct HMTXEntry {
@@ -496,15 +515,9 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     assert_or_return(flags.size() == numberOfPoints, false);
 
     let point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<size_t>(0), [](auto size, auto flag) {
-        return size + (
-            ((flag & FLAG_X_SAME) == 0) ?
-                (((flag & FLAG_X_SHORT) == 0) ? sizeof(uint16_t) : sizeof(uint8_t)) :
-                (((flag & FLAG_X_SHORT) == 0) ? 0 : sizeof(uint16_t))
-        ) + (
-            ((flag & FLAG_Y_SAME) == 0) ?
-                (((flag & FLAG_Y_SHORT) == 0) ? sizeof(uint16_t) : sizeof(uint8_t)) :
-                (((flag & FLAG_Y_SHORT) == 0) ? 0 : sizeof(uint16_t))
-        );
+        return size +
+            ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
+            ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
     });
     assert_or_return(offset + point_table_size <= bytes.size(), false);
 
@@ -512,24 +525,23 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     std::vector<int16_t> xCoordinates;
     xCoordinates.reserve(numberOfPoints);
     for (let flag: flags) {
-        switch (flag & (FLAG_X_SHORT | FLAG_X_SAME)) {
-        case 0: // long-vector, different.
-            xCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
-            offset += sizeof(int16_t);
-            break;
-        case FLAG_X_SAME: // Long-vector, same.
-            xCoordinates.push_back(0);
-            break;
-        case FLAG_X_SHORT: // short-vector, negative.
-            xCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
-            offset += sizeof(uint8_t);
-            break;
-        case FLAG_X_SAME | FLAG_X_SHORT: // short-vector, positve.
-            xCoordinates.push_back(static_cast<int16_t>(at<uint8_t>(bytes, offset)));
-            offset += sizeof(uint8_t);
-            break;
-        default:
-            abort();
+        if ((flag & FLAG_X_SHORT) > 0) {
+            if ((flag & FLAG_X_SAME) > 0) {
+                xCoordinates.push_back(static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+                offset += sizeof(uint8_t);
+            } else {
+                // Negative short.
+                xCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+                offset += sizeof(uint8_t);
+            }
+        } else {
+            if ((flag & FLAG_X_SAME) > 0) {
+                xCoordinates.push_back(0);
+            } else {
+                // Long
+                xCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
+                offset += sizeof(int16_t);
+            }
         }
     }
 
@@ -537,24 +549,23 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     std::vector<int16_t> yCoordinates;
     yCoordinates.reserve(numberOfPoints);
     for (let flag: flags) {
-        switch (flag & (FLAG_Y_SHORT | FLAG_Y_SAME)) {
-        case 0: // long-vector, different.
-            yCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
-            offset += sizeof(int16_t);
-            break;
-        case FLAG_Y_SAME: // Long-vector, same.
-            yCoordinates.push_back(0);
-            break;
-        case FLAG_Y_SHORT: // short-vector, negative.
-            yCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
-            offset += sizeof(uint8_t);
-            break;
-        case FLAG_Y_SAME | FLAG_Y_SHORT: // short-vector, positive.
-            yCoordinates.push_back(static_cast<int16_t>(at<uint8_t>(bytes, offset)));
-            offset += sizeof(uint8_t);
-            break;
-        default:
-            abort();
+        if ((flag & FLAG_Y_SHORT) > 0) {
+            if ((flag & FLAG_Y_SAME) > 0) {
+                yCoordinates.push_back(static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+                offset += sizeof(uint8_t);
+            } else {
+                // Negative short.
+                yCoordinates.push_back(-static_cast<int16_t>(at<uint8_t>(bytes, offset)));
+                offset += sizeof(uint8_t);
+            }
+        } else {
+            if ((flag & FLAG_Y_SAME) > 0) {
+                yCoordinates.push_back(0);
+            } else {
+                // Long
+                yCoordinates.push_back(at<big_int16_buf_t>(bytes, offset).value());
+                offset += sizeof(int16_t);
+            }
         }
     }
 
@@ -595,7 +606,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph) const noexcept
+bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph, uint16_t &metricsGlyphIndex) const noexcept
 {
     size_t offset = sizeof(GLYFEntry);
 
@@ -679,8 +690,7 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         }
 
         if (flags & FLAG_USE_MY_METRICS) {
-            // XXX Implement
-            LOG_WARNING("Reading glyph from font with FLAG_USE_MY_METRICS");
+            metricsGlyphIndex = subGlyphIndex;
         }
 
         glyph += T2D(subGlyphOffset, subGlyphScale) * subGlyph;
@@ -695,32 +705,36 @@ bool TrueTypeFont::loadGlyph(int glyphIndex, Path &glyph) const noexcept
 {
     assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
 
-    let glyphOffset = getGlyphOffset(glyphIndex);
-    assert_or_return(glyphOffset > 0, false);
+    gsl::span<std::byte const> bytes;
+    assert_or_return(getGlyphBytes(glyphIndex, bytes), false);
 
-    assert_or_return(glyphOffset + sizeof(GLYFEntry) <= glyfTableBytes.size(), false);
-    let bytes = glyfTableBytes.subspan(glyphOffset, glyfTableBytes.size() - glyphOffset);
+    auto metricsGlyphIndex = static_cast<uint16_t>(glyphIndex);
 
-    let &entry = at<GLYFEntry>(bytes, 0);
-    let numberOfContours = entry.numberOfContours.value();
+    if (bytes.size() > 0) {
+        assert_or_return(sizeof(GLYFEntry) <= bytes.size(), false);
+        let &entry = at<GLYFEntry>(bytes, 0);
+        let numberOfContours = entry.numberOfContours.value();
 
-    if (numberOfContours > 0) {
-        assert_or_return(loadSimpleGlyph(bytes, glyph), false);
-    } else if (numberOfContours < 0) {
-        assert_or_return(loadCompoundGlyph(bytes, glyph), false);
+        let position = glm::vec2{ entry.xMin.value(unitsPerEm), entry.yMin.value(unitsPerEm) };
+        let extent = extent2{
+            entry.xMax.value(unitsPerEm) - position.x,
+            entry.yMax.value(unitsPerEm) - position.y
+        };
+        glyph.boundingBox = { position, extent };
+
+        if (numberOfContours > 0) {
+            assert_or_return(loadSimpleGlyph(bytes, glyph), false);
+        } else if (numberOfContours < 0) {
+            assert_or_return(loadCompoundGlyph(bytes, glyph, metricsGlyphIndex), false);
+        } else {
+            // Empty glyph, such as white-space ' '.
+        }
+
     } else {
         // Empty glyph, such as white-space ' '.
     }
 
-    glm::vec2 const position = { entry.xMin.value(unitsPerEm), entry.yMin.value(unitsPerEm) };
-    extent2 const extent = {
-        entry.xMax.value(unitsPerEm) - position.x,
-        entry.yMax.value(unitsPerEm) - position.y
-    };
-
-    glyph.boundingBox = { position, extent };
-
-    return updateGlyphMetrics(glyphIndex, glyph);
+    return updateGlyphMetrics(metricsGlyphIndex, glyph);
 }
 
 struct SFNTHeader {

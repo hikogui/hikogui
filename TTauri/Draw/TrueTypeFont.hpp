@@ -119,7 +119,7 @@ private:
     /*! Find the glyph in the loca table.
      * called by loadGlyph()
      */
-    int64_t getGlyphOffset(int glyphIndex) const noexcept;
+    bool getGlyphBytes(int glyphIndex, gsl::span<std::byte const> &bytes) const noexcept;
 
     /*! Update the loaded glyph with metrics from the font tables.
      * called by loadGlyph()
@@ -127,7 +127,16 @@ private:
     bool updateGlyphMetrics(int glyphIndex, Path &glyph) const noexcept;
 
     bool loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph) const noexcept;
-    bool loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph) const noexcept;
+
+    /*! Load a compound glyph.
+     * This will call loadGlyph() recursively.
+     *
+     * \param bytes Bytes inside the glyf table of this specific compound glyph.
+     * \param glyph The path to update with points from the subglyphs.
+     * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
+     *                          this value is only updated when the USE_MY_METRICS flag was set.
+     */
+    bool loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph, uint16_t &metricsGlyphIndex) const noexcept;
 };
 
 }
