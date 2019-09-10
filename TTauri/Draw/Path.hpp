@@ -15,7 +15,7 @@ namespace TTauri::Draw {
 
 struct BezierCurve;
 struct PathString;
-struct Font;
+class Font;
 template<typename T> struct PixelMap;
 
 

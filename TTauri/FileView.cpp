@@ -55,8 +55,8 @@ FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, si
 
 FileView::FileView(FileView const &other) noexcept:
     fileMappingObject(other.fileMappingObject),
-    offset(other.offset),
-    _bytes(other._bytes)
+    _bytes(other._bytes),
+    offset(other.offset)
 {
 }
 
@@ -70,8 +70,8 @@ FileView &FileView::operator=(FileView const &other) noexcept
 
 FileView::FileView(FileView &&other) noexcept:
     fileMappingObject(std::move(other.fileMappingObject)),
-    offset(other.offset),
-    _bytes(std::move(other._bytes))
+    _bytes(std::move(other._bytes)),
+    offset(other.offset)
 {
 }
 

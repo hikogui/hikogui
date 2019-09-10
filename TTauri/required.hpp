@@ -23,6 +23,8 @@
 #define to_int(x) TTauri::numeric_cast<int>(x)
 #define to_int64(x) TTauri::numeric_cast<int64_t>(x)
 
+#define STRINGIFY(a) #a
+
 #if COMPILER == CC_MSVC
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
@@ -30,6 +32,7 @@
 #define no_inline __declspec(noinline)
 #define force_inline_attr
 #define no_inline_attr
+#define clang_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]
@@ -42,7 +45,8 @@
 #define force_inline inline __attribute__((always_inline))
 #define no_inline inline __attribute__((noinline))
 #define force_inline_attr
-#define no_inline_attr 
+#define no_inline_attr
+#define clang_suppress(a) _Pragma(STRINGIFY(clang diagnostic ignored a))
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
@@ -56,6 +60,7 @@
 #define no_inline inline __attribute__((noinline))
 #define force_inline_attr
 #define no_inline_attr
+#define clang_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
@@ -66,6 +71,7 @@
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
 #define force_inline inline
+#define clang_suppress(a)
 #define gsl_suppress(a)
 #define gsl_suppress2(a,b)
 #define gsl_suppress3(a,b,c)

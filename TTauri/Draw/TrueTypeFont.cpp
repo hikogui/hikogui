@@ -68,7 +68,7 @@ static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t 
     assert_or_return(length <= bytes.size(), -1);
 
     let segCount = header.segCountX2.value() / 2;
-    assert_or_return((offset + sizeof(uint16_t) + (3 * sizeof(uint16_t) * segCount)) <= bytes.size(), -1);
+    assert_or_return((offset + sizeof(uint16_t) + (3 * sizeof(uint16_t) * segCount)) <= static_cast<size_t>(bytes.size()), -1);
 
     let endCode = make_span<big_uint16_buf_t>(bytes, offset, segCount);
     offset += segCount * sizeof(uint16_t);
@@ -137,14 +137,14 @@ static int searchCharacterMapFormat6(gsl::span<std::byte const> bytes, char32_t 
     let &header = at<CMAPFormat6>(bytes, 0);
     offset += sizeof(CMAPFormat6);
 
-    let firstCode = header.firstCode.value();
+    let firstCode = static_cast<char32_t>(header.firstCode.value());
     let entryCount = header.entryCount.value();
-    if (c < firstCode || c >= (firstCode + entryCount)) {
+    if (c < firstCode || c >= static_cast<char32_t>(firstCode + entryCount)) {
         // Character outside of range.
         return 0;
     }
 
-    assert_or_return(offset + (entryCount * sizeof(uint16_t)) <= bytes.size(), -1);
+    assert_or_return(offset + (entryCount * sizeof(uint16_t)) <= static_cast<size_t>(bytes.size()), -1);
     let glyphIndexArray = make_span<big_uint16_buf_t>(bytes, offset, entryCount);
 
     let charOffset = c - firstCode;
@@ -172,7 +172,7 @@ static int searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char32_t
     auto offset = sizeof(CMAPFormat12);
 
     let numGroups = header.numGroups.value();
-    assert_or_return(offset + (numGroups * sizeof(CMAPFormat12Group)) <= bytes.size(), -1);
+    assert_or_return(offset + (numGroups * sizeof(CMAPFormat12Group)) <= static_cast<size_t>(bytes.size()), -1);
 
     let entries = make_span<CMAPFormat12Group>(bytes, offset, numGroups);
 
@@ -234,7 +234,7 @@ static gsl::span<std::byte const> parseCharacterMapDirectory(gsl::span<std::byte
     parse_assert(header.version.value() == 0);
 
     uint16_t numTables = header.numTables.value();
-    parse_assert(bytes.size() >= offset + numTables * sizeof(CMAPEntry));
+    parse_assert(offset + numTables * sizeof(CMAPEntry) <= static_cast<size_t>(bytes.size()));
     let entries = make_span<CMAPEntry>(bytes, offset, header.numTables.value());
 
     // Entries are ordered by platformID, then platformSpecificID.
@@ -416,7 +416,7 @@ bool TrueTypeFont::getGlyphBytes(int glyphIndex, gsl::span<std::byte const> &byt
     assert_or_return(startOffset <= endOffset, false);
     let size = endOffset - startOffset;
 
-    assert_or_return(endOffset <= glyfTableBytes.size(), false);
+    assert_or_return(endOffset <= static_cast<size_t>(glyfTableBytes.size()), false);
     bytes = glyfTableBytes.subspan(startOffset, size);
     return true;
 }
@@ -430,12 +430,12 @@ bool TrueTypeFont::updateGlyphMetrics(int glyphIndex, Path &glyph) const noexcep
 {
     assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
 
-    assert_or_return(numberOfHMetrics * sizeof(HMTXEntry) <= hmtxTableBytes.size(), false);
+    assert_or_return(numberOfHMetrics * sizeof(HMTXEntry) <= static_cast<size_t>(hmtxTableBytes.size()), false);
     let longHorizontalMetricTable = make_span<HMTXEntry>(hmtxTableBytes, 0, numberOfHMetrics);
     size_t offset = numberOfHMetrics * sizeof(HMTXEntry);
 
     let numberOfLeftSideBearings = numGlyphs - numberOfHMetrics;
-    assert_or_return(offset + numberOfLeftSideBearings * sizeof(FWord_buf_t) <= hmtxTableBytes.size(), false);
+    assert_or_return(offset + numberOfLeftSideBearings * sizeof(FWord_buf_t) <= static_cast<size_t>(hmtxTableBytes.size()), false);
     let leftSideBearings = make_span<FWord_buf_t>(hmtxTableBytes, offset, numberOfLeftSideBearings);
 
     float advanceWidth = 0.0f;
@@ -481,7 +481,7 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     let numberOfContours = static_cast<size_t>(entry.numberOfContours.value());
 
     // Check includes instructionLength.
-    assert_or_return(offset + (numberOfContours * sizeof(uint16_t)) + sizeof(uint16_t) <= bytes.size(), false);
+    assert_or_return(offset + (numberOfContours * sizeof(uint16_t)) + sizeof(uint16_t) <= static_cast<size_t>(bytes.size()), false);
     let endPoints = make_span<big_uint16_buf_t>(bytes, offset, numberOfContours);
     offset += numberOfContours * sizeof(uint16_t);
 
@@ -499,12 +499,12 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     std::vector<uint8_t> flags;
     flags.reserve(numberOfPoints);
     while (flags.size() < numberOfPoints) {
-        assert_or_return(offset + sizeof(uint8_t) <= bytes.size(), false);
+        assert_or_return(offset + sizeof(uint8_t) <= static_cast<size_t>(bytes.size()), false);
         let flag = at<uint8_t>(bytes, offset++);
 
         flags.push_back(flag);
         if (flag & FLAG_REPEAT) {
-            assert_or_return(offset + sizeof(uint8_t) <= bytes.size(), false);
+            assert_or_return(offset + sizeof(uint8_t) <= static_cast<size_t>(bytes.size()), false);
             let repeat = at<uint8_t>(bytes, offset++);
 
             for (size_t i = 0; i < repeat; i++) {
@@ -519,7 +519,7 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
             ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
             ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
     });
-    assert_or_return(offset + point_table_size <= bytes.size(), false);
+    assert_or_return(offset + point_table_size <= static_cast<size_t>(bytes.size()), false);
 
     // Get xCoordinates
     std::vector<int16_t> xCoordinates;
@@ -612,28 +612,27 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
 
     uint16_t flags;
     do {
-        assert_or_return(offset + sizeof(uint16_t) <= bytes.size(), false);
+        assert_or_return(offset + sizeof(uint16_t) <= static_cast<size_t>(bytes.size()), false);
         flags = at<big_uint16_buf_t>(bytes, offset).value();
         offset += sizeof(uint16_t);
 
-        assert_or_return(offset + sizeof(uint16_t) <= bytes.size(), false);
+        assert_or_return(offset + sizeof(uint16_t) <= static_cast<size_t>(bytes.size()), false);
         let subGlyphIndex = at<big_uint16_buf_t>(bytes, offset).value();
         offset += sizeof(uint16_t);
 
-        int r;
         Path subGlyph;
         assert_or_return(loadGlyph(subGlyphIndex, subGlyph), false);
 
         glm::vec2 subGlyphOffset;
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                assert_or_return(offset + 2 * sizeof(int16_t) <= bytes.size(), false);
+                assert_or_return(offset + 2 * sizeof(int16_t) <= static_cast<size_t>(bytes.size()), false);
                 subGlyphOffset.x = at<FWord_buf_t>(bytes, offset).value(unitsPerEm);
                 offset += sizeof(int16_t);
                 subGlyphOffset.y = at<FWord_buf_t>(bytes, offset).value(unitsPerEm);
                 offset += sizeof(int16_t);
             } else {
-                assert_or_return(offset + 2 * sizeof(int8_t) <= bytes.size(), false);
+                assert_or_return(offset + 2 * sizeof(int8_t) <= static_cast<size_t>(bytes.size()), false);
                 subGlyphOffset.x = at<FByte_buf_t>(bytes, offset).value(unitsPerEm);
                 offset += sizeof(int8_t);
                 subGlyphOffset.y = at<FByte_buf_t>(bytes, offset).value(unitsPerEm);
@@ -643,13 +642,13 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
             size_t pointNr1;
             size_t pointNr2;
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                assert_or_return(offset + 2 * sizeof(int16_t) <= bytes.size(), false);
+                assert_or_return(offset + 2 * sizeof(int16_t) <= static_cast<size_t>(bytes.size()), false);
                 pointNr1 = at<big_uint16_buf_t>(bytes, offset).value();
                 offset += sizeof(uint16_t);
                 pointNr2 = at<big_uint16_buf_t>(bytes, offset).value();
                 offset += sizeof(uint16_t);
             } else {
-                assert_or_return(offset + 2 * sizeof(int8_t) <= bytes.size(), false);
+                assert_or_return(offset + 2 * sizeof(int8_t) <= static_cast<size_t>(bytes.size()), false);
                 pointNr1 = at<uint8_t>(bytes, offset);
                 offset += sizeof(uint8_t);
                 pointNr2 = at<uint8_t>(bytes, offset);
@@ -663,18 +662,18 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         // Start with an identity matrix.
         auto subGlyphScale = glm::mat2x2(1.0f);
         if (flags & FLAG_WE_HAVE_A_SCALE) {
-            assert_or_return(offset + sizeof(uint16_t) <= bytes.size(), false);
+            assert_or_return(offset + sizeof(uint16_t) <= static_cast<size_t>(bytes.size()), false);
             subGlyphScale[0][0] = at<shortFrac_buf_t>(bytes, offset).value();
             subGlyphScale[1][1] = subGlyphScale[0][0];
             offset += sizeof(uint16_t);
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            assert_or_return(offset + 2 * sizeof(uint16_t) <= bytes.size(), false);
+            assert_or_return(offset + 2 * sizeof(uint16_t) <= static_cast<size_t>(bytes.size()), false);
             subGlyphScale[0][0] = at<shortFrac_buf_t>(bytes, offset).value();
             offset += sizeof(uint16_t);
             subGlyphScale[1][1] = at<shortFrac_buf_t>(bytes, offset).value();
             offset += sizeof(uint16_t);
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            assert_or_return(offset + 4 * sizeof(uint16_t) <= bytes.size(), false);
+            assert_or_return(offset + 4 * sizeof(uint16_t) <= static_cast<size_t>(bytes.size()), false);
             subGlyphScale[0][0] = at<shortFrac_buf_t>(bytes, offset).value();
             offset += sizeof(uint16_t);
             subGlyphScale[0][1] = at<shortFrac_buf_t>(bytes, offset).value();

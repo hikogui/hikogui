@@ -15,7 +15,15 @@
 
 namespace TTauri::Draw {
 
-struct Font {
+class Font {
+public:
+    Font() = default;
+    virtual ~Font() = default;
+    Font(Font const &) = delete;
+    Font &operator=(Font const &) = delete;
+    Font(Font &&) = delete;
+    Font &operator=(Font &&) = delete;
+
     /*! Find a glyph in the font based on an unicode code-point.
     * This is seperated from loading a glyph so that graphemes and ligatures can be found.
     *
