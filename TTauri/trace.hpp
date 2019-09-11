@@ -129,16 +129,81 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
     return lhs;
 }
 
-struct trace_statistics_type {
+/*! Statistics gathered at the destructor of a trace.
+ * This is a wait-free structure.
+ *  * The trace will acquire by incrementing the count,
+ *    and release when writing the same value in the version.
+ *  * The reading thread acquires by reading the count,
+ *    then release after it has read the version and checked if they hold the same value.
+ *  * Since there can be traces in multiple threads, it needs to update the statistics themselves
+ *    atomically as well.
+ */
+class trace_statistics_type {
+private:
     std::atomic<int64_t> count = 0;
-    cpu_counter_clock::duration duration;
-    cpu_counter_clock::duration peak_duration;
+    std::atomic<typename cpu_counter_clock::rep> duration = 0;
+    std::atomic<typename cpu_counter_clock::rep> peak_duration = 0;
     std::atomic<int64_t> version = 0;
 
     // Variables used by logger.
     int64_t prev_count = 0;
-    cpu_counter_clock::duration prev_duration;
-    std::atomic<bool> reset = false;
+    typename cpu_counter_clock::duration prev_duration = {};
+
+public:
+    /*!
+     * \return true when this was the first write.
+     */
+    bool write(cpu_counter_clock::duration const &d) {
+        // In the logging thread we can check if count and version are equal
+        // to read the statistics.
+        let prev_count = count.fetch_add(1, std::memory_order_acquire);
+
+        duration.fetch_add(d.count(), std::memory_order_relaxed);
+
+        auto prev_peak = peak_duration.load(std::memory_order_relaxed);
+        decltype(prev_peak) new_peak;
+        do {
+            new_peak = d.count() > prev_peak ? d.count() : prev_peak;
+        } while (!peak_duration.compare_exchange_weak(prev_peak, new_peak, std::memory_order_relaxed));
+
+        version.store(prev_count + 1, std::memory_order_release);
+        
+        return prev_count == 0;
+    }
+
+    struct read_result {
+        int64_t count;
+        int64_t last_count;
+
+        typename cpu_counter_clock::duration duration;
+        typename cpu_counter_clock::duration last_duration;
+        typename cpu_counter_clock::duration peak_duration;
+    };
+
+    read_result read() {
+        read_result r;
+
+        r.peak_duration = {};
+        do {
+            r.count = count.load(std::memory_order_acquire);
+
+            r.duration = decltype(r.duration){duration.load(std::memory_order_relaxed)};
+
+            auto tmp = peak_duration.exchange(0, std::memory_order_relaxed);
+            if (tmp > r.peak_duration.count()) {
+                r.peak_duration = decltype(r.duration){tmp};
+            }
+
+            std::atomic_thread_fence(std::memory_order_release);
+        } while (r.count != version.load(std::memory_order_relaxed));
+
+        r.last_count = r.count - prev_count;
+        r.last_duration = r.duration - prev_duration;
+
+        prev_count = r.count;
+        prev_duration = r.duration;
+        return r;
+    }
 };
 
 template<string_tag Tag>
@@ -176,27 +241,8 @@ public:
 
     force_inline ~trace() {
         let end_timestamp = cpu_counter_clock::now();
-        let duration = end_timestamp - data.timestamp;
 
-        auto &stat = trace_statistics<Tag>;
-        let count = stat.count.load(std::memory_order_relaxed);
-        let version = count + 1;
-
-        // In the logging thread we can check if count and version are equal
-        // to read the statistics.
-        stat.count.store(version, std::memory_order_relaxed);
-        std::atomic_thread_fence(std::memory_order_acquire);
-        stat.duration += duration;
-
-        let reset = stat.reset.load(std::memory_order_relaxed);
-        if (reset || duration > stat.peak_duration) {
-            stat.peak_duration = duration;
-            stat.reset.store(false, std::memory_order_relaxed);
-        }
-
-        stat.version.store(version, std::memory_order_release);
-
-        if (ttauri_unlikely(count == 0)) {
+        if(ttauri_unlikely(trace_statistics<Tag>.write(end_timestamp - data.timestamp))) {
             add_to_map();
         }
 

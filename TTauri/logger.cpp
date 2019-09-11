@@ -117,45 +117,23 @@ void logger_type::display_trace_statistics() noexcept {
     for (let &tag: keys) {
         auto *stat = trace_statistics_map.get(tag, nullptr);
         required_assert(stat != nullptr);
+        let stat_result = stat->read();
 
-        int64_t count;
-        int64_t version;
-        typename cpu_counter_clock::duration duration;
-        typename cpu_counter_clock::duration peak_duration;
-
-        let prev_count = stat->prev_count;
-        let prev_duration = stat->prev_duration;
-
-        do {
-            count = stat->count.load(std::memory_order_acquire);
-            duration = stat->duration;
-            peak_duration = stat->peak_duration;
-            version = stat->version.load(std::memory_order_relaxed);
-            std::atomic_thread_fence(std::memory_order_release);
-        } while (count != version);
-        stat->reset.store(true, std::memory_order_relaxed);
-
-        let last_count = count - prev_count;
-        let last_duration = duration - prev_duration;
-
-        if (last_count <= 0) {
+        if (stat_result.last_count <= 0) {
             logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:18n}",
                 tag_to_string(tag),
-                count,
-                last_count
+                stat_result.count,
+                stat_result.last_count
             );
 
         } else {
             // XXX not perfect at all.
             logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:+9n} mean: {:n} ns/iter, peak: {:n} ns/iter",
                 tag_to_string(tag),
-                count,
-                last_count, (last_duration / last_count) / 1ns, peak_duration / 1ns
+                stat_result.count,
+                stat_result.last_count, (stat_result.last_duration / stat_result.last_count) / 1ns, stat_result.peak_duration / 1ns
             );
         }
-
-        stat->prev_count = count;
-        stat->prev_duration = duration;
     }
 }
 
