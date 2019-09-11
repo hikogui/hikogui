@@ -28,10 +28,10 @@ struct Location {
     {
         if (d.is_vector()) {
             let v = static_cast<datum::vector>(d);
-            if (v.size() == 3 && v[0].is_url() && v[1].is_integer() && v[2].is_integer()) {
-                file = std::make_shared<URL>(static_cast<URL>(v[0]));
-                line = static_cast<int>(v[1]);
-                column = static_cast<int>(v[2]);
+            if (v.size() == 3 && gsl::at(v, 0).is_url() && gsl::at(v, 1).is_integer() && gsl::at(v, 2).is_integer()) {
+                file = std::make_shared<URL>(static_cast<URL>(gsl::at(v, 0)));
+                line = static_cast<int>(gsl::at(v, 1));
+                column = static_cast<int>(gsl::at(v, 2));
                 return;
             }
         }

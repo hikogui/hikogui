@@ -136,6 +136,7 @@ if(MSVC)
         set_source_files_properties(${TTauri_do_not_analyze} PROPERTIES COMPILE_FLAGS /analyze-)
         add_compile_options(/analyze /analyze:plugin EspXEngine.dll)
         add_compile_options(/wd26447)
+        add_compile_options(/wd26486) # lifetime.3 tooooooo many false positives.
     endif()
 endif()
 

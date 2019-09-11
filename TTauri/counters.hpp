@@ -68,7 +68,7 @@ inline std::pair<int64_t, int64_t> read_counter(string_tag tag) noexcept
 {
     auto &item = counter_map[tag];
 
-    let count_ptr = item.counter;
+    let * const count_ptr = item.counter;
     let count = count_ptr != nullptr ? item.counter->load(std::memory_order_relaxed) : 0;
     let count_since_last_read = count - item.previous_value;
     item.previous_value = count;

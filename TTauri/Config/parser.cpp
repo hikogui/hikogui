@@ -23,7 +23,7 @@ namespace TTauri::Config {
 
 using namespace std;
 
-
+gsl_suppress2(type.5,lifetime.4)
 ASTObject *parseConfigFile(URL const &path)
 {
     yyscan_t scanner;
@@ -44,7 +44,7 @@ ASTObject *parseConfigFile(URL const &path)
 
     TTauriConfig_yyset_in(file, scanner);
 
-    auto r = TTauriConfig_yyparse(scanner, &context);
+    let r = TTauriConfig_yyparse(scanner, &context);
 
     TTauriConfig_yylex_destroy(scanner);
     if (fclose(file) != 0) {

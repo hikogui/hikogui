@@ -15,7 +15,7 @@ struct ASTObject : ASTExpression {
 
     ASTObject(Location location) noexcept : ASTExpression(location), expressions() { }
 
-    gsl_suppress4(26489,lifetime.1,26486,lifetime.3)
+    gsl_suppress2(26489,lifetime.1)
     ASTObject(Location location, ASTExpressionList *expressionList) noexcept : ASTExpression(location), expressions() {
         for (auto expression: expressionList->expressions) {
             if (auto obj = dynamic_cast<ASTObject *>(expression)) {
@@ -36,7 +36,6 @@ struct ASTObject : ASTExpression {
         delete expressionList;
     }
 
-    gsl_suppress2(26486,lifetime.3)
     ~ASTObject() {
         for (auto expression: expressions) {
             delete expression;
@@ -49,13 +48,11 @@ struct ASTObject : ASTExpression {
     ASTObject &operator=(ASTObject const &node) = delete;
     ASTObject &operator=(ASTObject &&node) = delete;
 
-    gsl_suppress2(26486,lifetime.3)
     std::string string() const noexcept override {
         std::string s = "{";
 
         bool first = true;
         for (let expression: expressions) {
-            required_assert(expression != nullptr);
             if (!first) {
                 s += ",";
             }
@@ -67,12 +64,10 @@ struct ASTObject : ASTExpression {
         return s;
     }
 
-    gsl_suppress2(26486,lifetime.3)
-        datum execute(ExecutionContext &context) const override {
+    datum execute(ExecutionContext &context) const override {
         context.pushObject();
 
         for (let expression: expressions) {
-            required_assert(expression != nullptr);
             expression->executeStatement(context);
         }
 

@@ -13,17 +13,8 @@
 
 namespace TTauri {
 
-inline void pause_cpu()
-{
-#if COMPILER == CC_MSVC
-    //_mm_pause();
-#else
-    asm("pause");
-#endif
-}
-
 template<typename T>
-no_inline void contended_wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst) no_inline_attr
+no_inline void contended_wait_for_transition(std::atomic<T> const &state, T from, std::memory_order order=std::memory_order_seq_cst) no_inline_attr
 {
     using namespace std::literals::chrono_literals;
 
@@ -41,7 +32,7 @@ no_inline void contended_wait_for_transition(std::atomic<T> &state, T from, std:
 }
 
 template<typename T>
-force_inline void wait_for_transition(std::atomic<T> &state, T from, std::memory_order order=std::memory_order_seq_cst) force_inline_attr
+force_inline void wait_for_transition(std::atomic<T> const &state, T from, std::memory_order order=std::memory_order_seq_cst) force_inline_attr
 {
     if (ttauri_unlikely(state.load(order) != from)) {
         contended_wait_for_transition(state, from, order);

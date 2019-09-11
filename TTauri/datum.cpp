@@ -8,6 +8,7 @@
 
 namespace TTauri {
 
+gsl_suppress2(i.11,r.11)
 void datum::delete_pointer() noexcept {
     switch (type_id()) {
     case phy_integer_ptr_id: delete get_pointer<int64_t>(); break;
@@ -20,35 +21,36 @@ void datum::delete_pointer() noexcept {
     }
 }
 
+gsl_suppress3(type.1,r.11,r.3)
 void datum::copy_pointer(datum const &other) noexcept {
     switch (other.type_id()) {
     case phy_integer_ptr_id: {
-        auto *p = new int64_t(*other.get_pointer<int64_t>());
+        auto * const p = new int64_t(*other.get_pointer<int64_t>());
         u64 = integer_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_string_ptr_id: {
-        auto *p = new std::string(*other.get_pointer<std::string>());
+        auto * const p = new std::string(*other.get_pointer<std::string>());
         u64 = string_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_url_ptr_id: {
-        auto *p = new URL(*other.get_pointer<URL>());
+        auto * const p = new URL(*other.get_pointer<URL>());
         u64 = url_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_vector_ptr_id: {
-        auto *p = new datum::vector(*other.get_pointer<datum::vector>());
+        auto * const p = new datum::vector(*other.get_pointer<datum::vector>());
         u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_map_ptr_id: {
-        auto *p = new datum::map(*other.get_pointer<datum::map>());
+        auto * const p = new datum::map(*other.get_pointer<datum::map>());
         u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
     case phy_wsrgba_ptr_id: {
-        auto *p = new wsRGBA(*other.get_pointer<wsRGBA>());
+        auto * const p = new wsRGBA(*other.get_pointer<wsRGBA>());
         u64 = wsrgba_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
     } break;
 
@@ -57,32 +59,101 @@ void datum::copy_pointer(datum const &other) noexcept {
     }
 }
 
+gsl_suppress3(type.1,r.11,r.3)
 datum::datum(std::string_view value) noexcept : u64(make_string(value)) {
     if (value.size() > 6) {
         // Overflow.
-        auto p = new std::string(value);
+        auto * const p = new std::string(value);
         u64 = string_ptr_mask | reinterpret_cast<uint64_t>(p);
     }
 }
 
+gsl_suppress3(type.1,r.11,r.3)
 datum::datum(URL const &value) noexcept {
-    auto p = new URL(value);
+    auto * const p = new URL(value);
     u64 = url_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
+gsl_suppress3(type.1,r.11,r.3)
 datum::datum(datum::vector const &value) noexcept {
-    auto p = new datum::vector(value);
+    auto * const p = new datum::vector(value);
     u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
+gsl_suppress3(type.1,r.11,r.3)
 datum::datum(datum::map const &value) noexcept {
-    auto p = new datum::map(value);
+    auto * const p = new datum::map(value);
     u64 = map_ptr_mask | reinterpret_cast<uint64_t>(p);
 }
 
+gsl_suppress3(type.1,r.11,r.3)
 datum::datum(wsRGBA const &value) noexcept {
-    auto p = new wsRGBA(value);
+    auto * const p = new wsRGBA(value);
     u64 = wsrgba_ptr_mask | reinterpret_cast<uint64_t>(p);
+}
+
+datum &datum::operator=(std::string_view rhs)
+{
+    if (ttauri_unlikely(is_phy_pointer())) {
+        delete_pointer();
+    }
+
+    u64 = make_string(rhs);
+    if (rhs.size() > 6) {
+        // Overflow.
+        auto * const p = new std::string(rhs);
+        u64 = string_ptr_mask | reinterpret_cast<uint64_t>(p);
+    }
+    return *this;
+}
+
+
+datum &datum::operator=(URL const &rhs) noexcept
+{
+    if (ttauri_unlikely(is_phy_pointer())) {
+        delete_pointer();
+    }
+
+    auto * const p = new URL(rhs);
+    u64 = url_ptr_mask | reinterpret_cast<uint64_t>(p);
+
+    return *this;
+}
+
+datum &datum::operator=(datum::vector const &rhs)
+{
+    if (ttauri_unlikely(is_phy_pointer())) {
+        delete_pointer();
+    }
+
+    auto * const p = new datum::vector(rhs);
+    u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
+
+    return *this;
+}
+
+datum &datum::operator=(datum::map const &rhs)
+{
+    if (ttauri_unlikely(is_phy_pointer())) {
+        delete_pointer();
+    }
+
+    auto * const p = new datum::map(rhs);
+    u64 = map_ptr_mask | reinterpret_cast<uint64_t>(p);
+
+    return *this;
+}
+
+datum &datum::operator=(wsRGBA const &rhs)
+{
+    if (ttauri_unlikely(is_phy_pointer())) {
+        delete_pointer();
+    }
+
+    auto * const p = new wsRGBA(rhs);
+    u64 = wsrgba_ptr_mask | reinterpret_cast<uint64_t>(p);
+
+    return *this;
 }
 
 datum::operator double() const {
@@ -101,6 +172,7 @@ datum::operator float() const {
     return static_cast<float>(static_cast<double>(*this));
 }
 
+gsl_suppress(type.1)
 datum::operator int64_t() const {
     if (is_phy_integer()) {
         return get_signed_integer();
@@ -115,6 +187,7 @@ datum::operator int64_t() const {
     }
 }
 
+gsl_suppress(type.1)
 datum::operator int32_t() const {
     let v = static_cast<int64_t>(*this);
     if (v < std::numeric_limits<int32_t>::min() || v > std::numeric_limits<int32_t>::max()) {
@@ -123,6 +196,7 @@ datum::operator int32_t() const {
     return static_cast<int32_t>(v);
 }
 
+gsl_suppress(type.1)
 datum::operator int16_t() const {
     let v = static_cast<int64_t>(*this);
     if (v < std::numeric_limits<int16_t>::min() || v > std::numeric_limits<int16_t>::max()) {
@@ -131,6 +205,7 @@ datum::operator int16_t() const {
     return static_cast<int16_t>(v);
 }
 
+gsl_suppress(type.1)
 datum::operator int8_t() const {
     let v = static_cast<int64_t>(*this);
     if (v < std::numeric_limits<int8_t>::min() || v > std::numeric_limits<int8_t>::max()) {
@@ -144,6 +219,7 @@ datum::operator uint64_t() const {
     return static_cast<uint64_t>(v);
 }
 
+gsl_suppress(type.1)
 datum::operator uint32_t() const {
     let v = static_cast<uint64_t>(*this);
     if ( v > std::numeric_limits<uint32_t>::max()) {
@@ -152,6 +228,7 @@ datum::operator uint32_t() const {
     return static_cast<uint32_t>(v);
 }
 
+gsl_suppress(type.1)
 datum::operator uint16_t() const {
     let v = static_cast<uint64_t>(*this);
     if (v > std::numeric_limits<uint16_t>::max()) {
@@ -160,6 +237,7 @@ datum::operator uint16_t() const {
     return static_cast<uint16_t>(v);
 }
 
+gsl_suppress(type.1)
 datum::operator uint8_t() const {
     let v = static_cast<uint64_t>(*this);
     if (v > std::numeric_limits<uint8_t>::max()) {

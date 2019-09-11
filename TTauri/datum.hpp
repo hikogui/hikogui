@@ -82,9 +82,10 @@ void swap(datum &lhs, datum &rhs) noexcept;
  * XXX should add pickle and unpickle to datum.
  */
 class datum {
+    gsl_suppress(bounds.4)
     static constexpr uint64_t make_string(std::string_view str)
     {
-        uint64_t len = str.size();
+        let len = str.size();
 
         if (len > 6) {
             return 0;
@@ -154,6 +155,7 @@ class datum {
         uint64_t u64;
     };
 
+    gsl_suppress(type.1)
     uint16_t type_id() const noexcept {
         // We use memcpy on this to get access to the
         // actual bytes for determining the stored type.
@@ -258,19 +260,20 @@ public:
     explicit datum(uint16_t value) noexcept : datum(static_cast<uint32_t>(value)) {}
     explicit datum(uint8_t value) noexcept : datum(static_cast<uint32_t>(value)) {}
 
+    gsl_suppress4(type.1,r.11,r.3,con.4)
     explicit datum(int64_t value) noexcept :
         u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
         if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
             // Overflow.
-            auto p = new int64_t(value);
+            auto * const p = new int64_t(value);
             u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
         }
     }
 
-    explicit datum(int32_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
+    explicit datum(int32_t value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff)) {}
     explicit datum(int16_t value) noexcept : datum(static_cast<int32_t>(value)) {}
     explicit datum(int8_t value) noexcept : datum(static_cast<int32_t>(value)) {}
-    explicit datum(bool value) noexcept : u64(boolean_mask | int64_t{value}) {}
+    explicit datum(bool value) noexcept : u64(boolean_mask | static_cast<uint64_t>(value)) {}
     explicit datum(char value) noexcept : u64(character_mask | value) {}
     explicit datum(std::string_view value) noexcept;
     explicit datum(std::string const &value) noexcept : datum(std::string_view(value)) {}
@@ -289,36 +292,50 @@ public:
     }
     
     datum &operator=(float rhs) noexcept { return (*this = static_cast<double>(rhs)); }
-    datum &operator=(uint64_t rhs) noexcept { return (*this = datum{rhs}); }
 
-    datum &operator=(uint32_t rhs) noexcept {
+    datum &operator=(int64_t rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = integer_mask | uint64_t{rhs};
+
+        u64 = integer_mask | static_cast<uint64_t>(rhs & 0x0000ffff'ffffffff);
+        if (ttauri_unlikely(rhs < minimum_int || rhs > maximum_int)) {
+            // Overflow.
+            auto * const p = new int64_t(rhs);
+            u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
+        }
         return *this;
     }
-
-    datum &operator=(uint16_t rhs) noexcept { return (*this =  static_cast<uint32_t>(rhs)); }
-    datum &operator=(uint8_t rhs) noexcept { return (*this = static_cast<uint32_t>(rhs)); }
-    datum &operator=(int64_t rhs) noexcept { return (*this = datum{rhs}); }
 
     datum &operator=(int32_t rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = integer_mask | (int64_t(rhs) & 0x0000'ffff'ffff'ffff);
+        u64 = integer_mask | static_cast<uint64_t>(static_cast<int64_t>(rhs) & 0x0000'ffff'ffff'ffff);
         return *this;
     }
 
     datum &operator=(int16_t rhs) noexcept { return (*this = static_cast<int32_t>(rhs)); }
     datum &operator=(int8_t rhs) noexcept { return (*this = static_cast<int32_t>(rhs)); }
 
+    datum &operator=(uint64_t rhs) noexcept { return (*this = static_cast<int64_t>(rhs)); }
+
+    datum &operator=(uint32_t rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+        u64 = integer_mask | static_cast<uint64_t>(rhs);
+        return *this;
+    }
+
+    datum &operator=(uint16_t rhs) noexcept { return (*this =  static_cast<uint32_t>(rhs)); }
+    datum &operator=(uint8_t rhs) noexcept { return (*this = static_cast<uint32_t>(rhs)); }
+
     datum &operator=(bool rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = boolean_mask | int64_t{rhs};
+        u64 = boolean_mask | static_cast<uint64_t>(rhs);
         return *this;
     }
     
@@ -330,13 +347,13 @@ public:
         return *this;
     }
 
-    datum &operator=(std::string_view rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(std::string const &rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(char const *rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(URL const &rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(datum::vector const &rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(datum::map const &rhs) noexcept { return (*this = datum{rhs}); }
-    datum &operator=(wsRGBA const &rhs) noexcept { return (*this = datum{rhs}); }
+    datum &operator=(std::string_view rhs);
+    datum &operator=(std::string const &rhs) { *this = std::string_view{rhs}; return *this; }
+    datum &operator=(char const *rhs) { *this = std::string_view{rhs}; return *this; }
+    datum &operator=(URL const &rhs) noexcept;
+    datum &operator=(datum::vector const &rhs);
+    datum &operator=(datum::map const &rhs);
+    datum &operator=(wsRGBA const &rhs);
 
     //datum &operator+=(datum const &rhs) { return *this = *this + rhs; }
 

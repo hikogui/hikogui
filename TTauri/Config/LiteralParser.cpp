@@ -36,6 +36,7 @@ int64_t parseInteger(const char *text, int radix, bool negative) noexcept
     return negative ? -value : value;
 }
 
+gsl_suppress(bounds.1)
 double parseFloat(const char *text) noexcept {
     required_assert(text);
 
