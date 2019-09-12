@@ -10,10 +10,10 @@
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
-#include "TTauri/wsRGBA.hpp"
-#include "TTauri/URL.hpp"
-#include "TTauri/geometry.hpp"
 #include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
+#include "TTauri/Required/URL.hpp"
+#include "TTauri/Required/geometry.hpp"
 #include <limits>
 #include <memory>
 #include <vector>

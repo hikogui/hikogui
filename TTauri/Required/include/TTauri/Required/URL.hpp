@@ -100,8 +100,8 @@ public:
     static URL urlFromResourceDirectory() noexcept;
     static URL urlFromExecutableDirectory() noexcept;
     static URL urlFromExecutableFile() noexcept;
-    static std::optional<URL> urlFromApplicationDataDirectory() noexcept;
-    static std::optional<URL> urlFromApplicationLogDirectory() noexcept;
+    static URL urlFromApplicationDataDirectory() noexcept;
+    static URL urlFromApplicationLogDirectory() noexcept;
 
 private:
     friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
@@ -118,8 +118,6 @@ inline URL operator/(URL const &lhs, URL const &rhs) noexcept { return lhs.urlBy
 inline std::string to_string(URL const &url) noexcept { return url.string(); }
 
 std::ostream& operator<<(std::ostream& lhs, const URL& rhs);
-
-int64_t fileSize(URL const &url);
 
 template <typename T>
 inline std::unique_ptr<T> parseResource(URL const &location)

@@ -67,8 +67,9 @@ public:
         parseFontDirectory();
     }
 
-    TrueTypeFont(ResourceView const &view) :
-        view(std::make_unique<ResourceView>(view)), bytes(view.bytes()) {
+    TrueTypeFont(std::unique_ptr<ResourceView> view) :
+        view(std::move(view)) {
+        bytes = this->view->bytes();
         parseFontDirectory();
     }
 

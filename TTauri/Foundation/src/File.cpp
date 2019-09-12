@@ -3,6 +3,7 @@
 
 #include "TTauri/Foundation/File.hpp"
 #include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Required/strings.hpp"
 
 namespace TTauri {
@@ -78,6 +79,25 @@ void File::close()
         }
         intrinsic = INVALID_HANDLE_VALUE;
     }
+}
+
+int64_t File::fileSize(URL const &url)
+{
+#if OPERATING_SYSTEM == OS_WINDOWS
+    let name = url.nativeWPath();
+
+    WIN32_FILE_ATTRIBUTE_DATA attributes;
+    if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
+        TTAURI_THROW(io_error("Could not retrieve file attributes").set<"url"_tag>(url));
+    }
+
+    LARGE_INTEGER size;
+    size.HighPart = attributes.nFileSizeHigh;
+    size.LowPart = attributes.nFileSizeLow;
+    return numeric_cast<int64_t>(size.QuadPart);
+#else
+#error "Not Implemented for this operating system."
+#endif
 }
 
 }

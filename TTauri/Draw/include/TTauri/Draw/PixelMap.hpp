@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Draw/geometry.hpp"
+#include "TTauri/Required/geometry.hpp"
 #include "TTauri/Required/required.hpp"
 #include <glm/glm.hpp>
 #include <gsl/gsl>

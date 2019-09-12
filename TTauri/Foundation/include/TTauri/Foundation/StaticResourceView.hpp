@@ -3,8 +3,9 @@
 
 #pragma once
 
+#include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Required/required.hpp"
-#include "TTauri/StaticResources.hpp"
 #include <gsl/gsl>
 #include <cstddef>
 #include <unordered_map>
@@ -12,11 +13,13 @@
 namespace TTauri {
 
 
-struct StaticResourceView {
+class StaticResourceView : public ResourceView {
+private:
     // Borrowed reference from a byte array inside StaticResources.
     gsl::span<std::byte const> _bytes;
 
-    StaticResourceView(std::string const &filename) : _bytes(get_singleton<StaticResources>().get(filename)) {}
+public:
+    StaticResourceView(std::string const &filename) : _bytes(getStaticResource(filename)) {}
 
     StaticResourceView() = delete;
     ~StaticResourceView() = default;
@@ -25,7 +28,17 @@ struct StaticResourceView {
     StaticResourceView(StaticResourceView &&other) = default;
     StaticResourceView &operator=(StaticResourceView &&other) = default;
 
-    gsl::span<std::byte const> bytes() const noexcept { return _bytes; }
+    size_t offset() const noexcept override { return 0; }
+
+    size_t size() const noexcept override { return _bytes.size(); }
+
+    void const *data() const noexcept { return _bytes.data(); }
+
+    gsl::span<std::byte const> bytes() const noexcept override { return _bytes; }
+
+    static std::unique_ptr<ResourceView> loadView(std::string const &filename) {
+        return std::make_unique<StaticResourceView>(filename);
+    }
 };
 
 

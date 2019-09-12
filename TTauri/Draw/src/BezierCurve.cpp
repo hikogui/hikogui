@@ -3,7 +3,7 @@
 
 #include "TTauri/Draw/BezierCurve.hpp"
 #include "TTauri/Draw/BezierPoint.hpp"
-#include "TTauri/Required/PixelMap.inl"
+#include "TTauri/Draw/PixelMap.inl"
 #include "TTauri/Required/memory.hpp"
 #include <glm/gtx/matrix_transform_2d.hpp>
 

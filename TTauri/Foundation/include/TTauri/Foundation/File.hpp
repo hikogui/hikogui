@@ -54,6 +54,11 @@ struct File {
     File &operator=(File &&other) = delete;
 
     void close();
+
+    /*! Get the size of a file on the file system.
+    */
+    static int64_t fileSize(URL const &url);
 };
+
 
 }

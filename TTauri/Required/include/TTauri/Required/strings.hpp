@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "TTauri/Required/algorithm.hpp"
 #include "TTauri/Required/required.hpp"
 #include <utf8proc/utf8proc.h>
 #include <string>
@@ -49,7 +50,7 @@ constexpr char nibble_to_char(uint8_t nibble) noexcept
 /*!
  * \return value between 0-15, or -1 on error.
  */
-inline std::optional<int8_t> char_to_nibble(char c)
+inline int8_t char_to_nibble(char c)
 {
     if (c >= '0' && c <= '9') {
         return c - '0';

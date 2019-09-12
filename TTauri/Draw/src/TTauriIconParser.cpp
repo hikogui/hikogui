@@ -3,7 +3,7 @@
 #include "TTauri/Draw/Path.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/span.hpp"
+#include "TTauri/Foundation/span.hpp"
 #include "TTauri/Required/wsRGBA.hpp"
 #include <boost/endian/buffers.hpp>
 

@@ -15,6 +15,7 @@ add_shader(TTauri_GUI_Shader_objs
 )
 
 set(TTauri_GUI_srcs
+    src/init.cpp
     src/Device_base.cpp
     src/Device_vulkan.cpp
     src/Instance_base.cpp
@@ -41,5 +42,5 @@ target_link_libraries(TTauri_GUI TTauri_Foundation TTauri_Draw ${Vulkan_LIBRARIE
 target_include_directories(TTauri_GUI PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIRS})
 
 if (MSVC)
-    target_compile_definitions(TTauri_GUI PUBLIC -D_WIN64)
+    target_compile_definitions(TTauri_GUI PUBLIC -D_WIN64  -DVK_USE_PLATFORM_WIN32_KHR)
 endif()

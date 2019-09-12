@@ -13,12 +13,12 @@ namespace TTauri {
 
 FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t offset, size_t size) :
     fileMappingObject(fileMappingObject),
-    offset(offset)
+    _offset(offset)
 {
     if (size == 0) {
-        size = fileMappingObject->size - offset;
+        size = fileMappingObject->size - _offset;
     }
-    required_assert(offset + size <= fileMappingObject->size);
+    required_assert(_offset + size <= fileMappingObject->size);
 
 #ifdef WIN32
     DWORD desiredAccess;
@@ -34,8 +34,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         );
     }
 
-    DWORD fileOffsetHigh = offset >> 32;
-    DWORD fileOffsetLow = offset & 0xffffffff;
+    DWORD fileOffsetHigh = _offset >> 32;
+    DWORD fileOffsetLow = _offset & 0xffffffff;
 
     void *data;
     if ((data = MapViewOfFile(fileMappingObject->intrinsic, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
@@ -56,14 +56,14 @@ FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, si
 FileView::FileView(FileView const &other) noexcept:
     fileMappingObject(other.fileMappingObject),
     _bytes(other._bytes),
-    offset(other.offset)
+    _offset(other._offset)
 {
 }
 
 FileView &FileView::operator=(FileView const &other) noexcept
 {
     fileMappingObject = other.fileMappingObject;
-    offset = other.offset;
+    _offset = other._offset;
     _bytes = other._bytes;
     return *this;
 }
@@ -71,14 +71,14 @@ FileView &FileView::operator=(FileView const &other) noexcept
 FileView::FileView(FileView &&other) noexcept:
     fileMappingObject(std::move(other.fileMappingObject)),
     _bytes(std::move(other._bytes)),
-    offset(other.offset)
+    _offset(other._offset)
 {
 }
 
 FileView &FileView::operator=(FileView &&other) noexcept
 {
     fileMappingObject = std::move(other.fileMappingObject);
-    offset = other.offset;
+    _offset = other._offset;
     _bytes = std::move(other._bytes);
     return *this;
 }

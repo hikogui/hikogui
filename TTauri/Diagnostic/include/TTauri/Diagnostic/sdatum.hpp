@@ -690,3 +690,5 @@ inline size_t hash<TTauri::sdatum>::operator()(TTauri::sdatum const &value) cons
 
 #undef BI_BOOL_OPERATOR_CONVERSION
 #undef BI_OPERATOR_CONVERSION
+#undef MONO_OPERATOR_CONVERSION
+#undef MONO_BOOL_OPERATOR_CONVERSION

@@ -7,6 +7,7 @@
 #include "TTauri/Draw/PathString.hpp"
 #include "TTauri/Foundation/grapheme.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/URL.hpp"
 #include <vector>

@@ -4,6 +4,7 @@
 #include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Diagnostic/trace.hpp"
 #include "TTauri/Time/hiperf_utc_clock.hpp"
+#include "TTauri/Time/globals.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/strings.hpp"

@@ -7,6 +7,7 @@
 #include "TTauri/Draw/attributes.hpp"
 #include "TTauri/Draw/TTauriIconParser.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Required/wsRGBA.hpp"
 #include <glm/glm.hpp>
 #include <vector>
@@ -284,11 +285,11 @@ namespace TTauri {
 template<>
 inline std::unique_ptr<Draw::Path> parseResource(URL const &location)
 {
-    let view = ResourceView(location);
-
     if (location.extension() == "tticon") {
+        let &view = ResourceView::loadView(location);
+
         try {
-            let bytes = view.bytes();
+            let bytes = view->bytes();
             return std::make_unique<Draw::Path>(Draw::parseTTauriIcon(bytes));
         } catch (error &e) {
             e.set<"url"_tag>(location);

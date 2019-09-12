@@ -38,17 +38,6 @@ public:
     Application_base(Application_base &&) = delete;
     Application_base &operator=(Application_base &&) = delete;
 
-    /*! Get application name.
-     * At certain points of the application there may not be a name yet.
-     */
-    std::optional<std::string> applicationName() const noexcept {
-        if (delegate) {
-            return delegate->applicationName();
-        } else {
-            return {};
-        }
-    }
-
     /*! Run the given function on the main thread.
      */
     virtual void runOnMainThread(std::function<void()> function) = 0;

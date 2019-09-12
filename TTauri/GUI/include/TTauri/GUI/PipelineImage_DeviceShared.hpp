@@ -6,7 +6,7 @@
 #include "TTauri/GUI/PipelineImage_TextureMap.hpp"
 #include "TTauri/GUI/PipelineImage_Page.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
-#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Required/geometry.hpp"
 #include "TTauri/Required/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>

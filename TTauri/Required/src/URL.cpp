@@ -1,6 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
+#include "TTauri/Required/globals.hpp"
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/strings.hpp"
 #include "TTauri/Required/required.hpp"
@@ -210,54 +211,27 @@ URL URL::urlFromResourceDirectory() noexcept
     return r;
 }
 
-std::optional<URL> URL::urlFromApplicationDataDirectory() noexcept
+URL URL::urlFromApplicationDataDirectory() noexcept
 {
-    if (let optionalApplicationName = application().applicationName()) {
 #if OPERATING_SYSTEM == OS_WINDOWS
-        PWSTR wchar_localAppData;
+    PWSTR wchar_localAppData;
 
-        // Use application name for the directory inside the application-data directory.
-        if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wchar_localAppData) != S_OK) {
-            // This should really never happen.
-            no_default;
-        }
+    // Use application name for the directory inside the application-data directory.
+    if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wchar_localAppData) != S_OK) {
+        // This should really never happen.
+        no_default;
+    }
 
-        let base_localAppData = URL::urlFromWPath(wchar_localAppData);
-        return base_localAppData / *optionalApplicationName;
+    let base_localAppData = URL::urlFromWPath(wchar_localAppData);
+    return base_localAppData / applicationName;
 #else
 #error "Not Implemented for this operating system."
 #endif
-    } else {
-        return {};
-    }
 }
 
-std::optional<URL> URL::urlFromApplicationLogDirectory() noexcept
+URL URL::urlFromApplicationLogDirectory() noexcept
 {
-    if (let optionalApplicationDataDirectory = urlFromApplicationDataDirectory()) {
-        return *optionalApplicationDataDirectory / "Log";
-    } else {
-        return {};
-    }
-}
-
-int64_t fileSize(URL const &url)
-{
-#if OPERATING_SYSTEM == OS_WINDOWS
-    let name = url.nativeWPath();
-
-    WIN32_FILE_ATTRIBUTE_DATA attributes;
-    if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
-        TTAURI_THROW(io_error("Could not retrieve file attributes").set<"url"_tag>(url));
-    }
-
-    LARGE_INTEGER size;
-    size.HighPart = attributes.nFileSizeHigh;
-    size.LowPart = attributes.nFileSizeLow;
-    return numeric_cast<int64_t>(size.QuadPart);
-#else
-#error "Not Implemented for this operating system."
-#endif
+    return urlFromApplicationDataDirectory() / "Log";
 }
 
 std::ostream& operator<<(std::ostream& lhs, const URL& rhs)

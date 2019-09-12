@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Required/geometry.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 

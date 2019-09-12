@@ -5,11 +5,12 @@ set(TTauri_Foundation_srcs
     src/File.cpp
     src/FileMapping.cpp
     src/FileView.cpp
+    src/ResourceView.cpp
     src/StaticResourceView.cpp
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Foundation TTauri_Diagnostic TTauri_Time TTauri_Required glm utf8proc)
+target_link_libraries(TTauri_Foundation TTauri_Diagnostic TTauri_Time TTauri_Required glm)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (MSVC)

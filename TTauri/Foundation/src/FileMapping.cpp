@@ -11,7 +11,7 @@
 namespace TTauri {
 
 FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
-    file(file), size(size > 0 ? size : fileSize(file->location))
+    file(file), size(size > 0 ? size : File::fileSize(file->location))
 {
 #ifdef WIN32
     DWORD protect;
