@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Device_vulkan.hpp"
-#include "Instance.hpp"
-#include "PipelineImage.hpp"
-#include "PipelineImage_DeviceShared.hpp"
-#include "Window.hpp"
-#include "TTauri/ResourceView.hpp"
+#include "TTauri/GUI/Device_vulkan.hpp"
+#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/PipelineImage.hpp"
+#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 #include <gsl/gsl>
 
 namespace TTauri::GUI {

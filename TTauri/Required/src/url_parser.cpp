@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "TTauri/Required/required.hpp"
-#include "url_parser.hpp"
-#include "strings.hpp"
-#include "memory.hpp"
+#include "TTauri/Required/url_parser.hpp"
+#include "TTauri/Required/strings.hpp"
+#include "TTauri/Required/memory.hpp"
 #include <numeric>
 
 namespace TTauri {
@@ -42,7 +42,8 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
 
     auto s = std::string{};
 
-    uint8_t v;
+    uint8_t value;
+    int8_t nibble_result;
     for (let c: input) {
         switch (state) {
         case state_t::Idle:
@@ -61,14 +62,31 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
             break;
 
         case state_t::FirstNibble:
-            v = char_to_nibble(c) << 4;
-            state = state_t::SecondNibble;
+            nibble_result = char_to_nibble(c);
+            if (nibble_result == -1) {
+                // Not a nibble, pretent that there was no encoding.
+                s += '%';
+                s += c;
+                state = state_t::Idle;
+            } else {
+                value = static_cast<uint8_t>(nibble_result) << 4;
+                state = state_t::SecondNibble;
+            }
             break;
 
         case state_t::SecondNibble:
-            v |= char_to_nibble(c);
-            s += bit_cast<char>(v);
-            state = state_t::Idle;
+            nibble_result = char_to_nibble(c);
+            if (nibble_result == -1) {
+                // Not a nibble, pretent that there was no encoding.
+                s += '%';
+                s += nibble_to_char(value >> 4);
+                s += c;
+                state = state_t::Idle;
+            } else {
+                value |= static_cast<uint8_t>(nibble_result);
+                s += static_cast<char>(value);
+                state = state_t::Idle;
+            }
             break;
 
         default:

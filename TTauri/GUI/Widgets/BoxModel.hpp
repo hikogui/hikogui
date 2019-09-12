@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/geometry.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Required/required.hpp"
 #include <rhea/linear_expression.hpp>
 

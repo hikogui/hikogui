@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ASTNode.hpp"
+#include "TTauri/Config/ASTNode.hpp"
 
 namespace TTauri::Config {
 

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "hires_tai_clock.hpp"
-#include "hires_utc_clock.hpp"
-#include "leapsecond_db.hpp"
+#include "TTauri/Time/hires_tai_clock.hpp"
+#include "TTauri/Time/hires_utc_clock.hpp"
+#include "TTauri/Time/leapsecond_db.hpp"
 
 namespace TTauri {
 

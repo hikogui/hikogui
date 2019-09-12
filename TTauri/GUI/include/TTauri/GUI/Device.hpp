@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Device_vulkan.hpp"
+#include "TTauri/GUI/Device_vulkan.hpp"
 
 namespace TTauri::GUI {
 using Device = Device_vulkan;

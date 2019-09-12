@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PipelineImage.hpp"
-#include "PipelineImage_DeviceShared.hpp"
-#include "PipelineImage_Image.hpp"
-#include "Device.hpp"
+#include "TTauri/GUI/PipelineImage.hpp"
+#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineImage_Image.hpp"
+#include "TTauri/GUI/Device.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/URL.hpp"
-#include "TTauri/memory.hpp"
+#include "TTauri/Required/URL.hpp"
+#include "TTauri/Required/memory.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 

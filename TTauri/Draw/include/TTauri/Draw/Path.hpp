@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "BezierPoint.hpp"
-#include "attributes.hpp"
-#include "TTauriIconParser.hpp"
-#include "TTauri/wsRGBA.hpp"
-#include "TTauri/ResourceView.hpp"
+#include "TTauri/Draw/BezierPoint.hpp"
+#include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Draw/TTauriIconParser.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 

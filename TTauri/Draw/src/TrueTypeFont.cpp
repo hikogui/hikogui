@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TrueTypeFont.hpp"
-#include "TTauri/span.hpp"
-#include "TTauri/strings.hpp"
+#include "TTauri/Draw/TrueTypeFont.hpp"
+#include "TTauri/Required/span.hpp"
+#include "TTauri/Required/strings.hpp"
 #include <boost/endian/buffers.hpp>
 #include <cstddef>
 

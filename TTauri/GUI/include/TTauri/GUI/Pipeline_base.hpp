@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "Device_forward.hpp"
-#include "Window_forward.hpp"
+#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/Required/required.hpp"
 #include <memory>
 

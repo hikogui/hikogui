@@ -1,12 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "URL.hpp"
-#include "strings.hpp"
-#include "exceptions.hpp"
+#include "TTauri/Required/URL.hpp"
+#include "TTauri/Required/strings.hpp"
 #include "TTauri/Required/required.hpp"
-#include "url_parser.hpp"
-#include "Application.hpp"
+#include "TTauri/Required/url_parser.hpp"
 #include <regex>
 
 #if OPERATING_SYSTEM == OS_WINDOWS

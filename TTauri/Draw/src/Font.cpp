@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Font.hpp"
-#include "TrueTypeFont.hpp"
+#include "TTauri/Draw/Font.hpp"
+#include "TTauri/Draw/TrueTypeFont.hpp"
 
 namespace TTauri {
 

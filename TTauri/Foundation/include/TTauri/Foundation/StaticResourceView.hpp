@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
-#include "StaticResources.hpp"
+#include "TTauri/StaticResources.hpp"
 #include <gsl/gsl>
 #include <cstddef>
 #include <unordered_map>

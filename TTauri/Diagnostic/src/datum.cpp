@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Diagnostic/datum.hpp"
-#include "exceptions.hpp"
+#include "TTauri/Diagnositc/exceptions.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 

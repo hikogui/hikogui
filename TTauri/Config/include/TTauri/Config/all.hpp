@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "Config.hpp"
-#include "ExecutionContext.hpp"
-#include "LiteralParser.hpp"
-#include "Location.hpp"
-#include "ParseContext.hpp"
-#include "parser.hpp"
+#include "TTauri/Config/Config.hpp"
+#include "TTauri/Config/ExecutionContext.hpp"
+#include "TTauri/Config/LiteralParser.hpp"
+#include "TTauri/Config/Location.hpp"
+#include "TTauri/Config/ParseContext.hpp"
+#include "TTauri/Config/parser.hpp"

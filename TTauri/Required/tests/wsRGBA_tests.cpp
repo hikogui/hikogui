@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include <TTauri/wsRGBA.hpp>
+#include "TTauri/Required/wsRGBA.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

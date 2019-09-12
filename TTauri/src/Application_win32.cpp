@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Application_win32.hpp"
+#include "TTauri/Application_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "strings.hpp"
+#include "TTauri/Required/strings.hpp"
 #include <vulkan/vulkan.hpp>
 #include <thread>
 #include <string>

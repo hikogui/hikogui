@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "Path.hpp"
-#include "PathString.hpp"
-#include "TTauri/grapheme.hpp"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Required/required.hpp"
-#include "TTauri/URL.hpp"
-#include "TTauri/ResourceView.hpp"
+#include "TTauri/Required/URL.hpp"
 #include <vector>
 #include <map>
 #include <gsl/gsl>

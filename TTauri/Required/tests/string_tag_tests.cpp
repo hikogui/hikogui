@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "string_tag.hpp"
+#include "TTauri/Required/string_tag.hpp"
 #include "TTauri/Required/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

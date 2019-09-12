@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ASTExpression.hpp"
-#include "ASTObject.hpp"
-#include "parser.hpp"
-#include "TTauri/exceptions.hpp"
+#include "TTauri/Config/ASTExpression.hpp"
+#include "TTauri/Config/ASTObject.hpp"
+#include "TTauri/Config/parser.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 
 namespace TTauri::Config {
 

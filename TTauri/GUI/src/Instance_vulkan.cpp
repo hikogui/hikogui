@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Instance_vulkan.hpp"
-#include "Instance.hpp"
-#include "Device.hpp"
+#include "TTauri/GUI/Instance_vulkan.hpp"
+#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/Device.hpp"
 #include <chrono>
 
 namespace TTauri::GUI {

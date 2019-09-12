@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "PipelineImage_ImageLocation.hpp"
+#include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/geometry.hpp"
 #include <vulkan/vulkan.hpp>
 

@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "TTauri/Diagnostic/logging.hpp"
 #include "TTauri/Required/required.hpp"
-#include "strings.hpp"
-#include "logging.hpp"
+#include "TTauri/Required/strings.hpp"
 #include <fmt/format.h>
 #include <thread>
 #include <string_view>

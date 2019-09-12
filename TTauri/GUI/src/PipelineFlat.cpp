@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PipelineFlat.hpp"
-#include "PipelineFlat_DeviceShared.hpp"
-#include "Window.hpp"
-#include "Device.hpp"
+#include "TTauri/GUI/PipelineFlat.hpp"
+#include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/Device.hpp"
 
 namespace TTauri::GUI::PipelineFlat {
 

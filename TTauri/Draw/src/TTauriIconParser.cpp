@@ -1,10 +1,10 @@
 
-#include "TTauriIconParser.hpp"
-#include "Path.hpp"
-#include "TTauri/exceptions.hpp"
-#include "TTauri/span.hpp"
-#include "TTauri/wsRGBA.hpp"
-#include "TTauri/FileView.hpp"
+#include "TTauri/Draw/TTauriIconParser.hpp"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/span.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include <boost/endian/buffers.hpp>
 
 using namespace boost::endian;

@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "FileView.hpp"
-#include "URL.hpp"
+#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Required/memory.hpp"
+#include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/required.hpp"
-#include "exceptions.hpp"
-#include "logger.hpp"
-#include "memory.hpp"
 #include <mutex>
 
 namespace TTauri {

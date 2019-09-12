@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ButtonWidget.hpp"
-#include "utils.hpp"
+#include "TTauri/Widgets/ButtonWidget.hpp"
+#include "TTauri/Widgets/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

@@ -1,9 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Instance_vulkan_win32.hpp"
-#include "Window.hpp"
-
+#include "TTauri/GUI/Instance_vulkan_win32.hpp"
+#include "TTauri/GUI/Window.hpp"
 #include <ddraw.h>
 
 namespace TTauri::GUI {

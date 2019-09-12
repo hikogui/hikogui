@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "TTauri/Diagnostic/counters.hpp"
 #include "TTauri/Required/required.hpp"
-#include "string_tag.hpp"
-#include "counters.hpp"
+#include "TTauri/Required/string_tag.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>

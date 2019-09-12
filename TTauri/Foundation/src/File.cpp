@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "File.hpp"
-#include "strings.hpp"
-#include "logger.hpp"
+#include "TTauri/Foundation/File.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Required/strings.hpp"
 
 namespace TTauri {
 

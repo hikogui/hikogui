@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
-#include "memory.hpp"
+#include "TTauri/Required/memory.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>

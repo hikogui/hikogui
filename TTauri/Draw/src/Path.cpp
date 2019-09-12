@@ -1,15 +1,14 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Path.hpp"
-#include "PixelMap.inl"
-#include "BezierCurve.hpp"
-#include "PathString.hpp"
-#include "Font.hpp"
-#include "PixelMap.hpp"
-#include "TTauri/wsRGBA.hpp"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/PixelMap.inl"
+#include "TTauri/Draw/BezierCurve.hpp"
+#include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Draw/Font.hpp"
+#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include "TTauri/Required/required.hpp"
-
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace TTauri::Draw {

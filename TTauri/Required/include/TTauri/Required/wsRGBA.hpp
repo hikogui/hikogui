@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "geometry.hpp"
-#include "algorithm.hpp"
+#include "Required/geometry.hpp"
+#include "Required/algorithm.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <fmt/format.h>

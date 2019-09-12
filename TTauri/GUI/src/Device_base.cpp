@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Device_base.hpp"
-#include "Device.hpp"
-#include "Instance.hpp"
-#include "Window.hpp"
+#include "TTauri/GUI/Device_base.hpp"
+#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/Window.hpp"
 #include <fmt/format.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <tuple>

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "Device_base.hpp"
-#include "PipelineImage_DeviceShared.hpp"
-#include "PipelineFlat_DeviceShared.hpp"
+#include "TTauri/GUI/Device_base.hpp"
+#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 

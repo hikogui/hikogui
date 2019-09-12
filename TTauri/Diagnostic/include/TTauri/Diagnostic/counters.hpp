@@ -4,8 +4,8 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
-#include "string_tag.hpp"
-#include "wfree_unordered_map.hpp"
+#include "TTauri/Required/string_tag.hpp"
+#include "TTauri/Required/wfree_unordered_map.hpp"
 #include <gsl/gsl>
 
 namespace TTauri {

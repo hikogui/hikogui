@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PathString.hpp"
+#include "TTauri/Draw/PathString.hpp"
 
 namespace TTauri::Draw {
 

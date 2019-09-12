@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "BoxModel.hpp"
-#include "../PipelineFlat_Delegate.hpp"
-#include "../PipelineImage_Delegate.hpp"
-#include "../PipelineImage_Backing.hpp"
-#include "../Window_forward.hpp"
-#include "../Device_forward.hpp"
-#include "../Mouse.hpp"
+#include "TTauri/GUI/BoxModel.hpp"
+#include "TTauri/GUI/PipelineFlat_Delegate.hpp"
+#include "TTauri/GUI/PipelineImage_Delegate.hpp"
+#include "TTauri/GUI/PipelineImage_Backing.hpp"
+#include "TTauri/GUI/Window_forward.hpp"
+#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/Mouse.hpp"
 #include "TTauri/wsRGBA.hpp"
 #include "TTauri/URL.hpp"
 #include "TTauri/geometry.hpp"

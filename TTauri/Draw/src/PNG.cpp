@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PNG.hpp"
-#include "PixelMap.hpp"
-#include "TTauri/logger.hpp"
-#include "TTauri/exceptions.hpp"
-#include "TTauri/wsRGBA.hpp"
+#include "TTauri/Draw/PNG.hpp"
+#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include "TTauri/Required/required.hpp"
-#include "TTauri/URL.hpp"
+#include "TTauri/Required/URL.hpp"
 #include <png.h>
 #include <stdio.h>
 

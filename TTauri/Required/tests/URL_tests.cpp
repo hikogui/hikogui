@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include <TTauri/URL.hpp>
+#include "TTauri/Required/URL.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

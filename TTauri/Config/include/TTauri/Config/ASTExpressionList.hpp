@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ASTExpression.hpp"
+#include "TTauri/Config/ASTExpression.hpp"
 #include <vector>
 
 namespace TTauri::Config {

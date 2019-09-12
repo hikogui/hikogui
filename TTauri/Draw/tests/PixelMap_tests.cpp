@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PixelMap.inl"
-#include "Path.hpp"
-#include "BezierCurve.hpp"
-#include "TTauri/wsRGBA.hpp"
+#include "TTauri/Draw/PixelMap.inl"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/BezierCurve.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

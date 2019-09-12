@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "Pipeline_vulkan.hpp"
-#include "PipelineFlat_PushConstants.hpp"
-#include "PipelineFlat_Vertex.hpp"
-#include "globals.hpp"
-#include "Device_forward.hpp"
+#include "TTauri/GUI/Pipeline_vulkan.hpp"
+#include "TTauri/GUI/PipelineFlat_PushConstants.hpp"
+#include "TTauri/GUI/PipelineFlat_Vertex.hpp"
+#include "TTauri/GUI/globals.hpp"
+#include "TTauri/GUI/Device_forward.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 

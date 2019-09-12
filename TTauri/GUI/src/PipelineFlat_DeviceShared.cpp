@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PipelineFlat.hpp"
-#include "PipelineFlat_DeviceShared.hpp"
-#include "Device.hpp"
+#include "TTauri/GUI/PipelineFlat.hpp"
+#include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "TTauri/GUI/Device.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/URL.hpp"
+#include "TTauri/Required/URL.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 

@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
+#include "TTauri/Config/Config.hpp"
 #include <gtest/gtest.h>
 #include <Windows.h>
-#include "Config.hpp"
 
 using namespace std;
 using namespace TTauri::Config;

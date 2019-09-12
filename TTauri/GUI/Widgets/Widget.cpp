@@ -1,8 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Widget.hpp"
-#include "utils.hpp"
+#include "TTauri/GUI/Widget.hpp"
 
 namespace TTauri::GUI::Widgets {
 

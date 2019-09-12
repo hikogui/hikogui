@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include <TTauri/polynomial_tests.hpp>
-#include <TTauri/polynomial.hpp>
+#include "polynomial_tests.hpp"
+#include "TTauri/Foundation/polynomial.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

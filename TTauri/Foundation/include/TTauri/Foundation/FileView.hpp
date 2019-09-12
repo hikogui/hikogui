@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "FileMapping.hpp"
+#include "TTauri/Foundation/FileMapping.hpp"
 #include <gsl/gsl>
 
 namespace TTauri {

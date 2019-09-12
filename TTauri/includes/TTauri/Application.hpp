@@ -7,14 +7,14 @@
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 
-#include "Application_win32.hpp"
+#include "TTauri/Application_win32.hpp"
 namespace TTauri {
 using Application = Application_win32;
 }
 
 #elif OPERATING_SYSTEM == OS_MACOS
 
-#include "Application_macos.hpp"
+#include "TTauri/Application_macos.hpp"
 namespace TTauri {
 using Application = Application_macos;
 }

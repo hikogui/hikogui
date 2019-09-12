@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include "FileView.hpp"
-#include "StaticResourceView.hpp"
-#include "Application.hpp"
-#include "logger.hpp"
+#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Foundation/StaticResourceView.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
 #include <variant>
 
 namespace TTauri {

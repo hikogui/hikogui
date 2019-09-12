@@ -3,11 +3,10 @@
 
 #pragma once
 
-#include "globals.hpp"
-#include "Device.hpp"
-#include "Window.hpp"
-#include "VerticalSync.hpp"
-#include "TTauri/Application.hpp"
+#include "TTauri/GUI/globals.hpp"
+#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/VerticalSync.hpp"
 #include <gsl/gsl>
 #include <memory>
 #include <mutex>

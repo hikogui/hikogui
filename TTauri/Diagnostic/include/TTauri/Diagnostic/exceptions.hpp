@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "TTauri/Required/required.hpp"
-#include "string_tag.hpp"
-#include "tagged_map.hpp"
-#include "logger.hpp"
-#include "counters.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Diagnostic/counters.hpp"
 #include "TTauri/Diagnostic/datum.hpp"
+#include "TTauri/Required/required.hpp"
+#include "TTauri/Required/string_tag.hpp"
+#include "TTauri/Required/tagged_map.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>

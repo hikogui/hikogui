@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/URL.hpp"
+#include "TTauri/Required/URL.hpp"
 
 namespace TTauri::Config {
 

@@ -3,17 +3,16 @@
 
 #pragma once
 
-#include "TTauri/Required/required.hpp"
-#include "polymorphic_value.hpp"
-#include "wfree_message_queue.hpp"
-#include "wfree_unordered_map.hpp"
-#include "singleton.hpp"
-#include "url_parser.hpp"
-#include "atomic.hpp"
-#include "counters.hpp"
+#include "TTauri/Diagnostic/counters.hpp"
 #include "TTauri/Time/cpu_counter_clock.hpp"
-#include "meta.hpp"
-#include "format.hpp"
+#include "TTauri/Required/required.hpp"
+#include "TTauri/Required/polymorphic_value.hpp"
+#include "TTauri/Required/wfree_message_queue.hpp"
+#include "TTauri/Required/wfree_unordered_map.hpp"
+#include "TTauri/Required/url_parser.hpp"
+#include "TTauri/Required/atomic.hpp"
+#include "TTauri/Required/meta.hpp"
+#include "TTauri/Required/format.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -138,7 +137,6 @@ struct log_message: public log_message_base {
 
 
 /*! A class with which to log messages to a file or console.
- * This will primarilly used with get_singleton<>().
  */
 class logger_type {
     static constexpr size_t MAX_MESSAGE_SIZE = 224;

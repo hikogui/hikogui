@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "Window.hpp"
-#include "globals.hpp"
-#include "TTauri/exceptions.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/globals.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include <unordered_set>
 #include <boost/uuid/uuid.hpp>
 #include <mutex>

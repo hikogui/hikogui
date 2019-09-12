@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
-#include "exceptions.hpp"
 #include <utf8proc/utf8proc.h>
 #include <string>
 #include <string_view>
@@ -47,7 +46,10 @@ constexpr char nibble_to_char(uint8_t nibble) noexcept
     }
 }
 
-inline uint8_t char_to_nibble(char c)
+/*!
+ * \return value between 0-15, or -1 on error.
+ */
+inline std::optional<int8_t> char_to_nibble(char c)
 {
     if (c >= '0' && c <= '9') {
         return c - '0';
@@ -56,9 +58,7 @@ inline uint8_t char_to_nibble(char c)
     } else if (c >= 'A' && c <= 'F') {
         return (c - 'A') + 10;
     } else {
-        TTAURI_THROW(parse_error("Could not parse hexadecimal digit")
-            .set<"parse_string"_tag>(std::string(1, c))
-        );
+        return -1;
     }
 }
 

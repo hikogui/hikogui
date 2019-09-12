@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/geometry.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include <vulkan/vulkan.hpp>
 #include <gsl/gsl>
 

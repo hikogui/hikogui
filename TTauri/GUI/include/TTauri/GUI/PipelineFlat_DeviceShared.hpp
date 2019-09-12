@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "Device_forward.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Required/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>

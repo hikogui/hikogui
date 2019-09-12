@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "string_tag.hpp"
+#include "TTauri/Required/string_tag.hpp"
 #include <array>
 
 namespace TTauri {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Window_base.hpp"
+#include "TTauri/GUI/Window_base.hpp"
 #include <vulkan/vulkan.hpp>
 #include <optional>
 

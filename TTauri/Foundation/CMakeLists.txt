@@ -6,7 +6,6 @@ set(TTauri_Foundation_srcs
     src/FileMapping.cpp
     src/FileView.cpp
     src/StaticResourceView.cpp
-    src/strings.cpp
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})

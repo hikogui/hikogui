@@ -1,13 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "strings.hpp"
 #include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Diagnostic/trace.hpp"
 #include "TTauri/Time/hiperf_utc_clock.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/URL.hpp"
-#include "Application.hpp"
+#include "TTauri/Required/strings.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>

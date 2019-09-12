@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "PixelMap.hpp"
-#include "attributes.hpp"
-#include "TTauri/math.hpp"
-#include "TTauri/bezier.hpp"
+#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Foundation/math.hpp"
+#include "TTauri/Foundation/bezier.hpp"
 #include "TTauri/Required/required.hpp"
 #include <glm/glm.hpp>
 #include <tuple>

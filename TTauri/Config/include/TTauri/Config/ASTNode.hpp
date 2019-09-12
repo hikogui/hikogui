@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "Location.hpp"
-#include "ExecutionContext.hpp"
-#include "TTauri/datum.hpp"
-#include "TTauri/exceptions.hpp"
+#include "TTauri/Config/Location.hpp"
+#include "TTauri/Config/ExecutionContext.hpp"
+#include "TTauri/Diagnostic/datum.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include <string>
 
 namespace TTauri::Config {

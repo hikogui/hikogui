@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "geometry.hpp"
-#include "polynomial.hpp"
+#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/polynomial.hpp"
 
 namespace TTauri {
 

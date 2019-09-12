@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Instance_base.hpp"
-#include "TTauri/logger.hpp"
+#include "TTauri/GUI/Instance_base.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
 #include <chrono>
 
 namespace TTauri::GUI {

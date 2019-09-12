@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "exceptions.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

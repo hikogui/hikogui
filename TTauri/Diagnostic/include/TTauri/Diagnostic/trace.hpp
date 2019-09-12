@@ -1,12 +1,12 @@
 
 
-#include "TTauri/Required/required.hpp"
-#include "counters.hpp"
-#include "tagged_map.hpp"
-#include "wfree_message_queue.hpp"
+#include "TTauri/Diagnostic/counters.hpp"
+#include "TTauri/Diagnostic/sdatum.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Time/hiperf_utc_clock.hpp"
-#include "sdatum.hpp"
-#include "logger.hpp"
+#include "TTauri/Required/required.hpp"
+#include "TTauri/Required/tagged_map.hpp"
+#include "TTauri/Required/wfree_message_queue.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <atomic>

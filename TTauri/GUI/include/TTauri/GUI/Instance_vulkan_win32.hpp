@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Instance_vulkan.hpp"
+#include "TTauri/GUI/Instance_vulkan.hpp"
 #include <gsl/gsl>
 
 namespace TTauri::GUI {

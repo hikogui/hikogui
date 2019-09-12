@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "attributes.hpp"
-#include "Path.hpp"
+#include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Draw/Path.hpp"
 
 namespace TTauri::Draw {
 

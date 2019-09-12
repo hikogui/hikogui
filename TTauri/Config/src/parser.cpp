@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "parser.hpp"
-#include "ASTObject.hpp"
-#include "ParseContext.hpp"
-#include "TTauri/exceptions.hpp"
-#include "TTauri/logger.hpp"
+#include "TTauri/Config/parser.hpp"
+#include "TTauri/Config/ASTObject.hpp"
+#include "TTauri/Config/ParseContext.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
 #include <cstdio>
 #include <vector>
 #include <string>

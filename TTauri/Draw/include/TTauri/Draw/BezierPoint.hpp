@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/geometry.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Required/required.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>

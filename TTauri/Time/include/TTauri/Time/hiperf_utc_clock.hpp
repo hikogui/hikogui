@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "hires_utc_clock.hpp"
-#include "cpu_counter_clock.hpp"
-#include "sync_clock.hpp"
+#include "TTauri/Time/hires_utc_clock.hpp"
+#include "TTauri/Time/cpu_counter_clock.hpp"
+#include "TTauri/Time/sync_clock.hpp"
 
 namespace TTauri {
 

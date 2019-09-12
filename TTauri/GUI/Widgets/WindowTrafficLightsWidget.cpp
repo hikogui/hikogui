@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "WindowTrafficLightsWidget.hpp"
-#include "utils.hpp"
+#include "TTauri/GUI/WindowTrafficLightsWidget.hpp"
+#include "TTauri/GUI/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

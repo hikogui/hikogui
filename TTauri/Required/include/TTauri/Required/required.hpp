@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "os_detect.hpp"
+#include "TTauri/Required/os_detect.hpp"
 #include <exception>
 
 /*! Invariant should be the default for variables.

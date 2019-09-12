@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "globals.hpp"
-#include "WindowDelegate.hpp"
-#include "Widgets/WindowWidget.hpp"
-#include "Device_forward.hpp"
-#include "Mouse.hpp"
+#include "TTauri/GUI/globals.hpp"
+#include "TTauri/GUI/WindowDelegate.hpp"
+#include "TTauri/GUI/WindowWidget.hpp"
+#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/Mouse.hpp"
 #include "TTauri/Draw/attributes.hpp"
-#include "TTauri/geometry.hpp"
-#include "TTauri/logger.hpp"
+#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>

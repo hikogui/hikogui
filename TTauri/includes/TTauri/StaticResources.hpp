@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "URL.hpp"
-#include "exceptions.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/URL.hpp"
 #include <gsl/gsl>
 #include <unordered_map>
 #include <cstdint>

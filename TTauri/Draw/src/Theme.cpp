@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Theme.hpp"
+#include "TTauri/Draw/Theme.hpp"
 
 namespace TTauri::Draw {
 

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ASTExpression.hpp"
-#include "ASTExpressionList.hpp"
+#include "TTauri/Config/ASTExpression.hpp"
+#include "TTauri/Config/ASTExpressionList.hpp"
 #include <vector>
 #include <map>
 

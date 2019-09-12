@@ -1,14 +1,14 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "StaticResources.hpp"
+#include "TTauri/StaticResources.hpp"
 
 namespace TTauri {
 
-#include "GUI/PipelineImage.vert.spv.inl"
-#include "GUI/PipelineImage.frag.spv.inl"
-#include "GUI/PipelineFlat.vert.spv.inl"
-#include "GUI/PipelineFlat.frag.spv.inl"
+#include "GUI/shaders/PipelineImage.vert.spv.inl"
+#include "GUI/shaders/PipelineImage.frag.spv.inl"
+#include "GUI/shaders/PipelineFlat.vert.spv.inl"
+#include "GUI/shaders/PipelineFlat.frag.spv.inl"
 
 StaticResources::StaticResources() noexcept
 {

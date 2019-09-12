@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "Window_forward.hpp"
-#include "TTauri/geometry.hpp"
+#include "TTauri/GUI/Window_forward.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include <future>
 #include <map>
 #include <optional>

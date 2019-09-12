@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
-#include "atomic.hpp"
+#include "TTauri/Required/atomic.hpp"
 #include <array>
 #include <atomic>
 #include <memory>

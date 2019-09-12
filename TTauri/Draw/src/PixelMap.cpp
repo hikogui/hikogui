@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PixelMap.inl"
-#include "TTauri/wsRGBA.hpp"
+#include "TTauri/Draw/PixelMap.inl"
+#include "TTauri/Required/wsRGBA.hpp"
 #include <algorithm>
 
 namespace TTauri::Draw {

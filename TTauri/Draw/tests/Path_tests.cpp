@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Path.hpp"
-#include "BezierCurve.hpp"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/BezierCurve.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

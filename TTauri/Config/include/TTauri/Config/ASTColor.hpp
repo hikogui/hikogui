@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ASTExpression.hpp"
-#include "TTauri/wsRGBA.hpp"
+#include "TTauri/Config/ASTExpression.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include <glm/glm.hpp>
 
 namespace TTauri::Config {

@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Pipeline_base.hpp"
-#include "Device.hpp"
-#include "Window.hpp"
+#include "TTauri/GUI/Pipeline_base.hpp"
+#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/Window.hpp"
 
 namespace TTauri::GUI {
 

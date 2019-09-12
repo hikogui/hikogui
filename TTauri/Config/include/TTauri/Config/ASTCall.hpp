@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ASTExpression.hpp"
-#include "ASTExpressionList.hpp"
-#include "ASTMember.hpp"
-#include "ASTName.hpp"
+#include "TTauri/Config/ASTExpression.hpp"
+#include "TTauri/Config/ASTExpressionList.hpp"
+#include "TTauri/Config/ASTMember.hpp"
+#include "TTauri/Config/ASTName.hpp"
 #include <vector>
 
 namespace TTauri::Config {

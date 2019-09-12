@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "Path.hpp"
-#include "Font.hpp"
-#include "TTauri/ResourceView.hpp"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/Font.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 #include <memory>
 
 namespace TTauri::Draw {

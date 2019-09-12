@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "counters.hpp"
+#include "TTauri/Diagnostic/counters.hpp"
 #include "TTauri/Required/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

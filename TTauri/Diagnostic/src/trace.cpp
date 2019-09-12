@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "trace.hpp"
+#include "TTauri/Diagnostic/trace.hpp"
 
 namespace TTauri {
 

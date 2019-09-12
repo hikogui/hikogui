@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "parser.hpp"
-#include "TTauri/datum.hpp"
-#include "TTauri/exceptions.hpp"
-#include "TTauri/strings.hpp"
-#include "ASTObject.hpp"
+#include "TTauri/Config/parser.hpp"
+#include "TTauri/Config/ASTObject.hpp"
+#include "TTauri/Diagnostic/datum.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/strings.hpp"
 
 namespace TTauri::Config {
 

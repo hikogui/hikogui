@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "LiteralParser.hpp"
+#include "TTauri/Config/LiteralParser.hpp"
 #include <vector>
 #include <functional>
 #include <string>

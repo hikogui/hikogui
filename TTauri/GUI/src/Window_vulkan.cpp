@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "Window_vulkan.hpp"
-#include "Window.hpp"
-#include "Instance.hpp"
-#include "Device.hpp"
-#include "PipelineImage.hpp"
-#include "PipelineFlat.hpp"
-#include "TTauri/trace.hpp"
+#include "TTauri/GUI/Window_vulkan.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/PipelineImage.hpp"
+#include "TTauri/GUI/PipelineFlat.hpp"
+#include "TTauri/Diagnostic/trace.hpp"
 #include <vector>
 
 namespace TTauri::GUI {

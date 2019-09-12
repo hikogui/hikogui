@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "PipelineImage_Image.hpp"
-#include "PipelineImage_DeviceShared.hpp"
-#include "PipelineImage_ImageLocation.hpp"
-#include "PipelineImage_Vertex.hpp"
-#include "TTauri/logger.hpp"
+#include "TTauri/GUI/PipelineImage_Image.hpp"
+#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
+#include "TTauri/GUI/PipelineImage_Vertex.hpp"
+#include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Required/required.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 

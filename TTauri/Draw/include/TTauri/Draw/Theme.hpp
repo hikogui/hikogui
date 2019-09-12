@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "Font.hpp"
-#include "Path.hpp"
-#include "PathString.hpp"
-#include "TTauri/wsRGBA.hpp"
+#include "TTauri/Draw/Font.hpp"
+#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 #include "TTauri/Required/required.hpp"
 
 #include <string>

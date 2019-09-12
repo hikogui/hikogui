@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
+#include "TTauri/Config/ASTObject.hpp"
+#include "TTauri/Config/parser.hpp"
 #include <gtest/gtest.h>
 #include <Windows.h>
-#include "parser.hpp"
-#include "ASTObject.hpp"
 
 using namespace std;
 using namespace TTauri::Config;
