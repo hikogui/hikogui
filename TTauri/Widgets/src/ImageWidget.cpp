@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Widgets/ImageWidget.hpp"
-#include "TTauri/Widgets/utils.hpp"
+#include "TTauri/GUI/utils.hpp"
 #include <cmath>
 
 namespace TTauri::GUI::Widgets {

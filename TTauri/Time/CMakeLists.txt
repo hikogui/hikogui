@@ -2,6 +2,7 @@
 project(TTauri_Time CXX)
 
 set(TTauri_Time_srcs
+    src/globals.cpp
     src/hires_utc_clock.cpp
     src/hires_utc_clock_win32.cpp
 )

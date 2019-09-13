@@ -108,7 +108,7 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
     Device_base(),
     physicalIntrinsic(std::move(physicalDevice))
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(get_singleton<Instance>().loader());
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(GUI_globals->instance().loader());
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
@@ -162,7 +162,7 @@ Device_vulkan::~Device_vulkan()
 
 void Device_vulkan::initializeDevice(Window const &window)
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     const float defaultQueuePriority = 1.0;
 
@@ -177,7 +177,7 @@ void Device_vulkan::initializeDevice(Window const &window)
         numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-        &(get_singleton<Instance>().requiredFeatures)
+        &(GUI_globals->instance().requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
@@ -222,7 +222,7 @@ void Device_vulkan::initializeDevice(Window const &window)
 
 std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     LOG_INFO(" - Scoring QueueFamilies");
 
@@ -274,19 +274,19 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
 
 int Device_vulkan::score(vk::SurfaceKHR surface) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     auto formats = physicalIntrinsic.getSurfaceFormatsKHR(surface);
     auto presentModes = physicalIntrinsic.getSurfacePresentModesKHR(surface);
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, get_singleton<Instance>().requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, GUI_globals->instance().requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, get_singleton<Instance>().requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, GUI_globals->instance().requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -406,13 +406,13 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
 int Device_vulkan::score(Window const &window) const {
     auto surface = window.getSurface();
     let s = score(surface);
-    get_singleton<Instance>().destroySurfaceKHR(surface);
+    GUI_globals->instance().destroySurfaceKHR(surface);
     return s;
 }
 
 std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::BufferCreateInfo &bufferCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     VkBuffer buffer;
     VmaAllocation allocation;
@@ -427,14 +427,14 @@ std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::Buffe
 
 void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     vmaDestroyBuffer(allocator, buffer, allocation);
 }
 
 std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCreateInfo &imageCreateInfo, const VmaAllocationCreateInfo &allocationCreateInfo) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     VkImage image;
     VmaAllocation allocation;
@@ -449,21 +449,21 @@ std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCr
 
 void Device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     vmaDestroyImage(allocator, image, allocation);
 }
 
 void Device_vulkan::unmapMemory(const VmaAllocation &allocation) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     vmaUnmapMemory(allocator, allocation);
 }
 
 vk::CommandBuffer Device_vulkan::beginSingleTimeCommands() const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     let commandBuffers = intrinsic.allocateCommandBuffers({ graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1 });
     let commandBuffer = commandBuffers.at(0);
@@ -474,7 +474,7 @@ vk::CommandBuffer Device_vulkan::beginSingleTimeCommands() const
 
 void Device_vulkan::endSingleTimeCommands(vk::CommandBuffer commandBuffer) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     commandBuffer.end();
 
@@ -517,7 +517,7 @@ static pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayout(vk
 
 void Device_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     let commandBuffer = beginSingleTimeCommands();
 
@@ -553,7 +553,7 @@ void Device_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::Ima
 
 void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, std::vector<vk::ImageCopy> regions) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     let commandBuffer = beginSingleTimeCommands();
 
@@ -568,7 +568,7 @@ void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk:
 
 vk::ShaderModule Device_vulkan::loadShader(uint32_t const *data, size_t size) const
 {
-    auto lock = scoped_lock(TTauri::GUI::mutex);
+    auto lock = scoped_lock(GUI_globals->mutex);
 
     LOG_INFO("Loading shader");
 
@@ -590,8 +590,8 @@ vk::ShaderModule Device_vulkan::loadShader(gsl::span<std::byte const> shaderObje
 
 vk::ShaderModule Device_vulkan::loadShader(URL const &shaderObjectLocation) const
 {
-    auto shaderObjectView = ResourceView(shaderObjectLocation);
-    return loadShader(shaderObjectView.bytes());
+    auto shaderObjectView = ResourceView::loadView(shaderObjectLocation);
+    return loadShader(shaderObjectView->bytes());
 }
 
 }

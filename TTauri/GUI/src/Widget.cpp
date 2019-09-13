@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/Widget.hpp"
+#include "TTauri/GUI/utils.hpp"
 
 namespace TTauri::GUI::Widgets {
 

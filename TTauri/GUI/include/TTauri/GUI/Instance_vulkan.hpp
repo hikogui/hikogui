@@ -45,7 +45,7 @@ public:
      * \param extensions a list of Vulkan extensions required. Most useful
      *      for including operating system specific surface extensions.
      */
-    Instance_vulkan(const std::vector<const char *> extensions);
+    Instance_vulkan(InstanceDelegate *delegate, const std::vector<const char *> extensions);
     ~Instance_vulkan();
 
     Instance_vulkan(const Instance_vulkan &) = delete;
@@ -60,7 +60,7 @@ public:
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface) {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         intrinsic.destroySurfaceKHR(surface);
     }
 

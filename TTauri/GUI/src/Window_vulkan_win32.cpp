@@ -4,6 +4,7 @@
 #include "TTauri/GUI/Window_vulkan_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/Required/strings.hpp"
+#include "TTauri/Required/thread.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 
@@ -36,7 +37,7 @@ void Window_vulkan_win32::createWindowClass()
         Window_vulkan_win32::win32WindowClassName = L"TTauri Window Class";
 
         Window_vulkan_win32::win32WindowClass.lpfnWndProc = Window_vulkan_win32::_WindowProc;
-        Window_vulkan_win32::win32WindowClass.hInstance = application().hInstance;
+        Window_vulkan_win32::win32WindowClass.hInstance = GUI_globals->hInstance;
         Window_vulkan_win32::win32WindowClass.lpszClassName = Window_vulkan_win32::win32WindowClassName;
         Window_vulkan_win32::win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -65,7 +66,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
 
         NULL, // Parent window
         NULL, // Menu
-        application().hInstance, // Instance handle
+        GUI_globals->hInstance, // Instance handle
         this
     );
 
@@ -81,7 +82,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
     }
 
     if (!Window_vulkan_win32::firstWindowHasBeenOpened) {
-        ShowWindow(win32Window, application().nCmdShow);
+        ShowWindow(win32Window, GUI_globals->nCmdShow);
         Window_vulkan_win32::firstWindowHasBeenOpened = true;
     }
 
@@ -115,43 +116,43 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closeWindow()
 {
-    application().runOnMainThread([&]() {
+    run_on_main_thread([&]() {
         DestroyWindow(win32Window);
     });
 }
 
 void Window_vulkan_win32::minimizeWindow()
 {
-    application().runOnMainThread([&]() {
+    run_on_main_thread([&]() {
         ShowWindow(win32Window, SW_MINIMIZE);
     });
 }
 
 void Window_vulkan_win32::maximizeWindow()
 {
-    application().runOnMainThread([&]() {
+    run_on_main_thread([&]() {
         ShowWindow(win32Window, SW_MAXIMIZE);
     });
 }
 
 void Window_vulkan_win32::normalizeWindow()
 {
-    application().runOnMainThread([&]() {
+    run_on_main_thread([&]() {
         ShowWindow(win32Window, SW_RESTORE);
     });
 }
 
 void Window_vulkan_win32::closingWindow()
 {
-    application().runOnMainThread([&]() {
+    run_on_main_thread([&]() {
         Window_vulkan::closingWindow();
     });
 }
 
 void Window_vulkan_win32::openingWindow()
 {
-    application().runOnMainThread([&]() {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+    run_on_main_thread([&]() {
+        std::scoped_lock lock(GUI_globals->mutex);
 
         Window_vulkan::openingWindow();
 
@@ -164,9 +165,9 @@ void Window_vulkan_win32::openingWindow()
 
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
-    return get_singleton<Instance>().createWin32SurfaceKHR({
+    return GUI_globals->instance().createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
-        application().hInstance,
+        GUI_globals->hInstance,
         win32Window
     });
 }
@@ -205,7 +206,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
 LRESULT Window_vulkan_win32::windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
 
         MouseEvent mouseEvent;
 

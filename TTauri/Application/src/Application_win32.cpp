@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Application_win32.hpp"
+#include "TTauri/Application/Application_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/Required/strings.hpp"
@@ -13,7 +13,7 @@ namespace TTauri {
 
 
 Application_win32::Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) :
-    Application_base(std::move(delegate)),
+    Application_base(std::move(delegate), hInstance, nCmdShow),
     hInstance(hInstance), hPrevInstance(hPrevInstance), pCmdLine(pCmdLine), nCmdShow(nCmdShow),
     mainThreadID(GetCurrentThreadId())
 {
@@ -25,7 +25,7 @@ void Application_win32::lastWindowClosed()
         // Let the application have a change to open new windows from the main thread.
         Application_base::lastWindowClosed();
 
-        if (get_singleton<GUI::Instance>().getNumberOfWindows() == 0) {
+        if (GUI::GUI_globals->instance().getNumberOfWindows() == 0) {
             LOG_INFO("Application quiting due to all windows having been closed.");
             PostQuitMessage(0);
         }
@@ -51,6 +51,11 @@ int Application_win32::loop()
 {
     startingLoop();
 
+
+    Required_globals->main_thread_runner = [=](std::function<void()> f) {
+        return this->runOnMainThread(f);
+    };
+
     // Run the message loop.
     MSG msg = {};
     while (GetMessage(&msg, nullptr, 0, 0)) {
@@ -65,6 +70,8 @@ int Application_win32::loop()
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    Required_globals->main_thread_runner = {};
 
     return 0;
 }

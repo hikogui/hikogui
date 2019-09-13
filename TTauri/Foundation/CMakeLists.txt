@@ -2,6 +2,7 @@
 project(TTauri_Foundation CXX)
 
 set(TTauri_Foundation_srcs
+    src/globals.cpp
     src/File.cpp
     src/FileMapping.cpp
     src/FileView.cpp

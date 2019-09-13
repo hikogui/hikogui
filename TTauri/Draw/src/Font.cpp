@@ -11,10 +11,11 @@ template<>
 std::unique_ptr<Draw::Font> parseResource(URL const &location)
 {
     if (location.extension() == "ttf") {
-        let &view = ResourceView::loadView(location);
+        auto view = ResourceView::loadView(location);
 
         try {
-            return std::make_unique<Draw::TrueTypeFont>(view);
+            auto font = std::make_unique<Draw::TrueTypeFont>(std::move(view));
+            return font;
         } catch (error &e) {
             e.set<"url"_tag>(location);
             throw;

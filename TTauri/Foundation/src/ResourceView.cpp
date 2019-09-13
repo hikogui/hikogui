@@ -12,7 +12,7 @@ std::unique_ptr<ResourceView> ResourceView::loadView(URL const &location)
 {
     if (location.scheme() == "resource") {
         try {
-            let view = StaticResourceView::loadView(location.filename());
+            auto view = StaticResourceView::loadView(location.filename());
             LOG_INFO("Loaded resource {} from executable.", location);
             return view;
 

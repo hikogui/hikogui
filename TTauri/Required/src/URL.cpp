@@ -223,7 +223,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     }
 
     let base_localAppData = URL::urlFromWPath(wchar_localAppData);
-    return base_localAppData / applicationName;
+    return base_localAppData / Required_globals->applicationName;
 #else
 #error "Not Implemented for this operating system."
 #endif

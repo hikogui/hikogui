@@ -12,6 +12,7 @@ ADD_FLEX_BISON_DEPENDENCY(TTauriConfigScanner TTauriConfigParser)
 set(TTauri_Config_srcs
     ${BISON_TTauriConfigParser_OUTPUTS}
     ${FLEX_TTauriConfigScanner_OUTPUTS}
+    src/globals.cpp
     src/parser.cpp
     src/LiteralParser.cpp
 )

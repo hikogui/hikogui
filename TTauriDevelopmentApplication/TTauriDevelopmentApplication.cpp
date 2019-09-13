@@ -1,8 +1,10 @@
 
-#include "TTauri/all.hpp"
-#include "TTauri/GUI/all.hpp"
-#include "TTauri/Draw/all.hpp"
-#include "TTauri/GUI/Widgets/all.hpp"
+#include "TTauri/Widgets/widgets.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/WindowDelegate.hpp"
+#include "TTauri/GUI/WindowToolbarWidget.hpp"
+#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/Application/Application.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -55,8 +57,8 @@ public:
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
-        get_singleton<Instance>().initialize();
-        get_singleton<Instance>().addWindow<Window>(myWindowDelegate, "Hello World 1");
+        GUI_globals->instance().initialize();
+        GUI_globals->instance().addWindow<Window>(myWindowDelegate, "Hello World 1");
     }
 
     void lastWindowClosed() override

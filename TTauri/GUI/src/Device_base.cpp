@@ -25,21 +25,21 @@ Device_base::~Device_base()
 
 std::string Device_base::string() const noexcept
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     return fmt::format("{0:04x}:{1:04x} {2} {3}", vendorID, deviceID, deviceName, deviceUUID);
 }
 
 void Device_base::initializeDevice(Window const &window)
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
     
     state = State::READY_TO_DRAW;
 }
 
 void Device_base::add(std::unique_ptr<Window> window)
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     if (state == State::NO_DEVICE) {
         initializeDevice(*window);
@@ -54,7 +54,7 @@ void Device_base::add(std::unique_ptr<Window> window)
 
 void Device_base::remove(Window &window) noexcept
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     window.unsetDevice();
     windows.erase(std::find_if(windows.begin(), windows.end(), [&](auto &x) {

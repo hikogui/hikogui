@@ -4,6 +4,8 @@ project(TTauri_Required CXX)
 find_package(Boost REQUIRED)
 
 set(TTauri_Required_srcs
+    src/globals.cpp
+    src/thread.cpp
     src/URL.cpp
     src/url_parser.cpp
     src/wsRGBA.cpp

@@ -33,7 +33,7 @@ public:
 
     size_t size() const noexcept override { return _bytes->size(); }
 
-    void const *data() const noexcept { return _bytes->data(); }
+    void const *data() const noexcept override { return _bytes->data(); }
 
     gsl::span<std::byte> bytes() noexcept { return *_bytes; }
     gsl::span<std::byte const> bytes() const noexcept override { return *_bytes; }

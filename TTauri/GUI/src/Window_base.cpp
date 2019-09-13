@@ -34,7 +34,7 @@ Window_base::~Window_base()
 
 void Window_base::initialize()
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     widget = std::make_shared<Widgets::WindowWidget>();
 
@@ -61,7 +61,7 @@ void Window_base::closingWindow() {
 
 void Window_base::setDevice(Device *newDevice)
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     if (device) {
         state = State::DeviceLost;

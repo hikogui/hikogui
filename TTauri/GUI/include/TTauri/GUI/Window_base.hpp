@@ -122,7 +122,7 @@ public:
     virtual void render() = 0;
 
     bool isClosed() {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return state == State::NoWindow;
     }
 

@@ -25,11 +25,11 @@ static bool hasRequiredExtensions(const std::vector<const char *> &requiredExten
     return true;
 }
 
-Instance_vulkan::Instance_vulkan(const std::vector<const char *> extensionNames) :
-    Instance_base(),
+Instance_vulkan::Instance_vulkan(InstanceDelegate *delegate, const std::vector<const char *> extensionNames) :
+    Instance_base(delegate),
     requiredExtensions(std::move(extensionNames))
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     applicationInfo = vk::ApplicationInfo(
         "TTauri App", VK_MAKE_VERSION(0, 1, 0), "TTauri Engine", VK_MAKE_VERSION(0, 1, 0), VK_API_VERSION_1_0);
@@ -85,7 +85,7 @@ Instance_vulkan::~Instance_vulkan()
 
 void Instance_vulkan::initialize() noexcept(false)
 {
-    scoped_lock lock(TTauri::GUI::mutex);
+    scoped_lock lock(GUI_globals->mutex);
 
 #if defined(_WIN32) && !defined(NDEBUG)
     debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({

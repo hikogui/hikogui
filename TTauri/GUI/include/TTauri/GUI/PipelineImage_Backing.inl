@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "Window.hpp"
-#include "PipelineImage_Image.hpp"
+#include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/wsRGBA.hpp"
-#include "TTauri/pickle.hpp"
+#include "TTauri/Foundation/pickle.hpp"
+#include "TTauri/Required/wsRGBA.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 

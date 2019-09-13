@@ -12,7 +12,7 @@ using namespace gsl;
 
 Device *Instance_base::findBestDeviceForWindow(Window const &window)
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     int bestScore = -1;
     Device *bestDevice = nullptr;
@@ -40,7 +40,7 @@ Device *Instance_base::findBestDeviceForWindow(Window const &window)
 
 int Instance_base::getNumberOfWindows()
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
     int numberOfWindows = 0;
     for (const auto &device: devices) {

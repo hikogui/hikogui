@@ -2,6 +2,7 @@
 project(TTauri_Widgets CXX)
 
 set(TTauri_Widgets_srcs
+    src/globals.cpp
     src/ButtonWidget.cpp
     src/ImageWidget.cpp
 )

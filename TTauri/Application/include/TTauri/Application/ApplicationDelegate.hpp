@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Application_forward.hpp"
+#include "TTauri/Application/Application_forward.hpp"
+#include <string>
 
 namespace TTauri {
 

@@ -6,6 +6,7 @@
 #include "TTauri/GUI/Device_base.hpp"
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "TTauri/GUI/globals.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
@@ -99,7 +100,7 @@ public:
 
     template <typename T>
     gsl::span<T> mapMemory(const VmaAllocation &allocation) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
 
         void *mapping;
         let result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
@@ -116,7 +117,7 @@ public:
     void unmapMemory(const VmaAllocation &allocation) const;
 
     void flushAllocation(const VmaAllocation &allocation, VkDeviceSize offset, VkDeviceSize size) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         vmaFlushAllocation(allocator, allocation, offset, size);
     }
 
@@ -128,113 +129,113 @@ public:
 
 
     void waitIdle() const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.waitIdle();
     }
 
     vk::Result waitForFences(vk::ArrayProxy<const vk::Fence> fences, vk::Bool32 waitAll, uint64_t timeout) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.waitForFences(fences, waitAll, timeout);
     }
 
     vk::Result acquireNextImageKHR(vk::SwapchainKHR swapchain, uint64_t timeout, vk::Semaphore semaphore, vk::Fence fence, uint32_t* pImageIndex) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.acquireNextImageKHR(swapchain, timeout, semaphore, fence, pImageIndex);
     }
 
     void resetFences(vk::ArrayProxy<const vk::Fence> fences) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.resetFences(fences);
     }
 
     vk::Result createSwapchainKHR(const vk::SwapchainCreateInfoKHR* pCreateInfo, const vk::AllocationCallbacks* pAllocator, vk::SwapchainKHR* pSwapchain) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createSwapchainKHR(pCreateInfo, pAllocator, pSwapchain);
     }
 
     std::vector<vk::Image> getSwapchainImagesKHR(vk::SwapchainKHR swapchain) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.getSwapchainImagesKHR(swapchain);
     }
 
     vk::ImageView createImageView(const vk::ImageViewCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createImageView(createInfo);
     }
 
     vk::Framebuffer createFramebuffer(const vk::FramebufferCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createFramebuffer(createInfo);
     }
 
     vk::RenderPass createRenderPass(const vk::RenderPassCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createRenderPass(createInfo);
     }
 
     vk::Semaphore createSemaphore(const vk::SemaphoreCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createSemaphore(createInfo);
     }
 
     vk::Fence createFence(const vk::FenceCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createFence(createInfo);
     }
 
     vk::DescriptorSetLayout createDescriptorSetLayout(const vk::DescriptorSetLayoutCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createDescriptorSetLayout(createInfo);
     }
 
     vk::DescriptorPool createDescriptorPool(const vk::DescriptorPoolCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createDescriptorPool(createInfo);
     }
 
     vk::PipelineLayout createPipelineLayout(const vk::PipelineLayoutCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createPipelineLayout(createInfo);
     }
 
     vk::Pipeline createGraphicsPipeline(vk::PipelineCache pipelineCache, const vk::GraphicsPipelineCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createGraphicsPipeline(pipelineCache, createInfo);
     }
 
     vk::Sampler createSampler(const vk::SamplerCreateInfo& createInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.createSampler(createInfo);
     }
 
     std::vector<vk::DescriptorSet> allocateDescriptorSets(const vk::DescriptorSetAllocateInfo& allocateInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.allocateDescriptorSets(allocateInfo);
     }
 
     std::vector<vk::CommandBuffer> allocateCommandBuffers(const vk::CommandBufferAllocateInfo& allocateInfo) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.allocateCommandBuffers(allocateInfo);
     }
 
     void updateDescriptorSets(vk::ArrayProxy<const vk::WriteDescriptorSet> descriptorWrites, vk::ArrayProxy<const vk::CopyDescriptorSet> descriptorCopies) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.updateDescriptorSets(descriptorWrites, descriptorCopies);
     }
 
     void freeCommandBuffers(vk::CommandPool commandPool, vk::ArrayProxy<const vk::CommandBuffer> commandBuffers) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return intrinsic.freeCommandBuffers(commandPool, commandBuffers);
     }
 
     template<typename T>
     void destroy(T x) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         intrinsic.destroy(x);
     }
 
     vk::SurfaceCapabilitiesKHR getSurfaceCapabilitiesKHR(vk::SurfaceKHR surface) const {
-        std::scoped_lock lock(TTauri::GUI::mutex);
+        std::scoped_lock lock(GUI_globals->mutex);
         return physicalIntrinsic.getSurfaceCapabilitiesKHR(surface);
     }
 

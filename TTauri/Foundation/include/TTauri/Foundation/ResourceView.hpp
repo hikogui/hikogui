@@ -13,7 +13,7 @@ class URL;
 class ResourceView {
 public:
     ResourceView() = default;
-    ~ResourceView() = default;
+    virtual ~ResourceView() = default;
     ResourceView(ResourceView const &other) = default;
     ResourceView(ResourceView &&other) = default;
     ResourceView &operator=(ResourceView const &other) = default;

@@ -7,6 +7,7 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/VerticalSync.hpp"
+#include "TTauri/GUI/InstanceDelegate.hpp"
 #include <gsl/gsl>
 #include <memory>
 #include <mutex>
@@ -21,6 +22,8 @@ namespace TTauri::GUI {
  */
 class Instance_base {
 public:
+    InstanceDelegate *delegate;
+
     std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
@@ -31,7 +34,9 @@ public:
      */
     int previousNumberOfWindows = 0;
 
-    Instance_base() noexcept {
+    Instance_base(InstanceDelegate *delegate) noexcept :
+        delegate(delegate)
+    {
         verticalSync = std::make_unique<VerticalSync>(_handleVerticalSync, this);
     }
 
@@ -71,7 +76,7 @@ public:
         }
         let currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
-            application().lastWindowClosed();
+            delegate->lastWindowClosed();
         }
         previousNumberOfWindows = currentNumberOfWindows;
     }

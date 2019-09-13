@@ -19,7 +19,7 @@ private:
     gsl::span<std::byte const> _bytes;
 
 public:
-    StaticResourceView(std::string const &filename) : _bytes(getStaticResource(filename)) {}
+    StaticResourceView(std::string const &filename) : _bytes(Foundation_globals->getStaticResource(filename)) {}
 
     StaticResourceView() = delete;
     ~StaticResourceView() = default;
@@ -32,7 +32,7 @@ public:
 
     size_t size() const noexcept override { return _bytes.size(); }
 
-    void const *data() const noexcept { return _bytes.data(); }
+    void const *data() const noexcept override { return _bytes.data(); }
 
     gsl::span<std::byte const> bytes() const noexcept override { return _bytes; }
 

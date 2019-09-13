@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/ToolbarButtonWidget.hpp"
+#include "TTauri/GUI/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

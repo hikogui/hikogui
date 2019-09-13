@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Diagnositc/exceptions.hpp"
+#include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/memory.hpp"
 #include <glm/glm.hpp>

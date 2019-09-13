@@ -2,6 +2,7 @@
 project(TTauri_Diagnostic CXX)
 
 set(TTauri_Diagnostic_srcs
+    src/globals.cpp
     src/datum.cpp
     src/sdatum.cpp
     src/logger.cpp

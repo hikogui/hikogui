@@ -105,7 +105,7 @@ void logger_type::write(std::string const &str) noexcept {
 }
 
 void logger_type::display_time_calibration() noexcept {
-    if (let message = time_globals->read_message()) {
+    if (let message = Time_globals->read_message()) {
         LOG_AUDIT("{}", *message);
     }
 }

@@ -5,6 +5,9 @@
 
 namespace TTauri::GUI {
 
-void GUI_init();
+class InstanceDelegate {
+public:
+    virtual void lastWindowClosed() = 0;
+};
 
 }

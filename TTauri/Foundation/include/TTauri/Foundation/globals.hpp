@@ -11,17 +11,24 @@
 
 namespace TTauri {
 
-inline std::unordered_map<std::string,gsl::span<std::byte const>> staticResources;
+struct FoundationGlobals;
+inline FoundationGlobals *Foundation_globals = nullptr;
 
-inline gsl::span<std::byte const> getStaticResource(std::string const &key)
-{
-    let i = staticResources.find(key);
-    if (i == staticResources.end()) {
-        TTAURI_THROW(key_error("Could not find static resource")
-            .set<"key"_tag>(key)
-        );
-    }
-    return i->second;
-}
+struct FoundationGlobals {
+private:
+    std::unordered_map<std::string,gsl::span<std::byte const>> staticResources;
 
+public:
+    FoundationGlobals();
+    ~FoundationGlobals();
+    FoundationGlobals(FoundationGlobals const &) = delete;
+    FoundationGlobals &operator=(FoundationGlobals const &) = delete;
+    FoundationGlobals(FoundationGlobals &&) = delete;
+    FoundationGlobals &operator=(FoundationGlobals &&) = delete;
+
+    void addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept;
+
+    gsl::span<std::byte const> getStaticResource(std::string const &key) const;
 };
+
+}
