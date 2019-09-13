@@ -51,9 +51,9 @@ GUIGlobals::~GUIGlobals()
 
 Instance &GUIGlobals::instance()
 {
-    if (!_instance) {
+    if (_instance == nullptr) {
         let lock = std::scoped_lock(mutex);
-        if (!_instance) {
+        if (_instance == nullptr) {
             required_assert(instance_delegate != nullptr);
             _instance = new Instance(instance_delegate);
         }

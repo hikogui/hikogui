@@ -22,8 +22,8 @@ inline GUIGlobals *GUI_globals = nullptr;
 struct GUIGlobals {
 private:
     // Cannot use unique_ptr due to Instance not being a complete type.
-    Instance *_instance;
-    InstanceDelegate *instance_delegate;
+    Instance *_instance = nullptr;
+    InstanceDelegate *instance_delegate = nullptr;
 
 public:
 #if OPERATING_SYSTEM == OS_WINDOWS
