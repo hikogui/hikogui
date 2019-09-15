@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Draw/BezierCurve.hpp"
-#include "polynomial_tests.hpp"
+#include "TTauri/Foundation/polynomial_tests.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -55,7 +55,7 @@ target_static_resource(TTauri ${TTauri_resources})
 target_link_libraries(TTauri INTERFACE TTauri_Application)
 
  
-#enable_testing()
+enable_testing()
 
 
 add_subdirectory(TTauriDevelopmentApplication)

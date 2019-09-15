@@ -1,6 +1,8 @@
 
 project(TTauri_Diagnostic CXX)
 
+find_package(GTest)
+
 set(TTauri_Diagnostic_srcs
     src/globals.cpp
     src/datum.cpp
@@ -9,10 +11,18 @@ set(TTauri_Diagnostic_srcs
     src/trace.cpp
 )
 
+set(TTauri_Diagnostic_tests
+    tests/counters_tests.cpp
+    tests/datum_tests.cpp
+    tests/exceptions_tests.cpp
+)
+
 add_library(TTauri_Diagnostic STATIC ${TTauri_Diagnostic_srcs})
 target_link_libraries(TTauri_Diagnostic TTauri_Time TTauri_Required fmt)
 target_include_directories(TTauri_Diagnostic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-if (MSVC)
-    target_compile_definitions(TTauri_Diagnostic PUBLIC -D_WIN64)
-endif()
+add_executable(Diagnostic_tests ${TTauri_Diagnostic_tests})
+target_link_libraries(Diagnostic_tests PRIVATE gtest_main TTauri_Diagnostic)
+gtest_discover_tests(Diagnostic_tests)
+
+enable_testing()

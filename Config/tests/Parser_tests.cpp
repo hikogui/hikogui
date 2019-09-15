@@ -9,33 +9,33 @@ using namespace std;
 using namespace TTauri::Config;
 
 TEST(Config_Parser, EmptyFile) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/empty.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:empty.txt"));
     ASSERT_EQ(to_string(*o), "{}");
     ASSERT_EQ(to_string(o->execute()), "{}");
 }
 
 TEST(Config_Parser, Assignments) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/assignments.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:assignments.txt"));
     ASSERT_EQ(to_string(*o), "{foo:\"Hello World\",bar:1}");
     ASSERT_EQ(to_string(o->execute()), "{\"bar\": 1, \"foo\": \"Hello World\"}");
 }
 
 TEST(Config_Parser, Integers) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/integers.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:integers.txt"));
     ASSERT_EQ(to_string(*o), "{a:0,b:1,c:10,d:2,e:8,f:10,g:16,h:0,i:-1,j:-10,k:-2,l:-8,m:-10,n:-16,o:-10,p:-2,q:-8,r:-10,s:-16}");
     ASSERT_EQ(to_string(o->execute()), "{\"a\": 0, \"b\": 1, \"c\": 10, \"d\": 2, \"e\": 8, \"f\": 10, \"g\": 16, "s +
         "\"h\": 0, \"i\": -1, \"j\": -10, \"k\": -2, \"l\": -8, \"m\": -10, \"n\": -16, \"o\": -10, \"p\": -2, \"q\": -8, \"r\": -10, \"s\": -16}");
 }
 
 TEST(Config_Parser, Floats) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/floats.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:floats.txt"));
     ASSERT_EQ(to_string(*o), "{a:0.,b:-0.,c:1.,d:-1.,e:0.,f:-0.,g:0.1,h:-0.1,i:0.,j:-0.,k:1.,l:-1.}");
     ASSERT_EQ(to_string(o->execute()), "{\"a\": 0.0, \"b\": -0.0, \"c\": 1.0, \"d\": -1.0, \"e\": 0.0, \"f\": -0.0, \"g\": 0.1, "s
         "\"h\": -0.1, \"i\": 0.0, \"j\": -0.0, \"k\": 1.0, \"l\": -1.0}");
 }
 
 TEST(Config_Parser, Colors) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/colors.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:colors.txt"));
 
     auto parse_r = "{a:#012345ff,b:#6889abcd}"s;
     ASSERT_EQ(to_string(*o), parse_r);
@@ -45,37 +45,37 @@ TEST(Config_Parser, Colors) {
 }
 
 TEST(Config_Parser, Booleans) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/booleans.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:booleans.txt"));
     ASSERT_EQ(to_string(*o), "{a:true,b:false,c:null}");
     ASSERT_EQ(to_string(o->execute()), "{\"a\": true, \"b\": false, \"c\": null}");
 }
 
 TEST(Config_Parser, Arrays) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/arrays.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:arrays.txt"));
     ASSERT_EQ(to_string(*o), "{foo:[],bar:[1],baz:[1,2],bob:[1,2],a[]:3}");
     ASSERT_EQ(to_string(o->execute()), "{\"a\": [3], \"bar\": [1], \"baz\": [1, 2], \"bob\": [1, 2], \"foo\": []}");
 }
 
 TEST(Config_Parser, ObjectsSimple) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/objects_simple.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:objects_simple.txt"));
     ASSERT_EQ(to_string(*o), "{[z],w:3}");
     ASSERT_EQ(to_string(o->execute()), "{\"z\": {\"w\": 3}}");
 }
 
 TEST(Config_Parser, Objects) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/objects.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:objects.txt"));
     ASSERT_EQ(to_string(*o), "{foo:{a:1,\"b\":2},bar.baz:5,[hello],world:\"World\",[z],w:3}");
     ASSERT_EQ(to_string(o->execute()), "{\"bar\": {\"baz\": 5}, \"foo\": {\"a\": 1, \"b\": 2}, \"hello\": {\"world\": \"World\"}, \"z\": {\"w\": 3}}");
 }
 
 TEST(Config_Parser, JSON) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/json.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:json.txt"));
     ASSERT_EQ(to_string(*o), "{\"a\":1,\"b\":\"foo\",\"c\":1.1,\"d\":[1,2,3],\"e\":{\"a\":1,\"b\":1.1}}");
     ASSERT_EQ(to_string(o->execute()), "{\"a\": 1, \"b\": \"foo\", \"c\": 1.1, \"d\": [1, 2, 3], \"e\": {\"a\": 1, \"b\": 1.1}}");
 }
 
 TEST(Config_Parser, IntegerExpressions) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/integer_expressions.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:integer_expressions.txt"));
 
     auto parse_r = "{a:35,b:3,c:a+b,d:a-3,e:35*b,f:35/3,g:35%3,h:35&3,i:35|3,j:35^3,k:35<<3,l:35>>3,"s + 
                     "m:35<3,n:35>3,o:35<=3,p:35>=3,q:35==3,r:35!=3,s:35 and 3,t:35 or 3,u:35 xor 3,v:~35,w:-35,x:not 35,y:--35}"s;
@@ -89,7 +89,7 @@ TEST(Config_Parser, IntegerExpressions) {
 }
 
 TEST(Config_Parser, StringExpressions) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/string_expressions.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:string_expressions.txt"));
 
     auto parse_r = "{a:\"Hello\",b:\"World\",c:a+b,d:a<b,e:a>b,f:a<=b,g:a>=b,h:a==b,i:a!=b,j:a and b,"s +
         "k:a or b,l:a xor b,m:not a,n:not \"\",o:a and \"\",p:a or \"\",q:a xor \"\"}"s;
@@ -102,7 +102,7 @@ TEST(Config_Parser, StringExpressions) {
 }
 
 TEST(Config_Parser, BooleanExpressions) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/boolean_expressions.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:boolean_expressions.txt"));
 
     auto parse_r =
         "{m:true and true,n:true and false,o:false and true,p:false and false,q:true or true,"s +
@@ -121,7 +121,7 @@ TEST(Config_Parser, BooleanExpressions) {
 }
 
 TEST(Config_Parser, FloatExpressions) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/float_expressions.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:float_expressions.txt"));
 
     auto parse_r =
         "{a:35.,b:3.,ac:a+b,ad:a-b,ae:a*b,af:a/b,ag:a%b,"s +
@@ -151,7 +151,7 @@ TEST(Config_Parser, FloatExpressions) {
 }
 
 TEST(Config_Parser, IncludeFiles) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/includer.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:includer.txt"));
 
     auto parse_r = "{include(\"included.txt\"),a:{include(\"included.txt\")},[b],include(file:included.txt)}"s;
     ASSERT_EQ(to_string(*o), parse_r);
@@ -161,7 +161,7 @@ TEST(Config_Parser, IncludeFiles) {
 }
 
 TEST(Config_Parser, Variables) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/variables.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:variables.txt"));
 
     auto parse_r = "{$.a:3,$.b.foo:5,c:$.a,d:$.b}"s;
     ASSERT_EQ(to_string(*o), parse_r);
@@ -171,7 +171,7 @@ TEST(Config_Parser, Variables) {
 }
 
 TEST(Config_Parser, RootAccess) {
-    auto o = std::unique_ptr<ASTObject>(parseConfigFile("Config/TestFiles/root_access.txt"));
+    auto o = std::unique_ptr<ASTObject>(parseConfigFile("file:root_access.txt"));
 
     auto parse_r = "{a:3,b:{foo:/.a,/.a:5,bar:/.a},/.b.baz:/.b.foo}"s;
     ASSERT_EQ(to_string(*o), parse_r);

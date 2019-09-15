@@ -9,6 +9,7 @@
 #include <string>
 #include <string_view>
 #include <iterator>
+#include <vector>
 
 namespace TTauri {
 

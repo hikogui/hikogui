@@ -8,7 +8,7 @@ using namespace std;
 using namespace TTauri::Config;
 
 TEST(Config_Config, ConfigTest) {
-    auto config = Config("Config/TestFiles/config_test.txt");
+    auto config = Config("file:config_test.txt");
     //ASSERT_TRUE(config.success());
     ASSERT_EQ(config.errorMessage(), "");
 
@@ -29,17 +29,17 @@ TEST(Config_Config, ConfigTest) {
 
 TEST(Config_Config, SyntaxError) {
     {
-        auto config = Config("file:Config/TestFiles/syntax_error.txt");
+        auto config = Config("file:syntax_error.txt");
         ASSERT_TRUE(!config.success());
-        ASSERT_EQ(config.errorMessage(), "file:Config/TestFiles/syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.");
+        ASSERT_EQ(config.errorMessage(), "file:syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.");
     }
 
     {
-        auto config = Config("file:Config/TestFiles/include_syntax_error.txt");
+        auto config = Config("file:include_syntax_error.txt");
         ASSERT_TRUE(!config.success());
         ASSERT_EQ(config.errorMessage(),
-            "file:Config/TestFiles/syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.\n"
-            "file:Config/TestFiles/include_syntax_error.txt:2:1: Could not include file 'file:Config/TestFiles/syntax_error.txt'.");
+            "file:syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.\n"
+            "file:include_syntax_error.txt:2:1: Could not include file 'file:syntax_error.txt'.");
     }
 }
 

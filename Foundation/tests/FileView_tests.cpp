@@ -11,7 +11,7 @@ using namespace std;
 using namespace TTauri;
 
 TEST(FileView, ViewFileForRead) {
-    let view = FileView(URL("file:TestFiles/file_view.txt"));
+    let view = FileView(URL("file:file_view.txt"));
 
     let *test = reinterpret_cast<char const *>(view.bytes().data());
     ASSERT_TRUE(strncmp(test, "The quick brown", 15) == 0);

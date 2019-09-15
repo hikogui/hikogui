@@ -147,7 +147,13 @@ static void parse_path_split(url_parts &parts, std::vector<std::string_view> seg
 
 static void parse_path_split(url_parts &parts, std::string_view path, char sep='/') noexcept
 {
-    return parse_path_split(parts, split(path, sep));
+    if (path.size() == 0) {
+        // Empty path is relative.
+        return parse_path_split(parts, std::vector<std::string_view>{});
+
+    } else {
+        return parse_path_split(parts, split(path, sep));
+    }
 }
 
 static void parse_url_split(url_parts &parts, std::string_view url)
@@ -293,7 +299,8 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
 void normalize_url_parts(url_parts &parts) noexcept
 {
     auto &segments = parts.segments;
-    for (auto i = segments.begin(); i != segments.end(); i++) {
+    
+    for (auto i = segments.begin(); i != segments.end();) {
         if ((*i).size() == 0 || *i == "." || (parts.absolute && i == segments.begin() && *i == "..")) {
             // Strip out:
             //  * remove the leading slash "/foo/bar" -> "foo/bar"
@@ -311,6 +318,10 @@ void normalize_url_parts(url_parts &parts) noexcept
             // Backtrack, because the previous could now be a name and the new next a double dot.
             //  * "hoi/foo/bar/../../baz" -> "hoi/foo/../baz" -> "hoi/baz"
             i = (i == segments.begin()) ? i : i - 1;
+        }
+
+        if (i != segments.end()) {
+            i++;
         }
     }
 }
