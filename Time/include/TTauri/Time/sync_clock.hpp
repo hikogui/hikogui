@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
+#include "TTauri/Required/thread.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 #include <fmt/format.h>
 #include <chrono>
@@ -63,7 +64,9 @@ public:
         calibrate();
 
         if (create_thread) {
-            calibrate_loop_id = std::thread([&]() {
+            std::string thread_name = fmt::format("ClockSync_{}", name);
+            calibrate_loop_id = std::thread([=]() {
+                set_thread_name(thread_name);
                 return this->calibrate_loop();
             });
         }

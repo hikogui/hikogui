@@ -8,6 +8,7 @@
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/strings.hpp"
+#include "TTauri/Required/thread.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>
@@ -46,6 +47,7 @@ std::string log_message_base::string() const noexcept
 void logger_type::startLogging() noexcept
 {
     logger_thread = std::thread([&]() {
+        set_thread_name("LoggingThread");
         this->logger_loop();
     });
 }
@@ -66,7 +68,10 @@ void logger_type::stopLogging() noexcept
 void logger_type::startStatisticsLogging() noexcept
 {
     gather_thread = std::thread([&]() {
+        set_thread_name("Statistics");
+        LOG_AUDIT("Started: statistics gathering thread.");
         this->gather_loop();
+        LOG_AUDIT("Finished: statsistics gathering thread.");
     });
 }
 
@@ -80,8 +85,6 @@ void logger_type::stopStatisticsLogging() noexcept
         gather_thread.join();
     }
 }
-
-
 
 void logger_type::writeToFile(std::string str) noexcept {
 }

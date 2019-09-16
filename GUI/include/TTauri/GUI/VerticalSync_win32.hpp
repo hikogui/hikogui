@@ -30,7 +30,7 @@ class VerticalSync_win32 {
     void closeAdapter() noexcept;
     void wait() noexcept;
 
-    static void verticalSyncThread(VerticalSync_win32 *self) noexcept;
+    void verticalSyncThread() noexcept;
 
 public:
     VerticalSync_win32(std::function<void(void *)> callback, void *callbackData) noexcept;

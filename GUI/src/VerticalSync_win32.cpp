@@ -2,6 +2,7 @@
 #include "TTauri/GUI/VerticalSync_win32.hpp"
 #include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Required/strings.hpp"
+#include "TTauri/Required/thread.hpp"
 #define WIN32_NO_STATUS 1
 #include <Windows.h>
 #undef WIN32_NO_STATUS
@@ -72,7 +73,12 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void
         LOG_FATAL("Error locating function D3DKMTWaitForVerticalBlankEvent!");
     }
 
-    verticalSyncThreadID = std::thread{ verticalSyncThread, this };
+    verticalSyncThreadID = std::thread([=]() {
+        set_thread_name("VerticalSync");
+        LOG_AUDIT("Started: vertical-sync thread.");
+        this->verticalSyncThread();
+        LOG_AUDIT("Finished: vertical-sync thread.");
+    });
 }
 
 VerticalSync_win32::~VerticalSync_win32() {
@@ -168,15 +174,11 @@ void VerticalSync_win32::wait() noexcept
     }
 }
 
-void VerticalSync_win32::verticalSyncThread(VerticalSync_win32* self) noexcept
+void VerticalSync_win32::verticalSyncThread() noexcept
 {
-#ifdef _WIN32
-    SetThreadDescription(GetCurrentThread(), L"VerticalSync");
-#endif
-
-    while (!self->stop) {
-        self->wait();
-        self->callback(self->callbackData);
+    while (!stop) {
+        wait();
+        callback(callbackData);
     }
 }
 
