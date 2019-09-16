@@ -5,6 +5,8 @@ set(TTauri_Time_srcs
     src/globals.cpp
     src/hires_utc_clock.cpp
     src/hires_utc_clock_win32.cpp
+    src/audio_counter_clock_win32.cpp
+
 )
 
 add_library(TTauri_Time STATIC ${TTauri_Time_srcs})

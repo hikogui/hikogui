@@ -29,11 +29,15 @@ TimeGlobals::TimeGlobals(URL tzdata_location)
     // It will imediatly be synchronized, but inaccuratly, it will take a while to become
     // more accurate, but we don't want to block here.
     sync_clock_calibration<hires_utc_clock,cpu_counter_clock> =
-        new sync_clock_calibration_type<hires_utc_clock,cpu_counter_clock>("hiperf_utc");
+        new sync_clock_calibration_type<hires_utc_clock,cpu_counter_clock>("cpu_utc");
+
+    sync_clock_calibration<hires_utc_clock,audio_counter_clock> =
+        new sync_clock_calibration_type<hires_utc_clock,audio_counter_clock>("audio_utc");
 }
 
 TimeGlobals::~TimeGlobals()
 {
+    delete sync_clock_calibration<hires_utc_clock,audio_counter_clock>;
     delete sync_clock_calibration<hires_utc_clock,cpu_counter_clock>;
 
     required_assert(Time_globals == this);
@@ -46,8 +50,15 @@ std::optional<std::string> TimeGlobals::read_message(void) noexcept
         let message = time_zone_error_message;
         time_zone_error_message = {};
         return message;
+
+    } else if (let hiperf_utc_message = sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->read_message()) {
+        return hiperf_utc_message;
+
+    } else if (let audio_utc_message = sync_clock_calibration<hires_utc_clock,audio_counter_clock>->read_message()) {
+        return audio_utc_message;
+
     } else {
-        return sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->read_message();
+        return {};
     }
 }
 

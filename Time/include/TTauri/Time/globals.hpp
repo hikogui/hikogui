@@ -5,6 +5,7 @@
 
 #include "TTauri/Time/sync_clock.hpp"
 #include "TTauri/Time/cpu_counter_clock.hpp"
+#include "TTauri/Time/audio_counter_clock.hpp"
 #include "TTauri/Time/hires_utc_clock.hpp"
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/required.hpp"

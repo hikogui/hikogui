@@ -44,7 +44,7 @@ public:
         Maximized
     };
 
-    static constexpr long long resizeFrameRateDivider = 2;
+    static constexpr long long resizeFrameRateDivider = 1;
 
     State state = State::NoDevice;
 
