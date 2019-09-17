@@ -3,7 +3,7 @@
 
 #include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Diagnostic/trace.hpp"
-#include "TTauri/Time/hiperf_utc_clock.hpp"
+#include "TTauri/Time/cpu_utc_clock.hpp"
 #include "TTauri/Time/globals.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/URL.hpp"
@@ -36,7 +36,7 @@ std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs) {
 
 std::string log_message_base::string() const noexcept
 {
-    let utc_timestamp = hiperf_utc_clock::convert(timestamp);
+    let utc_timestamp = cpu_utc_clock::convert(timestamp);
     let local_timestring = format_iso8601(utc_timestamp);
 
     return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());

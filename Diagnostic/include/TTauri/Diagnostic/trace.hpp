@@ -3,7 +3,7 @@
 #include "TTauri/Diagnostic/counters.hpp"
 #include "TTauri/Diagnostic/sdatum.hpp"
 #include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Time/hiperf_utc_clock.hpp"
+#include "TTauri/Time/cpu_utc_clock.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/tagged_map.hpp"
 #include "TTauri/Required/wfree_message_queue.hpp"
@@ -123,7 +123,7 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
     lhs << fmt::format("parent={} tag={} start={} {}",
         rhs.parent_id,
         Tag,
-        format_iso8601(hiperf_utc_clock::convert(rhs.timestamp)),
+        format_iso8601(cpu_utc_clock::convert(rhs.timestamp)),
         info_string
     );
     return lhs;

@@ -9,6 +9,6 @@
 
 namespace TTauri {
 
-using hiperf_utc_clock = sync_clock<hires_utc_clock,cpu_counter_clock>;
+using cpu_utc_clock = sync_clock<hires_utc_clock,cpu_counter_clock>;
 
 }

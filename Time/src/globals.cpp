@@ -51,8 +51,8 @@ std::optional<std::string> TimeGlobals::read_message(void) noexcept
         time_zone_error_message = {};
         return message;
 
-    } else if (let hiperf_utc_message = sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->read_message()) {
-        return hiperf_utc_message;
+    } else if (let cpu_utc_message = sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->read_message()) {
+        return cpu_utc_message;
 
     } else if (let audio_utc_message = sync_clock_calibration<hires_utc_clock,audio_counter_clock>->read_message()) {
         return audio_utc_message;
