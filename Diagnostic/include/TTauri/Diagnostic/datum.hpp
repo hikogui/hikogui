@@ -275,6 +275,7 @@ public:
         u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
     }
 
+    explicit datum(datum::null) noexcept : u64(null_mask) {}
     explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
     explicit datum(float value) noexcept : datum(static_cast<double>(value)) {}
     explicit datum(uint64_t value) noexcept : datum(static_cast<int64_t>(value)) {}
@@ -304,6 +305,14 @@ public:
     explicit datum(datum::vector const &value) noexcept;
     explicit datum(datum::map const &value) noexcept;
     explicit datum(wsRGBA const &value) noexcept;
+
+    datum &operator=(datum::null rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+        u64 = null_mask;
+        return *this;
+    }
 
     datum &operator=(double rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {

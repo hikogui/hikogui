@@ -6,8 +6,8 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
-#include <unordered_set>
 #include <boost/uuid/uuid.hpp>
+#include <unordered_set>
 #include <mutex>
 #include <tuple>
 

@@ -51,6 +51,13 @@ add_library(TTauri_Config STATIC ${TTauri_Config_srcs})
 target_link_libraries(TTauri_Config TTauri_Foundation)
 target_include_directories(TTauri_Config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+if(MSVC)
+    # Use of strdup() inside windows.
+    target_compile_options(TTauri_Config PRIVATE -wd4996)
+    # Redefinition of MIN_* MAX_* macros due to lex/yacc
+    target_compile_options(TTauri_Config PRIVATE -wd4005)
+endif()
+
 add_executable(Config_tests ${TTauri_Config_tests})
 target_link_libraries(Config_tests PRIVATE gtest_main TTauri_Config)
 gtest_discover_tests(Config_tests)

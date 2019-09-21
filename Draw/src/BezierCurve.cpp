@@ -120,7 +120,7 @@ std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &co
 
     // Repair the endpoints of the contour as well.
     if (r.size() > 0 && r.back().P2 != r.front().P1) {
-        if (intersectPoint = getIntersectionPoint(r.back().P1, r.back().P2, r.front().P1, r.front().P2)) {
+        if ((intersectPoint = getIntersectionPoint(r.back().P1, r.back().P2, r.front().P1, r.front().P2))) {
             r.back().P2 = r.front().P1 = intersectPoint.value();
         } else {
             r.emplace_back(r.back().P2, r.front().P1);
