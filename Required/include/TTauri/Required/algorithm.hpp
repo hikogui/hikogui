@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "TTauri/Required/required.hpp"
 #include <algorithm>
 
 namespace TTauri {

@@ -1,8 +1,6 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#pragma once
-
 #include "TTauri/Time/globals.hpp"
 #include "TTauri/Required/globals.hpp"
 

@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Required/globals.hpp"
 #include "TTauri/Required/URL.hpp"
+#include "TTauri/Required/globals.hpp"
 #include "TTauri/Required/strings.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/url_parser.hpp"
@@ -175,7 +175,7 @@ URL URL::urlFromApplicationLogDirectory() noexcept
 
 std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
 {
-    lhs << to_string(rhs);
+    lhs << rhs.string();
     return lhs;
 }
 

@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <ostream>
 
 namespace TTauri {
 struct url_parts;

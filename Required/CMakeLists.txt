@@ -38,6 +38,10 @@ target_include_directories(TTauri_Required PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/in
 target_compile_definitions(TTauri_Required PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
 set_property(TARGET TTauri_Required PROPERTY CXX_STANDARD 17)
 
+if (APPLE)
+    target_link_libraries(TTauri_Required PUBLIC "-framework Foundation")
+endif()
+
 add_executable(Required_tests ${TTauri_Required_tests})
 target_link_libraries(Required_tests PRIVATE gtest_main TTauri_Required)
 gtest_discover_tests(Required_tests)

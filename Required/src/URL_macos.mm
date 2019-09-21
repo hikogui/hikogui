@@ -21,7 +21,7 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
         switch (errno) {
         case ENOENT:
             // Directory no longer exists.
-            return URL::urlFromPath("/tmp");
+            return URL("none:");
         default:
             no_default;
         }
@@ -31,30 +31,37 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
 
 URL URL::urlFromExecutableFile() noexcept
 {
-    char executablePath[MAXPATHLEN];
     uint32_t executablePathLength = MAXPATHLEN;
+
+    char *executablePath = new char[executablePathLength];
+
     if (_NSGetExecutablePath(executablePath, &executablePathLength) == -1) {
-        // Can only cause error if there is not enough room in executablePath
-        // deep paths could excede MAXPATHLEN.
-        no_default;
+        // Not enough room, try again.
+        delete [] executablePath;
+        executablePath = new char[executablePathLength];
+
+        if (_NSGetExecutablePath(executablePath, &executablePathLength) == -1) {
+            no_default;
+        }
     }
-    return URL::urlFromPath(executablePath);
+
+    auto url = URL::urlFromPath(executablePath);
+
+    delete [] executablePath;
+    return url;
 }
 
 URL URL::urlFromResourceDirectory() noexcept
 {
-    // Resource path, is the same directory as where the executable lives.
-    static auto r = urlFromExecutableDirectory();
-    return r;
+    NSURL *url = [NSBundle.mainBundle resourceURL];
+    return URL::urlFromPath(url.absoluteString.UTF8String);
 }
 
 URL URL::urlFromApplicationDataDirectory() noexcept
 {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-    NSString *applicationSupportDirectory = [paths firstObject];
-    char const *applicationSupportDirectory_cstr = [applicationSupportDirectory UTF8String];
-
-    return URL::urlFromPath(applicationSupportDirectory_cstr);
+    NSArray *urls = [NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask];
+    NSURL *url = urls.firstObject;
+    return URL::urlFromPath(url.absoluteString.UTF8String);
 }
 
 }
