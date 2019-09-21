@@ -1,8 +1,10 @@
 
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0074 NEW)
+enable_testing()
 
 project(TTauri CXX)
+ 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
 include(AddIcon)
@@ -55,17 +57,9 @@ add_library(TTauri INTERFACE)
 target_static_resource(TTauri ${TTauri_resources})
 target_link_libraries(TTauri INTERFACE TTauri_Application)
 
- 
-enable_testing()
 
 
 add_subdirectory(TTauriDevelopmentApplication)
-
-
-
-# Visual Studio likes to know about all header files.
-#file(GLOB_RECURSE TTauri_hdrs *.hpp *.inl)
-#source_group("Headers" FILES ${TTauri_hdrs})
 
 
 #set(TTauri_do_not_analyze
@@ -84,26 +78,5 @@ add_subdirectory(TTauriDevelopmentApplication)
 #   endif()
 #endif()
 
-#add_test(NAME TTauriTests COMMAND TTauri/TTauriTests --gtest_break_on_failure --gtest_catch_exceptions=0)
-#add_test(NAME TTauriTests COMMAND TTauri/TTauriTests --gtest_catch_exceptions=0)
-
- 
-#add_executable(TTauriTests ${TTauriTests_srcs})
-#target_link_libraries(TTauriTests TTauri gtest_main)
-#set_property(TARGET TTauriTests PROPERTY CXX_STANDARD 17)
-
-#set(TestFileGlobs
-#    ${CMAKE_CURRENT_SOURCE_DIR}/TestFiles/*
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Config/TestFiles/*
-#    ${CMAKE_CURRENT_SOURCE_DIR}/Draw/TestFiles/*
-#)
-
-#file(GLOB TestFiles RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CONFIGURE_DEPENDS ${TestFileGlobs})
-# foreach(TestFile ${TestFiles})
-#     add_custom_command(TARGET TTauriTests POST_BUILD
-#            COMMAND ${CMAKE_COMMAND} -E copy
-#                    ${CMAKE_CURRENT_SOURCE_DIR}/${TestFile}
-#                    ${CMAKE_CURRENT_BINARY_DIR}/${TestFile})
-#endforeach()
 
 
