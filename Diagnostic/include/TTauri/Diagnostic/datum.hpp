@@ -21,18 +21,36 @@
 #include <string_view>
 
 #define BI_OPERATOR_CONVERSION(op)\
-    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(datum const &lhs, T const &rhs) { return lhs op datum{rhs}; }\
-    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(T const &lhs, datum const &rhs) { return datum{lhs} op datum{rhs}; }
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum>\
+    operator op(datum const &lhs, T const &rhs) {\
+        return lhs op datum{rhs};\
+    }\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum>\
+    operator op(T const &lhs, datum const &rhs) {\
+        return datum{lhs} op datum{rhs};\
+    }
 
 #define BI_BOOL_OPERATOR_CONVERSION(op)\
-    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(datum const &lhs, T const &rhs) { return lhs op datum{rhs}; }\
-    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(T const &lhs, datum const &rhs) { return datum{lhs} op datum{rhs}; }
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool>\
+    operator op(datum const &lhs, T const &rhs) {\
+        return lhs op datum{rhs};\
+    }\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool>\
+    operator op(T const &lhs, datum const &rhs) {\
+        return datum{lhs} op datum{rhs};\
+    }
 
 #define MONO_OPERATOR_CONVERSION(op)\
-    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum> operator op(T const &rhs) { return lhs op datum{rhs}; }\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, datum>\
+    operator op(T const &rhs) {\
+        return lhs op datum{rhs};\
+    }
 
 #define MONO_BOOL_OPERATOR_CONVERSION(op)\
-    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool> operator op(T const &rhs) { return lhs op datum{rhs}; }\
+    template<typename T> std::enable_if_t<!std::is_same_v<T, datum>, bool>\
+    operator op(T const &rhs) {\
+        return lhs op datum{rhs};\
+    }
 
 namespace TTauri {
 class datum;
@@ -251,7 +269,12 @@ public:
         return *this;
     }
 
-    explicit datum(datum::null) noexcept : u64(null_mask) {}
+    template<typename Arg1, typename Arg2, typename... Args>
+    explicit datum(Arg1 arg1, Arg2 arg2, Args... args) noexcept {
+        auto * const p = new datum::vector(datum(arg1), datum(arg2), datum(args)...);
+        u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
+    }
+
     explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
     explicit datum(float value) noexcept : datum(static_cast<double>(value)) {}
     explicit datum(uint64_t value) noexcept : datum(static_cast<int64_t>(value)) {}

@@ -12,6 +12,16 @@ set(TTauri_Required_srcs
     src/wsRGBA.cpp
 )
 
+if(WIN32)
+    set(TTauri_Required_srcs ${TTauri_Required_srcs}
+        src/URL_win32.cpp
+    )
+elseif(APPLE)
+    set(TTauri_Required_srcs ${TTauri_Required_srcs}
+        src/URL_macos.mm
+    )
+endif()
+
 set(TTauri_Required_tests
     tests/polymorphic_value_tests.cpp
     tests/string_tag_tests.cpp
