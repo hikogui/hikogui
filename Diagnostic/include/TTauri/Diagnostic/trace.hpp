@@ -102,7 +102,7 @@ struct trace_data {
 
     template<string_tag InfoTag>
     sdatum const &get() const noexcept {
-        return info.get<InfoTag>();
+        return info.template get<InfoTag>();
     }
 };
 

@@ -53,15 +53,22 @@ URL URL::urlFromExecutableFile() noexcept
 
 URL URL::urlFromResourceDirectory() noexcept
 {
-    NSURL *url = [NSBundle.mainBundle resourceURL];
-    return URL::urlFromPath(url.absoluteString.UTF8String);
+    @autoreleasepool {
+        NSURL *url = [NSBundle.mainBundle resourceURL];
+        return URL::urlFromPath(url.absoluteString.UTF8String);
+    }
 }
 
 URL URL::urlFromApplicationDataDirectory() noexcept
 {
-    NSArray *urls = [NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask];
-    NSURL *url = urls.firstObject;
-    return URL::urlFromPath(url.absoluteString.UTF8String);
+    @autoreleasepool {
+        NSArray *urls = [NSFileManager.defaultManager
+            URLsForDirectory:NSApplicationSupportDirectory
+            inDomains:NSUserDomainMask
+        ];
+        NSURL *url = urls.firstObject;
+        return URL::urlFromPath(url.absoluteString.UTF8String);
+    }
 }
 
 }

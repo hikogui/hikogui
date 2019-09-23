@@ -4,10 +4,19 @@ project(TTauri_Time CXX)
 set(TTauri_Time_srcs
     src/globals.cpp
     src/hires_utc_clock.cpp
-    src/hires_utc_clock_win32.cpp
-    src/audio_counter_clock_win32.cpp
-
 )
+
+if(WIN32)
+    set(TTauri_Time_srcs ${TTauri_Time_srcs}
+        src/hires_utc_clock_win32.cpp
+        src/audio_counter_clock_win32.cpp
+    )
+elseif(APPLE)
+    set(TTauri_Time_srcs ${TTauri_Time_srcs}
+        src/hires_utc_clock_posix.cpp
+        src/audio_counter_clock_macos.cpp
+    )
+endif()
 
 add_library(TTauri_Time STATIC ${TTauri_Time_srcs})
 target_link_libraries(TTauri_Time TTauri_Required fmt tz)

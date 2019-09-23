@@ -23,7 +23,7 @@
 
 namespace TTauri {
 
-#ifdef _WIN32
+#if OPERATING_SYSTEM == OS_WINDOWS
 std::string getLastErrorMessage();
 #endif
 

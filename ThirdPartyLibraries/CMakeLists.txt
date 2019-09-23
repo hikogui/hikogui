@@ -5,8 +5,10 @@ set(gtest_force_shared_crt ON)
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)    # png comparison is always false.
     add_compile_options(-Wno-tautological-constant-out-of-range-compare)
-    # rhea destructor called on non-final that has virtual function.
-    add_compile_options(-Wno-delete-non-abstract-non-virtual-dtor)
+    if(NOT APPLE)
+        # rhea destructor called on non-final that has virtual function.
+        add_compile_options(-Wno-delete-non-abstract-non-virtual-dtor)
+    endif()
     # rhea /MP argument.
     add_compile_options(-Wno-unused-command-line-argument)
 elseif(MSVC)

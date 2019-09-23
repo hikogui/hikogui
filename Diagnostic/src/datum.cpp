@@ -26,32 +26,32 @@ void datum::copy_pointer(datum const &other) noexcept {
     switch (other.type_id()) {
     case phy_integer_ptr_id: {
         auto * const p = new int64_t(*other.get_pointer<int64_t>());
-        u64 = integer_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = make_pointer(integer_ptr_mask, p);
     } break;
 
     case phy_string_ptr_id: {
         auto * const p = new std::string(*other.get_pointer<std::string>());
-        u64 = string_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = make_pointer(string_ptr_mask, p);
     } break;
 
     case phy_url_ptr_id: {
         auto * const p = new URL(*other.get_pointer<URL>());
-        u64 = url_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = make_pointer(url_ptr_mask, p);
     } break;
 
     case phy_vector_ptr_id: {
         auto * const p = new datum::vector(*other.get_pointer<datum::vector>());
-        u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = make_pointer(vector_ptr_mask, p);
     } break;
 
     case phy_map_ptr_id: {
         auto * const p = new datum::map(*other.get_pointer<datum::map>());
-        u64 = map_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = make_pointer(map_ptr_mask, p);
     } break;
 
     case phy_wsrgba_ptr_id: {
         auto * const p = new wsRGBA(*other.get_pointer<wsRGBA>());
-        u64 = wsrgba_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        u64 = make_pointer(wsrgba_ptr_mask, p);
     } break;
 
     default:
@@ -64,32 +64,32 @@ datum::datum(std::string_view value) noexcept : u64(make_string(value)) {
     if (value.size() > 6) {
         // Overflow.
         auto * const p = new std::string(value);
-        u64 = string_ptr_mask | reinterpret_cast<uint64_t>(p);
+        u64 = make_pointer(string_ptr_mask, p);
     }
 }
 
 gsl_suppress3(type.1,r.11,r.3)
 datum::datum(URL const &value) noexcept {
     auto * const p = new URL(value);
-    u64 = url_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(url_ptr_mask, p);
 }
 
 gsl_suppress3(type.1,r.11,r.3)
 datum::datum(datum::vector const &value) noexcept {
     auto * const p = new datum::vector(value);
-    u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(vector_ptr_mask, p);
 }
 
 gsl_suppress3(type.1,r.11,r.3)
 datum::datum(datum::map const &value) noexcept {
     auto * const p = new datum::map(value);
-    u64 = map_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(map_ptr_mask, p);
 }
 
 gsl_suppress3(type.1,r.11,r.3)
 datum::datum(wsRGBA const &value) noexcept {
     auto * const p = new wsRGBA(value);
-    u64 = wsrgba_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(wsrgba_ptr_mask, p);
 }
 
 datum &datum::operator=(std::string_view rhs)
@@ -102,7 +102,7 @@ datum &datum::operator=(std::string_view rhs)
     if (rhs.size() > 6) {
         // Overflow.
         auto * const p = new std::string(rhs);
-        u64 = string_ptr_mask | reinterpret_cast<uint64_t>(p);
+        u64 = make_pointer(string_ptr_mask, p);
     }
     return *this;
 }
@@ -115,7 +115,7 @@ datum &datum::operator=(URL const &rhs) noexcept
     }
 
     auto * const p = new URL(rhs);
-    u64 = url_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(url_ptr_mask, p);
 
     return *this;
 }
@@ -127,7 +127,7 @@ datum &datum::operator=(datum::vector const &rhs)
     }
 
     auto * const p = new datum::vector(rhs);
-    u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(vector_ptr_mask, p);
 
     return *this;
 }
@@ -139,7 +139,7 @@ datum &datum::operator=(datum::map const &rhs)
     }
 
     auto * const p = new datum::map(rhs);
-    u64 = map_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(map_ptr_mask, p);
 
     return *this;
 }
@@ -151,7 +151,7 @@ datum &datum::operator=(wsRGBA const &rhs)
     }
 
     auto * const p = new wsRGBA(rhs);
-    u64 = wsrgba_ptr_mask | reinterpret_cast<uint64_t>(p);
+    u64 = make_pointer(wsrgba_ptr_mask, p);
 
     return *this;
 }

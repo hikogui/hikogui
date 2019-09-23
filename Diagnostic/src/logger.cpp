@@ -14,12 +14,8 @@
 #include <exception>
 #include <memory>
 #include <iostream>
+#include <ostream>
 #include <chrono>
-
-#if OPERATING_SYSTEM == OS_WINDOWS
-#include <Windows.h>
-#include <debugapi.h>
-#endif
 
 namespace TTauri {
 
@@ -87,15 +83,6 @@ void logger_type::stopStatisticsLogging() noexcept
 }
 
 void logger_type::writeToFile(std::string str) noexcept {
-}
-
-void logger_type::writeToConsole(std::string str) noexcept {
-#if OPERATING_SYSTEM == OS_WINDOWS
-    str += "\r\n";
-    OutputDebugStringW(translateString<std::wstring>(str).data());
-#else
-    cerr << str << endl;
-#endif
 }
 
 /*! Write to a log file and console.
@@ -196,29 +183,6 @@ void logger_type::logger_loop() noexcept {
             write(str);
         }
     } while (!last_iteration);
-}
-
-gsl_suppress(i.11)
-std::string getLastErrorMessage()
-{
-    DWORD const errorCode = GetLastError();
-    size_t const messageSize = 32768;
-    wchar_t* const c16_message = new wchar_t[messageSize];;
-
-    FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, // source
-        errorCode,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        c16_message,
-        messageSize,
-        NULL
-    );
-
-    let message = translateString<std::string>(std::wstring(c16_message));
-    delete [] c16_message;
-
-    return message;
 }
 
 }

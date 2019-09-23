@@ -7,6 +7,7 @@
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/wsRGBA.hpp"
 #include "TTauri/Required/memory.hpp"
+#include "TTauri/Required/type_traits.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -51,6 +52,7 @@
     operator op(T const &rhs) {\
         return lhs op datum{rhs};\
     }
+
 
 namespace TTauri {
 class datum;
@@ -98,10 +100,9 @@ void swap(datum &lhs, datum &rhs) noexcept;
  *
  * XXX should add pickle and unpickle to datum.
  */
+//gsl_suppress5(bounds.4,type.1,r.11,r.3,con.4)
 class datum {
-    gsl_suppress(bounds.4)
-    static constexpr uint64_t make_string(std::string_view str)
-    {
+    static constexpr uint64_t make_string(std::string_view str) {
         let len = str.size();
 
         if (len > 6) {
@@ -116,8 +117,12 @@ class datum {
         return (string_mask + (len << 48)) | x;
     }
 
-    static constexpr int64_t minimum_int = 0xfffe'0000'0000'0000LL;
-    static constexpr int64_t maximum_int = 0x0007'ffff'ffff'ffffLL;
+    static uint64_t make_pointer(uint64_t mask, void *ptr) {
+        return mask | (reinterpret_cast<uint64_t>(ptr) & pointer_mask);
+    }
+
+    static constexpr int64_t minimum_int = 0xfffc'0000'0000'0000LL;
+    static constexpr int64_t maximum_int = 0x0003'ffff'ffff'ffffLL;
 
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
@@ -172,7 +177,6 @@ class datum {
         uint64_t u64;
     };
 
-    gsl_suppress(type.1)
     uint16_t type_id() const noexcept {
         // We use memcpy on this to get access to the
         // actual bytes for determining the stored type.
@@ -272,30 +276,46 @@ public:
     template<typename Arg1, typename Arg2, typename... Args>
     explicit datum(Arg1 arg1, Arg2 arg2, Args... args) noexcept {
         auto * const p = new datum::vector(datum(arg1), datum(arg2), datum(args)...);
-        u64 = vector_ptr_mask | reinterpret_cast<uint64_t>(p);
+        u64 = make_pointer(vector_ptr_mask, p);
     }
 
     explicit datum(datum::null) noexcept : u64(null_mask) {}
-    explicit datum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
-    explicit datum(float value) noexcept : datum(static_cast<double>(value)) {}
-    explicit datum(uint64_t value) noexcept : datum(static_cast<int64_t>(value)) {}
-    explicit datum(uint32_t value) noexcept : u64(integer_mask | value) {}
-    explicit datum(uint16_t value) noexcept : datum(static_cast<uint32_t>(value)) {}
-    explicit datum(uint8_t value) noexcept : datum(static_cast<uint32_t>(value)) {}
 
-    gsl_suppress4(type.1,r.11,r.3,con.4)
-    explicit datum(int64_t value) noexcept :
-        u64(integer_mask | (value & 0x0000ffff'ffffffff)) {
-        if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
-            // Overflow.
-            auto * const p = new int64_t(value);
-            u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
+    template <class T, typename std::enable_if_t<std::is_floating_point_v<T>, T>* = nullptr>
+    explicit datum(T value) noexcept :
+        f64(value)
+    {
+        if (value != value) {
+            u64 = undefined_mask;
         }
     }
 
-    explicit datum(int32_t value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff)) {}
-    explicit datum(int16_t value) noexcept : datum(static_cast<int32_t>(value)) {}
-    explicit datum(int8_t value) noexcept : datum(static_cast<int32_t>(value)) {}
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_unsigned_v<T>, T>* = nullptr>
+    explicit datum(T value) noexcept :
+        u64(integer_mask | value)
+    {
+        if constexpr (sizeof(T) >= 8) {
+            if (ttauri_unlikely(value > maximum_int)) {
+                // Overflow.
+                auto * const p = new uint64_t(value);
+                u64 = make_pointer(integer_ptr_mask, p);
+            }
+        }
+    }
+
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_signed_v<T>, T>* = nullptr>
+    explicit datum(T value) noexcept :
+        u64(integer_mask | (static_cast<uint64_t>(value) & 0x0007ffff'ffffffff))
+    {
+        if constexpr (sizeof(T) >= 8) {
+            if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
+                // Overflow.
+                auto * const p = new int64_t(value);
+                u64 = make_pointer(integer_ptr_mask, p);
+            }
+        }
+    }
+
     explicit datum(bool value) noexcept : u64(boolean_mask | static_cast<uint64_t>(value)) {}
     explicit datum(char value) noexcept : u64(character_mask | value) {}
     explicit datum(std::string_view value) noexcept;
@@ -314,53 +334,49 @@ public:
         return *this;
     }
 
-    datum &operator=(double rhs) noexcept {
+    template <class T, typename std::enable_if_t<std::is_floating_point_v<T>, T>* = nullptr>
+    datum &operator=(T rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        f64 = rhs;
+
+        if (rhs == rhs) {
+            u64 = undefined_mask;
+        } else {
+            f64 = rhs;
+        }
         return *this;
     }
     
-    datum &operator=(float rhs) noexcept { return (*this = static_cast<double>(rhs)); }
-
-    datum &operator=(int64_t rhs) noexcept {
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_unsigned_v<T>, T>* = nullptr>
+    datum &operator=(T rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
-        u64 = integer_mask | static_cast<uint64_t>(rhs & 0x0000ffff'ffffffff);
+        u64 = integer_mask | static_cast<uint64_t>(rhs);
+        if (ttauri_unlikely(rhs > maximum_int)) {
+            // Overflow.
+            auto * const p = new uint64_t(rhs);
+            u64 = make_pointer(integer_ptr_mask, p);
+        }
+        return *this;
+    }
+
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_signed_v<T>, T>* = nullptr>
+    datum &operator=(T rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+
+        u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0007ffff'ffffffff);
         if (ttauri_unlikely(rhs < minimum_int || rhs > maximum_int)) {
             // Overflow.
             auto * const p = new int64_t(rhs);
-            u64 = integer_ptr_mask | reinterpret_cast<uint64_t>(p);
+            u64 = make_pointer(integer_ptr_mask, p);
         }
         return *this;
     }
-
-    datum &operator=(int32_t rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
-            delete_pointer();
-        }
-        u64 = integer_mask | static_cast<uint64_t>(static_cast<int64_t>(rhs) & 0x0000'ffff'ffff'ffff);
-        return *this;
-    }
-
-    datum &operator=(int16_t rhs) noexcept { return (*this = static_cast<int32_t>(rhs)); }
-    datum &operator=(int8_t rhs) noexcept { return (*this = static_cast<int32_t>(rhs)); }
-
-    datum &operator=(uint64_t rhs) noexcept { return (*this = static_cast<int64_t>(rhs)); }
-
-    datum &operator=(uint32_t rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
-            delete_pointer();
-        }
-        u64 = integer_mask | static_cast<uint64_t>(rhs);
-        return *this;
-    }
-
-    datum &operator=(uint16_t rhs) noexcept { return (*this =  static_cast<uint32_t>(rhs)); }
-    datum &operator=(uint8_t rhs) noexcept { return (*this = static_cast<uint32_t>(rhs)); }
 
     datum &operator=(bool rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {

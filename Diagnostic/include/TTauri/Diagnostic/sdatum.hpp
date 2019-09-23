@@ -5,6 +5,7 @@
 
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/memory.hpp"
+#include "TTauri/Required/type_traits.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -85,8 +86,8 @@ class sdatum {
         return (string_mask + (len << 48)) | x;
     }
 
-    static constexpr int64_t minimum_int = 0xfffe'0000'0000'0000LL;
-    static constexpr int64_t maximum_int = 0x0007'ffff'ffff'ffffLL;
+    static constexpr int64_t minimum_int = 0xfffc'0000'0000'0000LL;
+    static constexpr int64_t maximum_int = 0x0003'ffff'ffff'ffffLL;
 
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
@@ -176,34 +177,51 @@ public:
 
     force_inline sdatum() noexcept : u64(undefined_mask) {}
 
-    explicit sdatum(sdatum::null) noexcept : u64(null_mask) {}
-    explicit sdatum(double value) noexcept : f64(value) { if (value != value) { u64 = undefined_mask; } }
-    explicit sdatum(float value) noexcept : sdatum(static_cast<double>(value)) {}
-    explicit sdatum(uint64_t value) noexcept : sdatum(static_cast<int64_t>(value)) {}
-    explicit sdatum(uint32_t value) noexcept : u64(integer_mask | value) {}
-    explicit sdatum(uint16_t value) noexcept : sdatum(static_cast<uint32_t>(value)) {}
-    explicit sdatum(uint8_t value) noexcept : sdatum(static_cast<uint32_t>(value)) {}
-    explicit sdatum(int64_t value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff)) {}
+    template <class T, typename std::enable_if_t<std::is_floating_point_v<T>, T>* = nullptr>
+    explicit sdatum(T value) noexcept :
+        f64(value)
+    {
+        if (value != value) {
+            u64 = undefined_mask;
+        }
+    }
 
-    explicit sdatum(int32_t value) noexcept : u64(integer_mask | (int64_t{value} & 0x0000ffff'ffffffff)) {}
-    explicit sdatum(int16_t value) noexcept : sdatum(static_cast<int32_t>(value)) {}
-    explicit sdatum(int8_t value) noexcept : sdatum(static_cast<int32_t>(value)) {}
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_unsigned_v<T>, T>* = nullptr>
+    explicit sdatum(T value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0003ffff'ffffffff)) { }
+
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_signed_v<T>, T>* = nullptr>
+    explicit sdatum(T value) noexcept : u64(integer_mask | (static_cast<uint64_t>(value) & 0x0007ffff'ffffffff)) { }
+
+    explicit sdatum(sdatum::null) noexcept : u64(null_mask) {}
+
     explicit sdatum(bool value) noexcept : u64(boolean_mask | int64_t{value}) {}
     explicit sdatum(char value) noexcept : u64(character_mask | value) {}
     explicit sdatum(std::string_view value) noexcept : u64(make_string(value)) {}
     explicit sdatum(std::string const &value) noexcept : sdatum(std::string_view(value)) {}
     explicit sdatum(char const *value) noexcept : sdatum(std::string_view(value)) {}
 
-    sdatum &operator=(double rhs) noexcept { f64 = rhs; return *this; }
-    sdatum &operator=(float rhs) noexcept { return (*this = static_cast<double>(rhs)); }
-    sdatum &operator=(uint64_t rhs) noexcept { return (*this = sdatum{rhs}); }
-    sdatum &operator=(uint32_t rhs) noexcept { u64 = integer_mask | uint64_t{rhs}; return *this; }
-    sdatum &operator=(uint16_t rhs) noexcept { return (*this =  static_cast<uint32_t>(rhs)); }
-    sdatum &operator=(uint8_t rhs) noexcept { return (*this = static_cast<uint32_t>(rhs)); }
-    sdatum &operator=(int64_t rhs) noexcept { return (*this = sdatum{rhs}); }
-    sdatum &operator=(int32_t rhs) noexcept { u64 = integer_mask | (int64_t(rhs) & 0x0000'ffff'ffff'ffff); return *this; }
-    sdatum &operator=(int16_t rhs) noexcept { return (*this = static_cast<int32_t>(rhs)); }
-    sdatum &operator=(int8_t rhs) noexcept { return (*this = static_cast<int32_t>(rhs)); }
+    template <class T, typename std::enable_if_t<std::is_floating_point_v<T>, T>* = nullptr>
+    sdatum &operator=(T rhs) noexcept {
+        if (rhs == rhs) {
+            u64 = undefined_mask;
+        } else {
+            f64 = rhs;
+        }
+        return *this;
+    }
+    
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_unsigned_v<T>, T>* = nullptr>
+    sdatum &operator=(T rhs) noexcept {
+        u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0003ffff'ffffffff);
+        return *this;
+    }
+
+    template <class T, typename std::enable_if_t<is_numeric_integer_v<T> && std::is_signed_v<T>, T>* = nullptr>
+    sdatum &operator=(T rhs) noexcept {
+        u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0007ffff'ffffffff);;
+        return *this;
+    }
+
     sdatum &operator=(bool rhs) noexcept { u64 = boolean_mask | int64_t{rhs}; return *this; }
     sdatum &operator=(char rhs) noexcept { u64 = character_mask | static_cast<uint64_t>(rhs); return *this; }
     sdatum &operator=(std::string_view rhs) noexcept { return (*this = sdatum{rhs}); }
@@ -488,6 +506,11 @@ inline bool operator<(sdatum const &lhs, sdatum const &rhs) noexcept
         }
     }
 }
+
+inline bool operator!=(sdatum const &lhs, sdatum const &rhs) noexcept { return !(lhs == rhs); }
+inline bool operator>(sdatum const &lhs, sdatum const &rhs) noexcept { return rhs < lhs; }
+inline bool operator<=(sdatum const &lhs, sdatum const &rhs) noexcept { return !(rhs < lhs); }
+inline bool operator>=(sdatum const &lhs, sdatum const &rhs) noexcept { return !(lhs < rhs); }
 
 inline sdatum operator+(sdatum const &lhs, sdatum const &rhs) noexcept
 {

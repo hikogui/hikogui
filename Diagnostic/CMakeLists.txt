@@ -11,6 +11,16 @@ set(TTauri_Diagnostic_srcs
     src/trace.cpp
 )
 
+if(WIN32)
+    set(TTauri_Diagnostic_srcs ${TTauri_Diagnostic_srcs}
+        src/logger_win32.cpp
+    )
+elseif(APPLE)
+    set(TTauri_Diagnostic_srcs ${TTauri_Diagnostic_srcs}
+        src/logger_macos.mm
+    )
+endif()
+
 set(TTauri_Diagnostic_tests
     tests/counters_tests.cpp
     tests/datum_tests.cpp

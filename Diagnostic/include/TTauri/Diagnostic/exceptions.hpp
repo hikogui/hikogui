@@ -145,21 +145,21 @@ public:
      */
     template<string_tag InfoTag, typename InfoValueType>
     sub_error &set(InfoValueType &&info_value) noexcept {
-        static_assert(error_info.has(InfoTag), "Unknown tag of error info value.");
+        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
         error_info.template get<InfoTag>() = std::forward<InfoValueType>(info_value);
         return *this;
     }
 
     template<string_tag InfoTag>
     datum &get() noexcept {
-        static_assert(error_info.has(InfoTag), "Unknown tag of error info value.");
-        return error_info.get<InfoTag>();
+        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        return error_info.template get<InfoTag>();
     }
 
     template<string_tag InfoTag>
     datum const &get() const noexcept {
-        static_assert(error_info.has(InfoTag), "Unknown tag of error info value.");
-        return error_info.get<InfoTag>();
+        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        return error_info.template get<InfoTag>();
     }
 
     sub_error &log(char const *source_file, int source_line) {
