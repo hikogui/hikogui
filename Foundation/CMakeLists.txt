@@ -10,6 +10,7 @@ set(TTauri_Foundation_srcs
     src/FileView.cpp
     src/ResourceView.cpp
     src/StaticResourceView.cpp
+    src/base93.cpp
 )
 
 set(TTauri_Foundation_tests
@@ -17,6 +18,7 @@ set(TTauri_Foundation_tests
     tests/pickle_tests.cpp
     tests/polynomial_tests.cpp
     tests/small_map_tests.cpp
+    tests/base93_tests.cpp
 )
 
 set(TTauri_Foundation_test_files

@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <optional>
 #include <ostream>
+#include <utility>
 
 namespace TTauri {
 
