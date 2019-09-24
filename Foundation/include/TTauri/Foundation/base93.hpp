@@ -5,7 +5,6 @@
 
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Foundation/byte_string.hpp"
-#include <boost/multiprecision/cpp_int.hpp>
 
 namespace TTauri {
 

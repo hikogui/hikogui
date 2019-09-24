@@ -99,4 +99,15 @@ constexpr auto compiler = Compiler::clang;
 #error "Could not detect the compiler."
 #endif
 
+
+#define CPU_X64 'i'
+#define CPU_ARM 'a'
+
+#if defined(__amd64__) || defined(__x86_64__) || defined(_M_AMD64)
+#define PROCESSOR CPU_X64
+#elif defined(__arm__) || defined(_M_ARM)
+#define PROCESSOR CPU_ARM
+#endif
+
+
 }

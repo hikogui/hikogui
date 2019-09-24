@@ -14,8 +14,8 @@ using namespace TTauri;
 TEST(Base93, Default) {
     pcg32 random_generator;
 
-    for (int64_t count = 0; count < 1000; count++) {
-        for (int repeat = 0; repeat < 10; repeat++) {
+    for (int64_t count = 0; count < 36; count++) {
+        for (int repeat = 0; repeat < 1; repeat++) {
 
             let message = random_generator.get_bytes(count);
 
