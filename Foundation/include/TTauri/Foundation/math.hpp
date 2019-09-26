@@ -35,7 +35,7 @@ constexpr std::pair<T, T> shift_left_carry(T a, unsigned int count, T carry = 0)
     unsigned int reverse_count = nr_bits - count;
 
     return {
-        (a << count)| carry,
+        (a << count) | carry,
         a >> reverse_count
     };
 }
@@ -52,7 +52,7 @@ constexpr std::pair<T, T> shift_right_carry(T a, unsigned int count, T carry = 0
     unsigned int reverse_count = nr_bits - count;
 
     return {
-        (a >> count)| carry,
+        (a >> count) | carry,
         a << reverse_count
     };
 }
