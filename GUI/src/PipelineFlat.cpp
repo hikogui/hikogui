@@ -76,7 +76,7 @@ vector<vk::WriteDescriptorSet> PipelineFlat::createWriteDescriptorSet(uint32_t f
     return { };
 }
 
-int PipelineFlat::getDescriptorSetVersion() const
+ssize_t PipelineFlat::getDescriptorSetVersion() const
 {
     return 0;
 }

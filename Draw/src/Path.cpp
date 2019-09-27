@@ -20,14 +20,14 @@ glm::vec2 Path::advanceForGrapheme(int index) const noexcept
     return (advance * ligatureRatio) * static_cast<float>(index);
 }
 
-int Path::numberOfContours() const noexcept
+ssize_t Path::numberOfContours() const noexcept
 {
-    return to_int(contourEndPoints.size());
+    return to_signed(contourEndPoints.size());
 }
 
-int Path::numberOfLayers() const noexcept
+ssize_t Path::numberOfLayers() const noexcept
 {
-    return to_int(layerEndContours.size());
+    return to_signed(layerEndContours.size());
 }
 
 bool Path::hasLayers() const noexcept
@@ -64,37 +64,37 @@ void Path::tryRemoveLayers() noexcept
     layerEndContours.clear();
 }
 
-std::vector<BezierPoint>::const_iterator Path::beginContour(int contourNr) const noexcept
+std::vector<BezierPoint>::const_iterator Path::beginContour(ssize_t contourNr) const noexcept
 {
     return points.begin() + (contourNr == 0 ? 0 : contourEndPoints.at(contourNr - 1) + 1);
 }
 
-std::vector<BezierPoint>::const_iterator Path::endContour(int contourNr) const noexcept
+std::vector<BezierPoint>::const_iterator Path::endContour(ssize_t contourNr) const noexcept
 {
     return points.begin() + contourEndPoints.at(contourNr) + 1;
 }
 
-int Path::beginLayer(int layerNr) const noexcept
+ssize_t Path::beginLayer(ssize_t layerNr) const noexcept
 {
     return layerNr == 0 ? 0 : layerEndContours.at(layerNr - 1).first + 1;
 }
 
-int Path::endLayer(int layerNr) const noexcept
+ssize_t Path::endLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).first + 1;
 }
 
-wsRGBA Path::getColorOfLayer(int layerNr) const noexcept
+wsRGBA Path::getColorOfLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(int layerNr, wsRGBA fillColor) noexcept
+void Path::setColorOfLayer(ssize_t layerNr, wsRGBA fillColor) noexcept
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,wsRGBA> Path::getLayer(int layerNr) const noexcept
+std::pair<Path,wsRGBA> Path::getLayer(ssize_t layerNr) const noexcept
 {
     required_assert(hasLayers());
 
@@ -102,21 +102,21 @@ std::pair<Path,wsRGBA> Path::getLayer(int layerNr) const noexcept
 
     let begin = beginLayer(layerNr);
     let end = endLayer(layerNr);
-    for (int contourNr = begin; contourNr != end; contourNr++) {
+    for (ssize_t contourNr = begin; contourNr != end; contourNr++) {
         path.addContour(beginContour(contourNr), endContour(contourNr));
     }
 
     return {path, getColorOfLayer(layerNr)};
 }
 
-std::vector<BezierPoint> Path::getBezierPointsOfContour(int subpathNr) const noexcept
+std::vector<BezierPoint> Path::getBezierPointsOfContour(ssize_t subpathNr) const noexcept
 {
     let begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
     let end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
-std::vector<BezierCurve> Path::getBeziersOfContour(int contourNr) const noexcept
+std::vector<BezierCurve> Path::getBeziersOfContour(ssize_t contourNr) const noexcept
 {
     return makeContourFromPoints(beginContour(contourNr), endContour(contourNr));
 }
@@ -141,14 +141,14 @@ bool Path::isContourOpen() const noexcept
     } else if (contourEndPoints.size() == 0) {
         return true;
     } else {
-        return contourEndPoints.back() != (to_int(points.size()) - 1);
+        return contourEndPoints.back() != (to_signed(points.size()) - 1);
     }
 }
 
 void Path::closeContour() noexcept
 {
     if (isContourOpen()) {
-        contourEndPoints.push_back(to_int(points.size()) - 1);
+        contourEndPoints.push_back(to_signed(points.size()) - 1);
     }
 }
 
@@ -169,7 +169,7 @@ void Path::closeLayer(wsRGBA fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
-        layerEndContours.emplace_back(to_int(contourEndPoints.size()) - 1, fillColor);
+        layerEndContours.emplace_back(to_signed(contourEndPoints.size()) - 1, fillColor);
     }
 }
 
@@ -429,8 +429,8 @@ Path &operator+=(Path &lhs, Path const &rhs) noexcept
     // Left hand layer can only be open if the right hand side contains no layers.
     required_assert(!rhs.hasLayers() || !lhs.isLayerOpen());
 
-    let pointOffset = to_int(lhs.points.size());
-    let contourOffset = to_int(lhs.contourEndPoints.size());
+    let pointOffset = to_signed(lhs.points.size());
+    let contourOffset = to_signed(lhs.contourEndPoints.size());
 
     lhs.layerEndContours.reserve(lhs.layerEndContours.size() + rhs.layerEndContours.size());
     for (let [x, fillColor]: rhs.layerEndContours) {

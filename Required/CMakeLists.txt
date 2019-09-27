@@ -10,6 +10,7 @@ set(TTauri_Required_srcs
     src/URL.cpp
     src/url_parser.cpp
     src/wsRGBA.cpp
+    src/required.cpp
 )
 
 if(WIN32)

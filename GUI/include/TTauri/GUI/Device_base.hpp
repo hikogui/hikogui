@@ -6,6 +6,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <unordered_set>
 #include <mutex>
@@ -58,8 +59,8 @@ public:
      */
     virtual void initializeDevice(Window const &window);
 
-    int getNumberOfWindows() const noexcept {
-        return to_int(windows.size());
+    ssize_t getNumberOfWindows() const noexcept {
+        return to_signed(windows.size());
     }
 
     void add(std::unique_ptr<Window> window);

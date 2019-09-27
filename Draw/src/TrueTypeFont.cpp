@@ -94,7 +94,7 @@ static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t 
                 if (idRangeOffset_ == 0) {
                     // Use modulo 65536 arithmatic.
                     let u16_c = static_cast<uint16_t>(c);
-                    return to_int(idDelta.at(i).value() + u16_c);
+                    return to_signed(idDelta.at(i).value() + u16_c);
 
                 } else {
                     let charOffset = c - startCode_;
@@ -106,7 +106,7 @@ static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t 
                         return 0;
                     } else {
                         // Use modulo 65536 arithmatic.
-                        return to_int(idDelta[i].value() + glyphIndex);
+                        return to_signed(idDelta[i].value() + glyphIndex);
                     }
                 }
 
@@ -764,7 +764,7 @@ void TrueTypeFont::parseFontDirectory()
         int64_t offset = entry.offset.value();
         int64_t length = entry.length.value();
 
-        if (offset + length > to_int64(bytes.size())) {
+        if (offset + length > to_signed(bytes.size())) {
             TTAURI_THROW(parse_error("sfnt table-entry is out of range"));
         }
 

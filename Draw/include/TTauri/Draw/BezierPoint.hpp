@@ -5,6 +5,7 @@
 
 #include "TTauri/Required/geometry.hpp"
 #include "TTauri/Required/required.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
@@ -78,7 +79,7 @@ struct BezierPoint {
             previousPoint = point;
         }
 
-        for (int i = 0; i < to_int(r.size()); i++) {
+        for (int i = 0; i < to_signed(r.size()); i++) {
             if (r[i].type == BezierPoint::Type::Anchor) {
                 std::rotate(r.begin(), r.begin() + i, r.end());
                 r.push_back(r.front());

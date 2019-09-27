@@ -5,6 +5,7 @@
 
 #include "TTauri/Draw/attributes.hpp"
 #include "TTauri/Draw/Path.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 
 namespace TTauri::Draw {
 
@@ -32,8 +33,8 @@ struct PathString {
         alignment = other.alignment;
     }
 
-    int size() const noexcept {
-        return to_int(paths.size());
+    ssize_t size() const noexcept {
+        return to_signed(paths.size());
     }
 
     Path const &at(int i) const noexcept {

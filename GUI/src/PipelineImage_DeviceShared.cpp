@@ -8,6 +8,7 @@
 #include "TTauri/Draw/PixelMap.hpp"
 #include "TTauri/Required/URL.hpp"
 #include "TTauri/Required/memory.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
@@ -118,7 +119,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
-    for (int index = 0; index < to_int(image.pages.size()); index++) {
+    for (int index = 0; index < to_signed(image.pages.size()); index++) {
         let page = image.pages.at(index);
 
         if (page.isFullyTransparent()) {
@@ -147,7 +148,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         });
     }
 
-    for (int atlasTextureIndex = 0; atlasTextureIndex < to_int(atlasTextures.size()); atlasTextureIndex++) {
+    for (int atlasTextureIndex = 0; atlasTextureIndex < to_signed(atlasTextures.size()); atlasTextureIndex++) {
         let &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
         if (regionsToCopy.size() == 0) {
             continue;
@@ -275,7 +276,7 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    let currentImageIndex = to_int(atlasTextures.size());
+    let currentImageIndex = to_signed(atlasTextures.size());
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -321,7 +322,7 @@ void DeviceShared::addAtlasImage()
     }
 
     // Build image descriptor info.
-    for (int i = 0; i < to_int(atlasDescriptorImageInfos.size()); i++) {
+    for (int i = 0; i < to_signed(atlasDescriptorImageInfos.size()); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {
@@ -358,7 +359,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::Draw::PixelMap<uint32_t>{data.data(), to_int(imageCreateInfo.extent.width), to_int(imageCreateInfo.extent.height)}
+        TTauri::Draw::PixelMap<uint32_t>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

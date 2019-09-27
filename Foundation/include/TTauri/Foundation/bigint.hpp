@@ -32,8 +32,9 @@ struct bigint {
     constexpr bigint(bigint &&) noexcept = default;
     constexpr bigint &operator=(bigint &&) noexcept = default;
 
-    constexpr explicit bigint(digit_type value) noexcept {
-        digits[0] = value;
+    template<typename U, std::enable_if_t<std::is_integral_v<U>, int> = 0>
+    constexpr explicit bigint(U value) noexcept {
+        digits[0] = static_cast<digit_type>(value);
         for (auto i = 1; i < nr_digits; i++) {
             digits[i] = 0;
         }
@@ -69,186 +70,243 @@ struct bigint {
     constexpr explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
     constexpr explicit operator char () const noexcept { return static_cast<char>(digits[0]); }
 
+    std::string string() const noexcept {
+        auto tmp = *this;
+
+        std::string r;
+
+        if (tmp == 0) {
+            r = "0";
+        } else {
+            while (tmp > 0) {
+                digit_type remainder;
+                std::tie(tmp, remainder) = div(tmp, 10);
+                r += (static_cast<char>(remainder) + '0');
+            }
+        }
+
+        std::reverse(r.begin(), r.end());
+        return r;
+    }
+
     constexpr digit_type get_bit(unsigned int count) const noexcept {
-        let digit_count = to_int(count / bits_per_digit);
+        let digit_count = count / bits_per_digit;
         let bit_count = count % bits_per_digit;
 
         return (digits[digit_count] >> bit_count) & 1;
     }
 
     constexpr void set_bit(unsigned int count, digit_type value = 1) noexcept {
-        let digit_count = to_int(count / bits_per_digit);
+        let digit_count = count / bits_per_digit;
         let bit_count = count % bits_per_digit;
 
         digits[digit_count] |= (value << bit_count);
     }
 
     constexpr bigint &operator<<=(unsigned int count) noexcept {
-        let digit_count = to_int(count / bits_per_digit);
-        let bit_count = count % bits_per_digit;
-
-        if (digit_count > 0) {
-            for (auto i = nr_digits - 1; i >= digit_count; i--) {
-                digits[i] = digits[i - digit_count];
-            }
-            for (auto i = digit_count - 1; i >= 0; i--) {
-                digits[i] = 0;
-            }
-        }
-        if (bit_count > 0) {
-            digit_type carry = 0;
-            for (auto i = 0; i < nr_digits; i++) {
-                std::tie(digits[i], carry) = shift_left_carry(digits[i], bit_count, carry);
-            }
-        }
+        bigint_shift_left(*this, *this, count);
         return *this;
     }
 
     constexpr bigint &operator>>=(unsigned int count) noexcept {
-        let digit_count = to_int(count / bits_per_digit);
-        let bit_count = count % bits_per_digit;
-
-        if (digit_count > 0) {
-            auto i = 0;
-            for (; i < (nr_digits - digit_count); i++) {
-                digits[i] = digits[i + digit_count];
-            }
-            for (; i < nr_digits; i++) {
-                digits[i] = 0;
-            }
-        }
-        if (bit_count > 0) {
-            digit_type carry = 0;
-            for (auto i = nr_digits - 1; i >= 0; i--) {
-                std::tie(digits[i], carry) = shift_right_carry(digits[i], bit_count, carry);
-            }
-        }
-
+        bigint_shift_right(*this, *this, count);
         return *this;
     }
 
-    constexpr bigint &operator*=(digit_type rhs) noexcept {
-        digit_type carry = 0;
-        for (auto i = 0; i < nr_digits; i++) {
-            std::tie(digits[i], carry) = multiply_carry(digits[i], rhs, carry);
-        }
+    template<int O>
+    constexpr bigint &operator*=(bigint<digit_type,O> const &rhs) noexcept {
+        auto r = bigint<T,N>{0};
+        bigint_multiply(r, *this, rhs);
+        *this = r;
         return *this;
     }
 
-    constexpr bigint &operator+=(digit_type rhs) noexcept {
-        digit_type carry = 0;
-        std::tie(digits[0], carry) = add_carry(digits[0], rhs, digit_type{0});
-        for (auto i = 1; i < nr_digits; i++) {
-            std::tie(digits[i], carry) = add_carry(digits[i], digit_type{0}, carry);
-        }
+    template<typename U>
+    constexpr bigint &operator*=(U const &rhs) noexcept {
+        return (*this) *= bigint<digit_type,1>{rhs};
+    }
+
+    template<int O>
+    constexpr bigint &operator+=(bigint<digit_type,O> const &rhs) noexcept {
+        bigint_add(*this, *this, rhs);
         return *this;
     }
 
-    constexpr bigint &operator-=(digit_type rhs) noexcept {
-        digit_type borrow = 0;
-        std::tie(digits[0], borrow) = subtract_borrow(digits[0], rhs, digit_type{0});
-        for (auto i = 1; i < nr_digits; i++) {
-            std::tie(digits[i], borrow) = subtract_borrow(digits[i], digit_type{0}, borrow);
-        }
+    template<typename U>
+    constexpr bigint &operator+=(U const &rhs) noexcept {
+        return (*this) += bigint<digit_type,1>{rhs};
+    }
+
+    template<int O>
+    constexpr bigint &operator-=(bigint<digit_type,O> const &rhs) noexcept {
+        bigint_subtract(*this, *this, rhs);
         return *this;
     }
 
-    constexpr bigint &operator&=(digit_type rhs) noexcept {
-        digits[0] &= rhs;
-        for (int i = 1; i < nr_digits; i++) {
-            digits[i] = 0;
-        }
+    template<typename U>
+    constexpr bigint &operator-=(U const &rhs) noexcept {
+        return (*this) -= bigint<digit_type,1>{rhs};
+    }
+
+    template<int O>
+    constexpr bigint &operator&=(bigint<digit_type,O> const &rhs) noexcept {
+        bigint_and(*this, *this, rhs);
         return *this;
     }
 
-    constexpr bigint &operator|=(digit_type rhs) noexcept {
-        digits[0] |= rhs;
+    template<typename U>
+    constexpr bigint &operator&=(U const &rhs) noexcept {
+        return (*this) &= bigint<digit_type,1>{rhs};
+    }
+
+    template<int O>
+    constexpr bigint &operator|=(bigint<digit_type,O> const &rhs) noexcept {
+        bigint_or(*this, *this, rhs);
         return *this;
     }
 
-    constexpr bigint &operator^=(digit_type rhs) noexcept {
-        digits[0] ^= rhs;
+    template<typename U>
+    constexpr bigint &operator|=(U const &rhs) noexcept {
+        return (*this) |= bigint<digit_type,1>{rhs};
+    }
+
+    template<int O>
+    constexpr bigint &operator^=(bigint<digit_type,O> const &rhs) noexcept {
+        bigint_xor(*this, *this, rhs);
         return *this;
     }
 
-    constexpr bigint &operator^=(bigint const &rhs) noexcept {
-        for (auto i = 0; i < nr_digits; i++) {
-            digits[i] ^= rhs.digits[i];
-        }
-        return *this;
-    }
-
-    constexpr bigint &operator|=(bigint const &rhs) noexcept {
-        for (auto i = 0; i < nr_digits; i++) {
-            digits[i] |= rhs.digits[i];
-        }
-        return *this;
+    template<typename U>
+    constexpr bigint &operator^=(U const &rhs) noexcept {
+        return (*this) ^= bigint<digit_type,1>{rhs};
     }
 };
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bool operator==(bigint<T,N> const &lhs, U const rhs) noexcept
+template<typename T, int N, int O>
+constexpr int bigint_compare(bigint<T,N> const &lhs, bigint<T,O> const &rhs, T carry=0) noexcept
 {
-    for (auto i = N-1; i >= 1; i--) {
-        if (lhs.digits[i] != 0) {
-            return false;
+    constexpr int nr_digits = std::max(N, O);
+    for (auto i = nr_digits - 1; i >= 0; i--) {
+        let lhs_digit = i < N ? lhs.digits[i] : T{0};
+        let rhs_digit = i < O ? rhs.digits[i] : T{0};
+
+        if (lhs_digit < rhs_digit) {
+            return -1;
+        } else if (lhs_digit > rhs_digit) {
+            return 1;
         }
     }
-    return lhs.digits[0] == static_cast<T>(rhs);
+    return 0;
 }
 
-
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bool operator<(bigint<T,N> const &lhs, U const rhs) noexcept
+template<typename T, int R, int N>
+constexpr void bigint_invert(bigint<T,R> &r, bigint<T,N> const &rhs) noexcept
 {
-    for (auto i = N-1; i >= 1; i--) {
-        if (lhs.digits[i] != 0) {
-            return false;
+    for (auto i = 0; i < R; i++) {
+        r.digits[i] = i < N ? ~rhs.digits[i] : ~T{0};
+    }
+}
+
+template<typename T, int R, int N, int O>
+constexpr void bigint_add(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs, T carry=0) noexcept
+{
+    for (auto i = 0; i < R; i++) {
+        let lhs_digit = i < N ? lhs.digits[i] : T{0};
+        let rhs_digit = i < O ? rhs.digits[i] : T{0};
+        std::tie(r.digits[i], carry) = add_carry(lhs_digit, rhs_digit, carry);
+    }
+}
+
+template<typename T, int R, int N, int O>
+constexpr void bigint_multiply(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    // Reserve one extra digit for overflow.
+    for (auto rhs_index = 0; rhs_index < O; rhs_index++) {
+        let rhs_digit = rhs.digits[rhs_index];
+
+        T carry = 0;
+        for (auto lhs_index = 0; lhs_index < N; lhs_index++) {
+            let lhs_digit = lhs.digits[lhs_index];
+
+            T result;
+            T accumulator = (rhs_index + lhs_index) < R ? r.digits[rhs_index + lhs_index] : 0;
+            std::tie(result, carry) = multiply_carry(lhs_digit, rhs_digit, carry, accumulator);
+            if ((rhs_index + lhs_index) < R) {
+                r.digits[rhs_index + lhs_index] = result;
+            }
+        }
+
+        // Save the overflow in the digit beyond the current most significant byte.
+        if (rhs_index + N < R) {
+            r.digits[rhs_index + N] = carry;
         }
     }
-    return lhs.digits[0] < static_cast<T>(rhs);
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bool operator>(bigint<T,N> const &lhs, U rhs) noexcept {
-    for (auto i = N-1; i >= 1; i--) {
-        if (lhs.digits[i] != 0) {
-            return true;
+template<typename T, int R, int S, int N, int O>
+constexpr void bigint_div(bigint<T,R> &quotient, bigint<T,S> &remainder, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    for (auto i = bigint<T,N>::nr_bits - 1; i >= 0; i--) {
+        remainder <<= 1;
+        remainder |= lhs.get_bit(i);
+        if (remainder >= rhs) {
+            remainder -= rhs;
+            quotient.set_bit(i);
         }
     }
-    return lhs.digits[0] > static_cast<T>(rhs);
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bool operator!=(bigint<T,N> const &lhs, U rhs) noexcept {
-    return !(lhs == rhs);
-}
-
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bool operator>=(bigint<T,N> const &lhs, U rhs) noexcept {
-    return !(lhs < rhs);
-}
-
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bool operator<=(bigint<T,N> const &lhs, U rhs) noexcept {
-    return !(lhs > rhs);
-}
-
-
-
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bigint<T,N> operator<<(bigint<T,N> const &lhs, U count) noexcept {
-    let digit_count = to_int(count) / bigint<T,N>::bits_per_digit;
-    let bit_count = to_int(count) % bigint<T,N>::bits_per_digit;
-
-    bigint<T,N> r;
-
-    // Always copy the digits into r.
-    for (auto i = N - 1; i >= digit_count; i--) {
-        r.digits[i] = lhs.digits[i - digit_count];
+template<typename T, int R, int N, int O>
+constexpr void bigint_and(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    for (auto i = 0; i < R; i++) {
+        let lhs_digit = i < N ? lhs.digits[i] : T{0};
+        let rhs_digit = i < O ? rhs.digits[i] : T{0};
+        r.digits[i] = lhs_digit & rhs_digit;
     }
-    for (auto i = digit_count - 1; i >= 0; i--) {
-        r.digits[i] = 0;
+}
+
+template<typename T, int R, int N, int O>
+constexpr void bigint_or(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    for (auto i = 0; i < R; i++) {
+        let lhs_digit = i < N ? lhs.digits[i] : T{0};
+        let rhs_digit = i < O ? rhs.digits[i] : T{0};
+        r.digits[i] = lhs_digit | rhs_digit;
+    }
+}
+
+template<typename T, int R, int N, int O>
+constexpr void bigint_xor(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    for (auto i = 0; i < R; i++) {
+        let lhs_digit = i < N ? lhs.digits[i] : T{0};
+        let rhs_digit = i < O ? rhs.digits[i] : T{0};
+        r.digits[i] = lhs_digit ^ rhs_digit;
+    }
+}
+
+template<typename T, int R, int N, int O>
+constexpr void bigint_subtract(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    bigint<T,R> rhs_;
+    bigint_invert(rhs_, rhs);
+    bigint_add(r, lhs, rhs_, T{1});
+}
+
+template<typename T, int N>
+constexpr void bigint_shift_left(bigint<T,N> &r, bigint<T,N> const &lhs, int count) noexcept
+{
+    let digit_count = count / bigint<T,N>::bits_per_digit;
+    let bit_count = count % bigint<T,N>::bits_per_digit;
+
+    if (&r != &lhs || digit_count > 0) { 
+        for (auto i = N - 1; i >= digit_count; i--) {
+            r.digits[i] = lhs.digits[i - digit_count];
+        }
+        for (auto i = digit_count - 1; i >= 0; i--) {
+            r.digits[i] = 0;
+        }
     }
 
     if (bit_count > 0) {
@@ -257,169 +315,239 @@ constexpr bigint<T,N> operator<<(bigint<T,N> const &lhs, U count) noexcept {
             std::tie(r.digits[i], carry) = shift_left_carry(r.digits[i], bit_count, carry);
         }
     }
+}
+
+template<typename T, int N>
+constexpr void bigint_shift_right(bigint<T,N> &r, bigint<T,N> const &lhs, int count) noexcept
+{
+    let digit_count = count / bigint<T,N>::bits_per_digit;
+    let bit_count = count % bigint<T,N>::bits_per_digit;
+
+    if (&r != &lhs || digit_count > 0) { 
+        auto i = 0;
+        for (; i < (N - digit_count); i++) {
+            r.digits[i] = lhs.digits[i + digit_count];
+        }
+        for (; i < N; i++) {
+            r.digits[i] = 0;
+        }
+    }
+
+    if (bit_count > 0) {
+        T carry = 0;
+        for (auto i = N - 1; i >= 0; i--) {
+            std::tie(r.digits[i], carry) = shift_right_carry(r.digits[i], bit_count, carry);
+        }
+    }
+}
+
+template<typename T, int N, int O>
+constexpr bool operator==(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    return bigint_compare(lhs, rhs) == 0;
+}
+
+template<typename T, int N, int O>
+constexpr bool operator<(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    return bigint_compare(lhs, rhs) < 0;
+}
+
+template<typename T, int N, int O>
+constexpr bool operator>(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    return bigint_compare(lhs, rhs) > 0;
+}
+
+template<typename T, int N, int O>
+constexpr bool operator!=(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    return bigint_compare(lhs, rhs) != 0;
+}
+
+template<typename T, int N, int O>
+constexpr bool operator>=(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    return bigint_compare(lhs, rhs) >= 0;
+}
+
+template<typename T, int N, int O>
+constexpr bool operator<=(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    return bigint_compare(lhs, rhs) <= 0;
+}
+
+template<typename T, typename U, int N>
+constexpr bool operator==(bigint<T,N> const &lhs, U const &rhs) noexcept { return lhs == bigint<T,1>{rhs}; }
+template<typename T, typename U, int N>
+constexpr bool operator!=(bigint<T,N> const &lhs, U const &rhs) noexcept { return lhs != bigint<T,1>{rhs}; }
+template<typename T, typename U, int N>
+constexpr bool operator<(bigint<T,N> const &lhs, U const &rhs) noexcept { return lhs < bigint<T,1>{rhs}; }
+template<typename T, typename U, int N>
+constexpr bool operator>(bigint<T,N> const &lhs, U const &rhs) noexcept { return lhs > bigint<T,1>{rhs}; }
+template<typename T, typename U, int N>
+constexpr bool operator<=(bigint<T,N> const &lhs, U const &rhs) noexcept { return lhs <= bigint<T,1>{rhs}; }
+template<typename T, typename U, int N>
+constexpr bool operator>=(bigint<T,N> const &lhs, U const &rhs) noexcept { return lhs >= bigint<T,1>{rhs}; }
+
+
+template<typename T, int N, typename U>
+constexpr bigint<T,N> operator<<(bigint<T,N> const &lhs, U count) noexcept {
+    bigint<T,N> r;
+    bigint_shift_left(r, lhs, static_cast<int>(count));
     return r;
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
+template<typename T, int N, typename U>
+constexpr bigint<T,N> operator>>(bigint<T,N> const &lhs, U count) noexcept {
+    bigint<T,N> r;
+    bigint_shift_right(r, lhs, static_cast<int>(count));
+    return r;
+}
+
+
+template<typename T, int N, int O>
+constexpr auto operator*(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    constexpr int nr_digits = std::max(N, O);
+    auto r = bigint<T,nr_digits>{0};
+    bigint_multiply(r, lhs, rhs);
+    return r;
+}
+
+template<typename T, int N, typename U>
 constexpr bigint<T,N> operator*(bigint<T,N> const &lhs, U rhs) noexcept {
-    bigint<T,N> r;
+    return lhs * bigint<T,1>{rhs};
+}
 
-    T carry = 0;
-    for (auto i = 0; i < nr_digits; i++) {
-        std::tie(r.digits[i], carry) = multiply_carry(lhs.digits[i], static_cast<T>(rhs), carry);
-    }
+template<typename T, int N, int O>
+constexpr auto operator+(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    constexpr int nr_digits = std::max(N, O);
+    bigint<T,nr_digits> r;
+    bigint_add(r, lhs, rhs);
     return r;
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
+template<typename T, int N, typename U>
 constexpr bigint<T,N> operator+(bigint<T,N> const &lhs, U rhs) noexcept {
-    bigint<T,N> r;
+    return lhs + bigint<T,1>{rhs};
+}
 
-    T carry = 0;
-    for (auto i = 0; i < nr_digits; i++) {
-        std::tie(r.digits[i], carry) = add_carry(lhs.digits[i], static_cast<T>(rhs), carry);
-    }
+template<typename T, int N, int O>
+constexpr auto operator-(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    constexpr int nr_digits = std::max(N, O);
+    bigint<T,nr_digits> r;
+    bigint_subtract(r, lhs, rhs);
     return r;
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
+template<typename T, int N, typename U>
 constexpr bigint<T,N> operator-(bigint<T,N> const &lhs, U rhs) noexcept {
-    bigint<T,N> r;
+    return lhs - bigint<T,1>{rhs};
+}
 
-    T borrow = 0;
-    for (auto i = 0; i < N; i++) {
-        std::tie(r.digits[i], borrow) = subtract_borrow(lhs.digits[i], static_cast<T>(rhs), borrow);
-    }
+template<typename T, int N>
+constexpr auto operator~(bigint<T,N> const &rhs) noexcept
+{
+    bigint<T,N> r;
+    bigint_invert(r, rhs);
     return r;
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr U operator&(bigint<T,N> const &lhs, U rhs) noexcept {
-    return static_cast<U>(lhs.digits[0] & static_cast<T>(rhs));
+template<typename T, int N, int O>
+constexpr auto operator|(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    constexpr int nr_digits = std::max(N, O);
+    bigint<T,nr_digits> r;
+    bigint_or(r, lhs, rhs);
+    return r;
 }
 
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
+template<typename T, int N, typename U>
 constexpr bigint<T,N> operator|(bigint<T,N> const &lhs, U rhs) noexcept {
-    bigint<T,N> r;
-
-    r.digits[0] = lhs.digits[0] | static_cast<T>(rhs);
-    for (int i = 1; i < N; i++) {
-        r.digits[i] = 0;
-    }
-    return r;
-}
-
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr bigint<T,N> operator^(bigint<T,N> const &lhs, U rhs) noexcept {
-    bigint<T,N> r;
-
-    r.digits[0] = lhs.digits[0] ^ static_cast<T>(rhs);
-    for (int i = 1; i < N; i++) {
-        r.digits[i] = 0;
-    }
-    return r;
-}
-
-template<typename T, int N, typename U, std::enable_if_t<std::is_integral_v<U>,int> = 0>
-constexpr std::pair<bigint<T,N>, bigint<T,N>> div(bigint<T,N> const &lhs, U rhs) noexcept
-{
-    auto quotient = bigint<T,N>{0};
-    auto remainder = bigint<T,N>{0};
-
-    for (auto i = bigint<T,N>::nr_bits - 1; i >= 0; i--) {
-        remainder <<= 1;
-        remainder |= lhs.get_bit(i);
-        if (remainder >= static_cast<T>(rhs)) {
-            remainder -= static_cast<T>(rhs);
-            quotient.set_bit(i);
-        }
-    }
-
-    return { quotient, remainder };
-}
-
-
-template<typename T, int N>
-constexpr bool operator==(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept
-{
-    for (auto i = N-1; i >= 0; i--) {
-        if (lhs.digits[i] != rhs.digits[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template<typename T, int N>
-constexpr bool operator<(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept
-{
-    for (auto i = N-1; i >= 0; i--) {
-        if (lhs.digits[i] >= rhs.digits[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-template<typename T, int N> constexpr bool operator>(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept { return rhs < lhs; }
-template<typename T, int N> constexpr bool operator!=(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept { return !(lhs == rhs); }
-template<typename T, int N> constexpr bool operator>=(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept { return !(lhs < rhs); }
-template<typename T, int N> constexpr bool operator<=(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept { return !(lhs > rhs); }
-
-
-template<typename T, int N, int O>
-constexpr auto operator|(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept {
-    constexpr int nr_digits = std::max(N, O);
-    bigint<T,nr_digits> r;
-
-    for (auto i = 0; i < nr_digits; i++) {
-        auto lhs_digit = i < N ? lhs.digits[i] : static_cast<T>(0);
-        auto rhs_digit = i < O ? rhs.digits[i] : static_cast<T>(0);
-        r.digits[i] = lhs_digit | rhs_digit;
-    }
-    return r;
+    return lhs | bigint<T,1>{rhs};
 }
 
 template<typename T, int N, int O>
-constexpr auto operator^(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept {
-    constexpr int nr_digits = std::max(N, O);
-    bigint<T,nr_digits> r;
-
-    for (auto i = 0; i < nr_digits; i++) {
-        auto lhs_digit = i < N ? lhs.digits[i] : static_cast<T>(0);
-        auto rhs_digit = i < O ? rhs.digits[i] : static_cast<T>(0);
-        r.digits[i] = lhs_digit ^ rhs_digit;
-    }
-    return r;
-}
-
-template<typename T, int N, int O>
-constexpr auto operator&(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept {
+constexpr auto operator&(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
     constexpr int nr_digits = std::min(N, O);
     bigint<T,nr_digits> r;
-
-    for (auto i = 0; i < nr_digits; i++) {
-        r.digits[i] = lhs.digits[i] ^ rhs.digits[i];
-    }
+    bigint_and(r, lhs, rhs);
     return r;
 }
 
-template<typename T, int N>
-constexpr std::pair<bigint<T,N>, bigint<T,N>> div(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept
+template<typename T, int N, typename U>
+constexpr U operator&(bigint<T,N> const &lhs, U rhs) noexcept {
+    return static_cast<U>(lhs & bigint<T,1>{rhs});
+}
+
+template<typename T, int N, int O>
+constexpr auto operator^(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    constexpr int nr_digits = std::max(N, O);
+    bigint<T,nr_digits> r;
+    bigint_xor(r, lhs, rhs);
+    return r;
+}
+
+template<typename T, int N, typename U>
+constexpr bigint<T,N> operator^(bigint<T,N> const &lhs, U rhs) noexcept {
+    return lhs ^ bigint<T,1>{rhs};
+}
+
+template<typename T, int N, int O>
+constexpr std::pair<bigint<T,N>, bigint<T,O>> div(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
 {
     bigint<T,N> quotient = 0;
-    bigint<T,N> remainder = 0;
+    bigint<T,O> remainder = 0;
 
-    for (i = bigint<T,N>::nr_bits - 1; i >= 0; i--) {
-        remainder <<= 1;
-        remainder |= lhs.get_bit(i);
-        if (remainder >= rhs) {
-            remainder -= rhs;
-            quotient.set_bit(i);
-        }
-    }
-
+    bigint_div(quotient, remainder, lhs, rhs);
     return { quotient, remainder };
+}
+
+template<typename T, int N, typename U>
+constexpr std::pair<bigint<T,N>, U> div(bigint<T,N> const &lhs, U rhs) noexcept
+{
+    auto quotient = bigint<T,N>{0};
+    auto remainder = bigint<T,1>{0};
+
+    bigint_div(quotient, remainder, lhs, bigint<T,1>{rhs});
+    return { quotient, static_cast<U>(remainder) };
+}
+
+template<typename T, int N, int O>
+constexpr bigint<T,N> operator/(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept
+{
+    bigint<T,N> quotient = 0;
+    bigint<T,O> remainder = 0;
+
+    bigint_div(quotient, remainder, lhs, rhs);
+    return quotient;
+}
+
+template<typename T, typename U, int N>
+constexpr bigint<T,N> operator/(bigint<T,N> const &lhs, U const &rhs) noexcept
+{
+    return lhs / bigint<T,1>{rhs};
+}
+
+template<typename T, int N, int O>
+constexpr bigint<T,O> operator%(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept
+{
+    bigint<T,N> quotient = 0;
+    bigint<T,O> remainder = 0;
+
+    bigint_div(quotient, remainder, lhs, rhs);
+    return remainder;
+}
+
+template<typename T, typename U, int N>
+constexpr U operator%(bigint<T,N> const &lhs, U const &rhs) noexcept
+{
+    return static_cast<U>(lhs % bigint<T,1>{rhs});
 }
 
 using uint128_t = bigint<uint64_t,2>;

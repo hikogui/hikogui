@@ -112,9 +112,9 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
     } };
 }
 
-int PipelineImage::getDescriptorSetVersion() const
+ssize_t PipelineImage::getDescriptorSetVersion() const
 {
-    return to_int(device().imagePipeline->atlasTextures.size());
+    return to_signed(device().imagePipeline->atlasTextures.size());
 }
 
 std::vector<vk::PushConstantRange> PipelineImage::createPushConstantRanges() const

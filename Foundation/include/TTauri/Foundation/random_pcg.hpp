@@ -5,19 +5,20 @@
 
 #include "TTauri/Foundation/math.hpp"
 #include "TTauri/Foundation/byte_string.hpp"
+#include "TTauri/Required/numeric_Cast.hpp"
 #include <atomic>
 
 namespace TTauri {
 
 template<typename T>
-inline bstring get_bytes(T &generator, int64_t count)
+inline bstring get_bytes(T &generator, ssize_t count)
 {
     decltype(generator()) random_number;
 
     auto data = bstring(static_cast<size_t>(count), std::byte{0});
 
-    int64_t i = 0;
-    while (i < count - to_int64(sizeof(random_number)) - 1) {
+    ssize_t i = 0;
+    while (i < count - to_signed(sizeof(random_number)) - 1) {
         random_number = generator();
         for (int j = 0; j < sizeof(random_number); j++) {
             data[i++] = static_cast<std::byte>(random_number);
@@ -59,7 +60,7 @@ public:
         return rotr(static_cast<uint32_t>(x >> 27), count);
     }
 
-    bstring get_bytes(size_t count) {
+    bstring get_bytes(ssize_t count) {
         return TTauri::get_bytes(*this, count);
     }
 };
@@ -90,7 +91,7 @@ public:
         return rotr(static_cast<uint32_t>(x >> 27), count);
     }
 
-    bstring get_bytes(size_t count) {
+    bstring get_bytes(ssize_t count) {
         return TTauri::get_bytes(*this, count);
     }
 };

@@ -38,11 +38,11 @@ Device *Instance_base::findBestDeviceForWindow(Window const &window)
     }
 }
 
-int Instance_base::getNumberOfWindows()
+ssize_t Instance_base::getNumberOfWindows()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    int numberOfWindows = 0;
+    ssize_t numberOfWindows = 0;
     for (const auto &device: devices) {
         numberOfWindows+= device->getNumberOfWindows();
     }

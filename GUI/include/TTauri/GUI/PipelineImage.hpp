@@ -47,7 +47,7 @@ protected:
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
     std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t frameBufferIndex) const override;
-    virtual int getDescriptorSetVersion() const override;
+    virtual ssize_t getDescriptorSetVersion() const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;

@@ -57,39 +57,9 @@ constexpr std::pair<T, T> shift_right_carry(T a, unsigned int count, T carry = 0
     };
 }
 
-/*! Subtract two numbers with borrow chain.
- * \return a - (b + borrow_in)
- */
-template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
-constexpr std::pair<T, T> subtract_borrow(T a, T b, T borrow = 0) noexcept
-{
-    if constexpr (sizeof(T) == 1) {
-        uint16_t r = static_cast<uint16_t>(a) - (static_cast<uint16_t>(b) + borrow);
-        return { static_cast<uint8_t>(r), static_cast<uint8_t>(r >> 8) };
-
-    } else if constexpr (sizeof(T) == 2) {
-        uint32_t r = static_cast<uint32_t>(a) - (static_cast<uint32_t>(b) + borrow);
-        return { static_cast<uint16_t>(r), static_cast<uint16_t>(r >> 16) };
-
-    } else if constexpr (sizeof(T) == 4) {
-        uint64_t r = static_cast<uint64_t>(a) - (static_cast<uint64_t>(b) + borrow);
-        return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
-
-    } else if constexpr (sizeof(T) == 8) {
-#if PROCESSOR == CPU_X64
-        uint64_t r;
-        auto c = _subborrow_u64(static_cast<unsigned char>(borrow), a, b, &r);
-        return { r, static_cast<uint64_t>(c) };
-#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
-        uint128_t r = static_cast<uint128_t>(a) - (static_cast<uint128_t>(b) + borrow);
-        return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
-#else
-#error "Not implemented"
-#endif
-    }
-}
 
 /*! Add two numbers with carry chain.
+* \param carry either 0 or 1.
 * \return a + b + carry_in
 */
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>

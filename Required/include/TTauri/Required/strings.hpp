@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/algorithm.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include "TTauri/Required/required.hpp"
 #include <utf8proc/utf8proc.h>
 #include <string>

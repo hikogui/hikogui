@@ -8,6 +8,7 @@
 #include "TTauri/Required/wsRGBA.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/URL.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <png.h>
 #include <stdio.h>
 

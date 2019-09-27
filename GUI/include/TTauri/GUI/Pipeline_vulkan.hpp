@@ -56,7 +56,7 @@ protected:
         bool commandBufferValid = false;
         vk::Semaphore renderFinishedSemaphore;
         vk::DescriptorSet descriptorSet;
-        uint64_t descriptorSetVersion = 0;
+        ssize_t descriptorSetVersion = 0;
     };
 
     std::vector<FrameBufferObjects> frameBufferObjects;
@@ -73,7 +73,7 @@ protected:
     virtual std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const = 0;
     virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
     virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t frameBufferIndex) const = 0;
-    virtual int getDescriptorSetVersion() const = 0;
+    virtual ssize_t getDescriptorSetVersion() const = 0;
     virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
     virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;

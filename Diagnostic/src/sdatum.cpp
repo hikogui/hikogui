@@ -3,6 +3,7 @@
 
 #include "TTauri/Diagnostic/sdatum.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
@@ -117,7 +118,7 @@ size_t sdatum::size() const noexcept
     case phy_string_id3:
     case phy_string_id4:
     case phy_string_id5:
-    case phy_string_id6: return to_int(((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48);
+    case phy_string_id6: return to_signed(((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48);
     default: no_default;
     }
 }

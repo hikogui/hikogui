@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/strings.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 
 namespace TTauri {
 
@@ -76,15 +77,15 @@ struct gstring {
     using const_iterator = std::vector<grapheme>::const_iterator;
     using value_type = grapheme;
 
-    int size() const noexcept {
-        return to_int(graphemes.size());
+    ssize_t size() const noexcept {
+        return to_signed(graphemes.size());
     }
 
-    grapheme const &at(size_t i) const {
+    grapheme const &at(ssize_t i) const {
         return graphemes.at(i);
     }
 
-    grapheme &at(size_t i) {
+    grapheme &at(ssize_t i) {
         return graphemes.at(i);
     }
 

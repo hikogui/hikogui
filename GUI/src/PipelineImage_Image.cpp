@@ -7,6 +7,7 @@
 #include "TTauri/GUI/PipelineImage_Vertex.hpp"
 #include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Required/required.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace TTauri::GUI::PipelineImage {
@@ -121,12 +122,12 @@ void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vert
 {
     calculateVertexPositions(location);
 
-    if (offset + pages.size() * 4 > to_int(vertices.size())) {
+    if (offset + to_signed(pages.size()) * 4 > to_signed(vertices.size())) {
         LOG_FATAL("vertices don't fit");
         abort();
     }
 
-    for (int index = 0; index < to_int(pages.size()); index++) {
+    for (int index = 0; index < to_signed(pages.size()); index++) {
         placePageVertices(index, location, vertices, offset);
     }
 }

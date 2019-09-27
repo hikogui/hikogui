@@ -5,6 +5,8 @@
 
 #include "TTauri/Required/os_detect.hpp"
 #include <exception>
+#include <stdexcept>
+#include <type_traits>
 
 /*! Invariant should be the default for variables.
  * C++ does have an invariant but it requires you to enter the 'const' keyword which
@@ -13,15 +15,8 @@
  */
 #define let auto const
 
-/*! required assert will always abort and can not be disabled in production code.
- */
-#define required_assert(x) if (!(x)) { std::terminate(); }
 
-#define no_default std::terminate()
-#define not_implemented std::terminate()
 
-#define to_int(x) TTauri::numeric_cast<int>(x)
-#define to_int64(x) TTauri::numeric_cast<int64_t>(x)
 
 #define STRINGIFY(a) #a
 
@@ -80,13 +75,31 @@
 
 #endif
 
-constexpr size_t cache_line_size = 128;
+#if defined(NDEBUG)
+#define optional_assert(x)
+#define required_assert(x) if (!(x)) { std::terminate(); }
+#define no_default std::terminate()
+#define not_implemented std::terminate()
+#else
+#define optional_assert(x) if (ttauri_unlikely(!(x))) {TTauri::terminate();}
+#define required_assert(x) if (ttauri_unlikely(!(x))) {TTauri::terminate();}
+#define no_default TTauri::terminate()
+#define not_implemented TTauri::terminate()
+#endif
 
 namespace TTauri {
-template<typename T, typename U>
-gsl_suppress(f.6)
-T numeric_cast(U value) noexcept {
-    return static_cast<T>(value);
-}
+
+/*! Signed size/index into an array.
+*/
+using ssize_t = std::make_signed_t<size_t>;
+
+constexpr size_t cache_line_size = 128;
+
+void stop_debugger();
+
+[[noreturn]] inline void terminate() {
+    stop_debugger();
+    std::terminate();
 }
 
+}

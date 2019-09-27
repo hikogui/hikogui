@@ -57,7 +57,7 @@ void Pipeline_vulkan::buildCommandBuffers()
         numeric_cast<uint32_t>(frameBufferObjects.size())
     });
 
-    for (int i = 0; i < to_int(frameBufferObjects.size()); i++) {
+    for (int i = 0; i < to_signed(frameBufferObjects.size()); i++) {
         auto &frameBufferObject = frameBufferObjects.at(i);
         frameBufferObject.commandBuffer = commandBuffers.at(i);
         frameBufferObject.commandBufferValid = false;

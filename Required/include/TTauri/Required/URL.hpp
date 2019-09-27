@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <memory>
 #include <ostream>
+#include <mutex>
 
 namespace TTauri {
 struct url_parts;
@@ -131,6 +132,9 @@ gsl_suppress2(26489,lifetime.1)
 inline T &getResource(URL const &location)
 {
     static std::unordered_map<URL,std::unique_ptr<T>> resourceCache = {};
+    static std::mutex mutex;
+
+    auto lock = std::scoped_lock(mutex);
 
     let oldResource = resourceCache.find(location);
     if (oldResource != resourceCache.end()) {

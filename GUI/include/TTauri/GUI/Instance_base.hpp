@@ -32,7 +32,7 @@ public:
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
      */
-    int previousNumberOfWindows = 0;
+    ssize_t previousNumberOfWindows = 0;
 
     Instance_base(InstanceDelegate *delegate) noexcept :
         delegate(delegate)
@@ -68,7 +68,7 @@ public:
 
     /*! Count the number of windows managed by the GUI.
      */
-    int getNumberOfWindows();
+    ssize_t getNumberOfWindows();
 
     void render() {
         for (auto &device: devices) {

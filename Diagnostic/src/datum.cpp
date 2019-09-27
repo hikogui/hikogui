@@ -3,6 +3,7 @@
 
 #include "TTauri/Diagnostic/datum.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
@@ -442,7 +443,7 @@ datum &datum::operator[](datum const &rhs) {
         let index = static_cast<int64_t>(rhs);
         auto *v = get_pointer<datum::vector>();
 
-        if (index < 0 || index >= to_int64(v->size())) {
+        if (index < 0 || index >= to_signed(v->size())) {
             TTAURI_THROW(invalid_operation_error("Index {} out of range to access value in vector of size {}", index, v->size()));
         } else {
             return (*v)[index];
@@ -465,7 +466,7 @@ datum datum::operator[](datum const &rhs) const {
         let index = static_cast<int64_t>(rhs);
         auto *v = get_pointer<datum::vector>();
 
-        if (index < 0 || index >= to_int64(v->size())) {
+        if (index < 0 || index >= to_signed(v->size())) {
             TTAURI_THROW(invalid_operation_error("Index {} out of range to access value in vector of size {}", index, v->size()));
         } else {
             return (*v)[index];
@@ -573,7 +574,7 @@ size_t datum::size() const
     case phy_string_id3:
     case phy_string_id4:
     case phy_string_id5:
-    case phy_string_id6: return to_int(((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48);
+    case phy_string_id6: return to_signed(((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48);
     case phy_string_ptr_id: return get_pointer<std::string>()->size();
     case phy_vector_ptr_id: return get_pointer<datum::vector>()->size();
     case phy_map_ptr_id: return get_pointer<datum::map>()->size();

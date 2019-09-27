@@ -4,6 +4,7 @@
 #include "TTauri/Foundation/base93.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Foundation/bigint.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <algorithm>
 
 using namespace std::literals;
@@ -18,6 +19,7 @@ static uint8_t base93_crc(uint128_t number) noexcept
     // Number already includes the 5 CRC/padding bits.
     // Continue until the dividend is zero.
     while (number >= 32) {
+        optional_assert(divider > 0);
         if (top_bit < number) {
             // Align the top bit of the divider with the number before dividing.
             number ^= divider;
@@ -107,7 +109,7 @@ static uint128_t base93_bytes_to_number(bstring_view bytes) noexcept
 {
     auto number = uint128_t{0};
 
-    for (auto i = static_cast<int>(bytes.size()) - 1; i >= 0; i--) {
+    for (ssize_t i = to_signed(bytes.size()) - 1; i >= 0; i--) {
         number <<= 8;
         number |= static_cast<uint8_t>(bytes.at(i));
     }
@@ -122,7 +124,7 @@ static std::string base93_encode_number(uint128_t number, size_t nr_bytes) noexc
     let nr_digits = base93_nr_bytes_to_nr_digits(nr_bytes);
     auto r = std::string(nr_digits, '!');
 
-    for (auto i = static_cast<int>(nr_digits) - 1; i >= 0; i--) {
+    for (ssize_t i = to_signed(nr_digits) - 1; i >= 0; i--) {
         let [quotient, remainder] = div(number, 93);
         r.at(i) = static_cast<char>(remainder) + '!';
         number = quotient;

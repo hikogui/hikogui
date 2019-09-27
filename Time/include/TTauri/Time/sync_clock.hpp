@@ -5,7 +5,7 @@
 
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/thread.hpp"
-#include <boost/multiprecision/cpp_int.hpp>
+#include "TTauri/Required/bigint.hpp"
 #include <fmt/format.h>
 #include <chrono>
 #include <algorithm>
@@ -242,7 +242,7 @@ private:
     }
 
     typename slow_clock::duration convert(int64_t new_gain, typename fast_clock::duration fast_duration) const noexcept {
-        auto u128_count = static_cast<boost::multiprecision::int128_t>(fast_duration.count());
+        auto u128_count = static_cast<uint128_t>(fast_duration.count());
         u128_count *= new_gain;
         u128_count += (1LL << (gainShift - 1));
         u128_count >>= gainShift;
