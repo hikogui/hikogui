@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/strings.hpp"
-#include "TTauri/Foundation/math.hpp"
+#include "TTauri/Required/math.hpp"
 #include <type_traits>
 
 namespace TTauri {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/math.hpp"
+#include "TTauri/Required/math.hpp"
 
 namespace TTauri {
 

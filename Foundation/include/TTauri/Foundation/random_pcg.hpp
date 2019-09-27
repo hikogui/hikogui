@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/math.hpp"
+#include "TTauri/Required/math.hpp"
 #include "TTauri/Foundation/byte_string.hpp"
 #include "TTauri/Required/numeric_Cast.hpp"
 #include <atomic>

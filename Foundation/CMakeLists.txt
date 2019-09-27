@@ -18,7 +18,6 @@ set(TTauri_Foundation_tests
     tests/pickle_tests.cpp
     tests/polynomial_tests.cpp
     tests/small_map_tests.cpp
-    tests/bigint_tests.cpp
     tests/base93_tests.cpp
 )
 

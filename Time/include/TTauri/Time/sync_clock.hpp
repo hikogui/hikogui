@@ -145,7 +145,7 @@ private:
 
     typename slow_clock::duration getBias(int64_t new_gain) noexcept {
         // Get a large integer cpu_clock_value.
-        auto tmp = static_cast<boost::multiprecision::int128_t>(last_pair.fast.time_since_epoch() / 1ns);
+        auto tmp = static_cast<uint128_t>(last_pair.fast.time_since_epoch() / 1ns);
 
         // Multiply with the integer gain, that is pre-multiplied.
         tmp *= new_gain;

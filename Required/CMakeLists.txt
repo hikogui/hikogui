@@ -30,6 +30,7 @@ set(TTauri_Required_tests
     tests/url_parser_tests.cpp
     tests/URL_tests.cpp
     tests/wsRGBA_tests.cpp
+    tests/bigint_tests.cpp
 )
 
 add_library(TTauri_Required STATIC ${TTauri_Required_srcs})
