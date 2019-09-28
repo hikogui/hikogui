@@ -15,9 +15,6 @@
  */
 #define let auto const
 
-
-
-
 #define STRINGIFY(a) #a
 
 #if COMPILER == CC_MSVC

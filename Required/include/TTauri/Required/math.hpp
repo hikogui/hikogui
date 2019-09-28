@@ -79,7 +79,7 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
 
     } else if constexpr (sizeof(T) == 8) {
 #if PROCESSOR == CPU_X64
-        uint64_t r;
+        uint64_t r = 0;
         auto c = _addcarryx_u64(static_cast<unsigned char>(carry), a, b, &r);
         return { r, static_cast<uint64_t>(c) };
 #elif COMPILER == CC_CLANG || COMPILER == CC_GCC
@@ -108,9 +108,9 @@ constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 
 
     } else if constexpr (sizeof(T) == 8) {
 #if PROCESSOR == CPU_X64
-        uint64_t hi;
+        uint64_t hi = 0;
         uint64_t lo = _mulx_u64(a, b, &hi);
-        uint64_t c;
+        uint64_t c = 0;
         std::tie(lo, c) = add_carry(lo, carry, uint64_t{0});
         std::tie(hi, c) = add_carry(hi, uint64_t{0}, c);
         std::tie(lo, c) = add_carry(lo, accumulator, uint64_t{0});
@@ -140,11 +140,11 @@ constexpr T rotl(T x, unsigned int count) noexcept
         return _rotl64(x, count);
     } else {
         constexpr unsigned int mask = (8 * sizeof(T)) - 1;
-        return x << r | x >> (-r & mask);
+        return x << count | x >> (-count & mask);
     }
 #else
     constexpr unsigned int mask = (8 * sizeof(T)) - 1;
-    return x << r | x >> (-r & mask);
+    return x << count | x >> (-count & mask);
 #endif
 }
 
@@ -162,11 +162,11 @@ constexpr T rotr(T x, unsigned int count) noexcept
         return _rotr64(x, count);
     } else {
         constexpr unsigned int mask = (8 * sizeof(T)) - 1;
-        return x >> r | x << (-r & mask);
+        return x >> count | x << (-count & mask);
     }
 #else
     constexpr unsigned int mask = (8 * sizeof(T)) - 1;
-    return x >> r | x << (-r & mask);
+    return x >> count | x << (-count & mask);
 #endif
 }
 

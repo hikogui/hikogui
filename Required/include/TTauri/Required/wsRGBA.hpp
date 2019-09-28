@@ -5,6 +5,7 @@
 
 #include "TTauri/Required/geometry.hpp"
 #include "TTauri/Required/algorithm.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <fmt/format.h>

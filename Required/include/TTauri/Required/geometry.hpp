@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
+#include "TTauri/Required/numeric_cast.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>

@@ -12,7 +12,9 @@ namespace TTauri {
 
 void stop_debugger()
 {
+#if OPERATING_SYSTEM == OS_WINDOWS
     DebugBreak();
+#endif
 }
 
 
