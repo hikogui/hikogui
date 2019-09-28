@@ -145,7 +145,7 @@ private:
 
     typename slow_clock::duration getBias(int64_t new_gain) noexcept {
         // Get a large integer cpu_clock_value.
-        auto tmp = static_cast<uint128_t>(last_pair.fast.time_since_epoch() / 1ns);
+        auto tmp = static_cast<ubig128>(last_pair.fast.time_since_epoch() / 1ns);
 
         // Multiply with the integer gain, that is pre-multiplied.
         tmp *= new_gain;
@@ -242,7 +242,7 @@ private:
     }
 
     typename slow_clock::duration convert(int64_t new_gain, typename fast_clock::duration fast_duration) const noexcept {
-        auto u128_count = static_cast<uint128_t>(fast_duration.count());
+        auto u128_count = static_cast<ubig128>(fast_duration.count());
         u128_count *= new_gain;
         u128_count += (1LL << (gainShift - 1));
         u128_count >>= gainShift;

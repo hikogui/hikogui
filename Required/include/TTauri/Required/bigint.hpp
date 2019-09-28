@@ -6,16 +6,20 @@
 #include "TTauri/Required/strings.hpp"
 #include "TTauri/Required/math.hpp"
 #include <type_traits>
+#include <ostream>
 
 namespace TTauri {
 
-/*!
- *
- * We do not include any default, copy, move constructor or operators and destructor.
- * for performance reasons.
+/*! High performance big integer implementation.
+ * The bigint is a fixed width integer which will allow the compiler
+ * to make aggressive optimizations, unrolling most loops and easy inlining.
  */
-template<typename T, int N>
+template<typename T, int N, bool SIGNED=false>
 struct bigint {
+    static_assert(N >= 0, "bigint must have zero or more digits.");
+    static_assert(!SIGNED, "bigint has not implemented signed integers yet.");
+    static_assert(std::is_integral_v<T> && std::is_unsigned_v<T>, "bigint's digit must be unsigned integers.");
+
     using digit_type = T;
     static constexpr int nr_digits = N;
     static constexpr int bits_per_digit = sizeof(digit_type) * 8;
@@ -70,7 +74,19 @@ struct bigint {
     constexpr explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
     constexpr explicit operator char () const noexcept { return static_cast<char>(digits[0]); }
 
+    template<int O>
+    constexpr explicit operator bigint<T,O> () const noexcept {
+        bigint<T,O> r;
+
+        for (auto i = 0; i < O; i++) {
+            r.digits[i] = i < N ? digits[i] : 0;
+        }
+        return r;
+    }
+
     std::string string() const noexcept {
+        static auto oneOver10 = bigint_reciprocal<T,N*2>(10);
+
         auto tmp = *this;
 
         std::string r;
@@ -80,13 +96,24 @@ struct bigint {
         } else {
             while (tmp > 0) {
                 digit_type remainder;
-                std::tie(tmp, remainder) = div(tmp, 10);
+                std::tie(tmp, remainder) = div(tmp, 10, oneOver10);
                 r += (static_cast<char>(remainder) + '0');
             }
         }
 
         std::reverse(r.begin(), r.end());
         return r;
+    }
+
+    std::string UUIDString() const noexcept {
+        static_assert(std::is_same_v<T,uint64_t> && N == 2 && !SIGNED, "UUIDString should only be called on a uuid compatible type");
+        return fmt::format("{:08x}-{:04x}-{:04x}-{:04x}-{:012x}",
+            static_cast<uint32_t>(digits[1] >> 32),
+            static_cast<uint16_t>(digits[1] >> 16),
+            static_cast<uint16_t>(digits[1]),
+            static_cast<uint16_t>(digits[0] >> 48),
+            digits[0] & 0x0000ffff'ffffffffULL
+        );
     }
 
     constexpr digit_type get_bit(unsigned int count) const noexcept {
@@ -180,6 +207,38 @@ struct bigint {
     constexpr bigint &operator^=(U const &rhs) noexcept {
         return (*this) ^= bigint<digit_type,1>{rhs};
     }
+
+    static constexpr bigint fromBigEndian(uint8_t const *data) noexcept {
+        auto r = bigint{};
+        for (int i = N - 1; i >= 0; i--) {
+            digit_type d = 0;
+            for (ssize_t j = 0; j < sizeof(digit_type); j++) {
+                d <<= 8;
+                d |= *(data++);
+            }
+            r.digits[i] = d;
+        }
+        return r;
+    }
+    static constexpr bigint fromLittleEndian(uint8_t const *data) noexcept {
+        auto r = bigint{};
+        for (int i = 0; i < N; i++) {
+            digit_type d = 0;
+            for (ssize_t j = 0; j < sizeof(digit_type); j++) {
+                d |= static_cast<digit_type>(*(data++)) << (j*8);
+            }
+            r.digits[i] = d;
+        }
+        return r;
+    }
+
+    static constexpr bigint fromBigEndian(void const *data) noexcept {
+        return fromBigEndian(static_cast<uint8_t *>(data));
+    }
+
+    static constexpr bigint fromLittleEndian(void const *data) noexcept {
+        return fromLittleEndian(static_cast<uint8_t *>(data));
+    }
 };
 
 template<typename T, int N, int O>
@@ -220,7 +279,6 @@ constexpr void bigint_add(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> co
 template<typename T, int R, int N, int O>
 constexpr void bigint_multiply(bigint<T,R> &r, bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
 {
-    // Reserve one extra digit for overflow.
     for (auto rhs_index = 0; rhs_index < O; rhs_index++) {
         let rhs_digit = rhs.digits[rhs_index];
 
@@ -254,6 +312,53 @@ constexpr void bigint_div(bigint<T,R> &quotient, bigint<T,S> &remainder, bigint<
             quotient.set_bit(i);
         }
     }
+}
+
+template<typename T, int R, int S, int N, int O, int P>
+constexpr void bigint_div(bigint<T,R> &r_quotient, bigint<T,S> &r_remainder, bigint<T,N> const &lhs, bigint<T,O> const &rhs, bigint<T,P> const &rhs_reciprocal) noexcept
+{
+    auto quotient = bigint<T,N+P>{0};
+    bigint_multiply(quotient, lhs, rhs_reciprocal);
+
+    quotient >>= P*sizeof(T)*8;
+
+    auto product = bigint<T,N+O>{0};
+    bigint_multiply(product, quotient, rhs);
+
+    optional_assert(product <= lhs);
+    auto remainder = lhs - product;
+
+    int retry = 0;
+    while (remainder >= rhs) {
+        if (retry++ > 3) {
+            required_assert(false);
+            bigint_div(r_quotient, r_remainder, lhs, rhs);
+        }
+
+        remainder -= rhs;
+        quotient += 1;
+    }
+    r_quotient = static_cast<bigint<T,R>>(quotient);
+    r_remainder = static_cast<bigint<T,S>>(remainder);
+}
+
+/*! Calculate the reciprocal at a certain precision.
+ *
+ * N should be two times the size of the eventual numerator.
+ *
+ * \param divider The divider of 1.
+ * \return (1 << (K*sizeof(T)*8)) / divider
+ */
+template<typename T, int N, int O>
+constexpr auto bigint_reciprocal(bigint<T,O> const &divider) {
+    auto r = bigint<T,N+1>(0);
+    r.digits[N] = 1;
+    return static_cast<bigint<T,N>>(r / divider);
+}
+
+template<typename T, int N, typename U>
+constexpr auto bigint_reciprocal(U const &divider) {
+    return bigint_reciprocal<T,N>(bigint<T,1>{divider});
 }
 
 template<typename T, int R, int N, int O>
@@ -312,7 +417,10 @@ constexpr void bigint_shift_left(bigint<T,N> &r, bigint<T,N> const &lhs, int cou
     if (bit_count > 0) {
         T carry = 0;
         for (auto i = 0; i < N; i++) {
-            std::tie(r.digits[i], carry) = shift_left_carry(r.digits[i], bit_count, carry);
+            auto tmp = shift_left_carry(r.digits[i], bit_count, carry);
+            r.digits[i] = tmp.first;
+            carry = tmp.second;
+            //std::tie(r.digits[i], carry) = ;
         }
     }
 }
@@ -518,16 +626,37 @@ constexpr std::pair<bigint<T,N>, U> div(bigint<T,N> const &lhs, U rhs) noexcept
     return { quotient, static_cast<U>(remainder) };
 }
 
-template<typename T, int N, int O>
-constexpr bigint<T,N> operator/(bigint<T,N> const &lhs, bigint<T,N> const &rhs) noexcept
+template<typename T, int N, int O, int P>
+constexpr std::pair<bigint<T,N>, bigint<T,O>> div(bigint<T,N> const &lhs, bigint<T,O> const &rhs, bigint<T,P> const &rhs_reciprocal) noexcept
 {
     bigint<T,N> quotient = 0;
     bigint<T,O> remainder = 0;
+
+    bigint_div(quotient, remainder, lhs, rhs, rhs_reciprocal);
+    return { quotient, remainder };
+}
+
+template<typename T, int N, typename U, int O>
+constexpr std::pair<bigint<T,N>, U> div(bigint<T,N> const &lhs, U rhs, bigint<T,O> const &rhs_reciprocal) noexcept
+{
+    auto quotient = bigint<T,N>{0};
+    auto remainder = bigint<T,1>{0};
+
+    bigint_div(quotient, remainder, lhs, bigint<T,1>{rhs}, rhs_reciprocal);
+    return { quotient, static_cast<U>(remainder) };
+}
+
+template<typename T, int N, int O>
+constexpr bigint<T,N> operator/(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    auto quotient = bigint<T,N>{0};
+    auto remainder = bigint<T,O>{0};
 
     bigint_div(quotient, remainder, lhs, rhs);
     return quotient;
 }
 
+//template<typename T, typename U, int N, std::enable_if_t<std::is_integral_v<U>, int> = 0>
 template<typename T, typename U, int N>
 constexpr bigint<T,N> operator/(bigint<T,N> const &lhs, U const &rhs) noexcept
 {
@@ -550,6 +679,13 @@ constexpr U operator%(bigint<T,N> const &lhs, U const &rhs) noexcept
     return static_cast<U>(lhs % bigint<T,1>{rhs});
 }
 
-using uint128_t = bigint<uint64_t,2>;
+template<typename T, int N>
+inline std::ostream &operator<<(std::ostream &lhs, bigint<T,N> const &rhs) {
+    lhs << rhs.string();
+    return lhs;
+}
+
+using ubig128 = bigint<uint64_t,2>;
+using uuid = bigint<uint64_t,2>;
 
 }

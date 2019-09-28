@@ -11,10 +11,10 @@ using namespace std::literals;
 
 namespace TTauri {
 
-static uint8_t base93_crc(uint128_t number) noexcept
+static uint8_t base93_crc(ubig128 number) noexcept
 {
-    auto divider = static_cast<uint128_t>(0b100101) << 111; // CRC-5-USB polynomial.
-    auto top_bit = (static_cast<uint128_t>(0b100000) << 111) - 1; // CRC-5-USB polynomial.
+    auto divider = static_cast<ubig128>(0b100101) << 111; // CRC-5-USB polynomial.
+    auto top_bit = (static_cast<ubig128>(0b100000) << 111) - 1; // CRC-5-USB polynomial.
 
     // Number already includes the 5 CRC/padding bits.
     // Continue until the dividend is zero.
@@ -31,15 +31,15 @@ static uint8_t base93_crc(uint128_t number) noexcept
     return static_cast<uint8_t>(number & 0x1f);
 }
 
-static bool base93_crc_check(uint128_t number, size_t location) noexcept
+static bool base93_crc_check(ubig128 number, size_t location) noexcept
 {
-    auto v = base93_crc((static_cast<uint128_t>(location) << 85) | number);
+    auto v = base93_crc((static_cast<ubig128>(location) << 85) | number);
     return v == 0;
 }
 
-static uint128_t base93_add_crc(uint128_t number, size_t location) noexcept
+static ubig128 base93_add_crc(ubig128 number, size_t location) noexcept
 {
-    auto v = base93_crc((static_cast<uint128_t>(location) << 85) | number);
+    auto v = base93_crc((static_cast<ubig128>(location) << 85) | number);
     return number | v;
 }
 
@@ -93,7 +93,7 @@ static size_t base93_nr_bytes_to_nr_digits(size_t nr_bytes) noexcept
     }
 }
 
-static void base93_decode_number(bstring &message, uint128_t number, size_t nr_digits)
+static void base93_decode_number(bstring &message, ubig128 number, size_t nr_digits)
 {
     // Strip off CRC
     number >>= 5;
@@ -105,9 +105,9 @@ static void base93_decode_number(bstring &message, uint128_t number, size_t nr_d
     }
 }
 
-static uint128_t base93_bytes_to_number(bstring_view bytes) noexcept
+static ubig128 base93_bytes_to_number(bstring_view bytes) noexcept
 {
-    auto number = uint128_t{0};
+    auto number = ubig128{0};
 
     for (ssize_t i = to_signed(bytes.size()) - 1; i >= 0; i--) {
         number <<= 8;
@@ -119,13 +119,15 @@ static uint128_t base93_bytes_to_number(bstring_view bytes) noexcept
     return number;
 }
 
-static std::string base93_encode_number(uint128_t number, size_t nr_bytes) noexcept
+static std::string base93_encode_number(ubig128 number, size_t nr_bytes) noexcept
 {
+    static auto oneOver93 = bigint_reciprocal<uint64_t,4>(93);
+
     let nr_digits = base93_nr_bytes_to_nr_digits(nr_bytes);
     auto r = std::string(nr_digits, '!');
 
     for (ssize_t i = to_signed(nr_digits) - 1; i >= 0; i--) {
-        let [quotient, remainder] = div(number, 93);
+        let [quotient, remainder] = div(number, 93, oneOver93);
         r.at(i) = static_cast<char>(remainder) + '!';
         number = quotient;
     }
@@ -146,7 +148,7 @@ std::string base93_encode(bstring_view message) noexcept
 
     size_t nr_numbers = 0;
     size_t offset = 0;
-    auto number = uint128_t{0};
+    auto number = ubig128{0};
 
     while (offset < message.size()) {
         let nr_bytes = std::min(static_cast<size_t>(10), message.size() - offset);
@@ -168,7 +170,7 @@ bstring base93_decode(std::string_view str, size_t &offset)
     size_t nr_numbers = 0;
 
     bstring message;
-    auto number = uint128_t{0};
+    auto number = ubig128{0};
 
     uint64_t magic_check = 0;
 

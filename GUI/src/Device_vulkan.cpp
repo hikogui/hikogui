@@ -120,7 +120,7 @@ Device_vulkan::Device_vulkan(vk::PhysicalDevice physicalDevice) :
     deviceID = resultDeviceProperties2.properties.deviceID;
     vendorID = resultDeviceProperties2.properties.vendorID;
     deviceName = std::string(resultDeviceProperties2.properties.deviceName);
-    memcpy(deviceUUID.data, resultDeviceIDProperties.deviceUUID, deviceUUID.size());
+    deviceUUID = uuid::fromBigEndian(resultDeviceIDProperties.deviceUUID);
 
     memoryProperties = physicalIntrinsic.getMemoryProperties();
 }

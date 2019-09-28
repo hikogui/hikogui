@@ -38,11 +38,11 @@ CVReturn Instance_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink
 
     auto self = static_cast<Instance_vulkan_win32 *>(target);
 
-    auto currentHostTime = static_cast<__uint128_t>(now->hostTime);
+    auto currentHostTime = static_cast<ubig128>(now->hostTime);
     currentHostTime *= 1000000000;
     currentHostTime /= self->hostFrequency;
 
-    auto outputHostTime = static_cast<__uint128_t>(outputTime->hostTime);
+    auto outputHostTime = static_cast<ubig128>(outputTime->hostTime);
     outputHostTime *= 1000000000;
     outputHostTime /= self->hostFrequency;
 

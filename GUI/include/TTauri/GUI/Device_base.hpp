@@ -7,7 +7,7 @@
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Required/numeric_cast.hpp"
-#include <boost/uuid/uuid.hpp>
+#include "TTauri/Required/bigint.hpp"
 #include <unordered_set>
 #include <mutex>
 #include <tuple>
@@ -28,7 +28,7 @@ public:
     std::string deviceName = "<no device>";
     uint32_t vendorID = 0;
     uint32_t deviceID = 0;
-    boost::uuids::uuid deviceUUID = {};
+    uuid deviceUUID = {};
 
     /*! A list of windows managed by this device.
      */
