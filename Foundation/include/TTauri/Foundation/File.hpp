@@ -12,27 +12,44 @@
 namespace TTauri {
 
 
-struct AccessMode {
-    uint64_t value;
+enum class AccessMode {
+    Read = 0x1,
+    Write = 0x2,
+    ReadLock = 0x10,
+    WriteLock = 0x20,
+    Open = 0x100, //!< Open file if it exist, or fail.
+    Create = 0x200, //!< Create file if it does not exist, or fail.
+    Truncate = 0x400, //!< After the file has been opened, truncate it.
+    Random = 0x1000, //!< Hint the operating system that the data in the file will be accessed with random read or write patterns.
+    Sequential = 0x2000, //!< Hint to the operating system that the data in the file will be accessed sequentially.
+    WriteThrough = 0x4000, //!< Hint to the operating system that writes should be commited to disk quickly.
 
-    AccessMode(uint64_t v) noexcept : value(v) {}
-
-    bool operator>=(AccessMode m) noexcept {
-        return (value & m.value) == m.value;
-    }
-
-    static constexpr uint64_t RDONLY = 0x1;
-    static constexpr uint64_t WRONLY = 0x2;
-    static constexpr uint64_t RDLOCK = 0x10;
-    static constexpr uint64_t WRLOCK = 0x20;
-    static constexpr uint64_t RDWR = RDONLY | WRONLY;
-    static constexpr uint64_t CREAT = 0x100;
-    static constexpr uint64_t EXCL = 0x200;
-    static constexpr uint64_t TRUNC = 0x400;
-    static constexpr uint64_t RANDOM_ACCESS = 0x1000;
-    static constexpr uint64_t SEQUENTIAL = 0x2000;
-    static constexpr uint64_t WRITE_THROUGH = 0x4000;
+    OpenForRead = 0x101,
+    OpenForReadWrite = 0x103,
 };
+
+inline AccessMode operator|(AccessMode lhs, AccessMode rhs) noexcept
+{
+    return static_cast<AccessMode>(static_cast<int>(lhs) | static_cast<int>(rhs));
+}
+
+inline AccessMode operator&(AccessMode lhs, AccessMode rhs) noexcept
+{
+    return static_cast<AccessMode>(static_cast<int>(lhs) & static_cast<int>(rhs));
+}
+
+inline bool operator==(AccessMode lhs, AccessMode rhs) noexcept
+{
+    return static_cast<int>(lhs) == static_cast<int>(rhs);
+}
+
+inline bool operator<(AccessMode lhs, AccessMode rhs) noexcept
+{
+    return (lhs & rhs) != rhs;
+}
+
+inline bool operator!=(AccessMode lhs, AccessMode rhs) noexcept { return !(lhs == rhs); }
+inline bool operator>=(AccessMode lhs, AccessMode rhs) noexcept { return !(lhs < rhs); }
 
 struct File {
     AccessMode accessMode;

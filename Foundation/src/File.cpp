@@ -17,43 +17,60 @@ File::File(URL const &location, AccessMode accessMode) :
 {
 #if OPERATING_SYSTEM == OS_WINDOWS
     DWORD desiredAccess = 0;
-    if (accessMode >= AccessMode::RDONLY) {
-        desiredAccess |= GENERIC_READ;
-    }
-    if (accessMode >= AccessMode::WRONLY) {
-        desiredAccess |= GENERIC_WRITE;
+    if (accessMode >= (AccessMode::Read | AccessMode::Write)) {
+        desiredAccess = GENERIC_READ | GENERIC_WRITE;
+    } else if (accessMode >= AccessMode::Read) {
+        desiredAccess = GENERIC_READ;
+    } else if (accessMode >= AccessMode::Write) {
+        desiredAccess = GENERIC_WRITE;
+    } else {
+        TTAURI_THROW(io_error("Invalid AccessMode; expecting Readable and/or Writeable.")
+            .set<"url"_tag>(location)
+        );
     }
 
     DWORD shareMode;
-    if (accessMode >= AccessMode::WRLOCK) {
+    if (accessMode >= AccessMode::WriteLock) {
         shareMode = 0;
-    } else if (accessMode >= AccessMode::WRLOCK) {
+    } else if (accessMode >= AccessMode::ReadLock) {
         shareMode = FILE_SHARE_READ;
     } else {
-        shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
+        // Allow files to be renamed and deleted.
+        shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
     }
 
     DWORD creationDisposition;
-    if (accessMode >= AccessMode::EXCL) {
+    if (accessMode >= (AccessMode::Create | AccessMode::Open)) {
+        if (accessMode >= AccessMode::Truncate) {
+            creationDisposition = CREATE_ALWAYS;
+        } else {
+            creationDisposition = OPEN_ALWAYS;
+        }
+
+    } else if (accessMode >= AccessMode::Create) {
         creationDisposition = CREATE_NEW;
-    } else if (accessMode >= (AccessMode::CREAT | AccessMode::TRUNC)) {
-        creationDisposition = CREATE_ALWAYS;
-    } else if (accessMode >= AccessMode::CREAT) {
-        creationDisposition = OPEN_ALWAYS;
-    } else if (accessMode >= AccessMode::TRUNC) {
-        creationDisposition = TRUNCATE_EXISTING;
+
+    } else if (accessMode >= AccessMode::Open) {
+        if (accessMode >= AccessMode::Truncate) {
+            creationDisposition = TRUNCATE_EXISTING;
+        } else {
+            creationDisposition = OPEN_EXISTING;
+        }
+
     } else {
-        creationDisposition = OPEN_EXISTING;
+        TTAURI_THROW(io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.")
+            .set<"url"_tag>(location)
+        );
     }
 
     DWORD flagsAndAttributes = 0;
-    if (accessMode >= AccessMode::RANDOM_ACCESS) {
+    if (accessMode >= AccessMode::Random) {
         flagsAndAttributes |= FILE_FLAG_RANDOM_ACCESS;
     }
-    if (accessMode >= AccessMode::SEQUENTIAL) {
+    if (accessMode >= AccessMode::Sequential) {
         flagsAndAttributes |= FILE_FLAG_SEQUENTIAL_SCAN;
     }
-    if (accessMode >= AccessMode::WRITE_THROUGH) {
+    if (accessMode >= AccessMode::WriteThrough) {
         flagsAndAttributes |= FILE_FLAG_WRITE_THROUGH;
     }
 

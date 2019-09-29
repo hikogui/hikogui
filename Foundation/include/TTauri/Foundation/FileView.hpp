@@ -17,7 +17,7 @@ private:
 
 public:
     FileView(std::shared_ptr<FileMapping> const& mappingObject, size_t offset, size_t size);
-    FileView(URL const &location, AccessMode accessMode=AccessMode::RDONLY, size_t offset=0, size_t size=0);
+    FileView(URL const &location, AccessMode accessMode=AccessMode::OpenForRead, size_t offset=0, size_t size=0);
     ~FileView() = default;
 
     FileView() = delete;

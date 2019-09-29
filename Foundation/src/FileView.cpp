@@ -26,10 +26,10 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
 
 #if OPERATING_SYSTEM == OS_WINDOWS
     DWORD desiredAccess;
-    if (accessMode() >= AccessMode::RDWR) {
+    if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
         desiredAccess = FILE_MAP_WRITE;
     }
-    else if (accessMode() >= AccessMode::RDONLY) {
+    else if (accessMode() >= AccessMode::Read) {
         desiredAccess = FILE_MAP_READ;
     }
     else {

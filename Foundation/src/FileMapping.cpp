@@ -19,10 +19,10 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
 {
 #if OPERATING_SYSTEM == OS_WINDOWS
     DWORD protect;
-    if (accessMode() >= AccessMode::RDWR) {
+    if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {
         protect = PAGE_READWRITE;
     }
-    else if (accessMode() >= AccessMode::RDONLY) {
+    else if (accessMode() >= AccessMode::Read) {
         protect = PAGE_READONLY;
     }
     else {
