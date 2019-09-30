@@ -11,35 +11,21 @@ using namespace std::literals;
 
 namespace TTauri {
 
+
 static uint8_t base93_crc(ubig128 number) noexcept
 {
-    auto divider = static_cast<ubig128>(0b100101) << 111; // CRC-5-USB polynomial.
-    auto top_bit = (static_cast<ubig128>(0b100000) << 111) - 1; // CRC-5-USB polynomial.
-
-    // Number already includes the 5 CRC/padding bits.
-    // Continue until the dividend is zero.
-    while (number >= 32) {
-        optional_assert(divider > 0);
-        if (top_bit < number) {
-            // Align the top bit of the divider with the number before dividing.
-            number ^= divider;
-        }
-
-        divider >>= 1;
-        top_bit >>= 1;
-    }
-    return static_cast<uint8_t>(number & 0x1f);
+    return number.crc(0b100101);
 }
 
-static bool base93_crc_check(ubig128 number, size_t location) noexcept
+static bool base93_crc_check(ubig128 number) noexcept
 {
-    auto v = base93_crc((static_cast<ubig128>(location) << 85) | number);
-    return v == 0;
+    auto v = base93_crc(number >> 5);
+    return v == (number & 0x1f);
 }
 
-static ubig128 base93_add_crc(ubig128 number, size_t location) noexcept
+static ubig128 base93_add_crc(ubig128 number) noexcept
 {
-    auto v = base93_crc((static_cast<ubig128>(location) << 85) | number);
+    auto v = base93_crc(number >> 5);
     return number | v;
 }
 
@@ -60,6 +46,7 @@ static ubig128 base93_add_crc(ubig128 number, size_t location) noexcept
 static size_t base93_nr_digits_to_nr_bytes(size_t nr_digits)
 {
     switch (nr_digits) {
+    case 0: return 0;
     case 2: return 1;
     case 4: return 2;
     case 5: return 3;
@@ -93,7 +80,7 @@ static size_t base93_nr_bytes_to_nr_digits(size_t nr_bytes) noexcept
     }
 }
 
-static void base93_decode_number(bstring &message, ubig128 number, size_t nr_digits)
+static void base93_number_to_bytes(bstring &message, ubig128 number, size_t nr_digits)
 {
     // Strip off CRC
     number >>= 5;
@@ -119,7 +106,7 @@ static ubig128 base93_bytes_to_number(bstring_view bytes) noexcept
     return number;
 }
 
-static std::string base93_encode_number(ubig128 number, size_t nr_bytes) noexcept
+static std::string base93_number_to_characters(ubig128 number, size_t nr_bytes) noexcept
 {
     static auto oneOver93 = bigint_reciprocal<uint64_t,4>(93);
 
@@ -135,40 +122,60 @@ static std::string base93_encode_number(ubig128 number, size_t nr_bytes) noexcep
     return r;
 }
 
-static std::string base93_encode_bytes(bstring_view bytes, size_t location) noexcept
+static std::string base93_encode_bytes(bstring_view bytes) noexcept
 {
     let number = base93_bytes_to_number(bytes);
-    let number_with_crc = base93_add_crc(number, location);
-    return base93_encode_number(number_with_crc, bytes.size());
+    let number_with_crc = base93_add_crc(number);
+    return base93_number_to_characters(number_with_crc, bytes.size());
 }
 
 std::string base93_encode(bstring_view message) noexcept
 {
-    auto str = "~b93{"s;
+    // Split the message with a line feed every 76 characters.
+    // Make sure to split numbers, so that CRCs will detect missing lines.
+    constexpr int maximumLineLength = 76;
 
-    size_t nr_numbers = 0;
+    let totalNumbers = (message.size() + 9) / 10;
+    let totalDigits = totalNumbers * 13;
+    let totalLineSeperators = (totalDigits + 5 + maximumLineLength) / maximumLineLength;
+    let totalCharacters = totalDigits + totalLineSeperators + 5;
+
+    std::string str;
+    str.reserve(totalCharacters);
+
+    str += "~b93";
     size_t offset = 0;
-    auto number = ubig128{0};
-
+    size_t currentLineLength = 0;
     while (offset < message.size()) {
         let nr_bytes = std::min(static_cast<size_t>(10), message.size() - offset);
-        str += base93_encode_bytes(message.substr(offset, nr_bytes), nr_numbers++);
+
+        let digits = base93_encode_bytes(message.substr(offset, nr_bytes));
+
+        let splitPosition = std::min(digits.size(), maximumLineLength - currentLineLength);
+        str += digits.substr(0, splitPosition);
+        if (splitPosition < digits.size()) {
+            str += '\n';
+            str += digits.substr(splitPosition);
+            currentLineLength = digits.size() - splitPosition;
+        } else {
+            currentLineLength += splitPosition;
+        }
+
         offset += nr_bytes;
     }
 
-    str += "~}";
+    // Always add the closing ~ on the current line.
+    str += '~';
     return str;
 }
 
 
-bstring base93_decode(std::string_view str, size_t &offset)
+std::optional<bstring> base93_decode(std::string_view str, size_t &offset)
 {
-    enum class state_t { Idle, Command, Decoding, Finished };
+    enum class state_t { Idle, FoundTilde, FoundB, Found9, Decoding };
     auto state = state_t::Idle;
 
     size_t nr_digits = 0;
-    size_t nr_numbers = 0;
-
     bstring message;
     auto number = ubig128{0};
 
@@ -177,94 +184,63 @@ bstring base93_decode(std::string_view str, size_t &offset)
     while (offset < str.size()) {
         let c = str.at(offset++);
 
-        if (c == '~') {
-            magic_check = 0;
-            state = state_t::Command;
+        switch (state) {
+        case state_t::Idle:
+            state = c == '~' ? state_t::FoundTilde : state_t::Idle;
+            break;
 
-        } else {
-            switch (state) {
-            case state_t::Idle:
-                // Ignore all characters.
-                break;
+        case state_t::FoundTilde:
+            state = c == 'b' ? state_t::FoundB : state_t::Idle;
+            break;
 
-            case state_t::Command:
-                switch (c) {
-                case 'b':
-                case '9':
-                case '3':
-                    magic_check <<= 8;
-                    magic_check |= static_cast<uint8_t>(c);
-                    break;
+        case state_t::FoundB:
+            state = c == '9' ? state_t::Found9 : state_t::Idle;
+            break;
 
-                case '{':
-                    if (magic_check != 0x623933) { // 'b93'
-                        TTAURI_THROW(parse_error("Magic 'base93' check failed.")
-                            .set<"location"_tag>(offset - 1)
-                        );
-                    }
-                    state = state_t::Decoding;
-                    break;
+        case state_t::Found9:
+            state = c == '3' ? state_t::Decoding : state_t::Idle;
+            break;
 
-                case '}':
-                    if (nr_digits > 0) {
-                        // Decode the last bit of the message.
-                        if (!base93_crc_check(number, nr_numbers++)) {
-                            TTAURI_THROW(parse_error("CRC error.")
-                                .set<"location"_tag>(offset - 1)
-                            );
-                        }
-                        try {
-                            base93_decode_number(message, number, nr_digits);
-                        } catch (error &e) {
-                            e.set<"location"_tag>(offset - 1);
-                            throw;
-                        }
-                    }
-                    return message;
-
-                default:
-                    // Unexpected command character, ignore.
-                    state = state_t::Idle;
-                }
-                break;
-
-            case state_t::Decoding:
-                if (nr_digits == 13) {
-                    if (!base93_crc_check(number, nr_numbers++)) {
-                        TTAURI_THROW(parse_error("CRC error.")
-                            .set<"location"_tag>(offset - 1)
-                        );
-                    }
-                    try {
-                        base93_decode_number(message, number, nr_digits);
-                    } catch (error &e) {
-                        e.set<"location"_tag>(offset - 1);
-                        throw;
-                    }
-                    number = 0;
-                    nr_digits = 0;
-                }
-
-                if (c >= '!' && c <= '}') {
-                    number *= 93;
-                    number += (c - '!');
-                    nr_digits++;
-
-                } else if (c < '!') {
-                    // All non-printable and non-ASCII characters are ignored.
-                } else {
-                    TTAURI_THROW(parse_error("Non ASCII character found.")
+        case state_t::Decoding:
+            if (nr_digits == 13 || c == '~') {
+                if (!base93_crc_check(number)) {
+                    TTAURI_THROW(parse_error("CRC error.")
                         .set<"location"_tag>(offset - 1)
                     );
                 }
-                break;
+                try {
+                    base93_number_to_bytes(message, number, nr_digits);
+                } catch (error &e) {
+                    e.set<"location"_tag>(offset - 1);
+                    throw;
+                }
+                number = 0;
+                nr_digits = 0;
             }
+
+            if (c >= '!' && c <= '}') {
+                number *= 93;
+                number += (c - '!');
+                nr_digits++;
+
+            } else if (c == '~') {
+                return {std::move(message)};
+
+            } else if (static_cast<uint8_t>(c) >= 128) {
+                TTAURI_THROW(parse_error("Non ASCII character found.")
+                    .set<"location"_tag>(offset - 1)
+                );
+            }
+            break;
         }
     }
 
-    TTAURI_THROW(parse_error("Incomplete base-93 message.")
-        .set<"location"_tag>(offset - 1)
-    );
+    if (state == state_t::Decoding) {
+        TTAURI_THROW(parse_error("Incomplete base-93 message.")
+            .set<"location"_tag>(offset - 1)
+        );
+    }
+    return {};
 }
 
 }

@@ -5,13 +5,22 @@ find_package(GTest)
 
 set(TTauri_Foundation_srcs
     src/globals.cpp
-    src/File.cpp
     src/FileMapping.cpp
     src/FileView.cpp
     src/ResourceView.cpp
     src/StaticResourceView.cpp
     src/base93.cpp
 )
+
+if(WIN32)
+    set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
+        src/File_win32.cpp
+    )
+elseif(APPLE)
+    set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
+        src/File_posix.mm
+    )
+endif()
 
 set(TTauri_Foundation_tests
     tests/FileView_tests.cpp

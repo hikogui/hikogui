@@ -218,6 +218,16 @@ struct bigint {
         return (*this) ^= bigint<digit_type,1>{rhs};
     }
 
+    template<int O>
+    constexpr bigint<digit_type,O> crc(bigint<digit_type,O> const &rhs) noexcept {
+        return bigint_crc(*this, rhs);
+    }
+
+    template<typename U>
+    constexpr U crc(U const &rhs) noexcept {
+        return static_cast<U>(crc(bigint<digit_type,1>{rhs}));
+    }
+
     static constexpr bigint fromBigEndian(uint8_t const *data) noexcept {
         auto r = bigint{};
         for (int i = N - 1; i >= 0; i--) {
@@ -350,6 +360,46 @@ constexpr void bigint_div(bigint<T,R> &r_quotient, bigint<T,S> &r_remainder, big
     }
     r_quotient = static_cast<bigint<T,R>>(quotient);
     r_remainder = static_cast<bigint<T,S>>(remainder);
+}
+
+/*! Bit scan reverse.
+ * \return index of leading one, or -1 when rhs is zero.
+ */
+template<typename T, int N>
+constexpr int bigint_bsr(bigint<T,N> const &rhs) noexcept
+{
+    for (auto i = N - 1; i >= 0; i--) {
+        auto tmp = bsr(rhs.digits[i]);
+        if (tmp >= 0) {
+            return (i * bigint<T,N>::bits_per_digit) + tmp;
+        }
+    }
+    return -1;
+}
+
+/*! Calculate the remainder of a CRC check.
+ * \param r Return value, the remainder.
+ * \param lhs The number to check.
+ * \param rhs Polynomial.
+ */
+template<typename T, int N, int O>
+constexpr bigint<T,O> bigint_crc(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
+{
+    let polynomialOrder = bigint_bsr(rhs);
+    required_assert(polynomialOrder >= 0);
+
+    auto tmp = static_cast<bigint<T,O+N>>(lhs) << polynomialOrder;
+    auto rhs_ = static_cast<bigint<T,O+N>>(rhs);
+
+    auto tmp_highest_bit = bigint_bsr(tmp);
+    while (tmp_highest_bit >= polynomialOrder) {
+        let divident = rhs_ << (tmp_highest_bit - polynomialOrder);
+
+        tmp ^= divident;
+        tmp_highest_bit = bigint_bsr(tmp);
+    }
+
+    return static_cast<bigint<T,O>>(tmp);
 }
 
 /*! Calculate the reciprocal at a certain precision.

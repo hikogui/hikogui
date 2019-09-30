@@ -83,7 +83,7 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
         auto c = _addcarryx_u64(static_cast<unsigned char>(carry), a, b, &r);
         return { r, static_cast<uint64_t>(c) };
 #elif COMPILER == CC_CLANG || COMPILER == CC_GCC
-        uint128_t r = static_cast<uint128_t>(a) + static_cast<uint128_t>(b) + carry;
+        auto r = static_cast<__uint128_t>(a) + static_cast<__uint128_t>(b) + carry;
         return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
 #else
 #error "Not implemented"
@@ -107,7 +107,7 @@ constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 
         return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
 
     } else if constexpr (sizeof(T) == 8) {
-#if PROCESSOR == CPU_X64
+#if PROCESSOR == CPU_X64 && !(OPERATING_SYSTEM == OS_WINDOWS && COMPILER == CC_CLANG)
         uint64_t hi = 0;
         uint64_t lo = _mulx_u64(a, b, &hi);
         uint64_t c = 0;
@@ -118,12 +118,54 @@ constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 
         return { lo, hi }; 
 
 #elif COMPILER == CC_CLANG || COMPILER == CC_GCC
-        uint128_t r = static_cast<uint128_t>(a) * static_cast<uint128_t>(b) + carry + accumulator;
+        auto r = static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b) + carry + accumulator;
         return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
 #else
 #error "Not implemented"
 #endif
     }
+}
+
+/*! Bit scan reverse.
+ *
+ * \return index of highest '1' bit, or -1 when no bits are set.
+ */
+template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+constexpr int bsr(T x) noexcept
+{
+#if COMPILER == CC_MSVC
+    if constexpr (sizeof(T) == 4) {
+        unsigned long index;
+        auto found = _BitScanReverse(&index, x);
+        return found ? index : -1;
+
+    } else if constexpr (sizeof(T) == 8) {
+        unsigned long index;
+        auto found = _BitScanReverse64(&index, x);
+        return found ? index : -1;
+
+    } else {
+        not_implemented;
+    }
+#elif COMPILER == CC_CLANG
+    if constexpr (std::is_same_v<T,unsigned int>) {
+        auto tmp = __builtin_clz(x);
+        return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
+
+    } else if constexpr (std::is_same_v<T,unsigned long>) {
+        auto tmp = __builtin_clzl(x);
+        return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
+
+    } else if constexpr (std::is_same_v<T,unsigned long long>) {
+        auto tmp = __builtin_clzll(x);
+        return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
+
+    } else {
+        not_implemented;
+    }
+#else
+#error "Not implemented"
+#endif
 }
 
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
