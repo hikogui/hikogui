@@ -5,16 +5,26 @@
 
 #include "TTauri/Required/strings.hpp"
 #include "TTauri/Required/math.hpp"
+#include <fmt/format.h>
 #include <type_traits>
 #include <ostream>
 
 namespace TTauri {
 
+template<typename T, int N, bool SIGNED=false>
+struct bigint;
+
+template<typename T, int N, int O>
+constexpr bigint<T,N> bigint_reciprocal(bigint<T,O> const &divider);
+
+template<typename T, int N, typename U>
+constexpr bigint<T,N> bigint_reciprocal(U const &divider);
+
 /*! High performance big integer implementation.
  * The bigint is a fixed width integer which will allow the compiler
  * to make aggressive optimizations, unrolling most loops and easy inlining.
  */
-template<typename T, int N, bool SIGNED=false>
+template<typename T, int N, bool SIGNED>
 struct bigint {
     static_assert(N >= 0, "bigint must have zero or more digits.");
     static_assert(!SIGNED, "bigint has not implemented signed integers yet.");
@@ -233,11 +243,11 @@ struct bigint {
     }
 
     static constexpr bigint fromBigEndian(void const *data) noexcept {
-        return fromBigEndian(static_cast<uint8_t *>(data));
+        return fromBigEndian(static_cast<uint8_t const *>(data));
     }
 
     static constexpr bigint fromLittleEndian(void const *data) noexcept {
-        return fromLittleEndian(static_cast<uint8_t *>(data));
+        return fromLittleEndian(static_cast<uint8_t const *>(data));
     }
 };
 
@@ -350,14 +360,14 @@ constexpr void bigint_div(bigint<T,R> &r_quotient, bigint<T,S> &r_remainder, big
  * \return (1 << (K*sizeof(T)*8)) / divider
  */
 template<typename T, int N, int O>
-constexpr auto bigint_reciprocal(bigint<T,O> const &divider) {
+constexpr bigint<T,N> bigint_reciprocal(bigint<T,O> const &divider) {
     auto r = bigint<T,N+1>(0);
     r.digits[N] = 1;
     return static_cast<bigint<T,N>>(r / divider);
 }
 
 template<typename T, int N, typename U>
-constexpr auto bigint_reciprocal(U const &divider) {
+constexpr bigint<T,N> bigint_reciprocal(U const &divider) {
     return bigint_reciprocal<T,N>(bigint<T,1>{divider});
 }
 

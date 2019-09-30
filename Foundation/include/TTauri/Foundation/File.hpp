@@ -20,9 +20,11 @@ enum class AccessMode {
     Open = 0x100, //!< Open file if it exist, or fail.
     Create = 0x200, //!< Create file if it does not exist, or fail.
     Truncate = 0x400, //!< After the file has been opened, truncate it.
-    Random = 0x1000, //!< Hint the operating system that the data in the file will be accessed with random read or write patterns.
-    Sequential = 0x2000, //!< Hint to the operating system that the data in the file will be accessed sequentially.
-    WriteThrough = 0x4000, //!< Hint to the operating system that writes should be commited to disk quickly.
+    Random = 0x1000, //!< Hint the data should not be prefetched.
+    Sequential = 0x2000, //!< Hint that the data should be prefetched.
+    NoReuse = 0x4000, //!< Hint that the data should not be cached.
+    WriteThrough = 0x8000, //!< Hint that writes should be send directly to disk.
+    
 
     OpenForRead = 0x101,
     OpenForReadWrite = 0x103,
