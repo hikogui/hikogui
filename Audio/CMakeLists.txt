@@ -2,8 +2,11 @@
 project(TTauri_Audio CXX)
 
 set(TTauri_Audio_srcs
+    src/globals.cpp
     src/AudioDevice.cpp
     src/AudioDevice_win32.cpp
+    src/AudioSystem.cpp
+    src/AudioSystem_win32.cpp
 )
 
 add_library(TTauri_Audio STATIC ${TTauri_Audio_srcs})

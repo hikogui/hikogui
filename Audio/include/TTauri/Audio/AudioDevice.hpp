@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "TTauri/Required/bigint.hpp"
 #include "TTauri/Audio/AudioDeviceDelegate.hpp"
 #include "TTauri/Audio/AudioStreamConfig.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -20,16 +21,20 @@ namespace TTauri::Audio {
  * capture at the same time.
  */
 class AudioDevice {
-    std::shared_ptr<AudioDeviceDelegate> delegate;
+private:
+    std::shared_ptr<AudioDeviceDelegate> delegate = {};
 
-    AudioDevice(std::shared_ptr<AudioDeviceDelegate> delegate);
+public:
+    std::string id;
+
+    AudioDevice();
     virtual ~AudioDevice() = default;
 
     /*! Get a identfier for this device which can be stored
      * into a preferences file and be used after a reboot
      * to get the same device.
      */
-    virtual boost::uuids::uuid id() const noexcept = 0;
+    //virtual uuid uuid() const noexcept = 0;
 
     /*! Get a user friendly name of the audio device.
      * This is a combination of the name of the device and
@@ -51,7 +56,7 @@ class AudioDevice {
     /*! Check if a audio configuration is supported by this device.
      * \param config Configuration such as sample rate, sample format and bit-depth.
      */
-    virtual bool isConfigSupported(AudioStreamConfig config) const noexcept = 0;
+    //virtual bool isConfigSupported(AudioStreamConfig config) const noexcept = 0;
 
     /*! Start a session.
      * Start a session, which will cause data to be stream to and
@@ -69,12 +74,12 @@ class AudioDevice {
      * \param config Configuration such as sample rate, sample format and bit-depth.
      * XXX Windows allows for an icon to be passed to a session.
      */
-    virtual void startSession(boost::uuids::uuid sessionId, std::string name, AudioStreamConfig config) = 0;
+    //virtual void startSession(boost::uuids::uuid sessionId, std::string name, AudioStreamConfig config) = 0;
 
     /*! Stop a session.
      * Stop a session, which will also stop the streams of audio.
      */
-    virtual void stopSession() noexcept = 0;
+    //virtual void stopSession() noexcept = 0;
 };
 
 }

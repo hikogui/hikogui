@@ -206,14 +206,17 @@ inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
     constexpr T oneForth = static_cast<T>(1) / static_cast<T>(4);
     constexpr T oneTwentySeventh = static_cast<T>(1) / static_cast<T>(27);
 
-    if (p != 0 || q != 0) {
+    if (p == 0.0 && q == 0.0) {
+        return { static_cast<T>(0) };
+
+    } else {
         let D = oneForth*q*q + oneTwentySeventh*p*p*p;
 
-        if (D < 0) {
+        if (D < 0 && p != 0.0) {
             // Has three real roots.
             return solveDepressedCubicTrig(p, q);
 
-        } else if (D == 0) {
+        } else if (D == 0 && p != 0.0) {
             // Has two real roots, or maybe one root
             let t0 = (static_cast<T>(3)*q) / p;
             let t1 = (static_cast<T>(-3)*q) / (static_cast<T>(2)*p);
@@ -223,8 +226,6 @@ inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
             // Has one real root.
             return solveDepressedCubicCardano(p, q, D);
         }
-    } else {
-        return { static_cast<T>(0) };
     }
 }
 

@@ -240,4 +240,10 @@ inline logger_type logger = {};
 #define LOG_CRITICAL(...) TTAURI_LOG(log_level::Critical, __VA_ARGS__)
 #define LOG_FATAL(...) TTAURI_LOG(log_level::Fatal, __VA_ARGS__)
 
+#define hresult_assert_or_fatal(x) ([](HRESULT result) {\
+        if (ttauri_unlikely(FAILED(result))) {\
+            LOG_FATAL("Call to '{}' failed with {:08x}", #x, result);\
+        }\
+        return result;\
+    }(x))
 

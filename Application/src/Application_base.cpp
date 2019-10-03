@@ -18,6 +18,7 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
     i_time(URL::urlFromResourceDirectory() / "tzdata"),
     i_diagnostic(),
     i_config(),
+    i_audio(),
     i_draw(),
 #if OPERATING_SYSTEM == OS_WINDOWS
     i_gui(this, hInstance, nCmdShow),

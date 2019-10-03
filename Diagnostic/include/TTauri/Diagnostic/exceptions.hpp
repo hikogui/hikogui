@@ -213,4 +213,12 @@ using invalid_operation_error = sub_error<"invalid_op"_tag, "location"_tag, "pre
 #define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{}", #x )); }
 #define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
 
+#define hresult_assert_or_throw(x) ([](HRESULT result) {\
+        if (ttauri_unlikely(FAILED(result)) {\
+            TTAURI_THROW(io_error("Call to '{}' failed with {:08x}", #x, result));\
+        }\
+        return result;\
+    }(x))
+
+
 }
