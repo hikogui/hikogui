@@ -29,7 +29,7 @@ inline std::array<T,3> bezierToPolynomial(T P1, T C, T P2) noexcept
     };
 }
 
-// B(t)=(P_{1}-2C+P_{2})t^{2}+2(C-P_{1})t+P_{1}
+// B(t)=(-P_{1}+3C_{1}-3C_{2}+P_{2})t^{3}+(3P_{1}-6_{1}+3C_{2})t^{2}+(-3P_{1}+3C_{1})t+P_{1}
 template<typename T>
 inline std::array<T,4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 {
