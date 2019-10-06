@@ -35,4 +35,13 @@ template<> struct is_character<char32_t> : std::true_type {};
 template<typename T>
 inline constexpr bool is_character_v = is_character<T>::value;
 
+
+template<typename T, typename U>
+struct promote {
+    using type = decltype(static_cast<T>(0) + static_cast<U>(0));
+};
+
+template<typename T, typename U>
+using promote_t = promote<T,U>::type;
+
 }

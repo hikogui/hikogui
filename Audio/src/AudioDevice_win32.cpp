@@ -19,7 +19,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
     PROPVARIANT textProperty;
     PropVariantInit(&textProperty);
 
-    hresult_assert_or_fatal(propertyStore_->GetValue(PKEY_Device_FriendlyName, &textProperty));
+    hresult_assert(propertyStore_->GetValue(PKEY_Device_FriendlyName, &textProperty));
     auto textWString = std::wstring_view(textProperty.pwszVal);
     auto textString = translateString<std::string>(textWString);
 
@@ -36,7 +36,7 @@ AudioDevice_win32::AudioDevice_win32(void *device) :
     
     auto device_ = static_cast<IMMDevice *>(device);
     
-    hresult_assert_or_fatal(device_->OpenPropertyStore(STGM_READ, reinterpret_cast<IPropertyStore **>(&propertyStore)));
+    hresult_assert(device_->OpenPropertyStore(STGM_READ, reinterpret_cast<IPropertyStore **>(&propertyStore)));
 }
 
 AudioDevice_win32::~AudioDevice_win32()
@@ -73,7 +73,7 @@ std::string AudioDevice_win32::getIdFromDevice(void *device) noexcept
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR id_wcharstr;
     required_assert(device_ != nullptr);
-    hresult_assert_or_fatal(device_->GetId(&id_wcharstr));
+    hresult_assert(device_->GetId(&id_wcharstr));
 
     let id_wstring = std::wstring_view(id_wcharstr);
     auto id = translateString<std::string>(id_wstring);

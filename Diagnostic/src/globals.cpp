@@ -8,6 +8,11 @@
 
 namespace TTauri {
 
+static void assert_logger(char const *source_file, int source_line, char const *expression)
+{
+    logger.log<log_level::Assert>(cpu_counter_clock::now(), "{}", expression, source_code_ptr(source_file, source_line));
+}
+
 DiagnosticGlobals::DiagnosticGlobals()
 {
     required_assert(Required_globals != nullptr);

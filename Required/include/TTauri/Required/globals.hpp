@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/Required/required.hpp"
 #include <cstdint>
 #include <string>
 #include <thread>
@@ -19,6 +18,7 @@ public:
     std::thread::id main_thread_id;
     std::string applicationName;
     std::function<void(std::function<void()>)> main_thread_runner;
+    std::function<void(char const *, int, char const *)> assert_logger;
 
     RequiredGlobals(std::thread::id main_thread_id, std::string applicationName);
     ~RequiredGlobals();

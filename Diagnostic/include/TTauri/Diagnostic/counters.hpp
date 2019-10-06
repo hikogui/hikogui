@@ -28,7 +28,7 @@ struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.
     alignas(cache_line_size) inline static std::atomic<int64_t> counter = 0;
 
-    no_inline void add_to_map() const noexcept no_inline_attr {
+    no_inline void add_to_map() const noexcept {
         counter_map.insert(TAG, counter_map_value_type{&counter, 0});
     }
 

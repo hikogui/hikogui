@@ -57,6 +57,8 @@ enum class log_level: uint8_t {
     Warning,
     //! An error was detected and is recoverable by the user.
     Error,
+    //! An assert in the code was triggered.
+    Assert,
     //! An error has caused data to be corrupted.
     Critical,
     //! Unrecoverable error, need to terminate the application to reduce impact.
@@ -74,6 +76,7 @@ constexpr char const *to_const_string(log_level level) noexcept
     case log_level::Audit:     return "AUDIT";
     case log_level::Warning:   return "WARN";
     case log_level::Error:     return "ERROR";
+    case log_level::Assert:    return "ASSERT";
     case log_level::Critical:  return "CRIT";
     case log_level::Fatal:     return "FATAL";
     default: no_default;
@@ -239,11 +242,4 @@ inline logger_type logger = {};
 #define LOG_ERROR(...) TTAURI_LOG(log_level::Error, __VA_ARGS__)
 #define LOG_CRITICAL(...) TTAURI_LOG(log_level::Critical, __VA_ARGS__)
 #define LOG_FATAL(...) TTAURI_LOG(log_level::Fatal, __VA_ARGS__)
-
-#define hresult_assert_or_fatal(x) ([](HRESULT result) {\
-        if (ttauri_unlikely(FAILED(result))) {\
-            LOG_FATAL("Call to '{}' failed with {:08x}", #x, result);\
-        }\
-        return result;\
-    }(x))
 

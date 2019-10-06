@@ -168,6 +168,37 @@ constexpr int bsr(T x) noexcept
 #endif
 }
 
+/*! Bit scan reverse.
+*
+* \return index of highest '1' bit, or -1 when no bits are set.
+*/
+template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+constexpr int popcount(T x) noexcept
+{
+#if COMPILER == CC_MSVC
+    if constexpr (sizeof(T) == 8) {
+        return PopulationCount64(x);
+    } else {
+        not_implemented;
+    }
+#elif COMPILER == CC_CLANG
+    if constexpr (std::is_same_v<T,unsigned int>) {
+        return __builtin_popcount(x);
+
+    } else if constexpr (std::is_same_v<T,unsigned long>) {
+        return __builtin_popcountl(x);
+
+    } else if constexpr (std::is_same_v<T,unsigned long long>) {
+        return __builtin_popcountll(x);
+
+    } else {
+        not_implemented;
+    }
+#else
+#error "Not implemented"
+#endif
+}
+
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr T rotl(T x, unsigned int count) noexcept
 {

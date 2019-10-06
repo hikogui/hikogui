@@ -34,22 +34,22 @@ template<typename T, typename U>
 constexpr T numeric_cast(U x) noexcept
 {
     if constexpr (std::is_floating_point_v<T>) {
-        // No check needed all signed and unsigned integers can be cast without loss.
+        // No check needed all signed and unsigned integers can be cast without overflow.
 
     } else if constexpr (std::is_signed_v<T> && std::is_signed_v<U> && (sizeof(T) < sizeof(U))) {
-        required_assert(x >= std::numeric_limits<T>::min() && x <= std::numeric_limits<T>::max());
+        axiom_assert(x >= std::numeric_limits<T>::min() && x <= std::numeric_limits<T>::max());
 
     } else if constexpr (std::is_signed_v<T> && std::is_unsigned_v<U> && (sizeof(T) <= sizeof(U))) {
-        required_assert(x <= static_cast<U>(std::numeric_limits<T>::max()));
+        axiom_assert(x <= static_cast<U>(std::numeric_limits<T>::max()));
 
     } else if constexpr (std::is_unsigned_v<T> && std::is_unsigned_v<U> && (sizeof(T) < sizeof(U))) {
-        required_assert(x <= std::numeric_limits<T>::max());
+        axiom_assert(x <= std::numeric_limits<T>::max());
 
     } else if constexpr (std::is_unsigned_v<T> && std::is_signed_v<U>) {
         if constexpr (sizeof(T) < sizeof(U)) {
-            required_assert(x >= 0 && x <= std::numeric_limits<T>::max());
+            axiom_assert(x >= 0 && x <= std::numeric_limits<T>::max());
         } else {
-            required_assert(x >= 0);
+            axiom_assert(x >= 0);
         }
     }
     return static_cast<T>(x);

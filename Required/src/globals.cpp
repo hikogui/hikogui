@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Required/globals.hpp"
+#include "TTauri/Required/required.hpp"
 
 namespace TTauri {
 
