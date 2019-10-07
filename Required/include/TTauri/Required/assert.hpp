@@ -46,6 +46,7 @@ void assert_logging(uint64_t count, char const *source_file, int source_line, ch
 #if OPTIONAL_ASSERT_IMPLEMENTATION == AI_SKIP
 #define optional_assert(x) static_assert(sizeof(x) == 1)
 #elif OPTIONAL_ASSERT_IMPLEMENTATION == AI_LOG
+#define optional_assert(x)\
     do {\
         if (ttauri_unlikely(!(x))) {\
             static std::atomic<uint64_t> count;\
@@ -68,6 +69,7 @@ void assert_logging(uint64_t count, char const *source_file, int source_line, ch
 #if REVIEW_ASSERT_IMPLEMENTATION == AI_SKIP
 #define review_assert(x) static_assert(sizeof(x) == 1)
 #elif REVIEW_ASSERT_IMPLEMENTATION == AI_LOG
+#define review_assert(x)\
     do {\
         if (ttauri_unlikely(!(x))) {\
             static std::atomic<uint64_t> count;\
@@ -144,6 +146,6 @@ void assert_logging(uint64_t count, char const *source_file, int source_line, ch
 
 #define no_default assert_terminating(__FILE__, __LINE__, "No default")
 #define not_implemented assert_terminating(__FILE__, __LINE__, "No implemented")
-#define overflow assert_terminating(__FILE__, __LINE__, "Overflow")
+#define ttauri_overflow assert_terminating(__FILE__, __LINE__, "Overflow")
 
 }

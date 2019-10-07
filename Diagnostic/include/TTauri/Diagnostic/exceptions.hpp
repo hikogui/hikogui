@@ -202,6 +202,7 @@ using io_error = sub_error<"io_error"_tag, "url"_tag, "errno"_tag, "error_messag
 using key_error = sub_error<"key_error"_tag, "key"_tag>;
 using gui_error = sub_error<"gui_error"_tag, "vk_result"_tag>;
 using bounds_error = sub_error<"bounds_error"_tag>;
+using overflow_error = sub_error<"overflow"_tag>;
 
 /*! Error to throw when an operation can not be executed due to the type of its operants.
 * This is for example used in universal_type.

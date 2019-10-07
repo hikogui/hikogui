@@ -16,6 +16,8 @@ static void assert_logger(char const *source_file, int source_line, char const *
 DiagnosticGlobals::DiagnosticGlobals()
 {
     required_assert(Required_globals != nullptr);
+    Required_globals->assert_logger = assert_logger;
+
     required_assert(Time_globals != nullptr);
     required_assert(Diagnostic_globals == nullptr);
     Diagnostic_globals = this;

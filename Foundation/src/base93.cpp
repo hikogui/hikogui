@@ -179,8 +179,6 @@ std::optional<bstring> base93_decode(std::string_view str, size_t &offset)
     bstring message;
     auto number = ubig128{0};
 
-    uint64_t magic_check = 0;
-
     while (offset < str.size()) {
         let c = str.at(offset++);
 

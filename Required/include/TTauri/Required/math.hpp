@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
-#include "TTauri/Required/intrinsic.hpp"
 
 #include <complex>
 #include <cmath>

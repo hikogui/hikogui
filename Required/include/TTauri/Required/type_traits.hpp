@@ -42,6 +42,25 @@ struct promote {
 };
 
 template<typename T, typename U>
-using promote_t = promote<T,U>::type;
+using promote_t = typename promote<T,U>::type;
+
+template<typename T, typename Ei=void>
+struct make_intmax {
+    using type = uintmax_t;
+};
+
+
+template<typename T>
+struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>> {
+    using type = uintmax_t;
+};
+
+template<typename T>
+struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>>> {
+    using type = intmax_t;
+};
+
+template<typename T, typename U>
+using make_intmax_t = typename make_intmax<T>::type;
 
 }
