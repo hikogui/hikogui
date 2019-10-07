@@ -4,18 +4,11 @@
 #pragma once
 
 #include "TTauri/Required/required.hpp"
+#include "TTauri/Required/intrinsic.hpp"
 #include "TTauri/Required/type_traits.hpp"
 #include <limits>
 
 namespace TTauri {
-
-#if COMPILER = CC_MSVC && PROCESSOR = CPU_X64
-    int64_t safe_add(int64_t lhs, int64_t rhs)
-    {
-        
-}
-
-#endif
 
 template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
 T safe_add(T lhs, T rhs)
@@ -36,7 +29,7 @@ T safe_add(T lhs, T rhs)
     // If the sign bits on the lhs and rhs are equal
     // and if the sign bit of the lhs and result lhs/rhs are different
     // then there is an overflow.
-    if (((lhs ^ ~rhs) | (lhs ^ r)) < 0) {
+    if (((lhs ^ ~rhs) & (lhs ^ r)) < 0) {
         overflow;
     }
 

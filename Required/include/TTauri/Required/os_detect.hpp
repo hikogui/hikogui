@@ -109,6 +109,18 @@ constexpr auto compiler = Compiler::clang;
 #define PROCESSOR CPU_ARM
 #endif
 
+enum class Processor {
+    X64,
+    ARM
+};
+
+#if PROCESSOR == CPU_X64
+constexpr auto processor = Processor::X64;
+#elif PROCESSOR == CPU_ARM
+constexpr auto processor = Processor::ARM;
+#else
+#error "Could not detect processor."
+#endif
 
 #define STRINGIFY(a) #a
 
