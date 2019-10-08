@@ -30,12 +30,16 @@ static bool backoff(uint64_t count)
 
 void assert_logging(uint64_t count, char const *source_file, int source_line, char const *expression)
 {
-    if (Required_globals->assert_logger) {
-        if (backoff(count)) {
+    if (backoff(count)) {
+        if (Required_globals != nullptr && Required_globals->assert_logger) {
             Required_globals->assert_logger(source_file, source_line, expression);
-        }
-    } else {
-        if (backoff(count)) {
+
+        } else if (operatingSystem == OperatingSystem::Windows && IsDebuggerPresent()) {
+            let message = fmt::format("Assert failed at {}:{}, count {}: '{}'", source_file, source_line, count, expression);
+            let messageWString = translateString<std::wstring>(message);
+            OutputDebugStringW(messageWString.data());
+
+        } else {
             let message = fmt::format("Assert failed at {}:{}, count {}: '{}'", source_file, source_line, count, expression);
             std::cerr << message << std::endl;
         }

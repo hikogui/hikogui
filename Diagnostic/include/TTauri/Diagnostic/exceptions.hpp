@@ -6,6 +6,7 @@
 #include "TTauri/Diagnostic/logger.hpp"
 #include "TTauri/Diagnostic/counters.hpp"
 #include "TTauri/Diagnostic/datum.hpp"
+#include "TTauri/Required/assert.hpp"
 #include "TTauri/Required/required.hpp"
 #include "TTauri/Required/string_tag.hpp"
 #include "TTauri/Required/tagged_map.hpp"
@@ -38,8 +39,13 @@ private:
 
 public:
     template<typename Fmt, typename... Args>
-    error(Fmt const &fmt, Args &&... args) noexcept :
-        _message(fmt::format(fmt, std::forward<Args>(args)...)) {}
+    error(Fmt const &fmt, Args &&... args) noexcept {
+        if constexpr (sizeof...(args) == 0) {
+            _message = fmt;
+        } else {
+            _message = fmt::format(fmt, std::forward<Args>(args)...);
+        }
+    }
 
     virtual string_tag tag() const noexcept = 0;
     virtual std::string error_info_string() const noexcept = 0;

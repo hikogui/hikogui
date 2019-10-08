@@ -112,7 +112,6 @@ TYPED_TEST(UnsignedIntOverflow, Add) {
     TypeParam two = 2;
     TypeParam maximum = numeric_limits<TypeParam>::max();
     TypeParam high = maximum - 1;
-    TypeParam lessHigh = maximum - 2;
 
     ASSERT_FALSE(add_overflow(zero, zero, &r)); ASSERT_EQ(r, zero);
     ASSERT_FALSE(add_overflow(zero, one, &r)); ASSERT_EQ(r, one);
@@ -213,7 +212,6 @@ TYPED_TEST(UnsignedIntOverflow, Subtract) {
 
     TypeParam zero = 0;
     TypeParam one = 1;
-    TypeParam two = 2;
     TypeParam maximum = numeric_limits<TypeParam>::max();
     TypeParam high = maximum - 1;
     TypeParam lessHigh = maximum - 2;

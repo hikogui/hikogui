@@ -37,12 +37,12 @@ inline constexpr bool is_character_v = is_character<T>::value;
 
 
 template<typename T, typename U>
-struct promote {
+struct make_promote {
     using type = decltype(static_cast<T>(0) + static_cast<U>(0));
 };
 
 template<typename T, typename U>
-using promote_t = typename promote<T,U>::type;
+using make_promote_t = typename make_promote<T,U>::type;
 
 template<typename T, typename Ei=void>
 struct make_intmax {

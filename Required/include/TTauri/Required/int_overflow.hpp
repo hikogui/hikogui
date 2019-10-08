@@ -19,17 +19,21 @@
 
 namespace TTauri {
 
-template<typename T, typename U, std::enable_if_t<std::is_integral_v<T> && std::is_integral_v<U>,int> = 0>
+template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)
 {
+    static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "convert_overflow() requires integral argument and return type.");
+
     *r = static_cast<U>(x);
     // Optimized away when is_same_v<T,U>
     return *r != x;
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<typename T>
 inline bool add_overflow(T lhs, T rhs, T *r)
 {
+    static_assert(std::is_integral_v<T>, "add_overflow() requires integral arguments.");
+
     if constexpr (compiler == Compiler::gcc || compiler == Compiler::clang) {
         // ADD, JO
         return __builtin_add_overflow(lhs, rhs, r);
@@ -63,9 +67,11 @@ inline bool add_overflow(T lhs, T rhs, T *r)
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<typename T>
 inline bool sub_overflow(T lhs, T rhs, T *r)
 {
+    static_assert(std::is_integral_v<T>, "sub_overflow() requires integral arguments.");
+
     if constexpr (compiler == Compiler::gcc || compiler == Compiler::clang) {
         // SUB, JB
         return __builtin_sub_overflow(lhs, rhs, r);
@@ -85,9 +91,11 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
     }
 }
 
-template<typename T, std::enable_if_t<std::is_integral_v<T>, int> = 0>
+template<typename T>
 inline bool mul_overflow(T lhs, T rhs, T *r)
 {
+    static_assert(std::is_integral_v<T>, "mul_overflow() requires integral arguments.");
+
     if constexpr (compiler == Compiler::gcc || compiler == Compiler::clang) {
         return __builtin_mul_overflow(lhs, rhs, r);
 

@@ -28,6 +28,7 @@ set(TTauri_Foundation_tests
     tests/polynomial_tests.cpp
     tests/small_map_tests.cpp
     tests/base93_tests.cpp
+    tests/safe_int_tests.cpp
 )
 
 set(TTauri_Foundation_test_files
