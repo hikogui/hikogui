@@ -11,21 +11,33 @@
 namespace TTauri {
 
 enum class on_overflow_t {
+    //! On overflow throw an exception.
     Throw,
-    Terminate,
+    //! On overflow assert and terminate.
+    Assert,
+    //! On overflow assert and teminate in debug, assume in release.
+    Axiom,
+    //! On overflow saturate the result in the appropiate direction.
     Saturate
 };
 
 template<typename T, on_overflow_t OnOverflow>
-inline T safe_overflow(char const *message, bool is_max)
+inline T safe_overflow(T value, bool overflow, char const *message, bool is_max)
 {
     if constexpr (OnOverflow == on_overflow_t::Throw) {
-        TTAURI_THROW(overflow_error(message));
-    } else if constexpr (OnOverflow == on_overflow_t::Terminate) {
-        axiom_assert(true);
+        if (overflow) {
+            TTAURI_THROW(overflow_error(message));
+        }
+    } else if constexpr (OnOverflow == on_overflow_t::Assert) {
+        required_assert(!overflow);
+    } else if constexpr (OnOverflow == on_overflow_t::Axiom) {
+        axiom_assert(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Saturate) {
-        return is_max ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
+        if (ttauri_unlikely(overflow)) {
+            value = is_max ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
+        }
     }
+    return value;
 }
 
 template<typename T, on_overflow_t OnOverflow, typename U>
@@ -33,10 +45,8 @@ inline T safe_convert(U const &rhs)
 {
     T r;
     // Optimized away when is_same_v<T,U>
-    if (convert_overflow(rhs, &r)) {
-        return safe_overflow<T,OnOverflow>("safe_convert", rhs >= 0);
-    }
-    return r;
+    let overflow = convert_overflow(rhs, &r);
+    return safe_overflow<T,OnOverflow>(r, overflow, "safe_convert", rhs >= 0);
 }
 
 template<on_overflow_t OnOverflow, typename T, typename U>
@@ -47,10 +57,8 @@ inline make_promote_t<T,U> safe_add(T const &lhs, U const &rhs)
     let rhs_ = static_cast<make_promote_t<T,U>>(rhs);
 
     T r;
-    if (add_overflow(lhs, rhs, &r)) {
-        return safe_overflow<make_promote_t<T,U>,OnOverflow>("safe_add", lhs >= 0);
-    }
-    return r;
+    let overflow = add_overflow(lhs, rhs, &r);
+    return safe_overflow<T,OnOverflow>(r, overflow, "safe_add", rhs >= 0);
 }
 
 template<on_overflow_t OnOverflow, typename T, typename U>
@@ -61,10 +69,8 @@ inline make_promote_t<T,U> safe_sub(T const &lhs, U const &rhs)
     let rhs_ = static_cast<make_promote_t<T,U>>(rhs);
 
     T r;
-    if (sub_overflow(lhs, rhs, &r)) {
-        return safe_overflow<make_promote_t<T,U>,OnOverflow>("safe_sub", lhs >= 0);
-    }
-    return r;
+    let overflow = sub_overflow(lhs, rhs, &r);
+    return safe_overflow<T,OnOverflow>(r, overflow, "safe_sub", rhs >= 0);
 }
 
 template<on_overflow_t OnOverflow, typename T, typename U>
@@ -75,12 +81,9 @@ inline make_promote_t<T,U> safe_mul(T const &lhs, U const &rhs)
     let rhs_ = static_cast<make_promote_t<T,U>>(rhs);
 
     T r;
-    if (mul_overflow(lhs, rhs, &r)) {
-        return safe_overflow<make_promote_t<T,U>,OnOverflow>("safe_mul", (lhs_ ^ rhs_) >= 0);
-    }
-    return r;
+    let overflow = mul_overflow(lhs, rhs, &r);
+    return safe_overflow<T,OnOverflow>(r, overflow, "safe_mul", rhs >= 0);
 }
-
 
 template<typename T, on_overflow_t OnOverflow=on_overflow_t::Terminate>
 struct safe_int {
@@ -166,5 +169,40 @@ TEMPLATE(-, safe_sub)
 TEMPLATE(*, safe_mul)
 #undef TEMPLATE
 
+using sint64_t = safe_int<int64_t,on_overflow_t::Saturate>;
+using sint32_t = safe_int<int32_t,on_overflow_t::Saturate>;
+using sint16_t = safe_int<int16_t,on_overflow_t::Saturate>;
+using sint8_t = safe_int<int8_t,on_overflow_t::Saturate>;
+using suint64_t = safe_int<uint64_t,on_overflow_t::Saturate>;
+using suint32_t = safe_int<uint32_t,on_overflow_t::Saturate>;
+using suint16_t = safe_int<uint16_t,on_overflow_t::Saturate>;
+using suint8_t = safe_int<uint8_t,on_overflow_t::Saturate>;
+
+using tint64_t = safe_int<int64_t,on_overflow_t::Terminate>;
+using tint32_t = safe_int<int32_t,on_overflow_t::Terminate>;
+using tint16_t = safe_int<int16_t,on_overflow_t::Terminate>;
+using tint8_t = safe_int<int8_t,on_overflow_t::Terminate>;
+using tuint64_t = safe_int<uint64_t,on_overflow_t::Terminate>;
+using tuint32_t = safe_int<uint32_t,on_overflow_t::Terminate>;
+using tuint16_t = safe_int<uint16_t,on_overflow_t::Terminate>;
+using tuint8_t = safe_int<uint8_t,on_overflow_t::Terminate>;
+
+using eint64_t = safe_int<int64_t,on_overflow_t::Throw>;
+using eint32_t = safe_int<int32_t,on_overflow_t::Throw>;
+using eint16_t = safe_int<int16_t,on_overflow_t::Throw>;
+using eint8_t = safe_int<int8_t,on_overflow_t::Throw>;
+using euint64_t = safe_int<uint64_t,on_overflow_t::Throw>;
+using euint32_t = safe_int<uint32_t,on_overflow_t::Throw>;
+using euint16_t = safe_int<uint16_t,on_overflow_t::Throw>;
+using euint8_t = safe_int<uint8_t,on_overflow_t::Throw>;
+
+using fint64_t = safe_int<int64_t,on_overflow_t::Fast>;
+using fint32_t = safe_int<int32_t,on_overflow_t::Fast>;
+using fint16_t = safe_int<int16_t,on_overflow_t::Fast>;
+using fint8_t = safe_int<int8_t,on_overflow_t::Fast>;
+using fuint64_t = safe_int<uint64_t,on_overflow_t::Fast>;
+using fuint32_t = safe_int<uint32_t,on_overflow_t::Fast>;
+using fuint16_t = safe_int<uint16_t,on_overflow_t::Fast>;
+using fuint8_t = safe_int<uint8_t,on_overflow_t::Fast>;
 
 }
