@@ -13,7 +13,7 @@ namespace TTauri::Audio {
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 
-AudioSystem_win32::AudioSystem_win32(std::shared_ptr<AudioSystemDelegate> delegate) :
+AudioSystem_win32::AudioSystem_win32(AudioSystemDelegate *delegate) :
     AudioSystem(delegate)
 {
     hresult_assert(CoCreateInstance(
@@ -22,8 +22,6 @@ AudioSystem_win32::AudioSystem_win32(std::shared_ptr<AudioSystemDelegate> delega
         &deviceEnumerator
     ));
     required_assert(deviceEnumerator != nullptr);
-    
-
 }
 
 AudioSystem_win32::~AudioSystem_win32()
@@ -32,6 +30,13 @@ AudioSystem_win32::~AudioSystem_win32()
         
     required_assert(deviceEnumerator_ != nullptr);
     deviceEnumerator_->Release();
+}
+
+void AudioSystem_win32::initialize() noexcept
+{
+    AudioSystem::initialize();
+    updateDeviceList();
+    delegate->audioDeviceListChanged();
 }
 
 void AudioSystem_win32::updateDeviceList() noexcept
@@ -59,7 +64,7 @@ void AudioSystem_win32::updateDeviceList() noexcept
             device->Release();
         } else {
             auto audioDevice = std::make_unique<AudioDevice_win32>(device);
-            LOG_INFO("Found audio device {}", audioDevice->name());
+            LOG_INFO("Found audio device {} state={}", audioDevice->name(), audioDevice->state());
             devices.push_back(std::move(audioDevice));
         }
     }

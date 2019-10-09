@@ -4,6 +4,7 @@
 #include "TTauri/GUI/WindowDelegate.hpp"
 #include "TTauri/GUI/WindowToolbarWidget.hpp"
 #include "TTauri/GUI/Instance.hpp"
+#include "TTauri/Audio/AudioSystem.hpp"
 #include "TTauri/Application/Application.hpp"
 
 #include <vulkan/vulkan.hpp>
@@ -15,6 +16,7 @@
 
 using namespace std;
 using namespace TTauri;
+using namespace TTauri::Audio;
 using namespace TTauri::Draw;
 using namespace TTauri::GUI;
 using namespace TTauri::GUI::Widgets;
@@ -23,7 +25,6 @@ class MyWindowDelegate : public WindowDelegate {
 public:
     void openingWindow(Window &window) override
     {
-
         auto button1 = window.widget->addWidget<ButtonWidget>(u8"H\u00eb""ll\u00f6 W\u00f6""rld");
         window.addConstraint(button1->box.width == 100);
         window.addConstraint(button1->box.height == 30);
@@ -59,10 +60,17 @@ public:
 
         GUI_globals->instance().initialize();
         GUI_globals->instance().addWindow<Window>(myWindowDelegate, "Hello World 1");
+
+        Audio_globals->audioSystem().initialize();
     }
 
     void lastWindowClosed() override
     {
+    }
+
+    void audioDeviceListChanged() override
+    {
+        LOG_INFO("MyApplicationDelegate::audioDeviceListChanged()");
     }
 };
 

@@ -9,8 +9,7 @@ namespace TTauri::Audio {
 
 class AudioSystemDelegate {
 public:
-    AudioSystemDelegate();
-    virtual ~AudioSystemDelegate() = 0;
+    AudioSystemDelegate() noexcept = default;
 
     AudioSystemDelegate(AudioSystemDelegate const &) = delete;
     AudioSystemDelegate &operator=(AudioSystemDelegate const &) = delete;
@@ -20,7 +19,7 @@ public:
     /*! Called when the device list has changed.
      * This can happen when external devices are connected or disconnected.
      */
-    virtual void deviceListChanged() = 0;
+    virtual void audioDeviceListChanged() = 0;
 };
 
 }

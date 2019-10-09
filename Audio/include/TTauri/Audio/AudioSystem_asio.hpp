@@ -7,7 +7,7 @@
 
 namespace TTauri::Audio {
 
-class AudioSystem_asio: AudioSystem {
+class AudioSystem_asio: public AudioSystem {
 
 
 };

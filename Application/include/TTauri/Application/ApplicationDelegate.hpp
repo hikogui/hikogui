@@ -31,6 +31,12 @@ public:
     /*! Called right after the last window is closed
      */
     virtual void lastWindowClosed() = 0;
+
+    /*! Called when the device list has changed.
+    * This can happen when external devices are connected or disconnected.
+    */
+    virtual void audioDeviceListChanged() = 0;
+
 };
 
 }

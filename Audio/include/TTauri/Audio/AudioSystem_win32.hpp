@@ -9,13 +9,15 @@
 
 namespace TTauri::Audio {
 
-class AudioSystem_win32: AudioSystem {
+class AudioSystem_win32: public AudioSystem {
 private:
     void *deviceEnumerator;
 
 public:
-    AudioSystem_win32(std::shared_ptr<AudioSystemDelegate> delegate);
+    AudioSystem_win32(AudioSystemDelegate *delegate);
     virtual ~AudioSystem_win32();
+
+    void initialize() noexcept override;
 
     void updateDeviceList() noexcept;
 

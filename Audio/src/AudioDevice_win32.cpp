@@ -50,7 +50,6 @@ AudioDevice_win32::~AudioDevice_win32()
     device_->Release();
 }
 
-
 std::string AudioDevice_win32::name() const noexcept
 {
     return getStringProperty(propertyStore, PKEY_Device_FriendlyName);
@@ -64,6 +63,27 @@ std::string AudioDevice_win32::deviceName() const noexcept
 std::string AudioDevice_win32::endPointName() const noexcept
 {
     return getStringProperty(propertyStore, PKEY_Device_DeviceDesc);
+}
+
+AudioDevice_state AudioDevice_win32::state() const noexcept
+{
+    auto device_ = static_cast<IMMDevice *>(device);
+
+    DWORD state;
+    hresult_assert(device_->GetState(&state));
+
+    switch (state) {
+    case DEVICE_STATE_ACTIVE:
+        return AudioDevice_state::Active;
+    case DEVICE_STATE_DISABLED:
+        return AudioDevice_state::Disabled;
+    case DEVICE_STATE_NOTPRESENT:
+        return AudioDevice_state::NotPresent;
+    case DEVICE_STATE_UNPLUGGED:
+        return AudioDevice_state::Unplugged;
+    default:
+        no_default;
+    }
 }
 
 std::string AudioDevice_win32::getIdFromDevice(void *device) noexcept

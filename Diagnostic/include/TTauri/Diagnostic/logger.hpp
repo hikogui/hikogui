@@ -232,14 +232,14 @@ inline logger_type logger = {};
 
 }
 
-#define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(cpu_counter_clock::now(), __VA_ARGS__, source_code_ptr(__FILE__, __LINE__))
+#define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(::TTauri::cpu_counter_clock::now(), __VA_ARGS__, ::TTauri::source_code_ptr(__FILE__, __LINE__))
 
-#define LOG_DEBUG(...) TTAURI_LOG(log_level::Debug, __VA_ARGS__)
-#define LOG_INFO(...) TTAURI_LOG(log_level::Info, __VA_ARGS__)
-#define LOG_AUDIT(...) TTAURI_LOG(log_level::Audit, __VA_ARGS__)
-#define LOG_EXCEPTION(...) TTAURI_LOG(log_level::Exception, __VA_ARGS__)
-#define LOG_WARNING(...) TTAURI_LOG(log_level::Warning, __VA_ARGS__)
-#define LOG_ERROR(...) TTAURI_LOG(log_level::Error, __VA_ARGS__)
-#define LOG_CRITICAL(...) TTAURI_LOG(log_level::Critical, __VA_ARGS__)
-#define LOG_FATAL(...) TTAURI_LOG(log_level::Fatal, __VA_ARGS__)
+#define LOG_DEBUG(...) TTAURI_LOG(::TTauri::log_level::Debug, __VA_ARGS__)
+#define LOG_INFO(...) TTAURI_LOG(::TTauri::log_level::Info, __VA_ARGS__)
+#define LOG_AUDIT(...) TTAURI_LOG(::TTauri::log_level::Audit, __VA_ARGS__)
+#define LOG_EXCEPTION(...) TTAURI_LOG(::TTauri::log_level::Exception, __VA_ARGS__)
+#define LOG_WARNING(...) TTAURI_LOG(::TTauri::log_level::Warning, __VA_ARGS__)
+#define LOG_ERROR(...) TTAURI_LOG(::TTauri::log_level::Error, __VA_ARGS__)
+#define LOG_CRITICAL(...) TTAURI_LOG(::TTauri::log_level::Critical, __VA_ARGS__)
+#define LOG_FATAL(...) TTAURI_LOG(::TTauri::log_level::Fatal, __VA_ARGS__)
 

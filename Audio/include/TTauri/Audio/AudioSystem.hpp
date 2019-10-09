@@ -15,11 +15,11 @@ namespace TTauri::Audio {
  */
 class AudioSystem {
 protected:
-    std::shared_ptr<AudioSystemDelegate> delegate;
+    AudioSystemDelegate *delegate;
     std::vector<std::unique_ptr<AudioDevice>> devices;
 
 public:
-    AudioSystem(std::shared_ptr<AudioSystemDelegate> delegate);
+    AudioSystem(AudioSystemDelegate *delegate);
     virtual ~AudioSystem();
 
     size_t size() const noexcept {
@@ -33,6 +33,8 @@ public:
     auto end() noexcept {
         return devices.end();
     }
+
+    virtual void initialize() noexcept;
 
     bool hasDeviceWithId(std::string id) const noexcept;
 };

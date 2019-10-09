@@ -6,11 +6,29 @@
 #include "TTauri/Required/bigint.hpp"
 #include "TTauri/Audio/AudioDeviceDelegate.hpp"
 #include "TTauri/Audio/AudioStreamConfig.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <string>
 #include <memory>
+#include <ostream>
 
 namespace TTauri::Audio {
+
+enum class AudioDevice_state {
+    Active,
+    Disabled,
+    NotPresent,
+    Unplugged
+};
+
+inline std::ostream &operator<<(std::ostream &lhs, AudioDevice_state const &rhs)
+{
+    switch (rhs) {
+    case AudioDevice_state::Active: return lhs << "ACTIVE";
+    case AudioDevice_state::Disabled: return lhs << "DISABLED";
+    case AudioDevice_state::NotPresent: return lhs << "NOT_PRESENT";
+    case AudioDevice_state::Unplugged: return lhs << "UNPLUGGED";
+    default: no_default;
+    }
+}
 
 /*! A set of audio channels which can be rendered and/or captures at the same time.
  * On win32 this would be Audio Endpoint Device, which can either render or capture
@@ -27,7 +45,7 @@ private:
 public:
     std::string id;
 
-    AudioDevice();
+    AudioDevice() noexcept = default;
     virtual ~AudioDevice() = default;
 
     /*! Get a identfier for this device which can be stored
@@ -53,6 +71,10 @@ public:
      */
     virtual std::string endPointName() const noexcept = 0;
 
+    /*! Get the current state of the audio device.
+     */
+    virtual AudioDevice_state state() const noexcept = 0;
+
     /*! Check if a audio configuration is supported by this device.
      * \param config Configuration such as sample rate, sample format and bit-depth.
      */
@@ -74,7 +96,7 @@ public:
      * \param config Configuration such as sample rate, sample format and bit-depth.
      * XXX Windows allows for an icon to be passed to a session.
      */
-    //virtual void startSession(boost::uuids::uuid sessionId, std::string name, AudioStreamConfig config) = 0;
+    //virtual void startSession(uuid sessionId, std::string name, AudioStreamConfig config) = 0;
 
     /*! Stop a session.
      * Stop a session, which will also stop the streams of audio.

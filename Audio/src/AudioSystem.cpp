@@ -5,13 +5,18 @@
 
 namespace TTauri::Audio {
 
-AudioSystem::AudioSystem(std::shared_ptr<AudioSystemDelegate> delegate) :
-    delegate(std::move(delegate))
+AudioSystem::AudioSystem(AudioSystemDelegate *delegate) :
+    delegate(delegate)
 {
 }
 
 AudioSystem::~AudioSystem()
 {
+}
+
+void AudioSystem::initialize() noexcept
+{
+
 }
 
 bool AudioSystem::hasDeviceWithId(std::string id) const noexcept {

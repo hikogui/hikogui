@@ -9,6 +9,7 @@
 #include "TTauri/GUI/InstanceDelegate.hpp"
 #include "TTauri/Draw/globals.hpp"
 #include "TTauri/Audio/globals.hpp"
+#include "TTauri/Audio/AudioSystemDelegate.hpp"
 #include "TTauri/Config/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Diagnostic/globals.hpp"
@@ -32,7 +33,7 @@ namespace TTauri {
  * are destructed.
  *
  */
-class Application_base : public GUI::InstanceDelegate {
+class Application_base : public GUI::InstanceDelegate, Audio::AudioSystemDelegate {
 public:
     /*! Application delegate
     */
@@ -73,6 +74,11 @@ public:
     /*! Called by the GUI when the last window was closed.
     */
     void lastWindowClosed() override;
+
+    /*! Called when the device list has changed.
+    * This can happen when external devices are connected or disconnected.
+    */
+    void audioDeviceListChanged() override;
 };
 
 inline Application_base *_application = nullptr;

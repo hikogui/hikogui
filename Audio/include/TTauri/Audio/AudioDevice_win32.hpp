@@ -21,6 +21,7 @@ public:
     std::string name() const noexcept override;
     std::string deviceName() const noexcept override;
     std::string endPointName() const noexcept override;
+    AudioDevice_state state() const noexcept override;
 
     static std::string getIdFromDevice(void *device) noexcept;
 };
