@@ -14,8 +14,7 @@ Application_macos::Application_macos() :
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 
         // Get the main path the Resources folder of the bundle by requesting a known existing file.
-        auto _resourceFile = [[NSBundle mainBundle] pathForResource:@"BackingPipeline.frag" ofType:@"spv"];
-        auto resourceFile = boost::filesystem::path([_resourceFile UTF8String]);
+        //auto _resourceFile = [[NSBundle mainBundle] pathForResource:@"BackingPipeline.frag" ofType:@"spv"];
         resourceDir = resourceFile.parent_path();
 
         id menubar = [NSMenu new];

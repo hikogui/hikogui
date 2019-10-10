@@ -9,7 +9,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <fmt/format.h>
-#include <boost/endian/conversion.hpp>
 #include <string>
 #include <algorithm>
 #include <array>

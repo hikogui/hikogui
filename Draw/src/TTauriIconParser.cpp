@@ -5,9 +5,7 @@
 #include "TTauri/Diagnostic/exceptions.hpp"
 #include "TTauri/Foundation/span.hpp"
 #include "TTauri/Required/wsRGBA.hpp"
-#include <boost/endian/buffers.hpp>
-
-using namespace boost::endian;
+#include "TTauri/Required/endian.hpp"
 
 namespace TTauri::Draw {
 

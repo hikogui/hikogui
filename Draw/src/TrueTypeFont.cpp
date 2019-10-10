@@ -4,7 +4,7 @@
 #include "TTauri/Draw/TrueTypeFont.hpp"
 #include "TTauri/Foundation/span.hpp"
 #include "TTauri/Required/strings.hpp"
-#include <boost/endian/buffers.hpp>
+#include "TTauri/Required/endian.hpp"
 #include <cstddef>
 
 
@@ -13,7 +13,6 @@
 namespace TTauri::Draw {
 
 using namespace gsl;
-using namespace boost::endian;
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;

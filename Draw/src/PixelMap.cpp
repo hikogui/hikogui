@@ -3,6 +3,7 @@
 
 #include "TTauri/Draw/PixelMap.inl"
 #include "TTauri/Required/wsRGBA.hpp"
+#include "TTauri/Required/endian.hpp"
 #include <algorithm>
 
 namespace TTauri::Draw {
@@ -46,7 +47,7 @@ void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src) noexcept
         let srcRow = src.at(rowNr);
         auto dstRow = dst.at(rowNr);
         for (auto columnNr = 0; columnNr < src.width; columnNr++) {
-            dstRow[columnNr] = boost::endian::native_to_big(srcRow[columnNr].to_sRGBA_u32());
+            dstRow[columnNr] = native_to_big(srcRow[columnNr].to_sRGBA_u32());
         }
     }
 }
