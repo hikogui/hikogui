@@ -29,6 +29,8 @@ void logger_type::writeToConsole(std::string str) noexcept {
 }
 
 [[noreturn]] void terminateOnFatalError(std::string &&message) noexcept {
+    Foundation_globals->stopMaintenanceThread();
+
     if (IsDebuggerPresent()) {
         let messageWString = translateString<std::wstring>(message);
         OutputDebugStringW(messageWString.data());

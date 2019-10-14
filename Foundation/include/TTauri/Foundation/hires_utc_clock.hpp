@@ -33,6 +33,8 @@ struct hires_utc_clock {
     }
 };
 
+std::string format_engineering(hires_utc_clock::duration duration);
+
 /*! Return a ISO-8601 formated date-time.
 */
 std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp);

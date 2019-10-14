@@ -39,50 +39,6 @@ std::string log_message_base::string() const noexcept
     return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());
 }
 
-/*! Start logging to file and console.
-*/
-void logger_type::startLogging() noexcept
-{
-    logger_thread = std::thread([&]() {
-        set_thread_name("LoggingThread");
-        this->logger_loop();
-    });
-}
-
-/*! Stop logging to file and console.
-*/
-void logger_type::stopLogging() noexcept
-{
-    // Make sure all messages have been logged to log-file or console.
-    if (logger_thread.joinable()) {
-        logger_thread_stop = true;
-        logger_thread.join();
-    }
-}
-
-/*! Start logging of counters.
-*/
-void logger_type::startStatisticsLogging() noexcept
-{
-    gather_thread = std::thread([&]() {
-        set_thread_name("Statistics");
-        LOG_AUDIT("Started: statistics gathering thread.");
-        this->gather_loop();
-        LOG_AUDIT("Finished: statsistics gathering thread.");
-    });
-}
-
-/*! Stop logging of counters.
-*/
-void logger_type::stopStatisticsLogging() noexcept
-{
-    // Make sure that all counter and statistics are logged.
-    if (gather_thread.joinable()) {
-        gather_thread_stop = true;
-        gather_thread.join();
-    }
-}
-
 void logger_type::writeToFile(std::string str) noexcept {
 }
 
@@ -119,63 +75,47 @@ void logger_type::display_trace_statistics() noexcept {
 
         } else {
             // XXX not perfect at all.
-            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:+9n} mean: {:n} ns/iter, peak: {:n} ns/iter",
+            let duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
+            let duration_peak = format_engineering(stat_result.peak_duration);
+            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:+9n} mean: {}/iter, peak: {}",
                 tag_to_string(tag),
                 stat_result.count,
-                stat_result.last_count, (stat_result.last_duration / stat_result.last_count) / 1ns, stat_result.peak_duration / 1ns
+                stat_result.last_count, duration_per_iter, duration_peak
             );
         }
     }
 }
 
-void logger_type::gather_loop() noexcept {
+void logger_type::gather_tick(bool last) noexcept
+{
+    let t = trace<"gather_tick"_tag>{};
+
     constexpr auto gather_interval = 30s;
-    bool last_iteration = false;
 
-    do {
-        let now_rounded_to_interval = hires_utc_clock::now().time_since_epoch() / gather_interval;
-        let next_dump_time = typename hires_utc_clock::time_point(gather_interval * (now_rounded_to_interval + 1));
-
-        do {
-            std::this_thread::sleep_for(100ms);
-
-            if (gather_thread_stop) {
-                // We need to log all counter before finishing.
-                last_iteration = true;
-            }
-        } while (hires_utc_clock::now() < next_dump_time && !last_iteration);
-
-        if (last_iteration) {
-            LOG_INFO("Counter: displaying counters and statistics at end of program");
-        } else {
-            LOG_INFO("Counter: displaying counters and statistics over the last {} seconds", gather_interval / 1s);
-        }
-
+    if (last) {
+        LOG_INFO("Counter: displaying counters and statistics at end of program");
         display_counters();
         display_trace_statistics();
 
-    } while (!last_iteration);
+    } else if (next_gather_time < hires_utc_clock::now()) {
+        LOG_INFO("Counter: displaying counters and statistics over the last {} seconds", gather_interval / 1s);
+        display_counters();
+        display_trace_statistics();
+
+        let now_rounded_to_interval = hires_utc_clock::now().time_since_epoch() / gather_interval;
+        next_gather_time = typename hires_utc_clock::time_point(gather_interval * (now_rounded_to_interval + 1));
+    }
 }
 
+void logger_type::logger_tick() noexcept {
+    let t = trace<"logger_tick"_tag>{};
 
-void logger_type::logger_loop() noexcept {
-    bool last_iteration = false;
+    while (!message_queue.empty()) {
+        auto message = message_queue.read();
 
-    do {
-        std::this_thread::sleep_for(100ms);
-
-        if (logger_thread_stop) {
-            // We need to log everything to the logfile and console before finishing.
-            last_iteration = true;
-        }
-
-        while (!message_queue.empty()) {
-            auto message = message_queue.read();
-
-            let str = (*message)->string();
-            write(str);
-        }
-    } while (!last_iteration);
+        let str = (*message)->string();
+        write(str);
+    }
 }
 
 

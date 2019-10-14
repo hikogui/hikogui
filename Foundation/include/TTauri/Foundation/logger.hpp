@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/counters.hpp"
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
+#include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/Foundation/polymorphic_value.hpp"
 #include "TTauri/Foundation/wfree_message_queue.hpp"
 #include "TTauri/Foundation/atomic.hpp"
@@ -155,43 +156,14 @@ class logger_type {
     //! the message queue must work correctly before main() is executed.
     message_queue_type message_queue;
 
-    mutable std::mutex mutex;
-    bool logger_thread_stop = false;
-    std::thread logger_thread;
-    bool gather_thread_stop = false;
-    std::thread gather_thread;
+    hires_utc_clock::time_point next_gather_time = {};
 
 public:
     log_level minimum_log_level = log_level::Debug;
 
-    ~logger_type() {
-        stopThreads();
-    }
 
-    /*! Start logging to file and console.
-     */
-    void startLogging() noexcept;
-
-    /*! Stop logging to file and console.
-     */
-    void stopLogging() noexcept;
-
-    /*! Start logging of counters.
-     */
-    void startStatisticsLogging() noexcept;
-
-    /*! Stop logging of counters.
-     */
-    void stopStatisticsLogging() noexcept;
-
-    void stopThreads() noexcept {
-        auto lock = std::scoped_lock(mutex);
-        stopStatisticsLogging();
-        stopLogging();
-    }
-
-    void logger_loop() noexcept;
-    void gather_loop() noexcept;
+    void logger_tick() noexcept;
+    void gather_tick(bool last) noexcept;
 
     template<log_level Level, typename... Args>
     force_inline void log(typename cpu_counter_clock::time_point timestamp, char const *format, Args &&... args) noexcept {
@@ -212,7 +184,6 @@ public:
         if constexpr (Level >= log_level::Fatal) {
             auto const message = log_message<Level, Args...>(timestamp, format, std::forward<Args>(args)...);
             // Make sure everything including this message and counters are logged.
-            stopThreads();
             terminateOnFatalError(message.message());
 
         } else if constexpr (Level >= log_level::Error) {

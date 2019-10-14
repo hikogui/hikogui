@@ -8,6 +8,8 @@
 #include <string>
 #include <unordered_map>
 #include <cstddef>
+#include <thread>
+#include <mutex>
 
 namespace TTauri {
 
@@ -19,7 +21,9 @@ private:
     std::unordered_map<std::string,gsl::span<std::byte const>> staticResources;
 
     std::thread maintenanceThread;
-    bool stopMaintenanceThread = false;
+    bool _stopMaintenanceThread = false;
+
+    mutable std::mutex mutex;
 
 public:
     date::time_zone const *time_zone = nullptr;
@@ -38,7 +42,8 @@ public:
 
     gsl::span<std::byte const> getStaticResource(std::string const &key) const;
 
-    void maintenanceThreadProcedure();
+    void FoundationGlobals::stopMaintenanceThread() noexcept;
+    void maintenanceThreadProcedure() noexcept;
 };
 
 }

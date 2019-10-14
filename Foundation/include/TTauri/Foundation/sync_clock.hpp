@@ -23,8 +23,6 @@ class sync_clock_calibration_type {
     using slow_clock = C1;
     using fast_clock = C2;
 
-    std::string name;
-
     struct time_point_pair {
         typename slow_clock::time_point slow;
         typename fast_clock::time_point fast;
@@ -45,34 +43,21 @@ class sync_clock_calibration_type {
     */
     typename slow_clock::duration leapsecond_offset = 0ns;
 
-    std::thread calibrate_loop_id;
-    bool calibrate_loop_stop = false;
+    std::string name;
 
 public:
     /*! Construct a sync clock.
      * \param create_thread can be set to false when testing.
      */
-    sync_clock_calibration_type(std::string_view name, bool create_thread=true) noexcept :
-        name(name) 
+    sync_clock_calibration_type(std::string name) noexcept :
+        name(std::move(name))
     {
         // Do a first calibration of the clock.
         // Second calibration is done by the calibrate_loop thread.
         calibrate();
-
-        if (create_thread) {
-            std::string thread_name = fmt::format("ClockSync_{}", name);
-            calibrate_loop_id = std::thread([=]() {
-                set_thread_name(thread_name);
-                return this->calibrate_loop();
-            });
-        }
     }
 
     ~sync_clock_calibration_type() {
-        calibrate_loop_stop = true;
-        if (calibrate_loop_id.joinable()) {
-            calibrate_loop_id.join();
-        }
     }
 
     typename slow_clock::time_point convert(typename fast_clock::time_point fast_time) const noexcept {
@@ -213,26 +198,6 @@ private:
         }
         bias.store(new_bias + leap_adjustment, std::memory_order_relaxed);
         leapsecond_offset += leap_adjustment;
-    }
-
-    
-    void calibrate_loop() noexcept {
-        while (!calibrate_loop_stop) {
-            auto backoff = calibration_nr * 10s;
-            if (backoff > 120s) {
-                backoff = 120s;
-            }
-
-            for (int i = 0; i < (backoff / 100ms); i++) {
-                if (calibrate_loop_stop) {
-                    break;
-                }
-                std::this_thread::sleep_for(100ms);
-            }
-
-            calibrate();
-        }
-        return;
     }
 
     typename slow_clock::duration convert(int64_t new_gain, typename fast_clock::duration fast_duration) const noexcept {

@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/Foundation/audio_counter_clock.hpp"
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
+#include "TTauri/Foundation/trace.hpp"
 
 namespace TTauri {
 
@@ -36,16 +37,14 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, std::string
     sync_clock_calibration<hires_utc_clock,audio_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock,audio_counter_clock>("audio_utc");
 
-    logger.startLogging();
-    logger.startStatisticsLogging();
+    maintenanceThread = std::thread([=]() {
+        return this->maintenanceThreadProcedure();
+    });
 }
 
 FoundationGlobals::~FoundationGlobals()
 {
-    // This will log all current counters then all
-    // messages that are left in the queue..
-    logger.stopStatisticsLogging();
-    logger.stopLogging();
+    stopMaintenanceThread();
 
     delete sync_clock_calibration<hires_utc_clock,audio_counter_clock>;
     delete sync_clock_calibration<hires_utc_clock,cpu_counter_clock>;
@@ -54,19 +53,41 @@ FoundationGlobals::~FoundationGlobals()
     Foundation_globals = nullptr;
 }
 
-void FoundationGlobals::maintenanceThreadProcedure()
+void FoundationGlobals::stopMaintenanceThread() noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
+    _stopMaintenanceThread = true;
+    if (maintenanceThread.joinable()) {
+        maintenanceThread.join();
+    }
+}
+
+void FoundationGlobals::maintenanceThreadProcedure() noexcept
+{
+    set_thread_name("FoundationMaintenance");
     LOG_INFO("Maintenance thread started.");
 
-    while (!stopMaintenanceThread) {
+    while (!_stopMaintenanceThread) {
         std::this_thread::sleep_for(100ms);
 
-        sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
-        sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
+        let t = trace<"maintenance"_tag>{};
 
+        {
+            let t = trace<"calibrate_clk"_tag>{};
+            sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
+            sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
+        }
+
+        logger.gather_tick(false);
+        logger.logger_tick();
     };
+    LOG_INFO("Maintenance thread finishing.");
 
-    LOG_INFO("Maintenance thread finished.");
+    // Before the maintenance thread is terminated, gather all statistics and
+    // make sure all messages are logged.
+    logger.gather_tick(true);
+    logger.logger_tick();
 }
 
 void FoundationGlobals::addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept

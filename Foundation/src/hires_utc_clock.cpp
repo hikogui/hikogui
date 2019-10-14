@@ -10,6 +10,19 @@ namespace TTauri {
 
 using namespace std::chrono_literals;
 
+std::string format_engineering(hires_utc_clock::duration duration)
+{
+    if (duration >= 1s) {
+        return fmt::format("{:.3g} s", static_cast<double>(duration / 1ns) / 1'000'000'000);
+    } else if (duration >= 1ms) {
+        return fmt::format("{:.3g} ms", static_cast<double>(duration / 1ns) / 1'000'000);
+    } else if (duration >= 1us) {
+        return fmt::format("{:.3g} us", static_cast<double>(duration / 1ns) / 1'000);
+    } else {
+        return fmt::format("{:.3g} ns", static_cast<double>(duration / 1ns));
+    }
+}
+
 std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp)
 {
     let nanoseconds = utc_timestamp.time_since_epoch().count() % 1000000000;
