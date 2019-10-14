@@ -54,33 +54,22 @@ constexpr It rfind(It const begin, It const end, T const &value)
     return end;
 }
 
-template<typename T>
-inline std::enable_if_t<!std::is_pointer_v<T>, T> middle(T begin, T end) noexcept
+/*! For each cluster.
+ * func() is executed for each cluster that is found between first-last.
+ * A cluster is found between two seperators, a seperator is detected with IsClusterSeperator().
+ * A cluster does not include the seperator itself.
+ */
+template<typename It, typename It, typename S, typename F>
+void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
 {
-    return begin + std::distance(begin, end) / 2;
-}
+    for (size_t i = text.begin(); i != text.end();) {
+        auto j = std::find_if(i + 1, last, IsClusterSeperator);
+        Function(i, j);
 
-template<typename T>
-inline std::enable_if_t<std::is_pointer_v<T>, T> middle(T begin, T end) noexcept
-{
-    return reinterpret_cast<T>((reinterpret_cast<intptr_t>(begin) + reinterpret_cast<intptr_t>(end)) / 2);;
-}
-
-template<typename T, typename U>
-inline T binary_nearest_find(T begin, T end, U value) noexcept
-{
-    while (begin < end) {
-        let m = middle(begin, end);
-
-        if (value > *m) {
-            begin = m + 1;
-        } else if (value < *m) {
-            end = m;
-        } else {
-            return m;
-        }
+        auto skipOverSeperator = (j == text.end()) ? 0 : 1;
+        i = j + skipOverSeperator;
     }
-    return begin;
 }
+
 }
 

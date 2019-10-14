@@ -3,6 +3,14 @@
 import sys
 import os.path
 
+# Output Format
+#
+#
+# struct {
+#     uint32_t nr_codes
+#
+#  
+
 class Unicode (object):
     def __init__(self):
         pass
