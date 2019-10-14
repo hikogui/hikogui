@@ -6,8 +6,8 @@
 #include "TTauri/Draw/Font.hpp"
 #include "TTauri/Draw/Path.hpp"
 #include "TTauri/Draw/PathString.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/required.hpp"
 
 #include <string>
 #include <vector>

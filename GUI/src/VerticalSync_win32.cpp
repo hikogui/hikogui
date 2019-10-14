@@ -1,8 +1,8 @@
 
 #include "TTauri/GUI/VerticalSync_win32.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Required/strings.hpp"
-#include "TTauri/Required/thread.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/thread.hpp"
 #define WIN32_NO_STATUS 1
 #include <Windows.h>
 #undef WIN32_NO_STATUS

@@ -5,8 +5,8 @@
 
 #include "TTauri/Config/Location.hpp"
 #include "TTauri/Config/ExecutionContext.hpp"
-#include "TTauri/Diagnostic/datum.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Foundation/datum.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include <string>
 
 namespace TTauri::Config {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Required/os_detect.hpp"
+#include "TTauri/Foundation/os_detect.hpp"
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 #include "TTauri/GUI/Instance_vulkan_win32.hpp"

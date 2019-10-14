@@ -3,12 +3,12 @@
 
 #include "TTauri/Draw/PNG.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
-#include "TTauri/Required/required.hpp"
-#include "TTauri/Required/URL.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <png.h>
 #include <stdio.h>
 

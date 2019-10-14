@@ -6,9 +6,9 @@
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/Required/URL.hpp"
-#include "TTauri/Required/memory.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/memory.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 

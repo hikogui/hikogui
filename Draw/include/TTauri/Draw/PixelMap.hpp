@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Required/geometry.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <string>

@@ -10,7 +10,7 @@ set(TTauri_Audio_srcs
 )
 
 add_library(TTauri_Audio STATIC ${TTauri_Audio_srcs})
-target_link_libraries(TTauri_Audio TTauri_Foundation TTauri_Diagnostic TTauri_Time TTauri_Required)
+target_link_libraries(TTauri_Audio TTauri_Foundation)
 target_include_directories(TTauri_Audio PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (MSVC)

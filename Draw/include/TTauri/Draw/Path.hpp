@@ -7,8 +7,8 @@
 #include "TTauri/Draw/attributes.hpp"
 #include "TTauri/Draw/TTauriIconParser.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 

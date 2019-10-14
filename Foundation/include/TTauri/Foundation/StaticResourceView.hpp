@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <gsl/gsl>
 #include <cstddef>
 #include <unordered_map>

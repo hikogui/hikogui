@@ -5,18 +5,12 @@
 #include "TTauri/Audio/AudioSystem.hpp"
 #include "TTauri/Audio/AudioSystem_win32.hpp"
 #include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Diagnostic/globals.hpp"
-#include "TTauri/Time/globals.hpp"
-#include "TTauri/Required/globals.hpp"
 
 namespace TTauri::Audio {
 
 AudioGlobals::AudioGlobals(AudioSystemDelegate *audioSystem_delegate) :
     audioSystem_delegate(audioSystem_delegate)
 {
-    required_assert(Required_globals != nullptr);
-    required_assert(Time_globals != nullptr);
-    required_assert(Diagnostic_globals != nullptr);
     required_assert(Foundation_globals != nullptr);
     required_assert(Audio_globals == nullptr);
     Audio_globals = this;

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Diagnostic/datum.hpp"
+#include "TTauri/Foundation/datum.hpp"
 #include <optional>
 
 namespace TTauri::Config {

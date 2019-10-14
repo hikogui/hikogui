@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Diagnostic/datum.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/URL.hpp"
+#include "TTauri/Foundation/datum.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/URL.hpp"
 #include <fmt/format.h>
 #include <memory>
 #include <iostream>

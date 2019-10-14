@@ -4,8 +4,8 @@
 #pragma once
 
 #include "TTauri/GUI/Device_forward.hpp"
-#include "TTauri/Required/geometry.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

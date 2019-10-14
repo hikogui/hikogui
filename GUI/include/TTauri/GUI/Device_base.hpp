@@ -5,9 +5,9 @@
 
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/globals.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
-#include "TTauri/Required/bigint.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/bigint.hpp"
 #include <unordered_set>
 #include <mutex>
 #include <tuple>

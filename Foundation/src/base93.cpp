@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/base93.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/bigint.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/bigint.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <algorithm>
 
 using namespace std::literals;

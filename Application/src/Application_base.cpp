@@ -3,8 +3,8 @@
 
 #include "TTauri/Application/Application.hpp"
 #include "TTauri/Foundation/StaticResourceView.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Required/globals.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/globals.hpp"
 #include <memory>
 
 namespace TTauri {
@@ -14,9 +14,7 @@ using namespace std;
 
 Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, void *hInstance, int nCmdShow) :
     delegate(applicationDelegate),
-    i_required(std::this_thread::get_id(), applicationDelegate->applicationName()),
-    i_time(URL::urlFromResourceDirectory() / "tzdata"),
-    i_diagnostic(),
+    i_foundation(std::this_thread::get_id(), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
     i_config(),
     i_audio(this),
     i_draw(),
@@ -31,7 +29,7 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
     required_assert(_application == nullptr);
     _application = this;
 
-    LOG_AUDIT("Starting application '{}'.", Required_globals->applicationName);
+    LOG_AUDIT("Starting application '{}'.", Foundation_globals->applicationName);
 }
 
 Application_base::~Application_base()

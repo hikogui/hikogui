@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
-#include "TTauri/Required/geometry.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI::PipelineImage {

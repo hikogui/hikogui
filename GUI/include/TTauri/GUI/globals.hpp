@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Instance_forward.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <cstdint>
 #include <mutex>
 #include <memory>

@@ -4,7 +4,7 @@
 #include "TTauri/Application/Application_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/Required/strings.hpp"
+#include "TTauri/Foundation/strings.hpp"
 #include <vulkan/vulkan.hpp>
 #include <thread>
 #include <string>
@@ -54,7 +54,7 @@ int Application_win32::loop()
     startingLoop();
 
 
-    Required_globals->main_thread_runner = [=](std::function<void()> f) {
+    Foundation_globals->main_thread_runner = [=](std::function<void()> f) {
         return this->runOnMainThread(f);
     };
 
@@ -73,7 +73,7 @@ int Application_win32::loop()
         DispatchMessage(&msg);
     }
 
-    Required_globals->main_thread_runner = {};
+    Foundation_globals->main_thread_runner = {};
 
     return 0;
 }

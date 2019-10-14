@@ -4,7 +4,7 @@
 #include "TTauri/Draw/PixelMap.inl"
 #include "TTauri/Draw/Path.hpp"
 #include "TTauri/Draw/BezierCurve.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -5,9 +5,9 @@
 
 #include "TTauri/Draw/PixelMap.hpp"
 #include "TTauri/Draw/attributes.hpp"
-#include "TTauri/Required/math.hpp"
+#include "TTauri/Foundation/math.hpp"
 #include "TTauri/Foundation/bezier.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <glm/glm.hpp>
 #include <tuple>
 #include <limits>

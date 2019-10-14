@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "TTauri/Audio/AudioDevice_win32.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Required/strings.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/strings.hpp"
 #include <Windows.h>
 #include <propsys.h>
 #include <functiondiscoverykeys_devpkey.h>

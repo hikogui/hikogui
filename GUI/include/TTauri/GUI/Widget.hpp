@@ -11,9 +11,9 @@
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
 #include "TTauri/Draw/attributes.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
-#include "TTauri/Required/URL.hpp"
-#include "TTauri/Required/geometry.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 #include <limits>
 #include <memory>
 #include <vector>

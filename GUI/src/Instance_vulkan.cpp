@@ -10,7 +10,7 @@ namespace TTauri::GUI {
 
 using namespace std;
 
-static bool hasRequiredExtensions(const std::vector<const char *> &requiredExtensions)
+static bool hasFoundationExtensions(const std::vector<const char *> &requiredExtensions)
 {
     auto availableExtensions = std::unordered_set<std::string>();
     for (auto availableExtensionProperties : vk::enumerateInstanceExtensionProperties()) {
@@ -46,7 +46,7 @@ Instance_vulkan::Instance_vulkan(InstanceDelegate *delegate, const std::vector<c
     requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-    if (!hasRequiredExtensions(requiredExtensions)) {
+    if (!hasFoundationExtensions(requiredExtensions)) {
         TTAURI_THROW(gui_error("Vulkan instance does not have the required extensions"));
     }
 

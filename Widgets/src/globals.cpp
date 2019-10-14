@@ -6,17 +6,11 @@
 #include "TTauri/Draw/globals.hpp"
 #include "TTauri/Config/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Diagnostic/globals.hpp"
-#include "TTauri/Time/globals.hpp"
-#include "TTauri/Required/globals.hpp"
 
 namespace TTauri::GUI::Widgets {
 
 WidgetsGlobals::WidgetsGlobals()
 {
-    required_assert(Required_globals != nullptr);
-    required_assert(Time_globals != nullptr);
-    required_assert(Diagnostic_globals != nullptr);
     required_assert(Foundation_globals != nullptr);
     required_assert(Config::Config_globals != nullptr);
     required_assert(Draw::Draw_globals != nullptr);

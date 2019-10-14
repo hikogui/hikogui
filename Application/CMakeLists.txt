@@ -7,7 +7,7 @@ set(TTauri_Foundation_srcs
 )
 
 add_library(TTauri_Application STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Application TTauri_Widgets TTauri_GUI TTauri_Audio TTauri_Config TTauri_Foundation TTauri_Diagnostic TTauri_Time TTauri_Required)
+target_link_libraries(TTauri_Application TTauri_Widgets TTauri_GUI TTauri_Audio TTauri_Config TTauri_Foundation)
 target_include_directories(TTauri_Application PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 if (MSVC)

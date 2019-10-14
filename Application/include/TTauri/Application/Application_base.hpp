@@ -12,11 +12,11 @@
 #include "TTauri/Audio/AudioSystemDelegate.hpp"
 #include "TTauri/Config/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Diagnostic/globals.hpp"
-#include "TTauri/Time/globals.hpp"
-#include "TTauri/Required/globals.hpp"
-#include "TTauri/Required/required.hpp"
-#include "TTauri/Required/URL.hpp"
+#include "TTauri/Foundation/globals.hpp"
+#include "TTauri/Foundation/globals.hpp"
+#include "TTauri/Foundation/globals.hpp"
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/URL.hpp"
 #include <gsl/gsl>
 #include <memory>
 #include <string>
@@ -39,9 +39,6 @@ public:
     */
     std::shared_ptr<ApplicationDelegate> delegate;
 
-    RequiredGlobals i_required;
-    TimeGlobals i_time;
-    DiagnosticGlobals i_diagnostic;
     FoundationGlobals i_foundation;
     Config::ConfigGlobals i_config;
     Audio::AudioGlobals i_audio;

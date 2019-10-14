@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Required/required.hpp"
-#include "TTauri/Required/string_tag.hpp"
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/string_tag.hpp"
 #include <type_traits>
 #include <limits>
 

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Required/strings.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 
 namespace TTauri {
 

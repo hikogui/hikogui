@@ -5,7 +5,7 @@
 
 #include "TTauri/Draw/attributes.hpp"
 #include "TTauri/Draw/Path.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 
 namespace TTauri::Draw {
 

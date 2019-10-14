@@ -7,8 +7,8 @@
 #include "TTauri/Draw/PathString.hpp"
 #include "TTauri/Draw/Font.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace TTauri::Draw {

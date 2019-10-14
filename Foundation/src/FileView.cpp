@@ -2,11 +2,11 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Required/memory.hpp"
-#include "TTauri/Required/URL.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/memory.hpp"
+#include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <mutex>
 
 #if OPERATING_SYSTEM == OS_WINDOWS

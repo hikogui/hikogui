@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Config/ASTExpression.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
 #include <glm/glm.hpp>
 
 namespace TTauri::Config {

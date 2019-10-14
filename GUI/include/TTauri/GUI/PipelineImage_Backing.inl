@@ -7,7 +7,7 @@
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
 #include "TTauri/Foundation/pickle.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 

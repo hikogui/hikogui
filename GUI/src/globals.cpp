@@ -3,9 +3,6 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Instance.hpp"
-#include "TTauri/Required/globals.hpp"
-#include "TTauri/Time/globals.hpp"
-#include "TTauri/Diagnostic/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Config/globals.hpp"
 #include "TTauri/Draw/globals.hpp"
@@ -21,9 +18,6 @@ namespace TTauri::GUI {
 GUIGlobals::GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int nCmdShow) :
     instance_delegate(instance_delegate), hInstance(hInstance), nCmdShow(nCmdShow)
 {
-    required_assert(Required_globals != nullptr);
-    required_assert(Time_globals != nullptr);
-    required_assert(Diagnostic_globals != nullptr);
     required_assert(Foundation_globals != nullptr);
     required_assert(Config::Config_globals != nullptr);
     required_assert(Draw::Draw_globals != nullptr);

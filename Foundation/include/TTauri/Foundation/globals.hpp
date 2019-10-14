@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include <gsl/gsl>
 #include <string>
 #include <unordered_map>
@@ -18,8 +18,16 @@ struct FoundationGlobals {
 private:
     std::unordered_map<std::string,gsl::span<std::byte const>> staticResources;
 
+    std::thread maintenanceThread;
+    bool stopMaintenanceThread = false;
+
 public:
-    FoundationGlobals();
+    date::time_zone const *time_zone = nullptr;
+    std::thread::id main_thread_id;
+    std::function<void(std::function<void()>)> main_thread_runner;
+    std::string applicationName;
+
+    FoundationGlobals(std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept;
     ~FoundationGlobals();
     FoundationGlobals(FoundationGlobals const &) = delete;
     FoundationGlobals &operator=(FoundationGlobals const &) = delete;
@@ -29,6 +37,8 @@ public:
     void addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept;
 
     gsl::span<std::byte const> getStaticResource(std::string const &key) const;
+
+    void maintenanceThreadProcedure();
 };
 
 }

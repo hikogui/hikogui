@@ -4,8 +4,8 @@
 #include "TTauri/Config/parser.hpp"
 #include "TTauri/Config/ASTObject.hpp"
 #include "TTauri/Config/ParseContext.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/logger.hpp"
 #include <cstdio>
 #include <vector>
 #include <string>

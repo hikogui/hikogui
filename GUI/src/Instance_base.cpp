@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/Instance_base.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Foundation/logger.hpp"
 #include <chrono>
 
 namespace TTauri::GUI {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Required/os_detect.hpp"
+#include "TTauri/Foundation/os_detect.hpp"
 
 namespace TTauri::GUI {
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Time/hires_utc_clock.hpp"
+#include "TTauri/Foundation/hires_utc_clock.hpp"
 #include <vector>
 
 namespace TTauri::Audio {

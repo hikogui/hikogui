@@ -5,9 +5,9 @@
 
 #include "TTauri/Config/parser.hpp"
 #include "TTauri/Config/ASTObject.hpp"
-#include "TTauri/Diagnostic/datum.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/strings.hpp"
+#include "TTauri/Foundation/datum.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/strings.hpp"
 
 namespace TTauri::Config {
 

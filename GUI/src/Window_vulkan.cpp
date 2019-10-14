@@ -7,7 +7,7 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineFlat.hpp"
-#include "TTauri/Diagnostic/trace.hpp"
+#include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
 namespace TTauri::GUI {

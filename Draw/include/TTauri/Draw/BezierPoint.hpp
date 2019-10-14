@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Required/geometry.hpp"
-#include "TTauri/Required/required.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtx/vec_swizzle.hpp>

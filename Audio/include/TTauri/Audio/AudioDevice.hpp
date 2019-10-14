@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Required/bigint.hpp"
+#include "TTauri/Foundation/bigint.hpp"
 #include "TTauri/Audio/AudioDeviceDelegate.hpp"
 #include "TTauri/Audio/AudioStreamConfig.hpp"
 #include <string>

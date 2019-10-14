@@ -3,8 +3,8 @@
 
 #include "TTauri/Draw/TrueTypeFont.hpp"
 #include "TTauri/Foundation/span.hpp"
-#include "TTauri/Required/strings.hpp"
-#include "TTauri/Required/endian.hpp"
+#include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/endian.hpp"
 #include <cstddef>
 
 

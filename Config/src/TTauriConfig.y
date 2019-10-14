@@ -22,7 +22,7 @@
   #include <string>
   #include <cstdint>
   #include <memory>
-  #include "TTauri/Required/URL.hpp"
+  #include "TTauri/Foundation/URL.hpp"
   #include "TTauri/Config/AST.hpp"
   #include "TTauri/Config/ParseContext.hpp"
   #include "TTauri/Config/parser.hpp"

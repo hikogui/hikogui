@@ -2,10 +2,10 @@
 #include "TTauri/Draw/TTauriIconParser.hpp"
 #include "TTauri/Draw/Path.hpp"
 #include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/span.hpp"
-#include "TTauri/Required/wsRGBA.hpp"
-#include "TTauri/Required/endian.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/endian.hpp"
 
 namespace TTauri::Draw {
 

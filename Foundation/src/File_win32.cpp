@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/File.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/strings.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/strings.hpp"
 #include <Windows.h>
 
 namespace TTauri {

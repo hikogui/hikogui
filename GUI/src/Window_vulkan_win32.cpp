@@ -3,8 +3,8 @@
 
 #include "TTauri/GUI/Window_vulkan_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
-#include "TTauri/Required/strings.hpp"
-#include "TTauri/Required/thread.hpp"
+#include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/thread.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 

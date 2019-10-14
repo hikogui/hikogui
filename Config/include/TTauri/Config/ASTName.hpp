@@ -6,7 +6,7 @@
 #include "TTauri/Config/ASTExpression.hpp"
 #include "TTauri/Config/ASTObject.hpp"
 #include "TTauri/Config/parser.hpp"
-#include "TTauri/Diagnostic/exceptions.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 
 namespace TTauri::Config {
 

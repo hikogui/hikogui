@@ -4,7 +4,7 @@
 #pragma once
 
 #include <limits>
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/required.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 

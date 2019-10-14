@@ -3,8 +3,8 @@
 
 #include "TTauri/Audio/AudioSystem_win32.hpp"
 #include "TTauri/Audio/AudioDevice_win32.hpp"
-#include "TTauri/Required/required.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/logger.hpp"
 #include <Windows.h>
 #include <mmdeviceapi.h>
 

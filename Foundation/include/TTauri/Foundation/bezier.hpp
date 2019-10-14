@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/polynomial.hpp"
-#include "TTauri/Required/geometry.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 
 namespace TTauri {
 

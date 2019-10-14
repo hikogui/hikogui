@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <memory>
 
 namespace TTauri::GUI {

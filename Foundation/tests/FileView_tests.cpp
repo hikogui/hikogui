@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Required/required.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

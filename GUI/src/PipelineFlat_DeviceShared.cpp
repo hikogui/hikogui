@@ -5,7 +5,7 @@
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/Required/URL.hpp"
+#include "TTauri/Foundation/URL.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 

@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "TTauri/Draw/PixelMap.inl"
-#include "TTauri/Required/wsRGBA.hpp"
-#include "TTauri/Required/endian.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/endian.hpp"
 #include <algorithm>
 
 namespace TTauri::Draw {

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Diagnostic/exceptions.hpp"
-#include "TTauri/Required/URL.hpp"
-#include "TTauri/Required/memory.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/memory.hpp"
 #include <glm/glm.hpp>
 #include <string>
 #include <vector>

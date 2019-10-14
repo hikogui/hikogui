@@ -5,9 +5,9 @@
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/GUI/PipelineImage_Vertex.hpp"
-#include "TTauri/Diagnostic/logger.hpp"
-#include "TTauri/Required/required.hpp"
-#include "TTauri/Required/numeric_cast.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace TTauri::GUI::PipelineImage {
