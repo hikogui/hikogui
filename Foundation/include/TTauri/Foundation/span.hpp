@@ -8,6 +8,27 @@
 
 namespace TTauri {
 
+placement_ref
+
+template<typename T>
+class casted_span {
+    T *_begin;
+    T *_end;
+
+    span(T *_begin, T *_end) : _begin(_begin), _end(_end) {}
+
+    ~span() {
+        std::destroy(_begin, _end);
+    }
+
+    size_t size() const noexcept { return static_cast<size_t>(_end - _begin); }
+    T *begin() noexcept { return _begin; }
+    T *end() noexcept { return _end; }
+    T const * cbegin() const noexcept { return _begin; }
+    T const * cend() const noexcept { return _end; }
+
+};
+
 template<typename T>
 gsl_suppress(type.1)
 inline T &at(gsl::span<std::byte> bytes, size_t offset) noexcept
