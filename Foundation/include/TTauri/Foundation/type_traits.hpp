@@ -63,4 +63,30 @@ struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<
 template<typename T>
 using make_intmax_t = typename make_intmax<T>::type;
 
+template<typename To, typename From, typename Ei=void>
+struct copy_cv {};
+
+template<typename To, typename From>
+struct copy_cv<To,From,std::enable_if_t<!std::is_const_v<From> && !std::is_volatile_v<From>>> {
+    using type = std::remove_cv_t<To>;
+};
+
+template<typename To, typename From>
+struct copy_cv<To,From,std::enable_if_t<!std::is_const_v<From> && std::is_volatile_v<From>>> {
+    using type = std::remove_cv_t<To> volatile;
+};
+
+template<typename To, typename From>
+struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && !std::is_volatile_v<From>>> {
+    using type = std::remove_cv_t<To> const;
+};
+
+template<typename To, typename From>
+struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && std::is_volatile_v<From>>> {
+    using type = std::remove_cv_t<To> const volatile;
+};
+
+template<typename To, typename From>
+using copy_cv_t = typename copy_cv<To,From>::type;
+
 }

@@ -55,4 +55,9 @@ constexpr T numeric_cast(U x) noexcept
     return static_cast<T>(x);
 }
 
+template<typename T>
+constexpr size_t to_size(T x) noexcept {
+    return numeric_cast<size_t>(x);
+}
+
 }

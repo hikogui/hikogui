@@ -53,14 +53,6 @@ bit_cast(From const &src) noexcept
     return dst;
 }
 
-template<typename To, typename From>
-gsl_suppress5(f.23,bounds.3,type.1,26487,lifetime.4)
-std::enable_if_t<(sizeof(*To) == sizeof(*From)) && std::is_trivial_v<*To>,To>
-ptr_cast(From src) noexcept
-{
-    return std::launder(reinterpret_cast<To>(src));
-}
-
 template<typename T>
 inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept
 {
