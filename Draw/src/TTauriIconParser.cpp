@@ -3,7 +3,7 @@
 #include "TTauri/Draw/Path.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/span.hpp"
+#include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/endian.hpp"
 

@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Draw/TrueTypeFont.hpp"
-#include "TTauri/Foundation/span.hpp"
+#include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/endian.hpp"
 #include <cstddef>
