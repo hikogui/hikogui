@@ -42,7 +42,7 @@ public:
 
     gsl::span<std::byte const> getStaticResource(std::string const &key) const;
 
-    void FoundationGlobals::stopMaintenanceThread() noexcept;
+    void stopMaintenanceThread() noexcept;
     void maintenanceThreadProcedure() noexcept;
 };
 

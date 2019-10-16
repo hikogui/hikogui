@@ -62,11 +62,11 @@ constexpr It rfind(It const begin, It const end, T const &value)
 template<typename It, typename S, typename F>
 void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
 {
-    for (size_t i = text.begin(); i != text.end();) {
+    for (size_t i = first; i != last;) {
         auto j = std::find_if(i + 1, last, IsClusterSeperator);
         Function(i, j);
 
-        auto skipOverSeperator = (j == text.end()) ? 0 : 1;
+        auto skipOverSeperator = (j == last) ? 0 : 1;
         i = j + skipOverSeperator;
     }
 }

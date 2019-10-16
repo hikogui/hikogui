@@ -37,7 +37,7 @@ elseif(APPLE)
         src/hires_utc_clock_posix.cpp
         src/audio_counter_clock_macos.cpp
         src/logger_macos.mm
-        src/File_posix.mm
+        src/File_posix.cpp
     )
 endif()
 
@@ -75,7 +75,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # ADX and MDI for bigint.
     target_compile_options(TTauri_Foundation PUBLIC -madx)
     if (!WIN32)
-        target_compile_options(TTauri_Foundation PUBLIC -mmdi2)
+        target_compile_options(TTauri_Foundation PUBLIC -mmdi2 -mbmi2)
     endif()
 endif()
 
