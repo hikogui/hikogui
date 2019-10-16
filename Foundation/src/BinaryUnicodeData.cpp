@@ -1,8 +1,10 @@
 
-#include "TTauri/Text/BinaryUnicodeData.hpp"
+#include "TTauri/Foundation/BinaryUnicodeData.hpp"
 #include "TTauri/Foundation/endian.hpp"
-#include "TTauri/Foundation/span.hpp"
+#include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/algorithm.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
 
@@ -52,34 +54,34 @@ struct BinaryUnicodeData_CanonicalComposition {
 
     force_inline uint64_t startPlusComposingCharacter() const noexcept {
         return
-            static_cast<uint64_t>(startCharacter) |
-            static_cast<uint64_t>(composingCharacter) << 32;
+            static_cast<uint64_t>(startCharacter.value()) |
+            static_cast<uint64_t>(composingCharacter.value()) << 32;
     }
 };
 
 struct DecompositionInfo {
     little_uint32_buf_t _offset;
-    uint8_t flagsAndLength;
+    uint8_t _flagsAndLength;
     uint8_t _order;
 
     size_t offset() const noexcept {
-        return offset.value();
+        return _offset.value();
     }
 
     uint8_t order() const noexcept {
-        return order;
+        return _order;
     }
 
-    uint8_t decompositionLength() const noexcept {
-        return flags & 0x1f;
+    uint8_t length() const noexcept {
+        return _flagsAndLength & 0x1f;
     }
 
     bool isCanonical() const noexcept {
-        return decompositionLength() > 0 && (flags & 0x20) > 0;
+        return length() > 0 && (_flagsAndLength & 0x20) > 0;
     }
 
     bool isCompatible() const noexcept {
-        return decompositionLength() > 0 && (flags & 0x20) == 0;
+        return length() > 0 && (_flagsAndLength & 0x20) == 0;
     }
 };
 
@@ -113,37 +115,41 @@ struct BinaryUnicodeData_Header {
 };
 
 BinaryUnicodeData::BinaryUnicodeData(gsl::span<std::byte const> bytes) :
-    bytes(bytes)
+    bytes(bytes), view()
 {
-    let &header = at<BinaryUnicodeData_Header>(bytes, 0);
-
-    parse_assert(header.magic.value() == fourcc("bucd");
-    parse_assert(header.version.value() == 1);
-
-    auto offset = sizeof(BinaryUnicodeData_Header);
-
-    let nrCodeUnits = header.nrCodeUnits.value();
-    parse_assert(offset + nrCodeUnits * sizeof(BinaryUnicodeData_CodeUnit) <= bytes.size());
-    codeUnits = make_span<BinaryUnicodeData_CodeUnit>(bytes, offset, nrCodeUnits);
-    offset += nrCodeUnits * sizeof(BinaryUnicodeData_CodeUnit);
-
-    let nrCanonicalCompositions = header.nrCanonicalCompositions.value();
-    parse_assert(offset + nrCanonicalCompositions * sizeof(BinaryUnicodeData_CanonicalComposition) <= bytes.size());
-    canonicalCompositions = make_span<BinaryUnicodeData_CanonicalComposition>(bytes, offset, nrCanonicalCompositions);
+    initialize();
 }
 
 BinaryUnicodeData::BinaryUnicodeData(std::unique_ptr<ResourceView> view) :
-    BinaryUnicodeData(view->bytes()), view(std::move(view))
+    bytes(view->bytes()), view(std::move(view))
 {
+    initialize();
+}
+
+void BinaryUnicodeData::initialize()
+{
+    size_t offset = 0;
+    let header = make_placement_ptr<BinaryUnicodeData_Header>(bytes, offset);
+    parse_assert(header->magic.value() == fourcc("bucd"));
+    parse_assert(header->version.value() == 1);
+
+    codeUnits_offset = offset;
+    codeUnits_count = header->nrCodeUnits.value();
+    parse_assert(check_placement_array<BinaryUnicodeData_CodeUnit>(bytes, offset, codeUnits_count));
+
+    canonicalCompositions_offset = offset;
+    canonicalCompositions_count = header->nrCanonicalCompositions.value();
+    parse_assert(check_placement_array<BinaryUnicodeData_CanonicalComposition>(bytes, offset, canonicalCompositions_count));
 }
 
 BinaryUnicodeData_CodeUnit const *BinaryUnicodeData::getCodeUnitInfo(char32_t c) const noexcept
 {
+    let codeUnits = unsafe_make_placement_array<BinaryUnicodeData_CodeUnit>(bytes, rvalue_cast(codeUnits_offset), codeUnits_count);
     let i = std::lower_bound(codeUnits.begin(), codeUnits.end(), c, [](auto &element, auto value) {
-        return element.codeUnit.value() < value;
+        return element.codePoint.value() < value;
     });
 
-    if (i == codeUnits.end() || i->codeUnit.value() != c) {
+    if (i == codeUnits.end() || i->codePoint.value() != c) {
         return nullptr;
     } else {
         return &(*i);
@@ -156,7 +162,7 @@ BinaryUnicodeData_CodeUnit const *BinaryUnicodeData::getCodeUnitInfo(char32_t c)
  */
 static bool isCanonicalLigature(char32_t c)
 {
-    switch (x) {
+    switch (c) {
     case 0xfb00: // ff
     case 0xfb01: // fi
     case 0xfb02: // fl
@@ -178,7 +184,7 @@ static bool isCanonicalLigature(char32_t c)
 void BinaryUnicodeData::decompose(std::u32string &result, char32_t c, bool canonical, bool decomposeLigatures) const noexcept
 {
     let codePoint = c & CODE_POINT_MASK;
-    let upperBits = c & UPPER_BITS_MASK;
+    let upperBits = c & ORDER_MASK;
 
     if (codePoint >= 0x110000) {
         // Characters above unicode plane-16 are not decomposed.
@@ -189,20 +195,29 @@ void BinaryUnicodeData::decompose(std::u32string &result, char32_t c, bool canon
         let info = getCodeUnitInfo(codePoint);
         if (info) {
             bool mustDecompose = canonical ?
-                (info.decompositionInfo.isCanonical() || (decomposeLigatures && isCanonicalLigature(codePoint))):
-                info.decompositionInfo.isCompatible();
+                (info->decompositionInfo.isCanonical() || (decomposeLigatures && isCanonicalLigature(codePoint))):
+                info->decompositionInfo.isCompatible();
 
             if (mustDecompose) {
-                decomposition = make_span<little_uint16_buf_at>(bytes, info.decompositionInfo.offset(), info.decompositionInfo.length());
-                for (uint8_t i = 0; i < info.decompositionInfo.length(); i++) {
-                    decompose(result, decomposition[i] | upperBits, canonical);
+                let offset = info->decompositionInfo.offset();
+                let nrCodePoints = info->decompositionInfo.length();
+                if (check_placement_array<little_uint32_buf_at>(bytes, offset, nrCodePoints)) {
+                    let decomposition = unsafe_make_placement_array<little_uint32_buf_at>(bytes, rvalue_cast(offset), nrCodePoints);
+                    for (let codePoint: decomposition) {
+                        // Recusively decompose.
+                        decompose(result, static_cast<char32_t>(codePoint.value()) | upperBits, canonical);
+                    }
+
+                } else {
+                    // Error in the file-format, replace with REPLACEMENT_CHARACTER U+FFFD.
+                    result += static_cast<char32_t>(0xfffd) | upperBits;
                 }
 
             } else {
-                let order = info.decompositionInfo.order();
+                let order = info->decompositionInfo.order();
                 let newCodePoint = order == 0 ?
                     c :
-                    (info.codePoint | (static_cast<char32_t>(info.decompositionInfo.order()) << 24) | COMBINING_CHARACTER_MASK);
+                    (info->codePoint.value() | (static_cast<char32_t>(info->decompositionInfo.order()) << 24) | COMBINING_CHARACTER_MASK);
 
                 result += newCodePoint;
             }
@@ -215,11 +230,11 @@ void BinaryUnicodeData::decompose(std::u32string &result, char32_t c, bool canon
 
 void BinaryUnicodeData::normalizeDecompositionOrder(std::u32string &result) const noexcept
 {
-    for_each_cluster(result.begin, result.end,
+    for_each_cluster(result.begin(), result.end(),
         [](auto x) { return (x & COMBINING_CHARACTER_MASK) != 0; },
         [](auto s, auto e) { 
             std::stable_sort(s, e, [](auto a, auto b) {
-                return (a & CODE_UNIT_ORDER) < (b & CODE_UNIT_ORDER);
+                return (a & ORDER_MASK) < (b & ORDER_MASK);
             });
         }
     );
@@ -250,18 +265,20 @@ std::u32string BinaryUnicodeData::compatibleDecompose(std::u32string_view text) 
 
 char32_t BinaryUnicodeData::compose(char32_t startCharacter, char32_t composingCharacter) const noexcept
 {
-    
-
     uint64_t startPlusComposingCharacter =
         (static_cast<uint64_t>(startCharacter) & CODE_POINT_MASK) |
         ((static_cast<uint64_t>(composingCharacter) & CODE_POINT_MASK) << 32);
+
+    let canonicalCompositions = unsafe_make_placement_array<BinaryUnicodeData_CanonicalComposition>(
+        bytes, rvalue_cast(canonicalCompositions_offset), canonicalCompositions_count
+    );
 
     let i = std::lower_bound(canonicalCompositions.begin(), canonicalCompositions.end(), startPlusComposingCharacter, [](auto &element, auto value) {
         return element.startPlusComposingCharacter() < value;
     });
 
-    if (i != canonicalCompositions.end() && i->order() == ab) {
-        return i->composedCharacter;
+    if (i != canonicalCompositions.end() && i->startPlusComposingCharacter() == startPlusComposingCharacter) {
+        return i->composedCharacter.value();
     } else {
         return 0;
     }
@@ -279,9 +296,9 @@ struct GraphemeBreakState {
 
 /*! Check if there is a grapheme break between two units.
 */
-static bool checkGraphemeBreak(GraphemeUnitType type, GraphemeBreakState &state) noexcept
+static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakState &state) noexcept
 {
-    if (type == GraphemeUnitType::RI) {
+    if (type == GraphemeUnitType::Regional_Indicator) {
         state.RI_odd = !state.RI_odd;
     } else {
         state.RI_odd = false;
@@ -290,22 +307,22 @@ static bool checkGraphemeBreak(GraphemeUnitType type, GraphemeBreakState &state)
     let lhs = state.previous;
     let rhs = type;
 
-    let GB3 = (lhs == GraphemeUnitType::CR) & (rhs == GraphemeUnitType::LF);
-    let GB6 =
+    bool const GB3 = (lhs == GraphemeUnitType::CR) & (rhs == GraphemeUnitType::LF);
+    bool const GB6 =
         (lhs == GraphemeUnitType::L) &
         ((rhs == GraphemeUnitType::L) | (rhs == GraphemeUnitType::V) | (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
-    let GB7 =
-        ((lhs == GraphemeUnitType::LV) | (lhs == GraphemeUnitType::V) &
+    bool const GB7 =
+        ((lhs == GraphemeUnitType::LV) | (lhs == GraphemeUnitType::V)) &
         ((rhs == GraphemeUnitType::V) | (rhs == GraphemeUnitType::T));
-    let GB8 =
-        ((lhs == GraphemeUnitType::LVT) | (lhs == GraphemeUnitType::T) &
+    bool const GB8 =
+        ((lhs == GraphemeUnitType::LVT) | (lhs == GraphemeUnitType::T)) &
         (rhs == GraphemeUnitType::T);
-    let GB9 = ((rhs == GraphemeUnitType::Extend) | (rhs == GraphemeUnitType::ZWJ));
-    let GB9a = (rhs == GraphemeUnitType::SpacingMark);
-    let GB9b = (lhs == GraphemeUnitType::Prepend);
+    bool const GB9 = ((rhs == GraphemeUnitType::Extend) | (rhs == GraphemeUnitType::ZWJ));
+    bool const GB9a = (rhs == GraphemeUnitType::SpacingMark);
+    bool const GB9b = (lhs == GraphemeUnitType::Prepend);
     //let GB11 =
-    let GB12 = (lhs == GraphemeUnitType::RI) & (rhs == GraphemeUnitType::RI) & state.RI_odd;
-    let dontBreak = (GB3 | GB6 | GB7 | GB8 | GB9 | GB9a | GB9b | GB12);
+    bool const GB12 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) & state.RI_odd;
+    bool const dontBreak = (GB3 | GB6 | GB7 | GB8 | GB9 | GB9a | GB9b | GB12);
 
     state.previous = type;
     return !dontBreak;
@@ -314,14 +331,14 @@ static bool checkGraphemeBreak(GraphemeUnitType type, GraphemeBreakState &state)
 bool BinaryUnicodeData::checkGraphemeBreak(char32_t c, GraphemeBreakState &state) const noexcept
 {
     let codePoint = c & CODE_POINT_MASK;
-    if (code >= 0x110000) {
+    if (codePoint >= 0x110000) {
         state.reset();
         return true;
 
     } else {
         let info = getCodeUnitInfo(c);
         if (info) {
-            return checkGraphemeBreak(info->graphemeUnitType, state);
+            return checkGraphemeBreak_unitType(info->graphemeUnitType, state);
         } else {
             state.reset();
             return true;

@@ -13,6 +13,8 @@ namespace TTauri {
         "{}", message,
         source_code_ptr(source_file, source_line)
     );
+    // logger.log<log_level::Fatal> will terminate, do it twice to shut up compiler.
+    std::terminate();
 }
 
 void assertIsLogged(const char *source_file, int source_line, const char *message)

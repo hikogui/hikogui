@@ -20,7 +20,7 @@ function(add_icon RET)
         get_filename_component(OUTPUT_DIR ${OUTPUT_PATH} DIRECTORY)
         file(MAKE_DIRECTORY ${OUTPUT_DIR})
 
-	    # Add a custom command to compile GLSL to SPIR-V.
+	    # Add a custom command to convert a .svg file to a .tticon file.
 	    add_custom_command(
 		    OUTPUT ${OUTPUT_PATH}
 		    COMMAND ${Python_EXECUTABLE} ${SVG2TTICON_PY} -o ${OUTPUT_PATH} ${INPUT_PATH}

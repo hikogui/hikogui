@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/type_traits.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include <gsl/gsl>
 
 namespace TTauri {
@@ -29,7 +30,7 @@ class placement_ptr {
     static_assert(!std::is_const_v<Byte> || std::is_trivially_destructible_v<T>);
 
     using value_type = copy_cv_t<T,Byte>;
-    typename value_type *ptr;
+    value_type *ptr;
     
 public:
     force_inline placement_ptr(gsl::span<Byte> bytes, size_t &offset) {
@@ -42,11 +43,11 @@ public:
         std::destroy_at(ptr);
     }
 
-    force_inline typename value_type *operator->() const noexcept {
+    force_inline value_type *operator->() const noexcept {
         return ptr;
     }
 
-    force_inline typename value_type &operator*() const noexcept {
+    force_inline value_type &operator*() const noexcept {
         return *ptr;
     }
 };
@@ -131,15 +132,15 @@ public:
         return index < size();
     }
 
-    force_inline typename value_type *begin() const noexcept {
-        return std::launder(reinterpret_cast<typename value_type *>(_begin));
+    force_inline value_type *begin() const noexcept {
+        return std::launder(reinterpret_cast<value_type *>(_begin));
     }
 
-    force_inline typename value_type *end() const noexcept {
-        return std::launder(reinterpret_cast<typename value_type *>(_end));
+    force_inline value_type *end() const noexcept {
+        return std::launder(reinterpret_cast<value_type *>(_end));
     }
 
-    force_inline typename value_type &operator[](size_t offset) const noexcept {
+    force_inline value_type &operator[](size_t offset) const noexcept {
         return *(begin() + offset);
     }
 };

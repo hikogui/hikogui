@@ -62,7 +62,7 @@ constexpr It rfind(It const begin, It const end, T const &value)
 template<typename It, typename S, typename F>
 void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
 {
-    for (size_t i = first; i != last;) {
+    for (auto i = first; i != last;) {
         auto j = std::find_if(i + 1, last, IsClusterSeperator);
         Function(i, j);
 

@@ -14,17 +14,17 @@ using namespace TTauri;
 TEST(SafeIntTests, Add) {
     tint64_t r;
 
-    let zero = tint64_t{0};
-    let one = tint64_t{1};
-    let minTwo = tint64_t{-2};
-    let minOne = tint64_t{-1};
-    let two = tint64_t{2};
-    let maximum = tint64_t{numeric_limits<int64_t>::max()};
-    let high = tint64_t{maximum - 1};
-    let lessHigh = tint64_t{maximum - 2};
+    //let zero = tint64_t{0};
+    //let one = tint64_t{1};
+    //let minTwo = tint64_t{-2};
+    //let minOne = tint64_t{-1};
+    //let two = tint64_t{2};
+    //let maximum = tint64_t{numeric_limits<int64_t>::max()};
+    //let high = tint64_t{maximum - 1};
+    //let lessHigh = tint64_t{maximum - 2};
     let minimum = tint64_t{numeric_limits<int64_t>::min()};
-    let low = tint64_t{minimum + 1};
-    let lessLow = tint64_t{minimum + 2};
+    //let low = tint64_t{minimum + 1};
+    //let lessLow = tint64_t{minimum + 2};
 
     ASSERT_THROW(r = minimum + minimum, TTauri::overflow_error);
 

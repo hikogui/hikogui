@@ -1,9 +1,16 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
+#pragma once
 
+#include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Foundation/placement.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <gsl/gsl>
 
 namespace TTauri {
 struct GraphemeBreakState;
+struct BinaryUnicodeData_CodeUnit;
 
 class BinaryUnicodeData {
 private:
@@ -11,8 +18,11 @@ private:
 
     gsl::span<std::byte const> bytes;
 
-    gsl::span<BinaryUnicodeData_CodeUnit const> codeUnits;
-    gsl::span<BinaryUnicodeData_CanonicalComposition const> canonicalCompositions;
+    size_t codeUnits_offset;
+    size_t codeUnits_count;
+
+    size_t canonicalCompositions_offset;
+    size_t canonicalCompositions_count;
 public:
     /*! Load a true type font.
     * The methods in this class will parse the true-type font at run time.
@@ -55,6 +65,7 @@ public:
 private:
     BinaryUnicodeData_CodeUnit const *getCodeUnitInfo(char32_t c) const noexcept;
 
+    void initialize();
     bool checkGraphemeBreak(char32_t c, GraphemeBreakState &state) const noexcept;
     char32_t compose(char32_t startCharacter, char32_t composingCharacter) const noexcept;
     void decompose(std::u32string &result, char32_t c, bool canonical, bool decomposeLigatures) const noexcept;
