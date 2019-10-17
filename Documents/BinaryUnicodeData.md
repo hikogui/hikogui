@@ -16,26 +16,50 @@ All fields are in little endian format.
 ## Code unit description
 The code unit descriptions are orded by increasing code-point value.
 
- | Type     | Name                    | Description                                                              | 
- | -------- | ----------------------- | ------------------------------------------------------------------------ |
- | char32_t | codePoint               | The code unit descriptions are orded by increasing code-point value      |
- | uint32_t | decompositionOffset     | Byte offset in the file where the decompositions is located.             |
- | uint8_t  | decompositionFlags      | bits 4:0 length of the decomposition 0-18. bit 5 canonical decomposition |
- | uint8_t  | decompositionOrder      | Orderering value for sorting decomposition code-points                   |
- | uint8_t  | graphemeUnitType        | bits 3:0 Type for grapheme break detecting.                              |
- | uint8_t  | reserved                | 0x0                                                                      |
-
-## Canonical decomposition
-The Canonical decompositions are ordered by increasing start code-point followed by increasing composing
+ | Type     | Bits  | Name                     | Description                                                              | 
+ | -------- | ----- | ------------------------ | ------------------------------------------------------------------------ |
+ | uint32_t | 31:11 | codePoint                | The code unit descriptions are orded by increasing code-point value      |
+ |          | 10:3  | decompositionOrder       | Orderering value for sorting decomposition code-points                   |
+ |          | 2     | reserved                 | 0                                                                        |
+ |          | 1     | reserved                 | 0                                                                        |
+ |          | 0     | canonicalDecomposition   | Canonical decomposition flag                                             |
+ | uint32_t | 31:28 | graphemeUnitType         | 15 enum values, listed below                                             |
+ |          | 27    | reserved                 |                                                                          |
+ |          | 26    | reserved                 |                                                                          |
+ |          | 25:21 | decompositionLength      | Number of decomposition code points, maximum 18                          |
+ |          | 20:0  | decompositionOffset /    | decompositionLength >= 2 byte offset * 8 in the file.                    |
+ |          |       | decompositionCodePoint / | decompositionLength == 1 then this contains the code-point               |
+ |          |       | reserved                 | decompositionLength == 0                                                 |
+ 
+## Composition
+The compositions are ordered by increasing start code-point followed by increasing composing
 code-point value.
 
 For space saving and cache locality, the decompositionOffset of the code unit descriptions may point inside this table.
 
- | Type     | Name                    | Description                                                              | 
- | -------- | ----------------------- | ------------------------------------------------------------------------ |
- | char32_t | startCharacter          | The code point of the first character of a pair                          |
- | char32_t | composingCharacter      | The code point of the second character of a pair                         |
- | char32_t | composedCharacter       | The code point resulting of the combining of the pair                    |
+ | Type     | Bits  | Name                    | Description                                                              | 
+ | -------- | ----- | ----------------------- | ------------------------------------------------------------------------ |
+ | uint64_t | 63:43 | startCharacter          | The code point of the first character of a pair                          |
+ |          | 42:22 | composingCharacter      | The code point of the second character of a pair                         |
+ |          | 21    | reserved                | 0                                                                        |
+ |          | 20:0  | composedCharacter       | The code point resulting of the combining of the pair                    |
+
+## Other decompositions
+The decompositionOffset can point into the Composition table for decompositions of two code-points.
+For other decompositions it will need to point in the following table.
+
+ | Type     | Bits  | Name                    |
+ | -------- | ----- | ----------------------- |
+ | uint64_t | 63:43 | 1st character           |
+ |          | 42:22 | 2nd character           |
+ |          | 21    | reserved                |
+ |          | 20:0  | 3rd code point          |
+ | uint64_t | 63:43 | 4th character           |
+ |          | 42:22 | 5th character           |
+ |          | 21    | reserved                |
+ |          | 20:0  | 6th code point          |
+ | uint64_t |       | etc...                  |
+
 
 ## Grapheme unit types
 

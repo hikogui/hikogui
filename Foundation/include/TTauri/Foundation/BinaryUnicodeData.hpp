@@ -10,7 +10,7 @@
 
 namespace TTauri {
 struct GraphemeBreakState;
-struct BinaryUnicodeData_CodeUnit;
+struct BinaryUnicodeData_Description;
 
 class BinaryUnicodeData {
 private:
@@ -18,11 +18,11 @@ private:
 
     gsl::span<std::byte const> bytes;
 
-    size_t codeUnits_offset;
-    size_t codeUnits_count;
+    size_t descriptions_offset;
+    size_t descriptions_count;
 
-    size_t canonicalCompositions_offset;
-    size_t canonicalCompositions_count;
+    size_t compositions_offset;
+    size_t compositions_count;
 public:
     /*! Load a true type font.
     * The methods in this class will parse the true-type font at run time.
@@ -63,7 +63,7 @@ public:
 
 
 private:
-    BinaryUnicodeData_CodeUnit const *getCodeUnitInfo(char32_t c) const noexcept;
+    BinaryUnicodeData_Description const *getDescription(char32_t c) const noexcept;
 
     void initialize();
     bool checkGraphemeBreak(char32_t c, GraphemeBreakState &state) const noexcept;

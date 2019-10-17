@@ -38,11 +38,10 @@ class Composition (object):
         self.combinedCodePoint = combinedCodePoint
 
     def serialize(self):
-        return struct.pack("<LLL",
-            self.startCodePoint,
-            self.secondCodePoint,
-            self.combinedCodePoint
-        )
+        qword = self.startCodePoint << 43
+        qword = self.secondCodePoint << 22
+        qword = self.combinedCodePoint
+        return struct.pack("<Q", qword)
 
 class Decomposition (object):
     def __init__(self, description, decomposition):
@@ -51,10 +50,15 @@ class Decomposition (object):
 
     def serialize(self):
         ret = b""
-        for codePoint in decomposition:
-            ret += struct.pack("<L", codePoint)
-        return ret
+        for i in range(0, len(self.decomposition), 3):
+            qword = self.decomposition[i] << 43
+            if i + 1 < len(self.decomposition):
+                qword|= self.decomposition[i+1] << 22
+            if i + 2 < len(self.decomposition):
+                qword|= self.decomposition[i+2]
+            ret += struct.pack("<Q", qword)
 
+        return ret
 
 class UnicodeDescription (object):
     def __init__(self, codePoint, decomposition, decompositionIsCanonical, decompositionOrder):
@@ -71,14 +75,23 @@ class UnicodeDescription (object):
             (0x20 if self.decompositionIsCanonical else 0)
         )
 
-        return struct.pack("<LLBBBB",
-            self.codePoint,
-            self.decompositionOffset or 0,
-            decompositionFlagsAndLength,
-            self.decompositionOrder,
-            self.graphemeUnitType,
-            0
-        )
+        dword1 = self.codePoint << 11
+        dword1|= self.decompositionOrder << 3
+        dword1|= 1 if self.decompositionIsCanonical else 0
+
+        dword2 = self.graphemeUnitType << 28
+        dword2|= len(self.decomposition) << 21
+
+        if len(self.decomposition) == 0:
+            pass
+        elif len(self.decomposition) == 1:
+            dword2|= self.decomposition[0]
+        else:
+            if self.decompositionOffset % 8 != 0:
+                raise RuntimeError("Except decomposition offset to be a multiple of 8")
+            dword2|= (self.decompositionOffset // 8)
+
+        return struct.pack("<LL", dword1, dword2)
             
     def __repr__(self):
         return "code={}, offset={}, decomposition={}, canonical={}, order={}, graphemeUnitType={}".format(
@@ -160,26 +173,29 @@ def extractOtherDecompositions(descriptions):
     decompositions = []
     for description in descriptions:
         if (
-            len(description.decomposition) > 0 and
-            (not description.decompositionIsCanonical or len(description.decomposition) != 2)
+            len(description.decomposition) >= 3 or
+            (len(description.decomposition) == 2 and not description.decompositionIsCanonical)
         ):
             decomposition = Decomposition(
                 description=description,
                 decomposition=description.decomposition
             )
+            decompositions.append(decomposition)
+
     return decompositions
 
 def setDecompositionOffsets(descriptions, compositions, decompositions):
     offset = 16 # header size
-    offset += len(descriptions) * 12
+    offset += len(descriptions) * 8
     
     for composition in compositions:
         composition.description.decompositionOffset = offset
-        offset += 12
+        offset += 8
 
     for decomposition in decompositions:
         decomposition.description.decompositionOffset = offset
-        offset += len(decomposition.decomposition) * 4
+        # 3 code-points compacted into 64 bits.
+        offset += ((len(decomposition.decomposition) + 2) // 3) * 8
 
 def writeBinaryUnicodeData(filename, descriptions, compositions, decompositions):
     fd = open(filename, "wb")
@@ -197,7 +213,7 @@ def writeBinaryUnicodeData(filename, descriptions, compositions, decompositions)
         fd.write(composition.serialize())
 
     for decomposition in decompositions:
-        fd.write(decompositions.serialize())
+        fd.write(decomposition.serialize())
 
     fd.close()
 
@@ -216,5 +232,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print("success?")
-    sys.exit(2)

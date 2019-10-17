@@ -47,67 +47,79 @@ constexpr char32_t GRAPHEME_BREAK_MASK = 0x0040'0000;
 constexpr char32_t RESERVED_MASK = 0x0080'0000;
 constexpr char32_t ORDER_MASK = 0xff00'0000;
 
-struct BinaryUnicodeData_CanonicalComposition {
-    little_uint32_buf_t startCharacter;
-    little_uint32_buf_t composingCharacter;
-    little_uint32_buf_t composedCharacter;
+struct BinaryUnicodeData_Composition {
+    little_uint64_buf_t data;
 
-    force_inline uint64_t startPlusComposingCharacter() const noexcept {
-        return
-            static_cast<uint64_t>(startCharacter.value()) |
-            static_cast<uint64_t>(composingCharacter.value()) << 32;
+    force_inline char32_t startCharacter() const noexcept {
+        return data.value() >> 43;
+    }
+
+    force_inline char32_t composingCharacter() const noexcept {
+        return (data.value() >> 22) & CODE_POINT_MASK;
+    }
+
+    force_inline char32_t composedCharacter() const noexcept {
+        return data.value() & CODE_POINT_MASK;
+    }
+
+    force_inline uint64_t searchValue() const noexcept {
+        return data.value() >> 22;
     }
 };
 
-struct DecompositionInfo {
-    little_uint32_buf_t _offset;
-    uint8_t _flagsAndLength;
-    uint8_t _order;
+struct BinaryUnicodeData_Description {
+    little_uint32_buf_t data1;
+    little_uint32_buf_t data2;
 
-    size_t offset() const noexcept {
-        return _offset.value();
+    force_inline char32_t codePoint() const noexcept {
+        return data1.value() >> 11;
     }
 
-    uint8_t order() const noexcept {
-        return _order;
+    force_inline uint8_t decompositionOrder() const noexcept {
+        return (data1.value() >> 3) & 0xff;
     }
 
-    uint8_t length() const noexcept {
-        return _flagsAndLength & 0x1f;
+    force_inline bool decompositionIsCanonical() const noexcept {
+        return (data1.value() & 1) > 0;
     }
 
-    bool isCanonical() const noexcept {
-        return length() > 0 && (_flagsAndLength & 0x20) > 0;
+    force_inline GraphemeUnitType graphemeUnitType() const noexcept {
+        return static_cast<GraphemeUnitType>(data2.value() >> 28);
     }
 
-    bool isCompatible() const noexcept {
-        return length() > 0 && (_flagsAndLength & 0x20) == 0;
+    force_inline uint8_t decompositionLength() const noexcept {
+        return (data2.value() >> 21) & 0x1f;
     }
-};
 
-struct BinaryUnicodeData_CodeUnit {
-    little_uint32_buf_t codePoint;
-    DecompositionInfo decompositionInfo;
-    GraphemeUnitType graphemeUnitType;
-    uint8_t reserved;
+    force_inline size_t decompositionOffset() const noexcept {
+        return (data2.value() & CODE_POINT_MASK) * sizeof(uint64_t);
+    }
+
+    force_inline char32_t decompositionCodePoint() const noexcept {
+        return static_cast<char32_t>(data2.value() & CODE_POINT_MASK);
+    }
+
+    force_inline uint32_t searchValue() const noexcept {
+        return data1.value() >> 11;
+    }
 };
 
 struct BinaryUnicodeData_Header {
     little_uint32_buf_t magic;
     little_uint32_buf_t version;
-    little_uint32_buf_t nrCodeUnits;
-    little_uint32_buf_t nrCanonicalCompositions;
+    little_uint32_buf_t nrDescriptions;
+    little_uint32_buf_t nrCompositions;
     /* Canonical decomposition will include ligatures, so that the resulting
      * text will not include ligatures.
      *
      * After the header we will get the data for each of the code units.
      * These are ordered low to high to allow for binary search.
-     *      BinaryUnicodeData_CodeUnit codeUnits[nrCodeUnits];
+     *      BinaryUnicodeData_Description codeUnits[nrDescriptions];
      *
      * The next section are the canonical composition rules, these
      * are ordered low to high, startCharacter first followed by the composingCharacter, to
      * allow binary search. The codeUnits can point into this table for canonical two-unit decomposition.
-     *      BinaryUnicodeData_CanonicalComposition canonicalComposition[nrCanonicalCompositions];
+     *      BinaryUnicodeData_Composition canonicalComposition[nrCompositions];
      *
      * The last section are for rest of the decompositions, both canonical and compatible.
      *      little_uint32_buf_t restDecompositions;
@@ -133,23 +145,24 @@ void BinaryUnicodeData::initialize()
     parse_assert(header->magic.value() == fourcc("bucd"));
     parse_assert(header->version.value() == 1);
 
-    codeUnits_offset = offset;
-    codeUnits_count = header->nrCodeUnits.value();
-    parse_assert(check_placement_array<BinaryUnicodeData_CodeUnit>(bytes, offset, codeUnits_count));
+    descriptions_offset = offset;
+    descriptions_count = header->nrDescriptions.value();
+    parse_assert(check_placement_array<BinaryUnicodeData_Description>(bytes, offset, descriptions_count));
+    offset += sizeof(BinaryUnicodeData_Description) * descriptions_count;
 
-    canonicalCompositions_offset = offset;
-    canonicalCompositions_count = header->nrCanonicalCompositions.value();
-    parse_assert(check_placement_array<BinaryUnicodeData_CanonicalComposition>(bytes, offset, canonicalCompositions_count));
+    compositions_offset = offset;
+    compositions_count = header->nrCompositions.value();
+    parse_assert(check_placement_array<BinaryUnicodeData_Composition>(bytes, offset, compositions_count));
 }
 
-BinaryUnicodeData_CodeUnit const *BinaryUnicodeData::getCodeUnitInfo(char32_t c) const noexcept
+BinaryUnicodeData_Description const *BinaryUnicodeData::getDescription(char32_t c) const noexcept
 {
-    let codeUnits = unsafe_make_placement_array<BinaryUnicodeData_CodeUnit>(bytes, rvalue_cast(codeUnits_offset), codeUnits_count);
-    let i = std::lower_bound(codeUnits.begin(), codeUnits.end(), c, [](auto &element, auto value) {
-        return element.codePoint.value() < value;
+    let descriptions = unsafe_make_placement_array<BinaryUnicodeData_Description>(bytes, rvalue_cast(descriptions_offset), descriptions_count);
+    let i = std::lower_bound(descriptions.begin(), descriptions.end(), static_cast<uint32_t>(c), [](auto &element, auto value) {
+        return element.searchValue() < value;
     });
 
-    if (i == codeUnits.end() || i->codePoint.value() != c) {
+    if (i == descriptions.end() || i->codePoint() != c) {
         return nullptr;
     } else {
         return &(*i);
@@ -192,32 +205,53 @@ void BinaryUnicodeData::decompose(std::u32string &result, char32_t c, bool canon
 
     } else {
         // The upper 11 bits are left intact in the decomposed characters.
-        let info = getCodeUnitInfo(codePoint);
-        if (info) {
-            bool mustDecompose = canonical ?
-                (info->decompositionInfo.isCanonical() || (decomposeLigatures && isCanonicalLigature(codePoint))):
-                info->decompositionInfo.isCompatible();
+        let description = getDescription(codePoint);
+        if (description) {
+            let decompositionLength = description->decompositionLength();
+
+            bool mustDecompose =
+                (decompositionLength > 0) & (
+                    (canonical == description->decompositionIsCanonical()) |
+                    (decomposeLigatures & isCanonicalLigature(codePoint))
+                 );
 
             if (mustDecompose) {
-                let offset = info->decompositionInfo.offset();
-                let nrCodePoints = info->decompositionInfo.length();
-                if (check_placement_array<little_uint32_buf_at>(bytes, offset, nrCodePoints)) {
-                    let decomposition = unsafe_make_placement_array<little_uint32_buf_at>(bytes, rvalue_cast(offset), nrCodePoints);
-                    for (let codePoint: decomposition) {
-                        // Recusively decompose.
-                        decompose(result, static_cast<char32_t>(codePoint.value()) | upperBits, canonical);
-                    }
+                if (decompositionLength == 1) {
+                    let codePoint = description->decompositionCodePoint();
+                    decompose(result, codePoint | upperBits, canonical);
 
                 } else {
-                    // Error in the file-format, replace with REPLACEMENT_CHARACTER U+FFFD.
-                    result += static_cast<char32_t>(0xfffd) | upperBits;
+                    let offset = description->decompositionOffset();
+                    let nrTriplets = (decompositionLength + 2) / 3;
+
+                    if (check_placement_array<little_uint64_buf_at>(bytes, offset, nrTriplets)) {
+                        let decomposition = unsafe_make_placement_array<little_uint64_buf_at>(bytes, rvalue_cast(offset), nrTriplets);
+                        for (size_t tripletIndex = 0, i = 0; tripletIndex < nrTriplets; tripletIndex++, i+=3) {
+                            let triplet = decomposition[tripletIndex].value();
+                            let codePoint1 = static_cast<char32_t>(triplet >> 43);
+                            let codePoint2 = static_cast<char32_t>((triplet >> 22) & CODE_POINT_MASK);
+                            let codePoint3 = static_cast<char32_t>(triplet & CODE_POINT_MASK);
+
+                            decompose(result, codePoint1 | upperBits, canonical);
+                            if (i + 1 < decompositionLength) {
+                                decompose(result, codePoint2 | upperBits, canonical);
+                            }
+                            if (i + 2 < decompositionLength) {
+                                decompose(result, codePoint3 | upperBits, canonical);
+                            }
+                        }
+
+                    } else {
+                        // Error in the file-format, replace with REPLACEMENT_CHARACTER U+FFFD.
+                        result += static_cast<char32_t>(0xfffd) | upperBits;
+                    }
                 }
 
             } else {
-                let order = info->decompositionInfo.order();
+                let order = description->decompositionOrder();
                 let newCodePoint = order == 0 ?
                     c :
-                    (info->codePoint.value() | (static_cast<char32_t>(info->decompositionInfo.order()) << 24) | COMBINING_CHARACTER_MASK);
+                    (description->codePoint() | (static_cast<char32_t>(order) << 24) | COMBINING_CHARACTER_MASK);
 
                 result += newCodePoint;
             }
@@ -265,20 +299,20 @@ std::u32string BinaryUnicodeData::compatibleDecompose(std::u32string_view text) 
 
 char32_t BinaryUnicodeData::compose(char32_t startCharacter, char32_t composingCharacter) const noexcept
 {
-    uint64_t startPlusComposingCharacter =
-        (static_cast<uint64_t>(startCharacter) & CODE_POINT_MASK) |
-        ((static_cast<uint64_t>(composingCharacter) & CODE_POINT_MASK) << 32);
+    uint64_t searchValue =
+        ((static_cast<uint64_t>(startCharacter) & CODE_POINT_MASK) << 21) |
+        (static_cast<uint64_t>(composingCharacter) & CODE_POINT_MASK);
 
-    let canonicalCompositions = unsafe_make_placement_array<BinaryUnicodeData_CanonicalComposition>(
-        bytes, rvalue_cast(canonicalCompositions_offset), canonicalCompositions_count
+    let compositions = unsafe_make_placement_array<BinaryUnicodeData_Composition>(
+        bytes, rvalue_cast(compositions_offset), compositions_count
     );
 
-    let i = std::lower_bound(canonicalCompositions.begin(), canonicalCompositions.end(), startPlusComposingCharacter, [](auto &element, auto value) {
-        return element.startPlusComposingCharacter() < value;
+    let i = std::lower_bound(compositions.begin(), compositions.end(), searchValue, [](auto &element, auto value) {
+        return element.searchValue() < value;
     });
 
-    if (i != canonicalCompositions.end() && i->startPlusComposingCharacter() == startPlusComposingCharacter) {
-        return i->composedCharacter.value();
+    if (i != compositions.end() && i->searchValue() == searchValue) {
+        return i->composedCharacter();
     } else {
         return 0;
     }
@@ -336,9 +370,9 @@ bool BinaryUnicodeData::checkGraphemeBreak(char32_t c, GraphemeBreakState &state
         return true;
 
     } else {
-        let info = getCodeUnitInfo(c);
-        if (info) {
-            return checkGraphemeBreak_unitType(info->graphemeUnitType, state);
+        let description = getDescription(c);
+        if (description) {
+            return checkGraphemeBreak_unitType(description->graphemeUnitType(), state);
         } else {
             state.reset();
             return true;
