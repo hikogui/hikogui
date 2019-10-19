@@ -39,8 +39,8 @@ class Composition (object):
 
     def serialize(self):
         qword = self.startCodePoint << 43
-        qword = self.secondCodePoint << 22
-        qword = self.combinedCodePoint
+        qword |= self.secondCodePoint << 22
+        qword |= self.combinedCodePoint
         return struct.pack("<Q", qword)
 
 class Decomposition (object):
@@ -53,9 +53,9 @@ class Decomposition (object):
         for i in range(0, len(self.decomposition), 3):
             qword = self.decomposition[i] << 43
             if i + 1 < len(self.decomposition):
-                qword|= self.decomposition[i+1] << 22
+                qword |= self.decomposition[i+1] << 22
             if i + 2 < len(self.decomposition):
-                qword|= self.decomposition[i+2]
+                qword |= self.decomposition[i+2]
             ret += struct.pack("<Q", qword)
 
         return ret
@@ -76,20 +76,20 @@ class UnicodeDescription (object):
         )
 
         dword1 = self.codePoint << 11
-        dword1|= self.decompositionOrder << 3
-        dword1|= 1 if self.decompositionIsCanonical else 0
+        dword1 |= self.decompositionOrder << 3
+        dword1 |= 1 if self.decompositionIsCanonical else 0
 
         dword2 = self.graphemeUnitType << 28
-        dword2|= len(self.decomposition) << 21
+        dword2 |= len(self.decomposition) << 21
 
         if len(self.decomposition) == 0:
             pass
         elif len(self.decomposition) == 1:
-            dword2|= self.decomposition[0]
+            dword2 |= self.decomposition[0]
         else:
             if self.decompositionOffset % 8 != 0:
                 raise RuntimeError("Except decomposition offset to be a multiple of 8")
-            dword2|= (self.decompositionOffset // 8)
+            dword2 |= (self.decompositionOffset // 8)
 
         return struct.pack("<LL", dword1, dword2)
             
@@ -197,7 +197,7 @@ def setDecompositionOffsets(descriptions, compositions, decompositions):
         # 3 code-points compacted into 64 bits.
         offset += ((len(decomposition.decomposition) + 2) // 3) * 8
 
-def writeBinaryUnicodeData(filename, descriptions, compositions, decompositions):
+def writeUnicodeData(filename, descriptions, compositions, decompositions):
     fd = open(filename, "wb")
     fd.write(struct.pack("<LLLL",
         0x62756364, # magic
@@ -228,7 +228,7 @@ def main():
 
     setDecompositionOffsets(descriptions, compositions, decompositions)
 
-    writeBinaryUnicodeData(options.output_path, descriptions, compositions, decompositions)
+    writeUnicodeData(options.output_path, descriptions, compositions, decompositions)
 
 if __name__ == "__main__":
     main()

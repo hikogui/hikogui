@@ -62,8 +62,17 @@ constexpr It rfind(It const begin, It const end, T const &value)
 template<typename It, typename S, typename F>
 void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
 {
+    if (first == last) {
+        return;
+    }
+
+    // If the first item is a cluster seperator skip over it.
+    if (IsClusterSeperator(*first)) {
+        first++;
+    }
+
     for (auto i = first; i != last;) {
-        auto j = std::find_if(i + 1, last, IsClusterSeperator);
+        auto j = std::find_if(i, last, IsClusterSeperator);
         Function(i, j);
 
         auto skipOverSeperator = (j == last) ? 0 : 1;

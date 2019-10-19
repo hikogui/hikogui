@@ -1,8 +1,11 @@
 # Binary Unicode Data Format
-This is a data format that is read by the BinaryUnicodeData class and is formed from
+This is a data format that is read by the UnicodeData class and is formed from
 several Unicode ucd data files.
 
-All fields are in little endian format.
+All integers are in little endian format.
+All messages are aligned to 64 bit.
+
+By merging fields inside 32 and 64 bit integer integers, we can compress the data by about 1/3.
 
 ## Header
 
@@ -10,11 +13,11 @@ All fields are in little endian format.
  | -------- | ----------------------- | ------------------------------------------------------------------------ |
  | uint32_t | magic                   | Identifier of this file format 'bucd' (0x62756364)                       |
  | uint32_t | version                 | Version of the file format 0x1                                           |
- | uint32_t | nrCodeUnits             | Number of code unit descriptions that follow the header                  |
- | uint32_t | nrCanonicalCompositions | Number of canonical compositions that follow the code unit descriptions  |
+ | uint32_t | nrDescriptions          | Number of descriptions that follow the header                  |
+ | uint32_t | nrCompositions          | Number of compositions that follow the code unit descriptions  |
 
-## Code unit description
-The code unit descriptions are orded by increasing code-point value.
+## Description
+The Unicode code-point descriptions are orded by increasing code-point value.
 
  | Type     | Bits  | Name                     | Description                                                              | 
  | -------- | ----- | ------------------------ | ------------------------------------------------------------------------ |
@@ -24,8 +27,8 @@ The code unit descriptions are orded by increasing code-point value.
  |          | 1     | reserved                 | 0                                                                        |
  |          | 0     | canonicalDecomposition   | Canonical decomposition flag                                             |
  | uint32_t | 31:28 | graphemeUnitType         | 15 enum values, listed below                                             |
- |          | 27    | reserved                 |                                                                          |
- |          | 26    | reserved                 |                                                                          |
+ |          | 27    | reserved                 | 0                                                                        |
+ |          | 26    | reserved                 | 0                                                                        |
  |          | 25:21 | decompositionLength      | Number of decomposition code points, maximum 18                          |
  |          | 20:0  | decompositionOffset /    | decompositionLength >= 2 byte offset * 8 in the file.                    |
  |          |       | decompositionCodePoint / | decompositionLength == 1 then this contains the code-point               |

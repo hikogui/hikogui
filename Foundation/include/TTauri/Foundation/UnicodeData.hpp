@@ -9,14 +9,31 @@
 #include <gsl/gsl>
 
 namespace TTauri {
-struct GraphemeBreakState;
-struct BinaryUnicodeData_Description;
+struct UnicodeData_GraphemeBreakState;
+struct UnicodeData_Description;
 
-class BinaryUnicodeData {
+enum class GraphemeUnitType : uint8_t {
+    Other = 0,
+    CR = 1,
+    LF = 2,
+    Control = 3,
+    Extend = 4,
+    ZWJ = 5,
+    Regional_Indicator = 6,
+    Prepend = 7,
+    SpacingMark = 8,
+    L = 9,
+    V = 10,
+    T = 11,
+    LV = 12,
+    LVT = 13,
+    Extended_Pictographic = 14
+};
+
+class UnicodeData {
 private:
-    std::unique_ptr<ResourceView> view;
-
     gsl::span<std::byte const> bytes;
+    std::unique_ptr<ResourceView> view;
 
     size_t descriptions_offset;
     size_t descriptions_count;
@@ -29,14 +46,14 @@ public:
     * This also means that the bytes passed into this constructor will need to
     * remain available.
     */
-    BinaryUnicodeData(gsl::span<std::byte const> bytes);
-    BinaryUnicodeData(std::unique_ptr<ResourceView> view);
-    BinaryUnicodeData() = delete;
-    BinaryUnicodeData(BinaryUnicodeData const &other) = delete;
-    BinaryUnicodeData &operator=(BinaryUnicodeData const &other) = delete;
-    BinaryUnicodeData(BinaryUnicodeData &&other) = delete;
-    BinaryUnicodeData &operator=(BinaryUnicodeData &&other) = delete;
-    ~BinaryUnicodeData() = default;
+    UnicodeData(gsl::span<std::byte const> bytes);
+    UnicodeData(std::unique_ptr<ResourceView> view);
+    UnicodeData() = delete;
+    UnicodeData(UnicodeData const &other) = delete;
+    UnicodeData &operator=(UnicodeData const &other) = delete;
+    UnicodeData(UnicodeData &&other) = delete;
+    UnicodeData &operator=(UnicodeData &&other) = delete;
+    ~UnicodeData() = default;
 
     /*! This function will canonically decompose the text.
      * Ligatures will be decomposed.
@@ -44,7 +61,7 @@ public:
      * \param text to decompose, must be passed to checkCanonicalComposition() first.
      * \return The text after canonical decomposition.
      */
-    std::u32string canonicalDecompose(std::u32string_view text, bool decomposeLigatures=true) const noexcept;
+    std::u32string canonicalDecompose(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
 
     /*! This function will compatible decompose the text.
     * This function should be used before comparing two texts.
@@ -59,19 +76,23 @@ public:
      * \param text to compose, must be passed to checkCanonicalComposition() or canonicalDecompose() first.
      * \return The text after composition.
      */
-    size_t compose(std::u32string &text) const noexcept;
+    void compose(std::u32string &text) const noexcept;
 
 
 private:
-    BinaryUnicodeData_Description const *getDescription(char32_t c) const noexcept;
+    UnicodeData_Description const *getDescription(char32_t c) const noexcept;
+    GraphemeUnitType UnicodeData::getGraphemeUnitType(char32_t c) const noexcept;
 
     void initialize();
-    bool checkGraphemeBreak(char32_t c, GraphemeBreakState &state) const noexcept;
+    bool checkGraphemeBreak(char32_t c, UnicodeData_GraphemeBreakState &state) const noexcept;
     char32_t compose(char32_t startCharacter, char32_t composingCharacter) const noexcept;
-    void decompose(std::u32string &result, char32_t c, bool canonical, bool decomposeLigatures) const noexcept;
-    std::u32string decompose(std::u32string_view text, bool canonical, bool decomposeLigatures=false) const noexcept;
+    void decomposeCodePoint(std::u32string &result, char32_t c, bool decomposeCompatible, bool decomposeLigatures) const noexcept;
+    std::u32string decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures=false) const noexcept;
     void normalizeDecompositionOrder(std::u32string &result) const noexcept;
 
 };
+
+template<>
+std::unique_ptr<UnicodeData> parseResource(URL const &location);
 
 }

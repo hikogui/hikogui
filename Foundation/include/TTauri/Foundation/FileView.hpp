@@ -33,10 +33,20 @@ public:
 
     size_t size() const noexcept override { return _bytes->size(); }
 
+    void *data() noexcept { return _bytes->data(); }
     void const *data() const noexcept override { return _bytes->data(); }
 
     gsl::span<std::byte> bytes() noexcept { return *_bytes; }
     gsl::span<std::byte const> bytes() const noexcept override { return *_bytes; }
+
+    std::string_view string_view() noexcept {
+        return std::string_view{reinterpret_cast<char *>(data()), size()};
+    }
+
+    std::string_view const string_view() const noexcept {
+        return std::string_view{reinterpret_cast<char const *>(data()), size()};
+    }
+
 
     void flush(void* base, size_t size);
 

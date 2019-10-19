@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/UnicodeData.hpp"
 #include <gsl/gsl>
 #include <string>
 #include <unordered_map>
@@ -30,6 +31,7 @@ public:
     std::thread::id main_thread_id;
     std::function<void(std::function<void()>)> main_thread_runner;
     std::string applicationName;
+    std::unique_ptr<UnicodeData> unicodeData;
 
     FoundationGlobals(std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept;
     ~FoundationGlobals();

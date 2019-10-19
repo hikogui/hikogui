@@ -8,6 +8,8 @@
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
 #include "TTauri/Foundation/trace.hpp"
 
+#include "data/UnicodeData.bin.inl"
+
 namespace TTauri {
 
 FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept :
@@ -36,6 +38,10 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, std::string
 
     sync_clock_calibration<hires_utc_clock,audio_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock,audio_counter_clock>("audio_utc");
+
+
+    Foundation_globals->addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
+    unicodeData = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
 
     maintenanceThread = std::thread([=]() {
         return this->maintenanceThreadProcedure();
