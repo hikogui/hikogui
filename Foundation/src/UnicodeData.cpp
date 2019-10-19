@@ -8,7 +8,16 @@
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
 
+#include <Windows.h>
+#include <debugapi.h>
+
 namespace TTauri {
+
+/*! This character is not allowed in a Unicode text.
+ * We use this character temporarily to snuff out code-units
+ * during composing.
+ */
+constexpr char32_t NOT_A_CHARACTER = 0x00'ffff;
 
 /* char32_t bits.
 *  - bits 20:0 Code point
@@ -21,27 +30,51 @@ namespace TTauri {
 *  - bits 23   Reserved.
 */
 constexpr char32_t CODE_POINT_MASK = 0x001f'ffff;
-constexpr char32_t COMBINING_CHARACTER_MASK = 0x0020'0000;
-constexpr char32_t GRAPHEME_BREAK_MASK = 0x0040'0000;
-constexpr char32_t RESERVED_MASK = 0x0080'0000;
-constexpr char32_t ORDER_MASK = 0xff00'0000;
+constexpr char32_t UPPER_BITS_MASK = 0xffe0'0000;
 
 constexpr char32_t HANGUL_SBASE = 0xac00;
 constexpr char32_t HANGUL_LBASE = 0x1100;
 constexpr char32_t HANGUL_VBASE = 0x1161;
 constexpr char32_t HANGUL_TBASE = 0x11a7;
-constexpr size_t HANGUL_LCOUNT = 19;
-constexpr size_t HANGUL_VCOUNT = 21;
-constexpr size_t HANGUL_TCOUNT = 28;
-constexpr size_t HANGUL_NCOUNT = HANGUL_VCOUNT * HANGUL_TCOUNT;
-constexpr size_t HANGUL_SCOUNT = HANGUL_LCOUNT * HANGUL_NCOUNT;
+constexpr char32_t HANGUL_LCOUNT = 19;
+constexpr char32_t HANGUL_VCOUNT = 21;
+constexpr char32_t HANGUL_TCOUNT = 28;
+constexpr char32_t HANGUL_NCOUNT = HANGUL_VCOUNT * HANGUL_TCOUNT;
+constexpr char32_t HANGUL_SCOUNT = HANGUL_LCOUNT * HANGUL_NCOUNT;
 constexpr char32_t HANGUL_SEND = HANGUL_SBASE + HANGUL_SCOUNT;
 constexpr char32_t HANGUL_LEND = HANGUL_LBASE + HANGUL_LCOUNT;
 constexpr char32_t HANGUL_VEND = HANGUL_VBASE + HANGUL_VCOUNT;
 constexpr char32_t HANGUL_TEND = HANGUL_TBASE + HANGUL_TCOUNT;
 
+static bool isHangulLPart(char32_t codePoint)
+{
+    return codePoint >= HANGUL_LBASE && codePoint < (HANGUL_LBASE + HANGUL_LCOUNT);
+}
 
+static bool isHangulVPart(char32_t codePoint)
+{
+    return codePoint >= HANGUL_VBASE && codePoint < (HANGUL_VBASE + HANGUL_VCOUNT);
+}
 
+static bool isHangulTPart(char32_t codePoint)
+{
+    return codePoint >= HANGUL_TBASE && codePoint < (HANGUL_TBASE + HANGUL_TCOUNT);
+}
+
+static bool isHangulSyllable(char32_t codePoint)
+{
+    return codePoint >= HANGUL_SBASE && codePoint < (HANGUL_SBASE + HANGUL_SCOUNT);
+}
+
+static bool isHangulLVPart(char32_t codePoint)
+{
+    return isHangulSyllable(codePoint) && ((codePoint - HANGUL_SBASE) % HANGUL_TCOUNT) == 0;
+}
+
+static bool isHangulLVTPart(char32_t codePoint)
+{
+    return isHangulSyllable(codePoint) && ((codePoint - HANGUL_SBASE) % HANGUL_TCOUNT) > 0;
+}
 
 struct UnicodeData_Composition {
     little_uint64_buf_t data;
@@ -122,16 +155,6 @@ struct UnicodeData_Header {
      */
 };
 
-struct UnicodeData_GraphemeBreakState {
-    GraphemeUnitType previous = GraphemeUnitType::Other;
-    bool RI_odd = false;
-
-    void reset() noexcept {
-        previous = GraphemeUnitType::Other;
-        RI_odd = false;
-    }
-};
-
 UnicodeData::UnicodeData(gsl::span<std::byte const> bytes) :
     bytes(bytes), view()
 {
@@ -164,15 +187,66 @@ void UnicodeData::initialize()
 
 UnicodeData_Description const *UnicodeData::getDescription(char32_t c) const noexcept
 {
+    let codePoint = c & CODE_POINT_MASK;
+
     let descriptions = unsafe_make_placement_array<UnicodeData_Description>(bytes, rvalue_cast(descriptions_offset), descriptions_count);
-    let i = std::lower_bound(descriptions.begin(), descriptions.end(), static_cast<uint32_t>(c), [](auto &element, auto value) {
+    let i = std::lower_bound(descriptions.begin(), descriptions.end(), static_cast<uint32_t>(codePoint), [](auto &element, auto value) {
         return element.searchValue() < value;
     });
 
-    if (i == descriptions.end() || i->codePoint() != c) {
+    if (i == descriptions.end() || i->codePoint() != codePoint) {
         return nullptr;
     } else {
         return &(*i);
+    }
+}
+
+GraphemeUnitType UnicodeData::getGraphemeUnitType(char32_t c) const noexcept {
+    let codePoint = c & CODE_POINT_MASK;
+
+    if (codePoint >= 0x110000) {
+        return GraphemeUnitType::Other;
+
+    } else if (isHangulSyllable(codePoint)) {
+        let SIndex = codePoint - HANGUL_SBASE;
+        return (SIndex % HANGUL_TCOUNT) == 0 ? GraphemeUnitType::LV : GraphemeUnitType::LVT;
+
+    } else if (isHangulLPart(codePoint)) {
+        return GraphemeUnitType::L;
+
+    } else if (isHangulVPart(codePoint)) {
+        return GraphemeUnitType::V;
+
+    } else if (isHangulTPart(codePoint)) {
+        return GraphemeUnitType::T;
+
+    } else {
+        let description = getDescription(codePoint);
+        if (description) {
+            return description->graphemeUnitType();
+        } else {
+            return GraphemeUnitType::Other;
+        }
+    }
+}
+
+uint8_t UnicodeData::getDecompositionOrder(char32_t c) const noexcept {
+    let codePoint = c & CODE_POINT_MASK;
+
+    if (codePoint <= 127 && codePoint >= 0x110000) {
+        return 0;
+    } else if (
+        isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) ||
+        isHangulSyllable(codePoint)
+    ) {
+        return 0;
+    } else {
+        let description = getDescription(codePoint);
+        if (description) {
+            return description->decompositionOrder();
+        } else {
+            return 0;
+        }
     }
 }
 
@@ -182,7 +256,9 @@ UnicodeData_Description const *UnicodeData::getDescription(char32_t c) const noe
  */
 static bool isCanonicalLigature(char32_t c)
 {
-    switch (c) {
+    let codePoint = c & CODE_POINT_MASK;
+
+    switch (codePoint) {
     case 0xfb00: // ff
     case 0xfb01: // fi
     case 0xfb02: // fl
@@ -204,13 +280,22 @@ static bool isCanonicalLigature(char32_t c)
 void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t c, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
     let codePoint = c & CODE_POINT_MASK;
-    let upperBits = c & ORDER_MASK;
+    let upperBits = c & UPPER_BITS_MASK;
+
+    let description = getDescription(codePoint);
+    let decompositionLength = description ? description->decompositionLength() : 0;
+    let mustDecompose =
+        (decompositionLength > 0) && (
+            decomposeCompatible ||
+            description->decompositionIsCanonical() ||
+            (decomposeLigatures && isCanonicalLigature(codePoint))
+            );
 
     if (codePoint <= 127 || codePoint >= 0x110000) {
         // ASCII characters and code-points above unicode plane-16 are not decomposed.
         result += c;
 
-    } else if (codePoint >= HANGUL_SBASE && codePoint <= HANGUL_SEND) {
+    } else if (isHangulSyllable(codePoint)) {
         let SIndex = codePoint - HANGUL_SBASE;
         let LIndex = static_cast<char32_t>(SIndex / HANGUL_NCOUNT);
         let VIndex = static_cast<char32_t>((SIndex % HANGUL_NCOUNT) / HANGUL_TCOUNT);
@@ -221,83 +306,44 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t c, bool de
             result += (HANGUL_TBASE + TIndex) | upperBits;
         }
 
-    } else {
-        let description = getDescription(codePoint);
-        if (description) {
-            let decompositionLength = description->decompositionLength();
+    } else if (mustDecompose) {
+        if (decompositionLength == 1) {
+            let codePoint = description->decompositionCodePoint();
+            decomposeCodePoint(result, codePoint | upperBits, decomposeCompatible, decomposeLigatures);
 
-            bool mustDecompose =
-                (decompositionLength > 0) & (
-                    decomposeCompatible |
-                    description->decompositionIsCanonical() |
-                    (decomposeLigatures & isCanonicalLigature(codePoint))
-                 );
+        } else {
+            let offset = description->decompositionOffset();
+            let nrTriplets = (decompositionLength + 2) / 3;
 
-            if (mustDecompose) {
-                if (decompositionLength == 1) {
-                    let codePoint = description->decompositionCodePoint();
-                    decomposeCodePoint(result, codePoint | upperBits, decomposeCompatible, decomposeLigatures);
+            if (check_placement_array<little_uint64_buf_at>(bytes, offset, nrTriplets)) {
+                let decomposition = unsafe_make_placement_array<little_uint64_buf_at>(bytes, rvalue_cast(offset), nrTriplets);
+                for (size_t tripletIndex = 0, i = 0; tripletIndex < nrTriplets; tripletIndex++, i+=3) {
+                    let triplet = decomposition[tripletIndex].value();
+                    let codePoint1 = static_cast<char32_t>(triplet >> 43);
+                    let codePoint2 = static_cast<char32_t>((triplet >> 22) & CODE_POINT_MASK);
+                    let codePoint3 = static_cast<char32_t>(triplet & CODE_POINT_MASK);
 
-                } else {
-                    let offset = description->decompositionOffset();
-                    let nrTriplets = (decompositionLength + 2) / 3;
-
-                    if (check_placement_array<little_uint64_buf_at>(bytes, offset, nrTriplets)) {
-                        let decomposition = unsafe_make_placement_array<little_uint64_buf_at>(bytes, rvalue_cast(offset), nrTriplets);
-                        for (size_t tripletIndex = 0, i = 0; tripletIndex < nrTriplets; tripletIndex++, i+=3) {
-                            let triplet = decomposition[tripletIndex].value();
-                            let codePoint1 = static_cast<char32_t>(triplet >> 43);
-                            let codePoint2 = static_cast<char32_t>((triplet >> 22) & CODE_POINT_MASK);
-                            let codePoint3 = static_cast<char32_t>(triplet & CODE_POINT_MASK);
-
-                            decomposeCodePoint(result, codePoint1 | upperBits, decomposeCompatible, decomposeLigatures);
-                            if (i + 1 < decompositionLength) {
-                                decomposeCodePoint(result, codePoint2 | upperBits, decomposeCompatible, decomposeLigatures);
-                            }
-                            if (i + 2 < decompositionLength) {
-                                decomposeCodePoint(result, codePoint3 | upperBits, decomposeCompatible, decomposeLigatures);
-                            }
-                        }
-
-                    } else {
-                        // Error in the file-format, replace with REPLACEMENT_CHARACTER U+FFFD.
-                        result += static_cast<char32_t>(0xfffd) | upperBits;
+                    decomposeCodePoint(result, codePoint1 | upperBits, decomposeCompatible, decomposeLigatures);
+                    if (i + 1 < decompositionLength) {
+                        decomposeCodePoint(result, codePoint2 | upperBits, decomposeCompatible, decomposeLigatures);
+                    }
+                    if (i + 2 < decompositionLength) {
+                        decomposeCodePoint(result, codePoint3 | upperBits, decomposeCompatible, decomposeLigatures);
                     }
                 }
 
             } else {
-                let order = description->decompositionOrder();
-                let newCodePoint = order == 0 ?
-                    c :
-                    (description->codePoint() | (static_cast<char32_t>(order) << 24) | COMBINING_CHARACTER_MASK);
-
-                result += newCodePoint;
+                // Error in the file-format, replace with REPLACEMENT_CHARACTER U+FFFD.
+                result += static_cast<char32_t>(0xfffd) | upperBits;
             }
-
-        } else {
-            // Don't decompose code-points without a description in the UnicodeData.
-            result += c;
         }
+
+    } else {
+        // No decomposition available, or do not want to decompose.
+        result += c;
     }
 }
 
-void UnicodeData::normalizeDecompositionOrder(std::u32string &result) const noexcept
-{
-    for_each_cluster(result.begin(), result.end(),
-        [](auto x) { return (x & COMBINING_CHARACTER_MASK) == 0; },
-        [](auto s, auto e) { 
-            std::stable_sort(s, e, [](auto a, auto b) {
-                return (a & ORDER_MASK) < (b & ORDER_MASK);
-            });
-        }
-    );
-
-    for (auto &c: result) {
-        if ((c & COMBINING_CHARACTER_MASK) > 0) {
-            c &= CODE_POINT_MASK;
-        }
-    }
-}
 
 std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
@@ -308,7 +354,6 @@ std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCo
         decomposeCodePoint(result, c, decomposeCompatible, decomposeLigatures);
     }
 
-    normalizeDecompositionOrder(result);
     return result;
 }
 
@@ -321,6 +366,41 @@ std::u32string UnicodeData::compatibleDecompose(std::u32string_view text) const 
 {
     return decompose(text, true);
 }
+
+void UnicodeData::normalizeDecompositionOrder(std::u32string &text) const noexcept
+{
+    std::vector<uint64_t> textWithDecompositionOrder;
+    textWithDecompositionOrder.resize(text.size());
+
+    std::transform(text.begin(), text.end(), textWithDecompositionOrder.begin(), [&](auto x) {
+        let order = getDecompositionOrder(x);
+        return static_cast<uint64_t>(x) | (static_cast<uint64_t>(order) << 32);
+    });
+
+    for_each_cluster(textWithDecompositionOrder.begin(), textWithDecompositionOrder.end(),
+        [](auto x) { return (x >> 32) == 0; },
+        [](auto s, auto e) {
+            std::stable_sort(s, e, [](auto a, auto b) {
+                return (a >> 32) < (b >> 32);
+                });
+        }
+    );
+
+    std::transform(textWithDecompositionOrder.begin(), textWithDecompositionOrder.end(), text.begin(), [](auto x) {
+        return static_cast<char32_t>(x);
+    });
+}
+
+
+struct GraphemeBreakState {
+    GraphemeUnitType previous = GraphemeUnitType::Other;
+    bool RI_odd = false;
+
+    void reset() noexcept {
+        previous = GraphemeUnitType::Other;
+        RI_odd = false;
+    }
+};
 
 /*! Check if there is a grapheme break between two units.
 */
@@ -356,32 +436,6 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, UnicodeData_Graph
     return !dontBreak;
 }
 
-GraphemeUnitType UnicodeData::getGraphemeUnitType(char32_t c) const noexcept {
-    if (c >= 0x110000) {
-        return GraphemeUnitType::Other;
-
-    } else if (c >= HANGUL_SBASE && c < HANGUL_SEND) {
-        let SIndex = c - HANGUL_SBASE;
-        return (SIndex % HANGUL_TCOUNT) == 0 ? GraphemeUnitType::LV : GraphemeUnitType::LVT;
-
-    } else if (c >= HANGUL_LBASE && c < HANGUL_LEND) {
-        return GraphemeUnitType::L;
-
-    } else if (c >= HANGUL_VBASE && c < HANGUL_VEND) {
-        return GraphemeUnitType::V;
-
-    } else if (c >= HANGUL_TBASE && c < HANGUL_TEND) {
-        return GraphemeUnitType::T;
-
-    } else {
-        let description = getDescription(c);
-        if (description) {
-            return description->graphemeUnitType();
-        } else {
-            return GraphemeUnitType::Other;
-        }
-    }
-}
 
 bool UnicodeData::checkGraphemeBreak(char32_t c, UnicodeData_GraphemeBreakState &state) const noexcept
 {
@@ -389,50 +443,118 @@ bool UnicodeData::checkGraphemeBreak(char32_t c, UnicodeData_GraphemeBreakState 
     return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
 }
 
-char32_t UnicodeData::compose(char32_t startCharacter, char32_t composingCharacter) const noexcept
+char32_t UnicodeData::compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept
 {
+    let upperBits = startCharacter & UPPER_BITS_MASK;
+    let startCodePoint = startCharacter & CODE_POINT_MASK;
+    let composingCodePoint = composingCharacter & CODE_POINT_MASK;
+
     uint64_t searchValue =
-        ((static_cast<uint64_t>(startCharacter) & CODE_POINT_MASK) << 21) |
-        (static_cast<uint64_t>(composingCharacter) & CODE_POINT_MASK);
+        (static_cast<uint64_t>(startCodePoint) << 21) |
+        static_cast<uint64_t>(composingCodePoint);
 
-    let compositions = unsafe_make_placement_array<UnicodeData_Composition>(
-        bytes, rvalue_cast(compositions_offset), compositions_count
-        );
+    if (composeCRLF && startCodePoint == 0x00'000a && composingCodePoint == 0x00'000d) {
+        return 0x00'000d | upperBits;
 
-    let i = std::lower_bound(compositions.begin(), compositions.end(), searchValue, [](auto &element, auto value) {
-        return element.searchValue() < value;
-        });
+    } else if (isHangulLPart(startCodePoint) && isHangulVPart(composingCodePoint)) {
+        let LIndex = startCodePoint - HANGUL_LBASE;
+        let VIndex = composingCodePoint - HANGUL_VBASE;
+        let LVIndex = LIndex * HANGUL_NCOUNT + VIndex * HANGUL_TCOUNT;
+        return (HANGUL_SBASE + LVIndex) | upperBits;
 
-    if (i != compositions.end() && i->searchValue() == searchValue) {
-        return i->composedCharacter();
+    } else if (isHangulLVPart(startCodePoint) && isHangulTPart(composingCodePoint)) {
+        let TIndex = composingCodePoint - HANGUL_TBASE;
+        return (startCodePoint + TIndex) | upperBits;
+
     } else {
-        return 0;
+        let compositions = unsafe_make_placement_array<UnicodeData_Composition>(
+            bytes, rvalue_cast(compositions_offset), compositions_count
+            );
+
+        let i = std::lower_bound(compositions.begin(), compositions.end(), searchValue, [](auto &element, auto value) {
+            return element.searchValue() < value;
+            });
+
+        if (i != compositions.end() && i->searchValue() == searchValue) {
+            return i->composedCharacter() | upperBits;
+        } else {
+            // No composition found.
+            return NOT_A_CHARACTER;
+        }
     }
 }
-
-void UnicodeData::compose(std::u32string &text) const noexcept
+void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
 {
     if (text.size() <= 1) {
         return;
     }
 
-    auto graphemeBreakState = UnicodeData_GraphemeBreakState{};
-    char32_t prevC = text[0];
+    if (
+        text.size() == 6 &&
+        text[0]==0x0061 &&
+        text[1]==0x05AE &&
+        text[2]==0x0305 &&
+        text[3]==0x0300 &&
+        text[4]==0x0315 &&
+        text[5]==0x0062
+    ) {
+        //DebugBreak();
+    }
+
+    size_t i = 0;
     size_t j = 0;
-    for (size_t i = 1; i < text.size(); i++) {
-        let c = text[i];
-        if (let newC = compose(prevC, c)) {
-            // Recurse compose.
-            prevC = newC;
-        } else {
-            if (checkGraphemeBreak(prevC, graphemeBreakState)) {
-                prevC |= GRAPHEME_BREAK_MASK;
+    while (i < text.size()) {
+        let c = text[i++];
+        let codePoint = c & CODE_POINT_MASK;
+        let isStartCharacter = getDecompositionOrder(c) == 0;
+
+        if (codePoint == NOT_A_CHARACTER) {
+            // code-unit was sniffed out by compositing, skip it.
+        } else if (codePoint >= 0x10'ffff) {
+            // Characters above plane-16 of unicode.
+            text[j++] = c;
+
+        } else if (isStartCharacter) {
+            // Try composing.
+            auto startC = c;
+            uint8_t prevDecompositionOrder = 0;
+            for (size_t k = i; k < text.size(); k++) {
+                let composingC = text[k];
+                let composingDecompositionOrder = getDecompositionOrder(composingC);
+
+                bool blockingPair =
+                    prevDecompositionOrder != 0 &&
+                    prevDecompositionOrder >= composingDecompositionOrder;
+
+                bool composingIsStarter = composingDecompositionOrder == 0;
+
+                let composedC = compose(startC, composingC, composeCRLF);
+                if (composedC != NOT_A_CHARACTER && !blockingPair) {
+                    // Found a composition.
+                    startC = composedC;
+                    // The canonical combined DecompositionOrder is always zero.
+                    prevDecompositionOrder = 0;
+                    // Snuff out the code-unit.
+                    text[k] = NOT_A_CHARACTER; 
+
+                } else if (composingIsStarter) {
+                    // End after failing to compose with the next start-character.
+                    break;
+
+                } else {
+                    // The start character is not composing with this composingC.
+                    prevDecompositionOrder = composingDecompositionOrder;
+                }
             }
-            text[j++] = prevC;
-            prevC = c;
+            // Add the new combined character to the text.
+            text[j++] = startC;
+
+        } else {
+            // Unable to compose this character.
+            text[j++] = c;
         }
     }
-    text[j++] = prevC;
+
     text.resize(j);
 }
 
@@ -455,6 +577,36 @@ std::unique_ptr<UnicodeData> parseResource(URL const &location)
             .set<"url"_tag>(location)
         );
     }
+}
+
+std::u32string UnicodeData::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
+{
+    auto result = decompose(text, false, decomposeLigatures);
+    normalizeDecompositionOrder(result);
+    return result;
+}
+
+std::u32string UnicodeData::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF) const noexcept
+{
+    auto decomposedText = decompose(text, false, decomposeLigatures);
+    normalizeDecompositionOrder(decomposedText);
+    compose(decomposedText, composeCRLF);
+    return decomposedText;
+}
+
+std::u32string UnicodeData::toNFKD(std::u32string_view text) const noexcept
+{
+    auto result = decompose(text, true);
+    normalizeDecompositionOrder(result);
+    return result;
+}
+
+std::u32string UnicodeData::toNFKC(std::u32string_view text, bool composeCRLF) const noexcept
+{
+    auto decomposedText = decompose(text, true);
+    normalizeDecompositionOrder(decomposedText);
+    compose(decomposedText, composeCRLF);
+    return decomposedText;
 }
 
 }

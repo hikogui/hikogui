@@ -9,7 +9,6 @@
 #include <gsl/gsl>
 
 namespace TTauri {
-struct UnicodeData_GraphemeBreakState;
 struct UnicodeData_Description;
 
 enum class GraphemeUnitType : uint8_t {
@@ -28,6 +27,16 @@ enum class GraphemeUnitType : uint8_t {
     LV = 12,
     LVT = 13,
     Extended_Pictographic = 14
+};
+
+struct UnicodeData_GraphemeBreakState {
+    GraphemeUnitType previous = GraphemeUnitType::Other;
+    bool RI_odd = false;
+
+    void reset() noexcept {
+        previous = GraphemeUnitType::Other;
+        RI_odd = false;
+    }
 };
 
 class UnicodeData {
@@ -61,7 +70,7 @@ public:
      * \param text to decompose, must be passed to checkCanonicalComposition() first.
      * \return The text after canonical decomposition.
      */
-    std::u32string canonicalDecompose(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
+    std::u32string canonicalDecompose(std::u32string_view text, bool decomposeLigatures) const noexcept;
 
     /*! This function will compatible decompose the text.
     * This function should be used before comparing two texts.
@@ -73,19 +82,25 @@ public:
 
     /*! This function will compose the text.
      *
-     * \param text to compose, must be passed to checkCanonicalComposition() or canonicalDecompose() first.
-     * \return The text after composition.
+     * \param text, modified inplace, to compose.
      */
-    void compose(std::u32string &text) const noexcept;
+    void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 
+    bool checkGraphemeBreak(char32_t c, UnicodeData_GraphemeBreakState &state) const noexcept;
+
+    std::u32string toNFD(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
+    std::u32string toNFC(std::u32string_view text, bool decomposeLigatures=false, bool composeCRLF=false) const noexcept;
+    std::u32string toNFKD(std::u32string_view text) const noexcept;
+    std::u32string toNFKC(std::u32string_view text, bool composeCRLF=false) const noexcept;
 
 private:
-    UnicodeData_Description const *getDescription(char32_t c) const noexcept;
-    GraphemeUnitType UnicodeData::getGraphemeUnitType(char32_t c) const noexcept;
-
     void initialize();
-    bool checkGraphemeBreak(char32_t c, UnicodeData_GraphemeBreakState &state) const noexcept;
-    char32_t compose(char32_t startCharacter, char32_t composingCharacter) const noexcept;
+
+    UnicodeData_Description const *getDescription(char32_t c) const noexcept;
+    GraphemeUnitType getGraphemeUnitType(char32_t c) const noexcept;
+    uint8_t getDecompositionOrder(char32_t c) const noexcept;
+
+    char32_t compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept;
     void decomposeCodePoint(std::u32string &result, char32_t c, bool decomposeCompatible, bool decomposeLigatures) const noexcept;
     std::u32string decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures=false) const noexcept;
     void normalizeDecompositionOrder(std::u32string &result) const noexcept;

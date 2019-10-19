@@ -8,6 +8,7 @@ import struct
 parser = argparse.ArgumentParser(description='Build binary from Unicode ucd text files.')
 parser.add_argument("--output", dest="output_path", action="store", required=True)
 parser.add_argument("--unicode-data", dest="unicode_data_path", action="store", required=True)
+parser.add_argument("--composition-exclusions", dest="composition_exclusions_path", action="store", required=True)
 parser.add_argument("--grapheme-break-property", dest="grapheme_break_property_path", action="store", required=True)
 options = parser.parse_args()
 
@@ -120,6 +121,18 @@ def parseGraphemeBreakProperty(filename, descriptions):
             if codePoint in descriptions:
                 descriptions[codePoint].graphemeUnitType = graphemeUnitTypes[columns[1]]
 
+def parseCompositionExclusions(filename):
+    compositionExclusions = set()
+    for line in open(filename, encoding="utf-8"):
+        line = line.rstrip()
+        line = line.split("#", 1)[0]
+        if line == "":
+            continue
+    
+        codePoint = int(line.strip(), 16)
+        compositionExclusions.add(codePoint)
+
+    return compositionExclusions
 
 def parseUnicodeData(filename):
     descriptions = {}
@@ -154,10 +167,18 @@ def parseUnicodeData(filename):
 
     return descriptions
 
-def extractCompositions(descriptions):
+def isCanonicalComposition(description, composition_exclusions):
+    return (
+        len(description.decomposition) == 2 and
+        description.decompositionIsCanonical and
+        description.codePoint not in composition_exclusions and
+        description.decompositionStartsWithStart
+    )
+
+def extractCompositions(descriptions, composition_exclusions):
     compositions = []
     for description in descriptions:
-        if description.decompositionIsCanonical and len(description.decomposition) == 2:
+        if isCanonicalComposition(description, composition_exclusions):
             composition = Composition(
                 description=description,
                 startCodePoint=description.decomposition[0],
@@ -169,13 +190,10 @@ def extractCompositions(descriptions):
     compositions.sort(key=lambda x: (x.startCodePoint, x.secondCodePoint))
     return compositions
 
-def extractOtherDecompositions(descriptions):
+def extractOtherDecompositions(descriptions, composition_exclusions):
     decompositions = []
     for description in descriptions:
-        if (
-            len(description.decomposition) >= 3 or
-            (len(description.decomposition) == 2 and not description.decompositionIsCanonical)
-        ):
+        if len(description.decomposition) >= 2 and not isCanonicalComposition(description, composition_exclusions):
             decomposition = Decomposition(
                 description=description,
                 decomposition=description.decomposition
@@ -217,14 +235,27 @@ def writeUnicodeData(filename, descriptions, compositions, decompositions):
 
     fd.close()
 
+def checkDecompositionsForStartWithStart(descriptions):
+    for description in descriptions.values():
+        if len(description.decomposition) >= 1:
+            firstDecompositionCodePoint = description.decomposition[0]
+            if firstDecompositionCodePoint in descriptions:
+                firstDecompositionCodePointDescription = descriptions[description.decomposition[0]]
+                description.decompositionStartsWithStart = (firstDecompositionCodePointDescription.decompositionOrder == 0)
+            else:
+                #raise RuntimeError("Missing %x" % (firstDecompositionCodePoint))
+                description.decompositionStartsWithStart = True
+
 def main():
     descriptions = parseUnicodeData(options.unicode_data_path)
+    composition_exclusions = parseCompositionExclusions(options.composition_exclusions_path)
     parseGraphemeBreakProperty(options.grapheme_break_property_path, descriptions)
 
+    checkDecompositionsForStartWithStart(descriptions)
     descriptions = sorted(descriptions.values(), key=lambda x: x.codePoint)
 
-    compositions = extractCompositions(descriptions)
-    decompositions = extractOtherDecompositions(descriptions)
+    compositions = extractCompositions(descriptions, composition_exclusions)
+    decompositions = extractOtherDecompositions(descriptions, composition_exclusions)
 
     setDecompositionOffsets(descriptions, compositions, decompositions)
 

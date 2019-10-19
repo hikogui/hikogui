@@ -66,6 +66,7 @@ set(TTauri_Foundation_tests
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")
 set(UNICODE_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/UnicodeData.txt")
+set(COMPOSITION_EXCLUSIONS_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/CompositionExclusions.txt")
 set(GRAPHEME_BREAK_PROPERTY_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/GraphemeBreakProperty.txt")
 set(UNICODE_DATA_BIN "${CMAKE_CURRENT_BINARY_DIR}/data/UnicodeData.bin")
 get_filename_component(UNICODE_DATA_BIN_DIR ${UNICODE_DATA_BIN} DIRECTORY)
@@ -75,6 +76,7 @@ add_custom_command(
 	COMMAND ${Python_EXECUTABLE} ${UNICODE_DATA_CONVERTER_PY}
         --output=${UNICODE_DATA_BIN}
         --unicode-data=${UNICODE_DATA_TXT}
+        --composition-exclusions=${COMPOSITION_EXCLUSIONS_TXT}
         --grapheme-break-property=${GRAPHEME_BREAK_PROPERTY_TXT}
 	DEPENDS ${UNICODE_DATA_CONVERTER_PY} ${UNICODE_DATA_TXT} ${GRAPHEME_BREAK_PROPERTY_TXT}
 	VERBATIM)
