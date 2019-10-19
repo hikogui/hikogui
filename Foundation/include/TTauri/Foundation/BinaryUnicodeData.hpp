@@ -59,8 +59,12 @@ public:
      * \param text to compose, must be passed to checkCanonicalComposition() or canonicalDecompose() first.
      * \return The text after composition.
      */
-    size_t compose(std::u32string &text) const noexcept;
+    size_t compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 
+    std::u32string toNFD(std::u32string_view s) const noexcept;
+    std::u32string toNFC(std::u32string_view s) const noexcept;
+    std::u32string toNFKD(std::u32string_view s) const noexcept;
+    std::u32string toNFKC(std::u32string_view s) const noexcept;
 
 private:
     BinaryUnicodeData_Description const *getDescription(char32_t c) const noexcept;

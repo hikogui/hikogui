@@ -10,6 +10,8 @@
 
 namespace TTauri {
 
+constexpr uint64_t CRLF_SEARCH_VALUE = (0x00'000a << 21) | 0x00'000d;
+
 constexpr uint32_t CODE_UNIT_CANONICAL_DECOMPOSE = 1;
 constexpr uint32_t CODE_UNIT_COMPATIBLE_DECOMPOSE = 2;
 
@@ -248,12 +250,8 @@ void BinaryUnicodeData::decompose(std::u32string &result, char32_t c, bool canon
                 }
 
             } else {
-                let order = description->decompositionOrder();
-                let newCodePoint = order == 0 ?
-                    c :
-                    (description->codePoint() | (static_cast<char32_t>(order) << 24) | COMBINING_CHARACTER_MASK);
-
-                result += newCodePoint;
+                // No decomposition available, or do not want to decompose.
+                result += c;
             }
         } else {
             // Code Point not found in unicode data, replace with REPLACEMENT_CHARACTER U+FFFD.
@@ -262,7 +260,7 @@ void BinaryUnicodeData::decompose(std::u32string &result, char32_t c, bool canon
     }
 }
 
-void BinaryUnicodeData::normalizeDecompositionOrder(std::u32string &result) const noexcept
+void BinaryUnicodeData::normalizeDecompositionOrder(std::u32string &text) const noexcept
 {
     for_each_cluster(result.begin(), result.end(),
         [](auto x) { return (x & COMBINING_CHARACTER_MASK) != 0; },
@@ -297,11 +295,17 @@ std::u32string BinaryUnicodeData::compatibleDecompose(std::u32string_view text) 
     return decompose(text, false);
 }
 
-char32_t BinaryUnicodeData::compose(char32_t startCharacter, char32_t composingCharacter) const noexcept
+char32_t BinaryUnicodeData::compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept
 {
     uint64_t searchValue =
         ((static_cast<uint64_t>(startCharacter) & CODE_POINT_MASK) << 21) |
         (static_cast<uint64_t>(composingCharacter) & CODE_POINT_MASK);
+
+    char32_t upperBits = startCharacter & ORDER_MASK;
+
+    if (composeCRLF & (searchValue == CRLF_SEARCH_VALUE)) {
+        return 0x00'000d | upperBits;
+    }
 
     let compositions = unsafe_make_placement_array<BinaryUnicodeData_Composition>(
         bytes, rvalue_cast(compositions_offset), compositions_count
@@ -312,7 +316,7 @@ char32_t BinaryUnicodeData::compose(char32_t startCharacter, char32_t composingC
     });
 
     if (i != compositions.end() && i->searchValue() == searchValue) {
-        return i->composedCharacter();
+        return i->composedCharacter() | upperBits;
     } else {
         return 0;
     }
@@ -380,7 +384,7 @@ bool BinaryUnicodeData::checkGraphemeBreak(char32_t c, GraphemeBreakState &state
     }
 }
 
-size_t BinaryUnicodeData::compose(std::u32string &text) const noexcept
+size_t BinaryUnicodeData::compose(std::u32string &text, bool composeCRLF, bool breakGraphemes) const noexcept
 {
     if (text.size() == 1) {
         return 0;
@@ -391,11 +395,11 @@ size_t BinaryUnicodeData::compose(std::u32string &text) const noexcept
     size_t j = 0;
     for (size_t i = 1; i < text.size(); i++) {
         let c = text[i];
-        if (let newC = compose(prevC, c)) {
+        if (let newC = compose(prevC, c, composeCRLF)) {
             // Recurse compose.
             prevC = newC;
         } else {
-            if (checkGraphemeBreak(prevC, graphemeBreakState)) {
+            if (breakGraphemes && checkGraphemeBreak(prevC, graphemeBreakState)) {
                 prevC |= GRAPHEME_BREAK_MASK;
             }
             text[j++] = prevC;
@@ -404,6 +408,30 @@ size_t BinaryUnicodeData::compose(std::u32string &text) const noexcept
     }
     text[j++] = prevC;
     return j;
+}
+
+std::u32string BinaryUnicodeData::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
+{
+    return decompose(text, false, decomposeLigatures);
+}
+
+std::u32string BinaryUnicodeData::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF, bool breakGraphemes) const noexcept
+{
+    auto decomposedText = decompose(text, false, decomposeLigatures);
+    compose(decompsedText, composeCRLF, breakGraphemes);
+    return decomposedText;
+}
+
+std::u32string BinaryUnicodeData::toNFKD(std::u32string_view text) const noexcept
+{
+    return decompose(text, true);
+}
+
+std::u32string BinaryUnicodeData::toNFKC(std::u32string_view text, bool composeCRLF, bool breakGraphemes) const noexcept
+{
+    auto decomposedText = decompose(text, true);
+    compose(decompsedText, composeCRLF, breakGraphemes);
+    return decomposedText;
 }
 
 }
