@@ -9,6 +9,10 @@
 #include <iostream>
 #include <string>
 #include <gsl/gsl>
+#include <fmt/format.h>
+
+#include <Windows.h>
+#include <debugapi.h>
 
 using namespace std;
 using namespace TTauri;
@@ -98,20 +102,25 @@ std::vector<NormalizationTest> parseNormalizationTests()
 struct GraphemeBreakTest {
     std::u32string codePoints;
     std::vector<bool> breakOpertunities;
+    std::string comment;
+    int lineNr;
 };
 
-std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view line)
+std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view line, int lineNr)
 {
-    let split_line = split(line, "#");
+    GraphemeBreakTest r;
+
+    let split_line = split(line, "\t#");
     if (split_line.size() < 2) {
         return {};
     }
+    r.comment = fmt::format("{}: {}", lineNr, split_line[1]);
+    r.lineNr = lineNr;
+
     let columns = split(split_line[0], " ");
     if (columns.size() < 2) {
         return {};
     }
-
-    GraphemeBreakTest r;
 
     for (let column: columns) {
         if (column == "") {
@@ -135,10 +144,12 @@ std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
     let test_data = view.string_view();
 
     std::vector<GraphemeBreakTest> r;
+    int lineNr = 1;
     for (let line: split(test_data, "\n")) {
-        if (let optionalTest = parseGraphemeBreakTests_line(line)) {   
+        if (let optionalTest = parseGraphemeBreakTests_line(line, lineNr)) {   
             r.push_back(*optionalTest);
         }
+        lineNr++;
     }
     return r;
 }
@@ -345,11 +356,16 @@ TEST_F(UnicodeDataTests, GraphemeBreak) {
         ASSERT_EQ(test.codePoints.size() + 1, test.breakOpertunities.size());
 
         auto state = UnicodeData_GraphemeBreakState{};
+        
+        //if (test.lineNr == 161) {
+        //    DebugBreak();
+        //}
+
         for (size_t i = 0; i < test.codePoints.size(); i++) {
             let codePoint = test.codePoints[i];
             let breakOpertunity = test.breakOpertunities[i];
 
-            ASSERT_EQ(unicodeData.checkGraphemeBreak(codePoint, state), breakOpertunity);
+            ASSERT_EQ(unicodeData.checkGraphemeBreak(codePoint, state), breakOpertunity) << test.comment;
         }
 
     }

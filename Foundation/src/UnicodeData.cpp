@@ -8,9 +8,6 @@
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
 
-#include <Windows.h>
-#include <debugapi.h>
-
 namespace TTauri {
 
 /*! This character is not allowed in a Unicode text.
@@ -391,49 +388,88 @@ void UnicodeData::normalizeDecompositionOrder(std::u32string &text) const noexce
     });
 }
 
-
-struct GraphemeBreakState {
-    GraphemeUnitType previous = GraphemeUnitType::Other;
-    bool RI_odd = false;
-
-    void reset() noexcept {
-        previous = GraphemeUnitType::Other;
-        RI_odd = false;
-    }
-};
-
 /*! Check if there is a grapheme break between two units.
 */
 static bool checkGraphemeBreak_unitType(GraphemeUnitType type, UnicodeData_GraphemeBreakState &state) noexcept
 {
-    if (type == GraphemeUnitType::Regional_Indicator) {
-        state.RI_odd = !state.RI_odd;
-    } else {
-        state.RI_odd = false;
-    }
-
     let lhs = state.previous;
     let rhs = type;
 
-    bool const GB3 = (lhs == GraphemeUnitType::CR) & (rhs == GraphemeUnitType::LF);
-    bool const GB6 =
-        (lhs == GraphemeUnitType::L) &
-        ((rhs == GraphemeUnitType::L) | (rhs == GraphemeUnitType::V) | (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
-    bool const GB7 =
-        ((lhs == GraphemeUnitType::LV) | (lhs == GraphemeUnitType::V)) &
-        ((rhs == GraphemeUnitType::V) | (rhs == GraphemeUnitType::T));
-    bool const GB8 =
-        ((lhs == GraphemeUnitType::LVT) | (lhs == GraphemeUnitType::T)) &
+    enum state_t {
+        Unknown,
+        Break,
+        DontBreak,
+    };
+
+    state_t breakState = state_t::Unknown;
+
+    bool  GB1 = state.firstCharacter;
+    if ((breakState == state_t::Unknown) & GB1) {
+        breakState = state_t::Break;
+    }
+
+    state.firstCharacter = false;
+
+    let GB3 = (lhs == GraphemeUnitType::CR) && (rhs == GraphemeUnitType::LF);
+    let GB4 = (lhs == GraphemeUnitType::Control) || (lhs == GraphemeUnitType::CR) || (lhs == GraphemeUnitType::LF);
+    let GB5 = (rhs == GraphemeUnitType::Control) || (rhs == GraphemeUnitType::CR) || (rhs == GraphemeUnitType::LF);
+    if (breakState == state_t::Unknown) {
+        if (GB3) {
+            breakState = state_t::DontBreak;
+        } else if (GB4 || GB5) {
+            breakState = state_t::Break;
+        }
+    }
+
+    let GB6 =
+        (lhs == GraphemeUnitType::L) &&
+        ((rhs == GraphemeUnitType::L) || (rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
+    let GB7 =
+        ((lhs == GraphemeUnitType::LV) || (lhs == GraphemeUnitType::V)) &&
+        ((rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::T));
+    let GB8 =
+        ((lhs == GraphemeUnitType::LVT) || (lhs == GraphemeUnitType::T)) &&
         (rhs == GraphemeUnitType::T);
-    bool const GB9 = ((rhs == GraphemeUnitType::Extend) | (rhs == GraphemeUnitType::ZWJ));
-    bool const GB9a = (rhs == GraphemeUnitType::SpacingMark);
-    bool const GB9b = (lhs == GraphemeUnitType::Prepend);
-    //let GB11 =
-    bool const GB12 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) & state.RI_odd;
-    bool const dontBreak = (GB3 | GB6 | GB7 | GB8 | GB9 | GB9a | GB9b | GB12);
+    if ((breakState == state_t::Unknown) && (GB6 || GB7 || GB8)) {
+        breakState = state_t::DontBreak;
+    }
+
+    let GB9 = ((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ));
+    let GB9a = (rhs == GraphemeUnitType::SpacingMark);
+    let GB9b = (lhs == GraphemeUnitType::Prepend);
+    if ((breakState == state_t::Unknown) & (GB9 || GB9a || GB9b)) {
+        breakState = state_t::DontBreak;
+    }
+
+    let GB11 = state.inExtendedPictographic && (lhs == GraphemeUnitType::ZWJ) && (rhs == GraphemeUnitType::Extended_Pictographic);
+    if ((breakState == state_t::Unknown) && GB11) {
+        breakState = state_t::DontBreak;
+    }
+
+    if (rhs == GraphemeUnitType::Extended_Pictographic) {
+        state.inExtendedPictographic = true;
+    } else if (!((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ))) {
+        state.inExtendedPictographic = false;
+    }
+
+    let GB12_13 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) && ((state.RICount % 2) == 1);
+    if ((breakState == state_t::Unknown) && (GB12_13)) {
+        breakState = state_t::DontBreak;
+    }
+
+    if (rhs == GraphemeUnitType::Regional_Indicator) {
+        state.RICount++;
+    } else {
+        state.RICount = 0;
+    }
+
+    // GB999
+    if (breakState == state_t::Unknown) {
+        breakState = state_t::Break;
+    }
 
     state.previous = type;
-    return !dontBreak;
+    return breakState == state_t::Break;
 }
 
 
@@ -487,18 +523,6 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
 {
     if (text.size() <= 1) {
         return;
-    }
-
-    if (
-        text.size() == 6 &&
-        text[0]==0x0061 &&
-        text[1]==0x05AE &&
-        text[2]==0x0305 &&
-        text[3]==0x0300 &&
-        text[4]==0x0315 &&
-        text[5]==0x0062
-    ) {
-        //DebugBreak();
     }
 
     size_t i = 0;

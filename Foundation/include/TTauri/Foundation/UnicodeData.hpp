@@ -31,11 +31,15 @@ enum class GraphemeUnitType : uint8_t {
 
 struct UnicodeData_GraphemeBreakState {
     GraphemeUnitType previous = GraphemeUnitType::Other;
-    bool RI_odd = false;
+    int RICount = 0;
+    bool firstCharacter = true;
+    bool inExtendedPictographic = false;
 
     void reset() noexcept {
         previous = GraphemeUnitType::Other;
-        RI_odd = false;
+        RICount = 0;
+        firstCharacter = true;
+        inExtendedPictographic = false;
     }
 };
 

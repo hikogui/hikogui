@@ -8,6 +8,7 @@ import struct
 parser = argparse.ArgumentParser(description='Build binary from Unicode ucd text files.')
 parser.add_argument("--output", dest="output_path", action="store", required=True)
 parser.add_argument("--unicode-data", dest="unicode_data_path", action="store", required=True)
+parser.add_argument("--emoji-data", dest="emoji_data_path", action="store", required=True)
 parser.add_argument("--composition-exclusions", dest="composition_exclusions_path", action="store", required=True)
 parser.add_argument("--grapheme-break-property", dest="grapheme_break_property_path", action="store", required=True)
 options = parser.parse_args()
@@ -28,7 +29,7 @@ graphemeUnitTypes = {
     "T": 11,
     "LV": 12,
     "LVT": 13,
-    "Extended Pictographic": 14
+    "Extended_Pictographic": 14
 }
 
 class Composition (object):
@@ -121,6 +122,25 @@ def parseGraphemeBreakProperty(filename, descriptions):
             if codePoint in descriptions:
                 descriptions[codePoint].graphemeUnitType = graphemeUnitTypes[columns[1]]
 
+def parseEmojiData(filename, descriptions):
+    for line in open(filename, encoding="utf-8"):
+        line = line.rstrip()
+        line = line.split("#", 1)[0]
+        if line == "":
+            continue
+
+        columns = [x.strip() for x in line.split(";")]
+        
+        codePointRange = [int(x, 16) for x in columns[0].split("..")]
+        if len(codePointRange) == 1:
+            codePointRange.append(codePointRange[0])
+
+        emojiType = columns[1]
+        if emojiType == "Extended_Pictographic":
+            for codePoint in range(codePointRange[0], codePointRange[1] + 1):
+                if codePoint in descriptions:
+                    descriptions[codePoint].graphemeUnitType = graphemeUnitTypes["Extended_Pictographic"]
+
 def parseCompositionExclusions(filename):
     compositionExclusions = set()
     for line in open(filename, encoding="utf-8"):
@@ -133,6 +153,8 @@ def parseCompositionExclusions(filename):
         compositionExclusions.add(codePoint)
 
     return compositionExclusions
+
+
 
 def parseUnicodeData(filename):
     descriptions = {}
@@ -250,6 +272,7 @@ def main():
     descriptions = parseUnicodeData(options.unicode_data_path)
     composition_exclusions = parseCompositionExclusions(options.composition_exclusions_path)
     parseGraphemeBreakProperty(options.grapheme_break_property_path, descriptions)
+    parseEmojiData(options.emoji_data_path, descriptions)
 
     checkDecompositionsForStartWithStart(descriptions)
     descriptions = sorted(descriptions.values(), key=lambda x: x.codePoint)
