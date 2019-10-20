@@ -88,7 +88,7 @@ set(TTauri_Foundation_resources
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm utf8proc)
+target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm)
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(TTauri_Foundation PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)

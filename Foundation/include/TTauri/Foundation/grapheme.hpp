@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/globals.hpp"
 
 namespace TTauri {
 
@@ -18,7 +19,7 @@ struct grapheme {
     grapheme() noexcept : codePoints({}) {}
 
     grapheme(std::u32string codePoints) noexcept :
-        codePoints(translateString<std::u32string>(normalizeNFC(translateString<std::string>(codePoints)))) {}
+        codePoints(Foundation_globals->unicodeData->toNFC(codePoints)) {}
 
     ~grapheme() {
     }
@@ -46,29 +47,24 @@ struct grapheme {
     }
 
     std::u32string NFD() const noexcept {
-        return translateString<std::u32string>(normalizeNFD(translateString<std::string>(codePoints)));
+        return Foundation_globals->unicodeData->toNFC(codePoints);
     }
 
     std::u32string NFKC() const noexcept {
-        return translateString<std::u32string>(normalizeNFKC(translateString<std::string>(codePoints)));
+        return Foundation_globals->unicodeData->toNFKC(codePoints);
     }
 
     std::u32string NFKD() const noexcept {
-        return translateString<std::u32string>(normalizeNFKD(translateString<std::string>(codePoints)));
+        return Foundation_globals->unicodeData->toNFKD(codePoints);
     }
-
-    std::u32string NFKCCasefold() const noexcept {
-        return translateString<std::u32string>(normalizeNFKCCasefold(translateString<std::string>(codePoints)));
-    }
-
 };
 
 inline bool operator<(grapheme const& a, grapheme const& b) noexcept {
-    return a.NFKCCasefold() < b.NFKCCasefold();
+    return a.NFKC() < b.NFKC();
 }
 
 inline bool operator==(grapheme const& a, grapheme const& b) noexcept {
-    return a.NFKCCasefold() == b.NFKCCasefold();
+    return a.NFKC() == b.NFKC();
 }
 
 struct gstring {
@@ -113,32 +109,21 @@ struct gstring {
 template<>
 inline gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
-    gstring outputString;
-    std::u32string cluster;
-    utf8proc_int32_t breakState = 0;
-    utf8proc_int32_t previousCodePoint = -1;
+    let normalizedString = Foundation_globals->unicodeData->toNFC(inputString, true, true);
 
-    for (let currentCodePoint : inputString) {
-        let sl = splitLigature(currentCodePoint);
-        if (sl.size() > 0) {
-            outputString += grapheme(cluster);
-            cluster.clear();
-            for (let c : sl) {
-                outputString += grapheme({ c });
-            }
-            breakState = 0;
-            continue;
-        }
+    auto outputString = gstring{};
+    auto breakState = GraphemeBreakState{};
+    auto cluster = std::u32string{};
 
-        if (previousCodePoint >= 0) {
-            if (utf8proc_grapheme_break_stateful(previousCodePoint, currentCodePoint, &breakState)) {
+    for (let codePoint : normalizedString) {
+        if (Foundation_globals->unicodeData->checkGraphemeBreak(codePoint, breakState)) {
+            if (cluster.size() > 0) {
                 outputString += grapheme(cluster);
-                cluster.clear();
             }
+            cluster.clear();
         }
 
-        cluster += currentCodePoint;
-        previousCodePoint = currentCodePoint;
+        cluster += codePoint;
     }
     outputString += grapheme(cluster);
     return outputString;
