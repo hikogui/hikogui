@@ -388,96 +388,7 @@ void UnicodeData::normalizeDecompositionOrder(std::u32string &text) const noexce
     });
 }
 
-/*! Check if there is a grapheme break between two units.
-*/
-static bool checkGraphemeBreak_unitType(GraphemeUnitType type, UnicodeData_GraphemeBreakState &state) noexcept
-{
-    let lhs = state.previous;
-    let rhs = type;
 
-    enum state_t {
-        Unknown,
-        Break,
-        DontBreak,
-    };
-
-    state_t breakState = state_t::Unknown;
-
-    bool  GB1 = state.firstCharacter;
-    if ((breakState == state_t::Unknown) & GB1) {
-        breakState = state_t::Break;
-    }
-
-    state.firstCharacter = false;
-
-    let GB3 = (lhs == GraphemeUnitType::CR) && (rhs == GraphemeUnitType::LF);
-    let GB4 = (lhs == GraphemeUnitType::Control) || (lhs == GraphemeUnitType::CR) || (lhs == GraphemeUnitType::LF);
-    let GB5 = (rhs == GraphemeUnitType::Control) || (rhs == GraphemeUnitType::CR) || (rhs == GraphemeUnitType::LF);
-    if (breakState == state_t::Unknown) {
-        if (GB3) {
-            breakState = state_t::DontBreak;
-        } else if (GB4 || GB5) {
-            breakState = state_t::Break;
-        }
-    }
-
-    let GB6 =
-        (lhs == GraphemeUnitType::L) &&
-        ((rhs == GraphemeUnitType::L) || (rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
-    let GB7 =
-        ((lhs == GraphemeUnitType::LV) || (lhs == GraphemeUnitType::V)) &&
-        ((rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::T));
-    let GB8 =
-        ((lhs == GraphemeUnitType::LVT) || (lhs == GraphemeUnitType::T)) &&
-        (rhs == GraphemeUnitType::T);
-    if ((breakState == state_t::Unknown) && (GB6 || GB7 || GB8)) {
-        breakState = state_t::DontBreak;
-    }
-
-    let GB9 = ((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ));
-    let GB9a = (rhs == GraphemeUnitType::SpacingMark);
-    let GB9b = (lhs == GraphemeUnitType::Prepend);
-    if ((breakState == state_t::Unknown) & (GB9 || GB9a || GB9b)) {
-        breakState = state_t::DontBreak;
-    }
-
-    let GB11 = state.inExtendedPictographic && (lhs == GraphemeUnitType::ZWJ) && (rhs == GraphemeUnitType::Extended_Pictographic);
-    if ((breakState == state_t::Unknown) && GB11) {
-        breakState = state_t::DontBreak;
-    }
-
-    if (rhs == GraphemeUnitType::Extended_Pictographic) {
-        state.inExtendedPictographic = true;
-    } else if (!((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ))) {
-        state.inExtendedPictographic = false;
-    }
-
-    let GB12_13 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) && ((state.RICount % 2) == 1);
-    if ((breakState == state_t::Unknown) && (GB12_13)) {
-        breakState = state_t::DontBreak;
-    }
-
-    if (rhs == GraphemeUnitType::Regional_Indicator) {
-        state.RICount++;
-    } else {
-        state.RICount = 0;
-    }
-
-    // GB999
-    if (breakState == state_t::Unknown) {
-        breakState = state_t::Break;
-    }
-
-    state.previous = type;
-    return breakState == state_t::Break;
-}
-
-
-bool UnicodeData::checkGraphemeBreak(char32_t c, UnicodeData_GraphemeBreakState &state) const noexcept
-{
-    let codePoint = c & CODE_POINT_MASK;
-    return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
-}
 
 char32_t UnicodeData::compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept
 {
@@ -582,26 +493,7 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
     text.resize(j);
 }
 
-template<>
-std::unique_ptr<UnicodeData> parseResource(URL const &location)
-{
-    if (location.extension() == "bin") {
-        auto view = ResourceView::loadView(location);
 
-        try {
-            auto unicodeData = std::make_unique<UnicodeData>(std::move(view));
-            return unicodeData;
-        } catch (error &e) {
-            e.set<"url"_tag>(location);
-            throw;
-        }
-
-    } else {
-        TTAURI_THROW(url_error("Unknown extension")
-            .set<"url"_tag>(location)
-        );
-    }
-}
 
 std::u32string UnicodeData::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
 {
@@ -633,4 +525,113 @@ std::u32string UnicodeData::toNFKC(std::u32string_view text, bool composeCRLF) c
     return decomposedText;
 }
 
+static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakState &state) noexcept
+{
+    let lhs = state.previous;
+    let rhs = type;
+
+    enum state_t {
+        Unknown,
+        Break,
+        DontBreak,
+    };
+
+    state_t breakState = state_t::Unknown;
+
+    bool  GB1 = state.firstCharacter;
+    if ((breakState == state_t::Unknown) & GB1) {
+        breakState = state_t::Break;
+    }
+
+    state.firstCharacter = false;
+
+    let GB3 = (lhs == GraphemeUnitType::CR) && (rhs == GraphemeUnitType::LF);
+    let GB4 = (lhs == GraphemeUnitType::Control) || (lhs == GraphemeUnitType::CR) || (lhs == GraphemeUnitType::LF);
+    let GB5 = (rhs == GraphemeUnitType::Control) || (rhs == GraphemeUnitType::CR) || (rhs == GraphemeUnitType::LF);
+    if (breakState == state_t::Unknown) {
+        if (GB3) {
+            breakState = state_t::DontBreak;
+        } else if (GB4 || GB5) {
+            breakState = state_t::Break;
+        }
+    }
+
+    let GB6 =
+        (lhs == GraphemeUnitType::L) &&
+        ((rhs == GraphemeUnitType::L) || (rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::LV) | (rhs == GraphemeUnitType::LVT));
+    let GB7 =
+        ((lhs == GraphemeUnitType::LV) || (lhs == GraphemeUnitType::V)) &&
+        ((rhs == GraphemeUnitType::V) || (rhs == GraphemeUnitType::T));
+    let GB8 =
+        ((lhs == GraphemeUnitType::LVT) || (lhs == GraphemeUnitType::T)) &&
+        (rhs == GraphemeUnitType::T);
+    if ((breakState == state_t::Unknown) && (GB6 || GB7 || GB8)) {
+        breakState = state_t::DontBreak;
+    }
+
+    let GB9 = ((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ));
+    let GB9a = (rhs == GraphemeUnitType::SpacingMark);
+    let GB9b = (lhs == GraphemeUnitType::Prepend);
+    if ((breakState == state_t::Unknown) & (GB9 || GB9a || GB9b)) {
+        breakState = state_t::DontBreak;
+    }
+
+    let GB11 = state.inExtendedPictographic && (lhs == GraphemeUnitType::ZWJ) && (rhs == GraphemeUnitType::Extended_Pictographic);
+    if ((breakState == state_t::Unknown) && GB11) {
+        breakState = state_t::DontBreak;
+    }
+
+    if (rhs == GraphemeUnitType::Extended_Pictographic) {
+        state.inExtendedPictographic = true;
+    } else if (!((rhs == GraphemeUnitType::Extend) || (rhs == GraphemeUnitType::ZWJ))) {
+        state.inExtendedPictographic = false;
+    }
+
+    let GB12_13 = (lhs == GraphemeUnitType::Regional_Indicator) && (rhs == GraphemeUnitType::Regional_Indicator) && ((state.RICount % 2) == 1);
+    if ((breakState == state_t::Unknown) && (GB12_13)) {
+        breakState = state_t::DontBreak;
+    }
+
+    if (rhs == GraphemeUnitType::Regional_Indicator) {
+        state.RICount++;
+    } else {
+        state.RICount = 0;
+    }
+
+    // GB999
+    if (breakState == state_t::Unknown) {
+        breakState = state_t::Break;
+    }
+
+    state.previous = type;
+    return breakState == state_t::Break;
+}
+
+
+bool UnicodeData::checkGraphemeBreak(char32_t c, GraphemeBreakState &state) const noexcept
+{
+    let codePoint = c & CODE_POINT_MASK;
+    return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
+}
+
+template<>
+std::unique_ptr<UnicodeData> parseResource(URL const &location)
+{
+    if (location.extension() == "bin") {
+        auto view = ResourceView::loadView(location);
+
+        try {
+            auto unicodeData = std::make_unique<UnicodeData>(std::move(view));
+            return unicodeData;
+        } catch (error &e) {
+            e.set<"url"_tag>(location);
+            throw;
+        }
+
+    } else {
+        TTAURI_THROW(url_error("Unknown extension")
+            .set<"url"_tag>(location)
+        );
+    }
+}
 }

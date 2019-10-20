@@ -11,12 +11,8 @@
 #include <gsl/gsl>
 #include <fmt/format.h>
 
-#include <Windows.h>
-#include <debugapi.h>
-
 using namespace std;
 using namespace TTauri;
-
 
 /*! A test defined in NormalizationTests.txt.
  *
@@ -355,12 +351,8 @@ TEST_F(UnicodeDataTests, GraphemeBreak) {
     for (let &test: tests) {
         ASSERT_EQ(test.codePoints.size() + 1, test.breakOpertunities.size());
 
-        auto state = UnicodeData_GraphemeBreakState{};
+        auto state = GraphemeBreakState{};
         
-        //if (test.lineNr == 161) {
-        //    DebugBreak();
-        //}
-
         for (size_t i = 0; i < test.codePoints.size(); i++) {
             let codePoint = test.codePoints[i];
             let breakOpertunity = test.breakOpertunities[i];
