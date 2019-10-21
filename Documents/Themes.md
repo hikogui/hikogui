@@ -33,6 +33,10 @@ Attributes:
 
 ## GUI Element
 
+GUI Elements may be nested and should copy the color-palette from the parent.
+The use may configure user elements to have a different color-palette. 
+
+
 Styles:
  * Default
  * Important
@@ -47,5 +51,5 @@ Attributes:
  * Color-style
  * Text-style
  * Corner-radius
- * Carner-style
+ * Corner-style
 
