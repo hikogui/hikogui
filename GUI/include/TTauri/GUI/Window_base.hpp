@@ -8,7 +8,7 @@
 #include "TTauri/GUI/WindowWidget.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
-#include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include <rhea/simplex_solver.hpp>
@@ -79,7 +79,7 @@ public:
 
     /*! Orientation of the RGB subpixels.
      */
-    Draw::SubpixelOrientation subpixelOrientation = Draw::SubpixelOrientation::RedLeft;
+    SubpixelOrientation subpixelOrientation = SubpixelOrientation::RedLeft;
 
     /*! Dots-per-inch of the screen where the window is located.
      * If the window is located on multiple screens then one of the screens is used as

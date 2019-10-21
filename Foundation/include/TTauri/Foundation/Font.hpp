@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/PathString.hpp"
 #include "TTauri/Foundation/grapheme.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
@@ -14,7 +14,7 @@
 #include <map>
 #include <gsl/gsl>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 class Font {
 public:
@@ -122,6 +122,6 @@ public:
 namespace TTauri {
 
 template<>
-std::unique_ptr<Draw::Font> parseResource(URL const &location);
+std::unique_ptr<Font> parseResource(URL const &location);
 
 }

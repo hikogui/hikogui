@@ -10,7 +10,7 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 
-ToolbarButtonWidget::ToolbarButtonWidget(Draw::Path icon, std::function<void()> delegate) noexcept :
+ToolbarButtonWidget::ToolbarButtonWidget(Path icon, std::function<void()> delegate) noexcept :
     Widget(), delegate(delegate)
 {
     icon.tryRemoveLayers();
@@ -61,7 +61,7 @@ void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImag
 
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
-    auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
+    auto linearMap = PixelMap<wsRGBA>{image->extent};
     if (pressed) {
         fill(linearMap, pressedBackgroundColor);
     } else if (hover && enabled) {
@@ -73,12 +73,12 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     let iconSize = numeric_cast<float>(image->extent.height());
     let iconLocation = glm::vec2{image->extent.width() / 2.0f, image->extent.height() / 2.0f};
 
-    auto iconImage = Draw::PixelMap<wsRGBA>{image->extent};
-    if (std::holds_alternative<Draw::Path>(icon)) {
-        let p = Draw::Alignment::MiddleCenter + T2D(iconLocation, iconSize) * Draw::PathString{std::get<Draw::Path>(icon)};
+    auto iconImage = PixelMap<wsRGBA>{image->extent};
+    if (std::holds_alternative<Path>(icon)) {
+        let p = Alignment::MiddleCenter + T2D(iconLocation, iconSize) * PathString{std::get<Path>(icon)};
 
         fill(iconImage);
-        composit(iconImage, p.toPath(wsRGBA{ 0xffffffff }), Draw::SubpixelOrientation::RedLeft);
+        composit(iconImage, p.toPath(wsRGBA{ 0xffffffff }), SubpixelOrientation::RedLeft);
     } else {
         no_default;
     }

@@ -24,28 +24,28 @@ void ImageWidget::drawBackingImage() noexcept
 
     auto vulkanDevice = device();
 
-    auto linearMap = Draw::PixelMap<wsRGBA>{ backingImage->extent };
+    auto linearMap = PixelMap<wsRGBA>{ backingImage->extent };
     fill(linearMap, wsRGBA{ 0x000000ff });
 
     // Draw image in the fullPixelMap.
     // XXX This probably should allocate a PixelMap and add it to this class.
-    Draw::loadPNG(linearMap, path);
+    loadPNG(linearMap, path);
 
-    let &myFont = getResource<Draw::Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
+    let &myFont = getResource<Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
     let glyphIndex = myFont.searchCharacterMap('g');
-    Draw::Path glyph;
+    Path glyph;
     myFont.loadGlyph(glyphIndex, glyph);
 
     // Draw something.
     let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
     let path1 = T2D({20.0, 30.0}, 8.0) * glyph;
-    composit(linearMap, color, path1, Draw::SubpixelOrientation::Unknown);
+    composit(linearMap, color, path1, SubpixelOrientation::Unknown);
 
     let path2 = T2D({30.0, 30.0}, 8.0) * glyph;
-    composit(linearMap, color, path2, Draw::SubpixelOrientation::RedLeft);
+    composit(linearMap, color, path2, SubpixelOrientation::RedLeft);
 
     let path3 = T2D({40.0, 30.0}, 8.0) * glyph;
-    composit(linearMap, color, path3, Draw::SubpixelOrientation::RedRight);
+    composit(linearMap, color, path3, SubpixelOrientation::RedRight);
 
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }

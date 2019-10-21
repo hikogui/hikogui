@@ -1,17 +1,17 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/PixelMap.inl"
-#include "TTauri/Draw/BezierCurve.hpp"
-#include "TTauri/Draw/PathString.hpp"
-#include "TTauri/Draw/Font.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/PixelMap.inl"
+#include "TTauri/Foundation/BezierCurve.hpp"
+#include "TTauri/Foundation/PathString.hpp"
+#include "TTauri/Foundation/Font.hpp"
+#include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <glm/gtx/matrix_transform_2d.hpp>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 glm::vec2 Path::advanceForGrapheme(int index) const noexcept
 {
@@ -530,7 +530,7 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOri
 
     auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
     fill(mask);
-    Draw::fill(mask, curves);
+    fill(mask, curves);
 
     if (renderSubpixels) {
         subpixelFilter(mask);

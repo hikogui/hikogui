@@ -1,14 +1,14 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/BezierCurve.hpp"
+#include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/BezierCurve.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 
 using namespace std;
-using namespace TTauri::Draw;
+using namespace TTauri;
 
 TEST(PathTests, getBeziersOfLayer) {
     auto path = Path();

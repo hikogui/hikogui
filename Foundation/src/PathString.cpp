@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Foundation/PathString.hpp"
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 glm::vec2 PathString::advance() const noexcept
 {

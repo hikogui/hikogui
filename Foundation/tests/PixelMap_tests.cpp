@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/PixelMap.inl"
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/BezierCurve.hpp"
+#include "TTauri/Foundation/PixelMap.inl"
+#include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/BezierCurve.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
@@ -11,7 +11,7 @@
 
 using namespace std;
 using namespace TTauri;
-using namespace TTauri::Draw;
+using namespace TTauri;
 
 TEST(PixelMapTests, rotate90) {
     auto mask = PixelMap<uint8_t>(2, 2);

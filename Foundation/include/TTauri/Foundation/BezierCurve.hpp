@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Draw/PixelMap.hpp"
-#include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Foundation/PixelMap.hpp"
+#include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/math.hpp"
 #include "TTauri/Foundation/bezier.hpp"
 #include "TTauri/Foundation/required.hpp"
@@ -13,7 +13,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 struct BezierPoint;
 

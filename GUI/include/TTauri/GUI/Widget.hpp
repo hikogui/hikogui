@@ -10,7 +10,7 @@
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
-#include "TTauri/Draw/attributes.hpp"
+#include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/geometry.hpp"

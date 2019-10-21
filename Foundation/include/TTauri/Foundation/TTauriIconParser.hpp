@@ -9,7 +9,7 @@ namespace TTauri {
 class URL;
 }
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 struct Path;
 

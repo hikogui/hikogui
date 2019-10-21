@@ -5,7 +5,7 @@
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/Device.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
@@ -81,7 +81,7 @@ std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const iext
     return image;
 }
 
-TTauri::Draw::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
+TTauri::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 {
 
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
@@ -106,7 +106,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         rectangle.extent += glm::ivec2(2, 2);
 
         auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
-        Draw::addTransparentBorder(pixelMap);
+        addTransparentBorder(pixelMap);
     }
 
     // Flush the given image, included the border.
@@ -161,7 +161,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     }
 }
 
-void DeviceShared::uploadPixmapToAtlas(Image const &image, Draw::PixelMap<wsRGBA> const &pixelMap)
+void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<wsRGBA> const &pixelMap)
 {
     if (image.state == GUI::PipelineImage::Image::State::Drawing && pixelMap) {
         auto stagingMap = getStagingPixelMap(image.extent);
@@ -359,7 +359,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::Draw::PixelMap<uint32_t>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
+        TTauri::PixelMap<uint32_t>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

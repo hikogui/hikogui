@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/TrueTypeFont.hpp"
+#include "TTauri/Foundation/TrueTypeFont.hpp"
 #include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/endian.hpp"
@@ -10,7 +10,7 @@
 
 #define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return (y); }
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 using namespace gsl;
 

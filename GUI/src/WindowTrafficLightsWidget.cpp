@@ -8,7 +8,7 @@
 
 namespace TTauri::GUI::Widgets {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Draw::Path applicationIcon) noexcept :
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Path applicationIcon) noexcept :
     Widget(), applicationIcon(std::move(applicationIcon))
 {
 }
@@ -59,7 +59,7 @@ void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineIma
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-void WindowTrafficLightsWidget::drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius) noexcept
+void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept
 {
     let L = radius * 0.5;
     let W = radius * 0.3;
@@ -75,7 +75,7 @@ void WindowTrafficLightsWidget::drawTrianglesOutward(Draw::Path &path, glm::vec2
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius) noexcept
+void WindowTrafficLightsWidget::drawTrianglesInward(Path &path, glm::vec2 position, float radius) noexcept
 {
     let L = radius * 0.8;
 
@@ -90,7 +90,7 @@ void WindowTrafficLightsWidget::drawTrianglesInward(Draw::Path &path, glm::vec2 
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, float radius) noexcept
+void WindowTrafficLightsWidget::drawCross(Path &path, glm::vec2 position, float radius) noexcept
 {
     let W = sqrt(0.5);
     let L = radius * 0.5;
@@ -118,14 +118,14 @@ void WindowTrafficLightsWidget::drawCross(Draw::Path &path, glm::vec2 position, 
     path.closeContour();
 }
 
-Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image) noexcept
+PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image) noexcept
 {
-    auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
+    auto linearMap = PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
     let iconSize = numeric_cast<float>(image.extent.height());
     let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
-    let iconString = Draw::Alignment::MiddleCenter + T2D(iconLocation, iconSize) * Draw::PathString{applicationIcon};
+    let iconString = Alignment::MiddleCenter + T2D(iconLocation, iconSize) * PathString{applicationIcon};
 
     fill(linearMap);
     composit(linearMap, iconString.toPath(wsRGBA{ 0xffffffff }), window->subpixelOrientation);
@@ -136,9 +136,9 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(Pipel
     return linearMap;
 }
 
-Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
+PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
 {
-    auto linearMap = Draw::PixelMap<wsRGBA>{image.extent};
+    auto linearMap = PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
     let height = box.height.value();
@@ -156,7 +156,7 @@ Draw::PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(Pipelin
         height / 2.0
     };
 
-    auto drawing = Draw::Path();
+    auto drawing = Path();
     drawing.addCircle(redCenter, RADIUS);
     
     if (!window->active && !hover) {

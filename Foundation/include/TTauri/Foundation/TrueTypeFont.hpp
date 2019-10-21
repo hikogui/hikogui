@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/Font.hpp"
+#include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include <memory>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 class TrueTypeFont final: public Font {
 private:

@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "TTauri/Draw/BezierPoint.hpp"
-#include "TTauri/Draw/attributes.hpp"
-#include "TTauri/Draw/TTauriIconParser.hpp"
+#include "TTauri/Foundation/BezierPoint.hpp"
+#include "TTauri/Foundation/attributes.hpp"
+#include "TTauri/Foundation/TTauriIconParser.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 struct BezierCurve;
 struct PathString;
@@ -282,14 +282,14 @@ void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpi
 namespace TTauri {
 
 template<>
-inline std::unique_ptr<Draw::Path> parseResource(URL const &location)
+inline std::unique_ptr<Path> parseResource(URL const &location)
 {
     if (location.extension() == "tticon") {
         let &view = ResourceView::loadView(location);
 
         try {
             let bytes = view->bytes();
-            return std::make_unique<Draw::Path>(Draw::parseTTauriIcon(bytes));
+            return std::make_unique<Path>(parseTTauriIcon(bytes));
         } catch (error &e) {
             e.set<"url"_tag>(location);
             throw;

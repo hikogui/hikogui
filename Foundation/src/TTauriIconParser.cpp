@@ -1,13 +1,13 @@
 
-#include "TTauri/Draw/TTauriIconParser.hpp"
-#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Foundation/TTauriIconParser.hpp"
+#include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/endian.hpp"
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 struct little_fixed1_14_buf_t {
     little_int16_buf_t v;

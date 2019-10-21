@@ -15,7 +15,7 @@ namespace TTauri {
 struct wsRGBA;
 }
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 template <typename T>
 struct PixelRow {

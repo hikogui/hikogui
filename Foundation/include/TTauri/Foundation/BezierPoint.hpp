@@ -11,7 +11,7 @@
 #include <glm/gtx/vec_swizzle.hpp>
 #include <vector>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 struct BezierPoint {
     enum class Type { Anchor, QuadraticControl, CubicControl1, CubicControl2 };

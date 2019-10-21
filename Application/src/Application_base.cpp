@@ -17,7 +17,6 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
     i_foundation(std::this_thread::get_id(), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
     i_config(),
     i_audio(this),
-    i_draw(),
 #if OPERATING_SYSTEM == OS_WINDOWS
     i_gui(this, hInstance, nCmdShow),
 #else

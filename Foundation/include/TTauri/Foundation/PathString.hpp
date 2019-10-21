@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Draw/attributes.hpp"
-#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Foundation/attributes.hpp"
+#include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 struct PathString {
     std::vector<Path> paths;

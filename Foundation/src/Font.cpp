@@ -1,20 +1,20 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/Font.hpp"
-#include "TTauri/Draw/TrueTypeFont.hpp"
+#include "TTauri/Foundation/Font.hpp"
+#include "TTauri/Foundation/TrueTypeFont.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 
 namespace TTauri {
 
 template<>
-std::unique_ptr<Draw::Font> parseResource(URL const &location)
+std::unique_ptr<Font> parseResource(URL const &location)
 {
     if (location.extension() == "ttf") {
         auto view = ResourceView::loadView(location);
 
         try {
-            auto font = std::make_unique<Draw::TrueTypeFont>(std::move(view));
+            auto font = std::make_unique<TrueTypeFont>(std::move(view));
             return font;
         } catch (error &e) {
             e.set<"url"_tag>(location);

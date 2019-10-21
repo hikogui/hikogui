@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/pickle.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 
@@ -41,7 +41,7 @@ inline void Backing::loadOrDraw(Window const &window, extent2 const &currentExte
             case GUI::PipelineImage::Image::State::Drawing: {
                 auto p = std::promise<ImagePixelMap>();
                 futureImage = p.get_future();
-                p.set_value({image, Draw::PixelMap<wsRGBA>{}});
+                p.set_value({image, PixelMap<wsRGBA>{}});
             } break;
 
             case GUI::PipelineImage::Image::State::Uninitialized:
@@ -51,7 +51,7 @@ inline void Backing::loadOrDraw(Window const &window, extent2 const &currentExte
                     auto expected = GUI::PipelineImage::Image::State::Uninitialized;
                     if (!newImage->state.compare_exchange_strong(expected, GUI::PipelineImage::Image::State::Drawing)) {
                         // Another thread has started drawing.
-                        return {newImage, Draw::PixelMap<wsRGBA>{}};
+                        return {newImage, PixelMap<wsRGBA>{}};
                     }
 
                     return draw_function(newImage);

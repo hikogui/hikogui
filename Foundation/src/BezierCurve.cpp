@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/BezierCurve.hpp"
-#include "TTauri/Draw/BezierPoint.hpp"
-#include "TTauri/Draw/PixelMap.inl"
+#include "TTauri/Foundation/BezierCurve.hpp"
+#include "TTauri/Foundation/BezierPoint.hpp"
+#include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/memory.hpp"
 #include <glm/gtx/matrix_transform_2d.hpp>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 
 std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end) noexcept

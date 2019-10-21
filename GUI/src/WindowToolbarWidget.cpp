@@ -21,7 +21,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     Widget::setParent(parent);
 
     trafficLightButtons = addWidget<WindowTrafficLightsWidget>(
-        getResource<Draw::Path>(URL("resource:Themes/Icons/Application Icon.tticon"))
+        getResource<Path>(URL("resource:Themes/Icons/Application Icon.tticon"))
     );
     window->addConstraint(trafficLightButtons->box.outerTop() == box.top());
     window->addConstraint(trafficLightButtons->box.outerLeft() == box.left);
@@ -29,7 +29,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         closeWindowButton = addWidget<ToolbarButtonWidget>(
-            0.33f * getResource<Draw::Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
+            0.33f * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window->closeWindow(); }
         );
         closeWindowButton->hoverBackgroundColor = { 0xdd0000ff };
@@ -39,7 +39,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
         window->addConstraint(closeWindowButton->box.outerBottom() == box.bottom);
 
         maximizeWindowButton = addWidget<ToolbarButtonWidget>(
-            0.33f * getResource<Draw::Path>(URL("resource:Themes/Icons/Maximize%20Window.tticon")),
+            0.33f * getResource<Path>(URL("resource:Themes/Icons/Maximize%20Window.tticon")),
             [&]() { 
                 switch (window->size) {
                 case Window::Size::Normal:
@@ -58,8 +58,8 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
         window->addConstraint(maximizeWindowButton->box.outerBottom() == box.bottom);
 
         minimizeWindowButton = addWidget<ToolbarButtonWidget>(
-            0.33f * getResource<Draw::Path>(URL("resource:Themes/Icons/Minimize%20Window.tticon")),
-            //getResource<Draw::Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
+            0.33f * getResource<Path>(URL("resource:Themes/Icons/Minimize%20Window.tticon")),
+            //getResource<Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
             [&]() { window->minimizeWindow(); }
         );
         window->addConstraint(minimizeWindowButton->box.outerTop() == box.top());

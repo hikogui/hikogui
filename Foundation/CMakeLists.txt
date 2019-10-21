@@ -23,6 +23,15 @@ set(TTauri_Foundation_srcs
     src/StaticResourceView.cpp
     src/UnicodeData.cpp
     src/base93.cpp
+    src/BezierCurve.cpp
+    src/Font.cpp
+    src/Path.cpp
+    src/PathString.cpp
+    src/PixelMap.cpp
+    src/PNG.cpp
+    src/Theme.cpp
+    src/TrueTypeFont.cpp
+    src/TTauriIconParser.cpp
 )
 
 if(WIN32)
@@ -62,6 +71,9 @@ set(TTauri_Foundation_tests
     tests/base93_tests.cpp
     tests/safe_int_tests.cpp
     tests/UnicodeData_tests.cpp
+    tests/BezierCurve_tests.cpp
+    tests/Path_tests.cpp
+    tests/PixelMap_tests.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")
@@ -88,7 +100,7 @@ set(TTauri_Foundation_resources
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm)
+target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm zlib png)
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(TTauri_Foundation PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
@@ -111,6 +123,7 @@ set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/file_view.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/NormalizationTest.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/GraphemeBreakTest.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/Roboto-Regular.ttf
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})

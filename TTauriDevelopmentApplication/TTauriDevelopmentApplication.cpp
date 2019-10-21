@@ -17,7 +17,7 @@
 using namespace std;
 using namespace TTauri;
 using namespace TTauri::Audio;
-using namespace TTauri::Draw;
+using namespace TTauri;
 using namespace TTauri::GUI;
 using namespace TTauri::GUI::Widgets;
 

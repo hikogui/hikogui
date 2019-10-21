@@ -47,12 +47,12 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
 
 PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
-    auto linearMap = Draw::PixelMap<wsRGBA>{image->extent};
+    auto linearMap = PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
 
     // Draw something.
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-    let &labelFont = getResource<Draw::Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
+    let &labelFont = getResource<Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
     let labelFontSize = 12.0;
 
     wsRGBA backgroundColor;
@@ -75,14 +75,14 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
     let labelLocation = midpoint(rectangle);
     //let labelLocation = glm::vec2{0.0, 0.0};
 
-    auto drawing = Draw::Path();
+    auto drawing = Path();
 
-    auto buttonPath = Draw::Path();
+    auto buttonPath = Path();
     buttonPath.addRectangle(rectangle, backgroundShape);
     drawing.addPath(buttonPath, backgroundColor);
     drawing.addStroke(buttonPath, borderColor, 1.0);
 
-    let labelGlyphs = Draw::Alignment::MiddleCenter + T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
+    let labelGlyphs = Alignment::MiddleCenter + T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
     drawing += labelGlyphs.toPath(labelColor);
 
     composit(linearMap, drawing, window->subpixelOrientation);

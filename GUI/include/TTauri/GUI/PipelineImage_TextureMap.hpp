@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Device_forward.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Foundation/PixelMap.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
@@ -14,7 +14,7 @@ struct TextureMap {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    TTauri::Draw::PixelMap<uint32_t> pixelMap;
+    TTauri::PixelMap<uint32_t> pixelMap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const Device &device, vk::Format format, vk::ImageLayout nextLayout);

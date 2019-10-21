@@ -8,7 +8,7 @@ struct wsRGBA;
 class URL;
 }
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 template<typename T> struct PixelMap;
 

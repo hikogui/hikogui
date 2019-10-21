@@ -4,12 +4,12 @@
 #pragma once
 
 #include "TTauri/GUI/Widget.hpp"
-#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Foundation/Path.hpp"
 #include <memory>
 #include <string>
 #include <array>
 
-namespace TTauri::Draw {
+namespace TTauri {
 struct Path;
 }
 
@@ -31,9 +31,9 @@ public:
     bool pressedYellow = false;
     bool pressedGreen = false;
 
-    Draw::Path applicationIcon;
+    Path applicationIcon;
 
-    WindowTrafficLightsWidget(Draw::Path applicationIcon) noexcept;
+    WindowTrafficLightsWidget(Path applicationIcon) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     WindowTrafficLightsWidget(const WindowTrafficLightsWidget &) = delete;
@@ -53,12 +53,12 @@ public:
 private:
     std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const noexcept;
 
-    Draw::PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
-    Draw::PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;
+    PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
+    PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;
 
-    static void drawCross(Draw::Path &path, glm::vec2 position, float radius) noexcept;
-    static void drawTrianglesOutward(Draw::Path &path, glm::vec2 position, float radius) noexcept;
-    static void drawTrianglesInward(Draw::Path &path, glm::vec2 position, float radius) noexcept;
+    static void drawCross(Path &path, glm::vec2 position, float radius) noexcept;
+    static void drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept;
+    static void drawTrianglesInward(Path &path, glm::vec2 position, float radius) noexcept;
 
     PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
 

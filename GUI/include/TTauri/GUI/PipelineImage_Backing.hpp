@@ -15,7 +15,7 @@ namespace TTauri {
 struct wsRGBA;
 }
 
-namespace TTauri::Draw {
+namespace TTauri {
 template<typename T> struct PixelMap;
 }
 
@@ -26,7 +26,7 @@ struct Image;
  * It contains an PipelineImage::Image which is a reference to the TextureAtlas to be used to send vertices to the pipeline.
  */
 struct Backing {
-    using ImagePixelMap = std::pair<std::shared_ptr<GUI::PipelineImage::Image>,Draw::PixelMap<wsRGBA>>;
+    using ImagePixelMap = std::pair<std::shared_ptr<GUI::PipelineImage::Image>,PixelMap<wsRGBA>>;
 
     /*! A reference to the texture-atlas to be used to send vertices to the pipeline.
      */

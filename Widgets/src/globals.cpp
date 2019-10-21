@@ -3,7 +3,6 @@
 
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
-#include "TTauri/Draw/globals.hpp"
 #include "TTauri/Config/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
@@ -13,7 +12,6 @@ WidgetsGlobals::WidgetsGlobals()
 {
     required_assert(Foundation_globals != nullptr);
     required_assert(Config::Config_globals != nullptr);
-    required_assert(Draw::Draw_globals != nullptr);
     required_assert(GUI::GUI_globals != nullptr);
     required_assert(Widgets_globals == nullptr);
     Widgets_globals = this;

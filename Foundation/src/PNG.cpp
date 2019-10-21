@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/PNG.hpp"
-#include "TTauri/Draw/PixelMap.hpp"
+#include "TTauri/Foundation/PNG.hpp"
+#include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
@@ -12,7 +12,7 @@
 #include <png.h>
 #include <stdio.h>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 using namespace std;
 

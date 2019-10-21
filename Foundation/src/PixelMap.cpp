@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Draw/PixelMap.inl"
+#include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/endian.hpp"
 #include <algorithm>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 gsl_suppress(bounds.4)
 void addTransparentBorder(PixelMap<uint32_t>& pixelMap) noexcept

@@ -7,7 +7,7 @@
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
-#include "TTauri/Draw/globals.hpp"
+#include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystemDelegate.hpp"
 #include "TTauri/Config/globals.hpp"
@@ -42,7 +42,6 @@ public:
     FoundationGlobals i_foundation;
     Config::ConfigGlobals i_config;
     Audio::AudioGlobals i_audio;
-    Draw::DrawGlobals i_draw;
     GUI::GUIGlobals i_gui;
     GUI::Widgets::WidgetsGlobals i_widgets;
 

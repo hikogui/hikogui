@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Draw/Font.hpp"
-#include "TTauri/Draw/Path.hpp"
-#include "TTauri/Draw/PathString.hpp"
+#include "TTauri/Foundation/Font.hpp"
+#include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/PathString.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/required.hpp"
 
@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 
-namespace TTauri::Draw {
+namespace TTauri {
 
 enum class ThemeFontStyle {
     DEFAULT,

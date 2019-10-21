@@ -10,7 +10,7 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace TTauri::Draw {
+namespace TTauri {
 template<typename T> struct PixelMap;
 }
 

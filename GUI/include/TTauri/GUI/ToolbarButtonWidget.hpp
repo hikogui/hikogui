@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Widget.hpp"
-#include "TTauri/Draw/Path.hpp"
+#include "TTauri/Foundation/Path.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -18,14 +18,14 @@ public:
     bool hover = false;
     bool pressed = false;
 
-    std::variant<Draw::Path> icon;
+    std::variant<Path> icon;
 
     wsRGBA hoverBackgroundColor = { 0xffffff11 };
     wsRGBA pressedBackgroundColor = { 0xffffff22 };
 
     std::function<void()> delegate;
 
-    ToolbarButtonWidget(Draw::Path const icon, std::function<void()> delegate) noexcept;
+    ToolbarButtonWidget(Path const icon, std::function<void()> delegate) noexcept;
     ~ToolbarButtonWidget() {}
 
     ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;
