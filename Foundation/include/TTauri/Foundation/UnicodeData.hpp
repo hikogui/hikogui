@@ -72,12 +72,7 @@ public:
      * Certain ligatures, which are seen as seperate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * \param text to decompose.
      * \param decomposeLigatures decompose 'canonical'-ligatures
@@ -86,29 +81,19 @@ public:
     std::u32string canonicalDecompose(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
 
     /*! Compatible decompose of the characters in the text.
-    * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-    * to the composition characters when decomposed. These may be used as attributes
-    * for each character.
-    *
-    * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-    * may be used for text formatting.
-    *
-    * \param text to decompose.
-    * \return The text after canonical decomposition.
-    */
+     * Code-units outside of the unicode-planes will be passed through.
+     *
+     * \param text to decompose.
+     * \return The text after canonical decomposition.
+     */
     std::u32string compatibleDecompose(std::u32string_view text) const noexcept;
 
     /*! Compose the characters in the text.
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) is
      * used by the composition algorithm. Any 0x00'ffff in the text will be
-     * removed by the algorithm.
+     * removed by this algorithm.
      *
      * \param text to compose, in-place.
      * \param composeCRLF Compose CR-LF combinations to LF.
@@ -118,12 +103,7 @@ public:
     /*! Canonical reorder of the characters in the text.
      * This function is normally called after decomposing the text.
      *
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * \param text to normalize, in-place.
      */
@@ -133,12 +113,7 @@ public:
      * Certain ligatures, which are seen as seperate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
      * used by the composition algorithm. Any 0x00'ffff in the text may be
@@ -153,12 +128,7 @@ public:
      * Certain ligatures, which are seen as seperate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
      * used by the composition algorithm. Any 0x00'ffff in the text may be
@@ -171,12 +141,7 @@ public:
     std::u32string toNFC(std::u32string_view text, bool decomposeLigatures=false, bool composeCRLF=false) const noexcept;
 
     /*! Convert text to Unicode-NFKD normal form.
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
      * used by the composition algorithm. Any 0x00'ffff in the text may be
@@ -187,12 +152,7 @@ public:
     std::u32string toNFKD(std::u32string_view text) const noexcept;
 
     /*! Convert text to Unicode-NFKC normal form.
-     * The top 11 bits of each 32 bit code-unit will be passed through, and copied
-     * to the composition characters when decomposed. These may be used as attributes
-     * for each character.
-     *
-     * Code-units 0x20'0000 to 0x3f'ffff will also be passed through. These codes
-     * may be used for text formatting.
+     * Code-units outside of the unicode-planes will be passed through.
      *
      * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
      * used by the composition algorithm. Any 0x00'ffff in the text may be
@@ -206,8 +166,7 @@ public:
     /*! Check if for a graphemeBreak before the character.
      * Code-units must be tested in order, starting at the begining of the text.
      *
-     * The top 11 bits of the 32 bit code-unit will be ignored.
-     * Code-units 0x20'0000 to 0x3f'ffff will be treated as GraphemeUnitType::Other
+     * Code-units outside of the unicode-planes will be treated as GraphemeUnitType::Other
      *
      * \param codeUnit Current code-unit to test.
      * \param state Current state of the grapheme-break algorithm.
@@ -218,12 +177,12 @@ public:
 private:
     void initialize();
 
-    UnicodeData_Description const *getDescription(char32_t c) const noexcept;
-    GraphemeUnitType getGraphemeUnitType(char32_t c) const noexcept;
-    uint8_t getDecompositionOrder(char32_t c) const noexcept;
+    UnicodeData_Description const *getDescription(char32_t codePoint) const noexcept;
+    GraphemeUnitType getGraphemeUnitType(char32_t codePoint) const noexcept;
+    uint8_t getDecompositionOrder(char32_t codePoint) const noexcept;
 
     char32_t compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept;
-    void decomposeCodePoint(std::u32string &result, char32_t c, bool decomposeCompatible, bool decomposeLigatures) const noexcept;
+    void decomposeCodePoint(std::u32string &result, char32_t codePoint, bool decomposeCompatible, bool decomposeLigatures) const noexcept;
     std::u32string decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures=false) const noexcept;
 };
 

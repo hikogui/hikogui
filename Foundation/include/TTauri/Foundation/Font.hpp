@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/PathString.hpp"
-#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/gstring.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/required.hpp"
