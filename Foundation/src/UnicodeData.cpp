@@ -257,7 +257,7 @@ static bool isCanonicalLigature(char32_t codePoint)
 
 void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
-    let description = getDescription(codePoint);
+    let &description = getDescription(codePoint);
     let decompositionLength = description ? description->decompositionLength() : 0;
     let mustDecompose =
         (decompositionLength > 0) && (
@@ -322,7 +322,10 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint,
 
 std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
-    std::u32string result;
+    std::array<std::byte,4096> buffer;
+    auto allocator = std::pmr::monotonic_buffer_resource(buffer.data(), buffer.size());
+
+    auto result = std::pmr::u32string{&allocator};
     result.reserve(text.size() * 3);
 
     for (let codePoint: text) {
@@ -344,7 +347,10 @@ std::u32string UnicodeData::compatibleDecompose(std::u32string_view text) const 
 
 void UnicodeData::normalizeDecompositionOrder(std::u32string &text) const noexcept
 {
-    std::vector<uint64_t> textWithDecompositionOrder;
+    std::array<std::byte,4096> buffer;
+    auto allocator = std::pmr::monotonic_buffer_resource(buffer.data(), buffer.size());
+
+    auto textWithDecompositionOrder = std::pmr::vector<uint64_t>{&allocator};
     textWithDecompositionOrder.resize(text.size());
 
     std::transform(text.begin(), text.end(), textWithDecompositionOrder.begin(), [&](auto codePoint) {
