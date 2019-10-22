@@ -19,8 +19,8 @@ glm::vec2 PathString::ascender() const noexcept
     glm::vec2 maxAscender = {0.0, 0.0};
 
     for (int i = 0; i < size(); i++) {
-        if (glm::length(maxAscender) < glm::length(at(i).ascender)) {
-            maxAscender = at(i).ascender;
+        if (glm::length(maxAscender) < glm::length(at(i).metrics.ascender)) {
+            maxAscender = at(i).metrics.ascender;
         }
     }
 
@@ -32,8 +32,8 @@ glm::vec2 PathString::descender() const noexcept
     glm::vec2 maxDescender = {0.0, 0.0};
 
     for (int i = 0; i < size(); i++) {
-        if (glm::length(maxDescender) < glm::length(at(i).descender)) {
-            maxDescender = at(i).descender;
+        if (glm::length(maxDescender) < glm::length(at(i).metrics.descender)) {
+            maxDescender = at(i).metrics.descender;
         }
     }
 
@@ -45,8 +45,8 @@ glm::vec2 PathString::capHeight() const noexcept
     glm::vec2 maxCapHeight = {0.0, 0.0};
 
     for (int i = 0; i < size(); i++) {
-        if (glm::length(maxCapHeight) < glm::length(at(i).capHeight)) {
-            maxCapHeight = at(i).capHeight;
+        if (glm::length(maxCapHeight) < glm::length(at(i).metrics.capHeight)) {
+            maxCapHeight = at(i).metrics.capHeight;
         }
     }
 
@@ -75,12 +75,12 @@ glm::vec2 PathString::cursorAdvance(int graphemeIndex) const noexcept
 
     for (int i = 0; i < size(); i++) {
         let &glyph = at(i);
-        if (graphemeIndex < glyph.numberOfGraphemes) {
-            return totalAdvance + glyph.advanceForGrapheme(graphemeIndex);
+        if (graphemeIndex < glyph.metrics.numberOfGraphemes) {
+            return totalAdvance + glyph.metrics.advanceForGrapheme(graphemeIndex);
         } else {
             totalAdvance += glyphAdvance(i);
         }
-        graphemeIndex -= glyph.numberOfGraphemes;
+        graphemeIndex -= glyph.metrics.numberOfGraphemes;
     }
     return totalAdvance;
 }

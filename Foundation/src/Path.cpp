@@ -13,13 +13,6 @@
 
 namespace TTauri {
 
-glm::vec2 Path::advanceForGrapheme(int index) const noexcept
-{
-    let ligatureRatio = 1.0f / numberOfGraphemes;
-
-    return (advance * ligatureRatio) * static_cast<float>(index);
-}
-
 ssize_t Path::numberOfContours() const noexcept
 {
     return to_signed(contourEndPoints.size());
@@ -448,14 +441,7 @@ Path &operator+=(Path &lhs, Path const &rhs) noexcept
 
 Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept
 {
-    lhs.boundingBox *= rhs;
-    lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
-    lhs.rightSideBearing = glm::xy(rhs * glm::vec3(lhs.rightSideBearing, 1.0f));
-    lhs.advance = glm::xy(rhs * glm::vec3(lhs.advance, 0.0f));
-    lhs.ascender = glm::xy(rhs * glm::vec3(lhs.ascender, 0.0f));
-    lhs.descender = glm::xy(rhs * glm::vec3(lhs.descender, 0.0f));
-    lhs.capHeight = glm::xy(rhs * glm::vec3(lhs.capHeight, 0.0f));
-    lhs.xHeight = glm::xy(rhs * glm::vec3(lhs.xHeight, 0.0f));
+    lhs.metrics *= rhs;
 
     for (auto &point: lhs.points) {
         point *= rhs;
@@ -465,14 +451,7 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept
 
 Path &operator*=(Path &lhs, float const rhs) noexcept
 {
-    lhs.boundingBox *= rhs;
-    lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
-    lhs.rightSideBearing = glm::xy(rhs * glm::vec3(lhs.rightSideBearing, 1.0f));
-    lhs.advance = glm::xy(rhs * glm::vec3(lhs.advance, 0.0f));
-    lhs.ascender = glm::xy(rhs * glm::vec3(lhs.ascender, 0.0f));
-    lhs.descender = glm::xy(rhs * glm::vec3(lhs.descender, 0.0f));
-    lhs.capHeight = glm::xy(rhs * glm::vec3(lhs.capHeight, 0.0f));
-    lhs.xHeight = glm::xy(rhs * glm::vec3(lhs.xHeight, 0.0f));
+    lhs.metrics *= rhs;
 
     for (auto &point: lhs.points) {
         point *= rhs;
@@ -503,16 +482,13 @@ Path operator+(Path lhs, glm::vec2 const &rhs) noexcept
 
 Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept
 {
-    lhs.boundingBox += rhs;
-    lhs.leftSideBearing += rhs;
-    lhs.rightSideBearing += rhs;
+    lhs.metrics += rhs;
 
     for (auto &point: lhs.points) {
         point += rhs;
     }
     return lhs;
 }
-
 
 void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation) noexcept
 {

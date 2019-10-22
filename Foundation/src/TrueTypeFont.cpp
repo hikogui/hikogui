@@ -12,8 +12,6 @@
 
 namespace TTauri {
 
-using namespace gsl;
-
 struct Fixed_buf_t {
     big_uint32_buf_t x;
     float value() const noexcept { return static_cast<float>(x.value()) / 65536.0f; }
@@ -418,7 +416,7 @@ struct HMTXEntry {
     FWord_buf_t leftSideBearing;
 };
 
-bool TrueTypeFont::updateGlyphMetrics(int glyphIndex, Path &glyph) const noexcept
+bool TrueTypeFont::updateGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept
 {
     assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
 
@@ -441,13 +439,13 @@ bool TrueTypeFont::updateGlyphMetrics(int glyphIndex, Path &glyph) const noexcep
         leftSideBearing = leftSideBearings[glyphIndex - numberOfHMetrics].value(unitsPerEm);
     }
 
-    glyph.advance = glm::vec2{advanceWidth, 0.0f};
-    glyph.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
-    glyph.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + glyph.boundingBox.extent.width()), 0.0f};
-    glyph.ascender = glm::vec2{0.0f, ascender};
-    glyph.descender = glm::vec2{0.0f, descender};
-    glyph.xHeight = glm::vec2{0.0f, xHeight};
-    glyph.capHeight = glm::vec2{0.0f, HHeight};
+    metrics.advance = glm::vec2{advanceWidth, 0.0f};
+    metrics.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
+    metrics.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + metrics.boundingBox.extent.width()), 0.0f};
+    metrics.ascender = glm::vec2{0.0f, ascender};
+    metrics.descender = glm::vec2{0.0f, descender};
+    metrics.xHeight = glm::vec2{0.0f, xHeight};
+    metrics.capHeight = glm::vec2{0.0f, HHeight};
     return true;
 }
 
@@ -696,7 +694,7 @@ bool TrueTypeFont::loadGlyph(int glyphIndex, Path &glyph) const noexcept
             entry->xMax.value(unitsPerEm) - position.x,
             entry->yMax.value(unitsPerEm) - position.y
         };
-        glyph.boundingBox = { position, extent };
+        glyph.metrics.boundingBox = { position, extent };
 
         if (numberOfContours > 0) {
             assert_or_return(loadSimpleGlyph(bytes, glyph), false);
@@ -710,7 +708,87 @@ bool TrueTypeFont::loadGlyph(int glyphIndex, Path &glyph) const noexcept
         // Empty glyph, such as white-space ' '.
     }
 
-    return updateGlyphMetrics(metricsGlyphIndex, glyph);
+    return updateGlyphMetrics(metricsGlyphIndex, glyph.metrics);
+}
+
+bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, uint16_t &metricsGlyphIndex) const noexcept
+{
+    size_t offset = sizeof(GLYFEntry);
+
+    uint16_t flags;
+    do {
+        assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
+        flags = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
+
+        assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
+        let subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
+
+        if (flags & FLAG_ARGS_ARE_XY_VALUES) {
+            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
+                offset += sizeof(FWord_buf_t) * 2;
+            } else {
+                offset += sizeof(FByte_buf_t) * 2;
+            }
+        } else {
+            if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
+                offset += sizeof(big_uint16_buf_t) * 2;
+            } else {
+                offset += sizeof(uint8_t) * 2;
+            }
+        }
+
+        if (flags & FLAG_WE_HAVE_A_SCALE) {
+            offset += sizeof(shortFrac_buf_t);
+        } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
+            offset += sizeof(shortFrac_buf_t) * 2;
+        } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
+            offset += sizeof(shortFrac_buf_t) * 4;
+        }
+
+        if (flags & FLAG_USE_MY_METRICS) {
+            metricsGlyphIndex = subGlyphIndex;
+            return true;
+        }
+    } while (flags & FLAG_MORE_COMPONENTS);
+    // Ignore trailing instructions.
+
+    return true;
+}
+
+bool TrueTypeFont::loadGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept
+{
+    assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
+
+    gsl::span<std::byte const> bytes;
+    assert_or_return(getGlyphBytes(glyphIndex, bytes), false);
+
+    auto metricsGlyphIndex = static_cast<uint16_t>(glyphIndex);
+
+    if (bytes.size() > 0) {
+        assert_or_return(check_placement_ptr<GLYFEntry>(bytes), false);
+        let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
+        let numberOfContours = entry->numberOfContours.value();
+
+        let position = glm::vec2{ entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) };
+        let extent = extent2{
+            entry->xMax.value(unitsPerEm) - position.x,
+            entry->yMax.value(unitsPerEm) - position.y
+        };
+        metrics.boundingBox = { position, extent };
+
+        if (numberOfContours > 0) {
+            // A simple glyph does not include metrics information in the data.
+        } else if (numberOfContours < 0) {
+            assert_or_return(loadCompoundGlyphMetrics(bytes, metricsGlyphIndex), false);
+        } else {
+            // Empty glyph, such as white-space ' '.
+        }
+
+    } else {
+        // Empty glyph, such as white-space ' '.
+    }
+
+    return updateGlyphMetrics(metricsGlyphIndex, metrics);
 }
 
 struct SFNTHeader {
@@ -786,16 +864,16 @@ void TrueTypeFont::parseFontDirectory()
 
     let xGlyphIndex = searchCharacterMap('x');
     if (xGlyphIndex > 0) {
-        Path xGlyph;
-        loadGlyph(xGlyphIndex, xGlyph);
-        xHeight = xGlyph.boundingBox.extent.height();
+        GlyphMetrics metrics;
+        loadGlyphMetrics(xGlyphIndex, metrics);
+        xHeight = metrics.boundingBox.extent.height();
     }
 
     let HGlyphIndex = searchCharacterMap('H');
     if (HGlyphIndex > 0) {
-        Path HGlyph;
-        loadGlyph(HGlyphIndex, HGlyph);
-        HHeight = HGlyph.boundingBox.extent.height();
+        GlyphMetrics metrics;
+        loadGlyphMetrics(HGlyphIndex, metrics);
+        HHeight = metrics.boundingBox.extent.height();
     }
 }
 

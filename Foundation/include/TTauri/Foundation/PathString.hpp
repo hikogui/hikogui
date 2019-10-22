@@ -46,7 +46,7 @@ struct PathString {
     }
 
     glm::vec2 glyphAdvance(int i) const noexcept {
-        return at(i).advance;
+        return at(i).metrics.advance;
     }
 
     /*! Total width of the text.

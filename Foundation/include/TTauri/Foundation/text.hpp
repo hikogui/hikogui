@@ -1,33 +1,19 @@
 
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Theme.hpp"
 #include <string>
 #include <vector>
 
 namespace TTauri {
 
-class color_palette {
-    int id;
-    wsRGBA foregroundColor;
-    wsRGBA backgroundColor;
-    wsRGBA accentColor;
-    wsRGBA shadowColor;
-};
 
-class text_style {
-    int id;
-    int fontId;
-    int colorPaletteId;
-    float fontSize;
-    bool underlined;
-    bool double_underlined;
-    bool strike_through;
-    bool wave;
-};
+class decorated_grapheme {
+    grapheme g;
+    int styleIndex;
+    glm::vec2 position;
 
-class theme {
-    Font fallbackFont;
-    std::array<text_style,256> text_style;
+public:
 
 };
 
@@ -37,10 +23,12 @@ class theme {
  * as the style index for the style to use to render the grapheme.
  */
 class text {
-    std::vector<grapheme> graphemes;
+    std::vector<decorated_grapheme> graphemes;
 
     mutable size_t cursorPosition = 0;
     mutable ssize_t endSelection = -1;
+    mutable int styleAtCursor = 0;
+    grapheme partialCharacter = {};
 
 public:
     auto begin() noexcept {
@@ -101,18 +89,45 @@ public:
      */
     text cutSelection() noexcept;
 
+    /*! Set the current style.
+     * If text is selected the style of the selected text changes.
+     * Otherwise the style at the cursor changes.
+     */
+    void setStyle(int styleIndex) noexcept;
+
+    /*! Get the current style.
+     * This is the style at the cursor or the style of the first selected character.
+     * The style at the cursor is determined when the cursor position changes or
+     * by a call to setStyle().
+     *
+     * If the cursor moved from left->right or up->down the cursor style is taken from
+     * the character directly before the new cursor position.
+     *
+     * If the cursor moved from right->left or down->up the cursor style is taken from
+     * the character directly after the new cursor position.
+     */
+    int getStyle(void) const noexcept;
+
+    /*! Undo a text operation.
+     */
     void undo() noexcept;
 
+    /*! Redo after an undo().
+    */
     void redo() noexcept;
 
+    /*! Number of operations that can be undone.
+     */
     size_t undoSize() const noexcept;
 
+    /*! Number of undo() operations that can be redone.
+     */
     size_t redoSize() const noexcept;
 
     /*! Insert a temporary partial character.
      * This partial character is currently being constructed by the operating system.
      *
-     * Since the insertion has not been completed a selected text should not yet be deleted.
+     * Since the insertion has not been completed any selected text should not yet be deleted.
      */
     void insertPartialCharacter(grapheme character) noexcept;
 

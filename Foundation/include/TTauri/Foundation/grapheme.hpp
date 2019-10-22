@@ -111,6 +111,10 @@ public:
         }
     }
 
+    operator bool () const noexcept {
+        return value != 1;
+    }
+
     force_inline size_t size() const noexcept {
         if (has_pointer()) {
             return value >> 48;

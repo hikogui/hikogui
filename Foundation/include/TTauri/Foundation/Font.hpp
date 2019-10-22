@@ -10,11 +10,14 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/GlyphMetrics.hpp"
 #include <vector>
 #include <map>
 #include <gsl/gsl>
 
 namespace TTauri {
+
+
 
 class Font {
 public:
@@ -41,6 +44,15 @@ public:
     * \return true on success, false on error.
     */
     virtual bool loadGlyph(int glyphIndex, Path &path) const noexcept = 0;
+
+    /*! Load a glyph into a path.
+    * The glyph is directly loaded from the font file.
+    * 
+    * \param glyphIndex the index of a glyph inside the font.
+    * \param metrics The metrics constructed by the loader.
+    * \return true on success, false on error.
+    */
+    virtual bool loadGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept = 0;
 
     PathString getGlyphs(gstring const &graphemes) const noexcept {
         PathString r;

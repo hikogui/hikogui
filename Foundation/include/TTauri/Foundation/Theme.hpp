@@ -15,28 +15,40 @@
 
 namespace TTauri {
 
-enum class ThemeFontStyle {
-    DEFAULT,
+//  
+struct Palette {
+    /*! Color used by normal text and lines.
+     */
+    wsRGBA foregroundColor;
+
+    /*! Color used to accent an element which would normally use the foregroundColor.
+     */
+    wsRGBA accentColor;
+
+    /*! Color used to for a background an element.
+     */
+    wsRGBA backgroundColor;
 };
 
-struct FontStyle {
-    std::shared_ptr<Font> font;
-    float fontSize;
-    wsRGBA color;
+enum class TextDecoration : uint8_t {
+    Normal,
+    Underline,
+    DoubleUnderline,
+    WavyUnderline,
+    StrikeThrough
 };
 
-struct Theme {
-	std::string name;
-
-    std::vector<FontStyle> fontStyles;
-
-    PathString getGlyhs(gstring const &text, ThemeFontStyle font) noexcept;
-    //void render(PixelMap<uint32_t> &pixels, gstring const &text, ThemeFontStyle font, float dpi, glm::vec2 position, float angle);
-
-	static void loadAllThemes(const URL &fontDirectory, const URL &iconDirectory);
+struct TextStyle {
+    size_t paletteIndex;
+    size_t fontIndex;
+    TextDecoration decoration; 
 };
 
-extern Theme *selectedTheme;
-extern std::vector<std::shared_ptr<Theme>> themes;
+class theme {
+    std::vector<Palette> palettes;
+    std::vector<TextStyle> textStyles;
+    std::vector<std::pair<Font *,uint8_t>> fontsWithFallBack;
+};
+
 
 }

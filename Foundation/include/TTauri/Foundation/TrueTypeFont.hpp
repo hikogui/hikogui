@@ -22,7 +22,7 @@ private:
     //! 'cmap' character to glyph mapping
     gsl::span<std::byte const> cmapTableBytes;
 
-    //! The bytes of a unicode character map.
+    //! The bytes of a Unicode character map.
     gsl::span<std::byte const> cmapBytes;
 
     //! 'glyf' glyph data
@@ -81,8 +81,8 @@ public:
     TrueTypeFont &operator=(TrueTypeFont &&other) = delete;
     ~TrueTypeFont() = default;
 
-    /*! Find a glyph in the font based on an unicode code-point.
-     * This is seperated from loading a glyph so that graphemes and ligatures can be found.
+    /*! Find a glyph in the font based on an Unicode code-point.
+     * This is separated from loading a glyph so that graphemes and ligatures can be found.
      *
      * \param c Unicode code point to look up.
      * \return a glyph-index if a glyph has been found. 0 means "not found", -1 means "parse error".
@@ -94,9 +94,18 @@ public:
      * 
      * \param glyphIndex the index of a glyph inside the font.
      * \param path The path constructed by the loader.
-     * \return 1 on success, 0 on not implemented, -1 on parse error, -2 argument error.
+     * \return 1 on success, 0 on not implemented
      */
     bool loadGlyph(int glyphIndex, Path &path) const noexcept override;
+
+    /*! Load a glyphMetrics into a path.
+    * The glyph is directly loaded from the font file.
+    * 
+    * \param glyphIndex the index of a glyph inside the font.
+    * \param metrics The metrics constructed by the loader.
+    * \return 1 on success, 0 on not implemented
+    */
+    bool loadGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept override;
 
 private:
     /*! Parses the directory table of the font file.
@@ -122,10 +131,10 @@ private:
      */
     bool getGlyphBytes(int glyphIndex, gsl::span<std::byte const> &bytes) const noexcept;
 
-    /*! Update the loaded glyph with metrics from the font tables.
+    /*! Update the glyph metrics from the font tables.
      * called by loadGlyph()
      */
-    bool updateGlyphMetrics(int glyphIndex, Path &glyph) const noexcept;
+    bool updateGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept;
 
     bool loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph) const noexcept;
 
@@ -138,6 +147,17 @@ private:
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
     bool loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph, uint16_t &metricsGlyphIndex) const noexcept;
+
+    /*! Load a compound glyph.
+    * This will call loadGlyph() recursively.
+    *
+    * \param bytes Bytes inside the glyf table of this specific compound glyph.
+    * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
+    *                          this value is only updated when the USE_MY_METRICS flag was set.
+    */
+    bool loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, uint16_t &metricsGlyphIndex) const noexcept;
+
+
 };
 
 }

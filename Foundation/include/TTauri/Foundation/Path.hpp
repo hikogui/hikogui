@@ -9,6 +9,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/GlyphMetrics.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -25,53 +26,7 @@ struct Path {
     std::vector<ssize_t> contourEndPoints;
     std::vector<std::pair<ssize_t,wsRGBA>> layerEndContours;
 
-    /*! Bounding box of the path.
-     */
-    rect2 boundingBox = {};
-
-    /*! This is the position where the left side of the glyph
-     * starts. This includes some leading white space so that the glyph
-     * will stand a small distance of the edge.
-     *
-     * For many glyphs the leftSideBearing is the origin.
-     */
-    glm::vec2 leftSideBearing = {0.0f, 0.0f};
-
-    /*! This is the position where the right side of the glyph
-     * ends. This includes some leading white space so that the glyph
-     * will stand a small distance of the edge.
-     */
-    glm::vec2 rightSideBearing = {0.0f, 0.0f};
-
-    /*! Distance from baseline of highest ascender.
-     */
-    glm::vec2 ascender = {0.0f, 0.0f};
-
-    /*! Distance from baseline of lowest descender.
-     */
-    glm::vec2 descender = {0.0f, 0.0f};
-
-    /*! Height of capital letter, or height of the letter 'H'.
-    */
-    glm::vec2 capHeight = {0.0f, 0.0f};
-
-    /*! Height of the small letter 'x'.
-    */
-    glm::vec2 xHeight = {0.0f, 0.0f};
-
-    /*! The distance to the next character.
-     */
-    glm::vec2 advance = {0.0f, 0.0f};
-
-    /*! The number of graphemes this glyph represents.
-     * This may be larger than one when the glyph is a ligature.
-     */
-    int numberOfGraphemes = 1;
-
-    /*! Get the advanceWidth for the specific grapheme of
-     * a potential ligature.
-     */
-    glm::vec2 advanceForGrapheme(int index) const noexcept;
+    GlyphMetrics metrics;
 
     /*! Return the number of closed contours.
     */
