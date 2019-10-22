@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
+#include <memory_resource>
 
 namespace TTauri {
 
@@ -322,10 +323,7 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint,
 
 std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures) const noexcept
 {
-    std::array<std::byte,4096> buffer;
-    auto allocator = std::pmr::monotonic_buffer_resource(buffer.data(), buffer.size());
-
-    auto result = std::pmr::u32string{&allocator};
+    auto result = std::u32string{};
     result.reserve(text.size() * 3);
 
     for (let codePoint: text) {

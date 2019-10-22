@@ -123,7 +123,6 @@ set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/file_view.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/NormalizationTest.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/GraphemeBreakTest.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/Roboto-Regular.ttf
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})
