@@ -25,8 +25,8 @@ public:
     Font(Font &&) = delete;
     Font &operator=(Font &&) = delete;
 
-    /*! Find a glyph in the font based on an unicode code-point.
-    * This is seperated from loading a glyph so that graphemes and ligatures can be found.
+    /*! Find a glyph in the font based on an Unicode code-point.
+    * This is separated from loading a glyph so that graphemes and ligatures can be found.
     *
     * \param c Unicode code point to look up.
     * \return a glyph-index if a glyph has been found. 0 means "not found", -1 means "parse error".
@@ -55,7 +55,7 @@ public:
             for (let codePoint: grapheme.NFC()) {
                 let glyphIndex = searchCharacterMap(codePoint);
                 if (glyphIndex <= 0) {
-                    // The codePoint was not found in the font, or a parse error occured.
+                    // The codePoint was not found in the font, or a parse error occurred.
                     graphemeGlyphs.clear();
                     break;
                 }
@@ -90,7 +90,7 @@ public:
                 }
             }
 
-            // XXX Try fallback fonts.
+            // XXX Try fall back fonts.
 
             if (graphemeGlyphs.size() == 0) {
                 // Replace with not-found-glyph at index 0.

@@ -64,28 +64,35 @@ public:
         return *this;
     }
 
-    force_inline explicit grapheme(std::u32string codePoints) noexcept : value(0) {
-        switch (codePoints.size()) {
+    force_inline explicit grapheme(std::u32string_view codePoints) noexcept :
+        value(0)
+    {
+        let codePointsNFC = Foundation_globals->unicodeData->toNFC(codePoints);
+
+        switch (codePointsNFC.size()) {
         case 3:
-            value |= (static_cast<uint64_t>(codePoints[2] & 0x1f'ffff) << 43);
+            value |= (static_cast<uint64_t>(codePointsNFC[2] & 0x1f'ffff) << 43);
             [[fallthrough]];
         case 2:
-            value |= (static_cast<uint64_t>(codePoints[1] & 0x1f'ffff) << 22);
+            value |= (static_cast<uint64_t>(codePointsNFC[1] & 0x1f'ffff) << 22);
             [[fallthrough]];
         case 1:
-            value |= (static_cast<uint64_t>(codePoints[0] & 0x1f'ffff) << 1);
+            value |= (static_cast<uint64_t>(codePointsNFC[0] & 0x1f'ffff) << 1);
             [[fallthrough]];
         case 0:
             value |= 1;
             break;
         default:
-            if (codePoints.size() <= std::numeric_limits<uint16_t>::max()) {
-                value = create_pointer(codePoints.data(), codePoints.size());
+            if (codePointsNFC.size() <= std::numeric_limits<uint16_t>::max()) {
+                value = create_pointer(codePointsNFC.data(), codePointsNFC.size());
             } else {
                 value = (0x00'fffdULL << 43) | 1; // Replacement character.
             }
         }
     }
+
+    force_inline explicit grapheme(char32_t codePoint) noexcept :
+        grapheme(std::u32string_view{&codePoint, 1}) {}
 
     explicit operator std::u32string () const noexcept {
         if (has_pointer()) {
@@ -120,7 +127,7 @@ public:
     }
 
     force_inline std::u32string NFC() const noexcept {
-        return Foundation_globals->unicodeData->toNFC(static_cast<std::u32string>(*this));
+        return static_cast<std::u32string>(*this);
     }
 
     force_inline std::u32string NFD() const noexcept {
@@ -140,7 +147,7 @@ private:
         return (value & 1) == 0;
     }
 
-    static uint64_t create_pointer(char32_t *data, size_t size) noexcept {
+    static uint64_t create_pointer(char32_t const *data, size_t size) noexcept {
         auto ptr = new char32_t [size];
         std::memcpy(ptr, data, size);
 

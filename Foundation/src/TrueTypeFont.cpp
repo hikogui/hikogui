@@ -401,8 +401,8 @@ bool TrueTypeFont::getGlyphBytes(int glyphIndex, gsl::span<std::byte const> &byt
         let entries = make_placement_array<big_uint16_buf_t>(locaTableBytes);
         assert_or_return(entries.contains(glyphIndex + 1), false);
 
-        startOffset = entries[glyphIndex].value();
-        endOffset = entries[glyphIndex + 1].value();
+        startOffset = entries[glyphIndex].value() * 2;
+        endOffset = entries[glyphIndex + 1].value() * 2;
     }
 
     assert_or_return(startOffset <= endOffset, false);
