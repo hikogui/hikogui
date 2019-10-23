@@ -1,6 +1,7 @@
 
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/Theme.hpp"
 #include <string>
 #include <vector>
@@ -9,18 +10,81 @@ namespace TTauri {
 
 
 class decorated_grapheme {
-    grapheme g;
-    int styleIndex;
-    glm::vec2 position;
+    /*! The code units representing the grapheme.
+     * The grapheme is in Unicode-NFC after decomposing 'canonical' ligatures.
+     * 'Canonical'-ligatures are those ligatures that have the same meaning,
+     * in every language, when separated into individual characters,
+     * and are only combined for purpose to improve legibility and style by the font.
+     */
+    grapheme graphemeCodePoints;
 
+    /*! Text style for this grapheme.
+     * 18'0000 - 1f'ffff Code points to represent a textStyle, 19 bits in total.
+     *
+     * - 18:16 - 8 different decorations (Normal, Underlines, Dashed Underline, DoubleUnderline, WavyUnderline, Strikethrough)
+     * - 15:13 - 8 different decoration colors.
+     * - 12:10 - 8 font-shape (regular, italic, bold, boldItalic, light, lightItalic)
+     * -  9:8  - 4 font-families (Serif, Sans, Condensed, Monospace)
+     * -  7:4  - 16 font sizes (8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 50, 64, 100)
+     * -  3:0  - 16 different text colors.
+     */
+    TextStyle textStyle;
+
+    /*! Font where the grapheme was found.
+     * The font is selected based on an algorithm which priorities in the following order:
+     *  1. Try ligature combinations with the next graphemes.
+     *  2. Try NFC form, which will use less pre-composed glyphs in the font.
+     *  3. Try NFD form, which will require more glyphs to combine the character.
+     *  4. Try the next fall back font in the list and goto 1.
+     *  5. Use the Unknown character glyph from the first font.
+     */
+    Font *font;
+
+    /*! The set of glyphs which match the grapheme.
+     * Potentially the glyphs in this list may represent multiple graphemes when
+     * a ligature was combined.
+     */
+    std::vector<int> glyphIndices;
+
+    /*! Number of graphemes that the glyphIndices represent.
+     * Potentially the glyphs in this list may represent multiple graphemes when
+     * a ligature was combined.
+     */
+    size_t nrGraphemesInGlyphs;
+
+    /*! Metrics loaded for each glyph in font:glyphIndices.
+     */
+    std::vector<GlyphsMetrics> glyphsMetrics;
+
+    /*! Merged metrics from glyphsMetrics.
+     */
+    GlyphsMetric metrics;
 public:
 
 };
 
 /*! Editable text for GUI Widgets.
  *
- * The upper 11 bits of the first code point of a grapheme are used
- * as the style index for the style to use to render the grapheme.
+ * When converting between text and u32string and back certain code points
+ * have special meaning:
+ *
+ *   0x00'0000 - 0x10'ffff Unicode code points plane 0 to plane 16.
+ *   0x11'0000             Push formatting
+ *   0x11'0001             Pop formatting
+ *   0x11'01xx             Select font color.
+ *   0x11'02xx             Select decoration color.
+ *   0x11'03xx             Select decoration.
+ *                         bit  3:0 Line style: (solid line, dotted line, dashed line, double line, wavy line)
+ *                         bit  7:4 Line location: (no line, line above, line under, line through)
+ *   0x11'1xxx             Select font size.
+ *   0x18'0000 - 0x1f'ffff Select font from font registry 19 bits.
+ *                         bit    0 Italic
+ *                         bit  3:1 Font weight:
+ *                                  0=200 Extra-Light,1=300 Light,2=400 Regular,3=500 Medium,
+ *                                  4=600 Semi-Bold,5=700 Bold,6=800 Extra-Bold,7=900 Black
+ *                         bit  5:4 Font Category: 0=Normal, 1=Serif, 2=Mono-space, 3=Condensed
+ *                         bit 18:6 Font family.
+ *
  */
 class text {
     std::vector<decorated_grapheme> graphemes;
@@ -146,6 +210,11 @@ public:
      * Selected text will be deleted.
      */
     void pasteText(text text) noexcept;
+
+private:
+    /*! Calculate metrics and position for each grapheme.
+     */
+    void shapeText() noexcept;
 };
 
 
