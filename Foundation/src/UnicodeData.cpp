@@ -84,39 +84,49 @@ struct UnicodeData_Composition {
 };
 
 struct UnicodeData_Description {
-    little_uint32_buf_t data1;
-    little_uint32_buf_t data2;
+    little_uint64_buf_t data;
 
     force_inline char32_t codePoint() const noexcept {
-        return data1.value() >> 11;
+        return data.value() >> 43;
     }
 
     force_inline uint8_t decompositionOrder() const noexcept {
-        return (data1.value() >> 3) & 0xff;
+        return (data.value() >> 26) & 0xff;
     }
 
     force_inline bool decompositionIsCanonical() const noexcept {
-        return (data1.value() & 1) > 0;
+        return ((data.value() >> 34) & 1) > 0;
     }
 
     force_inline GraphemeUnitType graphemeUnitType() const noexcept {
-        return static_cast<GraphemeUnitType>(data2.value() >> 28);
+        return static_cast<GraphemeUnitType>((data.value() >> 35) & 0xf);
     }
 
     force_inline uint8_t decompositionLength() const noexcept {
-        return (data2.value() >> 21) & 0x1f;
+        return (data.value() >> 21) & 0x1f;
     }
 
     force_inline size_t decompositionOffset() const noexcept {
-        return (data2.value() & UNICODE_MASK) * sizeof(uint64_t);
+        return (data.value() & UNICODE_MASK) * sizeof(uint64_t);
     }
 
     force_inline char32_t decompositionCodePoint() const noexcept {
-        return static_cast<char32_t>(data2.value() & UNICODE_MASK);
+        return static_cast<char32_t>(data.value() & UNICODE_MASK);
     }
 
-    force_inline uint32_t searchValue() const noexcept {
-        return data1.value() >> 11;
+    force_inline BidirectionalClass bidirectionalClass() const noexcept {
+        switch (codePoint()) {
+        case 0x00'202a: return BidirectionalClass::LRE;
+        case 0x00'202d: return BidirectionalClass::LRO;
+        case 0x00'202b: return BidirectionalClass::RLE;
+        case 0x00'202e: return BidirectionalClass::RLO;
+        case 0x00'202c: return BidirectionalClass::PDF;
+        case 0x00'2066: return BidirectionalClass::LRI;
+        case 0x00'2067: return BidirectionalClass::RLI;
+        case 0x00'2068: return BidirectionalClass::FSI;
+        case 0x00'2069: return BidirectionalClass::PDI;
+        default: return static_cast<BidirectionalClass>((data.value() >> 39) & 0x0f);
+        }
     }
 };
 
@@ -175,8 +185,8 @@ void UnicodeData::initialize()
 UnicodeData_Description const *UnicodeData::getDescription(char32_t codePoint) const noexcept
 {
     let descriptions = unsafe_make_placement_array<UnicodeData_Description>(bytes, rvalue_cast(descriptions_offset), descriptions_count);
-    let i = std::lower_bound(descriptions.begin(), descriptions.end(), static_cast<uint32_t>(codePoint), [](auto &element, auto value) {
-        return element.searchValue() < value;
+    let i = std::lower_bound(descriptions.begin(), descriptions.end(), codePoint, [](auto &element, auto value) {
+        return element.codePoint() < value;
     });
 
     if (i == descriptions.end() || i->codePoint() != codePoint) {
@@ -227,6 +237,24 @@ uint8_t UnicodeData::getDecompositionOrder(char32_t codePoint) const noexcept {
             return description->decompositionOrder();
         } else {
             return 0;
+        }
+    }
+}
+
+BidirectionalClass UnicodeData::getBidirectionalClass(char32_t codePoint) const noexcept {
+    if (codePoint <= ASCII_MAX && codePoint > UNICODE_MAX) {
+        return BidirectionalClass::Unknown;
+    } else if (
+        isHangulLPart(codePoint) || isHangulVPart(codePoint) || isHangulTPart(codePoint) ||
+        isHangulSyllable(codePoint)
+        ) {
+        return BidirectionalClass::L;
+    } else {
+        let description = getDescription(codePoint);
+        if (description) {
+            return description->bidirectionalClass();
+        } else {
+            return BidirectionalClass::Unknown;
         }
     }
 }
@@ -314,8 +342,11 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint,
             }
         }
 
-    } else {
+    } else if (description) {
         // No decomposition available, or do not want to decompose.
+        result += (codePoint | (description->decompositionOrder() << 21));
+    } else {
+        // No description available.
         result += codePoint;
     }
 }
@@ -333,44 +364,25 @@ std::u32string UnicodeData::decompose(std::u32string_view text, bool decomposeCo
     return result;
 }
 
-std::u32string UnicodeData::canonicalDecompose(std::u32string_view text, bool decomposeLigatures) const noexcept
+void UnicodeData::reorder(std::u32string &text) noexcept
 {
-    return decompose(text, false, decomposeLigatures);
-}
-
-std::u32string UnicodeData::compatibleDecompose(std::u32string_view text) const noexcept
-{
-    return decompose(text, true);
-}
-
-void UnicodeData::normalizeDecompositionOrder(std::u32string &text) const noexcept
-{
-    std::array<std::byte,4096> buffer;
-    auto allocator = std::pmr::monotonic_buffer_resource(buffer.data(), buffer.size());
-
-    auto textWithDecompositionOrder = std::pmr::vector<uint64_t>{&allocator};
-    textWithDecompositionOrder.resize(text.size());
-
-    std::transform(text.begin(), text.end(), textWithDecompositionOrder.begin(), [&](auto codePoint) {
-        let decompositionOrder = getDecompositionOrder(codePoint);
-        return static_cast<uint64_t>(codePoint) | (static_cast<uint64_t>(decompositionOrder) << 32);
-    });
-
-    for_each_cluster(textWithDecompositionOrder.begin(), textWithDecompositionOrder.end(),
-        [](auto x) { return (x >> 32) == 0; },
+    for_each_cluster(text.begin(), text.end(),
+        [](auto x) { return (x >> 21) == 0; },
         [](auto s, auto e) {
             std::stable_sort(s, e, [](auto a, auto b) {
-                return (a >> 32) < (b >> 32);
-            });
+                return (a >> 21) < (b >> 21);
+                });
         }
     );
-
-    std::transform(textWithDecompositionOrder.begin(), textWithDecompositionOrder.end(), text.begin(), [](auto x) {
-        return static_cast<char32_t>(x);
-    });
 }
 
-
+void UnicodeData::clean(std::u32string &text) noexcept
+{
+    // clean up the text by removing the upper bits.
+    for (auto &codePoint: text) {
+        codePoint &= 0x1f'ffff;
+    }
+}
 
 char32_t UnicodeData::compose(char32_t startCodePoint, char32_t composingCodePoint, bool composeCRLF) const noexcept
 {
@@ -417,8 +429,10 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
     size_t i = 0;
     size_t j = 0;
     while (i < text.size()) {
-        let codePoint = text[i++];
-        let isStartCharacter = getDecompositionOrder(codePoint) == 0;
+        let codeUnit = text[i++];
+        let codePoint = codeUnit & 0x1f'ffff;
+        let compositionOrder = codeUnit >> 21;
+        let isStartCharacter = compositionOrder == 0;
 
         if (codePoint == UNICODE_INVALID_CHAR) {
             // code-unit was sniffed out by compositing, skip it.
@@ -428,11 +442,12 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
 
         } else if (isStartCharacter) {
             // Try composing.
-            auto startC = codePoint;
-            uint8_t prevDecompositionOrder = 0;
+            auto startCodePoint = codePoint;
+            char32_t prevDecompositionOrder = 0;
             for (size_t k = i; k < text.size(); k++) {
-                let composingC = text[k];
-                let composingDecompositionOrder = getDecompositionOrder(composingC);
+                let composingCodeUnit = text[k];
+                let composingCodePoint = composingCodeUnit & 0x1f'ffff;
+                let composingDecompositionOrder = composingCodeUnit >> 21;
 
                 bool blockingPair =
                     prevDecompositionOrder != 0 &&
@@ -440,10 +455,10 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
 
                 bool composingIsStarter = composingDecompositionOrder == 0;
 
-                let composedC = compose(startC, composingC, composeCRLF);
-                if (composedC != UNICODE_INVALID_CHAR && !blockingPair) {
+                let composedCodePoint = compose(startCodePoint, composingCodePoint, composeCRLF);
+                if (composedCodePoint != UNICODE_INVALID_CHAR && !blockingPair) {
                     // Found a composition.
-                    startC = composedC;
+                    startCodePoint = composedCodePoint;
                     // The canonical combined DecompositionOrder is always zero.
                     prevDecompositionOrder = 0;
                     // Snuff out the code-unit.
@@ -459,7 +474,7 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
                 }
             }
             // Add the new combined character to the text.
-            text[j++] = startC;
+            text[j++] = startCodePoint;
 
         } else {
             // Unable to compose this character.
@@ -470,36 +485,38 @@ void UnicodeData::compose(std::u32string &text, bool composeCRLF) const noexcept
     text.resize(j);
 }
 
-
-
 std::u32string UnicodeData::toNFD(std::u32string_view text, bool decomposeLigatures) const noexcept
 {
     auto result = decompose(text, false, decomposeLigatures);
-    normalizeDecompositionOrder(result);
+    reorder(result);
+    clean(result);
     return result;
 }
 
 std::u32string UnicodeData::toNFC(std::u32string_view text, bool decomposeLigatures, bool composeCRLF) const noexcept
 {
-    auto decomposedText = decompose(text, false, decomposeLigatures);
-    normalizeDecompositionOrder(decomposedText);
-    compose(decomposedText, composeCRLF);
-    return decomposedText;
+    auto result = decompose(text, false, decomposeLigatures);
+    reorder(result);
+    compose(result, composeCRLF);
+    clean(result);
+    return result;
 }
 
 std::u32string UnicodeData::toNFKD(std::u32string_view text) const noexcept
 {
     auto result = decompose(text, true);
-    normalizeDecompositionOrder(result);
+    reorder(result);
+    clean(result);
     return result;
 }
 
 std::u32string UnicodeData::toNFKC(std::u32string_view text, bool composeCRLF) const noexcept
 {
-    auto decomposedText = decompose(text, true);
-    normalizeDecompositionOrder(decomposedText);
-    compose(decomposedText, composeCRLF);
-    return decomposedText;
+    auto result = decompose(text, true);
+    reorder(result);
+    compose(result, composeCRLF);
+    clean(result);
+    return result;
 }
 
 static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakState &state) noexcept

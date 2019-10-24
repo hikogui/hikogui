@@ -29,6 +29,34 @@ enum class GraphemeUnitType : uint8_t {
     Extended_Pictographic = 14
 };
 
+enum class BidirectionalClass : uint8_t {
+    Unknown = 0,
+    L = 1,
+    R = 2,
+    AL = 3,
+    EN = 4,
+    ES = 5,
+    ET = 6,
+    AN = 7,
+    CS = 8,
+    NSM = 9,
+    BN = 10,
+    B = 11,
+    S = 12,
+    WS = 13,
+    ON = 14,
+    // Explicit values.
+    LRE,
+    LRO,
+    RLE,
+    RLO,
+    PDF,
+    LRI,
+    RLI,
+    FSI,
+    PDI
+};
+
 struct GraphemeBreakState {
     GraphemeUnitType previous = GraphemeUnitType::Other;
     int RICount = 0;
@@ -68,56 +96,12 @@ public:
     UnicodeData &operator=(UnicodeData &&other) = delete;
     ~UnicodeData() = default;
 
-    /*! Canonical decompose of the characters in the text.
-     * Certain ligatures, which are seen as seperate graphemes by the user
-     * may be decomposed when using the decomposeLigatures flag.
-     *
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * \param text to decompose.
-     * \param decomposeLigatures decompose 'canonical'-ligatures
-     * \return The text after canonical decomposition.
-     */
-    std::u32string canonicalDecompose(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
-
-    /*! Compatible decompose of the characters in the text.
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * \param text to decompose.
-     * \return The text after canonical decomposition.
-     */
-    std::u32string compatibleDecompose(std::u32string_view text) const noexcept;
-
-    /*! Compose the characters in the text.
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) is
-     * used by the composition algorithm. Any 0x00'ffff in the text will be
-     * removed by this algorithm.
-     *
-     * \param text to compose, in-place.
-     * \param composeCRLF Compose CR-LF combinations to LF.
-     */
-    void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
-
-    /*! Canonical reorder of the characters in the text.
-     * This function is normally called after decomposing the text.
-     *
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * \param text to normalize, in-place.
-     */
-    void normalizeDecompositionOrder(std::u32string &text) const noexcept;
-
     /*! Convert text to Unicode-NFD normal form.
-     * Certain ligatures, which are seen as seperate graphemes by the user
+     * Certain ligatures, which are seen as separate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
-     * used by the composition algorithm. Any 0x00'ffff in the text may be
-     * removed by the algorithm.
+     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
+     * Code units between 0x11'0000 and 0x1f'ffff will pass through. 
      *
      * \param text to normalize, in-place.
      * \param decomposeLigatures 'canonical'-ligatures are decomposed.
@@ -125,14 +109,11 @@ public:
     std::u32string toNFD(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
 
     /*! Convert text to Unicode-NFC normal form.
-     * Certain ligatures, which are seen as seperate graphemes by the user
+     * Certain ligatures, which are seen as separate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
-     * used by the composition algorithm. Any 0x00'ffff in the text may be
-     * removed by the algorithm.
+     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
+     * Code units between 0x11'0000 and 0x1f'ffff will pass through. 
      *
      * \param text to normalize, in-place.
      * \param decomposeLigatures 'canonical'-ligatures are decomposed.
@@ -141,22 +122,16 @@ public:
     std::u32string toNFC(std::u32string_view text, bool decomposeLigatures=false, bool composeCRLF=false) const noexcept;
 
     /*! Convert text to Unicode-NFKD normal form.
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
-     * used by the composition algorithm. Any 0x00'ffff in the text may be
-     * removed by the algorithm.
+     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
+     * Code units between 0x11'0000 and 0x1f'ffff will pass through. 
      *
      * \param text to normalize, in-place.
      */
     std::u32string toNFKD(std::u32string_view text) const noexcept;
 
     /*! Convert text to Unicode-NFKC normal form.
-     * Code-units outside of the unicode-planes will be passed through.
-     *
-     * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) may be
-     * used by the composition algorithm. Any 0x00'ffff in the text may be
-     * removed by the algorithm.
+     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
+     * Code units between 0x11'0000 and 0x1f'ffff will pass through. 
      *
      * \param text to normalize, in-place.
      * \param composeCRLF Compose CR-LF combinations to LF.
@@ -164,15 +139,22 @@ public:
     std::u32string toNFKC(std::u32string_view text, bool composeCRLF=false) const noexcept;
 
     /*! Check if for a graphemeBreak before the character.
-     * Code-units must be tested in order, starting at the begining of the text.
+     * Code-units must be tested in order, starting at the beginning of the text.
      *
-     * Code-units outside of the unicode-planes will be treated as GraphemeUnitType::Other
+     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
+     * Code units between 0x11'0000 and 0x1f'ffff will be treated as GraphemeUnitType::Other. 
      *
      * \param codeUnit Current code-unit to test.
      * \param state Current state of the grapheme-break algorithm.
      * \return true when a grapheme break exists before the current code-unit.
      */
     bool checkGraphemeBreak(char32_t codeUnit, GraphemeBreakState &state) const noexcept;
+
+    /*! Get the bidirectional class for a code-point.
+     * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
+     * Code units between 0x11'0000 and 0x1f'ffff will be treated as BidirectionalClass::Unknown. 
+     */
+    BidirectionalClass getBidirectionalClass(char32_t codePoint) const noexcept;
 
 private:
     void initialize();
@@ -184,6 +166,32 @@ private:
     char32_t compose(char32_t startCharacter, char32_t composingCharacter, bool composeCRLF) const noexcept;
     void decomposeCodePoint(std::u32string &result, char32_t codePoint, bool decomposeCompatible, bool decomposeLigatures) const noexcept;
     std::u32string decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures=false) const noexcept;
+
+
+    /*! Reorder text after decomposition.
+     * decompose() must be called before this function. The decompose() function
+     * will add the decompositionOrder in bits 28:21 of each code-unit.
+     */
+    static void reorder(std::u32string &text) noexcept;
+
+    /*! Clean the code-unit.
+    * This function should be called after reorder() or after compose() to remove
+    * temporary information from the code-units.
+    */
+    static void clean(std::u32string &text) noexcept;
+
+
+    /*! Compose the characters in the text.
+    * Code-units outside of the unicode-planes will be passed through.
+    *
+    * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) is
+    * used by the composition algorithm. Any 0x00'ffff in the text will be
+    * removed by this algorithm.
+    *
+    * \param text to compose, in-place.
+    * \param composeCRLF Compose CR-LF combinations to LF.
+    */
+    void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 };
 
 template<>

@@ -32,6 +32,35 @@ graphemeUnitTypes = {
     "Extended_Pictographic": 14
 }
 
+bidiClassValues = {
+    # Explicit
+    "LRE": 0,
+    "LRO": 0,
+    "RLE": 0,
+    "RLO": 0,
+    "PDF" : 0,
+    "LRI" : 0,
+    "RLI": 0,
+    "FSI": 0,
+    "PDI": 0,
+
+    # Implicit
+    "L": 1,
+    "R": 2,
+    "AL": 3,
+    "EN": 4,
+    "ES": 5,
+    "ET": 6,
+    "AN": 7,
+    "CS": 8,
+    "NSM": 9,
+    "BN": 10,
+    "B": 11,
+    "S": 12,
+    "WS": 13,
+    "ON": 14,
+}
+
 class Composition (object):
     def __init__(self, description, startCodePoint, secondCodePoint, combinedCodePoint):
         self.description = description
@@ -63,13 +92,14 @@ class Decomposition (object):
         return ret
 
 class UnicodeDescription (object):
-    def __init__(self, codePoint, decomposition, decompositionIsCanonical, decompositionOrder):
+    def __init__(self, codePoint, decomposition, decompositionIsCanonical, decompositionOrder, bidiClass):
         self.codePoint = codePoint;
         self.decomposition = decomposition
         self.decompositionIsCanonical = decompositionIsCanonical
         self.decompositionOrder = decompositionOrder
         self.decompositionOffset = None
         self.graphemeUnitType = graphemeUnitTypes["Other"]
+        self.bidiClass = bidiClass
 
     def serialize(self):
         decompositionFlagsAndLength = (
@@ -77,23 +107,23 @@ class UnicodeDescription (object):
             (0x20 if self.decompositionIsCanonical else 0)
         )
 
-        dword1 = self.codePoint << 11
-        dword1 |= self.decompositionOrder << 3
-        dword1 |= 1 if self.decompositionIsCanonical else 0
-
-        dword2 = self.graphemeUnitType << 28
-        dword2 |= len(self.decomposition) << 21
+        qword = self.codePoint << 43
+        qword |= self.bidiClass << 39
+        qword |= self.graphemeUnitType << 35
+        qword |= (1 << 34) if self.decompositionIsCanonical else 0
+        qword |= self.decompositionOrder << 26
+        qword |= len(self.decomposition) << 21
 
         if len(self.decomposition) == 0:
             pass
         elif len(self.decomposition) == 1:
-            dword2 |= self.decomposition[0]
+            qword |= self.decomposition[0]
         else:
             if self.decompositionOffset % 8 != 0:
                 raise RuntimeError("Except decomposition offset to be a multiple of 8")
-            dword2 |= (self.decompositionOffset // 8)
+            qword |= (self.decompositionOffset // 8)
 
-        return struct.pack("<LL", dword1, dword2)
+        return struct.pack("<Q", qword)
             
     def __repr__(self):
         return "code={}, offset={}, decomposition={}, canonical={}, order={}, graphemeUnitType={}".format(
@@ -182,7 +212,8 @@ def parseUnicodeData(filename):
             codePoint=int(columns[0], 16),
             decomposition=decomposition,
             decompositionIsCanonical=(decomposition_type is None),
-            decompositionOrder=int(columns[3])
+            decompositionOrder=int(columns[3]),
+            bidiClass=bidiClassValues[columns[4]]
         )
 
         descriptions[description.codePoint] = description

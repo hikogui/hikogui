@@ -21,14 +21,11 @@ The Unicode code-point descriptions are orded by increasing code-point value.
 
  | Type     | Bits  | Name                     | Description                                                              | 
  | -------- | ----- | ------------------------ | ------------------------------------------------------------------------ |
- | uint32_t | 31:11 | codePoint                | The code unit descriptions are orded by increasing code-point value      |
- |          | 10:3  | decompositionOrder       | Orderering value for sorting decomposition code-points                   |
- |          | 2     | reserved                 | 0                                                                        |
- |          | 1     | reserved                 | 0                                                                        |
- |          | 0     | canonicalDecomposition   | Canonical decomposition flag                                             |
- | uint32_t | 31:28 | graphemeUnitType         | 15 enum values, listed below                                             |
- |          | 27    | reserved                 | 0                                                                        |
- |          | 26    | reserved                 | 0                                                                        |
+ | uint64_t | 63:43 | codePoint                | The code unit descriptions are orded by increasing code-point value      |
+ |          | 42:39 | bidirectionalClass       | 15 enum values, listed below                                                                    |
+ |          | 38:35 | graphemeUnitType         | 15 enum values, listed below                                             |
+ |          | 34    | canonicalDecomposition   | Canonical decomposition flag                                             |
+ |          | 33:26 | decompositionOrder       | Orderering value for sorting decomposition code-points                   ||
  |          | 25:21 | decompositionLength      | Number of decomposition code points, maximum 18                          |
  |          | 20:0  | decompositionOffset /    | decompositionLength >= 2 byte offset * 8 in the file.                    |
  |          |       | decompositionCodePoint / | decompositionLength == 1 then this contains the code-point               |
@@ -53,12 +50,12 @@ For other decompositions it will need to point in the following table.
 
  | Type     | Bits  | Name                    |
  | -------- | ----- | ----------------------- |
- | uint64_t | 63:43 | 1st character           |
- |          | 42:22 | 2nd character           |
+ | uint64_t | 63:43 | 1st code point          |
+ |          | 42:22 | 2nd code point          |
  |          | 21    | reserved                |
  |          | 20:0  | 3rd code point          |
- | uint64_t | 63:43 | 4th character           |
- |          | 42:22 | 5th character           |
+ | uint64_t | 63:43 | 4th code point          |
+ |          | 42:22 | 5th code point          |
  |          | 21    | reserved                |
  |          | 20:0  | 6th code point          |
  | uint64_t |       | etc...                  |
@@ -83,3 +80,32 @@ For other decompositions it will need to point in the following table.
  | LV                    |    12 |
  | LVT                   |    13 |
  | Extended Pictographic |    14 |
+
+## Bidirectional Class
+
+ | Name                  | Value |
+ | --------------------- | -----:|
+ | Unknown               |     0 |
+ | LRE                   |     0 |
+ | LRO                   |     0 |
+ | RLE                   |     0 |
+ | RLO                   |     0 |
+ | PDF                   |     0 |
+ | LRI                   |     0 |
+ | RLI                   |     0 |
+ | FSI                   |     0 |
+ | PDI                   |     0 |
+ | L                     |     1 |
+ | R                     |     2 |
+ | AL                    |     3 |
+ | EN                    |     4 |
+ | ES                    |     5 |
+ | ET                    |     6 |
+ | AN                    |     7 |
+ | CS                    |     8 |
+ | NSM                   |     9 |
+ | BN                    |    10 |
+ | B                     |    11 |
+ | S                     |    12 |
+ | WS                    |    13 |
+ | ON                    |    14 |
