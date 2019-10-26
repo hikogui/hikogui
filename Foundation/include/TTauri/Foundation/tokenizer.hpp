@@ -11,7 +11,7 @@
 
 namespace TTauri {
 
-enum class TokenName {
+enum class TokenName : uint8_t {
     Whitespace,
     Comment,
     Operator,
@@ -26,9 +26,9 @@ enum class TokenName {
 };
 
 struct Token {
-    TokenName name;
     datum value;
     size_t offset;
+    TokenName name;
 };
 
 inline bool operator==(Token const &lhs, Token const &rhs) noexcept
