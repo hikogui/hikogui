@@ -26,9 +26,9 @@ enum class TokenName : uint8_t {
 };
 
 struct Token {
+    TokenName name;
     datum value;
     size_t offset;
-    TokenName name;
 };
 
 inline bool operator==(Token const &lhs, Token const &rhs) noexcept
