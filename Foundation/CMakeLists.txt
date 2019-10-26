@@ -74,6 +74,7 @@ set(TTauri_Foundation_tests
     tests/BezierCurve_tests.cpp
     tests/Path_tests.cpp
     tests/PixelMap_tests.cpp
+    tests/BasicTokenizer_tests.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")
