@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/BasicTokenizer.hpp"
+#include "TTauri/Foundation/tokenizer.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
