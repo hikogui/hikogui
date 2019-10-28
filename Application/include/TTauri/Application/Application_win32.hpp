@@ -16,7 +16,7 @@ public:
     int nCmdShow = 0;
     uint32_t mainThreadID = 0;
 
-    Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, void *hPrevInstance, wchar_t const *pCmdLine, int nCmdShow);
+    Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, void *hPrevInstance, wchar_t const *pCmdLine, int nCmdShow);
     ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;
@@ -24,7 +24,9 @@ public:
     Application_win32(Application_win32 &&) = delete;
     Application_win32 &operator=(Application_win32 &&) = delete;
 
+#if defined(TTAURI_GUI_ENABLED)
     void lastWindowClosed() override;
+#endif
 
     void runOnMainThread(std::function<void()> function) override;
 

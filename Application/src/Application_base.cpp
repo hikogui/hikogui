@@ -15,13 +15,13 @@ using namespace std;
 Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, void *hInstance, int nCmdShow) :
     delegate(applicationDelegate),
     i_foundation(std::this_thread::get_id(), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
-#if BUILT_TTAURI_CONFIG
+#if defined(TTAURI_CONFIG_ENABLED)
     i_config(),
 #endif
-#if BUILT_TTAURI_AUDIO
+#if defined(TTAURI_AUDIO_ENABLED)
     i_audio(this),
 #endif
-#if BUILT_TTAURI_GUI
+#if defined(TTAURI_GUI_ENABLED)
 #if OPERATING_SYSTEM == OS_WINDOWS
     i_gui(this, hInstance, nCmdShow),
 #else
@@ -55,14 +55,14 @@ void Application_base::startingLoop()
     }
 }
 
-#if BUILD_TTAURI_GUI
+#if defined(TTAURI_GUI_ENABLED)
 void Application_base::lastWindowClosed()
 {
     delegate->lastWindowClosed();
 }
 #endif
 
-#if BUILD_TTAURI_AUDIO
+#if defined(TTAURI_AUDIO_ENABLED)
 void Application_base::audioDeviceListChanged()
 {
     delegate->audioDeviceListChanged();

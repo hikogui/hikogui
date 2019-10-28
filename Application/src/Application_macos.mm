@@ -5,11 +5,11 @@
 
 namespace TTauri {
 
-Application_macos::Application_macos(const std::shared_ptr<ApplicationDelegate> delegate, int argc, char const * const *argv) :
+Application_macos::Application_macos(std::shared_ptr<ApplicationDelegate> delegate, int argc, char const * const *argv) :
     Application_base(std::move(delegate), nullptr, 0),
     argc(argc), argv(argv)
 {
-#ifdef BUILD_TTAURI_GUI
+#if !defined(TTAURI_GUI_ENABLED)
     @autoreleasepool {
         [NSApplication sharedApplication];
 

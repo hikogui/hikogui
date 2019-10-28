@@ -2,25 +2,28 @@
 // All rights reserved.
 
 #include "TTauri/Application/Application_win32.hpp"
+#if defined(TTAURI_GUI_ENABLED)
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
+#endif
 #include "TTauri/Foundation/strings.hpp"
-#include <vulkan/vulkan.hpp>
 #include <thread>
 #include <string>
+#include <Windows.h>
 
 namespace TTauri {
 
 constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
 
 
-Application_win32::Application_win32(const std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, void *hPrevInstance, wchar_t const *pCmdLine, int nCmdShow) :
+Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, void *hPrevInstance, wchar_t const *pCmdLine, int nCmdShow) :
     Application_base(std::move(delegate), hInstance, nCmdShow),
     hInstance(hInstance), hPrevInstance(hPrevInstance), pCmdLine(pCmdLine), nCmdShow(nCmdShow),
     mainThreadID(GetCurrentThreadId())
 {
 }
 
+#if defined(TTAURI_GUI_ENABLED)
 void Application_win32::lastWindowClosed()
 {
     runOnMainThread([&]() {
@@ -33,6 +36,7 @@ void Application_win32::lastWindowClosed()
         }
     });
 }
+#endif
 
 gsl_suppress(r.11)
 void Application_win32::runOnMainThread(std::function<void()> function)

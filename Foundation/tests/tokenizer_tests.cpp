@@ -10,152 +10,227 @@
 using namespace std;
 using namespace TTauri;
 
-TEST(BasicTokenizer, ParseInteger) {
-    size_t offset = 2;
-    auto token = parseToken("++12345++", offset);
-    auto expected = Token{TokenName::IntegerLiteral, datum{12345}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);
+
+#define ASSERT_NEXT_TOKEN_EQ(t, name, value, offset)\
+    do {\
+        let nextToken = t();\
+        let expectedToken = tokenizer_token_t{tokenizer_name_t::name, value, offset};\
+        ASSERT_EQ(nextToken, expectedToken);\
+    } while (false)
+
+TEST(Tokenizer, ParseInteger1) {
+    auto t = tokenizer("++12345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "12345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseFloat) {
-    size_t offset = 2;
-    auto token = parseToken("++12.45++", offset);
-    auto expected = Token{TokenName::FloatLiteral, datum{12.45}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);
+TEST(Tokenizer, ParseInteger2) {
+    auto t = tokenizer("+++2345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "+2345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseString) {
-    {size_t offset = 2;
-    auto token = parseToken("++\"2\\\"4\"++", offset);
-    auto expected = Token{TokenName::StringLiteral, datum{"\"2\"4"}, 2};
-    ASSERT_EQ(offset, 8);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("++'2\"4'++", offset);
-    auto expected = Token{TokenName::StringLiteral, datum{"'2\"4"}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("++'2\\'4'++", offset);
-    auto expected = Token{TokenName::StringLiteral, datum{"'2'4"}, 2};
-    ASSERT_EQ(offset, 8);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("++`2\"4`++", offset);
-    auto expected = Token{TokenName::StringLiteral, datum{"`2\"4"}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseInteger3) {
+    auto t = tokenizer("++-2345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "-2345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseName) {
-    size_t offset = 2;
-    auto token = parseToken("++_Foo_++", offset);
-    auto expected = Token{TokenName::Name, datum{"_Foo_"}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);
+TEST(Tokenizer, ParseInteger4) {
+    auto t = tokenizer("++02345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "02345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseOperator) {
-    size_t offset = 2;
-    auto token = parseToken("ab+-*-+ab", offset);
-    auto expected = Token{TokenName::Operator, datum{"+-*-+"}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);
+TEST(Tokenizer, ParseInteger5) {
+    auto t = tokenizer("++0x345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "0x345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseOpen) {
-    {size_t offset = 2;
-    auto token = parseToken("ab((}))ab", offset);
-    auto expected = Token{TokenName::Open, datum{"("}, 2};
-    ASSERT_EQ(offset, 3);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("ab{(}))ab", offset);
-    auto expected = Token{TokenName::Open, datum{"{"}, 2};
-    ASSERT_EQ(offset, 3);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("ab[(}))ab", offset);
-    auto expected = Token{TokenName::Open, datum{"["}, 2};
-    ASSERT_EQ(offset, 3);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseInteger6) {
+    auto t = tokenizer("+++0345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "+0345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseClose) {
-    {size_t offset = 2;
-    auto token = parseToken("ab)(}))ab", offset);
-    auto expected = Token{TokenName::Close, datum{")"}, 2};
-    ASSERT_EQ(offset, 3);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("ab}(}))ab", offset);
-    auto expected = Token{TokenName::Close, datum{"}"}, 2};
-    ASSERT_EQ(offset, 3);
-    ASSERT_EQ(token, expected);}
-
-    {size_t offset = 2;
-    auto token = parseToken("ab](}))ab", offset);
-    auto expected = Token{TokenName::Close, datum{"]"}, 2};
-    ASSERT_EQ(offset, 3);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseInteger7) {
+    auto t = tokenizer("++-0345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "-0345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseWhitespace) {
-    size_t offset = 2;
-    auto token = parseToken("++     ++", offset);
-    auto expected = Token{TokenName::Whitespace, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);
+TEST(Tokenizer, ParseInteger8) {
+    auto t = tokenizer("+++0x45++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "+0x45", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }
 
-TEST(BasicTokenizer, ParseComment) {
-    {size_t offset = 2;
-    auto token = parseToken("++/* */++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseInteger9) {
+    auto t = tokenizer("++-0x45++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, IntegerLiteral, "-0x45", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
 
-    {size_t offset = 2;
-    auto token = parseToken("++// foo\n++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 8);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseFloat1) {
+    auto t = tokenizer("++12.45++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "12.45", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
 
-    {size_t offset = 2;
-    auto token = parseToken("++# foo\n++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseFloat2) {
+    auto t = tokenizer("+++2.45++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "+2.45", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
 
-    {size_t offset = 2;
-    auto token = parseToken("++# foo\r++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseFloat3) {
+    auto t = tokenizer("++-2.45++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "-2.45", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
 
-    {size_t offset = 2;
-    auto token = parseToken("++# foo\r\n++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseFloat4) {
+    auto t = tokenizer("++.2345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, ".2345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
 
-    {size_t offset = 2;
-    auto token = parseToken("++# foo\n\n++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseFloat5) {
+    auto t = tokenizer("+++.345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "+.345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
 
-    {size_t offset = 2;
-    auto token = parseToken("++# foo\n\r++", offset);
-    auto expected = Token{TokenName::Comment, datum{}, 2};
-    ASSERT_EQ(offset, 7);
-    ASSERT_EQ(token, expected);}
+TEST(Tokenizer, ParseFloat6) {
+    auto t = tokenizer("++-.345++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "-.345", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseFloat7) {
+    auto t = tokenizer("++1234.++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "1234.", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseFloat8) {
+    auto t = tokenizer("++1.3e5++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "1.3e5", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseFloat9) {
+    auto t = tokenizer("++1.e45++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, FloatLiteral, "1.e45", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseString1) {
+    auto t = tokenizer("++\"2\\\"4\"++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, StringLiteral, "2\"4", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 8);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 10);
+}
+
+TEST(Tokenizer, ParseString2) {
+    auto t = tokenizer("++\"2\\\n4\"++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, StringLiteral, "2\n4", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 8);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 10);
+}
+
+TEST(Tokenizer, ParseString3) {
+    auto t = tokenizer("++\"2\n4\"++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, ErrorLFInString, "\n", 4);
+}
+
+TEST(Tokenizer, ParseString4) {
+    auto t = tokenizer("++\"234");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, ErrorEOTInString, "234", 2);
+}
+
+
+TEST(Tokenizer, ParseName) {
+    auto t = tokenizer("++_Foo_++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Name, "_Foo_", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseLiteral) {
+    auto t = tokenizer("++.++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, ".", 2);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 3);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 5);
+}
+
+TEST(Tokenizer, ParseWhitespace) {
+    auto t = tokenizer("++     ++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseLineComment1) {
+    auto t = tokenizer("++//45\n++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseLineComment2) {
+    auto t = tokenizer("++#345\n++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
+}
+
+TEST(Tokenizer, ParseBlockComment2) {
+    auto t = tokenizer("++/*3*/++");
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", 7);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", 9);
 }

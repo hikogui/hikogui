@@ -3,7 +3,7 @@
 
 #pragma once
 
-#cmakedefine BUILD_TTAURI_CONFIG
-#cmakedefine BUILD_TTAURI_AUDIO
-#cmakedefine BUILD_TTAURI_GUI
+#cmakedefine TTAURI_CONFIG_ENABLED
+#cmakedefine TTAURI_AUDIO_ENABLED
+#cmakedefine TTAURI_GUI_ENABLED
 

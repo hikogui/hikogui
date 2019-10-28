@@ -15,6 +15,66 @@
 
 namespace TTauri {
 
+constexpr bool isUpper(char c) noexcept {
+    return c >= 'A' && c <= 'Z';
+}
+
+constexpr bool isLower(char c) noexcept {
+    return c >= 'a' && c <= 'z';
+}
+
+constexpr bool isAlpha(char c) noexcept {
+    return isUpper(c) || isLower(c);
+}
+
+constexpr bool isDigit(char c) noexcept {
+    return c >= '0' && c <= '9';
+}
+
+constexpr bool isAlphaNum(char c) noexcept {
+    return isAlpha(c) || isDigit(c);
+}
+
+constexpr bool isLinefeed(char c) noexcept {
+    return c == '\r' || c == '\n' || c == '\f' || c == '\v';
+}
+
+constexpr bool isWhitespace(char c) noexcept {
+    return c == ' ' || c == '\t' || isLinefeed(c);
+}
+
+constexpr bool isNumberFirst(char c) noexcept {
+    return isDigit(c) || c == '+' || c == '-';
+}
+
+constexpr bool isNameFirst(char c) noexcept {
+    return isAlpha(c) || c == '_';
+}
+
+constexpr bool isNameNext(char c) noexcept {
+    return isAlphaNum(c) || c == '_';
+}
+
+constexpr bool isQuote(char c) noexcept {
+    return c == '"' || c == '\'' || c == '`';
+}
+
+constexpr bool isOpenBracket(char c) noexcept {
+    return c == '(' || c == '{' || c == '[';
+}
+
+constexpr bool isCloseBracket(char c) noexcept {
+    return c == ')' || c == '}' || c == ']';
+}
+
+constexpr bool isOperator(char c) noexcept {
+    return
+        !isAlphaNum(c) && c != '_' &&
+        !isWhitespace(c) &&
+        !isQuote(c) &&
+        !isOpenBracket(c) &&
+        !isCloseBracket(c);
+}
 gsl_suppress3(f.23,bounds.1,bounds.3)
     inline constexpr uint32_t fourcc(char const txt[5]) noexcept
 {
