@@ -3,17 +3,20 @@
 
 #pragma once
 
+#include "TTauri/Foundation/config.hpp"
 #include "TTauri/Application/ApplicationDelegate.hpp"
+#if BUILD_TTAURI_AUDIO
+#include "TTauri/Audio/globals.hpp"
+#include "TTauri/Audio/AudioSystemDelegate.hpp"
+#endif
+#if BUILD_TTAURI_GUI
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Audio/globals.hpp"
-#include "TTauri/Audio/AudioSystemDelegate.hpp"
+#endif
+#if BUILD_TTAURI_CONFIG
 #include "TTauri/Config/globals.hpp"
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#endif
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
@@ -26,6 +29,8 @@
 
 namespace TTauri {
 
+class Application_base_dummy {};
+
 /*! A singleton that represents the application.
  * An Application should be instantiated in a local variable in main.
  * This will allow the appliation to destruct Application systems in the
@@ -33,17 +38,31 @@ namespace TTauri {
  * are destructed.
  *
  */
-class Application_base : public GUI::InstanceDelegate, Audio::AudioSystemDelegate {
+class Application_base : public Application_base_dummy
+#if BUILD_TTAURI_GUI
+    , GUI::InstanceDelegate
+#endif
+#if BUILD_TTAURI_AUDIO
+    , Audio::AudioSystemDelegate
+#endif
+{
 public:
     /*! Application delegate
     */
     std::shared_ptr<ApplicationDelegate> delegate;
 
     FoundationGlobals i_foundation;
+#if BUILD_TTAURI_CONFIG
     Config::ConfigGlobals i_config;
+#endif
+#if BUILD_TTAURI_AUDIO
     Audio::AudioGlobals i_audio;
+#endif
+#if BUILD_TTAURI_GUI
     GUI::GUIGlobals i_gui;
     GUI::Widgets::WidgetsGlobals i_widgets;
+#endif
+    int i_dummy;
 
     bool loopStarted = false;
 
@@ -67,14 +86,18 @@ public:
      */
     virtual int loop() = 0;
 
+#if BUILD_TTAURI_GUI
     /*! Called by the GUI when the last window was closed.
     */
     void lastWindowClosed() override;
+#endif
 
+#if BUILD_TTAURI_AUDIO
     /*! Called when the device list has changed.
     * This can happen when external devices are connected or disconnected.
     */
     void audioDeviceListChanged() override;
+#endif
 };
 
 inline Application_base *_application = nullptr;

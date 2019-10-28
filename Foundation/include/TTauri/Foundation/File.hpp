@@ -4,8 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/URL.hpp"
-
-
 #include <cstdint>
 #include <map>
 
@@ -57,7 +55,7 @@ struct File {
     AccessMode accessMode;
     URL location;
 
-    void *fileHandle;
+    FileHandle fileHandle;
 
     File(URL const& location, AccessMode accessMode);
     ~File() noexcept;
@@ -71,7 +69,7 @@ struct File {
 
     /*! Get the size of a file on the file system.
     */
-    static int64_t fileSize(URL const &url);
+    static size_t fileSize(URL const &url);
 };
 
 

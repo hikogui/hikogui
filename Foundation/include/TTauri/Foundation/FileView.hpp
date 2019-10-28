@@ -12,6 +12,9 @@ namespace TTauri {
 class FileView : public ResourceView {
 private:
     std::shared_ptr<FileMapping> fileMappingObject;
+
+    // The shared_ptr to _bytes allows the FileView to be copied while pointing
+    // to the same memory map. This shared_ptr will use the private unmap().
     std::shared_ptr<gsl::span<std::byte>> _bytes;
     size_t _offset;
 
@@ -50,13 +53,15 @@ public:
 
     void flush(void* base, size_t size);
 
-    static void unmap(gsl::span<std::byte> *bytes) noexcept;
-
     static std::shared_ptr<FileMapping> findOrCreateFileMappingObject(URL const& path, AccessMode accessMode, size_t size);
 
     static std::unique_ptr<ResourceView> loadView(URL const &location) {
         return std::make_unique<FileView>(location);
     }
+
+private:
+    static void unmap(gsl::span<std::byte> *bytes) noexcept;
+
 };
 
 }

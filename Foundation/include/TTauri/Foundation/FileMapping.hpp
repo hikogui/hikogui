@@ -12,7 +12,7 @@ namespace TTauri {
 struct FileMapping {
     std::shared_ptr<File> file;
     size_t size;
-    void *mapHandle;
+    FileHandle mapHandle;
 
     FileMapping(std::shared_ptr<File> const& file, size_t size);
     FileMapping(URL const& path, AccessMode accessMode, size_t size);

@@ -1,8 +1,17 @@
 
 project(TTauri_Foundation CXX)
 
+option(BUILD_TTAURI_GUI "BUILD_TTAURI_GUI" OFF) 
+option(BUILD_TTAURI_AUDIO "BUILD_TTAURI_AUDIO" OFF) 
+option(BUILD_TTAURI_CONFIG "BUILD_TTAURI_CONFIG" OFF) 
+
 find_package(GTest)
 find_package(python COMPONENTS Interpreter)
+
+configure_file(
+    include/TTauri/Foundation/config.hpp.in 
+    include/TTauri/Foundation/config.hpp
+)
 
 set(TTauri_Foundation_srcs
     src/globals.cpp
@@ -17,8 +26,6 @@ set(TTauri_Foundation_srcs
     src/sdatum.cpp
     src/logger.cpp
     src/trace.cpp
-    src/FileMapping.cpp
-    src/FileView.cpp
     src/ResourceView.cpp
     src/StaticResourceView.cpp
     src/UnicodeData.cpp
@@ -32,6 +39,8 @@ set(TTauri_Foundation_srcs
     src/Theme.cpp
     src/TrueTypeFont.cpp
     src/TTauriIconParser.cpp
+    src/FileMapping.cpp
+    src/FileView.cpp
 )
 
 if(WIN32)
@@ -41,6 +50,8 @@ if(WIN32)
         src/audio_counter_clock_win32.cpp
         src/logger_win32.cpp
         src/File_win32.cpp
+        src/FileMapping_win32.cpp
+        src/FileView_win32.cpp
     )
 elseif(APPLE)
     set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
@@ -49,6 +60,8 @@ elseif(APPLE)
         src/audio_counter_clock_macos.cpp
         src/logger_macos.mm
         src/File_posix.cpp
+        src/FileMapping_posix.cpp
+        src/FileView_posix.cpp
     )
 endif()
 
@@ -103,6 +116,7 @@ set(TTauri_Foundation_resources
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
 target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm zlib png)
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(TTauri_Foundation PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
 target_static_resource(TTauri_Foundation ${TTauri_Foundation_resources})
@@ -111,13 +125,13 @@ set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # ADX and MDI for bigint.
     target_compile_options(TTauri_Foundation PUBLIC -madx)
-    if (!WIN32)
-        target_compile_options(TTauri_Foundation PUBLIC -mmdi2 -mbmi2)
+    if (NOT WIN32)
+        target_compile_options(TTauri_Foundation PUBLIC -mbmi2)
     endif()
 endif()
 
 if (APPLE)
-    target_link_libraries(TTauri_Foundation PUBLIC "-framework Foundation")
+    target_link_libraries(TTauri_Foundation PUBLIC "-framework Foundation -framework AppKit")
 endif()
 
 set(TTauri_Foundation_test_files

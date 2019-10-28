@@ -199,4 +199,12 @@ constexpr size_t cache_line_size = 128;
 */
 using ssize_t = std::make_signed_t<size_t>;
 
+/*! File descriptor/handle
+ */
+#if OPERATING_SYSTEM == OS_WINDOWS
+using FileHandle = void *;
+#else
+using FileHandle = int;
+#endif
+
 }

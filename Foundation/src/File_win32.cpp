@@ -97,7 +97,7 @@ void File::close()
     }
 }
 
-int64_t File::fileSize(URL const &url)
+size_t File::fileSize(URL const &url)
 {
     let name = url.nativeWPath();
 

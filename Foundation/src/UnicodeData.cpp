@@ -7,7 +7,6 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
-#include <memory_resource>
 
 namespace TTauri {
 

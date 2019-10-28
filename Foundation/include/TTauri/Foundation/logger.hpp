@@ -22,12 +22,7 @@
 
 namespace TTauri {
 
-
-
-
-#if OPERATING_SYSTEM == OS_WINDOWS
 std::string getLastErrorMessage();
-#endif
 
 [[noreturn]] void terminateOnFatalError(std::string &&message) noexcept;
 

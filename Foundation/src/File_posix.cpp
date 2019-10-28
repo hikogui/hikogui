@@ -6,6 +6,9 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace TTauri {
 
@@ -52,29 +55,28 @@ File::File(URL const &location, AccessMode accessMode) :
         );
     }
 
-    int advise = 0;
-    if (accessMode >= AccessMode::Random) {
-        advise = POSIX_FADV_RANDOM;
-    } if (accessMode >= AccessMode::Sequential) {
-        advise = POSIX_FADV_SEQUENTIAL;
-    } else {
-        advise = 0;
-    }
+    //int advise = 0;
+    //if (accessMode >= AccessMode::Random) {
+    //    advise = POSIX_FADV_RANDOM;
+    //} if (accessMode >= AccessMode::Sequential) {
+    //    advise = POSIX_FADV_SEQUENTIAL;
+    //} else {
+    //    advise = 0;
+    //}
+    //
+    //if (accessMode >= AccessMode::NoReuse) {
+    //    advise |= POSIX_FADV_NOREUSE;
+    //}
 
-    if (accessMode >= AccessMode::NoReuse) {
-        advise |= POSIX_FADV_NOREUSE;
-    }
-
-    int permissions = 0;
+    int permissions = 0666;
 
     let fileName = location.nativePath();
-    if ((fileHandle = open(fileName.data(), openFlag, permissions) == -1) {
+    if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
         TTAURI_THROW(io_error("Could not open file")
             .set<"error_message"_tag>(getLastErrorMessage())
             .set<"url"_tag>(location)
         );
     }
-#endif
 }
 
 File::~File() noexcept
@@ -84,34 +86,28 @@ File::~File() noexcept
 
 void File::close()
 {
-    if (fileHandle != INVALID_HANDLE_VALUE) {
-        if (!CloseHandle(fileHandle)) {
+    if (fileHandle != -1) {
+        if (!::close(fileHandle)) {
             TTAURI_THROW(io_error("Could not close file")
                 .set<"error_message"_tag>(getLastErrorMessage())
                 .set<"url"_tag>(location)
             );
         }
-        fileHandle = INVALID_HANDLE_VALUE;
+        fileHandle = -1;
     }
 }
 
-int64_t File::fileSize(URL const &url)
+size_t File::fileSize(URL const &url)
 {
-#if OPERATING_SYSTEM == OS_WINDOWS
-    let name = url.nativeWPath();
+    let name = url.nativePath();
 
-    WIN32_FILE_ATTRIBUTE_DATA attributes;
-    if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
+    struct ::stat statbuf;
+
+    if (::stat(name.data(), &statbuf) == -1) {
         TTAURI_THROW(io_error("Could not retrieve file attributes").set<"url"_tag>(url));
     }
 
-    LARGE_INTEGER size;
-    size.HighPart = attributes.nFileSizeHigh;
-    size.LowPart = attributes.nFileSizeLow;
-    return numeric_cast<int64_t>(size.QuadPart);
-#else
-#error "Not Implemented for this operating system."
-#endif
+    return numeric_cast<size_t>(statbuf.st_size);
 }
 
 }

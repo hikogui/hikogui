@@ -5,8 +5,6 @@
 
 #include "TTauri/GUI/Instance_vulkan.hpp"
 
-#import <Cocoa/Cocoa.h>
-
 namespace TTauri {
 namespace GUI {
 

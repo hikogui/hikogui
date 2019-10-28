@@ -30,4 +30,9 @@ void logger_type::writeToConsole(std::string str) noexcept {
     }
 }
 
+std::string getLastErrorMessage()
+{
+    return strerror(errno);
+}
+
 }

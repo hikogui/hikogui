@@ -4,7 +4,10 @@ cmake_policy(SET CMP0074 NEW)
 enable_testing()
 
 project(TTauri CXX)
- 
+
+option(BUILD_TTAURI_GUI "BUILD_TTAURI_GUI" OFF) 
+option(BUILD_TTAURI_AUDIO "BUILD_TTAURI_AUDIO" OFF) 
+option(BUILD_TTAURI_CONFIG "BUILD_TTAURI_CONFIG" OFF) 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
 include(AddIcon)
@@ -29,13 +32,21 @@ endif ()
 
 add_subdirectory(ThirdPartyLibraries)
 add_subdirectory(Utilities)
+
 add_subdirectory(Foundation)
+if(BUILD_TTAURI_CONFIG)
 add_subdirectory(Config)
+endif()
+if(BUILD_TTAURI_AUDIO)
 add_subdirectory(Audio)
+endif()
+if(BUILD_TTAURI_GUI)
 add_subdirectory(GUI)
 add_subdirectory(Widgets)
+endif()
 add_subdirectory(Application)
 
+if(BUILD_TTAURI_GUI)
 add_icon(Icon_objs 
     "Themes/Icons/Application Icon.svg"
     "Themes/Icons/Close Window.svg"
@@ -48,15 +59,15 @@ set(TTauri_resources
     ${Icon_objs}
     Themes/Fonts/Roboto/Roboto-Regular.ttf
 )
+endif()
 
 add_library(TTauri INTERFACE)
 target_static_resource(TTauri ${TTauri_resources})
 target_link_libraries(TTauri INTERFACE TTauri_Application)
 
-
-
+if(BUILD_TTAURI_GUI AND BUILD_TTAURI_AUDIO)
 add_subdirectory(TTauriDevelopmentApplication)
-
+endif()
 
 #set(TTauri_do_not_analyze
 #    ${BISON_TTauriConfigParser_OUTPUTS}

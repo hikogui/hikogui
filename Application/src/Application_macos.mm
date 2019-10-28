@@ -1,13 +1,15 @@
 
 
-#include "Application_macos.hpp"
-
+#include "TTauri/Application/Application_macos.hpp"
 #import <Cocoa/Cocoa.h>
 
 namespace TTauri {
 
-Application_macos::Application_macos() :
+Application_macos::Application_macos(const std::shared_ptr<ApplicationDelegate> delegate, int argc, char const * const *argv) :
+    Application_base(std::move(delegate), nullptr, 0),
+    argc(argc), argv(argv)
 {
+#ifdef BUILD_TTAURI_GUI
     @autoreleasepool {
         [NSApplication sharedApplication];
 
@@ -38,18 +40,11 @@ Application_macos::Application_macos() :
         
         [NSApp activateIgnoringOtherApps:YES];
     }
+#endif
 }
 
 Application_macos::~Application_macos()
 {
-}
-
-void Application_macos::initialize(const std::shared_ptr<ApplicationDelegate> delegate, int argc, char **argv)
-{
-    this->argc = argc;
-    this->argv = argv;
-
-    Application_base::initialize(move(delegate));
 }
 
 void Application_macos::runOnMainThread(std::function<void()> function)
@@ -60,7 +55,7 @@ void Application_macos::runOnMainThread(std::function<void()> function)
 
     // XXX post a message to the main thread loop.
     //auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
-    required_assert(r != 0);
+    //required_assert(r != 0);
 }
 
 int Application_macos::loop()

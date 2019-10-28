@@ -28,7 +28,7 @@ template<typename T>
 force_inline std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,T> 
 byte_swap(T x) noexcept
 {
-    if constexpr (compiler == Compiler::clang || compiler == Compiler::gcc) {
+#if COMPILER == CC_CLANG || COMPILER == CC_GCC
         if constexpr (sizeof(T) == sizeof(uint64_t)) {
             return static_cast<T>(__builtin_bswap64(static_cast<uint64_t>(x)));
         } else if constexpr (sizeof(T) == sizeof(uint32_t)) {
@@ -38,8 +38,7 @@ byte_swap(T x) noexcept
         } else {
             no_default;
         }
-
-    } else if constexpr (compiler == Compiler::MSVC) {
+#elif COMPILER == CC_MSVC
         if constexpr (sizeof(T) == sizeof(uint64_t)) {
             return static_cast<T>(_byteswap_uint64(static_cast<uint64_t>(x)));
         } else if constexpr (sizeof(T) == sizeof(unsigned long)) {
@@ -49,10 +48,9 @@ byte_swap(T x) noexcept
         } else {
             no_default;
         }
-
-    } else {
-        no_default;
-    }
+#else
+#error "Byteswap not implemented for this compiler."
+#endif
 }
 
 template<typename T>
