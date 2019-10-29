@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <list>
 
 using namespace std;
 using namespace TTauri;

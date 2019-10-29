@@ -10,6 +10,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"
 #include "TTauri/Foundation/url_parser.hpp"
+#include "TTauri/Foundation/debugger.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>
@@ -31,12 +32,39 @@ std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs) {
     return lhs;
 }
 
+[[noreturn]] void terminateOnFatalError(std::string &&message) noexcept {
+    Foundation_globals->stopMaintenanceThread();
+
+    if (debugger_is_present()) {
+        debugger_log(message);
+        debugger_break;
+
+    } else {
+        debugger_dialogue("Fatal error",
+            "Fatal error: {}.\n\n"
+            "This is a serious bug in this application, please email support@pokitec.com with the error message above. "
+            "Press OK to quit the application.",
+            message
+        );
+
+    }
+    std::terminate();
+}
+
 std::string log_message_base::string() const noexcept
 {
     let utc_timestamp = cpu_utc_clock::convert(timestamp);
     let local_timestring = format_iso8601(utc_timestamp);
 
     return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());
+}
+
+void logger_type::writeToConsole(std::string str) noexcept {
+    if (debugger_is_present()) {
+        debugger_log(str);
+    } else {
+        std::cerr << str << std::endl;
+    }
 }
 
 void logger_type::writeToFile(std::string str) noexcept {

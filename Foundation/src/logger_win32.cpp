@@ -23,32 +23,6 @@ namespace TTauri {
 
 using namespace std::literals::chrono_literals;
 
-void logger_type::writeToConsole(std::string str) noexcept {
-    str += "\r\n";
-    OutputDebugStringW(translateString<std::wstring>(str).data());
-}
-
-[[noreturn]] void terminateOnFatalError(std::string &&message) noexcept {
-    Foundation_globals->stopMaintenanceThread();
-
-    if (IsDebuggerPresent()) {
-        let messageWString = translateString<std::wstring>(message);
-        OutputDebugStringW(messageWString.data());
-        DebugBreak();
-
-    } else {
-        let longMessage = fmt::format(
-            "Fatal error: {}.\n\n"
-            "This is a serious bug in this application, please email support@pokitec.com with the error message above. "
-            "Press OK to quit the application.",
-            message
-        );
-        let messageWString = translateString<std::wstring>(longMessage);
-        let captionWString = translateString<std::wstring>(std::string("Fatal error"));
-        MessageBoxW(nullptr, messageWString.data(), captionWString.data(), MB_APPLMODAL | MB_OK | MB_ICONERROR);
-    }
-    std::terminate();
-}
 
 gsl_suppress(i.11)
 std::string getLastErrorMessage()

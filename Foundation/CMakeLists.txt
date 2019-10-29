@@ -52,6 +52,7 @@ if(WIN32)
         src/File_win32.cpp
         src/FileMapping_win32.cpp
         src/FileView_win32.cpp
+        src/debugger_win32.cpp
     )
 elseif(APPLE)
     set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
@@ -62,6 +63,7 @@ elseif(APPLE)
         src/File_posix.cpp
         src/FileMapping_posix.cpp
         src/FileView_posix.cpp
+        src/debugger_macos.mm
     )
 endif()
 

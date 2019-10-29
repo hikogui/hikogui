@@ -9,7 +9,7 @@ Application_macos::Application_macos(std::shared_ptr<ApplicationDelegate> delega
     Application_base(std::move(delegate), nullptr, 0),
     argc(argc), argv(argv)
 {
-#if !defined(TTAURI_GUI_ENABLED)
+#if defined(TTAURI_GUI_ENABLED)
     @autoreleasepool {
         [NSApplication sharedApplication];
 

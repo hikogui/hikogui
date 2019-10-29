@@ -87,7 +87,7 @@ inline R unpickle(Iter &&i, Iter &&end)
 }
 
 template<typename Iter>
-inline int64_t unpickle(Iter &i, Iter const &end)
+inline long long unpickle(Iter &i, Iter const &end)
 {
     // Type conversions.
     switch (pickle_type(i, end)) {
@@ -111,8 +111,9 @@ inline int64_t unpickle(Iter &i, Iter const &end)
 impl:
     size_t nr_bits = 0;
     uint64_t u64value = 0;
+    uint8_t c = 0;
     do {
-        uint8_t c = *(i++);
+        c = *(i++);
 
         nr_bits += 7;
         u64value <<= 7;
@@ -133,7 +134,7 @@ impl:
 }
 
 template<typename Iter>
-inline uint64_t unpickle(Iter &i, Iter const &end)
+inline unsigned long long unpickle(Iter &i, Iter const &end)
 {
     // Type conversions.
     switch (pickle_type(i, end)) {
@@ -157,8 +158,9 @@ inline uint64_t unpickle(Iter &i, Iter const &end)
 impl:
     size_t nr_bits = 0;
     uint64_t u64value = 0;
+    uint8_t c = 0;
     do {
-        uint8_t c = *(i++);
+        c = *(i++);
 
         nr_bits += 7;
         u64value <<= 7;
@@ -194,12 +196,12 @@ inline double unpickle(Iter &i, Iter const &end)
 impl:
     i++;
 
+    uint64_t u64value = 0;
     if ((end - i) < sizeof(u64value)) {
         TTAURI_THROW(parse_error("End of stream"));
     }
 
-    uint64_t u64value = 0;
-    for (size_t 0; i < sizeof(u64value); i++) {
+    for (size_t j = 0; j < sizeof(u64value); j++) {
         u64value <<= 8;
         u64value |= static_cast<uint8_t>(*(i++));
     }
@@ -207,12 +209,16 @@ impl:
     return bit_cast<double>(u64value);
 }
 
-template<typename Iter> inline uint32_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int32_t>(unpickle<uint64_t>(i, end)); }
-template<typename Iter> inline uint16_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int16_t>(unpickle<uint64_t>(i, end)); }
-template<typename Iter> inline uint8_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int8_t>(unpickle<uint64_t>(i, end)); }
-template<typename Iter> inline int32_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int32_t>(unpickle<int64_t>(i, end)); }
-template<typename Iter> inline int16_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int16_t>(unpickle<int64_t>(i, end)); }
-template<typename Iter> inline int8_t unpickle(Iter &i, Iter const &end) { return numeric_cast<int8_t>(unpickle<int64_t>(i, end)); }
+template<typename Iter> inline unsigned long unpickle(Iter &i, Iter const &end) { return numeric_cast<unsigned long>(unpickle<unsigned long long>(i, end)); }
+template<typename Iter> inline unsigned int unpickle(Iter &i, Iter const &end) { return numeric_cast<unsigned int>(unpickle<unsigned long long>(i, end)); }
+template<typename Iter> inline unsigned short unpickle(Iter &i, Iter const &end) { return numeric_cast<unsigned short>(unpickle<unsigned long long>(i, end)); }
+template<typename Iter> inline unsigned char unpickle(Iter &i, Iter const &end) { return numeric_cast<unsigned char>(unpickle<unsigned long long>(i, end)); }
+
+template<typename Iter> inline signed long unpickle(Iter &i, Iter const &end) { return numeric_cast<signed long>(unpickle<signed long long>(i, end)); }
+template<typename Iter> inline signed int unpickle(Iter &i, Iter const &end) { return numeric_cast<signed int>(unpickle<signed long long>(i, end)); }
+template<typename Iter> inline signed short unpickle(Iter &i, Iter const &end) { return numeric_cast<signed short>(unpickle<signed long long>(i, end)); }
+template<typename Iter> inline signed char unpickle(Iter &i, Iter const &end) { return numeric_cast<signed char>(unpickle<signed long long>(i, end)); }
+
 template<typename Iter> inline float unpickle(Iter &i, Iter const &end) { return numeric_cast<float>(unpickle<double>(i, end)); }
 
 template<typename Iter>
@@ -230,9 +236,10 @@ inline std::string unpickle(Iter &i, Iter const &end)
 
 impl:
     size_t stringLength = 0;
-    if (static_cast<uint8_t>(*i) == PICKLE_STRING || static_cast<uint8_t>(*i) == PICKLE_URL) {
+    let c = static_cast<uint8_t>(*i);
+    if (c == PICKLE_STRING || c == PICKLE_URL) {
         i++;
-        stringLength = unpickle<size_t>(i, begin);
+        stringLength = unpickle<size_t>(i, end);
     } else {
         stringLength = c - PICKLE_SMALL_STRING_MIN;
     }
@@ -349,7 +356,7 @@ inline void pickleAppend(std::string &lhs, bool rhs) noexcept
     lhs.push_back(rhs ? PICKLE_TRUE : PICKLE_FALSE);
 }
 
-inline void pickleAppend(std::string &lhs, nullptr_t rhs) noexcept
+inline void pickleAppend(std::string &lhs, std::nullptr_t rhs) noexcept
 {
     lhs.push_back(PICKLE_NULL);
 }
@@ -365,7 +372,7 @@ inline void pickleAppend(std::string &lhs, double rhs) noexcept
     }
 }
 
-inline void pickleAppend(std::string &lhs, uint64_t rhs) noexcept
+inline void pickleAppend(std::string &lhs, unsigned long long rhs) noexcept
 {
     while (true) {
         uint8_t const last_value = rhs & 0x7f;
@@ -388,7 +395,7 @@ inline void pickleAppend(std::string &lhs, uint64_t rhs) noexcept
  * Negative integers are encoded with at least two bytes. This
  * way the codes for 
  */
-inline void pickleAppend(std::string &lhs, int64_t rhs) noexcept
+inline void pickleAppend(std::string &lhs, signed long long rhs) noexcept
 {
     if (rhs >= 0) {
         return pickleAppend(lhs, static_cast<uint64_t>(rhs));
@@ -412,12 +419,16 @@ inline void pickleAppend(std::string &lhs, int64_t rhs) noexcept
     }
 }
 
-inline void pickleAppend(std::string &lhs, int32_t rhs) noexcept { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
-inline void pickleAppend(std::string &lhs, int16_t rhs) noexcept { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
-inline void pickleAppend(std::string &lhs, int8_t rhs) noexcept { return pickleAppend(lhs, static_cast<int64_t>(rhs)); }
-inline void pickleAppend(std::string &lhs, uint32_t rhs) noexcept { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
-inline void pickleAppend(std::string &lhs, uint16_t rhs) noexcept { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
-inline void pickleAppend(std::string &lhs, uint8_t rhs) noexcept { return pickleAppend(lhs, static_cast<uint64_t>(rhs)); }
+inline void pickleAppend(std::string &lhs, unsigned long rhs) noexcept { return pickleAppend(lhs, static_cast<unsigned long long>(rhs)); }
+inline void pickleAppend(std::string &lhs, unsigned int rhs) noexcept { return pickleAppend(lhs, static_cast<unsigned long long>(rhs)); }
+inline void pickleAppend(std::string &lhs, unsigned short rhs) noexcept { return pickleAppend(lhs, static_cast<unsigned long long>(rhs)); }
+inline void pickleAppend(std::string &lhs, unsigned char rhs) noexcept { return pickleAppend(lhs, static_cast<unsigned long long>(rhs)); }
+
+inline void pickleAppend(std::string &lhs, signed long rhs) noexcept { return pickleAppend(lhs, static_cast<signed long long>(rhs)); }
+inline void pickleAppend(std::string &lhs, signed int rhs) noexcept { return pickleAppend(lhs, static_cast<signed long long>(rhs)); }
+inline void pickleAppend(std::string &lhs, signed short rhs) noexcept { return pickleAppend(lhs, static_cast<signed long long>(rhs)); }
+inline void pickleAppend(std::string &lhs, signed char rhs) noexcept { return pickleAppend(lhs, static_cast<signed long long>(rhs)); }
+
 inline void pickleAppend(std::string &lhs, void *rhs) noexcept { return pickleAppend(lhs, reinterpret_cast<size_t>(rhs)); }
 
 inline void pickleAppend(std::string &lhs, URL const &rhs) noexcept
