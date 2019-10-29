@@ -45,7 +45,7 @@ void assertIsLogged(const char *source_file, int source_line, const char *messag
         }\
     } while (false)
 #elif OPTIONAL_ASSERT_IMPLEMENTATION == AI_ASSUME
-#define optional_assert(x) ttauri_assume(sizeof(x) == 1)
+#define optional_assert(x) ttauri_assume(x)
 #else
 #error "Optional assert implementation not set."
 #endif
@@ -67,7 +67,7 @@ void assertIsLogged(const char *source_file, int source_line, const char *messag
         }\
     } while (false)
 #elif REVIEW_ASSERT_IMPLEMENTATION == AI_ASSUME
-#define review_assert(x) ttauri_assume(sizeof(x) == 1)
+#define review_assert(x) ttauri_assume(x)
 #else
 #error "Review assert implementation not set."
 #endif
@@ -89,7 +89,7 @@ void assertIsLogged(const char *source_file, int source_line, const char *messag
         }\
     } while (false)
 #elif REQUIRED_ASSERT_IMPLEMENTATION == AI_ASSUME
-#define required_assert(x) ttauri_assume(sizeof(x) == 1)
+#define required_assert(x) ttauri_assume(x)
 #else
 #error "Foundation assert implementation not set."
 #endif
@@ -111,7 +111,7 @@ void assertIsLogged(const char *source_file, int source_line, const char *messag
         }\
     } while (false)
 #elif AXIOM_ASSERT_IMPLEMENTATION == AI_ASSUME
-#define axiom_assert(x) ttauri_assume(sizeof(x) == 1)
+#define axiom_assert(x) ttauri_assume(x)
 #else
 #error "Axiom assert implementation not set."
 #endif

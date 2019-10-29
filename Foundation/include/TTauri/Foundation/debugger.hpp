@@ -15,9 +15,15 @@ namespace TTauri {
 #else
 #error "Not implemented"
 #endif
+
 #elif OPERATING_SYSTEM == OS_WINDOWS
+#if !defined(NDEBUG)
 void _debugger_break();
-#define debugger_break _ttauri_trap()
+#define debugger_break _debugger_break()
+#else
+#define debugger_break std::terminate()
+#endif
+
 #else
 #error "Not implemented"
 #endif
@@ -27,7 +33,7 @@ void _debugger_break();
 #if !defined(NDEBUG)
 bool debugger_is_present() noexcept;
 #else
-bool debugger_is_present() noexcept { return false; }
+constexpr bool debugger_is_present() noexcept { return false; }
 #endif
 
 void _debugger_log(char const *text) noexcept;
