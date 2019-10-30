@@ -78,15 +78,15 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
         return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
 
     } else if constexpr (sizeof(T) == 8) {
-#if PROCESSOR == CPU_X64
-        uint64_t r = 0;
-        auto c = _addcarryx_u64(static_cast<unsigned char>(carry), a, b, &r);
-        return { r, static_cast<uint64_t>(c) };
-#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
+#if COMPILER == CC_CLANG || COMPILER == CC_GCC
         auto r = static_cast<__uint128_t>(a) + static_cast<__uint128_t>(b) + carry;
         return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
 #else
-#error "Not implemented"
+        uint64_t r1 = a + b;
+        uint64_t c = (r1 < a) ? 1 : 0;
+        uint64_t r2 = r1 + carry;
+        c += (r2 < r1) ? 1 : 0;
+        return { r2, c };
 #endif
     }
 }
@@ -147,7 +147,7 @@ constexpr int bsr(T x) noexcept
     } else {
         not_implemented;
     }
-#elif COMPILER == CC_CLANG
+#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
     if constexpr (std::is_same_v<T,unsigned int>) {
         auto tmp = __builtin_clz(x);
         return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
@@ -181,7 +181,7 @@ constexpr int popcount(T x) noexcept
     } else {
         not_implemented;
     }
-#elif COMPILER == CC_CLANG
+#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
     if constexpr (std::is_same_v<T,unsigned int>) {
         return __builtin_popcount(x);
 

@@ -38,20 +38,6 @@ inline bool add_overflow(T lhs, T rhs, T *r)
         // ADD, JO
         return __builtin_add_overflow(lhs, rhs, r);
 
-    } else if constexpr (std::is_unsigned_v<T> && processor == Processor::X64 && sizeof(T) == sizeof(uint64_t)) {
-        // ADD, JB
-        uint64_t r_;
-        let carry = _addcarryx_u64(0, static_cast<uint64_t>(lhs), static_cast<uint64_t>(rhs), &r_);
-        *r = r_;
-        return carry;
-
-    } else if constexpr (std::is_unsigned_v<T> && processor == Processor::X64 && sizeof(T) == sizeof(uint32_t)) {
-        // ADD, JB
-        unsigned int r_;
-        let carry = _addcarryx_u32(0, static_cast<unsigned int>(lhs), static_cast<unsigned int>(rhs), &r_);
-        *r = r_;
-        return carry;
-
     } else if constexpr (std::is_unsigned_v<T>) {
         // LEA, CMP, JB
         *r = lhs + rhs;
@@ -106,18 +92,6 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
 
         // Sign bit in *r should match all bits in hi.
         return (hi ^ (*r >> 63)) != 0;
-
-    } else if constexpr (std::is_unsigned_v<T> && processor == Processor::X64 && sizeof(T) == sizeof(uint64_t)) {
-        // MULX, TEST, JNE
-        uint64_t hi;
-        *r = _mulx_u64(lhs, rhs, &hi);
-        return hi > 0;
-
-    } else if constexpr (std::is_unsigned_v<T> && processor == Processor::X64 && sizeof(T) == sizeof(uint32_t)) {
-        // MULX, TEST, JNE
-        unsigned int hi;
-        *r = _mulx_u32(lhs, rhs, &hi);
-        return hi > 0;
 
     } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>)/2)) {
         // MOVSX, MOVSX, IMUL, MOVSX, CMP, JNE
