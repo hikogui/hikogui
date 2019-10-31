@@ -32,7 +32,7 @@ struct ASTNode {
      */
     virtual datum &executeLValue(ExecutionContext &context) const {
         TTAURI_THROW(invalid_operation_error("syntax error, expected a lvalue expression")
-            .set<"location"_tag>(location)
+            .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
         );
     }
 
@@ -46,7 +46,7 @@ struct ASTNode {
      */
     virtual datum executeCall(ExecutionContext &context, std::vector<datum> const &arguments) const {
         TTAURI_THROW(invalid_operation_error("result of expression does not support being used as a function")
-            .set<"location"_tag>(location)
+            .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
         );
     }
 
@@ -54,7 +54,7 @@ struct ASTNode {
      */
     virtual datum &executeAssignment(ExecutionContext &context, datum other) const {
         TTAURI_THROW(invalid_operation_error("result of expression does not support assignment")
-            .set<"location"_tag>(location)
+            .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
         );
     }
 
@@ -62,7 +62,7 @@ struct ASTNode {
      */
     virtual void executeStatement(ExecutionContext &context) const {
         TTAURI_THROW(invalid_operation_error("syntax error, expression can not be used as a statement inside an object")
-            .set<"location"_tag>(location)
+            .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
         );
     }
 };

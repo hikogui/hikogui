@@ -56,7 +56,9 @@ ASTObject *parseConfigFile(URL const &path)
 
     if (r != 0) {
         TTAURI_THROW(parse_error(context.errorMessage)
-            .set<"location"_tag>(context.errorLocation)
+            .set<"url"_tag>(*context.errorLocation.file)
+            .set<"line"_tag>(context.errorLocation.line)
+            .set<"column"_tag>(context.errorLocation.column)
         );
     }
 

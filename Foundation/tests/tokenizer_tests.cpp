@@ -290,3 +290,16 @@ TEST(Tokenizer, ParseBlockComment2) {
     ASSERT_NEXT_TOKEN_EQ(t, Literal, "++", v.begin() + 7);
     ASSERT_NEXT_TOKEN_EQ(t, End, "", v.begin() + 9);
 }
+
+TEST(Tokenizer, ParseFQName) {
+    auto str = "creditor.mc-clown";
+    auto v = std::string_view(str);
+    auto t = tokenizer(v);
+    ASSERT_NEXT_TOKEN_EQ(t, Name, "creditor", v.begin() + 0);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, ".", v.begin() + 8);
+    ASSERT_NEXT_TOKEN_EQ(t, Name, "mc", v.begin() + 9);
+    ASSERT_NEXT_TOKEN_EQ(t, Literal, "-", v.begin() + 11);
+    ASSERT_NEXT_TOKEN_EQ(t, Name, "clown", v.begin() + 12);
+    ASSERT_NEXT_TOKEN_EQ(t, End, "", v.begin() + 17);
+}
+

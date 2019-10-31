@@ -12,6 +12,7 @@
 #include <string_view>
 #include <iterator>
 #include <vector>
+#include <tuple>
 
 namespace TTauri {
 
@@ -527,6 +528,29 @@ inline std::u32string splitLigature(char32_t x) noexcept
 
     default: return {};
     }
+}
+
+/*! Return line and column count at the end iterator.
+ */
+template<typename It>
+inline std::pair<size_t,size_t> count_line_and_columns(It begin, It const end)
+{
+    size_t line = 1;
+    size_t column = 1;
+
+    for (; begin != end; begin++) {
+        switch (*begin) {
+        case '\n': line++; [[fallthrough]];
+        case '\r': column = 1;
+            break;
+        case '\t':
+            column = ((((column-1) / 8) + 1) * 8) + 1;
+            break;
+        default:
+            column++;
+        }
+    }
+    return { line, column };
 }
 
 }

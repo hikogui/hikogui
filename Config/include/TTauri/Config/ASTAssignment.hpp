@@ -26,7 +26,7 @@ struct ASTAssignment : ASTExpression {
 
         if (value.is_undefined()) {
             TTAURI_THROW(invalid_operation_error("right hand side value of assignment is Undefined")
-                .set<"location"_tag>(location)
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
             );
         }
 

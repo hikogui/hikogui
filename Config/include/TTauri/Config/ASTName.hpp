@@ -44,7 +44,8 @@ struct ASTName : ASTExpression {
                     name,
                     (i + 1),
                     typeid(T).name()
-                ).set<"location"_tag>(location)
+                )
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
             );
         }
 
@@ -57,7 +58,8 @@ struct ASTName : ASTExpression {
                     (i + 1),
                     typeid(T).name(),
                     argument.type_name()
-                ).set<"location"_tag>(location)
+                )
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
             );
         }
 
@@ -68,7 +70,8 @@ struct ASTName : ASTExpression {
                     name,
                     (i + 1),
                     arguments.size()
-                ).set<"location"_tag>(location)
+                )
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
             );
         }
 
@@ -98,16 +101,27 @@ struct ASTName : ASTExpression {
                 errorMessage += previousErrorMessage + "\n";
             }
 
-            if (e.has<"location"_tag>()) {
-                let location = static_cast<Location>(e.get<"location"_tag>());
-                errorMessage += location.string() + ": ";
+            if (e.has<"line"_tag>()) {
+                if (e.has<"url"_tag>()) {
+                    let url = static_cast<URL>(e.get<"url"_tag>());
+                    errorMessage += url.string() + ":";
+                }
+
+                let line = static_cast<size_t>(e.get<"line"_tag>());
+                errorMessage += std::to_string(line) + ":";
+
+                if (e.has<"column"_tag>()) {
+                    let column = static_cast<size_t>(e.get<"column"_tag>());
+                    errorMessage += std::to_string(column) + ":";
+                }
+                errorMessage += " ";
             }
 
             errorMessage += e.message();
             errorMessage += ".";
 
             TTAURI_THROW(invalid_operation_error("Could not include file '{}'", path)
-                .set<"location"_tag>(location)
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
                 .set<"previous_msg"_tag>(errorMessage)
             );
         }
@@ -150,7 +164,8 @@ struct ASTName : ASTExpression {
                         "Expecting relative path argument to function '{0}' got '{1}'",
                         name,
                         path
-                    ).set<"location"_tag>(location)
+                    )
+                    .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
                 );
             }
         }
@@ -174,7 +189,8 @@ struct ASTName : ASTExpression {
                 invalid_operation_error(
                     "Unknown function '{0}'",
                     name
-                ).set<"location"_tag>(location)
+                )
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
             );
         }
     }

@@ -36,9 +36,20 @@ struct Config {
                 _errorMessage += previousErrorMessage + "\n";
             }
 
-            if (e.has<"location"_tag>()) {
-                let location = static_cast<Location>(e.get<"location"_tag>());
-                _errorMessage += location.string() + ": ";
+            if (e.has<"line"_tag>()) {
+                if (e.has<"url"_tag>()) {
+                    let url = static_cast<URL>(e.get<"url"_tag>());
+                    _errorMessage += url.string() + ":";
+                }
+
+                let line = static_cast<size_t>(e.get<"line"_tag>());
+                _errorMessage += std::to_string(line) + ":";
+
+                if (e.has<"column"_tag>()) {
+                    let column = static_cast<size_t>(e.get<"column"_tag>());
+                    _errorMessage += std::to_string(column) + ":";
+                }
+                _errorMessage += " ";
             }
 
             _errorMessage += e.message();

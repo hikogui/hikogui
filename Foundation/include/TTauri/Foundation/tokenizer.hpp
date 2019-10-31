@@ -428,6 +428,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateOperatorThirdCharTrans
         } else {
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
+            transition.name = tokenizer_name_t::Literal;
         }
 
         r[i] = transition;
@@ -466,6 +467,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateOperatorSecondCharTran
         default:
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
+            transition.name = tokenizer_name_t::Literal;
         }
 
         r[i] = transition;
@@ -734,7 +736,7 @@ struct tokenizer {
         auto _index = index;
         auto transition = tokenizer_transition_t{};
         while (_index != end) {
-            transition = tokenizer_impl::transitionTable[static_cast<size_t>(_state) | *_index];
+            transition = tokenizer_impl::transitionTable[static_cast<uint16_t>(_state) | *_index];
 
             switch (static_cast<uint8_t>(transition.action())) {
             case 0x0: executeAction<0x0>(capture, captureIndex, _index, _state, transition); break;
@@ -760,9 +762,12 @@ struct tokenizer {
         if (_state == tokenizer_state_t::Initial) {
             // Mark the current offset as the position of the end-token.
             captureIndex = _index;
+            capture.clear();
         }
 
         transition = tokenizer_impl::transitionTable[static_cast<uint16_t>(_state)];
+        _state = transition.next();
+
 found:
 
         state = _state;
@@ -786,8 +791,20 @@ found:
     }
 };
 
-bool operator==(tokenizer::token_t const &lhs, tokenizer::token_t const &rhs) noexcept {
+force_inline bool operator==(tokenizer::token_t const &lhs, tokenizer::token_t const &rhs) noexcept {
     return (lhs.name == rhs.name) && (lhs.value == rhs.value) && (lhs.index == rhs.index);
+}
+
+force_inline bool operator==(tokenizer::token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+    return lhs.name == rhs;
+}
+
+force_inline bool operator!=(tokenizer::token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+    return !(lhs == rhs);
+}
+
+force_inline bool operator==(tokenizer::token_t const &lhs, const char *rhs) noexcept {
+    return lhs.value == rhs;
 }
 
 }

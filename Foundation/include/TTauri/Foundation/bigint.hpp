@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/math.hpp"
+#include "TTauri/Foundation/int_carry.hpp"
 #include <fmt/format.h>
 #include <type_traits>
 #include <ostream>

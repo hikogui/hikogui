@@ -28,7 +28,7 @@ struct ASTString : ASTExpression {
             lv = std::move(other);
             return lv;
         } catch (error &e) {
-            e.set<"location"_tag>(location);
+            e.set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column);
             throw;
         }
     }

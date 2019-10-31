@@ -79,7 +79,7 @@ struct ASTArray : ASTExpression {
 
         } else {
             TTAURI_THROW(invalid_operation_error("syntax error, expected 0 or 1 expression in section statement")
-                .set<"location"_tag>(location)
+                .set<"url"_tag>(*location.file).set<"line"_tag>(location.line).set<"column"_tag>(location.column)
             );
         }
     }

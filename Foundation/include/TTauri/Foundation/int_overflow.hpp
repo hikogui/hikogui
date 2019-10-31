@@ -85,13 +85,18 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
     if constexpr (compiler == Compiler::gcc || compiler == Compiler::clang) {
         return __builtin_mul_overflow(lhs, rhs, r);
 
-    } else if constexpr (std::is_signed_v<T> && compiler == Compiler::MSVC && sizeof(T) == sizeof(int64_t)) {
+    } else if constexpr (std::is_signed_v<T> && compiler == Compiler::MSVC && sizeof(T) == sizeof(long long)) {
         // IMUL, SAR, XOR, JNE
-        long long hi;
+        long long hi = 0;
         *r = _mul128(lhs, rhs, &hi);
 
         // Sign bit in *r should match all bits in hi.
         return (hi ^ (*r >> 63)) != 0;
+
+    } else if constexpr (std::is_unsigned_v<T> && compiler == Compiler::MSVC && sizeof(T) == sizeof(unsigned long long)) {
+        unsigned long long hi = 0;
+        *r = _umul128(lhs, rhs, &hi);
+        return hi > 0; 
 
     } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>)/2)) {
         // MOVSX, MOVSX, IMUL, MOVSX, CMP, JNE
