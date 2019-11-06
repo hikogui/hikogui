@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/os_detect.hpp"
 #include "TTauri/Foundation/type_traits.hpp"
 #include <type_traits>
+#include <cmath>
 
 #if PROCESSOR == CPU_X64
 #include <immintrin.h>
@@ -22,11 +23,17 @@ namespace TTauri {
 template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)
 {
-    static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "convert_overflow() requires integral argument and return type.");
+    static_assert(std::is_integral_v<U>, "convert_overflow() requires integral return type.");
+    static_assert(std::is_integral_v<T> || std::is_floating_point_v<T>, "convert_overflow() requires float or integral argument type.");
 
-    *r = static_cast<U>(x);
-    // Optimized away when is_same_v<T,U>
-    return *r != x;
+    if constexpr (std::is_integral_v<T>) {
+        // Optimized away when is_same_v<T,U>
+        *r = static_cast<U>(x);
+        return *r != x;
+    } else {
+        *r = static_cast<U>(std::llround(x));
+        return x < std::numeric_limits<U>::min() || x > std::numeric_limits<U>::max(); 
+    }
 }
 
 template<typename T>

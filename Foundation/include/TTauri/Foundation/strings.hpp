@@ -533,10 +533,10 @@ inline std::u32string splitLigature(char32_t x) noexcept
 /*! Return line and column count at the end iterator.
  */
 template<typename It>
-inline std::pair<size_t,size_t> count_line_and_columns(It begin, It const end)
+inline std::pair<int,int> count_line_and_columns(It begin, It const end)
 {
-    size_t line = 1;
-    size_t column = 1;
+    int line = 1;
+    int column = 1;
 
     for (; begin != end; begin++) {
         switch (*begin) {

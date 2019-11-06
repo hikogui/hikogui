@@ -5,6 +5,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/small_vector.hpp"
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/fixed.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -14,7 +15,7 @@
 namespace TTauri {
 
 enum class tokenizer_name_t : uint8_t {
-    ErrorNotAssigned,
+    NotAssigned,
     ErrorInvalidCharacter,
     ErrorEOTInBlockComment,
     ErrorEOTInString,
@@ -28,6 +29,24 @@ enum class tokenizer_name_t : uint8_t {
     Literal,                // Operator, or bracket, or other literal text.
     End
 };
+
+inline std::string to_string(tokenizer_name_t name) {
+    switch (name) {
+    case tokenizer_name_t::NotAssigned: return "NotAssigned";
+    case tokenizer_name_t::ErrorInvalidCharacter: return "ErrorInvalidCharacter";
+    case tokenizer_name_t::ErrorEOTInBlockComment: return "ErrorEOTInBlockComment";
+    case tokenizer_name_t::ErrorEOTInString: return "ErrorEOTInString";
+    case tokenizer_name_t::ErrorLFInString: return "ErrorLFInString";
+    case tokenizer_name_t::Operator: return "Operator";
+    case tokenizer_name_t::Name: return "Name";
+    case tokenizer_name_t::StringLiteral: return "StringLiteral";
+    case tokenizer_name_t::IntegerLiteral: return "IntegerLiteral";
+    case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
+    case tokenizer_name_t::Literal: return "Literal";
+    case tokenizer_name_t::End: return "End";
+    default: no_default;
+    }
+}
 
 enum class tokenizer_state_t: uint16_t {
     Initial = 0x0000,
@@ -78,7 +97,7 @@ struct tokenizer_transition_t {
         char c = '\0',
         tokenizer_state_t next = tokenizer_state_t::Initial,
         tokenizer_action_t action = tokenizer_action_t::Idle,
-        tokenizer_name_t name = tokenizer_name_t::ErrorNotAssigned
+        tokenizer_name_t name = tokenizer_name_t::NotAssigned
     ) :
         actionAndNextState(static_cast<uint16_t>(next) | static_cast<uint16_t>(action)),
         c(c),
@@ -684,9 +703,36 @@ struct tokenizer {
     using iterator = typename std::string_view::iterator;
 
     struct token_t {
-        tokenizer_name_t name;
+        tokenizer_name_t name = tokenizer_name_t::NotAssigned;
         std::string value;
         iterator index;
+
+        operator bool () const noexcept {
+            return name != tokenizer_name_t::NotAssigned;
+        }
+
+        explicit operator int () const noexcept {
+            return std::stoi(value);
+        }
+
+        explicit operator std::string () const noexcept {
+            return value;
+        }
+
+        template<typename T, int M>
+        explicit operator fixed<T,M> () const noexcept {
+            return fixed<T,M>{value};
+        }
+
+        std::string repr() const noexcept {
+            std::string r = to_string(name);
+            if (value.size() > 0) {
+                r += '\"';
+                r += value;
+                r += '\"';
+            }
+            return r;
+        }
     };
 
     tokenizer_state_t state;

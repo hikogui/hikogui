@@ -7,6 +7,8 @@
 
 namespace TTauri {
 
+#if !defined(NDEBUG)
+
 #if COMPILER == CC_GCC || COMPILER == CC_CLANG
 #if PROCESSOR == CPU_X64
 #define debugger_break __asm__("int $3")
@@ -17,15 +19,15 @@ namespace TTauri {
 #endif
 
 #elif OPERATING_SYSTEM == OS_WINDOWS
-#if !defined(NDEBUG)
 void _debugger_break();
 #define debugger_break _debugger_break()
-#else
-#define debugger_break std::terminate()
-#endif
 
 #else
 #error "Not implemented"
+#endif
+
+#else
+#define debugger_break
 #endif
 
 /*! Check if the program is being debugged.

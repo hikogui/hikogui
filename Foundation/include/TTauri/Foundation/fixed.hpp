@@ -5,16 +5,16 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/string_tag.hpp"
+#include "TTauri/Foundation/safe_int.hpp"
 #include <type_traits>
 #include <limits>
 
 namespace TTauri {
 
-template<typename T, int M, string_tag Tag=0>
+template<typename T, int M>
 struct fixed {
     using value_type = T;
-    constexpr int multiplier = M;
-    constexpr string_tag tag = Tag;
+    static constexpr int multiplier = M;
 
     T value;
 
@@ -25,52 +25,68 @@ struct fixed {
     fixed(fixed &&) = default;
     fixed &operator=(fixed &&) = default;
 
-    template<typename O, std::enabled_if_t<std::is_float_v<O>, int> = 0>  
-    explicit constexpr fixed(O &other) noexcept :
+    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
+    explicit constexpr fixed(O other) noexcept :
         value(static_cast<T>(other * M)) {
         required_assert(
-            other >= (std::numeric_limits<T>::min() / M)
+            other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
     }
 
-    template<typename O, std::enabled_if_t<std::is_integral_v<O>, int> = 0>
-    explicit constexpr fixed(O const &other) noexcept :
+    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
+    explicit constexpr fixed(O other) noexcept :
         value(static_cast<T>(other) * M) {
         required_assert(
-            other >= (std::numeric_limits<T>::min() / M)
+            other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
     }
 
-    template<typename O, std::enabled_if_t<std::is_float_v<O>, int> = 0>  
-    explicit constexpr fixed &operator=(long double const &other) noexcept {
+    explicit fixed(std::string const &other) :
+        fixed(stod(other)) {}
+
+    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
+    constexpr fixed &operator=(O other) noexcept {
         value = static_cast<T>(other * M);
-        return *this;
         required_assert(
-            other >= (std::numeric_limits<T>::min() / M)
+            other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
+        return *this;
     }
 
-    template<typename O, std::enabled_if_t<std::is_integral_v<O>, int> = 0>
-    explicit constexpr fixed &operator=(O const &other) noexcept {
+    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
+    constexpr fixed &operator=(O other) noexcept {
         value = static_cast<T>(other) * M;
-        return *this;
         required_assert(
-            other >= (std::numeric_limits<T>::min() / M)
+            other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
+        return *this;
     }
 
-    template<typename O, std::enabled_if_t<std::is_float_v<O>, int> = 0>  
+    fixed &operator=(std::string const &other) {
+        value = static_cast<T>(stod(other) * M);
+        required_assert(
+            other >= (std::numeric_limits<T>::min() / M) &&
+            other <= (std::numeric_limits<T>::max() / M)
+        );
+        return *this;
+    }
+
+    template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
     explicit operator O () const noexcept {
         return static_cast<O>(value) / M;
     }
 
-    template<typename O, std::enabled_if_t<std::is_integral_v<O>, int> = 0>
+    template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
     explicit operator O () const noexcept {
         return static_cast<O>(value / M);
+    }
+
+    std::string string() const noexcept {
+        return fmt::format("{}", static_cast<double>(value) / M);
     }
     
     static fixed fromValue(T value) noexcept {
@@ -80,48 +96,38 @@ struct fixed {
     }
 };
 
+template<typename T, int M> inline bool operator==(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value == rhs.value; }
+template<typename T, int M> inline bool operator!=(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value != rhs.value; }
+template<typename T, int M> inline bool operator<(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value < rhs.value; }
+template<typename T, int M> inline bool operator>(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value > rhs.value; }
+template<typename T, int M> inline bool operator<=(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value <= rhs.value; }
+template<typename T, int M> inline bool operator>=(fixed<T,M> const &lhs, fixed<T,M> const &rhs) { return lhs.value >= rhs.value; }
 
-inline bool operator==(fixed const &lhs, fixed const &rhs) { return lhs.value == rhs.value; }
-inline bool operator!=(fixed const &lhs, fixed const &rhs) { return lhs.value != rhs.value; }
-inline bool operator<(fixed const &lhs, fixed const &rhs) { return lhs.value < rhs.value; }
-inline bool operator>(fixed const &lhs, fixed const &rhs) { return lhs.value > rhs.value; }
-inline bool operator<=(fixed const &lhs, fixed const &rhs) { return lhs.value <= rhs.value; }
-inline bool operator>=(fixed const &lhs, fixed const &rhs) { return lhs.value >= rhs.value; }
-
-fixed operator+(fixed const &lhs, fixed const &rhs)
+template<typename T, int M> 
+fixed<T,M> operator+(fixed<T,M> const &lhs, fixed<T,M> const &rhs)
 {
-    return fixed::fromValue(lhs.value + rhs.value);
+    return fixed<T,M>::fromValue(lhs.value + rhs.value);
 }
 
-fixed operator-(fixed const &lhs, fixed const &rhs)
+template<typename T, int M>
+fixed<T,M> operator-(fixed<T,M> const &lhs, fixed<T,M> const &rhs)
 {
-    return fixed::fromValue(lhs.value - rhs.value);
+    return fixed<T,M>::fromValue(lhs.value - rhs.value);
 }
 
-fixed operator*(fixed const &lhs, fixed const &rhs)
+template<typename T, int M>
+std::string to_string(fixed<T,M> const v)
 {
-    return fixed::fromValue((lhs.value * rhs.value) / 
+    return rhs.string();
 }
 
-#define BIOPCAST(x)\
-    template<typename O> inline fixed operator x (fixed const &lhs, O const &rhs) { return lhs x fixed{rhs}; }\
-    template<typename O> inline fixed operator x (O const &lhs, fixed const &rhs) { return fixed{lhs} x rhs; }
+template<typename T, int M>
+std::ostream &operator<<(std::ostream &lhs, fixed<T,M> const &rhs)
+{
+    return lhs << rhs.string();
+}
 
-BIOPCAST(+)
-BIOPCAST(-)
+using money = fixed<safe_int<int64_t>,100>;
 
-#define BICMPCAST(x)\
-    template<typename O> inline bool operator x (fixed const &lhs, O const &rhs) { return lhs x fixed{rhs}; }\
-    template<typename O> inline bool operator x (O const &lhs, fixed const &rhs) { return fixed{lhs} x rhs; }
-
-BICMPCAST(==)
-BICMPCAST(!=)
-BICMPCAST(<)
-BICMPCAST(>)
-BICMPCAST(<=)
-BICMPCAST(>=)
-
-#undef BICMPCAST
-#undef BIOPCAST
 }
 

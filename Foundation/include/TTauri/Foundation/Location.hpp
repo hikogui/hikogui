@@ -9,7 +9,7 @@
 #include <memory>
 #include <iostream>
 
-namespace TTauri::Config {
+namespace TTauri {
 
 /*! Location inside a configuration file.
  */

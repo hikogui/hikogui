@@ -55,18 +55,30 @@ glm::vec2 PathString::capHeight() const noexcept
 
 glm::vec2 PathString::getStartPosition() const noexcept
 {
-    let v =
-        (alignment == HorizontalAlignment::Left) ? glm::vec2{0.0, 0.0} :
-        (alignment == HorizontalAlignment::Right) ? -advance() :
-        (alignment == HorizontalAlignment::Center) ? advance() * -0.5f :
-        (no_default, glm::vec2{});
+    glm::vec2 v;
 
-    return
-        (alignment == VerticalAlignment::Base) ? v :
-        (alignment == VerticalAlignment::Bottom) ? v - descender() :
-        (alignment == VerticalAlignment::Top) ? v - ascender() :
-        (alignment == VerticalAlignment::Middle) ? v - capHeight() * 0.5f :
-        (no_default, glm::vec2{});
+    if (alignment == HorizontalAlignment::Left) {
+        v = glm::vec2{0.0, 0.0};
+    } else if (alignment == HorizontalAlignment::Right) {
+        v = -advance();
+    } else if (alignment == HorizontalAlignment::Center) {
+        v = advance() * -0.5f;
+    } else {
+        no_default;
+    }
+
+    if (alignment == VerticalAlignment::Base) {
+        // Default.
+    } else if (alignment == VerticalAlignment::Bottom) {
+        v -= descender();
+    } else if (alignment == VerticalAlignment::Top) {
+        v -= ascender();
+    } else if (alignment == VerticalAlignment::Middle) {
+        v -= capHeight() * 0.5f;
+    } else {
+        no_default;
+    }
+    return v;
 }
 
 glm::vec2 PathString::cursorAdvance(int graphemeIndex) const noexcept
