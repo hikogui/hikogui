@@ -123,6 +123,18 @@ bool URL::isRelative() const noexcept
     return !isAbsolute();
 }
 
+bool URL::containsWildCard() const noexcept
+{
+    for (let &segment: pathSegments()) {
+        for (let c: segment) {
+            if (c == '*' || c == '?') {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
     let this_parts = parse_url(value);
@@ -136,7 +148,27 @@ URL URL::urlByAppendingPath(std::string_view const other) const noexcept
     return urlByAppendingPath(URL::urlFromPath(other));
 }
 
+URL URL::urlByAppendingPath(std::string const &other) const noexcept
+{
+    return urlByAppendingPath(URL::urlFromPath(other));
+}
+
+URL URL::urlByAppendingPath(char const *other) const noexcept
+{
+    return urlByAppendingPath(URL::urlFromPath(other));
+}
+
 URL URL::urlByAppendingPath(std::wstring_view const other) const noexcept
+{
+    return urlByAppendingPath(URL::urlFromWPath(other));
+}
+
+URL URL::urlByAppendingPath(std::wstring const &other) const noexcept
+{
+    return urlByAppendingPath(URL::urlFromWPath(other));
+}
+
+URL URL::urlByAppendingPath(wchar_t const *other) const noexcept
 {
     return urlByAppendingPath(URL::urlFromWPath(other));
 }
@@ -148,6 +180,65 @@ URL URL::urlByRemovingFilename() const noexcept
         parts.segments.pop_back();
     }
     return URL(parts);
+}
+
+static bool containsWildcards(std::string const &s)
+{
+    for (let c: s) {
+        if (c == '*' || c == '?') {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+static bool urlMatchGlob(URL url, URL glob, bool exactMatch) noexcept
+{
+    let urlSegments = url.pathSegments();
+    let globSegments = glob.pathSegments();
+
+    size_t globIndex = 0;
+    for (; globIndex < globSegments.size(); globIndex++) { 
+
+    }
+
+    return !exactMatch || globIndex == globSegments.size();
+}
+
+static void urlsByRecursiveScanning(URL base, URL glob, std::vector<URL> &result) noexcept
+{
+    for (let &filename: base.filenamesByScanningDirectory()) {
+        if (filename.back() == '/') {
+            let directory = std::string_view(filename.data(), filename.size() - 1);
+            let recurseURL = base.urlByAppendingPath(directory);
+            if (urlMatchGlob(recurseURL, glob, false)) {
+                urlsByRecursiveScanning(recurseURL, glob, result);
+            }
+
+        } else {
+            let finalURL = base.urlByAppendingPath(filename);
+            if (urlMatchGlob(finalURL, glob, true)) {
+                result.push_back(finalURL);
+            }
+        }
+    }
+}
+
+static URL urlBaseFromGlob(URL glob) noexcept
+{
+    auto base = glob;
+    while (base.containsWildCard()) {
+        base = base.urlByRemovingFilename();
+    }
+    return base;
+}
+
+std::vector<URL> URL::urlsByScanningWithGlobPattern() const noexcept
+{
+    std::vector<URL> urls;
+    urlsByRecursiveScanning(urlBaseFromGlob(*this), *this, urls);
+    return urls;
 }
 
 URL URL::urlFromPath(std::string_view const path) noexcept

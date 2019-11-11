@@ -57,4 +57,34 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     return base_localAppData / Foundation_globals->applicationName;
 }
 
+std::vector<std::string> URL::filenamesByScanningDirectory() const noexcept
+{
+    std::vector<std::string> filenames;
+
+    auto glob = urlByAppendingPath("*");
+
+    WIN32_FIND_DATAW fileData;
+
+    auto findHandle = FindFirstFileW(glob.nativeWPath().data(), &fileData);
+    if (findHandle == INVALID_HANDLE_VALUE) {
+        return filenames;
+    }
+
+    do {
+        auto filename = translateString<std::string>(fileData.cFileName);
+
+        if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0) {
+            filename += '/';
+        } else if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) > 0) {
+            continue;
+        }
+
+        filenames.push_back(filename);
+
+    } while (FindNextFileW(findHandle, &fileData));
+
+    FindClose(findHandle);
+    return filenames;
+}
+
 }

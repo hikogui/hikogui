@@ -85,14 +85,36 @@ public:
 
     bool isAbsolute() const noexcept;
     bool isRelative() const noexcept;
+    bool containsWildCard() const noexcept;
 
     URL urlByAppendingPath(URL const &other) const noexcept;
 
     URL urlByAppendingPath(std::string_view const other) const noexcept;
+    URL urlByAppendingPath(std::string const &other) const noexcept;
+    URL urlByAppendingPath(char const *other) const noexcept;
 
     URL urlByAppendingPath(std::wstring_view const other) const noexcept;
+    URL urlByAppendingPath(std::wstring const &other) const noexcept;
+    URL urlByAppendingPath(wchar_t const *other) const noexcept;
 
     URL urlByRemovingFilename() const noexcept;
+
+    /*! Return file names in the directory pointed by the url.
+     * \return A list of filenames or subdirectories (ending in '/') in the directory.
+     */
+    std::vector<std::string> filenamesByScanningDirectory() const noexcept;
+
+    /*! Return new URLs by finding matching files.
+     * Currently only works for file: scheme urls.
+     *
+     * The following wildcards are supported:
+     *  - '*' Replaced by 0 or more characters.
+     *  - '?' Replaced by 1 character.
+     *  - '**' Replaced by 0 or more nested directories.
+     *  - '[abcd]' Replaced by a single character from the set "abcd".
+     *  - '{foo,bar}' Replaced by a string "foo" or "bar".
+     */
+    std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
 
     static URL urlFromPath(std::string_view const path) noexcept;
 
