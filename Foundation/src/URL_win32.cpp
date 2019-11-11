@@ -61,17 +61,17 @@ std::vector<std::string> URL::filenamesByScanningDirectory() const noexcept
 {
     std::vector<std::string> filenames;
 
-    auto glob = urlByAppendingPath("*");
+    let glob = urlByAppendingPath("*");
 
     WIN32_FIND_DATAW fileData;
 
-    auto findHandle = FindFirstFileW(glob.nativeWPath().data(), &fileData);
+    let findHandle = FindFirstFileW(glob.nativeWPath().data(), &fileData);
     if (findHandle == INVALID_HANDLE_VALUE) {
         return filenames;
     }
 
     do {
-        auto filename = translateString<std::string>(fileData.cFileName);
+        auto filename = translateString<std::string>(std::wstring(fileData.cFileName));
 
         if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0) {
             filename += '/';

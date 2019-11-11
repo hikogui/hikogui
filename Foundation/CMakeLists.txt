@@ -30,6 +30,7 @@ set(TTauri_Foundation_srcs
     src/StaticResourceView.cpp
     src/UnicodeData.cpp
     src/base93.cpp
+    src/tokenizer.cpp
     src/BezierCurve.cpp
     src/Font.cpp
     src/Path.cpp
@@ -90,6 +91,7 @@ set(TTauri_Foundation_tests
     tests/Path_tests.cpp
     tests/PixelMap_tests.cpp
     tests/tokenizer_tests.cpp
+    tests/glob_tests.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")
@@ -140,6 +142,13 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     target_compile_options(TTauri_Foundation PUBLIC -mtune=skylake)
 elseif (MSVC)
     target_compile_options(TTauri_Foundation PUBLIC -arch:AVX)
+endif()
+
+# Some of our constexpr take a while to calculate.
+if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+    target_compile_options(TTauri_Foundation PUBLIC -fconstexpr-steps=100000000)
+elseif (MSVC)
+    target_compile_options(TTauri_Foundation PUBLIC -constexpr:steps 100000000)
 endif()
 
 if (APPLE)
