@@ -25,6 +25,7 @@ enum class tokenizer_name_t : uint8_t {
     Name,
     StringLiteral,
     IntegerLiteral,
+    DashedIntegerLiteral,
     FloatLiteral,
     Literal,                // Operator, or bracket, or other literal text.
     End
@@ -55,18 +56,19 @@ enum class tokenizer_state_t: uint16_t {
     Zero = 0x0300,                   // Could be part of a number with a base.
     Dot = 0x0400,                    // Could be the start of a floating point number, or an operator.
     Number = 0x0500,                 // Could be some kind of number without a base.
-    Float = 0x0600,
-    String = 0x0700,
-    StringEscape = 0x0800,
-    Slash = 0x0900,                  // Could be the start of a LineComment, BlockComment, or an operator.
-    LineComment = 0x0a00,
-    BlockComment = 0x0b00,
-    BlockCommentMaybeEnd = 0x0c00,   // Found a '*' possibly end of comment.
-    OperatorFirstChar = 0x0d00,
-    OperatorSecondChar = 0x0e00,
-    OperatorThirdChar = 0x0f00,
+    DashedInteger = 0x0600,          // Could be an integer with dashes, like a date.
+    Float = 0x0700,
+    String = 0x0800,
+    StringEscape = 0x0900,
+    Slash = 0x0a00,                  // Could be the start of a LineComment, BlockComment, or an operator.
+    LineComment = 0x0b00,
+    BlockComment = 0x0c00,
+    BlockCommentMaybeEnd = 0x0d00,   // Found a '*' possibly end of comment.
+    OperatorFirstChar = 0x0e00,
+    OperatorSecondChar = 0x0f00,
+    OperatorThirdChar = 0x1000,
 
-    Sentinal = 0x1000
+    Sentinal = 0x1100
 };
 constexpr size_t NR_TOKENIZER_STATE_VALUES = static_cast<size_t>(tokenizer_state_t::Sentinal) >> 8;
 
@@ -138,7 +140,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateNameTransitionTable()
         let c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isNameNext(c)) {
+        if (isNameNext(c) || c == '-') {
             transition.setNext(tokenizer_state_t::Name);
             transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
         } else {
@@ -223,19 +225,44 @@ constexpr std::array<tokenizer_transition_t,256> calculateNumberTransitionTable(
         let c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c)) {
+        if (isDigit(c) || c == '_' | c == '\'') {
             transition.setNext(tokenizer_state_t::Number);
             transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
         } else if (c == '.') {
             transition.setNext(tokenizer_state_t::Float);
             transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
-        } else if (c == '_' || c == '\'') {
-            transition.setNext(tokenizer_state_t::Number);
-            transition.setAction(tokenizer_action_t::Read);
+        } else if (c == '-') {
+            transition.setNext(tokenizer_state_t::DashedInteger);
+            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
         } else {
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
             transition.name = tokenizer_name_t::IntegerLiteral;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateDashedIntegerTransitionTable()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < 256; i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (isDigit(c) || c == '_' | c == '\'') {
+            transition.setNext(tokenizer_state_t::DashedInteger);
+            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+        } else if (c == '-') {
+            transition.setNext(tokenizer_state_t::DashedInteger);
+            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+        } else {
+            transition.setNext(tokenizer_state_t::Initial);
+            transition.setAction(tokenizer_action_t::Found);
+            transition.name = tokenizer_name_t::DashedIntegerLiteral;
         }
 
         r[i] = transition;
@@ -646,6 +673,9 @@ constexpr transitionTable_t calculateTransitionTable()
     i = static_cast<size_t>(tokenizer_state_t::Number);
     for (let t: calculateNumberTransitionTable()) { r[i++] = t; }
 
+    i = static_cast<size_t>(tokenizer_state_t::DashedInteger);
+    for (let t: calculateDashedIntegerTransitionTable()) { r[i++] = t; }
+
     i = static_cast<size_t>(tokenizer_state_t::Float);
     for (let t: calculateFloatTransitionTable()) { r[i++] = t; }
 
@@ -722,6 +752,18 @@ struct tokenizer {
         template<typename T, int M>
         explicit operator fixed<T,M> () const noexcept {
             return fixed<T,M>{value};
+        }
+
+        explicit operator date::year_month_day () const noexcept {
+            let parts = split(value, "-");
+            if (parts.size() != 3) {
+                TTAURI_THROW(parse_error("Expect date to be in the format YYYY-MM-DD"));
+            }
+
+            let year = date::year{stoi(parts[0])};
+            let month = date::year{stoi(parts[1])};
+            let day = date::year{stoi(parts[2])};
+            return {year, month, day};
         }
 
         std::string repr() const noexcept {
