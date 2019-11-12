@@ -80,5 +80,20 @@ void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
     }
 }
 
+/*! Check if the 
+ */
+template<typename InputIt1, typename InputIt2>
+bool starts_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
+{
+    let [haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
+    return needle_result == needle_last;
+}
+
+template<typename Container1, typename Container2>
+bool starts_with(Container1 haystack, Container2 needle) noexcept
+{
+    return starts_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+}
+
 }
 
