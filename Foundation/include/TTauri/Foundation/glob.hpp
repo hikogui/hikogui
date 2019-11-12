@@ -181,4 +181,77 @@ std::vector<glob_token_t> parseGlobPattern(std::string_view glob)
     }
 }
 
+enum class glob_match_result_t {
+    No,
+    Partial,
+    Match
+};
+
+using glob_iterator = std::vector<glob_token_t>::iterator;
+
+glob_match_result_t matchGlob(glob_iterator index, glob_iterator end, std::string_view str)
+{
+    if (begin == end && str.size() == 0) {
+        return glob_match_result_t::Match;
+    } else if (str.size() == 0) {
+        return glob_match_result_t::Partial;
+    } else if (begin == end) {
+        return glob_match_result_t::No;
+    }
+
+#define MATCH_GLOB_CHECK_RESULT\
+    switch (r) {\
+    case glob_match_result_t::No: break;\
+    case glob_match_result_t::Match: return r;\
+    case glob_match_result_t::Partial: result = r; break;\
+    default: no_default;\
+    }
+
+    auto result = glob_match_result::No;
+    switch (index->name) {
+    case glob_token_name_t::Choice:
+        for (let value: index->values) {
+            if (starts_with(str, value)) {
+                let r = matchGlob(index+1, end, str.removePrefix(value.size()));
+                MATCH_GLOB_CHECK_RESULT
+            }
+        }
+        return result;
+
+    case glob_token_name_t::AnyCharacter:
+        return matchGlob(index+1, end, str.removePrefix(1));
+
+    case glob_token_name_t::AnyString:
+        // Loop through each character in the string, including the end.
+        for (size_t i = 0; i <= str.size(); i++) {
+            let r = matchGlob(index+1, end, str.removePrefix(i));
+            MATCH_GLOB_CHECK_RESULT
+
+            // Don't continue beyond a slash.
+            if (i < str.size() && str[i] == '/') {
+                break;
+            }
+        }
+        return result;
+
+    case glob_token_name_t::AnyDirectory:
+        // Loop through each character in the string, including the end.
+        for (size_t i = 0; i <= str.size(); i++) {
+            let r = matchGlob(index+1, end, str.removePrefix(i));
+            MATCH_GLOB_CHECK_RESULT
+        }
+        return result;
+
+    default:
+        no_default;
+    }
+#undef MATCH_GLOB_CHECK_RESULT
+}
+
+glob_match_result_t matchGlob(std::vector<glob_token_t> glob, std::string_view str)
+{
+    return matchGlob(glob.begin(), glob.end(), str);
+}
+
+
 }
