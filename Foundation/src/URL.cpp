@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/url_parser.hpp"
+#include "TTauri/Foundation/glob.hpp"
 #include <regex>
 
 namespace TTauri {
@@ -123,18 +124,6 @@ bool URL::isRelative() const noexcept
     return !isAbsolute();
 }
 
-bool URL::containsWildCard() const noexcept
-{
-    for (let &segment: pathSegments()) {
-        for (let c: segment) {
-            if (c == '*' || c == '?') {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
     let this_parts = parse_url(value);
@@ -182,17 +171,6 @@ URL URL::urlByRemovingFilename() const noexcept
     return URL(parts);
 }
 
-static bool containsWildcards(std::string const &s)
-{
-    for (let c: s) {
-        if (c == '*' || c == '?') {
-            return true;
-        }
-    }
-    return false;
-}
-
-
 static bool urlMatchGlob(URL url, URL glob, bool exactMatch) noexcept
 {
     let urlSegments = url.pathSegments();
@@ -206,38 +184,34 @@ static bool urlMatchGlob(URL url, URL glob, bool exactMatch) noexcept
     return !exactMatch || globIndex == globSegments.size();
 }
 
-static void urlsByRecursiveScanning(URL base, URL glob, std::vector<URL> &result) noexcept
+static void urlsByRecursiveScanning(std::string base, glob_token_list_t const &glob, std::vector<URL> &result) noexcept
 {
-    for (let &filename: base.filenamesByScanningDirectory()) {
+    for (let &filename: URL::filenamesByScanningDirectory(base)) {
         if (filename.back() == '/') {
             let directory = std::string_view(filename.data(), filename.size() - 1);
-            let recurseURL = base.urlByAppendingPath(directory);
-            if (urlMatchGlob(recurseURL, glob, false)) {
-                urlsByRecursiveScanning(recurseURL, glob, result);
+            auto recursePath = base + "/";
+            recursePath += directory;
+
+            if (matchGlob(glob, recursePath) != glob_match_result_t::No) {
+                urlsByRecursiveScanning(recursePath, glob, result);
             }
 
         } else {
-            let finalURL = base.urlByAppendingPath(filename);
-            if (urlMatchGlob(finalURL, glob, true)) {
-                result.push_back(finalURL);
+            let finalPath = base + '/' + filename;
+            if (matchGlob(glob, finalPath) != glob_match_result_t::Match) {
+                result.push_back(URL::urlFromPath(finalPath));
             }
         }
     }
 }
 
-static URL urlBaseFromGlob(URL glob) noexcept
-{
-    auto base = glob;
-    while (base.containsWildCard()) {
-        base = base.urlByRemovingFilename();
-    }
-    return base;
-}
-
 std::vector<URL> URL::urlsByScanningWithGlobPattern() const noexcept
 {
+    let glob = parseGlob(path());
+    let basePath = basePathOfGlob(glob);
+
     std::vector<URL> urls;
-    urlsByRecursiveScanning(urlBaseFromGlob(*this), *this, urls);
+    urlsByRecursiveScanning(basePath, glob, urls);
     return urls;
 }
 
@@ -268,6 +242,23 @@ std::ostream& operator<<(std::ostream& lhs, const URL& rhs)
 {
     lhs << rhs.string();
     return lhs;
+}
+
+std::string URL::nativePathFromPath(std::string_view path) noexcept
+{
+    std::string r = static_cast<std::string>(path);
+
+    for (auto &c: r) {
+        if (c == '/') {
+            c = native_path_seperator;
+        }
+    }
+    return r;
+}
+
+std::wstring URL::nativeWPathFromPath(std::string_view path) noexcept
+{
+    return translateString<std::wstring>(nativePathFromPath(path));
 }
 
 }

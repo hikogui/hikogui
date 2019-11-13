@@ -85,7 +85,6 @@ public:
 
     bool isAbsolute() const noexcept;
     bool isRelative() const noexcept;
-    bool containsWildCard() const noexcept;
 
     URL urlByAppendingPath(URL const &other) const noexcept;
 
@@ -99,10 +98,6 @@ public:
 
     URL urlByRemovingFilename() const noexcept;
 
-    /*! Return file names in the directory pointed by the url.
-     * \return A list of filenames or subdirectories (ending in '/') in the directory.
-     */
-    std::vector<std::string> filenamesByScanningDirectory() const noexcept;
 
     /*! Return new URLs by finding matching files.
      * Currently only works for file: scheme urls.
@@ -116,6 +111,7 @@ public:
      */
     std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
 
+
     static URL urlFromPath(std::string_view const path) noexcept;
 
     static URL urlFromWPath(std::wstring_view const path) noexcept;
@@ -126,6 +122,15 @@ public:
     static URL urlFromExecutableFile() noexcept;
     static URL urlFromApplicationDataDirectory() noexcept;
     static URL urlFromApplicationLogDirectory() noexcept;
+
+    /*! Return file names in the directory pointed by the url.
+    * \param path path to the directory to scan.
+    * \return A list of filenames or subdirectories (ending in '/') in the directory.
+    */
+    static std::vector<std::string> filenamesByScanningDirectory(std::string_view path) noexcept;
+
+    static std::string nativePathFromPath(std::string_view path) noexcept;
+    static std::wstring nativeWPathFromPath(std::string_view path) noexcept;
 
 private:
     friend bool operator==(URL const &lhs, URL const &rhs) noexcept;

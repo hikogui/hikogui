@@ -9,8 +9,6 @@
 
 namespace TTauri {
 
-constexpr char native_path_seperator = (operatingSystem == OperatingSystem::Windows) ? '\\' : '/';
-
 static bool is_urlchar_scheme(char c, size_t i)
 {
     return is_urlchar_alpha(c) || (i > 0 && (is_urlchar_digit(c) || c == '+' || c == '-' || c == '.'));

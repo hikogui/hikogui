@@ -93,7 +93,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs) {
  *    between and including the two given code-units.
  *  - '<code-unit>' Matches the UTF-8 code unit itself.
  */
-glob_token_list_t parseGlob(std::string_view glob)
+inline glob_token_list_t parseGlob(std::string_view glob)
 {
     enum class state_t {
         Idle,

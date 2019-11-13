@@ -57,15 +57,16 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     return base_localAppData / Foundation_globals->applicationName;
 }
 
-std::vector<std::string> URL::filenamesByScanningDirectory() const noexcept
+std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
 {
+    auto searchPath = static_cast<std::string>(path);
+    searchPath += '/';
+    searchPath += '*';
+
     std::vector<std::string> filenames;
-
-    let glob = urlByAppendingPath("*");
-
     WIN32_FIND_DATAW fileData;
 
-    let findHandle = FindFirstFileW(glob.nativeWPath().data(), &fileData);
+    let findHandle = FindFirstFileW(URL::nativeWPathFromPath(searchPath).data(), &fileData);
     if (findHandle == INVALID_HANDLE_VALUE) {
         return filenames;
     }

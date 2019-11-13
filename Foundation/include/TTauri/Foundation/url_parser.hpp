@@ -3,12 +3,15 @@
 
 #pragma once
 
+#include "TTauri/Foundation/os_detect.hpp"
 #include <string_view>
 #include <string>
 #include <vector>
 #include <functional>
 
 namespace TTauri {
+
+constexpr char native_path_seperator = (operatingSystem == OperatingSystem::Windows) ? '\\' : '/';
 
 constexpr bool is_urlchar_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
