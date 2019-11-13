@@ -76,6 +76,7 @@ constexpr bool isOperator(char c) noexcept {
         !isOpenBracket(c) &&
         !isCloseBracket(c);
 }
+
 gsl_suppress3(f.23,bounds.1,bounds.3)
     inline constexpr uint32_t fourcc(char const txt[5]) noexcept
 {

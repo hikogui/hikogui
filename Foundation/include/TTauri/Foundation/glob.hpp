@@ -13,8 +13,11 @@
 namespace TTauri {
 
 enum class glob_token_type_t {
-    Choice,
-    Seperator,
+    String,
+    StringList,
+    CharacterList,
+    InverseCharacterList,
+    Separator,
     AnyString,
     AnyCharacter,
     AnyDirectory
@@ -22,8 +25,11 @@ enum class glob_token_type_t {
 
 inline std::ostream &operator<<(std::ostream &lhs, glob_token_type_t const &rhs) {
     switch (rhs) {
-    case glob_token_type_t::Choice: lhs << "Choice"; break;
-    case glob_token_type_t::Seperator: lhs << "Seperator"; break;
+    case glob_token_type_t::String: lhs << "String"; break;
+    case glob_token_type_t::StringList: lhs << "StringList"; break;
+    case glob_token_type_t::CharacterList: lhs << "CharacterList"; break;
+    case glob_token_type_t::InverseCharacterList: lhs << "InverseCharacterList"; break;
+    case glob_token_type_t::Separator: lhs << "Separator"; break;
     case glob_token_type_t::AnyString: lhs << "AnyString"; break;
     case glob_token_type_t::AnyCharacter: lhs << "AnyCharacter"; break;
     case glob_token_type_t::AnyDirectory: lhs << "AnyDirectory"; break;
@@ -34,22 +40,23 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_type_t const &rhs)
 
 struct glob_token_t {
     glob_token_type_t type;
+    std::string value;
     std::vector<std::string> values;
 
-    glob_token_t(glob_token_type_t type) : type(type), values() {}
-    glob_token_t(glob_token_type_t type, std::string value) : type(type), values({value}) {}
-    glob_token_t(glob_token_type_t type, std::vector<std::string> values) : type(type), values(values) {}
+    glob_token_t(glob_token_type_t type) : type(type), value(), values() {}
+    glob_token_t(glob_token_type_t type, std::string value) : type(type), value(value), values() {}
+    glob_token_t(glob_token_type_t type, std::vector<std::string> values) : type(type), value(), values(values) {}
 };
 
 inline bool operator==(glob_token_t const &lhs, glob_token_t const &rhs) noexcept {
-    return lhs.type == rhs.type && lhs.values == rhs.values;
+    return lhs.type == rhs.type && lhs.value == rhs.value && lhs.values == rhs.values;
 }
 
 inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs) {
     lhs << rhs.type;
-    if (rhs.values.size() == 1) {
-        lhs << ":" << rhs.values[0];
-    } else if (rhs.values.size() > 1) {
+    if (rhs.value.size() > 0) {
+        lhs << ":" << rhs.value;
+    } else if (rhs.values.size() > 0) {
         lhs << ":{";
         for (size_t i = 0; i < rhs.values.size(); i++) {
             if (i != 0) {
@@ -62,6 +69,25 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs) {
     return lhs;
 }
 
+/*! Parse a glob pattern.
+ * A glob pattern is designed to match with paths and uses '/' as path separators.
+ * The following place holders will be handled:
+ *  - '*' matches zero or more characters within a filename or directory name.
+ *  - '**' matches zero or more characters in a path, including path separators.
+ *  - '?' matches one character.
+ *  - '[<range>]' matches one character inside the range.
+ *  - '[^<range>]' matches one character that is not within the range, the path separator '/'
+ *    is implicitly included in <range>.
+ *  - '{<list>}' matches one string in the list. The list is a comma ',' separated list
+ *    of strings.
+ *
+ * The following patterns can be part of a <range>:
+ *  - '-' A dash as the first or last character in <range> matches the '-' character.
+ *  - ']' A close bracket as the first character in <range> matches the ']' character.
+ *  - '<code-unit>-<code-unit>' A dash between two UTF-8 code-units matches all UTF-8 code units
+ *    between and including the two given code-units.
+ *  - '<code-unit>' Matches the UTF-8 code unit itself.
+ */
 std::vector<glob_token_t> parseGlob(std::string_view glob)
 {
     enum class state_t {
@@ -76,7 +102,10 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
 
     std::vector<glob_token_t> r;
     std::string tmpString;
-    std::vector<std::string> tmpChoice;
+    std::vector<std::string> tmpStringList;
+    bool isInverse;
+    bool isFirstCharacter;
+    bool isRange;
 
     auto i = glob.begin();
     while (true) {
@@ -85,10 +114,15 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
         switch (state) {
         case state_t::Idle:
             switch (c) {
-            case '/': r.emplace_back(glob_token_type_t::Seperator); break;
+            case '/': r.emplace_back(glob_token_type_t::Separator); break;
             case '?': r.emplace_back(glob_token_type_t::AnyCharacter); break;
             case '*': state = state_t::FoundStar; break;
-            case '[': state = state_t::FoundBracket; break;
+            case '[':
+                isInverse = false;
+                isFirstCharacter = true;
+                isRange = false;
+                state = state_t::FoundBracket;
+                break;
             case '{': state = state_t::FoundBrace; break;
             case '\\': state = state_t::FoundEscape; break;
             case '\0': return r;
@@ -98,7 +132,7 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
 
         case state_t::FoundText:
             if (c == '/' || c == '?' || c == '*' || c == '[' || c == '{' || c == '\0') {
-                r.emplace_back(glob_token_type_t::Choice, tmpString);
+                r.emplace_back(glob_token_type_t::String, tmpString);
                 tmpString.clear();
                 state = state_t::Idle;
                 continue; // Don't increment the iterator.
@@ -111,7 +145,7 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
 
         case state_t::FoundEscape:
             if (c == '\0') {
-                r.emplace_back(glob_token_type_t::Choice, tmpString);
+                r.emplace_back(glob_token_type_t::String, tmpString);
                 state = state_t::Idle;
                 continue; // Don't increment the iterator.
             } else {
@@ -132,17 +166,69 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
 
         case state_t::FoundBracket:
             switch (c) {
-            case ']':
-                r.emplace_back(glob_token_type_t::Choice, tmpChoice);
-                tmpChoice.clear();
-                state = state_t::Idle;
+            case '^':
+                if (isFirstCharacter) {
+                    isInverse = true;
+                    tmpString += '/';
+                } else {
+                    tmpString += c;
+                }
                 break;
+
+            case ']':
+                if (isFirstCharacter) {
+                    tmpString += c;
+                } else {
+                    if (isRange) {
+                        tmpString += '-';
+                    }
+
+                    if (isInverse) {
+                        r.emplace_back(glob_token_type_t::InverseCharacterList, tmpString);
+                    } else {
+                        r.emplace_back(glob_token_type_t::CharacterList, tmpString);
+                    }
+
+                    tmpString.clear();
+                    state = state_t::Idle;
+                }
+                isFirstCharacter = false;
+                break;
+
+            case '-':
+                if (isFirstCharacter) {
+                    tmpString += '-';
+                } else {
+                    isRange = true;
+                }
+                isFirstCharacter = false;
+                break;
+
             case '\0':
-                r.emplace_back(glob_token_type_t::Choice, tmpChoice);
+                if (isRange) {
+                    tmpString += '-';
+                }
+
+                if (isInverse) {
+                    r.emplace_back(glob_token_type_t::InverseCharacterList, tmpString);
+                } else {
+                    r.emplace_back(glob_token_type_t::CharacterList, tmpString);
+                }
                 state = state_t::Idle;
                 continue; // Don't increment the iterator.
+
             default:
-                tmpChoice.emplace_back(1, c);
+                if (isRange) {
+                    let isFirstCharacter = static_cast<uint8_t>(tmpString.back());
+                    let lastCharacter = static_cast<uint8_t>(c);
+                    for (uint8_t character = isFirstCharacter + 1; character <= lastCharacter; character++) {
+                        tmpString += static_cast<char>(character);
+                    }
+                } else {
+                    tmpString += c;
+                }
+                isRange = false;
+                isFirstCharacter = false;
                 break;
             }
             break;
@@ -150,19 +236,19 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
         case state_t::FoundBrace:
             switch (c) {
             case '}':
-                tmpChoice.push_back(tmpString);
+                tmpStringList.push_back(tmpString);
                 tmpString.clear();
-                r.emplace_back(glob_token_type_t::Choice, tmpChoice);
-                tmpChoice.clear();
+                r.emplace_back(glob_token_type_t::StringList, tmpStringList);
+                tmpStringList.clear();
                 state = state_t::Idle;
                 break;
             case ',':
-                tmpChoice.push_back(tmpString);
+                tmpStringList.push_back(tmpString);
                 tmpString.clear();
                 break;
             case '\0':
-                tmpChoice.push_back(tmpString);
-                r.emplace_back(glob_token_type_t::Choice, tmpChoice);
+                tmpStringList.push_back(tmpString);
+                r.emplace_back(glob_token_type_t::StringList, tmpStringList);
                 state = state_t::Idle;
                 continue; // Don't increment the iterator.
             default:
@@ -196,7 +282,7 @@ inline glob_match_result_t matchGlob(glob_iterator index, glob_iterator end, std
 
     } else if (str.size() == 0) {
         switch (index->type) {
-        case glob_token_type_t::Seperator:
+        case glob_token_type_t::Separator:
             return glob_match_result_t::Partial;
         case glob_token_type_t::AnyString:
         case glob_token_type_t::AnyDirectory:
@@ -218,7 +304,13 @@ inline glob_match_result_t matchGlob(glob_iterator index, glob_iterator end, std
     auto result = glob_match_result_t::No;
 
     switch (index->type) {
-    case glob_token_type_t::Choice:
+    case glob_token_type_t::String:
+        if (starts_with(str, index->value)) {
+            MATCH_GLOB_RECURSE(result, index + 1, end, str.substr(index->value.size()));
+        }
+        return result;
+
+    case glob_token_type_t::StringList:
         for (let value: index->values) {
             if (starts_with(str, value)) {
                 MATCH_GLOB_RECURSE(result, index + 1, end, str.substr(value.size()));
@@ -226,7 +318,19 @@ inline glob_match_result_t matchGlob(glob_iterator index, glob_iterator end, std
         }
         return result;
 
-    case glob_token_type_t::Seperator:
+    case glob_token_type_t::CharacterList:
+        if (index->value.find(str.front()) != std::string::npos) {
+            MATCH_GLOB_RECURSE(result, index + 1, end, str.substr(1));
+        }
+        return result;
+
+    case glob_token_type_t::InverseCharacterList:
+        if (index->value.find(str.front()) == std::string::npos) {
+            MATCH_GLOB_RECURSE(result, index + 1, end, str.substr(1));
+        }
+        return result;
+
+    case glob_token_type_t::Separator:
         if (str.front() == '/') {
             return matchGlob(index+1, end, str.substr(1));
         } else {
