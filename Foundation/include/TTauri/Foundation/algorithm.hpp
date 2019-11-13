@@ -41,17 +41,30 @@ inline void erase_if(T &v, F operation)
     }
 }
 
-template<typename It, typename T>
-constexpr It rfind(It const begin, It const end, T const &value)
+
+template<typename It, typename UnaryPredicate>
+constexpr It rfind_if(It const begin, It const end, UnaryPredicate predicate)
 {
     auto i = end;
     do {
         i--;
-        if (*i == value) {
+        if (predicate(*i)) {
             return i;
         }
     } while (i != begin);
     return end;
+}
+
+template<typename It, typename UnaryPredicate>
+constexpr It rfind_if_not(It const begin, It const end, UnaryPredicate predicate)
+{
+    return rfind_if(begin, end, [](auto const &x) { return !predicate(x); });
+}
+
+template<typename It, typename T>
+constexpr It rfind(It const begin, It const end, T const &value)
+{
+    return rfind_if(begin, end, [](auto const &x) { return x == value; });
 }
 
 /*! For each cluster.

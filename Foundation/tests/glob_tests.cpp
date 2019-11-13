@@ -416,3 +416,12 @@ TEST(Glob, MatchBraces) {
     ASSERT_EQ(matchGlob("f{12,23,1256}o", "f23oo"), glob_match_result_t::No);
     ASSERT_EQ(matchGlob("f{12,23,1256}o/tree", "f23o"), glob_match_result_t::Partial);
 }
+
+TEST(Glob, BasePath) {
+    ASSERT_EQ(basePathOfGlob("foo/bar/baz*"), "foo/bar");
+    ASSERT_EQ(basePathOfGlob("foo/bar/*"), "foo/bar");
+    ASSERT_EQ(basePathOfGlob("/foo/bar/baz*"), "/foo/bar");
+    ASSERT_EQ(basePathOfGlob("/foo/bar/*"), "/foo/bar");
+    ASSERT_EQ(basePathOfGlob("/foo*"), "/");
+    ASSERT_EQ(basePathOfGlob("/*"), "/");
+}

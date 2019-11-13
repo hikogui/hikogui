@@ -48,6 +48,11 @@ struct glob_token_t {
     glob_token_t(glob_token_type_t type, std::vector<std::string> values) : type(type), value(), values(values) {}
 };
 
+using glob_token_list_t = std::vector<glob_token_t>;
+using glob_token_iterator = glob_token_list_t::iterator;
+using glob_token_const_iterator = glob_token_list_t::const_iterator;
+
+
 inline bool operator==(glob_token_t const &lhs, glob_token_t const &rhs) noexcept {
     return lhs.type == rhs.type && lhs.value == rhs.value && lhs.values == rhs.values;
 }
@@ -88,7 +93,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs) {
  *    between and including the two given code-units.
  *  - '<code-unit>' Matches the UTF-8 code unit itself.
  */
-std::vector<glob_token_t> parseGlob(std::string_view glob)
+glob_token_list_t parseGlob(std::string_view glob)
 {
     enum class state_t {
         Idle,
@@ -100,7 +105,7 @@ std::vector<glob_token_t> parseGlob(std::string_view glob)
     };
     state_t state = state_t::Idle;
 
-    std::vector<glob_token_t> r;
+    glob_token_list_t r;
     std::string tmpString;
     std::vector<std::string> tmpStringList;
     bool isInverse;
@@ -271,9 +276,7 @@ enum class glob_match_result_t {
     Match
 };
 
-using glob_iterator = std::vector<glob_token_t>::iterator;
-
-inline glob_match_result_t matchGlob(glob_iterator index, glob_iterator end, std::string_view str)
+inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token_const_iterator end, std::string_view str)
 {
     if (index == end) {
         return (str.size() == 0) ?
@@ -369,15 +372,64 @@ inline glob_match_result_t matchGlob(glob_iterator index, glob_iterator end, std
 #undef MATCH_GLOB_RECURSE
 }
 
-inline glob_match_result_t matchGlob(std::vector<glob_token_t> glob, std::string_view str)
+inline glob_match_result_t matchGlob(glob_token_list_t const &glob, std::string_view str)
 {
     return matchGlob(glob.begin(), glob.end(), str);
 }
 
 inline glob_match_result_t matchGlob(std::string_view glob, std::string_view str)
 {
-    let pattern = parseGlob(glob);
-    return matchGlob(pattern, str);
+    return matchGlob(parseGlob(glob), str);
+}
+
+inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_const_iterator last) {
+    if (first == last) {
+        return "";
+    }
+
+    // Find the first place holder and don't include it as a token.
+    auto endOfBase = std::find_if_not(first, last, [](auto const &x) {
+        return x.type == glob_token_type_t::String || x.type == glob_token_type_t::Separator;
+    });
+
+    if (endOfBase != last) {
+        // Backtrack until the last separator, and remove it.
+        // Except when we included everything in the first loop because in that case there
+        // are no placeholders at all and we want to include the filename.
+        endOfBase = rfind_if(first, endOfBase, [](auto const &x) {
+            return x.type == glob_token_type_t::Separator;
+        });
+    }
+
+    // Add back the leading slash.
+    if (endOfBase == first && first->type == glob_token_type_t::Separator) {
+        endOfBase++;
+    }
+
+    std::string r;
+    for (auto index = first; index != endOfBase; index++) {
+        switch (index->type) {
+        case glob_token_type_t::String:
+            r += index->value;
+            break;
+        case glob_token_type_t::Separator:
+            r += '/';
+            break;
+        default:
+            no_default;
+        }
+    }
+    return r;
+}
+
+inline std::string basePathOfGlob(glob_token_list_t const &glob)
+{
+    return basePathOfGlob(glob.begin(), glob.end());
+}
+
+inline std::string basePathOfGlob(std::string_view glob)
+{
+    return basePathOfGlob(parseGlob(glob));
 }
 
 }
