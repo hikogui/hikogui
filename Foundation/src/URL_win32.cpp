@@ -74,7 +74,9 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     do {
         auto filename = translateString<std::string>(std::wstring(fileData.cFileName));
 
-        if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0) {
+        if (filename == "." || filename == "..") {
+            continue;
+        } else if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0) {
             filename += '/';
         } else if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) > 0) {
             continue;

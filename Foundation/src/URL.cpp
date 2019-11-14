@@ -171,25 +171,7 @@ URL URL::urlByRemovingFilename() const noexcept
     return URL(parts);
 }
 
-URL URL::urlByRemovingBaseURL(URL const &url) const noexcept
-{
-
-}
-
-static bool urlMatchGlob(URL url, URL glob, bool exactMatch) noexcept
-{
-    let urlSegments = url.pathSegments();
-    let globSegments = glob.pathSegments();
-
-    size_t globIndex = 0;
-    for (; globIndex < globSegments.size(); globIndex++) { 
-
-    }
-
-    return !exactMatch || globIndex == globSegments.size();
-}
-
-static void urlsByRecursiveScanning(std::string base, glob_token_list_t const &glob, std::vector<URL> &result) noexcept
+static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t const &glob, std::vector<URL> &result) noexcept
 {
     for (let &filename: URL::filenamesByScanningDirectory(base)) {
         if (filename.back() == '/') {
@@ -203,7 +185,7 @@ static void urlsByRecursiveScanning(std::string base, glob_token_list_t const &g
 
         } else {
             let finalPath = base + '/' + filename;
-            if (matchGlob(glob, finalPath) != glob_match_result_t::Match) {
+            if (matchGlob(glob, finalPath) == glob_match_result_t::Match) {
                 result.push_back(URL::urlFromPath(finalPath));
             }
         }

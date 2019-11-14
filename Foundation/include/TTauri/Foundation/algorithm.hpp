@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
+#include <tuple>
 
 namespace TTauri {
 
@@ -43,28 +44,28 @@ inline void erase_if(T &v, F operation)
 
 
 template<typename It, typename UnaryPredicate>
-constexpr It rfind_if(It const begin, It const end, UnaryPredicate predicate)
+constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 {
-    auto i = end;
+    auto i = last;
     do {
         i--;
         if (predicate(*i)) {
             return i;
         }
-    } while (i != begin);
-    return end;
+    } while (i != first);
+    return last;
 }
 
 template<typename It, typename UnaryPredicate>
-constexpr It rfind_if_not(It const begin, It const end, UnaryPredicate predicate)
+constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
-    return rfind_if(begin, end, [](auto const &x) { return !predicate(x); });
+    return rfind_if(first, last, [&](auto const &x) { return !predicate(x); });
 }
 
 template<typename It, typename T>
-constexpr It rfind(It const begin, It const end, T const &value)
+constexpr It rfind(It const first, It const last, T const &value)
 {
-    return rfind_if(begin, end, [](auto const &x) { return x == value; });
+    return rfind_if(first, last, [&](auto const &x) { return x == value; });
 }
 
 /*! For each cluster.
@@ -73,7 +74,7 @@ constexpr It rfind(It const begin, It const end, T const &value)
  * A cluster does not include the seperator itself.
  */
 template<typename It, typename S, typename F>
-void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
+inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
 {
     if (first == last) {
         return;
@@ -93,19 +94,57 @@ void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
     }
 }
 
-/*! Check if the 
- */
 template<typename InputIt1, typename InputIt2>
-bool starts_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
+inline bool starts_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
 {
     let [haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
     return needle_result == needle_last;
 }
 
 template<typename Container1, typename Container2>
-bool starts_with(Container1 haystack, Container2 needle) noexcept
+inline bool starts_with(Container1 haystack, Container2 needle) noexcept
 {
     return starts_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+}
+
+template<typename InputIt1, typename InputIt2, typename BinaryPredicate>
+inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, BinaryPredicate predicate) noexcept
+{
+    auto i1 = last1;
+    auto i2 = last2;
+
+    while (true) {
+        if (i1 == first1 && i2 == first2) {
+            return {last1, last2};
+        } else if (i1 == first1) {
+            return {last1, --i2};
+        } else if (i2 == first2) {
+            return {--i1, last2};
+        }
+
+        if (!predicate(*(--i1), *(--i2))) {
+            return {i1, i2};
+        }
+    }
+}
+
+template<typename InputIt1, typename InputIt2>
+inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2) noexcept
+{
+    return rmismatch(first1, last1, first2, last2, [&](auto a, auto b) { return a == b; });  
+}
+
+template<typename InputIt1, typename InputIt2>
+inline bool ends_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
+{
+    let [haystack_result, needle_result] = rmismatch(haystack_first, haystack_last, needle_first, needle_last);
+    return needle_result == needle_last;
+}
+
+template<typename Container1, typename Container2>
+inline bool ends_with(Container1 haystack, Container2 needle) noexcept
+{
+    return ends_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
 }
 
 }

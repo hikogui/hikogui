@@ -2,11 +2,13 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/algorithm.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
 
 using namespace std;
+using namespace std::literals;
 using namespace TTauri;
 
 TEST(URLTests, parsing) {
@@ -26,16 +28,23 @@ TEST(URLTests, relativePath) {
     ASSERT_EQ(a.path(), "foo/bar.txt");
 }
 
-TEST(URLTests, glob) {
+TEST(URLTests, glob1) {
     let executableDirectory = URL::urlFromExecutableDirectory();
     
     let txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
-    for (auto &txt_file: txt_files) {
-        txt_file = txt_file.
-    }
 
-    let a = URL("file:foo/bar.txt");
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "GraphemeBreakTest.txt"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "file_view.txt"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "NormalizationTest.txt"s); }));
+    ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "TTauri_Foundation.lib"s); }));
+}
 
-    ASSERT_EQ(a.path(), "foo/bar.txt");
+TEST(URLTests, glob2) {
+    let executableDirectory = URL::urlFromExecutableDirectory();
+
+    let txt_file_glob = executableDirectory.urlByAppendingPath("**/*.hpp");
+    auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
+
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "include/TTauri/Foundation/config.hpp"s); }));
 }

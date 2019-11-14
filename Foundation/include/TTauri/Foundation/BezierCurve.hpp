@@ -21,7 +21,7 @@ struct BezierPoint;
  * A linear, quadratic or cubic bezier curve.
  */
 struct BezierCurve {
-    enum class Type { Linear, Quadratic, Cubic };
+    enum class Type { None, Linear, Quadratic, Cubic };
 
     Type type;
     glm::vec2 P1; //!< First point
@@ -46,6 +46,10 @@ struct BezierCurve {
     /*! Construct a cubic bezier-curve.
      */
     BezierCurve(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2) noexcept : type(Type::Cubic), P1(P1), C1(C1), C2(C2), P2(P2) {}
+
+    /*! Construct a bezier-curve of any type.
+    */
+    BezierCurve(Type type, glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2) noexcept : type(type), P1(P1), C1(C1), C2(C2), P2(P2) {}
 
     /*! Return a point on the bezier-curve.
      * Values of `t` beyond 0.0 and 1.0 will find a point extrapolated beyond the
@@ -179,7 +183,7 @@ struct BezierCurve {
     }
 };
 
-inline [[nodiscard]] bool operator==(BezierCurve const &lhs, BezierCurve const &rhs) noexcept {
+[[nodiscard]] inline bool operator==(BezierCurve const &lhs, BezierCurve const &rhs) noexcept {
     if (lhs.type != rhs.type) {
         return false;
     }
@@ -195,7 +199,7 @@ inline [[nodiscard]] bool operator==(BezierCurve const &lhs, BezierCurve const &
     }
 }
 
-inline [[nodiscard]] BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve const &rhs) noexcept {
+[[nodiscard]] inline BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve const &rhs) noexcept {
     return {
         rhs.type,
         glm::xy(lhs * glm::vec3(rhs.P1, 1.0)),
@@ -205,7 +209,7 @@ inline [[nodiscard]] BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve c
     };
 }
 
-inline [[nodiscard]] BezierCurve operator*(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
+[[nodiscard]] inline BezierCurve operator*(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
     return { lhs.type, lhs.P1 * rhs, lhs.C1 * rhs, lhs.C2 * rhs, lhs.P2 * rhs };
 }
 
@@ -217,7 +221,7 @@ inline BezierCurve &operator*=(BezierCurve &lhs, glm::vec2 const rhs) noexcept {
     return lhs;
 }
 
-inline [[nodiscard]] BezierCurve operator+(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
+[[nodiscard]] inline BezierCurve operator+(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
     return { lhs.type, lhs.P1 + rhs, lhs.C1 + rhs, lhs.C2 + rhs, lhs.P2 + rhs };
 }
 
@@ -231,7 +235,7 @@ inline BezierCurve &operator+=(BezierCurve &lhs, glm::vec2 const rhs) noexcept {
 
 /*! Reverse direction of a curve.
  */
-inline [[nodiscard]] BezierCurve operator~(BezierCurve const &rhs) noexcept {
+[[nodiscard]] inline BezierCurve operator~(BezierCurve const &rhs) noexcept {
     return { rhs.type, rhs.P2, rhs.C2, rhs.C1, rhs.P1 };
 }
 

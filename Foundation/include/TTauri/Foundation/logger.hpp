@@ -78,7 +78,7 @@ constexpr char const *to_const_string(log_level level) noexcept
     case log_level::Assert:    return "ASSERT";
     case log_level::Critical:  return "CRIT";
     case log_level::Fatal:     return "FATAL";
-    default: no_default;
+    default: return "<unknown>";
     }
 }
 

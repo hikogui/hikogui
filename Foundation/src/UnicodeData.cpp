@@ -27,10 +27,6 @@ constexpr char32_t HANGUL_VCOUNT = 21;
 constexpr char32_t HANGUL_TCOUNT = 28;
 constexpr char32_t HANGUL_NCOUNT = HANGUL_VCOUNT * HANGUL_TCOUNT;
 constexpr char32_t HANGUL_SCOUNT = HANGUL_LCOUNT * HANGUL_NCOUNT;
-constexpr char32_t HANGUL_SEND = HANGUL_SBASE + HANGUL_SCOUNT;
-constexpr char32_t HANGUL_LEND = HANGUL_LBASE + HANGUL_LCOUNT;
-constexpr char32_t HANGUL_VEND = HANGUL_VBASE + HANGUL_VCOUNT;
-constexpr char32_t HANGUL_TEND = HANGUL_TBASE + HANGUL_TCOUNT;
 
 static bool isHangulLPart(char32_t codePoint)
 {
@@ -55,11 +51,6 @@ static bool isHangulSyllable(char32_t codePoint)
 static bool isHangulLVPart(char32_t codePoint)
 {
     return isHangulSyllable(codePoint) && ((codePoint - HANGUL_SBASE) % HANGUL_TCOUNT) == 0;
-}
-
-static bool isHangulLVTPart(char32_t codePoint)
-{
-    return isHangulSyllable(codePoint) && ((codePoint - HANGUL_SBASE) % HANGUL_TCOUNT) > 0;
 }
 
 struct UnicodeData_Composition {

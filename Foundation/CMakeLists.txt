@@ -139,14 +139,18 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     target_compile_options(TTauri_Foundation PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
 
     # Tune according to a more modern CPU.
-    target_compile_options(TTauri_Foundation PUBLIC -mtune=skylake)
+    if (NOT MSVC)
+        target_compile_options(TTauri_Foundation PUBLIC -mtune=skylake)
+    endif()
 elseif (MSVC)
     target_compile_options(TTauri_Foundation PUBLIC -arch:AVX)
 endif()
 
 # Some of our constexpr take a while to calculate.
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-    target_compile_options(TTauri_Foundation PUBLIC -fconstexpr-steps=100000000)
+    if (NOT MSVC)
+        target_compile_options(TTauri_Foundation PUBLIC -fconstexpr-steps=100000000)
+    endif()
 elseif (MSVC)
     target_compile_options(TTauri_Foundation PUBLIC -constexpr:steps 100000000)
 endif()

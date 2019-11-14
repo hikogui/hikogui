@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/assert.hpp"
 #include <string>
 #include <string_view>
+#include <exception>
 
 namespace TTauri {
 
@@ -20,7 +21,7 @@ constexpr string_tag char_to_tag(char c) noexcept
     } else if (c == '_') {
         return 27;
     } else {
-        no_default;
+        std::terminate();
     }
 }
 
@@ -48,8 +49,6 @@ constexpr char tag_to_char(string_tag tag) noexcept
  */
 constexpr string_tag string_to_tag(char const *str, size_t str_size) noexcept
 {
-    required_assert(str_size <= 13);
-
     string_tag r = 0;
     for (auto i = 0; i < 13; i++) {
         r *= 28;

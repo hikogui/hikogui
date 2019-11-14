@@ -9,18 +9,12 @@ namespace TTauri {
 
 #if !defined(NDEBUG)
 
-#if COMPILER == CC_GCC || COMPILER == CC_CLANG
-#if PROCESSOR == CPU_X64
-#define debugger_break __asm__("int $3")
-#elif PROCESSOR == CPU_ARM
-#define debugger_break __asm__("trap")
-#else
-#error "Not implemented"
-#endif
-
-#elif OPERATING_SYSTEM == OS_WINDOWS
+#if OPERATING_SYSTEM == OS_WINDOWS
 void _debugger_break();
 #define debugger_break _debugger_break()
+
+#elif COMPILER == CC_GCC || COMPILER == CC_CLANG
+#define debugger_break __builtin_trap()
 
 #else
 #error "Not implemented"

@@ -68,7 +68,7 @@ private:
      * \param accesssMode mode of how to access the file.
      * \return A shared pointer to a file object.
      */
-    static [[nodiscard]] std::shared_ptr<File> findOrOpenFile(URL const& path, AccessMode accessMode);
+    [[nodiscard]] static std::shared_ptr<File> findOrOpenFile(URL const& path, AccessMode accessMode);
 };
 
 }

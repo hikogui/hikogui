@@ -259,7 +259,6 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAf
     std::array<tokenizer_transition_t,256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        let c = static_cast<char>(i);
         tokenizer_transition_t transition = {'-'};
         transition.setNext(tokenizer_state_t::OperatorSecondChar);
         transition.setAction(tokenizer_action_t::Start | tokenizer_action_t::Capture);
@@ -274,7 +273,6 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonA
     std::array<tokenizer_transition_t,256> r{};
 
     for (uint16_t i = 0; i < r.size(); i++) {
-        let c = static_cast<char>(i);
         tokenizer_transition_t transition = {':'};
         transition.setNext(tokenizer_state_t::OperatorSecondChar);
         transition.setAction(tokenizer_action_t::Start | tokenizer_action_t::Capture);

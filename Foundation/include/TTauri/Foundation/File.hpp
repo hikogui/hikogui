@@ -27,19 +27,19 @@ enum class AccessMode {
     OpenForReadWrite = 0x103, //!< Default open a file for reading and writing.
 };
 
-inline [[nodiscard]] AccessMode operator|(AccessMode lhs, AccessMode rhs) noexcept
+[[nodiscard]] inline AccessMode operator|(AccessMode lhs, AccessMode rhs) noexcept
 {
     return static_cast<AccessMode>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }
 
-inline [[nodiscard]] AccessMode operator&(AccessMode lhs, AccessMode rhs) noexcept
+[[nodiscard]] inline AccessMode operator&(AccessMode lhs, AccessMode rhs) noexcept
 {
     return static_cast<AccessMode>(static_cast<int>(lhs) & static_cast<int>(rhs));
 }
 
 /*! True if all bits on rhs are set in lhs.
  */
-inline [[nodiscard]] bool operator>=(AccessMode lhs, AccessMode rhs) noexcept
+[[nodiscard]] inline bool operator>=(AccessMode lhs, AccessMode rhs) noexcept
 {
     return (lhs & rhs) == rhs;
 }
@@ -79,7 +79,7 @@ struct File {
     /*! Get the size of a file on the file system.
      * \return The size of the file in bytes.
      */
-    static [[nodiscard]] size_t fileSize(URL const &url);
+    [[nodiscard]] static size_t fileSize(URL const &url);
 };
 
 
