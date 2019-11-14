@@ -98,6 +98,7 @@ public:
 
     URL urlByRemovingFilename() const noexcept;
 
+    URL urlByRemovingBaseURL(URL const &url) const noexcept;
 
     /*! Return new URLs by finding matching files.
      * Currently only works for file: scheme urls.
@@ -111,9 +112,7 @@ public:
      */
     std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
 
-
     static URL urlFromPath(std::string_view const path) noexcept;
-
     static URL urlFromWPath(std::wstring_view const path) noexcept;
 
     static URL urlFromCurrentWorkingDirectory() noexcept;

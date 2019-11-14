@@ -9,13 +9,22 @@
 
 namespace TTauri {
 
+/*! Map a file into virtual memory.
+ */
 class FileView : public ResourceView {
 private:
+    /*! pointer to a file mapping object.
+     */
     std::shared_ptr<FileMapping> fileMappingObject;
 
-    // The shared_ptr to _bytes allows the FileView to be copied while pointing
-    // to the same memory map. This shared_ptr will use the private unmap().
+    /*! A pointer to virtual memory that maps the file into memory.
+     * The shared_ptr to _bytes allows the FileView to be copied while pointing
+     * to the same memory map. This shared_ptr will use the private unmap().
+     */
     std::shared_ptr<gsl::span<std::byte>> _bytes;
+
+    /*! The offset into the file which is mapped to memory.
+     */
     size_t _offset;
 
 public:
@@ -29,39 +38,82 @@ public:
     FileView &operator=(FileView const &other) noexcept;
     FileView &operator=(FileView &&other) noexcept;
 
-    AccessMode accessMode() const noexcept { return fileMappingObject->accessMode(); }
-    URL const &location() const noexcept { return fileMappingObject->location(); }
+    /*! Access mode of the opened file.
+     */
+    [[nodiscard]] AccessMode accessMode() const noexcept { return fileMappingObject->accessMode(); }
 
-    size_t offset() const noexcept override { return _offset; }
+    /*! URL location to the file.
+     */
+    [[nodiscard]] URL const &location() const noexcept { return fileMappingObject->location(); }
 
-    size_t size() const noexcept override { return _bytes->size(); }
+    /*! Offset of the mapping into the file.
+     */
+    [[nodiscard]] size_t offset() const noexcept override { return _offset; }
 
-    void *data() noexcept { return _bytes->data(); }
-    void const *data() const noexcept override { return _bytes->data(); }
+    /*! Number of bytes which is mapped to memory.
+     */
+    [[nodiscard]] size_t size() const noexcept override { return _bytes->size(); }
 
-    gsl::span<std::byte> bytes() noexcept { return *_bytes; }
-    gsl::span<std::byte const> bytes() const noexcept override { return *_bytes; }
+    /*! Pointer to the mapping into memory.
+     */
+    [[nodiscard]] void *data() noexcept { return _bytes->data(); }
 
-    std::string_view string_view() noexcept {
+    /*! Pointer to the mapping into memory.
+     */
+    [[nodiscard]] void const *data() const noexcept override { return _bytes->data(); }
+
+    /*! Span to the mapping into memory.
+     */
+    [[nodiscard]] gsl::span<std::byte> bytes() noexcept { return *_bytes; }
+
+    /*! Span to the mapping into memory.
+     */
+    [[nodiscard]] gsl::span<std::byte const> bytes() const noexcept override { return *_bytes; }
+
+    /*! String view to the mapping into memory.
+     */
+    [[nodiscard]] std::string_view string_view() noexcept {
         return std::string_view{reinterpret_cast<char *>(data()), size()};
     }
 
-    std::string_view const string_view() const noexcept {
+    /*! String view to the mapping into memory.
+     */
+    [[nodiscard]] std::string_view const string_view() const noexcept {
         return std::string_view{reinterpret_cast<char const *>(data()), size()};
     }
 
-
+    /*! Flush changes in memory to the open file.
+     * \param base start location of the memory to flush.
+     * \param Number of bytes from the base of the memory region to flush.
+     */
     void flush(void* base, size_t size);
 
-    static std::shared_ptr<FileMapping> findOrCreateFileMappingObject(URL const& path, AccessMode accessMode, size_t size);
-
-    static std::unique_ptr<ResourceView> loadView(URL const &location) {
+    /*! Load a view of a resource.
+     * This is used when the resource that needs to be opened is a file.
+     */
+    [[nodiscard]] static std::unique_ptr<ResourceView> loadView(URL const &location) {
         return std::make_unique<FileView>(location);
     }
 
 private:
+    /*! Unmap the bytes from memory.
+     * This is used by the shared_ptr to span to automatically unmap the memory, even
+     * if the FileMapping has been copied.
+     *
+     * \param bytes The bytes to unmap.
+     */
     static void unmap(gsl::span<std::byte> *bytes) noexcept;
 
+    /*! Open a file mapping object.
+     * File mapping objects are cached and will be shared by FileViews.
+     * Caching is done using std::weak_ptr to FileMapping objects
+     *
+     * \param path URL to the file.
+     * \param accessMode mode how to open the file.
+     * \param size Number of bytes from the start of the file to map.
+     * \return A shared-pointer to file mapping object.
+     */
+    [[nodiscard]] static std::shared_ptr<FileMapping> findOrCreateFileMappingObject(URL const& path, AccessMode accessMode, size_t size);
 };
 
 }

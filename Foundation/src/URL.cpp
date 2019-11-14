@@ -171,6 +171,11 @@ URL URL::urlByRemovingFilename() const noexcept
     return URL(parts);
 }
 
+URL URL::urlByRemovingBaseURL(URL const &url) const noexcept
+{
+
+}
+
 static bool urlMatchGlob(URL url, URL glob, bool exactMatch) noexcept
 {
     let urlSegments = url.pathSegments();

@@ -20,12 +20,28 @@ struct PathString;
 class Font;
 template<typename T> struct PixelMap;
 
-
+/*! A path is a vector graphics object.
+ * It represents:
+ *  - a set of layers each with a different colour.
+ *  - a layer is a set of contours
+ *  - a contour is a set of bezier point describing a closed set of bezier curves.
+ */
 struct Path {
+    /*! A set of all bezier points describing all bezier curves, contours and layers.
+     */
     std::vector<BezierPoint> points;
+
+    /*! An index into \see points where each contour ends.
+     */
     std::vector<ssize_t> contourEndPoints;
+
+    /*! An color and index into \see contourEndPoints where each layer ends.
+     */
     std::vector<std::pair<ssize_t,wsRGBA>> layerEndContours;
 
+    /*! When a path is used a font-glyph the metrics here describe
+     * metric for the glyph.
+     */
     GlyphMetrics metrics;
 
     /*! Return the number of closed contours.

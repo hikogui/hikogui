@@ -8,6 +8,10 @@
 
 namespace TTauri {
 
+/*! Metrics of a glyph.
+ * This information is used to position glyphs next to each other
+ * and determinate the size of a shaped text.
+ */
 struct GlyphMetrics {
     /*! Bounding box of the path.
     */
