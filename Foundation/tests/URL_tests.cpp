@@ -25,3 +25,17 @@ TEST(URLTests, relativePath) {
 
     ASSERT_EQ(a.path(), "foo/bar.txt");
 }
+
+TEST(URLTests, glob) {
+    let executableDirectory = URL::urlFromExecutableDirectory();
+    
+    let txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
+    auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
+    for (auto &txt_file: txt_files) {
+        txt_file = txt_file.
+    }
+
+    let a = URL("file:foo/bar.txt");
+
+    ASSERT_EQ(a.path(), "foo/bar.txt");
+}

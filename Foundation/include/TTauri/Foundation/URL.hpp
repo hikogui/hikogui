@@ -98,6 +98,7 @@ public:
 
     URL urlByRemovingFilename() const noexcept;
 
+    URL urlByRemovingBase(URL const &base) const noexcept;
 
     /*! Return new URLs by finding matching files.
      * Currently only works for file: scheme urls.
