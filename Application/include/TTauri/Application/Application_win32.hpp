@@ -10,13 +10,9 @@ namespace TTauri {
 
 class Application_win32 final : public Application_base {
 public:
-    void *hInstance = nullptr;
-    void *hPrevInstance = nullptr;
-    wchar_t const *pCmdLine = nullptr;
-    int nCmdShow = 0;
     uint32_t mainThreadID = 0;
 
-    Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, void *hPrevInstance, wchar_t const *pCmdLine, int nCmdShow);
+    Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow);
     ~Application_win32() = default;
 
     Application_win32(const Application_win32 &) = delete;
@@ -30,9 +26,10 @@ public:
 
     void runOnMainThread(std::function<void()> function) override;
 
-    void startingLoop() override;
-
     int loop() override;
+
+protected:
+    bool startingLoop() override;
 };
 
 }

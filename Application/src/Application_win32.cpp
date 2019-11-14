@@ -9,16 +9,33 @@
 #include "TTauri/Foundation/strings.hpp"
 #include <thread>
 #include <string>
+#include <vector>
 #include <Windows.h>
 
 namespace TTauri {
 
 constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
 
+[[nodiscard]] static std::vector<std::string> passArguments() noexcept
+{
+    std::vector<std::string> arguments;
 
-Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, void *hPrevInstance, wchar_t const *pCmdLine, int nCmdShow) :
-    Application_base(std::move(delegate), hInstance, nCmdShow),
-    hInstance(hInstance), hPrevInstance(hPrevInstance), pCmdLine(pCmdLine), nCmdShow(nCmdShow),
+    let commandLine = GetCommandLineW();
+
+    int argc = 0;
+    let argv = CommandLineToArgvW(commandLine, &argc);
+    required_assert(argv != nullptr);
+
+    for (int i = 0; i < argc; i++) {
+        arguments.push_back(translateString<std::string>(std::wstring(argv[i])));
+    }
+
+    LocalFree(argv);
+    return arguments;
+}
+
+Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow) :
+    Application_base(std::move(delegate), passArguments(), hInstance, nCmdShow),
     mainThreadID(GetCurrentThreadId())
 {
 }
@@ -27,7 +44,7 @@ Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delega
 void Application_win32::lastWindowClosed()
 {
     runOnMainThread([&]() {
-        // Let the application have a change to open new windows from the main thread.
+        // Let the application have a chance to open new windows from the main thread.
         Application_base::lastWindowClosed();
 
         if (GUI::GUI_globals->instance().getNumberOfWindows() == 0) {
@@ -48,15 +65,16 @@ void Application_win32::runOnMainThread(std::function<void()> function)
     required_assert(r != 0);
 }
 
-void Application_win32::startingLoop()
+bool Application_win32::startingLoop()
 {
-    Application_base::startingLoop();
+    return Application_base::startingLoop();
 }
 
 int Application_win32::loop()
 {
-    startingLoop();
-
+    if (!startingLoop()) {
+        return 0;
+    }
 
     Foundation_globals->main_thread_runner = [=](std::function<void()> f) {
         return this->runOnMainThread(f);

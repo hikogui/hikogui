@@ -42,6 +42,7 @@ set(TTauri_Foundation_srcs
     src/TTauriIconParser.cpp
     src/FileMapping.cpp
     src/FileView.cpp
+    src/Options.cpp
 )
 
 if(WIN32)

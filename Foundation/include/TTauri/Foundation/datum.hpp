@@ -429,6 +429,14 @@ public:
     datum operator[](datum const &rhs) const;
     datum &append();
 
+    void push_back(datum const &value) {
+        append() = value;
+    }
+
+    void push_back(datum &&value) {
+        append() = std::move(value);
+    }
+
     template<typename T>
     std::enable_if_t<!std::is_same_v<T, datum>, datum>
     &operator[](T const &rhs) {

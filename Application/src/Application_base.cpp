@@ -12,9 +12,9 @@ namespace TTauri {
 using namespace std;
 
 
-Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, void *hInstance, int nCmdShow) :
+Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance, int nCmdShow) :
     delegate(applicationDelegate),
-    i_foundation(std::this_thread::get_id(), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
+    i_foundation(applicationDelegate->optionConfig(), arguments, std::this_thread::get_id(), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
 #if defined(TTAURI_CONFIG_ENABLED)
     i_config(),
 #endif
@@ -47,12 +47,9 @@ Application_base::~Application_base()
     _application = nullptr;
 }
 
-void Application_base::startingLoop()
+bool Application_base::startingLoop()
 {
-    if (!loopStarted) {
-        loopStarted = true;
-        delegate->startingLoop();
-    }
+    return delegate->startingLoop();
 }
 
 #if defined(TTAURI_GUI_ENABLED)

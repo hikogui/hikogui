@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Application/Application_forward.hpp"
+#include "TTauri/Foundation/Options.hpp"
 #include <string>
 
 namespace TTauri {
@@ -24,9 +25,14 @@ public:
      */
     virtual std::string applicationName() const noexcept = 0;
 
-    /*! Called right before the application loop is started.
+    /*! Return the possible command line argument options.
      */
-    virtual void startingLoop() = 0;
+    virtual std::vector<OptionConfig> optionConfig() const noexcept = 0;
+
+    /*! Called right before the application loop is started.
+     * \return true to start the loop, false to exit the application.
+     */
+    virtual bool startingLoop() = 0;
 
     /*! Called right after the last window is closed
      */

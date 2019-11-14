@@ -12,15 +12,16 @@
 
 namespace TTauri {
 
-FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept :
+FoundationGlobals::FoundationGlobals(std::vector<OptionConfig> const &optionConfig, std::vector<std::string> const &arguments, std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept :
     main_thread_id(main_thread_id),
+    options(optionConfig, arguments),
     applicationName(std::move(applicationName))
 {
     required_assert(Foundation_globals == nullptr);
     Foundation_globals = this;
 
     // The logger is the first object that will use the timezone database.
-    // Zo we will initialize it here.
+    // So we will initialize it here.
 #if USE_OS_TZDB == 0
     date::set_install(tzdata_location.nativePath());
 #endif
@@ -31,7 +32,7 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, std::string
     }
 
     // First we need a clock, it is used by almost any other service.
-    // It will imediatly be synchronized, but inaccuratly, it will take a while to become
+    // It will immediately be synchronized, but inaccurately, it will take a while to become
     // more accurate, but we don't want to block here.
     sync_clock_calibration<hires_utc_clock,cpu_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock,cpu_counter_clock>("cpu_utc");

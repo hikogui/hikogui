@@ -51,6 +51,10 @@ public:
     */
     std::shared_ptr<ApplicationDelegate> delegate;
 
+    /*! Command line arguments.
+     */
+    std::vector<std::string> arguments;
+
     FoundationGlobals i_foundation;
 #if defined(TTAURI_CONFIG_ENABLED)
     Config::ConfigGlobals i_config;
@@ -64,9 +68,7 @@ public:
 #endif
     int i_dummy;
 
-    bool loopStarted = false;
-
-    Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, void *hInstance = nullptr, int nCmdShow = 0);
+    Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance = nullptr, int nCmdShow = 0);
     virtual ~Application_base();
     Application_base(const Application_base &) = delete;
     Application_base &operator=(const Application_base &) = delete;
@@ -76,10 +78,6 @@ public:
     /*! Run the given function on the main thread.
      */
     virtual void runOnMainThread(std::function<void()> function) = 0;
-
-    /*! Called right before a loop is started.
-     */
-    virtual void startingLoop();
 
     /*! Run the operating system's main loop.
      * Must be called after initialize().
@@ -98,6 +96,11 @@ public:
     */
     void audioDeviceListChanged() override;
 #endif
+
+protected:
+    /*! Called right before a loop is started.
+    */
+    virtual bool startingLoop();
 };
 
 inline Application_base *_application = nullptr;
