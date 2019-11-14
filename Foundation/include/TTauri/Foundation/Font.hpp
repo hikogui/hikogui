@@ -18,7 +18,10 @@
 namespace TTauri {
 
 
-
+/*! A font.
+ * This class has information on how to shape text and
+ * get glyphs consisting of bezier contours.
+ */
 class Font {
 public:
     Font() = default;

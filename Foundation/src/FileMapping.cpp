@@ -11,7 +11,7 @@
 namespace TTauri {
 
 
-std::shared_ptr<File> FileMapping::findOrCreateFile(URL const& location, AccessMode accessMode)
+std::shared_ptr<File> FileMapping::findOrOpenFile(URL const& location, AccessMode accessMode)
 {
     static std::mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;

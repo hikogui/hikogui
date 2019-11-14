@@ -112,9 +112,7 @@ public:
      */
     std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
 
-
     static URL urlFromPath(std::string_view const path) noexcept;
-
     static URL urlFromWPath(std::wstring_view const path) noexcept;
 
     static URL urlFromCurrentWorkingDirectory() noexcept;

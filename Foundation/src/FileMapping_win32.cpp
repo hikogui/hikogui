@@ -39,7 +39,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
 }
 
 FileMapping::FileMapping(URL const &location, AccessMode accessMode, size_t size) :
-    FileMapping(findOrCreateFile(location, accessMode), size) {}
+    FileMapping(findOrOpenFile(location, accessMode), size) {}
 
 FileMapping::~FileMapping()
 {
