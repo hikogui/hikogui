@@ -4,6 +4,7 @@
 #include "TTauri/GUI/WindowDelegate.hpp"
 #include "TTauri/GUI/WindowToolbarWidget.hpp"
 #include "TTauri/GUI/Instance.hpp"
+#include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystem.hpp"
 #include "TTauri/Application/Application.hpp"
 
@@ -54,7 +55,7 @@ public:
         return "TTauri Development Application";
     }
 
-    void startingLoop() override
+    bool startingLoop() override
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
@@ -62,6 +63,7 @@ public:
         GUI_globals->instance().addWindow<Window>(myWindowDelegate, "Hello World 1");
 
         Audio_globals->audioSystem().initialize();
+        return true;
     }
 
     void lastWindowClosed() override
@@ -74,11 +76,11 @@ public:
     }
 };
 
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
+MAIN_DEFINITION
 {
     auto myApplicationDelegate = make_shared<MyApplicationDelegate>();
 
-    auto app = Application(myApplicationDelegate, hInstance, hPrevInstance, pCmdLine, nCmdShow);
+    auto app = Application(myApplicationDelegate, MAIN_ARGUMENTS);
 
     return app.loop();
 }

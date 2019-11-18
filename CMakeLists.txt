@@ -1,15 +1,16 @@
 
 cmake_minimum_required(VERSION 3.0)
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0054 NEW)
 enable_testing()
 
 project(TTauri CXX)
 
-find_package(Doxygen)
+#find_package(Doxygen)
 
-option(BUILD_TTAURI_GUI "BUILD_TTAURI_GUI" OFF) 
-option(BUILD_TTAURI_AUDIO "BUILD_TTAURI_AUDIO" OFF) 
-option(BUILD_TTAURI_CONFIG "BUILD_TTAURI_CONFIG" OFF) 
+set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
+set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
+set(BUILD_TTAURI_CONFIG OFF CACHE BOOL "Enable TTAURI Config") 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
 include(AddIcon)
@@ -37,12 +38,15 @@ add_subdirectory(Utilities)
 
 add_subdirectory(Foundation)
 if(BUILD_TTAURI_CONFIG)
+message("TTauri Config enabled")
 add_subdirectory(Config)
 endif()
 if(BUILD_TTAURI_AUDIO)
+message("TTauri Audio enabled")
 add_subdirectory(Audio)
 endif()
 if(BUILD_TTAURI_GUI)
+message("TTauri GUI enabled")
 add_subdirectory(GUI)
 add_subdirectory(Widgets)
 endif()
@@ -71,9 +75,9 @@ if(BUILD_TTAURI_GUI AND BUILD_TTAURI_AUDIO)
 add_subdirectory(TTauriDevelopmentApplication)
 endif()
 
-doxygen_add_docs(TTauri_Doxygen
-    Foundation/include/
-)
+#doxygen_add_docs(TTauri_Doxygen
+#    Foundation/include/
+#)
 
 #set(TTauri_do_not_analyze
 #    ${BISON_TTauriConfigParser_OUTPUTS}

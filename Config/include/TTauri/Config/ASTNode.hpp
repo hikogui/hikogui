@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Config/Location.hpp"
 #include "TTauri/Config/ExecutionContext.hpp"
+#include "TTauri/Foundation/Location.hpp"
 #include "TTauri/Foundation/datum.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include <string>

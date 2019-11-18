@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/datum.hpp"
+#include <gsl/gsl>
 #include <optional>
 
 namespace TTauri::Config {

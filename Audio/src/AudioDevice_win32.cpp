@@ -4,6 +4,7 @@
 #include "TTauri/Audio/AudioDevice_win32.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include <Windows.h>
 #include <propsys.h>
 #include <functiondiscoverykeys_devpkey.h>
@@ -19,7 +20,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
     PROPVARIANT textProperty;
     PropVariantInit(&textProperty);
 
-    hresult_assert(propertyStore_->GetValue(PKEY_Device_FriendlyName, &textProperty));
+    hresult_assert_or_throw(propertyStore_->GetValue(PKEY_Device_FriendlyName, &textProperty));
     auto textWString = std::wstring_view(textProperty.pwszVal);
     auto textString = translateString<std::string>(textWString);
 
@@ -36,7 +37,7 @@ AudioDevice_win32::AudioDevice_win32(void *device) :
     
     auto device_ = static_cast<IMMDevice *>(device);
     
-    hresult_assert(device_->OpenPropertyStore(STGM_READ, reinterpret_cast<IPropertyStore **>(&propertyStore)));
+    hresult_assert_or_throw(device_->OpenPropertyStore(STGM_READ, reinterpret_cast<IPropertyStore **>(&propertyStore)));
 }
 
 AudioDevice_win32::~AudioDevice_win32()
@@ -70,7 +71,7 @@ AudioDevice_state AudioDevice_win32::state() const noexcept
     auto device_ = static_cast<IMMDevice *>(device);
 
     DWORD state;
-    hresult_assert(device_->GetState(&state));
+    hresult_assert_or_throw(device_->GetState(&state));
 
     switch (state) {
     case DEVICE_STATE_ACTIVE:
@@ -93,7 +94,7 @@ std::string AudioDevice_win32::getIdFromDevice(void *device) noexcept
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR id_wcharstr;
     required_assert(device_ != nullptr);
-    hresult_assert(device_->GetId(&id_wcharstr));
+    hresult_assert_or_throw(device_->GetId(&id_wcharstr));
 
     let id_wstring = std::wstring_view(id_wcharstr);
     auto id = translateString<std::string>(id_wstring);

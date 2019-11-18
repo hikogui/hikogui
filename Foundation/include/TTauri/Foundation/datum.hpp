@@ -369,7 +369,7 @@ public:
                 auto * const p = new uint64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing datum from integer {}, larger than {}", rhs, maximum_int);
+                TTAURI_THROW_OVERFLOW_ERROR("Constructing datum from integer {}, larger than {}", value, maximum_int);
             }
         }
     }
@@ -1521,7 +1521,7 @@ public:
     }
 
     template<typename T>
-    friend bool will_cast_to(datum_impl const &rhs) {
+    friend bool will_cast_to(datum_impl<HasPointer> const &rhs) {
         if constexpr (std::is_same_v(T, bool)) {
             return true;
         } else if constexpr (std::is_same_v(T, char)) {
