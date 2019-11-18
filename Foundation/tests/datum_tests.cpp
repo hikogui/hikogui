@@ -92,3 +92,10 @@ TEST(Datum, StringOperations) {
 
     ASSERT_EQ(static_cast<std::string>(v), "Hello World"s);
 }
+
+TEST(Datum, WillCastTo) {
+    let v = datum{-1};
+
+    ASSERT_TRUE(will_cast_to<int>(v));
+    ASSERT_FALSE(will_cast_to<URL>(v));
+}

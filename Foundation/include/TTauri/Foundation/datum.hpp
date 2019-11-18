@@ -1522,23 +1522,23 @@ public:
 
     template<typename T>
     friend bool will_cast_to(datum_impl<HasPointer> const &rhs) {
-        if constexpr (std::is_same_v(T, bool)) {
+        if constexpr (std::is_same_v<T, bool>) {
             return true;
-        } else if constexpr (std::is_same_v(T, char)) {
-            return d.is_string();
-        } else if constexpr (std::is_arithmetic_v(T) ) {
-            return d.is_numeric();
-        } else if constexpr (std:is_same_v(T, datum_impl::undefined)) {
-            return d.is_undefined();
-        } else if constexpr (std:is_same_v(T, datum_impl::vector)) {
-            return d.is_vector();
-        } else if constexpr (std:is_same_v(T, datum_impl::map)) {
-            return d.is_map();
-        } else if constexpr (std:is_same_v(T, wsRGBA)) {
-            return d.is_wsrgba();
-        } else if constexpr (std:is_same_v(T, URL)) {
-            return d.is_url() || d.is_string();
-        } else if constexpr (std:is_same_v(T, std::string)) {
+        } else if constexpr (std::is_same_v<T, char>) {
+            return rhs.is_string();
+        } else if constexpr (std::is_arithmetic_v<T>) {
+            return rhs.is_numeric();
+        } else if constexpr (std::is_same_v<T, datum_impl::undefined>) {
+            return rhs.is_undefined();
+        } else if constexpr (std::is_same_v<T, datum_impl::vector>) {
+            return rhs.is_vector();
+        } else if constexpr (std::is_same_v<T, datum_impl::map>) {
+            return rhs.is_map();
+        } else if constexpr (std::is_same_v<T, wsRGBA>) {
+            return rhs.is_wsrgba();
+        } else if constexpr (std::is_same_v<T, URL>) {
+            return rhs.is_url() || rhs.is_string();
+        } else if constexpr (std::is_same_v<T, std::string>) {
             return true;
         } else {
             return false;
