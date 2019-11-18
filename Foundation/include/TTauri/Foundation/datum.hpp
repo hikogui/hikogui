@@ -81,6 +81,18 @@ constexpr uint16_t datum_make_id(uint16_t id) {
 
 void swap(datum &lhs, datum &rhs) noexcept;
 
+enum class datum_type_t {
+    Null,
+    Undefined,
+    Boolean,
+    Integer,
+    Float,
+    String,
+    URL,
+    Map,
+    Vector,
+    wsRGBA
+};
 
 /*! A fixed size (64 bits) class for a generic value type.
  * A datum can hold and do calculations with the following types:
@@ -98,7 +110,6 @@ void swap(datum &lhs, datum &rhs) noexcept;
  * you can serialize your own types by adding conversion constructor and
  * operator to and from the datum on your type.
  *
- * XXX should add pickle and unpickle to datum.
  */
 //gsl_suppress5(bounds.4,type.1,r.11,r.3,con.4)
 class datum {
@@ -225,6 +236,15 @@ class datum {
     void delete_pointer() noexcept;
     void copy_pointer(datum const &other) noexcept;
 
+    uint64_t get_unsigned_integer() const noexcept { return u64 & 0x0000ffff'ffffffff; }
+    int64_t get_signed_integer() const noexcept { return static_cast<int64_t>(u64 << 16) >> 16; }
+
+    template<typename O>
+    O *get_pointer() const {
+        // canonical pointers on x86 and ARM are 48 bit, with sign extension of bit 47.
+        return std::launder(reinterpret_cast<O *>(get_signed_integer()));
+    }
+
 public:
     using vector = std::vector<datum>;
     using map = std::unordered_map<datum,datum>;
@@ -243,27 +263,26 @@ public:
         if (ttauri_unlikely(other.is_phy_pointer())) {
             copy_pointer(other);
         } else {
+            // We do a memcpy, because we don't know the type in the union.
             std::memcpy(this, &other, sizeof(*this));
         }
     }
 
     datum &operator=(datum const &other) noexcept {
-        if (this == &other) {
-            return *this;
-        }
-
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         if (ttauri_unlikely(other.is_phy_pointer())) {
             copy_pointer(other);
         } else {
+            // We do a memcpy, because we don't know the type in the union.
             std::memcpy(this, &other, sizeof(*this));
         }
         return *this;
     }
 
     datum(datum &&other) noexcept : u64(undefined_mask) {
+        // We do a memcpy, because we don't know the type in the union.
         std::memcpy(this, &other, sizeof(*this));
         other.u64 = undefined_mask;
     }
@@ -480,19 +499,16 @@ public:
     bool is_numeric() const noexcept { return is_integer() || is_float(); }
     bool is_color() const noexcept { return is_wsrgba(); }
 
+    datum_type_t type() const noexcept;
     char const *type_name() const noexcept;
-
-    uint64_t get_unsigned_integer() const noexcept { return u64 & 0x0000ffff'ffffffff; }
-    int64_t get_signed_integer() const noexcept { return static_cast<int64_t>(u64 << 16) >> 16; }
-
-    template<typename O>
-    O *get_pointer() const {
-        // canonical pointers on x86 and ARM.
-        return reinterpret_cast<O *>(get_signed_integer()); 
-    }
 
     size_t size() const;
     size_t hash() const noexcept;
+
+    map::const_iterator map_begin() const noexcept;
+    map::const_iterator map_end() const noexcept;
+    vector::const_iterator vector_begin() const noexcept;
+    vector::const_iterator vector_end() const noexcept;
 
     friend bool operator==(datum const &lhs, datum const &rhs) noexcept;
     friend bool operator<(datum const &lhs, datum const &rhs) noexcept;

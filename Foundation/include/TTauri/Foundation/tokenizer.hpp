@@ -97,6 +97,19 @@ struct token_t {
     }
 };
 
+using token_vector = std::vector<TTauri::token_t>;
+using token_iterator = typename token_vector::iterator;
+
+template<typename T>
+struct parse_result_t {
+    std::optional<T> value;
+    token_iterator next_token;
+
+    operator bool () const noexcept {
+        return static_cast<bool>(value);
+    }
+};
+
 inline std::ostream &operator<<(std::ostream &lhs, token_t const &rhs)
 {
     return lhs << rhs.repr();

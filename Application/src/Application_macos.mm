@@ -5,8 +5,19 @@
 
 namespace TTauri {
 
+[[nodiscard]] static std::vector<std::string> passArguments(int argc, char const * const *argv) noexcept
+{
+    std::vector<std::string> arguments;
+
+    for (int i = 0; i < argc; i++) {
+        arguments.emplace_back(argv[i]);
+    }
+
+    return arguments;
+}
+
 Application_macos::Application_macos(std::shared_ptr<ApplicationDelegate> delegate, int argc, char const * const *argv) :
-    Application_base(std::move(delegate), nullptr, 0),
+    Application_base(std::move(delegate), passArguments(argc, argv), nullptr, 0),
     argc(argc), argv(argv)
 {
 #if defined(TTAURI_GUI_ENABLED)

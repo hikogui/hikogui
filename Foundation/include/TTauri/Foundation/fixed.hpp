@@ -118,7 +118,7 @@ fixed<T,M> operator-(fixed<T,M> const &lhs, fixed<T,M> const &rhs)
 template<typename T, int M>
 std::string to_string(fixed<T,M> const v)
 {
-    return rhs.string();
+    return v.string();
 }
 
 template<typename T, int M>

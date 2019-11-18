@@ -5,6 +5,8 @@ enable_testing()
 
 project(TTauri CXX)
 
+find_package(Doxygen)
+
 option(BUILD_TTAURI_GUI "BUILD_TTAURI_GUI" OFF) 
 option(BUILD_TTAURI_AUDIO "BUILD_TTAURI_AUDIO" OFF) 
 option(BUILD_TTAURI_CONFIG "BUILD_TTAURI_CONFIG" OFF) 
@@ -68,6 +70,10 @@ target_link_libraries(TTauri INTERFACE TTauri_Application)
 if(BUILD_TTAURI_GUI AND BUILD_TTAURI_AUDIO)
 add_subdirectory(TTauriDevelopmentApplication)
 endif()
+
+doxygen_add_docs(TTauri_Doxygen
+    Foundation/include/
+)
 
 #set(TTauri_do_not_analyze
 #    ${BISON_TTauriConfigParser_OUTPUTS}

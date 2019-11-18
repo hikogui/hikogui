@@ -493,6 +493,42 @@ datum &datum::append() {
     }
 }
 
+datum_type_t type() const noexcept
+{
+    switch (type_id()) {
+    case phy_boolean_id: return datum_type_t::Boolean;
+    case phy_null_id: return datum_type_t::Null;
+    case phy_undefined_id: return datum_type::Undefined;
+    case phy_integer_id0:
+    case phy_integer_id1:
+    case phy_integer_id2:
+    case phy_integer_id3:
+    case phy_integer_id4:
+    case phy_integer_id5:
+    case phy_integer_id6:
+    case phy_integer_id7:
+    case phy_integer_ptr_id: return datum_type::Integer;
+    case phy_string_id0:
+    case phy_string_id1:
+    case phy_string_id2:
+    case phy_string_id3:
+    case phy_string_id4:
+    case phy_string_id5:
+    case phy_string_id6:
+    case phy_string_ptr_id: return datum_type_t::String;
+    case phy_url_ptr_id: return datum_type_t::URL;
+    case phy_vector_ptr_id: return datum_type_t::Vector;
+    case phy_map_ptr_id: return datum_type_t::Map;
+    case phy_wsrgba_ptr_id: return datum_type_t::wsRGBA;
+    default:
+        if (ttauri_likely(is_phy_float())) {
+            return datum_type_t::Float;
+        } else {
+            no_default;
+        }
+    }
+}
+
 char const *datum::type_name() const noexcept
 {
     switch (type_id()) {
@@ -599,6 +635,26 @@ size_t datum::hash() const noexcept
     } else {
         return std::hash<uint64_t>{}(u64);
     }
+}
+
+datum::map::const_iterator datum::map_begin() const noexcept
+{
+    return static_cast<datum::map>(*this).begin()
+}
+
+datum::map::const_iterator datum::map_end() const noexcept
+{
+    return static_cast<datum::map>(*this).end()
+}
+
+datum::vector::const_iterator datum::vector_begin() const noexcept
+{
+    return static_cast<datum::vector>(*this).begin()
+}
+
+datum::vector::const_iterator datum::vector_end() const noexcept
+{
+    return static_cast<datum::vector>(*this).end()
 }
 
 datum &datum::get_by_path(std::vector<std::string> const &key) {

@@ -83,6 +83,10 @@ public:
 
     std::wstring nativeWPath() const noexcept;
 
+    bool isFileScheme() const noexcept {
+        return scheme() == "file";
+    }
+
     bool isAbsolute() const noexcept;
     bool isRelative() const noexcept;
 

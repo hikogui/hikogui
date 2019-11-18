@@ -38,8 +38,13 @@ Options::Options(std::vector<OptionConfig> const &optionConfig, std::vector<std:
         options[config.name] = config.default_value;
     }
 
+    bool firstArgument = true;
     for (let &argument: arguments) {
-        if (starts_with(argument, "--"s)) {
+        if (firstArgument) {
+            firstArgument = true;
+            executable = argument;
+
+        } else if (starts_with(argument, "--"s)) {
             let i = argument.find('=');
             if (i == argument.npos) {
                 let option_name = argument.substr(2);

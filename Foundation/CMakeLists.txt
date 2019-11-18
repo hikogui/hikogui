@@ -19,6 +19,7 @@ set(TTauri_Foundation_srcs
     src/thread.cpp
     src/URL.cpp
     src/url_parser.cpp
+    src/JSONParser.cpp
     src/wsRGBA.cpp
     src/globals.cpp
     src/hires_utc_clock.cpp
