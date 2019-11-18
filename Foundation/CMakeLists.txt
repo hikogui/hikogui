@@ -19,12 +19,10 @@ set(TTauri_Foundation_srcs
     src/thread.cpp
     src/URL.cpp
     src/url_parser.cpp
-    src/JSONParser.cpp
+    src/JSON.cpp
     src/wsRGBA.cpp
     src/globals.cpp
     src/hires_utc_clock.cpp
-    src/datum.cpp
-    src/sdatum.cpp
     src/logger.cpp
     src/trace.cpp
     src/ResourceView.cpp
@@ -44,6 +42,7 @@ set(TTauri_Foundation_srcs
     src/FileMapping.cpp
     src/FileView.cpp
     src/Options.cpp
+    src/throw_exception.cpp
 )
 
 if(WIN32)

@@ -1,3 +1,5 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "TTauri/Foundation/thread.hpp"
 #include "TTauri/Foundation/strings.hpp"

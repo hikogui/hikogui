@@ -32,7 +32,7 @@ enum class tokenizer_name_t : uint8_t {
     End
 };
 
-inline std::string to_string(tokenizer_name_t name) {
+constexpr char const *to_string(tokenizer_name_t name) noexcept {
     switch (name) {
     case tokenizer_name_t::NotAssigned: return "NotAssigned";
     case tokenizer_name_t::ErrorInvalidCharacter: return "ErrorInvalidCharacter";
@@ -50,6 +50,11 @@ inline std::string to_string(tokenizer_name_t name) {
     case tokenizer_name_t::End: return "End";
     default: no_default;
     }
+}
+
+inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
+{
+    return lhs << to_string(rhs);
 }
 
 struct token_t {

@@ -6,14 +6,15 @@
 #include "TTauri/Foundation/tokenizer.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/datum.hpp"
 #include <string>
 #include <optional>
 #include <string_view>
 
-namespace Messari {
+namespace TTauri {
 
-ASTRoot parseJSON(std::string_view text);
+datum parseJSON(std::string_view text);
 
-ASTRoot parseJSON(TTauri::URL const &file);
+datum parseJSON(TTauri::URL const &file);
 
 }

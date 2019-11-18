@@ -10,16 +10,21 @@
 #include <vector>
 #include <optional>
 
-namespace Messari {
+namespace TTauri {
 
-using namespace TTauri;
+struct parse_context_t {
+    std::string_view::const_iterator text_begin;
 
+    std::pair<int,int> line_and_column(token_iterator token) const noexcept {
+        return count_line_and_columns(text_begin, token->index);
+    }
+};
 
-static datum parseValue(parse_context_t &context, token_iterator token);
+static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token);
 
-static datum parseArray(parse_context_t &context, token_iterator token)
+static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator token)
 {
-    auto array = datum{datum_vector{}};
+    auto array = datum{datum::vector{}};
 
     // Required '['
     if ((*token == tokenizer_name_t::Literal) && (*token == "[")) {
@@ -46,6 +51,7 @@ static datum parseArray(parse_context_t &context, token_iterator token)
             }
 
             array.push_back(*result.value);
+            token = result.next_token;
 
             if ((*token == tokenizer_name_t::Literal) && (*token == ",")) {
                 token++;
@@ -66,9 +72,9 @@ static datum parseArray(parse_context_t &context, token_iterator token)
     return {std::move(array), token};
 }
 
-static datum parseObject(parse_context_t &context, token_iterator token)
+static parse_result_t<datum> parseObject(parse_context_t &context, token_iterator token)
 {
-    auto object = datum{datum_map{}};
+    auto object = datum{datum::map{}};
 
     // Required '{'
     if ((*token == tokenizer_name_t::Literal) && (*token == "{")) {
@@ -108,6 +114,7 @@ static datum parseObject(parse_context_t &context, token_iterator token)
 
             if (auto result = parseValue(context, token)) {
                 object[name] = *result.value;
+                token = result.next_token;
 
             } else {
                 let [line, column] = context.line_and_column(token);
@@ -136,23 +143,29 @@ static datum parseObject(parse_context_t &context, token_iterator token)
     return {std::move(object), token};
 }
 
-static datum parseValue(parse_context_t &context, token_iterator token)
+static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token)
 {
     switch (token->name) {
-    case tokenizer_name_t::StringLiteral:
-        return datum{static_cast<std::string>(*token++);
-    case tokenizer_name_t::IntegerLiteral:
-        return datum{static_cast<long long>(*token++);
-    case tokenizer_name_t::FloatLiteral:
-        return datum{static_cast<double>(*token++);
-    case tokenizer_name_t::Name:
-        let name = static_cast<std::string>(*token);
+    case tokenizer_name_t::StringLiteral: {
+        auto value = datum{static_cast<std::string>(*token++)};
+        return {std::move(value), token};
+        } break;
+    case tokenizer_name_t::IntegerLiteral: {
+        auto value = datum{static_cast<long long>(*token++)};
+        return {std::move(value), token};
+        } break;
+    case tokenizer_name_t::FloatLiteral: {
+        auto value = datum{static_cast<double>(*token++)};
+        return {std::move(value), token};
+        } break;
+    case tokenizer_name_t::Name: {
+        let name = static_cast<std::string>(*token++);
         if (name == "true") {
-            return datum{true};
+            return {datum{true}, token};
         } else if (name == "false") {
-            return datum{false};
+            return {datum{false}, token};
         } else if (name == "null") {
-            return datum{datum::null};
+            return {datum{datum::null{}}, token};
         } else {
             let [line, column] = context.line_and_column(token);
             TTAURI_THROW(parse_error("Unexpected name '{}'", name)
@@ -160,14 +173,15 @@ static datum parseValue(parse_context_t &context, token_iterator token)
                 .set<"column"_tag>(column)
             );
         }
+        } break;
     default:
         if (auto result = parseObject(context, token)) {
-            return std::move(*result.value);
+            return result;
         } else if (auto result = parseArray(context, token)) {
-            return std::move(*result.value);
+            return result;
         } else {
             let [line, column] = context.line_and_column(token);
-            TTAURI_THROW(parse_error("Unexpected token", name)
+            TTAURI_THROW(parse_error("Unexpected token '{}'", token->name)
                 .set<"line"_tag>(line)
                 .set<"column"_tag>(column)
             );
@@ -224,20 +238,20 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         result += "null";
         break;
 
-    case datm_type_t::Boolean:
+    case datum_type_t::Boolean:
         result += value ? "true" : "false";
         break;
 
-    case datm_type_t::Integer:
-        result += fmt::format("{}", static_cast<long long>(value)
+    case datum_type_t::Integer:
+        result += fmt::format("{}", static_cast<long long>(value));
         break;
 
-    case datm_type_t::Float:
-        result += fmt::format("{}", static_cast<double>(value)
+    case datum_type_t::Float:
+        result += fmt::format("{}", static_cast<double>(value));
         break;
 
-    case datm_type_t::String:
-    case datm_type_t::URL:
+    case datum_type_t::String:
+    case datum_type_t::URL:
         result += '"';
         for (let c: static_cast<std::string>(value)) {
             switch (c) {
@@ -252,12 +266,12 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         result += '"';
         break;
 
-    case datum_type_t::wsRGBA:
+    case datum_type_t::wsRGBA: {
         auto color_value = static_cast<wsRGBA>(value);
         result += '"';
         result += to_string(color_value);
         result += '"';
-        break;
+        } break;
 
     case datum_type_t::Vector:
         result.append(' ', indent);

@@ -493,12 +493,12 @@ datum &datum::append() {
     }
 }
 
-datum_type_t type() const noexcept
+datum_type_t datum::type() const noexcept
 {
     switch (type_id()) {
     case phy_boolean_id: return datum_type_t::Boolean;
     case phy_null_id: return datum_type_t::Null;
-    case phy_undefined_id: return datum_type::Undefined;
+    case phy_undefined_id: return datum_type_t::Undefined;
     case phy_integer_id0:
     case phy_integer_id1:
     case phy_integer_id2:
@@ -507,7 +507,7 @@ datum_type_t type() const noexcept
     case phy_integer_id5:
     case phy_integer_id6:
     case phy_integer_id7:
-    case phy_integer_ptr_id: return datum_type::Integer;
+    case phy_integer_ptr_id: return datum_type_t::Integer;
     case phy_string_id0:
     case phy_string_id1:
     case phy_string_id2:
@@ -639,22 +639,22 @@ size_t datum::hash() const noexcept
 
 datum::map::const_iterator datum::map_begin() const noexcept
 {
-    return static_cast<datum::map>(*this).begin()
+    return static_cast<datum::map>(*this).begin();
 }
 
 datum::map::const_iterator datum::map_end() const noexcept
 {
-    return static_cast<datum::map>(*this).end()
+    return static_cast<datum::map>(*this).end();
 }
 
 datum::vector::const_iterator datum::vector_begin() const noexcept
 {
-    return static_cast<datum::vector>(*this).begin()
+    return static_cast<datum::vector>(*this).begin();
 }
 
 datum::vector::const_iterator datum::vector_end() const noexcept
 {
-    return static_cast<datum::vector>(*this).end()
+    return static_cast<datum::vector>(*this).end();
 }
 
 datum &datum::get_by_path(std::vector<std::string> const &key) {
