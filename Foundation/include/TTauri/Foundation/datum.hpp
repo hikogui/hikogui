@@ -23,17 +23,17 @@
 #include <string_view>
 
 namespace TTauri {
-template<bool HasPointer>
+template<bool HasLargeObjects>
 class datum_impl;
 
 }
 
 namespace std {
 
-template<bool HasPointer>
-class hash<TTauri::datum_impl<HasPointer>> {
+template<bool HasLargeObjects>
+class hash<TTauri::datum_impl<HasLargeObjects>> {
 public:
-    size_t operator()(TTauri::datum_impl<HasPointer> const &value) const;
+    size_t operator()(TTauri::datum_impl<HasLargeObjects> const &value) const;
 };
 
 }
@@ -53,7 +53,7 @@ enum class datum_type_t {
     wsRGBA
 };
 
-/*! A fixed size (64 bits) class for a generic value type.
+/** A fixed size (64 bits) class for a generic value type.
  * A datum can hold and do calculations with the following types:
  *  - Floating point number (double, without NaN)
  *  - Signed integer number (52 bits)
@@ -69,11 +69,16 @@ enum class datum_type_t {
  * you can serialize your own types by adding conversion constructor and
  * operator to and from the datum on your type.
  *
- * \param HasPointer A fast datum has no support for types that require more than 64 bits.
+ * @param HasLargeObjects true when the datum will manage memory for large objects 
  */
-//gsl_suppress5(bounds.4,type.1,r.11,r.3,con.4)
-template<bool HasPointer>
+template<bool HasLargeObjects>
 class datum_impl {
+private:
+    /** Encode 0 to 6 UTF-8 code units in to a uint64_t.
+     *
+     * @param str String to encode into an uint64_t
+     * @return Encoded string, or zero if `str` did not fit.
+     */
     static constexpr uint64_t make_string(std::string_view str) {
         let len = str.size();
 
@@ -89,19 +94,40 @@ class datum_impl {
         return (string_mask + (len << 48)) | x;
     }
 
+    /** Encode a pointer into a uint64_t.
+     *
+     * @param mask A mask signifying the type of the pointer.
+     * @param ptr Pointer to encode.
+     * @return Encoded pointer.
+     */
     static uint64_t make_pointer(uint64_t mask, void *ptr) {
         return mask | (reinterpret_cast<uint64_t>(ptr) & pointer_mask);
     }
 
+    /** Convert an type_id to a mask.
+     *
+     * @param id Type id
+     * @return Encoded type id.
+     */
     static constexpr uint64_t id_to_mask(uint64_t id) {
         return id << 48;
     }
 
+    /** Make an id from a 5 bit integer.
+     * Encodes the 5 bit integer into the top 16 bits of a floating
+     * point NaN. The msb is encoded into the sign-bit the other 4 bits
+     * in bits 52:49.
+     *
+     * @param id 5 bit integer.
+     * @return 16-bit type id.
+     */
     static constexpr uint16_t make_id(uint16_t id) {
         return ((id & 0x10) << 11) | (id & 0xf) | 0x7ff0;
     }
 
+    /// Lowest integer that can be encoded into datum's storage.
     static constexpr int64_t minimum_int = 0xfffc'0000'0000'0000LL;
+    /// Highest integer that can be encoded into datum's storage.
     static constexpr int64_t maximum_int = 0x0003'ffff'ffff'ffffLL;
 
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
@@ -157,37 +183,42 @@ class datum_impl {
         uint64_t u64;
     };
 
+    /** Extract the type_id from datum's storage.
+     * This function will get the most siginicant 16 bits from
+     * the datum's storage. It uses std::memcpy() to make sure
+     * there is no undefined behaviour, due to not knowing
+     * ahead of time if a double or uint64_t was stored.
+     *
+     * @return The type_id of the stored object.
+     */
     force_inline uint16_t type_id() const noexcept {
-        // We use memcpy on this to get access to the
-        // actual bytes for determining the stored type.
-        // This gets around C++ undefined behavior of type-punning
-        // through a union.
-        // Technically you should memcpy to std::bytes[] but the
-        // implementation was really slow compared to this, since
-        // the native-endian presentation of the uint64_t destination
-        // helps a lot.
-
-        // The following is implemented as a simple direct uint16_t
-        // memory load.
         uint64_t data;
         std::memcpy(&data, this, sizeof(data));
         return static_cast<uint16_t>(data >> 48);
     }
 
+    /** Determine if a physical float is stored.
+     */
     force_inline bool is_phy_float() const noexcept {
         let id = type_id();
         return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
     }
 
+    /** Determine if a physical integer is stored.
+     */
     force_inline bool is_phy_integer() const noexcept {
         return (type_id() & 0xfff8) == 0x7ff8;
     }
 
+    /** Determine if a physical string between 0 and 6 code-units is stored.
+     */
     force_inline bool is_phy_string() const noexcept {
         let id = type_id();
         return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
     }
 
+    /** Determine if a physical boolean is stored.
+     */
     force_inline bool is_phy_boolean() const noexcept {
         return type_id() == phy_boolean_id;
     }
@@ -201,31 +232,31 @@ class datum_impl {
     }
 
     force_inline bool is_phy_pointer() const noexcept {
-        return HasPointer && (type_id() & 0xfff8) == 0xfff8;
+        return HasLargeObjects && (type_id() & 0xfff8) == 0xfff8;
     }
 
     force_inline bool is_phy_string_ptr() const noexcept {
-        return HasPointer && type_id() == phy_string_ptr_id;
+        return HasLargeObjects && type_id() == phy_string_ptr_id;
     }
 
     force_inline bool is_phy_url_ptr() const noexcept {
-        return HasPointer && type_id() == phy_url_ptr_id;
+        return HasLargeObjects && type_id() == phy_url_ptr_id;
     }
 
     force_inline bool is_phy_integer_ptr() const noexcept {
-        return HasPointer && type_id() == phy_integer_ptr_id;
+        return HasLargeObjects && type_id() == phy_integer_ptr_id;
     }
 
     force_inline bool is_phy_vector_ptr() const noexcept {
-        return HasPointer && type_id() == phy_vector_ptr_id;
+        return HasLargeObjects && type_id() == phy_vector_ptr_id;
     }
 
     force_inline bool is_phy_map_ptr() const noexcept {
-        return HasPointer && type_id() == phy_map_ptr_id;
+        return HasLargeObjects && type_id() == phy_map_ptr_id;
     }
 
     force_inline bool is_phy_wsrgba_ptr() const noexcept {
-        return HasPointer && type_id() == phy_wsrgba_ptr_id;
+        return HasLargeObjects && type_id() == phy_wsrgba_ptr_id;
     }
 
     force_inline uint64_t get_unsigned_integer() const noexcept {
@@ -243,7 +274,7 @@ class datum_impl {
     }
 
     void delete_pointer() noexcept {
-        if constexpr (HasPointer) {
+        if constexpr (HasLargeObjects) {
             switch (type_id()) {
             case phy_integer_ptr_id: delete get_pointer<int64_t>(); break;
             case phy_string_ptr_id: delete get_pointer<std::string>(); break;
@@ -257,7 +288,7 @@ class datum_impl {
     }
 
     void copy_pointer(datum_impl const &other) noexcept {
-        if constexpr (HasPointer) {
+        if constexpr (HasLargeObjects) {
             switch (other.type_id()) {
             case phy_integer_ptr_id: {
                 auto * const p = new int64_t(*other.get_pointer<int64_t>());
@@ -365,7 +396,7 @@ public:
         u64(integer_mask | value)
     {
         if (ttauri_unlikely(value > maximum_int)) {
-            if constexpr (HasPointer) {
+            if constexpr (HasLargeObjects) {
                 auto * const p = new uint64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
@@ -379,7 +410,7 @@ public:
         u64(integer_mask | (static_cast<uint64_t>(value) & 0x0007ffff'ffffffff))
     {
         if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
-            if constexpr (HasPointer) {
+            if constexpr (HasLargeObjects) {
                 auto * const p = new int64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
@@ -394,7 +425,7 @@ public:
 
     datum_impl(std::string_view value) noexcept : u64(make_string(value)) {
         if (value.size() > 6) {
-            if constexpr (HasPointer) {
+            if constexpr (HasLargeObjects) {
                 auto * const p = new std::string(value);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
@@ -407,25 +438,25 @@ public:
 
     datum_impl(char const *value) noexcept : datum_impl(std::string_view(value)) {}
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl(URL const &value) noexcept {
         auto * const p = new URL(value);
         u64 = make_pointer(url_ptr_mask, p);
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl(datum_impl::vector const &value) noexcept {
         auto * const p = new datum_impl::vector(value);
         u64 = make_pointer(vector_ptr_mask, p);
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl(datum_impl::map const &value) noexcept {
         auto * const p = new datum_impl::map(value);
         u64 = make_pointer(map_ptr_mask, p);
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl(wsRGBA const &value) noexcept {
         auto * const p = new wsRGBA(value);
         u64 = make_pointer(wsrgba_ptr_mask, p);
@@ -461,7 +492,7 @@ public:
 
         u64 = integer_mask | static_cast<uint64_t>(rhs);
         if (ttauri_unlikely(rhs > maximum_int)) {
-            if constexpr (HasPointer) {
+            if constexpr (HasLargeObjects) {
                 auto * const p = new uint64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
@@ -479,7 +510,7 @@ public:
 
         u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0007ffff'ffffffff);
         if (ttauri_unlikely(rhs < minimum_int || rhs > maximum_int)) {
-            if constexpr (HasPointer) {
+            if constexpr (HasLargeObjects) {
                 auto * const p = new int64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
@@ -513,7 +544,7 @@ public:
 
         u64 = make_string(rhs);
         if (rhs.size() > 6) {
-            if constexpr (HasPointer) {
+            if constexpr (HasLargeObjects) {
                 auto * const p = new std::string(rhs);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
@@ -533,7 +564,7 @@ public:
         return *this;
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(URL const &rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
@@ -544,7 +575,7 @@ public:
         return *this;
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::vector const &rhs) {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
@@ -556,7 +587,7 @@ public:
         return *this;
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::map const &rhs) {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
@@ -568,7 +599,7 @@ public:
         return *this;
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(wsRGBA const &rhs) {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
@@ -779,7 +810,7 @@ public:
         }
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     explicit operator URL() const {
         if (is_string()) {
             return URL{static_cast<std::string>(*this)};
@@ -790,7 +821,7 @@ public:
         }
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     explicit operator datum_impl::vector() const {
         if (is_vector()) {
             return *get_pointer<datum_impl::vector>();
@@ -799,7 +830,7 @@ public:
         }
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     explicit operator datum_impl::map() const {
         if (is_map()) {
             return *get_pointer<datum_impl::map>();
@@ -808,7 +839,7 @@ public:
         }
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     explicit operator wsRGBA() const {
         if (is_wsrgba()) {
             return *get_pointer<wsRGBA>();
@@ -1088,23 +1119,23 @@ public:
         }
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename map::const_iterator map_begin() const noexcept {
         return static_cast<datum_impl::map>(*this).begin();
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename map::const_iterator map_end() const noexcept {
         return static_cast<datum_impl::map>(*this).end();
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename vector::const_iterator vector_begin() const noexcept {
         let &v = static_cast<datum_impl::vector>(*this);
         return v.begin();
     }
 
-    template<bool P=HasPointer, std::enable_if_t<P,int> = 0>
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename vector::const_iterator vector_end() const noexcept{
         return static_cast<datum_impl::vector const>(*this).end();
     }
@@ -1521,7 +1552,7 @@ public:
     }
 
     template<typename T>
-    friend bool will_cast_to(datum_impl<HasPointer> const &rhs) {
+    friend bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
         if constexpr (std::is_same_v<T, bool>) {
             return true;
         } else if constexpr (std::is_same_v<T, char>) {
@@ -1546,8 +1577,8 @@ public:
     }
 };
 
-template<bool HasPointer>
-bool operator<(typename datum_impl<HasPointer>::map const &lhs, typename datum_impl<HasPointer>::map const &rhs) noexcept {
+template<bool HasLargeObjects>
+bool operator<(typename datum_impl<HasLargeObjects>::map const &lhs, typename datum_impl<HasLargeObjects>::map const &rhs) noexcept {
     auto lhs_keys = transform<datum_impl::vector>(lhs, [](auto x) { return x.first; });
     auto rhs_keys = transform<datum_impl::vector>(lhs, [](auto x) { return x.first; });
 
@@ -1574,8 +1605,8 @@ using sdatum = datum_impl<false>;
 
 namespace std {
 
-template<bool HasPointer>
-inline size_t hash<TTauri::datum_impl<HasPointer>>::operator()(TTauri::datum_impl<HasPointer> const &value) const {
+template<bool HasLargeObjects>
+inline size_t hash<TTauri::datum_impl<HasLargeObjects>>::operator()(TTauri::datum_impl<HasLargeObjects> const &value) const {
     return value.hash();
 }
 
