@@ -757,9 +757,15 @@ public:
 
     explicit operator std::string() const noexcept {
         switch (type_id()) {
-        case phy_boolean_id: return static_cast<bool>(*this) ? "true" : "false";
-        case phy_null_id: return "null";
-        case phy_undefined_id: return "undefined";
+        case phy_boolean_id:
+            return static_cast<bool>(*this) ? "true" : "false";
+
+        case phy_null_id:
+            return "null";
+
+        case phy_undefined_id:
+            return "undefined";
+
         case phy_integer_id0:
         case phy_integer_id1:
         case phy_integer_id2:
@@ -768,7 +774,13 @@ public:
         case phy_integer_id5:
         case phy_integer_id6:
         case phy_integer_id7: return fmt::format("{}", static_cast<int64_t>(*this));
-        case phy_integer_ptr_id: return fmt::format("{}", static_cast<int64_t>(*this));
+        case phy_integer_ptr_id:
+            if constexpr (HasLargeObjects) {
+                return fmt::format("{}", static_cast<int64_t>(*this));
+            } else {
+                no_default;
+            }
+
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -776,27 +788,76 @@ public:
         case phy_string_id4:
         case phy_string_id5:
         case phy_string_id6: {
-            let length = size();
-            char buffer[6];
-            for (int i = 0; i < length; i++) {
-                buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
-            }
-            return std::string(buffer, length);
-            } break;
-        case phy_string_ptr_id: return *get_pointer<std::string>();
-        case phy_url_ptr_id: return get_pointer<URL>()->string();
-        case phy_vector_ptr_id: {
-            std::string r = "[";
-            auto count = 0;
-            for (let &v: *get_pointer<datum_impl::vector>()) {
-                if (count++ > 0) {
-                    r += ", ";
+                let length = size();
+                char buffer[6];
+                for (int i = 0; i < length; i++) {
+                    buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
                 }
-                r += v.repr();
+                return std::string(buffer, length);
             }
-            r += "]";
-            return r;
-            } break;
+
+        case phy_string_ptr_id:
+            if constexpr (HasLargeObjects) {
+                return *get_pointer<std::string>();
+            } else {
+                no_default;
+            }
+
+        case phy_url_ptr_id:
+            if constexpr (HasLargeObjects) {
+                return get_pointer<URL>()->string();
+            } else {
+                no_default;
+            }
+
+        case phy_wsrgba_ptr_id:
+            if constexpr (HasLargeObjects) {
+                return to_string(*get_pointer<wsRGBA>());
+            } else {
+                no_default;
+            }
+
+        case phy_vector_ptr_id:
+            if constexpr (HasLargeObjects) {
+                std::string r = "[";
+                auto count = 0;
+                for (auto i = vector_begin(); i != vector_end(); i++) {
+                    if (count++ > 0) {
+                        r += ", ";
+                    }
+                    r += i->repr();
+                }
+                r += "]";
+                return r;
+            } else {
+                no_default;
+            }
+
+        case phy_map_ptr_id:
+            if constexpr (HasLargeObjects) {
+                std::vector<std::pair<datum,datum>> items;
+                items.reserve(size());
+                std::copy(map_begin(), map_end(), std::back_inserter(items));
+                std::sort(items.begin(), items.end(), [](auto &a, auto &b) {
+                    return a.first < b.first;
+                });
+
+                std::string r = "{";
+                auto count = 0;
+                for (auto &item: items) {
+                    if (count++ > 0) {
+                        r += ", ";
+                    }
+                    r += item.first.repr();
+                    r += ": ";
+                    r += item.second.repr();
+                }
+                r += "}";
+                return r;
+            } else {
+                no_default;
+            }
+
         default:
             if (is_phy_float()) {
                 auto str = fmt::format("{:g}", static_cast<double>(*this));
@@ -1121,23 +1182,38 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename map::const_iterator map_begin() const noexcept {
-        return static_cast<datum_impl::map>(*this).begin();
+        if (is_phy_map_ptr()) {
+            return get_pointer<datum_impl::map>()->begin();
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("map_begin() expect datum to be a map, but it is a {}.", this->type_name());
+        }
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename map::const_iterator map_end() const noexcept {
-        return static_cast<datum_impl::map>(*this).end();
+        if (is_phy_map_ptr()) {
+            return get_pointer<datum_impl::map>()->end();
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("map_end() expect datum to be a map, but it is a {}.", this->type_name());
+        }
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename vector::const_iterator vector_begin() const noexcept {
-        let &v = static_cast<datum_impl::vector>(*this);
-        return v.begin();
+        if (is_phy_vector_ptr()) {
+            return get_pointer<datum_impl::vector>()->begin();
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("vector_begin() expect datum to be a vector, but it is a {}.", this->type_name());
+        }
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     typename vector::const_iterator vector_end() const noexcept{
-        return static_cast<datum_impl::vector const>(*this).end();
+        if (is_phy_vector_ptr()) {
+            return get_pointer<datum_impl::vector>()->end();
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("vector_end() expect datum to be a vector, but it is a {}.", this->type_name());
+        }
     }
 
     size_t hash() const noexcept{

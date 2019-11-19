@@ -5,16 +5,16 @@
 
 #include "TTauri/Foundation/config.hpp"
 #include "TTauri/Application/ApplicationDelegate.hpp"
-#if defined(TTAURI_AUDIO_ENABLED)
+#if defined(BUILD_TTAURI_AUDIO)
 #include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystemDelegate.hpp"
 #endif
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
 #endif
-#if defined(TTAURI_CONFIG_ENABLED)
+#if defined(BUILD_TTAURI_CONFIG)
 #include "TTauri/Config/globals.hpp"
 #endif
 #include "TTauri/Foundation/globals.hpp"
@@ -39,10 +39,10 @@ class Application_base_dummy {};
  *
  */
 class Application_base : public Application_base_dummy
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
     , GUI::InstanceDelegate
 #endif
-#if defined(TTAURI_AUDIO_ENABLED)
+#if defined(BUILD_TTAURI_AUDIO)
     , Audio::AudioSystemDelegate
 #endif
 {
@@ -56,13 +56,13 @@ public:
     std::vector<std::string> arguments;
 
     FoundationGlobals i_foundation;
-#if defined(TTAURI_CONFIG_ENABLED)
+#if defined(BUILD_TTAURI_CONFIG)
     Config::ConfigGlobals i_config;
 #endif
-#if defined(TTAURI_AUDIO_ENABLED)
+#if defined(BUILD_TTAURI_AUDIO)
     Audio::AudioGlobals i_audio;
 #endif
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
     GUI::GUIGlobals i_gui;
     GUI::Widgets::WidgetsGlobals i_widgets;
 #endif
@@ -84,13 +84,7 @@ public:
      */
     virtual int loop() = 0;
 
-#if defined(TTAURI_GUI_ENABLED)
-    /*! Called by the GUI when the last window was closed.
-    */
-    void lastWindowClosed() override;
-#endif
-
-#if defined(TTAURI_AUDIO_ENABLED)
+#if defined(BUILD_TTAURI_AUDIO)
     /*! Called when the device list has changed.
     * This can happen when external devices are connected or disconnected.
     */

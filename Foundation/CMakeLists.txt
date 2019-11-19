@@ -1,9 +1,9 @@
 
 project(TTauri_Foundation CXX)
 
-option(TTAURI_GUI_ENABLED "TTAURI_GUI_ENABLED" OFF) 
-option(TTAURI_AUDIO_ENABLED "TTAURI_AUDIO_ENABLED" OFF) 
-option(TTAURI_CONFIG_ENABLED "TTAURI_CONFIG_ENABLED" OFF) 
+set(BUILD_TTAURI_GUI ON CACHE BOOL "Enable GUI")
+set(BUILD_TTAURI_AUDIO ON CACHE BOOL "Enable Audio")
+set(BUILD_TTAURI_CONFIG ON CACHE BOOL "Enable Config")
 
 find_package(GTest)
 find_package(python COMPONENTS Interpreter)

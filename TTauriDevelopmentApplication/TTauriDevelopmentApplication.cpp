@@ -55,6 +55,10 @@ public:
         return "TTauri Development Application";
     }
 
+    std::vector<TTauri::OptionConfig> optionConfig() const noexcept override {
+        return {};
+    }
+
     bool startingLoop() override
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();

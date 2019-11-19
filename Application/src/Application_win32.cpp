@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Application/Application_win32.hpp"
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Window.hpp"
 #endif
@@ -40,12 +40,12 @@ Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delega
 {
 }
 
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
 void Application_win32::lastWindowClosed()
 {
     runOnMainThread([&]() {
         // Let the application have a chance to open new windows from the main thread.
-        Application_base::lastWindowClosed();
+        delegate->lastWindowClosed();
 
         if (GUI::GUI_globals->instance().getNumberOfWindows() == 0) {
             LOG_INFO("Application quiting due to all windows having been closed.");

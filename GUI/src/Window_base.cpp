@@ -49,6 +49,8 @@ void Window_base::openingWindow() {
     Window *thisWindow = dynamic_cast<Window *>(this);
     assert(thisWindow);
     delegate->openingWindow(*thisWindow);
+
+    std::scoped_lock lock(GUI_globals->mutex);
     state = State::NoDevice;
 }
 
@@ -56,6 +58,8 @@ void Window_base::closingWindow() {
     Window* thisWindow = dynamic_cast<Window*>(this);
     assert(thisWindow);
     delegate->closingWindow(*thisWindow);
+
+    std::scoped_lock lock(GUI_globals->mutex);
     state = State::NoWindow;
 }
 

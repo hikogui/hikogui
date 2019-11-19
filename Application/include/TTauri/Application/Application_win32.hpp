@@ -20,7 +20,7 @@ public:
     Application_win32(Application_win32 &&) = delete;
     Application_win32 &operator=(Application_win32 &&) = delete;
 
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
     void lastWindowClosed() override;
 #endif
 

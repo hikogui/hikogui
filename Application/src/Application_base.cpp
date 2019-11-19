@@ -11,17 +11,16 @@ namespace TTauri {
 
 using namespace std;
 
-
 Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance, int nCmdShow) :
     delegate(applicationDelegate),
     i_foundation(applicationDelegate->optionConfig(), arguments, std::this_thread::get_id(), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
-#if defined(TTAURI_CONFIG_ENABLED)
+#if defined(BUILD_TTAURI_CONFIG)
     i_config(),
 #endif
-#if defined(TTAURI_AUDIO_ENABLED)
+#if defined(BUILD_TTAURI_AUDIO)
     i_audio(this),
 #endif
-#if defined(TTAURI_GUI_ENABLED)
+#if defined(BUILD_TTAURI_GUI)
 #if OPERATING_SYSTEM == OS_WINDOWS
     i_gui(this, hInstance, nCmdShow),
 #else
@@ -52,14 +51,7 @@ bool Application_base::startingLoop()
     return delegate->startingLoop();
 }
 
-#if defined(TTAURI_GUI_ENABLED)
-void Application_base::lastWindowClosed()
-{
-    delegate->lastWindowClosed();
-}
-#endif
-
-#if defined(TTAURI_AUDIO_ENABLED)
+#if defined(BUILD_TTAURI_AUDIO)
 void Application_base::audioDeviceListChanged()
 {
     delegate->audioDeviceListChanged();
