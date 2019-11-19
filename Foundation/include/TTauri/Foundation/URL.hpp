@@ -47,10 +47,10 @@ private:
 
 public:
     URL() = default;
-    URL(std::string_view url);
-    URL(char const *url);
-    URL(std::string const &url);
-    URL(url_parts const &parts);
+    explicit URL(std::string_view url);
+    explicit URL(char const *url);
+    explicit URL(std::string const &url);
+    explicit URL(url_parts const &parts);
 
     URL(URL const &other) = default;
     URL(URL &&other) = default;
@@ -145,6 +145,7 @@ inline bool operator!=(URL const &lhs, URL const &rhs) noexcept { return !(lhs =
 inline bool operator>=(URL const &lhs, URL const &rhs) noexcept { return !(lhs < rhs); }
 inline bool operator<=(URL const &lhs, URL const &rhs) noexcept { return !(lhs > rhs); }
 inline URL operator/(URL const &lhs, URL const &rhs) noexcept { return lhs.urlByAppendingPath(rhs); }
+inline URL operator/(URL const &lhs, std::string_view const &rhs) noexcept { return lhs.urlByAppendingPath(URL{rhs}); }
 inline std::string to_string(URL const &url) noexcept { return url.string(); }
 
 std::ostream& operator<<(std::ostream& lhs, const URL& rhs);

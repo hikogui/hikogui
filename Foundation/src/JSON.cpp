@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/datum.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Foundation/JSONParser.hpp"
+#include "TTauri/Foundation/JSON.hpp"
 #include <vector>
 #include <optional>
 
@@ -133,7 +133,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
 
         } else {
             let [line, column] = context.line_and_column(token);
-            TTAURI_THROW(parse_error("Expecting a key-string as the next item in an object.")
+            TTAURI_THROW(parse_error("Unexpected token {}, expected a key or close-brace.", *token)
                 .set<"line"_tag>(line)
                 .set<"column"_tag>(column)
             );
@@ -203,6 +203,7 @@ datum parseJSON(std::string_view text)
 
     if (auto result = parseObject(context, token)) {
         root = std::move(*result.value);
+        token = result.next_token;
 
     } else {
         let [line, column] = context.line_and_column(token);

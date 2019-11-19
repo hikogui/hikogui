@@ -66,8 +66,99 @@ struct token_t {
         return name != tokenizer_name_t::NotAssigned;
     }
 
-    explicit operator int () const noexcept {
-        return std::stoi(value);
+    explicit operator long double () const {
+        try {
+            return std::stold(value);
+        } catch(...) {
+            TTAURI_THROW(parse_error("Could not convert token {} to long double", *this));
+        }
+    }
+
+    explicit operator double () const {
+        try {
+            return std::stod(value);
+        } catch(...) {
+            TTAURI_THROW(parse_error("Could not convert token {} to double", *this));
+        }
+    }
+
+    explicit operator float () const {
+        try {
+            return std::stof(value);
+        } catch(...) {
+            TTAURI_THROW(parse_error("Could not convert token {} to float", *this));
+        }
+    }
+
+    explicit operator signed long long () const {
+        try {
+            return std::stoll(value);
+        } catch(...) {
+            TTAURI_THROW(parse_error("Could not convert token {} to signed long long", *this));
+        }
+    }
+
+    explicit operator signed long () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to signed long", *this))
+        }
+    }
+
+    explicit operator signed int () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to signed int", *this))
+        }
+    }
+
+    explicit operator signed short () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to signed short", *this))
+        }
+    }
+
+    explicit operator signed char () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to signed char", *this))
+        }
+    }
+
+    explicit operator unsigned long long () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < 0) {
+            TTAURI_THROW(parse_error("Could not convert token {} to unsigned long long", *this))
+        }
+    }
+
+    explicit operator unsigned long () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < 0 || v > std::numeric_limits<unsigned long>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to unsigned long", *this))
+        }
+    }
+
+    explicit operator unsigned int () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < 0 || v > std::numeric_limits<unsigned int>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to unsigned int", *this))
+        }
+    }
+
+    explicit operator unsigned short () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < 0 || v > std::numeric_limits<unsigned short>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to unsigned short", *this))
+        }
+    }
+
+    explicit operator unsigned char () const {
+        auto v = static_cast<signed long long>(*this);
+        if (v < 0 || v > std::numeric_limits<unsigned char>::max()) {
+            TTAURI_THROW(parse_error("Could not convert token {} to unsigned char", *this))
+        }
     }
 
     explicit operator std::string () const noexcept {

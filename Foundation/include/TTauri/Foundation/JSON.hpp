@@ -17,4 +17,6 @@ datum parseJSON(std::string_view text);
 
 datum parseJSON(TTauri::URL const &file);
 
+std::string dumpJSON(datum const &root);
+
 }

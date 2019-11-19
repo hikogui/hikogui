@@ -374,12 +374,6 @@ public:
         return *this;
     }
 
-    template<typename Arg1, typename Arg2, typename... Args>
-    explicit datum_impl(Arg1 arg1, Arg2 arg2, Args... args) noexcept {
-        auto * const p = new datum_impl::vector(datum_impl(arg1), datum_impl(arg2), datum_impl(args)...);
-        u64 = make_pointer(vector_ptr_mask, p);
-    }
-
     datum_impl(datum_impl::null) noexcept : u64(null_mask) {}
 
     template <class T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
@@ -477,9 +471,9 @@ public:
         }
 
         if (rhs == rhs) {
-            u64 = undefined_mask;
-        } else {
             f64 = rhs;
+        } else {
+            u64 = undefined_mask;
         }
         return *this;
     }
