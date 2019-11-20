@@ -197,28 +197,20 @@ private:
         return static_cast<uint16_t>(data >> 48);
     }
 
-    /** Determine if a physical float is stored.
-     */
     force_inline bool is_phy_float() const noexcept {
         let id = type_id();
         return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
     }
 
-    /** Determine if a physical integer is stored.
-     */
     force_inline bool is_phy_integer() const noexcept {
         return (type_id() & 0xfff8) == 0x7ff8;
     }
 
-    /** Determine if a physical string between 0 and 6 code-units is stored.
-     */
     force_inline bool is_phy_string() const noexcept {
         let id = type_id();
         return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
     }
 
-    /** Determine if a physical boolean is stored.
-     */
     force_inline bool is_phy_boolean() const noexcept {
         return type_id() == phy_boolean_id;
     }
@@ -259,20 +251,30 @@ private:
         return HasLargeObjects && type_id() == phy_wsrgba_ptr_id;
     }
 
+    /** Extract the 48 bit unsigned integer from datum's storage.
+     */
     force_inline uint64_t get_unsigned_integer() const noexcept {
         return (u64 << 16) >> 16;
     }
 
+    /** Extract the 48 bit signed integer from datum's storage and sign extent to 64 bit.
+     */
     force_inline int64_t get_signed_integer() const noexcept {
         return static_cast<int64_t>(u64 << 16) >> 16;
     }
 
+    /** Extract a pointer for an existing object from datum's storage.
+     * Canonical pointers on x86 and ARM are at most 48 bit and are sign extended to 64 bit.
+     * Since the pointer is stored as a 48 bit integer, this function will launder it.
+     */
     template<typename O>
     force_inline O *get_pointer() const {
-        // canonical pointers on x86 and ARM are 48 bit, with sign extension of bit 47.
         return std::launder(reinterpret_cast<O *>(get_signed_integer()));
     }
 
+    /** Delete the object that the datum is pointing to.
+     * This function should only be called on a datum that holds a pointer.
+     */
     void delete_pointer() noexcept {
         if constexpr (HasLargeObjects) {
             switch (type_id()) {
@@ -287,6 +289,11 @@ private:
         }
     }
 
+    /** Copy the object pointed to by the other datum into this datum.
+     * Other datum must point to an object. This datum must not point to an object.
+     *
+     * @param other The other datum which holds a pointer to an object.
+     */
     void copy_pointer(datum_impl const &other) noexcept {
         if constexpr (HasLargeObjects) {
             switch (other.type_id()) {
@@ -903,6 +910,13 @@ public:
         }
     }
 
+    /** Index into a datum::map or datum::vector.
+     * This datum must hold a vector, map or undefined.
+     * When this datum holds undefined it is treated as if datum holds an empty map.
+     * When this datum holds a vector, the index must be datum holding an integer.
+     *
+     * @param rhs An index into the map or vector.
+     */
     datum_impl &operator[](datum_impl const &rhs) {
         if (is_undefined()) {
             // When accessing a name on an undefined it means we need replace it with an empty map.
@@ -929,6 +943,13 @@ public:
         }
     }
 
+    /** Index into a datum::map or datum::vector.
+     * This datum must hold a vector, map or undefined.
+     * When this datum holds undefined it is treated as if datum holds an empty map.
+     * When this datum holds a vector, the index must be datum holding an integer.
+     *
+     * @param rhs An index into the map or vector.
+     */
     datum_impl operator[](datum_impl const &rhs) const {
         if (is_map()) {
             auto *m = get_pointer<datum_impl::map>();
@@ -952,6 +973,11 @@ public:
         }
     }
 
+    /** Append and return a reference to a datum holding undefined to this datum.
+     * This datum holding a undefined will be treated as if it is holding an empty vector.
+     * This datum must hold a vector.
+     * @return a reference to datum holding a vector.
+     */ 
     datum_impl &append() {
         if (is_undefined()) {
             // When appending on undefined it means we need replace it with an empty vector.
@@ -969,24 +995,38 @@ public:
         }
     }
 
-    void push_back(datum_impl const &value) {
-        append() = value;
+    template<typename... Args>
+    void emplace_back(Args... &&args) {
+        if (is_undefined()) {
+            // When appending on undefined it means we need replace it with an empty vector.
+            auto *p = new datum_impl::vector();
+            u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        }
+
+        if (is_vector()) {
+            auto *v = get_pointer<datum_impl::vector>();
+            v->emplace_back(std::forward<Args>(args)...);
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot append new item onto type {}", type_name());
+        }
     }
 
-    void push_back(datum_impl &&value) {
-        append() = std::move(value);
-    }
+    template<typename Arg>
+    void push_back(Arg &&arg) {
+        if (is_undefined()) {
+            // When appending on undefined it means we need replace it with an empty vector.
+            auto *p = new datum_impl::vector();
+            u64 = vector_ptr_mask | (reinterpret_cast<uint64_t>(p) & pointer_mask);
+        }
 
-    template<typename T>
-    std::enable_if_t<!std::is_same_v<T, datum_impl>, datum_impl>
-    &operator[](T const &rhs) {
-        return (*this)[datum_impl{rhs}];
-    }
+        if (is_vector()) {
+            auto *v = get_pointer<datum_impl::vector>();
+            v->push_back(std::forward<Arg>(arg));
 
-    template<typename T>
-    std::enable_if_t<!std::is_same_v<T, datum_impl>, datum_impl>
-    operator[](T const &rhs) const {
-        return (*this)[datum_impl{rhs}];
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot append new item onto type {}", type_name());
+        }
     }
 
     std::string repr() const noexcept{
