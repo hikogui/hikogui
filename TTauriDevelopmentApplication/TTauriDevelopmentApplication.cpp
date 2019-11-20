@@ -55,8 +55,8 @@ public:
         return "TTauri Development Application";
     }
 
-    std::vector<TTauri::OptionConfig> optionConfig() const noexcept override {
-        return {};
+    TTauri::datum configuration(std::vector<std::string> arguments) const noexcept override {
+        return TTauri::datum::map{};
     }
 
     bool startingLoop() override
