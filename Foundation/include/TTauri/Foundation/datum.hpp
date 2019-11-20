@@ -53,6 +53,24 @@ enum class datum_type_t {
     wsRGBA
 };
 
+inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
+{
+    switch (rhs) {
+    case datum_type_t::Null: lhs << "Null"; break;
+    case datum_type_t::Undefined: lhs << "Undefined"; break;
+    case datum_type_t::Boolean: lhs << "Boolean"; break;
+    case datum_type_t::Integer: lhs << "Integer"; break;
+    case datum_type_t::Float: lhs << "Float"; break;
+    case datum_type_t::String: lhs << "String"; break;
+    case datum_type_t::URL: lhs << "URL"; break;
+    case datum_type_t::Map: lhs << "Map"; break;
+    case datum_type_t::Vector: lhs << "Vector"; break;
+    case datum_type_t::wsRGBA: lhs << "wsRGBA"; break;
+    default: no_default;
+    }
+    return lhs;
+}
+
 /** A fixed size (64 bits) class for a generic value type.
  * A datum can hold and do calculations with the following types:
  *  - Floating point number (double, without NaN)
@@ -917,6 +935,7 @@ public:
      *
      * @param rhs An index into the map or vector.
      */
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator[](datum_impl const &rhs) {
         if (is_undefined()) {
             // When accessing a name on an undefined it means we need replace it with an empty map.
@@ -950,6 +969,7 @@ public:
      *
      * @param rhs An index into the map or vector.
      */
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl operator[](datum_impl const &rhs) const {
         if (is_map()) {
             auto *m = get_pointer<datum_impl::map>();
@@ -973,11 +993,38 @@ public:
         }
     }
 
+    /** Check if an index is contained in a datum.
+     * This datum must hold a vector, map or undefined.
+     * When this datum holds undefined it is treated as if datum holds an empty map.
+     * When this datum holds a vector, the index must be datum holding an integer.
+     *
+     * @param rhs An index into the map or vector.
+     * @return true if the index is in the map or vector.
+     */
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    bool contains(datum_impl const &rhs) const noexcept {
+        if (is_map()) {
+            auto *m = get_pointer<datum_impl::map>();
+            let i = m->find(rhs);
+            return i != m->end();
+
+        } else if (is_vector() && rhs.is_integer()) {
+            let index = static_cast<int64_t>(rhs);
+            auto *v = get_pointer<datum_impl::vector>();
+
+            return index >= 0 && index < to_signed(v->size());
+
+        } else {
+            return false;
+        }
+    }
+
     /** Append and return a reference to a datum holding undefined to this datum.
      * This datum holding a undefined will be treated as if it is holding an empty vector.
      * This datum must hold a vector.
      * @return a reference to datum holding a vector.
-     */ 
+     */
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &append() {
         if (is_undefined()) {
             // When appending on undefined it means we need replace it with an empty vector.
@@ -996,7 +1043,7 @@ public:
     }
 
     template<typename... Args>
-    void emplace_back(Args... &&args) {
+    void emplace_back(Args &&... args) {
         if (is_undefined()) {
             // When appending on undefined it means we need replace it with an empty vector.
             auto *p = new datum_impl::vector();
@@ -1422,9 +1469,43 @@ public:
         return !(lhs < rhs);
     }
 
-    //friend bool operator!(datum_impl const &rhs) const noexcept {
-    //    return !static_cast<bool>(rhs);
-    //}
+    /** Merge two datums together, such that the second will override values on the first.
+     * This will merge map-datums together by recursively deep merging matching items.
+     *
+     * @param lhs First datum.
+     * @param rhs Second datum that will override the first datum.
+     * @return 
+     */
+    friend datum_impl deep_merge(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+        datum_impl result;
+
+        if (lhs.is_map() && rhs.is_map()) {
+            result = lhs;
+
+            auto result_map = result.get_pointer<datum_impl::map>();
+            for (auto rhs_i = rhs.map_begin(); rhs_i != rhs.map_end(); rhs_i++) {
+                auto result_i = result_map->find(rhs_i->first);
+                if (result_i == result_map->end()) {
+                    result_map->insert(*rhs_i);
+                } else {
+                    result_i->second = deep_merge(result_i->second, rhs_i->second);
+                }
+            }
+
+        } else if (lhs.is_vector() && rhs.is_vector()) {
+            result = lhs;
+
+            auto result_vector = result.get_pointer<datum_impl::vector>();
+            for (auto rhs_i = rhs.vector_begin(); rhs_i != rhs.vector_end(); rhs_i++) {
+                result_vector->push_back(*rhs_i);
+            }
+
+        } else {
+            result = rhs;
+        }
+
+        return result;
+    }
 
     friend datum_impl operator~(datum_impl const &rhs) {
         if (rhs.is_integer()) {
@@ -1661,31 +1742,34 @@ public:
         memswap(lhs, rhs);
     }
 
-    template<typename T>
-    friend bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
-        if constexpr (std::is_same_v<T, bool>) {
-            return true;
-        } else if constexpr (std::is_same_v<T, char>) {
-            return rhs.is_string();
-        } else if constexpr (std::is_arithmetic_v<T>) {
-            return rhs.is_numeric();
-        } else if constexpr (std::is_same_v<T, datum_impl::undefined>) {
-            return rhs.is_undefined();
-        } else if constexpr (std::is_same_v<T, datum_impl::vector>) {
-            return rhs.is_vector();
-        } else if constexpr (std::is_same_v<T, datum_impl::map>) {
-            return rhs.is_map();
-        } else if constexpr (std::is_same_v<T, wsRGBA>) {
-            return rhs.is_wsrgba();
-        } else if constexpr (std::is_same_v<T, URL>) {
-            return rhs.is_url() || rhs.is_string();
-        } else if constexpr (std::is_same_v<T, std::string>) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 };
+
+template<typename T, bool HasLargeObjects>
+inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
+    if constexpr (std::is_same_v<T, bool>) {
+        return true;
+    } else if constexpr (std::is_same_v<T, char>) {
+        return rhs.is_string();
+    } else if constexpr (std::is_arithmetic_v<T>) {
+        return rhs.is_numeric();
+    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::undefined>) {
+        return rhs.is_undefined();
+    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::null>) {
+        return rhs.is_null();
+    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::vector>) {
+        return rhs.is_vector();
+    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::map>) {
+        return rhs.is_map();
+    } else if constexpr (std::is_same_v<T, wsRGBA>) {
+        return rhs.is_wsrgba();
+    } else if constexpr (std::is_same_v<T, URL>) {
+        return rhs.is_url() || rhs.is_string();
+    } else if constexpr (std::is_same_v<T, std::string>) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 template<bool HasLargeObjects>
 bool operator<(typename datum_impl<HasLargeObjects>::map const &lhs, typename datum_impl<HasLargeObjects>::map const &rhs) noexcept {

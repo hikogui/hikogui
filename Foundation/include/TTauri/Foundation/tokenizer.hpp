@@ -103,6 +103,7 @@ struct token_t {
         if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to signed long", *this))
         }
+        return v;
     }
 
     explicit operator signed int () const {
@@ -110,6 +111,7 @@ struct token_t {
         if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to signed int", *this))
         }
+        return v;
     }
 
     explicit operator signed short () const {
@@ -117,6 +119,7 @@ struct token_t {
         if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to signed short", *this))
         }
+        return v;
     }
 
     explicit operator signed char () const {
@@ -124,6 +127,7 @@ struct token_t {
         if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to signed char", *this))
         }
+        return v;
     }
 
     explicit operator unsigned long long () const {
@@ -131,6 +135,7 @@ struct token_t {
         if (v < 0) {
             TTAURI_THROW(parse_error("Could not convert token {} to unsigned long long", *this))
         }
+        return v;
     }
 
     explicit operator unsigned long () const {
@@ -138,6 +143,7 @@ struct token_t {
         if (v < 0 || v > std::numeric_limits<unsigned long>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to unsigned long", *this))
         }
+        return v;
     }
 
     explicit operator unsigned int () const {
@@ -145,6 +151,7 @@ struct token_t {
         if (v < 0 || v > std::numeric_limits<unsigned int>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to unsigned int", *this))
         }
+        return v;
     }
 
     explicit operator unsigned short () const {
@@ -152,6 +159,7 @@ struct token_t {
         if (v < 0 || v > std::numeric_limits<unsigned short>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to unsigned short", *this))
         }
+        return v;
     }
 
     explicit operator unsigned char () const {
@@ -159,6 +167,7 @@ struct token_t {
         if (v < 0 || v > std::numeric_limits<unsigned char>::max()) {
             TTAURI_THROW(parse_error("Could not convert token {} to unsigned char", *this))
         }
+        return v;
     }
 
     explicit operator std::string () const noexcept {

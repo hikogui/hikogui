@@ -12,9 +12,9 @@
 
 namespace TTauri {
 
-FoundationGlobals::FoundationGlobals(std::vector<OptionConfig> const &optionConfig, std::vector<std::string> const &arguments, std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept :
+FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, datum configuration, std::string applicationName, URL tzdata_location) noexcept :
     main_thread_id(main_thread_id),
-    options(optionConfig, arguments),
+    configuration(std::move(configuration)),
     applicationName(std::move(applicationName))
 {
     required_assert(Foundation_globals == nullptr);

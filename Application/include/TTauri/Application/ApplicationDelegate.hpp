@@ -4,8 +4,9 @@
 #pragma once
 
 #include "TTauri/Application/Application_forward.hpp"
-#include "TTauri/Foundation/Options.hpp"
+#include "TTauri/Foundation/datum.hpp"
 #include <string>
+#include <vector>
 
 namespace TTauri {
 
@@ -27,7 +28,7 @@ public:
 
     /*! Return the possible command line argument options.
      */
-    virtual std::vector<OptionConfig> optionConfig() const noexcept = 0;
+    virtual datum configuration(std::vector<std::string> arguments) const noexcept = 0;
 
     /*! Called right before the application loop is started.
      * \return true to start the loop, false to exit the application.

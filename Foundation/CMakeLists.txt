@@ -41,7 +41,6 @@ set(TTauri_Foundation_srcs
     src/TTauriIconParser.cpp
     src/FileMapping.cpp
     src/FileView.cpp
-    src/Options.cpp
     src/throw_exception.cpp
 )
 

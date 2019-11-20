@@ -5,7 +5,6 @@
 
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/UnicodeData.hpp"
-#include "TTauri/Foundation/Options.hpp"
 #include <gsl/gsl>
 #include <string>
 #include <unordered_map>
@@ -27,16 +26,15 @@ private:
 
     mutable std::mutex mutex;
 
-    Options options;
-
 public:
     date::time_zone const *time_zone = nullptr;
     std::thread::id main_thread_id;
     std::function<void(std::function<void()>)> main_thread_runner;
+    datum configuration;
     std::string applicationName;
     std::unique_ptr<UnicodeData> unicodeData;
 
-    FoundationGlobals(std::vector<OptionConfig> const &optionConfig, std::vector<std::string> const &arguments, std::thread::id main_thread_id, std::string applicationName, URL tzdata_location) noexcept;
+    FoundationGlobals(std::thread::id main_thread_id, datum configuration, std::string applicationName, URL tzdata_location) noexcept;
     ~FoundationGlobals();
     FoundationGlobals(FoundationGlobals const &) = delete;
     FoundationGlobals &operator=(FoundationGlobals const &) = delete;

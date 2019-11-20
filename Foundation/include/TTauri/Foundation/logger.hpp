@@ -82,6 +82,27 @@ constexpr char const *to_const_string(log_level level) noexcept
     }
 }
 
+inline int command_line_argument_to_log_level(std::string_view str) noexcept
+{
+    if (str == "debug") {
+        return static_cast<int>(log_level::Debug);
+    } else if (str == "info") {
+        return static_cast<int>(log_level::Info);
+    } else if (str == "audit") {
+        return static_cast<int>(log_level::Audit);
+    } else if (str == "warning") {
+        return static_cast<int>(log_level::Warning);
+    } else if (str == "error") {
+        return static_cast<int>(log_level::Error);
+    } else if (str == "critical") {
+        return static_cast<int>(log_level::Critical);
+    } else if (str == "fatal") {
+        return static_cast<int>(log_level::Fatal);
+    } else {
+        return -1;
+    }
+}
+
 constexpr bool operator<(log_level lhs, log_level rhs) noexcept { return static_cast<int>(lhs) < static_cast<int>(rhs); }
 constexpr bool operator>(log_level lhs, log_level rhs) noexcept { return rhs < lhs; }
 constexpr bool operator==(log_level lhs, log_level rhs) noexcept { return static_cast<int>(lhs) == static_cast<int>(rhs); }
