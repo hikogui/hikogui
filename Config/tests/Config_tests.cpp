@@ -5,10 +5,11 @@
 #include <gtest/gtest.h>
 
 using namespace std;
+using namespace TTauri;
 using namespace TTauri::Config;
 
 TEST(Config_Config, ConfigTest) {
-    auto config = Config("file:config_test.txt");
+    auto config = TTauri::Config::Config(URL("file:config_test.txt"));
     //ASSERT_TRUE(config.success());
     ASSERT_EQ(config.errorMessage(), "");
 
@@ -29,13 +30,13 @@ TEST(Config_Config, ConfigTest) {
 
 TEST(Config_Config, SyntaxError) {
     {
-        auto config = Config("file:syntax_error.txt");
+        auto config = TTauri::Config::Config(URL("file:syntax_error.txt"));
         ASSERT_TRUE(!config.success());
         ASSERT_EQ(config.errorMessage(), "file:syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.");
     }
 
     {
-        auto config = Config("file:include_syntax_error.txt");
+        auto config = TTauri::Config::Config(URL("file:include_syntax_error.txt"));
         ASSERT_TRUE(!config.success());
         ASSERT_EQ(config.errorMessage(),
             "file:syntax_error.txt:4:1: syntax error, unexpected T_IDENTIFIER.\n"
