@@ -15,33 +15,40 @@ namespace TTauri {
 
 using namespace std::literals;
 
-/*! Options parsed from command line arguments and configuration file.
+/** A parser to parse command line arguments.
  */
 class CommandLineParser {
-    /*! Specification of possible command line option.
+    /** Specification of possible command line option.
     */
     struct option_t {
-        /*! Name of the option.
+        /** Name of the option.
         */
         std::string name;
 
-        /*! Type of the option.
+        /** Type of the option.
         */
         datum_type_t type;
 
-        /*! Help message for the option.
+        /** Help message for the option.
         */
         std::string help;
 
+        /** A function to decode a string into an integer.
+         * This is mostly useful to for enums.
+         */
         std::function<int(std::string_view)> enum_conversion;
 
         option_t(std::string name, datum_type_t type, std::string help, std::function<int(std::string_view)> enum_conversion) :
             name(std::move(name)), type(type), help(std::move(help)), enum_conversion(std::move(enum_conversion)) {}
     };
 
+    // The synopsis of the application to be printed on --help and error.
     std::string synopsis;
+
+    // A list of options.
     std::vector<option_t> options;
 
+    /// A list of error messages occured during parsing.
     std::vector<std::string> error_messages;
 
 public:
