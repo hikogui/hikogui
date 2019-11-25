@@ -23,6 +23,34 @@ namespace TTauri {
 
 constexpr long double pi = 3.141592653589793238462643383279502884L;
 
+constexpr long long pow10_table[20] {
+                            0LL,
+                            1LL,
+                           10LL,
+                          100LL,
+                        1'000LL,
+                       10'000LL,
+                      100'000LL,
+                    1'000'000LL,
+                   10'000'000LL,
+                  100'000'000LL,
+                1'000'000'000LL,
+               10'000'000'000LL,
+              100'000'000'000LL,
+            1'000'000'000'000LL,
+           10'000'000'000'000LL,
+          100'000'000'000'000LL,
+        1'000'000'000'000'000LL,
+       10'000'000'000'000'000LL,
+      100'000'000'000'000'000LL,
+    1'000'000'000'000'000'000LL,
+};
+
+constexpr long long pow10(int x) noexcept {
+    axiom_assert(x >= 0 && x <= 19);
+    return pow10_table[x];
+}
+
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr int bsr(T x) noexcept
 {

@@ -25,6 +25,7 @@ enum class tokenizer_name_t : uint8_t {
     Name,
     StringLiteral,
     IntegerLiteral,
+    BooleanLiteral,
     DateLiteral,
     TimeLiteral,
     FloatLiteral,
@@ -43,6 +44,7 @@ constexpr char const *to_string(tokenizer_name_t name) noexcept {
     case tokenizer_name_t::Name: return "Name";
     case tokenizer_name_t::StringLiteral: return "StringLiteral";
     case tokenizer_name_t::IntegerLiteral: return "IntegerLiteral";
+    case tokenizer_name_t::BooleanLiteral: return "BooleanLiteral";
     case tokenizer_name_t::DateLiteral: return "DateLiteral";
     case tokenizer_name_t::TimeLiteral: return "TimeLiteral";
     case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
@@ -61,6 +63,8 @@ struct token_t {
     tokenizer_name_t name = tokenizer_name_t::NotAssigned;
     std::string value;
     std::string_view::iterator index;
+    bool is_binary = false;
+    int precedence = 0;
 
     operator bool () const noexcept {
         return name != tokenizer_name_t::NotAssigned;

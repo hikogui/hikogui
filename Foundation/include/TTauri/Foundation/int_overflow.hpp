@@ -84,6 +84,9 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
     }
 }
 
+/** Multiply with overflow detection.
+ * @return true when the multiplication overflowed.
+ */
 template<typename T>
 inline bool mul_overflow(T lhs, T rhs, T *r)
 {
