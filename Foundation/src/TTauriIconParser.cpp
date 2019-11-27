@@ -62,7 +62,7 @@ struct little_scRGB_buf_t {
     little_uint16_buf_t alpha;
 
     wsRGBA value() const noexcept {
-        return {glm::vec4{
+        return wsRGBA{glm::vec4{
             (static_cast<float>(red.value()) - 4096.0f) / 8192.0f,
             (static_cast<float>(green.value()) - 4096.0f) / 8192.0f,
             (static_cast<float>(blue.value()) - 4096.0f) / 8192.0f,

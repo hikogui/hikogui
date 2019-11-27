@@ -73,7 +73,7 @@ struct wsRGBA {
     /*! Set the colour using the pixel value.
      * No conversion is done with the given value.
      */
-    wsRGBA(glm::i16vec4 c) noexcept :
+    explicit wsRGBA(glm::i16vec4 c) noexcept :
         color(c) {}
 
     /*! Set the colour with linear-sRGB values.
@@ -81,7 +81,7 @@ struct wsRGBA {
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
     
-    wsRGBA(glm::vec4 c) noexcept :
+    explicit wsRGBA(glm::vec4 c) noexcept :
         color(static_cast<glm::i16vec4>(glm::vec4{
             glm::xyz(c) * c.a * F32_MAX_SRGB,
             c.a * F32_MAX_ALPHA })) {}
@@ -90,13 +90,13 @@ struct wsRGBA {
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
      * This constructor expect colour which has not been pre-multiplied with the alpha.
      */
-    wsRGBA(double r, double g, double b, double a=1.0) noexcept :
+    explicit wsRGBA(double r, double g, double b, double a=1.0) noexcept :
         wsRGBA(glm::vec4{r, g, b, a}) {}
 
     /*! Set the colour with gamma corrected sRGB values.
      */
     
-    wsRGBA(uint32_t c) noexcept {
+    explicit wsRGBA(uint32_t c) noexcept {
         let colorWithoutPreMultiply = glm::i64vec4{
             gamma_to_linear_i16((c >> 24) & 0xff),
             gamma_to_linear_i16((c >> 16) & 0xff),
@@ -309,48 +309,50 @@ struct wsRGBA {
         static_assert(RESULTV_DIVIDER == 0x7fff * 0xff);
         color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
     }
+
+    friend bool operator==(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
+    {
+        return lhs.color == rhs.color;
+    }
+
+    friend bool operator<(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
+    {
+        if (lhs.color[0] != rhs.color[0]) {
+            return lhs.color[0] < rhs.color[0];
+        } else if (lhs.color[1] != rhs.color[1]) {
+            return lhs.color[1] < rhs.color[1];
+        } else if (lhs.color[2] != rhs.color[2]) {
+            return lhs.color[2] < rhs.color[2];
+        } else if (lhs.color[3] != rhs.color[3]) {
+            return lhs.color[3] < rhs.color[3];
+        } else {
+            return false;
+        }
+    }
+
+    friend bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs == rhs); }
+    friend bool operator>(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return rhs < lhs; }
+    friend bool operator<=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs > rhs); }
+    friend bool operator>=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs < rhs); }
+
+    friend std::string to_string(wsRGBA const &x) noexcept
+    {
+        let floatColor = x.to_wsRGBApm_vec4();
+        if (
+            floatColor.r >= 0.0 && floatColor.r <= 1.0 &&
+            floatColor.g >= 0.0 && floatColor.g <= 1.0 &&
+            floatColor.b >= 0.0 && floatColor.b <= 1.0
+            ) {
+            // This color is inside the sRGB gamut.
+            return fmt::format("#{:08x}", x.to_sRGBA_u32());
+
+        } else {
+            return fmt::format("<{:.3f}, {:.3f}, {:.3f}, {:.3f}>", floatColor.r, floatColor.g, floatColor.b, floatColor.a);
+        }
+    }
 };
 
-inline bool operator==(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
-{
-    return lhs.color == rhs.color;
-}
 
-inline bool operator<(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
-{
-    if (lhs.color[0] != rhs.color[0]) {
-        return lhs.color[0] < rhs.color[0];
-    } else if (lhs.color[1] != rhs.color[1]) {
-        return lhs.color[1] < rhs.color[1];
-    } else if (lhs.color[2] != rhs.color[2]) {
-        return lhs.color[2] < rhs.color[2];
-    } else if (lhs.color[3] != rhs.color[3]) {
-        return lhs.color[3] < rhs.color[3];
-    } else {
-        return false;
-    }
-}
-
-inline bool operator!=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs == rhs); }
-inline bool operator>(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return rhs < lhs; }
-inline bool operator<=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs > rhs); }
-inline bool operator>=(wsRGBA const &lhs, wsRGBA const &rhs) noexcept { return !(lhs < rhs); }
-
-inline std::string to_string(wsRGBA const &x) noexcept
-{
-    let floatColor = x.to_wsRGBApm_vec4();
-    if (
-        floatColor.r >= 0.0 && floatColor.r <= 1.0 &&
-        floatColor.g >= 0.0 && floatColor.g <= 1.0 &&
-        floatColor.b >= 0.0 && floatColor.b <= 1.0
-        ) {
-        // This color is inside the sRGB gamut.
-        return fmt::format("#{:08x}", x.to_sRGBA_u32());
-
-    } else {
-        return fmt::format("<{:.3f}, {:.3f}, {:.3f}, {:.3f}>", floatColor.r, floatColor.g, floatColor.b, floatColor.a);
-    }
-}
 
 // http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
 const glm::mat3x3 matrix_sRGB_to_XYZ = {

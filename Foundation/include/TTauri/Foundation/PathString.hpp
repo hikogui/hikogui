@@ -68,7 +68,7 @@ struct PathString {
      */
     glm::vec2 cursorAdvance(int graphemeIndex) const noexcept;
 
-    Path toPath(wsRGBA defaultColor={0.0, 0.0, 0.0, 1.0}) const noexcept;
+    Path toPath(wsRGBA defaultColor=wsRGBA{0.0, 0.0, 0.0, 1.0}) const noexcept;
 };
 
 PathString operator*(glm::mat3x3 const &lhs, PathString rhs) noexcept;

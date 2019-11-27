@@ -24,7 +24,6 @@ namespace TTauri {
 constexpr long double pi = 3.141592653589793238462643383279502884L;
 
 constexpr long long pow10_table[20] {
-                            0LL,
                             1LL,
                            10LL,
                           100LL,
@@ -46,8 +45,8 @@ constexpr long long pow10_table[20] {
     1'000'000'000'000'000'000LL,
 };
 
-constexpr long long pow10(int x) noexcept {
-    axiom_assert(x >= 0 && x <= 19);
+constexpr long long pow10ll(int x) noexcept {
+    axiom_assert(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 
