@@ -401,17 +401,14 @@ public:
 
     datum_impl(datum_impl::null) noexcept : u64(null_mask) {}
 
-    template <class T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
-    datum_impl(T value) noexcept :
-        f64(value)
-    {
+    datum_impl(double value) noexcept : f64(value) {
         if (value != value) {
             u64 = undefined_mask;
         }
     }
+    datum_impl(float value) noexcept : datum_impl(static_cast<double>(value)) {}
 
-    template <class T, std::enable_if_t<is_numeric_integer_v<T> && std::is_unsigned_v<T>, int> = 0>
-    datum_impl(T value) noexcept :
+    datum_impl(unsigned long long value) noexcept :
         u64(integer_mask | value)
     {
         if (ttauri_unlikely(value > maximum_int)) {
@@ -423,9 +420,12 @@ public:
             }
         }
     }
+    datum_impl(unsigned long value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
+    datum_impl(unsigned int value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
+    datum_impl(unsigned short value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
+    datum_impl(unsigned char value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
 
-    template <class T, std::enable_if_t<is_numeric_integer_v<T> && std::is_signed_v<T>, int> = 0>
-    datum_impl(T value) noexcept :
+    datum_impl(signed long long value) noexcept :
         u64(integer_mask | (static_cast<uint64_t>(value) & 0x0007ffff'ffffffff))
     {
         if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
@@ -437,9 +437,12 @@ public:
             }
         }
     }
+    datum_impl(signed long value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
+    datum_impl(signed int value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
+    datum_impl(signed short value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
+    datum_impl(signed char value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
 
     datum_impl(bool value) noexcept : u64(boolean_mask | static_cast<uint64_t>(value)) {}
-
     datum_impl(char value) noexcept : u64(character_mask | value) {}
 
     datum_impl(std::string_view value) noexcept : u64(make_string(value)) {
@@ -454,7 +457,6 @@ public:
     }
 
     datum_impl(std::string const &value) noexcept : datum_impl(std::string_view(value)) {}
-
     datum_impl(char const *value) noexcept : datum_impl(std::string_view(value)) {}
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
@@ -489,8 +491,7 @@ public:
         return *this;
     }
 
-    template <class T, std::enable_if_t<std::is_floating_point_v<T>, int> = 0>
-    datum_impl &operator=(T rhs) noexcept {
+    datum_impl &operator=(double rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
@@ -502,9 +503,9 @@ public:
         }
         return *this;
     }
-    
-    template <class T, std::enable_if_t<is_numeric_integer_v<T> && std::is_unsigned_v<T>, int> = 0>
-    datum_impl &operator=(T rhs) noexcept {
+    datum_impl& operator=(float rhs) noexcept { return *this = static_cast<double>(rhs); }
+
+    datum_impl &operator=(unsigned long long rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
@@ -520,9 +521,12 @@ public:
         }
         return *this;
     }
+    datum_impl& operator=(unsigned long rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
+    datum_impl& operator=(unsigned int rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
+    datum_impl& operator=(unsigned short rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
+    datum_impl& operator=(unsigned char rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
 
-    template <class T, std::enable_if_t<is_numeric_integer_v<T> && std::is_signed_v<T>, int> = 0>
-    datum_impl &operator=(T rhs) noexcept {
+    datum_impl &operator=(signed long long rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
@@ -539,6 +543,10 @@ public:
 
         return *this;
     }
+    datum_impl& operator=(signed long rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
+    datum_impl& operator=(signed int rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
+    datum_impl& operator=(signed short rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
+    datum_impl& operator=(signed char rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
 
     datum_impl &operator=(bool rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {

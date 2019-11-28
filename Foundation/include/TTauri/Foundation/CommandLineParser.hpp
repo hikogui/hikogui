@@ -82,10 +82,9 @@ public:
     datum parse(std::vector<std::string> const &arguments) noexcept {
         auto configuration = datum{datum::map{}};
 
-        bool firstArgument = true;
+        int argumentCount = 0;
         for (let &argument: arguments) {
-            if (firstArgument) {
-                firstArgument = true;
+            if (argumentCount++ == 0) {
                 configuration["executable-path"] = arguments[0];
 
             } else if (starts_with(argument, "--"s)) {
@@ -108,7 +107,7 @@ public:
                     }
 
                 } else {
-                    let option_name = argument.substr(2, i);
+                    let option_name = argument.substr(2, i-2);
                     let option_value_string = argument.substr(i+1);
 
                     let &option = std::find_if(options.begin(), options.end(), [&](auto x) {
@@ -164,7 +163,7 @@ public:
                             break;
 
                         case datum_type_t::URL:
-                            configuration[option_name] = URL(option_value_string);
+                            configuration[option_name] = URL::urlFromCurrentWorkingDirectory().urlByAppendingPath(option_value_string);
                             break; 
 
                         default:

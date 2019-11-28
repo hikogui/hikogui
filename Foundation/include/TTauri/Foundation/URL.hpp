@@ -24,7 +24,7 @@ struct url_parts;
  *  - The size of the URL instance is small and copies/moves are fast.
  * 
  * Constructors and path manipulations will cause the url to be normalized:
- *  - Remove accidental concatination of two slashes 'foo//bar' -> 'foo/bar'
+ *  - Remove accidental concatenation of two slashes 'foo//bar' -> 'foo/bar'
  *  - Remove single dot directories 'foo/./bar' -> 'foo/bar'
  *  - Remove leading double-dot directories on absolute paths '/../foo' -> '/foo'
  *  - Remove name+double-dot combinations 'foo/bar/../baz' -> 'foo/baz'
@@ -36,7 +36,7 @@ struct url_parts;
  *
  * The url instance may be relative itself; meaning it does not hold a scheme.
  * This is important, because it means that any string passed to the constructor is a valid url.
- * This also means that non of the custructors and non of the methods will ever cause an error.
+ * This also means that non of the constructors and non of the methods will ever cause an error.
  *
  * meaningless-urls could still cause meaningless results when converted to a path.
  * But this is no different from having a meaningless path in the first place.
