@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/small_vector.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/fixed.hpp"
+#include "TTauri/Foundation/decimal.hpp"
 #include <memory>
 #include <string>
 #include <string_view>
@@ -178,9 +178,8 @@ struct token_t {
         return value;
     }
 
-    template<typename T, int M>
-    explicit operator fixed<T,M> () const {
-        return fixed<T,M>{value};
+    explicit operator decimal () const {
+        return decimal{value};
     }
 
     explicit operator date::year_month_day () const {
