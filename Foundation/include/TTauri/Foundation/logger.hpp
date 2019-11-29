@@ -219,7 +219,7 @@ private:
 };
 
 // The constructor of logger only starts the logging thread.
-// The ring buffer of the logger is trivaliy constructed and can be used before the logger's constructor is stared.
+// The ring buffer of the logger is triviality constructed and can be used before the logger's constructor is stared.
 inline logger_type logger = {}; 
 
 #define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(::TTauri::cpu_counter_clock::now(), __VA_ARGS__, ::TTauri::source_code_ptr(__FILE__, __LINE__))

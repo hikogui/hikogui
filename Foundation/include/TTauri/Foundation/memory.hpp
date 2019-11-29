@@ -93,4 +93,19 @@ inline void cleanupWeakPointers(std::unordered_map<K,std::vector<std::weak_ptr<T
     }
 }
 
+template<typename Value, typename Map, typename Key, typename... Args>
+inline std::shared_ptr<Value> try_make_shared(Map map, Key key, Args... args) {
+    std::shared_ptr<Value> value;
+
+    let i = map.find(key);
+    if (i == map.end()) {
+        value = std::make_shared<Value>(std::forward<Args>(args)...);
+        map.insert_or_assign(key, value);
+    }
+    else {
+        value = i->second;
+    }
+    return value;
+}
+
 }

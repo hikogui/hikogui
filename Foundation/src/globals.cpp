@@ -20,6 +20,8 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, datum confi
     required_assert(Foundation_globals == nullptr);
     Foundation_globals = this;
 
+    logger.minimum_log_level = static_cast<log_level>(static_cast<int>(this->configuration["log-level"]));
+
     // The logger is the first object that will use the timezone database.
     // So we will initialize it here.
 #if USE_OS_TZDB == 0
