@@ -54,14 +54,26 @@ class CommandLineParser {
 public:
     CommandLineParser(std::string synopsis) : synopsis(std::move(synopsis)) {}
 
+    /** Add a configuration option.
+     *
+     * @param name Name of the option. Excluding the leading dashes
+     * @param type Type of the option's argument
+     * @param help Description text of the option.
+     * @param enum_conversion A function that converts a string to an integer.
+     */
     void add(std::string name, datum_type_t type, std::string help, std::function<int(std::string_view)> enum_conversion = {}) noexcept {
         options.emplace_back(std::move(name), type, std::move(help), std::move(enum_conversion));
     }
 
+    /** check if an error has occured during parsing.
+     */
     bool has_error() const noexcept {
         return error_messages.size() > 0;
     }
 
+    /** Print help text for the command line arguments.
+     * This will also print any error messages that happened during the parsing.
+     */
     void print_help() {
         for (let &error_message: error_messages) {
             std::cerr << error_message << "\n";
@@ -79,6 +91,15 @@ public:
         std::cerr.flush();
     }
 
+    /** Parse the arguments.
+     * The result will be a map of option/value pairs.
+     * Special options are:
+     * - 'executable-path' The path to the exectuable.
+     * - 'arguments' A list of strings of the non-option arguments.
+     * 
+     * @param arguments a list of command line arguments, including the exectable name as the first argument.
+     * @return The result as a map-datum, with option names as the keys.
+     */
     datum parse(std::vector<std::string> const &arguments) noexcept {
         auto configuration = datum{datum::map{}};
 
