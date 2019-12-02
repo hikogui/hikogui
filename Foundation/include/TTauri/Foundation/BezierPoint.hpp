@@ -22,8 +22,8 @@ struct BezierPoint {
     Type type;
     glm::vec2 p;
 
-    BezierPoint(glm::vec2 p, Type type) noexcept : type(type), p(p) {}
-    BezierPoint(float x, float y, Type type) noexcept : BezierPoint({x, y}, type) {}
+    BezierPoint(glm::vec2 const p, Type const type) noexcept : type(type), p(p) {}
+    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint({x, y}, type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:
@@ -38,8 +38,8 @@ struct BezierPoint {
      * \return a vector of bezier point that include all the anchor and control points.
      */
     [[nodiscard]] static std::vector<BezierPoint> normalizePoints(
-        std::vector<BezierPoint>::const_iterator begin,
-        std::vector<BezierPoint>::const_iterator end
+        std::vector<BezierPoint>::const_iterator const begin,
+        std::vector<BezierPoint>::const_iterator const end
     ) noexcept {
         std::vector<BezierPoint> r;
 
@@ -100,46 +100,41 @@ struct BezierPoint {
         // The result did not contain an anchor.
         required_assert(false);
     }
+
+    inline BezierPoint &operator*=(glm::mat3x3 const &rhs) noexcept {
+        this->p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
+        return *this;
+    }
+
+    inline BezierPoint &operator*=(float const rhs) noexcept {
+        this->p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
+        return *this;
+    }
+
+    inline BezierPoint &operator+=(glm::vec2 const rhs) noexcept {
+        this->p += rhs;
+        return *this;
+    }
+
+    [[nodiscard]] friend bool operator==(BezierPoint const &lhs, BezierPoint const &rhs) noexcept {
+        return (lhs.p == rhs.p) && (lhs.type == rhs.type);
+    }
+
+    [[nodiscard]] friend BezierPoint operator*(glm::mat2x2 const &lhs, BezierPoint const &rhs) noexcept {
+        return { lhs * rhs.p, rhs.type };
+    }
+
+    [[nodiscard]] friend BezierPoint operator*(glm::mat3x3 const &lhs, BezierPoint const &rhs) noexcept {
+        return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
+    }
+
+    [[nodiscard]] friend BezierPoint operator*(float const lhs, BezierPoint const &rhs) noexcept {
+        return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
+    }
+
+    [[nodiscard]] friend BezierPoint operator+(BezierPoint const &lhs, glm::vec2 rhs) noexcept {
+        return { lhs.p + rhs, lhs.type };
+    }
 };
-
-[[nodiscard]] inline bool operator==(BezierPoint const &lhs, BezierPoint const &rhs) noexcept {
-    return (lhs.p == rhs.p) && (lhs.type == rhs.type);
-}
-
-
-[[nodiscard]] inline BezierPoint operator*(glm::mat2x2 const &lhs, BezierPoint const &rhs) noexcept {
-    return { lhs * rhs.p, rhs.type };
-}
-
-
-[[nodiscard]] inline BezierPoint operator*(glm::mat3x3 const &lhs, BezierPoint const &rhs) noexcept {
-    return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
-}
-
-
-inline BezierPoint &operator*=(BezierPoint &lhs, glm::mat3x3 const &rhs) noexcept {
-    lhs.p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
-    return lhs;
-}
-
-
-[[nodiscard]] inline BezierPoint operator*(float const lhs, BezierPoint const &rhs) noexcept {
-    return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
-}
-
-
-inline BezierPoint &operator*=(BezierPoint &lhs, float const rhs) noexcept {
-    lhs.p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
-    return lhs;
-}
-
-[[nodiscard]] inline BezierPoint operator+(BezierPoint const &lhs, glm::vec2 rhs) noexcept {
-    return { lhs.p + rhs, lhs.type };
-}
-
-inline BezierPoint &operator+=(BezierPoint &lhs, glm::vec2 rhs) noexcept {
-    lhs.p += rhs;
-    return lhs;
-}
 
 }

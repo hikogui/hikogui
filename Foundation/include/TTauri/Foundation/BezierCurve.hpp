@@ -37,19 +37,19 @@ struct BezierCurve {
 
     /*! Construct a linear bezier-curve.
      */
-    BezierCurve(glm::vec2 P1, glm::vec2 P2) noexcept : type(Type::Linear), P1(P1), C1(), C2(), P2(P2) {}
+    BezierCurve(glm::vec2 const P1, glm::vec2 const P2) noexcept : type(Type::Linear), P1(P1), C1(), C2(), P2(P2) {}
 
     /*! Construct a quadratic bezier-curve.
      */
-    BezierCurve(glm::vec2 P1, glm::vec2 C1, glm::vec2 P2) noexcept : type(Type::Quadratic), P1(P1), C1(C1), C2(C1), P2(P2) {}
+    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const P2) noexcept : type(Type::Quadratic), P1(P1), C1(C1), C2(C1), P2(P2) {}
 
     /*! Construct a cubic bezier-curve.
      */
-    BezierCurve(glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2) noexcept : type(Type::Cubic), P1(P1), C1(C1), C2(C2), P2(P2) {}
+    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2) noexcept : type(Type::Cubic), P1(P1), C1(C1), C2(C2), P2(P2) {}
 
     /*! Construct a bezier-curve of any type.
     */
-    BezierCurve(Type type, glm::vec2 P1, glm::vec2 C1, glm::vec2 C2, glm::vec2 P2) noexcept : type(type), P1(P1), C1(C1), C2(C2), P2(P2) {}
+    BezierCurve(Type const type, glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2) noexcept : type(type), P1(P1), C1(C1), C2(C2), P2(P2) {}
 
     /*! Return a point on the bezier-curve.
      * Values of `t` beyond 0.0 and 1.0 will find a point extrapolated beyond the
@@ -58,7 +58,7 @@ struct BezierCurve {
      * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
      * \return the coordinates of the point on the curve.
      */ 
-    [[nodiscard]] glm::vec2 pointAt(float t) const noexcept {
+    [[nodiscard]] glm::vec2 pointAt(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return bezierPointAt(P1, P2, t);
         case Type::Quadratic: return bezierPointAt(P1, C1, P2, t);
@@ -71,7 +71,7 @@ struct BezierCurve {
      * \param y y-axis.
      * \return 0 to 3, or infinit number of x values.
      */
-    [[nodiscard]] results<float,3> solveXByY(float y) const noexcept {
+    [[nodiscard]] results<float,3> solveXByY(float const y) const noexcept {
         switch (type) {
         case Type::Linear: return bezierFindX(P1, P2, y);
         case Type::Quadratic: return bezierFindX(P1, C1, P2, y);
@@ -85,7 +85,7 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two cubic bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> cubicSplit(float t) const noexcept {
+    [[nodiscard]] std::pair<BezierCurve,BezierCurve> cubicSplit(float const t) const noexcept {
         let outerA = BezierCurve{P1, C1};
         let outerBridge = BezierCurve{C1, C2};
         let outerB = BezierCurve{C2, P2};
@@ -103,7 +103,7 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two quadratic bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> quadraticSplit(float t) const noexcept {
+    [[nodiscard]] std::pair<BezierCurve,BezierCurve> quadraticSplit(float const t) const noexcept {
         let outerA = BezierCurve{P1, C1};
         let outerB = BezierCurve{C1, P2};
 
@@ -117,7 +117,7 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two linear bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> linearSplit(float t) const noexcept {
+    [[nodiscard]] std::pair<BezierCurve,BezierCurve> linearSplit(float const t) const noexcept {
         let newPoint = pointAt(t);
 
         return {{ P1, newPoint }, { newPoint, P2 }};
@@ -128,7 +128,7 @@ struct BezierCurve {
      *        where to split the curve.
      * \return two bezier-curves.
      */
-    [[nodiscard]] std::pair<BezierCurve,BezierCurve> split(float t) const noexcept {
+    [[nodiscard]] std::pair<BezierCurve,BezierCurve> split(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return linearSplit(t);
         case Type::Quadratic: return quadraticSplit(t);
@@ -141,7 +141,7 @@ struct BezierCurve {
      * \param r resulting list of linear segments.
      * \param minimumFlatness minimum amount of flatness of the resulting curve segments.
      */
-    void subdivideUntilFlat_impl(std::vector<BezierCurve> &r, float minimumFlatness) const noexcept {
+    void subdivideUntilFlat_impl(std::vector<BezierCurve> &r, float const minimumFlatness) const noexcept {
         if (flatness() >= minimumFlatness) {
             r.push_back(*this);
         } else {
@@ -155,7 +155,7 @@ struct BezierCurve {
      * \param tolerance maximum amount of curvines.
      * \return resulting list of curve segments.
      */
-    [[nodiscard]] std::vector<BezierCurve> subdivideUntilFlat(float tolerance) const noexcept {
+    [[nodiscard]] std::vector<BezierCurve> subdivideUntilFlat(float const tolerance) const noexcept {
         std::vector<BezierCurve> r;
         subdivideUntilFlat_impl(r, 1.0f - tolerance);
         return r;
@@ -173,71 +173,74 @@ struct BezierCurve {
         }
     }
 
+    BezierCurve &operator*=(glm::vec2 const rhs) noexcept {
+        this->P1 *= rhs;
+        this->C1 *= rhs;
+        this->C2 *= rhs;
+        this->P2 *= rhs;
+        return *this;
+    }
+
+    BezierCurve &operator+=(glm::vec2 const rhs) noexcept {
+        this->P1 += rhs;
+        this->C1 += rhs;
+        this->C2 += rhs;
+        this->P2 += rhs;
+        return *this;
+    }
+
     /*! Return a line-segment from a curve at a certain distance.
      * \param offset positive means the parrallel line will be on the starboard of the curve.
      * \return line segment offset from the curve.
      */
-    [[nodiscard]] BezierCurve toParrallelLine(float offset) const noexcept {
+    [[nodiscard]] BezierCurve toParrallelLine(float const offset) const noexcept {
         auto [newP1, newP2] = parrallelLine(P1, P2, offset);
         return { newP1, newP2 };
     }
+
+    [[nodiscard]] friend bool operator==(BezierCurve const &lhs, BezierCurve const &rhs) noexcept {
+        if (lhs.type != rhs.type) {
+            return false;
+        }
+        switch (lhs.type) {
+        case BezierCurve::Type::Linear:
+            return (lhs.P1 == rhs.P1) && (lhs.P2 == rhs.P2);
+        case BezierCurve::Type::Quadratic:
+            return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.P2 == rhs.P2);
+        case BezierCurve::Type::Cubic:
+            return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
+        default:
+            no_default;
+        }
+    }
+
+    [[nodiscard]] friend BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve const &rhs) noexcept {
+        return {
+            rhs.type,
+            glm::xy(lhs * glm::vec3(rhs.P1, 1.0)),
+            glm::xy(lhs * glm::vec3(rhs.C1, 1.0)),
+            glm::xy(lhs * glm::vec3(rhs.C2, 1.0)),
+            glm::xy(lhs * glm::vec3(rhs.P2, 1.0))
+        };
+    }
+
+    [[nodiscard]] friend BezierCurve operator*(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
+        return { lhs.type, lhs.P1 * rhs, lhs.C1 * rhs, lhs.C2 * rhs, lhs.P2 * rhs };
+    }
+
+
+    [[nodiscard]] friend BezierCurve operator+(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
+        return { lhs.type, lhs.P1 + rhs, lhs.C1 + rhs, lhs.C2 + rhs, lhs.P2 + rhs };
+    }
+
+
+    /*! Reverse direction of a curve.
+     */
+    [[nodiscard]] friend BezierCurve operator~(BezierCurve const &rhs) noexcept {
+        return { rhs.type, rhs.P2, rhs.C2, rhs.C1, rhs.P1 };
+    }
 };
 
-[[nodiscard]] inline bool operator==(BezierCurve const &lhs, BezierCurve const &rhs) noexcept {
-    if (lhs.type != rhs.type) {
-        return false;
-    }
-    switch (lhs.type) {
-    case BezierCurve::Type::Linear:
-        return (lhs.P1 == rhs.P1) && (lhs.P2 == rhs.P2);
-    case BezierCurve::Type::Quadratic:
-        return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.P2 == rhs.P2);
-    case BezierCurve::Type::Cubic:
-        return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
-    default:
-        no_default;
-    }
-}
-
-[[nodiscard]] inline BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve const &rhs) noexcept {
-    return {
-        rhs.type,
-        glm::xy(lhs * glm::vec3(rhs.P1, 1.0)),
-        glm::xy(lhs * glm::vec3(rhs.C1, 1.0)),
-        glm::xy(lhs * glm::vec3(rhs.C2, 1.0)),
-        glm::xy(lhs * glm::vec3(rhs.P2, 1.0))
-    };
-}
-
-[[nodiscard]] inline BezierCurve operator*(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
-    return { lhs.type, lhs.P1 * rhs, lhs.C1 * rhs, lhs.C2 * rhs, lhs.P2 * rhs };
-}
-
-inline BezierCurve &operator*=(BezierCurve &lhs, glm::vec2 const rhs) noexcept {
-    lhs.P1 *= rhs;
-    lhs.C1 *= rhs;
-    lhs.C2 *= rhs;
-    lhs.P2 *= rhs;
-    return lhs;
-}
-
-[[nodiscard]] inline BezierCurve operator+(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
-    return { lhs.type, lhs.P1 + rhs, lhs.C1 + rhs, lhs.C2 + rhs, lhs.P2 + rhs };
-}
-
-inline BezierCurve &operator+=(BezierCurve &lhs, glm::vec2 const rhs) noexcept {
-    lhs.P1 += rhs;
-    lhs.C1 += rhs;
-    lhs.C2 += rhs;
-    lhs.P2 += rhs;
-    return lhs;
-}
-
-/*! Reverse direction of a curve.
- */
-[[nodiscard]] inline BezierCurve operator~(BezierCurve const &rhs) noexcept {
-    return { rhs.type, rhs.P2, rhs.C2, rhs.C1, rhs.P1 };
-}
 
 /*! Make a contour of Bezier curves from a list of points.
  * \param first The first point in a list
