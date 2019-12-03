@@ -12,7 +12,8 @@
 
 namespace TTauri {
 
-
+/** A resource that was included in the executable.
+ */
 class StaticResourceView : public ResourceView {
 private:
     // Borrowed reference from a byte array inside StaticResources.
@@ -36,8 +37,8 @@ public:
 
     gsl::span<std::byte const> bytes() const noexcept override { return _bytes; }
 
-    static std::unique_ptr<ResourceView> loadView(std::string const &filename) {
-        return std::make_unique<StaticResourceView>(filename);
+    static std::unique_ptr<ResourceView> loadView(std::string const &location) {
+        return std::make_unique<StaticResourceView>(location);
     }
 };
 

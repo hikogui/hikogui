@@ -17,48 +17,106 @@ struct wsRGBA;
 
 namespace TTauri {
 
+/** A row of pixels.
+ */
 template <typename T>
 struct PixelRow {
+    /** Pointer to an array of pixels.
+     */
     T *pixels;
+
+    /** Number of pixels in the row.
+     */
     int width;
 
+    /** Get a pointer to the pixel data.
+     */
     T const *data() const noexcept {
         return pixels;
     }
 
+    /** Get a pointer to the pixel data.
+     */
     T *data() noexcept {
         return pixels;
     }
 
+    /** Get a access to a pixel in the row.
+     * @param columnNr The column number in the row.
+     * @return a reference to a pixel.
+     */
     T const &operator[](int columnNr) const noexcept {
         return pixels[columnNr];
     }
 
+    /** Get a access to a pixel in the row.
+     * @param columnNr The column number in the row.
+     * @return a reference to a pixel.
+     */
     T &operator[](int columnNr) noexcept {
         return pixels[columnNr];
     }
 
+    /** Get a access to a pixel in the row.
+     * This function does bound checking.
+     *
+     * @param columnNr The column number in the row.
+     * @return a reference to a pixel.
+     */
     T const &at(int columnNr) const noexcept {
         required_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 
+    /** Get a access to a pixel in the row.
+     * This function does bound checking.
+     *
+     * @param columnNr The column number in the row.
+     * @return a reference to a pixel.
+     */
     T &at(int columnNr) noexcept {
         required_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 };
 
+/** A 2D canvas of pixels.
+ * This class may either allocate its own memory, or gives access
+ * to memory allocated by another API, such as a Vulkan texture.
+ */
 template <typename T>
 struct PixelMap {
+    /** Pointer to a 2D canvas of pixels.
+     */
     T *pixels;
+
+    /** Number of horizontal pixels.
+     */
     int width;
+
+    /** Number of vertical pixels.
+     */
     int height;
+
+    /** Number of pixel element until the next row.
+     * This is used when the alignment of each row is different from the width of the canvas.
+     */
     int stride;
+
+    /** True if the memory was allocated by this class, false if the canvas was received from another API.
+     */
     bool selfAllocated = false;
 
+    /** Construct an empty pixel-map.
+     */
     PixelMap() noexcept : pixels(nullptr), width(0), height(0), stride(0) {}
 
+    /** Construct an pixel-map from memory received from an API.
+     * @param pixel A pointer to pixels received from the API.
+     * @param width The width of the image.
+     * @param height The height of the image.
+     * @param stride Number of pixel elements until the next row.
+     */
     PixelMap(T *pixels, int width, int height, int stride) noexcept : pixels(pixels), width(width), height(height), stride(stride) {
         if (pixels) {
             required_assert(stride >= width);
@@ -70,6 +128,12 @@ struct PixelMap {
         }
     } 
 
+    /** Construct an pixel-map.
+     * This constructor will allocate its own memory.
+     *
+     * @param width The width of the image.
+     * @param height The height of the image.
+     */
     gsl_suppress(r.11)
     PixelMap(int width, int height) noexcept : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
         if (pixels) {
@@ -82,9 +146,32 @@ struct PixelMap {
         }
     }
 
+    /** Construct an pixel-map.
+     * This constructor will allocate its own memory.
+     *
+     * @param extent The width and height of the image.
+     */
     PixelMap(iextent2 extent) noexcept : PixelMap(extent.width(), extent.height()) {}
+
+
+    /** Construct an pixel-map from memory received from an API.
+     * @param pixel A pointer to pixels received from the API.
+     * @param width The width of the image.
+     * @param height The height of the image.
+     */
     PixelMap(T *pixels, int width, int height) noexcept : PixelMap(pixels, width, height, width) {}
+
+    /** Construct an pixel-map from memory received from an API.
+     * @param pixel A pointer to pixels received from the API.
+     * @param extent The width and height of the image.
+     */
     PixelMap(T *pixels, iextent2 extent) noexcept : PixelMap(pixels, extent.width(), extent.height()) {}
+
+    /** Construct an pixel-map from memory received from an API.
+     * @param pixel A pointer to pixels received from the API.
+     * @param extent The width and height of the image.
+     * @param stride Number of pixel elements until the next row.
+     */
     PixelMap(T *pixels, iextent2 extent, int stride) noexcept : PixelMap(pixels, extent.width(), extent.height(), stride) {}
 
     gsl_suppress2(r.11,i.11)
@@ -94,9 +181,10 @@ struct PixelMap {
         }
     }
 
-    /*! Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
+    /** Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
      */
     PixelMap(PixelMap const &other) = delete;
+
     PixelMap(PixelMap &&other) noexcept : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
         other.selfAllocated = false;
     }
@@ -105,8 +193,8 @@ struct PixelMap {
         return pixels;
     }
 
-    /*! Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
-    */
+    /** Disallowing copying so that life-time of selfAllocated pixels is easy to understand.
+     */
     PixelMap &operator=(PixelMap const &other) = delete;
 
     gsl_suppress2(r.11,i.11)
@@ -123,6 +211,10 @@ struct PixelMap {
         return *this;
     }
 
+    /** Get a (smaller) view of the map.
+     * @param rect offset and extent of the rectangle to return.
+     * @return A new pixel-map that point to the same memory as the current pixel-map.
+     */
     PixelMap<T> submap(irect2 rect) const noexcept {
         required_assert(
             (rect.offset.x >= 0) &&
@@ -145,6 +237,13 @@ struct PixelMap {
         }
     }
     
+    /** Get a (smaller) view of the map.
+     * @param x x-offset in the current pixel-map
+     * @param y y-offset in the current pixel-map
+     * @param width width of the returned image.
+     * @param height height of the returned image.
+     * @return A new pixel-map that point to the same memory as the current pixel-map.
+     */
     PixelMap<T> submap(int const x, int const y, int const width, int const height) const noexcept {
         return submap(irect2{{x, y}, {width, height}});
     }
@@ -167,7 +266,9 @@ struct PixelMap {
         return (*this)[rowNr];
     }
 
-    
+    /** Return a vector of pointers to rows.
+     * The PNG API requires an array of pointers to write a png image to the pixel-map.
+     */
     std::vector<void *> rowPointers() noexcept {
         std::vector<void *> r;
         r.reserve(height);

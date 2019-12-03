@@ -71,9 +71,14 @@ struct GraphemeBreakState {
     }
 };
 
+/** Unicode Data used for caractorizing unicode code-points.
+ */
 class UnicodeData {
 private:
     gsl::span<std::byte const> bytes;
+
+    /** A view to the binary UnicodeData.
+     */
     std::unique_ptr<ResourceView> view;
 
     size_t descriptions_offset;
@@ -82,13 +87,15 @@ private:
     size_t compositions_offset;
     size_t compositions_count;
 public:
-    /*! Load a true type font.
-    * The methods in this class will parse the true-type font at run time.
-    * This also means that the bytes passed into this constructor will need to
-    * remain available.
-    */
+    /** Load binary unicode data.
+     * The bytes passed into this constructor will need to remain available.
+     */
     UnicodeData(gsl::span<std::byte const> bytes);
+
+    /** Load binary unicode data from a resource.
+     */
     UnicodeData(std::unique_ptr<ResourceView> view);
+
     UnicodeData() = delete;
     UnicodeData(UnicodeData const &other) = delete;
     UnicodeData &operator=(UnicodeData const &other) = delete;
@@ -96,7 +103,7 @@ public:
     UnicodeData &operator=(UnicodeData &&other) = delete;
     ~UnicodeData() = default;
 
-    /*! Convert text to Unicode-NFD normal form.
+    /** Convert text to Unicode-NFD normal form.
      * Certain ligatures, which are seen as separate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
@@ -108,7 +115,7 @@ public:
      */
     std::u32string toNFD(std::u32string_view text, bool decomposeLigatures=false) const noexcept;
 
-    /*! Convert text to Unicode-NFC normal form.
+    /** Convert text to Unicode-NFC normal form.
      * Certain ligatures, which are seen as separate graphemes by the user
      * may be decomposed when using the decomposeLigatures flag.
      *
@@ -121,7 +128,7 @@ public:
      */
     std::u32string toNFC(std::u32string_view text, bool decomposeLigatures=false, bool composeCRLF=false) const noexcept;
 
-    /*! Convert text to Unicode-NFKD normal form.
+    /** Convert text to Unicode-NFKD normal form.
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
      * Code units between 0x11'0000 and 0x1f'ffff will pass through. 
      *
@@ -129,7 +136,7 @@ public:
      */
     std::u32string toNFKD(std::u32string_view text) const noexcept;
 
-    /*! Convert text to Unicode-NFKC normal form.
+    /** Convert text to Unicode-NFKC normal form.
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
      * Code units between 0x11'0000 and 0x1f'ffff will pass through. 
      *
@@ -138,7 +145,7 @@ public:
      */
     std::u32string toNFKC(std::u32string_view text, bool composeCRLF=false) const noexcept;
 
-    /*! Check if for a graphemeBreak before the character.
+    /** Check if for a graphemeBreak before the character.
      * Code-units must be tested in order, starting at the beginning of the text.
      *
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
@@ -150,7 +157,7 @@ public:
      */
     bool checkGraphemeBreak(char32_t codeUnit, GraphemeBreakState &state) const noexcept;
 
-    /*! Get the bidirectional class for a code-point.
+    /** Get the bidirectional class for a code-point.
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
      * Code units between 0x11'0000 and 0x1f'ffff will be treated as BidirectionalClass::Unknown. 
      */
@@ -168,29 +175,29 @@ private:
     std::u32string decompose(std::u32string_view text, bool decomposeCompatible, bool decomposeLigatures=false) const noexcept;
 
 
-    /*! Reorder text after decomposition.
+    /** Reorder text after decomposition.
      * decompose() must be called before this function. The decompose() function
      * will add the decompositionOrder in bits 28:21 of each code-unit.
      */
     static void reorder(std::u32string &text) noexcept;
 
-    /*! Clean the code-unit.
-    * This function should be called after reorder() or after compose() to remove
-    * temporary information from the code-units.
-    */
+    /** Clean the code-unit.
+     * This function should be called after reorder() or after compose() to remove
+     * temporary information from the code-units.
+     */
     static void clean(std::u32string &text) noexcept;
 
 
-    /*! Compose the characters in the text.
-    * Code-units outside of the unicode-planes will be passed through.
-    *
-    * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) is
-    * used by the composition algorithm. Any 0x00'ffff in the text will be
-    * removed by this algorithm.
-    *
-    * \param text to compose, in-place.
-    * \param composeCRLF Compose CR-LF combinations to LF.
-    */
+    /** Compose the characters in the text.
+     * Code-units outside of the unicode-planes will be passed through.
+     *
+     * Code-unit 0x00'ffff (not-a-character, invalid inside a unicode stream) is
+     * used by the composition algorithm. Any 0x00'ffff in the text will be
+     * removed by this algorithm.
+     *
+     * \param text to compose, in-place.
+     * \param composeCRLF Compose CR-LF combinations to LF.
+     */
     void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 };
 
