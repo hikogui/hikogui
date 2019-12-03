@@ -216,7 +216,7 @@ template<string_tag Tag, string_tag... InfoTags>
 class trace final {
     // If this pointer is not an volatile, clang will optimize it away and replacing it
     // with direct access to the trace_stack variable. This trace_stack variable is in local storage,
-    // so a lot of instructions and memory accesses are emited by the compiler multiple times.
+    // so a lot of instructions and memory accesses are emitted by the compiler multiple times.
     trace_stack_type * volatile stack;
 
     trace_data<Tag, InfoTags...> data;

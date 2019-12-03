@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/decimal.hpp"
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/type_traits.hpp"
 #include "TTauri/Foundation/throw_exception.hpp"
@@ -45,6 +46,7 @@ enum class datum_type_t {
     Undefined,
     Boolean,
     Integer,
+    Decimal,
     Float,
     String,
     URL,
@@ -60,6 +62,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
     case datum_type_t::Undefined: lhs << "Undefined"; break;
     case datum_type_t::Boolean: lhs << "Boolean"; break;
     case datum_type_t::Integer: lhs << "Integer"; break;
+    case datum_type_t::Decimal: lhs << "Decimal"; break;
     case datum_type_t::Float: lhs << "Float"; break;
     case datum_type_t::String: lhs << "String"; break;
     case datum_type_t::URL: lhs << "URL"; break;
@@ -148,16 +151,19 @@ private:
     /// Highest integer that can be encoded into datum's storage.
     static constexpr int64_t maximum_int = 0x0003'ffff'ffff'ffffLL;
 
+    static constexpr int64_t minimum_mantissa = 0xffff'ff00'0000'0000LL;
+    static constexpr int64_t maximum_mantissa = 0x0000'00ff'ffff'ffffLL;
+
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
 
     static constexpr uint16_t phy_boolean_id       = make_id(0b00001);
     static constexpr uint16_t phy_null_id          = make_id(0b00010);
     static constexpr uint16_t phy_undefined_id     = make_id(0b00011);
-    static constexpr uint16_t phy_reserved_id0     = make_id(0b00100);
-    static constexpr uint16_t phy_reserved_id1     = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id2     = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id3     = make_id(0b00111);
+    static constexpr uint16_t phy_decimal_id       = make_id(0b00100);
+    static constexpr uint16_t phy_reserved_id0     = make_id(0b00101);
+    static constexpr uint16_t phy_reserved_id1     = make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id2     = make_id(0b00111);
     static constexpr uint16_t phy_integer_id0      = make_id(0b01000);
     static constexpr uint16_t phy_integer_id1      = make_id(0b01001);
     static constexpr uint16_t phy_integer_id2      = make_id(0b01010);
@@ -180,8 +186,8 @@ private:
     static constexpr uint16_t phy_vector_ptr_id    = make_id(0b11011);
     static constexpr uint16_t phy_map_ptr_id       = make_id(0b11100);
     static constexpr uint16_t phy_wsrgba_ptr_id    = make_id(0b11101);
-    static constexpr uint16_t phy_reserved_ptr_id1 = make_id(0b11110);
-    static constexpr uint16_t phy_reserved_ptr_id2 = make_id(0b11111);
+    static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b11110);
+    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11111);
 
     static constexpr uint64_t boolean_mask = id_to_mask(phy_boolean_id);
     static constexpr uint64_t null_mask = id_to_mask(phy_null_id);
@@ -189,12 +195,14 @@ private:
     static constexpr uint64_t string_mask = id_to_mask(phy_string_id0);
     static constexpr uint64_t character_mask = id_to_mask(phy_string_id1);
     static constexpr uint64_t integer_mask = id_to_mask(phy_integer_id0);
+    static constexpr uint64_t decimal_mask = id_to_mask(phy_decimal_id);
     static constexpr uint64_t string_ptr_mask = id_to_mask(phy_string_ptr_id);
     static constexpr uint64_t url_ptr_mask = id_to_mask(phy_url_ptr_id);
     static constexpr uint64_t integer_ptr_mask = id_to_mask(phy_integer_ptr_id);
     static constexpr uint64_t vector_ptr_mask = id_to_mask(phy_vector_ptr_id);
     static constexpr uint64_t map_ptr_mask = id_to_mask(phy_map_ptr_id);
     static constexpr uint64_t wsrgba_ptr_mask = id_to_mask(phy_wsrgba_ptr_id);
+    static constexpr uint64_t decimal_ptr_mask = id_to_mask(phy_decimal_ptr_id);
 
     union {
         double f64;
@@ -202,9 +210,9 @@ private:
     };
 
     /** Extract the type_id from datum's storage.
-     * This function will get the most siginicant 16 bits from
+     * This function will get the most significant 16 bits from
      * the datum's storage. It uses std::memcpy() to make sure
-     * there is no undefined behaviour, due to not knowing
+     * there is no undefined behavior, due to not knowing
      * ahead of time if a double or uint64_t was stored.
      *
      * @return The type_id of the stored object.
@@ -227,6 +235,10 @@ private:
     force_inline bool is_phy_string() const noexcept {
         let id = type_id();
         return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
+    }
+
+    force_inline bool is_phy_decimal() const noexcept {
+        return type_id() == phy_decimal_id;
     }
 
     force_inline bool is_phy_boolean() const noexcept {
@@ -269,6 +281,10 @@ private:
         return HasLargeObjects && type_id() == phy_wsrgba_ptr_id;
     }
 
+    force_inline bool is_phy_decimal_ptr() const noexcept {
+        return HasLargeObjects && type_id() == phy_decimal_ptr_id;
+    }
+
     /** Extract the 48 bit unsigned integer from datum's storage.
      */
     force_inline uint64_t get_unsigned_integer() const noexcept {
@@ -302,6 +318,7 @@ private:
             case phy_vector_ptr_id: delete get_pointer<datum_impl::vector>(); break;
             case phy_map_ptr_id: delete get_pointer<datum_impl::map>(); break;
             case phy_wsrgba_ptr_id: delete get_pointer<wsRGBA>(); break;
+            case phy_decimal_ptr_id: delete get_pointer<decimal>(); break;
             default: no_default;
             }
         }
@@ -341,8 +358,13 @@ private:
             } break;
 
             case phy_wsrgba_ptr_id: {
-                auto * const p = new wsRGBA(*other.get_pointer<wsRGBA>());
+                auto* const p = new wsRGBA(*other.get_pointer<wsRGBA>());
                 u64 = make_pointer(wsrgba_ptr_mask, p);
+            } break;
+
+            case phy_decimal_ptr_id: {
+                auto* const p = new decimal(*other.get_pointer<decimal>());
+                u64 = make_pointer(decimal_ptr_mask, p);
             } break;
 
             default:
@@ -408,9 +430,27 @@ public:
     }
     datum_impl(float value) noexcept : datum_impl(static_cast<double>(value)) {}
 
-    datum_impl(unsigned long long value) noexcept :
-        u64(integer_mask | value)
-    {
+    datum_impl(decimal value) noexcept {
+        long long m = value.mantissa();
+
+        if (ttauri_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
+            if constexpr (HasLargeObjects) {
+                auto* const p = new decimal(value);
+                u64 = make_pointer(decimal_ptr_mask, p);
+            } else {
+                TTAURI_THROW_OVERFLOW_ERROR("Constructing decimal {} to datum", value);
+            }
+        } else {
+            int e = value.exponent();
+
+            value =
+                decimal_mask |
+                static_cast<uint8_t>(e) |
+                ((static_cast<uint64_t>(m) << 24) >> 24);
+        }
+    }
+
+    datum_impl(unsigned long long value) noexcept : u64(integer_mask | value) {
         if (ttauri_unlikely(value > maximum_int)) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new uint64_t(value);
@@ -504,6 +544,31 @@ public:
         return *this;
     }
     datum_impl& operator=(float rhs) noexcept { return *this = static_cast<double>(rhs); }
+
+
+    datum_impl& operator=(decimal rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+
+        long long m = value.mantissa();
+        if (ttauri_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
+            if constexpr (HasLargeObjects) {
+                auto* const p = new decimal(value);
+                u64 = make_pointer(decimal_ptr_mask, p);
+            } else {
+                TTAURI_THROW_OVERFLOW_ERROR("Constructing decimal {} to datum", value);
+            }
+        } else {
+            int e = value.exponent();
+
+            value =
+                decimal_mask |
+                static_cast<uint8_t>(e) |
+                ((static_cast<uint64_t>(m) << 24) >> 24);
+        }
+        return *this;
+    }
 
     datum_impl &operator=(unsigned long long rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
@@ -654,6 +719,23 @@ public:
         return static_cast<float>(static_cast<double>(*this));
     }
 
+    explicit operator decimal() const {
+        if (is_phy_decimal()) {
+            uint64_t v = get_unsigned_integer();
+            int e = static_cast<int8_t>(v);
+            long long m = static_cast<int64_t>(v << 24) >> 24;
+            return decimal{e, m};
+        } else if (is_phy_decimal_ptr()) {
+            return *get_pointer<decimal>();
+        } else if (is_phy_integer() || is_phy_integer_ptr()) {
+            return decimal{static_cast<signed long long>(*this)};
+        } else if (is_phy_float()) {
+            return decimal{static_cast<double>(*this)};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a decimal", this->repr(), this->type_name());
+        }
+    }
+
     explicit operator signed long long () const {
         if (is_phy_integer()) {
             return get_signed_integer();
@@ -750,6 +832,7 @@ public:
         case phy_integer_id5:
         case phy_integer_id6:
         case phy_integer_id7: return static_cast<int64_t>(*this) != 0;
+        case phy_decimal_id: return static_cast<decimal>(*this) != 0;
         case phy_integer_ptr_id: return *get_pointer<int64_t>() != 0;
         case phy_string_id0:
         case phy_string_id1:
@@ -763,6 +846,7 @@ public:
         case phy_vector_ptr_id: return this->size() > 0;
         case phy_map_ptr_id: return this->size() > 0;
         case phy_wsrgba_ptr_id: return !(get_pointer<wsRGBA>()->isTransparent());
+        case phy_decimal_ptr_id: return static_cast<decimal>(*this) != 0;
         default:
             if (ttauri_likely(is_phy_float())) {
                 return static_cast<double>(*this) != 0.0;
@@ -801,6 +885,7 @@ public:
         case phy_integer_id5:
         case phy_integer_id6:
         case phy_integer_id7: return fmt::format("{}", static_cast<int64_t>(*this));
+        case phy_decimal_id: return fmt::format("{}", static_cast<decimal>(*this));
         case phy_integer_ptr_id:
             if constexpr (HasLargeObjects) {
                 return fmt::format("{}", static_cast<int64_t>(*this));
@@ -840,6 +925,13 @@ public:
         case phy_wsrgba_ptr_id:
             if constexpr (HasLargeObjects) {
                 return to_string(*get_pointer<wsRGBA>());
+            } else {
+                no_default;
+            }
+
+        case phy_decimal_ptr_id:
+            if constexpr (HasLargeObjects) {
+                return fmt::format("{}", static_cast<decimal>(*this));
             } else {
                 no_default;
             }
@@ -1098,6 +1190,8 @@ public:
         case phy_integer_id6:
         case phy_integer_id7:
         case phy_integer_ptr_id: return static_cast<std::string>(*this);
+        case phy_decimal_id:
+        case phy_decimal_ptr_id: return static_cast<std::string>(*this);
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -1123,7 +1217,7 @@ public:
      * Used in less-than comparison between different types.
      */
     int type_order() const noexcept {
-        if (is_float() || is_phy_integer_ptr()) {
+        if (is_numeric()) {
             // Fold all numeric values into the same group (literal integers).
             return phy_integer_id0;
         } else {
@@ -1170,6 +1264,7 @@ public:
     }
 
     bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
+    bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
     bool is_float() const noexcept { return is_phy_float(); }
     bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
     bool is_boolean() const noexcept { return is_phy_boolean(); }
@@ -1179,7 +1274,7 @@ public:
     bool is_vector() const noexcept { return is_phy_vector_ptr(); }
     bool is_map() const noexcept { return is_phy_map_ptr(); }
     bool is_wsrgba() const noexcept { return is_phy_wsrgba_ptr(); }
-    bool is_numeric() const noexcept { return is_integer() || is_float(); }
+    bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
     bool is_color() const noexcept { return is_wsrgba(); }
 
     datum_type_t type() const noexcept {
@@ -1196,6 +1291,8 @@ public:
         case phy_integer_id6:
         case phy_integer_id7:
         case phy_integer_ptr_id: return datum_type_t::Integer;
+        case phy_decimal_id:
+        case phy_decimal_ptr_id: return datum_type_t::Decimal;
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -1231,6 +1328,8 @@ public:
         case phy_integer_id6:
         case phy_integer_id7:
         case phy_integer_ptr_id: return "Integer";
+        case phy_decimal_id:
+        case phy_decimal_ptr_id: return "Decimal";
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -1324,6 +1423,8 @@ public:
                     });
             case phy_wsrgba_ptr_id:
                 return std::hash<wsRGBA>{}(*get_pointer<wsRGBA>());
+            case phy_decimal_ptr_id:
+                return std::hash<decimal>{}(*get_pointer<decimal>());
             default: no_default;
             }
         } else {
@@ -1350,8 +1451,16 @@ public:
         case datum_impl::phy_integer_ptr_id:
             return (
                 (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
+                (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
                 (rhs.is_integer() && static_cast<int64_t>(lhs) == static_cast<int64_t>(rhs))
-                );
+            );
+        case datum_impl::phy_decimal_id:
+        case datum_impl::phy_decimal_ptr_id:
+            return (
+                (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
+                (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
+                (rhs.is_integer() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs))
+            );
         case datum_impl::phy_string_id0:
         case datum_impl::phy_string_id1:
         case datum_impl::phy_string_id2:
@@ -1404,8 +1513,21 @@ public:
         case datum_impl::phy_integer_ptr_id:
             if (rhs.is_float()) {
                 return static_cast<double>(lhs) < static_cast<double>(rhs);
+            } else if (rhs.is_decimal()) {
+                return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
             } else if (rhs.is_integer()) {
                 return static_cast<int64_t>(lhs) < static_cast<int64_t>(rhs);
+            } else {
+                return lhs.type_order() < rhs.type_order();
+            }
+        case datum_impl::phy_decimal_id:
+        case datum_impl::phy_decimal_ptr_id:
+            if (rhs.is_float()) {
+                return static_cast<double>(lhs) < static_cast<double>(rhs);
+            } else if (rhs.is_decimal()) {
+                return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
+            } else if (rhs.is_integer()) {
+                return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
             } else {
                 return lhs.type_order() < rhs.type_order();
             }
@@ -1528,6 +1650,8 @@ public:
     friend datum_impl operator-(datum_impl const &rhs) {
         if (rhs.is_integer()) {
             return datum{-static_cast<int64_t>(rhs)};
+        } else if (rhs.is_decimal()) {
+            return datum{ -static_cast<decimal>(rhs) };
         } else if (rhs.is_float()) {
             return datum{-static_cast<double>(rhs)};
         } else {
@@ -1538,15 +1662,25 @@ public:
     }
 
     friend datum_impl operator+(datum_impl const &lhs, datum_impl const &rhs) {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<int64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
-            return datum{lhs_ + rhs_};
-
-        } else if (lhs.is_numeric() && rhs.is_numeric()) {
+        if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
+            return datum{ lhs_ + rhs_ };
+
+        } else if (lhs.is_decimal() || rhs.is_decimal()) {
+            let lhs_ = static_cast<decimal>(lhs);
+            let rhs_ = static_cast<decimal>(rhs);
             return datum{lhs_ + rhs_};
+
+        } else if (lhs.is_integer() || rhs.is_integer()) {
+            let lhs_ = static_cast<long long int>(lhs);
+            let rhs_ = static_cast<long long int>(rhs);
+            return datum{ lhs_ + rhs_ };
+
+        } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
+            let lhs_ = static_cast<URL>(lhs);
+            let rhs_ = static_cast<URL>(rhs);
+            return datum{ lhs_ + rhs_ };
 
         } else if (lhs.is_string() && rhs.is_string()) {
             let lhs_ = static_cast<std::string>(lhs);
@@ -1580,15 +1714,19 @@ public:
     }
 
     friend datum_impl operator-(datum_impl const &lhs, datum_impl const &rhs) {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<int64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
-            return datum_impl{lhs_ - rhs_};
-
-        } else if (lhs.is_numeric() && rhs.is_numeric()) {
+        if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ - rhs_};
+            return datum{ lhs_ - rhs_ };
+        } else if (lhs.is_decimal() || rhs.is_decimal()) {
+            let lhs_ = static_cast<decimal>(lhs);
+            let rhs_ = static_cast<decimal>(rhs);
+            return datum{ lhs_ - rhs_ };
+
+        } else if (lhs.is_integer() || rhs.is_integer()) {
+            let lhs_ = static_cast<long long int>(lhs);
+            let rhs_ = static_cast<long long int>(rhs);
+            return datum{ lhs_ + rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't subtract '-' value {} of type {} from value {} of type {}",
@@ -1598,15 +1736,20 @@ public:
     }
 
     friend datum_impl operator*(datum_impl const &lhs, datum_impl const &rhs) {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<int64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
-            return datum_impl{lhs_ * rhs_};
-
-        } else if (lhs.is_numeric() && rhs.is_numeric()) {
+        if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ * rhs_};
+            return datum{ lhs_ * rhs_ };
+
+        } else if (lhs.is_decimal() || rhs.is_decimal()) {
+            let lhs_ = static_cast<decimal>(lhs);
+            let rhs_ = static_cast<decimal>(rhs);
+            return datum{ lhs_ * rhs_ };
+
+        } else if (lhs.is_integer() || rhs.is_integer()) {
+            let lhs_ = static_cast<long long int>(lhs);
+            let rhs_ = static_cast<long long int>(rhs);
+            return datum{ lhs_ * rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't multiply '+' value {} of type {} with value {} of type {}",
@@ -1616,17 +1759,21 @@ public:
     }
 
     friend datum_impl operator/(datum_impl const &lhs, datum_impl const &rhs) {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<int64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
-            return datum_impl{lhs_ / rhs_};
-
-        } else if (lhs.is_numeric() && rhs.is_numeric()) {
+        if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum_impl{lhs_ / rhs_};
+            return datum{ lhs_ / rhs_ };
 
-            // XXX implement path concatenation.
+        } else if (lhs.is_decimal() || rhs.is_decimal()) {
+            let lhs_ = static_cast<decimal>(lhs);
+            let rhs_ = static_cast<decimal>(rhs);
+            return datum{ lhs_ / rhs_ };
+
+        } else if (lhs.is_integer() || rhs.is_integer()) {
+            let lhs_ = static_cast<long long int>(lhs);
+            let rhs_ = static_cast<long long int>(rhs);
+            return datum{ lhs_ / rhs_ };
+
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't divide '/' value {} of type {} by value {} of type {}",
                 lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
@@ -1635,15 +1782,20 @@ public:
     }
 
     friend datum_impl operator%(datum_impl const &lhs, datum_impl const &rhs) {
-        if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<int64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
-            return datum_impl{lhs_ % rhs_};
-
-        } else if (lhs.is_numeric() && rhs.is_numeric()) {
+        if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum_impl{std::fmod(lhs_,rhs_)};
+            return datum{ lhs_ % rhs_ };
+
+        } else if (lhs.is_decimal() || rhs.is_decimal()) {
+            let lhs_ = static_cast<decimal>(lhs);
+            let rhs_ = static_cast<decimal>(rhs);
+            return datum{ lhs_ % rhs_ };
+
+        } else if (lhs.is_integer() || rhs.is_integer()) {
+            let lhs_ = static_cast<long long int>(lhs);
+            let rhs_ = static_cast<long long int>(rhs);
+            return datum{ lhs_ % rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't take modulo '%' value {} of type {} by value {} of type {}",

@@ -100,6 +100,11 @@ public:
     explicit operator double () { return static_cast<double>(static_cast<long double>(*this)); }
     explicit operator float () { return static_cast<float>(static_cast<long double>(*this)); }
 
+    size_t hash() const noexcept {
+        auto v = this->normalize();
+        return std::hash<uint64_t>{}(value);
+    }
+
     /** Extract exponent from value.
      * The exponent is encoded in the least significant bits so that only a
      * MOVSX instruction is needed.
@@ -441,6 +446,17 @@ private:
         } else {
             return {exponent, mantissa};
         }
+    }
+};
+
+}
+
+namespace std {
+
+template<>
+struct hash<TTauri::decimal> {
+    inline size_t operator()(decimal const& value) const {
+        return value.hash();
     }
 };
 

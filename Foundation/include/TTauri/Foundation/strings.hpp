@@ -49,11 +49,11 @@ constexpr bool isNumberFirst(char c) noexcept {
 }
 
 constexpr bool isNameFirst(char c) noexcept {
-    return isAlpha(c) || c == '_';
+    return isAlpha(c) || c == '_' || c == '$';
 }
 
 constexpr bool isNameNext(char c) noexcept {
-    return isAlphaNum(c) || c == '_';
+    return isAlphaNum(c) || c == '_' || c == '$';
 }
 
 constexpr bool isQuote(char c) noexcept {
