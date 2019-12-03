@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/throw_exception.hpp"
 #include "TTauri/Foundation/int_overflow.hpp"
 #include "TTauri/Foundation/math.hpp"
+#include <fmt/ostream.h>
 #include <limits>
 #include <string_view>
 #include <string>
@@ -252,9 +253,10 @@ public:
         return s;
     }
 
-    friend std::ostream &operator<<(std::ostream &lhs, decimal rhs) {
+    friend std::ostream& operator<<(std::ostream& lhs, decimal rhs) {
         return lhs << to_string(rhs);
     }
+
 
 private:
 
@@ -429,7 +431,7 @@ private:
             } else if (c == '-') {
                 mantissa_str += c;
             } else {
-                TTAURI_THROW(parse_error("Unexpected character in decimal number '{}'", str));
+                TTAURI_THROW_PARSE_ERROR("Unexpected character in decimal number '{}'", str);
             }
         }
 
@@ -440,9 +442,9 @@ private:
         long long mantissa;
         auto result = std::from_chars(first, last, mantissa, 10);
         if (result.ptr == first) {
-            TTAURI_THROW(parse_error("Could not parse mantissa '{}'", mantissa_str));
+            TTAURI_THROW_PARSE_ERROR("Could not parse mantissa '{}'", mantissa_str);
         } else if (result.ec == std::errc::result_out_of_range) {
-            TTAURI_THROW(parse_error("Mantissa '{}' out of range ", mantissa_str));
+            TTAURI_THROW_PARSE_ERROR("Mantissa '{}' out of range ", mantissa_str);
         } else {
             return {exponent, mantissa};
         }
@@ -455,7 +457,7 @@ namespace std {
 
 template<>
 struct hash<TTauri::decimal> {
-    inline size_t operator()(decimal const& value) const {
+    inline size_t operator()(TTauri::decimal const& value) const {
         return value.hash();
     }
 };

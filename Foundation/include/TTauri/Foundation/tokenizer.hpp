@@ -6,6 +6,8 @@
 #include "TTauri/Foundation/small_vector.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/decimal.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include <date/date.h>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -21,11 +23,9 @@ enum class tokenizer_name_t : uint8_t {
     ErrorEOTInString,
     ErrorLFInString,
 
-    Operator,
     Name,
     StringLiteral,
     IntegerLiteral,
-    BooleanLiteral,
     DateLiteral,
     TimeLiteral,
     FloatLiteral,
@@ -40,11 +40,9 @@ constexpr char const *to_string(tokenizer_name_t name) noexcept {
     case tokenizer_name_t::ErrorEOTInBlockComment: return "ErrorEOTInBlockComment";
     case tokenizer_name_t::ErrorEOTInString: return "ErrorEOTInString";
     case tokenizer_name_t::ErrorLFInString: return "ErrorLFInString";
-    case tokenizer_name_t::Operator: return "Operator";
     case tokenizer_name_t::Name: return "Name";
     case tokenizer_name_t::StringLiteral: return "StringLiteral";
     case tokenizer_name_t::IntegerLiteral: return "IntegerLiteral";
-    case tokenizer_name_t::BooleanLiteral: return "BooleanLiteral";
     case tokenizer_name_t::DateLiteral: return "DateLiteral";
     case tokenizer_name_t::TimeLiteral: return "TimeLiteral";
     case tokenizer_name_t::FloatLiteral: return "FloatLiteral";

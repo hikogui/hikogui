@@ -102,12 +102,12 @@ struct BezierPoint {
     }
 
     inline BezierPoint &operator*=(glm::mat3x3 const &rhs) noexcept {
-        this->p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
+        this->p = glm::xy(rhs * glm::vec3{this->p, 1.0f});
         return *this;
     }
 
     inline BezierPoint &operator*=(float const rhs) noexcept {
-        this->p = glm::xy(rhs * glm::vec3{lhs.p, 1.0f});
+        this->p = glm::xy(rhs * glm::vec3{this->p, 1.0f});
         return *this;
     }
 

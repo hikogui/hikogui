@@ -16,4 +16,10 @@ namespace TTauri {
     throw std::move(overflow_error("{}", message).log(source_file, source_line));
 }
 
+[[noreturn]] void _throw_parse_error(char const* source_file, int source_line, std::string message)
+{
+    throw std::move(parse_error("{}", message).log(source_file, source_line));
+}
+
+
 }

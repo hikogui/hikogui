@@ -45,7 +45,7 @@ struct Location {
     }
 
     friend std::ostream& operator<<(std::ostream &os, Location const &l) {
-        os << l.string();
+        os << to_string(l);
         return os;
     }
 };

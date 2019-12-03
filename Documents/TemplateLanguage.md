@@ -42,10 +42,10 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 3          | '+' expr          | Unary plus                           |
  | 3          | '-' expr          | Unary minus                          |
  | 3          | '~' expr          | Bitwise not                          |
- | 3          | not expr          | Boolean not                          |
+ | 3          | '!' expr          | Boolean not                          |
  | 4          | expr '**' expr    | Power                                |
  | 5          | expr '*' expr     | Multiply                             |
- | 5          | expr '/' expr     | Divide                               |
+ | 5          | expr '/' expr     | Divide / path-join                   |
  | 5          | expr '%' expr     | Remainder                            |
  | 6          | expr '+' expr     | Addition / append                    |
  | 6          | expr '-' expr     | Subtraction                          |
@@ -61,8 +61,8 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 12         | expr '^' expr     | Bitwise xor                          |
  | 13         | expr '\|' expr    | Bitwise or                           |
  | 13         | expr '\|' name    | String filter                        |
- | 14         | expr 'and' expr   | Logical and                          |
- | 15         | expr 'or' expr    | Logical or                           |
+ | 14         | expr '&&' expr    | Logical and                          |
+ | 15         | expr '||' expr    | Logical or                           |
  | 17         | expr ',' expr     | Comma separator on function calls    |
 
 ### Function call
@@ -221,8 +221,8 @@ No literal available.
 Explicit conversion: `url()`
 
 Operations available that work on a string:
- - `url + url -> url`
- - `url + string -> url`
+ - `url / url -> url`
+ - `url / string -> url`
  - `url == url -> boolean`
  - `url != url -> boolean`
  - `url < url -> boolean`
@@ -339,14 +339,26 @@ inside the body of a flow-control statement.
 Functions and blocks that are included by the `#include` statements are available in the global scope. See
 the data model chapter.
 
+The filename is an expression, this expression is evaluated during parsing.
 When the filename argument is relative, the file is located relative to the current file.
 
-There is no protection against including a file multiple times or recursively.
-
-Syntax BNF: '#include' url-expression
 
 It is recommended that the included files have the `.tti` (TTauri Include) extension,
 and top-level template files have the `.ttt` (TTauri Template) extension.
+
+Warning: There is no protection against including a file multiple times or recursively.
+
+Syntax BNF: '#include' url-expression
+
+Example:
+```
+#include "foo.tti"
+```
+
+Result:
+```
+This is the contents of foo.tti.
+```
 
 ### If statement
 Conditional `#if` statement, with optional `#elif` statments and optional end `#else` statement.
@@ -360,7 +372,6 @@ Syntax:
  - '#end' '\n'
 
 Example:
-
 ```
 #let foo = 5
 

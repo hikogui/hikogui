@@ -1677,11 +1677,6 @@ public:
             let rhs_ = static_cast<long long int>(rhs);
             return datum{ lhs_ + rhs_ };
 
-        } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
-            let lhs_ = static_cast<URL>(lhs);
-            let rhs_ = static_cast<URL>(rhs);
-            return datum{ lhs_ + rhs_ };
-
         } else if (lhs.is_string() && rhs.is_string()) {
             let lhs_ = static_cast<std::string>(lhs);
             let rhs_ = static_cast<std::string>(rhs);
@@ -1718,6 +1713,7 @@ public:
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
             return datum{ lhs_ - rhs_ };
+
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
             let rhs_ = static_cast<decimal>(rhs);
@@ -1772,6 +1768,11 @@ public:
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
+            return datum{ lhs_ / rhs_ };
+
+        } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
+            let lhs_ = static_cast<URL>(lhs);
+            let rhs_ = static_cast<URL>(rhs);
             return datum{ lhs_ / rhs_ };
 
         } else {
