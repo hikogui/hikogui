@@ -376,9 +376,11 @@ inline std::unique_ptr<expression> parse_primary_expression(expression_parse_con
             context.advance();
             return std::make_unique<expression_literal>(lookahead.location, datum::undefined)
 
-        } else if (auto func0 = context.get_function0(lookahead.name)) {
+        } else if (auto func = context.get_function(lookahead.name)) {
             context.advance();
             lookahead = context.peek();
+
+            std::vector<std::unique_ptr<expression>> args;
 
             if ((lookahead == tokenizer_name_t::Literal) && (lookahead == "(")) {
                 context.advance();
@@ -389,63 +391,27 @@ inline std::unique_ptr<expression> parse_primary_expression(expression_parse_con
 
             if ((lookahead == tokenizer_name_t::Literal) && (lookahead == ")")) {
                 context.advance();
+
             } else {
-                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", lookahead);
-            }
-            return std::make_unique<expression_function0>(lookahead.location, std::move(func0));
+                while (true) {
+                    args.push_back(parse_expression(context));
 
-        } else if (auto func1 = context.get_function1(lookahead.name)) {
-            context.advance();
-            lookahead = context.peek();
+                    if ((lookahead == tokenizer_name_t::Literal) && (lookahead == ",")) {
+                        context.advance();
+                        lookahead = context.peek();
+                    } else {
+                        break;
+                    }
+                }
 
-            if ((lookahead == tokenizer_name_t::Literal) && (lookahead == "(")) {
-                context.advance();
-                lookahead = context.peek();
-            }
-            else {
-                TTAURI_THROW(parse_error("Expected '(' token for function call got {}", lookahead);
-            }
-
-            auto arg1 = parse_expression(context);
-
-            if ((lookahead == tokenizer_name_t::Literal) && (lookahead == ")")) {
-                context.advance();
-            }
-            else {
-                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", lookahead);
-            }
-            return std::make_unique<expression_function1>(lookahead.location, std::move(func1), std::move(arg1));
-
-        } else if (auto func2 = context.get_function2(lookahead.name)) {
-            context.advance();
-            lookahead = context.peek();
-
-            if ((lookahead == tokenizer_name_t::Literal) && (lookahead == "(")) {
-                context.advance();
-                lookahead = context.peek();
-            }
-            else {
-                TTAURI_THROW(parse_error("Expected '(' token for function call got {}", lookahead);
+                if ((lookahead == tokenizer_name_t::Literal) && (lookahead == ")")) {
+                    context.advance();
+                } else {
+                    TTAURI_THROW(parse_error("Expected ')' token for function call got {}", lookahead);
+                }
             }
 
-            auto arg1 = parse_expression(context);
-
-            if ((lookahead == tokenizer_name_t::Literal) && (lookahead == ",")) {
-                context.advance();
-                lookahead = context.peek();
-            } else {
-                TTAURI_THROW(parse_error("Expected ',' token for function call got {}", lookahead);
-            }
-
-            auto arg2 = parse_expression(context);
-
-            if ((lookahead == tokenizer_name_t::Literal) && (lookahead == ")")) {
-                context.advance();
-            }
-            else {
-                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", lookahead);
-            }
-            return std::make_unique<expression_function2>(lookahead.location, std::move(func2), std::move(arg1), std::move(arg2));
+            return std::make_unique<expression_call>(lookahead.location, std::move(func), std::move(args));
 
         } else {
             context.advance();
