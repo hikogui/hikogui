@@ -264,6 +264,17 @@ TEST(Tokenizer, ParseLiteral) {
     ASSERT_TOKEN_EQ(tokens[3], End, "", v.begin() + 5);
 }
 
+TEST(Tokenizer, ParseSlash) {
+    auto str = "++ / ++";
+    auto v = std::string_view(str);
+    auto tokens = parseTokens(v);
+    ASSERT_TOKEN_EQ(tokens[0], Literal, "++", v.begin() + 0);
+    ASSERT_TOKEN_EQ(tokens[1], Literal, "/", v.begin() + 3);
+    ASSERT_TOKEN_EQ(tokens[2], Literal, "++", v.begin() + 5);
+    ASSERT_TOKEN_EQ(tokens[3], End, "", v.begin() + 7);
+}
+
+
 TEST(Tokenizer, ParseWhitespace) {
     auto str = "++     ++";
     auto v = std::string_view(str);

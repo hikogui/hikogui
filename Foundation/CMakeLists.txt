@@ -42,6 +42,7 @@ set(TTauri_Foundation_srcs
     src/FileMapping.cpp
     src/FileView.cpp
     src/throw_exception.cpp
+    src/expression.cpp
 )
 
 if(WIN32)
@@ -80,6 +81,7 @@ set(TTauri_Foundation_tests
     tests/counters_tests.cpp
     tests/datum_tests.cpp
     tests/exceptions_tests.cpp
+    tests/expression_tests.cpp
     tests/FileView_tests.cpp
     tests/pickle_tests.cpp
     tests/polynomial_tests.cpp

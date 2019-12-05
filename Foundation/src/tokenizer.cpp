@@ -365,7 +365,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Slash(
             transition.setNext(tokenizer_state_t::BlockComment);
             transition.setAction(tokenizer_action_t::Read);
         } else {
-            transition.setNext(tokenizer_state_t::OperatorFirstChar);
+            transition.setNext(tokenizer_state_t::OperatorSecondChar);
         }
 
         r[i] = transition;
@@ -522,11 +522,14 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         let c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (c == '>') {
+        switch (c) {
+        case '>':
+        case '=':
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);
             transition.name = tokenizer_name_t::Literal;
-        } else {
+            break;
+        default:
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
             transition.name = tokenizer_name_t::Literal;
@@ -556,6 +559,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 
         switch (c) {
         case '=': MORE_CHARS; break; // Possible: <=>
+        case '<': MORE_CHARS; break; // Possible: <<=
+        case '>': MORE_CHARS; break; // Possible: >>=
 
         case '-': LAST_CHAR; break;
         case '+': LAST_CHAR; break;
@@ -563,8 +568,6 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '&': LAST_CHAR; break;
         case '|': LAST_CHAR; break;
         case '^': LAST_CHAR; break;
-        case '<': LAST_CHAR; break;
-        case '>': LAST_CHAR; break;
         default:
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
@@ -599,7 +602,6 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '.': LAST_CHAR; break;
         case ';': LAST_CHAR; break;
         case ',': LAST_CHAR; break;
-        case '/': LAST_CHAR; break;
         case '(': LAST_CHAR; break;
         case ')': LAST_CHAR; break;
         case '[': LAST_CHAR; break;
@@ -607,21 +609,22 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '{': LAST_CHAR; break;
         case '}': LAST_CHAR; break;
         case '?': LAST_CHAR; break;
-        case '%': LAST_CHAR; break;
         case '@': LAST_CHAR; break;
         case '$': LAST_CHAR; break;
         case '~': LAST_CHAR; break;
 
         case '!': MORE_CHARS; break; // Possible: !=
-        case '<': MORE_CHARS; break; // Possible: <=>, <=, <-, <<, <>
-        case '>': MORE_CHARS; break; // Possible: >=, >>
+        case '<': MORE_CHARS; break; // Possible: <=>, <=, <-, <<, <>, <<=
+        case '>': MORE_CHARS; break; // Possible: >=, >>, >>=
         case '=': MORE_CHARS; break; // Possible: ==, =>
-        case '+': MORE_CHARS; break; // Possible: ++
-        case '-': MORE_CHARS; break; // Possible: --, ->,
+        case '+': MORE_CHARS; break; // Possible: ++, +=
+        case '-': MORE_CHARS; break; // Possible: --, ->, -=
         case '*': MORE_CHARS; break; // Possible: **
-        case '|': MORE_CHARS; break; // Possible: ||
-        case '&': MORE_CHARS; break; // Possible: &&
-        case '^': MORE_CHARS; break; // Possible: ^^
+        case '%': MORE_CHARS; break; // Possible: %=
+        case '/': MORE_CHARS; break; // Possible: /=
+        case '|': MORE_CHARS; break; // Possible: ||, |=
+        case '&': MORE_CHARS; break; // Possible: &&, &=
+        case '^': MORE_CHARS; break; // Possible: ^=
         case ':': MORE_CHARS; break; // Possible: :=
         default:
             // If we don't recognize the operator, it means this character is invalid.

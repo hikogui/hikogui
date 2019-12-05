@@ -163,14 +163,4 @@ constexpr T rotr(T x, unsigned int count) noexcept
 #endif
 }
 
-template<typename T, typename M>
-constexpr T modulo(T x, M m) noexcept
-{
-    if (x >= 0) {
-        return x % m;
-    } else {
-        return m - (-x % m);
-    }
-}
-
 }

@@ -10,6 +10,7 @@
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/type_traits.hpp"
 #include "TTauri/Foundation/throw_exception.hpp"
+#include "TTauri/Foundation/math.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -22,6 +23,7 @@
 #include <ostream>
 #include <numeric>
 #include <string_view>
+#include <cmath>
 
 namespace TTauri {
 template<bool HasLargeObjects>
@@ -1432,6 +1434,85 @@ public:
         }
     }
 
+    datum_impl &operator+=(datum_impl const &rhs) {
+        if (this->is_vector()) {
+            this->push_back(rhs);
+        } else {
+            *this = *this + rhs;
+        }
+        return *this;
+    }
+
+    datum_impl &operator-=(datum_impl const &rhs) {
+        return *this = *this - rhs;
+    }
+
+    datum_impl &operator*=(datum_impl const &rhs) {
+        return *this = *this * rhs;
+    }
+
+    datum_impl &operator/=(datum_impl const &rhs) {
+        return *this = *this / rhs;
+    }
+
+    datum_impl &operator%=(datum_impl const &rhs) {
+        return *this = *this % rhs;
+    }
+
+    datum_impl &operator<<=(datum_impl const &rhs) {
+        return *this = *this << rhs;
+    }
+
+    datum_impl &operator>>=(datum_impl const &rhs) {
+        return *this = *this >> rhs;
+    }
+
+    datum_impl &operator&=(datum_impl const &rhs) {
+        return *this = *this & rhs;
+    }
+
+    datum_impl &operator|=(datum_impl const &rhs) {
+        return *this = *this | rhs;
+    }
+
+    datum_impl &operator^=(datum_impl const &rhs) {
+        return *this = *this ^ rhs;
+    }
+
+    friend datum_impl operator~(datum_impl const &rhs) {
+        if (rhs.is_integer()) {
+            return datum{~static_cast<int64_t>(rhs)};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't bit-wise negate '~' value {} of type {}",
+                rhs.repr(), rhs.type_name()
+            );
+        }
+    }
+
+    friend datum_impl operator-(datum_impl const &rhs) {
+        if (rhs.is_integer()) {
+            return datum{-static_cast<int64_t>(rhs)};
+        } else if (rhs.is_decimal()) {
+            return datum{ -static_cast<decimal>(rhs) };
+        } else if (rhs.is_float()) {
+            return datum{-static_cast<double>(rhs)};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic negate '-' value {} of type {}",
+                rhs.repr(), rhs.type_name()
+            );
+        }
+    }
+
+    friend datum_impl operator+(datum_impl const &rhs) {
+        if (rhs.is_numeric()) {
+            return rhs;
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic posgate '+' value {} of type {}",
+                rhs.repr(), rhs.type_name()
+            );
+        }
+    }
+
     friend bool operator==(datum_impl const &lhs, datum_impl const &rhs) noexcept {
         switch (lhs.type_id()) {
         case datum_impl::phy_boolean_id:
@@ -1599,68 +1680,6 @@ public:
         return !(lhs < rhs);
     }
 
-    /** Merge two datums together, such that the second will override values on the first.
-     * This will merge map-datums together by recursively deep merging matching items.
-     *
-     * @param lhs First datum.
-     * @param rhs Second datum that will override the first datum.
-     * @return 
-     */
-    friend datum_impl deep_merge(datum_impl const &lhs, datum_impl const &rhs) noexcept {
-        datum_impl result;
-
-        if (lhs.is_map() && rhs.is_map()) {
-            result = lhs;
-
-            auto result_map = result.get_pointer<datum_impl::map>();
-            for (auto rhs_i = rhs.map_begin(); rhs_i != rhs.map_end(); rhs_i++) {
-                auto result_i = result_map->find(rhs_i->first);
-                if (result_i == result_map->end()) {
-                    result_map->insert(*rhs_i);
-                } else {
-                    result_i->second = deep_merge(result_i->second, rhs_i->second);
-                }
-            }
-
-        } else if (lhs.is_vector() && rhs.is_vector()) {
-            result = lhs;
-
-            auto result_vector = result.get_pointer<datum_impl::vector>();
-            for (auto rhs_i = rhs.vector_begin(); rhs_i != rhs.vector_end(); rhs_i++) {
-                result_vector->push_back(*rhs_i);
-            }
-
-        } else {
-            result = rhs;
-        }
-
-        return result;
-    }
-
-    friend datum_impl operator~(datum_impl const &rhs) {
-        if (rhs.is_integer()) {
-            return datum{~static_cast<int64_t>(rhs)};
-        } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't bit-wise negate '~' value {} of type {}",
-                rhs.repr(), rhs.type_name()
-            );
-        }
-    }
-
-    friend datum_impl operator-(datum_impl const &rhs) {
-        if (rhs.is_integer()) {
-            return datum{-static_cast<int64_t>(rhs)};
-        } else if (rhs.is_decimal()) {
-            return datum{ -static_cast<decimal>(rhs) };
-        } else if (rhs.is_float()) {
-            return datum{-static_cast<double>(rhs)};
-        } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic negate '-' value {} of type {}",
-                rhs.repr(), rhs.type_name()
-            );
-        }
-    }
-
     friend datum_impl operator+(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
@@ -1722,7 +1741,7 @@ public:
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
-            return datum{ lhs_ + rhs_ };
+            return datum{ lhs_ - rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't subtract '-' value {} of type {} from value {} of type {}",
@@ -1748,7 +1767,7 @@ public:
             return datum{ lhs_ * rhs_ };
 
         } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't multiply '+' value {} of type {} with value {} of type {}",
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't multiply '*' value {} of type {} with value {} of type {}",
                 lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
             );
         }
@@ -1786,7 +1805,7 @@ public:
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ lhs_ % rhs_ };
+            return datum{ fmod(lhs_, rhs_) };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
@@ -1903,6 +1922,56 @@ public:
         memswap(lhs, rhs);
     }
 
+    friend datum_impl pow(datum_impl const &lhs, datum_impl const &rhs) {
+        if (lhs.is_numeric() || rhs.is_numeric()) {
+            let lhs_ = static_cast<double>(lhs);
+            let rhs_ = static_cast<double>(rhs);
+            return datum{ pow(lhs_, rhs_) };
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't raise to a power '**' value {} of type {} with value {} of type {}",
+                lhs.repr(), lhs.type_name(), rhs.repr(), rhs.type_name()
+            );
+        }
+    }
+
+    /** Merge two datums together, such that the second will override values on the first.
+     * This will merge map-datums together by recursively deep merging matching items.
+     *
+     * @param lhs First datum.
+     * @param rhs Second datum that will override the first datum.
+     * @return 
+     */
+    friend datum_impl deep_merge(datum_impl const &lhs, datum_impl const &rhs) noexcept {
+        datum_impl result;
+
+        if (lhs.is_map() && rhs.is_map()) {
+            result = lhs;
+
+            auto result_map = result.get_pointer<datum_impl::map>();
+            for (auto rhs_i = rhs.map_begin(); rhs_i != rhs.map_end(); rhs_i++) {
+                auto result_i = result_map->find(rhs_i->first);
+                if (result_i == result_map->end()) {
+                    result_map->insert(*rhs_i);
+                } else {
+                    result_i->second = deep_merge(result_i->second, rhs_i->second);
+                }
+            }
+
+        } else if (lhs.is_vector() && rhs.is_vector()) {
+            result = lhs;
+
+            auto result_vector = result.get_pointer<datum_impl::vector>();
+            for (auto rhs_i = rhs.vector_begin(); rhs_i != rhs.vector_end(); rhs_i++) {
+                result_vector->push_back(*rhs_i);
+            }
+
+        } else {
+            result = rhs;
+        }
+
+        return result;
+    }
 };
 
 template<typename T, bool HasLargeObjects>

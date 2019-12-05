@@ -29,11 +29,13 @@ TEST(Datum, IntOperations) {
     ASSERT_EQ(v < 42, false);
     ASSERT_EQ(v < 41, false);
     ASSERT_EQ(v < 43, true);
+    ASSERT_EQ(v - 5, 37);
 
     ASSERT_EQ(v == 42.0, true);
     ASSERT_EQ(v < 42.0, false);
     ASSERT_EQ(v < 41.0, false);
     ASSERT_EQ(v < 43.0, true);
+
 
     let a = v + 3;
     ASSERT_EQ(a.is_integer(), true);

@@ -103,7 +103,7 @@ public:
 
     size_t hash() const noexcept {
         auto v = this->normalize();
-        return std::hash<uint64_t>{}(value);
+        return std::hash<uint64_t>{}(v.value);
     }
 
     /** Extract exponent from value.
@@ -224,7 +224,18 @@ public:
         auto lhs_e = lhs.exponent();
 
         std::tie(lhs_e, lhs_m) = decimal::denormalize(lhs_e, lhs_m);
-        return {lhs_e - rhs_e, lhs_m / rhs_m};
+        return { lhs_e - rhs_e, lhs_m / rhs_m };
+    }
+
+    [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept {
+        auto rhs_m = rhs.mantissa();
+        axiom_assert(rhs_m != 0);
+        auto rhs_e = rhs.exponent();
+        auto lhs_m = lhs.mantissa();
+        auto lhs_e = lhs.exponent();
+
+        std::tie(lhs_e, lhs_m) = decimal::denormalize(lhs_e, lhs_m);
+        return { lhs_e - rhs_e, lhs_m % rhs_m };
     }
 
     [[nodiscard]] friend std::string to_string(decimal x) noexcept {
