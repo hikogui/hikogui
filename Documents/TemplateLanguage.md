@@ -89,7 +89,7 @@ Syntax: `undefined`
 ### Boolean
 Syntax: `true` or `false`
 
-Explicit conversion: `bool()`
+Explicit conversion: `boolean()`
 
 Operations available that work on a boolean (all datum will be implicitly converted to a boolean):
  - `not boolean -> boolean`
@@ -107,7 +107,7 @@ A 64 bit signed integer in 2's compliment format.
 
 Syntax: `[+-]?(0[bBoOdDxX])?[0-9a-fA-F']+`
 
-Explicit conversion: `int()`
+Explicit conversion: `integer()`
 
 Operations available that work on a integer:
  - `+ integer -> integer`

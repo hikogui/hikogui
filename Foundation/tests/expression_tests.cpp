@@ -331,10 +331,19 @@ TEST(Expression, Binding) {
     ASSERT_EQ(r, 42);
     ASSERT_EQ(context.get("bar"), 33);
     ASSERT_EQ(context.get("baz"), 42);
+
+    ASSERT_NO_THROW(e = parse_expression("[foo[1], foo[0]] = foo"));
+    ASSERT_EQ(e->string(), "([(foo[1]), (foo[0])] = foo)");
+    ASSERT_NO_THROW(r = e->evaluate(context));
+    ASSERT_EQ(r, 42);
+    expected = datum::vector{42, 33};
+    ASSERT_EQ(context.get("foo"), expected);
 }
 
 TEST(Expression, FunctionCall) {
     std::unique_ptr<expression> e;
+    datum r;
+    expression_evaluation_context context;
 
     ASSERT_NO_THROW(e = parse_expression("foo()"));
     ASSERT_EQ(e->string(), "(foo())");
@@ -350,6 +359,12 @@ TEST(Expression, FunctionCall) {
 
     ASSERT_NO_THROW(e = parse_expression("(!foo)(2)"));
     ASSERT_EQ(e->string(), "((! foo)(2))");
+
+    ASSERT_NO_THROW(e = parse_expression("float(5)"));
+    ASSERT_EQ(e->string(), "(float(5))");
+    ASSERT_NO_THROW(r = e->evaluate(context));
+    ASSERT_EQ(to_string(r), "5.0");
+
 }
 
 TEST(Expression, Members) {
