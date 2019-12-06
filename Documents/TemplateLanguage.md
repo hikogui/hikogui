@@ -36,34 +36,50 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
 
 ### Operators
 
- | Precedence | Operator          | Description                          |
- | ----------:|:----------------- |:------------------------------------ |
- | 2          | expr '[' expr ']' | Subscripting                         |
- | 3          | '+' expr          | Unary plus                           |
- | 3          | '-' expr          | Unary minus                          |
- | 3          | '~' expr          | Bitwise not                          |
- | 3          | '!' expr          | Boolean not                          |
- | 4          | expr '**' expr    | Power                                |
- | 5          | expr '*' expr     | Multiply                             |
- | 5          | expr '/' expr     | Divide / path-join                   |
- | 5          | expr '%' expr     | Remainder                            |
- | 6          | expr '+' expr     | Addition / append                    |
- | 6          | expr '-' expr     | Subtraction                          |
- | 7          | expr '<<' expr    | Bitwise shift left                   |
- | 7          | expr '>>' expr    | Bitwise shift right with sign extend |
- | 9          | expr '<' expr     | Less than                            |
- | 9          | expr '>' expr     | Greater than                         |
- | 9          | expr '<=' expr    | Less than or equal to                |
- | 9          | expr '>=' expr    | Greater than or equal to             |
- | 10         | expr '==' expr    | Equal to                             |
- | 10         | expr '!=' expr    | Not equal to                         |
- | 11         | expr '&' expr     | Bitwise and                          |
- | 12         | expr '^' expr     | Bitwise xor                          |
- | 13         | expr '\|' expr    | Bitwise or                           |
- | 13         | expr '\|' name    | String filter                        |
- | 14         | expr '&&' expr    | Logical and                          |
- | 15         | expr '||' expr    | Logical or                           |
- | 17         | expr ',' expr     | Comma separator on function calls    |
+ | Precedence | Operator               | Description                          |
+ | ----------:|:---------------------- |:------------------------------------ |
+ | 2          | expr '[' expr ']'      | Subscripting                         |
+ | 2          | expr '(' args ')'      | Function call                        |
+ | 3          | '+' expr               | Unary plus                           |
+ | 3          | '-' expr               | Unary minus                          |
+ | 3          | '~' expr               | Bitwise not                          |
+ | 3          | '!' expr               | Boolean not                          |
+ | 3          | '++' expr              | Increment                            |
+ | 3          | '--' expr              | Decrement                            |
+ | 4          | expr '.' name          | Member                               |
+ | 4          | expr '**' expr         | Power                                |
+ | 5          | expr '*' expr          | Multiply                             |
+ | 5          | expr '/' expr          | Divide / path-join                   |
+ | 5          | expr '%' expr          | Remainder                            |
+ | 6          | expr '+' expr          | Addition / append                    |
+ | 6          | expr '-' expr          | Subtraction                          |
+ | 7          | expr '<<' expr         | Bitwise shift left                   |
+ | 7          | expr '>>' expr         | Bitwise shift right with sign extend |
+ | 9          | expr '<' expr          | Less than                            |
+ | 9          | expr '>' expr          | Greater than                         |
+ | 9          | expr '<=' expr         | Less than or equal to                |
+ | 9          | expr '>=' expr         | Greater than or equal to             |
+ | 10         | expr '==' expr         | Equal to                             |
+ | 10         | expr '!=' expr         | Not equal to                         |
+ | 11         | expr '&' expr          | Bitwise and                          |
+ | 12         | expr '^' expr          | Bitwise xor                          |
+ | 13         | expr '\|' expr         | Bitwise or                           |
+ | 13         | expr '\|' name         | String filter                        |
+ | 14         | expr '&&' expr         | Logical and                          |
+ | 15         | expr '||' expr         | Logical or                           |
+ | 16         | expr '?' expr ':' expr | Ternary operator                     |
+ | 16         | expr '=' expr          | Assign                               |
+ | 16         | expr '+=' expr         | Inplace add                          |
+ | 16         | expr '-=' expr         | Inplace subtractions                 |
+ | 16         | expr '*=' expr         | Inplace multiply                     |
+ | 16         | expr '/=' expr         | Inplace divide / path-join           |
+ | 16         | expr '%=' expr         | Inplace remainder                    |
+ | 16         | expr '<<=' expr        | Inplace shift left                   |
+ | 16         | expr '>>=' expr        | Inplace shift right                  |
+ | 16         | expr '&=' expr         | Inplace and                          |
+ | 16         | expr '^=' expr         | Inplace xor                          |
+ | 16         | expr '\|=' expr        | Inplace or                           |
+ | 17         | expr ',' expr          | Comma separator on function calls    |
 
 ### Function call
 Call a function with zero or more arguments.
@@ -73,6 +89,23 @@ Functions are build-in, passed by the developer when evaluating an expression,
 or added in the template by the user.
 
 Syntax: name '(' ( expression ( ',' expression )* ','? )? ')'
+
+### Assignment
+An assignment operator is different from inplace-operations. An inplace-operation will
+modify a value of an existing variable. An assignment operator will create or replace
+a variable at the current scope.
+
+The current scope is either the local scope of the function where the expression is located. Or
+in the global scope if the expression is located at the top level (outside of a function) of a template.
+control flow will not intruduce new scopes.
+
+An assignment done in the local-scope will hide variables in global scope with the same name.
+
+Assignment can be done on multiple variables at the same time, by unpacking into a vector literal.
+
+Syntax: name | expr '=' expression
+
+Syntax: '[' name | expr ( ',' name | expr )* ']' '=' expression
 
 ### Null
 Used by the user to denote a *nothing* value.
@@ -310,19 +343,22 @@ Result:
 36
 ```
 
-### Assignment
-Assignment of a value to a name. Later assignment overwrite the value that the name holds.
+### Expression Statement
+Expressions can be evaluated as statements themselves. This is mostly useful for
+doing assignment, modiyfing data or calling functions with side effects.
+
+Expression statement will add text to the output.
 
 At the top-level assignments are done in global scope. Inside functions and blocks assignments
 are done in the local scope, even if the name already exists in the global scope.
 Loops do not introduce scopes.
 
-Syntax: '#let' name (',' name)* = expression
+Syntax: '##' expression
 
 Example
 ```
-#let foo = 42
-#let foo, bar = [foo + 2, 2]
+## foo = 42
+## [foo, bar] = [foo + 2, 2]
 ${foo} ${bar}
 ```
 
@@ -373,7 +409,7 @@ Syntax:
 
 Example:
 ```
-#let foo = 5
+## foo = 5
 
 #if foo == 2
 Foo is two.
@@ -447,10 +483,10 @@ Syntax:
 
 Example:
 ```
-#let i = 0
+## i = 0
 #while i < 3
 Iteration ${i}.
-#let i = i + 1
+## i = i + 1
 #end
 ```
 
@@ -474,10 +510,10 @@ Syntax:
  - '#while' boolean-expression '\n'
 
 ```
-#let i = 0
+## i = 0
 #do
 Iteration ${i}.
-#let i = i + 1
+## i = i + 1
 #while i < 0
 ```
 
