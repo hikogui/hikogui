@@ -163,6 +163,15 @@ Operations available that work on a integer:
  - `integer > integer -> boolean`
  - `integer <= integer -> boolean`
  - `integer >= integer -> boolean`
+ - `integer += integer -> integer`
+ - `integer -= integer -> integer`
+ - `integer *= integer -> integer`
+ - `integer **= integer -> float`
+ - `integer /= integer -> integer`
+ - `integer %= integer -> integer`
+ - `integer &= integer -> integer`
+ - `integer ^= integer -> integer`
+ - `integer |= integer -> integer`
 
 
 ### Decimal
@@ -187,6 +196,12 @@ Operations available that work on a decimal float (integer are implicitly conver
  - `decimal > decimal -> boolean`
  - `decimal <= decimal -> boolean`
  - `decimal >= decimal -> boolean`
+ - `decimal += decimal -> decimal`
+ - `decimal -= decimal -> decimal`
+ - `decimal *= decimal -> decimal`
+ - `decimal **= decimal -> float`
+ - `decimal /= decimal -> decimal`
+ - `decimal %= decimal -> decimal`
  - `round(decimal)`
  - `floor(decimal)`
  - `ceil(decimal)`
@@ -278,9 +293,12 @@ Operations available that work on a vector:
  - `vector > vector -> boolean`
  - `vector <= vector -> boolean`
  - `vector >= vector -> boolean`
+ - `vector += datum -> vector`
  - `vector[integer] -> datum`
  - `size(vector) -> integer`
- - `append(vector, datum value)`
+ - `sort(vector) -> vector`
+ - `vector.append(datum)`
+ - `vector.pop() -> datum`
 
 
 ### Map
@@ -301,6 +319,7 @@ Operations available that work on a map:
  - `contains(map, datum) -> boolean`
  - `keys(map) -> vector`
  - `values(map) -> vector`
+ - `items(map) -> vector[key, value]`
 
 
 ## Statements and placeholders
