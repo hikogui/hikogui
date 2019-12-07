@@ -112,21 +112,94 @@ static datum function_values(expression_evaluation_context &context, datum::vect
     }
 }
 
-expression_evaluation_context::expression_evaluation_context()
+static datum function_items(expression_evaluation_context &context, datum::vector const &args)
 {
-    if (global_functions.size() == 0) {
-        global_functions["float"] = function_float;
-        global_functions["integer"] = function_integer;
-        global_functions["decimal"] = function_decimal;
-        global_functions["string"] = function_string;
-        global_functions["boolean"] = function_boolean;
-        global_functions["url"] = function_url;
-        global_functions["size"] = function_size;
-        global_functions["keys"] = function_keys;
-        global_functions["values"] = function_values;
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for items() function, got {}", args.size()));
+    }
+
+    let &arg = args[0];
+
+    if (arg.is_map()) {
+        datum::vector values;
+        for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
+            values.emplace_back(datum::vector{i->first, i->second});
+        }
+        return datum{std::move(values)};
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting map argument for items() function, got {}", arg.type_name()));
     }
 }
 
+static datum function_sort(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for sort() function, got {}", args.size()));
+    }
+
+    let &arg = args[0];
+
+    if (arg.is_vector()) {
+        auto r = static_cast<datum::vector>(arg);
+        std::sort(r.begin(), r.end());
+        return datum{r};
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector argument for sort() function, got {}", arg.type_name()));
+    }
+}
+
+expression_parse_context::function_table expression_parse_context::global_functions = {
+    {"float"s, function_float},
+    {"integer"s, function_integer},
+    {"decimal"s, function_decimal},
+    {"string"s, function_string},
+    {"boolean"s, function_boolean},
+    {"url"s, function_url},
+    {"size"s, function_size},
+    {"keys"s, function_keys},
+    {"values"s, function_values},
+    {"items"s, function_items},
+    {"sort"s, function_sort}
+};
+
+static datum method_append(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for .append() method, got {}", args.size()));
+    }
+
+    if (self.is_vector()) {
+        self.push_back(args[0]);
+        return {};
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector on left hand side for .append() method, got {}", self.type_name()));
+    }
+}
+
+static datum method_pop(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .pop() method, got {}", args.size()));
+    }
+
+    if (self.is_vector()) {
+        auto r = self.back();
+        self.pop_back();
+        return r;
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector on left hand side for .pop() method, got {}", self.type_name()));
+    }
+}
+
+expression_parse_context::method_table expression_parse_context::global_methods = {
+    {"append"s, method_append},
+    {"push"s, method_append},
+    {"pop"s, method_pop},
+};
 
 struct expression_arguments final : expression {
     expression_vector args;
@@ -178,6 +251,12 @@ struct expression_vector_literal final : expression {
 
     expression_vector_literal(index_type index, expression_vector values) :
         expression(index), values(std::move(values)) {}
+
+    void post_process(expression_parse_context& context) override {
+        for (auto &value: values) {
+            value->post_process(context);
+        }
+    }
 
     datum evaluate(expression_evaluation_context& context) const override {
         datum::vector r;
@@ -234,6 +313,16 @@ struct expression_map_literal final : expression {
     expression_map_literal(index_type index, expression_vector keys, expression_vector values) :
         expression(index), keys(std::move(keys)), values(std::move(values)) {}
 
+    void post_process(expression_parse_context& context) override {
+        for (auto &key: keys) {
+            key->post_process(context);
+        }
+
+        for (auto &value: values) {
+            value->post_process(context);
+        }
+    }
+
     datum evaluate(expression_evaluation_context& context) const override {
         required_assert(keys.size() == values.size());
 
@@ -268,10 +357,17 @@ struct expression_map_literal final : expression {
 
 struct expression_name final : expression {
     std::string name;
-    mutable expression_evaluation_context::function_type function;
+    mutable expression_parse_context::function_type function;
 
     expression_name(index_type index, std::string_view name) :
         expression(index), name(name) {}
+
+    void resolve_function_pointer(expression_parse_context& context) override {
+        function = context.get_function(name);
+        if (!function) {
+            TTAURI_THROW(parse_error("Could not find function {}()", name));
+        }
+    }
 
     datum evaluate(expression_evaluation_context& context) const override {
         return context.get(name);
@@ -286,9 +382,6 @@ struct expression_name final : expression {
     }
 
     datum call(expression_evaluation_context& context, datum::vector const &arguments) const override {
-        if (!function) {
-            function = context.get_function(name);
-        }
         return function(context, arguments);
     }
 
@@ -311,6 +404,13 @@ struct expression_call final : expression {
         auto rhs_ = dynamic_cast<expression_arguments*>(rhs.get());
         required_assert(rhs_ != nullptr);
         args = std::move(rhs_->args);
+    }
+
+    void post_process(expression_parse_context& context) override {
+        lhs->resolve_function_pointer(context);
+        for (auto &arg: args) {
+            arg->post_process(context);
+        }
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
@@ -342,6 +442,10 @@ struct expression_unary_operator : expression {
     expression_unary_operator(index_type index, std::unique_ptr<expression> rhs) :
         expression(index), rhs(std::move(rhs)) {}
 
+    void post_process(expression_parse_context& context) override {
+        rhs->post_process(context);
+    }
+
     std::string string() const noexcept override {
         return fmt::format("<unary_operator {}>", rhs);
     }
@@ -353,6 +457,11 @@ struct expression_binary_operator : expression {
 
     expression_binary_operator(index_type index, std::unique_ptr<expression> lhs, std::unique_ptr<expression> rhs) :
         expression(index), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+
+    void post_process(expression_parse_context& context) override {
+        lhs->post_process(context);
+        rhs->post_process(context);
+    }
 
     std::string string() const noexcept override {
         return fmt::format("<binary_operator {}, {}>", lhs, rhs);
@@ -374,6 +483,12 @@ struct expression_ternary_operator final : expression {
         rhs_true = std::move(pair_->args[0]);
         rhs_false = std::move(pair_->args[1]);
         // The unique_ptrs inside pair_ are now empty.
+    }
+
+    void post_process(expression_parse_context& context) override {
+        lhs->post_process(context);
+        rhs_true->post_process(context);
+        rhs_false->post_process(context);
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
@@ -442,8 +557,7 @@ struct expression_increment final : expression_unary_operator {
         expression_unary_operator(index, std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
-        not_implemented;
-        //return ++rhs->evaluate(context);
+        return ++(rhs->evaluate(context));
     }
 
     std::string string() const noexcept override {
@@ -456,8 +570,7 @@ struct expression_decrement final : expression_unary_operator {
         expression_unary_operator(index, std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
-        not_implemented;
-        //return --rhs->evaluate(context);
+        return --(rhs->evaluate(context));
     }
 
     std::string string() const noexcept override {
@@ -713,12 +826,40 @@ struct expression_ge final : expression_binary_operator {
 };
 
 struct expression_member final : expression_binary_operator {
+    mutable expression_parse_context::method_type method;
+    expression_name* rhs_name;
+
     expression_member(index_type index, std::unique_ptr<expression> lhs, std::unique_ptr<expression> rhs) :
-        expression_binary_operator(index, std::move(lhs), std::move(rhs)) {}
+        expression_binary_operator(index, std::move(lhs), std::move(rhs))
+    {
+        rhs_name = dynamic_cast<expression_name*>(this->rhs.get());
+        if (rhs_name == nullptr) {
+            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a member accessor. got {}.", rhs));
+        }
+    }
+
+    void resolve_function_pointer(expression_parse_context& context) override {
+        method = context.get_method(rhs_name->name);
+        if (!method) {
+            TTAURI_THROW(parse_error("Could not find method .{}().", rhs_name->name));
+        }
+    }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        not_implemented;
-        //return lhs->evaluate(context) . rhs->evaluate(context);
+        return lhs->evaluate(context)[rhs_name->name];
+    }
+
+    datum &evaluate_lvalue(expression_evaluation_context& context) const override {
+        let rhs_ = dynamic_cast<expression_name*>(rhs.get());
+        if (rhs_ == nullptr) {
+            TTAURI_THROW(invalid_operation_error("Expecting a name token on the right hand side of a member accessor. got {}.", rhs));
+        }
+
+        return lhs->evaluate_lvalue(context)[rhs_->name];
+    }
+
+    datum call(expression_evaluation_context& context, datum::vector const &arguments) const override {
+        return method(context, lhs->evaluate_lvalue(context), arguments);
     }
 
     std::string string() const noexcept override {
@@ -1249,7 +1390,7 @@ std::unique_ptr<expression> parse_expression(expression_parse_context& context)
 std::string_view::const_iterator find_end_of_expression(
     std::string_view::const_iterator first,
     std::string_view::const_iterator last,
-    char terminating_character)
+    std::string_view terminating_string)
 {
     std::string bracket_stack;
     char in_string = 0;
@@ -1279,8 +1420,8 @@ std::string_view::const_iterator find_end_of_expression(
                     if (*i == bracket_stack.back()) {
                         bracket_stack.pop_back();
                     }
-                }
-                else if (*i == terminating_character) {
+
+                } else if (starts_with(i, last, terminating_string.begin(), terminating_string.end())) {
                     return i;
                 }
             }

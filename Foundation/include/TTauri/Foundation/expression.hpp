@@ -16,17 +16,13 @@
 namespace TTauri {
 
 struct expression_evaluation_context {
-    using function_type = std::function<datum(expression_evaluation_context&, datum::vector const &)>;
     using scope = std::unordered_map<std::string, datum>;
     using stack = std::vector<scope>;
-
-    std::unordered_map<std::string,function_type> functions;
-    static inline std::unordered_map<std::string,function_type> global_functions;
 
     stack local_stack;
     scope globals;
 
-    expression_evaluation_context();
+    expression_evaluation_context() {};
 
     void push() {
         local_stack.emplace_back();
@@ -51,19 +47,7 @@ struct expression_evaluation_context {
         return local_stack.back();
     }
 
-    [[nodiscard]] function_type get_function(std::string const &name) const {
-        let i = functions.find(name);
-        if (i != functions.end()) {
-            return i->second;
-        }
-
-        let j = global_functions.find(name);
-        if (j != global_functions.end()) {
-            return j->second;
-        }
-
-        TTAURI_THROW(key_error("Unknown function {}.", name));
-    }
+    
 
     [[nodiscard]] datum const& get(std::string const &name) const {
         if (has_locals()) {
@@ -117,6 +101,14 @@ struct expression_evaluation_context {
 
 struct expression_parse_context {
     using const_iterator = typename std::vector<token_t>::const_iterator;
+    using function_type = std::function<datum(expression_evaluation_context&, datum::vector const &)>;
+    using function_table = std::unordered_map<std::string,function_type>;
+    using method_type = std::function<datum(expression_evaluation_context&, datum &, datum::vector const &)>;
+    using method_table = std::unordered_map<std::string,method_type>;
+
+    function_table functions;
+    static function_table global_functions;
+    static method_table global_methods;
 
     std::vector<token_t> tokens;
     const_iterator index;
@@ -145,6 +137,29 @@ struct expression_parse_context {
         ++(*this);
         return tmp;
     }
+
+    [[nodiscard]] function_type get_function(std::string const &name) const noexcept {
+        let i = functions.find(name);
+        if (i != functions.end()) {
+            return i->second;
+        }
+
+        let j = global_functions.find(name);
+        if (j != global_functions.end()) {
+            return j->second;
+        }
+
+        return {};
+    }
+
+    [[nodiscard]] method_type get_method(std::string const &name) const noexcept {
+        let i = global_methods.find(name);
+        if (i != global_methods.end()) {
+            return i->second;
+        }
+
+        return {};
+    }
 };
 
 struct expression {
@@ -156,6 +171,16 @@ struct expression {
     expression(index_type index) : index(index) {}
 
     virtual ~expression() {}
+
+    /** Resolve function and method pointers.
+     * At all call-expressions resolve the function pointers from the parse_context.
+     */
+    virtual void post_process(expression_parse_context& context) {}
+
+    /** Resolve function and method pointers.
+    * This is called on a name-expression or member-expression to set the function pointer.
+    */
+    virtual void resolve_function_pointer(expression_parse_context& context) {}
 
     /** Evaluate an rvalue.
      */
@@ -200,19 +225,21 @@ std::unique_ptr<expression> parse_expression(expression_parse_context& context);
     */
 inline std::unique_ptr<expression> parse_expression(std::string_view text) {
     auto context = expression_parse_context(text);
-    return parse_expression(context);
+    auto e = parse_expression(context);
+    e->post_process(context);
+    return e;
 }
 
 /** Find the end of an expression.
     * This function will track nested brackets and strings, until the terminating_character is found.
     * @param first Iterator to the first character of the expression.
     * @param last Iterator to beyond the last character of the text.
-    * @param terminating_character The character to find.
+    * @param terminating_string The string to find, which is not part of the expression.
     * @return Iterator to the terminating character if found, or last.
     */
 std::string_view::const_iterator find_end_of_expression(
     std::string_view::const_iterator first,
     std::string_view::const_iterator last,
-    char terminating_character);
+    char terminating_string);
 
 }

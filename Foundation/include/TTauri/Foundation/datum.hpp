@@ -1178,7 +1178,58 @@ public:
         }
     }
 
-    std::string repr() const noexcept{
+    void pop_back() {
+        if (is_vector()) {
+            auto *v = get_pointer<datum_impl::vector>();
+            v->pop_back();
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot pop_back() onto type {}", type_name());
+        }
+    }
+
+    datum_impl const &front() const {
+        if (is_vector()) {
+            let *v = get_pointer<datum_impl::vector>();
+            return v->front();
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot front() onto type {}", type_name());
+        }
+    }
+
+    datum_impl &front() {
+        if (is_vector()) {
+            auto *v = get_pointer<datum_impl::vector>();
+            return v->front();
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot front() onto type {}", type_name());
+        }
+    }
+
+    datum_impl const &back() const {
+        if (is_vector()) {
+            let *v = get_pointer<datum_impl::vector>();
+            return v->back();
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot back() onto type {}", type_name());
+        }
+    }
+
+    datum_impl &back() {
+        if (is_vector()) {
+            auto *v = get_pointer<datum_impl::vector>();
+            return v->back();
+
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot back() onto type {}", type_name());
+        }
+    }
+
+
+    std::string repr() const noexcept {
         switch (type_id()) {
         case phy_boolean_id: return static_cast<std::string>(*this);
         case phy_null_id: return static_cast<std::string>(*this);
@@ -1432,6 +1483,38 @@ public:
         } else {
             return std::hash<uint64_t>{}(u64);
         }
+    }
+
+    datum_impl &operator++() {
+        if (~this->is_numeric()) {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '++' value {} of type {}",
+                this->repr(), this->type_name()
+            );
+        }
+
+        return *this += 1;
+    }
+
+    datum_impl &operator--() {
+        if (~this->is_numeric()) {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '--' value {} of type {}",
+                this->repr(), this->type_name()
+            );
+        }
+
+        return *this -= 1;
+    }
+
+    datum_impl operator++(int) {
+        auto tmp = *this;
+        ++*this;
+        return tmp;
+    }
+
+    datum_impl operator--(int) {
+        auto tmp = *this;
+        --*this;
+        return tmp;
     }
 
     datum_impl &operator+=(datum_impl const &rhs) {

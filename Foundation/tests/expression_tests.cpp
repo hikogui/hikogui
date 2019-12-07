@@ -345,25 +345,52 @@ TEST(Expression, FunctionCall) {
     datum r;
     expression_evaluation_context context;
 
-    ASSERT_NO_THROW(e = parse_expression("foo()"));
-    ASSERT_EQ(e->string(), "(foo())");
+    ASSERT_NO_THROW(e = parse_expression("float()"));
+    ASSERT_EQ(e->string(), "(float())");
 
-    ASSERT_NO_THROW(e = parse_expression("foo(2)"));
-    ASSERT_EQ(e->string(), "(foo(2))");
+    ASSERT_NO_THROW(e = parse_expression("float(2)"));
+    ASSERT_EQ(e->string(), "(float(2))");
 
-    ASSERT_NO_THROW(e = parse_expression("foo(2, 3)"));
-    ASSERT_EQ(e->string(), "(foo(2, 3))");
+    ASSERT_NO_THROW(e = parse_expression("float(2, 3)"));
+    ASSERT_EQ(e->string(), "(float(2, 3))");
 
-    ASSERT_NO_THROW(e = parse_expression("!foo(2)"));
-    ASSERT_EQ(e->string(), "(! (foo(2)))");
+    ASSERT_NO_THROW(e = parse_expression("!float(2)"));
+    ASSERT_EQ(e->string(), "(! (float(2)))");
 
-    ASSERT_NO_THROW(e = parse_expression("(!foo)(2)"));
-    ASSERT_EQ(e->string(), "((! foo)(2))");
+    ASSERT_NO_THROW(e = parse_expression("(!float)(2)"));
+    ASSERT_EQ(e->string(), "((! float)(2))");
 
     ASSERT_NO_THROW(e = parse_expression("float(5)"));
     ASSERT_EQ(e->string(), "(float(5))");
     ASSERT_NO_THROW(r = e->evaluate(context));
     ASSERT_EQ(to_string(r), "5.0");
+
+}
+
+TEST(Expression, MethodCall) {
+    std::unique_ptr<expression> e;
+    datum r;
+    expression_evaluation_context context;
+    datum::vector expected;
+
+    ASSERT_NO_THROW(e = parse_expression("foo = [1, 2, 3]"));
+    ASSERT_EQ(e->string(), "(foo = [1, 2, 3])");
+    ASSERT_NO_THROW(r = e->evaluate(context));
+    expected = datum::vector{1, 2, 3};
+    ASSERT_EQ(r, expected);
+
+    ASSERT_NO_THROW(e = parse_expression("foo.append(4.2)"));
+    ASSERT_EQ(e->string(), "((foo . append)(4.2))");
+    ASSERT_NO_THROW(r = e->evaluate(context));
+    expected = datum::vector{datum{1}, datum{2}, datum{3}, datum{4.2}};
+    ASSERT_EQ(context.get("foo"), expected);
+
+    ASSERT_NO_THROW(e = parse_expression("foo.pop()"));
+    ASSERT_EQ(e->string(), "((foo . pop)())");
+    ASSERT_NO_THROW(r = e->evaluate(context));
+    ASSERT_EQ(r, 4.2);
+    expected = datum::vector{1, 2, 3};
+    ASSERT_EQ(context.get("foo"), expected);
 
 }
 
@@ -373,8 +400,8 @@ TEST(Expression, Members) {
     ASSERT_NO_THROW(e = parse_expression("foo.bar"));
     ASSERT_EQ(e->string(), "(foo . bar)");
 
-    ASSERT_NO_THROW(e = parse_expression("foo.bar(2, 3)"));
-    ASSERT_EQ(e->string(), "((foo . bar)(2, 3))");
+    ASSERT_NO_THROW(e = parse_expression("foo.append(2, 3)"));
+    ASSERT_EQ(e->string(), "((foo . append)(2, 3))");
 }
 
 TEST(Expression, Vector) {
