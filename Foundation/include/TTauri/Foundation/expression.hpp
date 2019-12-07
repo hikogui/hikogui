@@ -16,16 +16,17 @@
 namespace TTauri {
 
 struct expression_evaluation_context {
-    using function_type = std::function<datum(expression_evaluation_context&, datum::vector)>;
+    using function_type = std::function<datum(expression_evaluation_context&, datum::vector const &)>;
     using scope = std::unordered_map<std::string, datum>;
     using stack = std::vector<scope>;
 
     std::unordered_map<std::string,function_type> functions;
+    static inline std::unordered_map<std::string,function_type> global_functions;
+
     stack local_stack;
     scope globals;
 
-    expression_evaluation_context() {
-    }
+    expression_evaluation_context();
 
     void push() {
         local_stack.emplace_back();
@@ -48,6 +49,20 @@ struct expression_evaluation_context {
     force_inline scope& locals() {
         axiom_assert(has_locals());
         return local_stack.back();
+    }
+
+    [[nodiscard]] function_type get_function(std::string const &name) const {
+        let i = functions.find(name);
+        if (i != functions.end()) {
+            return i->second;
+        }
+
+        let j = global_functions.find(name);
+        if (j != global_functions.end()) {
+            return j->second;
+        }
+
+        TTAURI_THROW(key_error("Unknown function {}.", name));
     }
 
     [[nodiscard]] datum const& get(std::string const &name) const {
@@ -156,6 +171,12 @@ struct expression {
      */
     virtual datum &assign(expression_evaluation_context& context, datum const &rhs) const {
         return evaluate_lvalue(context) = rhs;
+    }
+
+    /** Call a function with a datum::vector as arguments.
+     */
+    virtual datum call(expression_evaluation_context& context, datum::vector const &arguments) const {
+        TTAURI_THROW(invalid_operation_error("Expression is not callable."));
     }
 
     virtual std::string string() const noexcept = 0;

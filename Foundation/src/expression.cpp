@@ -13,6 +13,120 @@
 
 namespace TTauri {
 
+static datum function_float(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for float() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<double>(args[0])};
+}
+
+static datum function_integer(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for integer() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<long long int>(args[0])};
+}
+
+static datum function_decimal(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for decimal() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<decimal>(args[0])};
+}
+
+static datum function_string(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for string() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<std::string>(args[0])};
+}
+
+static datum function_boolean(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for boolean() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<bool>(args[0])};
+}
+
+static datum function_url(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for url() function, got {}", args.size()));
+    }
+
+    return datum{static_cast<URL>(args[0])};
+}
+
+static datum function_size(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for size() function, got {}", args.size()));
+    }
+
+    return datum{args[0].size()};
+}
+
+static datum function_keys(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for keys() function, got {}", args.size()));
+    }
+
+    let &arg = args[0];
+
+    datum::vector keys;
+    for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
+        keys.push_back(i->first);
+    }
+    return datum{std::move(keys)};
+}
+
+static datum function_values(expression_evaluation_context &context, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for values() function, got {}", args.size()));
+    }
+
+    let &arg = args[0];
+
+    if (arg.is_map()) {
+        datum::vector values;
+        for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
+            values.push_back(i->second);
+        }
+        return datum{std::move(values)};
+    } else if (arg.is_vector()) {
+        return datum{arg};
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector or map argument for values() function, got {}", arg.type_name()));
+    }
+}
+
+expression_evaluation_context::expression_evaluation_context()
+{
+    if (global_functions.size() == 0) {
+        global_functions["float"] = function_float;
+        global_functions["integer"] = function_integer;
+        global_functions["decimal"] = function_decimal;
+        global_functions["string"] = function_string;
+        global_functions["boolean"] = function_boolean;
+        global_functions["url"] = function_url;
+        global_functions["size"] = function_size;
+        global_functions["keys"] = function_keys;
+        global_functions["values"] = function_values;
+    }
+}
+
 
 struct expression_arguments final : expression {
     expression_vector args;
@@ -84,10 +198,13 @@ struct expression_vector_literal final : expression {
             TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on with a vector of size {} got {}.", values.size(), rhs.size()));
         }
 
+        // Make a copy, in case of self assignment.
+        let rhs_copy = rhs;
+
         size_t i = 0;
         while (true) {
             let &lhs_ = values[i];
-            let &rhs_ = rhs[i];
+            let &rhs_ = rhs_copy[i];
 
             if (++i < rhs.size()) {
                 lhs_->assign(context, rhs_);
@@ -151,6 +268,7 @@ struct expression_map_literal final : expression {
 
 struct expression_name final : expression {
     std::string name;
+    mutable expression_evaluation_context::function_type function;
 
     expression_name(index_type index, std::string_view name) :
         expression(index), name(name) {}
@@ -165,6 +283,13 @@ struct expression_name final : expression {
 
     datum &assign(expression_evaluation_context& context, datum const &rhs) const override {
         return context.set(name, rhs);
+    }
+
+    datum call(expression_evaluation_context& context, datum::vector const &arguments) const override {
+        if (!function) {
+            function = context.get_function(name);
+        }
+        return function(context, arguments);
     }
 
     std::string string() const noexcept override {
@@ -189,12 +314,11 @@ struct expression_call final : expression {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        not_implemented;
-        //let args_ = transform<datum::vector>(args, [&](let& x) {
-        //    return x->evaluate(context);
-        //});
+        let args_ = transform<datum::vector>(args, [&](let& x) {
+            return x->evaluate(context);
+        });
 
-        //return lhs.call(context, args_);
+        return lhs->call(context, args_);
     }
 
     std::string string() const noexcept override {
