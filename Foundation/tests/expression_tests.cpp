@@ -11,7 +11,7 @@ using namespace std::literals;
 using namespace TTauri;
 
 TEST(Expression, Literals) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
 
     ASSERT_NO_THROW(e = parse_expression("42"));
     ASSERT_EQ(e->string(), "42");
@@ -36,7 +36,7 @@ TEST(Expression, Literals) {
 }
 
 TEST(Expression, BinaryOperators) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
     datum r;
     expression_evaluation_context context;
 
@@ -140,12 +140,12 @@ TEST(Expression, BinaryOperators) {
     ASSERT_NO_THROW(e = parse_expression("42 && 0"));
     ASSERT_EQ(e->string(), "(42 && 0)");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    ASSERT_EQ(r, false);
+    ASSERT_EQ(r, 0);
 
     ASSERT_NO_THROW(e = parse_expression("42 || 0"));
     ASSERT_EQ(e->string(), "(42 || 0)");
     ASSERT_NO_THROW(r = e->evaluate(context));
-    ASSERT_EQ(r, true);
+    ASSERT_EQ(r, 42);
 
     // Context does not have 'a' set yet.
     ASSERT_NO_THROW(e = parse_expression("a = 2"));
@@ -223,7 +223,7 @@ TEST(Expression, BinaryOperators) {
 }
 
 TEST(Expression, UnaryOperators) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
     datum r;
     expression_evaluation_context context;
 
@@ -264,7 +264,7 @@ TEST(Expression, UnaryOperators) {
 }
 
 TEST(Expression, IndexOperator) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
     datum r;
     datum expected;
     expression_evaluation_context context;
@@ -313,7 +313,7 @@ TEST(Expression, IndexOperator) {
 }
 
 TEST(Expression, Binding) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
     datum r;
     datum expected;
     expression_evaluation_context context;
@@ -341,7 +341,7 @@ TEST(Expression, Binding) {
 }
 
 TEST(Expression, FunctionCall) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
     datum r;
     expression_evaluation_context context;
 
@@ -368,7 +368,7 @@ TEST(Expression, FunctionCall) {
 }
 
 TEST(Expression, MethodCall) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
     datum r;
     expression_evaluation_context context;
     datum::vector expected;
@@ -395,7 +395,7 @@ TEST(Expression, MethodCall) {
 }
 
 TEST(Expression, Members) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
 
     ASSERT_NO_THROW(e = parse_expression("foo.bar"));
     ASSERT_EQ(e->string(), "(foo . bar)");
@@ -405,7 +405,7 @@ TEST(Expression, Members) {
 }
 
 TEST(Expression, Vector) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
 
     ASSERT_NO_THROW(e = parse_expression("[]"));
     ASSERT_EQ(e->string(), "[]");
@@ -421,7 +421,7 @@ TEST(Expression, Vector) {
 }
 
 TEST(Expression, Map) {
-    std::unique_ptr<expression> e;
+    std::unique_ptr<expression_node> e;
 
     ASSERT_NO_THROW(e = parse_expression("{}"));
     ASSERT_EQ(e->string(), "{}");

@@ -110,25 +110,31 @@ struct expression_parse_context {
     static function_table global_functions;
     static method_table global_methods;
 
-    std::vector<token_t> tokens;
-    const_iterator index;
-    const_iterator end;
+    std::string_view::const_iterator first;
+    std::string_view::const_iterator last;
 
-    expression_parse_context(std::string_view text) :
-        tokens(parseTokens(text)), index(tokens.begin()), end(tokens.end()) {}
+    std::vector<token_t> tokens;
+    const_iterator token_it;
+
+    expression_parse_context(std::string_view::const_iterator first, std::string_view::const_iterator last) :
+        first(first), last(last), tokens(parseTokens(first, last)), token_it(tokens.begin()) {}
+
+    ssize_t offset() const noexcept {
+        return std::distance(first, token_it->index);
+    }
 
     [[nodiscard]] token_t const& operator*() const noexcept {
-        return *index;
+        return *token_it;
     }
 
     [[nodiscard]] token_t const *operator->() const noexcept {
-        return &(*index);
+        return &(*token_it);
     }
 
     expression_parse_context& operator++() noexcept {
-        axiom_assert(index != end);
-        axiom_assert(*index != tokenizer_name_t::End);
-        ++index;
+        axiom_assert(token_it != tokens.end());
+        axiom_assert(*token_it != tokenizer_name_t::End);
+        ++token_it;
         return *this;
     }
 
@@ -162,15 +168,14 @@ struct expression_parse_context {
     }
 };
 
-struct expression {
-    using expression_vector = std::vector<std::unique_ptr<expression>>;
-    using index_type = std::string_view::const_iterator;
+struct expression_node {
+    using expression_vector = std::vector<std::unique_ptr<expression_node>>;
 
-    index_type index;
+    ssize_t offset;
 
-    expression(index_type index) : index(index) {}
+    expression_node(ssize_t offset) : offset(offset) {}
 
-    virtual ~expression() {}
+    virtual ~expression_node() {}
 
     /** Resolve function and method pointers.
      * At all call-expressions resolve the function pointers from the parse_context.
@@ -189,7 +194,7 @@ struct expression {
     /** Evaluate an existing lvalue.
      */
     virtual datum &evaluate_lvalue(expression_evaluation_context& context) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not a modifiable value."));
+        TTAURI_THROW(invalid_operation_error("Expression is not a modifiable value.").set<"offset"_tag>(offset));
     }
 
     /** Assign to a non-existing or existing lvalue.
@@ -201,16 +206,16 @@ struct expression {
     /** Call a function with a datum::vector as arguments.
      */
     virtual datum call(expression_evaluation_context& context, datum::vector const &arguments) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not callable."));
+        TTAURI_THROW(invalid_operation_error("Expression is not callable.").set<"offset"_tag>(offset));
     }
 
     virtual std::string string() const noexcept = 0;
 
-    friend std::string to_string(expression const& rhs) noexcept {
+    friend std::string to_string(expression_node const& rhs) noexcept {
         return rhs.string();
     }
 
-    friend std::ostream& operator<<(std::ostream& lhs, expression const& rhs) noexcept {
+    friend std::ostream& operator<<(std::ostream& lhs, expression_node const& rhs) noexcept {
         return lhs << to_string(rhs);
     }
 };
@@ -218,17 +223,25 @@ struct expression {
 /** Parse an expression.
     * Parses an expression until EOF, ')', ',', '}'
     */
-std::unique_ptr<expression> parse_expression(expression_parse_context& context);
+std::unique_ptr<expression_node> parse_expression(expression_parse_context& context);
 
 /** Parse an expression.
     * Parses an expression until EOF, ')', ',', '}'
     */
-inline std::unique_ptr<expression> parse_expression(std::string_view text) {
-    auto context = expression_parse_context(text);
+inline std::unique_ptr<expression_node> parse_expression(std::string_view::const_iterator first, std::string_view::const_iterator last) {
+    auto context = expression_parse_context(first, last);
     auto e = parse_expression(context);
     e->post_process(context);
     return e;
 }
+
+/** Parse an expression.
+* Parses an expression until EOF, ')', ',', '}'
+*/
+inline std::unique_ptr<expression_node> parse_expression(std::string_view text) {
+    return parse_expression(text.cbegin(), text.cend());
+}
+
 
 /** Find the end of an expression.
     * This function will track nested brackets and strings, until the terminating_character is found.
@@ -240,6 +253,6 @@ inline std::unique_ptr<expression> parse_expression(std::string_view text) {
 std::string_view::const_iterator find_end_of_expression(
     std::string_view::const_iterator first,
     std::string_view::const_iterator last,
-    char terminating_string);
+    std::string_view terminating_string);
 
 }

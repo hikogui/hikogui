@@ -780,7 +780,7 @@ constexpr transitionTable_t transitionTable = buildTransitionTable();
 
 
 struct tokenizer {
-    using iterator = typename std::string_view::iterator;
+    using iterator = typename std::string_view::const_iterator;
 
     tokenizer_state_t state;
     iterator begin;
@@ -790,10 +790,6 @@ struct tokenizer {
 
     tokenizer(iterator begin, iterator end) :
         state(tokenizer_state_t::Initial), begin(begin), end(end), index(begin), captureIndex(begin) {}
-
-    tokenizer(std::string_view text) :
-        state(tokenizer_state_t::Initial), begin(text.begin()), end(text.end()), index(text.begin()), captureIndex(text.end()) {}
-
 
     template<uint8_t Action>
     static force_inline void executeAction(
@@ -884,9 +880,14 @@ struct tokenizer {
     }
 };
 
+[[nodiscard]] std::vector<token_t> parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept
+{
+    return tokenizer(first, last).getTokens();
+}
+
 [[nodiscard]] std::vector<token_t> parseTokens(std::string_view text) noexcept
 {
-    return tokenizer(text).getTokens();
+    return parseTokens(text.cbegin(), text.cend());
 }
 
 }

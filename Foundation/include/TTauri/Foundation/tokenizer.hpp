@@ -256,6 +256,8 @@ force_inline bool operator==(token_t const &lhs, const char *rhs) noexcept {
 */
 [[nodiscard]] std::vector<token_t> parseTokens(std::string_view text) noexcept;
 
+[[nodiscard]] std::vector<token_t> parseTokens(std::string_view::const_iterator first, std::string_view::const_iterator last) noexcept;
+
 
 
 }

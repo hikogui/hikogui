@@ -43,6 +43,7 @@ set(TTauri_Foundation_srcs
     src/FileView.cpp
     src/throw_exception.cpp
     src/expression.cpp
+    src/text_template.cpp
 )
 
 if(WIN32)
