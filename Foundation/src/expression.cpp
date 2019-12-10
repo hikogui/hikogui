@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/expression.hpp"
+#include "TTauri/Foundation/operator.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <string_view>
@@ -1302,62 +1303,12 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
 }
 
 
-/** Operator Precedence according to C++.
-    */
-[[nodiscard]] uint8_t binary_operator_precedence(token_t const& token) noexcept {
-    if (token != tokenizer_name_t::Literal) {
+[[nodiscard]] uint8_t operator_precedence(token_t const &token, bool binary) noexcept {
+    if (token != token_name_t::Literal) {
         return std::numeric_limits<uint8_t>::max();
+    } else {
+        return operator_precedence(token->value.str(), binary);
     }
-
-    switch (operator_to_int(token.value.data())) {
-    case operator_to_int("::"): return 1;
-    case operator_to_int("("): return 2;
-    case operator_to_int("["): return 2;
-    case operator_to_int("."): return 2;
-    case operator_to_int("->"): return 2;
-    case operator_to_int(".*"): return 4;
-    case operator_to_int("->*"): return 4;
-    case operator_to_int("**"): return 4;
-    case operator_to_int("*"): return 5;
-    case operator_to_int("/"): return 5;
-    case operator_to_int("%"): return 5;
-    case operator_to_int("+"): return 6;
-    case operator_to_int("-"): return 6;
-    case operator_to_int("<<"): return 7;
-    case operator_to_int(">>"): return 7;
-    case operator_to_int("<=>"): return 8;
-    case operator_to_int("<"): return 9;
-    case operator_to_int(">"): return 9;
-    case operator_to_int("<="): return 9;
-    case operator_to_int(">="): return 9;
-    case operator_to_int("=="): return 10;
-    case operator_to_int("!="): return 10;
-    case operator_to_int("&"): return 11;
-    case operator_to_int("^"): return 12;
-    case operator_to_int("|"): return 13;
-    case operator_to_int("&&"): return 14;
-    case operator_to_int("||"): return 15;
-    case operator_to_int("?"): return 16;
-    case operator_to_int("="): return 16;
-    case operator_to_int("+="): return 16;
-    case operator_to_int("-="): return 16;
-    case operator_to_int("*="): return 16;
-    case operator_to_int("/="): return 16;
-    case operator_to_int("%="): return 16;
-    case operator_to_int("<<="): return 16;
-    case operator_to_int(">>="): return 16;
-    case operator_to_int("&="): return 16;
-    case operator_to_int("^="): return 16;
-    case operator_to_int("|="): return 16;
-    case operator_to_int(","): return 17;
-    case operator_to_int("]"): return 17;
-    case operator_to_int(")"): return 17;
-    default: return std::numeric_limits<uint8_t>::max();
-    }
-}
-
-[[nodiscard]] uint8_t operator_precedence(token_t const& token, bool binary) noexcept {
-    return binary ? binary_operator_precedence(token) : 3;
 }
 
 static std::unique_ptr<expression_node> parse_operation_expression(
