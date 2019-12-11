@@ -151,7 +151,7 @@ static datum function_sort(expression_evaluation_context &context, datum::vector
     }
 }
 
-expression_parse_context::function_table expression_parse_context::global_functions = {
+expression_post_process_context::function_table expression_post_process_context::global_functions = {
     {"float"s, function_float},
     {"integer"s, function_integer},
     {"decimal"s, function_decimal},
@@ -196,7 +196,7 @@ static datum method_pop(expression_evaluation_context &context, datum &self, dat
     }
 }
 
-expression_parse_context::method_table expression_parse_context::global_methods = {
+expression_post_process_context::method_table expression_post_process_context::global_methods = {
     {"append"s, method_append},
     {"push"s, method_append},
     {"pop"s, method_pop},
@@ -255,7 +255,7 @@ struct expression_vector_literal_node final : expression_node {
     expression_vector_literal_node(ssize_t offset, expression_vector values) :
         expression_node(offset), values(std::move(values)) {}
 
-    void post_process(expression_parse_context& context) override {
+    void post_process(expression_post_process_context& context) override {
         for (auto &value: values) {
             value->post_process(context);
         }
@@ -316,7 +316,7 @@ struct expression_map_literal_node final : expression_node {
     expression_map_literal_node(ssize_t offset, expression_vector keys, expression_vector values) :
         expression_node(offset), keys(std::move(keys)), values(std::move(values)) {}
 
-    void post_process(expression_parse_context& context) override {
+    void post_process(expression_post_process_context& context) override {
         for (auto &key: keys) {
             key->post_process(context);
         }
@@ -360,12 +360,12 @@ struct expression_map_literal_node final : expression_node {
 
 struct expression_name_node final : expression_node {
     std::string name;
-    mutable expression_parse_context::function_type function;
+    mutable expression_post_process_context::function_type function;
 
     expression_name_node(ssize_t offset, std::string_view name) :
         expression_node(offset), name(name) {}
 
-    void resolve_function_pointer(expression_parse_context& context) override {
+    void resolve_function_pointer(expression_post_process_context& context) override {
         function = context.get_function(name);
         if (!function) {
             TTAURI_THROW(parse_error("Could not find function {}()", name).set<"offset"_tag>(offset));
@@ -373,8 +373,10 @@ struct expression_name_node final : expression_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
+        let &const_context = context;
+
         try {
-            return context.get(name);
+            return const_context.get(name);
         } catch (error &e) {
             e.set<"offset"_tag>(offset);
             throw;
@@ -408,6 +410,10 @@ struct expression_name_node final : expression_node {
         }
     }
 
+    std::string get_name() const noexcept override {
+        return name;
+    }
+
     std::string string() const noexcept override {
         return name;
     }
@@ -429,7 +435,7 @@ struct expression_call_node final : expression_node {
         args = std::move(rhs_->args);
     }
 
-    void post_process(expression_parse_context& context) override {
+    void post_process(expression_post_process_context& context) override {
         lhs->resolve_function_pointer(context);
         for (auto &arg: args) {
             arg->post_process(context);
@@ -447,6 +453,26 @@ struct expression_call_node final : expression_node {
             e.set<"offset"_tag>(offset);
             throw;
         }
+    }
+
+    std::vector<std::string> get_name_and_argument_names() const override {
+        std::vector<std::string> r;
+
+        try {
+            r.push_back(lhs->get_name());
+        } catch (parse_error &) {
+            TTAURI_THROW(parse_error("Function definition does not have a name, got {})", lhs));
+        }
+
+        for (let &arg: args) {
+            try {
+                r.push_back(arg->get_name());
+            } catch (parse_error &) {
+                TTAURI_THROW(parse_error("Definition of function {}() has a non-name argument {})", lhs, arg));
+            }
+        }
+
+        return r;
     }
 
     std::string string() const noexcept override {
@@ -470,7 +496,7 @@ struct expression_unary_operator_node : expression_node {
     expression_unary_operator_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
         expression_node(offset), rhs(std::move(rhs)) {}
 
-    void post_process(expression_parse_context& context) override {
+    void post_process(expression_post_process_context& context) override {
         rhs->post_process(context);
     }
 
@@ -486,7 +512,7 @@ struct expression_binary_operator_node : expression_node {
     expression_binary_operator_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
         expression_node(offset), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
 
-    void post_process(expression_parse_context& context) override {
+    void post_process(expression_post_process_context& context) override {
         lhs->post_process(context);
         rhs->post_process(context);
     }
@@ -513,7 +539,7 @@ struct expression_ternary_operator_node final : expression_node {
         // The unique_ptrs inside pair_ are now empty.
     }
 
-    void post_process(expression_parse_context& context) override {
+    void post_process(expression_post_process_context& context) override {
         lhs->post_process(context);
         rhs_true->post_process(context);
         rhs_false->post_process(context);
@@ -961,7 +987,6 @@ struct expression_le_node final : expression_binary_operator_node {
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) <= rhs->evaluate(context);
-
     }
 
     std::string string() const noexcept override {
@@ -975,7 +1000,6 @@ struct expression_ge_node final : expression_binary_operator_node {
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) >= rhs->evaluate(context);
-
     }
 
     std::string string() const noexcept override {
@@ -984,7 +1008,7 @@ struct expression_ge_node final : expression_binary_operator_node {
 };
 
 struct expression_member_node final : expression_binary_operator_node {
-    mutable expression_parse_context::method_type method;
+    mutable expression_post_process_context::method_type method;
     expression_name_node* rhs_name;
 
     expression_member_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
@@ -996,7 +1020,7 @@ struct expression_member_node final : expression_binary_operator_node {
         }
     }
 
-    void resolve_function_pointer(expression_parse_context& context) override {
+    void resolve_function_pointer(expression_post_process_context& context) override {
         method = context.get_method(rhs_name->name);
         if (!method) {
             TTAURI_THROW(parse_error("Could not find method .{}().", rhs_name->name).set<"offset"_tag>(offset));
@@ -1293,21 +1317,11 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
     }
 };
 
-[[nodiscard]] constexpr uint32_t operator_to_int(char const* str) noexcept {
-    uint32_t v = 0;
-    for (int i = 0; str[i] != '\0'; i++) {
-        v <<= 8;
-        v |= str[i];
-    }
-    return v;
-}
-
-
 [[nodiscard]] uint8_t operator_precedence(token_t const &token, bool binary) noexcept {
-    if (token != token_name_t::Literal) {
-        return std::numeric_limits<uint8_t>::max();
+    if (token != tokenizer_name_t::Literal) {
+        return 0;
     } else {
-        return operator_precedence(token->value.str(), binary);
+        return std::numeric_limits<uint8_t>::max() - operator_precedence(token.value.data(), binary);
     }
 }
 
@@ -1570,7 +1584,7 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
     auto lookahead = *context;
     auto lookahead_precedence = operator_precedence(lookahead, static_cast<bool>(lhs));
 
-    while (!parse_expression_is_at_end(context) && lookahead_precedence <= precedence) {
+    while (!parse_expression_is_at_end(context) && lookahead_precedence >= precedence) {
         let op = lookahead;
         let op_precedence = lookahead_precedence;
         ++context;
@@ -1588,7 +1602,7 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
 
         lookahead = *context;
         lookahead_precedence = operator_precedence(lookahead, static_cast<bool>(rhs));
-        while (!parse_expression_is_at_end(context) && lookahead_precedence < op_precedence) {
+        while (!parse_expression_is_at_end(context) && lookahead_precedence > op_precedence) {
             rhs = parse_expression_1(context, std::move(rhs), op_precedence);
 
             lookahead = *context;
@@ -1601,7 +1615,7 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
 
 std::unique_ptr<expression_node> parse_expression(expression_parse_context& context)
 {
-    return parse_expression_1(context, parse_primary_expression(context), std::numeric_limits<uint8_t>::max());
+    return parse_expression_1(context, parse_primary_expression(context), 0);
 }
 
 std::string_view::const_iterator find_end_of_expression(

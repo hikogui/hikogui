@@ -65,9 +65,9 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 12         | expr '^' expr          | Bitwise xor                          |
  | 13         | expr '\|' expr         | Bitwise or                           |
  | 13         | expr '\|' name         | String filter                        |
- | 14         | expr '&&' expr         | Logical and                          |
- | 15         | expr '||' expr         | Logical or                           |
- | 16         | expr '?' expr ':' expr | Ternary operator                     |
+ | 14         | expr '&&' expr         | Logical short-circuit and                          |
+ | 15         | expr '\|\|' expr       | Logical short-circuit or                           |
+ | 16         | expr '?' expr ':' expr | Ternary short-circuit operator                     |
  | 16         | expr '=' expr          | Assign                               |
  | 16         | expr '+=' expr         | Inplace add                          |
  | 16         | expr '-=' expr         | Inplace subtractions                 |
@@ -79,7 +79,6 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 16         | expr '&=' expr         | Inplace and                          |
  | 16         | expr '^=' expr         | Inplace xor                          |
  | 16         | expr '\|=' expr        | Inplace or                           |
- | 17         | expr ',' expr          | Comma separator on function calls    |
 
 ### Function call
 Call a function with zero or more arguments.
@@ -88,7 +87,7 @@ A function is a name in special global scope with functions.
 Functions are build-in, passed by the developer when evaluating an expression,
 or added in the template by the user.
 
-Syntax: name '(' ( expression ( ',' expression )* ','? )? ')'
+Syntax: `name '(' ( expression ( ',' expression )* ','? )? ')'`
 
 ### Assignment
 An assignment operator is different from inplace-operations. An inplace-operation will
@@ -103,9 +102,9 @@ An assignment done in the local-scope will hide variables in global scope with t
 
 Assignment can be done on multiple variables at the same time, by unpacking into a vector literal.
 
-Syntax: name | expr '=' expression
+Syntax: `name | expr '=' expression`
 
-Syntax: '[' name | expr ( ',' name | expr )* ']' '=' expression
+Syntax: `'[' name | expr ( ',' name | expr )* ']' '=' expression`
 
 ### Null
 Used by the user to denote a *nothing* value.
@@ -145,6 +144,8 @@ Explicit conversion: `integer()`
 Operations available that work on a integer:
  - `+ integer -> integer`
  - `- integer -> integer`
+ - `++ integer -> integer`
+ - `-- integer -> integer`
  - `integer + integer -> integer`
  - `integer - integer -> integer`
  - `integer * integer -> integer`
@@ -403,7 +404,7 @@ and top-level template files have the `.ttt` (TTauri Template) extension.
 
 Warning: There is no protection against including a file multiple times or recursively.
 
-Syntax BNF: '#include' url-expression
+Syntax: `'#include' url-expression`
 
 Example:
 ```
@@ -421,10 +422,10 @@ The expression in the `#elif` statements are only evaluated if the result of the
 expressions where `false`.
 
 Syntax:
- - '#if' boolean-expression '\n'
- - '#elif' boolean-expression '\n'
- - '#else' '\n'
- - '#end' '\n'
+ - `'#if' boolean-expression '\n'`
+ - `'#elif' boolean-expression '\n'`
+ - `'#else' '\n'`
+ - `'#end' '\n'`
 
 Example:
 ```
@@ -462,15 +463,16 @@ The `#else` part of the for loop is only executed when the result of the express
 has zero items.
 
 Inside the loop extra variables are available for convenience:
- - `$i` integer index of the iteration
+ - `$i` or `$count` integer index of the iteration
+ - `$size` or `$length` integer index of the iteration
  - `$first` is true if this is the first iteration
  - `$last` is true if this is the last iteration
  - The extra variables created by an outer loop are prefixed with an extra `$`.
 
 Syntax:
- - '#for' name ( ',' name )* 'in' expression '\n'
- - '#else' '\n'
- - '#end' '\n'
+ - `'#for' name ( ',' name )* 'in' expression '\n'`
+ - `'#else' '\n'`
+ - `'#end' '\n'`
 
 Example:
 ```
@@ -492,13 +494,13 @@ The value of x is hello.
 A while loop executes a block multiple times until the expression yields `false`.
 
 Inside the loop extra variables are available for convenience:
- - `$i` integer index of the iteration
+ - `$i` or `$count` integer index of the iteration
  - `$first` is true if this is the first iteration
  - The extra variables created by an outer loop are prefixed with an extra `$`.
 
 Syntax:
- - '#while' boolean-expression '\n'
- - '#end' '\n'
+ - `'#while' boolean-expression '\n'`
+ - `'#end' '\n'`
 
 Example:
 ```
@@ -520,13 +522,13 @@ Iteration 2.
 A do-while loop executes a block at least once until the expression yields `false`.
 
 Inside the loop extra variables are available for convenience:
- - `$i` integer index of the iteration
+ - `$i` or `$count` integer index of the iteration
  - `$first` is true if this is the first iteration
  - The extra variables created by an outer loop are prefixed with an extra `$`
 
 Syntax:
- - '#do' '\n'
- - '#while' boolean-expression '\n'
+ - `'#do' '\n'`
+ - `'#while' boolean-expression '\n'`
 
 ```
 ## i = 0
@@ -545,14 +547,10 @@ Iteration 0.
 Stop executing of a block inside a loop, then:
  - *continue* with the next iteration of the loop or
  - *break* out of the loop
-
-The argument to `#continue` and `#break` denotes the number of levels of outer-loops to break out of
-or continue with. 1 denotes the current loop, 2 denotes the next outer-loop. Both the `#continue` and
-`#break` statements have an implicit argument with the value of 1.
-
+ 
 Syntax:
- - '#continue' ( integer-expression )? '\n'
- - '#break' ( integer-expression )? '\n'
+ - `'#continue' '\n'`
+ - `'#break' '\n'`
 
 Example:
 ```
@@ -589,8 +587,8 @@ This functionality together with the `#include` statement can be used for
 as a simple form of object-oriented-polymorphism.
 
 Syntax:
- - '#function' name '(' ( name ( ',' name )* ','? )? ')' '\n'
- - '#end' '\n'
+ - `'#function' name '(' ( name ( ',' name )* ','? )? ')' '\n'`
+ - `'#end' '\n'`
 
 Example:
 ```
@@ -614,7 +612,7 @@ bar is foo is 42.
 ### Return
 Return data from a function
 
-Syntax: '#return' expression '\n'
+Syntax: `'#return' expression '\n'`
 
 Example:
 ```
@@ -640,8 +638,8 @@ together with the `#include` statement can be used for as a simple form of
 object-oriented-polymorphism.
 
 Syntax:
- - '#block' name '\n'
- - '#end'
+ - `'#block' name '\n'`
+ - `'#end'`
 
 Example:
 ```

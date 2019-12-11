@@ -46,6 +46,8 @@ namespace TTauri {
 enum class datum_type_t {
     Null,
     Undefined,
+    Break,
+    Continue,
     Boolean,
     Integer,
     Decimal,
@@ -54,13 +56,15 @@ enum class datum_type_t {
     URL,
     Map,
     Vector,
-    wsRGBA
+    wsRGBA,
 };
 
 inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
 {
     switch (rhs) {
     case datum_type_t::Null: lhs << "Null"; break;
+    case datum_type_t::Break: lhs << "Break"; break;
+    case datum_type_t::Continue: lhs << "Continue"; break;
     case datum_type_t::Undefined: lhs << "Undefined"; break;
     case datum_type_t::Boolean: lhs << "Boolean"; break;
     case datum_type_t::Integer: lhs << "Integer"; break;
@@ -82,6 +86,8 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
  *  - Signed integer number (52 bits)
  *  - Boolean
  *  - Null
+ *  - Break
+ *  - Continue
  *  - Undefined
  *  - String
  *  - Vector of datum
@@ -159,13 +165,20 @@ private:
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
 
-    static constexpr uint16_t phy_boolean_id       = make_id(0b00001);
-    static constexpr uint16_t phy_null_id          = make_id(0b00010);
-    static constexpr uint16_t phy_undefined_id     = make_id(0b00011);
-    static constexpr uint16_t phy_decimal_id       = make_id(0b00100);
-    static constexpr uint16_t phy_reserved_id0     = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id1     = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id2     = make_id(0b00111);
+    static constexpr uint64_t small_undefined = 0;
+    static constexpr uint64_t small_null = 1;
+    static constexpr uint64_t small_true = 2;
+    static constexpr uint64_t small_false = 3;
+    static constexpr uint64_t small_break = 4;
+    static constexpr uint64_t small_continue = 5;
+
+    static constexpr uint16_t phy_small_id         = make_id(0b00001);
+    static constexpr uint16_t phy_decimal_id       = make_id(0b00010);
+    static constexpr uint16_t phy_reserved_id0     = make_id(0b00011);
+    static constexpr uint16_t phy_reserved_id1     = make_id(0b00100);
+    static constexpr uint16_t phy_reserved_id2     = make_id(0b00101);
+    static constexpr uint16_t phy_reserved_id3     = make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id4     = make_id(0b00111);
     static constexpr uint16_t phy_integer_id0      = make_id(0b01000);
     static constexpr uint16_t phy_integer_id1      = make_id(0b01001);
     static constexpr uint16_t phy_integer_id2      = make_id(0b01010);
@@ -191,9 +204,13 @@ private:
     static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b11110);
     static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11111);
 
-    static constexpr uint64_t boolean_mask = id_to_mask(phy_boolean_id);
-    static constexpr uint64_t null_mask = id_to_mask(phy_null_id);
-    static constexpr uint64_t undefined_mask = id_to_mask(phy_undefined_id);
+    static constexpr uint64_t small_mask = id_to_mask(phy_small_id);
+    static constexpr uint64_t undefined_mask = small_mask | small_undefined;
+    static constexpr uint64_t null_mask = small_mask | small_null;
+    static constexpr uint64_t true_mask = small_mask | small_true;
+    static constexpr uint64_t false_mask = small_mask | small_false;
+    static constexpr uint64_t break_mask = small_mask | small_break;
+    static constexpr uint64_t continue_mask = small_mask | small_continue;
     static constexpr uint64_t string_mask = id_to_mask(phy_string_id0);
     static constexpr uint64_t character_mask = id_to_mask(phy_string_id1);
     static constexpr uint64_t integer_mask = id_to_mask(phy_integer_id0);
@@ -243,16 +260,8 @@ private:
         return type_id() == phy_decimal_id;
     }
 
-    force_inline bool is_phy_boolean() const noexcept {
-        return type_id() == phy_boolean_id;
-    }
-
-    force_inline bool is_phy_null() const noexcept {
-        return type_id() == phy_null_id;
-    }
-
-    force_inline bool is_phy_undefined() const noexcept {
-        return type_id() == phy_undefined_id;
+    force_inline bool is_phy_small() const noexcept {
+        return type_id() == phy_small_id;
     }
 
     force_inline bool is_phy_pointer() const noexcept {
@@ -381,6 +390,8 @@ public:
     using map = std::unordered_map<datum_impl,datum_impl>;
     struct undefined {};
     struct null {};
+    struct _continue {};
+    struct _break {};
 
     datum_impl() noexcept : u64(undefined_mask) {}
 
@@ -423,7 +434,10 @@ public:
         return *this;
     }
 
+    datum_impl(datum_impl::undefined) noexcept : u64(undefined_mask) {}
     datum_impl(datum_impl::null) noexcept : u64(null_mask) {}
+    datum_impl(datum_impl::_break) noexcept : u64(break_mask) {}
+    datum_impl(datum_impl::_continue) noexcept : u64(continue_mask) {}
 
     datum_impl(double value) noexcept : f64(value) {
         if (value != value) {
@@ -484,7 +498,7 @@ public:
     datum_impl(signed short value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
     datum_impl(signed char value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
 
-    datum_impl(bool value) noexcept : u64(boolean_mask | static_cast<uint64_t>(value)) {}
+    datum_impl(bool value) noexcept : u64(value ? true_mask : false_mask) {}
     datum_impl(char value) noexcept : u64(character_mask | value) {}
 
     datum_impl(std::string_view value) noexcept : u64(make_string(value)) {
@@ -525,11 +539,35 @@ public:
         u64 = make_pointer(wsrgba_ptr_mask, p);
     }
 
+    datum_impl &operator=(datum_impl::undefined rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+        u64 = undefined_mask;
+        return *this;
+    }
+
     datum_impl &operator=(datum_impl::null rhs) noexcept {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = null_mask;
+        return *this;
+    }
+
+    datum_impl &operator=(datum_impl::_break rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+        u64 = break_mask;
+        return *this;
+    }
+
+    datum_impl &operator=(datum_impl::_continue rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+        u64 = _continue_mask;
         return *this;
     }
 
@@ -619,7 +657,7 @@ public:
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = boolean_mask | static_cast<uint64_t>(rhs);
+        u64 = rhs ? true_mask : false_mask;
         return *this;
     }
     
@@ -745,11 +783,13 @@ public:
             return *get_pointer<signed long long>();
         } else if (is_phy_float()) {
             return static_cast<signed long long>(f64);
-        } else if (is_phy_boolean()) {
-            return get_unsigned_integer() > 0 ? 1 : 0;
-        } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed long long", this->repr(), this->type_name());
+        } else if (is_phy_small()) {
+            switch (get_unsigned_integer()) {
+            case small_true: return 1;
+            case small_false: return 0;
+            }
         }
+        TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed long long", this->repr(), this->type_name());
     }
 
     explicit operator signed long () const {
@@ -823,9 +863,7 @@ public:
 
     explicit operator bool() const noexcept {
         switch (type_id()) {
-        case phy_boolean_id: return get_unsigned_integer() > 0;
-        case phy_null_id: return false;
-        case phy_undefined_id: return false;
+        case phy_small_id: return get_unsigned_integer() == small_true;
         case phy_integer_id0:
         case phy_integer_id1:
         case phy_integer_id2:
@@ -870,14 +908,16 @@ public:
 
     explicit operator std::string() const noexcept {
         switch (type_id()) {
-        case phy_boolean_id:
-            return static_cast<bool>(*this) ? "true" : "false";
-
-        case phy_null_id:
-            return "null";
-
-        case phy_undefined_id:
-            return "undefined";
+        case phy_small_id:
+            switch (get_unsigned_integer()) {
+            case small_undefined: return "undefined";
+            case small_null: return "null";
+            case small_true: return "true";
+            case small_false: return "false";
+            case small_break: return "break";
+            case small_continue: return "continue";
+            default: no_default;
+            }
 
         case phy_integer_id0:
         case phy_integer_id1:
@@ -1231,9 +1271,16 @@ public:
 
     std::string repr() const noexcept {
         switch (type_id()) {
-        case phy_boolean_id: return static_cast<std::string>(*this);
-        case phy_null_id: return static_cast<std::string>(*this);
-        case phy_undefined_id: return static_cast<std::string>(*this);
+        case phy_small_id:
+            switch (get_unsigned_integer()) {
+            case small_undefined: return "undefined";
+            case small_null: return "null";
+            case small_true: return "true";
+            case small_false: return "false";
+            case small_break: return "break";
+            case small_continue: return "continue";
+            default: no_default;
+            }
         case phy_integer_id0:
         case phy_integer_id1:
         case phy_integer_id2:
@@ -1316,25 +1363,55 @@ public:
         }
     }
 
-    bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
-    bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
-    bool is_float() const noexcept { return is_phy_float(); }
-    bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
-    bool is_boolean() const noexcept { return is_phy_boolean(); }
-    bool is_null() const noexcept { return is_phy_null(); }
-    bool is_undefined() const noexcept { return is_phy_undefined(); }
-    bool is_url() const noexcept { return is_phy_url_ptr(); }
-    bool is_vector() const noexcept { return is_phy_vector_ptr(); }
-    bool is_map() const noexcept { return is_phy_map_ptr(); }
-    bool is_wsrgba() const noexcept { return is_phy_wsrgba_ptr(); }
-    bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
-    bool is_color() const noexcept { return is_wsrgba(); }
+    force_inline bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
+    force_inline bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
+    force_inline bool is_float() const noexcept { return is_phy_float(); }
+    force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
+
+    force_inline bool is_boolean() const noexcept {
+        if (is_phy_small()) {
+            let tmp = get_unsigned_integer();
+            return tmp == small_true || tmp == small_false;
+        } else {
+            return false;
+        }
+    }
+
+    force_inline bool is_null() const noexcept {
+        return is_phy_small() && get_unsigned_integer() == small_null;
+    }
+
+    force_inline bool is_undefined() const noexcept {
+        return is_phy_small() && get_unsigned_integer() == small_undefined;
+    }
+
+    force_inline bool is_break() const noexcept {
+        return is_phy_small() && get_unsigned_integer() == small_break;
+    }
+
+    force_inline bool is_continue() const noexcept {
+        return is_phy_small() && get_unsigned_integer() == small_continue;
+    }    bool is_url() const noexcept { return is_phy_url_ptr(); }
+
+    force_inline bool is_vector() const noexcept { return is_phy_vector_ptr(); }
+    force_inline bool is_map() const noexcept { return is_phy_map_ptr(); }
+    force_inline bool is_wsrgba() const noexcept { return is_phy_wsrgba_ptr(); }
+    force_inline bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
+    force_inline bool is_color() const noexcept { return is_wsrgba(); }
 
     datum_type_t type() const noexcept {
         switch (type_id()) {
-        case phy_boolean_id: return datum_type_t::Boolean;
-        case phy_null_id: return datum_type_t::Null;
-        case phy_undefined_id: return datum_type_t::Undefined;
+        case phy_small_id:
+            switch (get_unsigned_integer()) {
+            case small_undefined: return datum_type_t::Undefined;
+            case small_null: return datum_type_t::Null;
+            case small_false: return datum_type_t::Boolean;
+            case small_true: return datum_type_t::Boolean;
+            case small_break: return datum_type_t::Break;
+            case small_continue: return datum_type_t::Continue;
+            default: no_default;
+            }
+      
         case phy_integer_id0:
         case phy_integer_id1:
         case phy_integer_id2:
@@ -1369,9 +1446,17 @@ public:
 
     char const *type_name() const noexcept{
         switch (type_id()) {
-        case phy_boolean_id: return "Boolean";
-        case phy_null_id: return "Null";
-        case phy_undefined_id: return "Undefined";
+        case phy_small_id:
+            switch (get_unsigned_integer()) {
+            case small_undefined: return "Undefined";
+            case small_null: return "Null";
+            case small_false: return "Boolean";
+            case small_true: return "Boolean";
+            case small_break: return "Break";
+            case small_continue: return "Continue";
+            default: no_default;
+            }
+
         case phy_integer_id0:
         case phy_integer_id1:
         case phy_integer_id2:
@@ -1486,7 +1571,7 @@ public:
     }
 
     datum_impl &operator++() {
-        if (~this->is_numeric()) {
+        if (!this->is_numeric()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '++' value {} of type {}",
                 this->repr(), this->type_name()
             );
@@ -1496,7 +1581,7 @@ public:
     }
 
     datum_impl &operator--() {
-        if (~this->is_numeric()) {
+        if (!this->is_numeric()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't increment '--' value {} of type {}",
                 this->repr(), this->type_name()
             );
@@ -1598,12 +1683,8 @@ public:
 
     friend bool operator==(datum_impl const &lhs, datum_impl const &rhs) noexcept {
         switch (lhs.type_id()) {
-        case datum_impl::phy_boolean_id:
-            return rhs.is_boolean() && static_cast<bool>(lhs) == static_cast<bool>(rhs);
-        case datum_impl::phy_null_id:
-            return rhs.is_null();
-        case datum_impl::phy_undefined_id:
-            return rhs.is_undefined();
+        case datum_impl::phy_small_id:
+            return rhs.is_phy_small() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
         case datum_impl::phy_integer_id0:
         case datum_impl::phy_integer_id1:
         case datum_impl::phy_integer_id2:
@@ -1656,16 +1737,12 @@ public:
 
     friend bool operator<(datum_impl const &lhs, datum_impl const &rhs) noexcept {
         switch (lhs.type_id()) {
-        case datum_impl::phy_boolean_id:
-            if (rhs.is_boolean()) {
+        case datum_impl::phy_small_id:
+            if (lhs.is_boolean() && rhs.is_boolean()) {
                 return static_cast<bool>(lhs) < static_cast<bool>(rhs);
             } else {
-                return lhs.type_order() < rhs.type_order();
+                return lhs.get_unsigned_integer() < rhs.get_unsigned_integer();
             }
-        case datum_impl::phy_null_id:
-            return lhs.type_order() < rhs.type_order();
-        case datum_impl::phy_undefined_id:
-            return lhs.type_order() < rhs.type_order();
         case datum_impl::phy_integer_id0:
         case datum_impl::phy_integer_id1:
         case datum_impl::phy_integer_id2:
@@ -2009,7 +2086,7 @@ public:
         if (lhs.is_numeric() || rhs.is_numeric()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ pow(lhs_, rhs_) };
+            return datum{ std::pow(lhs_, rhs_) };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't raise to a power '**' value {} of type {} with value {} of type {}",
@@ -2069,6 +2146,10 @@ inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
         return rhs.is_undefined();
     } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::null>) {
         return rhs.is_null();
+    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::_break>) {
+        return rhs.is_break();
+    } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::_continue>) {
+        return rhs.is_continue();
     } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::vector>) {
         return rhs.is_vector();
     } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::map>) {

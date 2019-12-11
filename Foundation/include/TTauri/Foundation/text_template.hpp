@@ -6,78 +6,15 @@
 #include "TTauri/Foundation/expression.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/algorithm.hpp"
+#include "TTauri/Foundation/FileView.hpp"
 
 namespace TTauri {
 
-struct template_parse_context;
-
-struct template_node {
-    using statement_vector = typename std::vector<std::unique_ptr<template_node>>;
-
-    ssize_t offset;
-
-    template_node(ssize_t offset) :
-        offset(offset) {}
-
-    virtual ~template_node() {}
-
-    /** Append a template-piece to the current template.
-     */
-    virtual bool append(std::unique_ptr<template_node> x) noexcept { return false; }
-
-    virtual bool found_elif(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept { return false; }
-    virtual bool found_else(ssize_t offset) noexcept { return false;}
-    virtual bool found_while(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept { return false; }
-
-    void post_process(template_parse_context &context) {
-        no_default;
-    }
-
-    virtual std::string string() const noexcept {
-        return "<template_node>";
-    }
-
-    friend std::string to_string(template_node const &lhs) noexcept {
-        return lhs.string();
-    }
-
-    friend std::ostream &operator<<(std::ostream &lhs, template_node const &rhs) {
-        return lhs << to_string(rhs);
-    }
-};
-
-
-struct template_top_node: template_node {
-    URL url;
-    statement_vector children;
-
-    template_top_node(ssize_t offset, URL url) :
-        template_node(offset), url(std::move(url)), children() {}
-
-    /** Append a template-piece to the current template.
-    */
-    bool append(std::unique_ptr<template_node> x) noexcept override {
-        children.push_back(std::move(x));
-        return true;
-    }
-
-    std::string string() const noexcept override {
-        let children_str = transform<std::vector<std::string>>(children, [](auto const &x) { return x->string(); });
-        return fmt::format("<snippet {}>", join(children_str, ", "));
-    }
-};
+struct template_node;
 
 struct template_parse_context {
-    using statement_stack_type = typename template_node::statement_vector;
+    using statement_stack_type = std::vector<std::unique_ptr<template_node>>;
     using const_iterator = typename std::string_view::const_iterator;
-    using function_type = std::function<datum(expression_evaluation_context&, datum::vector const &)>;
-    using function_table = std::unordered_map<std::string,function_type>;
-    using method_type = std::function<datum(expression_evaluation_context&, datum &, datum::vector const &)>;
-    using method_table = std::unordered_map<std::string,method_type>;
-
-    function_table functions;
-    static function_table global_functions;
-    static method_table global_methods;
 
     statement_stack_type statement_stack;
 
@@ -88,6 +25,11 @@ struct template_parse_context {
 
     std::optional<const_iterator> text_segment_start;
 
+    /** Post process context is used to record functions that are defined
+    * in the template being parsed.
+    */
+    expression_post_process_context post_process_context;
+
     template_parse_context() = delete;
     template_parse_context(template_parse_context const &other) = delete;
     template_parse_context &operator=(template_parse_context const &other) = delete;
@@ -95,11 +37,7 @@ struct template_parse_context {
     template_parse_context &operator=(template_parse_context &&other) = delete;
     ~template_parse_context() = default;
 
-    template_parse_context(URL const &url, const_iterator first, const_iterator last) :
-        url(url), first(first), last(last), text_it(first)
-    {
-        push<template_top_node>(0, url);
-    }
+    template_parse_context(URL const &url, const_iterator first, const_iterator last);
 
     [[nodiscard]] ssize_t offset() const noexcept {
         return std::distance(first, text_it);
@@ -119,7 +57,7 @@ struct template_parse_context {
         return *this;
     }
 
-    template_parse_context& operator+=(int x) noexcept {
+    template_parse_context& operator+=(ssize_t x) noexcept {
         text_it += x;
         return *this;
     }
@@ -130,7 +68,7 @@ struct template_parse_context {
 
     bool starts_with_and_advance_over(std::string_view text) noexcept {
         if (starts_with(text)) {
-            *this += text.size();
+            *this += ssize(text);
             return true;
         } else {
             return false;
@@ -148,34 +86,16 @@ struct template_parse_context {
 
     bool advance_over(std::string_view text) noexcept {
         if (advance_to(text)) {
-            *this += text.size();
+            *this += ssize(text);
             return true;
         } else {
             return false;
         }
     }
 
-    std::unique_ptr<expression_node> parse_expression(std::string_view end_text) {
-        let expression_last = find_end_of_expression(text_it, last, end_text);
+    std::unique_ptr<expression_node> parse_expression(std::string_view end_text);
 
-        auto context = expression_parse_context(text_it, expression_last);
-
-        std::unique_ptr<expression_node> expression;
-
-        try {
-            expression = ::TTauri::parse_expression(context);
-        } catch (error &e) {
-            required_assert(e.has<"offset"_tag>());
-            e.set<"offset"_tag>(offset() + e.get<"offset"_tag>());
-        }
-
-        text_it = expression_last;
-        if (starts_with(end_text)) {
-            *this += end_text.size();
-        }
-
-        return expression;
-    }
+    std::unique_ptr<expression_node> parse_expression_and_advance_over(std::string_view end_text);
 
     template<typename T, typename... Args>
     void push(Args &&... args) {
@@ -191,68 +111,114 @@ struct template_parse_context {
         }
     }
 
-    [[nodiscard]] bool pop() noexcept {
-        if (statement_stack.size() > 0) {
-            auto tmp = std::move(statement_stack.back());
-            statement_stack.pop_back();
-            return statement_stack.back()->append(std::move(tmp));
-        } else {
-            return false;
-        }
-    }
+    /** Handle #end statement.
+     * This will pop the current statement of the stack and append it
+     * to the statement that is now at the top of the stack.
+     */
+    [[nodiscard]] bool pop() noexcept;
 
     void start_of_text_segment(int back_track = 0) noexcept;
     void end_of_text_segment();
 
     [[nodiscard]] bool top_statement_is_do() const noexcept;
 
-    [[nodiscard]] bool found_elif(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept {
-        if (statement_stack.size() > 0) {
-            return statement_stack.back()->found_elif(offset, std::move(expression));
-        } else {
-            return false;
-        }
-    }
+    [[nodiscard]] bool found_elif(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept;
 
-    [[nodiscard]] bool found_else(ssize_t offset) noexcept {
-        if (statement_stack.size() > 0) {
-            return statement_stack.back()->found_else(offset);
-        } else {
-            return false;
-        }
-    }
+    [[nodiscard]] bool found_else(ssize_t offset) noexcept;
 
-    [[nodiscard]] bool found_while(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept {
-        if (statement_stack.size() > 0) {
-            return statement_stack.back()->found_while(offset, std::move(expression));
-        } else {
-            return false;
-        }
-    }
-
+    [[nodiscard]] bool found_while(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept;
 
     void include(ssize_t offset, std::unique_ptr<expression_node> expression);
+};
 
-    [[nodiscard]] function_type get_function(std::string const &name) const noexcept {
-        let i = functions.find(name);
-        if (i != functions.end()) {
-            return i->second;
-        }
+struct template_node {
+    using statement_vector = typename std::vector<std::unique_ptr<template_node>>;
 
-        let j = global_functions.find(name);
-        if (j != global_functions.end()) {
-            return j->second;
-        }
+    ssize_t offset;
 
-        return {};
+    template_node(ssize_t offset) :
+        offset(offset) {}
+
+    virtual ~template_node() {}
+
+    /** Append a template-piece to the current template.
+     */
+    [[nodiscard]] virtual bool append(std::unique_ptr<template_node> x) noexcept { return false; }
+
+    /** Should any spaces on the elft side of a statement be removed?
+     */
+    [[nodiscard]] virtual bool should_left_align() const noexcept { return true; } 
+
+    /** Remove any trailing spaces or tabs after a new-line.
+     */
+    virtual void left_align() noexcept {}
+
+    [[nodiscard]] virtual bool found_elif(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept { return false; }
+    [[nodiscard]] virtual bool found_else(ssize_t offset) noexcept { return false;}
+    [[nodiscard]] virtual bool found_while(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept { return false; }
+
+    virtual void post_process(expression_post_process_context &context) {}
+
+    /** Evaluate the template.
+     * Text in the template is added to the context.output_text.
+     * @param context Data used by expressions inside the template statements. .output_text will
+     *        contain textual data from the template.
+     * @return datum::undefined when the template_node generated textual data into context.output_text.
+     *         datum::break when a #break statement was encountered. datum::continue when a #continue statement
+     *         was encountered. Otherwise data returned from a #return statement.
+     */
+    [[nodiscard]] virtual datum evaluate(expression_evaluation_context &context) {
+        no_default;
     }
 
-    [[nodiscard]] method_type get_method(std::string const &name) const noexcept {
-        let i = global_methods.find(name);
-        if (i != global_methods.end()) {
-            return i->second;
-        }
+    [[nodiscard]] std::string evaluate_output(expression_evaluation_context &context = expression_evaluation_context{}) {
+        auto tmp = evaluate(context);
+        if (tmp.is_break()) {
+            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
+                .set<"offset"_tag>(offset)
+            );
 
+        } else if (tmp.is_continue()) {
+            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.")
+                .set<"offset"_tag>(offset)
+            );
+
+        } else if (tmp.is_undefined()) {
+            return std::move(context.output);
+
+        } else {
+            TTAURI_THROW(invalid_operation_error("Found #return not inside a function.")
+                .set<"offset"_tag>(offset)
+            );
+        }
+    }
+
+    [[nodiscard]] virtual std::string string() const noexcept {
+        return "<template_node>";
+    }
+
+    [[nodiscard]] friend std::string to_string(template_node const &lhs) noexcept {
+        return lhs.string();
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, template_node const &rhs) {
+        return lhs << to_string(rhs);
+    }
+
+    static void append_child(statement_vector &children, std::unique_ptr<template_node> new_child) {
+        if (ssize(children) > 0 && new_child->should_left_align()) {
+            children.back()->left_align();
+        }
+        children.push_back(std::move(new_child));
+    }
+
+    [[nodiscard]] static datum evaluate_children(expression_evaluation_context &context, statement_vector const &children) {
+        for (let &child: children) {
+            let tmp = child->evaluate(context);
+            if (!tmp.is_undefined()) {
+                return tmp;
+            }
+        }
         return {};
     }
 };
@@ -263,12 +229,19 @@ std::unique_ptr<template_node> parse_template(template_parse_context &context);
 inline std::unique_ptr<template_node> parse_template(URL url, std::string_view::const_iterator first, std::string_view::const_iterator last) {
     auto context = template_parse_context(std::move(url), first, last);
     auto e = parse_template(context);
-    e->post_process(context);
+    //e->post_process(context);
     return e;
 }
 
 inline std::unique_ptr<template_node> parse_template(URL url, std::string_view text) {
     return parse_template(std::move(url), text.cbegin(), text.cend());
+}
+
+inline std::unique_ptr<template_node> parse_template(URL url) {
+    let fv = FileView(url);
+    let sv = fv.string_view();
+
+    return parse_template(std::move(url), sv.cbegin(), sv.cend());
 }
 
 

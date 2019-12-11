@@ -97,6 +97,7 @@ set(TTauri_Foundation_tests
     tests/glob_tests.cpp
     tests/JSON_tests.cpp
     tests/decimal_tests.cpp
+    tests/template_tests.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")
@@ -166,6 +167,8 @@ endif()
 
 set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/file_view.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/includer.ttt
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/includee.tti
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/NormalizationTest.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/GraphemeBreakTest.txt
 )
