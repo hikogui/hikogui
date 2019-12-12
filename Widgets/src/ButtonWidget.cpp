@@ -57,17 +57,17 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
 
     wsRGBA backgroundColor;
     wsRGBA labelColor;
-    wsRGBA borderColor = {1.0, 1.0, 1.0, 1.0};
+    wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
     if (value) {
-        backgroundColor = { 0x4c4cffff };
-        labelColor = {1.0, 1.0, 1.0, 1.0};
+        backgroundColor = wsRGBA{ 0x4c4cffff };
+        labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
     } else {
-        backgroundColor = { 0x4c884cff };
-        labelColor = {0.0, 0.0, 0.0, 1.0};
+        backgroundColor = wsRGBA{ 0x4c884cff };
+        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
     }
     if (pressed) {
-        backgroundColor = { 0x4c4cffff };
-        labelColor = {0.0, 0.0, 0.0, 1.0};
+        backgroundColor = wsRGBA{ 0x4c4cffff };
+        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
     }
 
 #pragma warning(suppress: 6001)

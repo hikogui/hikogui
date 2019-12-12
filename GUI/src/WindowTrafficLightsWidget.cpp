@@ -160,44 +160,44 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage
     drawing.addCircle(redCenter, RADIUS);
     
     if (!window->active && !hover) {
-        drawing.closeLayer({ 0x888888ff });
+        drawing.closeLayer(wsRGBA{ 0x888888ff });
     } else if (pressedRed) {
-        drawing.closeLayer({ 0xff877fff });
+        drawing.closeLayer(wsRGBA{ 0xff877fff });
     } else {
-        drawing.closeLayer({ 0xff5951ff });
+        drawing.closeLayer(wsRGBA{ 0xff5951ff });
     }
 
     drawing.addCircle(yellowCenter, RADIUS);
     if (!window->active && !hover) {
-        drawing.closeLayer({ 0x888888ff });
+        drawing.closeLayer(wsRGBA{ 0x888888ff });
     } else if (pressedYellow) {
-        drawing.closeLayer({ 0xffed56ff });
+        drawing.closeLayer(wsRGBA{ 0xffed56ff });
     } else {
-        drawing.closeLayer({ 0xe5bf28ff });
+        drawing.closeLayer(wsRGBA{ 0xe5bf28ff });
     }
 
     drawing.addCircle(greenCenter, RADIUS);
     if (!window->active && !hover) {
-        drawing.closeLayer({ 0x888888ff });
+        drawing.closeLayer(wsRGBA{ 0x888888ff });
     } else if (pressedGreen) {
-        drawing.closeLayer({ 0x82ef59ff });
+        drawing.closeLayer(wsRGBA{ 0x82ef59ff });
     } else {
-        drawing.closeLayer({ 0x51c12bff });
+        drawing.closeLayer(wsRGBA{ 0x51c12bff });
     }
 
     if (hover) {
         drawCross(drawing, redCenter, RADIUS);
-        drawing.closeLayer({ 0x990000ff });
+        drawing.closeLayer(wsRGBA{ 0x990000ff });
 
         drawing.addRectangle({{yellowCenter.x - RADIUS * 0.5 - 0.5, yellowCenter.y - 0.5}, {RADIUS * 1.0 + 1.0, 1.0}});
-        drawing.closeLayer({ 0x7f5900ff });
+        drawing.closeLayer(wsRGBA{ 0x7f5900ff });
 
         if (window->size == Window::Size::Maximized) {
             drawTrianglesInward(drawing, greenCenter, RADIUS);
         } else {
             drawTrianglesOutward(drawing, greenCenter, RADIUS);
         }
-        drawing.closeLayer({ 0x006600ff });
+        drawing.closeLayer(wsRGBA{ 0x006600ff });
     }
 
     composit(linearMap, drawing, window->subpixelOrientation);
