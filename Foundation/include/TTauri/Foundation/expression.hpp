@@ -69,13 +69,13 @@ struct expression_evaluation_context {
      * Used if you need to reset the output to a previous position.
      */
     void set_output_size(ssize_t new_size) noexcept {
-        required_assert(new_size > 0);
-        required_assert(new_size <= output_size());
+        ttauri_assert(new_size > 0);
+        ttauri_assert(new_size <= output_size());
         output.resize(new_size);
     }
 
     void enable_output() noexcept {
-        required_assert(output_disable_count > 0);
+        ttauri_assert(output_disable_count > 0);
         output_disable_count--;
     }
 
@@ -88,7 +88,7 @@ struct expression_evaluation_context {
     }
 
     void loop_pop() noexcept {
-        required_assert(ssize(loop_stack) > 0);
+        ttauri_assert(ssize(loop_stack) > 0);
         loop_stack.pop_back();
     }
 
@@ -98,7 +98,7 @@ struct expression_evaluation_context {
     }
 
     void pop() {
-        required_assert(local_stack.size() > 0);
+        ttauri_assert(local_stack.size() > 0);
         local_stack.pop_back();
         loop_pop();
     }
@@ -108,17 +108,17 @@ struct expression_evaluation_context {
     }
 
     force_inline scope const& locals() const {
-        axiom_assert(has_locals());
+        ttauri_axiom(has_locals());
         return local_stack.back();
     }
 
     force_inline scope& locals() {
-        axiom_assert(has_locals());
+        ttauri_axiom(has_locals());
         return local_stack.back();
     }
 
     [[nodiscard]] datum const &loop_get(std::string_view name) const {
-        axiom_assert(name.size() > 0);
+        ttauri_axiom(name.size() > 0);
         if (name.back() == '$') {
             TTAURI_THROW(key_error("Invalid loop variable '{}'", name));
         }
@@ -155,7 +155,7 @@ struct expression_evaluation_context {
     }
 
     [[nodiscard]] datum const& get(std::string const &name) const {
-        required_assert(name.size() > 0);
+        ttauri_assert(name.size() > 0);
 
         if (name[0] == '$') {
             return loop_get(name);
@@ -177,7 +177,7 @@ struct expression_evaluation_context {
     }
 
     [[nodiscard]] datum &get(std::string const &name) {
-        required_assert(name.size() > 0);
+        ttauri_assert(name.size() > 0);
 
         if (has_locals()) {
             let i = locals().find(name);
@@ -295,8 +295,8 @@ struct expression_parse_context {
     }
 
     expression_parse_context& operator++() noexcept {
-        axiom_assert(token_it != tokens.end());
-        axiom_assert(*token_it != tokenizer_name_t::End);
+        ttauri_axiom(token_it != tokens.end());
+        ttauri_axiom(*token_it != tokenizer_name_t::End);
         ++token_it;
         return *this;
     }

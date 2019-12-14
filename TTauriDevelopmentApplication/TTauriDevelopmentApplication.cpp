@@ -7,6 +7,7 @@
 #include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystem.hpp"
 #include "TTauri/Application/Application.hpp"
+#include "TTauri/Foundation/CommandLineParser.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -55,8 +56,36 @@ public:
         return "TTauri Development Application";
     }
 
-    TTauri::datum configuration(std::vector<std::string> arguments) const noexcept override {
-        return TTauri::datum::map{};
+    datum configuration(std::vector<std::string> arguments) const noexcept override {
+        auto parser = CommandLineParser(
+            "TTauri development application."
+        );
+        parser.add(
+            "help"s,
+            datum_type_t::Boolean,
+            "This help message"s
+        );
+        parser.add(
+            "log-level"s,
+            datum_type_t::Integer,
+            "Set the log level, possible values 'debug', 'info', 'audit', 'warning', 'error', 'critical' or 'fatal'."s,
+            command_line_argument_to_log_level
+        );
+
+        auto default_configuration = datum{datum::map{}};
+        default_configuration["help"] = false;
+        default_configuration["log-level"] = static_cast<uint8_t>(log_level::Warning);
+
+        let command_line_configuration = parser.parse(arguments);
+        auto configuration = deep_merge(default_configuration, command_line_configuration);
+
+        if (parser.has_error() || configuration["help"]) {
+            parser.print_help();
+            std::exit(parser.has_error() ? 2 : 0);
+        }
+
+        LOG_INFO("Configuration {}", configuration);
+        return configuration;
     }
 
     bool startingLoop() override

@@ -40,8 +40,8 @@ void addTransparentBorder(PixelMap<uint32_t>& pixelMap) noexcept
 
 void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src) noexcept
 {
-    required_assert(dst.width >= src.width);
-    required_assert(dst.height >= src.height);
+    ttauri_assert(dst.width >= src.width);
+    ttauri_assert(dst.height >= src.height);
 
     for (auto rowNr = 0; rowNr < src.height; rowNr++) {
         let srcRow = src.at(rowNr);
@@ -54,8 +54,8 @@ void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src) noexcept
 
 void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
 {
-    required_assert(src.width >= dst.width);
-    required_assert(src.height >= dst.height);
+    ttauri_assert(src.width >= dst.width);
+    ttauri_assert(src.height >= dst.height);
 
     for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst[rowNr];
@@ -70,8 +70,8 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
 
 void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over) noexcept
 {
-    required_assert(over.height >= under.height);
-    required_assert(over.width >= under.width);
+    ttauri_assert(over.height >= under.height);
+    ttauri_assert(over.width >= under.width);
 
     for (auto rowNr = 0; rowNr < under.height; rowNr++) {
         let overRow = over.at(rowNr);
@@ -86,8 +86,8 @@ void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over) noexcept
 
 void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask) noexcept
 {
-    required_assert(mask.height >= under.height);
-    required_assert(mask.width >= under.width);
+    ttauri_assert(mask.height >= under.height);
+    ttauri_assert(mask.width >= under.width);
 
     for (auto rowNr = 0; rowNr < under.height; rowNr++) {
         let maskRow = mask.at(rowNr);
@@ -102,8 +102,8 @@ void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mas
 
 void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask) noexcept
 {
-    required_assert(mask.height >= under.height);
-    required_assert((mask.width * 3) >= under.width);
+    ttauri_assert(mask.height >= under.height);
+    ttauri_assert((mask.width * 3) >= under.width);
 
     for (auto rowNr = 0; rowNr < under.height; rowNr++) {
         let maskRow = mask.at(rowNr);
@@ -123,7 +123,7 @@ void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> co
 
 void desaturate(PixelMap<wsRGBA> &dst, float brightness) noexcept
 {
-    required_assert(brightness > 0.0 && brightness <= 1.0);
+    ttauri_assert(brightness > 0.0 && brightness <= 1.0);
     let _brightness = static_cast<uint16_t>(brightness * 32768.0); 
 
     for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
@@ -151,7 +151,7 @@ void subpixelFilter(PixelMap<uint8_t> &image) noexcept
 
 void subpixelFlip(PixelMap<uint8_t> &image) noexcept
 {
-    required_assert(image.width % 3 == 0);
+    ttauri_assert(image.width % 3 == 0);
 
     for (auto rowNr = 0; rowNr < image.height; rowNr++) {
         auto row = image.at(rowNr);

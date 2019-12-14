@@ -7,8 +7,6 @@
 
 namespace TTauri {
 
-#if !defined(NDEBUG)
-
 #if OPERATING_SYSTEM == OS_WINDOWS
 void _debugger_break();
 #define debugger_break _debugger_break()
@@ -20,17 +18,10 @@ void _debugger_break();
 #error "Not implemented"
 #endif
 
-#else
-#define debugger_break
-#endif
 
 /*! Check if the program is being debugged.
  */
-#if !defined(NDEBUG)
 bool debugger_is_present() noexcept;
-#else
-constexpr bool debugger_is_present() noexcept { return false; }
-#endif
 
 void _debugger_log(char const *text) noexcept;
 
@@ -85,5 +76,36 @@ void debugger_dialogue(std::string caption, std::string fmt, Args... args) noexc
         _debugger_dialogue(caption.data(), fmt.data());
     }
 }
+
+
+/** Abort the application.
+* @param source_file __FILE__
+* @param source_line __LINE__
+* @param message Message to display.
+* @param arg1 First argument to formatter
+* @param args Rest arguments to formatter
+*/
+template<typename... Args>
+[[noreturn]] no_inline void _debugger_abort(char const *source_file, int source_line, char const *fmt, Args &&... args)
+{
+    std::string message;
+
+    if (sizeof...(Args) == 0) {
+        message = fmt;    
+    } else {
+        message = fmt::format(fmt, std::forward<Args>(args)...);
+    }
+
+    if (debugger_is_present()) {
+        debugger_log("{}:{} {}", source_file, source_line, message);
+        debugger_break;
+    } else {
+        debugger_dialogue("Aborting", "{}:{} {}", source_file, source_line, message);
+    }
+
+    std::abort();
+}
+
+#define debugger_abort(...) _debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
 
 }

@@ -118,12 +118,12 @@ class sub_error final : public error {
     }
 
     datum &get(string_tag info_tag) noexcept override {
-        required_assert(error_info.has(info_tag) == 1);
+        ttauri_assert(error_info.has(info_tag) == 1);
         return error_info.get(info_tag);
     }
 
     datum const &get(string_tag info_tag) const noexcept override {
-        required_assert(error_info.has(info_tag) == 1);
+        ttauri_assert(error_info.has(info_tag) == 1);
         return error_info.get(info_tag);
     }
 

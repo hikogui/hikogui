@@ -39,7 +39,7 @@ void Window_base::initialize()
     widget = std::make_shared<Widgets::WindowWidget>();
 
     auto _window = dynamic_cast<Window *>(this);
-    required_assert(_window);
+    ttauri_assert(_window);
     widget->setParentWindow(_window);
 
     openingWindow();

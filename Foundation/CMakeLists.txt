@@ -15,7 +15,6 @@ configure_file(
 
 set(TTauri_Foundation_srcs
     src/globals.cpp
-    src/assert.cpp
     src/thread.cpp
     src/URL.cpp
     src/url_parser.cpp

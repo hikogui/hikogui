@@ -46,7 +46,7 @@ constexpr long long pow10_table[20] {
 };
 
 constexpr long long pow10ll(int x) noexcept {
-    axiom_assert(x >= 0 && x <= 18);
+    ttauri_axiom(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 

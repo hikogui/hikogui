@@ -125,7 +125,7 @@ impl:
     // Sign extent by left shifting the unsigned value to align to the
     // MSB. Then converting to an signed value and shift right (which does
     // sign extending).
-    required_assert(nr_bits < 64);
+    ttauri_assert(nr_bits < 64);
     size_t sign_extent_shift = 64 - nr_bits;
     u64value <<= sign_extent_shift;
 

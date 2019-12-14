@@ -19,7 +19,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     if (size == 0) {
         size = fileMappingObject->size - _offset;
     }
-    required_assert(_offset + size <= fileMappingObject->size);
+    ttauri_assert(_offset + size <= fileMappingObject->size);
 
     DWORD desiredAccess;
     if (accessMode() >= (AccessMode::Read | AccessMode::Write)) {

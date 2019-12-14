@@ -582,7 +582,7 @@ vk::ShaderModule Device_vulkan::loadShader(gsl::span<std::byte const> shaderObje
 {
     // Make sure the address is aligned to uint32_t;
     let address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
-    required_assert((address & 2) == 0);
+    ttauri_assert((address & 2) == 0);
 
     let shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());

@@ -30,8 +30,8 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 #endif
     i_dummy()
 {
-    required_assert(delegate);
-    required_assert(_application == nullptr);
+    ttauri_assert(delegate);
+    ttauri_assert(_application == nullptr);
     _application = this;
 
     LOG_AUDIT("Starting application '{}'.", Foundation_globals->applicationName);
@@ -42,7 +42,7 @@ Application_base::~Application_base()
     LOG_AUDIT("Stopping application.");
 
     // Application should be destructed only once.
-    required_assert(_application == this);
+    ttauri_assert(_application == this);
     _application = nullptr;
 }
 

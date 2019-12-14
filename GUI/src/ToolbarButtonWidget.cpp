@@ -36,7 +36,7 @@ int ToolbarButtonWidget::state() const noexcept {
 
 void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept
 {
-    required_assert(window);
+    ttauri_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
     }, "ToolbarButtonWidget", this, state());

@@ -327,7 +327,7 @@ struct expression_map_literal_node final : expression_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        required_assert(keys.size() == values.size());
+        ttauri_assert(keys.size() == values.size());
 
         datum::map r;
         for (size_t i = 0; i < keys.size(); i++) {
@@ -340,7 +340,7 @@ struct expression_map_literal_node final : expression_node {
     }
 
     std::string string() const noexcept override {
-        required_assert(keys.size() == values.size());
+        ttauri_assert(keys.size() == values.size());
 
         std::string r = "{";
         for (size_t i = 0; i < keys.size(); i++) {
@@ -431,7 +431,7 @@ struct expression_call_node final : expression_node {
         expression_node(offset), lhs(std::move(lhs))
     {
         auto rhs_ = dynamic_cast<expression_arguments*>(rhs.get());
-        required_assert(rhs_ != nullptr);
+        ttauri_assert(rhs_ != nullptr);
         args = std::move(rhs_->args);
     }
 
@@ -531,8 +531,8 @@ struct expression_ternary_operator_node final : expression_node {
         expression_node(offset), lhs(std::move(lhs))
     {
         expression_arguments* pair_ = dynamic_cast<expression_arguments*>(pair.get());
-        required_assert(pair_ != nullptr);
-        required_assert(pair_->args.size() == 2);
+        ttauri_assert(pair_ != nullptr);
+        ttauri_assert(pair_->args.size() == 2);
 
         rhs_true = std::move(pair_->args[0]);
         rhs_false = std::move(pair_->args[1]);

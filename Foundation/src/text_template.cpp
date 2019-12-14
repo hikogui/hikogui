@@ -221,7 +221,7 @@ struct template_if_node final: template_node {
     }
 
     std::string string() const noexcept override {
-        required_assert(expressions.size() > 0);
+        ttauri_assert(expressions.size() > 0);
         std::string s = "<if ";
         s += to_string(*expressions[0]);
         s += join(transform<std::vector<std::string>>(children_groups[0], [](auto &x) { return to_string(*x); }));
@@ -360,7 +360,7 @@ struct template_do_node final: template_node {
     }
 
     std::string string() const noexcept override {
-        required_assert(expression);
+        ttauri_assert(expression);
         std::string s = "<do ";
         s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
         s += to_string(*expression);
@@ -488,7 +488,7 @@ struct template_function_node final: template_node {
         template_node(offset)
     {
         auto name_and_arguments = function_declaration_expression->get_name_and_argument_names();
-        required_assert(name_and_arguments.size() >= 1);
+        ttauri_assert(name_and_arguments.size() >= 1);
 
         name = name_and_arguments[0];
         name_and_arguments.erase(name_and_arguments.begin());
@@ -605,7 +605,7 @@ struct template_block_node final: template_node {
         }
 
         auto function = context.get_function(name);
-        required_assert(function);
+        ttauri_assert(function);
 
         context.push_super(super_function);
         for (let &child: children) {
@@ -734,7 +734,7 @@ std::unique_ptr<expression_node> template_parse_context::parse_expression(std::s
     try {
         expression = ::TTauri::parse_expression(context);
     } catch (error &e) {
-        required_assert(e.has<"offset"_tag>());
+        ttauri_assert(e.has<"offset"_tag>());
         e.set<"offset"_tag>(offset() + e.get<"offset"_tag>());
     }
 
@@ -898,7 +898,7 @@ void parse_template_hash(template_parse_context &context)
                 TTAURI_THROW(parse_error("Unexpected #while statement; missing #do."));
             }
 
-            required_assert(context.pop());
+            ttauri_assert(context.pop());
         } else {
             context.push<template_while_node>(offset, std::move(expression));
         }

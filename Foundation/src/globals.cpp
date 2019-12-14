@@ -17,7 +17,7 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, datum confi
     configuration(std::move(configuration)),
     applicationName(std::move(applicationName))
 {
-    required_assert(Foundation_globals == nullptr);
+    ttauri_assert(Foundation_globals == nullptr);
     Foundation_globals = this;
 
     logger.minimum_log_level = static_cast<log_level>(static_cast<int>(this->configuration["log-level"]));
@@ -58,7 +58,7 @@ FoundationGlobals::~FoundationGlobals()
     delete sync_clock_calibration<hires_utc_clock,audio_counter_clock>;
     delete sync_clock_calibration<hires_utc_clock,cpu_counter_clock>;
 
-    required_assert(Foundation_globals == this);
+    ttauri_assert(Foundation_globals == this);
     Foundation_globals = nullptr;
 }
 

@@ -75,7 +75,7 @@ struct tokenizer_transition_t {
 
     constexpr tokenizer_state_t next() const noexcept {
         uint16_t stateInt = actionAndNextState >> 8;
-        axiom_assert(stateInt < static_cast<uint16_t>(tokenizer_state_t::Sentinal));
+        ttauri_axiom(stateInt < static_cast<uint16_t>(tokenizer_state_t::Sentinal));
         return static_cast<tokenizer_state_t>(stateInt);
     }
     constexpr tokenizer_action_t action() const noexcept {

@@ -37,19 +37,19 @@ constexpr T numeric_cast(U x) noexcept
         // No check needed all signed and unsigned integers can be cast without overflow.
 
     } else if constexpr (std::is_signed_v<T> && std::is_signed_v<U> && (sizeof(T) < sizeof(U))) {
-        axiom_assert(x >= std::numeric_limits<T>::min() && x <= std::numeric_limits<T>::max());
+        ttauri_axiom(x >= std::numeric_limits<T>::min() && x <= std::numeric_limits<T>::max());
 
     } else if constexpr (std::is_signed_v<T> && std::is_unsigned_v<U> && (sizeof(T) <= sizeof(U))) {
-        axiom_assert(x <= static_cast<U>(std::numeric_limits<T>::max()));
+        ttauri_axiom(x <= static_cast<U>(std::numeric_limits<T>::max()));
 
     } else if constexpr (std::is_unsigned_v<T> && std::is_unsigned_v<U> && (sizeof(T) < sizeof(U))) {
-        axiom_assert(x <= std::numeric_limits<T>::max());
+        ttauri_axiom(x <= std::numeric_limits<T>::max());
 
     } else if constexpr (std::is_unsigned_v<T> && std::is_signed_v<U>) {
         if constexpr (sizeof(T) < sizeof(U)) {
-            axiom_assert(x >= 0 && x <= std::numeric_limits<T>::max());
+            ttauri_axiom(x >= 0 && x <= std::numeric_limits<T>::max());
         } else {
-            axiom_assert(x >= 0);
+            ttauri_axiom(x >= 0);
         }
     }
     return static_cast<T>(x);

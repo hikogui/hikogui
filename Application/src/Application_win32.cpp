@@ -24,7 +24,7 @@ constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
 
     int argc = 0;
     let argv = CommandLineToArgvW(commandLine, &argc);
-    required_assert(argv != nullptr);
+    ttauri_assert(argv != nullptr);
 
     for (int i = 0; i < argc; i++) {
         arguments.push_back(translateString<std::string>(std::wstring(argv[i])));
@@ -59,10 +59,10 @@ gsl_suppress(r.11)
 void Application_win32::runOnMainThread(std::function<void()> function)
 {
     let functionP = new std::function<void()>(std::move(function));
-    required_assert(functionP);
+    ttauri_assert(functionP);
 
     auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
-    required_assert(r != 0);
+    ttauri_assert(r != 0);
 }
 
 bool Application_win32::startingLoop()

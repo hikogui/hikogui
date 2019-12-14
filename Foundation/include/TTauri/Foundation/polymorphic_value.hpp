@@ -95,28 +95,28 @@ public:
 
     T const &operator*() const noexcept {
         if constexpr (should_call_destructor<T>()) {
-            required_assert(has_value);
+            ttauri_assert(has_value);
         }
         return *reinterpret_cast<T const *>(data());
     }
 
     T &operator*() noexcept {
         if constexpr (should_call_destructor<T>()) {
-            required_assert(has_value);
+            ttauri_assert(has_value);
         }
         return *reinterpret_cast<T *>(data());
     }
 
     T const *operator->() const noexcept {
         if constexpr (should_call_destructor<T>()) {
-            required_assert(has_value);
+            ttauri_assert(has_value);
         }
         return reinterpret_cast<T const *>(data());
     }
 
     T *operator->() noexcept {
         if constexpr (should_call_destructor<T>()) {
-            required_assert(has_value);
+            ttauri_assert(has_value);
         }
         return reinterpret_cast<T *>(data());
     }

@@ -52,7 +52,7 @@ struct template_parse_context {
     }
 
     template_parse_context& operator++() noexcept {
-        axiom_assert(!atEOF());
+        ttauri_axiom(!atEOF());
         ++text_it;
         return *this;
     }

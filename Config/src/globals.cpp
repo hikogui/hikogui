@@ -11,14 +11,14 @@ namespace TTauri::Config {
 
 ConfigGlobals::ConfigGlobals()
 {
-    required_assert(Foundation_globals != nullptr);
-    required_assert(Config_globals == nullptr);
+    ttauri_assert(Foundation_globals != nullptr);
+    ttauri_assert(Config_globals == nullptr);
     Config_globals = this;
 }
 
 ConfigGlobals::~ConfigGlobals()
 {
-    required_assert(Config_globals == this);
+    ttauri_assert(Config_globals == this);
     Config_globals = nullptr;
 }
 

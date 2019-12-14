@@ -195,7 +195,7 @@ datum parseJSON(std::string_view text)
 
     datum root;
 
-    axiom_assert(tokens.back() == tokenizer_name_t::End);
+    ttauri_axiom(tokens.back() == tokenizer_name_t::End);
     parse_context_t context;
     context.text_begin = text.begin();
 

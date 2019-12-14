@@ -346,13 +346,13 @@ constexpr void bigint_div(bigint<T,R> &r_quotient, bigint<T,S> &r_remainder, big
     auto product = bigint<T,N+O>{0};
     bigint_multiply(product, quotient, rhs);
 
-    optional_assert(product <= lhs);
+    ttauri_axiom(product <= lhs);
     auto remainder = lhs - product;
 
     int retry = 0;
     while (remainder >= rhs) {
         if (retry++ > 3) {
-            required_assert(false);
+            ttauri_assert(false);
             bigint_div(r_quotient, r_remainder, lhs, rhs);
         }
 
@@ -387,7 +387,7 @@ template<typename T, int N, int O>
 constexpr bigint<T,O> bigint_crc(bigint<T,N> const &lhs, bigint<T,O> const &rhs) noexcept
 {
     let polynomialOrder = bigint_bsr(rhs);
-    required_assert(polynomialOrder >= 0);
+    ttauri_assert(polynomialOrder >= 0);
 
     auto tmp = static_cast<bigint<T,O+N>>(lhs) << polynomialOrder;
     auto rhs_ = static_cast<bigint<T,O+N>>(rhs);

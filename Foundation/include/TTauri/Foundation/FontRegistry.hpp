@@ -11,7 +11,7 @@ class FontFamilyID {
     explicit FontFamily(uint32_t id) noexcept :
         value(id)
     {
-        required_assert(id <= 0x1fff); 
+        ttauri_assert(id <= 0x1fff); 
     }
 
     explicit operator uint32_t () const noexcept {
@@ -70,7 +70,7 @@ public:
             (static_cast<uint32_t>(family) << 6)
         )
     {
-        required_assert(familyId >= 0 && familyId <= 0x1fff);
+        ttauri_assert(familyId >= 0 && familyId <= 0x1fff);
     }
 
     FontWeight getWeight() const noexcept {

@@ -36,7 +36,7 @@ void Window_vulkan::waitIdle()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
     device->waitIdle();
     LOG_INFO("/waitIdle");
@@ -49,7 +49,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
     //LOG_DEBUG("acquireNextImage '{}'", title);
-    required_assert(device);
+    ttauri_assert(device);
     let result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
     //LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
 
@@ -86,7 +86,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
 void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore)
 {
-    required_assert(device);
+    ttauri_assert(device);
 
     std::scoped_lock lock(GUI_globals->mutex);
 
@@ -264,7 +264,7 @@ void Window_vulkan::render()
 
     // Wait until previous rendering has finished, before the next rendering.
     // XXX maybe use one for each swapchain image or go to single command buffer.
-    required_assert(device);
+    ttauri_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
@@ -290,7 +290,7 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     std::scoped_lock lock(GUI_globals->mutex);
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-    required_assert(device);
+    ttauri_assert(device);
     surfaceCapabilities = device->getSurfaceCapabilitiesKHR(intrinsic);
 
     LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {}), osExtent=({}, {})",
@@ -387,13 +387,13 @@ bool Window_vulkan::buildSurface()
 {
     intrinsic = getSurface();
 
-    required_assert(device);
+    ttauri_assert(device);
     return device->score(intrinsic) > 0;
 }
 
 Window_base::State Window_vulkan::buildSwapchain()
 {
-    required_assert(device);
+    ttauri_assert(device);
 
     std::scoped_lock lock(GUI_globals->mutex);
 
@@ -450,7 +450,7 @@ void Window_vulkan::teardownSwapchain()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     device->destroy(swapchain);
 }
 
@@ -458,7 +458,7 @@ void Window_vulkan::buildFramebuffers()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     swapchainImages = device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
         auto imageView = device->createImageView({
@@ -494,7 +494,7 @@ void Window_vulkan::teardownFramebuffers()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     for (auto frameBuffer : swapchainFramebuffers) {
         device->destroy(frameBuffer);
     }
@@ -564,7 +564,7 @@ void Window_vulkan::buildRenderPasses()
         subpassDependency.data()
     };
 
-    required_assert(device);
+    ttauri_assert(device);
     firstRenderPass = device->createRenderPass(renderPassCreateInfo);
 
     attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
@@ -582,7 +582,7 @@ void Window_vulkan::teardownRenderPasses()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     device->destroy(firstRenderPass);
     device->destroy(followUpRenderPass);
     device->destroy(lastRenderPass);
@@ -592,7 +592,7 @@ void Window_vulkan::buildSemaphores()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     imageAvailableSemaphore = device->createSemaphore({});
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
@@ -605,7 +605,7 @@ void Window_vulkan::teardownSemaphores()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    required_assert(device);
+    ttauri_assert(device);
     device->destroy(imageAvailableSemaphore);
     device->destroy(renderFinishedFence);
 }

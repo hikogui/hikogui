@@ -12,9 +12,9 @@ Widget::Widget() noexcept
 
 Device *Widget::device() const noexcept
 {
-    required_assert(window);
+    ttauri_assert(window);
     auto device = window->device;
-    required_assert(device);
+    ttauri_assert(device);
     return device;
 }
 

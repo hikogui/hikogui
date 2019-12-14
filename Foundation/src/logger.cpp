@@ -91,7 +91,7 @@ void logger_type::display_trace_statistics() noexcept {
     let keys = trace_statistics_map.keys();
     for (let &tag: keys) {
         auto *stat = trace_statistics_map.get(tag, nullptr);
-        required_assert(stat != nullptr);
+        ttauri_assert(stat != nullptr);
         let stat_result = stat->read();
 
         if (stat_result.last_count <= 0) {

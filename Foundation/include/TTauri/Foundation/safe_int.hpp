@@ -51,9 +51,9 @@ force_inline T safe_handle_overflow(T value, bool overflow, bool is_positive) no
             TTAURI_THROW(overflow_error("safe_int"));
         }
     } else if constexpr (OnOverflow == on_overflow_t::Assert) {
-        required_assert(!overflow);
+        ttauri_assert(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Axiom) {
-        axiom_assert(!overflow);
+        ttauri_axiom(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Saturate) {
         if (ttauri_unlikely(overflow)) {
             value = is_positive ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();

@@ -58,7 +58,7 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
             break;
         case BezierPoint::Type::CubicControl2:
             C2 = point.p;
-            required_assert(type == BezierCurve::Type::Cubic);
+            ttauri_assert(type == BezierCurve::Type::Cubic);
             break;
         default:
             no_default;

@@ -10,7 +10,7 @@ namespace TTauri::Config {
 
 int64_t parseInteger(const char *text, int radix, bool negative) noexcept
 {
-    required_assert(text);
+    ttauri_assert(text);
 
     let size = strlen(text);
     size_t offset = 0;
@@ -38,7 +38,7 @@ int64_t parseInteger(const char *text, int radix, bool negative) noexcept
 
 gsl_suppress(bounds.1)
 double parseFloat(const char *text) noexcept {
-    required_assert(text);
+    ttauri_assert(text);
 
     let size = strlen(text);
     size_t offset = 0;
@@ -80,7 +80,7 @@ double parseFloat(const char *text) noexcept {
 gsl_suppress2(f.6,r.11)
 char *parseString(const char *text) noexcept
 {
-    required_assert(text);
+    ttauri_assert(text);
 
     let size = strlen(text) - 1; // Ignore the last '"' or '>' character.
     size_t offset = 1; // Skip over first '"' or '<' character.
@@ -110,13 +110,13 @@ char *parseString(const char *text) noexcept
     }
 
     let r = strdup(value.data());
-    required_assert(r);
+    ttauri_assert(r);
     gsl_suppress2(lifetime.4,26487) return r;
 }
 
 URL *parseURL(const char *text)
 {
-    required_assert(text);
+    ttauri_assert(text);
 
     auto s = std::string{text};
     if (s.front() == '<' && s.back() == '>') {
@@ -128,14 +128,14 @@ URL *parseURL(const char *text)
 
 char *parseIdentifier(const char *text) noexcept 
 {
-    required_assert(text);
+    ttauri_assert(text);
 
     return strdup(text);
 }
 
 bool parseBoolean(const char *text) noexcept
 {
-    required_assert(text);
+    ttauri_assert(text);
 
     return strcmp(text, "true") == 0;
 }

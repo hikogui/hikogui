@@ -43,7 +43,7 @@ struct BezierPoint {
     ) noexcept {
         std::vector<BezierPoint> r;
 
-        required_assert((end - begin) >= 2);
+        ttauri_assert((end - begin) >= 2);
 
         auto previousPoint = *(end - 1);
         auto previousPreviousPoint = *(end - 2);
@@ -52,7 +52,7 @@ struct BezierPoint {
 
             switch (point.type) {
             case BezierPoint::Type::Anchor:
-                required_assert(previousPoint.type != BezierPoint::Type::CubicControl1);
+                ttauri_assert(previousPoint.type != BezierPoint::Type::CubicControl1);
                 r.push_back(point);
                 break;
 
@@ -61,7 +61,7 @@ struct BezierPoint {
                     r.emplace_back(midpoint(previousPoint.p, point.p), BezierPoint::Type::Anchor);
 
                 } else {
-                    required_assert(previousPoint.type == BezierPoint::Type::Anchor);
+                    ttauri_assert(previousPoint.type == BezierPoint::Type::Anchor);
                 }
                 r.push_back(point);
                 break;
@@ -72,11 +72,11 @@ struct BezierPoint {
 
             case BezierPoint::Type::CubicControl2:
                 if (previousPoint.type == BezierPoint::Type::Anchor) {
-                    required_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
+                    ttauri_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
 
                     r.emplace_back(glm::reflect(previousPreviousPoint.p, previousPoint.p), BezierPoint::Type::CubicControl1);
                 } else {
-                    required_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
+                    ttauri_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
                 }
                 r.push_back(point);
                 break;
@@ -98,7 +98,7 @@ struct BezierPoint {
         }
 
         // The result did not contain an anchor.
-        required_assert(false);
+        ttauri_assert(false);
     }
 
     inline BezierPoint &operator*=(glm::mat3x3 const &rhs) noexcept {

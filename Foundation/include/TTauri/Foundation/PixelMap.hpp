@@ -64,7 +64,7 @@ struct PixelRow {
      * @return a reference to a pixel.
      */
     T const &at(int columnNr) const noexcept {
-        required_assert(columnNr >= 0 && columnNr < width);
+        ttauri_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 
@@ -75,7 +75,7 @@ struct PixelRow {
      * @return a reference to a pixel.
      */
     T &at(int columnNr) noexcept {
-        required_assert(columnNr >= 0 && columnNr < width);
+        ttauri_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 };
@@ -119,12 +119,12 @@ struct PixelMap {
      */
     PixelMap(T *pixels, int width, int height, int stride) noexcept : pixels(pixels), width(width), height(height), stride(stride) {
         if (pixels) {
-            required_assert(stride >= width);
-            required_assert(width > 0);
-            required_assert(height > 0);
+            ttauri_assert(stride >= width);
+            ttauri_assert(width > 0);
+            ttauri_assert(height > 0);
         } else {
-            required_assert(width == 0);
-            required_assert(height == 0);
+            ttauri_assert(width == 0);
+            ttauri_assert(height == 0);
         }
     } 
 
@@ -137,12 +137,12 @@ struct PixelMap {
     gsl_suppress(r.11)
     PixelMap(int width, int height) noexcept : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
         if (pixels) {
-            required_assert(stride >= width);
-            required_assert(width > 0);
-            required_assert(height > 0);
+            ttauri_assert(stride >= width);
+            ttauri_assert(width > 0);
+            ttauri_assert(height > 0);
         } else {
-            required_assert(width == 0);
-            required_assert(height == 0);
+            ttauri_assert(width == 0);
+            ttauri_assert(height == 0);
         }
     }
 
@@ -216,13 +216,13 @@ struct PixelMap {
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
     PixelMap<T> submap(irect2 rect) const noexcept {
-        required_assert(
+        ttauri_assert(
             (rect.offset.x >= 0) &&
             (rect.offset.y >= 0) &&
             (rect.extent.width() >= 0) &&
             (rect.extent.height() >= 0)
         );
-        required_assert(
+        ttauri_assert(
             (rect.offset.x + rect.extent.width() <= width) &&
             (rect.offset.y + rect.extent.height() <= height)
         );
@@ -257,12 +257,12 @@ struct PixelMap {
     }
 
     PixelRow<T> const at(int const rowNr) const noexcept {
-        required_assert(rowNr < height);
+        ttauri_assert(rowNr < height);
         return (*this)[rowNr];
     }
 
     PixelRow<T> at(int const rowNr) noexcept {
-        required_assert(rowNr < height);
+        ttauri_assert(rowNr < height);
         return (*this)[rowNr];
     }
 

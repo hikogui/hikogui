@@ -36,7 +36,7 @@ int WindowTrafficLightsWidget::state() const noexcept {
 
 void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, int& offset) noexcept
 {
-    required_assert(window);
+    ttauri_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
         }, "WindowTrafficLightsWidget", state());

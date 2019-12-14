@@ -45,7 +45,7 @@ void Device_base::add(std::unique_ptr<Window> window)
     }
 
     auto _device = dynamic_cast<Device *>(this);
-    required_assert(_device);
+    ttauri_assert(_device);
     window->setDevice(_device);
 
     windows.push_back(std::move(window));

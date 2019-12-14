@@ -10,16 +10,16 @@ namespace TTauri::GUI::Widgets {
 
 WidgetsGlobals::WidgetsGlobals()
 {
-    required_assert(Foundation_globals != nullptr);
-    required_assert(Config::Config_globals != nullptr);
-    required_assert(GUI::GUI_globals != nullptr);
-    required_assert(Widgets_globals == nullptr);
+    ttauri_assert(Foundation_globals != nullptr);
+    ttauri_assert(Config::Config_globals != nullptr);
+    ttauri_assert(GUI::GUI_globals != nullptr);
+    ttauri_assert(Widgets_globals == nullptr);
     Widgets_globals = this;
 }
 
 WidgetsGlobals::~WidgetsGlobals()
 {
-    required_assert(Widgets_globals == this);
+    ttauri_assert(Widgets_globals == this);
     Widgets_globals = nullptr;
 }
 

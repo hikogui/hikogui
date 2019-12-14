@@ -218,7 +218,7 @@ public:
 
     [[nodiscard]] friend decimal operator/(decimal lhs, decimal rhs) noexcept {
         auto rhs_m = rhs.mantissa();
-        axiom_assert(rhs_m != 0);
+        ttauri_axiom(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -229,7 +229,7 @@ public:
 
     [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept {
         auto rhs_m = rhs.mantissa();
-        axiom_assert(rhs_m != 0);
+        ttauri_axiom(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -358,7 +358,7 @@ private:
         while (ttauri_unlikely(!is_valid_mantissa(m))) {
             m /= 10;
             e++;
-            required_assert(e <= exponent_max);
+            ttauri_assert(e <= exponent_max);
         }
 
         while (ttauri_unlikely(e > exponent_max)) {
@@ -369,7 +369,7 @@ private:
             e--;
 
             // abort on overflow. This decimal does not support infinite.
-            required_assert(is_valid_mantissa(m));
+            ttauri_assert(is_valid_mantissa(m));
         }
 
         while (ttauri_unlikely(e < exponent_min)) {

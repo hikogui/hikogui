@@ -89,7 +89,7 @@ void Path::setColorOfLayer(ssize_t layerNr, wsRGBA fillColor) noexcept
 
 std::pair<Path,wsRGBA> Path::getLayer(ssize_t layerNr) const noexcept
 {
-    required_assert(hasLayers());
+    ttauri_assert(hasLayers());
 
     auto path = Path{};
 
@@ -116,7 +116,7 @@ std::vector<BezierCurve> Path::getBeziersOfContour(ssize_t contourNr) const noex
 
 std::vector<BezierCurve> Path::getBeziers() const noexcept
 {
-    required_assert(!hasLayers());
+    ttauri_assert(!hasLayers());
 
     std::vector<BezierCurve> r;
 
@@ -183,7 +183,7 @@ void Path::moveTo(glm::vec2 position) noexcept
 
 void Path::moveRelativeTo(glm::vec2 direction) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
 
     let lastPosition = currentPosition();
     closeContour();
@@ -192,26 +192,26 @@ void Path::moveRelativeTo(glm::vec2 direction) noexcept
 
 void Path::lineTo(glm::vec2 position) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::lineRelativeTo(glm::vec2 direction) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
 void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
     let p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
@@ -219,7 +219,7 @@ void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direct
 
 void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
     points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
     points.emplace_back(position, BezierPoint::Type::Anchor);
@@ -227,7 +227,7 @@ void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, 
 
 void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
     let p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
     points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
@@ -236,7 +236,7 @@ void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDi
 
 void Path::arcTo(float radius, glm::vec2 position) noexcept
 {
-    required_assert(isContourOpen());
+    ttauri_assert(isContourOpen());
 
     let r = std::abs(radius);
     let P1 = currentPosition();
@@ -274,7 +274,7 @@ void Path::arcTo(float radius, glm::vec2 position) noexcept
 
 void Path::addRectangle(rect2 rect, glm::vec4 corners) noexcept
 {
-    required_assert(!isContourOpen());
+    ttauri_assert(!isContourOpen());
 
     glm::vec4 radii = glm::abs(corners);
 
@@ -325,7 +325,7 @@ void Path::addRectangle(rect2 rect, glm::vec4 corners) noexcept
 
 void Path::addCircle(glm::vec2 position, float radius) noexcept
 {
-    required_assert(!isContourOpen());
+    ttauri_assert(!isContourOpen());
 
     moveTo({position.x, position.y - radius});
     arcTo(radius, {position.x + radius, position.y});
@@ -337,7 +337,7 @@ void Path::addCircle(glm::vec2 position, float radius) noexcept
 
 void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept
 {
-    required_assert(!isContourOpen());
+    ttauri_assert(!isContourOpen());
     points.insert(points.end(), begin, end);
     closeContour();
 }
@@ -349,7 +349,7 @@ void Path::addContour(std::vector<BezierPoint> const &contour) noexcept
 
 void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
 {
-    required_assert(!isContourOpen());
+    ttauri_assert(!isContourOpen());
 
     for (let &curve: contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
@@ -388,8 +388,8 @@ void Path::addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, Li
 
 Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const noexcept
 {
-    required_assert(!hasLayers());
-    required_assert(!isContourOpen());
+    ttauri_assert(!hasLayers());
+    ttauri_assert(!isContourOpen());
 
     auto r = Path{};
 
@@ -416,11 +416,11 @@ Path operator+(Path lhs, Path const &rhs) noexcept
 
 Path &operator+=(Path &lhs, Path const &rhs) noexcept
 {
-    required_assert(!lhs.isContourOpen());
-    required_assert(!rhs.isContourOpen());
+    ttauri_assert(!lhs.isContourOpen());
+    ttauri_assert(!rhs.isContourOpen());
 
     // Left hand layer can only be open if the right hand side contains no layers.
-    required_assert(!rhs.hasLayers() || !lhs.isLayerOpen());
+    ttauri_assert(!rhs.hasLayers() || !lhs.isLayerOpen());
 
     let pointOffset = to_signed(lhs.points.size());
     let contourOffset = to_signed(lhs.contourEndPoints.size());
@@ -492,8 +492,8 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept
 
 void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation) noexcept
 {
-    required_assert(!path.hasLayers());
-    required_assert(!path.isContourOpen());
+    ttauri_assert(!path.hasLayers());
+    ttauri_assert(!path.isContourOpen());
 
     let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
 
@@ -521,7 +521,7 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOri
 
 void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation) noexcept
 {
-    required_assert(src.hasLayers() && !src.isLayerOpen());
+    ttauri_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
         let [layer, fillColor] = src.getLayer(layerNr);
