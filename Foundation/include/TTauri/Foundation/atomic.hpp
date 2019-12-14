@@ -12,14 +12,22 @@
 
 namespace TTauri {
 
+/** Wait for transition.
+ * Wait until state has switched to the new state.
+ * This function is for the contended state. It should not be inlined so that
+ * not so much code is generated at the call site.
+ *
+ * @param state variable to monitor.
+ * @param to The value the state needs to be before this function returns.
+ */
 template<typename T>
-no_inline void contended_wait_for_transition(std::atomic<T> const &state, T from, std::memory_order order=std::memory_order_seq_cst)
+no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
     auto backoff = 10ms;
     while (true) {
-        if (state.load(order) == from) {
+        if (state.load(order) == to) {
             return;
         }
 
@@ -30,14 +38,30 @@ no_inline void contended_wait_for_transition(std::atomic<T> const &state, T from
     }
 }
 
+/** Wait for transition.
+ * Wait until state has switched to the new state.
+ * This function is for the non-contended state. The code emitted on x86 should
+ * be MOV,CMP,JNE. The JNE is taken on contended state.
+ *
+ * @param state variable to monitor.
+ * @param to The value the state needs to be before this function returns.
+ */
 template<typename T>
-force_inline void wait_for_transition(std::atomic<T> const &state, T from, std::memory_order order=std::memory_order_seq_cst)
+force_inline void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
-    if (ttauri_unlikely(state.load(order) != from)) {
-        contended_wait_for_transition(state, from, order);
+    if (ttauri_unlikely(state.load(order) != to)) {
+        contended_wait_for_transition(state, to, order);
     }
 }
 
+/** Transition from one state to another.
+ * This is the non-included version that is used for contended situation.
+ *
+ * @param state The state variable to monitor and modify.
+ * @param from The value that state needs to have before changing it to `to`.
+ * @param to The value to set once state has the value `from` .
+ * @param order Memory order to use for this state variable.
+ */
 template<string_tag BlockCounterTag=0,typename T>
 no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
@@ -61,6 +85,15 @@ no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::me
     }
 }
 
+/** Transition from one state to another.
+ * This is the included version that is used for non-contended situation.
+ * Should emit on x86: CMPXCHG,JNE
+ *
+ * @param state The state variable to monitor and modify.
+ * @param from The value that state needs to have before changing it to `to`.
+ * @param to The value to set once state has the value `from` .
+ * @param order Memory order to use for this state variable.
+ */
 template<string_tag BlockCounterTag=0,typename T>
 force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {

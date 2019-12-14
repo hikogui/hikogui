@@ -5,11 +5,53 @@
 
 #include "TTauri/Foundation/os_detect.hpp"
 #include "TTauri/Foundation/debugger.hpp"
+#include "TTauri/Foundation/abort.hpp"
 #include  <exception>
 
 namespace TTauri {
 
+#define no_default ttauri_abort("no_default");
+#define not_implemented ttauri_abort("not_implemented");
+#define ttauri_overflow ttauri_abort("overflow");
+
+/** Assert if expression is true.
+ * Independed of NDEBUG macro this macro will always check and abort on fail.
+ */
+#define ttauri_assert(expression)\
+    do {\
+        if (ttauri_unlikely(!(x))) {\
+            ttauri_abort(# expression);\
+        }\
+    } while (false)
+
+#if defined(NDEBUG)
+
+/** Assert if expression is true.
+ * When NDEBUG is set then the expression is assumed to be true and optimizes code.
+ * HWne NDEBUG is unset this macro will check and abort on fail.
+ */
+#define ttauri_axiom(expression)\
+    do {\
+        static_assert(sizeof(expression) == 1);\
+        ttauri_assume(expression);\
+    } while (false)
+
+#else
+
+/** Assert if expression is true.
+ * When NDEBUG is set then the expression is assumed to be true and optimizes code.
+ * HWne NDEBUG is unset this macro will check and abort on fail.
+ */
+#define ttauri_axiom(expression)\
+    do {\
+        if (ttauri_unlikely(!(x))) {\
+            ttauri_abort(# expression);\
+        }\
+    } while (false)
+#endif
+
 void assertIsLogged(const char *source_file, int source_line, const char *message);
+
 
 #define AI_SKIP 'S'
 #define AI_LOG 'L'
@@ -103,9 +145,5 @@ void assertIsLogged(const char *source_file, int source_line, const char *messag
 #error "Axiom assert implementation not set."
 #endif
 
-
-#define no_default debugger_break; std::terminate();
-#define not_implemented debugger_break; std::terminate();
-#define ttauri_overflow debugger_break; std::terminate();
 
 }

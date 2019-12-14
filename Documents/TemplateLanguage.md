@@ -323,7 +323,14 @@ Operations available that work on a map:
  - `items(map) -> vector[key, value]`
 
 
-## Statements and placeholders
+## Escape, Statements and placeholders
+Statements and placeholders are used to generate text.
+
+To make it so generated text will not include unexpected white space the following rules apply:
+ * White-spaces in front of a statement are removed up to the last new-line.
+ * The white-spaces and the linefeed after a statement is removed.
+ * An escape can remove a new-line.
+ * Text (including trailing white-spaces) are kept in front of a statement.
 
 ### Escape sequences
 The backslash is used to escape:
