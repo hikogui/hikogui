@@ -65,9 +65,9 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 12         | expr '^' expr          | Bitwise xor                          |
  | 13         | expr '\|' expr         | Bitwise or                           |
  | 13         | expr '\|' name         | String filter                        |
- | 14         | expr '&&' expr         | Logical short-circuit and                          |
- | 15         | expr '\|\|' expr       | Logical short-circuit or                           |
- | 16         | expr '?' expr ':' expr | Ternary short-circuit operator                     |
+ | 14         | expr '&&' expr         | Logical short-circuit and            |
+ | 15         | expr '\|\|' expr       | Logical short-circuit or             |
+ | 16         | expr '?' expr ':' expr | Ternary short-circuit operator       |
  | 16         | expr '=' expr          | Assign                               |
  | 16         | expr '+=' expr         | Inplace add                          |
  | 16         | expr '-=' expr         | Inplace subtractions                 |
@@ -79,6 +79,7 @@ Expressions can be enclosed inside parenthesis '(' ')' to force precedence on th
  | 16         | expr '&=' expr         | Inplace and                          |
  | 16         | expr '^=' expr         | Inplace xor                          |
  | 16         | expr '\|=' expr        | Inplace or                           |
+ | 17         | expr '!' name          | String filter                        |
 
 ### Function call
 Call a function with zero or more arguments.
@@ -88,6 +89,16 @@ Functions are build-in, passed by the developer when evaluating an expression,
 or added in the template by the user.
 
 Syntax: `name '(' ( expression ( ',' expression )* ','? )? ')'`
+
+### String filter
+The string filter binary operator '!' implicitly converts the left hand side expression
+to a string, and passes this string through the filter `name`, yielding a new string.
+
+Built in filters:
+ * `html`: html-encode the string.
+ * `xml`: xml-encode the string.
+ * `url`: url-encode the string.
+ * `id`: Convert string to match `[a-zA-Z_][0-9a-zA-Z_]*`.
 
 ### Assignment
 An assignment operator is different from inplace-operations. An inplace-operation will

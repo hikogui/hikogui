@@ -138,6 +138,7 @@ enum class graphic_character_t {
     case operator_to_int(","): return 17;
     case operator_to_int("]"): return 17;
     case operator_to_int(")"): return 17;
+    case operator_to_int("!"): return 18;
     default: return std::numeric_limits<uint8_t>::max();
     }
 }

@@ -14,7 +14,7 @@ static bool is_urlchar_scheme(char c, size_t i)
     return is_urlchar_alpha(c) || (i > 0 && (is_urlchar_digit(c) || c == '+' || c == '-' || c == '.'));
 }
 
-std::string url_encode(std::string_view const input, std::function<bool(char)> unreserved_char_check) noexcept
+std::string url_encode_part(std::string_view const input, std::function<bool(char)> unreserved_char_check) noexcept
 {
     std::string s;
     s.reserve(input.size() + input.size() / 2);
@@ -283,8 +283,8 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
     let backward_count = std::count(path.begin(), path.end(), '\\');
 
     encodedPath = (forward_count >= backward_count) ?
-        url_encode(path, is_urlchar_pchar_forward) :
-        url_encode(path, is_urlchar_pchar_backward);
+        url_encode_part(path, is_urlchar_pchar_forward) :
+        url_encode_part(path, is_urlchar_pchar_backward);
 
     let sep = (forward_count >= backward_count) ? '/' : '\\';
 

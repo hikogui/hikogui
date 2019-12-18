@@ -77,6 +77,22 @@ constexpr bool isOperator(char c) noexcept {
         !isCloseBracket(c);
 }
 
+/** Encode a string to be usable as an id.
+ * An id has the following format: [_a-zA-Z][_a-zA-Z0-9]*
+ */
+inline std::string id_encode(std::string_view str)
+{
+    std::string r;
+    r.reserve(size(str));
+
+    r += isNameFirst(str.front()) ? str.front() : '_';
+    for (let c: str.substr(1)) {
+        r += isNameNext(c) ? c : '_';
+    }
+
+    return r;
+}
+
 gsl_suppress3(f.23,bounds.1,bounds.3)
     inline constexpr uint32_t fourcc(char const txt[5]) noexcept
 {

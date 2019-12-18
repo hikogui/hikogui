@@ -57,7 +57,12 @@ constexpr bool is_urlchar_pchar_backward(char c) {
  * \param unreserved_char_check a function pointer to check if a character is unreserved.
  * \return The url-encoded string.
  */
-std::string url_encode(std::string_view input, std::function<bool(char)> unreserved_char_check) noexcept;
+std::string url_encode_part(std::string_view input, std::function<bool(char)> unreserved_char_check) noexcept;
+
+inline std::string url_encode(std::string_view input) noexcept {
+    return url_encode_part(input, is_urlchar_unreserved);
+}
+
 
 /*! Replace all percent-encoding with actual characters from a part of a URL.
  *

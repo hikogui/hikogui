@@ -3,6 +3,8 @@
 
 #include "TTauri/Foundation/expression.hpp"
 #include "TTauri/Foundation/operator.hpp"
+#include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/url_parser.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <string_view>
@@ -196,11 +198,57 @@ static datum method_pop(expression_evaluation_context &context, datum &self, dat
     }
 }
 
+static datum method_year(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .year() method, got {}", args.size()));
+    }
+
+    return self.year();
+}
+
+static datum method_quarter(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .quarter() method, got {}", args.size()));
+    }
+
+    return self.quarter();
+}
+
+static datum method_month(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .month() method, got {}", args.size()));
+    }
+
+    return self.month();
+}
+
+static datum method_day(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 0) {
+        TTAURI_THROW(invalid_operation_error("Expecting 0 arguments for .day() method, got {}", args.size()));
+    }
+
+    return self.day();
+}
+
 expression_post_process_context::method_table expression_post_process_context::global_methods = {
     {"append"s, method_append},
     {"push"s, method_append},
     {"pop"s, method_pop},
+    {"year"s, method_year},
+    {"quarter"s, method_quarter},
+    {"month"s, method_month},
+    {"day"s, method_day},
 };
+
+expression_post_process_context::filter_table expression_post_process_context::global_filters = {
+    {"id"s, id_encode},
+    {"url"s, url_encode}
+};
+
 
 /** A temporary node used during parsing.
  */
@@ -1028,7 +1076,7 @@ struct expression_member_node final : expression_binary_operator_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        auto lhs_ = lhs->evaluate(context);
+        let lhs_ = lhs->evaluate(context);
         try {
             return lhs_[rhs_name->name];
         } catch (error &e) {
@@ -1059,6 +1107,43 @@ struct expression_member_node final : expression_binary_operator_node {
 
     std::string string() const noexcept override {
         return fmt::format("({} . {})", *lhs, *rhs);
+    }
+};
+
+struct expression_filter_node final : expression_binary_operator_node {
+    mutable expression_post_process_context::filter_type filter;
+    expression_name_node* rhs_name;
+
+    expression_filter_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs))
+    {
+        rhs_name = dynamic_cast<expression_name_node*>(this->rhs.get());
+        if (rhs_name == nullptr) {
+            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a filter operator. got {}.", rhs).set<"offset"_tag>(offset));
+        }
+    }
+
+    void post_process(expression_post_process_context& context) override {
+        expression_binary_operator_node::post_process(context);
+
+        filter = context.get_filter(rhs_name->name);
+        if (!filter) {
+            TTAURI_THROW(parse_error("Could not find filter .{}().", rhs_name->name).set<"offset"_tag>(offset));
+        }
+    }
+
+    datum evaluate(expression_evaluation_context& context) const override {
+        auto lhs_ = lhs->evaluate(context);
+        try {
+            return {filter(static_cast<std::string>(lhs_))};
+        } catch (error &e) {
+            e.set<"offset"_tag>(offset);
+            throw;
+        }
+    }
+
+    std::string string() const noexcept override {
+        return fmt::format("({} ! {})", *lhs, *rhs);
     }
 };
 
@@ -1331,6 +1416,7 @@ static std::unique_ptr<expression_node> parse_operation_expression(
     let offset = std::distance(context.first, op.index);
 
     if (lhs) {
+        // Binary operator
         switch (operator_to_int(op.value.data())) {
         case operator_to_int("."): return std::make_unique<expression_member_node>(offset, std::move(lhs), std::move(rhs));
         case operator_to_int("**"): return std::make_unique<expression_pow_node>(offset, std::move(lhs), std::move(rhs));
@@ -1366,9 +1452,11 @@ static std::unique_ptr<expression_node> parse_operation_expression(
         case operator_to_int("&="): return std::make_unique<expression_inplace_and_node>(offset, std::move(lhs), std::move(rhs));
         case operator_to_int("|="): return std::make_unique<expression_inplace_or_node>(offset, std::move(lhs), std::move(rhs));
         case operator_to_int("^="): return std::make_unique<expression_inplace_xor_node>(offset, std::move(lhs), std::move(rhs));
+        case operator_to_int("!"): return std::make_unique<expression_filter_node>(offset, std::move(lhs), std::move(rhs));
         default: TTAURI_THROW(parse_error("Unexpected binary operator {}", op).set<"offset"_tag>(offset));
         }
     } else {
+        // Unary operator
         switch (operator_to_int(op.value.data())) {
         case operator_to_int("+"): return std::make_unique<expression_plus_node>(offset, std::move(rhs));
         case operator_to_int("-"): return std::make_unique<expression_minus_node>(offset, std::move(rhs));

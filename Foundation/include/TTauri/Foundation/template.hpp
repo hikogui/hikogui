@@ -216,6 +216,37 @@ struct template_node {
         children.push_back(std::move(new_child));
     }
 
+    [[nodiscard]] static datum evaluate_expression_without_output(expression_evaluation_context &context, expression_node const &expression, ssize_t offset) {
+        try {
+            return expression.evaluate_without_output(context);
+        } catch (error &e) {
+            ttauri_assert(e.has<"offset"_tag>());
+            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            throw;
+        }
+    }
+
+    [[nodiscard]] static datum evaluate_expression(expression_evaluation_context &context, expression_node const &expression, ssize_t offset) {
+        try {
+            return expression.evaluate(context);
+        } catch (error &e) {
+            ttauri_assert(e.has<"offset"_tag>());
+            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            throw;
+        }
+    }
+
+    [[nodiscard]] static void post_process_expression(expression_post_process_context &context, expression_node &expression, ssize_t offset) {
+        try {
+            return expression.post_process(context);
+        } catch (error &e) {
+            ttauri_assert(e.has<"offset"_tag>());
+            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            throw;
+        }
+    }
+
+
     [[nodiscard]] static datum evaluate_children(expression_evaluation_context &context, statement_vector const &children) {
         for (let &child: children) {
             let tmp = child->evaluate(context);

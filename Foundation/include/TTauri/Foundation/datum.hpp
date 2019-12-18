@@ -1283,6 +1283,39 @@ public:
         }
     }
 
+    datum_impl year() const {
+        if (is_ymd()) {
+            return {static_cast<signed>(static_cast<date::year_month_day>(*this).year())};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get year() from type {}", type_name());
+        }
+    }
+
+    datum_impl quarter() const {
+        if (is_ymd()) {
+            auto month = static_cast<unsigned>(static_cast<date::year_month_day>(*this).month());
+            return {((month-1) / 3) + 1};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get month() from type {}", type_name());
+        }
+    }
+
+    datum_impl month() const {
+        if (is_ymd()) {
+            return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).month())};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get month() from type {}", type_name());
+        }
+    }
+
+    datum_impl day() const {
+        if (is_ymd()) {
+            return {static_cast<unsigned>(static_cast<date::year_month_day>(*this).day())};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot get day() from type {}", type_name());
+        }
+    }
+
     datum_impl const &front() const {
         if (is_vector()) {
             let *v = get_pointer<datum_impl::vector>();

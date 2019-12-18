@@ -30,7 +30,27 @@ struct template_top_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        return evaluate_children(context, children);
+        try {
+            return evaluate_children(context, children);
+
+        } catch (error &e) {
+            e.set<"url"_tag>(url);
+
+            // Reopen the template file to calculate the line and column.
+            auto f = FileView(url);
+            auto v = f.string_view();
+
+            if (offset <= ssize(v)) {
+                ttauri_assert(e.has<"offset"_tag>());
+                ssize_t offset = static_cast<ssize_t>(e.get<"offset"_tag>());
+
+                let [line, column] = count_line_and_columns(v.begin(), v.begin() + offset);
+                e.set<"line"_tag>(line);
+                e.set<"column"_tag>(column);
+            }
+
+            throw;
+        }
     }
 
     std::string string() const noexcept override {
@@ -85,7 +105,13 @@ struct template_placeholder_node final: template_node {
     [[nodiscard]] bool should_left_align() const noexcept override { return false; }
 
     void post_process(expression_post_process_context &context) override {
-        expression->post_process(context);
+        try {
+            expression->post_process(context);
+        } catch (parse_error &e) {
+            ttauri_assert(e.has<"offset"_tag>());
+            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            throw;
+        }
     }
 
     std::string string() const noexcept override {
@@ -95,7 +121,7 @@ struct template_placeholder_node final: template_node {
     datum evaluate(expression_evaluation_context &context) override {
         let output_size = context.output_size();
 
-        let tmp = expression->evaluate(context);
+        let tmp = evaluate_expression(context, *expression, offset);
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
                 .set<"offset"_tag>(offset)
@@ -125,7 +151,7 @@ struct template_expression_node final: template_node {
         template_node(offset), expression(std::move(expression)) {}
 
     void post_process(expression_post_process_context &context) override {
-        expression->post_process(context);
+        post_process_expression(context, *expression, offset);
     }
 
     std::string string() const noexcept override {
@@ -135,7 +161,7 @@ struct template_expression_node final: template_node {
     datum evaluate(expression_evaluation_context &context) override {
         let output_size = context.output_size();
 
-        let tmp = expression->evaluate_without_output(context);
+        let tmp = evaluate_expression_without_output(context, *expression, offset);
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
                 .set<"offset"_tag>(offset)
@@ -181,7 +207,6 @@ struct template_if_node final: template_node {
             return false;
         }
 
-        expression_offsets.push_back(offset);
         children_groups.emplace_back();
         return true;
     }
@@ -194,9 +219,11 @@ struct template_if_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        for (let &expression: expressions) {
-            expression->post_process(context);
+        ttauri_assert(ssize(expressions) == ssize(expression_offsets));
+        for (ssize_t i = 0; i != ssize(expressions); ++i) {
+            post_process_expression(context, *expressions[i], expression_offsets[i]);
         }
+
         for (let &children: children_groups) {
             if (ssize(children) > 0) {
                 children.back()->left_align();
@@ -209,8 +236,9 @@ struct template_if_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
+        ttauri_axiom(ssize(expressions) == ssize(expression_offsets));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
-            if (expressions[i]->evaluate_without_output(context)) {
+            if (evaluate_expression_without_output(context, *expressions[i], expression_offsets[i])) {
                 return evaluate_children(context, children_groups[i]);
             }
         }
@@ -261,7 +289,7 @@ struct template_while_node final: template_node {
             children.back()->left_align();
         }
 
-        expression->post_process(context);
+        post_process_expression(context, *expression, offset);
         for (let &child: children) {
             child->post_process(context);
         }
@@ -271,7 +299,7 @@ struct template_while_node final: template_node {
         let output_size = context.output_size();
 
         ssize_t loop_count = 0;
-        while (expression->evaluate_without_output(context)) {
+        while (evaluate_expression_without_output(context, *expression, offset)) {
             context.loop_push(loop_count++);
             auto tmp = evaluate_children(context, children);
             context.loop_pop();
@@ -331,7 +359,8 @@ struct template_do_node final: template_node {
             children.back()->left_align();
         }
 
-        expression->post_process(context);
+        post_process_expression(context, *expression, offset);
+
         for (let &child: children) {
             child->post_process(context);
         }
@@ -355,7 +384,7 @@ struct template_do_node final: template_node {
                 return tmp;
             }
 
-        } while (expression->evaluate_without_output(context));
+        } while (evaluate_expression_without_output(context, *expression, offset));
         return {};
     }
 
@@ -407,8 +436,9 @@ struct template_for_node final: template_node {
             else_children.back()->left_align();
         }
 
-        name_expression->post_process(context);
-        list_expression->post_process(context);
+        post_process_expression(context, *name_expression, offset);
+        post_process_expression(context, *list_expression, offset);
+
         for (let &child: children) {
             child->post_process(context);
         }
@@ -418,9 +448,7 @@ struct template_for_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        context.disable_output();
-        auto list_data = list_expression->evaluate(context);
-        context.enable_output();
+        auto list_data = evaluate_expression_without_output(context, *list_expression, offset);
 
         if (!list_data.is_vector()) {
             TTAURI_THROW(invalid_operation_error("Expecting expression returns a vector, got {}", list_data)
@@ -434,7 +462,13 @@ struct template_for_node final: template_node {
             ssize_t loop_count = 0;
             for (auto i = list_data.vector_begin(); i != list_data.vector_end(); ++i) {
                 let &item = *i;
-                name_expression->assign_without_output(context, item);
+                try {
+                    name_expression->assign_without_output(context, item);
+                } catch (invalid_operation_error &e) {
+                    ttauri_assert(e.has<"offset"_tag>());
+                    e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+                    throw;
+                }
 
                 context.loop_push(loop_count++, loop_size);
                 auto tmp = evaluate_children(context, children);
@@ -615,7 +649,14 @@ struct template_block_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let tmp = function(context, datum::vector{});
+        datum tmp;
+        try {
+            tmp = function(context, datum::vector{});
+        } catch (invalid_operation_error &e) {
+            ttauri_assert(e.has<"offset"_tag>());
+            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            throw;
+        }
 
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
@@ -706,11 +747,11 @@ struct template_return_node final: template_node {
         template_node(offset), expression(std::move(expression)) {}
 
     void post_process(expression_post_process_context &context) override {
-        expression->post_process(context);
+        post_process_expression(context, *expression, offset);
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        return expression->evaluate_without_output(context);
+        return evaluate_expression_without_output(context, *expression, offset);
     }
 
     std::string string() const noexcept override {

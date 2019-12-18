@@ -214,6 +214,8 @@ struct expression_evaluation_context {
 };
 
 struct expression_post_process_context {
+    using filter_type = std::function<std::string(std::string_view)>;
+    using filter_table = std::unordered_map<std::string,filter_type>;
     using function_type = std::function<datum(expression_evaluation_context&, datum::vector const &)>;
     using function_table = std::unordered_map<std::string,function_type>;
     using function_stack = std::vector<function_type>;
@@ -224,6 +226,7 @@ struct expression_post_process_context {
     function_stack super_stack;
     static function_table global_functions;
     static method_table global_methods;
+    static filter_table global_filters;
 
     [[nodiscard]] function_type get_function(std::string const &name) const noexcept {
         if (name == "super") {
@@ -260,6 +263,15 @@ struct expression_post_process_context {
 
     void pop_super(void) noexcept {
         super_stack.pop_back();
+    }
+
+    [[nodiscard]] filter_type get_filter(std::string const &name) const noexcept {
+        let i = global_filters.find(name);
+        if (i != global_filters.end()) {
+            return i->second;
+        }
+
+        return {};
     }
 
     [[nodiscard]] method_type get_method(std::string const &name) const noexcept {

@@ -88,12 +88,17 @@ public:
     bool has() const noexcept {
         return has(InfoTag);
     }
+
+    friend std::string to_string(error const &rhs) {
+        return rhs.string();
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, error const &rhs) {
+        return os << to_string(rhs);
+    }
+
 };
 
-inline std::ostream &operator<<(std::ostream &os, error const &x)
-{
-    return os << x.string();
-}
 
 template<string_tag Tag, string_tag... InfoTags>
 class sub_error final : public error {
@@ -166,6 +171,12 @@ public:
     datum const &get() const noexcept {
         static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
         return error_info.template get<InfoTag>();
+    }
+
+    template<string_tag InfoTag>
+    bool has() const noexcept {
+        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        return !((error_info.template get<InfoTag>()).is_undefined());
     }
 
     sub_error &log(char const *source_file, int source_line) {
