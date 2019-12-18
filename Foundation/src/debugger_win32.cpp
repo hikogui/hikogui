@@ -8,11 +8,9 @@
 
 namespace TTauri {
 
-#if !defined(NDEBUG)
 bool debugger_is_present() noexcept {
     return IsDebuggerPresent();
 }
-#endif
 
 void _debugger_log(char const *message) noexcept
 {
@@ -30,11 +28,9 @@ void _debugger_dialogue(char const *caption, char const *message)
     MessageBoxW(nullptr, messageWString.data(), captionWString.data(), MB_APPLMODAL | MB_OK | MB_ICONERROR);
 }
 
-#if !defined(NDEBUG)
 void _debugger_break() 
 {
     DebugBreak();
 }
-#endif
 
 }

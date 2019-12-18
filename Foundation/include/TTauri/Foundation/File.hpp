@@ -22,9 +22,11 @@ enum class AccessMode {
     Sequential = 0x2000, //!< Hint that the data should be prefetched.
     NoReuse = 0x4000, //!< Hint that the data should not be cached.
     WriteThrough = 0x8000, //!< Hint that writes should be send directly to disk.
+    CreateDirectories = 0x10000, //!< Create directory hierarchy, if the file could not be created.
     
     OpenForRead = 0x101, //!< Default open a file for reading.
     OpenForReadWrite = 0x103, //!< Default open a file for reading and writing.
+    TruncateOrCreateForWrite = 0x702
 };
 
 [[nodiscard]] inline AccessMode operator|(AccessMode lhs, AccessMode rhs) noexcept
@@ -76,10 +78,34 @@ struct File {
      */
     void close();
 
+    /*! Write data to a file.
+    */
+    ssize_t write(std::byte const *data, ssize_t size);
+
+    /*! Write data to a file.
+    */
+    ssize_t write(void const *data, ssize_t size) {
+        return write(reinterpret_cast<std::byte const *>(data), size);
+    }
+
+    /*! Write data to a file.
+    */
+    ssize_t write(char const *data, ssize_t size) {
+        return write(reinterpret_cast<std::byte const *>(data), size);
+    }
+
+    ssize_t write(std::string_view text) {
+        return write(text.data(), ssize(text));
+    }
+
     /*! Get the size of a file on the file system.
      * \return The size of the file in bytes.
      */
     [[nodiscard]] static size_t fileSize(URL const &url);
+
+    static void createDirectory(URL const &url, bool hierarchy=false);
+
+    static void createDirectoryHierarchy(URL const &url);
 };
 
 

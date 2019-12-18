@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/text_template.hpp"
+#include "TTauri/Foundation/template.hpp"
 
 namespace TTauri {
 
@@ -736,6 +736,7 @@ std::unique_ptr<expression_node> template_parse_context::parse_expression(std::s
     } catch (error &e) {
         ttauri_assert(e.has<"offset"_tag>());
         e.set<"offset"_tag>(offset() + e.get<"offset"_tag>());
+        throw;
     }
 
     text_it = expression_last;
@@ -1001,7 +1002,7 @@ void parse_template_escape(template_parse_context &context)
     );
 }
 
-std::unique_ptr<template_node> parse_template(template_parse_context &context)
+static std::unique_ptr<template_node> parse_template_1(template_parse_context &context)
 {
     context.start_of_text_segment();
 
@@ -1042,6 +1043,21 @@ std::unique_ptr<template_node> parse_template(template_parse_context &context)
 
     top->post_process(context.post_process_context);
     return top;
+}
+
+std::unique_ptr<template_node> parse_template(template_parse_context &context)
+{
+    try {
+        return parse_template_1(context);
+    } catch (parse_error &e) {
+        e.set<"url"_tag>(context.url);
+        ssize_t offset = static_cast<ssize_t>(e.get<"offset"_tag>());
+
+        let [line, column] = count_line_and_columns(context.first, context.first + offset);
+        e.set<"line"_tag>(line);
+        e.set<"column"_tag>(column);
+        throw;
+    }
 }
 
 }

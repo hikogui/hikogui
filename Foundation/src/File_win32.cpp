@@ -71,12 +71,27 @@ File::File(URL const &location, AccessMode accessMode) :
     }
 
     let fileName = location.nativeWPath();
-    if ((fileHandle = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) == INVALID_HANDLE_VALUE) {
-        TTAURI_THROW(io_error("Could not open file")
-            .set<"error_message"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location)
-        );
+    if ((fileHandle = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) != INVALID_HANDLE_VALUE) {
+        return;
     }
+
+    let error = GetLastError();
+    if (accessMode >= AccessMode::CreateDirectories && error == ERROR_PATH_NOT_FOUND && (
+        creationDisposition == CREATE_ALWAYS || creationDisposition == OPEN_ALWAYS || creationDisposition == CREATE_NEW
+    )) {
+        // Retry opening the file, by first creating the directory hierarchy.
+        let directory = location.urlByRemovingFilename();
+        File::createDirectoryHierarchy(directory);
+
+        if ((fileHandle = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) != INVALID_HANDLE_VALUE) {
+            return;
+        }
+    }
+
+    TTAURI_THROW(io_error("Could not open file")
+        .set<"error_message"_tag>(getLastErrorMessage())
+        .set<"url"_tag>(location)
+    );
 }
 
 File::~File() noexcept
@@ -97,6 +112,36 @@ void File::close()
     }
 }
 
+/*! Write data to a file.
+*/
+ssize_t File::write(std::byte const *data, ssize_t size)
+{
+    ttauri_assume(size >= 0);
+    ttauri_assume(fileHandle != INVALID_HANDLE_VALUE);
+
+    ssize_t total_written_size = 0;
+    while (size) {
+        let write_size = static_cast<DWORD>(std::min(size, static_cast<ssize_t>(std::numeric_limits<DWORD>::max())));
+        DWORD written_size = 0;
+
+        if (!WriteFile(fileHandle, data, write_size, &written_size, nullptr)) {
+            TTAURI_THROW(io_error("Could not write to file")
+                .set<"error_message"_tag>(getLastErrorMessage())
+                .set<"url"_tag>(location)
+            );
+        } else if (written_size == 0) {
+            break;
+        }
+
+        data += written_size;
+        size -= written_size;
+        total_written_size += written_size;
+    }
+
+    return total_written_size;
+}
+
+
 size_t File::fileSize(URL const &url)
 {
     let name = url.nativeWPath();
@@ -110,6 +155,41 @@ size_t File::fileSize(URL const &url)
     size.HighPart = attributes.nFileSizeHigh;
     size.LowPart = attributes.nFileSizeLow;
     return numeric_cast<int64_t>(size.QuadPart);
+}
+
+void File::createDirectory(URL const &url, bool hierarchy)
+{
+    if (url.isRootDirectory()) {
+        TTAURI_THROW(io_error("Cannot create a root directory."));
+    }
+
+    let directory_name = url.nativeWPath();
+    if (CreateDirectoryW(directory_name.data(), nullptr)) {
+        return;
+    }
+
+    if (hierarchy && GetLastError() == ERROR_PATH_NOT_FOUND) {
+        try {
+            File::createDirectory(url.urlByRemovingFilename(), true);
+        } catch (io_error &e) {
+            e.set<"url"_tag>(url);
+            throw;
+        }
+
+        if (CreateDirectoryW(directory_name.data(), nullptr)) {
+            return;
+        }
+    }
+
+    TTAURI_THROW(io_error("Could not create directory")
+        .set<"error_message"_tag>(getLastErrorMessage())
+        .set<"url"_tag>(url)
+    );
+}
+
+void File::createDirectoryHierarchy(URL const &url)
+{
+    return createDirectory(url, true);
 }
 
 }

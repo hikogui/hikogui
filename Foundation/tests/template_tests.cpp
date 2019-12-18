@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/text_template.hpp"
+#include "TTauri/Foundation/template.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

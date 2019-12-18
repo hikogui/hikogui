@@ -11,6 +11,7 @@
 #include "TTauri/Foundation/type_traits.hpp"
 #include "TTauri/Foundation/throw_exception.hpp"
 #include "TTauri/Foundation/math.hpp"
+#include <date/date.h>
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -57,6 +58,7 @@ enum class datum_type_t {
     Map,
     Vector,
     wsRGBA,
+    YearMonthDay,
 };
 
 inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
@@ -75,6 +77,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
     case datum_type_t::Map: lhs << "Map"; break;
     case datum_type_t::Vector: lhs << "Vector"; break;
     case datum_type_t::wsRGBA: lhs << "wsRGBA"; break;
+    case datum_type_t::YearMonthDay: lhs << "YearMonthDay"; break;
     default: no_default;
     }
     return lhs;
@@ -93,6 +96,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
  *  - Vector of datum
  *  - Unordered map of datum:datum.
  *  - wsRGBA color.
+ *  - YearMonthDay.
  *
  * Due to the recursive nature of the datum type (through vector and map)
  * you can serialize your own types by adding conversion constructor and
@@ -159,8 +163,8 @@ private:
     /// Highest integer that can be encoded into datum's storage.
     static constexpr int64_t maximum_int = 0x0003'ffff'ffff'ffffLL;
 
-    static constexpr int64_t minimum_mantissa = 0xffff'ff00'0000'0000LL;
-    static constexpr int64_t maximum_mantissa = 0x0000'00ff'ffff'ffffLL;
+    static constexpr int64_t minimum_mantissa = 0xffff'ff80'0000'0000LL;
+    static constexpr int64_t maximum_mantissa = 0x0000'007f'ffff'ffffLL;
 
     static constexpr uint16_t exponent_mask = 0b0111'1111'1111'0000;
     static constexpr uint64_t pointer_mask = 0x0000'ffff'ffff'ffff;
@@ -174,11 +178,11 @@ private:
 
     static constexpr uint16_t phy_small_id         = make_id(0b00001);
     static constexpr uint16_t phy_decimal_id       = make_id(0b00010);
-    static constexpr uint16_t phy_reserved_id0     = make_id(0b00011);
-    static constexpr uint16_t phy_reserved_id1     = make_id(0b00100);
-    static constexpr uint16_t phy_reserved_id2     = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id3     = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id4     = make_id(0b00111);
+    static constexpr uint16_t phy_ymd_id           = make_id(0b00011);
+    static constexpr uint16_t phy_reserved_id0     = make_id(0b00100);
+    static constexpr uint16_t phy_reserved_id1     = make_id(0b00101);
+    static constexpr uint16_t phy_reserved_id2     = make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id3     = make_id(0b00111);
     static constexpr uint16_t phy_integer_id0      = make_id(0b01000);
     static constexpr uint16_t phy_integer_id1      = make_id(0b01001);
     static constexpr uint16_t phy_integer_id2      = make_id(0b01010);
@@ -215,6 +219,7 @@ private:
     static constexpr uint64_t character_mask = id_to_mask(phy_string_id1);
     static constexpr uint64_t integer_mask = id_to_mask(phy_integer_id0);
     static constexpr uint64_t decimal_mask = id_to_mask(phy_decimal_id);
+    static constexpr uint64_t ymd_mask = id_to_mask(phy_ymd_id);
     static constexpr uint64_t string_ptr_mask = id_to_mask(phy_string_ptr_id);
     static constexpr uint64_t url_ptr_mask = id_to_mask(phy_url_ptr_id);
     static constexpr uint64_t integer_ptr_mask = id_to_mask(phy_integer_ptr_id);
@@ -258,6 +263,10 @@ private:
 
     force_inline bool is_phy_decimal() const noexcept {
         return type_id() == phy_decimal_id;
+    }
+
+    force_inline bool is_phy_ymd() const noexcept {
+        return type_id() == phy_ymd_id;
     }
 
     force_inline bool is_phy_small() const noexcept {
@@ -459,12 +468,21 @@ public:
         } else {
             int e = value.exponent();
 
-            value =
+            u64 =
                 decimal_mask |
                 static_cast<uint8_t>(e) |
-                ((static_cast<uint64_t>(m) << 24) >> 24);
+                ((static_cast<uint64_t>(m) << 24) >> 16);
         }
     }
+
+    datum_impl(date::year_month_day const &ymd) noexcept :
+        u64(
+            ymd_mask | ((
+                (static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
+                (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
+                static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))
+            ) & 0x0000ffff'ffffffff)
+        ) {}
 
     datum_impl(unsigned long long value) noexcept : u64(integer_mask | value) {
         if (ttauri_unlikely(value > maximum_int)) {
@@ -591,22 +609,35 @@ public:
             delete_pointer();
         }
 
-        long long m = value.mantissa();
+        long long m = rhs.mantissa();
         if (ttauri_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
             if constexpr (HasLargeObjects) {
-                auto* const p = new decimal(value);
+                auto* const p = new decimal(rhs);
                 u64 = make_pointer(decimal_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing decimal {} to datum", value);
+                TTAURI_THROW_OVERFLOW_ERROR("Constructing decimal {} to datum", rhs);
             }
         } else {
-            int e = value.exponent();
+            int e = rhs.exponent();
 
-            value =
+            u64 =
                 decimal_mask |
                 static_cast<uint8_t>(e) |
-                ((static_cast<uint64_t>(m) << 24) >> 24);
+                ((static_cast<uint64_t>(m) << 24) >> 16);
         }
+        return *this;
+    }
+
+    datum_impl &operator=(date::year_month_day const & ymd) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+
+        u64 = ymd_mask | ((
+            (static_cast<uint64_t>(static_cast<int>(ymd.year())) << 9) |
+            (static_cast<uint64_t>(static_cast<unsigned>(ymd.month())) << 5) |
+            static_cast<uint64_t>(static_cast<unsigned>(ymd.day()))
+        ) & 0x0000ffff'ffffffff);
         return *this;
     }
 
@@ -746,6 +777,8 @@ public:
     explicit operator double() const {
         if (is_phy_float()) {
             return f64;
+        } else if (is_decimal()) {
+            return static_cast<double>(static_cast<decimal>(*this));
         } else if (is_phy_integer()) {
             return static_cast<double>(get_signed_integer());
         } else if (is_phy_integer_ptr()) {
@@ -763,7 +796,7 @@ public:
         if (is_phy_decimal()) {
             uint64_t v = get_unsigned_integer();
             int e = static_cast<int8_t>(v);
-            long long m = static_cast<int64_t>(v << 24) >> 24;
+            long long m = static_cast<int64_t>(v << 16) >> 24;
             return decimal{e, m};
         } else if (is_phy_decimal_ptr()) {
             return *get_pointer<decimal>();
@@ -773,6 +806,26 @@ public:
             return decimal{static_cast<double>(*this)};
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a decimal", this->repr(), this->type_name());
+        }
+    }
+
+    explicit operator date::year_month_day() const {
+        if (is_phy_ymd()) {
+            let u = get_unsigned_integer();
+            let i = get_signed_integer();
+            let day = static_cast<unsigned>(u & 0x1f);
+            let month = static_cast<unsigned>((u >> 5) & 0xf);
+            let year = static_cast<signed>(i >> 9);
+
+            if (day == 0) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
+            }
+            if (month == 0) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
+            }
+            return date::year_month_day{date::year{year}, date::month{month}, date::day{day}};
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
         }
     }
 
@@ -873,6 +926,7 @@ public:
         case phy_integer_id6:
         case phy_integer_id7: return static_cast<int64_t>(*this) != 0;
         case phy_decimal_id: return static_cast<decimal>(*this) != 0;
+        case phy_ymd_id: return true;
         case phy_integer_ptr_id: return *get_pointer<int64_t>() != 0;
         case phy_string_id0:
         case phy_string_id1:
@@ -928,6 +982,7 @@ public:
         case phy_integer_id6:
         case phy_integer_id7: return fmt::format("{}", static_cast<int64_t>(*this));
         case phy_decimal_id: return fmt::format("{}", static_cast<decimal>(*this));
+        case phy_ymd_id: return fmt::format("{}", static_cast<date::year_month_day>(*this));
         case phy_integer_ptr_id:
             if constexpr (HasLargeObjects) {
                 return fmt::format("{}", static_cast<int64_t>(*this));
@@ -1292,6 +1347,7 @@ public:
         case phy_integer_ptr_id: return static_cast<std::string>(*this);
         case phy_decimal_id:
         case phy_decimal_ptr_id: return static_cast<std::string>(*this);
+        case phy_ymd_id: return static_cast<std::string>(*this);
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -1365,6 +1421,7 @@ public:
 
     force_inline bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
     force_inline bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
+    force_inline bool is_ymd() const noexcept { return is_phy_ymd(); }
     force_inline bool is_float() const noexcept { return is_phy_float(); }
     force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
 
@@ -1423,6 +1480,7 @@ public:
         case phy_integer_ptr_id: return datum_type_t::Integer;
         case phy_decimal_id:
         case phy_decimal_ptr_id: return datum_type_t::Decimal;
+        case phy_ymd_id: return datum_type_t::YearMonthDay;
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -1468,6 +1526,7 @@ public:
         case phy_integer_ptr_id: return "Integer";
         case phy_decimal_id:
         case phy_decimal_ptr_id: return "Decimal";
+        case phy_ymd_id: return "YearMonthDay";
         case phy_string_id0:
         case phy_string_id1:
         case phy_string_id2:
@@ -1661,7 +1720,7 @@ public:
         if (rhs.is_integer()) {
             return datum{-static_cast<int64_t>(rhs)};
         } else if (rhs.is_decimal()) {
-            return datum{ -static_cast<decimal>(rhs) };
+             return datum{-static_cast<decimal>(rhs)};
         } else if (rhs.is_float()) {
             return datum{-static_cast<double>(rhs)};
         } else {
@@ -1706,6 +1765,8 @@ public:
                 (rhs.is_decimal() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs)) ||
                 (rhs.is_integer() && static_cast<decimal>(lhs) == static_cast<decimal>(rhs))
             );
+        case datum_impl::phy_ymd_id:
+            return rhs.is_ymd() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
         case datum_impl::phy_string_id0:
         case datum_impl::phy_string_id1:
         case datum_impl::phy_string_id2:
@@ -1769,6 +1830,12 @@ public:
                 return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
             } else if (rhs.is_integer()) {
                 return static_cast<decimal>(lhs) < static_cast<decimal>(rhs);
+            } else {
+                return lhs.type_order() < rhs.type_order();
+            }
+        case datum_impl::phy_ymd_id:
+            if (rhs.is_ymd()) {
+                return static_cast<date::year_month_day>(lhs) == static_cast<date::year_month_day>(rhs);
             } else {
                 return lhs.type_order() < rhs.type_order();
             }

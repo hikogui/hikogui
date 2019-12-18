@@ -47,6 +47,13 @@ TEST(Datum, IntOperations) {
 
 }
 
+TEST(Datum, DecimalOperations) {
+
+    let v = decimal(-25);
+    ASSERT_EQ(static_cast<decimal>(datum{v}), v);
+}
+
+
 TEST(Datum, NegativeIntOperations) {
     let v = datum{-1};
 

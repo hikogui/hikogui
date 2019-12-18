@@ -123,17 +123,17 @@ struct expression_evaluation_context {
             TTAURI_THROW(key_error("Invalid loop variable '{}'", name));
         }
 
-        std::string_view short_name = name;
+        std::string_view short_name = name.substr(1);
         auto i = loop_stack.crbegin();
 
-        do {
+        while (short_name[0] == '$') {
             if (i == loop_stack.crend() || i->count.is_undefined()) {
                 TTAURI_THROW(key_error("Accessing loop variable {} while not in loop", name));
             }
 
             short_name = short_name.substr(1);
             i++;
-        } while (short_name[0] == '$');
+        }
 
         if (short_name == "i" || short_name == "count") {
             return i->count;
@@ -194,12 +194,14 @@ struct expression_evaluation_context {
         TTAURI_THROW(key_error("Could not find {} in local or global scope.", name));
     }
 
-    void set_local(std::string const &name, datum& value) {
-        locals()[name] = value;
+    template<typename T>
+    void set_local(std::string const &name, T &&value) {
+        locals()[name] = std::forward<T>(value);
     }
 
-    void set_global(std::string const& name, datum& value) {
-        globals[name] = value;
+    template<typename T>
+    void set_global(std::string const& name, T &&value) {
+        globals[name] = std::forward<T>(value);
     }
 
     datum &set(std::string const &name, datum const &value) {

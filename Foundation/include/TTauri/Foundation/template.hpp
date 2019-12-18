@@ -193,6 +193,10 @@ struct template_node {
         }
     }
 
+    [[nodiscard]] std::string evaluate_output(datum const &globals) {
+        expression_evaluation_context context;
+    }
+
     [[nodiscard]] virtual std::string string() const noexcept {
         return "<template_node>";
     }
@@ -229,7 +233,6 @@ std::unique_ptr<template_node> parse_template(template_parse_context &context);
 inline std::unique_ptr<template_node> parse_template(URL url, std::string_view::const_iterator first, std::string_view::const_iterator last) {
     auto context = template_parse_context(std::move(url), first, last);
     auto e = parse_template(context);
-    //e->post_process(context);
     return e;
 }
 

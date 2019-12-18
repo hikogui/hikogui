@@ -89,6 +89,7 @@ public:
 
     bool isAbsolute() const noexcept;
     bool isRelative() const noexcept;
+    bool isRootDirectory() const noexcept;
 
     URL urlByAppendingPath(URL const &other) const noexcept;
 

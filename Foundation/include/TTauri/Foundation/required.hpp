@@ -13,6 +13,19 @@ namespace TTauri {
 
 using namespace std::literals;
 
+/*! Invariant should be the default for variables.
+* C++ does have an invariant but it requires you to enter the 'const' keyword which
+* is easy to forget. Using a single keyword 'let' for an invariant makes it easier to notice
+* when you have defined a variant.
+*/
+#ifndef let
+#define let auto const
+#endif
+
+/*! Signed size/index into an array.
+*/
+using ssize_t = std::ptrdiff_t;
+
 template<typename T>
 force_inline std::remove_reference_t<T> rvalue_cast(T value)
 {

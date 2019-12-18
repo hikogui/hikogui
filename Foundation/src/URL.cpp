@@ -124,6 +124,12 @@ bool URL::isRelative() const noexcept
     return !isAbsolute();
 }
 
+bool URL::isRootDirectory() const noexcept
+{
+    return parse_url(value).segments.size() == 0;
+}
+
+
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
     let this_parts = parse_url(value);
