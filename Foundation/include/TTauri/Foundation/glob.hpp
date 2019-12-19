@@ -98,8 +98,10 @@ inline glob_token_list_t parseGlob(std::string_view glob)
     enum class state_t {
         Idle,
         FoundText,
+        FoundSlash,
         FoundEscape,
-        FoundStar,
+        FoundSlashStar,
+        FoundSlashDoubleStar,
         FoundBracket,
         FoundBrace,
     };
@@ -119,9 +121,14 @@ inline glob_token_list_t parseGlob(std::string_view glob)
         switch (state) {
         case state_t::Idle:
             switch (c) {
-            case '/': r.emplace_back(glob_token_type_t::Separator); break;
-            case '?': r.emplace_back(glob_token_type_t::AnyCharacter); break;
-            case '*': state = state_t::FoundStar; break;
+            case '/':
+                r.emplace_back(glob_token_type_t::Separator);
+                state = state_t::FoundSlash;
+                break;
+            case '?':
+                r.emplace_back(glob_token_type_t::AnyCharacter); break;
+            case '*':
+                r.emplace_back(glob_token_type_t::AnyString); break;
             case '[':
                 isInverse = false;
                 isFirstCharacter = true;
@@ -159,12 +166,34 @@ inline glob_token_list_t parseGlob(std::string_view glob)
             }
             break;
 
-        case state_t::FoundStar:
-            state = state_t::Idle;
+        case state_t::FoundSlash:
             if (c == '*') {
-                r.emplace_back(glob_token_type_t::AnyDirectory);
+                state = state_t::FoundSlashStar;
+            } else {
+                state = state_t::Idle;
+                continue;
+            }
+            break;
+
+        case state_t::FoundSlashStar:
+            if (c == '*') {
+                state = state_t::FoundSlashDoubleStar;
             } else {
                 r.emplace_back(glob_token_type_t::AnyString);
+                state = state_t::Idle;
+                continue;
+            }
+            break;
+
+        case state_t::FoundSlashDoubleStar:
+            if (c == '/') {
+                r.emplace_back(glob_token_type_t::AnyDirectory);
+                state = state_t::Idle;
+
+            } else {
+                // Fallback to AnyString, as if there was only a single '*'.
+                r.emplace_back(glob_token_type_t::AnyString);
+                state = state_t::Idle;
                 continue; // Don't increment the iterator.
             }
             break;
@@ -305,6 +334,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
 
     // result may be assigned Partial by MATCH_GLOB_RECURSE.
     auto result = glob_match_result_t::No;
+    bool found_slash = false;
 
     switch (index->type) {
     case glob_token_type_t::String:
@@ -360,9 +390,13 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         return result;
 
     case glob_token_type_t::AnyDirectory:
-        // Loop through each character in the string, including the end.
+        // Recurse after each slash. The first slash is implied.
+        found_slash = true;
         for (size_t i = 0; i <= str.size(); i++) {
-            MATCH_GLOB_RECURSE(result, index + 1, end, str.substr(i));
+            if (found_slash || i == str.size()) {
+                MATCH_GLOB_RECURSE(result, index + 1, end, str.substr(i));
+            }
+            found_slash = i < str.size() && str[i] == '/';
         }
         return result;
 

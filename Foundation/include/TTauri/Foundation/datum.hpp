@@ -26,6 +26,7 @@
 #include <string_view>
 #include <cmath>
 
+
 namespace TTauri {
 template<bool HasLargeObjects>
 class datum_impl;

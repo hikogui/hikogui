@@ -106,6 +106,6 @@ template<typename... Args>
     std::abort();
 }
 
-#define debugger_abort(...) _debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
+#define debugger_abort(...) ::TTauri::_debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
 
 }
