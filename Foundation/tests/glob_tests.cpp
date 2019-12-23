@@ -106,8 +106,8 @@ TEST(Glob, ParseSlashDoubleStarPattern) {
     auto tokens = parseGlob("w/**/rld");
     ASSERT_EQ(tokens.size(), 4);
     ASSERT_TOKEN_EQ3(tokens[0], String, "w");
-    ASSERT_TOKEN_EQ2(tokens[1], Separator);
-    ASSERT_TOKEN_EQ2(tokens[2], AnyDirectory);
+    ASSERT_TOKEN_EQ2(tokens[1], AnyDirectory);
+    ASSERT_TOKEN_EQ2(tokens[2], Separator);
     ASSERT_TOKEN_EQ3(tokens[3], String, "rld");
 }
 
@@ -115,15 +115,15 @@ TEST(Glob, ParseSlashDoubleStarPatternAtEnd) {
     auto tokens = parseGlob("w/**/");
     ASSERT_EQ(tokens.size(), 3);
     ASSERT_TOKEN_EQ3(tokens[0], String, "w");
-    ASSERT_TOKEN_EQ2(tokens[1], Separator);
-    ASSERT_TOKEN_EQ2(tokens[2], AnyDirectory);
+    ASSERT_TOKEN_EQ2(tokens[1], AnyDirectory);
+    ASSERT_TOKEN_EQ2(tokens[2], Separator);
 }
 
 TEST(Glob, ParseSlashDoubleStarPatternAtBegin) {
     auto tokens = parseGlob("/**/world");
     ASSERT_EQ(tokens.size(), 3);
-    ASSERT_TOKEN_EQ2(tokens[0], Separator);
-    ASSERT_TOKEN_EQ2(tokens[1], AnyDirectory);
+    ASSERT_TOKEN_EQ2(tokens[0], AnyDirectory);
+    ASSERT_TOKEN_EQ2(tokens[1], Separator);
     ASSERT_TOKEN_EQ3(tokens[2], String, "world");
 }
 
@@ -364,8 +364,9 @@ TEST(Glob, MatchDoubleStar) {
 
     ASSERT_EQ(matchGlob("foo/**/baz", "foo/bar/baz"), glob_match_result_t::Match);
     ASSERT_EQ(matchGlob("foo/**/baz", "foo/bar1/bar2/baz"), glob_match_result_t::Match);
-    //ASSERT_EQ(matchGlob("foo/**/baz", "foo/baz"), glob_match_result_t::Match);
+    ASSERT_EQ(matchGlob("foo/**/baz", "foo/baz"), glob_match_result_t::Match);
     ASSERT_EQ(matchGlob("foo/**/baz", "foo/bar1"), glob_match_result_t::Partial);
+    ASSERT_EQ(matchGlob("foo/**/baz", "foo"), glob_match_result_t::Partial);
 }
 
 TEST(Glob, MatchQuestion) {
