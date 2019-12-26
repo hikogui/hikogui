@@ -48,7 +48,11 @@ Application_base::~Application_base()
 
 bool Application_base::startingLoop()
 {
-    return delegate->startingLoop();
+    try {
+        return delegate->startingLoop();
+    } catch (error &e) {
+        LOG_FATAL("Exception during startingLoop {}", to_string(e));
+    }
 }
 
 #if defined(BUILD_TTAURI_AUDIO)
