@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <type_traits>
+#include <exception>
+#include <cstddef>
 
 namespace TTauri {
 
@@ -129,6 +130,7 @@ constexpr auto processor = Processor::ARM;
 #if COMPILER == CC_MSVC
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
+#define ttauri_unreachable() std::terminate()
 #define ttauri_assume(condition) __assume(condition)
 #define force_inline __forceinline
 #define no_inline __declspec(noinline)
@@ -142,7 +144,8 @@ constexpr auto processor = Processor::ARM;
 #elif COMPILER == CC_CLANG
 #define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
 #define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
-#define ttauri_assume(condition) do { if (!(condition)) __builtin_unreachable(); } while (false)
+#define ttauri_unreachable() __builtin_unreachable()
+#define ttauri_assume(condition) do { if (!(condition)) ttauri_unreachable(); } while (false)
 #define force_inline inline __attribute__((always_inline))
 #define no_inline inline __attribute__((noinline))
 #define clang_suppress(a) _Pragma(STRINGIFY(clang diagnostic ignored a))
@@ -155,7 +158,8 @@ constexpr auto processor = Processor::ARM;
 #elif COMPILER == CC_GCC
 #define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
 #define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
-#define ttauri_assume(condition) do { if (!(condition)) __builtin_unreachable(); } while (false)
+#define ttauri_unreachable() __builtin_unreachable()
+#define ttauri_assume(condition) do { if (!(condition)) ttauri_unreachable(); } while (false)
 #define force_inline inline __attribute__((always_inline))
 #define no_inline inline __attribute__((noinline))
 #define clang_suppress(a)
@@ -168,6 +172,7 @@ constexpr auto processor = Processor::ARM;
 #else
 #define ttauri_likely(condition) condition
 #define ttauri_unlikely(condition) condition
+#define ttauri_unreachable() std::terminate()
 #define ttauri_assume(condition) static_assert(sizeof(condition) == 1)
 #define force_inline inline
 #define no_inline

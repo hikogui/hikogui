@@ -165,7 +165,7 @@ public:
 
     [[nodiscard]] friend bool operator<(decimal lhs, decimal rhs) noexcept {
         let [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
-        return lhs_m == rhs_m;
+        return lhs_m < rhs_m;
     }
 
     [[nodiscard]] friend bool operator!=(decimal lhs, decimal rhs) noexcept { return !(lhs == rhs); }

@@ -159,8 +159,6 @@ struct template_expression_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let output_size = context.output_size();
-
         let tmp = evaluate_expression_without_output(context, *expression, offset);
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
@@ -529,8 +527,16 @@ struct template_function_node final: template_node {
         argument_names = std::move(name_and_arguments);
 
         super_function = context.set_function(name,
-            [&](expression_evaluation_context &context, datum::vector const &arguments) {
-                return this->evaluate_call(context, arguments);
+            [this,offset](expression_evaluation_context &context, datum::vector const &arguments) {
+                try {
+                    return this->evaluate_call(context, arguments);
+                } catch (error &e) {
+
+                    TTAURI_THROW(invalid_operation_error("Failed during handling of function call")
+                        .set<"previous_msg"_tag>(to_string(e))
+                        .set<"offset"_tag>(offset)
+                    );
+                }
             }
         );
     }
@@ -680,8 +686,6 @@ struct template_block_node final: template_node {
 
     datum evaluate_call(expression_evaluation_context &context, datum::vector const &arguments) {
         context.push();
-
-        let output_size = context.output_size();
         auto tmp = evaluate_children(context, children);
         context.pop();
 

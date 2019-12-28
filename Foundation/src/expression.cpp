@@ -450,12 +450,7 @@ struct expression_name_node final : expression_node {
     }
 
     datum call(expression_evaluation_context& context, datum::vector const &arguments) const override {
-        try {
-            return function(context, arguments);
-        } catch (error &e) {
-            e.set<"offset"_tag>(offset);
-            throw;
-        }
+        return function(context, arguments);
     }
 
     std::string get_name() const noexcept override {
@@ -495,12 +490,7 @@ struct expression_call_node final : expression_node {
             return x->evaluate(context);
         });
 
-        try {
-            return lhs->call(context, args_);
-        } catch (error &e) {
-            e.set<"offset"_tag>(offset);
-            throw;
-        }
+        return lhs->call(context, args_);
     }
 
     std::vector<std::string> get_name_and_argument_names() const override {
@@ -1077,6 +1067,11 @@ struct expression_member_node final : expression_binary_operator_node {
 
     datum evaluate(expression_evaluation_context& context) const override {
         let lhs_ = lhs->evaluate(context);
+        if (!lhs_.contains(rhs_name->name)) {
+            TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name)
+                .set<"offset"_tag>(offset)
+            );
+        }
         try {
             return lhs_[rhs_name->name];
         } catch (error &e) {
@@ -1154,6 +1149,13 @@ struct expression_index_node final : expression_binary_operator_node {
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
         auto rhs_ = rhs->evaluate(context);
+
+        if (!lhs_.contains(rhs_)) {
+            TTAURI_THROW(invalid_operation_error("Unknown key '{}'", rhs_)
+                .set<"offset"_tag>(offset)
+            );
+        }
+
         try {
             return lhs_[rhs_];
         } catch (error &e) {
@@ -1403,7 +1405,7 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
 };
 
 [[nodiscard]] uint8_t operator_precedence(token_t const &token, bool binary) noexcept {
-    if (token != tokenizer_name_t::Literal) {
+    if (token != tokenizer_name_t::Operator) {
         return 0;
     } else {
         return std::numeric_limits<uint8_t>::max() - operator_precedence(token.value.data(), binary);
@@ -1512,12 +1514,12 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
             return std::make_unique<expression_name_node>(offset, (context++)->value);
         }
 
-    case tokenizer_name_t::Literal:
+    case tokenizer_name_t::Operator:
         if (*context == "(") {
             ++context;
             auto subexpression = parse_expression(context);
 
-            if ((*context == tokenizer_name_t::Literal) && (*context == ")")) {
+            if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
                 ++context;
             } else {
                 TTAURI_THROW(parse_error("Expected ')' token for function call got {}", *context).set<"offset"_tag>(offset));
@@ -1531,12 +1533,12 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
             expression_node::expression_vector values;
 
             // ',' is between each expression, but a ']' may follow a ',' directly.
-            while (!((*context == tokenizer_name_t::Literal) && (*context == "]"))) {
+            while (!((*context == tokenizer_name_t::Operator) && (*context == "]"))) {
                 values.push_back(parse_expression(context));
 
-                if ((*context == tokenizer_name_t::Literal) && (*context == ",")) {
+                if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
                     ++context;
-                } else if ((*context == tokenizer_name_t::Literal) && (*context == "]")) {
+                } else if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
                     ++context;
                     break;
                 } else {
@@ -1553,10 +1555,10 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
             expression_node::expression_vector values;
 
             // ',' is between each expression, but a ']' may follow a ',' directly.
-            while (!((*context == tokenizer_name_t::Literal) && (*context == "}"))) {
+            while (!((*context == tokenizer_name_t::Operator) && (*context == "}"))) {
                 keys.push_back(parse_expression(context));
 
-                if ((*context == tokenizer_name_t::Literal) && (*context == ":")) {
+                if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
                     ++context;
                 } else {
                     TTAURI_THROW(parse_error("Expected ':' after a map key. got {}", *context).set<"offset"_tag>(offset));
@@ -1564,9 +1566,9 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
 
                 values.push_back(parse_expression(context));
 
-                if ((*context == tokenizer_name_t::Literal) && (*context == ",")) {
+                if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
                     ++context;
-                } else if ((*context == tokenizer_name_t::Literal) && (*context == "}")) {
+                } else if ((*context == tokenizer_name_t::Operator) && (*context == "}")) {
                     ++context;
                     break;
                 } else {
@@ -1592,7 +1594,7 @@ static std::unique_ptr<expression_node> parse_index_expression(expression_parse_
 {
     auto rhs = parse_expression(context);
 
-    if ((*context == tokenizer_name_t::Literal) && (*context == "]")) {
+    if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
         ++context;
     } else {
         TTAURI_THROW(parse_error("Expected ']' token at end of indexing operator got {}", *context).set<"offset"_tag>(context.offset()));
@@ -1606,7 +1608,7 @@ static std::unique_ptr<expression_node> parse_ternary_argument_expression(expres
 {
     auto rhs_true = parse_expression(context);
 
-    if ((*context == tokenizer_name_t::Literal) && (*context == ":")) {
+    if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
         ++context;
     } else {
         TTAURI_THROW(parse_error("Expected ':' token in ternary expression {}", *context).set<"offset"_tag>(context.offset()));
@@ -1623,17 +1625,17 @@ static std::unique_ptr<expression_node> parse_call_argument_expression(expressio
 {
     expression_node::expression_vector args;
 
-    if ((*context == tokenizer_name_t::Literal) && (*context == ")")) {
+    if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
         ++context;
 
     } else while (true) {
         args.push_back(parse_expression(context));
 
-        if ((*context == tokenizer_name_t::Literal) && (*context == ",")) {
+        if ((*context == tokenizer_name_t::Operator) && (*context == ",")) {
             ++context;
             continue;
 
-        } else if ((*context == tokenizer_name_t::Literal) && (*context == ")")) {
+        } else if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
             ++context;
             break;
 
@@ -1651,7 +1653,7 @@ static bool parse_expression_is_at_end(expression_parse_context& context)
         return true;
     }
 
-    if (*context != tokenizer_name_t::Literal) {
+    if (*context != tokenizer_name_t::Operator) {
         TTAURI_THROW(parse_error("Expecting an operator token got {}", *context).set<"offset"_tag>(context.offset()));
     }
 
@@ -1678,11 +1680,11 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
         ++context;
 
         std::unique_ptr<expression_node> rhs;
-        if (op == tokenizer_name_t::Literal && op == "[") {
+        if (op == tokenizer_name_t::Operator && op == "[") {
             rhs = parse_index_expression(context);
-        } else if (op == tokenizer_name_t::Literal && op == "(") {
+        } else if (op == tokenizer_name_t::Operator && op == "(") {
             rhs = parse_call_argument_expression(context);
-        } else if (op == tokenizer_name_t::Literal && op == "?") {
+        } else if (op == tokenizer_name_t::Operator && op == "?") {
             rhs = parse_ternary_argument_expression(context);
         } else {
             rhs = parse_primary_expression(context);

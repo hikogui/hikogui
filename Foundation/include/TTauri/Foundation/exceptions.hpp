@@ -9,6 +9,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/string_tag.hpp"
 #include "TTauri/Foundation/tagged_map.hpp"
+#include "TTauri/Foundation/Location.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>
@@ -158,6 +159,15 @@ public:
     sub_error &set(InfoValueType &&info_value) noexcept {
         static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
         error_info.template get<InfoTag>() = std::forward<InfoValueType>(info_value);
+        return *this;
+    }
+
+    sub_error &set_location(Location const &location) noexcept {
+        if (location.has_file()) {
+            set<"url"_tag>(location.file());
+        }
+        set<"line"_tag>(location.line());
+        set<"column"_tag>(location.column());
         return *this;
     }
 

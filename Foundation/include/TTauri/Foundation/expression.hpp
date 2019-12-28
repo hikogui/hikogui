@@ -120,7 +120,7 @@ struct expression_evaluation_context {
     [[nodiscard]] datum const &loop_get(std::string_view name) const {
         ttauri_axiom(name.size() > 0);
         if (name.back() == '$') {
-            TTAURI_THROW(key_error("Invalid loop variable '{}'", name));
+            TTAURI_THROW(invalid_operation_error("Invalid loop variable '{}'", name));
         }
 
         std::string_view short_name = name.substr(1);
@@ -128,7 +128,7 @@ struct expression_evaluation_context {
 
         while (short_name[0] == '$') {
             if (i == loop_stack.crend() || i->count.is_undefined()) {
-                TTAURI_THROW(key_error("Accessing loop variable {} while not in loop", name));
+                TTAURI_THROW(invalid_operation_error("Accessing loop variable {} while not in loop", name));
             }
 
             short_name = short_name.substr(1);
@@ -141,16 +141,16 @@ struct expression_evaluation_context {
             return i->first;
         } else if (short_name == "size" || short_name == "length") {
             if (i->size.is_undefined()) {
-                TTAURI_THROW(key_error("Accessing loop variable {} only available in #for loops", name));
+                TTAURI_THROW(invalid_operation_error("Accessing loop variable {} only available in #for loops", name));
             }
             return i->size;
         } else if (short_name == "last") {
             if (i->last.is_undefined()) {
-                TTAURI_THROW(key_error("Accessing loop variable {} only available in #for loops", name));
+                TTAURI_THROW(invalid_operation_error("Accessing loop variable {} only available in #for loops", name));
             }
             return i->last;
         } else {
-            TTAURI_THROW(key_error("Unknown loop variable {}", name));
+            TTAURI_THROW(invalid_operation_error("Unknown loop variable {}", name));
         }
     }
 
@@ -173,7 +173,7 @@ struct expression_evaluation_context {
             return j->second;
         }
 
-        TTAURI_THROW(key_error("Could not find {} in local or global scope.", name));
+        TTAURI_THROW(invalid_operation_error("Could not find {} in local or global scope.", name));
     }
 
     [[nodiscard]] datum &get(std::string const &name) {
@@ -191,7 +191,7 @@ struct expression_evaluation_context {
             return j->second;
         }
 
-        TTAURI_THROW(key_error("Could not find {} in local or global scope.", name));
+        TTAURI_THROW(invalid_operation_error("Could not find {} in local or global scope.", name));
     }
 
     template<typename T>

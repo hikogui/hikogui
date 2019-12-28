@@ -145,7 +145,7 @@ struct template_node {
      */
     [[nodiscard]] virtual bool append(std::unique_ptr<template_node> x) noexcept { return false; }
 
-    /** Should any spaces on the elft side of a statement be removed?
+    /** Should any spaces on the left side of a statement be removed?
      */
     [[nodiscard]] virtual bool should_left_align() const noexcept { return true; } 
 
@@ -171,7 +171,7 @@ struct template_node {
         no_default;
     }
 
-    [[nodiscard]] std::string evaluate_output(expression_evaluation_context &context = expression_evaluation_context{}) {
+    [[nodiscard]] std::string evaluate_output(expression_evaluation_context &context) {
         auto tmp = evaluate(context);
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
@@ -193,8 +193,9 @@ struct template_node {
         }
     }
 
-    [[nodiscard]] std::string evaluate_output(datum const &globals) {
-        expression_evaluation_context context;
+    [[nodiscard]] std::string evaluate_output() {
+        auto context = expression_evaluation_context{};
+        return evaluate_output(context);
     }
 
     [[nodiscard]] virtual std::string string() const noexcept {
@@ -236,7 +237,7 @@ struct template_node {
         }
     }
 
-    [[nodiscard]] static void post_process_expression(expression_post_process_context &context, expression_node &expression, ssize_t offset) {
+    static void post_process_expression(expression_post_process_context &context, expression_node &expression, ssize_t offset) {
         try {
             return expression.post_process(context);
         } catch (error &e) {

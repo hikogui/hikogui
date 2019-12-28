@@ -151,7 +151,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Dot()
         } else {
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
-            transition.name = tokenizer_name_t::Literal;
+            transition.name = tokenizer_name_t::Operator;
         }
 
         r[i] = transition;
@@ -527,12 +527,12 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '=':
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);
-            transition.name = tokenizer_name_t::Literal;
+            transition.name = tokenizer_name_t::Operator;
             break;
         default:
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
-            transition.name = tokenizer_name_t::Literal;
+            transition.name = tokenizer_name_t::Operator;
         }
 
         r[i] = transition;
@@ -545,7 +545,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 #define LAST_CHAR\
     transition.setNext(tokenizer_state_t::Initial);\
     transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);\
-    transition.name = tokenizer_name_t::Literal
+    transition.name = tokenizer_name_t::Operator
 
 #define MORE_CHARS\
     transition.setNext(tokenizer_state_t::OperatorThirdChar);\
@@ -571,7 +571,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         default:
             transition.setNext(tokenizer_state_t::Initial);
             transition.setAction(tokenizer_action_t::Found);
-            transition.name = tokenizer_name_t::Literal;
+            transition.name = tokenizer_name_t::Operator;
         }
 
         r[i] = transition;
@@ -586,7 +586,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 #define LAST_CHAR\
     transition.setNext(tokenizer_state_t::Initial);\
     transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);\
-    transition.name = tokenizer_name_t::Literal
+    transition.name = tokenizer_name_t::Operator
 
 #define MORE_CHARS\
     transition.setNext(tokenizer_state_t::OperatorSecondChar);\

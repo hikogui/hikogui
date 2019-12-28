@@ -29,7 +29,7 @@ enum class tokenizer_name_t : uint8_t {
     DateLiteral,
     TimeLiteral,
     FloatLiteral,
-    Literal,                // Operator, or bracket, or other literal text.
+    Operator,                // Operator, or bracket, or other literal text.
     End
 };
 
@@ -46,7 +46,7 @@ constexpr char const *to_string(tokenizer_name_t name) noexcept {
     case tokenizer_name_t::DateLiteral: return "DateLiteral";
     case tokenizer_name_t::TimeLiteral: return "TimeLiteral";
     case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
-    case tokenizer_name_t::Literal: return "Literal";
+    case tokenizer_name_t::Operator: return "Operator";
     case tokenizer_name_t::End: return "End";
     default: no_default;
     }

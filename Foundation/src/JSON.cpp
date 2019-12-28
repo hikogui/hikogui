@@ -27,7 +27,7 @@ static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator
     auto array = datum{datum::vector{}};
 
     // Required '['
-    if ((*token == tokenizer_name_t::Literal) && (*token == "[")) {
+    if ((*token == tokenizer_name_t::Operator) && (*token == "[")) {
         token++; 
     } else {
         return {};
@@ -36,7 +36,7 @@ static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator
     bool commaAfterValue = true;
     while (true) {
         // A ']' is required at end of configuration-items.
-        if ((*token == tokenizer_name_t::Literal) && (*token == "]")) {
+        if ((*token == tokenizer_name_t::Operator) && (*token == "]")) {
             token++;
             break;
 
@@ -53,7 +53,7 @@ static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator
             array.push_back(*result.value);
             token = result.next_token;
 
-            if ((*token == tokenizer_name_t::Literal) && (*token == ",")) {
+            if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
                 token++;
                 commaAfterValue = true;
             } else {
@@ -77,7 +77,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
     auto object = datum{datum::map{}};
 
     // Required '{'
-    if ((*token == tokenizer_name_t::Literal) && (*token == "{")) {
+    if ((*token == tokenizer_name_t::Operator) && (*token == "{")) {
         token++; 
     } else {
         return {};
@@ -86,7 +86,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
     bool commaAfterValue = true;
     while (true) {
         // A '}' is required at end of configuration-items.
-        if ((*token == tokenizer_name_t::Literal) && (*token == "}")) {
+        if ((*token == tokenizer_name_t::Operator) && (*token == "}")) {
             token++;
             break;
 
@@ -102,7 +102,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
 
             auto name = static_cast<std::string>(*token++);
 
-            if ((*token == tokenizer_name_t::Literal) && (*token == ":")) {
+            if ((*token == tokenizer_name_t::Operator) && (*token == ":")) {
                 token++;
             } else {
                 let [line, column] = context.line_and_column(token);
@@ -124,7 +124,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
                 );
             }
 
-            if ((*token == tokenizer_name_t::Literal) && (*token == ",")) {
+            if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
                 token++;
                 commaAfterValue = true;
             } else {

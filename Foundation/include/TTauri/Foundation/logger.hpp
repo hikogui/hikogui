@@ -232,6 +232,6 @@ inline logger_type logger = {};
 #define LOG_ERROR(...) TTAURI_LOG(::TTauri::log_level::Error, __VA_ARGS__)
 #define LOG_ASSERT(...) TTAURI_LOG(::TTauri::log_level::Assert, __VA_ARGS__)
 #define LOG_CRITICAL(...) TTAURI_LOG(::TTauri::log_level::Critical, __VA_ARGS__)
-#define LOG_FATAL(...) TTAURI_LOG(::TTauri::log_level::Fatal, __VA_ARGS__)
+#define LOG_FATAL(...) TTAURI_LOG(::TTauri::log_level::Fatal, __VA_ARGS__); ttauri_unreachable()
 
 }
