@@ -358,6 +358,16 @@ struct expression_node {
         TTAURI_THROW(invalid_operation_error("Expression is not a modifiable value.").set<"offset"_tag>(offset));
     }
 
+    virtual bool has_evaluate_xvalue() const {
+        return false;
+    }
+    
+    /** Evaluate an existing xvalue.
+    */
+    virtual datum const &evaluate_xvalue(expression_evaluation_context const& context) const {
+        TTAURI_THROW(invalid_operation_error("Expression is not a xvalue.").set<"offset"_tag>(offset));
+    }
+
     /** Assign to a non-existing or existing lvalue.
      */
     virtual datum &assign(expression_evaluation_context& context, datum const &rhs) const {

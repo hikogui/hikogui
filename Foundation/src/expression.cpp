@@ -440,6 +440,21 @@ struct expression_name_node final : expression_node {
         }
     }
 
+    virtual bool has_evaluate_xvalue() const {
+        return true;
+    }
+
+    /** Evaluate an existing xvalue.
+    */
+    datum const &evaluate_xvalue(expression_evaluation_context const& context) const override {
+        try {
+            return context.get(name);
+        } catch (error &e) {
+            e.set<"offset"_tag>(offset);
+            throw;
+        }
+    }
+
     datum &assign(expression_evaluation_context& context, datum const &rhs) const override {
         try {
             return context.set(name, rhs);
@@ -1066,17 +1081,35 @@ struct expression_member_node final : expression_binary_operator_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        let lhs_ = lhs->evaluate(context);
-        if (!lhs_.contains(rhs_name->name)) {
-            TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name)
-                .set<"offset"_tag>(offset)
-            );
-        }
-        try {
-            return lhs_[rhs_name->name];
-        } catch (error &e) {
-            e.set<"offset"_tag>(offset);
-            throw;
+        if (lhs->has_evaluate_xvalue()) {
+            let &lhs_ = lhs->evaluate_xvalue(context);
+
+            if (!lhs_.contains(rhs_name->name)) {
+                TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name)
+                    .set<"offset"_tag>(offset)
+                );
+            }
+            try {
+                return lhs_[rhs_name->name];
+            } catch (error &e) {
+                e.set<"offset"_tag>(offset);
+                throw;
+            }
+
+        } else {
+            let lhs_ = lhs->evaluate(context);
+
+            if (!lhs_.contains(rhs_name->name)) {
+                TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name)
+                    .set<"offset"_tag>(offset)
+                );
+            }
+            try {
+                return lhs_[rhs_name->name];
+            } catch (error &e) {
+                e.set<"offset"_tag>(offset);
+                throw;
+            }
         }
     }
 
