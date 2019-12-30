@@ -541,14 +541,32 @@ public:
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    datum_impl(URL &&value) noexcept {
+        auto * const p = new URL(std::move(value));
+        u64 = make_pointer(url_ptr_mask, p);
+    }
+
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl(datum_impl::vector const &value) noexcept {
         auto * const p = new datum_impl::vector(value);
         u64 = make_pointer(vector_ptr_mask, p);
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    datum_impl(datum_impl::vector &&value) noexcept {
+        auto * const p = new datum_impl::vector(std::move(value));
+        u64 = make_pointer(vector_ptr_mask, p);
+    }
+
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl(datum_impl::map const &value) noexcept {
         auto * const p = new datum_impl::map(value);
+        u64 = make_pointer(map_ptr_mask, p);
+    }
+
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    datum_impl(datum_impl::map &&value) noexcept {
+        auto * const p = new datum_impl::map(std::move(value));
         u64 = make_pointer(map_ptr_mask, p);
     }
 
@@ -740,6 +758,17 @@ public:
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    datum_impl &operator=(URL &&rhs) noexcept {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+
+        auto * const p = new URL(std::move(rhs));
+        u64 = make_pointer(url_ptr_mask, p);
+        return *this;
+    }
+
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::vector const &rhs) {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
@@ -752,12 +781,37 @@ public:
     }
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    datum_impl &operator=(datum_impl::vector &&rhs) {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+
+        auto * const p = new datum_impl::vector(std::move(rhs));
+        u64 = make_pointer(vector_ptr_mask, p);
+
+        return *this;
+    }
+
+
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::map const &rhs) {
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
         auto * const p = new datum_impl::map(rhs);
+        u64 = make_pointer(map_ptr_mask, p);
+
+        return *this;
+    }
+
+    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
+    datum_impl &operator=(datum_impl::map &&rhs) {
+        if (ttauri_unlikely(is_phy_pointer())) {
+            delete_pointer();
+        }
+
+        auto * const p = new datum_impl::map(std::move(rhs));
         u64 = make_pointer(map_ptr_mask, p);
 
         return *this;
@@ -1869,7 +1923,7 @@ public:
             }
         case datum_impl::phy_ymd_id:
             if (rhs.is_ymd()) {
-                return static_cast<date::year_month_day>(lhs) == static_cast<date::year_month_day>(rhs);
+                return static_cast<date::year_month_day>(lhs) < static_cast<date::year_month_day>(rhs);
             } else {
                 return lhs.type_order() < rhs.type_order();
             }

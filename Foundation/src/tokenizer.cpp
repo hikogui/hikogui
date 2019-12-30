@@ -360,10 +360,10 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Slash(
 
         if (c == '/') {
             transition.setNext(tokenizer_state_t::LineComment);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Start);
         } else if (c == '*') {
             transition.setNext(tokenizer_state_t::BlockComment);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Start);
         } else {
             transition.setNext(tokenizer_state_t::OperatorSecondChar);
         }

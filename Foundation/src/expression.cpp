@@ -167,6 +167,20 @@ expression_post_process_context::function_table expression_post_process_context:
     {"sort"s, function_sort}
 };
 
+static datum method_contains(expression_evaluation_context &context, datum &self, datum::vector const &args)
+{
+    if (args.size() != 1) {
+        TTAURI_THROW(invalid_operation_error("Expecting 1 argument for .contains() method, got {}", args.size()));
+    }
+
+    if (self.is_vector() || self.is_map()) {
+        return self.contains(args[0]);
+
+    } else {
+        TTAURI_THROW(invalid_operation_error("Expecting vector or map on left hand side for .contains() method, got {}", self.type_name()));
+    }
+}
+
 static datum method_append(expression_evaluation_context &context, datum &self, datum::vector const &args)
 {
     if (args.size() != 1) {
@@ -236,6 +250,7 @@ static datum method_day(expression_evaluation_context &context, datum &self, dat
 
 expression_post_process_context::method_table expression_post_process_context::global_methods = {
     {"append"s, method_append},
+    {"contains"s, method_contains},
     {"push"s, method_append},
     {"pop"s, method_pop},
     {"year"s, method_year},

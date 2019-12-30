@@ -201,6 +201,32 @@ struct token_t {
         }
         return r;
     }
+
+    friend inline std::ostream &operator<<(std::ostream &lhs, token_t const &rhs)
+    {
+        return lhs << rhs.repr();
+    }
+
+    [[nodiscard]] friend force_inline bool operator==(token_t const &lhs, token_t const &rhs) noexcept {
+        return (lhs.name == rhs.name) && (lhs.value == rhs.value);
+    }
+
+    [[nodiscard]] friend force_inline bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+        return lhs.name == rhs;
+    }
+
+    [[nodiscard]] friend force_inline bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
+    [[nodiscard]] friend force_inline bool operator==(token_t const &lhs, const char *rhs) noexcept {
+        return lhs.value == rhs;
+    }
+
+    [[nodiscard]] friend force_inline bool operator!=(token_t const &lhs, const char *rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
 };
 
 using token_vector = std::vector<TTauri::token_t>;
@@ -216,26 +242,7 @@ struct parse_result_t {
     }
 };
 
-inline std::ostream &operator<<(std::ostream &lhs, token_t const &rhs)
-{
-    return lhs << rhs.repr();
-}
 
-force_inline bool operator==(token_t const &lhs, token_t const &rhs) noexcept {
-    return (lhs.name == rhs.name) && (lhs.value == rhs.value) && (lhs.index == rhs.index);
-}
-
-force_inline bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
-    return lhs.name == rhs;
-}
-
-force_inline bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
-    return !(lhs == rhs);
-}
-
-force_inline bool operator==(token_t const &lhs, const char *rhs) noexcept {
-    return lhs.value == rhs;
-}
 
 /*! parse tokens from a text.
 * This parsing tokens from most programming languages.
