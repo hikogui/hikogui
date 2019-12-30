@@ -35,6 +35,32 @@ TEST(Expression, Literals) {
     ASSERT_EQ(e->string(), "foo");
 }
 
+TEST(Expression, BinaryOperatorsLeftToRightAssociativity) {
+    std::unique_ptr<expression_node> e;
+    datum r;
+    expression_evaluation_context context;
+
+    ASSERT_NO_THROW(e = parse_expression("4 - 2 - 1"));
+    ASSERT_EQ(e->string(), "((4 - 2) - 1)");
+    ASSERT_EQ(e->evaluate(context), 1);
+
+    ASSERT_NO_THROW(e = parse_expression("depth - data.level - 1"));
+    ASSERT_EQ(e->string(), "((depth - (data . level)) - 1)");
+
+
+    
+}
+
+TEST(Expression, BinaryOperatorsRightToLeftAssociativity) {
+    std::unique_ptr<expression_node> e;
+    datum r;
+    expression_evaluation_context context;
+
+    ASSERT_NO_THROW(e = parse_expression("4 -= 2 -= 1"));
+    ASSERT_EQ(e->string(), "(4 -= (2 -= 1))");
+}
+
+
 TEST(Expression, BinaryOperators) {
     std::unique_ptr<expression_node> e;
     datum r;

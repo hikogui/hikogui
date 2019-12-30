@@ -16,6 +16,8 @@
 
 namespace TTauri {
 
+static std::unique_ptr<expression_node> parse_expression_1(expression_parse_context& context, std::unique_ptr<expression_node> lhs, uint8_t min_precedence);
+
 static datum function_float(expression_evaluation_context &context, datum::vector const &args)
 {
     if (args.size() != 1) {
@@ -1452,11 +1454,12 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
     }
 };
 
-[[nodiscard]] uint8_t operator_precedence(token_t const &token, bool binary) noexcept {
+[[nodiscard]] std::pair<uint8_t,bool> operator_precedence(token_t const &token, bool binary) noexcept {
     if (token != tokenizer_name_t::Operator) {
-        return 0;
+        return {0, false};
     } else {
-        return std::numeric_limits<uint8_t>::max() - operator_precedence(token.value.data(), binary);
+        auto [precedence, left_to_right] = operator_precedence(token.value.data(), binary);
+        return {std::numeric_limits<uint8_t>::max() - precedence, left_to_right};
     }
 }
 
@@ -1627,8 +1630,11 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
             return std::make_unique<expression_map_literal_node>(offset, std::move(keys), std::move(values));
 
         } else {
-            // Found a unary operator, this should be handled using operator_precedence.
-            return {};
+            let unary_op = *context;
+            ++context;
+            let [precedence, left_to_right] = operator_precedence(unary_op, false);
+            auto subexpression = parse_expression_1(context, parse_primary_expression(context), precedence);
+            return parse_operation_expression(context, {}, unary_op, std::move(subexpression));
         }
 
     default:
@@ -1713,18 +1719,25 @@ static bool parse_expression_is_at_end(expression_parse_context& context)
         *context == ",";
 }
 
-
 /** Parse an expression.
-    * Parses an expression until EOF, ')', '}', ']', ':', ','
-    */
-static std::unique_ptr<expression_node> parse_expression_1(expression_parse_context& context, std::unique_ptr<expression_node> lhs, uint8_t precedence)
+ * https://en.wikipedia.org/wiki/Operator-precedence_parser
+ * Parses an expression until EOF, ')', '}', ']', ':', ','
+ */
+static std::unique_ptr<expression_node> parse_expression_1(expression_parse_context& context, std::unique_ptr<expression_node> lhs, uint8_t min_precedence)
 {
-    auto lookahead = *context;
-    auto lookahead_precedence = operator_precedence(lookahead, static_cast<bool>(lhs));
+    token_t lookahead;
+    uint8_t lookahead_precedence;
+    bool lookahead_left_to_right;
 
-    while (!parse_expression_is_at_end(context) && lookahead_precedence >= precedence) {
+    std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
+    if (parse_expression_is_at_end(context)) {
+        return lhs;
+    }
+
+    while (lookahead_precedence >= min_precedence) {
         let op = lookahead;
         let op_precedence = lookahead_precedence;
+        let op_left_to_right = lookahead_left_to_right;
         ++context;
 
         std::unique_ptr<expression_node> rhs;
@@ -1738,13 +1751,21 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
             rhs = parse_primary_expression(context);
         }
 
-        lookahead = *context;
-        lookahead_precedence = operator_precedence(lookahead, static_cast<bool>(rhs));
-        while (!parse_expression_is_at_end(context) && lookahead_precedence > op_precedence) {
-            rhs = parse_expression_1(context, std::move(rhs), op_precedence);
+        std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
+        if (parse_expression_is_at_end(context)) {
+            return parse_operation_expression(context, std::move(lhs), op, std::move(rhs));
+        }
 
-            lookahead = *context;
-            lookahead_precedence = operator_precedence(lookahead, static_cast<bool>(rhs));
+        while (
+            (lookahead_left_to_right == true && lookahead_precedence > op_precedence) ||
+            (lookahead_left_to_right == false && lookahead_precedence == op_precedence)
+        ) {
+            rhs = parse_expression_1(context, std::move(rhs), lookahead_precedence);
+
+            std::tie(lookahead_precedence, lookahead_left_to_right) = operator_precedence(lookahead = *context, true);
+            if (parse_expression_is_at_end(context)) {
+                return parse_operation_expression(context, std::move(lhs), op, std::move(rhs));
+            }
         }
         lhs = parse_operation_expression(context, std::move(lhs), op, std::move(rhs));
     }
