@@ -102,10 +102,12 @@ struct template_parse_context {
         statement_stack.push_back(std::make_unique<T>(std::forward<Args>(args)...));
     }
 
+    [[nodiscard]] bool append(std::unique_ptr<template_node> x) noexcept;
+
     template<typename T, typename... Args>
     [[nodiscard]] bool append(Args &&... args) noexcept {
         if (statement_stack.size() > 0) {
-            return statement_stack.back()->append(std::make_unique<T>(std::forward<Args>(args)...));
+            return append(std::make_unique<T>(std::forward<Args>(args)...));
         } else {
             return false;
         }

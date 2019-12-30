@@ -117,6 +117,7 @@ public:
             _line += location._line;
             _column = location._column;
         }
+        return *this;
     }
 
     friend std::string to_string(Location const &l) noexcept {

@@ -17,7 +17,6 @@ void _debugger_log(char const *text) noexcept
     }
 }
 
-#if !defined(NDEBUG)
 bool debugger_is_present() noexcept
 {
     struct kinfo_proc info;
@@ -34,7 +33,6 @@ bool debugger_is_present() noexcept
 
     return ((info.kp_proc.p_flag & P_TRACED) != 0);
 }
-#endif
 
 void _debugger_dialogue(char const *caption, char const *message)
 {

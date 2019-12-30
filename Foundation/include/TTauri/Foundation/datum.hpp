@@ -586,7 +586,7 @@ public:
         if (ttauri_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = _continue_mask;
+        u64 = continue_mask;
         return *this;
     }
 
@@ -1052,7 +1052,7 @@ public:
 
         case phy_map_ptr_id:
             if constexpr (HasLargeObjects) {
-                std::vector<std::pair<datum,datum>> items;
+                std::vector<std::pair<datum_impl,datum_impl>> items;
                 items.reserve(size());
                 std::copy(map_begin(), map_end(), std::back_inserter(items));
                 std::sort(items.begin(), items.end(), [](auto &a, auto &b) {
@@ -1742,7 +1742,7 @@ public:
 
     friend datum_impl operator~(datum_impl const &rhs) {
         if (rhs.is_integer()) {
-            return datum{~static_cast<int64_t>(rhs)};
+            return datum_impl{~static_cast<int64_t>(rhs)};
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't bit-wise negate '~' value {} of type {}",
                 rhs.repr(), rhs.type_name()
@@ -1752,11 +1752,11 @@ public:
 
     friend datum_impl operator-(datum_impl const &rhs) {
         if (rhs.is_integer()) {
-            return datum{-static_cast<int64_t>(rhs)};
+            return datum_impl{-static_cast<int64_t>(rhs)};
         } else if (rhs.is_decimal()) {
-             return datum{-static_cast<decimal>(rhs)};
+             return datum_impl{-static_cast<decimal>(rhs)};
         } else if (rhs.is_float()) {
-            return datum{-static_cast<double>(rhs)};
+            return datum_impl{-static_cast<double>(rhs)};
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't arithmetic negate '-' value {} of type {}",
                 rhs.repr(), rhs.type_name()
@@ -1945,28 +1945,28 @@ public:
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ lhs_ + rhs_ };
+            return datum_impl{ lhs_ + rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
             let rhs_ = static_cast<decimal>(rhs);
-            return datum{lhs_ + rhs_};
+            return datum_impl{lhs_ + rhs_};
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
-            return datum{ lhs_ + rhs_ };
+            return datum_impl{ lhs_ + rhs_ };
 
         } else if (lhs.is_string() && rhs.is_string()) {
             let lhs_ = static_cast<std::string>(lhs);
             let rhs_ = static_cast<std::string>(rhs);
-            return datum{std::move(lhs_ + rhs_)};
+            return datum_impl{std::move(lhs_ + rhs_)};
 
         } else if (lhs.is_vector() && rhs.is_vector()) {
             auto lhs_ = static_cast<datum_impl::vector>(lhs);
             let &rhs_ = *(rhs.get_pointer<datum_impl::vector>());
             std::copy(rhs_.begin(), rhs_.end(), std::back_inserter(lhs_));
-            return datum{std::move(lhs_)};
+            return datum_impl{std::move(lhs_)};
 
         } else if (lhs.is_map() && rhs.is_map()) {
             let &lhs_ = *(lhs.get_pointer<datum_impl::map>());
@@ -1974,12 +1974,12 @@ public:
             for (let &item: lhs_) {
                 rhs_.try_emplace(item.first, item.second);
             }
-            return datum{std::move(rhs_)};
+            return datum_impl{std::move(rhs_)};
 
         } else if (lhs.is_wsrgba() && rhs.is_wsrgba()) {
             auto lhs_ = static_cast<wsRGBA>(lhs);
             lhs_.composit(*(rhs.get_pointer<wsRGBA>()));
-            return datum{lhs_};
+            return datum_impl{lhs_};
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't add '+' value {} of type {} to value {} of type {}",
@@ -1992,17 +1992,17 @@ public:
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ lhs_ - rhs_ };
+            return datum_impl{ lhs_ - rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
             let rhs_ = static_cast<decimal>(rhs);
-            return datum{ lhs_ - rhs_ };
+            return datum_impl{ lhs_ - rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
-            return datum{ lhs_ - rhs_ };
+            return datum_impl{ lhs_ - rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't subtract '-' value {} of type {} from value {} of type {}",
@@ -2015,17 +2015,17 @@ public:
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ lhs_ * rhs_ };
+            return datum_impl{ lhs_ * rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
             let rhs_ = static_cast<decimal>(rhs);
-            return datum{ lhs_ * rhs_ };
+            return datum_impl{ lhs_ * rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
-            return datum{ lhs_ * rhs_ };
+            return datum_impl{ lhs_ * rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't multiply '*' value {} of type {} with value {} of type {}",
@@ -2038,22 +2038,22 @@ public:
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ lhs_ / rhs_ };
+            return datum_impl{ lhs_ / rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
             let rhs_ = static_cast<decimal>(rhs);
-            return datum{ lhs_ / rhs_ };
+            return datum_impl{ lhs_ / rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
-            return datum{ lhs_ / rhs_ };
+            return datum_impl{ lhs_ / rhs_ };
 
         } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
             let lhs_ = static_cast<URL>(lhs);
             let rhs_ = static_cast<URL>(rhs);
-            return datum{ lhs_ / rhs_ };
+            return datum_impl{ lhs_ / rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't divide '/' value {} of type {} by value {} of type {}",
@@ -2066,17 +2066,17 @@ public:
         if (lhs.is_float() || rhs.is_float()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ fmod(lhs_, rhs_) };
+            return datum_impl{ fmod(lhs_, rhs_) };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
             let lhs_ = static_cast<decimal>(lhs);
             let rhs_ = static_cast<decimal>(rhs);
-            return datum{ lhs_ % rhs_ };
+            return datum_impl{ lhs_ % rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
             let lhs_ = static_cast<long long int>(lhs);
             let rhs_ = static_cast<long long int>(rhs);
-            return datum{ lhs_ % rhs_ };
+            return datum_impl{ lhs_ % rhs_ };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't take modulo '%' value {} of type {} by value {} of type {}",
@@ -2162,7 +2162,7 @@ public:
         if (lhs.is_integer() && rhs.is_integer()) {
             let lhs_ = static_cast<uint64_t>(lhs);
             let rhs_ = static_cast<uint64_t>(rhs);
-            return datum{lhs_ ^ rhs_};
+            return datum_impl{lhs_ ^ rhs_};
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't XOR '^' value {} of type {} with value {} of type {}",
@@ -2187,7 +2187,7 @@ public:
         if (lhs.is_numeric() || rhs.is_numeric()) {
             let lhs_ = static_cast<double>(lhs);
             let rhs_ = static_cast<double>(rhs);
-            return datum{ std::pow(lhs_, rhs_) };
+            return datum_impl{ std::pow(lhs_, rhs_) };
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't raise to a power '**' value {} of type {} with value {} of type {}",
@@ -2268,8 +2268,8 @@ inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
 
 template<bool HasLargeObjects>
 bool operator<(typename datum_impl<HasLargeObjects>::map const &lhs, typename datum_impl<HasLargeObjects>::map const &rhs) noexcept {
-    auto lhs_keys = transform<datum_impl::vector>(lhs, [](auto x) { return x.first; });
-    auto rhs_keys = transform<datum_impl::vector>(lhs, [](auto x) { return x.first; });
+    auto lhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) { return x.first; });
+    auto rhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) { return x.first; });
 
     if (lhs_keys == rhs_keys) {
         for (let &k: lhs_keys) {

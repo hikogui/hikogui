@@ -763,6 +763,11 @@ struct template_return_node final: template_node {
     }
 };
 
+[[nodiscard]] bool template_parse_context::append(std::unique_ptr<template_node> x) noexcept
+{
+    return statement_stack.back()->append(std::move(x));
+}
+
 template_parse_context::template_parse_context(URL const &url, const_iterator first, const_iterator last) :
     url(url), first(first), last(last), text_it(first)
 {

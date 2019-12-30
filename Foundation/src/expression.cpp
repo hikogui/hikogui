@@ -440,7 +440,7 @@ struct expression_name_node final : expression_node {
         }
     }
 
-    virtual bool has_evaluate_xvalue() const {
+    bool has_evaluate_xvalue() const override {
         return true;
     }
 
