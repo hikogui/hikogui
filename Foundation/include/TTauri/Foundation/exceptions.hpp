@@ -23,9 +23,10 @@
 namespace TTauri {
 
 class error {
-private:
+protected:
     std::string _message;
 
+private:
     virtual error &set(string_tag info_tag, datum const &info_value) noexcept = 0;
 
     virtual error &set(string_tag info_tag, datum &&info_value) noexcept = 0;
@@ -62,8 +63,13 @@ public:
         );
     }
 
-    std::string message() const {
+    [[nodiscard]] std::string message() const noexcept {
         return _message;
+    }
+
+    error &caused_by(error const &other) noexcept {
+        _message = fmt::format("{}\nCaused by: {}", _message, other.string());
+        return *this;
     }
 
     /*!
@@ -83,6 +89,30 @@ public:
         set<"column"_tag>(location.column());
         return *this;
     }
+
+    /*! Merge locations.
+     * Used when the current exception is a expression inside a statement.
+     */
+    error &merge_location(parse_location statement_location) noexcept {
+        let line = static_cast<int>(get<"line"_tag>());
+        let column = static_cast<int>(get<"column"_tag>());
+
+        auto expression_location = parse_location{line, column};
+        if (has<"url"_tag>()) {
+            let url = static_cast<URL>(get<"url"_tag>());
+            expression_location.set_file(std::move(url));
+        }
+
+        statement_location += expression_location;
+
+        if (statement_location.has_file()) {
+            set<"url"_tag>(statement_location.file());
+        }
+        set<"line"_tag>(statement_location.line());
+        set<"column"_tag>(statement_location.column());
+        return *this;
+    }
+
 
     template<string_tag InfoTag>
     datum &get() noexcept {
@@ -162,6 +192,11 @@ public:
     sub_error(Fmt const &fmt, Args &&... args) noexcept :
         error(fmt, std::forward<Args>(args)...) {}
 
+    sub_error &caused_by(error const &other) noexcept {
+        _message = fmt::format("{}\nCaused by: {}", _message, other.string());
+        return *this;
+    }
+
     /*!
      * A non-virtual method like this will return the actual class instance
      * which means throw knows exactly which class is being thrown.
@@ -232,12 +267,12 @@ public:
  *
  * For this reasons ParserErrors should not be ignored by the callees of a parser.
  */
-using parse_error = sub_error<"parse_error"_tag, "url"_tag, "line"_tag, "column"_tag, "offset"_tag, "previous_msg"_tag, "parse_string"_tag>;
+using parse_error = sub_error<"parse_error"_tag, "url"_tag, "line"_tag, "column"_tag, "previous_msg"_tag, "parse_string"_tag>;
 
 /** Error to throw when an operation can not be executed due to the type of its operants.
 ** This is for example used in universal_type.
 **/
-using invalid_operation_error = sub_error<"invalid_op"_tag, "url"_tag, "line"_tag, "column"_tag, "offset"_tag, "previous_msg"_tag>;
+using invalid_operation_error = sub_error<"invalid_op"_tag, "url"_tag, "line"_tag, "column"_tag, "previous_msg"_tag>;
 
 using url_error = sub_error<"url_error"_tag, "url"_tag>;
 using io_error = sub_error<"io_error"_tag, "url"_tag, "errno"_tag, "error_message"_tag>;

@@ -34,12 +34,32 @@ public:
     parse_location() noexcept : _file({}), _line(0), _column(0) {}
 
     /** Construct a location.
-     * @param file An URL to the file where the token was found.
-     * @param line Line number where the token was found.
-     * @param column Column where the token was found.
-     */
+    * @param file An URL to the file where the token was found.
+    * @param line Line number where the token was found.
+    * @param column Column where the token was found.
+    */
+    parse_location(std::shared_ptr<URL> const &file) noexcept : _file(file), _line(0), _column(0) {}
+
+    /** Construct a location.
+    * @param file An URL to the file where the token was found.
+    * @param line Line number where the token was found.
+    * @param column Column where the token was found.
+    */
+    parse_location(URL const &file) noexcept : _file(std::make_shared<URL>(std::move(file))), _line(0), _column(0) {}
+
+    /** Construct a location.
+    * @param file An URL to the file where the token was found.
+    * @param line Line number where the token was found.
+    * @param column Column where the token was found.
+    */
     parse_location(std::shared_ptr<URL> const &file, int line, int column) noexcept : _file(file), _line(line - 1), _column(column - 1) {}
-    
+
+    /** Construct a location.
+    * @param line Line number where the token was found.
+    * @param column Column where the token was found.
+    */
+    parse_location(int line, int column) noexcept : _file(), _line(line - 1), _column(column - 1) {}
+
     [[nodiscard]] bool has_file() const noexcept {
         return static_cast<bool>(_file);
     }
@@ -62,6 +82,10 @@ public:
 
     void set_file(std::shared_ptr<URL> file) {
         _file = std::move(file);
+    }
+
+    void set_file(URL file) {
+        _file = std::make_shared<URL>(std::move(file));
     }
 
     void set_line(int line) noexcept {

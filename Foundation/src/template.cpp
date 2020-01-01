@@ -6,11 +6,10 @@
 namespace TTauri {
 
 struct template_top_node final: template_node {
-    URL url;
     statement_vector children;
 
-    template_top_node(ssize_t offset, URL url) :
-        template_node(offset), url(std::move(url)), children() {}
+    template_top_node(parse_location location) :
+        template_node(std::move(location)), children() {}
 
     /** Append a template-piece to the current template.
     */
@@ -34,21 +33,7 @@ struct template_top_node final: template_node {
             return evaluate_children(context, children);
 
         } catch (error &e) {
-            e.set<"url"_tag>(url);
-
-            // Reopen the template file to calculate the line and column.
-            auto f = FileView(url);
-            auto v = f.string_view();
-
-            if (offset <= ssize(v)) {
-                ttauri_assert(e.has<"offset"_tag>());
-                ssize_t offset = static_cast<ssize_t>(e.get<"offset"_tag>());
-
-                let [line, column] = count_line_and_columns(v.begin(), v.begin() + offset);
-                e.set<"line"_tag>(line);
-                e.set<"column"_tag>(column);
-            }
-
+            e.merge_location(location);
             throw;
         }
     }
@@ -62,8 +47,8 @@ struct template_top_node final: template_node {
 struct template_string_node final: template_node {
     std::string text;
 
-    template_string_node(ssize_t offset, std::string text) :
-        template_node(offset), text(std::move(text)) {}
+    template_string_node(parse_location location, std::string text) :
+        template_node(std::move(location)), text(std::move(text)) {}
 
     [[nodiscard]] bool should_left_align() const noexcept override { return false; }
 
@@ -99,8 +84,8 @@ struct template_string_node final: template_node {
 struct template_placeholder_node final: template_node {
     std::unique_ptr<expression_node> expression;
 
-    template_placeholder_node(ssize_t offset, std::unique_ptr<expression_node> expression) :
-        template_node(offset), expression(std::move(expression)) {}
+    template_placeholder_node(parse_location location, std::unique_ptr<expression_node> expression) :
+        template_node(std::move(location)), expression(std::move(expression)) {}
 
     [[nodiscard]] bool should_left_align() const noexcept override { return false; }
 
@@ -108,8 +93,7 @@ struct template_placeholder_node final: template_node {
         try {
             expression->post_process(context);
         } catch (parse_error &e) {
-            ttauri_assert(e.has<"offset"_tag>());
-            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            e.merge_location(location);
             throw;
         }
     }
@@ -121,16 +105,12 @@ struct template_placeholder_node final: template_node {
     datum evaluate(expression_evaluation_context &context) override {
         let output_size = context.output_size();
 
-        let tmp = evaluate_expression(context, *expression, offset);
+        let tmp = evaluate_expression(context, *expression, location);
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_undefined()) {
             return {};
@@ -147,11 +127,11 @@ struct template_placeholder_node final: template_node {
 struct template_expression_node final: template_node {
     std::unique_ptr<expression_node> expression;
 
-    template_expression_node(ssize_t offset, std::unique_ptr<expression_node> expression) :
-        template_node(offset), expression(std::move(expression)) {}
+    template_expression_node(parse_location location, std::unique_ptr<expression_node> expression) :
+        template_node(std::move(location)), expression(std::move(expression)) {}
 
     void post_process(expression_post_process_context &context) override {
-        post_process_expression(context, *expression, offset);
+        post_process_expression(context, *expression, location);
     }
 
     std::string string() const noexcept override {
@@ -159,16 +139,12 @@ struct template_expression_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let tmp = evaluate_expression_without_output(context, *expression, offset);
+        let tmp = evaluate_expression_without_output(context, *expression, location);
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
 
         } else {
             return {};
@@ -179,28 +155,28 @@ struct template_expression_node final: template_node {
 struct template_if_node final: template_node {
     std::vector<statement_vector> children_groups;
     std::vector<std::unique_ptr<expression_node>> expressions;
-    std::vector<ssize_t> expression_offsets;
+    std::vector<parse_location> expression_locations;
 
-    template_if_node(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept :
-        template_node(offset)
+    template_if_node(parse_location location, std::unique_ptr<expression_node> expression) noexcept :
+        template_node(location)
     {
         expressions.push_back(std::move(expression));
-        expression_offsets.push_back(offset);
+        expression_locations.push_back(location);
         children_groups.emplace_back();
     }
 
-    bool found_elif(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept override {
+    bool found_elif(parse_location location, std::unique_ptr<expression_node> expression) noexcept override {
         if (children_groups.size() != expressions.size()) {
             return false;
         }
 
         expressions.push_back(std::move(expression));
-        expression_offsets.push_back(offset);
+        expression_locations.push_back(std::move(location));
         children_groups.emplace_back();
         return true;
     }
 
-    bool found_else(ssize_t offset) noexcept override {
+    bool found_else(parse_location location) noexcept override {
         if (children_groups.size() != expressions.size()) {
             return false;
         }
@@ -217,9 +193,9 @@ struct template_if_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        ttauri_assert(ssize(expressions) == ssize(expression_offsets));
+        ttauri_assert(ssize(expressions) == ssize(expression_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
-            post_process_expression(context, *expressions[i], expression_offsets[i]);
+            post_process_expression(context, *expressions[i], expression_locations[i]);
         }
 
         for (let &children: children_groups) {
@@ -234,9 +210,9 @@ struct template_if_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        ttauri_axiom(ssize(expressions) == ssize(expression_offsets));
+        ttauri_axiom(ssize(expressions) == ssize(expression_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
-            if (evaluate_expression_without_output(context, *expressions[i], expression_offsets[i])) {
+            if (evaluate_expression_without_output(context, *expressions[i], expression_locations[i])) {
                 return evaluate_children(context, children_groups[i]);
             }
         }
@@ -272,8 +248,8 @@ struct template_while_node final: template_node {
     statement_vector children;
     std::unique_ptr<expression_node> expression;
 
-    template_while_node(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept :
-        template_node(offset), expression(std::move(expression)) {}
+    template_while_node(parse_location location, std::unique_ptr<expression_node> expression) noexcept :
+        template_node(std::move(location)), expression(std::move(expression)) {}
 
     /** Append a template-piece to the current template.
     */
@@ -287,7 +263,7 @@ struct template_while_node final: template_node {
             children.back()->left_align();
         }
 
-        post_process_expression(context, *expression, offset);
+        post_process_expression(context, *expression, location);
         for (let &child: children) {
             child->post_process(context);
         }
@@ -297,7 +273,7 @@ struct template_while_node final: template_node {
         let output_size = context.output_size();
 
         ssize_t loop_count = 0;
-        while (evaluate_expression_without_output(context, *expression, offset)) {
+        while (evaluate_expression_without_output(context, *expression, location)) {
             context.loop_push(loop_count++);
             auto tmp = evaluate_children(context, children);
             context.loop_pop();
@@ -325,18 +301,18 @@ struct template_while_node final: template_node {
 struct template_do_node final: template_node {
     statement_vector children;
     std::unique_ptr<expression_node> expression;
-    ssize_t expression_offset;
+    parse_location expression_location;
 
-    template_do_node(ssize_t offset) noexcept :
-        template_node(offset) {}
+    template_do_node(parse_location location) noexcept :
+        template_node(std::move(location)) {}
 
 
-    bool found_while(ssize_t offset, std::unique_ptr<expression_node> x) noexcept override {
+    bool found_while(parse_location location, std::unique_ptr<expression_node> x) noexcept override {
         if (expression) {
             return false;
         } else {
             expression = std::move(x);
-            expression_offset = offset;
+            expression_location = std::move(location);
             return true;
         }
     }
@@ -357,7 +333,7 @@ struct template_do_node final: template_node {
             children.back()->left_align();
         }
 
-        post_process_expression(context, *expression, offset);
+        post_process_expression(context, *expression, location);
 
         for (let &child: children) {
             child->post_process(context);
@@ -382,7 +358,7 @@ struct template_do_node final: template_node {
                 return tmp;
             }
 
-        } while (evaluate_expression_without_output(context, *expression, offset));
+        } while (evaluate_expression_without_output(context, *expression, expression_location));
         return {};
     }
 
@@ -403,8 +379,8 @@ struct template_for_node final: template_node {
     statement_vector children;
     statement_vector else_children;
 
-    template_for_node(ssize_t offset, std::unique_ptr<expression_node> name_expression, std::unique_ptr<expression_node> list_expression) noexcept :
-        template_node(offset), name_expression(std::move(name_expression)), list_expression(std::move(list_expression)) {}
+    template_for_node(parse_location location, std::unique_ptr<expression_node> name_expression, std::unique_ptr<expression_node> list_expression) noexcept :
+        template_node(std::move(location)), name_expression(std::move(name_expression)), list_expression(std::move(list_expression)) {}
 
     /** Append a template-piece to the current template.
     */
@@ -417,7 +393,7 @@ struct template_for_node final: template_node {
         return true;
     }
 
-    bool found_else(ssize_t offset) noexcept override {
+    bool found_else(parse_location location) noexcept override {
         if (has_else) {
             return false;
         } else {
@@ -434,8 +410,8 @@ struct template_for_node final: template_node {
             else_children.back()->left_align();
         }
 
-        post_process_expression(context, *name_expression, offset);
-        post_process_expression(context, *list_expression, offset);
+        post_process_expression(context, *name_expression, location);
+        post_process_expression(context, *list_expression, location);
 
         for (let &child: children) {
             child->post_process(context);
@@ -446,12 +422,10 @@ struct template_for_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        auto list_data = evaluate_expression_without_output(context, *list_expression, offset);
+        auto list_data = evaluate_expression_without_output(context, *list_expression, location);
 
         if (!list_data.is_vector()) {
-            TTAURI_THROW(invalid_operation_error("Expecting expression returns a vector, got {}", list_data)
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Expecting expression returns a vector, got {}", list_data).set_location(location));
         }
 
         let output_size = context.output_size();
@@ -463,9 +437,7 @@ struct template_for_node final: template_node {
                 try {
                     name_expression->assign_without_output(context, item);
                 } catch (invalid_operation_error &e) {
-                    ttauri_assert(e.has<"offset"_tag>());
-                    e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
-                    throw;
+                    e.merge_location(location);
                 }
 
                 context.loop_push(loop_count++, loop_size);
@@ -516,8 +488,8 @@ struct template_function_node final: template_node {
 
     expression_post_process_context::function_type super_function;
 
-    template_function_node(ssize_t offset, expression_post_process_context &context, std::unique_ptr<expression_node> function_declaration_expression) noexcept :
-        template_node(offset)
+    template_function_node(parse_location location, expression_post_process_context &context, std::unique_ptr<expression_node> function_declaration_expression) noexcept :
+        template_node(std::move(location))
     {
         auto name_and_arguments = function_declaration_expression->get_name_and_argument_names();
         ttauri_assert(name_and_arguments.size() >= 1);
@@ -527,14 +499,13 @@ struct template_function_node final: template_node {
         argument_names = std::move(name_and_arguments);
 
         super_function = context.set_function(name,
-            [this,offset](expression_evaluation_context &context, datum::vector const &arguments) {
+            [this,&location](expression_evaluation_context &context, datum::vector const &arguments) {
                 try {
                     return this->evaluate_call(context, arguments);
                 } catch (error &e) {
-
                     TTAURI_THROW(invalid_operation_error("Failed during handling of function call")
-                        .set<"previous_msg"_tag>(to_string(e))
-                        .set<"offset"_tag>(offset)
+                        .caused_by(e)
+                        .set_location(location)
                     );
                 }
             }
@@ -567,9 +538,7 @@ struct template_function_node final: template_node {
     datum evaluate_call(expression_evaluation_context &context, datum::vector const &arguments) {
         context.push();
         if (ssize(argument_names) != ssize(arguments)) {
-            TTAURI_THROW(invalid_operation_error("Invalid number of arguments to function {}() expecting {} got {}.", name, argument_names.size(), arguments.size())
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Invalid number of arguments to function {}() expecting {} got {}.", name, argument_names.size(), arguments.size()).set_location(location));
         }
 
         for (ssize_t i = 0; i != ssize(argument_names); ++i) {
@@ -581,14 +550,10 @@ struct template_function_node final: template_node {
         context.pop();
 
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_undefined()) {
             return {};
@@ -620,8 +585,8 @@ struct template_block_node final: template_node {
     expression_post_process_context::function_type function;
     expression_post_process_context::function_type super_function;
 
-    template_block_node(ssize_t offset, expression_post_process_context &context, std::unique_ptr<expression_node> name_expression) noexcept :
-        template_node(offset), name(name_expression->get_name())
+    template_block_node(parse_location location, expression_post_process_context &context, std::unique_ptr<expression_node> name_expression) noexcept :
+        template_node(std::move(location)), name(name_expression->get_name())
     {
         name = name_expression->get_name();
 
@@ -659,28 +624,21 @@ struct template_block_node final: template_node {
         try {
             tmp = function(context, datum::vector{});
         } catch (invalid_operation_error &e) {
-            ttauri_assert(e.has<"offset"_tag>());
-            e.set<"offset"_tag>(offset + e.get<"offset"_tag>());
+            e.merge_location(location);
             throw;
         }
 
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            TTAURI_THROW(invalid_operation_error("Can not use a #return statement inside a #block.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Can not use a #return statement inside a #block.").set_location(location));
         }
     }
 
@@ -690,22 +648,16 @@ struct template_block_node final: template_node {
         context.pop();
 
         if (tmp.is_break()) {
-            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_continue()) {
-            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Found #continue not inside a loop statement.").set_location(location));
 
         } else if (tmp.is_undefined()) {
             return {};
 
         } else {
-            TTAURI_THROW(invalid_operation_error("Can not use a #return statement inside a #block.")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Can not use a #return statement inside a #block.").set_location(location));
         }
     }
 
@@ -720,7 +672,7 @@ struct template_block_node final: template_node {
 
 
 struct template_break_node final: template_node {
-    template_break_node(ssize_t offset) noexcept : template_node(offset) {}
+    template_break_node(parse_location location) noexcept : template_node(std::move(location)) {}
 
     datum evaluate(expression_evaluation_context &context) override {
         return datum::_break{};
@@ -733,7 +685,7 @@ struct template_break_node final: template_node {
 };
 
 struct template_continue_node final: template_node {
-    template_continue_node(ssize_t offset) noexcept : template_node(offset) {}
+    template_continue_node(parse_location location) noexcept : template_node(std::move(location)) {}
 
     datum evaluate(expression_evaluation_context &context) override {
         return datum::_continue{};
@@ -747,15 +699,15 @@ struct template_continue_node final: template_node {
 struct template_return_node final: template_node {
     std::unique_ptr<expression_node> expression;
 
-    template_return_node(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept :
-        template_node(offset), expression(std::move(expression)) {}
+    template_return_node(parse_location location, std::unique_ptr<expression_node> expression) noexcept :
+        template_node(std::move(location)), expression(std::move(expression)) {}
 
     void post_process(expression_post_process_context &context) override {
-        post_process_expression(context, *expression, offset);
+        post_process_expression(context, *expression, location);
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        return evaluate_expression_without_output(context, *expression, offset);
+        return evaluate_expression_without_output(context, *expression, location);
     }
 
     std::string string() const noexcept override {
@@ -769,27 +721,26 @@ struct template_return_node final: template_node {
 }
 
 template_parse_context::template_parse_context(URL const &url, const_iterator first, const_iterator last) :
-    url(url), first(first), last(last), text_it(first)
+    location(url), index(first), last(last)
 {
-    push<template_top_node>(0, url);
+    push<template_top_node>(location);
 }
 
 std::unique_ptr<expression_node> template_parse_context::parse_expression(std::string_view end_text) {
-    let expression_last = find_end_of_expression(text_it, last, end_text);
+    let expression_last = find_end_of_expression(index, last, end_text);
 
-    auto context = expression_parse_context(text_it, expression_last);
+    auto context = expression_parse_context(index, expression_last);
 
     std::unique_ptr<expression_node> expression;
 
     try {
         expression = ::TTauri::parse_expression(context);
     } catch (error &e) {
-        ttauri_assert(e.has<"offset"_tag>());
-        e.set<"offset"_tag>(offset() + e.get<"offset"_tag>());
+        e.merge_location(location);
         throw;
     }
 
-    text_it = expression_last;
+    (*this) += std::distance(index, expression_last);
     return expression;
 }
 
@@ -797,9 +748,7 @@ std::unique_ptr<expression_node> template_parse_context::parse_expression_and_ad
     auto expression = parse_expression(end_text);
 
     if (!starts_with_and_advance_over(end_text)) {
-        TTAURI_THROW(parse_error("Could not find '{}' after expression", end_text)
-            .set<"offset"_tag>(offset())
-        );
+        TTAURI_THROW(parse_error("Could not find '{}' after expression", end_text).set_location(location));
     }
 
     return expression;
@@ -827,16 +776,15 @@ std::unique_ptr<expression_node> template_parse_context::parse_expression_and_ad
 
 void template_parse_context::start_of_text_segment(int back_track) noexcept
 {
-    text_segment_start = text_it - back_track;
+    text_segment_start = index - back_track;
 }
 
 void template_parse_context::end_of_text_segment()
 {
     if (text_segment_start) {
-        if (text_it > *text_segment_start) {
-            let text_segment_offset = std::distance(first, *text_segment_start);
-            if (!append<template_string_node>(text_segment_offset, std::string(*text_segment_start, text_it))) {
-                TTAURI_THROW(parse_error("Unexpected text segment."));
+        if (index > *text_segment_start) {
+            if (!append<template_string_node>(location, std::string(*text_segment_start, index))) {
+                TTAURI_THROW(parse_error("Unexpected text segment.").set_location(location));
             }
         }
 
@@ -844,31 +792,31 @@ void template_parse_context::end_of_text_segment()
     }
 }
 
-[[nodiscard]] bool template_parse_context::found_elif(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept {
+[[nodiscard]] bool template_parse_context::found_elif(parse_location location, std::unique_ptr<expression_node> expression) noexcept {
     if (statement_stack.size() > 0) {
-        return statement_stack.back()->found_elif(offset, std::move(expression));
+        return statement_stack.back()->found_elif(std::move(location), std::move(expression));
     } else {
         return false;
     }
 }
 
-[[nodiscard]] bool template_parse_context::found_else(ssize_t offset) noexcept {
+[[nodiscard]] bool template_parse_context::found_else(parse_location location) noexcept {
     if (statement_stack.size() > 0) {
-        return statement_stack.back()->found_else(offset);
+        return statement_stack.back()->found_else(std::move(location));
     } else {
         return false;
     }
 }
 
-[[nodiscard]] bool template_parse_context::found_while(ssize_t offset, std::unique_ptr<expression_node> expression) noexcept {
+[[nodiscard]] bool template_parse_context::found_while(parse_location location, std::unique_ptr<expression_node> expression) noexcept {
     if (statement_stack.size() > 0) {
-        return statement_stack.back()->found_while(offset, std::move(expression));
+        return statement_stack.back()->found_while(std::move(location), std::move(expression));
     } else {
         return false;
     }
 }
 
-void template_parse_context::include(ssize_t offset, std::unique_ptr<expression_node> expression)
+void template_parse_context::include(parse_location location, std::unique_ptr<expression_node> expression)
 {
     auto post_process_context = expression_post_process_context();
     expression->post_process(post_process_context);
@@ -876,50 +824,49 @@ void template_parse_context::include(ssize_t offset, std::unique_ptr<expression_
     auto evaluation_context = expression_evaluation_context();
     let argument = expression->evaluate(evaluation_context);
 
-    let current_template_directory = url.urlByRemovingFilename();
+    let current_template_directory = location.has_file() ?
+        location.file().urlByRemovingFilename() :
+        URL::urlFromCurrentWorkingDirectory();
+
     let new_template_path = current_template_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
     if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_template(new_template_path))) {
-            TTAURI_THROW(parse_error("Unexpected #include statement")
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(parse_error("Unexpected #include statement").set_location(location));
         }
     } else {
-        TTAURI_THROW(parse_error("Unexpected #include statement, missing top-level")
-            .set<"offset"_tag>(offset)
-        );
+        TTAURI_THROW(parse_error("Unexpected #include statement, missing top-level").set_location(location));
     }
 }
 
 void parse_template_hash(template_parse_context &context)
 {
-    let offset = context.offset();
+    let &location = context.location;
 
     if (context.starts_with("end")) {
         context.advance_over("\n");
 
         if (!context.pop()) {
-            TTAURI_THROW(parse_error("Unexpected #end statement."));
+            TTAURI_THROW(parse_error("Unexpected #end statement.").set_location(location));
         }
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("#")) {
-        if (!context.append<template_expression_node>(offset, context.parse_expression_and_advance_over("\n"))) {
-            TTAURI_THROW(parse_error("Unexpected ## (expression) statement."));
+        if (!context.append<template_expression_node>(location, context.parse_expression_and_advance_over("\n"))) {
+            TTAURI_THROW(parse_error("Unexpected ## (expression) statement.").set_location(location));
         }
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("if ")) {
-        context.push<template_if_node>(offset, context.parse_expression_and_advance_over("\n"));
+        context.push<template_if_node>(location, context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("elif ")) {
-        if (!context.found_elif(offset, context.parse_expression_and_advance_over("\n"))) {
-            TTAURI_THROW(parse_error("Unexpected #elif statement."));
+        if (!context.found_elif(location, context.parse_expression_and_advance_over("\n"))) {
+            TTAURI_THROW(parse_error("Unexpected #elif statement.").set_location(location));
         }
 
         context.start_of_text_segment();
@@ -927,8 +874,8 @@ void parse_template_hash(template_parse_context &context)
     } else if (context.starts_with_and_advance_over("else")) {
         context.advance_over("\n");
 
-        if (!context.found_else(offset)) {
-            TTAURI_THROW(parse_error("Unexpected #else statement."));
+        if (!context.found_else(location)) {
+            TTAURI_THROW(parse_error("Unexpected #else statement.").set_location(location));
         }
 
         context.start_of_text_segment();
@@ -937,7 +884,7 @@ void parse_template_hash(template_parse_context &context)
         auto name_expression = context.parse_expression_and_advance_over("in");
         auto list_expression = context.parse_expression_and_advance_over("\n");
 
-        context.push<template_for_node>(offset, std::move(name_expression), std::move(list_expression));
+        context.push<template_for_node>(location, std::move(name_expression), std::move(list_expression));
 
         context.start_of_text_segment();
 
@@ -945,13 +892,13 @@ void parse_template_hash(template_parse_context &context)
         auto expression = context.parse_expression_and_advance_over("\n");
 
         if (context.top_statement_is_do()) {
-            if (!context.found_while(offset, std::move(expression))) {
-                TTAURI_THROW(parse_error("Unexpected #while statement; missing #do."));
+            if (!context.found_while(location, std::move(expression))) {
+                TTAURI_THROW(parse_error("Unexpected #while statement; missing #do.").set_location(location));
             }
 
             ttauri_assert(context.pop());
         } else {
-            context.push<template_while_node>(offset, std::move(expression));
+            context.push<template_while_node>(location, std::move(expression));
         }
 
         context.start_of_text_segment();
@@ -959,25 +906,25 @@ void parse_template_hash(template_parse_context &context)
     } else if (context.starts_with_and_advance_over("do")) {
         context.advance_over("\n");
 
-        context.push<template_do_node>(offset);
+        context.push<template_do_node>(location);
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("function ")) {
-        context.push<template_function_node>(offset, context.post_process_context, context.parse_expression_and_advance_over("\n"));
+        context.push<template_function_node>(location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("block ")) {
-        context.push<template_block_node>(offset, context.post_process_context, context.parse_expression_and_advance_over("\n"));
+        context.push<template_block_node>(location, context.post_process_context, context.parse_expression_and_advance_over("\n"));
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("break")) {
         context.advance_over("\n");
 
-        if (!context.append<template_break_node>(offset)) {
-            TTAURI_THROW(parse_error("Unexpected #break statement"));
+        if (!context.append<template_break_node>(location)) {
+            TTAURI_THROW(parse_error("Unexpected #break statement").set_location(location));
         }
 
         context.start_of_text_segment();
@@ -985,21 +932,21 @@ void parse_template_hash(template_parse_context &context)
     } else if (context.starts_with_and_advance_over("continue")) {
         context.advance_over("\n");
 
-        if (!context.append<template_continue_node>(offset)) {
-            TTAURI_THROW(parse_error("Unexpected #continue statement"));
+        if (!context.append<template_continue_node>(location)) {
+            TTAURI_THROW(parse_error("Unexpected #continue statement").set_location(location));
         }
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("return ")) {
-        if (!context.append<template_return_node>(offset, context.parse_expression_and_advance_over("\n"))) {
-            TTAURI_THROW(parse_error("Unexpected #return statement"));
+        if (!context.append<template_return_node>(location, context.parse_expression_and_advance_over("\n"))) {
+            TTAURI_THROW(parse_error("Unexpected #return statement").set_location(location));
         }
 
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("include ")) {
-        context.include(offset, context.parse_expression_and_advance_over("\n"));
+        context.include(location, context.parse_expression_and_advance_over("\n"));
         context.start_of_text_segment();
 
     } else { // Add '#' and the current character to text.
@@ -1010,11 +957,11 @@ void parse_template_hash(template_parse_context &context)
 
 void parse_template_dollar(template_parse_context &context)
 {
-    let offset = context.offset();
+    let &location = context.location;
 
     if (*context == '{') {
         ++context;
-        if (!context.append<template_placeholder_node>(offset, context.parse_expression_and_advance_over("}"))) {
+        if (!context.append<template_placeholder_node>(location, context.parse_expression_and_advance_over("}"))) {
             TTAURI_THROW(parse_error("Unexpected placeholder."));
         }
 
@@ -1047,12 +994,10 @@ void parse_template_escape(template_parse_context &context)
             return;
         }
     }
-    TTAURI_THROW(parse_error("Unexpected end-of-file after escape '\' character.")
-        .set<"offset"_tag>(context.offset())
-    );
+    TTAURI_THROW(parse_error("Unexpected end-of-file after escape '\' character.").set_location(context.location));
 }
 
-static std::unique_ptr<template_node> parse_template_1(template_parse_context &context)
+std::unique_ptr<template_node> parse_template(template_parse_context &context)
 {
     context.start_of_text_segment();
 
@@ -1083,9 +1028,9 @@ static std::unique_ptr<template_node> parse_template_1(template_parse_context &c
     context.end_of_text_segment();
 
     if (context.statement_stack.size() < 1) {
-        TTAURI_THROW(parse_error("Found to many #end statements."));
+        TTAURI_THROW(parse_error("Found to many #end statements.").set_location(context.location));
     } else if (context.statement_stack.size() > 1) {
-        TTAURI_THROW(parse_error("Missing #end statement."));
+        TTAURI_THROW(parse_error("Missing #end statement.").set_location(context.location));
     }
 
     auto top = std::move(context.statement_stack.back());
@@ -1093,21 +1038,6 @@ static std::unique_ptr<template_node> parse_template_1(template_parse_context &c
 
     top->post_process(context.post_process_context);
     return top;
-}
-
-std::unique_ptr<template_node> parse_template(template_parse_context &context)
-{
-    try {
-        return parse_template_1(context);
-    } catch (parse_error &e) {
-        e.set<"url"_tag>(context.url);
-        ssize_t offset = static_cast<ssize_t>(e.get<"offset"_tag>());
-
-        let [line, column] = count_line_and_columns(context.first, context.first + offset);
-        e.set<"line"_tag>(line);
-        e.set<"column"_tag>(column);
-        throw;
-    }
 }
 
 }
