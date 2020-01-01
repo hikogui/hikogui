@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/datum.hpp"
-#include "TTauri/Foundation/Location.hpp"
+#include "TTauri/Foundation/parse_location.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/tokenizer.hpp"
 #include <vector>
@@ -296,10 +296,6 @@ struct expression_parse_context {
     expression_parse_context(std::string_view::const_iterator first, std::string_view::const_iterator last) :
         first(first), last(last), tokens(parseTokens(first, last)), token_it(tokens.begin()) {}
 
-    ssize_t offset() const noexcept {
-        return std::distance(first, token_it->index);
-    }
-
     [[nodiscard]] token_t const& operator*() const noexcept {
         return *token_it;
     }
@@ -325,9 +321,9 @@ struct expression_parse_context {
 struct expression_node {
     using expression_vector = std::vector<std::unique_ptr<expression_node>>;
 
-    ssize_t offset;
+    parse_location location;
 
-    expression_node(ssize_t offset) : offset(offset) {}
+    expression_node(parse_location location) : location(location) {}
 
     virtual ~expression_node() {}
 
@@ -355,7 +351,7 @@ struct expression_node {
     /** Evaluate an existing lvalue.
      */
     virtual datum &evaluate_lvalue(expression_evaluation_context& context) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not a modifiable value.").set<"offset"_tag>(offset));
+        TTAURI_THROW(invalid_operation_error("Expression is not a modifiable value.").set_location(location));
     }
 
     virtual bool has_evaluate_xvalue() const {
@@ -365,7 +361,7 @@ struct expression_node {
     /** Evaluate an existing xvalue.
     */
     virtual datum const &evaluate_xvalue(expression_evaluation_context const& context) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not a xvalue.").set<"offset"_tag>(offset));
+        TTAURI_THROW(invalid_operation_error("Expression is not a xvalue.").set_location(location));
     }
 
     /** Assign to a non-existing or existing lvalue.
@@ -384,20 +380,20 @@ struct expression_node {
     /** Call a function with a datum::vector as arguments.
      */
     virtual datum call(expression_evaluation_context& context, datum::vector const &arguments) const {
-        TTAURI_THROW(invalid_operation_error("Expression is not callable.").set<"offset"_tag>(offset));
+        TTAURI_THROW(invalid_operation_error("Expression is not callable.").set_location(location));
     }
 
     /** Get the name of a expression_name_node.
     */
     virtual std::string get_name() const {
-        TTAURI_THROW(parse_error("Expect a name got {})", *this));
+        TTAURI_THROW(parse_error("Expect a name got {})", *this).set_location(location));
     }
 
     /** Get name and argument names from a function declaration.
      * This is only implemented on the expression_call_node.
      */
     virtual std::vector<std::string> get_name_and_argument_names() const {
-        TTAURI_THROW(parse_error("Expect a function definition got {})", *this));
+        TTAURI_THROW(parse_error("Expect a function definition got {})", *this).set_location(location));
     }
 
     virtual std::string string() const noexcept = 0;

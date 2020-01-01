@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/decimal.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/parse_location.hpp"
 #include <date/date.h>
 #include <memory>
 #include <string>
@@ -60,7 +61,7 @@ inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
 struct token_t {
     tokenizer_name_t name = tokenizer_name_t::NotAssigned;
     std::string value;
-    std::string_view::iterator index;
+    parse_location location;
     bool is_binary = false;
     int precedence = 0;
 

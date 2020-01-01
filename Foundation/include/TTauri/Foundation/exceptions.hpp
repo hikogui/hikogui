@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/string_tag.hpp"
 #include "TTauri/Foundation/tagged_map.hpp"
-#include "TTauri/Foundation/Location.hpp"
+#include "TTauri/Foundation/parse_location.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>
@@ -75,6 +75,15 @@ public:
         return set(InfoTag, datum{std::forward<InfoValueType>(info_value)});
     }
 
+    error &set_location(parse_location const &location) noexcept {
+        if (location.has_file()) {
+            set<"url"_tag>(location.file());
+        }
+        set<"line"_tag>(location.line());
+        set<"column"_tag>(location.column());
+        return *this;
+    }
+
     template<string_tag InfoTag>
     datum &get() noexcept {
         return get(InfoTag);
@@ -89,6 +98,8 @@ public:
     bool has() const noexcept {
         return has(InfoTag);
     }
+
+    
 
     friend std::string to_string(error const &rhs) {
         return rhs.string();
@@ -162,7 +173,7 @@ public:
         return *this;
     }
 
-    sub_error &set_location(Location const &location) noexcept {
+    sub_error &set_location(parse_location const &location) noexcept {
         if (location.has_file()) {
             set<"url"_tag>(location.file());
         }

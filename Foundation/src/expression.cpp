@@ -272,11 +272,11 @@ expression_post_process_context::filter_table expression_post_process_context::g
 struct expression_arguments final : expression_node {
     expression_vector args;
 
-    expression_arguments(ssize_t offset, expression_vector args) :
-        expression_node(offset), args(std::move(args)) {}
+    expression_arguments(parse_location location, expression_vector args) :
+        expression_node(std::move(location)), args(std::move(args)) {}
 
-    expression_arguments(ssize_t offset, std::unique_ptr<expression_node> arg1, std::unique_ptr<expression_node> arg2) :
-        expression_node(offset)
+    expression_arguments(parse_location location, std::unique_ptr<expression_node> arg1, std::unique_ptr<expression_node> arg2) :
+        expression_node(std::move(location))
     {
         args.push_back(std::move(arg1));
         args.push_back(std::move(arg2));
@@ -302,8 +302,8 @@ struct expression_arguments final : expression_node {
 struct expression_literal_node final : expression_node {
     datum value;
 
-    expression_literal_node(ssize_t offset, datum const& value) :
-        expression_node(offset), value(value) {}
+    expression_literal_node(parse_location location, datum const& value) :
+        expression_node(std::move(location)), value(value) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return value;
@@ -317,8 +317,8 @@ struct expression_literal_node final : expression_node {
 struct expression_vector_literal_node final : expression_node {
     expression_vector values;
 
-    expression_vector_literal_node(ssize_t offset, expression_vector values) :
-        expression_node(offset), values(std::move(values)) {}
+    expression_vector_literal_node(parse_location location, expression_vector values) :
+        expression_node(std::move(location)), values(std::move(values)) {}
 
     void post_process(expression_post_process_context& context) override {
         for (auto &value: values) {
@@ -336,13 +336,13 @@ struct expression_vector_literal_node final : expression_node {
 
     datum &assign(expression_evaluation_context& context, datum const &rhs) const override {
         if (!rhs.is_vector()) {
-            TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on vectors, got {}.", rhs).set<"offset"_tag>(offset));
+            TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on vectors, got {}.", rhs).set_location(location));
         }
         if (values.size() < 1) {
-            TTAURI_THROW(invalid_operation_error("Unpacking can only be done on 1 or more return values.").set<"offset"_tag>(offset));
+            TTAURI_THROW(invalid_operation_error("Unpacking can only be done on 1 or more return values.").set_location(location));
         }
         if (values.size() != rhs.size()) {
-            TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on with a vector of size {} got {}.", values.size(), rhs.size()).set<"offset"_tag>(offset));
+            TTAURI_THROW(invalid_operation_error("Unpacking values can only be done on with a vector of size {} got {}.", values.size(), rhs.size()).set_location(location));
         }
 
         // Make a copy, in case of self assignment.
@@ -378,8 +378,8 @@ struct expression_map_literal_node final : expression_node {
     expression_vector keys;
     expression_vector values;
 
-    expression_map_literal_node(ssize_t offset, expression_vector keys, expression_vector values) :
-        expression_node(offset), keys(std::move(keys)), values(std::move(values)) {}
+    expression_map_literal_node(parse_location location, expression_vector keys, expression_vector values) :
+        expression_node(std::move(location)), keys(std::move(keys)), values(std::move(values)) {}
 
     void post_process(expression_post_process_context& context) override {
         for (auto &key: keys) {
@@ -427,13 +427,13 @@ struct expression_name_node final : expression_node {
     std::string name;
     mutable expression_post_process_context::function_type function;
 
-    expression_name_node(ssize_t offset, std::string_view name) :
-        expression_node(offset), name(name) {}
+    expression_name_node(parse_location location, std::string_view name) :
+        expression_node(std::move(location)), name(name) {}
 
     void resolve_function_pointer(expression_post_process_context& context) override {
         function = context.get_function(name);
         if (!function) {
-            TTAURI_THROW(parse_error("Could not find function {}()", name).set<"offset"_tag>(offset));
+            TTAURI_THROW(parse_error("Could not find function {}()", name).set_location(location));
         }
     }
 
@@ -443,7 +443,7 @@ struct expression_name_node final : expression_node {
         try {
             return const_context.get(name);
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -452,7 +452,7 @@ struct expression_name_node final : expression_node {
         try {
             return context.get(name);
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -467,7 +467,7 @@ struct expression_name_node final : expression_node {
         try {
             return context.get(name);
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -476,7 +476,7 @@ struct expression_name_node final : expression_node {
         try {
             return context.set(name, rhs);
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -499,11 +499,11 @@ struct expression_call_node final : expression_node {
     expression_vector args;
 
     expression_call_node(
-        ssize_t offset,
+        parse_location location,
         std::unique_ptr<expression_node> lhs,
         std::unique_ptr<expression_node> rhs
     ) :
-        expression_node(offset), lhs(std::move(lhs))
+        expression_node(std::move(location)), lhs(std::move(lhs))
     {
         auto rhs_ = dynamic_cast<expression_arguments*>(rhs.get());
         ttauri_assert(rhs_ != nullptr);
@@ -563,8 +563,8 @@ struct expression_call_node final : expression_node {
 struct expression_unary_operator_node : expression_node {
     std::unique_ptr<expression_node> rhs;
 
-    expression_unary_operator_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_node(offset), rhs(std::move(rhs)) {}
+    expression_unary_operator_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_node(std::move(location)), rhs(std::move(rhs)) {}
 
     void post_process(expression_post_process_context& context) override {
         rhs->post_process(context);
@@ -579,8 +579,8 @@ struct expression_binary_operator_node : expression_node {
     std::unique_ptr<expression_node> lhs;
     std::unique_ptr<expression_node> rhs;
 
-    expression_binary_operator_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_node(offset), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
+    expression_binary_operator_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_node(std::move(location)), lhs(std::move(lhs)), rhs(std::move(rhs)) {}
 
     void post_process(expression_post_process_context& context) override {
         lhs->post_process(context);
@@ -597,8 +597,8 @@ struct expression_ternary_operator_node final : expression_node {
     std::unique_ptr<expression_node> rhs_true;
     std::unique_ptr<expression_node> rhs_false;
 
-    expression_ternary_operator_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> pair) :
-        expression_node(offset), lhs(std::move(lhs))
+    expression_ternary_operator_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> pair) :
+        expression_node(std::move(location)), lhs(std::move(lhs))
     {
         expression_arguments* pair_ = dynamic_cast<expression_arguments*>(pair.get());
         ttauri_assert(pair_ != nullptr);
@@ -630,15 +630,15 @@ struct expression_ternary_operator_node final : expression_node {
 };
 
 struct expression_plus_node final : expression_unary_operator_node {
-    expression_plus_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_unary_operator_node(offset, std::move(rhs)) {}
+    expression_plus_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_unary_operator_node(std::move(location), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
         try {
             return +rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -649,15 +649,15 @@ struct expression_plus_node final : expression_unary_operator_node {
 };
 
 struct expression_minus_node final : expression_unary_operator_node {
-    expression_minus_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_unary_operator_node(offset, std::move(rhs)) {}
+    expression_minus_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_unary_operator_node(std::move(location), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
         try {
             return -rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -668,15 +668,15 @@ struct expression_minus_node final : expression_unary_operator_node {
 };
 
 struct expression_invert_node final : expression_unary_operator_node {
-    expression_invert_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_unary_operator_node(offset, std::move(rhs)) {}
+    expression_invert_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_unary_operator_node(std::move(location), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
         try {
             return ~rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -687,15 +687,15 @@ struct expression_invert_node final : expression_unary_operator_node {
 };
 
 struct expression_logical_not_node final : expression_unary_operator_node {
-    expression_logical_not_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_unary_operator_node(offset, std::move(rhs)) {}
+    expression_logical_not_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_unary_operator_node(std::move(location), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
         try {
             return !rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -706,15 +706,15 @@ struct expression_logical_not_node final : expression_unary_operator_node {
 };
 
 struct expression_increment_node final : expression_unary_operator_node {
-    expression_increment_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_unary_operator_node(offset, std::move(rhs)) {}
+    expression_increment_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_unary_operator_node(std::move(location), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto &rhs_ = rhs->evaluate_lvalue(context);
         try {
             return ++rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -725,15 +725,15 @@ struct expression_increment_node final : expression_unary_operator_node {
 };
 
 struct expression_decrement_node final : expression_unary_operator_node {
-    expression_decrement_node(ssize_t offset, std::unique_ptr<expression_node> rhs) :
-        expression_unary_operator_node(offset, std::move(rhs)) {}
+    expression_decrement_node(parse_location location, std::unique_ptr<expression_node> rhs) :
+        expression_unary_operator_node(std::move(location), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto &rhs_ = rhs->evaluate_lvalue(context);
         try {
             return --rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -744,8 +744,8 @@ struct expression_decrement_node final : expression_unary_operator_node {
 };
 
 struct expression_add_node final : expression_binary_operator_node {
-    expression_add_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_add_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -753,7 +753,7 @@ struct expression_add_node final : expression_binary_operator_node {
         try {
             return lhs_ + rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -764,8 +764,8 @@ struct expression_add_node final : expression_binary_operator_node {
 };
 
 struct expression_sub_node final : expression_binary_operator_node {
-    expression_sub_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_sub_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -773,7 +773,7 @@ struct expression_sub_node final : expression_binary_operator_node {
         try {
             return lhs_ - rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -784,8 +784,8 @@ struct expression_sub_node final : expression_binary_operator_node {
 };
 
 struct expression_mul_node final : expression_binary_operator_node {
-    expression_mul_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_mul_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -793,7 +793,7 @@ struct expression_mul_node final : expression_binary_operator_node {
         try {
             return lhs_ * rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -804,8 +804,8 @@ struct expression_mul_node final : expression_binary_operator_node {
 };
 
 struct expression_div_node final : expression_binary_operator_node {
-    expression_div_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_div_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -813,7 +813,7 @@ struct expression_div_node final : expression_binary_operator_node {
         try {
             return lhs_ / rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -824,8 +824,8 @@ struct expression_div_node final : expression_binary_operator_node {
 };
 
 struct expression_mod_node final : expression_binary_operator_node {
-    expression_mod_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_mod_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -833,7 +833,7 @@ struct expression_mod_node final : expression_binary_operator_node {
         try {
             return lhs_ % rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -844,8 +844,8 @@ struct expression_mod_node final : expression_binary_operator_node {
 };
 
 struct expression_pow_node final : expression_binary_operator_node {
-    expression_pow_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_pow_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -853,7 +853,7 @@ struct expression_pow_node final : expression_binary_operator_node {
         try {
             return pow(lhs_, rhs_);
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -864,8 +864,8 @@ struct expression_pow_node final : expression_binary_operator_node {
 };
 
 struct expression_logical_and_node final : expression_binary_operator_node {
-    expression_logical_and_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_logical_and_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -882,8 +882,8 @@ struct expression_logical_and_node final : expression_binary_operator_node {
 };
 
 struct expression_logical_or_node final : expression_binary_operator_node {
-    expression_logical_or_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_logical_or_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -900,8 +900,8 @@ struct expression_logical_or_node final : expression_binary_operator_node {
 };
 
 struct expression_bit_and_node final : expression_binary_operator_node {
-    expression_bit_and_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_bit_and_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -909,7 +909,7 @@ struct expression_bit_and_node final : expression_binary_operator_node {
         try {
             return lhs_ & rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -920,8 +920,8 @@ struct expression_bit_and_node final : expression_binary_operator_node {
 };
 
 struct expression_bit_or_node final : expression_binary_operator_node {
-    expression_bit_or_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_bit_or_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -929,7 +929,7 @@ struct expression_bit_or_node final : expression_binary_operator_node {
         try {
             return lhs_ | rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -940,8 +940,8 @@ struct expression_bit_or_node final : expression_binary_operator_node {
 };
 
 struct expression_bit_xor_node final : expression_binary_operator_node {
-    expression_bit_xor_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_bit_xor_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -949,7 +949,7 @@ struct expression_bit_xor_node final : expression_binary_operator_node {
         try {
             return lhs_ ^ rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -960,8 +960,8 @@ struct expression_bit_xor_node final : expression_binary_operator_node {
 };
 
 struct expression_shl_node final : expression_binary_operator_node {
-    expression_shl_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_shl_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -969,7 +969,7 @@ struct expression_shl_node final : expression_binary_operator_node {
         try {
             return lhs_ << rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -980,8 +980,8 @@ struct expression_shl_node final : expression_binary_operator_node {
 };
 
 struct expression_shr_node final : expression_binary_operator_node {
-    expression_shr_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_shr_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
@@ -989,7 +989,7 @@ struct expression_shr_node final : expression_binary_operator_node {
         try {
             return lhs_ >> rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1000,8 +1000,8 @@ struct expression_shr_node final : expression_binary_operator_node {
 };
 
 struct expression_eq_node final : expression_binary_operator_node {
-    expression_eq_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_eq_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) == rhs->evaluate(context);
@@ -1013,8 +1013,8 @@ struct expression_eq_node final : expression_binary_operator_node {
 };
 
 struct expression_ne_node final : expression_binary_operator_node {
-    expression_ne_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_ne_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) != rhs->evaluate(context);
@@ -1026,8 +1026,8 @@ struct expression_ne_node final : expression_binary_operator_node {
 };
 
 struct expression_lt_node final : expression_binary_operator_node {
-    expression_lt_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_lt_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) < rhs->evaluate(context);
@@ -1039,8 +1039,8 @@ struct expression_lt_node final : expression_binary_operator_node {
 };
 
 struct expression_gt_node final : expression_binary_operator_node {
-    expression_gt_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_gt_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) > rhs->evaluate(context);
@@ -1052,8 +1052,8 @@ struct expression_gt_node final : expression_binary_operator_node {
 };
 
 struct expression_le_node final : expression_binary_operator_node {
-    expression_le_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_le_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) <= rhs->evaluate(context);
@@ -1065,8 +1065,8 @@ struct expression_le_node final : expression_binary_operator_node {
 };
 
 struct expression_ge_node final : expression_binary_operator_node {
-    expression_ge_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_ge_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         return lhs->evaluate(context) >= rhs->evaluate(context);
@@ -1081,19 +1081,19 @@ struct expression_member_node final : expression_binary_operator_node {
     mutable expression_post_process_context::method_type method;
     expression_name_node* rhs_name;
 
-    expression_member_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs))
+    expression_member_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
     {
         rhs_name = dynamic_cast<expression_name_node*>(this->rhs.get());
         if (rhs_name == nullptr) {
-            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a member accessor. got {}.", rhs).set<"offset"_tag>(offset));
+            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a member accessor. got {}.", rhs).set_location(location));
         }
     }
 
     void resolve_function_pointer(expression_post_process_context& context) override {
         method = context.get_method(rhs_name->name);
         if (!method) {
-            TTAURI_THROW(parse_error("Could not find method .{}().", rhs_name->name).set<"offset"_tag>(offset));
+            TTAURI_THROW(parse_error("Could not find method .{}().", rhs_name->name).set_location(location));
         }
     }
 
@@ -1102,14 +1102,12 @@ struct expression_member_node final : expression_binary_operator_node {
             let &lhs_ = lhs->evaluate_xvalue(context);
 
             if (!lhs_.contains(rhs_name->name)) {
-                TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name)
-                    .set<"offset"_tag>(offset)
-                );
+                TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name).set_location(location));
             }
             try {
                 return lhs_[rhs_name->name];
             } catch (error &e) {
-                e.set<"offset"_tag>(offset);
+                e.set_location(location);
                 throw;
             }
 
@@ -1117,14 +1115,12 @@ struct expression_member_node final : expression_binary_operator_node {
             let lhs_ = lhs->evaluate(context);
 
             if (!lhs_.contains(rhs_name->name)) {
-                TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name)
-                    .set<"offset"_tag>(offset)
-                );
+                TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name).set_location(location));
             }
             try {
                 return lhs_[rhs_name->name];
             } catch (error &e) {
-                e.set<"offset"_tag>(offset);
+                e.set_location(location);
                 throw;
             }
         }
@@ -1135,7 +1131,7 @@ struct expression_member_node final : expression_binary_operator_node {
         try {
             return lhs_[rhs_name->name];
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1145,7 +1141,7 @@ struct expression_member_node final : expression_binary_operator_node {
         try {
             return method(context, lhs_, arguments);
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1159,12 +1155,12 @@ struct expression_filter_node final : expression_binary_operator_node {
     mutable expression_post_process_context::filter_type filter;
     expression_name_node* rhs_name;
 
-    expression_filter_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs))
+    expression_filter_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs))
     {
         rhs_name = dynamic_cast<expression_name_node*>(this->rhs.get());
         if (rhs_name == nullptr) {
-            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a filter operator. got {}.", rhs).set<"offset"_tag>(offset));
+            TTAURI_THROW(parse_error("Expecting a name token on the right hand side of a filter operator. got {}.", rhs).set_location(location));
         }
     }
 
@@ -1173,7 +1169,7 @@ struct expression_filter_node final : expression_binary_operator_node {
 
         filter = context.get_filter(rhs_name->name);
         if (!filter) {
-            TTAURI_THROW(parse_error("Could not find filter .{}().", rhs_name->name).set<"offset"_tag>(offset));
+            TTAURI_THROW(parse_error("Could not find filter .{}().", rhs_name->name).set_location(location));
         }
     }
 
@@ -1182,7 +1178,7 @@ struct expression_filter_node final : expression_binary_operator_node {
         try {
             return {filter(static_cast<std::string>(lhs_))};
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1193,23 +1189,21 @@ struct expression_filter_node final : expression_binary_operator_node {
 };
 
 struct expression_index_node final : expression_binary_operator_node {
-    expression_index_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_index_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto lhs_ = lhs->evaluate(context);
         auto rhs_ = rhs->evaluate(context);
 
         if (!lhs_.contains(rhs_)) {
-            TTAURI_THROW(invalid_operation_error("Unknown key '{}'", rhs_)
-                .set<"offset"_tag>(offset)
-            );
+            TTAURI_THROW(invalid_operation_error("Unknown key '{}'", rhs_).set_location(location));
         }
 
         try {
             return lhs_[rhs_];
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1220,7 +1214,7 @@ struct expression_index_node final : expression_binary_operator_node {
         try {
             return lhs_[rhs_];
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1231,8 +1225,8 @@ struct expression_index_node final : expression_binary_operator_node {
 };
 
 struct expression_assign_node final : expression_binary_operator_node {
-    expression_assign_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_assign_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1245,8 +1239,8 @@ struct expression_assign_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_add_node final : expression_binary_operator_node {
-    expression_inplace_add_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_add_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1255,7 +1249,7 @@ struct expression_inplace_add_node final : expression_binary_operator_node {
         try {
             return lhs_ += rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1266,8 +1260,8 @@ struct expression_inplace_add_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_sub_node final : expression_binary_operator_node {
-    expression_inplace_sub_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_sub_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1276,7 +1270,7 @@ struct expression_inplace_sub_node final : expression_binary_operator_node {
         try {
             return lhs_ -= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1287,8 +1281,8 @@ struct expression_inplace_sub_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_mul_node final : expression_binary_operator_node {
-    expression_inplace_mul_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_mul_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1297,7 +1291,7 @@ struct expression_inplace_mul_node final : expression_binary_operator_node {
         try {
             return lhs_ *= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1308,8 +1302,8 @@ struct expression_inplace_mul_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_div_node final : expression_binary_operator_node {
-    expression_inplace_div_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_div_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1318,7 +1312,7 @@ struct expression_inplace_div_node final : expression_binary_operator_node {
         try {
             return lhs_ /= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1329,8 +1323,8 @@ struct expression_inplace_div_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_mod_node final : expression_binary_operator_node {
-    expression_inplace_mod_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_mod_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1339,7 +1333,7 @@ struct expression_inplace_mod_node final : expression_binary_operator_node {
         try {
             return lhs_ %= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1350,8 +1344,8 @@ struct expression_inplace_mod_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_shl_node final : expression_binary_operator_node {
-    expression_inplace_shl_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_shl_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1360,7 +1354,7 @@ struct expression_inplace_shl_node final : expression_binary_operator_node {
         try {
             return lhs_ <<= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1371,8 +1365,8 @@ struct expression_inplace_shl_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_shr_node final : expression_binary_operator_node {
-    expression_inplace_shr_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_shr_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1381,7 +1375,7 @@ struct expression_inplace_shr_node final : expression_binary_operator_node {
         try {
             return lhs_ >>= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1392,8 +1386,8 @@ struct expression_inplace_shr_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_and_node final : expression_binary_operator_node {
-    expression_inplace_and_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_and_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1402,7 +1396,7 @@ struct expression_inplace_and_node final : expression_binary_operator_node {
         try {
             return lhs_ &= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1413,8 +1407,8 @@ struct expression_inplace_and_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_or_node final : expression_binary_operator_node {
-    expression_inplace_or_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_or_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1423,7 +1417,7 @@ struct expression_inplace_or_node final : expression_binary_operator_node {
         try {
             return lhs_ |= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1434,8 +1428,8 @@ struct expression_inplace_or_node final : expression_binary_operator_node {
 };
 
 struct expression_inplace_xor_node final : expression_binary_operator_node {
-    expression_inplace_xor_node(ssize_t offset, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
-        expression_binary_operator_node(offset, std::move(lhs), std::move(rhs)) {}
+    expression_inplace_xor_node(parse_location location, std::unique_ptr<expression_node> lhs, std::unique_ptr<expression_node> rhs) :
+        expression_binary_operator_node(std::move(location), std::move(lhs), std::move(rhs)) {}
 
     datum evaluate(expression_evaluation_context& context) const override {
         auto rhs_ = rhs->evaluate(context);
@@ -1444,7 +1438,7 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
         try {
             return lhs_ ^= rhs_;
         } catch (error &e) {
-            e.set<"offset"_tag>(offset);
+            e.set_location(location);
             throw;
         }
     }
@@ -1466,58 +1460,56 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
 static std::unique_ptr<expression_node> parse_operation_expression(
     expression_parse_context& context, std::unique_ptr<expression_node> lhs, token_t const& op, std::unique_ptr<expression_node> rhs
 ) {
-    let offset = std::distance(context.first, op.index);
-
     if (lhs) {
         // Binary operator
         switch (operator_to_int(op.value.data())) {
-        case operator_to_int("."): return std::make_unique<expression_member_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("**"): return std::make_unique<expression_pow_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("*"): return std::make_unique<expression_mul_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("/"): return std::make_unique<expression_div_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("%"): return std::make_unique<expression_mod_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("+"): return std::make_unique<expression_add_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("-"): return std::make_unique<expression_sub_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("<<"): return std::make_unique<expression_shl_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int(">>"): return std::make_unique<expression_shr_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("<"): return std::make_unique<expression_lt_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int(">"): return std::make_unique<expression_gt_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("<="): return std::make_unique<expression_le_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int(">="): return std::make_unique<expression_ge_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("=="): return std::make_unique<expression_eq_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("!="): return std::make_unique<expression_ne_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("&"): return std::make_unique<expression_bit_and_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("^"): return std::make_unique<expression_bit_xor_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("|"): return std::make_unique<expression_bit_or_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("&&"): return std::make_unique<expression_logical_and_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("||"): return std::make_unique<expression_logical_or_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("?"): return std::make_unique<expression_ternary_operator_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("["): return std::make_unique<expression_index_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("("): return std::make_unique<expression_call_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("="): return std::make_unique<expression_assign_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("+="): return std::make_unique<expression_inplace_add_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("-="): return std::make_unique<expression_inplace_sub_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("*="): return std::make_unique<expression_inplace_mul_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("/="): return std::make_unique<expression_inplace_div_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("%="): return std::make_unique<expression_inplace_mod_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("<<="): return std::make_unique<expression_inplace_shl_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int(">>="): return std::make_unique<expression_inplace_shr_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("&="): return std::make_unique<expression_inplace_and_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("|="): return std::make_unique<expression_inplace_or_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("^="): return std::make_unique<expression_inplace_xor_node>(offset, std::move(lhs), std::move(rhs));
-        case operator_to_int("!"): return std::make_unique<expression_filter_node>(offset, std::move(lhs), std::move(rhs));
-        default: TTAURI_THROW(parse_error("Unexpected binary operator {}", op).set<"offset"_tag>(offset));
+        case operator_to_int("."): return std::make_unique<expression_member_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("**"): return std::make_unique<expression_pow_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("*"): return std::make_unique<expression_mul_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("/"): return std::make_unique<expression_div_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("%"): return std::make_unique<expression_mod_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("+"): return std::make_unique<expression_add_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("-"): return std::make_unique<expression_sub_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<<"): return std::make_unique<expression_shl_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">>"): return std::make_unique<expression_shr_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<"): return std::make_unique<expression_lt_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">"): return std::make_unique<expression_gt_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<="): return std::make_unique<expression_le_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">="): return std::make_unique<expression_ge_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("=="): return std::make_unique<expression_eq_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("!="): return std::make_unique<expression_ne_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&"): return std::make_unique<expression_bit_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("^"): return std::make_unique<expression_bit_xor_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("|"): return std::make_unique<expression_bit_or_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&&"): return std::make_unique<expression_logical_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("||"): return std::make_unique<expression_logical_or_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("?"): return std::make_unique<expression_ternary_operator_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("["): return std::make_unique<expression_index_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("("): return std::make_unique<expression_call_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("="): return std::make_unique<expression_assign_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("+="): return std::make_unique<expression_inplace_add_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("-="): return std::make_unique<expression_inplace_sub_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("*="): return std::make_unique<expression_inplace_mul_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("/="): return std::make_unique<expression_inplace_div_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("%="): return std::make_unique<expression_inplace_mod_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("<<="): return std::make_unique<expression_inplace_shl_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int(">>="): return std::make_unique<expression_inplace_shr_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("&="): return std::make_unique<expression_inplace_and_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("|="): return std::make_unique<expression_inplace_or_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("^="): return std::make_unique<expression_inplace_xor_node>(op.location, std::move(lhs), std::move(rhs));
+        case operator_to_int("!"): return std::make_unique<expression_filter_node>(op.location, std::move(lhs), std::move(rhs));
+        default: TTAURI_THROW(parse_error("Unexpected binary operator {}", op).set_location(op.location));
         }
     } else {
         // Unary operator
         switch (operator_to_int(op.value.data())) {
-        case operator_to_int("+"): return std::make_unique<expression_plus_node>(offset, std::move(rhs));
-        case operator_to_int("-"): return std::make_unique<expression_minus_node>(offset, std::move(rhs));
-        case operator_to_int("~"): return std::make_unique<expression_invert_node>(offset, std::move(rhs));
-        case operator_to_int("!"): return std::make_unique<expression_logical_not_node>(offset, std::move(rhs));
-        case operator_to_int("++"): return std::make_unique<expression_increment_node>(offset, std::move(rhs));
-        case operator_to_int("--"): return std::make_unique<expression_decrement_node>(offset, std::move(rhs));
-        default: TTAURI_THROW(parse_error("Unexpected unary operator {}", op).set<"offset"_tag>(offset));
+        case operator_to_int("+"): return std::make_unique<expression_plus_node>(op.location, std::move(rhs));
+        case operator_to_int("-"): return std::make_unique<expression_minus_node>(op.location, std::move(rhs));
+        case operator_to_int("~"): return std::make_unique<expression_invert_node>(op.location, std::move(rhs));
+        case operator_to_int("!"): return std::make_unique<expression_logical_not_node>(op.location, std::move(rhs));
+        case operator_to_int("++"): return std::make_unique<expression_increment_node>(op.location, std::move(rhs));
+        case operator_to_int("--"): return std::make_unique<expression_decrement_node>(op.location, std::move(rhs));
+        default: TTAURI_THROW(parse_error("Unexpected unary operator {}", op).set_location(op.location));
         }
     }
 }
@@ -1533,36 +1525,37 @@ static std::unique_ptr<expression_node> parse_operation_expression(
     */
 static std::unique_ptr<expression_node> parse_primary_expression(expression_parse_context& context)
 {
-    let offset = context.offset();
+    let &location = context->location;
+
     switch (context->name) {
     case tokenizer_name_t::IntegerLiteral:
-        return std::make_unique<expression_literal_node>(offset, static_cast<long long>(*context++));
+        return std::make_unique<expression_literal_node>(location, static_cast<long long>(*context++));
 
     case tokenizer_name_t::FloatLiteral:
-        return std::make_unique<expression_literal_node>(offset, static_cast<double>(*context++));
+        return std::make_unique<expression_literal_node>(location, static_cast<double>(*context++));
 
     case tokenizer_name_t::StringLiteral:
-        return std::make_unique<expression_literal_node>(offset, static_cast<std::string>(*context++));
+        return std::make_unique<expression_literal_node>(location, static_cast<std::string>(*context++));
 
     case tokenizer_name_t::Name:
         if (*context == "true") {
             ++context;
-            return std::make_unique<expression_literal_node>(offset, true);
+            return std::make_unique<expression_literal_node>(location, true);
 
         } else if (*context == "false") {
             ++context;
-            return std::make_unique<expression_literal_node>(offset, false);
+            return std::make_unique<expression_literal_node>(location, false);
 
         } else if (*context == "null") {
             ++context;
-            return std::make_unique<expression_literal_node>(offset, datum::null{});
+            return std::make_unique<expression_literal_node>(location, datum::null{});
 
         } else if (*context == "undefined") {
             ++context;
-            return std::make_unique<expression_literal_node>(offset, datum{});
+            return std::make_unique<expression_literal_node>(location, datum{});
 
         } else {
-            return std::make_unique<expression_name_node>(offset, (context++)->value);
+            return std::make_unique<expression_name_node>(location, (context++)->value);
         }
 
     case tokenizer_name_t::Operator:
@@ -1573,7 +1566,7 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
             if ((*context == tokenizer_name_t::Operator) && (*context == ")")) {
                 ++context;
             } else {
-                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", *context).set<"offset"_tag>(offset));
+                TTAURI_THROW(parse_error("Expected ')' token for function call got {}", *context).set_location(location));
             }
 
             return subexpression;
@@ -1593,11 +1586,11 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
                     ++context;
                     break;
                 } else {
-                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-expression. got {}", *context).set<"offset"_tag>(offset));
+                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-expression. got {}", *context).set_location(location));
                 }
             }
 
-            return std::make_unique<expression_vector_literal_node>(offset, std::move(values));
+            return std::make_unique<expression_vector_literal_node>(location, std::move(values));
 
         } else if (*context == "{") {
             ++context;
@@ -1612,7 +1605,7 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
                 if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
                     ++context;
                 } else {
-                    TTAURI_THROW(parse_error("Expected ':' after a map key. got {}", *context).set<"offset"_tag>(offset));
+                    TTAURI_THROW(parse_error("Expected ':' after a map key. got {}", *context).set_location(location));
                 }
 
                 values.push_back(parse_expression(context));
@@ -1623,11 +1616,11 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
                     ++context;
                     break;
                 } else {
-                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-expression. got {}", *context).set<"offset"_tag>(offset));
+                    TTAURI_THROW(parse_error("Expected ']' or ',' after a vector sub-expression. got {}", *context).set_location(location));
                 }
             }
 
-            return std::make_unique<expression_map_literal_node>(offset, std::move(keys), std::move(values));
+            return std::make_unique<expression_map_literal_node>(location, std::move(keys), std::move(values));
 
         } else {
             let unary_op = *context;
@@ -1638,7 +1631,7 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
         }
 
     default:
-        TTAURI_THROW(parse_error("Unexpected token in primary expression {}", *context).set<"offset"_tag>(offset));
+        TTAURI_THROW(parse_error("Unexpected token in primary expression {}", *context).set_location(location));
     }
 }
 
@@ -1651,7 +1644,7 @@ static std::unique_ptr<expression_node> parse_index_expression(expression_parse_
     if ((*context == tokenizer_name_t::Operator) && (*context == "]")) {
         ++context;
     } else {
-        TTAURI_THROW(parse_error("Expected ']' token at end of indexing operator got {}", *context).set<"offset"_tag>(context.offset()));
+        TTAURI_THROW(parse_error("Expected ']' token at end of indexing operator got {}", *context).set_location(context->location));
     }
     return rhs;
 }
@@ -1665,12 +1658,12 @@ static std::unique_ptr<expression_node> parse_ternary_argument_expression(expres
     if ((*context == tokenizer_name_t::Operator) && (*context == ":")) {
         ++context;
     } else {
-        TTAURI_THROW(parse_error("Expected ':' token in ternary expression {}", *context).set<"offset"_tag>(context.offset()));
+        TTAURI_THROW(parse_error("Expected ':' token in ternary expression {}", *context).set_location(context->location));
     }
 
     auto rhs_false = parse_expression(context);
 
-    return std::make_unique<expression_arguments>(context.offset(), std::move(rhs_true), std::move(rhs_false));
+    return std::make_unique<expression_arguments>(context->location, std::move(rhs_true), std::move(rhs_false));
 }
 
 /** Parse the rhs of an index operator, including the closing bracket.
@@ -1694,11 +1687,11 @@ static std::unique_ptr<expression_node> parse_call_argument_expression(expressio
             break;
 
         } else {
-            TTAURI_THROW(parse_error("Expected ',' or ')' After a function argument {}", *context).set<"offset"_tag>(context.offset()));
+            TTAURI_THROW(parse_error("Expected ',' or ')' After a function argument {}", *context).set_location(context->location));
         }
     }
 
-    return std::make_unique<expression_arguments>(context.offset(), std::move(args));
+    return std::make_unique<expression_arguments>(context->location, std::move(args));
 }
 
 static bool parse_expression_is_at_end(expression_parse_context& context)
@@ -1708,7 +1701,7 @@ static bool parse_expression_is_at_end(expression_parse_context& context)
     }
 
     if (*context != tokenizer_name_t::Operator) {
-        TTAURI_THROW(parse_error("Expecting an operator token got {}", *context).set<"offset"_tag>(context.offset()));
+        TTAURI_THROW(parse_error("Expecting an operator token got {}", *context).set_location(context->location));
     }
 
     return

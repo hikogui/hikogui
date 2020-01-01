@@ -783,25 +783,26 @@ struct tokenizer {
     using iterator = typename std::string_view::const_iterator;
 
     tokenizer_state_t state;
-    iterator begin;
-    iterator end;
     iterator index;
-    iterator captureIndex;
+    iterator end;
+    parse_location location;
+    parse_location captureLocation;
 
     tokenizer(iterator begin, iterator end) :
-        state(tokenizer_state_t::Initial), begin(begin), end(end), index(begin), captureIndex(begin) {}
+        state(tokenizer_state_t::Initial), index(begin), end(end) {}
 
     template<uint8_t Action>
     static force_inline void executeAction(
         small_vector<char,256> &capture,
-        iterator &captureIndex,
+        parse_location &captureLocation,
+        parse_location &location,
         iterator &index,
         tokenizer_state_t &state,
         tokenizer_transition_t &transition
     ) {
         constexpr auto action = static_cast<tokenizer_action_t>(Action);
         if constexpr (action >= tokenizer_action_t::Start) {
-            captureIndex = index;
+            captureLocation = location;
             capture.clear();
         }
 
@@ -810,7 +811,8 @@ struct tokenizer {
         }
 
         if constexpr (action >= tokenizer_action_t::Read) {
-            index++;
+            location += *index;
+            ++index;
         }
 
         state = transition.next();
@@ -823,34 +825,35 @@ struct tokenizer {
 
         auto _state = state;
         auto _index = index;
+        auto _location = location;
         auto transition = tokenizer_transition_t{};
         while (_index != end) {
             transition = transitionTable[get_offset(_state, *_index)];
 
             switch (static_cast<uint8_t>(transition.action())) {
-            case 0x0: executeAction<0x0>(capture, captureIndex, _index, _state, transition); break;
-            case 0x1: executeAction<0x1>(capture, captureIndex, _index, _state, transition); break;
-            case 0x2: executeAction<0x2>(capture, captureIndex, _index, _state, transition); break;
-            case 0x3: executeAction<0x3>(capture, captureIndex, _index, _state, transition); break;
-            case 0x4: executeAction<0x4>(capture, captureIndex, _index, _state, transition); break;
-            case 0x5: executeAction<0x5>(capture, captureIndex, _index, _state, transition); break;
-            case 0x6: executeAction<0x6>(capture, captureIndex, _index, _state, transition); break;
-            case 0x7: executeAction<0x7>(capture, captureIndex, _index, _state, transition); break;
-            case 0x8: executeAction<0x8>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0x9: executeAction<0x9>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0xa: executeAction<0xa>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0xb: executeAction<0xb>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0xc: executeAction<0xc>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0xd: executeAction<0xd>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0xe: executeAction<0xe>(capture, captureIndex, _index, _state, transition); goto found;
-            case 0xf: executeAction<0xf>(capture, captureIndex, _index, _state, transition); goto found;
+            case 0x0: executeAction<0x0>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x1: executeAction<0x1>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x2: executeAction<0x2>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x3: executeAction<0x3>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x4: executeAction<0x4>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x5: executeAction<0x5>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x6: executeAction<0x6>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x7: executeAction<0x7>(capture, captureLocation, _location, _index, _state, transition); break;
+            case 0x8: executeAction<0x8>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0x9: executeAction<0x9>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0xa: executeAction<0xa>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0xb: executeAction<0xb>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0xc: executeAction<0xc>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0xd: executeAction<0xd>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0xe: executeAction<0xe>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            case 0xf: executeAction<0xf>(capture, captureLocation, _location, _index, _state, transition); goto found;
             }
         }
 
         // Complete the token at the current state. Or an end-token at the initial state.
         if (_state == tokenizer_state_t::Initial) {
             // Mark the current offset as the position of the end-token.
-            captureIndex = _index;
+            captureLocation = _location;
             capture.clear();
         }
 
@@ -860,8 +863,9 @@ struct tokenizer {
     found:
 
         state = _state;
+        location = _location;
         index = _index;
-        return {transition.name, std::string{capture.begin(), capture.end()}, captureIndex};
+        return {transition.name, std::string{capture.begin(), capture.end()}, captureLocation};
     }
 
     /*! Parse all tokens.

@@ -15,9 +15,6 @@ namespace TTauri {
 struct parse_context_t {
     std::string_view::const_iterator text_begin;
 
-    std::pair<int,int> line_and_column(token_iterator token) const noexcept {
-        return count_line_and_columns(text_begin, token->index);
-    }
 };
 
 static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token);
@@ -43,11 +40,7 @@ static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator
         // Required a value.
         } else if (auto result = parseValue(context, token)) {
             if (!commaAfterValue) {
-                let [line, column] = context.line_and_column(token);
-                TTAURI_THROW(parse_error("Missing expected ','")
-                    .set<"line"_tag>(line)
-                    .set<"column"_tag>(column)
-                );
+                TTAURI_THROW(parse_error("Missing expected ','").set_location(token->location));
             }
 
             array.push_back(*result.value);
@@ -61,11 +54,7 @@ static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator
             }
 
         } else {
-            let [line, column] = context.line_and_column(token);
-            TTAURI_THROW(parse_error("Expecting a value as the next item in an array.")
-                .set<"line"_tag>(line)
-                .set<"column"_tag>(column)
-            );
+            TTAURI_THROW(parse_error("Expecting a value as the next item in an array.").set_location(token->location));
         }
     }
 
@@ -93,11 +82,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
         // Required a string name.
         } else if (*token == tokenizer_name_t::StringLiteral) {
             if (!commaAfterValue) {
-                let [line, column] = context.line_and_column(token);
-                TTAURI_THROW(parse_error("Missing expected ','")
-                    .set<"line"_tag>(line)
-                    .set<"column"_tag>(column)
-                );
+                TTAURI_THROW(parse_error("Missing expected ','").set_location(token->location));
             }
 
             auto name = static_cast<std::string>(*token++);
@@ -105,11 +90,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
             if ((*token == tokenizer_name_t::Operator) && (*token == ":")) {
                 token++;
             } else {
-                let [line, column] = context.line_and_column(token);
-                TTAURI_THROW(parse_error("Missing expected ':'")
-                    .set<"line"_tag>(line)
-                    .set<"column"_tag>(column)
-                );
+                TTAURI_THROW(parse_error("Missing expected ':'").set_location(token->location));
             }
 
             if (auto result = parseValue(context, token)) {
@@ -117,11 +98,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
                 token = result.next_token;
 
             } else {
-                let [line, column] = context.line_and_column(token);
-                TTAURI_THROW(parse_error("Missing JSON value")
-                    .set<"line"_tag>(line)
-                    .set<"column"_tag>(column)
-                );
+                TTAURI_THROW(parse_error("Missing JSON value").set_location(token->location));
             }
 
             if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
@@ -132,11 +109,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
             }
 
         } else {
-            let [line, column] = context.line_and_column(token);
-            TTAURI_THROW(parse_error("Unexpected token {}, expected a key or close-brace.", *token)
-                .set<"line"_tag>(line)
-                .set<"column"_tag>(column)
-            );
+            TTAURI_THROW(parse_error("Unexpected token {}, expected a key or close-brace.", *token).set_location(token->location));
         }
     }
 
@@ -167,11 +140,7 @@ static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator
         } else if (name == "null") {
             return {datum{datum::null{}}, token};
         } else {
-            let [line, column] = context.line_and_column(token);
-            TTAURI_THROW(parse_error("Unexpected name '{}'", name)
-                .set<"line"_tag>(line)
-                .set<"column"_tag>(column)
-            );
+            TTAURI_THROW(parse_error("Unexpected name '{}'", name).set_location(token->location));
         }
         } break;
     default:
@@ -180,11 +149,7 @@ static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator
         } else if (auto result = parseArray(context, token)) {
             return result;
         } else {
-            let [line, column] = context.line_and_column(token);
-            TTAURI_THROW(parse_error("Unexpected token '{}'", token->name)
-                .set<"line"_tag>(line)
-                .set<"column"_tag>(column)
-            );
+            TTAURI_THROW(parse_error("Unexpected token '{}'", token->name).set_location(token->location));
         }
     }
 }
@@ -206,19 +171,11 @@ datum parseJSON(std::string_view text)
         token = result.next_token;
 
     } else {
-        let [line, column] = context.line_and_column(token);
-        TTAURI_THROW(parse_error("Missing JSON object")
-            .set<"line"_tag>(line)
-            .set<"column"_tag>(column)
-        );
+        TTAURI_THROW(parse_error("Missing JSON object").set_location(token->location));
     }
 
     if (*token != tokenizer_name_t::End) {
-        let [line, column] = context.line_and_column(token);
-        TTAURI_THROW(parse_error("Unexpected text after JSON root object")
-            .set<"line"_tag>(line)
-            .set<"column"_tag>(column)
-        );
+        TTAURI_THROW(parse_error("Unexpected text after JSON root object").set_location(token->location));
     }
 
     return root;

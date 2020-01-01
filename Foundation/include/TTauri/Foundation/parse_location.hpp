@@ -12,7 +12,7 @@ namespace TTauri {
 
 /*! Location inside a configuration file.
  */
-class Location {
+class parse_location {
     /** The URL to the file that was parsed.
      * This is a shared_ptr, since a lot of Location objects will point to the same file.
      */
@@ -31,14 +31,14 @@ class Location {
 public:
     /** Construct an empty location object.
      */
-    Location() noexcept : _file({}), _line(0), _column(0) {}
+    parse_location() noexcept : _file({}), _line(0), _column(0) {}
 
     /** Construct a location.
      * @param file An URL to the file where the token was found.
      * @param line Line number where the token was found.
      * @param column Column where the token was found.
      */
-    Location(std::shared_ptr<URL> const &file, int line, int column) noexcept : _file(file), _line(line - 1), _column(column - 1) {}
+    parse_location(std::shared_ptr<URL> const &file, int line, int column) noexcept : _file(file), _line(line - 1), _column(column - 1) {}
     
     [[nodiscard]] bool has_file() const noexcept {
         return static_cast<bool>(_file);
@@ -77,7 +77,7 @@ public:
         _column = line_and_column.second - 1;
     }
 
-    Location &operator+=(char c) noexcept {
+    parse_location &operator+=(char c) noexcept {
         switch (c) {
         case '\t':
             _column = ((_column / 8) + 1) * 8;
@@ -96,21 +96,21 @@ public:
         return *this;
     }
 
-    Location &operator+=(std::string const &s) noexcept {
+    parse_location &operator+=(std::string const &s) noexcept {
         for (let c: s) {
             *this += c;
         }
         return *this;
     }
 
-    Location &operator+=(char const *s) noexcept {
+    parse_location &operator+=(char const *s) noexcept {
         while (let c = *s++) {
             *this += c;
         }
         return *this;
     }
 
-    Location &operator+=(Location const &location) noexcept {
+    parse_location &operator+=(parse_location const &location) noexcept {
         if (location._line == 0) {
             _column += location._column;
         } else {
@@ -120,11 +120,11 @@ public:
         return *this;
     }
 
-    friend std::string to_string(Location const &l) noexcept {
+    friend std::string to_string(parse_location const &l) noexcept {
         return fmt::format("{0}:{1}:{2}", l.file(), l.line(), l.column());
     }
 
-    friend std::ostream& operator<<(std::ostream &os, Location const &l) {
+    friend std::ostream& operator<<(std::ostream &os, parse_location const &l) {
         os << to_string(l);
         return os;
     }
