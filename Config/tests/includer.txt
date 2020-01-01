@@ -1,9 +1,0 @@
-
-include("included.txt");
-
-a = {
-    include("included.txt");
-};
-
-[b]
-include(file:included.txt);

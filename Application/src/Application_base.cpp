@@ -14,9 +14,6 @@ using namespace std;
 Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance, int nCmdShow) :
     delegate(applicationDelegate),
     i_foundation(std::this_thread::get_id(), applicationDelegate->configuration(arguments), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
-#if defined(BUILD_TTAURI_CONFIG)
-    i_config(),
-#endif
 #if defined(BUILD_TTAURI_AUDIO)
     i_audio(this),
 #endif

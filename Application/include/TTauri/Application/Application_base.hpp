@@ -14,9 +14,6 @@
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
 #endif
-#if defined(BUILD_TTAURI_CONFIG)
-#include "TTauri/Config/globals.hpp"
-#endif
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
@@ -56,9 +53,6 @@ public:
     std::vector<std::string> arguments;
 
     FoundationGlobals i_foundation;
-#if defined(BUILD_TTAURI_CONFIG)
-    Config::ConfigGlobals i_config;
-#endif
 #if defined(BUILD_TTAURI_AUDIO)
     Audio::AudioGlobals i_audio;
 #endif

@@ -267,12 +267,12 @@ public:
  *
  * For this reasons ParserErrors should not be ignored by the callees of a parser.
  */
-using parse_error = sub_error<"parse_error"_tag, "url"_tag, "line"_tag, "column"_tag, "previous_msg"_tag, "parse_string"_tag>;
+using parse_error = sub_error<"parse_error"_tag, "url"_tag, "line"_tag, "column"_tag>;
 
 /** Error to throw when an operation can not be executed due to the type of its operants.
 ** This is for example used in universal_type.
 **/
-using invalid_operation_error = sub_error<"invalid_op"_tag, "url"_tag, "line"_tag, "column"_tag, "previous_msg"_tag>;
+using invalid_operation_error = sub_error<"invalid_op"_tag, "url"_tag, "line"_tag, "column"_tag>;
 
 using url_error = sub_error<"url_error"_tag, "url"_tag>;
 using io_error = sub_error<"io_error"_tag, "url"_tag, "errno"_tag, "error_message"_tag>;

@@ -3,7 +3,6 @@ project(TTauri_Foundation CXX)
 
 set(BUILD_TTAURI_GUI ON CACHE BOOL "Enable GUI")
 set(BUILD_TTAURI_AUDIO ON CACHE BOOL "Enable Audio")
-set(BUILD_TTAURI_CONFIG ON CACHE BOOL "Enable Config")
 
 find_package(GTest)
 find_package(python COMPONENTS Interpreter)

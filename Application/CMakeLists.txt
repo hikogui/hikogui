@@ -3,7 +3,6 @@ project(TTauri_Application CXX)
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
-set(BUILD_TTAURI_CONFIG OFF CACHE BOOL "Enable TTAURI Config") 
 
 set(TTauri_Foundation_srcs
     src/Application_base.cpp
@@ -20,10 +19,6 @@ set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
 endif()
 
 set(TTauri_Application_Libraries TTauri_Foundation)
-if(BUILD_TTAURI_CONFIG)
-message("TTauri::Application Config Enabled")
-set(TTauri_Application_Libraries ${TTauri_Application_Libraries} TTauri_Config)
-endif()
 if(BUILD_TTAURI_AUDIO)
 message("TTauri::Application Audio Enabled")
 set(TTauri_Application_Libraries ${TTauri_Application_Libraries} TTauri_Audio)

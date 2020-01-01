@@ -43,7 +43,7 @@ set(TTauri_GUI_srcs
 
 add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs})
 target_static_resource(TTauri_GUI ${TTauri_GUI_Shader_objs})
-target_link_libraries(TTauri_GUI TTauri_Foundation TTauri_Config ${Vulkan_LIBRARIES} VMA rhea)
+target_link_libraries(TTauri_GUI TTauri_Foundation ${Vulkan_LIBRARIES} VMA rhea)
 target_include_directories(TTauri_GUI PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_GUI PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include ${Vulkan_INCLUDE_DIRS})
 

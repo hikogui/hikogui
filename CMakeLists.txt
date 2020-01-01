@@ -10,7 +10,6 @@ project(TTauri CXX)
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
-set(BUILD_TTAURI_CONFIG OFF CACHE BOOL "Enable TTAURI Config") 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
 include(AddIcon)
@@ -37,10 +36,6 @@ add_subdirectory(ThirdPartyLibraries)
 add_subdirectory(Utilities)
 
 add_subdirectory(Foundation)
-if(BUILD_TTAURI_CONFIG)
-message("TTauri Config enabled")
-add_subdirectory(Config)
-endif()
 if(BUILD_TTAURI_AUDIO)
 message("TTauri Audio enabled")
 add_subdirectory(Audio)
@@ -80,8 +75,6 @@ endif()
 #)
 
 #set(TTauri_do_not_analyze
-#    ${BISON_TTauriConfigParser_OUTPUTS}
-#    ${FLEX_TTauriConfigScanner_OUTPUTS}
 #    ${TTauriTests_srcs}
 #)
 

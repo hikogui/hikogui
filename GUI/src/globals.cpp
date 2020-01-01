@@ -3,7 +3,6 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Instance.hpp"
-#include "TTauri/Config/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
 #include "shaders/PipelineImage.vert.spv.inl"
@@ -18,7 +17,6 @@ GUIGlobals::GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int
     instance_delegate(instance_delegate), hInstance(hInstance), nCmdShow(nCmdShow)
 {
     ttauri_assert(Foundation_globals != nullptr);
-    ttauri_assert(Config::Config_globals != nullptr);
     ttauri_assert(GUI_globals == nullptr);
     GUI_globals = this;
 
