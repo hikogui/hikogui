@@ -469,7 +469,7 @@ struct template_for_node final: template_node {
     std::string string() const noexcept override {
         std::string s = "<for ";
         s += to_string(*name_expression);
-        s += " in ";
+        s += ": ";
         s += to_string(*list_expression);
         s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
         if (has_else) {
@@ -881,7 +881,7 @@ void parse_template_hash(template_parse_context &context)
         context.start_of_text_segment();
 
     } else if (context.starts_with_and_advance_over("for ")) {
-        auto name_expression = context.parse_expression_and_advance_over("in");
+        auto name_expression = context.parse_expression_and_advance_over(":");
         auto list_expression = context.parse_expression_and_advance_over("\n");
 
         context.push<template_for_node>(location, std::move(name_expression), std::move(list_expression));

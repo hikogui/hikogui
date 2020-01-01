@@ -132,7 +132,7 @@ TEST(TextTemplate, For) {
 
     ASSERT_NO_THROW(t = parse_template(URL("none:"),
         "foo\n"
-        "#for a in [42, 43]\n"
+        "#for a: [42, 43]\n"
         "value is ${a}\n"
         "#end\n"
         "bar\n"
@@ -140,7 +140,7 @@ TEST(TextTemplate, For) {
     ASSERT_EQ(to_string(*t),
         "<top "
             "<text foo\n>"
-            "<for a in [42, 43]"
+            "<for a: [42, 43]"
                 "<text value is ><placeholder a><text \n>"
             ">"
             "<text bar\n>"
@@ -156,7 +156,7 @@ TEST(TextTemplate, For) {
 
     ASSERT_NO_THROW(t = parse_template(URL("none:"),
         "foo\n"
-        "#for a in [42, 43]\n"
+        "#for a: [42, 43]\n"
         "value is ${a}\n"
         "#else\n"
         "No values\n"
@@ -166,7 +166,7 @@ TEST(TextTemplate, For) {
     ASSERT_EQ(to_string(*t),
         "<top "
             "<text foo\n>"
-            "<for a in [42, 43]"
+            "<for a: [42, 43]"
                 "<text value is ><placeholder a><text \n>"
             "else "
                 "<text No values\n>"
