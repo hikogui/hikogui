@@ -9,6 +9,10 @@
 
 namespace TTauri {
 
+// "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
+// https://unicode.org/reports/tr44/ (TR44 5.7.3)
+using long_grapheme = std::array<char32_t,18>;
+
 /*! A grapheme, what a user thinks a character is.
  * This will exclude ligatures, because a user would see those as separate characters.
  */
@@ -24,7 +28,7 @@ class grapheme {
      *
      * if bit 0 is '0' the value contains a length+pointer as follows:
      *    - 63:48   Length
-     *    - 47:0    Pointer to char32_t array on the heap;
+     *    - 47:0    Pointer to long_grapheme on the heap;
      *              bottom two bits are zero, due to alignment.
      */
     uint64_t value;
@@ -39,7 +43,7 @@ public:
     force_inline grapheme(const grapheme& other) noexcept {
         value = other.value;
         if (other.has_pointer()) {
-            value = create_pointer(other.get_pointer(), other.size());
+            value = create_pointer(other.get_pointer()->data(), other.size());
         }
     }
 
@@ -47,7 +51,7 @@ public:
         delete_pointer();
         value = other.value;
         if (other.has_pointer()) {
-            value = create_pointer(other.get_pointer(), other.size());
+            value = create_pointer(other.get_pointer()->data(), other.size());
         }
         return *this;
     }
@@ -81,7 +85,7 @@ public:
             value |= 1;
             break;
         default:
-            if (codePoints.size() <= std::numeric_limits<uint16_t>::max()) {
+            if (codePoints.size() <= std::tuple_size<long_grapheme>::value) {
                 value = create_pointer(codePoints.data(), codePoints.size());
             } else {
                 value = (0x00'fffdULL << 43) | 1; // Replacement character.
@@ -94,7 +98,7 @@ public:
 
     explicit operator std::u32string () const noexcept {
         if (has_pointer()) {
-            return {get_pointer(), size()};
+            return {get_pointer()->data(), size()};
         } else {
             auto r = std::u32string{};
             auto tmp = value >> 1;
@@ -113,7 +117,7 @@ public:
         return value != 1;
     }
 
-    force_inline size_t size() const noexcept {
+    [[nodiscard]] force_inline size_t size() const noexcept {
         if (has_pointer()) {
             return value >> 48;
         } else {
@@ -128,58 +132,58 @@ public:
         }
     }
 
-    force_inline std::u32string NFC() const noexcept {
+    [[nodiscard]] force_inline std::u32string NFC() const noexcept {
         return Foundation_globals->unicodeData->toNFC(static_cast<std::u32string>(*this));
     }
 
-    force_inline std::u32string NFD() const noexcept {
+    [[nodiscard]] force_inline std::u32string NFD() const noexcept {
         return Foundation_globals->unicodeData->toNFD(static_cast<std::u32string>(*this));
     }
 
-    force_inline std::u32string NFKC() const noexcept {
+    [[nodiscard]] force_inline std::u32string NFKC() const noexcept {
         return Foundation_globals->unicodeData->toNFKC(static_cast<std::u32string>(*this));
     }
 
-    force_inline std::u32string NFKD() const noexcept {
+    [[nodiscard]] force_inline std::u32string NFKD() const noexcept {
         return Foundation_globals->unicodeData->toNFKD(static_cast<std::u32string>(*this));
     }
 
 private:
-    force_inline bool has_pointer() const noexcept {
+    [[nodiscard]] force_inline bool has_pointer() const noexcept {
         return (value & 1) == 0;
     }
 
-    static uint64_t create_pointer(char32_t const *data, size_t size) noexcept {
-        auto ptr = new char32_t [size];
-        std::memcpy(ptr, data, size);
+    [[nodiscard]] static uint64_t create_pointer(char32_t const *data, size_t size) noexcept {
+        ttauri_assert(size <= std::tuple_size<long_grapheme>::value);
+
+        auto ptr = new long_grapheme();
+        memcpy(ptr->data(), data, size);
 
         auto iptr = reinterpret_cast<ptrdiff_t>(ptr);
         auto uptr = static_cast<uint64_t>(iptr << 16) >> 16;
         return (size << 48) | uptr;
     }
 
-    force_inline char32_t *get_pointer() const noexcept {
+    [[nodiscard]] force_inline long_grapheme *get_pointer() const noexcept {
         auto uptr = (value << 16);
         auto iptr = static_cast<ptrdiff_t>(uptr) >> 16;
-        return std::launder(reinterpret_cast<char32_t *>(iptr));
+        return std::launder(reinterpret_cast<long_grapheme *>(iptr));
     }
 
-    force_inline void delete_pointer() noexcept {
+    [[nodiscard]] force_inline void delete_pointer() noexcept {
         if (has_pointer()) {
-            delete [] get_pointer();
+            delete get_pointer();
         }
     }
+
+    [[nodiscard]] friend bool operator<(grapheme const& a, grapheme const& b) noexcept {
+        return a.NFKC() < b.NFKC();
+    }
+
+    [[nodiscard]] friend bool operator==(grapheme const& a, grapheme const& b) noexcept {
+        return a.NFKC() == b.NFKC();
+    }
 };
-
-inline bool operator<(grapheme const& a, grapheme const& b) noexcept {
-    return a.NFKC() < b.NFKC();
-}
-
-inline bool operator==(grapheme const& a, grapheme const& b) noexcept {
-    return a.NFKC() == b.NFKC();
-}
-
-
 
 
 }
