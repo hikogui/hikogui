@@ -47,14 +47,15 @@ enum class font_background {
 class font_style {
     uint32_t value;
 
-    constexpr int super_family_bits = 8;
+    constexpr int super_family_bits = 7;
     constexpr int serif_bits = 1;
     constexpr int monospace_bits = 1;
     constexpr int italic_bits = 1;
     constexpr int condensed_bits = 1;
-    constexpr int weight_bits = 4;
+    constexpr int weight_bits = 3;
     constexpr int size_bits = 8;
     constexpr int color_bits = 4;
+    constexpr int language_bits = 2;
     constexpr int decoration_bits = 2;
     constexpr int background_bits = 2;
 
@@ -66,7 +67,8 @@ class font_style {
     constexpr int weight_shift = condensed_shift - weight_bits;
     constexpr int size_shift = weight_shift - size_bits;
     constexpr int color_shift = size_shift - color_bits;
-    constexpr int underline_shift = color_shift - underline_bits;
+    constexpr int language_shift = color_shift - language_shift;
+    constexpr int underline_shift = language_shift - underline_bits;
     constexpr int background_shift = underline_shift - background_bits;
     static_assert(background_shift >= 0);
 
@@ -78,6 +80,7 @@ class font_style {
     constexpr uint64_t weight_mask = (1ULL << weight_bits) - 1;
     constexpr uint64_t size_mask = (1ULL << size_bits) - 1;
     constexpr uint64_t color_mask = (1ULL << color_bits) - 1;
+    constexpr uint64_t language_mask = (1ULL << language_bits) - 1;
     constexpr uint64_t underline_mask = (1ULL << underline_bits) - 1;
     constexpr uint64_t background_mask = (1ULL << background_bits) - 1;
 
@@ -87,56 +90,154 @@ public:
      * including those of serif/sans-serif, mono and slab types
      * weights and display sizes.
      */
-    [[nodiscard]] uint8_t super_family_id {
+    [[nodiscard]] int super_family_id() const noexcept {
         return (value >> super_family_shift) & super_family_mask;
     }
 
-    [[nodiscard]] bool serif() const noexcept { return ((value >> serif_shift) & serif_mask) != 0; }
-    [[nodiscard]] bool monospace() const noexcept { return ((value >> monospace_shift) & monospace_mask) != 0; }
-    [[nodiscard]] bool italic() const noexcept { return ((value >> italic_shift) & italic_mask) != 0; }
-    [[nodiscard]] bool condensed() const noexcept { return ((value >> condensed_shift) & condensed_mask) != 0; }
+    font_style &set_super_family_id(int x) noexcept {
+        ttauri_assert((x & super_family_mask) == x);
+        value &= ~(super_family_mask << super_family_shift);
+        value |= static_cast<uint64_t>(x) << super_family_shift;
+        return *this;
+    }
+
+    [[nodiscard]] bool serif() const noexcept {
+        return ((value >> serif_shift) & serif_mask) != 0;
+    }
+
+    font_style &set_serif(bool x) noexcept {
+        value &= ~(1 << serif_shift);
+        value |= static_cast<uint64_t>(x) << serif_shift;
+        return *this;
+    }
+
+    [[nodiscard]] bool monospace() const noexcept {
+        return ((value >> monospace_shift) & monospace_mask) != 0;
+    }
+
+    font_style &set_monospace(bool x) noexcept {
+        value &= ~(1 << monospace_shift);
+        value |= static_cast<uint64_t>(x) << monospace_shift;
+        return *this;
+    }
+
+    [[nodiscard]] bool italic() const noexcept {
+        return ((value >> italic_shift) & italic_mask) != 0;
+    }
+
+    font_style &set_italic(bool x) noexcept {
+        value &= ~(1 << italic_shift);
+        value |= static_cast<uint64_t>(x) << italic_shift;
+        return *this;
+    }
+
+    [[nodiscard]] bool condensed() const noexcept {
+        return ((value >> condensed_shift) & condensed_mask) != 0;
+    }
+
+    font_style &set_condensed(bool x) noexcept {
+        value &= ~(1 << condensed_shift);
+        value |= static_cast<uint64_t>(x) << condensed_shift;
+        return *this;
+    }
 
     /** Font weight.
      * A multiplier between 0.0 and 2.0 representing the weight of character:
      * 
      * value | code | name
      * -----:| ----:|:------
-     *     1 |  100 | Thin / Hairline
-     *     2 |  200 | Ultra-light / Extra-light
-     *     3 |  300 | Light
-     *     4 |  400 | Normal / Regular
-     *     5 |  500 | Medium
-     *     6 |  600 | Semi-bold / Demi-bold
-     *     7 |  700 | Bold
-     *     8 |  800 | Extra-bold / Ultra-bold
-     *     9 |  900 | Heavy / Black
-     *    10 | 1000 | Extra-black / Ultra-black
+     *     0 |  100 | Thin / Hairline
+     *     1 |  200 | Ultra-light / Extra-light
+     *     2 |  300 | Light
+     *     3 |  400 | Normal / Regular
+     *     4 |  600 | Medium / Semi-bold / Demi-bold
+     *     5 |  700 | Bold
+     *     6 |  800 | Extra-bold / Ultra-bold
+     *     7 |  950 | Heavy / Black / Extra-black / Ultra-black
      */
     [[nodiscard]] int weight() const noexcept {
         return (value >> weight_shift) & weight_mask;
     }
 
+    font_style &set_weight(int x) noexcept {
+        ttauri_assert((x & weight_mask) == x);
+        value &= ~(weight_mask << weight_shift);
+        value |= static_cast<uint64_t>(x) << weight_shift;
+        return *this;
+    }
+
     /** Size of text in pt.
      */
-    [[nodiscard]] float size() const noexcept { return (value >> size_shift) & size_mask; }
+    [[nodiscard]] float size() const noexcept {
+        return (value >> size_shift) & size_mask;
+    }
+
+    font_style &set_size(float x) noexcept {
+        let x_ = static_cast<uint64_t>(x);
+        ttauri_assert((x_ & size_mask) == x_);
+        value &= ~(size_mask << size_shift);
+        value |= static_cast<uint64_t>(x_) << size_shift;
+        return *this;
+    }
 
     /** Text color index.
      * Value between 0-15.
      */
-    [[nodiscard]] int color() const noexcept { return (value >> color_shift) & color_mask; }
+    [[nodiscard]] int color() const noexcept {
+        return (value >> color_shift) & color_mask;
+    }
 
-    [[nodiscard]] font_underline underline() const noexcept { return static_cast<font_underline>((value >> underline_shift) & underline_mask); }
+    font_style &set_color(int x) noexcept {
+        ttauri_assert((x & color_mask) == x);
+        value &= ~(color_mask << color_shift);
+        value |= static_cast<uint64_t>(x) << color_shift;
+        return *this;
+    }
+
+    /** Text language index.
+     * Value between 0-7.
+     */
+    [[nodiscard]] int language() const noexcept {
+        return (value >> language_shift) & language_mask;
+    }
+
+    font_style &set_language(int x) noexcept {
+        ttauri_assert((x & language_mask) == x);
+        value &= ~(language_mask << language_shift);
+        value |= static_cast<uint64_t>(x) << language_shift;
+        return *this;
+    }
+
+    [[nodiscard]] font_underline underline() const noexcept {
+        return static_cast<font_underline>((value >> underline_shift) & underline_mask);
+    }
     
-    [[nodiscard]] font_background background() const noexcept { return static_cast<font_background>((value >> background_shift) & background_mask); }
+    font_style &set_underline(font_underline x) noexcept {
+        let x_ = static_cast<uint64_t>(x);
+        ttauri_assert((x_ & underline_mask) == x_);
+        value &= ~(underline_mask << underline_shift);
+        value |= static_cast<uint64_t>(x_) << underline_shift;
+        return *this;
+    }
+
+    [[nodiscard]] font_background background() const noexcept {
+        return static_cast<font_background>((value >> background_shift) & background_mask);
+    }
+
+    font_style &set_background(font_background x) noexcept {
+        let x_ = static_cast<uint64_t>(x);
+        ttauri_assert((x_ & background_mask) == x_);
+        value &= ~(background_mask << background_shift);
+        value |= static_cast<uint64_t>(x_) << background_shift;
+        return *this;
+    }
 };
 
 struct attributed_grapheme {
     font_style style;
     uint32_t text_index;
     grapheme grapheme;
-
-    // XXX Language code?
-
+    string_tag language;
 };
 
 /** Intermediate representation of a glyph, before text-shaping.
@@ -147,8 +248,7 @@ struct attributed_glyph {
     // Or zero when the glyph combines with the previous glyph.
     uint32_t text_index_and_size;
 
-    // XXX Language code?
-
+    string_tag language;
 
     uint16_t font_id;
     uint16_t glyph_id;
