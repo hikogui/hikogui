@@ -19,6 +19,25 @@ enum class font_weight {
     Black,      ///< 950: Heavy / Black / Extra-black / Ultra-black
 };
 constexpr int font_weight_bits = 3;
+inline auto const font_weight_name_to_index_table = std::unordered_map<std::string,font_weight>{
+    {"thin", font_weight::Thin},
+    {"hairline", font_weight::Thin},
+    {"ultra-light", font_weight::ExtraLight},
+    {"extra-light", font_weight::ExtraLight},
+    {"light", font_weight::Light},
+    {"normal", font_weight::Regular},
+    {"regular", font_weight::Regular},
+    {"medium", font_weight::SemiBold},
+    {"semi-bold", font_weight::SemiBold},
+    {"demi-bold", font_weight::SemiBold},
+    {"bold", font_weight::Bold},
+    {"extra-bold", font_weight::ExtraBold},
+    {"ultra-bold", font_weight::ExtraBold},
+    {"heavy", font_weight::Black},
+    {"black", font_weight::Black},
+    {"extra-black", font_weight::Black},
+    {"ultra-black", font_weight::Black},
+};
 
 /** Describes how a grapheme should be underlined when rendering the text.
 * It is carried with the grapheme and glyphs, so that the text render engine
@@ -26,13 +45,19 @@ constexpr int font_weight_bits = 3;
 * (left to right) and, this makes it easier to correctly render the decoration
 * of multiple glyphs in a single stroke.
 */
-enum class font_underline {
+enum class font_decoration {
     None,
-    Underlined,
-    Striketrough,
-    WavyLine,
+    Underline,
+    WavyUnderline,
+    StrikeThrough,
 };
-constexpr int font_underline_bits = 2;
+constexpr int font_decoration_bits = 2;
+inline auto const font_decoration_name_to_index_table = std::unordered_map<std::string,font_decoration>{
+    {"none", font_decoration::None},
+    {"underline", font_decoration::Underline},
+    {"wavy-underline", font_decoration::WavyUnderline},
+    {"strike-through", font_decoration::StrikeThrough},
+};
 
 /** Describes how the background of a grapheme should drawn when rendering the text.
 * It is carried with the grapheme and glyphs, so that the text render engine
@@ -92,6 +117,34 @@ enum class color_index {
 };
 constexpr int color_index_bits = 5;
 constexpr int color_index_size = 1 << 5;
+inline auto const color_name_to_index_table = std::unordered_map<std::string,color_index>{
+    {"gray-60", color_index::Gray60},
+    {"gray-40", color_index::Gray40},
+    {"gray-20", color_index::Gray20},
+    {"blue", color_index::Blue},
+    {"green", color_index::Green},
+    {"indigo", color_index::Indigo},
+    {"orange", color_index::Orange},
+    {"pink", color_index::Pink},
+    {"purple", color_index::Purple},
+    {"red", color_index::Red},
+    {"teal", color_index::Teal},
+    {"yellow", color_index::Yellow},
+    {"background", color_index::Background},
+    {"background-secondary", color_index::BackgroundSecondary},
+    {"background-ternary", color_index::BackgroundTernary},
+    {"foreground", color_index::Foreground},
+    {"foreground-secondary", color_index::ForegroundSecondary},
+    {"fill", color_index::FillSecondary},
+    {"custom-1", color_index::Custom1},
+    {"custom-2", color_index::Custom2},
+    {"custom-3", color_index::Custom3},
+    {"custom-4", color_index::Custom4},
+    {"custom-5", color_index::Custom5},
+    {"custom-6", color_index::Custom6},
+    {"custom-7", color_index::Custom7},
+    {"custom-8", color_index::Custom8},
+};
 
 enum class font_style_index {
     Label,
@@ -102,7 +155,14 @@ enum class font_style_index {
     InputFieldPlaceholder,
 };
 constexpr ssize_t font_style_index_size = 2;
-
+inline auto const font_style_name_to_index_table = std::unordered_map<std::string,font_style_index>{
+    {"label", font_style_index::Label},
+    {"text", font_style_index::Text},
+    {"link", font_style_index::Link},
+    {"heading", font_style_index::Heading},
+    {"input-field", font_style_index::InputField},
+    {"input-field-placeholder", font_style_index::InputFieldPlaceholder},
+};
 
 /** The font-style carries all the information needed to draw a grapheme in a certain style.
 * The font-style is compressed in a single 32-bit integer to improve speed of comparison in
@@ -120,7 +180,7 @@ class font_style {
     constexpr static int size_bits = 7;
     constexpr static int color_bits = color_index_bits;
     constexpr static int language_bits = 2;
-    constexpr static int underline_bits = font_underline_bits;
+    constexpr static int decoration_bits = font_decoration_bits;
     constexpr static int background_bits = font_background_bits;
 
     constexpr static int super_family_shift = (sizeof(value) * CHAR_BIT) - super_family_bits;
@@ -132,8 +192,8 @@ class font_style {
     constexpr static int size_shift = weight_shift - size_bits;
     constexpr static int color_shift = size_shift - color_bits;
     constexpr static int language_shift = color_shift - language_bits;
-    constexpr static int underline_shift = language_shift - underline_bits;
-    constexpr static int background_shift = underline_shift - background_bits;
+    constexpr static int decoration_shift = language_shift - decoration_bits;
+    constexpr static int background_shift = decoration_shift - background_bits;
     static_assert(background_shift >= 0);
 
     constexpr static uint64_t super_family_mask = (1ULL << super_family_bits) - 1;
@@ -145,7 +205,7 @@ class font_style {
     constexpr static uint64_t size_mask = (1ULL << size_bits) - 1;
     constexpr static uint64_t color_mask = (1ULL << color_bits) - 1;
     constexpr static uint64_t language_mask = (1ULL << language_bits) - 1;
-    constexpr static uint64_t underline_mask = (1ULL << underline_bits) - 1;
+    constexpr static uint64_t decoration_mask = (1ULL << decoration_bits) - 1;
     constexpr static uint64_t background_mask = (1ULL << background_bits) - 1;
 
 public:
@@ -254,15 +314,15 @@ public:
         return *this;
     }
 
-    [[nodiscard]] font_underline underline() const noexcept {
-        return static_cast<font_underline>((value >> underline_shift) & underline_mask);
+    [[nodiscard]] font_decoration decoration() const noexcept {
+        return static_cast<font_decoration>((value >> decoration_shift) & decoration_mask);
     }
 
-    font_style &set_underline(font_underline x) noexcept {
+    font_style &set_decoration(font_decoration x) noexcept {
         let x_ = static_cast<uint64_t>(x);
-        ttauri_assert((x_ & underline_mask) == x_);
-        value &= ~(underline_mask << underline_shift);
-        value |= static_cast<uint64_t>(x_) << underline_shift;
+        ttauri_assert((x_ & decoration_mask) == x_);
+        value &= ~(decoration_mask << decoration_shift);
+        value |= static_cast<uint64_t>(x_) << decoration_shift;
         return *this;
     }
 
@@ -288,10 +348,11 @@ struct theme {
 
     /// 16 colors.
     std::array<wsRGBA,color_index_size> color_palette;
+    color_index default_accent_color;
 
     std::array<font_style,font_style_index_size> font_styles;
 };
 
-[[nodiscard]] theme parse_theme(URL const &url) noexcept;
+[[nodiscard]] theme parse_theme(URL const &url);
 
 }

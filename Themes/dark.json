@@ -1,68 +1,67 @@
 {
-    "colors": {
-        "Gray60": [ 142, 142, 147 ],
-        "Gray40": [ 72, 72, 74 ],
-        "Gray20": [ 44, 44, 46 ],
-        "Blue": [ 10, 132, 255 ],
-        "Green": [ 48, 209, 88 ],
-        "Indigo": [ 94, 92, 230 ],
-        "Orange": [ 255, 159, 10 ],
-        "Pink": [ 255, 55, 95 ],
-        "Purple": [ 191, 90, 242 ],
-        "Red": [ 255, 69, 58 ],
-        "Teal": [ 100, 210, 255 ],
-        "Yellow": [ 255, 214, 10 ],
+    "color-palette": {
+        "gray-60": [ 142, 142, 147 ],
+        "gray-40": [ 72, 72, 74 ],
+        "gray-20": [ 44, 44, 46 ],
+        "blue": [ 10, 132, 255 ],
+        "green": [ 48, 209, 88 ],
+        "indigo": [ 94, 92, 230 ],
+        "orange": [ 255, 159, 10 ],
+        "pink": [ 255, 55, 95 ],
+        "purple": [ 191, 90, 242 ],
+        "red": [ 255, 69, 58 ],
+        "teal": [ 100, 210, 255 ],
+        "yellow": [ 255, 214, 10 ],
 
         // Semantic colors.
-        "Background": [ 14, 14, 16 ],
-        "BackgroundSecondary": [ 44, 44, 46 ],
-        "BackgroundTernary": [ 72, 72, 74 ],
-        "Foreground": [ 242, 242, 247 ],
-        "ForegroundSecondary": [ 209, 209, 214 ],
-        "Fill": [ 142, 142, 147 ],
-        "FillSecondary": [ 58, 58, 60 ]
+        "background": [ 14, 14, 16 ],
+        "background-secondary": [ 44, 44, 46 ],
+        "background-ternary": [ 72, 72, 74 ],
+        "foreground": [ 242, 242, 247 ],
+        "foreground-secondary": [ 209, 209, 214 ],
+        "fill": [ 142, 142, 147 ],
+        "fill-secondary": [ 58, 58, 60 ]
     },
+    "accent-color": "blue",
 
-    "font-style": {
-        "Label": {
+    "font-styles": {
+        "label": {
             "super-family": "Noto",
             // "serif": false,
-            // "mono": false,
+            // "monospace": false,
             // "italic": false,
             // "condensed": false,
             // "weight": "regular",
             "size": 10,
-            "color": "Foreground"
-            //"underline": null
+            "color": "foreground"
+            //"decoration": "none"
         },
-        "Text": {
+        "text": {
             "super-family": "Noto",
             "size": 10,
-            "color": "Foreground"
+            "color": "foreground"
         },
-        "Link": {
+        "link": {
             "super-family": "Noto",
             "size": 10,
-            "color": "Blue",
-            "underline": "Single"
+            "color": "blue",
+            "decoration": "underline"
         },
-        "Heading": {
+        "heading": {
             "super-family": "Noto",
             "size": 12,
-            "weight": "Bold",
-            "color": "Foreground"
+            "weight": "bold",
+            "color": "foreground"
         },
-        "InputField": {
+        "input-field": {
             "super-family": "Noto",
             "size": 10,
-            "color": "Foreground",
-            "underline": "Single"
+            "color": "foreground"
         },
-        "InputFieldPlaceholder": {
+        "input-field-placeholder": {
             "super-family": "Noto",
             "size": 10,
-            "color": "Fill",
-            "underline": "Single"
+            "color": "fill"
         }
     }
 }

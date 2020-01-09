@@ -91,6 +91,11 @@ class FontBook {
      */
     [[nodiscard]] font_style_id register_style(std::string font_family, uint8_t size, int weight, bool condensed, bool italic, uint8_t color) noexcept;
 
+    /** Find font super family id.
+     * Automatic fall-back to the "Noto" super font family.
+     */
+    [[nodiscard]] int find_super_family_id(std::string const &name) const noexcept;
+
     /** Find a glyph using the given code-point.
      * This function will find a glyph for a font that looks closest to the given style.
      *

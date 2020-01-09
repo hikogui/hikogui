@@ -52,9 +52,9 @@ inline int16_t linear_alpha_i16(uint8_t u) noexcept
     return static_cast<int16_t>((int32_t{u} * 32767 + 128) / 255);
 }
 
-/*! Wide Gammut linear sRGB with pre-mulitplied alpha.
- * This RGB space is compatible with sRGB but can represent colours outside of the
- * sRGB gammut. Becuase it is linear and has pre-multiplied alpha it is easy to use
+/*! Wide Gamut linear sRGB with pre-multiplied alpha.
+ * This RGB space is compatible with sRGB but can represent colors outside of the
+ * sRGB gamut. Because it is linear and has pre-multiplied alpha it is easy to use
  * for compositing.
  */
 struct wsRGBA {
@@ -70,15 +70,15 @@ struct wsRGBA {
 
     wsRGBA() noexcept : color({0, 0, 0, 0}) {}
 
-    /*! Set the colour using the pixel value.
+    /*! Set the color using the pixel value.
      * No conversion is done with the given value.
      */
     explicit wsRGBA(glm::i16vec4 c) noexcept :
         color(c) {}
 
-    /*! Set the colour with linear-sRGB values.
-     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
-     * This constructor expect colour which has not been pre-multiplied with the alpha.
+    /*! Set the color with linear-sRGB values.
+     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gamut should be between -0.5 - 7.5.
+     * This constructor expect color which has not been pre-multiplied with the alpha.
      */
     
     explicit wsRGBA(glm::vec4 c) noexcept :
@@ -86,16 +86,15 @@ struct wsRGBA {
             glm::xyz(c) * c.a * F32_MAX_SRGB,
             c.a * F32_MAX_ALPHA })) {}
 
-    /*! Set the colour with linear-sRGB values.
-     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gammut should be between -0.5 - 7.5.
-     * This constructor expect colour which has not been pre-multiplied with the alpha.
+    /*! Set the color with linear-sRGB values.
+     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gamut should be between -0.5 - 7.5.
+     * This constructor expect color which has not been pre-multiplied with the alpha.
      */
     explicit wsRGBA(double r, double g, double b, double a=1.0) noexcept :
         wsRGBA(glm::vec4{r, g, b, a}) {}
 
-    /*! Set the colour with gamma corrected sRGB values.
+    /*! Set the color with gamma corrected sRGB values.
      */
-    
     explicit wsRGBA(uint32_t c) noexcept {
         let colorWithoutPreMultiply = glm::i64vec4{
             gamma_to_linear_i16((c >> 24) & 0xff),
@@ -111,6 +110,29 @@ struct wsRGBA {
             )
         );
     }
+
+    /*! Set the color with gamma corrected sRGB values.
+    */
+    explicit wsRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a=255) noexcept {
+        let colorWithoutPreMultiply = glm::i64vec4{
+            gamma_to_linear_i16(r),
+            gamma_to_linear_i16(g),
+            gamma_to_linear_i16(b),
+            linear_alpha_i16(a)
+        };
+
+        color = static_cast<glm::i16vec4>(
+            glm::i64vec4(
+                (glm::xyz(colorWithoutPreMultiply) * colorWithoutPreMultiply.a) / I64_MAX_ALPHA,
+                colorWithoutPreMultiply.a
+            )
+        );
+    }
+
+    /*! Set the color with gamma corrected sRGB values.
+    */
+    explicit wsRGBA(uint32_t c) noexcept :
+        wsRGBA(static_cast<uint8_t>(c >> 24), static_cast<uint8_t>(c >> 16), static_cast<uint8_t>(c >> 8), static_cast<uint8_t>(c)) {}
 
     int16_t const &r() const noexcept { return color.r; }
     int16_t const &g() const noexcept { return color.g; }

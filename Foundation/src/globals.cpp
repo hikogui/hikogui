@@ -46,6 +46,10 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, datum confi
     Foundation_globals->addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
     unicodeData = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
 
+    font_book = std::make_unique<FontBook>(URL::urlFromResourceDirectory() / "fonts");
+
+    // load themes after the font_book.
+
     maintenanceThread = std::thread([=]() {
         return this->maintenanceThreadProcedure();
     });
