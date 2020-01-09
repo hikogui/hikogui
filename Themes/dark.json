@@ -1,0 +1,68 @@
+{
+    "colors": {
+        "Gray60": [ 142, 142, 147 ],
+        "Gray40": [ 72, 72, 74 ],
+        "Gray20": [ 44, 44, 46 ],
+        "Blue": [ 10, 132, 255 ],
+        "Green": [ 48, 209, 88 ],
+        "Indigo": [ 94, 92, 230 ],
+        "Orange": [ 255, 159, 10 ],
+        "Pink": [ 255, 55, 95 ],
+        "Purple": [ 191, 90, 242 ],
+        "Red": [ 255, 69, 58 ],
+        "Teal": [ 100, 210, 255 ],
+        "Yellow": [ 255, 214, 10 ],
+
+        // Semantic colors.
+        "Background": [ 14, 14, 16 ],
+        "BackgroundSecondary": [ 44, 44, 46 ],
+        "BackgroundTernary": [ 72, 72, 74 ],
+        "Foreground": [ 242, 242, 247 ],
+        "ForegroundSecondary": [ 209, 209, 214 ],
+        "Fill": [ 142, 142, 147 ],
+        "FillSecondary": [ 58, 58, 60 ]
+    },
+
+    "font-style": {
+        "Label": {
+            "super-family": "Noto",
+            // "serif": false,
+            // "mono": false,
+            // "italic": false,
+            // "condensed": false,
+            // "weight": "regular",
+            "size": 10,
+            "color": "Foreground"
+            //"underline": null
+        },
+        "Text": {
+            "super-family": "Noto",
+            "size": 10,
+            "color": "Foreground"
+        },
+        "Link": {
+            "super-family": "Noto",
+            "size": 10,
+            "color": "Blue",
+            "underline": "Single"
+        },
+        "Heading": {
+            "super-family": "Noto",
+            "size": 12,
+            "weight": "Bold",
+            "color": "Foreground"
+        },
+        "InputField": {
+            "super-family": "Noto",
+            "size": 10,
+            "color": "Foreground",
+            "underline": "Single"
+        },
+        "InputFieldPlaceholder": {
+            "super-family": "Noto",
+            "size": 10,
+            "color": "Fill",
+            "underline": "Single"
+        }
+    }
+}

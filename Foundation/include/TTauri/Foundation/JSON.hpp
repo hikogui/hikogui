@@ -17,18 +17,18 @@ namespace TTauri {
  * @param text The text to parse.
  * @return A datum representing the parsed object.
  */
-datum parseJSON(std::string_view text);
+[[nodiscard]] datum parseJSON(std::string_view text);
 
 /** Parse a JSON string.
  * @param file URL pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-datum parseJSON(TTauri::URL const &file);
+[[nodiscard]] datum parseJSON(TTauri::URL const &file);
 
 /** Dump an datum object into a JSON string.
  * @param root datum-object to serialize
  * @return The JSON serialized object as a string
  */
-std::string dumpJSON(datum const &root);
+[[nodiscard]] std::string dumpJSON(datum const &root);
 
 }

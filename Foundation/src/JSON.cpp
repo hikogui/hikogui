@@ -17,9 +17,9 @@ struct parse_context_t {
 
 };
 
-static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token);
+[[nodiscard]] static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token);
 
-static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator token)
+[[nodiscard]] static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator token)
 {
     auto array = datum{datum::vector{}};
 
@@ -61,7 +61,7 @@ static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator
     return {std::move(array), token};
 }
 
-static parse_result_t<datum> parseObject(parse_context_t &context, token_iterator token)
+[[nodiscard]] static parse_result_t<datum> parseObject(parse_context_t &context, token_iterator token)
 {
     auto object = datum{datum::map{}};
 
@@ -116,7 +116,7 @@ static parse_result_t<datum> parseObject(parse_context_t &context, token_iterato
     return {std::move(object), token};
 }
 
-static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token)
+[[nodiscard]] static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token)
 {
     switch (token->name) {
     case tokenizer_name_t::StringLiteral: {
@@ -154,7 +154,7 @@ static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator
     }
 }
 
-datum parseJSON(std::string_view text)
+[[nodiscard]] datum parseJSON(std::string_view text)
 {
     token_vector tokens = parseTokens(text);
 
@@ -181,7 +181,7 @@ datum parseJSON(std::string_view text)
     return root;
 }
 
-datum parseJSON(TTauri::URL const &file)
+[[nodiscard]] datum parseJSON(TTauri::URL const &file)
 {
     auto view = TTauri::FileView(file);
     return parseJSON(view.string_view());
@@ -277,7 +277,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
     }
 }
 
-std::string dumpJSON(datum const &root)
+[[nodiscard]] std::string dumpJSON(datum const &root)
 {
     auto r = std::string{};
     dumpJSON_impl(root, r);

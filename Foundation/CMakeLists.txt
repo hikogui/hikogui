@@ -34,7 +34,7 @@ set(TTauri_Foundation_srcs
     src/PathString.cpp
     src/PixelMap.cpp
     src/PNG.cpp
-    src/Theme.cpp
+    src/theme.cpp
     src/TrueTypeFont.cpp
     src/TTauriIconParser.cpp
     src/FileMapping.cpp
