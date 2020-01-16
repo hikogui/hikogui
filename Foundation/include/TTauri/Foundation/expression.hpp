@@ -108,17 +108,17 @@ struct expression_evaluation_context {
     }
 
     force_inline scope const& locals() const {
-        ttauri_axiom(has_locals());
+        ttauri_assume(has_locals());
         return local_stack.back();
     }
 
     force_inline scope& locals() {
-        ttauri_axiom(has_locals());
+        ttauri_assume(has_locals());
         return local_stack.back();
     }
 
     [[nodiscard]] datum const &loop_get(std::string_view name) const {
-        ttauri_axiom(name.size() > 0);
+        ttauri_assume(name.size() > 0);
         if (name.back() == '$') {
             TTAURI_THROW(invalid_operation_error("Invalid loop variable '{}'", name));
         }
@@ -305,8 +305,8 @@ struct expression_parse_context {
     }
 
     expression_parse_context& operator++() noexcept {
-        ttauri_axiom(token_it != tokens.end());
-        ttauri_axiom(*token_it != tokenizer_name_t::End);
+        ttauri_assume(token_it != tokens.end());
+        ttauri_assume(*token_it != tokenizer_name_t::End);
         ++token_it;
         return *this;
     }

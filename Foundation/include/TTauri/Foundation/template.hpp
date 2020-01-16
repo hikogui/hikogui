@@ -47,7 +47,7 @@ struct template_parse_context {
     }
 
     template_parse_context& operator++() noexcept {
-        ttauri_axiom(!atEOF());
+        ttauri_assume(!atEOF());
         location += *index;
         ++index;
         return *this;

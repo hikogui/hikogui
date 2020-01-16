@@ -3,6 +3,7 @@
 
 #include "TTauri/Foundation/thread.hpp"
 #include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/globals.hpp"
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 #include <Windows.h>
@@ -22,6 +23,11 @@ void set_thread_name(std::string_view name)
 #elif OPERATING_SYSTEM == OS_LINUX
     pthread_setname_np(pthread_self(), name.data());
 #endif
+}
+
+bool is_main_thread()
+{
+    return std::this_thread::get_id() == Foundation_globals->main_thread_id;
 }
 
 void run_on_main_thread(std::function<void()> f)

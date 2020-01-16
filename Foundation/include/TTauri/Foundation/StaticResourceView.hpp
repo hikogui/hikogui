@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <gsl/gsl>
 #include <cstddef>
@@ -20,7 +19,7 @@ private:
     gsl::span<std::byte const> _bytes;
 
 public:
-    StaticResourceView(std::string const &filename) : _bytes(Foundation_globals->getStaticResource(filename)) {}
+    StaticResourceView(std::string const &filename);
 
     StaticResourceView() = delete;
     ~StaticResourceView() = default;

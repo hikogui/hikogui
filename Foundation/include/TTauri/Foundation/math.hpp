@@ -46,7 +46,7 @@ constexpr long long pow10_table[20] {
 };
 
 constexpr long long pow10ll(int x) noexcept {
-    ttauri_axiom(x >= 0 && x <= 18);
+    ttauri_assume(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 
@@ -96,10 +96,14 @@ template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_
 constexpr int popcount(T x) noexcept
 {
 #if COMPILER == CC_MSVC
-    if constexpr (sizeof(T) == 8) {
-        return PopulationCount64(x);
+    if constexpr (sizeof(T) == sizeof(unsigned __int64)) {
+        return __popcnt64(x);
+    } else if constexpr (sizeof(T) == sizeof(unsigned int)) {
+        return __popcnt(x);
+    } else if constexpr (sizeof(T) == sizeof(unsigned short)) {
+        return __popcnt16(x);
     } else {
-        not_implemented;
+        return __popcnt64(static_cast<unsigned __int64>(x));
     }
 #elif COMPILER == CC_CLANG || COMPILER == CC_GCC
     if constexpr (std::is_same_v<T,unsigned int>) {

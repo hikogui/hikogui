@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/audio_counter_clock.hpp"
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
 #include "TTauri/Foundation/trace.hpp"
-
+#include "TTauri/Foundation/config.hpp"
 #include "data/UnicodeData.bin.inl"
 
 namespace TTauri {
@@ -46,7 +46,11 @@ FoundationGlobals::FoundationGlobals(std::thread::id main_thread_id, datum confi
     Foundation_globals->addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
     unicodeData = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
 
-    font_book = std::make_unique<FontBook>(URL::urlFromResourceDirectory() / "fonts");
+#if defined(BUILD_TTAURI_GUI)
+    font_book = std::make_unique<FontBook>(std::vector<URL>{
+        URL::urlFromSystemFontDirectory()
+    });
+#endif
 
     // load themes after the font_book.
 

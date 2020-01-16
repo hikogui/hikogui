@@ -118,12 +118,12 @@ namespace TTauri {
     for (auto i = map.map_begin(); i != map.map_end(); ++i) {
         let key = static_cast<std::string>(i->first);
 
-        if (key == "super-family") {
+        if (key == "family") {
             if (!i->second.is_string()) {
                 TTAURI_THROW(parse_error("Expect super-family attribute of a font style to be a string, got {}", i->second));
             }
             // Will never fail; automatic fall-back to "Noto".
-            r.set_super_family_id(Foundation_globals->font_book->find_super_family_id(static_cast<std::string>(i->second)));
+            //r.set_family(Foundation_globals->font_book->find_family(static_cast<std::string>(i->second)));
 
         } else if (key == "serif") {
             if (!i->second.is_string()) {

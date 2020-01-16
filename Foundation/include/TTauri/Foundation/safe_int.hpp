@@ -53,7 +53,7 @@ force_inline T safe_handle_overflow(T value, bool overflow, bool is_positive) no
     } else if constexpr (OnOverflow == on_overflow_t::Assert) {
         ttauri_assert(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Axiom) {
-        ttauri_axiom(!overflow);
+        ttauri_assume(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Saturate) {
         if (ttauri_unlikely(overflow)) {
             value = is_positive ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();

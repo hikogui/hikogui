@@ -346,7 +346,7 @@ constexpr void bigint_div(bigint<T,R> &r_quotient, bigint<T,S> &r_remainder, big
     auto product = bigint<T,N+O>{0};
     bigint_multiply(product, quotient, rhs);
 
-    ttauri_axiom(product <= lhs);
+    ttauri_assume(product <= lhs);
     auto remainder = lhs - product;
 
     int retry = 0;

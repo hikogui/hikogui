@@ -94,24 +94,6 @@ struct wsRGBA {
         wsRGBA(glm::vec4{r, g, b, a}) {}
 
     /*! Set the color with gamma corrected sRGB values.
-     */
-    explicit wsRGBA(uint32_t c) noexcept {
-        let colorWithoutPreMultiply = glm::i64vec4{
-            gamma_to_linear_i16((c >> 24) & 0xff),
-            gamma_to_linear_i16((c >> 16) & 0xff),
-            gamma_to_linear_i16((c >> 8) & 0xff),
-            linear_alpha_i16(c & 0xff)
-        };
-
-        color = static_cast<glm::i16vec4>(
-            glm::i64vec4(
-                (glm::xyz(colorWithoutPreMultiply) * colorWithoutPreMultiply.a) / I64_MAX_ALPHA,
-                colorWithoutPreMultiply.a
-            )
-        );
-    }
-
-    /*! Set the color with gamma corrected sRGB values.
     */
     explicit wsRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a=255) noexcept {
         let colorWithoutPreMultiply = glm::i64vec4{
