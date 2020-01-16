@@ -61,6 +61,24 @@ Steps of text-shaping:
     - The carret location list also contains the carret height and slant. 
 
 
+### Glyph Lookup algorithm
+
+ 1. Lookup grapheme's NFC code points in the code-point-to-font table and take the intersection of fonts.
+ 2. Lookup grapheme's NFD code points in the code-point-to-font table and take the intersection of fonts.
+ 3. Find the closest matching font compared to the font-style and fall-back to the Noto font.
+ 4. Open the matching font.
+ 5. Lookup glyphs matching the code points from the grapheme's (NFC primary, NFD secondary).
+ 6. If next grapheme's style is the same, then try looking up the code-points in the current font, otherwise start at 1.
+ 7. Otherwise start at 1. with the next grapheme.
+
+A grapheme's code point is looked up into the code-point-to-fonts table.
+he returned fonts are then matched with the font-style of the grapheme.
+
+This font is cached based on the style, and any code point is first checked with this
+cached font. If the code point is not found then the full lookup is done.
+
+
+
 ### Font styles
 A font style is a 32 bit description of how a grapheme should
 be displayed. It is only 32 bit so that it is accompanied with each
@@ -100,4 +118,21 @@ Weight table:
      7 |    800 | Extra-bold / Ultra-bold
      8 |    900 | Heavy / Black
      9 |    950 | Extra-black / Ultra-black
+
+
+## Themes
+A theme consists of predefined colors, fonts and button shapes.
+A theme is loaded from a json file. The theme directory is scanned for all themes
+and from the preferences the user can select the current theme at runtime.
+
+### Colors
+#### Accent Color
+#### Semantic Color
+#### Custom Color
+Custom colors are for application specific widgets. These colors may also be modified
+by the application at runtime. For example an audio application may use custom colours
+for drawing the audio level meters.
+
+### Font Styles
+### Button shapes
 
