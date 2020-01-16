@@ -5,7 +5,6 @@
 
 #include "TTauri/Foundation/grapheme.hpp"
 #include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/globals.hpp"
 #include <vector>
 
 namespace TTauri {
@@ -50,37 +49,9 @@ struct gstring {
 };
 
 template<>
-inline gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
-{
-    let normalizedString = Foundation_globals->unicodeData->toNFC(inputString, true, true);
-
-    auto outputString = gstring{};
-    auto breakState = GraphemeBreakState{};
-    auto cluster = std::u32string{};
-
-    for (let codePoint : normalizedString) {
-        if (Foundation_globals->unicodeData->checkGraphemeBreak(codePoint, breakState)) {
-            if (cluster.size() > 0) {
-                outputString += grapheme(cluster);
-            }
-            cluster.clear();
-        }
-
-        cluster += codePoint;
-    }
-    outputString += grapheme(cluster);
-    return outputString;
-}
+gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept;
 
 template<>
-inline std::u32string translateString(const gstring& inputString, TranslateStringOptions options) noexcept
-{
-    std::u32string outputString;
-
-    for (let c : inputString) {
-        outputString += c.NFC();
-    }
-    return outputString;
-}
+std::u32string translateString(const gstring& inputString, TranslateStringOptions options) noexcept;
 
 }

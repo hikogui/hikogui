@@ -77,6 +77,30 @@ constexpr bool isOperator(char c) noexcept {
         !isCloseBracket(c);
 }
 
+inline std::string to_lower(std::string_view str)
+{
+    std::string r;
+    r.reserve(size(str));
+
+    for (let c: str) {
+        r += (c >= 'A' && c <= 'Z') ? (c - 'A') + 'a': c;
+    }
+
+    return r;
+}
+
+inline std::string to_upper(std::string_view str)
+{
+    std::string r;
+    r.reserve(size(str));
+
+    for (let c: str) {
+        r += (c >= 'a' && c <= 'z') ? (c - 'a') + 'A': c;
+    }
+
+    return r;
+}
+
 /** Encode a string to be usable as an id.
  * An id has the following format: [_a-zA-Z][_a-zA-Z0-9]*
  */
@@ -349,7 +373,7 @@ inline std::u32string translateString(std::string_view const inputString, Transl
                 codePointToDo = 4;
 
             } else if (inputCharacter > 0xfe) {
-                // UTF-16 bytecode mark should not apear in UTF-8.
+                // UTF-16 bytecode mark should not appear in UTF-8.
                 codePoint = UNICODE_Replacement_Character;
                 codePointToDo = 1;
 

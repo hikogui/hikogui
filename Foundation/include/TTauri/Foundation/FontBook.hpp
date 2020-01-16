@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
@@ -7,6 +7,8 @@
 #include "TTauri/Foundation/grapheme.hpp"
 #include "TTauri/Foundation/text.hpp"
 #include "TTauri/Foundation/attributes.hpp"
+#include "TTauri/Foundation/FontDescription.hpp"
+#include "TTauri/Foundation/tagged_id.hpp"
 #include <limits>
 #include <array>
 #include <new>
@@ -16,23 +18,23 @@ namespace TTauri {
 
 
 
-struct attributed_grapheme {
-    font_style style;
-    uint32_t text_index;
-    grapheme grapheme;
-};
+//struct attributed_grapheme {
+//    font_style style;
+//    uint32_t text_index;
+//    grapheme grapheme;
+//};
 
 /** Intermediate representation of a glyph, before text-shaping.
  */
-struct attributed_glyph {
-    font_style style;
-    // Upper 4 bits on the text_index contains the number graphemes that are merged in a single glyph.
-    // Or zero when the glyph combines with the previous glyph.
-    uint32_t text_index_and_size;
+//struct attributed_glyph {
+//    font_style style;
+//    // Upper 4 bits on the text_index contains the number graphemes that are merged in a single glyph.
+//    // Or zero when the glyph combines with the previous glyph.
+//    uint32_t text_index_and_size/;
 
-    uint16_t font_id;
-    uint16_t glyph_id;
-};
+//    uint16_t font_id;
+//    uint16_t glyph_id;
+//};
 
 /** All information for a glyph after text-shaping.
  */
@@ -44,11 +46,11 @@ struct placed_glyph {
  * 128-bits.
  */
 struct glyph {
-    font_id font_id;
-    glyph_id glyph_id;
+    uint16_t font_id;
+    uint16_t glyph_id;
 
     uint16_t grapheme_index; ///< Index back into the text.
-    glyph_atlas_id atlas_id; ///< Index into to atlas image.
+    //glyph_atlas_id atlas_id; ///< Index into to atlas image.
 
     uint8_t width; ///< width in pixels of the atlas sub-image
     uint8_t height; ///< height in pixels of the atlas sub-image
@@ -74,7 +76,42 @@ struct glyph {
 
 using glyph_array = std::vector<glyph>;
 
+
+
+
+
+
+using FontFamilyID = tagged_id<uint16_t, class FontBook, "fontfamily_id"_tag>;
+using FontID = tagged_id<uint16_t, class FontBook, "font_id"_tag>;
 class FontBook {
+    /** Table of FontFamilyIDs index using the family-name.
+     */
+    std::unordered_map<std::string,FontFamilyID> family_name_table;
+
+    /** Same as family_name_table, but will also have resolved font families from the fallback_chain.
+     */
+    mutable std::unordered_map<std::string,FontFamilyID> family_name_cache;
+
+    /**
+     */
+    std::unordered_map<std::string,std::string> family_name_fallback_chain;
+
+
+    /** FontID indexed using FontFamilyID + font_variant.
+     */
+    std::vector<std::array<FontID,FontVariant::max()>> font_variant_table;
+
+    /** Descriptions of fonts, indexed using FontID.
+     */
+    std::vector<FontDescription> font_descriptions;
+
+    /** If no matching font is found, lookup glyphs in one of the following fonts.
+     */
+    std::vector<FontID> last_resort_font_table;
+
+public:
+    FontBook(std::vector<URL> const &font_directories);
+
     /** Register a font.
      * Duplicate registrations will be ignored.
      * 
@@ -83,18 +120,46 @@ class FontBook {
      *  - The weight, width, slant & design-size from the 'fdsc' table.
      *  - The character map 'cmap' table.
      */
-    void register_font(URL font_file);
+    FontID register_font(URL font_file);
 
-    /** Register a font-style for use when shaping text.
-     * The font-style keeps a cache for which specific glyph to use for a set of code-points.
-     * Duplicate registrations will return the same font_style_id.
+    /** Find font family id.
+     * This function will always return a valid FontFamilyID by walking the fallback-chain.
      */
-    [[nodiscard]] font_style_id register_style(std::string font_family, uint8_t size, int weight, bool condensed, bool italic, uint8_t color) noexcept;
+    [[nodiscard]] FontFamilyID find_family(std::string_view family_name) const noexcept;
 
-    /** Find font super family id.
-     * Automatic fall-back to the "Noto" super font family.
+    /** Register font family id.
+     * If the family already exists the existing family_id is returned.
      */
-    [[nodiscard]] int find_super_family_id(std::string const &name) const noexcept;
+    [[nodiscard]] FontFamilyID register_family(std::string_view family_name) noexcept;
+
+    /** Find a font closest to the variant.
+     * This function will always return a valid FontID.
+     *
+     * @param family_id a valid family id.
+     * @param variant The variant of the font to select.
+     * @return a valid font id.
+     */
+    [[nodiscard]] FontID find_font(FontFamilyID family_id, FontVariant variant) const noexcept;
+
+    /** Find a font closest to the variant.
+    * This function will always return a valid FontID.
+    *
+    * @param family_id a valid family id.
+    * @param weight The weight of the font to select.
+    * @param italic If the font to select should be italic or not.
+    * @return a valid font id.
+    */
+    [[nodiscard]] FontID find_font(FontFamilyID family_id, font_weight weight, bool italic) const noexcept;
+
+    /** Find a font closest to the variant.
+     * This function will always return a valid FontID.
+     *
+     * @param family_id a valid family id.
+     * @param weight The weight of the font to select.
+     * @param italic If the font to select should be italic or not.
+     * @return a valid font id.
+     */
+    [[nodiscard]] FontID find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph for a font that looks closest to the given style.
@@ -103,7 +168,7 @@ class FontBook {
      * @param codePoint the Unicode code-point to find in the font.
      * @return The font/glyph containing the code point, or boolean false if not found.
      */
-    [[nodiscard]] glyph find_glyph(font_style_id style, char32_t codePoint) const noexcept;
+    [[nodiscard]] glyph find_glyph(int style, char32_t codePoint) const noexcept;
 
     /** Find a glyph using the given code-point.
     * This function is used for finding combining marks in the same font as the
@@ -118,7 +183,7 @@ class FontBook {
     /** Find a set of glyphs matching the given grapheme.
      * If the grapheme results in combining marks all glyphs will be from the same font.
      */
-    [[nodiscard]] glyph_array find_glyph(font_style_id style, grapheme g) const noexcept;
+    [[nodiscard]] glyph_array find_glyph(int style, grapheme g) const noexcept;
 
     /** Find all the glyphs in a text.
      * The text a set of graphemes which is decorated with font_style_ids.
@@ -126,16 +191,16 @@ class FontBook {
      */
     [[nodiscard]] glyph_array shape_text(text text, float max_width) const noexcept;
 
-    [[nodiscard]] glyph_metrics get_glyph_metrics(glyph id) noexcept;
+    //[[nodiscard]] glyph_metrics get_glyph_metrics(glyph id) noexcept;
 
-    [[nodiscard]] path get_glyph_path(glyph id) noexcept;
+    //[[nodiscard]] path get_glyph_path(glyph id) noexcept;
 
 private:
 
     /** Load the font.
      * We have already read the font once; if opening the font fails now we can't handle the errors.
      */
-    void load_font(font_id id) const noexcept;
+    void load_font(int id) const noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */
@@ -150,6 +215,14 @@ private:
     void atlas_lookup(glyph_array &glyphs) noexcept;
 
     void kern_glyphs(glyph_array &glyphs) const noexcept;
+
+    /** Find a fallback font family name
+    * Repeated calls will follow the chain.
+    */
+    [[nodiscard]] std::string const &FontBook::find_fallback_family_name(std::string const &name) const noexcept;
+
+    void create_family_name_fallback_chain() noexcept;
+
 };
 
 

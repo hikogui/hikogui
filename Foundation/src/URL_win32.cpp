@@ -57,6 +57,19 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     return base_localAppData / Foundation_globals->applicationName;
 }
 
+URL URL::urlFromSystemFontDirectory() noexcept
+{
+    PWSTR wchar_fonts;
+
+    // Use application name for the directory inside the application-data directory.
+    if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &wchar_fonts) != S_OK) {
+        // This should really never happen.
+        no_default;
+    }
+
+    return URL::urlFromWPath(wchar_fonts);
+}
+
 std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
 {
     auto searchPath = static_cast<std::string>(path);

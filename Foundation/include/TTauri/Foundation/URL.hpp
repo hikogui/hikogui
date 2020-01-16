@@ -124,6 +124,7 @@ public:
     static URL urlFromExecutableFile() noexcept;
     static URL urlFromApplicationDataDirectory() noexcept;
     static URL urlFromApplicationLogDirectory() noexcept;
+    static URL urlFromSystemFontDirectory() noexcept;
 
     /*! Return file names in the directory pointed by the url.
     * \param path path to the directory to scan.

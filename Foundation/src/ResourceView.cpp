@@ -5,6 +5,8 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Foundation/StaticResourceView.hpp"
+#include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 
 namespace TTauri {
 

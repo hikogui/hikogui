@@ -26,40 +26,37 @@
 
     "font-styles": {
         "label": {
-            "super-family": "Noto",
-            // "serif": false,
-            // "monospace": false,
+            "family": "Arial",
             // "italic": false,
-            // "condensed": false,
             // "weight": "regular",
             "size": 10,
             "color": "foreground"
             //"decoration": "none"
         },
         "text": {
-            "super-family": "Noto",
+            "family": "Arial",
             "size": 10,
             "color": "foreground"
         },
         "link": {
-            "super-family": "Noto",
+            "family": "Arial",
             "size": 10,
             "color": "blue",
             "decoration": "underline"
         },
         "heading": {
-            "super-family": "Noto",
+            "family": "Arial",
             "size": 12,
             "weight": "bold",
             "color": "foreground"
         },
         "input-field": {
-            "super-family": "Noto",
+            "family": "Arial",
             "size": 10,
             "color": "foreground"
         },
         "input-field-placeholder": {
-            "super-family": "Noto",
+            "family": "Arial",
             "size": 10,
             "color": "fill"
         }

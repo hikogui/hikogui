@@ -5,18 +5,19 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
+#include <array>
 
 namespace TTauri {
 
 enum class font_weight {
-    Thin,       ///< 100: Thin / Hairline
-    ExtraLight, ///< 200: Ultra-light / Extra-light
-    Light,      ///< 300: Light
-    Regular,    ///< 400: Normal / Regular
-    SemiBold,   ///< 600: Medium / Semi-bold / Demi-bold
-    Bold,       ///< 700: Bold
-    ExtraBold,  ///< 800: Extra-bold / Ultra-bold
-    Black,      ///< 950: Heavy / Black / Extra-black / Ultra-black
+    Thin = 0,       ///< 100: Thin / Hairline
+    ExtraLight = 1, ///< 200: Ultra-light / Extra-light
+    Light = 2,      ///< 300: Light
+    Regular = 3,    ///< 400: Normal / Regular
+    SemiBold = 4,   ///< 600: Medium / Semi-bold / Demi-bold
+    Bold = 5,       ///< 700: Bold
+    ExtraBold = 6,  ///< 800: Extra-bold / Ultra-bold
+    Black = 7,      ///< 950: Heavy / Black / Extra-black / Ultra-black
 };
 constexpr int font_weight_bits = 3;
 inline auto const font_weight_name_to_index_table = std::unordered_map<std::string,font_weight>{
@@ -38,6 +39,80 @@ inline auto const font_weight_name_to_index_table = std::unordered_map<std::stri
     {"extra-black", font_weight::Black},
     {"ultra-black", font_weight::Black},
 };
+
+[[nodiscard]] inline std::string to_string(font_weight const &x) noexcept {
+    switch (x) {
+    case font_weight::Thin: return "Thin";
+    case font_weight::ExtraLight: return "ExtraLight";
+    case font_weight::Light: return "Light";
+    case font_weight::Regular: return "Regular";
+    case font_weight::SemiBold: return "SemiBold";
+    case font_weight::Bold: return "Bold";
+    case font_weight::ExtraBold: return "ExtraBold";
+    case font_weight::Black: return "Black";
+    default: no_default;
+    }
+}
+
+[[nodiscard]] inline char to_char(font_weight const &x) noexcept {
+    switch (x) {
+    case font_weight::Thin: return '1';
+    case font_weight::ExtraLight: return '2';
+    case font_weight::Light: return '3';
+    case font_weight::Regular: return '4';
+    case font_weight::SemiBold: return '5';
+    case font_weight::Bold: return '6';
+    case font_weight::ExtraBold: return '7';
+    case font_weight::Black: return '8';
+    default: no_default;
+    }
+}
+
+inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs) {
+    return lhs << to_string(rhs);
+}
+
+[[nodiscard]] constexpr std::array<font_weight,64> font_weight_alternative_table_generator() noexcept
+{
+    std::array<font_weight,64> r = {font_weight::Regular};
+
+    for (int w = 0; w < 8; ++w) {
+        auto min_w = w;
+        auto max_w = w;
+        auto new_w = w;
+        auto forward = false;
+
+        for (int i = 0; i < 8; ++i) {
+            r[(w << 3) | i] = static_cast<font_weight>(new_w);
+
+            // Change direction to not overflow.
+            if ((forward && max_w == 7) || (!forward && min_w == 0)) {
+                forward = !forward;
+            }
+
+            if (forward) {
+                ++max_w;
+                new_w = max_w;
+            } else {
+                --min_w;
+                new_w = min_w;
+            }
+
+            // Change direction to zig-zag.
+            forward = !forward;
+        }
+    }
+    return r;
+}
+
+constexpr std::array<font_weight,64> font_weight_alternative_table = font_weight_alternative_table_generator();
+
+[[nodiscard]] constexpr font_weight font_weight_alterative(font_weight weight, int i) noexcept {
+    ttauri_assume(i >= 0 && i < 8);
+    auto w = static_cast<int>(weight);
+    ttauri_assume(w >= 0 && w < 8);
+    return font_weight_alternative_table[(w << 3) | i];
+}
 
 /** Describes how a grapheme should be underlined when rendering the text.
 * It is carried with the grapheme and glyphs, so that the text render engine
@@ -280,7 +355,7 @@ public:
     /** Size of text in pt.
     */
     [[nodiscard]] float size() const noexcept {
-        return (value >> size_shift) & size_mask;
+        return static_cast<float>((value >> size_shift) & size_mask);
     }
 
     font_style &set_size(float x) noexcept {

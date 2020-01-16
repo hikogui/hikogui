@@ -210,7 +210,7 @@ struct template_if_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        ttauri_axiom(ssize(expressions) == ssize(expression_locations));
+        ttauri_assume(ssize(expressions) == ssize(expression_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             if (evaluate_expression_without_output(context, *expressions[i], expression_locations[i])) {
                 return evaluate_children(context, children_groups[i]);

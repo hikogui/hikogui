@@ -185,13 +185,18 @@ constexpr auto processor = Processor::ARM;
 
 #endif
 
+#if !defined(NDEBUG)
+#undef ttauri_assume
+/** In debug mode, replace ttauri_assume() with an ttauri_assert().
+ */
+#define ttauri_assume(expression) ttauri_assert(expression)
+#endif
+
 #if PROCESSOR == CPU_X64
 constexpr size_t cache_line_size = 128;
 #else
 #error "Not implemented"
 #endif
-
-
 
 /*! File descriptor/handle
  */

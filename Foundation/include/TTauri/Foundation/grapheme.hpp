@@ -1,11 +1,11 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include <array>
 
 namespace TTauri {
 
@@ -132,21 +132,13 @@ public:
         }
     }
 
-    [[nodiscard]] force_inline std::u32string NFC() const noexcept {
-        return Foundation_globals->unicodeData->toNFC(static_cast<std::u32string>(*this));
-    }
+    [[nodiscard]] std::u32string NFC() const noexcept;
 
-    [[nodiscard]] force_inline std::u32string NFD() const noexcept {
-        return Foundation_globals->unicodeData->toNFD(static_cast<std::u32string>(*this));
-    }
+    [[nodiscard]] std::u32string NFD() const noexcept;
 
-    [[nodiscard]] force_inline std::u32string NFKC() const noexcept {
-        return Foundation_globals->unicodeData->toNFKC(static_cast<std::u32string>(*this));
-    }
+    [[nodiscard]] std::u32string NFKC() const noexcept;
 
-    [[nodiscard]] force_inline std::u32string NFKD() const noexcept {
-        return Foundation_globals->unicodeData->toNFKD(static_cast<std::u32string>(*this));
-    }
+    [[nodiscard]] std::u32string NFKD() const noexcept;
 
 private:
     [[nodiscard]] force_inline bool has_pointer() const noexcept {
@@ -170,7 +162,7 @@ private:
         return std::launder(reinterpret_cast<long_grapheme *>(iptr));
     }
 
-    [[nodiscard]] force_inline void delete_pointer() noexcept {
+    force_inline void delete_pointer() noexcept {
         if (has_pointer()) {
             delete get_pointer();
         }

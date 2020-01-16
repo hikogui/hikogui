@@ -42,6 +42,9 @@ set(TTauri_Foundation_srcs
     src/throw_exception.cpp
     src/expression.cpp
     src/template.cpp
+    src/FontBook.cpp
+    src/grapheme.cpp
+    src/gstring.cpp
 )
 
 if(WIN32)

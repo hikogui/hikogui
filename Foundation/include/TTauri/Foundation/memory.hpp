@@ -20,6 +20,11 @@ force_inline void memswap(T &dst, U &src) {
     memcpy(&dst, tmp, sizeof(T));
 }
 
+template<typename T>
+force_inline bool is_aligned(T* p){
+    return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
+}
+
 template<typename R, typename T>
 gsl_suppress3(type.1,26487,lifetime.4)
     inline R align(T ptr, size_t alignment) noexcept

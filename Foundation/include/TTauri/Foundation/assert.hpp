@@ -9,12 +9,17 @@
 
 namespace TTauri {
 
+#if defined(NDEBUG)
+#define no_default ttauri_unreachable();
+#else
 #define no_default debugger_abort("no_default");
+#endif
+
 #define not_implemented debugger_abort("not_implemented");
 #define ttauri_overflow debugger_abort("overflow");
 
 /** Assert if expression is true.
- * Independed of NDEBUG macro this macro will always check and abort on fail.
+ * Independent of NDEBUG macro this macro will always check and abort on fail.
  */
 #define ttauri_assert(expression)\
     do {\
@@ -22,26 +27,5 @@ namespace TTauri {
             debugger_abort(# expression);\
         }\
     } while (false)
-
-#if defined(NDEBUG)
-
-/** Assert if expression is true.
- * When NDEBUG is set then the expression is assumed to be true and optimizes code.
- * When NDEBUG is unset this macro will check and abort on fail.
- */
-#define ttauri_axiom(expression)\
-    do {\
-        static_assert(sizeof(expression) == 1);\
-        ttauri_assume(expression);\
-    } while (false)
-
-#else
-
-/** Assert if expression is true.
- * When NDEBUG is set then the expression is assumed to be true and optimizes code.
- * When NDEBUG is unset this macro will check and abort on fail.
- */
-#define ttauri_axiom(expression) ttauri_assert(expression)
-#endif
 
 }

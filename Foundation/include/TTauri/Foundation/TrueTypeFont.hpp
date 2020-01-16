@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Foundation/FontDescription.hpp"
 #include <memory>
 
 namespace TTauri {
@@ -16,8 +17,9 @@ private:
 
     gsl::span<std::byte const> bytes;
 
-    float xHeight;
-    float HHeight;
+    uint16_t OS2_xHeight = 0;
+    uint16_t OS2_HHeight = 0;
+
 
     //! 'cmap' character to glyph mapping
     gsl::span<std::byte const> cmapTableBytes;
@@ -56,6 +58,9 @@ private:
     //! 'post' PostScript (not needed)
     gsl::span<std::byte const> postTableBytes;
 
+    //! 'OS/2' OS/2 (not needed)
+    gsl::span<std::byte const> os2TableBytes;
+
 public:
     /*! Load a true type font.
      * The methods in this class will parse the true-type font at run time.
@@ -81,6 +86,10 @@ public:
     TrueTypeFont &operator=(TrueTypeFont &&other) = delete;
     ~TrueTypeFont() = default;
 
+    FontDescription description;
+
+
+    
     /*! Find a glyph in the font based on an Unicode code-point.
      * This is separated from loading a glyph so that graphemes and ligatures can be found.
      *
@@ -119,7 +128,16 @@ private:
      */
     void parseHeadTable(gsl::span<std::byte const> headTableBytes);
 
-    void parseHHEATable(gsl::span<std::byte const> bytes);
+    void parseHheaTable(gsl::span<std::byte const> bytes);
+
+    void parseNameTable(gsl::span<std::byte const> bytes);
+
+    void parseOS2Table(gsl::span<std::byte const> bytes);
+
+    /** Parse the character map to create unicode_ranges.
+     */
+    [[nodiscard]] UnicodeRanges parseCharacterMap();
+
 
     /*! Parses the maxp table of the font file.
     * This function is called by parseFontDirectory().
