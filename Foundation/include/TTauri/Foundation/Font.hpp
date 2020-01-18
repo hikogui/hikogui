@@ -17,7 +17,6 @@
 
 namespace TTauri {
 
-
 /*! A font.
  * This class has information on how to shape text and
  * get glyphs consisting of bezier contours.
@@ -31,13 +30,18 @@ public:
     Font(Font &&) = delete;
     Font &operator=(Font &&) = delete;
 
+    /** Get the glyph for a code-point.
+     * @return glyph-index, or invalid when not found or error.
+     */
+    [[nodiscard]] virtual GlyphID getGlyph(char32_t c) const noexcept = 0;
+
     /*! Find a glyph in the font based on an Unicode code-point.
     * This is separated from loading a glyph so that graphemes and ligatures can be found.
     *
     * \param c Unicode code point to look up.
     * \return a glyph-index if a glyph has been found. 0 means "not found", -1 means "parse error".
     */
-    virtual int searchCharacterMap(char32_t c) const noexcept = 0;
+    [[deprecated]] virtual int searchCharacterMap(char32_t c) const noexcept = 0;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.

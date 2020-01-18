@@ -48,37 +48,37 @@ struct CMAPFormat4 {
 };
 
 
-static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t c) noexcept
+static GlyphID searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t c) noexcept
 {
     if (c > 0xffff) {
         // character value too high.
-        return 0;
+        return {};
     }
 
     size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<CMAPFormat4>(bytes, offset), -1);
+    assert_or_return(check_placement_ptr<CMAPFormat4>(bytes, offset), {});
     let header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
 
     let length = header->length.value();
-    assert_or_return(length <= bytes.size(), -1);
+    assert_or_return(length <= bytes.size(), {});
 
     let segCount = header->segCountX2.value() / 2;
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), -1);
+    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
     let endCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     offset += sizeof(uint16_t); // reservedPad
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), -1);
+    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
     let startCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), -1);
+    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
     let idDelta = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     // The glyphIdArray is included inside idRangeOffset.
     let idRangeOffset_count = (length - offset) / sizeof(uint16_t);
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count), -1);
+    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count), {});
     let idRangeOffset = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count);
 
     for (uint16_t i = 0; i < segCount; i++) {
@@ -91,7 +91,7 @@ static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t 
                 if (idRangeOffset_ == 0) {
                     // Use modulo 65536 arithmatic.
                     let u16_c = static_cast<uint16_t>(c);
-                    return to_signed(idDelta[i].value() + u16_c);
+                    return {idDelta[i].value() + u16_c};
 
                 } else {
                     let charOffset = c - startCode_;
@@ -100,22 +100,22 @@ static int searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char32_t 
                     assert_or_return(glyphOffset < idRangeOffset.size(), -1); 
                     let glyphIndex = idRangeOffset[glyphOffset].value();
                     if (glyphIndex == 0) {
-                        return 0;
+                        return {};
                     } else {
                         // Use modulo 65536 arithmatic.
-                        return to_signed(idDelta[i].value() + glyphIndex);
+                        return {idDelta[i].value() + glyphIndex};
                     }
                 }
 
             } else {
                 // character outside of segment
-                return 0;
+                return {};
             }
         }
     }
 
     // Could not find character.
-    return 0;
+    return {};
 }
 
 [[nodiscard]] static UnicodeRanges parseCharacterMapFormat4(gsl::span<std::byte const> bytes)
@@ -147,26 +147,26 @@ struct CMAPFormat6 {
     big_uint16_buf_t entryCount;
 };
 
-static int searchCharacterMapFormat6(gsl::span<std::byte const> bytes, char32_t c) noexcept
+static GlyphID searchCharacterMapFormat6(gsl::span<std::byte const> bytes, char32_t c) noexcept
 {
     size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<CMAPFormat6>(bytes, offset), -1);
+    assert_or_return(check_placement_ptr<CMAPFormat6>(bytes, offset), {});
     let header = unsafe_make_placement_ptr<CMAPFormat6>(bytes, offset);
 
     let firstCode = static_cast<char32_t>(header->firstCode.value());
     let entryCount = header->entryCount.value();
     if (c < firstCode || c >= static_cast<char32_t>(firstCode + entryCount)) {
         // Character outside of range.
-        return 0;
+        return {};
     }
 
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, entryCount), -1);
+    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, entryCount), {});
     let glyphIndexArray = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, entryCount);
 
     let charOffset = c - firstCode;
-    assert_or_return(charOffset < glyphIndexArray.size(), -1);
-    return glyphIndexArray[charOffset].value();
+    assert_or_return(charOffset < glyphIndexArray.size(), {});
+    return {glyphIndexArray[charOffset].value()};
 }
 
 [[nodiscard]] static UnicodeRanges parseCharacterMapFormat6(gsl::span<std::byte const> bytes)
@@ -196,16 +196,16 @@ struct CMAPFormat12Group {
     big_uint32_buf_t startGlyphID;
 };
 
-static int searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char32_t c) noexcept
+static GlyphID searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char32_t c) noexcept
 {
     size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<CMAPFormat12>(bytes, offset), -1);
+    assert_or_return(check_placement_ptr<CMAPFormat12>(bytes, offset), {});
     let header = unsafe_make_placement_ptr<CMAPFormat12>(bytes, offset);
 
     let numGroups = header->numGroups.value();
 
-    assert_or_return(check_placement_array<CMAPFormat12Group>(bytes, offset, numGroups), -1);
+    assert_or_return(check_placement_array<CMAPFormat12Group>(bytes, offset, numGroups), {});
     let entries = unsafe_make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
 
     let i = std::lower_bound(entries.begin(), entries.end(), c, [](let &element, char32_t value) {
@@ -217,15 +217,15 @@ static int searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char32_t
         let startCharCode = entry.startCharCode.value();
         if (c >= startCharCode) {
             c -= startCharCode;
-            return entry.startGlyphID.value() + c; 
+            return {entry.startGlyphID.value() + c};
         } else {
             // Character was not in this group.
-            return 0;
+            return {};
         }
 
     } else {
         // Character was not in map.
-        return 0;
+        return {};
     }
 }
 
@@ -257,18 +257,25 @@ static int searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char32_t
     }
 }
 
-int TrueTypeFont::searchCharacterMap(char32_t c) const noexcept
+[[nodiscard]] GlyphID TrueTypeFont::getGlyph(char32_t c) const noexcept
 {
-    assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), -1);
+    assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), {});
     let format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
 
     switch (format->value()) {
     case 4: return searchCharacterMapFormat4(cmapBytes, c);
     case 6: return searchCharacterMapFormat6(cmapBytes, c);
     case 12: return searchCharacterMapFormat12(cmapBytes, c);
-    default:
-        // Unknown glyph if we can not find the character.
-        return 0;
+    default: return {};
+    }
+}
+
+int TrueTypeFont::searchCharacterMap(char32_t c) const noexcept
+{
+    if (auto id = getGlyph(c)) {
+        return static_cast<int>(id);
+    } else {
+        return -1;
     }
 }
 
