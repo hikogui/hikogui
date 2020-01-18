@@ -200,59 +200,19 @@ FontID FontBook::register_font(URL url)
     no_default;
 }
 
-[[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, font_weight weight, bool italic) const noexcept
+[[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept
 {
     return find_font(family_id, FontVariant(weight, italic));
 }
 
-[[nodiscard]] FontID FontBook::find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept
+[[nodiscard]] FontID FontBook::find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept
 {
     return find_font(find_family(family_name), weight, italic);
 }
-
-
-[[nodiscard]] glyph FontBook::find_glyph(int style, char32_t codePoint) const noexcept
-{
-    return {};
-}
-
-[[nodiscard]] glyph FontBook::find_glyph(glyph primary_glyph, char32_t codePoint) const noexcept
-{
-    return {};
-}
-
-[[nodiscard]] glyph_array FontBook::find_glyph(int style, grapheme g) const noexcept
-{
-    return {};
-}
-
-[[nodiscard]] glyph_array FontBook::shape_text(text text, float max_width) const noexcept
-{
-    return {};
-}
-
-//[[nodiscard]] glyph_metrics FontBook::get_glyph_metrics(glyph id) noexcept;
-
-//[[nodiscard]] path FontBook::get_glyph_path(glyph id) noexcept;
 
 void FontBook::load_font(int id) const noexcept
 {
 }
 
-void FontBook::morph_glyphs(glyph_array &glyphs) const noexcept
-{
-}
-
-void FontBook::atlas_lookup(glyph &glyph) noexcept
-{
-}
-
-void FontBook::atlas_lookup(glyph_array &glyphs) noexcept
-{
-}
-
-void FontBook::kern_glyphs(glyph_array &glyphs) const noexcept
-{
-}
 
 };

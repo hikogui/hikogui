@@ -32,7 +32,7 @@ void ImageWidget::drawBackingImage() noexcept
     loadPNG(linearMap, path);
 
     let &myFont = getResource<Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
-    let glyphIndex = myFont.searchCharacterMap('g');
+    let glyphIndex = myFont.getGlyph('g');
     Path glyph;
     myFont.loadGlyph(glyphIndex, glyph);
 

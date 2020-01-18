@@ -88,17 +88,11 @@ public:
 
     FontDescription description;
 
-
+    /** Get the glyph for a code-point.
+    * @return glyph-index, or invalid when not found or error.
+    */
     [[nodiscard]] GlyphID getGlyph(char32_t c) const noexcept override;
     
-    /*! Find a glyph in the font based on an Unicode code-point.
-     * This is separated from loading a glyph so that graphemes and ligatures can be found.
-     *
-     * \param c Unicode code point to look up.
-     * \return a glyph-index if a glyph has been found. 0 means "not found", -1 means "parse error".
-     */
-    [[deprecated]] int searchCharacterMap(char32_t c) const noexcept override;
-
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.
      * 

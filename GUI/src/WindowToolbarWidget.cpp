@@ -32,8 +32,8 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
             0.33f * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window->closeWindow(); }
         );
-        closeWindowButton->hoverBackgroundColor = { 0xdd0000ff };
-        closeWindowButton->pressedBackgroundColor = { 0xff0000ff };
+        closeWindowButton->hoverBackgroundColor = wsRGBA{ 0xdd0000ff };
+        closeWindowButton->pressedBackgroundColor = wsRGBA{ 0xff0000ff };
         window->addConstraint(closeWindowButton->box.outerTop() == box.top());
         window->addConstraint(closeWindowButton->box.outerRight() == box.right());
         window->addConstraint(closeWindowButton->box.outerBottom() == box.bottom);

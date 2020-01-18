@@ -32,15 +32,24 @@ force_inline std::remove_reference_t<T> rvalue_cast(T value)
     return value;
 }
 
+
+template<typename C>
+struct nr_items {
+    constexpr static ssize_t value = static_cast<ssize_t>(C::max) + 1;
+};
+
+template<typename C>
+constexpr auto nr_items_v = nr_items<C>::value;
+
 template <class C>
-constexpr auto ssize(const C& c) -> std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>> 
+constexpr auto ssize(const C& c) -> std::common_type_t<ssize_t, std::make_signed_t<decltype(c.size())>> 
 {
-    using R = std::common_type_t<std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
+    using R = std::common_type_t<ssize_t, std::make_signed_t<decltype(c.size())>>;
     return static_cast<R>(c.size());
 }
 
-template <class T, std::ptrdiff_t N>
-constexpr std::ptrdiff_t ssize(const T (&array)[N]) noexcept
+template <class T, ssize_t N>
+constexpr ssize_t ssize(const T (&array)[N]) noexcept
 {
     return N;
 }

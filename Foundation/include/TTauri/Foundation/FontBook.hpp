@@ -85,7 +85,7 @@ public:
     * @param italic If the font to select should be italic or not.
     * @return a valid font id.
     */
-    [[nodiscard]] FontID find_font(FontFamilyID family_id, font_weight weight, bool italic) const noexcept;
+    [[nodiscard]] FontID find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept;
 
     /** Find a font closest to the variant.
      * This function will always return a valid FontID.
@@ -95,18 +95,17 @@ public:
      * @param italic If the font to select should be italic or not.
      * @return a valid font id.
      */
-    [[nodiscard]] FontID find_font(std::string_view family_name, font_weight weight, bool italic) const noexcept;
-
-    [[nodiscard]] Glyph find_glyphs(FontID font_id, char32_t code_point) const noexcept;
+    [[nodiscard]] FontID find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept;
 
     /** Find a glyph using the given code-point.
-     * This function will find a glyph for a font that looks closest to the given style.
+     * This function will find a glyph matching the grapheme in the selected font, or
+     * find the glyph in the fallback font.
      *
-     * @param style The font style to use for finding glyphs.
-     * @param codePoint the Unicode code-point to find in the font.
-     * @return The font/glyph containing the code point, or boolean false if not found.
+     * @param font_id The font to use to find the grapheme in.
+     * @param grapheme The Unicode grapheme to find in the font.
+     * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] GlyphArray find_glyphs(FontID font_id, grapheme grapheme) const noexcept;
+    [[nodiscard]] FontGlyphIDs find_glyph(FontID font_id, grapheme grapheme) const noexcept;
 
 private:
 
@@ -117,22 +116,22 @@ private:
 
     /** Morph the set of glyphs using the font's morph tables.
      */
-    void morph_glyphs(glyph_array &glyphs) const noexcept;
+    //void morph_glyphs(glyph_array &glyphs) const noexcept;
 
     /** Lookup the glyphs in the atlas and optionally render.
     */
-    void atlas_lookup(glyph &glyph) noexcept;
+    //void atlas_lookup(glyph &glyph) noexcept;
 
     /** Lookup the glyphs in the atlas and optionally render.
      */
-    void atlas_lookup(glyph_array &glyphs) noexcept;
+    //void atlas_lookup(glyph_array &glyphs) noexcept;
 
-    void kern_glyphs(glyph_array &glyphs) const noexcept;
+    //void kern_glyphs(glyph_array &glyphs) const noexcept;
 
     /** Find a fallback font family name
     * Repeated calls will follow the chain.
     */
-    [[nodiscard]] std::string const &FontBook::find_fallback_family_name(std::string const &name) const noexcept;
+    [[nodiscard]] std::string const &find_fallback_family_name(std::string const &name) const noexcept;
 
     void create_family_name_fallback_chain() noexcept;
 

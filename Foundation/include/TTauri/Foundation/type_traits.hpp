@@ -63,6 +63,21 @@ struct make_intmax<T,std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<
 template<typename T>
 using make_intmax_t = typename make_intmax<T>::type;
 
+template<typename T> struct make_larger { using type = T; };
+template<> struct make_larger<signed long> { using type = signed long long; };
+template<> struct make_larger<signed int> { using type = signed long; };
+template<> struct make_larger<signed short> { using type = signed int; };
+template<> struct make_larger<signed char> { using type = signed short; };
+template<> struct make_larger<unsigned long> { using type = unsigned long long; };
+template<> struct make_larger<unsigned int> { using type = unsigned long; };
+template<> struct make_larger<unsigned short> { using type = unsigned int; };
+template<> struct make_larger<unsigned char> { using type = unsigned short; };
+template<> struct make_larger<double> { using type = long double; };
+template<> struct make_larger<float> { using type = double; };
+
+template<typename T>
+using make_larger_t = typename make_larger<T>::type;
+
 template<typename To, typename From, typename Ei=void>
 struct copy_cv {};
 

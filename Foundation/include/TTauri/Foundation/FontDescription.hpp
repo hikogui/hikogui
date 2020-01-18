@@ -3,21 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Foundation/tagged_id.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/theme.hpp"
 #include "TTauri/Foundation/UnicodeData.hpp"
+#include "TTauri/Foundation/GlyphID.hpp"
 
 namespace TTauri {
-
-using FontFamilyID = tagged_id<uint16_t, class FontBook, "fontfamily_id"_tag>;
-using FontID = tagged_id<uint16_t, class FontBook, "font_id"_tag>;
-using GlyphID = tagged_id<uint16_t, class Font, "glyph_id"_tag>;
-
-struct FontGlyphID {
-    FontID font_id;
-    GlyphID glyph_id;
-};
 
 enum class FontWeight {
     Thin,       ///< 100: Thin / Hairline
@@ -32,7 +22,7 @@ enum class FontWeight {
     ExtraBlack, ///< 950: Extra-black / Ultra-black
 };
 
-inline auto const name_to_FontWeight_table = std::unordered_map<std::string,font_weight>{
+inline auto const FontWeight_from_string_table = std::unordered_map<std::string,FontWeight>{
     {"thin", FontWeight::Thin},
     {"hairline", FontWeight::Thin},
     {"ultra-light", FontWeight::ExtraLight},
@@ -60,7 +50,7 @@ inline auto const name_to_FontWeight_table = std::unordered_map<std::string,font
 
 /** Convert a font weight value between 50 and 1000 to a font weight.
  */
-[[nodiscard]] constexpr FontWeight FontWeight_from_int(int rhs) noexcept {
+[[nodiscard]] constexpr FontWeight FontWeight_from_int(int rhs) {
     if (rhs < 50 || rhs > 1000) {
         TTAURI_THROW(parse_error("Unknown font-weight {}", rhs));
     }
@@ -68,8 +58,8 @@ inline auto const name_to_FontWeight_table = std::unordered_map<std::string,font
 }
 
 [[nodiscard]] inline FontWeight FontWeight_from_string(std::string_view rhs) {
-    let i = name_to_FontWeight_table(to_lower(rhs));
-    if (i == name_to_FontWeight_table.end()) {
+    let i = FontWeight_from_string_table.find(to_lower(rhs));
+    if (i == FontWeight_from_string_table.end()) {
         TTAURI_THROW(parse_error("Unknown font-weight {}", rhs));
     }
     return i->second;
@@ -97,7 +87,7 @@ inline auto const name_to_FontWeight_table = std::unordered_map<std::string,font
 
 [[nodiscard]] inline char to_char(FontWeight const &x) noexcept {
     let x_ = static_cast<int>(x);
-    ttauri_assume(x >= 0 && x <= 9);
+    ttauri_assume(x_ >= 0 && x_ <= 9);
     return '0' + x_;
 }
 
@@ -106,7 +96,7 @@ inline auto const name_to_FontWeight_table = std::unordered_map<std::string,font
     return (x_ == 1000) ? 950 : x_;
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs) {
+inline std::ostream &operator<<(std::ostream &lhs, FontWeight const &rhs) {
     return lhs << to_string(rhs);
 }
 
@@ -121,7 +111,7 @@ inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs) {
         auto forward = false;
 
         for (int i = 0; i < 10; ++i) {
-            r[(w << 3) | i] = static_cast<font_weight>(new_w);
+            r[(w << 3) | i] = static_cast<FontWeight>(new_w);
 
             // Change direction to not overflow.
             if ((forward && max_w == 9) || (!forward && min_w == 0)) {
@@ -145,11 +135,11 @@ inline std::ostream &operator<<(std::ostream &lhs, font_weight const &rhs) {
 
 constexpr auto FontWeight_alternative_table = FontWeight_alternative_table_generator();
 
-[[nodiscard]] constexpr FontWeight FontWeight_alterative(font_weight weight, int i) noexcept {
+[[nodiscard]] constexpr FontWeight FontWeight_alterative(FontWeight weight, int i) noexcept {
     ttauri_assume(i >= 0 && i < 10);
     auto w = static_cast<int>(weight);
     ttauri_assume(w >= 0 && w < 10);
-    return font_weight_alternative_table[(w * 10) + i];
+    return FontWeight_alternative_table[(w * 10) + i];
 }
 
 /** A font variant is one of 16 different fonts that can be part of a family.
@@ -161,17 +151,17 @@ class FontVariant {
     uint8_t value;
 
 public:
-    constexpr static size_t max() { return 20; }
-    constexpr static size_t half() { return max() / 2; }
+    constexpr static int max() { return 20; }
+    constexpr static int half() { return max() / 2; }
 
-    constexpr FontVariant(font_weight weight, bool italic) noexcept : value(static_cast<int>(weight) + (italic ? half() : 0)) {}
-    constexpr FontVariant() noexcept : FontVariant(font_weight::Regular, false) {}
-    constexpr FontVariant(font_weight weight) noexcept : FontVariant(weight, false) {}
-    constexpr FontVariant(bool italic) noexcept : FontVariant(font_weight::Regular, italic) {}
+    constexpr FontVariant(FontWeight weight, bool italic) noexcept : value(static_cast<uint8_t>(static_cast<int>(weight) + (italic ? half() : 0))) {}
+    constexpr FontVariant() noexcept : FontVariant(FontWeight::Regular, false) {}
+    constexpr FontVariant(FontWeight weight) noexcept : FontVariant(weight, false) {}
+    constexpr FontVariant(bool italic) noexcept : FontVariant(FontWeight::Regular, italic) {}
 
-    constexpr font_weight weight() const noexcept {
+    constexpr FontWeight weight() const noexcept {
         ttauri_assume(value < max());
-        return static_cast<font_weight>(value % half());
+        return static_cast<FontWeight>(value % half());
     }
 
     [[nodiscard]] constexpr bool italic() const noexcept {
@@ -179,8 +169,8 @@ public:
         return value >= half();
     }
 
-    constexpr FontVariant &set_weight(font_weight rhs) noexcept {
-        value = static_cast<int>(rhs) + (italic() ? half() : 0);
+    constexpr FontVariant &set_weight(FontWeight rhs) noexcept {
+        value = static_cast<uint8_t>(static_cast<int>(rhs) + (italic() ? half() : 0));
         ttauri_assume(value < max());
         return *this;
     }
@@ -201,8 +191,8 @@ public:
      */
     constexpr FontVariant alternative(int i) const noexcept {
         ttauri_assume(i >= 0 && i < max());
-        auto it = italic() == (i < half());
-        auto w = FontWeight_alterative(weight(), i % half());
+        let w = FontWeight_alterative(weight(), i % half());
+        let it = italic() == (i < half());
         return {w, it};
     }
 };
@@ -216,7 +206,7 @@ struct FontDescription {
     bool serif = false;
     bool italic = false;
     bool condensed = false;
-    font_weight weight = font_weight::Regular;
+    FontWeight weight = FontWeight::Regular;
     float optical_size = 12.0;
 
     UnicodeRanges unicode_ranges;

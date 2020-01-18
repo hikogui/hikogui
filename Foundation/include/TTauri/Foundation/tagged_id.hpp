@@ -6,23 +6,29 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/string_tag.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/math.hpp"
 #include <limits>
 
 namespace TTauri {
 
-template<typename T, typename Friend, string_tag Tag, ssize_t Max=std::numeric_limits<T>::max() - 1>
+template<typename T, string_tag Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
 public:
     static_assert(std::is_integral_v<T>, "Expecting tagged_id to be an integral");
+    static_assert(Max < std::numeric_limits<T>::max(), "Max must be at least one less than the maximum value of T");
 
     using type = T;
     constexpr static string_tag tag = Tag;
-    constexpr static ssize_t max = Max;
-    constexpr static ssize_t invalid = Max + 1;
+
+    constexpr static type max = Max;
+    constexpr static type invalid = max + 1;
+
+    constexpr static type mask = make_mask(invalid);
 
 private:
     type value;
 
+public:
     constexpr explicit tagged_id(signed long long rhs) noexcept : value(numeric_cast<type>(rhs)) {}
     constexpr explicit tagged_id(signed long rhs) noexcept : value(numeric_cast<type>(rhs)) {}
     constexpr explicit tagged_id(signed int rhs) noexcept : value(numeric_cast<type>(rhs)) {}
@@ -45,7 +51,6 @@ private:
     constexpr tagged_id &operator=(unsigned short rhs) noexcept { value = numeric_cast<type>(rhs); return *this; }
     constexpr tagged_id &operator=(unsigned char rhs) noexcept { value = numeric_cast<type>(rhs); return *this; }
 
-public:
     constexpr tagged_id() noexcept : value(invalid) {}
     constexpr tagged_id(tagged_id const &other) noexcept = default;
     constexpr tagged_id(tagged_id &&other) noexcept = default;
@@ -77,8 +82,6 @@ public:
     template<typename O> [[nodiscard]] friend bool operator>(O const &lhs, tagged_id const &rhs) noexcept { ttauri_assume(lhs.value <= max); return lhs > rhs.value; }
     template<typename O> [[nodiscard]] friend bool operator<=(O const &lhs, tagged_id const &rhs) noexcept { ttauri_assume(lhs.value <= max); return lhs <= rhs.value; }
     template<typename O> [[nodiscard]] friend bool operator>=(O const &lhs, tagged_id const &rhs) noexcept { ttauri_assume(lhs.value <= max); return lhs >= rhs.value; }
-
-    friend Friend;
 };
 
 

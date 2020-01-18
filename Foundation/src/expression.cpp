@@ -1730,7 +1730,6 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
     while (lookahead_precedence >= min_precedence) {
         let op = lookahead;
         let op_precedence = lookahead_precedence;
-        let op_left_to_right = lookahead_left_to_right;
         ++context;
 
         std::unique_ptr<expression_node> rhs;

@@ -99,6 +99,7 @@ set(TTauri_Foundation_tests
     tests/JSON_tests.cpp
     tests/decimal_tests.cpp
     tests/template_tests.cpp
+    tests/math_tests.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")

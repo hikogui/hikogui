@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/type_traits.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>
@@ -86,6 +87,38 @@ constexpr int bsr(T x) noexcept
 #else
 #error "Not implemented"
 #endif
+}
+
+template<typename T>
+constexpr auto next_power_of_two(T rhs)
+{
+    make_larger_t<T> x = rhs;
+
+    --x;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    if constexpr (sizeof(T) >= 2) {
+        x |= x >> 8;
+    }
+    if constexpr (sizeof(T) >= 4) {
+        x |= x >> 16;
+    }
+    if constexpr (sizeof(T) >= 8) {
+        x |= x >> 32;
+    }
+    ++x;
+    x += (x == 0);
+    return x;
+}
+
+/** Make a bit-mask which includes the given value.
+ */
+template<typename T>
+constexpr T make_mask(T x)
+{
+    let p2 = next_power_of_two(x);
+    return static_cast<T>(p2 - 1);
 }
 
 /*! Bit scan reverse.

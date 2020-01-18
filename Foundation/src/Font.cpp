@@ -7,6 +7,36 @@
 
 namespace TTauri {
 
+[[nodiscard]] FontGlyphIDs Font::getGlyph(grapheme g) const noexcept
+{
+    FontGlyphIDs r;
+
+    // First try composed normalization
+    std::vector<Path> graphemeGlyphs;
+    for (let codePoint: g.NFC()) {
+        if (let glyphIndex = getGlyph(codePoint)) {
+            r += glyphIndex;
+        } else {
+            r.clear();
+            break;
+        }
+    }
+
+    if (!r) {
+        // First try decomposed normalization
+        for (let codePoint: g.NFD()) {
+            if (let glyphIndex = getGlyph(codePoint)) {
+                r += glyphIndex;
+            } else {
+                r.clear();
+                break;
+            }
+        }
+    }
+
+    return r;
+}
+
 template<>
 std::unique_ptr<Font> parseResource(URL const &location)
 {

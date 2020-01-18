@@ -21,7 +21,7 @@ TEST(Datum, IntOperations) {
     ASSERT_EQ(v.is_integer(), true);
     ASSERT_EQ(v.is_numeric(), true);
     ASSERT_EQ(v.is_float(), false);
-    ASSERT_EQ(v.is_boolean(), false);
+    ASSERT_EQ(v.is_bool(), false);
     ASSERT_EQ(v.is_string(), false);
     ASSERT_EQ(v.is_url(), false);
 
@@ -72,7 +72,7 @@ TEST(Datum, FloatOperations) {
     ASSERT_EQ(v.is_integer(), false);
     ASSERT_EQ(v.is_numeric(), true);
     ASSERT_EQ(v.is_float(), true);
-    ASSERT_EQ(v.is_boolean(), false);
+    ASSERT_EQ(v.is_bool(), false);
     ASSERT_EQ(v.is_string(), false);
     ASSERT_EQ(v.is_url(), false);
 

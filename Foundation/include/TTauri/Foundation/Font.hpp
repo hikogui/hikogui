@@ -11,6 +11,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/GlyphMetrics.hpp"
+#include "TTauri/Foundation/FontDescription.hpp"
 #include <vector>
 #include <map>
 #include <gsl/gsl>
@@ -35,13 +36,7 @@ public:
      */
     [[nodiscard]] virtual GlyphID getGlyph(char32_t c) const noexcept = 0;
 
-    /*! Find a glyph in the font based on an Unicode code-point.
-    * This is separated from loading a glyph so that graphemes and ligatures can be found.
-    *
-    * \param c Unicode code point to look up.
-    * \return a glyph-index if a glyph has been found. 0 means "not found", -1 means "parse error".
-    */
-    [[deprecated]] virtual int searchCharacterMap(char32_t c) const noexcept = 0;
+    [[nodiscard]] FontGlyphIDs getGlyph(grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -72,8 +67,8 @@ public:
             // First try composed normalization
             std::vector<Path> graphemeGlyphs;
             for (let codePoint: grapheme.NFC()) {
-                let glyphIndex = searchCharacterMap(codePoint);
-                if (glyphIndex <= 0) {
+                let glyphIndex = getGlyph(codePoint);
+                if (!glyphIndex) {
                     // The codePoint was not found in the font, or a parse error occurred.
                     graphemeGlyphs.clear();
                     break;
@@ -92,8 +87,8 @@ public:
             if (graphemeGlyphs.size() == 0) {
                 // Try again with decomposed normalization.
                 for (let codePoint: grapheme.NFD()) {
-                    let glyphIndex = searchCharacterMap(codePoint);
-                    if (glyphIndex <= 0) {
+                    let glyphIndex = getGlyph(codePoint);
+                    if (!glyphIndex) {
                         graphemeGlyphs.clear();
                         break;
                     }

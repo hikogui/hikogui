@@ -18,9 +18,9 @@ struct template_parse_context {
 
     statement_stack_type statement_stack;
 
+    parse_location location;
     const_iterator index;
     const_iterator last;
-    parse_location location;
 
     std::optional<const_iterator> text_segment_start;
 

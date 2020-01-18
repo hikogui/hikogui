@@ -8,7 +8,7 @@
 #include <cstddef>
 
 
-#define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return (y); }
+#define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return y; }
 
 namespace TTauri {
 
@@ -89,21 +89,23 @@ static GlyphID searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char3
                 // Found the glyph.
                 let idRangeOffset_ = idRangeOffset[i].value();
                 if (idRangeOffset_ == 0) {
-                    // Use modulo 65536 arithmatic.
-                    let u16_c = static_cast<uint16_t>(c);
-                    return {idDelta[i].value() + u16_c};
+                    // Use modulo 65536 arithmetic.
+                    uint16_t glyphIndex = idDelta[i].value();
+                    glyphIndex += static_cast<uint16_t>(c);
+                    return GlyphID{ glyphIndex };
 
                 } else {
                     let charOffset = c - startCode_;
                     let glyphOffset = (idRangeOffset_ / 2) + charOffset + i;
 
-                    assert_or_return(glyphOffset < idRangeOffset.size(), -1); 
-                    let glyphIndex = idRangeOffset[glyphOffset].value();
+                    assert_or_return(glyphOffset < idRangeOffset.size(), {}); 
+                    uint16_t glyphIndex = idRangeOffset[glyphOffset].value();
                     if (glyphIndex == 0) {
                         return {};
                     } else {
-                        // Use modulo 65536 arithmatic.
-                        return {idDelta[i].value() + glyphIndex};
+                        // Use modulo 65536 arithmetic.
+                        glyphIndex += idDelta[i].value();
+                        return GlyphID{ glyphIndex};
                     }
                 }
 
@@ -166,7 +168,7 @@ static GlyphID searchCharacterMapFormat6(gsl::span<std::byte const> bytes, char3
 
     let charOffset = c - firstCode;
     assert_or_return(charOffset < glyphIndexArray.size(), {});
-    return {glyphIndexArray[charOffset].value()};
+    return GlyphID{glyphIndexArray[charOffset].value()};
 }
 
 [[nodiscard]] static UnicodeRanges parseCharacterMapFormat6(gsl::span<std::byte const> bytes)
@@ -217,7 +219,7 @@ static GlyphID searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char
         let startCharCode = entry.startCharCode.value();
         if (c >= startCharCode) {
             c -= startCharCode;
-            return {entry.startGlyphID.value() + c};
+            return GlyphID{entry.startGlyphID.value() + c};
         } else {
             // Character was not in this group.
             return {};
@@ -267,15 +269,6 @@ static GlyphID searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char
     case 6: return searchCharacterMapFormat6(cmapBytes, c);
     case 12: return searchCharacterMapFormat12(cmapBytes, c);
     default: return {};
-    }
-}
-
-int TrueTypeFont::searchCharacterMap(char32_t c) const noexcept
-{
-    if (auto id = getGlyph(c)) {
-        return static_cast<int>(id);
-    } else {
-        return -1;
     }
 }
 
@@ -633,22 +626,8 @@ void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> bytes)
     parse_assert(version <= 5);
 
     let weight_value = table->usWeightClass.value();
-    if (weight_value >= 1 && weight_value < 150) {
-        description.weight = font_weight::Thin;
-    } else if (weight_value < 250) {
-        description.weight = font_weight::ExtraLight;
-    } else if (weight_value < 350) {
-        description.weight = font_weight::Light;
-    } else if (weight_value < 500) {
-        description.weight = font_weight::Regular;
-    } else if (weight_value < 650) {
-        description.weight = font_weight::SemiBold;
-    } else if (weight_value < 750) {
-        description.weight = font_weight::Bold;
-    } else if (weight_value < 875) {
-        description.weight = font_weight::ExtraBold;
-    } else if (weight_value <= 1000) {
-        description.weight = font_weight::Black;
+    if (weight_value >= 1 && weight_value <= 1000) {
+        description.weight = FontWeight_from_int(weight_value);
     }
 
     let width_value = table->usWidthClass.value();
@@ -665,17 +644,20 @@ void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> bytes)
         description.serif = false;
     }
 
+    // The panose weight table is odd, assuming the integer values are
+    // increasing with boldness, Thin is bolder then Light.
+    // The table below uses the integer value as an indication of boldness.
     switch (table->panose.bWeight) {
-    case 2: description.weight = font_weight::Thin; break;
-    case 3: description.weight = font_weight::ExtraLight; break;
-    case 4: description.weight = font_weight::Light; break;
-    case 5: description.weight = font_weight::Regular; break;
-    case 6: description.weight = font_weight::Regular; break;
-    case 7: description.weight = font_weight::SemiBold; break;
-    case 8: description.weight = font_weight::Bold; break;
-    case 9: description.weight = font_weight::ExtraBold; break;
-    case 10: description.weight = font_weight::Black; break;
-    case 11: description.weight = font_weight::Black; break;
+    case 2: description.weight = FontWeight::Thin; break;
+    case 3: description.weight = FontWeight::ExtraLight; break;
+    case 4: description.weight = FontWeight::Light; break;
+    case 5: description.weight = FontWeight::Regular; break;
+    case 6: description.weight = FontWeight::Medium; break;
+    case 7: description.weight = FontWeight::SemiBold; break;
+    case 8: description.weight = FontWeight::Bold; break;
+    case 9: description.weight = FontWeight::ExtraBold; break;
+    case 10: description.weight = FontWeight::Black; break;
+    case 11: description.weight = FontWeight::ExtraBlack; break;
     default: break;
     }
 
@@ -1251,8 +1233,8 @@ void TrueTypeFont::parseFontDirectory()
     if (OS2_xHeight > 0) {
         description.xHeight = emScale * OS2_xHeight;
     } else {
-        let xGlyphIndex = searchCharacterMap('x');
-        if (xGlyphIndex > 0) {
+        let xGlyphIndex = getGlyph('x');
+        if (xGlyphIndex) {
             GlyphMetrics metrics;
             loadGlyphMetrics(xGlyphIndex, metrics);
             description.xHeight = metrics.boundingBox.extent.height();
@@ -1262,8 +1244,8 @@ void TrueTypeFont::parseFontDirectory()
     if (OS2_HHeight > 0) {
         description.HHeight = emScale * OS2_HHeight;
     } else {
-        let HGlyphIndex = searchCharacterMap('H');
-        if (HGlyphIndex > 0) {
+        let HGlyphIndex = getGlyph('H');
+        if (HGlyphIndex) {
             GlyphMetrics metrics;
             loadGlyphMetrics(HGlyphIndex, metrics);
             description.HHeight = metrics.boundingBox.extent.height();

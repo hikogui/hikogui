@@ -1513,7 +1513,7 @@ public:
     force_inline bool is_float() const noexcept { return is_phy_float(); }
     force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
 
-    force_inline bool is_boolean() const noexcept {
+    force_inline bool is_bool() const noexcept {
         if (is_phy_small()) {
             let tmp = get_unsigned_integer();
             return tmp == small_true || tmp == small_false;
@@ -1887,7 +1887,7 @@ public:
     friend bool operator<(datum_impl const &lhs, datum_impl const &rhs) noexcept {
         switch (lhs.type_id()) {
         case datum_impl::phy_small_id:
-            if (lhs.is_boolean() && rhs.is_boolean()) {
+            if (lhs.is_bool() && rhs.is_bool()) {
                 return static_cast<bool>(lhs) < static_cast<bool>(rhs);
             } else {
                 return lhs.get_unsigned_integer() < rhs.get_unsigned_integer();
