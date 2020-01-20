@@ -199,6 +199,8 @@ public:
 
 struct FontDescription {
     URL url;
+    std::shared_ptr<class Font> font;
+
     std::string family_name;
     std::string sub_family_name;
 
@@ -213,6 +215,7 @@ struct FontDescription {
 
     float xHeight = 0.0;
     float HHeight = 0.0;
+
 
     [[nodiscard]] FontVariant font_variant() const noexcept {
         return {weight, italic};

@@ -15,10 +15,6 @@
 
 namespace TTauri {
 
-
-
-
-
 class FontBook {
     /** Table of FontFamilyIDs index using the family-name.
      */
@@ -43,7 +39,7 @@ class FontBook {
 
     /** If no matching font is found, lookup glyphs in one of the following fonts.
      */
-    std::vector<FontID> last_resort_font_table;
+    std::vector<FontID> fallback_font_table;
 
 public:
     FontBook(std::vector<URL> const &font_directories);

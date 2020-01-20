@@ -118,9 +118,8 @@ void FontBook::create_family_name_fallback_chain() noexcept
 
 FontID FontBook::register_font(URL url)
 {
-    auto file_view = FileView(url);
-    auto font = TrueTypeFont(file_view.bytes());
-    auto &description = font.description;
+    auto font = Font::load(url);
+    auto &description = font->description;
 
     description.url = url;
 
@@ -130,7 +129,7 @@ FontID FontBook::register_font(URL url)
     font_descriptions.push_back(description);
 
     let font_family_id = register_family(description.family_name);
-    font_variant_table[font_family_id][font.description.font_variant()] = font_id;
+    font_variant_table[font_family_id][description.font_variant()] = font_id;
     return font_id;
 }
 
@@ -210,8 +209,40 @@ FontID FontBook::register_font(URL url)
     return find_font(find_family(family_name), weight, italic);
 }
 
-void FontBook::load_font(int id) const noexcept
+[[nodiscard]] FontGlyphIDs FontBook::get_glyph_exact(FontID font_id, grapheme grapheme) const noexcept
 {
+    auto font_description = font_descriptions[font_id];
+    if (!font_description.font) {
+        font_description.font = Font::load(font_description.url);
+    }
+
+    auto glyph_ids = font_description.font->get_glyphs(grapheme);
+    glyph_ids.set_font_id(font_id);
+    return glyph_ids;
+}
+
+[[nodiscard]] FontGlyphIDs FontBook::get_glyph(FontID font_id, grapheme grapheme) const noexcept
+{
+    // First try the selected font.
+    auto glyph_ids = get_glyph_exact(font_id, grapheme);
+    if (glyph_ids) {
+        return glyph_ids;
+    }
+
+    // Now scan the fallback fonts.
+    for (fb_font_id: fallback_font_table) {
+        auto &font_description = font_descriptions[font_id];
+        if (font_description.unicode_ranges.contains(grapheme)) {
+            if ((glyph_ids = get_glyph_exeact(fb_font_id, grapheme))) {
+                return glyph_ids;
+            }
+        }
+    }
+
+    // If all everything has failed, use the tofu block of the original font.
+    glyph_ids += GlyphID{0};
+    glyph_ids.set_font_id(font_id);
+    return glyph_ids;
 }
 
 
