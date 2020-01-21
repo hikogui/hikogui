@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/tagged_id.hpp"
+#include "TTauri/Foundation/grapheme.hpp"
 #include <algorithm>
 #include <utility>
 
@@ -16,6 +17,24 @@ using FontID = tagged_id<uint16_t, "font_id"_tag, 0x7ffe>;
 using GlyphID = tagged_id<uint16_t, "glyph_id"_tag>;
 
 using FontFamilyID = tagged_id<uint16_t, "fontfamily_id"_tag>;
+
+
+/** 
+ */
+struct FontIDGrapheme {
+    FontID font_id;
+    grapheme g;
+
+    [[nodiscard]] size_t hash() const noexcept {
+        return std::hash<FontID>{}(font_id) ^ std::hash<grapheme>{}(g);
+    }
+
+    [[nodiscard]] friend bool operator==(FontIDGrapheme const &lhs, FontIDGrapheme const &rhs) noexcept {
+        return (lhs.font_id == rhs.font_id) && (lhs.g == rhs.g);
+    }
+};
+
+
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -181,3 +200,14 @@ private:
 };
 
 };
+
+namespace std {
+
+template<>
+struct hash<TTauri::FontIDGrapheme> {
+    [[nodiscard]] size_t operator() (TTauri::FontIDGrapheme const &rhs) const noexcept {
+        return rhs.hash();
+    }
+};
+
+}

@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/math.hpp"
+#include "TTauri/Foundation/grapheme.hpp"
 #include <gsl/gsl>
 
 namespace TTauri {
@@ -72,7 +73,7 @@ struct GraphemeBreakState {
     }
 };
 
-/** Unicode Ranges based on the OS/2 table in truetype fonts.
+/** Unicode Ranges based on the OS/2 table in TrueType fonts.
  */
 struct UnicodeRanges {
     uint32_t value[4];
@@ -85,7 +86,13 @@ struct UnicodeRanges {
     }
 
     UnicodeRanges(char32_t c) noexcept : UnicodeRanges() {
-        addCodePoint(c);
+        add(c);
+    }
+
+    UnicodeRanges(grapheme g) noexcept : UnicodeRanges() {
+        for (ssize_t i = 0; i != ssize(g); ++i) {
+            add(g[i]);
+        }
     }
 
     operator bool () const noexcept {
@@ -94,17 +101,26 @@ struct UnicodeRanges {
 
     /** Add code point to unicode-ranges.
     */
-    void addCodePoint(char32_t c) noexcept;
+    void add(char32_t c) noexcept;
 
     /** Add code points to unicode-ranges.
      * @param first First code point.
      * @param last One beyond the last code point.
      */
-    void addCodePointRange(char32_t first, char32_t last) noexcept;
+    void add(char32_t first, char32_t last) noexcept;
 
     /** Check if the code point is present in the unicode-ranges.
      */
-    [[nodiscard]] bool checkCodePoint(char32_t c) const noexcept;
+    [[nodiscard]] bool contains(char32_t c) const noexcept;
+
+    [[nodiscard]] bool contains(grapheme g) const noexcept {
+        for (ssize_t i = 0; i != ssize(g); ++i) {
+            if (!contains(g[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     void set_bit(int i) noexcept {
         ttauri_assume(i > 0 && i < 128);
@@ -158,7 +174,7 @@ struct UnicodeRanges {
     }
 };
 
-/** Unicode Data used for caractorizing unicode code-points.
+/** Unicode Data used for characterizing unicode code-points.
  */
 class UnicodeData {
 private:

@@ -15,31 +15,41 @@
 
 namespace TTauri {
 
+
 class FontBook {
+    struct FontEntry {
+        URL url;
+        FontDescription description;
+        mutable std::unique_ptr<Font> font;
+        std::vector<FontID> fallbacks;
+
+        FontEntry(URL url, FontDescription description) noexcept : url(std::move(url)), description(std::move(description)), font(), fallbacks() {}
+    };
+
+
     /** Table of FontFamilyIDs index using the family-name.
      */
-    std::unordered_map<std::string,FontFamilyID> family_name_table;
+    std::unordered_map<std::string,FontFamilyID> family_names;
 
-    /** Same as family_name_table, but will also have resolved font families from the fallback_chain.
-     */
-    mutable std::unordered_map<std::string,FontFamilyID> family_name_cache;
-
-    /**
+    /** A list of family name -> fallback family name
      */
     std::unordered_map<std::string,std::string> family_name_fallback_chain;
 
-
-    /** FontID indexed using FontFamilyID + font_variant.
+    /** Different fonts; variants of a family.
      */
-    std::vector<std::array<FontID,FontVariant::max()>> font_variant_table;
+    std::vector<std::array<FontID,FontVariant::max()>> font_variants;
 
-    /** Descriptions of fonts, indexed using FontID.
-     */
-    std::vector<FontDescription> font_descriptions;
+    std::vector<FontEntry> font_entries;
 
-    /** If no matching font is found, lookup glyphs in one of the following fonts.
-     */
-    std::vector<FontID> fallback_font_table;
+    /** Same as family_name, but will also have resolved font families from the fallback_chain.
+    * Must be cleared when a new font family is registered.
+    */
+    mutable std::unordered_map<std::string,FontFamilyID> family_name_cache;
+
+    /**
+    * Must be cleared when a new font is registered.
+    */
+    mutable std::unordered_map<FontIDGrapheme, FontGlyphIDs> glyph_cache;
 
 public:
     FontBook(std::vector<URL> const &font_directories);
@@ -51,8 +61,18 @@ public:
      *  - The English Font Family from the 'name' table.
      *  - The weight, width, slant & design-size from the 'fdsc' table.
      *  - The character map 'cmap' table.
+     *
+     * @param url Location of font.
+     * @param post_process Calculate font fallback
      */
-    FontID register_font(URL font_file);
+    FontID register_font(URL url, bool post_process=true);
+
+    /** Post process FontBook
+     * Should be called after a set of register_font() calls
+     * This calculates font fallbacks.
+     */
+    void post_process() noexcept;
+
 
     /** Find font family id.
      * This function will always return a valid FontFamilyID by walking the fallback-chain.
@@ -93,6 +113,7 @@ public:
      */
     [[nodiscard]] FontID find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept;
 
+
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
      * find the glyph in the fallback font.
@@ -105,10 +126,12 @@ public:
 
 private:
 
-    /** Load the font.
-     * We have already read the font once; if opening the font fails now we can't handle the errors.
+    void calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept;
+
+    /** Find the glyph for this specific font.
+     * This will open the font file if needed.
      */
-    void load_font(int id) const noexcept;
+    [[nodiscard]] FontGlyphIDs find_glyph_actual(FontID font_id, grapheme grapheme) const noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */

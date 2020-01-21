@@ -294,7 +294,7 @@ constexpr std::array unicodeRangeToBitPosition = {
     std::pair<char32_t,int>{0x100000, 90}, //  Private Use (plane 16)	-10FFFD	Added in OpenType 1.4 for OS/2 version 3.
 };
 
-void UnicodeRanges::addCodePointRange(char32_t first, char32_t last) noexcept
+void UnicodeRanges::add(char32_t first, char32_t last) noexcept
 {
     auto first_ = std::lower_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), first, [](let &a, let &b) { return a.first < b; });
     auto last_ = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), last, [](let &a, let &b) { return a < b.first; });
@@ -303,13 +303,13 @@ void UnicodeRanges::addCodePointRange(char32_t first, char32_t last) noexcept
     }
 }
 
-void UnicodeRanges::addCodePoint(char32_t c) noexcept
+void UnicodeRanges::add(char32_t c) noexcept
 {
     auto i = std::lower_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), c, [](let &a, let &b) { return a.first < b; });
     return set_bit(i->second);
 }
 
-[[nodiscard]] bool UnicodeRanges::checkCodePoint(char32_t c) const noexcept
+[[nodiscard]] bool UnicodeRanges::contains(char32_t c) const noexcept
 {
     auto i = std::lower_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), c, [](let &a, let &b) { return a.first < b; });
     return get_bit(i->second);

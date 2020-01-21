@@ -7,15 +7,14 @@
 
 namespace TTauri {
 
-[[nodiscard]] FontGlyphIDs Font::getGlyph(grapheme g) const noexcept
+[[nodiscard]] FontGlyphIDs Font::find_glyph(grapheme g) const noexcept
 {
     FontGlyphIDs r;
 
     // First try composed normalization
-    std::vector<Path> graphemeGlyphs;
-    for (let codePoint: g.NFC()) {
-        if (let glyphIndex = getGlyph(codePoint)) {
-            r += glyphIndex;
+    for (ssize_t i = 0; i != ssize(g); ++i) {
+        if (let glyph_id = find_glyph(g[i])) {
+            r += glyph_id;
         } else {
             r.clear();
             break;
@@ -24,9 +23,9 @@ namespace TTauri {
 
     if (!r) {
         // First try decomposed normalization
-        for (let codePoint: g.NFD()) {
-            if (let glyphIndex = getGlyph(codePoint)) {
-                r += glyphIndex;
+        for (let c: g.NFD()) {
+            if (let glyph_id = find_glyph(c)) {
+                r += glyph_id;
             } else {
                 r.clear();
                 break;
@@ -44,8 +43,7 @@ std::unique_ptr<Font> parseResource(URL const &location)
         auto view = ResourceView::loadView(location);
 
         try {
-            auto font = std::make_unique<TrueTypeFont>(std::move(view));
-            return font;
+            return std::make_unique<TrueTypeFont>(std::move(view));
         } catch (error &e) {
             e.set<"url"_tag>(location);
             throw;

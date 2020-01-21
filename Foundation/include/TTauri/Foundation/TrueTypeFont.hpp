@@ -6,7 +6,6 @@
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/FontDescription.hpp"
 #include <memory>
 
 namespace TTauri {
@@ -78,7 +77,6 @@ public:
         parseFontDirectory();
     }
 
-
     TrueTypeFont() = delete;
     TrueTypeFont(TrueTypeFont const &other) = delete;
     TrueTypeFont &operator=(TrueTypeFont const &other) = delete;
@@ -86,12 +84,10 @@ public:
     TrueTypeFont &operator=(TrueTypeFont &&other) = delete;
     ~TrueTypeFont() = default;
 
-    FontDescription description;
-
     /** Get the glyph for a code-point.
     * @return glyph-index, or invalid when not found or error.
     */
-    [[nodiscard]] GlyphID getGlyph(char32_t c) const noexcept override;
+    [[nodiscard]] GlyphID find_glyph(char32_t c) const noexcept override;
     
     /*! Load a glyph into a path.
      * The glyph is directly loaded from the font file.

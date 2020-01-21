@@ -18,49 +18,14 @@ FontBook::FontBook(std::vector<URL> const &font_directories)
             auto t = trace<"font_scan"_tag>{};
 
             try {
-                register_font(font_url);
+                register_font(font_url, false);
             } catch (error &) {
                 LOG_ERROR("Failed parsing font at {}", font_url);
             }
         }
     }
-    // Pre-polutate the cache with the current families.
-    family_name_cache = family_name_table;
 
-    
-    // Calculate fallback fonts.
-    /*
-    UnicodeRanges total_ranges;
-    while (true) {
-        int max_font_id = -1;
-        int max_popcount = total_ranges.popcount();
-
-        int current_font_id = 0;
-        for (auto i = entries.begin(); i != entries.end(); ++i, ++current_font_id) {
-            if (!(i->italic == false && i->monospace == false && i->weight == font_weight::Regular)) {
-                continue;
-            }
-
-            auto current_range = total_ranges | i->unicode_ranges;
-            auto current_popcount = current_range.popcount();
-
-            if (current_popcount > max_popcount) {
-                max_font_id = current_font_id;
-                max_popcount = current_popcount;
-            }
-        }
-
-        if (max_font_id >= 0) {
-            let &best_entry = entries[max_font_id];
-            LOG_INFO("Found fallback-font: id={}: {}", max_font_id, to_string(best_entry));
-
-            last_resort_font_ids.push_back(max_font_id);
-            total_ranges |= best_entry.unicode_ranges;
-        } else {
-            break;
-        }
-    }
-    */
+    post_process();
 }
 
 void FontBook::create_family_name_fallback_chain() noexcept
@@ -116,32 +81,112 @@ void FontBook::create_family_name_fallback_chain() noexcept
     family_name_fallback_chain["andale mono"] = "monospace";
 }
 
-FontID FontBook::register_font(URL url)
+FontID FontBook::register_font(URL url, bool post_process)
 {
-    auto font = Font::load(url);
+    auto font = parseResource<Font>(url);
     auto &description = font->description;
-
-    description.url = url;
 
     LOG_INFO("Parsed font {}: {}", url, to_string(description));
 
-    let font_id = FontID(ssize(font_descriptions));
-    font_descriptions.push_back(description);
+    let font_id = FontID(ssize(font_entries));
+    font_entries.emplace_back(url, description);
 
     let font_family_id = register_family(description.family_name);
-    font_variant_table[font_family_id][description.font_variant()] = font_id;
+    font_variants[font_family_id][description.font_variant()] = font_id;
+
+    if (post_process) {
+        this->post_process();
+    }
+
     return font_id;
+}
+
+void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(FontDescription const&,FontDescription const&)> predicate) noexcept
+{
+    // First calculate total_ranges for the current fallback fonts.
+    UnicodeRanges total_ranges = entry.description.unicode_ranges;
+    for (let fallback_id: entry.fallbacks) {
+        total_ranges |= font_entries[fallback_id].description.unicode_ranges;
+    }
+
+    // Repeatably find the font that matches the predicate and improves the
+    // total_ranges most by being included in the fallback list.
+    while (true) {
+        ssize_t max_font_id = -1;
+        int max_popcount = total_ranges.popcount();
+
+        // Find a font that matches the predicate and has the largest improvement.
+        for (ssize_t fallback_id = 0; fallback_id != ssize(font_entries); ++fallback_id) {
+            let &fallback_entry = font_entries[fallback_id];
+
+            if (!predicate(entry.description, fallback_entry.description)) {
+                continue;
+            }
+
+            auto current_range = total_ranges | fallback_entry.description.unicode_ranges;
+            auto current_popcount = current_range.popcount();
+
+            if (current_popcount > max_popcount) {
+                max_font_id = fallback_id;
+                max_popcount = current_popcount;
+            }
+        }
+
+        // Add the new best fallback font, or stop.
+        if (max_font_id >= 0) {
+            let &fallback_entry = font_entries[max_font_id];
+            LOG_DEBUG("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
+
+            entry.fallbacks.push_back(FontID{max_font_id});
+            total_ranges |= fallback_entry.description.unicode_ranges;
+        } else {
+            return;
+        }
+    }
+    ttauri_unreachable();
+}
+
+void FontBook::post_process() noexcept
+{
+    // Reset caches.
+    glyph_cache.clear();
+    family_name_cache = family_names;
+
+    // For each font, find fallback list.
+    for (ssize_t i = 0; i != ssize(font_entries); ++i) {
+        auto &entry = font_entries[i];
+        entry.fallbacks.clear();
+
+        LOG_DEBUG("Looking for fallback fonts for: {}", to_string(entry.description));
+        calculate_fallback_fonts(entry, [](let &current, let &fallback) {
+            return
+                starts_with(fallback.family_name, current.family_name) &&
+                (current.italic == fallback.italic) &&
+                almost_equal(current.weight, fallback.weight);
+        });
+        calculate_fallback_fonts(entry, [](let &current, let &fallback) {
+            return
+                (current.monospace == fallback.monospace) &&
+                (current.serif == fallback.serif) &&
+                (current.condensed == fallback.condensed) &&
+                (current.italic == fallback.italic) &&
+                almost_equal(current.weight, fallback.weight);
+        });
+        calculate_fallback_fonts(entry, [](let &current, let &fallback) {
+            return true;
+        });
+    }
 }
 
 [[nodiscard]] FontFamilyID FontBook::register_family(std::string_view family_name) noexcept
 {
     auto name = to_lower(family_name);
 
-    auto i = family_name_table.find(name);
-    if (i == family_name_table.end()) {
-        let family_id = FontFamilyID(ssize(font_variant_table));
-        font_variant_table.emplace_back();
-        family_name_table[name] = family_id;
+    auto i = family_names.find(name);
+    if (i == family_names.end()) {
+        let family_id = FontFamilyID(ssize(font_variants));
+        font_variants.emplace_back();
+        family_names[name] = family_id;
 
         // If a new family is added, then the cache which includes fallbacks is no longer valid.
         family_name_cache.clear();
@@ -177,8 +222,8 @@ FontID FontBook::register_font(URL url)
     while (true) {
         name = &(find_fallback_family_name(*name));
 
-        let i = family_name_table.find(*name);
-        if (i != family_name_table.end()) {
+        let i = family_names.find(*name);
+        if (i != family_names.end()) {
             family_name_cache[original_name] = i->second;
             return i->second;
         }
@@ -188,10 +233,10 @@ FontID FontBook::register_font(URL url)
 [[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
 {
     ttauri_assert(family_id);
-    ttauri_assume(family_id >= 0 && family_id < ssize(font_variant_table));
-    let &font_variants = font_variant_table[family_id];
+    ttauri_assume(family_id >= 0 && family_id < ssize(font_variants));
+    let &variants = font_variants[family_id];
     for (auto i = 0; i < 16; i++) {
-        if (auto font_id = font_variants[variant.alternative(i)]) {
+        if (auto font_id = variants[variant.alternative(i)]) {
             return font_id;
         }
     }
@@ -209,31 +254,43 @@ FontID FontBook::register_font(URL url)
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] FontGlyphIDs FontBook::get_glyph_exact(FontID font_id, grapheme grapheme) const noexcept
+[[nodiscard]] FontGlyphIDs FontBook::find_glyph_actual(FontID font_id, grapheme grapheme) const noexcept
 {
-    auto font_description = font_descriptions[font_id];
-    if (!font_description.font) {
-        font_description.font = Font::load(font_description.url);
+    ttauri_assume(font_id < ssize(font_entries));
+
+    let &entry = font_entries[font_id];
+    if (!entry.font) {
+        // This font was parsed once before, it must not give an error now.
+        entry.font = parseResource<Font>(entry.url);
+        ttauri_assert(entry.font);
     }
 
-    auto glyph_ids = font_description.font->get_glyphs(grapheme);
+    auto glyph_ids = entry.font->find_glyph(grapheme);
     glyph_ids.set_font_id(font_id);
     return glyph_ids;
 }
 
-[[nodiscard]] FontGlyphIDs FontBook::get_glyph(FontID font_id, grapheme grapheme) const noexcept
+[[nodiscard]] FontGlyphIDs FontBook::find_glyph(FontID font_id, grapheme g) const noexcept
 {
+    auto i = glyph_cache.find({font_id, g});
+    if (i != glyph_cache.end()) {
+        return i->second;
+    }
+
     // First try the selected font.
-    auto glyph_ids = get_glyph_exact(font_id, grapheme);
+    auto glyph_ids = find_glyph_actual(font_id, g);
     if (glyph_ids) {
+        glyph_cache[{font_id, g}] = glyph_ids;
         return glyph_ids;
     }
 
-    // Now scan the fallback fonts.
-    for (fb_font_id: fallback_font_table) {
-        auto &font_description = font_descriptions[font_id];
-        if (font_description.unicode_ranges.contains(grapheme)) {
-            if ((glyph_ids = get_glyph_exeact(fb_font_id, grapheme))) {
+    // Scan fonts which are fallback to this.
+    auto g_range = UnicodeRanges(g);
+    for (let fallback_id: font_entries[font_id].fallbacks) {
+        auto &fallback_description = font_entries[fallback_id].description;
+        if (fallback_description.unicode_ranges >= g_range) {
+            if ((glyph_ids = find_glyph_actual(fallback_id, g))) {
+                glyph_cache[{font_id, g}] = glyph_ids;
                 return glyph_ids;
             }
         }
@@ -242,8 +299,10 @@ FontID FontBook::register_font(URL url)
     // If all everything has failed, use the tofu block of the original font.
     glyph_ids += GlyphID{0};
     glyph_ids.set_font_id(font_id);
+    glyph_cache[{font_id, g}] = glyph_ids;
     return glyph_ids;
 }
+
 
 
 };

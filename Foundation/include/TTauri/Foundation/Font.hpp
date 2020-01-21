@@ -31,12 +31,19 @@ public:
     Font(Font &&) = delete;
     Font &operator=(Font &&) = delete;
 
-    /** Get the glyph for a code-point.
-     * @return glyph-index, or invalid when not found or error.
+    /** The description is filled with information parsed from the font.
      */
-    [[nodiscard]] virtual GlyphID getGlyph(char32_t c) const noexcept = 0;
+    FontDescription description;
 
-    [[nodiscard]] FontGlyphIDs getGlyph(grapheme g) const noexcept;
+    /** Get the glyph for a code-point.
+     * @return glyph-id, or invalid when not found or error.
+     */
+    [[nodiscard]] virtual GlyphID find_glyph(char32_t c) const noexcept = 0;
+
+    /** Get the glyphs for a grapheme.
+    * @return a set of glyph-ids, or invalid when not found or error.
+    */
+    [[nodiscard]] FontGlyphIDs find_glyph(grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -62,20 +69,18 @@ public:
         for (int graphemeIndex = 0; graphemeIndex < graphemes.size(); graphemeIndex++) {
             let &grapheme = graphemes.at(graphemeIndex);
 
-            // XXX Try and find ligatures in font.
-
             // First try composed normalization
             std::vector<Path> graphemeGlyphs;
-            for (let codePoint: grapheme.NFC()) {
-                let glyphIndex = getGlyph(codePoint);
-                if (!glyphIndex) {
+            for (let c: grapheme.NFC()) {
+                let glyph_id = find_glyph(c);
+                if (!glyph_id) {
                     // The codePoint was not found in the font, or a parse error occurred.
                     graphemeGlyphs.clear();
                     break;
                 }
 
                 Path glyph;
-                if (!loadGlyph(glyphIndex, glyph)) {
+                if (!loadGlyph(glyph_id, glyph)) {
                     // Some kind of parsing error, causes the glyph not to be loaded.
                     graphemeGlyphs.clear();
                     break;
@@ -86,15 +91,15 @@ public:
 
             if (graphemeGlyphs.size() == 0) {
                 // Try again with decomposed normalization.
-                for (let codePoint: grapheme.NFD()) {
-                    let glyphIndex = getGlyph(codePoint);
-                    if (!glyphIndex) {
+                for (let c: grapheme.NFD()) {
+                    let glyph_id = find_glyph(c);
+                    if (!glyph_id) {
                         graphemeGlyphs.clear();
                         break;
                     }
 
                     Path glyph;
-                    if (!loadGlyph(glyphIndex, glyph)) {
+                    if (!loadGlyph(glyph_id, glyph)) {
                         // Some kind of parsing error, causes the glyph not to be loaded.
                         graphemeGlyphs.clear();
                         break;
@@ -103,8 +108,6 @@ public:
                     graphemeGlyphs.push_back(std::move(glyph));
                 }
             }
-
-            // XXX Try fall back fonts.
 
             if (graphemeGlyphs.size() == 0) {
                 // Replace with not-found-glyph at index 0.

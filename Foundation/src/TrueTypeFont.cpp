@@ -135,7 +135,7 @@ static GlyphID searchCharacterMapFormat4(gsl::span<std::byte const> bytes, char3
     let startCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     for (int i = 0; i != segCount; ++i) {
-        r.addCodePointRange(static_cast<char32_t>(startCode[i].value()), static_cast<char32_t>(endCode[i].value()) + 1);
+        r.add(static_cast<char32_t>(startCode[i].value()), static_cast<char32_t>(endCode[i].value()) + 1);
     }
 
     return r;
@@ -180,7 +180,7 @@ static GlyphID searchCharacterMapFormat6(gsl::span<std::byte const> bytes, char3
     let firstCode = static_cast<char32_t>(header->firstCode.value());
     let entryCount = header->entryCount.value();
 
-    r.addCodePointRange(static_cast<char32_t>(firstCode), static_cast<char32_t>(firstCode) + entryCount);
+    r.add(static_cast<char32_t>(firstCode), static_cast<char32_t>(firstCode) + entryCount);
 
     return r;
 }
@@ -241,7 +241,7 @@ static GlyphID searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char
 
     let entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
     for (let &entry: entries) {
-        r.addCodePointRange(static_cast<char32_t>(entry.startCharCode.value()), static_cast<char32_t>(entry.endCharCode.value()) + 1);
+        r.add(static_cast<char32_t>(entry.startCharCode.value()), static_cast<char32_t>(entry.endCharCode.value()) + 1);
     }
     return r;
 }
@@ -259,7 +259,7 @@ static GlyphID searchCharacterMapFormat12(gsl::span<std::byte const> bytes, char
     }
 }
 
-[[nodiscard]] GlyphID TrueTypeFont::getGlyph(char32_t c) const noexcept
+[[nodiscard]] GlyphID TrueTypeFont::find_glyph(char32_t c) const noexcept
 {
     assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), {});
     let format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
@@ -1233,10 +1233,10 @@ void TrueTypeFont::parseFontDirectory()
     if (OS2_xHeight > 0) {
         description.xHeight = emScale * OS2_xHeight;
     } else {
-        let xGlyphIndex = getGlyph('x');
-        if (xGlyphIndex) {
+        let glyph_id = find_glyph('x');
+        if (glyph_id) {
             GlyphMetrics metrics;
-            loadGlyphMetrics(xGlyphIndex, metrics);
+            loadGlyphMetrics(glyph_id, metrics);
             description.xHeight = metrics.boundingBox.extent.height();
         }
     }
@@ -1244,10 +1244,10 @@ void TrueTypeFont::parseFontDirectory()
     if (OS2_HHeight > 0) {
         description.HHeight = emScale * OS2_HHeight;
     } else {
-        let HGlyphIndex = getGlyph('H');
-        if (HGlyphIndex) {
+        let glyph_id = find_glyph('H');
+        if (glyph_id) {
             GlyphMetrics metrics;
-            loadGlyphMetrics(HGlyphIndex, metrics);
+            loadGlyphMetrics(glyph_id, metrics);
             description.HHeight = metrics.boundingBox.extent.height();
         }
     }

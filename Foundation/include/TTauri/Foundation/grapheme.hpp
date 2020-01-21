@@ -20,6 +20,8 @@ class grapheme {
     /*! This value contains up to 3 code-points, or a pointer+length to an array
      * of code-points located on the heap.
      *
+     * The code-points inside the grapheme are in NFC.
+     *
      * If bit 0 is '1' the value contains up to 3 code-points as follows:
      *    - 63:43   3rd code-point, or zero
      *    - 42:22   2nd code-point, or zero
@@ -68,30 +70,7 @@ public:
         return *this;
     }
 
-    force_inline explicit grapheme(std::u32string_view codePoints) noexcept :
-        value(0)
-    {
-        switch (codePoints.size()) {
-        case 3:
-            value |= (static_cast<uint64_t>(codePoints[2] & 0x1f'ffff) << 43);
-            [[fallthrough]];
-        case 2:
-            value |= (static_cast<uint64_t>(codePoints[1] & 0x1f'ffff) << 22);
-            [[fallthrough]];
-        case 1:
-            value |= (static_cast<uint64_t>(codePoints[0] & 0x1f'ffff) << 1);
-            [[fallthrough]];
-        case 0:
-            value |= 1;
-            break;
-        default:
-            if (codePoints.size() <= std::tuple_size<long_grapheme>::value) {
-                value = create_pointer(codePoints.data(), codePoints.size());
-            } else {
-                value = (0x00'fffdULL << 43) | 1; // Replacement character.
-            }
-        }
-    }
+    explicit grapheme(std::u32string_view codePoints) noexcept;
 
     force_inline explicit grapheme(char32_t codePoint) noexcept :
         grapheme(std::u32string_view{&codePoint, 1}) {}
@@ -117,6 +96,15 @@ public:
         return value != 1;
     }
 
+    [[nodiscard]] size_t hash() const noexcept {
+        size_t r = 0;
+        for (ssize_t i = 0; i != ssize(*this); ++i) {
+            r ^= std::hash<char32_t>{}((*this)[i]);
+            r *= 0x9e3779b97f4a7c13ULL; // 64 bit golden ratio.
+        }
+        return r;
+    }
+
     [[nodiscard]] force_inline size_t size() const noexcept {
         if (has_pointer()) {
             return value >> 48;
@@ -132,7 +120,25 @@ public:
         }
     }
 
-    [[nodiscard]] std::u32string NFC() const noexcept;
+    [[nodiscard]] char32_t operator[](size_t i) const noexcept {
+        if (has_pointer()) {
+            ttauri_assume(i < std::tuple_size_v<long_grapheme>); 
+            return (*get_pointer())[i];
+
+        } else {
+            ttauri_assume(i < 3);
+            return (value >> ((i * 21) + 1)) & 0x1f'ffff;
+        }
+    }
+
+    [[nodiscard]] std::u32string NFC() const noexcept {
+        std::u32string r;
+        r.reserve(ssize(*this));
+        for (ssize_t i = 0; i != ssize(*this); ++i) {
+            r += (*this)[i];
+        }
+        return r;
+    }
 
     [[nodiscard]] std::u32string NFD() const noexcept;
 
@@ -169,13 +175,43 @@ private:
     }
 
     [[nodiscard]] friend bool operator<(grapheme const& a, grapheme const& b) noexcept {
-        return a.NFKC() < b.NFKC();
+        let length = std::min(ssize(a), ssize(b));
+
+        for (ssize_t i = 0; i != length; ++i) {
+            if (a[i] < b[i]) {
+                return true;
+            }
+        }
+        return ssize(a) < ssize(b);
     }
 
     [[nodiscard]] friend bool operator==(grapheme const& a, grapheme const& b) noexcept {
-        return a.NFKC() == b.NFKC();
+        if (a.value == b.value) {
+            return true;
+        }
+
+        if (ssize(a) != ssize(b)) {
+            return false;
+        }
+
+        for (ssize_t i = 0; i != ssize(a); ++i) {
+            if (a[i] != b[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 };
 
+}
+
+namespace std {
+
+template<>
+struct hash<TTauri::grapheme> {
+    [[nodiscard]] size_t operator() (TTauri::grapheme const &rhs) const noexcept {
+        return rhs.hash();
+    }
+};
 
 }

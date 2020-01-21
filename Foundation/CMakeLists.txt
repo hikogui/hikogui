@@ -45,6 +45,7 @@ set(TTauri_Foundation_srcs
     src/FontBook.cpp
     src/grapheme.cpp
     src/gstring.cpp
+    src/TextShaper.cpp
 )
 
 if(WIN32)
