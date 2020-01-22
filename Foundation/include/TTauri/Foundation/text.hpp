@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Grapheme.hpp"
 #include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/theme.hpp"
 #include <string>
@@ -12,12 +12,12 @@
 namespace TTauri {
 
 class text {
-    std::vector<grapheme> graphemes;
+    std::vector<Grapheme> graphemes;
 
     mutable size_t cursorPosition = 0;
     mutable ssize_t endSelection = -1;
     mutable int styleAtCursor = 0;
-    grapheme partialCharacter = {};
+    Grapheme partialCharacter = {};
 
 public:
     auto begin() noexcept {
@@ -32,7 +32,7 @@ public:
         return graphemes.size();
     }
 
-    grapheme &operator[](size_t i) noexcept {
+    Grapheme &operator[](size_t i) noexcept {
         return graphemes[i];
     }
 
@@ -118,7 +118,7 @@ public:
      *
      * Since the insertion has not been completed any selected text should not yet be deleted.
      */
-    void insertPartialCharacter(grapheme character) noexcept;
+    void insertPartialCharacter(Grapheme character) noexcept;
 
     /*! Cancel the temporary partial character.
      * Cancellation may happen when another widget or piece of text is selected by the user
@@ -129,7 +129,7 @@ public:
     /*! insert character at the cursor position.
      * Selected text will be deleted.
      */
-    void insertCharacter(grapheme character) noexcept;
+    void insertCharacter(Grapheme character) noexcept;
 
     /*! insert text at the cursor position.
      * Selected text will be deleted.

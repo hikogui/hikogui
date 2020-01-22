@@ -18,14 +18,14 @@ gstring translateString(std::u32string_view const inputString, TranslateStringOp
     for (let codePoint : normalizedString) {
         if (Foundation_globals->unicodeData->checkGraphemeBreak(codePoint, breakState)) {
             if (cluster.size() > 0) {
-                outputString += grapheme(cluster);
+                outputString += Grapheme{cluster};
             }
             cluster.clear();
         }
 
         cluster += codePoint;
     }
-    outputString += grapheme(cluster);
+    outputString += Grapheme{cluster};
     return outputString;
 }
 

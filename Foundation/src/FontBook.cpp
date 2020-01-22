@@ -254,23 +254,30 @@ void FontBook::post_process() noexcept
     return find_font(find_family(family_name), weight, italic);
 }
 
-[[nodiscard]] FontGlyphIDs FontBook::find_glyph_actual(FontID font_id, grapheme grapheme) const noexcept
+[[nodiscard]] Font const &FontBook::get_font(FontID font_id) const noexcept
 {
     ttauri_assume(font_id < ssize(font_entries));
-
     let &entry = font_entries[font_id];
+
     if (!entry.font) {
         // This font was parsed once before, it must not give an error now.
         entry.font = parseResource<Font>(entry.url);
         ttauri_assert(entry.font);
     }
 
-    auto glyph_ids = entry.font->find_glyph(grapheme);
+    return *(entry.font);
+}
+
+[[nodiscard]] FontGlyphIDs FontBook::find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept
+{
+    let &font = get_font(font_id);
+
+    auto glyph_ids = font.find_glyph(grapheme);
     glyph_ids.set_font_id(font_id);
     return glyph_ids;
 }
 
-[[nodiscard]] FontGlyphIDs FontBook::find_glyph(FontID font_id, grapheme g) const noexcept
+[[nodiscard]] FontGlyphIDs FontBook::find_glyph(FontID font_id, Grapheme g) const noexcept
 {
     auto i = glyph_cache.find({font_id, g});
     if (i != glyph_cache.end()) {

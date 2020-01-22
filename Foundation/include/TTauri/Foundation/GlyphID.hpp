@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/tagged_id.hpp"
-#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Grapheme.hpp"
 #include <algorithm>
 #include <utility>
 
@@ -23,10 +23,10 @@ using FontFamilyID = tagged_id<uint16_t, "fontfamily_id"_tag>;
  */
 struct FontIDGrapheme {
     FontID font_id;
-    grapheme g;
+    Grapheme g;
 
     [[nodiscard]] size_t hash() const noexcept {
-        return std::hash<FontID>{}(font_id) ^ std::hash<grapheme>{}(g);
+        return std::hash<FontID>{}(font_id) ^ std::hash<Grapheme>{}(g);
     }
 
     [[nodiscard]] friend bool operator==(FontIDGrapheme const &lhs, FontIDGrapheme const &rhs) noexcept {
@@ -139,6 +139,14 @@ public:
             *(get_pointer()) += rhs;
         }
         return *this;
+    }
+
+    [[nodiscard]] force_inline GlyphID front() const noexcept {
+        if (size() == 0) {
+            return GlyphID{};
+        } else {
+            return (*this)[0];
+        }
     }
 
     [[nodiscard]] force_inline GlyphID operator[](size_t index) const noexcept {

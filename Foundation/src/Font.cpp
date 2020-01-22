@@ -7,7 +7,7 @@
 
 namespace TTauri {
 
-[[nodiscard]] FontGlyphIDs Font::find_glyph(grapheme g) const noexcept
+[[nodiscard]] FontGlyphIDs Font::find_glyph(Grapheme g) const noexcept
 {
     FontGlyphIDs r;
 

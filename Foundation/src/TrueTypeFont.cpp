@@ -362,7 +362,7 @@ struct HHEATable {
     big_int16_buf_t reserved2;
     big_int16_buf_t reserved3;
     big_int16_buf_t metricDataFormat;
-    big_int16_buf_t numberOfHMetrics;
+    big_uint16_buf_t numberOfHMetrics;
 };
 
 void TrueTypeFont::parseHheaTable(gsl::span<std::byte const> bytes)
@@ -726,25 +726,25 @@ void TrueTypeFont::parseMaxpTable(gsl::span<std::byte const> bytes)
     numGlyphs = table->numGlyphs.value();
 }
 
-bool TrueTypeFont::getGlyphBytes(int glyphIndex, gsl::span<std::byte const> &bytes) const noexcept
+bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, gsl::span<std::byte const> &bytes) const noexcept
 {
-    assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
     size_t startOffset = 0;
     size_t endOffset = 0;
     if (locaTableIsOffset32) {
         let entries = make_placement_array<big_uint32_buf_t>(locaTableBytes);
-        assert_or_return(entries.contains(glyphIndex + 1), false);
+        assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
-        startOffset = entries[glyphIndex].value();
-        endOffset = entries[glyphIndex + 1].value();
+        startOffset = entries[glyph_id].value();
+        endOffset = entries[static_cast<int>(glyph_id) + 1].value();
 
     } else {
         let entries = make_placement_array<big_uint16_buf_t>(locaTableBytes);
-        assert_or_return(entries.contains(glyphIndex + 1), false);
+        assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
-        startOffset = entries[glyphIndex].value() * 2;
-        endOffset = entries[glyphIndex + 1].value() * 2;
+        startOffset = entries[glyph_id].value() * 2;
+        endOffset = entries[static_cast<int>(glyph_id) + 1].value() * 2;
     }
 
     assert_or_return(startOffset <= endOffset, false);
@@ -760,9 +760,9 @@ struct HMTXEntry {
     FWord_buf_t leftSideBearing;
 };
 
-bool TrueTypeFont::updateGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept
+bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID kern_glyph1_id, GlyphID kern_glyph2_id) const noexcept
 {
-    assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
     size_t offset = 0;
 
@@ -775,14 +775,15 @@ bool TrueTypeFont::updateGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) con
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
-    if (glyphIndex < numberOfHMetrics) {
-        advanceWidth = longHorizontalMetricTable[glyphIndex].advanceWidth.value(unitsPerEm);
-        leftSideBearing = longHorizontalMetricTable[glyphIndex].leftSideBearing.value(unitsPerEm);
+    if (glyph_id < numberOfHMetrics) {
+        advanceWidth = longHorizontalMetricTable[glyph_id].advanceWidth.value(unitsPerEm);
+        leftSideBearing = longHorizontalMetricTable[glyph_id].leftSideBearing.value(unitsPerEm);
     } else {
         advanceWidth = longHorizontalMetricTable[numberOfHMetrics - 1].advanceWidth.value(unitsPerEm);
-        leftSideBearing = leftSideBearings[glyphIndex - numberOfHMetrics].value(unitsPerEm);
+        leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
     }
 
+    // XXX add kerning to advance vector.
     metrics.advance = glm::vec2{advanceWidth, 0.0f};
     metrics.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
     metrics.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + metrics.boundingBox.extent.width()), 0.0f};
@@ -936,7 +937,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph, uint16_t &metricsGlyphIndex) const noexcept
+bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept
 {
     size_t offset = sizeof(GLYFEntry);
 
@@ -949,7 +950,7 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         let subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
 
         Path subGlyph;
-        assert_or_return(loadGlyph(subGlyphIndex, subGlyph), false);
+        assert_or_return(loadGlyph(GlyphID{subGlyphIndex}, subGlyph), false);
 
         glm::vec2 subGlyphOffset;
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
@@ -1008,7 +1009,7 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         }
 
         if (flags & FLAG_USE_MY_METRICS) {
-            metricsGlyphIndex = subGlyphIndex;
+            metrics_glyph_id = subGlyphIndex;
         }
 
         glyph += T2D(subGlyphOffset, subGlyphScale) * subGlyph;
@@ -1019,14 +1020,14 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
     return true;
 }
 
-bool TrueTypeFont::loadGlyph(int glyphIndex, Path &glyph) const noexcept
+bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
 {
-    assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
     gsl::span<std::byte const> bytes;
-    assert_or_return(getGlyphBytes(glyphIndex, bytes), false);
+    assert_or_return(getGlyphBytes(glyph_id, bytes), false);
 
-    auto metricsGlyphIndex = static_cast<uint16_t>(glyphIndex);
+    auto metrics_glyph_id = glyph_id;
 
     if (bytes.size() > 0) {
         assert_or_return(check_placement_ptr<GLYFEntry>(bytes), false);
@@ -1043,7 +1044,7 @@ bool TrueTypeFont::loadGlyph(int glyphIndex, Path &glyph) const noexcept
         if (numberOfContours > 0) {
             assert_or_return(loadSimpleGlyph(bytes, glyph), false);
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundGlyph(bytes, glyph, metricsGlyphIndex), false);
+            assert_or_return(loadCompoundGlyph(bytes, glyph, metrics_glyph_id), false);
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1052,10 +1053,10 @@ bool TrueTypeFont::loadGlyph(int glyphIndex, Path &glyph) const noexcept
         // Empty glyph, such as white-space ' '.
     }
 
-    return updateGlyphMetrics(metricsGlyphIndex, glyph.metrics);
+    return updateGlyphMetrics(metrics_glyph_id, glyph.metrics);
 }
 
-bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, uint16_t &metricsGlyphIndex) const noexcept
+bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept
 {
     size_t offset = sizeof(GLYFEntry);
 
@@ -1090,7 +1091,7 @@ bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, ui
         }
 
         if (flags & FLAG_USE_MY_METRICS) {
-            metricsGlyphIndex = subGlyphIndex;
+            metrics_glyph_id = subGlyphIndex;
             return true;
         }
     } while (flags & FLAG_MORE_COMPONENTS);
@@ -1099,14 +1100,14 @@ bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, ui
     return true;
 }
 
-bool TrueTypeFont::loadGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept
+bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id) const noexcept
 {
-    assert_or_return(glyphIndex >= 0 && glyphIndex < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
     gsl::span<std::byte const> bytes;
-    assert_or_return(getGlyphBytes(glyphIndex, bytes), false);
+    assert_or_return(getGlyphBytes(glyph_id, bytes), false);
 
-    auto metricsGlyphIndex = static_cast<uint16_t>(glyphIndex);
+    auto metricsGlyphIndex = glyph_id;
 
     if (bytes.size() > 0) {
         assert_or_return(check_placement_ptr<GLYFEntry>(bytes), false);
@@ -1132,7 +1133,7 @@ bool TrueTypeFont::loadGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const
         // Empty glyph, such as white-space ' '.
     }
 
-    return updateGlyphMetrics(metricsGlyphIndex, metrics);
+    return updateGlyphMetrics(metricsGlyphIndex, metrics, glyph_id, lookahead_glyph_id);
 }
 
 struct SFNTHeader {

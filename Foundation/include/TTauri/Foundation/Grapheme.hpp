@@ -120,6 +120,14 @@ public:
         }
     }
 
+    [[nodiscard]] char32_t front() const noexcept {
+        if (size() == 0) {
+            return 0;
+        } else {
+            return (*this)[0];
+        }
+    }
+
     [[nodiscard]] char32_t operator[](size_t i) const noexcept {
         if (has_pointer()) {
             ttauri_assume(i < std::tuple_size_v<long_Grapheme>); 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Grapheme.hpp"
 #include "TTauri/Foundation/text.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/FontDescription.hpp"
@@ -113,6 +113,7 @@ public:
      */
     [[nodiscard]] FontID find_font(std::string_view family_name, FontWeight weight, bool italic) const noexcept;
 
+    [[nodiscard]] Font const &get_font(FontID font_id) const noexcept;
 
     /** Find a glyph using the given code-point.
      * This function will find a glyph matching the grapheme in the selected font, or
@@ -122,7 +123,7 @@ public:
      * @param grapheme The Unicode grapheme to find in the font.
      * @return A list of glyphs which matched the grapheme.
      */
-    [[nodiscard]] FontGlyphIDs find_glyph(FontID font_id, grapheme grapheme) const noexcept;
+    [[nodiscard]] FontGlyphIDs find_glyph(FontID font_id, Grapheme grapheme) const noexcept;
 
 private:
 
@@ -131,7 +132,7 @@ private:
     /** Find the glyph for this specific font.
      * This will open the font file if needed.
      */
-    [[nodiscard]] FontGlyphIDs find_glyph_actual(FontID font_id, grapheme grapheme) const noexcept;
+    [[nodiscard]] FontGlyphIDs find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept;
 
     /** Morph the set of glyphs using the font's morph tables.
      */

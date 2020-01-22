@@ -6,11 +6,12 @@
 #include "TTauri/Foundation/theme.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/GlyphMetrics.hpp"
 
 namespace TTauri {
 
 struct AttributedGrapheme {
-    grapheme g;
+    Grapheme grapheme;
     int index;
 
     /** All information about the shape and color needed to render this grapheme. */
@@ -21,6 +22,8 @@ struct AttributedGrapheme {
  */
 struct AttributedGlyph {
     FontGlyphIDs glyphs;
+
+    Grapheme grapheme;
 
     /** Copied from the original attributed-grapheme.
      * An attributed-glyph always represents one or more (ligature) graphemes, a grapheme is never split.
@@ -33,12 +36,11 @@ struct AttributedGlyph {
     /** Copied from the original attributed-grapheme. */
     TextStyle style;
 
-    /** Advance vector to the next glyph */
-    glm::vec2 advance;
+    /** Metrics taken from the font file. */
+    GlyphMetrics metrics;
 
-    /** Position and size of the glyph inside the resulting box. */
-    rect2 bounding_box;
-
+    AttributedGlyph(AttributedGrapheme const &attr_grapheme, FontGlyphIDs glyphs) noexcept :
+        glyphs(std::move(glyphs)), grapheme(attr_grapheme.grapheme), index(attr_grapheme.index), style(attr_grapheme.style), metrics() {}
 };
 
 /** Shape the text.

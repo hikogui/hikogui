@@ -43,7 +43,7 @@ public:
     /** Get the glyphs for a grapheme.
     * @return a set of glyph-ids, or invalid when not found or error.
     */
-    [[nodiscard]] FontGlyphIDs find_glyph(grapheme g) const noexcept;
+    [[nodiscard]] FontGlyphIDs find_glyph(Grapheme g) const noexcept;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -52,7 +52,7 @@ public:
     * \param path The path constructed by the loader.
     * \return true on success, false on error.
     */
-    virtual bool loadGlyph(int glyphIndex, Path &path) const noexcept = 0;
+    virtual bool loadGlyph(GlyphID glyph_id, Path &path) const noexcept = 0;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.
@@ -61,7 +61,7 @@ public:
     * \param metrics The metrics constructed by the loader.
     * \return true on success, false on error.
     */
-    virtual bool loadGlyphMetrics(int glyphIndex, GlyphMetrics &metrics) const noexcept = 0;
+    virtual bool loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id=GlyphID{}) const noexcept = 0;
 
     PathString getGlyphs(gstring const &graphemes) const noexcept {
         PathString r;
@@ -112,7 +112,7 @@ public:
             if (graphemeGlyphs.size() == 0) {
                 // Replace with not-found-glyph at index 0.
                 Path glyph;
-                if (!loadGlyph(0, glyph)) {
+                if (!loadGlyph(GlyphID{0}, glyph)) {
                     // Some kind of parsing error, causes the glyph not to be loaded.
                     LOG_FATAL("Could not load glyph 0 from font file.");
                 }
