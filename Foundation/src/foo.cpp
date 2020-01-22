@@ -1,12 +1,12 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Grapheme.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
 namespace TTauri {
 
-grapheme::grapheme(std::u32string_view codePoints) noexcept :
+Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     value(0)
 {
     let codePoints_ = Foundation_globals->unicodeData->toNFC(codePoints);
@@ -25,7 +25,7 @@ grapheme::grapheme(std::u32string_view codePoints) noexcept :
         value |= 1;
         break;
     default:
-        if (codePoints_.size() <= std::tuple_size_v<long_grapheme>) {
+        if (codePoints_.size() <= std::tuple_size_v<long_Grapheme>) {
             value = create_pointer(codePoints_.data(), codePoints_.size());
         } else {
             value = (0x00'fffdULL << 1) | 1; // Replacement character.
@@ -33,15 +33,15 @@ grapheme::grapheme(std::u32string_view codePoints) noexcept :
     }
 }
 
-[[nodiscard]] std::u32string grapheme::NFD() const noexcept {
+[[nodiscard]] std::u32string Grapheme::NFD() const noexcept {
     return Foundation_globals->unicodeData->toNFD(static_cast<std::u32string>(*this));
 }
 
-[[nodiscard]] std::u32string grapheme::NFKC() const noexcept {
+[[nodiscard]] std::u32string Grapheme::NFKC() const noexcept {
     return Foundation_globals->unicodeData->toNFKC(static_cast<std::u32string>(*this));
 }
 
-[[nodiscard]] std::u32string grapheme::NFKD() const noexcept {
+[[nodiscard]] std::u32string Grapheme::NFKD() const noexcept {
     return Foundation_globals->unicodeData->toNFKD(static_cast<std::u32string>(*this));
 }
 
