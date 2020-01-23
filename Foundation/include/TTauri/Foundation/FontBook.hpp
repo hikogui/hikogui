@@ -15,6 +15,12 @@
 
 namespace TTauri {
 
+/** FontBook keeps track of multiple fonts.
+ * The FontBook is instantiated during Application startup
+ * and is available through Foundation_globals->font_book.
+ *
+ * 
+ */
 class FontBook {
     /** Table of FontFamilyIDs index using the family-name.
      */
