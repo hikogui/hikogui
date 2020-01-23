@@ -60,6 +60,9 @@ private:
     //! 'OS/2' OS/2 (not needed)
     gsl::span<std::byte const> os2TableBytes;
 
+    //! 'kern' Kerning tables (optional)
+    gsl::span<std::byte const> kernTableBytes;
+
 public:
     /*! Load a true type font.
      * The methods in this class will parse the true-type font at run time.

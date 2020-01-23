@@ -12,6 +12,5 @@
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/PNG.hpp"
 #include "TTauri/Foundation/attributes.hpp"
-#include "TTauri/Foundation/PathString.hpp"
-#include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/pickle.hpp"
+#include "TTauri/Foundation/ShapedText.hpp"

@@ -160,12 +160,6 @@ Path parseTTauriIcon(gsl::span<std::byte const> bytes)
         }
     }
 
-    drawing.metrics.advance = {1.0, 0.0};
-    drawing.metrics.ascender = {0.0, 1.0};
-    drawing.metrics.descender = {0.0, 0.0};
-    drawing.metrics.capHeight = {0.0, 1.0};
-    drawing.metrics.xHeight = {1.0, 0.0};
-
     return drawing;
 }
 

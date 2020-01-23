@@ -71,14 +71,15 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     }
 
     let iconSize = numeric_cast<float>(image->extent.height());
-    let iconLocation = glm::vec2{image->extent.width() / 2.0f, image->extent.height() / 2.0f};
+    let iconLocation = glm::vec2{image->extent.width() / 2.0f, 0.0f};
 
     auto iconImage = PixelMap<wsRGBA>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
-        let p = Alignment::MiddleCenter + T2D(iconLocation, iconSize) * PathString{std::get<Path>(icon)};
+        auto p = std::get<Path>(icon).centerScale(static_cast<extent2>(image->extent), 10.0);
+        p.closeLayer(wsRGBA{1.0, 1.0, 1.0, 1.0});
 
         fill(iconImage);
-        composit(iconImage, p.toPath(wsRGBA{ 0xffffffff }), SubpixelOrientation::RedLeft);
+        composit(iconImage, p, SubpixelOrientation::RedLeft);
     } else {
         no_default;
     }

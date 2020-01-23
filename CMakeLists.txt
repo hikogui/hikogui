@@ -58,7 +58,6 @@ add_icon(Icon_objs
 
 set(TTauri_resources
     ${Icon_objs}
-    Themes/Fonts/Roboto/Roboto-Regular.ttf
 )
 endif()
 

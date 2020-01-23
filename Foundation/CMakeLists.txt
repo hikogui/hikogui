@@ -31,7 +31,6 @@ set(TTauri_Foundation_srcs
     src/BezierCurve.cpp
     src/Font.cpp
     src/Path.cpp
-    src/PathString.cpp
     src/PixelMap.cpp
     src/PNG.cpp
     src/theme.cpp
@@ -45,7 +44,7 @@ set(TTauri_Foundation_srcs
     src/FontBook.cpp
     src/Grapheme.cpp
     src/gstring.cpp
-    src/TextShaper.cpp
+    src/ShapedText.cpp
 )
 
 if(WIN32)

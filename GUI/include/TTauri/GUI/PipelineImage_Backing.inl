@@ -56,6 +56,10 @@ inline void Backing::loadOrDraw(Window const &window, extent2 const &currentExte
 
                     return draw_function(newImage);
                 });
+#if !defined(NDEBUG)
+                // Synchronize to make debugging easier.
+                (*futureImage).wait();
+#endif
                 break;
             }
         }

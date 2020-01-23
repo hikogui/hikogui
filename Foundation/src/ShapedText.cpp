@@ -1,10 +1,23 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/TextShaper.hpp"
+#include "TTauri/Foundation/ShapedText.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
 namespace TTauri {
+
+[[nodiscard]] static std::vector<AttributedGrapheme> makeAttributedGraphemeVector(gstring const &text, TextStyle const &style) noexcept
+{
+    std::vector<AttributedGrapheme> r;
+    r.reserve(ssize(text));
+
+    int index = 0;
+    for (let &grapheme: text) {
+        r.emplace_back(grapheme, index++, style);
+    }
+
+    return r;
+}
 
 static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
 {
@@ -19,7 +32,7 @@ static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
     let &font_book = *(Foundation_globals->font_book);
 
     for (let &ag: text) {
-        let font_id = font_book.find_font(ag.style.family_id, ag.style.font_variant);
+        let font_id = font_book.find_font(ag.style.family_id, ag.style.variant);
         glyphs.emplace_back(ag, font_book.find_glyph(font_id, ag.grapheme));
     }
 
@@ -78,6 +91,9 @@ struct AttributedGlyphsLine {
     float width = 0.0;
     float vertical_advance = 0.0;
     float descender = 0.0;
+
+    AttributedGlyphsLine(std::vector<AttributedGlyph>::iterator begin, std::vector<AttributedGlyph>::iterator end, float width, float vertical_advance, float descender) :
+        begin(begin), end(end), width(width), vertical_advance(vertical_advance), descender(descender) {}
 };
 
 [[nodiscard]] static std::vector<AttributedGlyphsLine> make_lines(std::vector<AttributedGlyph> &glyphs, float maximum_width) noexcept
@@ -147,7 +163,7 @@ struct AttributedGlyphsLine {
 [[nodiscard]] static extent2 calculate_text_size(std::vector<AttributedGlyphsLine> const &lines, extent2 size) noexcept
 {
     if (ssize(lines) == 0) {
-        return;
+        return {0.0, 0.0};
     }
 
     auto height = 0.0f;
@@ -164,16 +180,16 @@ struct AttributedGlyphsLine {
 
 static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 size, extent2 minimum_size, Alignment alignment) noexcept
 {
-    auto position = glm::vec2{0.0, 0.0};
+    auto position = glm::vec2{0.0f, 0.0f};
 
     if (alignment == VerticalAlignment::Base || size.height() >= minimum_size.height()) {
-        position.y = 0.0;
+        position.y = 0.0f;
     } else if (alignment == VerticalAlignment::Top) {
-        position.y = 0.0;
+        position.y = 0.0f;
     } else if (alignment == VerticalAlignment::Bottom) {
         position.y = minimum_size.height() - size.height();
     } else if (alignment == VerticalAlignment::Middle) {
-        position.y = (minimum_size.height() - size.height()) * 0.5;
+        position.y = (minimum_size.height() - size.height()) * 0.5f;
     } else {
         no_default;
     }
@@ -182,24 +198,42 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 si
         position.y += line.vertical_advance;
 
         if (alignment == HorizontalAlignment::Left) {
-            position.x = 0.0;
+            position.x = 0.0f;
         } else if (alignment == HorizontalAlignment::Right) {
             position.x = size.width() - line.width;
         } else if (alignment == HorizontalAlignment::Center) {
-            position.x = (size.width() - line.width) * 0.5;
+            position.x = (size.width() - line.width) * 0.5f;
         } else {
             no_default;
         }
 
         for (auto i = line.begin; i != line.end; ++i) {
+            i->position = position;
             i->metrics *= T2D(position);
             position += i->metrics.advance;
         }
     }
 }
 
-
-[[nodiscard]] std::pair<extent2,std::vector<AttributedGlyph>> shape_text(std::vector<AttributedGrapheme> text, Alignment alignment, extent2 minimum_size, extent2 maximum_size) noexcept
+/** Shape the text.
+* The given text is in logical-order; the order in which humans write text.
+* The resulting glyphs are in left-to-right display order.
+*
+* The following operations are executed on the text by the `shape_text()` function:
+*  - Put graphemes in left-to-right display order using the UnicodeData's bidi_algorithm.
+*  - Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
+*  - Morph attributed-glyphs using the Font's morph algorithm.
+*  - Calculate advance for each attributed-glyph using the Font's advance and kern algorithms.
+*  - Add line-breaks to the text to fit within the maximum-width.
+*  - Calculate actual size of the box, no smaller than the minimum_size.
+*  - Align the text within the actual box size.
+*
+* @param text The text to be shaped.
+* @param max_width Maximum width that the text should flow into.
+* @param alignment How the text should be aligned in the box.
+* @return size of the resulting text, shaped text.
+*/
+[[nodiscard]] static std::pair<extent2,std::vector<AttributedGlyph>> shape_text(std::vector<AttributedGrapheme> text, Alignment alignment, extent2 minimum_size, extent2 maximum_size) noexcept
 {
     std::vector<AttributedGlyph> attributed_glyphs;
     extent2 box_size;
@@ -216,7 +250,7 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 si
     // Load metric for each attributed-glyph using many of the Font's tables.
     load_metrics_for_glyphs(glyphs);
 
-    auto lines = make_lines(glyphs, maximum_size.width);
+    auto lines = make_lines(glyphs, maximum_size.width());
 
     // Calculate actual size of the box, no smaller than the minimum_size.
     box_size = calculate_text_size(lines, minimum_size);
@@ -226,5 +260,57 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 si
 
     return {box_size, glyphs};
 }
+
+
+ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept
+{
+    std::tie(this->box_size, this->text) = shape_text(text, alignment, minimum_size, maximum_size);
+}
+
+ShapedText::ShapedText(gstring const &text, TextStyle const &style, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept :
+    ShapedText(makeAttributedGraphemeVector(text, style), alignment, minimum_size, maximum_size) {}
+
+ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept :
+    ShapedText(translateString<gstring>(text), style, alignment, minimum_size, maximum_size) {}
+
+[[nodiscard]] Path ShapedText::toPath() const noexcept
+{
+    Path r;
+
+    if (ssize(text) == 0) {
+        return r;
+    }
+
+
+    ttauri_assume(Foundation_globals->font_book);
+    let &font_book = *(Foundation_globals->font_book);
+
+    auto previous_color = text.front().style.color;
+    for (let &attributed_glyph: text) {
+        let font_id = attributed_glyph.glyphs.font_id();
+        let &font = font_book.get_font(font_id);
+
+        for (ssize_t i = 0; i < ssize(attributed_glyph.glyphs); i++) {
+            let glyph_id = attributed_glyph.glyphs[i];
+
+            Path glyph_path;
+            if (!font.loadGlyph(glyph_id, glyph_path)) {
+                LOG_ERROR("Could not find glyph {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
+            }
+
+            if (attributed_glyph.style.color != previous_color) {
+                r.closeLayer(previous_color);
+                previous_color = attributed_glyph.style.color;
+            }
+            r += T2D(attributed_glyph.position, attributed_glyph.style.size) * glyph_path;
+        }
+    }
+
+    ttauri_assume(r.isLayerOpen());
+    r.closeLayer(previous_color);
+
+    return r;
+}
+
 
 }
