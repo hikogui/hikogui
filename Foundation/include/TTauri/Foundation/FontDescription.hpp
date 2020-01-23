@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/UnicodeData.hpp"
 #include "TTauri/Foundation/GlyphID.hpp"
 
@@ -98,6 +97,11 @@ inline auto const FontWeight_from_string_table = std::unordered_map<std::string,
 
 inline std::ostream &operator<<(std::ostream &lhs, FontWeight const &rhs) {
     return lhs << to_string(rhs);
+}
+
+inline bool almost_equal(FontWeight const &lhs, FontWeight const &rhs) noexcept {
+    // Check only if it is bold or not.
+    return (lhs > FontWeight::Medium) == (rhs > FontWeight::Medium);
 }
 
 [[nodiscard]] constexpr auto FontWeight_alternative_table_generator() noexcept
@@ -198,9 +202,6 @@ public:
 };
 
 struct FontDescription {
-    URL url;
-    std::shared_ptr<class Font> font;
-
     std::string family_name;
     std::string sub_family_name;
 

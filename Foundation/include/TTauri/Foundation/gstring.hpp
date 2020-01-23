@@ -3,27 +3,27 @@
 
 #pragma once
 
-#include "TTauri/Foundation/grapheme.hpp"
+#include "TTauri/Foundation/Grapheme.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include <vector>
 
 namespace TTauri {
 
 struct gstring {
-    std::vector<grapheme> graphemes;
+    std::vector<Grapheme> graphemes;
 
-    using const_iterator = std::vector<grapheme>::const_iterator;
-    using value_type = grapheme;
+    using const_iterator = std::vector<Grapheme>::const_iterator;
+    using value_type = Grapheme;
 
     ssize_t size() const noexcept {
         return to_signed(graphemes.size());
     }
 
-    grapheme const &at(ssize_t i) const {
+    Grapheme const &at(ssize_t i) const {
         return graphemes.at(i);
     }
 
-    grapheme &at(ssize_t i) {
+    Grapheme &at(ssize_t i) {
         return graphemes.at(i);
     }
 
@@ -42,7 +42,7 @@ struct gstring {
         return *this;
     }
 
-    gstring &operator+=(grapheme const &grapheme) noexcept {
+    gstring &operator+=(Grapheme const &grapheme) noexcept {
         graphemes.push_back(grapheme);
         return *this;
     }
