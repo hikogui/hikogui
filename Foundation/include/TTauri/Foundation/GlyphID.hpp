@@ -96,7 +96,10 @@ public:
 
     FontGlyphIDs &operator=(FontGlyphIDs const &rhs) {
         delete_pointer();
-        value = new_pointer(*(rhs.get_pointer()));
+        value = rhs.value;
+        if (rhs.has_pointer()) {
+            value = new_pointer(*(rhs.get_pointer()));
+        }
         return *this;
     }
 

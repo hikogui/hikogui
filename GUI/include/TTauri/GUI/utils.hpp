@@ -15,3 +15,4 @@
 #include "TTauri/Foundation/PathString.hpp"
 #include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/pickle.hpp"
+#include "TTauri/Foundation/ShapedText.hpp"

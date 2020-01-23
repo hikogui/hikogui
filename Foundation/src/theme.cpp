@@ -8,6 +8,9 @@
 namespace TTauri {
 
 
+TextStyle::TextStyle(std::string_view family_name, FontVariant variant, float size, wsRGBA color, TextDecoration decoration) :
+    TextStyle(Foundation_globals->font_book->find_family(family_name), variant, size, color, decoration) {}
+
 [[nodiscard]] FontStyleID parse_theme_text_style_index(datum data)
 {
     if (data.is_integer()) {
@@ -113,10 +116,10 @@ namespace TTauri {
             if (!i->second.is_bool()) {
                 TTAURI_THROW(parse_error("Expect italic attribute of a font style to be a boolean, got {}", i->second));
             }
-            r.font_variant.set_italic(static_cast<bool>(i->second));
+            r.variant.set_italic(static_cast<bool>(i->second));
 
         } else if (key == "weight") {
-            r.font_variant.set_weight(parse_theme_font_weight(i->second));
+            r.variant.set_weight(parse_theme_font_weight(i->second));
 
         } else if (key == "size") {
             if (!(i->second.is_string() || i->second.is_float())) {
@@ -125,7 +128,8 @@ namespace TTauri {
             r.size = static_cast<float>(i->second);
 
         } else if (key == "color") {
-            r.color = parse_theme_color_index(i->second);
+            not_implemented;
+            //r.color = parse_theme_color_index(i->second);
 
         } else if (key == "decoration") {
             r.decoration = parse_theme_decoration(i->second);

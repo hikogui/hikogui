@@ -52,7 +52,6 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
 
     // Draw something.
     let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-    let &labelFont = getResource<Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
     let labelFontSize = 12.0;
 
     wsRGBA backgroundColor;
@@ -72,8 +71,6 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
 
 #pragma warning(suppress: 6001)
     let rectangle = rect2{{0.5f, 0.5f}, { static_cast<float>(image->extent.width()) - 1.0f, static_cast<float>(image->extent.height()) - 1.0f }};
-    let labelLocation = midpoint(rectangle);
-    //let labelLocation = glm::vec2{0.0, 0.0};
 
     auto drawing = Path();
 
@@ -82,8 +79,9 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
     drawing.addPath(buttonPath, backgroundColor);
     drawing.addStroke(buttonPath, borderColor, 1.0);
 
-    let labelGlyphs = Alignment::MiddleCenter + T2D(labelLocation, labelFontSize) * labelFont.getGlyphs(label);
-    drawing += labelGlyphs.toPath(labelColor);
+    let labelStyle = TextStyle("Arial", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
+    let labelShapedText = ShapedText(label, labelStyle, Alignment::MiddleCenter, rectangle.extent, rectangle.extent);
+    drawing += labelShapedText.toPath();
 
     composit(linearMap, drawing, window->subpixelOrientation);
 

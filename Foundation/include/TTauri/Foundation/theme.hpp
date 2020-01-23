@@ -140,10 +140,18 @@ inline auto const FontStyleID_from_string_table = std::unordered_map<std::string
 
 struct TextStyle {
     FontFamilyID family_id;
-    FontVariant font_variant;
-    ColorID color;
-    TextDecoration decoration;
+    FontVariant variant;
     float size;
+    wsRGBA color;
+    TextDecoration decoration;
+
+    TextStyle() :
+        family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
+
+    TextStyle(FontFamilyID family_id, FontVariant variant, float size, wsRGBA color, TextDecoration decoration) :
+        family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
+
+    TextStyle(std::string_view family_name, FontVariant variant, float size, wsRGBA color, TextDecoration decoration);
 };
 
 
