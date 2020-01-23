@@ -123,12 +123,10 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineIma
     auto linearMap = PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
-    let iconSize = numeric_cast<float>(image.extent.height());
-    let iconLocation = glm::vec2{image.extent.width() / 2.0f, image.extent.height() / 2.0f};
-    let iconString = Alignment::MiddleCenter + T2D(iconLocation, iconSize) * PathString{applicationIcon};
+    let iconPath = applicationIcon.centerScale(static_cast<extent2>(image.extent), 5.0);
 
     fill(linearMap);
-    composit(linearMap, iconString.toPath(wsRGBA{ 0xffffffff }), window->subpixelOrientation);
+    composit(linearMap, iconPath, window->subpixelOrientation);
 
     if (!window->active) {
         desaturate(linearMap, 0.5f);

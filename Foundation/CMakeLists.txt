@@ -31,7 +31,6 @@ set(TTauri_Foundation_srcs
     src/BezierCurve.cpp
     src/Font.cpp
     src/Path.cpp
-    src/PathString.cpp
     src/PixelMap.cpp
     src/PNG.cpp
     src/theme.cpp

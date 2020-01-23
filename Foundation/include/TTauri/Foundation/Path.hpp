@@ -39,22 +39,21 @@ struct Path {
      */
     std::vector<std::pair<ssize_t,wsRGBA>> layerEndContours;
 
-    /*! When a path is used a font-glyph the metrics here describe
-     * metric for the glyph.
-     */
-    GlyphMetrics metrics;
-
     /*! Return the number of closed contours.
     */
-    ssize_t numberOfContours() const noexcept;
+    [[nodiscard]] ssize_t numberOfContours() const noexcept;
 
     /*! Return the number of closed layers.
     */
-    ssize_t numberOfLayers() const noexcept;
+    [[nodiscard]] ssize_t numberOfLayers() const noexcept;
 
     /*! Check if all layers have the same color.
      */
-    bool allLayersHaveSameColor() const noexcept;
+    [[nodiscard]] bool allLayersHaveSameColor() const noexcept;
+
+    /** Calculate bounding box.
+     */
+    [[nodiscard]] rect2 boundingBox() const noexcept;
 
     /*! Try to move the layers in a path.
      * Layers are removed if there are layers, and all the layers have
@@ -64,35 +63,35 @@ struct Path {
 
     /*! Return an iterator to the start point of a contour.
      */
-    std::vector<BezierPoint>::const_iterator beginContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<BezierPoint>::const_iterator beginContour(ssize_t contourNr) const noexcept;
 
     /* Return and end-iterator beyond the end point of a contour.
      */
-    std::vector<BezierPoint>::const_iterator endContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<BezierPoint>::const_iterator endContour(ssize_t contourNr) const noexcept;
 
     /* Return the first contour index of a layer.
      */
-    ssize_t beginLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] ssize_t beginLayer(ssize_t layerNr) const noexcept;
 
     /* Return beyond the last contour index of a layer.
      */
-    ssize_t endLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] ssize_t endLayer(ssize_t layerNr) const noexcept;
 
-    std::vector<BezierPoint> getBezierPointsOfContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<BezierPoint> getBezierPointsOfContour(ssize_t contourNr) const noexcept;
 
-    std::vector<BezierCurve> getBeziersOfContour(ssize_t contourNr) const noexcept;
+    [[nodiscard]] std::vector<BezierCurve> getBeziersOfContour(ssize_t contourNr) const noexcept;
 
-    std::vector<BezierCurve> getBeziers() const noexcept;
+    [[nodiscard]] std::vector<BezierCurve> getBeziers() const noexcept;
 
-    std::pair<Path,wsRGBA> getLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] std::pair<Path,wsRGBA> getLayer(ssize_t layerNr) const noexcept;
 
-    wsRGBA getColorOfLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] wsRGBA getColorOfLayer(ssize_t layerNr) const noexcept;
 
     void setColorOfLayer(ssize_t layerNr, wsRGBA fillColor) noexcept;
 
     /*! Return true if there is an open contour.
      */
-    bool isContourOpen() const noexcept;
+    [[nodiscard]] bool isContourOpen() const noexcept;
 
     /*! Close current contour.
     * No operation if there is no open contour.
@@ -101,11 +100,11 @@ struct Path {
 
     /*! This path has layers.
      */
-    bool hasLayers() const noexcept;
+    [[nodiscard]] bool hasLayers() const noexcept;
 
     /*! Return true if there is an open layer.
     */
-    bool isLayerOpen() const noexcept;
+    [[nodiscard]] bool isLayerOpen() const noexcept;
 
     /*! Close current contour.
     * No operation if there is no open layer.
@@ -115,7 +114,7 @@ struct Path {
     /*! Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
      */
-    glm::vec2 currentPosition() const noexcept;
+    [[nodiscard]] glm::vec2 currentPosition() const noexcept;
 
     /*! Start a new contour at position.
      * closes current subpath.
@@ -207,7 +206,11 @@ struct Path {
      * \param lineJoinStyle the style of how outside corners of a stroke are drawn.
      * \param tolerance Tolerance of how flat the curves in the path need to be.
      */
-    Path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const noexcept;
+    [[nodiscard]] Path toStroke(float strokeWidth=1.0f, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) const noexcept;
+
+    /** Center and scale a path inside the extent with padding.
+     */
+    [[nodiscard]] Path centerScale(extent2 extent, float padding=0.0) const noexcept;
 };
 
 Path operator+(Path lhs, Path const &rhs) noexcept;

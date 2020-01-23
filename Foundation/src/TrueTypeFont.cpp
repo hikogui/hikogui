@@ -755,6 +755,138 @@ bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, gsl::span<std::byte const> &b
     return true;
 }
 
+struct KERNTable_ver0 {
+    big_uint16_buf_t version;
+    big_uint16_buf_t nTables;
+};
+
+struct KERNTable_ver1 {
+    big_uint32_buf_t version;
+    big_uint32_buf_t nTables;
+};
+
+struct KERNSubtable_ver0 {
+    big_uint16_buf_t version;
+    big_uint16_buf_t length;
+    big_uint16_buf_t coverage;
+};
+
+struct KERNSubtable_ver1 {
+    big_uint32_buf_t length;
+    big_uint16_buf_t coverage;
+    big_uint16_buf_t tupleIndex;
+};
+
+struct KERNFormat0 {
+    big_uint16_buf_t nPairs;
+    big_uint16_buf_t searchRange;
+    big_uint16_buf_t entrySelector;
+    big_uint16_buf_t rangeShift;
+};
+
+struct KERNFormat0_entry {
+    big_uint16_buf_t left;
+    big_uint16_buf_t right;
+    FWord_buf_t value;
+};
+
+static void getKerningFormat0(gsl::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, glm::vec2 &r) noexcept
+{
+    size_t offset = 0;
+
+    assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset),);
+    let formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
+    let nPairs = formatheader->nPairs.value();
+
+    assert_or_return(check_placement_array<KERNFormat0_entry>(bytes, offset, nPairs),);
+    let entries = unsafe_make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
+
+    let i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](let &a, let &b) {
+        if (a.left.value() == b.first) {
+            return a.right.value() < b.second;
+        } else {
+            return a.left.value() < b.first;
+        }
+    });
+    assert_or_return(i != entries.end(),);
+
+    if (glyph1_id == i->left.value() && glyph2_id == i->right.value()) {
+        // Writing direction is assumed horizontal.
+        switch (coverage & 0xf) {
+        case 0x1: r.x += i->value.value(unitsPerEm); break;
+        case 0x3: r.x = std::min(r.x, i->value.value(unitsPerEm)); break;
+        case 0x5: r.y += i->value.value(unitsPerEm); break;
+        case 0x7: r.y = std::min(r.y, i->value.value(unitsPerEm)); break;
+        // Override
+        case 0x9: r.x = i->value.value(unitsPerEm); break;
+        case 0xb: r.x = i->value.value(unitsPerEm); break;
+        case 0xd: r.y = i->value.value(unitsPerEm); break;
+        case 0xf: r.y = i->value.value(unitsPerEm); break;
+        default:;
+        }
+    }
+}
+
+static void getKerningFormat3(gsl::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, glm::vec2 &r) noexcept
+{
+    not_implemented;
+}
+
+[[nodiscard]] static glm::vec2 getKerning(gsl::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
+{
+    auto r = glm::vec2(0.0f, 0.0f);
+    size_t offset = 0;
+
+    assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
+    let header_ver0 = unsafe_make_placement_ptr<KERNTable_ver0>(bytes, offset);
+    uint32_t version = header_ver0->version.value();
+
+    uint32_t nTables = 0;
+    if (version == 0x0000) {
+        nTables = header_ver0->nTables.value();
+
+    } else {
+        // Restart with version 1 table.
+        offset = 0;
+        assert_or_return(check_placement_ptr<KERNTable_ver1>(bytes, offset), r);
+        let header_ver1 = unsafe_make_placement_ptr<KERNTable_ver1>(bytes, offset);
+        assert_or_return(header_ver1->version.value() == 0x00010000, r);
+        nTables = header_ver1->nTables.value();
+    }
+
+    for (uint32_t subtableIndex = 0; subtableIndex != nTables; ++subtableIndex) {
+        let subtable_offset = offset;
+
+        uint16_t coverage = 0;
+        uint32_t length = 0;
+        if (version == 0x0000) {
+            assert_or_return(check_placement_ptr<KERNSubtable_ver0>(bytes, offset), r);
+            let subheader = unsafe_make_placement_ptr<KERNSubtable_ver0>(bytes, offset);
+            coverage = subheader->coverage.value();
+            length = subheader->length.value();
+
+        } else {
+            assert_or_return(check_placement_ptr<KERNSubtable_ver1>(bytes, offset), r);
+            let subheader = unsafe_make_placement_ptr<KERNSubtable_ver1>(bytes, offset);
+            coverage = subheader->coverage.value();
+            length = subheader->length.value();
+        }
+
+        switch (coverage >> 8) {
+        case 0: // Pairs
+            getKerningFormat0(bytes.subspan(offset), coverage, unitsPerEm, glyph1_id, glyph2_id, r);
+            break;
+        case 3: // Compact 2D kerning values.
+            getKerningFormat3(bytes.subspan(offset), coverage, unitsPerEm, glyph1_id, glyph2_id, r);
+            break;
+        }
+
+        offset = subtable_offset + length;
+    }
+
+    return r;
+}
+
 struct HMTXEntry {
     uFWord_buf_t advanceWidth;
     FWord_buf_t leftSideBearing;
@@ -783,7 +915,6 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
         leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
     }
 
-    // XXX add kerning to advance vector.
     metrics.advance = glm::vec2{advanceWidth, 0.0f};
     metrics.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
     metrics.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + metrics.boundingBox.extent.width()), 0.0f};
@@ -791,6 +922,11 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
     metrics.descender = glm::vec2{0.0f, descender};
     metrics.xHeight = glm::vec2{0.0f, description.xHeight};
     metrics.capHeight = glm::vec2{0.0f, description.HHeight};
+
+    if (kern_glyph1_id && kern_glyph2_id) {
+        metrics.advance += getKerning(kernTableBytes, unitsPerEm, kern_glyph1_id, kern_glyph2_id);
+    }
+
     return true;
 }
 
@@ -1039,7 +1175,6 @@ bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
             entry->xMax.value(unitsPerEm) - position.x,
             entry->yMax.value(unitsPerEm) - position.y
         };
-        glyph.metrics.boundingBox = { position, extent };
 
         if (numberOfContours > 0) {
             assert_or_return(loadSimpleGlyph(bytes, glyph), false);
@@ -1053,7 +1188,7 @@ bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
         // Empty glyph, such as white-space ' '.
     }
 
-    return updateGlyphMetrics(metrics_glyph_id, glyph.metrics);
+    return true;
 }
 
 bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept
@@ -1201,6 +1336,9 @@ void TrueTypeFont::parseFontDirectory()
             break;
         case fourcc("OS/2"):
             os2TableBytes = tableBytes;
+            break;
+        case fourcc("kern"):
+            kernTableBytes = tableBytes;
             break;
         default:
             break;

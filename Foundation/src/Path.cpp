@@ -4,7 +4,6 @@
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/BezierCurve.hpp"
-#include "TTauri/Foundation/PathString.hpp"
 #include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
@@ -42,6 +41,25 @@ bool Path::allLayersHaveSameColor() const noexcept
         }
     }
     return true;
+}
+
+[[nodiscard]] rect2 Path::boundingBox() const noexcept
+{
+    if (ssize(points) == 0) {
+        return rect2{{0.0, 0.0}, {0.0, 0.0}};
+    }
+
+    glm::vec2 left_bottom = points.front().p;
+    glm::vec2 right_top = points.front().p;
+
+    for (let &point: points) {
+        left_bottom.x = std::min(left_bottom.x, point.p.x);
+        left_bottom.y = std::min(left_bottom.y, point.p.y);
+        right_top.x = std::max(right_top.x, point.p.x);
+        right_top.y = std::max(right_top.y, point.p.y);
+    }
+
+    return rect2{left_bottom, right_top - left_bottom};
 }
 
 void Path::tryRemoveLayers() noexcept
@@ -439,10 +457,32 @@ Path &operator+=(Path &lhs, Path const &rhs) noexcept
     return lhs;
 }
 
+Path Path::centerScale(extent2 extent, float padding) const noexcept
+{
+    
+    auto max_size = extent2{
+        std::max(1.0f, extent.width() - (padding * 2.0f)),
+        std::max(1.0f, extent.width() - (padding * 2.0f))
+    };
+
+    auto bbox = boundingBox();
+    if (bbox.extent.width() <= 0.0 || bbox.extent.height() <= 0.0) {
+        return {};
+    }
+
+    let scale = std::min(
+        max_size.width() / bbox.extent.width(),
+        max_size.height() / bbox.extent.height()
+    );
+    bbox *= scale;
+    
+    let offset = -bbox.offset + (extent - bbox.extent) * 0.5f;
+
+    return T2D(offset, scale) * *this;
+}
+
 Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept
 {
-    lhs.metrics *= rhs;
-
     for (auto &point: lhs.points) {
         point *= rhs;
     }
@@ -451,8 +491,6 @@ Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept
 
 Path &operator*=(Path &lhs, float const rhs) noexcept
 {
-    lhs.metrics *= rhs;
-
     for (auto &point: lhs.points) {
         point *= rhs;
     }
@@ -482,8 +520,6 @@ Path operator+(Path lhs, glm::vec2 const &rhs) noexcept
 
 Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept
 {
-    lhs.metrics += rhs;
-
     for (auto &point: lhs.points) {
         point += rhs;
     }

@@ -31,20 +31,19 @@ void ImageWidget::drawBackingImage() noexcept
     // XXX This probably should allocate a PixelMap and add it to this class.
     loadPNG(linearMap, path);
 
-    let &myFont = getResource<Font>(URL("resource:Themes/Fonts/Roboto/Roboto-Regular.ttf"));
-    let glyph_id = myFont.find_glyph('g');
-    Path glyph;
-    myFont.loadGlyph(glyph_id, glyph);
+    let text_style = TextStyle("Arial", FontVariant{}, 8, wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f }, TextDecoration{});
+    let shaped_text = ShapedText("g", text_style, Alignment::BottomLeft, extent2{10.0, 50.0}, extent2{100.0, 500.0});
+    let glyph = shaped_text.toPath();
 
     // Draw something.
     let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
-    let path1 = T2D({20.0, 30.0}, 8.0) * glyph;
+    let path1 = T2D({20.0, 30.0}) * glyph;
     composit(linearMap, color, path1, SubpixelOrientation::Unknown);
 
-    let path2 = T2D({30.0, 30.0}, 8.0) * glyph;
+    let path2 = T2D({30.0, 30.0}) * glyph;
     composit(linearMap, color, path2, SubpixelOrientation::RedLeft);
 
-    let path3 = T2D({40.0, 30.0}, 8.0) * glyph;
+    let path3 = T2D({40.0, 30.0}) * glyph;
     composit(linearMap, color, path3, SubpixelOrientation::RedRight);
 
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);

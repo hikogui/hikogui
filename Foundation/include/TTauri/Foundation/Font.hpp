@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/PathString.hpp"
 #include "TTauri/Foundation/gstring.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
@@ -62,76 +61,6 @@ public:
     * \return true on success, false on error.
     */
     virtual bool loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID lookahead_glyph_id=GlyphID{}) const noexcept = 0;
-
-    PathString getGlyphs(gstring const &graphemes) const noexcept {
-        PathString r;
-
-        for (int graphemeIndex = 0; graphemeIndex < graphemes.size(); graphemeIndex++) {
-            let &grapheme = graphemes.at(graphemeIndex);
-
-            // First try composed normalization
-            std::vector<Path> graphemeGlyphs;
-            for (let c: grapheme.NFC()) {
-                let glyph_id = find_glyph(c);
-                if (!glyph_id) {
-                    // The codePoint was not found in the font, or a parse error occurred.
-                    graphemeGlyphs.clear();
-                    break;
-                }
-
-                Path glyph;
-                if (!loadGlyph(glyph_id, glyph)) {
-                    // Some kind of parsing error, causes the glyph not to be loaded.
-                    graphemeGlyphs.clear();
-                    break;
-                }
-
-                graphemeGlyphs.push_back(std::move(glyph));
-            }
-
-            if (graphemeGlyphs.size() == 0) {
-                // Try again with decomposed normalization.
-                for (let c: grapheme.NFD()) {
-                    let glyph_id = find_glyph(c);
-                    if (!glyph_id) {
-                        graphemeGlyphs.clear();
-                        break;
-                    }
-
-                    Path glyph;
-                    if (!loadGlyph(glyph_id, glyph)) {
-                        // Some kind of parsing error, causes the glyph not to be loaded.
-                        graphemeGlyphs.clear();
-                        break;
-                    }
-
-                    graphemeGlyphs.push_back(std::move(glyph));
-                }
-            }
-
-            if (graphemeGlyphs.size() == 0) {
-                // Replace with not-found-glyph at index 0.
-                Path glyph;
-                if (!loadGlyph(GlyphID{0}, glyph)) {
-                    // Some kind of parsing error, causes the glyph not to be loaded.
-                    LOG_FATAL("Could not load glyph 0 from font file.");
-                }
-
-                graphemeGlyphs.push_back(std::move(glyph));
-            }
-
-            // Add graphemeGlyphs.
-            for (let glyph: graphemeGlyphs) {
-                r.add(std::move(glyph));
-            }
-        }
-
-        return r;
-    }
-
-    PathString getGlyphs(std::string const &s) const noexcept {
-        return getGlyphs(translateString<gstring>(s));
-    }
 };
 
 }
