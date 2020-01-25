@@ -1,11 +1,11 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/Font.hpp"
-#include "TTauri/Foundation/TrueTypeFont.hpp"
+#include "TTauri/Text/Font.hpp"
+#include "TTauri/Text/TrueTypeFont.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 
-namespace TTauri {
+namespace TTauri::Text {
 
 [[nodiscard]] FontGlyphIDs Font::find_glyph(Grapheme g) const noexcept
 {
@@ -36,14 +36,18 @@ namespace TTauri {
     return r;
 }
 
+}
+
+namespace TTauri {
+
 template<>
-std::unique_ptr<Font> parseResource(URL const &location)
+std::unique_ptr<TTauri::Text::Font> parseResource(URL const &location)
 {
     if (location.extension() == "ttf") {
         auto view = ResourceView::loadView(location);
 
         try {
-            return std::make_unique<TrueTypeFont>(std::move(view));
+            return std::make_unique<TTauri::Text::TrueTypeFont>(std::move(view));
         } catch (error &e) {
             e.set<"url"_tag>(location);
             throw;

@@ -1,12 +1,12 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/FontBook.hpp"
+#include "TTauri/Text/FontBook.hpp"
+#include "TTauri/Text/TrueTypeFont.hpp"
 #include "TTauri/Foundation/trace.hpp"
-#include "TTauri/Foundation/TrueTypeFont.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 
-namespace TTauri {
+namespace TTauri::Text {
 
 FontBook::FontBook(std::vector<URL> const &font_directories)
 {

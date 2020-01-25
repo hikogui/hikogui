@@ -10,6 +10,7 @@
 #include "TTauri/Audio/AudioSystemDelegate.hpp"
 #endif
 #if defined(BUILD_TTAURI_GUI)
+#include "TTauri/Text/globals.hpp"
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
@@ -57,6 +58,7 @@ public:
     Audio::AudioGlobals i_audio;
 #endif
 #if defined(BUILD_TTAURI_GUI)
+    Text::TextGlobals i_text;
     GUI::GUIGlobals i_gui;
     GUI::Widgets::WidgetsGlobals i_widgets;
 #endif

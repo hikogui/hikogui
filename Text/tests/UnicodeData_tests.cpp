@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/UnicodeData.hpp"
+#include "TTauri/Text/UnicodeData.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "data/UnicodeData.bin.inl"
@@ -13,6 +13,7 @@
 
 using namespace std;
 using namespace TTauri;
+using namespace TTauri::Text;
 
 /*! A test defined in NormalizationTests.txt.
  *

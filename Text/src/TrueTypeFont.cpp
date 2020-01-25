@@ -1,7 +1,7 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/TrueTypeFont.hpp"
+#include "TTauri/Text/TrueTypeFont.hpp"
 #include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/endian.hpp"
@@ -10,7 +10,7 @@
 
 #define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return y; }
 
-namespace TTauri {
+namespace TTauri::Text {
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;
@@ -644,7 +644,7 @@ void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> bytes)
         description.serif = false;
     }
 
-    // The panose weight table is odd, assuming the integer values are
+    // The Panose weight table is odd, assuming the integer values are
     // increasing with boldness, Thin is bolder then Light.
     // The table below uses the integer value as an indication of boldness.
     switch (table->panose.bWeight) {

@@ -1,14 +1,14 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
+#include "TTauri/Text/Font.hpp"
 #include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include <memory>
 
-namespace TTauri {
+namespace TTauri::Text {
 
 class TrueTypeFont final: public Font {
 private:

@@ -3,58 +3,31 @@
 
 #pragma once
 
+#include "TTauri/Text/GlyphID.hpp"
+#include "TTauri/Text/FontID.hpp"
 #include "TTauri/Foundation/tagged_id.hpp"
-#include "TTauri/Foundation/Grapheme.hpp"
-#include <algorithm>
-#include <utility>
 
-namespace TTauri {
-
-/** FontID is 15 bits.
- */
-using FontID = tagged_id<uint16_t, "font_id"_tag, 0x7ffe>;
-//static_cast(FontID::mask <= 0x7fff, "Font ID must be 15 bits or less.");
-using GlyphID = tagged_id<uint16_t, "glyph_id"_tag>;
-
-using FontFamilyID = tagged_id<uint16_t, "fontfamily_id"_tag>;
-
-
-/** 
- */
-struct FontIDGrapheme {
-    FontID font_id;
-    Grapheme g;
-
-    [[nodiscard]] size_t hash() const noexcept {
-        return std::hash<FontID>{}(font_id) ^ std::hash<Grapheme>{}(g);
-    }
-
-    [[nodiscard]] friend bool operator==(FontIDGrapheme const &lhs, FontIDGrapheme const &rhs) noexcept {
-        return (lhs.font_id == rhs.font_id) && (lhs.g == rhs.g);
-    }
-};
-
-
+namespace TTauri::Text {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
-class FontGlyphsIDs_long {
+class FontGlyphIDs_long {
     int8_t nr_glyphs = 0;
     std::array<GlyphID,18> glyph_ids;
 
-    FontGlyphsIDs_long() noexcept = delete;
-    FontGlyphsIDs_long(FontGlyphsIDs_long const &rhs) noexcept = default;
-    FontGlyphsIDs_long(FontGlyphsIDs_long &&rhs) noexcept = default;
-    FontGlyphsIDs_long &operator=(FontGlyphsIDs_long const &rhs) noexcept = default;
-    FontGlyphsIDs_long &operator=(FontGlyphsIDs_long &&rhs) noexcept = default;
+    FontGlyphIDs_long() noexcept = delete;
+    FontGlyphIDs_long(FontGlyphIDs_long const &rhs) noexcept = default;
+    FontGlyphIDs_long(FontGlyphIDs_long &&rhs) noexcept = default;
+    FontGlyphIDs_long &operator=(FontGlyphIDs_long const &rhs) noexcept = default;
+    FontGlyphIDs_long &operator=(FontGlyphIDs_long &&rhs) noexcept = default;
 
-    force_inline FontGlyphsIDs_long(GlyphID g1, GlyphID g2, GlyphID g3) noexcept {
+    force_inline FontGlyphIDs_long(GlyphID g1, GlyphID g2, GlyphID g3) noexcept {
         (*this) += g1;
         (*this) += g2;
         (*this) += g3;
     }
 
-    force_inline FontGlyphsIDs_long operator+=(GlyphID rhs) noexcept {
+    force_inline FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
         ttauri_assume(nr_glyphs < ssize(glyph_ids));
         glyph_ids[nr_glyphs++] = rhs;
         return *this;
@@ -67,18 +40,18 @@ class FontGlyphIDs {
     constexpr static uint64_t empty = 0xffff'ffff'ffff'ffff;
 
     /*
-     * 0 to 3 glyph_ids, with or without a font_id.
-     * 63:48 glyph_id[2]
-     * 47:32 glyph_id[1]
-     * 31:16 glyph_id[0]
-     *    15 '1'
-     * 14: 0 font_id
-     *
-     * More than 3 glyphs
-     * 63:16 FontGlyphsIDs_long *
-     *    15 '0'
-     * 14: 0 font_id
-     */
+    * 0 to 3 glyph_ids, with or without a font_id.
+    * 63:48 glyph_id[2]
+    * 47:32 glyph_id[1]
+    * 31:16 glyph_id[0]
+    *    15 '1'
+    * 14: 0 font_id
+    *
+    * More than 3 glyphs
+    * 63:16 FontGlyphsIDs_long *
+    *    15 '0'
+    * 14: 0 font_id
+    */
     uint64_t value;
 
 public:
@@ -185,14 +158,14 @@ private:
         return (value & 0x8000) == 0;
     }
 
-    [[nodiscard]] force_inline FontGlyphsIDs_long const *get_pointer() const noexcept {
+    [[nodiscard]] force_inline FontGlyphIDs_long const *get_pointer() const noexcept {
         ttauri_assume(has_pointer());
-        return std::launder(reinterpret_cast<FontGlyphsIDs_long const *>(static_cast<ptrdiff_t>(value) >> 16));
+        return std::launder(reinterpret_cast<FontGlyphIDs_long const *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
-    [[nodiscard]] force_inline FontGlyphsIDs_long *get_pointer() noexcept {
+    [[nodiscard]] force_inline FontGlyphIDs_long *get_pointer() noexcept {
         ttauri_assume(has_pointer());
-        return std::launder(reinterpret_cast<FontGlyphsIDs_long *>(static_cast<ptrdiff_t>(value) >> 16));
+        return std::launder(reinterpret_cast<FontGlyphIDs_long *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
     void delete_pointer() noexcept {
@@ -204,21 +177,9 @@ private:
 
     template<typename... Args>
     [[nodiscard]] static uint64_t new_pointer(Args &&... args) noexcept {
-        auto *ptr = new FontGlyphsIDs_long(std::forward<Args>(args)...);
+        auto *ptr = new FontGlyphIDs_long(std::forward<Args>(args)...);
         return static_cast<uint64_t>(reinterpret_cast<ptrdiff_t>(ptr) << 16);
     }
 
 };
-
-};
-
-namespace std {
-
-template<>
-struct hash<TTauri::FontIDGrapheme> {
-    [[nodiscard]] size_t operator() (TTauri::FontIDGrapheme const &rhs) const noexcept {
-        return rhs.hash();
-    }
-};
-
 }

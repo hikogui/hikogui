@@ -1,14 +1,16 @@
+// Copyright 2019, 2020 Pokitec
+// All rights reserved.
 
-#include "TTauri/Foundation/UnicodeData.hpp"
-#include "TTauri/Foundation/endian.hpp"
+#include "TTauri/Text/UnicodeData.hpp"
 #include "TTauri/Foundation/placement.hpp"
+#include "TTauri/Foundation/endian.hpp"
 #include "TTauri/Foundation/algorithm.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
 
-namespace TTauri {
+namespace TTauri::Text {
 
 constexpr char32_t ASCII_MAX = 0x7f;
 constexpr char32_t UNICODE_MASK = 0x1f'ffff;
@@ -793,14 +795,18 @@ bool UnicodeData::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &sta
     return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
 }
 
+}
+
+namespace TTauri {
+
 template<>
-std::unique_ptr<UnicodeData> parseResource(URL const &location)
+std::unique_ptr<TTauri::Text::UnicodeData> parseResource(URL const &location)
 {
     if (location.extension() == "bin") {
         auto view = ResourceView::loadView(location);
 
         try {
-            auto unicodeData = std::make_unique<UnicodeData>(std::move(view));
+            auto unicodeData = std::make_unique<TTauri::Text::UnicodeData>(std::move(view));
             return unicodeData;
         } catch (error &e) {
             e.set<"url"_tag>(location);
@@ -813,4 +819,5 @@ std::unique_ptr<UnicodeData> parseResource(URL const &location)
         );
     }
 }
+
 }

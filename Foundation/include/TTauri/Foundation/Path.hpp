@@ -9,15 +9,12 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
-#include "TTauri/Foundation/GlyphMetrics.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
 namespace TTauri {
 
 struct BezierCurve;
-struct PathString;
-class Font;
 template<typename T> struct PixelMap;
 
 /*! A path is a vector graphics object.

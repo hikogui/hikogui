@@ -3,15 +3,14 @@
 
 #pragma once
 
-#include "TTauri/Foundation/Grapheme.hpp"
-#include "TTauri/Foundation/Font.hpp"
-#include "TTauri/Foundation/theme.hpp"
+#include "TTauri/Text/Grapheme.hpp"
+#include "TTauri/Text/Font.hpp"
 #include <string>
 #include <vector>
 
-namespace TTauri {
+namespace TTauri::Text {
 
-class text {
+class EditableText {
     std::vector<Grapheme> graphemes;
 
     mutable size_t cursorPosition = 0;

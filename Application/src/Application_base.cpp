@@ -23,6 +23,7 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 #else
     i_gui(this),
 #endif
+    i_text(),
     i_widgets(),
 #endif
     i_dummy()

@@ -1,21 +1,22 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
+#include "TTauri/Text/GlyphMetrics.hpp"
+#include "TTauri/Text/FontGlyphIDs.hpp"
+#include "TTauri/Text/gstring.hpp"
+#include "TTauri/Text/FontDescription.hpp"
 #include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/gstring.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/GlyphMetrics.hpp"
-#include "TTauri/Foundation/FontDescription.hpp"
+#include <gsl/gsl>
 #include <vector>
 #include <map>
-#include <gsl/gsl>
 
-namespace TTauri {
+namespace TTauri::Text {
 
 /*! A font.
  * This class has information on how to shape text and
@@ -68,6 +69,6 @@ public:
 namespace TTauri {
 
 template<>
-std::unique_ptr<Font> parseResource(URL const &location);
+std::unique_ptr<TTauri::Text::Font> parseResource(URL const &location);
 
 }

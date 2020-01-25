@@ -4,45 +4,11 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/FontDescription.hpp"
+#include "TTauri/Text/FontDescription.hpp"
+#include "TTauri/Text/TextStyle.hpp"
 #include <array>
 
-namespace TTauri {
-
-/** Describes how a grapheme should be underlined when rendering the text.
-* It is carried with the grapheme and glyphs, so that the text render engine
-* can draw the decoration after the text is shaped and in rendering-order
-* (left to right) and, this makes it easier to correctly render the decoration
-* of multiple glyphs in a single stroke.
-*/
-enum class TextDecoration {
-    None,
-    Underline,
-    WavyUnderline,
-    StrikeThrough,
-
-    max = StrikeThrough
-};
-inline auto const TextDecoration_from_string_table = std::unordered_map<std::string,TextDecoration>{
-    {"none", TextDecoration::None},
-    {"underline", TextDecoration::Underline},
-    {"wavy-underline", TextDecoration::WavyUnderline},
-    {"strike-through", TextDecoration::StrikeThrough},
-};
-
-/** Describes how the background of a grapheme should drawn when rendering the text.
-* It is carried with the grapheme and glyphs, so that the text render engine
-* can draw the decoration after the text is shaped and in rendering-order
-* (left to right) and, this makes it easier to correctly render the decoration
-* of multiple glyphs in a single stroke.
-*/
-enum class font_background {
-    None,
-    Selected,
-    SearchMatch,
-    Reserved3,
-};
-constexpr int font_background_bits = 2;
+namespace TTauri::GUI {
 
 /** Semantic colors.
 */
@@ -138,24 +104,10 @@ inline auto const FontStyleID_from_string_table = std::unordered_map<std::string
     {"input-field-placeholder", FontStyleID::InputFieldPlaceholder},
 };
 
-struct TextStyle {
-    FontFamilyID family_id;
-    FontVariant variant;
-    float size;
-    wsRGBA color;
-    TextDecoration decoration;
-
-    TextStyle() :
-        family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
-
-    TextStyle(FontFamilyID family_id, FontVariant variant, float size, wsRGBA color, TextDecoration decoration) :
-        family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
-
-    TextStyle(std::string_view family_name, FontVariant variant, float size, wsRGBA color, TextDecoration decoration);
-};
 
 
-struct theme {
+
+struct Theme {
     std::string name;
 
     /// IETF language tags.
@@ -165,9 +117,9 @@ struct theme {
     std::array<wsRGBA,nr_items_v<ColorID>> color_palette;
     ColorID default_accent_color;
 
-    std::array<TextStyle,nr_items_v<FontStyleID>> text_styles;
+    std::array<TTauri::Text::TextStyle,nr_items_v<FontStyleID>> text_styles;
 };
 
-[[nodiscard]] theme parse_theme(URL const &url);
+[[nodiscard]] Theme parse_theme(URL const &url);
 
 }

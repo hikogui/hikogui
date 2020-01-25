@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/ShapedText.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "TTauri/Text/ShapedText.hpp"
+#include "TTauri/Text/globals.hpp"
 
-namespace TTauri {
+namespace TTauri::Text {
 
 [[nodiscard]] static std::vector<AttributedGrapheme> makeAttributedGraphemeVector(gstring const &text, TextStyle const &style) noexcept
 {
@@ -29,7 +29,8 @@ static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
 
-    let &font_book = *(Foundation_globals->font_book);
+    ttauri_assume(Text_globals->font_book);
+    let &font_book = *(Text_globals->font_book);
 
     for (let &ag: text) {
         let font_id = font_book.find_font(ag.style.family_id, ag.style.variant);
@@ -46,7 +47,8 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 
 static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 {
-    let &font_book = *(Foundation_globals->font_book);
+    ttauri_assume(Text_globals->font_book);
+    let &font_book = *(Text_globals->font_book);
 
     auto font_id = FontID{};
     Font const *font = nullptr;
@@ -282,8 +284,8 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignmen
     }
 
 
-    ttauri_assume(Foundation_globals->font_book);
-    let &font_book = *(Foundation_globals->font_book);
+    ttauri_assume(Text_globals->font_book);
+    let &font_book = *(Text_globals->font_book);
 
     auto previous_color = text.front().style.color;
     for (let &attributed_glyph: text) {

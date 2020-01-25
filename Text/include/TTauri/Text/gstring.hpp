@@ -1,13 +1,13 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
-#include "TTauri/Foundation/Grapheme.hpp"
+#include "TTauri/Text/Grapheme.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include <vector>
 
-namespace TTauri {
+namespace TTauri::Text {
 
 struct gstring {
     std::vector<Grapheme> graphemes;
@@ -48,10 +48,14 @@ struct gstring {
     }
 };
 
-template<>
-gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept;
+}
+
+namespace TTauri {
 
 template<>
-std::u32string translateString(const gstring& inputString, TranslateStringOptions options) noexcept;
+TTauri::Text::gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept;
+
+template<>
+std::u32string translateString(const TTauri::Text::gstring& inputString, TranslateStringOptions options) noexcept;
 
 }

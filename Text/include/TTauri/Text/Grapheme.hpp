@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include <array>
 
-namespace TTauri {
+namespace TTauri::Text {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -216,8 +216,8 @@ private:
 namespace std {
 
 template<>
-struct hash<TTauri::Grapheme> {
-    [[nodiscard]] size_t operator() (TTauri::Grapheme const &rhs) const noexcept {
+struct hash<TTauri::Text::Grapheme> {
+    [[nodiscard]] size_t operator() (TTauri::Text::Grapheme const &rhs) const noexcept {
         return rhs.hash();
     }
 };

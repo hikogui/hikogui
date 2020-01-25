@@ -34,9 +34,7 @@ TEST(URLTests, glob1) {
     let txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "GraphemeBreakTest.txt"s); }));
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "file_view.txt"s); }));
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "NormalizationTest.txt"s); }));
     ASSERT_FALSE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "TTauri_Foundation.lib"s); }));
 }
 

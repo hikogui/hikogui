@@ -25,26 +25,18 @@ set(TTauri_Foundation_srcs
     src/trace.cpp
     src/ResourceView.cpp
     src/StaticResourceView.cpp
-    src/UnicodeData.cpp
     src/base93.cpp
     src/tokenizer.cpp
     src/BezierCurve.cpp
-    src/Font.cpp
     src/Path.cpp
     src/PixelMap.cpp
     src/PNG.cpp
-    src/theme.cpp
-    src/TrueTypeFont.cpp
     src/TTauriIconParser.cpp
     src/FileMapping.cpp
     src/FileView.cpp
     src/throw_exception.cpp
     src/expression.cpp
     src/template.cpp
-    src/FontBook.cpp
-    src/Grapheme.cpp
-    src/gstring.cpp
-    src/ShapedText.cpp
 )
 
 if(WIN32)
@@ -90,7 +82,6 @@ set(TTauri_Foundation_tests
     tests/small_map_tests.cpp
     tests/base93_tests.cpp
     tests/safe_int_tests.cpp
-    tests/UnicodeData_tests.cpp
     tests/BezierCurve_tests.cpp
     tests/Path_tests.cpp
     tests/PixelMap_tests.cpp
@@ -102,36 +93,12 @@ set(TTauri_Foundation_tests
     tests/math_tests.cpp
 )
 
-set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")
-set(UNICODE_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/UnicodeData.txt")
-set(EMOJI_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/emoji-data.txt")
-set(COMPOSITION_EXCLUSIONS_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/CompositionExclusions.txt")
-set(GRAPHEME_BREAK_PROPERTY_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/GraphemeBreakProperty.txt")
-set(UNICODE_DATA_BIN "${CMAKE_CURRENT_BINARY_DIR}/data/UnicodeData.bin")
-get_filename_component(UNICODE_DATA_BIN_DIR ${UNICODE_DATA_BIN} DIRECTORY)
-file(MAKE_DIRECTORY ${UNICODE_DATA_BIN_DIR})
-add_custom_command(
-	OUTPUT ${UNICODE_DATA_BIN}
-	COMMAND ${Python_EXECUTABLE} ${UNICODE_DATA_CONVERTER_PY}
-        --output=${UNICODE_DATA_BIN}
-        --unicode-data=${UNICODE_DATA_TXT}
-        --emoji-data=${EMOJI_DATA_TXT}
-        --composition-exclusions=${COMPOSITION_EXCLUSIONS_TXT}
-        --grapheme-break-property=${GRAPHEME_BREAK_PROPERTY_TXT}
-	DEPENDS ${UNICODE_DATA_CONVERTER_PY} ${UNICODE_DATA_TXT} ${GRAPHEME_BREAK_PROPERTY_TXT}
-	VERBATIM)
-
-set(TTauri_Foundation_resources
-    ${UNICODE_DATA_BIN}
-)
-
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
 target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm zlib png)
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_compile_definitions(TTauri_Foundation PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
-target_static_resource(TTauri_Foundation ${TTauri_Foundation_resources})
 set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 
 # 
@@ -171,8 +138,6 @@ set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/file_view.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/includer.ttt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/includee.tti
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/NormalizationTest.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/GraphemeBreakTest.txt
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})

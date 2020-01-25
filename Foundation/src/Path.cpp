@@ -4,7 +4,6 @@
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/BezierCurve.hpp"
-#include "TTauri/Foundation/Font.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/required.hpp"
@@ -269,7 +268,7 @@ void Path::arcTo(float radius, glm::vec2 position) noexcept
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
     let C = Pm + normal(Vm2) * std::cos(alpha) * radius;
 
-    // Culate vectors from center to end points.
+    // Calculate vectors from center to end points.
     let VC1 = P1 - C;
     let VC2 = P2 - C;
 

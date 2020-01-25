@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 
-namespace TTauri {
+namespace TTauri::Text {
 
 /*! Metrics of a glyph.
  * This information is used to position glyphs next to each other

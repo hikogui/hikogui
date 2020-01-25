@@ -3,17 +3,21 @@
 
 #pragma once
 
+#include "TTauri/Text/FontDescription.hpp"
+#include "TTauri/Text/Grapheme.hpp"
+#include "TTauri/Text/Font.hpp"
+#include "TTauri/Text/FontFamilyID.hpp"
+#include "TTauri/Text/FontID.hpp"
+#include "TTauri/Text/FontGraphemeID.hpp"
+#include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/Grapheme.hpp"
-#include "TTauri/Foundation/text.hpp"
 #include "TTauri/Foundation/attributes.hpp"
-#include "TTauri/Foundation/FontDescription.hpp"
 #include <limits>
 #include <array>
 #include <new>
 
 
-namespace TTauri {
+namespace TTauri::Text {
 
 /** FontBook keeps track of multiple fonts.
  * The FontBook is instantiated during Application startup
@@ -54,7 +58,7 @@ class FontBook {
     /**
     * Must be cleared when a new font is registered.
     */
-    mutable std::unordered_map<FontIDGrapheme, FontGlyphIDs> glyph_cache;
+    mutable std::unordered_map<FontGraphemeID, FontGlyphIDs> glyph_cache;
 
 public:
     FontBook(std::vector<URL> const &font_directories);

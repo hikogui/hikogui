@@ -3,14 +3,14 @@
 
 #pragma once
 
+#include "TTauri/Text/Grapheme.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/math.hpp"
-#include "TTauri/Foundation/Grapheme.hpp"
+#include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include <gsl/gsl>
 
-namespace TTauri {
+namespace TTauri::Text {
 struct UnicodeData_Description;
 
 enum class GraphemeUnitType : uint8_t {
@@ -304,7 +304,12 @@ private:
     void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 };
 
+}
+
+namespace TTauri {
+
 template<>
-std::unique_ptr<UnicodeData> parseResource(URL const &location);
+std::unique_ptr<TTauri::Text::UnicodeData> parseResource(URL const &location);
 
 }
+

@@ -1,55 +1,19 @@
-// Copyright 2019 Pokitec
+// Copyright 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
-#include "TTauri/Foundation/theme.hpp"
+#include "TTauri/Text/AttributedGlyph.hpp"
+#include "TTauri/Text/gstring.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/geometry.hpp"
-#include "TTauri/Foundation/GlyphMetrics.hpp"
-#include "TTauri/Foundation/gstring.hpp"
 #include "TTauri/Foundation/Path.hpp"
 #include <string_view>
 
-namespace TTauri {
+namespace TTauri::Text {
 
-struct AttributedGrapheme {
-    Grapheme grapheme;
-    int index;
 
-    /** All information about the shape and color needed to render this grapheme. */
-    TextStyle style;
 
-    AttributedGrapheme(Grapheme grapheme, int index, TextStyle style) :
-        grapheme(std::move(grapheme)), index(index), style(std::move(style)) {}
-};
-
-/**
- */
-struct AttributedGlyph {
-    FontGlyphIDs glyphs;
-
-    Grapheme grapheme;
-
-    /** Copied from the original attributed-grapheme.
-     * An attributed-glyph always represents one or more (ligature) graphemes, a grapheme is never split.
-     */
-    int index;
-
-    /** Number of graphemes merged (ligature) into this attributed-glyph. */
-    uint8_t grapheme_count;
-
-    /** Copied from the original attributed-grapheme. */
-    TextStyle style;
-
-    /** Metrics taken from the font file. */
-    GlyphMetrics metrics;
-
-    glm::vec2 position;
-
-    AttributedGlyph(AttributedGrapheme const &attr_grapheme, FontGlyphIDs glyphs) noexcept :
-        glyphs(std::move(glyphs)), grapheme(attr_grapheme.grapheme), index(attr_grapheme.index), style(attr_grapheme.style), metrics() {}
-};
 
 /** ShapedText represent a piece of text shaped to be displayed.
  */
@@ -98,7 +62,7 @@ public:
     ~ShapedText() = default;
 
     /** Return the size of the box.
-     * The box is at least minimum_size, upto maximum_size.
+     * The box is at least minimum_size, up to maximum_size.
      */
     [[nodiscard]] extent2 size() const noexcept {
         return box_size;
@@ -114,7 +78,7 @@ public:
      * @param coordinate A coordinate within the box.
      * @return index of the selected grapheme, or -1 if no grapheme was found near the coordinate.
      */
-    [[nodiscard]] int indexFromCoordinate(gml::vec2 coordinate) const noexcept;
+    [[nodiscard]] int indexFromCoordinate(glm::vec2 coordinate) const noexcept;
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the ShapedText.
@@ -123,7 +87,7 @@ public:
      * @param current The current coordinate of the mouse pointer, during the drag.
      * @return indices of all the graphemes selected during a drag.
      */
-    [[nodiscard]] std::vector<int> indicesFromCoordinates(gml::vec2 start, glm::vec2 current) const noexcept;
+    [[nodiscard]] std::vector<int> indicesFromCoordinates(glm::vec2 start, glm::vec2 current) const noexcept;
 };
 
 
