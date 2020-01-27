@@ -9,6 +9,12 @@
 
 namespace TTauri {
 
+static constexpr BezierCurve::Color operator++(BezierCurve::Color &lhs, int) noexcept
+{
+    auto tmp = lhs;
+    lhs = (lhs == BezierCurve::Color::Cyan) ? BezierCurve::Color::Magenta : BezierCurve::Color::Cyan;
+    return tmp;
+}
 
 std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end) noexcept
 {
@@ -21,6 +27,7 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
     auto C1 = glm::vec2{};
     auto C2 = glm::vec2{};
 
+    auto color = BezierCurve::Color::Yellow;
     for (let &point: points) {
         switch (point.type) {
         case BezierPoint::Type::Anchor:
@@ -30,17 +37,17 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
                 type = BezierCurve::Type::Linear;
                 break;
             case BezierCurve::Type::Linear:
-                r.emplace_back(P1, point.p);
+                r.emplace_back(P1, point.p, color++);
                 P1 = point.p;
                 type = BezierCurve::Type::Linear;
                 break;
             case BezierCurve::Type::Quadratic:
-                r.emplace_back(P1, C1, point.p);
+                r.emplace_back(P1, C1, point.p, color++);
                 P1 = point.p;
                 type = BezierCurve::Type::Linear;
                 break;
             case BezierCurve::Type::Cubic:
-                r.emplace_back(P1, C1, C2, point.p);
+                r.emplace_back(P1, C1, C2, point.p, color++);
                 P1 = point.p;
                 type = BezierCurve::Type::Linear;
                 break;
@@ -63,6 +70,11 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
         default:
             no_default;
         }
+    }
+
+    // If there is only a single curve, water-drop-shaped, it should be marked white.
+    if (ssize(r) == 1) {
+        r.front().color = BezierCurve::Color::White;
     }
 
     return r;
@@ -265,6 +277,50 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
 {
     for (int rowNr = 0; rowNr < image.height; rowNr++) {
         fillRow(image.at(rowNr), rowNr, curves);
+    }
+}
+
+[[nodiscard]] static glm::vec3 generate_pixel(glm::vec2 point, std::vector<BezierCurve> const &curves) noexcept
+{
+    auto red_distance = std::numeric_limits<float>::max();
+    auto green_distance = std::numeric_limits<float>::max();
+    auto blue_distance = std::numeric_limits<float>::max();
+    BezierCurve const *red_curve = nullptr;
+    BezierCurve const *green_curve = nullptr;
+    BezierCurve const *blue_curve = nullptr;
+
+    for (let &curve: curves) {
+        auto distance = curve.square_distance(point);
+        if (curve.has_red() && distance < red_distance) {
+            red_distance = distance;
+            red_curve = &curve;
+        }
+        if (curve.has_green() && distance < green_distance) {
+            green_distance = distance;
+            green_curve = &curve;
+        }
+        if (curve.has_blue() && distance < blue_distance) {
+            blue_distance = distance;
+            blue_curve = &curve;
+        }
+    }
+
+    return glm::vec3{
+        (red_curve == nullptr) ? -std::numeric_limits<float>::max() : red_curve->signed_pseudo_distance(point),
+        (green_curve == nullptr) ? -std::numeric_limits<float>::max() : green_curve->signed_pseudo_distance(point),
+        (blue_curve == nullptr) ? -std::numeric_limits<float>::max() : blue_curve->signed_pseudo_distance(point)
+    };    
+}
+
+void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexcept
+{
+    for (int row_nr = 0; row_nr != image.height; ++row_nr) {
+        auto &row = image.at(row_nr);
+        auto y = static_cast<float>(image.height - row_nr);
+        for (int column_nr = 0; column_nr != image.width; ++column_nr) {
+            auto x = static_cast<float>(column_nr);
+            row[column_nr] = generate_pixel(glm::vec2(x, y), curves);
+        }
     }
 }
 

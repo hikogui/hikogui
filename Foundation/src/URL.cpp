@@ -111,7 +111,7 @@ std::string URL::nativePath() const noexcept
 
 std::wstring URL::nativeWPath() const noexcept
 {
-    return translateString<std::wstring>(nativePath());
+    return to_wstring(nativePath());
 }
 
 bool URL::isAbsolute() const noexcept
@@ -217,7 +217,7 @@ URL URL::urlFromPath(std::string_view const path) noexcept
 
 URL URL::urlFromWPath(std::wstring_view const path) noexcept
 {
-    return urlFromPath(translateString<std::string>(path));
+    return urlFromPath(to_string(path));
 }
 
 URL URL::urlFromExecutableDirectory() noexcept
@@ -251,7 +251,7 @@ std::string URL::nativePathFromPath(std::string_view path) noexcept
 
 std::wstring URL::nativeWPathFromPath(std::string_view path) noexcept
 {
-    return translateString<std::wstring>(nativePathFromPath(path));
+    return to_wstring(nativePathFromPath(path));
 }
 
 }

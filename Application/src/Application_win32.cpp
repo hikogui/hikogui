@@ -27,7 +27,7 @@ constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
     ttauri_assert(argv != nullptr);
 
     for (int i = 0; i < argc; i++) {
-        arguments.push_back(translateString<std::string>(std::wstring(argv[i])));
+        arguments.push_back(to_string(std::wstring(argv[i])));
     }
 
     LocalFree(argv);

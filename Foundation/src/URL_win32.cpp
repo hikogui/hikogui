@@ -85,7 +85,7 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     }
 
     do {
-        auto filename = translateString<std::string>(std::wstring(fileData.cFileName));
+        auto filename = to_string(std::wstring(fileData.cFileName));
 
         if (filename == "." || filename == "..") {
             continue;

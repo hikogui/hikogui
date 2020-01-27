@@ -22,7 +22,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
 
     hresult_assert_or_throw(propertyStore_->GetValue(PKEY_Device_FriendlyName, &textProperty));
     auto textWString = std::wstring_view(textProperty.pwszVal);
-    auto textString = translateString<std::string>(textWString);
+    auto textString = to_string(textWString);
 
     PropVariantClear(&textProperty);
     return textString;
@@ -97,7 +97,7 @@ std::string AudioDevice_win32::getIdFromDevice(void *device) noexcept
     hresult_assert_or_throw(device_->GetId(&id_wcharstr));
 
     let id_wstring = std::wstring_view(id_wcharstr);
-    auto id = translateString<std::string>(id_wstring);
+    auto id = to_string(id_wstring);
     CoTaskMemFree(id_wcharstr);
     return id;
 }

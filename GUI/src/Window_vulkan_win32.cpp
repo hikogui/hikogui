@@ -80,7 +80,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
 {
     createWindowClass();
 
-    auto u16title = translateString<wstring>(title);
+    auto u16title = to_wstring(title);
 
     // We are opening a popup window with a caption bar to cause drop-shadow to appear around
     // the window.

@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "TTauri/Foundation/MSD10.hpp"
+#include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/math.hpp"
@@ -21,9 +23,11 @@ struct BezierPoint;
  * A linear, quadratic or cubic bezier curve.
  */
 struct BezierCurve {
-    enum class Type { None, Linear, Quadratic, Cubic };
+    enum class Type : uint8_t { None, Linear, Quadratic, Cubic };
+    enum class Color : uint8_t { Yellow, Magenta, Cyan, White };
 
     Type type;
+    Color color;
     glm::vec2 P1; //!< First point
     glm::vec2 C1; //!< Control point
     glm::vec2 C2; //!< Control point
@@ -37,19 +41,36 @@ struct BezierCurve {
 
     /*! Construct a linear bezier-curve.
      */
-    BezierCurve(glm::vec2 const P1, glm::vec2 const P2) noexcept : type(Type::Linear), P1(P1), C1(), C2(), P2(P2) {}
+    BezierCurve(glm::vec2 const P1, glm::vec2 const P2, Color color=Color::White) noexcept :
+        type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {}
 
     /*! Construct a quadratic bezier-curve.
      */
-    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const P2) noexcept : type(Type::Quadratic), P1(P1), C1(C1), C2(C1), P2(P2) {}
+    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const P2, Color color=Color::White) noexcept :
+        type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(C1), P2(P2) {}
 
     /*! Construct a cubic bezier-curve.
      */
-    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2) noexcept : type(Type::Cubic), P1(P1), C1(C1), C2(C2), P2(P2) {}
+    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2, Color color=Color::White) noexcept :
+        type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {}
 
     /*! Construct a bezier-curve of any type.
     */
-    BezierCurve(Type const type, glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2) noexcept : type(type), P1(P1), C1(C1), C2(C2), P2(P2) {}
+    BezierCurve(Type const type, glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2, Color color=Color::White) noexcept :
+        type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {}
+
+
+    [[nodiscard]] bool has_red() const noexcept {
+        return color != Color::Cyan;
+    }
+
+    [[nodiscard]] bool has_green() const noexcept {
+        return color != Color::Magenta;
+    }
+
+    [[nodiscard]] bool has_blue() const noexcept {
+        return color != Color::Yellow;
+    }
 
     /*! Return a point on the bezier-curve.
      * Values of `t` beyond 0.0 and 1.0 will find a point extrapolated beyond the
@@ -67,6 +88,22 @@ struct BezierCurve {
         }
     }
 
+    /*! Return a tangent on the bezier-curve.
+    * Values of `t` beyond 0.0 and 1.0 will find a point extrapolated beyond the
+    * bezier segment.
+    * 
+    * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
+    * \return the tangent-vector at point t on the curve
+    */ 
+    [[nodiscard]] glm::vec2 tangentAt(float const t) const noexcept {
+        switch (type) {
+        case Type::Linear: return bezierTangentAt(P1, P2, t);
+        case Type::Quadratic: return bezierTangentAt(P1, C1, P2, t);
+        case Type::Cubic: return bezierTangentAt(P1, C1, C2, P2, t);
+        default: no_default;
+        }
+    }
+
     /*! Return the x values where the curve crosses the y-axis.
      * \param y y-axis.
      * \return 0 to 3, or infinit number of x values.
@@ -78,6 +115,36 @@ struct BezierCurve {
         case Type::Cubic: return bezierFindX(P1, C1, C2, P2, y);
         default: no_default;
         }
+    }
+
+    [[nodiscard]] float solveTClosestToPoint(glm::vec2 P) const noexcept {
+        switch (type) {
+        case Type::Linear: return bezierFindClosestT(P1, P2, P);
+        case Type::Quadratic: return bezierFindClosestT(P1, C1, P2, P);
+        case Type::Cubic: no_default;
+        default: no_default;
+        }
+    }
+    /** Find the distance from the point to the curve.
+     * @return distance squared to the curve
+     */
+    [[nodiscard]] float square_distance(glm::vec2 P) const noexcept {
+        float t = solveTClosestToPoint(P);
+        t = std::clamp(t, 0.0f, 1.0f);
+        auto v = pointAt(t) - P;
+        return glm::dot(v, v);
+    }
+
+    /** Find the distance from the point to the curve.
+    * @return distance to the curve; 0.0 on the curve, positive is inside, negative is outside.
+    */
+    [[nodiscard]] float signed_pseudo_distance(glm::vec2 P) const noexcept {
+        float t = solveTClosestToPoint(P);
+
+        auto v = pointAt(t) - P;
+        auto distance = glm::length(v);
+        auto angle = viktorCross(tangentAt(t), v);
+        return angle >= 0.0f ? distance : -distance;
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.
@@ -243,6 +310,8 @@ struct BezierCurve {
 
 
 /*! Make a contour of Bezier curves from a list of points.
+ * The contour is also colorized to be used for creating multichannel-signed-distance-fields.
+ *
  * \param first The first point in a list
  * \param first The last point in a list
  */
@@ -264,7 +333,7 @@ struct BezierCurve {
  * cover all intersections and gaps.
  *
  * \param contour a list of bezier curve segments forming a closed contour.
- * \param offset positive means the parrallel contour will be on the starboard side of the given contour. 
+ * \param offset positive means the parallel contour will be on the starboard side of the given contour. 
  * \param lineJoinStyle how the gaps between line segments are joined together.
  * \param tolerance to how curved the new contour should look.
  */
@@ -274,9 +343,16 @@ struct BezierCurve {
     LineJoinStyle lineJoinStyle,
     float tolerance) noexcept;
 
-/*! Fill a linear greyscale image by filling a curve with anti-aliasing.
- * \param image An alpha-channel image to make opaque where pixel is inside the contour
+/** Fill a linear greyscale image by filling a curve with anti-aliasing.
+ * @param image An alpha-channel image to make opaque where pixel is inside the contours
+ * @param curves All curves of path, in no particular order.
  */
-void fill(PixelMap<uint8_t>& image, std::vector<BezierCurve> const& contour) noexcept;
+void fill(PixelMap<uint8_t>& image, std::vector<BezierCurve> const& curves) noexcept;
+
+/** Fill a multi-channel signed distance field image from the given contour.
+ * @param image An multichannel-signed-distance-field which show distance toward the closest curve
+ * @param curves All curves of path, in no particular order.
+ */
+void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexcept;
 
 }

@@ -16,7 +16,7 @@ namespace TTauri {
 void set_thread_name(std::string_view name)
 {
 #if OPERATING_SYSTEM == OS_WINDOWS
-    let wname = translateString<std::wstring>(name);
+    let wname = to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.data());
 #elif OPERATING_SYSTEM == OS_MACOS
     pthread_setname_np(name.data());

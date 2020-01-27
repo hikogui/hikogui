@@ -436,7 +436,7 @@ TEST(TextTemplate, Include) {
     std::unique_ptr<template_node> t;
 
     ASSERT_NO_THROW(t = parse_template(URL("file:includer.ttt")));
-    ASSERT_EQ(to_string(*t),
+    ASSERT_EQ(normalize_lf(to_string(*t)),
         "<top "
             "<text foo\n>"
             "<top "

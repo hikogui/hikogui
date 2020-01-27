@@ -16,59 +16,59 @@
 
 namespace TTauri {
 
-constexpr bool isUpper(char c) noexcept {
+[[nodiscard]] constexpr bool isUpper(char c) noexcept {
     return c >= 'A' && c <= 'Z';
 }
 
-constexpr bool isLower(char c) noexcept {
+[[nodiscard]] constexpr bool isLower(char c) noexcept {
     return c >= 'a' && c <= 'z';
 }
 
-constexpr bool isAlpha(char c) noexcept {
+[[nodiscard]] constexpr bool isAlpha(char c) noexcept {
     return isUpper(c) || isLower(c);
 }
 
-constexpr bool isDigit(char c) noexcept {
+[[nodiscard]] constexpr bool isDigit(char c) noexcept {
     return c >= '0' && c <= '9';
 }
 
-constexpr bool isAlphaNum(char c) noexcept {
+[[nodiscard]] constexpr bool isAlphaNum(char c) noexcept {
     return isAlpha(c) || isDigit(c);
 }
 
-constexpr bool isLinefeed(char c) noexcept {
+[[nodiscard]] constexpr bool isLinefeed(char c) noexcept {
     return c == '\r' || c == '\n' || c == '\f' || c == '\v';
 }
 
-constexpr bool isWhitespace(char c) noexcept {
+[[nodiscard]] constexpr bool isWhitespace(char c) noexcept {
     return c == ' ' || c == '\t' || isLinefeed(c);
 }
 
-constexpr bool isNumberFirst(char c) noexcept {
+[[nodiscard]] constexpr bool isNumberFirst(char c) noexcept {
     return isDigit(c) || c == '+' || c == '-';
 }
 
-constexpr bool isNameFirst(char c) noexcept {
+[[nodiscard]] constexpr bool isNameFirst(char c) noexcept {
     return isAlpha(c) || c == '_' || c == '$';
 }
 
-constexpr bool isNameNext(char c) noexcept {
+[[nodiscard]] constexpr bool isNameNext(char c) noexcept {
     return isAlphaNum(c) || c == '_' || c == '$';
 }
 
-constexpr bool isQuote(char c) noexcept {
+[[nodiscard]] constexpr bool isQuote(char c) noexcept {
     return c == '"' || c == '\'' || c == '`';
 }
 
-constexpr bool isOpenBracket(char c) noexcept {
+[[nodiscard]] constexpr bool isOpenBracket(char c) noexcept {
     return c == '(' || c == '{' || c == '[';
 }
 
-constexpr bool isCloseBracket(char c) noexcept {
+[[nodiscard]] constexpr bool isCloseBracket(char c) noexcept {
     return c == ')' || c == '}' || c == ']';
 }
 
-constexpr bool isOperator(char c) noexcept {
+[[nodiscard]] constexpr bool isOperator(char c) noexcept {
     return
         !isAlphaNum(c) && c != '_' &&
         !isWhitespace(c) &&
@@ -77,7 +77,7 @@ constexpr bool isOperator(char c) noexcept {
         !isCloseBracket(c);
 }
 
-inline std::string to_lower(std::string_view str)
+[[nodiscard]] inline std::string to_lower(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -89,7 +89,7 @@ inline std::string to_lower(std::string_view str)
     return r;
 }
 
-inline std::string to_upper(std::string_view str)
+[[nodiscard]] inline std::string to_upper(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -101,10 +101,41 @@ inline std::string to_upper(std::string_view str)
     return r;
 }
 
+/** Normalize string to use only line-feeds.
+ */
+[[nodiscard]] inline std::string normalize_lf(std::string_view str) noexcept
+{
+    std::string r;
+    r.reserve(size(str));
+
+    auto found_cr = false;
+    for (let c: str) {
+        if (ttauri_unlikely(found_cr)) {
+            // This is Microsoft or old-Apple, we replace the previous carriage-return
+            // with a line-feed and emit the current character.
+            r += '\n';
+            if (c != '\r' && c != '\n') {
+                r += c;
+            }
+        
+        } else if (ttauri_likely(c != '\r')) {
+            // Emit any non-carriage return character.
+            r += c;
+        }
+
+        found_cr = c == '\r';
+    }
+    if (found_cr) {
+        r += '\n';
+    }
+
+    return r;
+}
+
 /** Encode a string to be usable as an id.
  * An id has the following format: [_a-zA-Z][_a-zA-Z0-9]*
  */
-inline std::string id_encode(std::string_view str)
+[[nodiscard]] inline std::string id_encode(std::string_view str) noexcept
 {
     std::string r;
     r.reserve(size(str));
@@ -118,7 +149,7 @@ inline std::string id_encode(std::string_view str)
 }
 
 gsl_suppress3(f.23,bounds.1,bounds.3)
-    inline constexpr uint32_t fourcc(char const txt[5]) noexcept
+[[nodiscard]] constexpr uint32_t fourcc(char const txt[5]) noexcept
 {
     return (
         (static_cast<uint32_t>(txt[0]) << 24) |
@@ -129,7 +160,7 @@ gsl_suppress3(f.23,bounds.1,bounds.3)
 }
 
 gsl_suppress(bounds.3)
-    inline std::string fourcc_to_string(uint32_t x) noexcept
+[[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
     char c_str[5];
     c_str[0] = numeric_cast<char>((x >> 24) & 0xff);
@@ -141,7 +172,7 @@ gsl_suppress(bounds.3)
     return {c_str};
 }
 
-constexpr char nibble_to_char(uint8_t nibble) noexcept
+[[nodiscard]] constexpr char nibble_to_char(uint8_t nibble) noexcept
 {
     if (nibble <= 9) {
         return '0' + nibble;
@@ -155,7 +186,7 @@ constexpr char nibble_to_char(uint8_t nibble) noexcept
 /*!
  * \return value between 0-15, or -1 on error.
  */
-inline int8_t char_to_nibble(char c)
+[[nodiscard]] inline int8_t char_to_nibble(char c) noexcept
 {
     if (c >= '0' && c <= '9') {
         return c - '0';
@@ -168,7 +199,7 @@ inline int8_t char_to_nibble(char c)
     }
 }
 
-inline std::string_view make_string_view(
+[[nodiscard]] inline std::string_view make_string_view(
     typename std::string::const_iterator b,
     typename std::string::const_iterator e
 ) noexcept
@@ -179,7 +210,7 @@ inline std::string_view make_string_view(
 }
 
 template<typename T, typename... Args>
-inline std::vector<T> split(T haystack, Args... needle) noexcept
+[[nodiscard]] inline std::vector<T> split(T haystack, Args... needle) noexcept
 {
     std::vector<T> r;
 
@@ -196,7 +227,7 @@ inline std::vector<T> split(T haystack, Args... needle) noexcept
     return r;
 }
 
-inline std::string join(std::vector<std::string> const &list, std::string_view const joiner = {}) noexcept
+[[nodiscard]] inline std::string join(std::vector<std::string> const &list, std::string_view const joiner = {}) noexcept
 {
     std::string r;
 
@@ -218,7 +249,7 @@ inline std::string join(std::vector<std::string> const &list, std::string_view c
     return r;
 }
 
-inline std::string join(std::vector<std::string_view> const &list, std::string_view const joiner = {}) noexcept
+[[nodiscard]] inline std::string join(std::vector<std::string_view> const &list, std::string_view const joiner = {}) noexcept
 {
     std::string r;
 
@@ -257,7 +288,7 @@ constexpr char32_t UNICODE_Zero_Width_No_Break_Space = 0xfeff;
 constexpr char32_t UNICODE_BOM = UNICODE_Zero_Width_No_Break_Space;
 constexpr char32_t UNICODE_Reverse_BOM = 0xfffe;
 
-inline char32_t CP1252ToCodePoint(uint8_t inputCharacter) noexcept
+[[nodiscard]] inline char32_t CP1252ToCodePoint(uint8_t inputCharacter) noexcept
 {
     if (inputCharacter >= 0 && inputCharacter <= 0x7f) {
         return inputCharacter;
@@ -327,7 +358,7 @@ struct TranslateStringOptions {
 };
 
 template<typename T, typename U>
-inline T translateString(U const inputString, TranslateStringOptions options = {}) noexcept
+[[nodiscard]] inline T translateString(U const inputString, TranslateStringOptions options = {}) noexcept
 {
     if constexpr (sizeof (typename T::value_type) == sizeof (typename U::value_type)) {
         return transform<T>(inputString, [](let &inputCharacter) { return inputCharacter; });
@@ -338,12 +369,12 @@ inline T translateString(U const inputString, TranslateStringOptions options = {
 }
 
 template<typename T, typename U>
-inline T translateString(std::basic_string<U> const inputString, TranslateStringOptions options = {}) noexcept {
+[[nodiscard]] inline T translateString(std::basic_string<U> const inputString, TranslateStringOptions options = {}) noexcept {
     return translateString<T>(std::basic_string_view<U>(inputString), options);
 }
 
 template<>
-inline std::u32string translateString(std::string_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] inline std::u32string translateString(std::string_view const inputString, TranslateStringOptions options) noexcept
 {
     std::u32string outputString;
     char32_t codePoint = 0;
@@ -414,7 +445,7 @@ inline std::u32string translateString(std::string_view const inputString, Transl
 }
 
 template<>
-inline std::u32string translateString(std::u16string_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] inline std::u32string translateString(std::u16string_view const inputString, TranslateStringOptions options) noexcept
 {
     bool byteSwap = options._byteSwap;
     std::u32string outputString;
@@ -469,14 +500,14 @@ inline std::u32string translateString(std::u16string_view const inputString, Tra
 }
 
 template<>
-inline std::u32string translateString(std::wstring_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] inline std::u32string translateString(std::wstring_view const inputString, TranslateStringOptions options) noexcept
 {
     auto tmp = translateString<std::u16string>(inputString, options);
     return translateString<std::u32string>(tmp, options);
 }
 
 template<>
-inline std::u16string translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] inline std::u16string translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     std::u16string outputString;
 
@@ -507,14 +538,14 @@ inline std::u16string translateString(std::u32string_view const inputString, Tra
 }
 
 template<>
-inline std::wstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] inline std::wstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     auto tmp = translateString<std::u16string>(inputString, options);
     return translateString<std::wstring>(tmp, options);
 }
 
 template<>
-inline std::string translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] inline std::string translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
 {
     std::string outputString;
 
@@ -548,9 +579,55 @@ inline std::string translateString(std::u32string_view const inputString, Transl
     return outputString;
 }
 
+[[nodiscard]] inline std::string to_string(std::wstring_view str) noexcept {
+    return translateString<std::string>(str);
+}
 
+[[nodiscard]] inline std::string to_string(std::u16string_view str) noexcept {
+    return translateString<std::string>(str);
+}
 
-inline std::u32string splitLigature(char32_t x) noexcept
+[[nodiscard]] inline std::string to_string(std::u32string_view str) noexcept {
+    return translateString<std::string>(str);
+}
+
+[[nodiscard]] inline std::wstring to_wstring(std::string_view str) noexcept {
+    return translateString<std::wstring>(str);
+}
+
+[[nodiscard]] inline std::wstring to_wstring(std::u16string_view str) noexcept {
+    return translateString<std::wstring>(str);
+}
+
+[[nodiscard]] inline std::wstring to_wstring(std::u32string_view str) noexcept {
+    return translateString<std::wstring>(str);
+}
+
+[[nodiscard]] inline std::u16string to_u16string(std::string_view str) noexcept {
+    return translateString<std::u16string>(str);
+}
+
+[[nodiscard]] inline std::u16string to_u16string(std::wstring_view str) noexcept {
+    return translateString<std::u16string>(str);
+}
+
+[[nodiscard]] inline std::u16string to_u16string(std::u32string_view str) noexcept {
+    return translateString<std::u16string>(str);
+}
+
+[[nodiscard]] inline std::u32string to_u32string(std::string_view str) noexcept {
+    return translateString<std::u32string>(str);
+}
+
+[[nodiscard]] inline std::u32string to_u32string(std::wstring_view str) noexcept {
+    return translateString<std::u32string>(str);
+}
+
+[[nodiscard]] inline std::u32string to_u32string(std::u16string_view str) noexcept {
+    return translateString<std::u32string>(str);
+}
+
+[[nodiscard]] inline std::u32string splitLigature(char32_t x) noexcept
 {
     switch (x) {
     case 0xfb00: return { 0x0066, 0x0066 }; // ff
@@ -574,7 +651,7 @@ inline std::u32string splitLigature(char32_t x) noexcept
 /*! Return line and column count at the end iterator.
  */
 template<typename It>
-inline std::pair<int,int> count_line_and_columns(It begin, It const end)
+[[nodiscard]] inline std::pair<int,int> count_line_and_columns(It begin, It const end)
 {
     int line = 1;
     int column = 1;

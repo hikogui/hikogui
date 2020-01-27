@@ -61,6 +61,31 @@ inline T bezierPointAt(T P1, T C1, T C2, T P2, U t) noexcept
     return a*t*t*t + b*t*t + c*t + d;
 }
 
+template<typename T, typename U>
+inline T bezierTangentAt(T P1, T P2, U t) noexcept
+{
+    return P2 - P1;
+}
+
+template<typename T, typename U>
+inline T bezierTangentAt(T P1, T C, T P2, U t) noexcept
+{
+    constexpr U _2 = 2.0;
+    return _2 * t * (P2 - _2 * C + P1) + _2 * (C - P1);
+} 
+
+template<typename T, typename U>
+inline T bezierTangentAt(T P1, T C1, T C2, T P2, U t) noexcept
+{
+    constexpr U _2 = 2.0;
+    constexpr U _3 = 3.0;
+    constexpr U _6 = 6.0;
+    return 
+        _3 * t * t * (P2 - _3 * C2 + _3 * C1 - P1) +
+        _6 * t * (C2 - _2 * C1 + P1) +
+        _3 * (C1 - P1);
+}
+
 template<typename T>
 inline results<T,1> bezierFindT(T P1, T P2, T x) noexcept
 {
@@ -82,6 +107,55 @@ inline results<T,3> bezierFindT(T P1, T C1, T C2, T P2, T x) noexcept
     return solvePolynomial(a, b, c, d - x);
 }
 
+/** Find t on the line P1->P2 which is closest to P.
+ */
+template<typename T>
+inline T bezierFindClosestT(glm::vec<2,T> P1, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
+{
+    auto t_above = glm::dot(P - P1, P2 - P1);
+    auto t_below = glm::dot(P2 - P1, P2 - P1);
+    if (ttauri_unlikely(t_below == 0.0)) {
+        return t_above >= 0.0 ? std::numeric_limits<T>::max() : -std::numeric_limits<T>::max();
+    } else {
+        return t_above / t_below;
+    }
+}
+
+/** Find t on the curve P1->C->P2 which is closest to P.
+*/
+template<typename T>
+inline T bezierFindClosestT(glm::vec<2,T> P1, glm::vec<2,T> C, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
+{
+    constexpr T _0 = 0.0;
+    constexpr T _2 = 2.0;
+    constexpr T _3 = 3.0;
+
+    auto p = P - P1;
+    auto p1 = C - P1;
+    auto p2 = P2 - (_2 * C) + P1;
+
+    auto a = glm::dot(p2, p2);
+    auto b = _3 * glm::dot(p1, p2);
+    auto c = glm::dot(_2 * p1, p1) - glm::dot(p2, p);
+    auto d = -glm::dot(p1, p);
+    auto results = solvePolynomial(a, b, c, d);
+
+    if (results.hasInfiniteResults()) {
+        return _0;
+    } else {
+        auto min_distance = std::numeric_limits<T>::max();
+        auto min_t = _0;
+        for (let t: results) {
+            auto v = bezierPointAt(P1, C, P2, t) - P;
+            auto distance = glm::dot(v, v);
+            if (distance < min_distance) {
+                min_distance = distance;
+                min_t = t;
+            }
+        }
+        return min_t;
+    }
+}
 
 /*! Find x for y on a bezier curve.
  * In a contour, multiple bezier curves are attached to each other

@@ -100,7 +100,7 @@ void VerticalSync_win32::openAdapter() noexcept
         }
     }
 
-    LOG_INFO("Found primary display device '{}'.", translateString<string>(wstring(dd.DeviceName)));
+    LOG_INFO("Found primary display device '{}'.", to_string(wstring(dd.DeviceName)));
 
     HDC hdc = CreateDCW(NULL, dd.DeviceName, NULL, NULL);
     if (hdc == NULL) {
