@@ -87,7 +87,7 @@ File::~File() noexcept
 void File::close()
 {
     if (fileHandle != -1) {
-        if (!::close(fileHandle)) {
+        if (::close(fileHandle) != 0) {
             TTAURI_THROW(io_error("Could not close file")
                 .set<"error_message"_tag>(getLastErrorMessage())
                 .set<"url"_tag>(location)

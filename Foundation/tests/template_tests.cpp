@@ -438,11 +438,11 @@ TEST(TextTemplate, Include) {
     ASSERT_NO_THROW(t = parse_template(URL("file:includer.ttt")));
     ASSERT_EQ(to_string(*t),
         "<top "
-            "<text foo\r\n>"
+            "<text foo\n>"
             "<top "
-                "<text baz\r\n>"
+                "<text baz\n>"
             ">"
-            "<text bar\r\n>"
+            "<text bar\n>"
         ">"
     );
 }

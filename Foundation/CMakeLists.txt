@@ -53,6 +53,7 @@ if(WIN32)
 elseif(APPLE)
     set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
         src/URL_macos.mm
+        src/URL_posix.cpp
         src/hires_utc_clock_posix.cpp
         src/audio_counter_clock_macos.cpp
         src/logger_macos.mm
