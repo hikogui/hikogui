@@ -81,10 +81,10 @@ std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const iext
     return image;
 }
 
-TTauri::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
+TTauri::PixelMap<MSD10> DeviceShared::getStagingPixelMap()
 {
 
-    stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
+    stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eGeneral);
 
     return stagingTexture.pixelMap.submap(
         Page::border, Page::border,
@@ -94,29 +94,16 @@ TTauri::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
-    // Start with the actual image inside the stagingImage.
-    auto rectangle = irect2{
-        {Page::border, Page::border},
-        image.extent
-    };
-    // Add one pixel of border around the actual image and keep extending
-    // until the full border with is finished.
-    for (int b = 0; b < Page::border; b++) {
-        rectangle.offset -= glm::ivec2(1, 1);
-        rectangle.extent += glm::ivec2(2, 2);
-
-        auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
-        addTransparentBorder(pixelMap);
-    }
+    
 
     // Flush the given image, included the border.
     device.flushAllocation(
         stagingTexture.allocation,
         0,
-        ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
+        (image.extent.height() * stagingTexture.pixelMap.stride) * sizeof (MSD10)
     );
     
-    stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
+    stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
     for (int index = 0; index < to_signed(image.pages.size()); index++) {
@@ -155,13 +142,13 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         }
 
         auto &atlasTexture = atlasTextures.at(atlasTextureIndex);
-        atlasTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferDstOptimal);
 
         device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
     }
 }
 
-void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<wsRGBA> const &pixelMap)
+void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<MSD10> const &pixelMap)
 {
     if (image.state == GUI::PipelineMSDF::Image::State::Drawing && pixelMap) {
         auto stagingMap = getStagingPixelMap(image.extent);
@@ -174,7 +161,7 @@ void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<wsRGBA> cons
 void DeviceShared::prepareAtlasForRendering()
 {
     for (auto &atlasTexture: atlasTextures) {
-        atlasTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eShaderReadOnlyOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
@@ -282,7 +269,7 @@ void DeviceShared::addAtlasImage()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eR8G8B8A8Srgb,
+        vk::Format::eA2B10G10R10UnormPack32,
         vk::Extent3D(atlasImageWidth, atlasImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -339,7 +326,7 @@ void DeviceShared::buildAtlas()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eR8G8B8A8Srgb,
+        vk::Format::eA2B10G10R10UnormPack32,
         vk::Extent3D(stagingImageWidth, stagingImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -359,7 +346,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<uint32_t>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
+        TTauri::PixelMap<MSD10>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

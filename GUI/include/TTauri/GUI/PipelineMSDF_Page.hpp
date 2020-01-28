@@ -8,22 +8,14 @@
 
 namespace TTauri::GUI::PipelineMSDF {
 
+/* A location inside the atlas where the character is located.
+ */
 struct Page {
-    static constexpr int width = 64;
-    static constexpr int height = 64;
-    static constexpr int border = 1;
-    static constexpr int widthIncludingBorder = width + 2 * border;
-    static constexpr int heightIncludingBorder = height + 2 * border;
-
-    ssize_t nr;
-
-    Page(ssize_t nr) : nr(nr) {}
-
-    /*! Create a transparent page.
-     */
-    Page() : nr(std::numeric_limits<ssize_t>::max()) {}
-
-    bool isFullyTransparent() const noexcept { return nr == std::numeric_limits<ssize_t>::max(); }
+    uint16_t x;
+    uint16_t y;
+    uint8_t z;
+    uint8_t width;
+    uint8_t height;
 };
 
 }

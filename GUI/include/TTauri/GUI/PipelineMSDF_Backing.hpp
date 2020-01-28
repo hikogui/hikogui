@@ -12,7 +12,7 @@
 #include <string>
 
 namespace TTauri {
-struct wsRGBA;
+struct MSD10;
 }
 
 namespace TTauri {
@@ -26,13 +26,13 @@ struct Image;
  * It contains an PipelineMSDF::Image which is a reference to the TextureAtlas to be used to send vertices to the pipeline.
  */
 struct Backing {
-    using ImagePixelMap = std::pair<std::shared_ptr<GUI::PipelineMSDF::Image>,PixelMap<wsRGBA>>;
+    using ImagePixelMap = std::pair<std::shared_ptr<GUI::PipelineMSDF::Image>,PixelMap<MSD10>>;
 
     /*! A reference to the texture-atlas to be used to send vertices to the pipeline.
      */
     std::shared_ptr<GUI::PipelineMSDF::Image> image;
 
-    /*! An optional future image and pixelmap to be uploaded to the atlas
+    /*! An optional future image and pixel map to be uploaded to the atlas
      * waiting to replace the `image`.
      */
     std::optional<std::future<ImagePixelMap>> futureImage;

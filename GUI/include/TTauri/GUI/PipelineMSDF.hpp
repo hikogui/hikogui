@@ -14,7 +14,7 @@
 namespace TTauri::GUI::PipelineMSDF {
 
 /*! Pipeline for rendering backings of widgets.
- * Maintains texture map atlasses and sharing for all views.
+ * Maintains texture map atlases and sharing for all views.
  */
 class PipelineMSDF : public Pipeline_vulkan {
 public:

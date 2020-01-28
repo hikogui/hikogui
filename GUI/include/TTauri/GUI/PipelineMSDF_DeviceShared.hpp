@@ -21,14 +21,13 @@ namespace TTauri::GUI::PipelineMSDF {
 struct Image;
 
 struct DeviceShared final {
-    static constexpr int atlasNrHorizontalPages = 60;
-    static constexpr int atlasNrVerticalPages = 60;
-    static constexpr int atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
-    static constexpr int atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
-    static constexpr int atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
-    static constexpr int atlasMaximumNrImages = 16;
-    static constexpr int stagingImageWidth = 2048;
-    static constexpr int stagingImageHeight = 1024;
+    // Handle up to 8192 characters. An educated Chinese person knows between 5000 and 6000 characters.
+    // Maximum character size is 32x32 pixels.
+    static constexpr int atlasImageWidth = 32 * 32; // 32 characters, of 32 pixels wide.
+    static constexpr int atlasImageHeight = 16 * 32; // 16 characters, of 32 pixels height.
+    static constexpr int atlasMaximumNrImages = 16; // 16 * 512 characters, of 32x32 pixels.
+    static constexpr int stagingImageWidth = 64; // maximum size of character that can be uploaded is 64x64
+    static constexpr int stagingImageHeight = 64;
 
     Device const &device;
 
@@ -62,21 +61,12 @@ struct DeviceShared final {
     */
     void destroy(gsl::not_null<Device *> vulkanDevice);
 
-    /*! Get the coordinate in the atlast from a page index.
+    /*! Get the coordinate in the atlas from a page index.
      * \param page number in the atlas
-     * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
+     * \return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex.
      */
     static glm::ivec3 getAtlasPositionFromPage(Page page) noexcept {
-        let imageIndex = page.nr / atlasNrPagesPerImage;
-        let pageNrInsideImage = page.nr % atlasNrPagesPerImage;
-
-        let pageY = pageNrInsideImage / atlasNrVerticalPages;
-        let pageX = pageNrInsideImage % atlasNrVerticalPages;
-
-        let x = pageX * Page::widthIncludingBorder + Page::border;
-        let y = pageY * Page::heightIncludingBorder + Page::border;
-
-        return {x, y, imageIndex};
+        return {page.x, page.y, page.z}; 
     }
 
     std::vector<Page> getFreePages(int const nrPages);

@@ -18,21 +18,9 @@ Image::~Image()
     parent->returnPages(pages);
 }
 
-irect2 Image::indexToRect(int const pageIndex) const noexcept
+irect2 Image::indexToRect(Page page) const noexcept
 {
-    let indexY = pageIndex / pageExtent.x;
-    let indexX = pageIndex % pageExtent.x;
-
-    let left = indexX * Page::width;
-    let top = indexY * Page::height;
-    let right = left + Page::width;
-    let bottom = top + Page::height;
-    let rightOverflow = right - std::min(right, extent.x);
-    let bottomOverflow = bottom - std::min(bottom, extent.y);
-    let width = Page::width - rightOverflow;
-    let height = Page::height - bottomOverflow;
-
-    return {{left, top}, {width, height}};
+    return {{page.x, page.y}, {page.width, page.height}};
 }
 
 static bool inside(glm::vec2 point, rect2 clip) noexcept

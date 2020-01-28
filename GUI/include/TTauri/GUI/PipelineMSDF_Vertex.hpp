@@ -19,7 +19,7 @@ struct Vertex {
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
     rect2 clippingRectangle;
 
-    //! The x, y coord inside the texture-atlas, z is used as an index in the texture-atlas array
+    //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     glm::u16vec3 atlasPosition;
 
     //! The depth for depth test.
