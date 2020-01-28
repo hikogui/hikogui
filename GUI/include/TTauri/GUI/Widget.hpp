@@ -6,6 +6,7 @@
 #include "TTauri/GUI/BoxModel.hpp"
 #include "TTauri/GUI/PipelineFlat_Delegate.hpp"
 #include "TTauri/GUI/PipelineImage_Delegate.hpp"
+#include "TTauri/GUI/PipelineMSDF_Delegate.hpp"
 #include "TTauri/GUI/PipelineImage_Backing.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
@@ -31,7 +32,7 @@ namespace TTauri::GUI::Widgets {
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class Widget : public PipelineImage::Delegate, public PipelineFlat::Delegate {
+class Widget : public PipelineImage::Delegate, public PipelineFlat::Delegate, public PipelineMSDF::Delegate {
 public:
     //! Convenient reference to the Window.
     Window *window;
@@ -81,6 +82,7 @@ public:
 
     void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
     void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, int &offset) noexcept override;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.

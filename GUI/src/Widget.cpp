@@ -38,6 +38,13 @@ void Widget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices
     }
 }
 
+void Widget::pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, int &offset) noexcept
+{
+    for (auto &child : children) {
+        child->pipelineMSDFPlaceVertices(vertices, offset);
+    }
+}
+
 HitBox Widget::hitBoxTest(glm::vec2 position) const noexcept
 {
     for (auto& widget : children) {

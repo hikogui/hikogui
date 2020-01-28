@@ -9,6 +9,8 @@
 #include "shaders/PipelineImage.frag.spv.inl"
 #include "shaders/PipelineFlat.vert.spv.inl"
 #include "shaders/PipelineFlat.frag.spv.inl"
+#include "shaders/PipelineMSDF.vert.spv.inl"
+#include "shaders/PipelineMSDF.frag.spv.inl"
 
 
 namespace TTauri::GUI {
@@ -24,6 +26,8 @@ GUIGlobals::GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int
     Foundation_globals->addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
     Foundation_globals->addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
     Foundation_globals->addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
+    Foundation_globals->addStaticResource(PipelineMSDF_vert_spv_filename, PipelineMSDF_vert_spv_bytes);
+    Foundation_globals->addStaticResource(PipelineMSDF_frag_spv_filename, PipelineMSDF_frag_spv_bytes);
 }
 
 GUIGlobals::~GUIGlobals()
