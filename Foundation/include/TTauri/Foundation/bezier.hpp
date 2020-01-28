@@ -108,23 +108,27 @@ inline results<T,3> bezierFindT(T P1, T C1, T C2, T P2, T x) noexcept
 }
 
 /** Find t on the line P1->P2 which is closest to P.
+ * Used for finding the shortest distance from a point to a curve.
+ * The shortest vector from a curve to a point is a normal.
  */
 template<typename T>
-inline T bezierFindClosestT(glm::vec<2,T> P1, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
+inline results<T,1> bezierFindTForNormalsIntersectingPoint(glm::vec<2,T> P1, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
 {
     auto t_above = glm::dot(P - P1, P2 - P1);
     auto t_below = glm::dot(P2 - P1, P2 - P1);
     if (ttauri_unlikely(t_below == 0.0)) {
-        return t_above >= 0.0 ? std::numeric_limits<T>::max() : -std::numeric_limits<T>::max();
+        return {};
     } else {
-        return t_above / t_below;
+        return {t_above / t_below};
     }
 }
 
 /** Find t on the curve P1->C->P2 which is closest to P.
+* Used for finding the shortest distance from a point to a curve.
+* The shortest vector from a curve to a point is a normal.
 */
 template<typename T>
-inline T bezierFindClosestT(glm::vec<2,T> P1, glm::vec<2,T> C, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
+inline results<T,3> bezierFindTForNormalsIntersectingPoint(glm::vec<2,T> P1, glm::vec<2,T> C, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
 {
     constexpr T _0 = 0.0;
     constexpr T _2 = 2.0;
@@ -138,23 +142,7 @@ inline T bezierFindClosestT(glm::vec<2,T> P1, glm::vec<2,T> C, glm::vec<2,T> P2,
     auto b = _3 * glm::dot(p1, p2);
     auto c = glm::dot(_2 * p1, p1) - glm::dot(p2, p);
     auto d = -glm::dot(p1, p);
-    auto results = solvePolynomial(a, b, c, d);
-
-    if (results.hasInfiniteResults()) {
-        return _0;
-    } else {
-        auto min_distance = std::numeric_limits<T>::max();
-        auto min_t = _0;
-        for (let t: results) {
-            auto v = bezierPointAt(P1, C, P2, t) - P;
-            auto distance = glm::dot(v, v);
-            if (distance < min_distance) {
-                min_distance = distance;
-                min_t = t;
-            }
-        }
-        return min_t;
-    }
+    return solvePolynomial(a, b, c, d);
 }
 
 /*! Find x for y on a bezier curve.

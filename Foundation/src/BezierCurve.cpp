@@ -282,15 +282,15 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
 
 [[nodiscard]] static glm::vec3 generate_pixel(glm::vec2 point, std::vector<BezierCurve> const &curves) noexcept
 {
-    auto red_distance = std::numeric_limits<float>::max();
-    auto green_distance = std::numeric_limits<float>::max();
-    auto blue_distance = std::numeric_limits<float>::max();
+    auto red_distance = BezierCurve::msdf_result_t{};
+    auto green_distance = BezierCurve::msdf_result_t{};
+    auto blue_distance = BezierCurve::msdf_result_t{};
     BezierCurve const *red_curve = nullptr;
     BezierCurve const *green_curve = nullptr;
     BezierCurve const *blue_curve = nullptr;
 
     for (let &curve: curves) {
-        auto distance = curve.square_distance(point);
+        auto distance = curve.msdf_fast_distance(point);
         if (curve.has_red() && distance < red_distance) {
             red_distance = distance;
             red_curve = &curve;
@@ -306,9 +306,9 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     }
 
     return glm::vec3{
-        (red_curve == nullptr) ? -std::numeric_limits<float>::max() : red_curve->signed_pseudo_distance(point),
-        (green_curve == nullptr) ? -std::numeric_limits<float>::max() : green_curve->signed_pseudo_distance(point),
-        (blue_curve == nullptr) ? -std::numeric_limits<float>::max() : blue_curve->signed_pseudo_distance(point)
+        (red_curve == nullptr) ? -std::numeric_limits<float>::max() : red_curve->signed_pseudo_distance(red_distance, point),
+        (green_curve == nullptr) ? -std::numeric_limits<float>::max() : green_curve->signed_pseudo_distance(green_distance, point),
+        (blue_curve == nullptr) ? -std::numeric_limits<float>::max() : blue_curve->signed_pseudo_distance(blue_distance, point)
     };    
 }
 

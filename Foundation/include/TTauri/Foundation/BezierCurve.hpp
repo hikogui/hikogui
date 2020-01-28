@@ -106,7 +106,7 @@ struct BezierCurve {
 
     /*! Return the x values where the curve crosses the y-axis.
      * \param y y-axis.
-     * \return 0 to 3, or infinit number of x values.
+     * \return 0 to 3, or infinite number of x values.
      */
     [[nodiscard]] results<float,3> solveXByY(float const y) const noexcept {
         switch (type) {
@@ -117,34 +117,77 @@ struct BezierCurve {
         }
     }
 
-    [[nodiscard]] float solveTClosestToPoint(glm::vec2 P) const noexcept {
+    [[nodiscard]] results<float,3> solveTForNormalsIntersectingPoint(glm::vec2 P) const noexcept {
         switch (type) {
-        case Type::Linear: return bezierFindClosestT(P1, P2, P);
-        case Type::Quadratic: return bezierFindClosestT(P1, C1, P2, P);
+        case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
+        case Type::Quadratic: return bezierFindTForNormalsIntersectingPoint(P1, C1, P2, P);
         case Type::Cubic: no_default;
         default: no_default;
         }
     }
+
+    struct msdf_result_t {
+        float squared_distance;
+        float angle;
+        float t;
+
+        constexpr msdf_result_t() noexcept :
+            squared_distance(std::numeric_limits<float>::max()), angle(0.0f), t(0.0f) {}
+
+        constexpr msdf_result_t(float squared_distance, float angle, float t) noexcept :
+            squared_distance(squared_distance), angle(angle), t(t) {}
+
+        [[nodiscard]] friend constexpr bool operator<(msdf_result_t const &lhs, msdf_result_t const &rhs) noexcept {
+            if (lhs.squared_distance != rhs.squared_distance) {
+                return lhs.squared_distance < rhs.squared_distance;
+            } else {
+                // Maximize orthogonality.
+                return std::abs(lhs.angle) > std::abs(rhs.angle);
+            }
+        }
+    };
+
     /** Find the distance from the point to the curve.
-     * @return distance squared to the curve
      */
-    [[nodiscard]] float square_distance(glm::vec2 P) const noexcept {
-        float t = solveTClosestToPoint(P);
-        t = std::clamp(t, 0.0f, 1.0f);
-        auto v = pointAt(t) - P;
-        return glm::dot(v, v);
+    [[nodiscard]] msdf_result_t msdf_fast_distance(glm::vec2 P) const noexcept {
+        auto min_square_distance = std::numeric_limits<float>::max();
+        auto min_clamped_t = 0.0f;
+        auto min_t = 0.0f;
+        auto min_normal = glm::vec2{0.0f, 1.0f};
+
+        let ts = solveTForNormalsIntersectingPoint(P);
+        for (let t: ts) {
+            let clamped_t = std::clamp(t, 0.0f, 1.0f);
+
+            let normal = P - pointAt(clamped_t);
+            let square_distance = glm::dot(normal, normal);
+            if (square_distance < min_square_distance) {
+                min_square_distance = square_distance;
+                min_clamped_t = clamped_t;
+                min_t = t;
+                min_normal = normal;
+            }
+        }
+
+        auto angle = 0.0f;
+        if (min_t <= 0.0f || min_t >= 1.0f) {
+            let unit_normal = glm::normalize(min_normal);
+            let unit_tangent = glm::normalize(tangentAt(min_clamped_t));
+            angle = viktorCross(unit_normal, unit_tangent);
+        }
+
+        return {min_square_distance, angle, min_t};
     }
 
     /** Find the distance from the point to the curve.
     * @return distance to the curve; 0.0 on the curve, positive is inside, negative is outside.
     */
-    [[nodiscard]] float signed_pseudo_distance(glm::vec2 P) const noexcept {
-        float t = solveTClosestToPoint(P);
+    [[nodiscard]] float signed_pseudo_distance(msdf_result_t result, glm::vec2 P) const noexcept {
+        // Use the non-clamped t, to get the distance to the extrapolated curve.
+        let distance = glm::length(P - pointAt(result.t));
 
-        auto v = pointAt(t) - P;
-        auto distance = glm::length(v);
-        auto angle = viktorCross(tangentAt(t), v);
-        return angle >= 0.0f ? distance : -distance;
+        // Use the original angle, for determining which side of the curve the point is.
+        return result.angle < 0.0f ? distance : -distance;
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.
@@ -219,7 +262,7 @@ struct BezierCurve {
     }
 
     /*! Subdivide a bezier-curve until each are flat enough.
-     * \param tolerance maximum amount of curvines.
+     * \param tolerance maximum amount of curviness.
      * \return resulting list of curve segments.
      */
     [[nodiscard]] std::vector<BezierCurve> subdivideUntilFlat(float const tolerance) const noexcept {
@@ -257,7 +300,7 @@ struct BezierCurve {
     }
 
     /*! Return a line-segment from a curve at a certain distance.
-     * \param offset positive means the parrallel line will be on the starboard of the curve.
+     * \param offset positive means the parallel line will be on the starboard of the curve.
      * \return line segment offset from the curve.
      */
     [[nodiscard]] BezierCurve toParrallelLine(float const offset) const noexcept {
@@ -343,7 +386,7 @@ struct BezierCurve {
     LineJoinStyle lineJoinStyle,
     float tolerance) noexcept;
 
-/** Fill a linear greyscale image by filling a curve with anti-aliasing.
+/** Fill a linear gray scale image by filling a curve with anti-aliasing.
  * @param image An alpha-channel image to make opaque where pixel is inside the contours
  * @param curves All curves of path, in no particular order.
  */
