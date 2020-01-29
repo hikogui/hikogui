@@ -30,35 +30,35 @@ struct A2B10G10R10UNorm {
     uint32_t value;
 
     A2B10G10R10UNorm() = default;
-    constexpr A2B10G10R10UNorm(A2B10G10R10UNorm const &rhs) noexcept = default;
-    constexpr A2B10G10R10UNorm(A2B10G10R10UNorm &&rhs) noexcept = default;
-    constexpr A2B10G10R10UNorm &operator=(A2B10G10R10UNorm const &rhs) noexcept = default;
-    constexpr A2B10G10R10UNorm &operator=(A2B10G10R10UNorm &&rhs) noexcept = default;
+    A2B10G10R10UNorm(A2B10G10R10UNorm const &rhs) noexcept = default;
+    A2B10G10R10UNorm(A2B10G10R10UNorm &&rhs) noexcept = default;
+    A2B10G10R10UNorm &operator=(A2B10G10R10UNorm const &rhs) noexcept = default;
+    A2B10G10R10UNorm &operator=(A2B10G10R10UNorm &&rhs) noexcept = default;
     ~A2B10G10R10UNorm() = default;
 
-    constexpr explicit A2B10G10R10UNorm(glm::vec4 const &rhs) noexcept :
+    explicit A2B10G10R10UNorm(glm::vec4 const &rhs) noexcept :
         value(make_A2B10G10R10UNorm_value(rhs)) {}
 
-    constexpr explicit A2B10G10R10UNorm(glm::vec3 const &rhs) noexcept :
+    explicit A2B10G10R10UNorm(glm::vec3 const &rhs) noexcept :
         value(make_A2B10G10R10UNorm_value(rhs)) {}
 
-    constexpr explicit A2B10G10R10UNorm(float r, float g, float b, float a) noexcept :
+    explicit A2B10G10R10UNorm(float r, float g, float b, float a) noexcept :
         A2B10G10R10UNorm(glm::vec4{r, g, b, a}) {}
 
-    constexpr explicit A2B10G10R10UNorm(float r, float g, float b) noexcept :
+    explicit A2B10G10R10UNorm(float r, float g, float b) noexcept :
         A2B10G10R10UNorm(glm::vec3{r, g, b}) {}
 
-    constexpr A2B10G10R10UNorm &operator=(glm::vec4 const &rhs) noexcept {
+    A2B10G10R10UNorm &operator=(glm::vec4 const &rhs) noexcept {
         value = make_A2B10G10R10UNorm_value(rhs);
         return *this;
     }
 
-    constexpr A2B10G10R10UNorm &operator=(glm::vec3 const &rhs) noexcept {
+    A2B10G10R10UNorm &operator=(glm::vec3 const &rhs) noexcept {
         value = make_A2B10G10R10UNorm_value(rhs);
         return *this;
     }
 
-    constexpr explicit operator glm::vec4 () const noexcept {
+    explicit operator glm::vec4 () const noexcept {
         return glm::vec4{
             static_cast<float>((value >> 20) & 0x3ff) / 1023.0f,
             static_cast<float>((value >> 10) & 0x3ff) / 1023.0f,
@@ -67,7 +67,7 @@ struct A2B10G10R10UNorm {
         };
     }
 
-    constexpr explicit operator glm::vec3 () const noexcept {
+    explicit operator glm::vec3 () const noexcept {
         return glm::vec3{
             static_cast<float>((value >> 20) & 0x3ff) / 1023.0f,
             static_cast<float>((value >> 10) & 0x3ff) / 1023.0f,

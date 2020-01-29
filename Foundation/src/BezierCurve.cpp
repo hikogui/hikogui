@@ -315,7 +315,7 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
 void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexcept
 {
     for (int row_nr = 0; row_nr != image.height; ++row_nr) {
-        auto &row = image.at(row_nr);
+        auto row = image.at(row_nr);
         auto y = static_cast<float>(image.height - row_nr);
         for (int column_nr = 0; column_nr != image.width; ++column_nr) {
             auto x = static_cast<float>(column_nr);
