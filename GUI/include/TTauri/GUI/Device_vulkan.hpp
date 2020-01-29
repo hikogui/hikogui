@@ -6,6 +6,7 @@
 #include "TTauri/GUI/Device_base.hpp"
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineMSDF_DeviceShared.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
@@ -41,6 +42,7 @@ public:
 
     std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
     std::unique_ptr<PipelineFlat::DeviceShared> flatPipeline;
+    std::unique_ptr<PipelineMSDF::DeviceShared> MSDFPipeline;
 
     /*! List if extension required on this device.
      */
@@ -96,7 +98,7 @@ public:
     void endSingleTimeCommands(vk::CommandBuffer commandBuffer) const;
 
     void transitionLayout(vk::Image image, vk::Format format, vk::ImageLayout srcLayout, vk::ImageLayout dstLayout) const;
-    void copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, std::vector<vk::ImageCopy> regions) const;
+    void copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, vk::ArrayProxy<vk::ImageCopy const> regions) const;
 
     template <typename T>
     gsl::span<T> mapMemory(const VmaAllocation &allocation) const {
@@ -108,6 +110,7 @@ public:
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
+        // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
         let mappingSpan = gsl::span<T>(mappingT, allocationInfo.size / sizeof (T));
 

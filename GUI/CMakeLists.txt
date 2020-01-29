@@ -33,7 +33,6 @@ set(TTauri_GUI_srcs
     src/PipelineImage_TextureMap.cpp
     src/PipelineMSDF.cpp
     src/PipelineMSDF_DeviceShared.cpp
-    src/PipelineMSDF_Image.cpp
     src/PipelineMSDF_TextureMap.cpp
     src/VerticalSync_win32.cpp
     src/VulkanMemoryAllocator.cpp

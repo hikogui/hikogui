@@ -13,7 +13,7 @@ layout(location = 1) in vec2 inClippingRectangleOffset;
 layout(location = 2) in vec2 inClippingRectangleExtent;
 layout(location = 3) in uvec3 inAtlasPosition;
 layout(location = 4) in uint inDepth;
-layout(location = 5) in uint inAlpha;
+layout(location = 5) in vec4 inColor;
 
 layout(location = 0) out vec2 outClippingRectangleMinimum;
 layout(location = 1) out vec2 outClippingRectangleMaximum;
@@ -40,5 +40,5 @@ void main() {
     outClippingRectangleMinimum = flipY(inClippingRectangleOffset) - vec2(0.0, inClippingRectangleExtent.y);
     outClippingRectangleMaximum = flipY(inClippingRectangleOffset) + vec2(inClippingRectangleExtent.x, 0.0);
     outAtlasPosition = convertToTexture(inAtlasPosition);
-    outAlpha = inAlpha;
+    outAlpha = inColor.r;
 }

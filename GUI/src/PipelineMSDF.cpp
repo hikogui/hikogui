@@ -24,7 +24,7 @@ vk::Semaphore PipelineMSDF::render(uint32_t frameBufferIndex, vk::Semaphore inpu
 
     device().flushAllocation(vertexBuffersAllocation.at(frameBufferIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
 
-    device().imagePipeline->prepareAtlasForRendering();
+    device().MSDFPipeline->prepareAtlasForRendering();
    
     if (tmpNumberOfVertices != numberOfVertices) {
         invalidateCommandBuffers();
@@ -40,7 +40,7 @@ void PipelineMSDF::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    device().imagePipeline->drawInCommandBuffer(commandBuffer);
+    device().MSDFPipeline->drawInCommandBuffer(commandBuffer);
 
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
@@ -69,7 +69,7 @@ void PipelineMSDF::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineMSDF::createShaderStages() const {
-    return device().imagePipeline->shaderStages;
+    return device().MSDFPipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineMSDF::createDescriptorSetLayoutBindings() const {
@@ -88,7 +88,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineMSDF::createDescriptorSetLay
 
 vector<vk::WriteDescriptorSet> PipelineMSDF::createWriteDescriptorSet(uint32_t frameBufferIndex) const
 {
-    let &sharedImagePipeline = device().imagePipeline;
+    let &sharedImagePipeline = device().MSDFPipeline;
     let &frameBufferObject = frameBufferObjects.at(frameBufferIndex);
 
     return { {
@@ -114,7 +114,7 @@ vector<vk::WriteDescriptorSet> PipelineMSDF::createWriteDescriptorSet(uint32_t f
 
 ssize_t PipelineMSDF::getDescriptorSetVersion() const
 {
-    return to_signed(device().imagePipeline->atlasTextures.size());
+    return to_signed(device().MSDFPipeline->atlasTextures.size());
 }
 
 std::vector<vk::PushConstantRange> PipelineMSDF::createPushConstantRanges() const

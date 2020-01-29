@@ -16,6 +16,10 @@ namespace PipelineFlat {
 class PipelineFlat;
 }
 
+namespace PipelineMSDF {
+class PipelineMSDF;
+}
+
 class Window_vulkan : public Window_base {
 public:
     vk::SurfaceKHR intrinsic;
@@ -38,6 +42,7 @@ public:
 
     std::unique_ptr<PipelineImage::PipelineImage> imagePipeline;
     std::unique_ptr<PipelineFlat::PipelineFlat> flatPipeline;
+    std::unique_ptr<PipelineMSDF::PipelineMSDF> MSDFPipeline;
 
     Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan();

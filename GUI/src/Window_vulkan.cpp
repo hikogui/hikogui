@@ -7,6 +7,7 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineFlat.hpp"
+#include "TTauri/GUI/PipelineMSDF.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
@@ -30,6 +31,7 @@ void Window_vulkan::initialize()
     Window_base::initialize();
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
+    MSDFPipeline = std::make_unique<PipelineMSDF::PipelineMSDF>(dynamic_cast<Window &>(*this));
 }
 
 void Window_vulkan::waitIdle()
@@ -46,7 +48,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    // swapchain, fence & imageAvailableSemaphore must be externally synchronized.
+    // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
     //LOG_DEBUG("acquireNextImage '{}'", title);
     ttauri_assert(device);
@@ -141,6 +143,7 @@ void Window_vulkan::build()
         if (device) {
             imagePipeline->buildForNewDevice();
             flatPipeline->buildForNewDevice();
+            MSDFPipeline->buildForNewDevice();
             state = State::NoSurface;
         }
     }
@@ -152,12 +155,13 @@ void Window_vulkan::build()
         }
         imagePipeline->buildForNewSurface();
         flatPipeline->buildForNewSurface();
+        MSDFPipeline->buildForNewSurface();
         state = State::NoSwapchain;
     }
 
     if (state == State::NoSwapchain) {
         if (!readSurfaceExtent()) {
-            // Minimized window, can not build a new swapchain.
+            // Minimized window, can not build a new swap chain.
             return;
         }
 
@@ -168,7 +172,7 @@ void Window_vulkan::build()
         }
 
         if (!checkSurfaceExtent()) {
-            // Window has changed during swapchain creation, it is in a inconsistant bad state.
+            // Window has changed during swap chain creation, it is in a inconsistent bad state.
             // This is a bug in the Vulkan specification.
             teardownSwapchain();
             return;
@@ -177,6 +181,7 @@ void Window_vulkan::build()
         buildFramebuffers();
         buildSemaphores();
         flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
+        MSDFPipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent, nrSwapchainImages);
         imagePipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
 
         windowChangedSize({
@@ -197,6 +202,7 @@ void Window_vulkan::teardown()
         waitIdle();
         imagePipeline->teardownForSwapchainLost();
         flatPipeline->teardownForSwapchainLost();
+        MSDFPipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownFramebuffers();
         teardownRenderPasses();
@@ -207,6 +213,7 @@ void Window_vulkan::teardown()
             LOG_INFO("Tearing down because the window lost the drawable surface.");
             imagePipeline->teardownForSurfaceLost();
             flatPipeline->teardownForSurfaceLost();
+            MSDFPipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = State::NoSurface;
 
@@ -215,6 +222,7 @@ void Window_vulkan::teardown()
 
                 imagePipeline->teardownForDeviceLost();
                 flatPipeline->teardownForDeviceLost();
+                MSDFPipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = State::NoDevice;
 
@@ -223,6 +231,7 @@ void Window_vulkan::teardown()
 
                     imagePipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
+                    MSDFPipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
                 }
@@ -245,7 +254,7 @@ void Window_vulkan::render()
         return;
     }
 
-    // Teardown then buildup from the vulkan objects that where invalid.
+    // Tear down then buildup from the vulkan objects that where invalid.
     teardown();
     build();
 
@@ -263,7 +272,7 @@ void Window_vulkan::render()
     tr.set<"frame_buffer"_tag>(*frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
-    // XXX maybe use one for each swapchain image or go to single command buffer.
+    // XXX maybe use one for each swap chain image or go to single command buffer.
     ttauri_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
@@ -273,7 +282,8 @@ void Window_vulkan::render()
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
     let flatPipelineFinishedSemaphore = flatPipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
-    let renderFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
+    let MSDFPipelineFinishedSemaphore = MSDFPipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
+    let renderFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), MSDFPipelineFinishedSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
@@ -281,7 +291,7 @@ void Window_vulkan::render()
 
     presentImageToQueue(frameBufferIndex.value(), renderFinishedSemaphore);
 
-    // Do an early teardown of invalid vulkan objects.
+    // Do an early tear down of invalid vulkan objects.
     teardown();
 }
 
@@ -520,8 +530,6 @@ void Window_vulkan::buildRenderPasses()
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
-            // XXX ePresentSrcKHR should only be used on the last pass.
-            // Must eColorAttachmentOptimal with multiple-passes.
             vk::ImageLayout::eColorAttachmentOptimal // finalLayout
         }
     };

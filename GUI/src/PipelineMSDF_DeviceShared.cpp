@@ -3,7 +3,6 @@
 
 #include "TTauri/GUI/PipelineMSDF.hpp"
 #include "TTauri/GUI/PipelineMSDF_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineMSDF_Image.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/URL.hpp"
@@ -35,127 +34,66 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-std::vector<Page> DeviceShared::getFreePages(int const nrPages)
-{
-    while (nrPages > atlasFreePages.size()) {
-        addAtlasImage();
-    }
+[[nodiscard]] AtlasRect DeviceShared::allocateGlyph(iextent2 extent) noexcept {
+    if (atlasAllocationPosition.y + extent.height() > atlasImageHeight) {
+        atlasAllocationPosition.x = 0; 
+        atlasAllocationPosition.y = 0; 
+        ++(atlasAllocationPosition.z);
+        atlasAllocationMaxHeight = 0;
 
-    auto pages = std::vector<Page>();
-    for (int i = 0; i < nrPages; i++) {
-        let page = atlasFreePages.back();
-        pages.push_back(page);
-        atlasFreePages.pop_back();
-    }
-    return pages;
-}
+        if (atlasAllocationPosition.z >= atlasMaximumNrImages) {
+            LOG_FATAL("PipelineMSDF atlas overflow, too many glyphs in use.");
+        }
 
-void DeviceShared::returnPages(std::vector<Page> const &pages)
-{
-
-    atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
-}
-
-std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const iextent2 extent)
-{
-
-    let i = imageCache.find(key);
-    if (i != imageCache.end()) {
-        if (let image = i->second.lock()) {
-            return image;
+        if (atlasAllocationPosition.z >= size(atlasTextures)) {
+            addAtlasImage();
         }
     }
 
-    // Cleanup only after the happy flow failed.
-    cleanupWeakPointers(imageCache);
+    if (atlasAllocationPosition.x + extent.width() > atlasImageWidth) {
+        atlasAllocationPosition.x = 0;
+        atlasAllocationPosition.y += atlasAllocationMaxHeight;
+    }
 
-    let pageExtent = iextent2{
-        (extent.width() + (Page::width - 1)) / Page::width,
-        (extent.height() + (Page::height - 1)) / Page::height
-    };
+    auto r = AtlasRect(atlasAllocationPosition, extent);
 
-    let pages = getFreePages(pageExtent.x * pageExtent.y);
-    let image = std::make_shared<Image>(this, key, extent, pageExtent, pages);
+    atlasAllocationPosition.x += extent.width();
+    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, extent.height());
 
-    imageCache.try_emplace(key, image);
-    return image;
+    return r;
 }
 
-TTauri::PixelMap<MSD10> DeviceShared::getStagingPixelMap()
+[[nodiscard]] TTauri::PixelMap<MSD10> &DeviceShared::getStagingPixelMap()
 {
-
     stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eGeneral);
-
-    return stagingTexture.pixelMap.submap(
-        Page::border, Page::border,
-        stagingImageWidth - 2 * Page::border, stagingImageHeight - 2 * Page::border
-    );
+    return stagingTexture.pixelMap;
 }
 
-void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
+void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
 {
-    
-
     // Flush the given image, included the border.
     device.flushAllocation(
         stagingTexture.allocation,
         0,
-        (image.extent.height() * stagingTexture.pixelMap.stride) * sizeof (MSD10)
+        (stagingTexture.pixelMap.height * stagingTexture.pixelMap.stride) * sizeof (MSD10)
     );
     
     stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
-    for (int index = 0; index < to_signed(image.pages.size()); index++) {
-        let page = image.pages.at(index);
 
-        if (page.isFullyTransparent()) {
-            // Hole in the image does not need to be rendered.
-            continue;
-        }
+    auto regionsToCopy = std::vector{vk::ImageCopy{
+        { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
+        { 0, 0, 0 },
+        { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
+        { numeric_cast<int32_t>(location.x), numeric_cast<int32_t>(location.y), 0 },
+        { numeric_cast<uint32_t>(location.width), numeric_cast<uint32_t>(location.height), 1}
+    }};
 
-        auto imageRect = image.indexToRect(index);
-        // Adjust the position to be inside the stagingImage, excluding its border.
-        imageRect.offset += glm::ivec2(Page::border, Page::border);
-        let atlasPosition = getAtlasPositionFromPage(page);
+    auto &atlasTexture = atlasTextures.at(location.z);
+    atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferDstOptimal);
 
-        // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbour sampling
-        // on the edge of a page.
-        imageRect.offset -= glm::ivec2(Page::border, Page::border);
-        imageRect.extent += glm::ivec2(Page::border*2, Page::border*2);
-        let atlasOffset = xy(atlasPosition) - glm::ivec2(Page::border, Page::border);
-
-        auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
-        regionsToCopy.push_back({
-            { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { numeric_cast<int32_t>(imageRect.offset.x), numeric_cast<int32_t>(imageRect.offset.y), 0 },
-            { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { numeric_cast<int32_t>(atlasOffset.x), numeric_cast<int32_t>(atlasOffset.y), 0 },
-            { numeric_cast<uint32_t>(imageRect.extent.width()), numeric_cast<uint32_t>(imageRect.extent.height()), 1}
-        });
-    }
-
-    for (int atlasTextureIndex = 0; atlasTextureIndex < to_signed(atlasTextures.size()); atlasTextureIndex++) {
-        let &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
-        if (regionsToCopy.size() == 0) {
-            continue;
-        }
-
-        auto &atlasTexture = atlasTextures.at(atlasTextureIndex);
-        atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferDstOptimal);
-
-        device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
-    }
-}
-
-void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<MSD10> const &pixelMap)
-{
-    if (image.state == GUI::PipelineMSDF::Image::State::Drawing && pixelMap) {
-        auto stagingMap = getStagingPixelMap(image.extent);
-        fill(stagingMap, pixelMap);
-        updateAtlasWithStagingPixelMap(image);
-        image.state = GUI::PipelineMSDF::Image::State::Uploaded;
-    }
+    device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regionsToCopy));
 }
 
 void DeviceShared::prepareAtlasForRendering()
@@ -169,7 +107,6 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {
     commandBuffer.bindIndexBuffer(indexBuffer, 0, vk::IndexType::eUint16);
 }
-
 
 void DeviceShared::buildIndexBuffer()
 {
@@ -301,12 +238,6 @@ void DeviceShared::addAtlasImage()
     });
 
     atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
- 
-    // Add pages for this image to free list.
-    let pageOffset = currentImageIndex * atlasNrPagesPerImage;
-    for (int i = 0; i < atlasNrPagesPerImage; i++) {
-            atlasFreePages.push_back({pageOffset + i});
-    }
 
     // Build image descriptor info.
     for (int i = 0; i < to_signed(atlasDescriptorImageInfos.size()); i++) {
@@ -340,7 +271,7 @@ void DeviceShared::buildAtlas()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    let data = device.mapMemory<uint32_t>(allocation);
+    let data = device.mapMemory<MSD10>(allocation);
 
     stagingTexture = {
         image,

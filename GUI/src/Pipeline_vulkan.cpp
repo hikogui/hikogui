@@ -341,7 +341,7 @@ void Pipeline_vulkan::validateCommandBuffer(uint32_t frameBufferIndex)
 
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    let backgroundColor = wsRGBA(window.widget->backgroundColor).to_Linear_sRGBA_vec4();
+    let backgroundColor = static_cast<glm::vec4>(window.widget->backgroundColor);
     std::array<float, 4> _backgroundColor = { backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a };
     std::array<vk::ClearValue, 1> const clearColors = { vk::ClearValue{ _backgroundColor } };
 

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/GUI/PipelineMSDF_ImageLocation.hpp"
 #include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI::PipelineMSDF {
@@ -19,29 +19,20 @@ struct Vertex {
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
     rect2 clippingRectangle;
 
-    //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
+    //! The x, y (relative to bottom-left) coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     glm::u16vec3 atlasPosition;
 
-    //! The depth for depth test.
     uint16_t depth;
 
-    //! transparency of the image.
-    uint8_t alpha;
+    //! The depth for depth test.
+    R16G16B16A16SFloat color;
 
-    //! Align to 32 bits.
-    uint8_t dummy1;
-    uint8_t dummy2;
-    uint8_t dummy3;
-
-    Vertex(const ImageLocation &location, glm::vec2 position, glm::u16vec3 atlasPosition) noexcept :
+    Vertex(glm::vec2 position, rect2 clippingRectangle, glm::u16vec3 atlasPosition, float depth, wsRGBA color) noexcept :
         position(position),
-        clippingRectangle({
-            {location.clippingRectangle.offset.x, location.clippingRectangle.offset.y},
-            {location.clippingRectangle.extent.width(), location.clippingRectangle.extent.height()}
-        }),
+        clippingRectangle(clippingRectangle),
         atlasPosition(atlasPosition),
-        depth(static_cast<uint16_t>(location.depth)),
-        alpha(static_cast<uint8_t>(location.alpha * 255.0)), dummy1(0), dummy2(0), dummy3(0) {}
+        depth(static_cast<uint16_t>(depth)),
+        color(R16G16B16A16SFloat{color}) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -58,7 +49,7 @@ struct Vertex {
             { 2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.extent) },
             { 3, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, atlasPosition) },                
             { 4, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
-            { 5, 0, vk::Format::eR8Uint, offsetof(Vertex, alpha) },
+            { 5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
         };
     }
 };

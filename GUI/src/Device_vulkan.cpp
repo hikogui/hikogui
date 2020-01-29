@@ -131,6 +131,8 @@ Device_vulkan::~Device_vulkan()
         gsl_suppress(f.6) {
             imagePipeline->destroy(gsl::make_not_null(this));
             imagePipeline = nullptr;
+            MSDFPipeline->destroy(gsl::make_not_null(this));
+            MSDFPipeline = nullptr;
             flatPipeline->destroy(gsl::make_not_null(this));
             flatPipeline = nullptr;
 
@@ -215,6 +217,7 @@ void Device_vulkan::initializeDevice(Window const &window)
 
     imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(dynamic_cast<Device &>(*this));
+    MSDFPipeline = std::make_unique<PipelineMSDF::DeviceShared>(dynamic_cast<Device &>(*this));
 
     Device_base::initializeDevice(window);
 }
@@ -259,7 +262,7 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
         });
     }
 
-    // Iterativly add indices if it completes the totalQueueCapabilities.
+    // Iteratively add indices if it completes the totalQueueCapabilities.
     vector<pair<uint32_t, uint8_t>> queueFamilyIndicesAndQueueCapabilitiess;
     uint8_t totalCapabilities = 0;
     for (let &[index, capabilities, score] : queueFamilieScores) {
@@ -311,7 +314,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
         return 0;
     }
 
-    // Give score based on colour quality.
+    // Give score based on color quality.
     LOG_INFO(" - Surface formats:");
     uint32_t bestSurfaceFormatScore = 0;
     for (auto format : formats) {
@@ -389,7 +392,7 @@ int Device_vulkan::score(vk::SurfaceKHR surface) const
         return 0;
     }
 
-    // Give score based on the perfomance of the device.
+    // Give score based on the performance of the device.
     let properties = physicalIntrinsic.getProperties();
     LOG_INFO(" - Type of device: {}", vk::to_string(properties.deviceType));
     switch (properties.deviceType) {
@@ -496,7 +499,7 @@ static pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayout(vk
     case vk::ImageLayout::eUndefined:
         return { vk::AccessFlags(), vk::PipelineStageFlagBits::eTopOfPipe };
 
-    // GPU Texure Maps
+    // GPU Texture Maps
     case vk::ImageLayout::eTransferDstOptimal:
         return { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer };
 
@@ -551,7 +554,7 @@ void Device_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::Ima
     endSingleTimeCommands(commandBuffer);
 }
 
-void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, std::vector<vk::ImageCopy> regions) const
+void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk::Image dstImage, vk::ImageLayout dstLayout, vk::ArrayProxy<vk::ImageCopy const> regions) const
 {
     auto lock = scoped_lock(GUI_globals->mutex);
 

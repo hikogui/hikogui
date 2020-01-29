@@ -80,7 +80,6 @@ struct wsRGBA {
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gamut should be between -0.5 - 7.5.
      * This constructor expect color which has not been pre-multiplied with the alpha.
      */
-    
     explicit wsRGBA(glm::vec4 c) noexcept :
         color(static_cast<glm::i16vec4>(glm::vec4{
             glm::xyz(c) * c.a * F32_MAX_SRGB,
@@ -111,6 +110,23 @@ struct wsRGBA {
         );
     }
 
+    /** Return floating point values.
+     * Alpha is not pre-multiplied.
+     */
+    explicit operator glm::vec4 () const noexcept {
+        let floatColor = static_cast<glm::vec4>(color);
+        if (floatColor.a == 0.0) {
+            return {0.0, 0.0, 0.0, 0.0};
+        } else {
+            let alpha = floatColor.a * F32_ALPHA_MUL;
+            let oneOverAlpha = 1.0f / alpha;
+            return {
+                glm::xyz(floatColor) * F32_SRGB_MUL * oneOverAlpha,
+                alpha
+            };
+        }
+    }
+
     /*! Set the color with gamma corrected sRGB values.
     */
     explicit wsRGBA(uint32_t c) noexcept :
@@ -137,35 +153,8 @@ struct wsRGBA {
     bool isTransparent() const noexcept { return color.a <= 0; }
     bool isOpaque() const noexcept { return color.a == I64_MAX_ALPHA; }
 
-    /*! Return a linear wsRGBA float vector with pre multiplied alpha.
-     */
-    
-    glm::vec4 to_wsRGBApm_vec4() const noexcept {
-        let floatColor = static_cast<glm::vec4>(color);
-        return {
-            glm::xyz(floatColor) * F32_SRGB_MUL,
-            floatColor.a * F32_ALPHA_MUL
-        };
-    }
-
-    
-    glm::vec4 to_Linear_sRGBA_vec4() const noexcept {
-        let floatColor = to_wsRGBApm_vec4();
-
-        if (floatColor.a == 0) {
-            return { 0.0, 0.0, 0.0, 0.0 };
-        } else {
-            let oneOverAlpha = 1.0f / floatColor.a;
-            return {
-                glm::xyz(floatColor) * oneOverAlpha,
-                floatColor.a
-            };
-        }
-    }
-
     /*! Return a 32 bit gamma corrected sRGBA colour with normal alpha.
     */
-    
     uint32_t to_sRGBA_u32() const noexcept {
         let i64colorPM = static_cast<glm::i64vec4>(color);
         if (i64colorPM.a == 0) {
@@ -341,7 +330,7 @@ struct wsRGBA {
 
     friend std::string to_string(wsRGBA const &x) noexcept
     {
-        let floatColor = x.to_wsRGBApm_vec4();
+        let floatColor = static_cast<glm::vec4>(x);
         if (
             floatColor.r >= 0.0 && floatColor.r <= 1.0 &&
             floatColor.g >= 0.0 && floatColor.g <= 1.0 &&
