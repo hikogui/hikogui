@@ -22,6 +22,9 @@ class ShapedText {
     extent2 box_size;
 
 public:
+    ShapedText() noexcept :
+        text(), box_size(0.0f, 0.0f) {}
+
     /** Create shaped text from attributed text..
      * This function is used to draw rich-text.
      * Each grapheme comes with its own text-style.

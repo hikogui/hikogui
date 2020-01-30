@@ -279,6 +279,9 @@ void Window_vulkan::render()
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     device->resetFences({ renderFinishedFence });
 
+    // Update the widgets before the pipelines need their vertices.
+    widget->update(widget->modified());
+
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
     let flatPipelineFinishedSemaphore = flatPipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);

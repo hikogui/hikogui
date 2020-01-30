@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "TTauri/Foundation/hash.hpp"
 #include "TTauri/Text/FontID.hpp"
 #include "TTauri/Text/Grapheme.hpp"
 
@@ -15,7 +16,7 @@ struct FontGraphemeID {
     Grapheme g;
 
     [[nodiscard]] size_t hash() const noexcept {
-        return std::hash<FontID>{}(font_id) ^ std::hash<Grapheme>{}(g);
+        return hash_mix(font_id, g);
     }
 
     [[nodiscard]] friend bool operator==(FontGraphemeID const &lhs, FontGraphemeID const &rhs) noexcept {

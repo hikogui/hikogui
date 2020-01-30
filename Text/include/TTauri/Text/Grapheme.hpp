@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/hash.hpp"
 #include <array>
 
 namespace TTauri::Text {
@@ -99,8 +100,7 @@ public:
     [[nodiscard]] size_t hash() const noexcept {
         size_t r = 0;
         for (ssize_t i = 0; i != ssize(*this); ++i) {
-            r ^= std::hash<char32_t>{}((*this)[i]);
-            r *= 0x9e3779b97f4a7c13ULL; // 64 bit golden ratio.
+            r = hash_mix_two(r, std::hash<char32_t>{}((*this)[i]));
         }
         return r;
     }

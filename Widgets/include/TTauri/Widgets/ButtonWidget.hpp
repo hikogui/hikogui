@@ -13,13 +13,16 @@
 namespace TTauri::GUI::Widgets {
 
 class ButtonWidget : public Widget {
-public:
-    bool value = false;
-    bool enabled = true;
-    bool focus = false;
-    bool pressed = false;
+protected:
+    bool _value = false;
+    bool _enabled = true;
+    bool _focus = false;
+    bool _pressed = false;
+    std::string _label = "<unknown>";
 
-    std::string label;
+    Path drawing;
+    Text::ShapedText labelShapedText;
+public:
 
     ButtonWidget(std::string const label) noexcept;
     ~ButtonWidget() {}
@@ -29,16 +32,25 @@ public:
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
-    int state() const noexcept{
-        int r = 0;
-        r |= value ? 1 : 0;
-        r |= enabled ? 2 : 0;
-        r |= focus ? 4 : 0;
-        r |= pressed ? 8 : 0;
-        return r;
-    }
+    [[nodiscard]] bool value() const noexcept { return _value; };
+    ButtonWidget &set_value(bool rhs) noexcept { _value = rhs; _modified = true; return *this; }
 
+    [[nodiscard]] bool enabled() const noexcept { return _enabled; };
+    ButtonWidget &set_enabled(bool rhs) noexcept { _enabled = rhs; _modified = true; return *this; }
+
+    [[nodiscard]] bool focus() const noexcept { return _focus; };
+    ButtonWidget &set_focus(bool rhs) noexcept { _focus = rhs; _modified = true; return *this; }
+
+    [[nodiscard]] bool pressed() const noexcept { return _pressed; };
+    ButtonWidget &set_pressed(bool rhs) noexcept { _pressed = rhs; _modified = true; return *this; }
+
+    [[nodiscard]] std::string label() const noexcept { return _label; };
+    ButtonWidget &set_label(std::string rhs) noexcept { _label = std::move(rhs); _modified = true; return *this; }
+
+
+    void update(bool modified) noexcept override;
     void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept override;
+    void pipelineMSDFPlaceVertices(gsl::span<GUI::PipelineMSDF::Vertex>& vertices, int& offset) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent event) noexcept override;
 

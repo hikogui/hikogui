@@ -12,12 +12,52 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(std::string const label) noexcept :
-    Widget(), label(std::move(label))
+    Widget(), _label(std::move(label))
 {
     box.leftMargin = 10.0;
     box.bottomMargin = 10.0;
     box.rightMargin = 10.0;
     box.topMargin = 10.0;
+}
+
+void ButtonWidget::update(bool modified) noexcept
+{
+    if (modified) {
+        // Draw something.
+        let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
+        let labelFontSize = 12.0;
+
+        wsRGBA backgroundColor;
+        wsRGBA labelColor;
+        wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+        if (value()) {
+            backgroundColor = wsRGBA{ 0x4c4cffff };
+            labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+        } else {
+            backgroundColor = wsRGBA{ 0x4c884cff };
+            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+        }
+        if (pressed()) {
+            backgroundColor = wsRGBA{ 0x4c4cffff };
+            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+        }
+
+    #pragma warning(suppress: 6001)
+        let rectangle = rect2{{0.5f, 0.5f}, { box.currentExtent().width() - 1.0f, box.currentExtent().height() - 1.0f }};
+
+        drawing.clear();
+
+        auto buttonPath = Path();
+        buttonPath.addRectangle(rectangle, backgroundShape);
+        drawing.addPath(buttonPath, backgroundColor);
+        drawing.addStroke(buttonPath, borderColor, 1.0);
+
+        let labelStyle = TextStyle("Arial", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
+        labelShapedText = ShapedText(label(), labelStyle, Alignment::MiddleCenter, rectangle.extent, rectangle.extent);
+        drawing += labelShapedText.toPath();
+    }
+
+    return Widget::update(modified);
 }
 
 void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept
@@ -26,7 +66,7 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
 
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
-    }, "Button", label, state());
+    }, "Button", label(), value(), enabled(), focus(), pressed());
  
     if (backingImage.image) {
         let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
@@ -46,56 +86,31 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
+void ButtonWidget::pipelineMSDFPlaceVertices(gsl::span<GUI::PipelineMSDF::Vertex>& vertices, int& offset) noexcept
+{
+    ttauri_assert(window);
+
+
+    Widget::pipelineMSDFPlaceVertices(vertices, offset);
+}
+
+
 PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     auto linearMap = PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
-
-    // Draw something.
-    let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-    let labelFontSize = 12.0;
-
-    wsRGBA backgroundColor;
-    wsRGBA labelColor;
-    wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
-    if (value) {
-        backgroundColor = wsRGBA{ 0x4c4cffff };
-        labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
-    } else {
-        backgroundColor = wsRGBA{ 0x4c884cff };
-        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
-    }
-    if (pressed) {
-        backgroundColor = wsRGBA{ 0x4c4cffff };
-        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
-    }
-
-#pragma warning(suppress: 6001)
-    let rectangle = rect2{{0.5f, 0.5f}, { static_cast<float>(image->extent.width()) - 1.0f, static_cast<float>(image->extent.height()) - 1.0f }};
-
-    auto drawing = Path();
-
-    auto buttonPath = Path();
-    buttonPath.addRectangle(rectangle, backgroundShape);
-    drawing.addPath(buttonPath, backgroundColor);
-    drawing.addStroke(buttonPath, borderColor, 1.0);
-
-    let labelStyle = TextStyle("Arial", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
-    let labelShapedText = ShapedText(label, labelStyle, Alignment::MiddleCenter, rectangle.extent, rectangle.extent);
-    drawing += labelShapedText.toPath();
-
     composit(linearMap, drawing, window->subpixelOrientation);
 
     return { std::move(image), std::move(linearMap) };
 }
 
 void ButtonWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {
-    if (enabled) {
+    if (enabled()) {
         window->setCursor(GUI::Cursor::Clickable);
-        pressed = event.down.leftButton;
+        set_pressed(event.down.leftButton);
 
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            value = !value;
+            set_value(!value());
         }
 
     } else {

@@ -36,6 +36,14 @@ struct Path {
      */
     std::vector<std::pair<ssize_t,wsRGBA>> layerEndContours;
 
+    /** Clear the path.
+     */
+    void clear() noexcept {
+        points.clear();
+        contourEndPoints.clear();
+        layerEndContours.clear();
+    }
+
     /*! Return the number of closed contours.
     */
     [[nodiscard]] ssize_t numberOfContours() const noexcept;

@@ -24,6 +24,32 @@ struct BoxModel {
     mutable rhea::variable width;
     mutable rhea::variable height;
 
+    mutable double previous_left;
+    mutable double previous_bottom;
+    mutable double previous_width;
+    mutable double previous_height;
+
+    [[nodiscard]] bool modified() const noexcept {
+        let new_left = left.value();
+        let new_bottom = bottom.value();
+        let new_width = width.value();
+        let new_height = height.value();
+        if (
+            new_left != previous_left ||
+            new_bottom != previous_bottom ||
+            new_width != previous_width ||
+            new_height != previous_height
+        ) {
+            previous_left = new_left;
+            previous_bottom = new_bottom;
+            previous_width = new_width;
+            previous_height = new_height;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     rhea::linear_expression right() const noexcept {
         return left + width;
     }

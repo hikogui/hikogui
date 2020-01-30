@@ -24,6 +24,20 @@ void Widget::setParent(Widget *parent) noexcept
     this->parent = parent;
 }
 
+bool Widget::modified() const noexcept
+{
+    auto m = box.modified() || _modified;
+    _modified = false;
+    return m;
+}
+
+void Widget::update(bool modified) noexcept
+{
+    for (auto &child : children) {
+        child->update(child->modified());
+    }
+}
+
 void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept
 {
     for (auto &child : children) {

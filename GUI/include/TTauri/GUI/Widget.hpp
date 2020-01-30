@@ -11,14 +11,18 @@
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
+#include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/attributes.hpp"
+#include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/geometry.hpp"
+#include <TTauri/Foundation/pickle.hpp>
 #include <limits>
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <typeinfo>
 
 namespace TTauri::GUI::PipelineImage {
 struct Image;
@@ -33,6 +37,9 @@ namespace TTauri::GUI::Widgets {
  * between Views.
  */
 class Widget : public PipelineImage::Delegate, public PipelineFlat::Delegate, public PipelineMSDF::Delegate {
+protected:
+    mutable bool _modified = true;
+
 public:
     //! Convenient reference to the Window.
     Window *window;
@@ -43,19 +50,20 @@ public:
 
     Widget *currentMouseTarget = nullptr;
 
+    /** A key for checking if the state of the widget has changed.
+     */
+    std::string current_state_key;
+
+    /** Temporary for calculation of the current_state_key.
+    */
+    mutable std::string next_state_key;
+
     //! Location of the frame compared to the window.
     BoxModel box;
-
-    /*! current extent of the widget.
-     * Calculated at the start of pipelineImagePlaceVertices, but may be
-     * defered until the resizing of the window has been completed.
-     * This allows for the widget to be scaled, instead of redrawn.
-     */
-    extent2 currentExtent;
      
     float depth = 0;
 
-    /*! Constructor for creating subviews.
+    /*! Constructor for creating sub views.
      */
     Widget() noexcept;
     virtual ~Widget() {}
@@ -80,9 +88,18 @@ public:
 
     Device *device() const noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
-    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
-    void pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, int &offset) noexcept override;
+    /** Check if the data in the widget is modified.
+     * Overriding functions should use clearAndPickleAppend(next_state_key, *)
+     * to add data to the key. Those overriding functions should call
+     * the base class's isModified() at the end.
+     */
+    virtual bool modified() const noexcept;
+
+    /** Update the widget before placing vertices.
+     * The overriding function should call the base class's update() at the end.
+     * @param modified The data in the widget has been modified.
+     */
+    virtual void update(bool modified) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
@@ -92,6 +109,10 @@ public:
     virtual void handleMouseEvent(MouseEvent event) noexcept;
 
     virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
+
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, int &offset) noexcept override;
 };
 
 }
