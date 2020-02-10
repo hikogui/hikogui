@@ -65,6 +65,32 @@ struct rect {
             (position.x < (offset.x + extent.width())) &&
             (position.y < (offset.y + extent.height()));
     }
+
+    /** Get coordinate of a corner
+     *    2 <-- 3
+     *    | \   ^
+     *    |  \  |
+     *    v   \ |
+     *    0 --> 1
+     */
+     template<int N, std::enable_if_t<S==2,int> = 0>
+     glm::vec<S,T,Q> corner() const noexcept {
+        static_assert(N >= 0 && N < 4);
+        if constexpr (N == 0) {
+            return offset;
+        } else if constexpr (N == 1) {
+            return offset + glm::vec<S,T,Q>{extent.width(), 0.0f};
+        } else if constexpr (N == 2) {
+            return offset + glm::vec<S,T,Q>{0.0f, extent.height()};
+        } else  {
+            return offset + extent;
+        }
+     }
+
+     template<int N, std::enable_if_t<S==2,int> = 0>
+     glm::vec<S+1,T,Q> homogeneous_corner() const noexcept {
+        return glm::vec<S+1,T,Q>{corner<N>(), 1.0f};
+     }
 };
 
 

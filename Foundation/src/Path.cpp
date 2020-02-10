@@ -119,6 +119,30 @@ std::pair<Path,wsRGBA> Path::getLayer(ssize_t layerNr) const noexcept
     return {path, getColorOfLayer(layerNr)};
 }
 
+void Path::optimizeLayers() noexcept
+{
+    if (ssize(layerEndContours) == 0) {
+        return;
+    }
+
+    decltype(layerEndContours) tmp;
+    tmp.reserve(ssize(layerEndContours));
+
+    auto prev_i = layerEndContours.begin(); 
+    for (auto i = prev_i + 1; i != layerEndContours.end(); ++i) {
+        // Add the last layer of a contiguous color.
+        if (prev_i->second != i->second) {
+            tmp.push_back(*prev_i);
+        }
+
+        prev_i = i;
+    }
+    tmp.push_back(*prev_i);
+
+    std::swap(layerEndContours, tmp);
+}
+
+
 std::vector<BezierPoint> Path::getBezierPointsOfContour(ssize_t subpathNr) const noexcept
 {
     let begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
@@ -563,6 +587,11 @@ void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpix
 
         composit(dst, fillColor, layer, subpixelOrientation);
     }
+}
+
+void fill(PixelMap<MSD10> &dst, Path const &path) noexcept
+{
+    fill(dst, path.getBeziers());
 }
 
 }

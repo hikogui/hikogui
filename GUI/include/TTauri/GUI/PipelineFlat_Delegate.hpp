@@ -10,7 +10,7 @@ namespace TTauri::GUI::PipelineFlat {
 struct Vertex;
 
 struct Delegate {
-    virtual void pipelineFlatPlaceVertices(gsl::span<Vertex> &vertices, int &offset) = 0;
+    virtual void pipelineFlatPlaceVertices(gsl::span<Vertex> &vertices, ssize_t &offset) = 0;
 };
 
 }

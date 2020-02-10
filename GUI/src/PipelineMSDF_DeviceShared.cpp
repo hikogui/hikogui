@@ -4,10 +4,12 @@
 #include "TTauri/GUI/PipelineMSDF.hpp"
 #include "TTauri/GUI/PipelineMSDF_DeviceShared.hpp"
 #include "TTauri/GUI/Device.hpp"
+#include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/BezierCurve.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
@@ -34,7 +36,7 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] AtlasRect DeviceShared::allocateGlyph(iextent2 extent) noexcept {
+[[nodiscard]] AtlasRect DeviceShared::allocateRect(iextent2 extent) noexcept {
     if (atlasAllocationPosition.y + extent.height() > atlasImageHeight) {
         atlasAllocationPosition.x = 0; 
         atlasAllocationPosition.y = 0; 
@@ -55,19 +57,14 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
         atlasAllocationPosition.y += atlasAllocationMaxHeight;
     }
 
-    auto r = AtlasRect(atlasAllocationPosition, extent);
-
+    auto r = AtlasRect{atlasAllocationPosition, extent};
+    
     atlasAllocationPosition.x += extent.width();
     atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, extent.height());
 
     return r;
 }
 
-[[nodiscard]] TTauri::PixelMap<MSD10> &DeviceShared::getStagingPixelMap()
-{
-    stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eGeneral);
-    return stagingTexture.pixelMap;
-}
 
 void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
 {
@@ -86,14 +83,19 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
         { 0, 0, 0 },
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-        { numeric_cast<int32_t>(location.x), numeric_cast<int32_t>(location.y), 0 },
-        { numeric_cast<uint32_t>(location.width), numeric_cast<uint32_t>(location.height), 1}
+        { numeric_cast<int32_t>(location.atlas_position.x), numeric_cast<int32_t>(location.atlas_position.y), 0 },
+        { numeric_cast<uint32_t>(location.atlas_extent.width()), numeric_cast<uint32_t>(location.atlas_extent.height()), 1}
     }};
 
-    auto &atlasTexture = atlasTextures.at(location.z);
+    auto &atlasTexture = atlasTextures.at(location.atlas_position.z);
     atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regionsToCopy));
+}
+
+void DeviceShared::prepareStagingPixmapForDrawing()
+{
+    stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eGeneral);
 }
 
 void DeviceShared::prepareAtlasForRendering()
@@ -102,6 +104,106 @@ void DeviceShared::prepareAtlasForRendering()
         atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
+
+/** Prepare the atlas for drawing a text.
+*/
+void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
+{
+    int count = 0;
+    for (let &attr_grapheme: text) {
+        let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
+        if (atlas_i != glyphs_in_atlas.end()) {
+            continue;
+        }
+
+        ++count;
+        prepareStagingPixmapForDrawing();
+
+        // We will draw the font at 15 pt into the texture. And we need a border for the texture to
+        // allow proper bi-linear interpolation on the edges.
+        let extent = static_cast<iextent2>(attr_grapheme.metrics.boundingBox.extent * fontSize) + glm::ivec2(drawBorder*2, drawBorder*2);
+
+        // The quad should be rendered with a border.
+        static_assert(renderBorder < drawBorder);
+        auto atlas_rect = allocateRect(extent);
+        atlas_rect.bounding_box = rect2{
+            static_cast<glm::vec2>(glm::xy(atlas_rect.atlas_position)) + glm::vec2{renderBorder, renderBorder},
+            attr_grapheme.metrics.boundingBox.extent * fontSize + glm::vec2{renderBorder*2.0f, renderBorder*2.0f}
+        };
+
+        // Now create a path of the combined glyphs. Offset and scale the path so that
+        // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
+        let offset = glm::vec2{drawBorder, drawBorder} - (attr_grapheme.metrics.boundingBox.offset * fontSize);
+        let path = T2D(offset, fontSize) * attr_grapheme.glyphs.get_path();
+
+        auto pixmap = stagingTexture.pixelMap.submap(irect2{glm::ivec2{0,0}, extent});
+        fill(pixmap, path);
+
+        uploadStagingPixmapToAtlas(atlas_rect);
+
+        glyphs_in_atlas[attr_grapheme.glyphs] = atlas_rect;
+    }
+
+    if (count != 0) {
+        prepareAtlasForRendering();
+    }
+}
+
+/** Places vertices.
+*
+* This is the format of a quad.
+*
+*    2 <-- 3
+*    | \   ^
+*    |  \  |
+*    v   \ |
+*    0 --> 1
+*/
+void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, gsl::span<Vertex> &vertices, ssize_t &offset) noexcept
+{
+    for (let &attr_grapheme: text) {
+        // Adjust bounding box by adding a border based on the fixed font size.
+        let bounding_box = rect2{
+            attr_grapheme.metrics.boundingBox.offset - glm::vec2{scaledRenderBorder, scaledRenderBorder},
+            attr_grapheme.metrics.boundingBox.extent + glm::vec2{scaledRenderBorder*2.0f, scaledRenderBorder*2.0f}
+        };
+
+        let vM = transform * attr_grapheme.transform;
+        let v0 = glm::xy(vM * bounding_box.homogeneous_corner<0>());
+        let v1 = glm::xy(vM * bounding_box.homogeneous_corner<1>());
+        let v2 = glm::xy(vM * bounding_box.homogeneous_corner<2>());
+        let v3 = glm::xy(vM * bounding_box.homogeneous_corner<3>());
+
+        // If none of the vertices is inside the clipping rectangle then don't add the
+        // quad to the vertex list.
+        if (!(
+            clippingRectangle.contains(v0) ||
+            clippingRectangle.contains(v1) ||
+            clippingRectangle.contains(v2) ||
+            clippingRectangle.contains(v3)
+        )) {
+            continue;
+        }
+
+        let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
+        ttauri_assume(atlas_i != glyphs_in_atlas.end());
+
+        // Texture coordinates are upside-down.
+        let &atlas_rect = atlas_i->second;
+        let t0 = atlas_rect.bounding_box.corner<2>();
+        let t1 = atlas_rect.bounding_box.corner<3>();
+        let t2 = atlas_rect.bounding_box.corner<0>();
+        let t3 = atlas_rect.bounding_box.corner<1>();
+        let texture_nr = atlas_rect.atlas_position.z;
+
+        ttauri_assert(offset + 4 <= ssize(vertices));
+        vertices[offset++] = Vertex{v0, clippingRectangle, t0, texture_nr, depth, attr_grapheme.style.color};
+        vertices[offset++] = Vertex{v1, clippingRectangle, t1, texture_nr, depth, attr_grapheme.style.color};
+        vertices[offset++] = Vertex{v2, clippingRectangle, t2, texture_nr, depth, attr_grapheme.style.color};
+        vertices[offset++] = Vertex{v3, clippingRectangle, t3, texture_nr, depth, attr_grapheme.style.color};
+    }
+}
+
 
 void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {

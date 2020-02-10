@@ -35,7 +35,7 @@ public:
 protected:
     PushConstants pushConstants;
 
-    int numberOfVertices = 0;
+    ssize_t numberOfVertices = 0;
     std::vector<vk::Buffer> vertexBuffers;
     std::vector<VmaAllocation> vertexBuffersAllocation;
     std::vector<gsl::span<Vertex>> vertexBuffersData;

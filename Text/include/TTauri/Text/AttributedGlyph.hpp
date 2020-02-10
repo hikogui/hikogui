@@ -30,10 +30,14 @@ struct AttributedGlyph {
     /** Metrics taken from the font file. */
     GlyphMetrics metrics;
 
-    glm::vec2 position;
+    /** Transform includes position, and scale of the glyph.
+     */
+    glm::mat3x3 transform;
 
     AttributedGlyph(AttributedGrapheme const &attr_grapheme, FontGlyphIDs glyphs) noexcept :
         glyphs(std::move(glyphs)), grapheme(attr_grapheme.grapheme), index(attr_grapheme.index), style(attr_grapheme.style), metrics() {}
+
+    [[nodiscard]] Path get_path() const noexcept;
 };
 
 }

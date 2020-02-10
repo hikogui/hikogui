@@ -11,14 +11,15 @@ layout(push_constant) uniform PushConstants {
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec2 inClippingRectangleOffset;
 layout(location = 2) in vec2 inClippingRectangleExtent;
-layout(location = 3) in uvec3 inAtlasPosition;
-layout(location = 4) in uint inDepth;
-layout(location = 5) in vec4 inColor;
+layout(location = 3) in vec2 inAtlasPosition;
+layout(location = 4) in uint inAtlasTextureNr;
+layout(location = 5) in uint inDepth;
+layout(location = 6) in vec4 inColor;
 
 layout(location = 0) out vec2 outClippingRectangleMinimum;
 layout(location = 1) out vec2 outClippingRectangleMaximum;
 layout(location = 2) out vec3 outAtlasPosition;
-layout(location = 3) out float outAlpha;
+layout(location = 3) out vec4 outColor;
 
 vec2 flipY(vec2 windowPosition) {
     return vec2(windowPosition.x, pushConstants.windowExtent.y - windowPosition.y);
@@ -28,8 +29,8 @@ vec2 convertToViewport(vec2 windowPosition) {
     return (windowPosition * pushConstants.viewportScale) - vec2(1.0, 1.0);
 }
 
-vec3 convertToTexture(vec3 atlasPosition) {
-    return vec3(atlasPosition.xy * pushConstants.atlasScale, atlasPosition.z);
+vec3 convertToTexture(vec2 atlasPosition) {
+    return vec3(atlasPosition.xy * pushConstants.atlasScale, inAtlasTextureNr);
 }
 
 void main() {
@@ -40,5 +41,5 @@ void main() {
     outClippingRectangleMinimum = flipY(inClippingRectangleOffset) - vec2(0.0, inClippingRectangleExtent.y);
     outClippingRectangleMaximum = flipY(inClippingRectangleOffset) + vec2(inClippingRectangleExtent.x, 0.0);
     outAtlasPosition = convertToTexture(inAtlasPosition);
-    outAlpha = inColor.r;
+    outColor = inColor;
 }

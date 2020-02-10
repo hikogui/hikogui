@@ -25,7 +25,7 @@ void ButtonWidget::update(bool modified) noexcept
     if (modified) {
         // Draw something.
         let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-        let labelFontSize = 12.0;
+        let labelFontSize = 15.0;
 
         wsRGBA backgroundColor;
         wsRGBA labelColor;
@@ -52,15 +52,17 @@ void ButtonWidget::update(bool modified) noexcept
         drawing.addPath(buttonPath, backgroundColor);
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
-        let labelStyle = TextStyle("Arial", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
+        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
         labelShapedText = ShapedText(label(), labelStyle, Alignment::MiddleCenter, rectangle.extent, rectangle.extent);
-        drawing += labelShapedText.toPath();
+        //drawing += labelShapedText.get_path();
+
+        window->device->MSDFPipeline->prepareAtlas(labelShapedText);
     }
 
     return Widget::update(modified);
 }
 
-void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept
+void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept
 {
     ttauri_assert(window);
 
@@ -86,9 +88,10 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-void ButtonWidget::pipelineMSDFPlaceVertices(gsl::span<GUI::PipelineMSDF::Vertex>& vertices, int& offset) noexcept
+void ButtonWidget::pipelineMSDFPlaceVertices(gsl::span<GUI::PipelineMSDF::Vertex>& vertices, ssize_t& offset) noexcept
 {
     ttauri_assert(window);
+    window->device->MSDFPipeline->placeVertices(labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
 
 
     Widget::pipelineMSDFPlaceVertices(vertices, offset);

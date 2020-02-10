@@ -17,11 +17,11 @@ namespace TTauri {
     __m128i halfs = _mm_cvtps_ph(floats, _MM_FROUND_CUR_DIRECTION);
 
     // The first 4 entries are the converted floats, the second 4 are not used.
-    std::array<uint16_t,8> buffer;
-    _mm_storeu_si16(buffer.data(), halfs);
+    __m128i buffer;
+    _mm_store_si128(&buffer, halfs);
 
     glm::u16vec4 ret;
-    std::memcpy(&ret, buffer.data(), sizeof(ret));
+    std::memcpy(&ret, &buffer, sizeof(ret));
     return ret;
 }
 

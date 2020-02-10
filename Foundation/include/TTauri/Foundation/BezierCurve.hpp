@@ -169,12 +169,9 @@ struct BezierCurve {
             }
         }
 
-        auto angle = 0.0f;
-        if (min_t <= 0.0f || min_t >= 1.0f) {
-            let unit_normal = glm::normalize(min_normal);
-            let unit_tangent = glm::normalize(tangentAt(min_clamped_t));
-            angle = viktorCross(unit_normal, unit_tangent);
-        }
+        let unit_normal = glm::normalize(min_normal);
+        let unit_tangent = glm::normalize(tangentAt(min_clamped_t));
+        auto angle = viktorCross(unit_normal, unit_tangent);
 
         return {min_square_distance, angle, min_t};
     }
@@ -187,7 +184,7 @@ struct BezierCurve {
         let distance = glm::length(P - pointAt(result.t));
 
         // Use the original angle, for determining which side of the curve the point is.
-        return result.angle < 0.0f ? distance : -distance;
+        return result.angle < 0.0f ? -distance : distance;
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.

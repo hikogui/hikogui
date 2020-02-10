@@ -9,6 +9,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/MSD10.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -115,6 +116,11 @@ struct Path {
     * No operation if there is no open layer.
     */
     void closeLayer(wsRGBA fillColor) noexcept;
+
+    /** Optimize layers.
+     * Merge contiguous layers with the same color.
+     */
+    void optimizeLayers() noexcept;
 
     /*! Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
@@ -254,7 +260,11 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOri
 */
 void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
 
-
+/** Fill a multi-channel signed distance field image from the given path.
+* @param image An multichannel-signed-distance-field which show distance toward the closest curve
+* @param path A path.
+*/
+void fill(PixelMap<MSD10> &dst, Path const &path) noexcept;
 
 }
 

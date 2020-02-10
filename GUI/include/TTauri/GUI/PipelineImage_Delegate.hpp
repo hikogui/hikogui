@@ -10,7 +10,7 @@ namespace TTauri::GUI::PipelineImage {
 struct Vertex;
 
 struct Delegate {
-    virtual void pipelineImagePlaceVertices(gsl::span<Vertex> &vertices, int &offset) = 0;
+    virtual void pipelineImagePlaceVertices(gsl::span<Vertex> &vertices, ssize_t &offset) = 0;
 };
 
 }

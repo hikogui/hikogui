@@ -81,8 +81,7 @@ static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexce
             }
         }
 
-        // Scale the metrics with the text-size.
-        i->metrics *= T2D(glm::vec2{0.0, 0.0}, i->style.size);
+        // XXX merge the bounding box of combining glyphs in the metrics.
     }
 }
 
@@ -110,9 +109,9 @@ struct AttributedGlyphsLine {
     float max_vertical_advance = 0.0;
     float max_decender = 0.0;
     for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
-        let width = previous_width + i->metrics.advance.x;
-        max_vertical_advance = std::max(max_vertical_advance, 1.2f * i->metrics.capHeight.y);
-        max_decender = std::max(max_decender, i->metrics.descender.y);
+        let width = previous_width + (i->metrics.advance.x * i->style.size);
+        max_vertical_advance = std::max(max_vertical_advance, 1.2f * (i->metrics.capHeight.y * i->style.size));
+        max_decender = std::max(max_decender, i->metrics.descender.y * i->style.size);
         if (width > maximum_width) {
             // Break at end of previous word.
             lines.emplace_back(start_of_line, end_of_last_word, end_of_last_word_width, max_vertical_advance, max_decender);
@@ -210,9 +209,8 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 si
         }
 
         for (auto i = line.begin; i != line.end; ++i) {
-            i->position = position;
-            i->metrics *= T2D(position);
-            position += i->metrics.advance;
+            i->transform = T2D(position, i->style.size);
+            position += i->metrics.advance * i->style.size;
         }
     }
 }
@@ -275,7 +273,7 @@ ShapedText::ShapedText(gstring const &text, TextStyle const &style, Alignment co
 ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept :
     ShapedText(translateString<gstring>(text), style, alignment, minimum_size, maximum_size) {}
 
-[[nodiscard]] Path ShapedText::toPath() const noexcept
+[[nodiscard]] Path ShapedText::get_path() const noexcept
 {
     Path r;
 
@@ -283,33 +281,14 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignmen
         return r;
     }
 
-
     ttauri_assume(Text_globals->font_book);
     let &font_book = *(Text_globals->font_book);
 
     auto previous_color = text.front().style.color;
-    for (let &attributed_glyph: text) {
-        let font_id = attributed_glyph.glyphs.font_id();
-        let &font = font_book.get_font(font_id);
-
-        for (ssize_t i = 0; i < ssize(attributed_glyph.glyphs); i++) {
-            let glyph_id = attributed_glyph.glyphs[i];
-
-            Path glyph_path;
-            if (!font.loadGlyph(glyph_id, glyph_path)) {
-                LOG_ERROR("Could not find glyph {} in font {} - {}", static_cast<int>(glyph_id), font.description.family_name, font.description.sub_family_name);
-            }
-
-            if (attributed_glyph.style.color != previous_color) {
-                r.closeLayer(previous_color);
-                previous_color = attributed_glyph.style.color;
-            }
-            r += T2D(attributed_glyph.position, attributed_glyph.style.size) * glyph_path;
-        }
+    for (let &attr_glyph: text) {
+        r += attr_glyph.get_path();
     }
-
-    ttauri_assume(r.isLayerOpen());
-    r.closeLayer(previous_color);
+    r.optimizeLayers();
 
     return r;
 }

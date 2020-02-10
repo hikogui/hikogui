@@ -20,18 +20,20 @@ struct Vertex {
     rect2 clippingRectangle;
 
     //! The x, y (relative to bottom-left) coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
-    glm::u16vec3 atlasPosition;
+    glm::vec2 atlasPosition;
 
+    uint16_t atlasTextureNr;
     uint16_t depth;
 
     //! The depth for depth test.
     R16G16B16A16SFloat color;
 
-    Vertex(glm::vec2 position, rect2 clippingRectangle, glm::u16vec3 atlasPosition, float depth, wsRGBA color) noexcept :
+    Vertex(glm::vec2 position, rect2 clippingRectangle, glm::vec2 atlasPosition, int atlasTextureNr, float depth, wsRGBA color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         atlasPosition(atlasPosition),
-        depth(static_cast<uint16_t>(depth)),
+        atlasTextureNr(numeric_cast<uint16_t>(atlasTextureNr)),
+        depth(numeric_cast<uint16_t>(depth)),
         color(R16G16B16A16SFloat{color}) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
@@ -47,9 +49,10 @@ struct Vertex {
             { 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, position) },
             { 1, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.offset) },
             { 2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.extent) },
-            { 3, 0, vk::Format::eR16G16B16Uint, offsetof(Vertex, atlasPosition) },                
-            { 4, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
-            { 5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
+            { 3, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, atlasPosition) },                
+            { 4, 0, vk::Format::eR16Uint, offsetof(Vertex, atlasTextureNr) },                
+            { 5, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
+            { 6, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
         };
     }
 };

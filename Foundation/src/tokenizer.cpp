@@ -37,8 +37,11 @@ enum class tokenizer_action_t: uint8_t {
     Idle = 0x00,
     Capture = 0x01, // Capture this character.
     Start = 0x02, // Start the capture queue.
-    Read = 0x04, // Read next character, before processing next state.
+    Read = 0x04, // Read next character, before processing next state. This will also advance the location.
     Found = 0x08, // Token Found.
+    Tab = 0x10, // Move the location modulo 8 to the right.
+    LineFeed = 0x20, // Move to the next line.
+    Poison = 0x80, // Cleared. 
 };
 
 constexpr uint16_t get_offset(tokenizer_state_t state, char c = '\0') noexcept {
@@ -50,13 +53,24 @@ constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, tokenizer_action_
     return static_cast<tokenizer_action_t>(static_cast<uint8_t>(lhs) | static_cast<uint8_t>(rhs));
 }
 
+constexpr tokenizer_action_t operator|(tokenizer_action_t lhs, char rhs)
+{
+    switch (rhs) {
+    case '\n': return lhs | tokenizer_action_t::LineFeed;
+    case '\f': return lhs | tokenizer_action_t::LineFeed;
+    case '\t': return lhs | tokenizer_action_t::Tab;
+    default: return lhs | tokenizer_action_t::Idle;
+    }
+}
+
 constexpr bool operator>=(tokenizer_action_t lhs, tokenizer_action_t rhs)
 {
     return (static_cast<uint8_t>(lhs) & static_cast<uint8_t>(rhs)) == static_cast<uint8_t>(rhs);
 }
 
 struct tokenizer_transition_t {
-    uint16_t actionAndNextState;
+    tokenizer_state_t next;
+    tokenizer_action_t action;
     char c;
     tokenizer_name_t name;
 
@@ -66,32 +80,10 @@ struct tokenizer_transition_t {
         tokenizer_action_t action = tokenizer_action_t::Idle,
         tokenizer_name_t name = tokenizer_name_t::NotAssigned
     ) :
-        actionAndNextState(get_offset(next) | static_cast<uint8_t>(action)),
-        c(c),
-        name(name) {}
+        next(next), action(action), c(c), name(name) {}
 
     constexpr tokenizer_transition_t() :
-        actionAndNextState(0xffff), c('\0'), name(tokenizer_name_t::NotAssigned) {}
-
-    constexpr tokenizer_state_t next() const noexcept {
-        uint16_t stateInt = actionAndNextState >> 8;
-        ttauri_assume(stateInt < static_cast<uint16_t>(tokenizer_state_t::Sentinal));
-        return static_cast<tokenizer_state_t>(stateInt);
-    }
-    constexpr tokenizer_action_t action() const noexcept {
-        uint8_t actionInt = static_cast<uint8_t>(actionAndNextState);
-        return static_cast<tokenizer_action_t>(actionInt);
-    }
-
-    constexpr void setNext(tokenizer_state_t state) noexcept {
-        actionAndNextState &= 0x00ff;
-        actionAndNextState |= get_offset(state);
-    }
-
-    constexpr void setAction(tokenizer_action_t action) noexcept {
-        actionAndNextState &= 0xff00;
-        actionAndNextState |= static_cast<uint16_t>(action);
-    }
+        next(tokenizer_state_t::Initial), action(tokenizer_action_t::Idle), c('\0'), name(tokenizer_name_t::NotAssigned) {}
 };
 
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Name()
@@ -103,11 +95,11 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Name()
         tokenizer_transition_t transition = {c};
 
         if (isNameNext(c) || c == '-') {
-            transition.setNext(tokenizer_state_t::Name);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Name;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::Name;
         }
 
@@ -125,12 +117,12 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_MinusO
         tokenizer_transition_t transition = {c};
 
         if (c == '0') {
-            transition.setNext(tokenizer_state_t::Zero);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Zero;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else if (isDigit(c) || c == '.') {
-            transition.setNext(tokenizer_state_t::Number);
+            transition.next = tokenizer_state_t::Number;
         } else {
-            transition.setNext(tokenizer_state_t::OperatorSecondChar);
+            transition.next = tokenizer_state_t::OperatorSecondChar;
         }
 
         r[i] = transition;
@@ -147,10 +139,10 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Dot()
         tokenizer_transition_t transition = {c};
 
         if (isDigit(c)) {
-            transition.setNext(tokenizer_state_t::Float);
+            transition.next = tokenizer_state_t::Float;
         } else {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::Operator;
         }
 
@@ -168,10 +160,10 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Zero()
         tokenizer_transition_t transition = {c};
 
         if (c == 'x' || c == 'X' || c == 'd' || c == 'D' || c == 'o' || c == 'O' || c == 'b' || c == 'B') {
-            transition.setNext(tokenizer_state_t::Number);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Number;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
-            transition.setNext(tokenizer_state_t::Number);
+            transition.next = tokenizer_state_t::Number;
         }
 
         r[i] = transition;
@@ -188,20 +180,20 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Number
         tokenizer_transition_t transition = {c};
 
         if (isDigit(c) || c == '_' || c == '\'') {
-            transition.setNext(tokenizer_state_t::Number);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Number;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else if (c == '.') {
-            transition.setNext(tokenizer_state_t::Float);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Float;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else if (c == '-') {
-            transition.setNext(tokenizer_state_t::DashAfterNumber);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::DashAfterNumber;
+            transition.action = tokenizer_action_t::Read;
         } else if (c == ':') {
-            transition.setNext(tokenizer_state_t::ColonAfterNumber);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::ColonAfterNumber;
+            transition.action = tokenizer_action_t::Read;
         } else {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::IntegerLiteral;
         }
 
@@ -219,11 +211,11 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAf
         tokenizer_transition_t transition = {'-'};
 
         if (isDigit(c)) {
-            transition.setNext(tokenizer_state_t::Date);
-            transition.setAction(tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Date;
+            transition.action = tokenizer_action_t::Capture;
         } else {
-            transition.setNext(tokenizer_state_t::DashAfterInteger);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::DashAfterInteger;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::IntegerLiteral;
         }
 
@@ -241,11 +233,11 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonA
         tokenizer_transition_t transition = {':'};
 
         if (isDigit(c)) {
-            transition.setNext(tokenizer_state_t::Time);
-            transition.setAction(tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Time;
+            transition.action = tokenizer_action_t::Capture;
         } else {
-            transition.setNext(tokenizer_state_t::ColonAfterInteger);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::ColonAfterInteger;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::IntegerLiteral;
         }
 
@@ -260,8 +252,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DashAf
 
     for (uint16_t i = 0; i < r.size(); i++) {
         tokenizer_transition_t transition = {'-'};
-        transition.setNext(tokenizer_state_t::OperatorSecondChar);
-        transition.setAction(tokenizer_action_t::Start | tokenizer_action_t::Capture);
+        transition.next = tokenizer_state_t::OperatorSecondChar;
+        transition.action = tokenizer_action_t::Start | tokenizer_action_t::Capture;
 
         r[i] = transition;
     }
@@ -274,8 +266,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_ColonA
 
     for (uint16_t i = 0; i < r.size(); i++) {
         tokenizer_transition_t transition = {':'};
-        transition.setNext(tokenizer_state_t::OperatorSecondChar);
-        transition.setAction(tokenizer_action_t::Start | tokenizer_action_t::Capture);
+        transition.next = tokenizer_state_t::OperatorSecondChar;
+        transition.action = tokenizer_action_t::Start | tokenizer_action_t::Capture;
 
         r[i] = transition;
     }
@@ -291,11 +283,11 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Date()
         tokenizer_transition_t transition = {c};
 
         if (isDigit(c) || c == '-') {
-            transition.setNext(tokenizer_state_t::Date);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Date;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::DateLiteral;
         }
 
@@ -313,11 +305,11 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Time()
         tokenizer_transition_t transition = {c};
 
         if (isDigit(c) || c == ':' || c == '.') {
-            transition.setNext(tokenizer_state_t::Time);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Time;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::TimeLiteral;
         }
 
@@ -334,14 +326,14 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Float(
         tokenizer_transition_t transition = {c};
 
         if (isDigit(c) || c == 'e' || c == 'E' || c == '-') {
-            transition.setNext(tokenizer_state_t::Float);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Float;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         } else if (c == '_' || c == '\'') {
-            transition.setNext(tokenizer_state_t::Float);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::Float;
+            transition.action = tokenizer_action_t::Read;
         } else {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::FloatLiteral;
         }
 
@@ -359,13 +351,13 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Slash(
         tokenizer_transition_t transition = {c};
 
         if (c == '/') {
-            transition.setNext(tokenizer_state_t::LineComment);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::LineComment;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
         } else if (c == '*') {
-            transition.setNext(tokenizer_state_t::BlockComment);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::BlockComment;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
         } else {
-            transition.setNext(tokenizer_state_t::OperatorSecondChar);
+            transition.next = tokenizer_state_t::OperatorSecondChar;
         }
 
         r[i] = transition;
@@ -382,13 +374,13 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_LineCo
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
-            transition.setNext(tokenizer_state_t::Initial);
+            transition.next = tokenizer_state_t::Initial;
         } else if (isLinefeed(c)) {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Read | c;
         } else {
-            transition.setNext(tokenizer_state_t::LineComment);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::LineComment;
+            transition.action = tokenizer_action_t::Read | c;
         }
 
         r[i] = transition;
@@ -405,15 +397,15 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockC
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::ErrorEOTInBlockComment;
         } else if (c == '*') {
-            transition.setNext(tokenizer_state_t::BlockCommentMaybeEnd);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::BlockCommentMaybeEnd;
+            transition.action = tokenizer_action_t::Read;
         } else {
-            transition.setNext(tokenizer_state_t::BlockComment);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::BlockComment;
+            transition.action = tokenizer_action_t::Read | c;
         }
 
         r[i] = transition;
@@ -430,18 +422,18 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockC
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::ErrorEOTInBlockComment;
         } else if (c == '/') {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Read;
         } else if (c == '*') {
-            transition.setNext(tokenizer_state_t::BlockCommentMaybeEnd);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::BlockCommentMaybeEnd;
+            transition.action = tokenizer_action_t::Read;
         } else {
-            transition.setNext(tokenizer_state_t::BlockComment);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::BlockComment;
+            transition.action = tokenizer_action_t::Read | c;
         }
 
         r[i] = transition;
@@ -458,23 +450,23 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::ErrorEOTInString;
         } else if (isLinefeed(c)) {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start | c;
             transition.name = tokenizer_name_t::ErrorLFInString;
         } else if (c == '\\') {
-            transition.setNext(tokenizer_state_t::StringEscape);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::StringEscape;
+            transition.action = tokenizer_action_t::Read;
         } else if (c == '"') {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read;
             transition.name = tokenizer_name_t::StringLiteral;
         } else {
-            transition.setNext(tokenizer_state_t::String);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::String;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | c;
         }
 
         r[i] = transition;
@@ -492,8 +484,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
 
         switch (c) {
         case '\0':
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::ErrorEOTInString;
             r[i] = transition;
             continue;
@@ -507,8 +499,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
         case 'v': transition.c = '\v'; break;
         }
 
-        transition.setNext(tokenizer_state_t::String);
-        transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+        transition.next = tokenizer_state_t::String;
+        transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         r[i] = transition;
     }
     return r;
@@ -525,13 +517,13 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         switch (c) {
         case '>':
         case '=':
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture;
             transition.name = tokenizer_name_t::Operator;
             break;
         default:
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::Operator;
         }
 
@@ -543,13 +535,13 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorSecondChar()
 {
 #define LAST_CHAR\
-    transition.setNext(tokenizer_state_t::Initial);\
-    transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);\
+    transition.next = tokenizer_state_t::Initial;\
+    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture;\
     transition.name = tokenizer_name_t::Operator
 
 #define MORE_CHARS\
-    transition.setNext(tokenizer_state_t::OperatorThirdChar);\
-    transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+    transition.next = tokenizer_state_t::OperatorThirdChar;\
+    transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
 
     std::array<tokenizer_transition_t,256> r{};
 
@@ -569,8 +561,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case '|': LAST_CHAR; break;
         case '^': LAST_CHAR; break;
         default:
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::Operator;
         }
 
@@ -584,13 +576,13 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_OperatorFirstChar()
 {
 #define LAST_CHAR\
-    transition.setNext(tokenizer_state_t::Initial);\
-    transition.setAction(tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture);\
+    transition.next = tokenizer_state_t::Initial;\
+    transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read | tokenizer_action_t::Capture;\
     transition.name = tokenizer_name_t::Operator
 
 #define MORE_CHARS\
-    transition.setNext(tokenizer_state_t::OperatorSecondChar);\
-    transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+    transition.next = tokenizer_state_t::OperatorSecondChar;\
+    transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
 
     std::array<tokenizer_transition_t,256> r{};
 
@@ -628,8 +620,8 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Operat
         case ':': MORE_CHARS; break; // Possible: :=
         default:
             // If we don't recognize the operator, it means this character is invalid.
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
             transition.name = tokenizer_name_t::ErrorInvalidCharacter;
         }
 
@@ -649,38 +641,38 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
         tokenizer_transition_t transition = {c};
 
         if (c == '\0') {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Found);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
             transition.name = tokenizer_name_t::End;
         } else if (isNameFirst(c)) {
-            transition.setNext(tokenizer_state_t::Name);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::Name;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '-' || c == '+') {
-            transition.setNext(tokenizer_state_t::MinusOrPlus);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::MinusOrPlus;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '0') {
-            transition.setNext(tokenizer_state_t::Zero);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::Zero;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (isDigit(c)) {
-            transition.setNext(tokenizer_state_t::Number);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::Number;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '.') {
-            transition.setNext(tokenizer_state_t::Dot);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::Dot;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '"') {
-            transition.setNext(tokenizer_state_t::String);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::String;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
         } else if (isWhitespace(c)) {
-            transition.setNext(tokenizer_state_t::Initial);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Read | c;
         } else if (c == '#') {
-            transition.setNext(tokenizer_state_t::LineComment);
-            transition.setAction(tokenizer_action_t::Read);
+            transition.next = tokenizer_state_t::LineComment;
+            transition.action = tokenizer_action_t::Read;
         } else if (c == '/') {
-            transition.setNext(tokenizer_state_t::Slash);
-            transition.setAction(tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start);
+            transition.next = tokenizer_state_t::Slash;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else {
-            transition.setNext(tokenizer_state_t::OperatorFirstChar);
+            transition.next = tokenizer_state_t::OperatorFirstChar;
         }
 
         r[i] = transition;
@@ -703,7 +695,7 @@ constexpr transitionTable_t calculateTransitionTable()
 
     // Poisson the table, to make sure all sub tables have been initialized.
     for (size_t i = 0; i < r.size(); i++) {
-        r[i].actionAndNextState = 0xffff;
+        r[i].action = tokenizer_action_t::Poison;
     }
 
     size_t i = 0;
@@ -739,10 +731,10 @@ constexpr bool optimizeTransitionTableOnce(transitionTable_t &r)
     bool foundOptimization = false;
     for (size_t i = 0; i < r.size(); i++) {
         auto &transition = r[i];
-        if (transition.action() == tokenizer_action_t::Idle) {
+        if (transition.action == tokenizer_action_t::Idle) {
             foundOptimization = true;
 
-            transition = r[get_offset(transition.next(), static_cast<char>(i & 0xff))];
+            transition = r[get_offset(transition.next, static_cast<char>(i & 0xff))];
         }
     }
     return foundOptimization;
@@ -761,7 +753,7 @@ constexpr transitionTable_t optimizeTransitionTable(transitionTable_t transition
 constexpr bool checkTransitionTable(transitionTable_t const &r)
 {
     for (size_t i = 0; i < r.size(); i++) {
-        if (r[i].actionAndNextState == 0xffff) {
+        if (r[i].action >= tokenizer_action_t::Poison) {
             return false;
         }
     }
@@ -791,81 +783,55 @@ struct tokenizer {
     tokenizer(iterator begin, iterator end) :
         state(tokenizer_state_t::Initial), index(begin), end(end) {}
 
-    template<uint8_t Action>
-    static force_inline void executeAction(
-        small_vector<char,256> &capture,
-        parse_location &captureLocation,
-        parse_location &location,
-        iterator &index,
-        tokenizer_state_t &state,
-        tokenizer_transition_t &transition
-    ) {
-        constexpr auto action = static_cast<tokenizer_action_t>(Action);
-        if constexpr (action >= tokenizer_action_t::Start) {
-            captureLocation = location;
-            capture.clear();
-        }
-
-        if constexpr (action >= tokenizer_action_t::Capture) {
-            capture.push_back(transition.c);
-        }
-
-        if constexpr (action >= tokenizer_action_t::Read) {
-            location += *index;
-            ++index;
-        }
-
-        state = transition.next();
-    }
-
     /*! Parse a token.
     */
     [[nodiscard]] token_t getNextToken() {
-        small_vector<char,256> capture;
+        auto token = token_t{};
 
-        auto _state = state;
-        auto _index = index;
-        auto _location = location;
         auto transition = tokenizer_transition_t{};
-        while (_index != end) {
-            transition = transitionTable[get_offset(_state, *_index)];
+        while (index != end) {
+            transition = transitionTable[get_offset(state, *index)];
+            state = transition.next;
 
-            switch (static_cast<uint8_t>(transition.action())) {
-            case 0x0: executeAction<0x0>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x1: executeAction<0x1>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x2: executeAction<0x2>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x3: executeAction<0x3>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x4: executeAction<0x4>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x5: executeAction<0x5>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x6: executeAction<0x6>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x7: executeAction<0x7>(capture, captureLocation, _location, _index, _state, transition); break;
-            case 0x8: executeAction<0x8>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0x9: executeAction<0x9>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0xa: executeAction<0xa>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0xb: executeAction<0xb>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0xc: executeAction<0xc>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0xd: executeAction<0xd>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0xe: executeAction<0xe>(capture, captureLocation, _location, _index, _state, transition); goto found;
-            case 0xf: executeAction<0xf>(capture, captureLocation, _location, _index, _state, transition); goto found;
+            auto action = transition.action;
+            if (action >= tokenizer_action_t::Start) {
+                token.location = location;
+                token.value.clear();
+            }
+
+            if (action >= tokenizer_action_t::Capture) {
+                token.value += transition.c;
+            }
+
+            if (action >= tokenizer_action_t::Read) {
+                if (action >= tokenizer_action_t::LineFeed) {
+                    location.increment_line();
+                } else if (action >= tokenizer_action_t::Tab) {
+                    location.tab_column();
+                } else {
+                    location.increment_column();
+                }
+                ++index;
+            }
+
+            if (action >= tokenizer_action_t::Found) {
+                token.name = transition.name;
+                return token;
             }
         }
 
         // Complete the token at the current state. Or an end-token at the initial state.
-        if (_state == tokenizer_state_t::Initial) {
+        if (state == tokenizer_state_t::Initial) {
             // Mark the current offset as the position of the end-token.
-            captureLocation = _location;
-            capture.clear();
+            token.location = location;
+            token.value.clear();
         }
 
-        transition = transitionTable[get_offset(_state)];
-        _state = transition.next();
+        transition = transitionTable[get_offset(state)];
+        state = transition.next;
 
-    found:
-
-        state = _state;
-        location = _location;
-        index = _index;
-        return {transition.name, std::string{capture.begin(), capture.end()}, captureLocation};
+        token.name = transition.name;
+        return token;
     }
 
     /*! Parse all tokens.

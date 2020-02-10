@@ -29,9 +29,9 @@ void Window_vulkan::initialize()
     std::scoped_lock lock(GUI_globals->mutex);
 
     Window_base::initialize();
-    imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
     MSDFPipeline = std::make_unique<PipelineMSDF::PipelineMSDF>(dynamic_cast<Window &>(*this));
+    imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
 }
 
 void Window_vulkan::waitIdle()
@@ -141,8 +141,8 @@ void Window_vulkan::build()
 
     if (state == State::NoDevice) {
         if (device) {
-            imagePipeline->buildForNewDevice();
             flatPipeline->buildForNewDevice();
+            imagePipeline->buildForNewDevice();
             MSDFPipeline->buildForNewDevice();
             state = State::NoSurface;
         }
@@ -153,8 +153,8 @@ void Window_vulkan::build()
             state = State::DeviceLost;
             return;
         }
-        imagePipeline->buildForNewSurface();
         flatPipeline->buildForNewSurface();
+        imagePipeline->buildForNewSurface();
         MSDFPipeline->buildForNewSurface();
         state = State::NoSwapchain;
     }
@@ -181,8 +181,8 @@ void Window_vulkan::build()
         buildFramebuffers();
         buildSemaphores();
         flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
-        MSDFPipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent, nrSwapchainImages);
-        imagePipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
+        imagePipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent, nrSwapchainImages);
+        MSDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
 
         windowChangedSize({
             numeric_cast<float>(swapchainImageExtent.width),
@@ -285,8 +285,8 @@ void Window_vulkan::render()
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
     let flatPipelineFinishedSemaphore = flatPipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
-    let MSDFPipelineFinishedSemaphore = MSDFPipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
-    let renderFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), MSDFPipelineFinishedSemaphore);
+    let imagePipelineFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
+    let renderFinishedSemaphore = MSDFPipeline->render(frameBufferIndex.value(), imagePipelineFinishedSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.

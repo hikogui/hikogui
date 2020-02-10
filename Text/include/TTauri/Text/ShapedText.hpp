@@ -71,9 +71,17 @@ public:
         return box_size;
     }
 
+    [[nodiscard]] std::vector<AttributedGlyph>::const_iterator begin() const noexcept {
+        return text.cbegin();
+    }
+
+    [[nodiscard]] std::vector<AttributedGlyph>::const_iterator end() const noexcept {
+        return text.cend();
+    }
+
     /** Convert the whole shaped text into a layered path.
      */
-    [[nodiscard]] Path toPath() const noexcept;
+    [[nodiscard]] Path get_path() const noexcept;
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the ShapedText.

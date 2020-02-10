@@ -59,11 +59,40 @@ inline std::ostream &operator<<(std::ostream &lhs, tokenizer_name_t rhs)
 }
 
 struct token_t {
-    tokenizer_name_t name = tokenizer_name_t::NotAssigned;
+    tokenizer_name_t name;
     std::string value;
     parse_location location;
-    bool is_binary = false;
-    int precedence = 0;
+    bool is_binary;
+    int precedence;
+
+    token_t() noexcept :
+        name(tokenizer_name_t::NotAssigned), value(), location(), is_binary(false), precedence(0) {}
+
+    token_t(tokenizer_name_t name, std::string value) noexcept :
+        name(name), value(std::move(value)), location(), is_binary(false), precedence(0) {}
+
+    token_t(token_t const &other) noexcept :
+        name(other.name), value(other.value), location(other.location), is_binary(other.is_binary), precedence(other.precedence) {}
+    token_t(token_t &&other) noexcept :
+        name(other.name), value(std::move(other.value)), location(std::move(other.location)), is_binary(other.is_binary), precedence(other.precedence) {}
+
+    token_t &operator=(token_t const &other) noexcept {
+        name = other.name;
+        value = other.value;
+        location = other.location;
+        is_binary = other.is_binary;
+        precedence = other.precedence;
+        return *this;
+    }
+
+    token_t &operator=(token_t &&other) noexcept {
+        name = other.name;
+        value = std::move(other.value);
+        location = std::move(other.location);
+        is_binary = other.is_binary;
+        precedence = other.precedence;
+        return *this;
+    }
 
     operator bool () const noexcept {
         return name != tokenizer_name_t::NotAssigned;

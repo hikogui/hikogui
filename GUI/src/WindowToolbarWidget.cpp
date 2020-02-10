@@ -68,7 +68,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     }
 }
 
-void WindowToolbarWidget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept
+void WindowToolbarWidget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept
 {
     PipelineFlat::Vertex::placeBox(vertices, offset, box.currentRectangle(), glm::vec4{0.0,0.0,0.0,0.5}, box.currentRectangle());
 

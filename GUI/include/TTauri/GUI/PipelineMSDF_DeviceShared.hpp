@@ -6,15 +6,21 @@
 #include "TTauri/GUI/PipelineMSDF_TextureMap.hpp"
 #include "TTauri/GUI/PipelineMSDF_AtlasRect.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
+#include <unordered_map>
 
 namespace TTauri {
 template<typename T> struct PixelMap;
+}
+
+namespace TTauri::Text {
+class ShapedText;
 }
 
 namespace TTauri::GUI::PipelineMSDF {
@@ -30,6 +36,12 @@ struct DeviceShared final {
     static constexpr int stagingImageWidth = 64; // maximum size of character that can be uploaded is 64x64
     static constexpr int stagingImageHeight = 64;
 
+    static constexpr float fontSize = 20.0f;
+    static constexpr int drawBorder = 3;
+
+    static constexpr float renderBorder = 2.0;
+    static constexpr float scaledRenderBorder = renderBorder / fontSize;
+
     Device const &device;
 
     vk::Buffer indexBuffer;
@@ -39,6 +51,7 @@ struct DeviceShared final {
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
+    std::unordered_map<Text::FontGlyphIDs,AtlasRect> glyphs_in_atlas;
     TextureMap stagingTexture;
     std::vector<TextureMap> atlasTextures;
 
@@ -67,23 +80,30 @@ struct DeviceShared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] AtlasRect allocateGlyph(iextent2 extent) noexcept;
+    [[nodiscard]] AtlasRect allocateRect(iextent2 extent) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
-
-    /** Get a pixmap overlaying the mapping of the staging pixmap.
-     * This will transition the staging texture to 'general' for writing by the CPU.
-     */
-    [[nodiscard]] TTauri::PixelMap<MSD10> &getStagingPixelMap();
 
     /** Once drawing in the staging pixmap is completed, you can upload it to the atlas.
      * This will transition the stating texture to 'source' and the atlas to 'destination'.
      */
     void uploadStagingPixmapToAtlas(AtlasRect location);
 
+    /** This will transition the staging texture to 'general' for writing by the CPU.
+    */
+    void prepareStagingPixmapForDrawing();
+
     /** This will transition the atlas to 'shader-read'.
      */
     void prepareAtlasForRendering();
+
+    /** Prepare the atlas for drawing a text.
+     */
+    void prepareAtlas(Text::ShapedText const &text) noexcept;
+
+    /** Prepare the atlas for drawing a text.
+    */
+    void placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, gsl::span<Vertex> &vertices, ssize_t &offset) noexcept;
 
 private:
 

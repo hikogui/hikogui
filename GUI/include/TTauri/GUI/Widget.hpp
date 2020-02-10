@@ -110,9 +110,9 @@ public:
 
     virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept override;
-    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
-    void pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept override;
+    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept override;
+    void pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, ssize_t &offset) noexcept override;
 };
 
 }

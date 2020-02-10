@@ -13,6 +13,8 @@ set(TTauri_Text_srcs
     src/gstring.cpp
     src/ShapedText.cpp
     src/TextStyle.cpp
+    src/FontGlyphIDs.cpp
+    src/AttributedGlyph.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/UnicodeData_converter.py")

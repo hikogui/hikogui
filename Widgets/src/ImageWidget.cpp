@@ -34,7 +34,7 @@ void ImageWidget::drawBackingImage() noexcept
 
     let text_style = TextStyle("Arial", FontVariant{}, 8, wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f }, TextDecoration{});
     let shaped_text = ShapedText("g", text_style, Alignment::BottomLeft, extent2{10.0, 50.0}, extent2{100.0, 500.0});
-    let glyph = shaped_text.toPath();
+    let glyph = shaped_text.get_path();
 
     // Draw something.
     let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
@@ -50,7 +50,7 @@ void ImageWidget::drawBackingImage() noexcept
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset) noexcept
+void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept
 {
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 

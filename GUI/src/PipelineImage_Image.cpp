@@ -79,7 +79,17 @@ void Image::calculateVertexPositions(const ImageLocation &location)
     tmpVertexPositions.push_back(calculatePosition(extent.width(), y, lastWidth, lastHeight, location));
 }
 
-void Image::placePageVertices(int const index, const ImageLocation &location, gsl::span<Vertex> &vertices, int &offset) const {
+/** Places vertices.
+ *
+ * This is the format of a quad.
+ *
+ *    2 <-- 3
+ *    | \   ^
+ *    |  \  |
+ *    v   \ |
+ *    0 --> 1
+ */
+void Image::placePageVertices(int const index, const ImageLocation &location, gsl::span<Vertex> &vertices, ssize_t &offset) const {
     let page = pages.at(index);
 
     if (page.isFullyTransparent()) {
@@ -118,7 +128,7 @@ void Image::placePageVertices(int const index, const ImageLocation &location, gs
 * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
 * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
-void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, int &offset)
+void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, ssize_t &offset)
 {
     calculateVertexPositions(location);
 

@@ -54,7 +54,7 @@ struct Vertex {
         };
     }
 
-    static void placeBox(gsl::span<Vertex> &vertices, int &offset, rect2 box, glm::vec4 color, rect2 clippingRectangle)
+    static void placeBox(gsl::span<Vertex> &vertices, ssize_t &offset, rect2 box, glm::vec4 color, rect2 clippingRectangle)
     {
         ttauri_assert(offset + 4 <= vertices.size());
         vertices[offset++] = Vertex{glm::vec2{box.offset.x, box.offset.y}, color, clippingRectangle};

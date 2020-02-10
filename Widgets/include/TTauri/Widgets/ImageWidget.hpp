@@ -26,7 +26,7 @@ public:
 
     void drawBackingImage() noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept override;
 
 private:
     std::string key;

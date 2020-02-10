@@ -38,21 +38,21 @@ void Widget::update(bool modified) noexcept
     }
 }
 
-void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, int &offset) noexcept
+void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept
 {
     for (auto &child : children) {
         child->pipelineImagePlaceVertices(vertices, offset);
     }
 }
 
-void Widget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept
+void Widget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept
 {
     for (auto &child : children) {
         child->pipelineFlatPlaceVertices(vertices, offset);
     }
 }
 
-void Widget::pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, int &offset) noexcept
+void Widget::pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, ssize_t &offset) noexcept
 {
     for (auto &child : children) {
         child->pipelineMSDFPlaceVertices(vertices, offset);

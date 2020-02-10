@@ -19,7 +19,7 @@ PipelineMSDF::PipelineMSDF(Window const &window) :
 
 vk::Semaphore PipelineMSDF::render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore)
 {
-    int tmpNumberOfVertices = 0;
+    ssize_t tmpNumberOfVertices = 0;
     window.widget->pipelineMSDFPlaceVertices(vertexBuffersData.at(frameBufferIndex), tmpNumberOfVertices);
 
     device().flushAllocation(vertexBuffersAllocation.at(frameBufferIndex), 0, tmpNumberOfVertices * sizeof (Vertex));

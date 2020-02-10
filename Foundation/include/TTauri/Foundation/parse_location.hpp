@@ -101,6 +101,22 @@ public:
         _column = line_and_column.second - 1;
     }
 
+    force_inline void increment_column() noexcept {
+        ++_column;
+    }
+
+    force_inline void tab_column() noexcept {
+        _column /= 8;
+        _column += 1;
+        _column *= 8;
+    }
+
+    force_inline void increment_line() noexcept {
+        _column = 0;
+        ++_line;
+    }
+
+
     parse_location &operator+=(char c) noexcept {
         switch (c) {
         case '\t':

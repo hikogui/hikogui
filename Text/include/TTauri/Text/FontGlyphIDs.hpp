@@ -5,7 +5,12 @@
 
 #include "TTauri/Text/GlyphID.hpp"
 #include "TTauri/Text/FontID.hpp"
+#include "TTauri/Foundation/hash.hpp"
 #include "TTauri/Foundation/tagged_id.hpp"
+
+namespace TTauri {
+struct Path;
+}
 
 namespace TTauri::Text {
 
@@ -28,9 +33,40 @@ class FontGlyphIDs_long {
     }
 
     force_inline FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
+        ttauri_assume(nr_glyphs >= 0);
         ttauri_assume(nr_glyphs < ssize(glyph_ids));
         glyph_ids[nr_glyphs++] = rhs;
         return *this;
+    }
+
+    [[nodiscard]] size_t hash() const noexcept {
+        ttauri_assume(nr_glyphs > 3);
+        ttauri_assume(nr_glyphs < ssize(glyph_ids));
+
+        uint64_t r = 0;
+        for (int8_t i = 0; i != nr_glyphs; ++i) {
+            r = hash_mix_two(r, std::hash<GlyphID>{}(glyph_ids[i]));
+        }
+
+        return r;
+    }
+
+    [[nodiscard]] friend bool operator==(FontGlyphIDs_long const &lhs, FontGlyphIDs_long const &rhs) noexcept {
+        ttauri_assume(lhs.nr_glyphs > 3);
+        ttauri_assume(rhs.nr_glyphs > 3);
+        ttauri_assume(lhs.nr_glyphs < ssize(lhs.glyph_ids));
+        ttauri_assume(rhs.nr_glyphs < ssize(rhs.glyph_ids));
+
+        if (lhs.nr_glyphs == rhs.nr_glyphs) {
+            for (int8_t i = 0; i != lhs.nr_glyphs; ++i) {
+                if (lhs.glyph_ids[i] != rhs.glyph_ids[i]) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     friend class FontGlyphIDs;
@@ -153,6 +189,16 @@ public:
         }
     }
 
+    [[nodiscard]] size_t hash() const noexcept {
+        if (has_pointer()) {
+            return get_pointer()->hash();
+        } else {
+            return std::hash<uint64_t>{}(value);
+        }
+    }
+
+    [[nodiscard]] Path get_path() const noexcept;
+
 private:
     [[nodiscard]] force_inline bool has_pointer() const noexcept {
         return (value & 0x8000) == 0;
@@ -181,5 +227,39 @@ private:
         return static_cast<uint64_t>(reinterpret_cast<ptrdiff_t>(ptr) << 16);
     }
 
+public:
+    [[nodiscard]] friend bool operator==(FontGlyphIDs const &lhs, FontGlyphIDs const &rhs) noexcept {
+        if (lhs.has_pointer() == rhs.has_pointer()) {
+            if (lhs.has_pointer()) {
+                return *(lhs.get_pointer()) == *(rhs.get_pointer());
+            } else {
+                return lhs.value == rhs.value;
+            }
+        } else {
+            return false;
+        }
+
+        if (lhs.has_pointer() || rhs.has_pointer()) {
+            if (lhs.size() != rhs.size()) {
+                return false;
+            } else {
+                // At this point, both are pointers
+            }
+        } else {
+            return lhs.value == rhs.value;
+        }
+    }
 };
+
+}
+
+namespace std {
+
+template<>
+struct hash<TTauri::Text::FontGlyphIDs> {
+    [[nodiscard]] size_t operator()(TTauri::Text::FontGlyphIDs const &rhs) const noexcept {
+        return rhs.hash();
+    }
+};
+
 }

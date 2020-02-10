@@ -28,7 +28,7 @@ public:
 
     void setParent(Widget *parent) noexcept override;
 
-    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, int &offset) noexcept override;
+    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept override;
 
     HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 };

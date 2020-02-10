@@ -10,7 +10,7 @@ namespace TTauri::GUI::PipelineMSDF {
 struct Vertex;
 
 struct Delegate {
-    virtual void pipelineMSDFPlaceVertices(gsl::span<Vertex> &vertices, int &offset) = 0;
+    virtual void pipelineMSDFPlaceVertices(gsl::span<Vertex> &vertices, ssize_t &offset) = 0;
 };
 
 }

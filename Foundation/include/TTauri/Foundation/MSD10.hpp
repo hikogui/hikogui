@@ -39,7 +39,7 @@ struct MSD10 : public A2B10G10R10UNorm {
         MSD10(glm::vec3{r, g, b}) {}
 
     MSD10 &operator=(glm::vec3 const &rhs) noexcept {
-        A2B10G10R10UNorm::operator=(rhs);
+        A2B10G10R10UNorm::operator=(rhs * to_multiplier + 0.5f);
         return *this;
     }
 

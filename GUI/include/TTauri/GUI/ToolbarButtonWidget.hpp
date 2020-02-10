@@ -35,7 +35,7 @@ public:
 
     void setParent(Widget *parent) noexcept override;
 
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, int& offset) noexcept override;
+    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent event) noexcept override;
 
