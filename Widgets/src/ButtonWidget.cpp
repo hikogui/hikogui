@@ -53,7 +53,7 @@ void ButtonWidget::update(bool modified) noexcept
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
-        labelShapedText = ShapedText(label(), labelStyle, Alignment::MiddleCenter, rectangle.extent, rectangle.extent);
+        labelShapedText = ShapedText(label(), labelStyle, Alignment::BaseCenter, rectangle.extent, rectangle.extent);
         //drawing += labelShapedText.get_path();
 
         window->device->MSDFPipeline->prepareAtlas(labelShapedText);

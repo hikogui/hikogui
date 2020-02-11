@@ -33,19 +33,23 @@ struct GlyphMetrics {
 
     /*! Distance from baseline of highest ascender.
     */
-    glm::vec2 ascender = {0.0f, 0.0f};
+    float ascender = 0.0f;
 
     /*! Distance from baseline of lowest descender.
     */
-    glm::vec2 descender = {0.0f, 0.0f};
+    float descender = 0.0f;
+
+    /*! Distance between lines.
+     */
+    float lineGap = 0.0f;
 
     /*! Height of capital letter, or height of the letter 'H'.
     */
-    glm::vec2 capHeight = {0.0f, 0.0f};
+    float capHeight = 0.0f;
 
     /*! Height of the small letter 'x'.
     */
-    glm::vec2 xHeight = {0.0f, 0.0f};
+    float xHeight = 0.0f;
 
     /*! The distance to the next character.
     */
@@ -72,10 +76,11 @@ inline GlyphMetrics &operator*=(GlyphMetrics &lhs, glm::mat3x3 const &rhs) noexc
     lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
     lhs.rightSideBearing = glm::xy(rhs * glm::vec3(lhs.rightSideBearing, 1.0f));
     lhs.advance = glm::xy(rhs * glm::vec3(lhs.advance, 0.0f));
-    lhs.ascender = glm::xy(rhs * glm::vec3(lhs.ascender, 0.0f));
-    lhs.descender = glm::xy(rhs * glm::vec3(lhs.descender, 0.0f));
-    lhs.capHeight = glm::xy(rhs * glm::vec3(lhs.capHeight, 0.0f));
-    lhs.xHeight = glm::xy(rhs * glm::vec3(lhs.xHeight, 0.0f));
+    lhs.ascender = (rhs * glm::vec3(0.0f, lhs.ascender, 0.0f)).y;
+    lhs.descender = (rhs * glm::vec3(0.0f, lhs.descender, 0.0f)).y;
+    lhs.lineGap = (rhs * glm::vec3(0.0f, lhs.lineGap, 0.0f)).y;
+    lhs.capHeight = (rhs * glm::vec3(0.0f, lhs.capHeight, 0.0f)).y;
+    lhs.xHeight = (rhs * glm::vec3(0.0f, lhs.xHeight, 0.0f)).y;
     return lhs;
 }
 
@@ -85,10 +90,11 @@ inline GlyphMetrics &operator*=(GlyphMetrics &lhs, float const rhs) noexcept
     lhs.leftSideBearing = glm::xy(rhs * glm::vec3(lhs.leftSideBearing, 1.0f));
     lhs.rightSideBearing = glm::xy(rhs * glm::vec3(lhs.rightSideBearing, 1.0f));
     lhs.advance = glm::xy(rhs * glm::vec3(lhs.advance, 0.0f));
-    lhs.ascender = glm::xy(rhs * glm::vec3(lhs.ascender, 0.0f));
-    lhs.descender = glm::xy(rhs * glm::vec3(lhs.descender, 0.0f));
-    lhs.capHeight = glm::xy(rhs * glm::vec3(lhs.capHeight, 0.0f));
-    lhs.xHeight = glm::xy(rhs * glm::vec3(lhs.xHeight, 0.0f));
+    lhs.ascender = (rhs * glm::vec3(0.0f, lhs.ascender, 0.0f)).y;
+    lhs.descender = (rhs * glm::vec3(0.0f, lhs.descender, 0.0f)).y;
+    lhs.lineGap = (rhs * glm::vec3(0.0f, lhs.lineGap, 0.0f)).y;
+    lhs.capHeight = (rhs * glm::vec3(0.0f, lhs.capHeight, 0.0f)).y;
+    lhs.xHeight = (rhs * glm::vec3(0.0f, lhs.xHeight, 0.0f)).y;
     return lhs;
 }
 

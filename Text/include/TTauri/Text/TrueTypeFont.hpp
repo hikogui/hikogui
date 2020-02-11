@@ -39,6 +39,7 @@ private:
     gsl::span<std::byte const> hheaTableBytes;
     float ascender;
     float descender;
+    float lineGap;
     uint16_t numberOfHMetrics;
 
     //! 'hmtx' horizontal metrics

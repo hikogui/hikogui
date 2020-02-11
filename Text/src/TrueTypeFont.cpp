@@ -372,6 +372,7 @@ void TrueTypeFont::parseHheaTable(gsl::span<std::byte const> bytes)
     parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0);
     ascender = table->ascender.value(unitsPerEm);
     descender = table->descender.value(unitsPerEm);
+    lineGap = table->lineGap.value(unitsPerEm);
     numberOfHMetrics = table->numberOfHMetrics.value();
 }
 
@@ -918,10 +919,11 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
     metrics.advance = glm::vec2{advanceWidth, 0.0f};
     metrics.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
     metrics.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + metrics.boundingBox.extent.width()), 0.0f};
-    metrics.ascender = glm::vec2{0.0f, ascender};
-    metrics.descender = glm::vec2{0.0f, descender};
-    metrics.xHeight = glm::vec2{0.0f, description.xHeight};
-    metrics.capHeight = glm::vec2{0.0f, description.HHeight};
+    metrics.ascender = ascender;
+    metrics.descender = descender;
+    metrics.lineGap = lineGap;
+    metrics.xHeight = description.xHeight;
+    metrics.capHeight = description.HHeight;
 
     if (kern_glyph1_id && kern_glyph2_id) {
         metrics.advance += getKerning(kernTableBytes, unitsPerEm, kern_glyph1_id, kern_glyph2_id);
