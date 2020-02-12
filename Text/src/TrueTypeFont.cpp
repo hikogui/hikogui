@@ -1172,11 +1172,11 @@ bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
         let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
         let numberOfContours = entry->numberOfContours.value();
 
-        let position = glm::vec2{ entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) };
-        let extent = extent2{
-            entry->xMax.value(unitsPerEm) - position.x,
-            entry->yMax.value(unitsPerEm) - position.y
-        };
+        //let position = glm::vec2{ entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) };
+        //let extent = extent2{
+        //    entry->xMax.value(unitsPerEm) - position.x,
+        //    entry->yMax.value(unitsPerEm) - position.y
+        //};
 
         if (numberOfContours > 0) {
             assert_or_return(loadSimpleGlyph(bytes, glyph), false);

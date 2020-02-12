@@ -594,4 +594,9 @@ void fill(PixelMap<MSD10> &dst, Path const &path) noexcept
     fill(dst, path.getBeziers());
 }
 
+void fill(PixelMap<SDF8> &dst, Path const &path) noexcept
+{
+    fill(dst, path.getBeziers());
+}
+
 }

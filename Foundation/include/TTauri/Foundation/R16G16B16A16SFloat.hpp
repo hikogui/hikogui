@@ -77,7 +77,7 @@ struct R16G16B16A16SFloat {
         __m128 floats = _mm_cvtph_ps(halfs);
 
         glm::vec4 r;
-        std::memcpy(&r, buffer.data(), sizeof(r));
+        std::memcpy(&r, &floats, sizeof(r));
         return r;
     }
 

@@ -14,26 +14,17 @@ namespace TTauri::GUI::PipelineMSDF {
 */
 struct Vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    glm::vec2 position;
-
-    //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    rect2 clippingRectangle;
+    glm::vec3 position;
 
     //! The x, y (relative to bottom-left) coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
-    glm::vec2 atlasPosition;
-
-    uint16_t atlasTextureNr;
-    uint16_t depth;
+    glm::vec3 textureCoord;
 
     //! The depth for depth test.
     R16G16B16A16SFloat color;
 
-    Vertex(glm::vec2 position, rect2 clippingRectangle, glm::vec2 atlasPosition, int atlasTextureNr, float depth, wsRGBA color) noexcept :
+    Vertex(glm::vec3 position, glm::vec3 textureCoord, wsRGBA color) noexcept :
         position(position),
-        clippingRectangle(clippingRectangle),
-        atlasPosition(atlasPosition),
-        atlasTextureNr(numeric_cast<uint16_t>(atlasTextureNr)),
-        depth(numeric_cast<uint16_t>(depth)),
+        textureCoord(textureCoord),
         color(R16G16B16A16SFloat{color}) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
@@ -46,13 +37,9 @@ struct Vertex {
     static std::vector<vk::VertexInputAttributeDescription> inputAttributeDescriptions()
     {
         return {
-            { 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, position) },
-            { 1, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.offset) },
-            { 2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, clippingRectangle.extent) },
-            { 3, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, atlasPosition) },                
-            { 4, 0, vk::Format::eR16Uint, offsetof(Vertex, atlasTextureNr) },                
-            { 5, 0, vk::Format::eR16Uint, offsetof(Vertex, depth) },
-            { 6, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
+            { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position) },
+            { 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, textureCoord) },                
+            { 2, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) }
         };
     }
 };

@@ -22,24 +22,31 @@ ButtonWidget::ButtonWidget(std::string const label) noexcept :
 
 void ButtonWidget::update(bool modified) noexcept
 {
+    if ((update_count++ % 60) == 0) {
+        modified = true;
+    }
+
     if (modified) {
         // Draw something.
         let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-        let labelFontSize = 15.0;
 
         wsRGBA backgroundColor;
-        wsRGBA labelColor;
+        wsRGBA labelColor1;
+        wsRGBA labelColor2;
         wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
         if (value()) {
             backgroundColor = wsRGBA{ 0x4c4cffff };
-            labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+            labelColor1 = wsRGBA{1.0, 1.0, 1.0, 1.0};
+            labelColor2 = wsRGBA{0.0, 1.0, 1.0, 1.0};
         } else {
             backgroundColor = wsRGBA{ 0x4c884cff };
-            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+            labelColor1 = wsRGBA{0.0, 0.0, 0.0, 1.0};
+            labelColor2 = wsRGBA{0.01, 0.01, 0.01, 1.0};
         }
         if (pressed()) {
             backgroundColor = wsRGBA{ 0x4c4cffff };
-            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+            labelColor1 = wsRGBA{0.0, 0.0, 0.0, 1.0};
+            labelColor2 = wsRGBA{1.0, 0.0, 0.0, 1.0};
         }
 
     #pragma warning(suppress: 6001)
@@ -52,11 +59,17 @@ void ButtonWidget::update(bool modified) noexcept
         drawing.addPath(buttonPath, backgroundColor);
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
-        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, labelFontSize, labelColor, TextDecoration::None);
-        labelShapedText = ShapedText(label(), labelStyle, Alignment::BaseCenter, rectangle.extent, rectangle.extent);
-        //drawing += labelShapedText.get_path();
+        let labelStyle1 = TextStyle("Helvetica", FontVariant{FontWeight::Regular, false}, 12.0, labelColor1, TextDecoration::None);
+        let labelStyle2 = TextStyle("Helvetica", FontVariant{FontWeight::Regular, false}, 12.0, labelColor2, TextDecoration::None);
 
-        window->device->MSDFPipeline->prepareAtlas(labelShapedText);
+        labelShapedText1 = ShapedText(label(), labelStyle1, Alignment::MiddleCenter, box.currentExtent(), box.currentExtent());
+        labelShapedText2 = ShapedText(label(), labelStyle2, Alignment::MiddleCenter, box.currentExtent(), box.currentExtent());
+
+        if ((update_count / 60) % 2 == 0) {
+            drawing += labelShapedText2.get_path();
+        }
+
+        window->device->MSDFPipeline->prepareAtlas(labelShapedText1);
     }
 
     return Widget::update(modified);
@@ -66,9 +79,11 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
 {
     ttauri_assert(window);
 
+    let blink = (update_count / 60) % 2 == 0;
+
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
-    }, "Button", label(), value(), enabled(), focus(), pressed());
+    }, "Button", label(), value(), enabled(), focus(), pressed(), blink);
  
     if (backingImage.image) {
         let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
@@ -91,8 +106,10 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
 void ButtonWidget::pipelineMSDFPlaceVertices(gsl::span<GUI::PipelineMSDF::Vertex>& vertices, ssize_t& offset) noexcept
 {
     ttauri_assert(window);
-    window->device->MSDFPipeline->placeVertices(labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
 
+    if ((update_count / 60) % 2 == 0) {
+        window->device->MSDFPipeline->placeVertices(labelShapedText1, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
+    }
 
     Widget::pipelineMSDFPlaceVertices(vertices, offset);
 }
@@ -102,7 +119,8 @@ PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GU
 {
     auto linearMap = PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
-    composit(linearMap, drawing, window->subpixelOrientation);
+    //composit(linearMap, drawing, window->subpixelOrientation);
+    composit(linearMap, drawing, SubpixelOrientation::Unknown);
 
     return { std::move(image), std::move(linearMap) };
 }

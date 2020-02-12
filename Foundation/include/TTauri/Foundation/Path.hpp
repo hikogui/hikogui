@@ -10,6 +10,7 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/MSD10.hpp"
+#include "TTauri/Foundation/SDF8.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -265,6 +266,12 @@ void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpi
 * @param path A path.
 */
 void fill(PixelMap<MSD10> &dst, Path const &path) noexcept;
+
+/** Fill a signed distance field image from the given path.
+* @param image An signed-distance-field which show distance toward the closest curve
+* @param path A path.
+*/
+void fill(PixelMap<SDF8> &dst, Path const &path) noexcept;
 
 }
 

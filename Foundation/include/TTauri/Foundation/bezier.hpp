@@ -130,7 +130,6 @@ inline results<T,1> bezierFindTForNormalsIntersectingPoint(glm::vec<2,T> P1, glm
 template<typename T>
 inline results<T,3> bezierFindTForNormalsIntersectingPoint(glm::vec<2,T> P1, glm::vec<2,T> C, glm::vec<2,T> P2, glm::vec<2,T> P) noexcept
 {
-    constexpr T _0 = 0.0;
     constexpr T _2 = 2.0;
     constexpr T _3 = 3.0;
 

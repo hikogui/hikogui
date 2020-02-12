@@ -47,8 +47,6 @@ void PipelineMSDF::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_
 
     pushConstants.windowExtent = { extent.width , extent.height };
     pushConstants.viewportScale = { 2.0 / extent.width, 2.0 / extent.height };
-    pushConstants.atlasExtent = { DeviceShared::atlasImageWidth, DeviceShared::atlasImageHeight };
-    pushConstants.atlasScale = { 1.0 / DeviceShared::atlasImageWidth, 1.0 / DeviceShared::atlasImageHeight };
     commandBuffer.pushConstants(
         pipelineLayout,
         vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment,

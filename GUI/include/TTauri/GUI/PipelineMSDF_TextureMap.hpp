@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/MSD10.hpp"
+#include "TTauri/Foundation/SDF8.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
@@ -15,7 +15,7 @@ struct TextureMap {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    TTauri::PixelMap<MSD10> pixelMap;
+    TTauri::PixelMap<SDF8> pixelMap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const Device &device, vk::Format format, vk::ImageLayout nextLayout);

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/MSD10.hpp"
+#include "TTauri/Foundation/SDF8.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/attributes.hpp"
@@ -146,6 +147,39 @@ struct BezierCurve {
             }
         }
     };
+
+    /** Find the distance from the point to the curve.
+     */
+    [[nodiscard]] std::pair<float,float> sdf_distance(glm::vec2 P) const noexcept {
+        auto min_square_distance = std::numeric_limits<float>::max();
+        auto min_t = 0.0f;
+        auto min_normal = glm::vec2{0.0f, 1.0f};
+
+        let ts = solveTForNormalsIntersectingPoint(P);
+        for (auto t: ts) {
+            t = std::clamp(t, 0.0f, 1.0f);
+
+            let normal = P - pointAt(t);
+            let square_distance = glm::dot(normal, normal);
+            if (square_distance < min_square_distance) {
+                min_square_distance = square_distance;
+                min_t = t;
+                min_normal = normal;
+            }
+        }
+
+        let unit_normal = glm::normalize(min_normal);
+        let unit_tangent = glm::normalize(tangentAt(min_t));
+        let orthogonality = viktorCross(unit_normal, unit_tangent);
+
+        let tangent = tangentAt(min_t);
+        let distance = std::sqrt(min_square_distance);
+
+        let sdistance = viktorCross(tangent, min_normal) < 0.0 ? distance : -distance;
+
+        // Use the original angle, for determining which side of the curve the point is.
+        return {sdistance, orthogonality};
+    }
 
     /** Find the distance from the point to the curve.
      */
@@ -394,5 +428,11 @@ void fill(PixelMap<uint8_t>& image, std::vector<BezierCurve> const& curves) noex
  * @param curves All curves of path, in no particular order.
  */
 void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexcept;
+
+/** Fill a signed distance field image from the given contour.
+* @param image An signed-distance-field which show distance toward the closest curve
+* @param curves All curves of path, in no particular order.
+*/
+void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept;
 
 }

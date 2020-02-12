@@ -72,10 +72,10 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
     device.flushAllocation(
         stagingTexture.allocation,
         0,
-        (stagingTexture.pixelMap.height * stagingTexture.pixelMap.stride) * sizeof (MSD10)
+        (stagingTexture.pixelMap.height * stagingTexture.pixelMap.stride) * sizeof (SDF8)
     );
     
-    stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferSrcOptimal);
+    stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
 
@@ -88,24 +88,38 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
     }};
 
     auto &atlasTexture = atlasTextures.at(location.atlas_position.z);
-    atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eTransferDstOptimal);
+    atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regionsToCopy));
 }
 
 void DeviceShared::prepareStagingPixmapForDrawing()
 {
-    stagingTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eGeneral);
+    stagingTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eGeneral);
 }
 
 void DeviceShared::prepareAtlasForRendering()
 {
     for (auto &atlasTexture: atlasTextures) {
-        atlasTexture.transitionLayout(device, vk::Format::eA2B10G10R10UnormPack32, vk::ImageLayout::eShaderReadOnlyOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
 /** Prepare the atlas for drawing a text.
+ *
+ *  +---------------------+
+ *  |     draw border     |
+ *  |  +---------------+  |
+ *  |  | render border |  |
+ *  |  |  +---------+  |  |
+ *  |  |  |  glyph  |  |  |
+ *  |  |  | bounding|  |  |
+ *  |  |  |   box   |  |  |
+ *  |  |  +---------+  |  |
+ *  |  |               |  |
+ *  |  +---------------+  |
+ *  |                     |
+ *  O---------------------+
 */
 void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 {
@@ -117,29 +131,36 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
         }
 
         ++count;
-        prepareStagingPixmapForDrawing();
 
         // We will draw the font at 15 pt into the texture. And we need a border for the texture to
         // allow proper bi-linear interpolation on the edges.
         let extent = static_cast<iextent2>(attr_grapheme.metrics.boundingBox.extent * fontSize) + glm::ivec2(drawBorder*2, drawBorder*2);
-
-        // The quad should be rendered with a border.
-        static_assert(renderBorder < drawBorder);
         auto atlas_rect = allocateRect(extent);
-        atlas_rect.bounding_box = rect2{
-            static_cast<glm::vec2>(glm::xy(atlas_rect.atlas_position)) + glm::vec2{renderBorder, renderBorder},
-            attr_grapheme.metrics.boundingBox.extent * fontSize + glm::vec2{renderBorder*2.0f, renderBorder*2.0f}
-        };
 
         // Now create a path of the combined glyphs. Offset and scale the path so that
         // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
         let offset = glm::vec2{drawBorder, drawBorder} - (attr_grapheme.metrics.boundingBox.offset * fontSize);
         let path = T2D(offset, fontSize) * attr_grapheme.glyphs.get_path();
 
+        // Draw glyphs into staging buffer of the atlas.
+        prepareStagingPixmapForDrawing();
         auto pixmap = stagingTexture.pixelMap.submap(irect2{glm::ivec2{0,0}, extent});
         fill(pixmap, path);
-
         uploadStagingPixmapToAtlas(atlas_rect);
+
+        // The bounding box is in texture coordinates.
+        let atlas_px_offset = static_cast<glm::vec2>(glm::xy(atlas_rect.atlas_position)) + glm::vec2{drawBorder - renderBorder, drawBorder - renderBorder};
+        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent * fontSize + glm::vec2{renderBorder*2.0f, renderBorder*2.0f};
+
+        let atlas_tx_multiplier = glm::vec2{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
+        let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;
+        let atlas_tx_extent = atlas_px_extent * atlas_tx_multiplier;
+        let atlas_tx_box = rect2{atlas_tx_offset, atlas_tx_extent};
+
+        get<0>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<0>(), atlas_rect.atlas_position.z};
+        get<1>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<1>(), atlas_rect.atlas_position.z};
+        get<2>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<2>(), atlas_rect.atlas_position.z};
+        get<3>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<3>(), atlas_rect.atlas_position.z};
 
         glyphs_in_atlas[attr_grapheme.glyphs] = atlas_rect;
     }
@@ -190,17 +211,12 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
 
         // Texture coordinates are upside-down.
         let &atlas_rect = atlas_i->second;
-        let t0 = atlas_rect.bounding_box.corner<2>();
-        let t1 = atlas_rect.bounding_box.corner<3>();
-        let t2 = atlas_rect.bounding_box.corner<0>();
-        let t3 = atlas_rect.bounding_box.corner<1>();
-        let texture_nr = atlas_rect.atlas_position.z;
 
         ttauri_assert(offset + 4 <= ssize(vertices));
-        vertices[offset++] = Vertex{v0, clippingRectangle, t0, texture_nr, depth, attr_grapheme.style.color};
-        vertices[offset++] = Vertex{v1, clippingRectangle, t1, texture_nr, depth, attr_grapheme.style.color};
-        vertices[offset++] = Vertex{v2, clippingRectangle, t2, texture_nr, depth, attr_grapheme.style.color};
-        vertices[offset++] = Vertex{v3, clippingRectangle, t3, texture_nr, depth, attr_grapheme.style.color};
+        vertices[offset++] = Vertex{glm::vec3{v0, depth}, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color};
+        vertices[offset++] = Vertex{glm::vec3{v1, depth}, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color};
+        vertices[offset++] = Vertex{glm::vec3{v2, depth}, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color};
+        vertices[offset++] = Vertex{glm::vec3{v3, depth}, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color};
     }
 }
 
@@ -288,9 +304,13 @@ void DeviceShared::buildShaders()
     vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineMSDF.vert.spv"));
     fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineMSDF.frag.spv"));
 
+    fragmentShaderSpecializationConstants.rangeMultiplier = SDF8::max_distance;
+    fragmentShaderSpecializationEntries = FragmentSpecializationConstants::specializationEntries();
+    fragmentShaderSpecializationInfo = fragmentShaderSpecializationConstants.specializationInfo(fragmentShaderSpecializationEntries);
+
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main", &fragmentShaderSpecializationInfo}
     };
 }
 
@@ -302,13 +322,13 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    let currentImageIndex = to_signed(atlasTextures.size());
+    //let currentImageIndex = to_signed(atlasTextures.size());
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eA2B10G10R10UnormPack32,
+        vk::Format::eR8Snorm,
         vk::Extent3D(atlasImageWidth, atlasImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -359,7 +379,7 @@ void DeviceShared::buildAtlas()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eA2B10G10R10UnormPack32,
+        vk::Format::eR8Snorm,
         vk::Extent3D(stagingImageWidth, stagingImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -373,13 +393,13 @@ void DeviceShared::buildAtlas()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    let data = device.mapMemory<MSD10>(allocation);
+    let data = device.mapMemory<SDF8>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<MSD10>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
+        TTauri::PixelMap<SDF8>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

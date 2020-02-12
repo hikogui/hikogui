@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include <limits>
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/geometry.hpp"
+#include <array>
 
 namespace TTauri::GUI::PipelineMSDF {
 
@@ -15,7 +15,7 @@ struct AtlasRect {
     glm::ivec3 atlas_position;
     iextent2 atlas_extent;
 
-    rect2 bounding_box;
+    std::array<glm::vec3,4> textureCoords;
 };
 
 }

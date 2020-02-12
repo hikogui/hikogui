@@ -320,10 +320,6 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignmen
         return r;
     }
 
-    ttauri_assume(Text_globals->font_book);
-    let &font_book = *(Text_globals->font_book);
-
-    auto previous_color = text.front().style.color;
     for (let &attr_glyph: text) {
         r += attr_glyph.get_path();
     }

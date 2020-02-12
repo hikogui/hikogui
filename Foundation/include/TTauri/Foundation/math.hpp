@@ -200,4 +200,26 @@ constexpr T rotr(T x, unsigned int count) noexcept
 #endif
 }
 
+template<typename T>
+constexpr T median(T a, T b, T c) noexcept {
+    return std::clamp(c, std::min(a, b), std::max(a, b));
+}
+
+inline bool almost_equal(float a, float b) noexcept {
+    uint32_t a_;
+    uint32_t b_;
+
+    std::memcpy(&a_, &a, sizeof(a_));
+    std::memcpy(&b_, &b, sizeof(b_));
+
+    auto a__ = static_cast<int>(a_ & 0x7ffffff);
+    auto b__ = static_cast<int>(b_ & 0x7ffffff);
+
+    if ((a_ < 0) == (b_ < 0)) {
+        return std::abs(a__ - b__) < 10;
+    } else {
+        return std::abs(a__ + b__) < 10;
+    }
+}
+
 }

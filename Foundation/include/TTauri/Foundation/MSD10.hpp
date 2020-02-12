@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/A2B10G10R10UNorm.hpp"
+#include "TTauri/Foundation/math.hpp"
 
 namespace TTauri {
 
@@ -19,7 +20,7 @@ namespace TTauri {
 struct MSD10 : public A2B10G10R10UNorm {
     /** Max distance in pixels represented by a channel.
      */
-    constexpr static float max_distance = 4.0f;
+    constexpr static float max_distance = 1.0f;
 
     // Multiplier to fit a signed distance in a range between 0.0 and 1.0.
     constexpr static float from_multiplier = (max_distance * 2.0f);
@@ -45,6 +46,15 @@ struct MSD10 : public A2B10G10R10UNorm {
 
     operator glm::vec3 () const noexcept {
         return ((A2B10G10R10UNorm::operator glm::vec3()) - 0.5f) * from_multiplier;
+    }
+
+    /** Repair a pixel with potential artifacts.
+     * Simply replace all values with the median.
+     */
+    void repair() noexcept {
+        auto v = static_cast<glm::vec3>(*this);
+        auto m = median(v.x, v.y, v.z);
+        *this = glm::vec3{m, m, m};
     }
 };
 

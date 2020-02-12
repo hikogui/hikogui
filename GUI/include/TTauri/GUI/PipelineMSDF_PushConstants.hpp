@@ -11,8 +11,6 @@ namespace TTauri::GUI::PipelineMSDF {
 struct PushConstants {
     glm::vec2 windowExtent = { 0.0, 0.0 };
     glm::vec2 viewportScale = { 0.0, 0.0 };
-    glm::vec2 atlasExtent = { 0.0, 0.0 };
-    glm::vec2 atlasScale = { 0.0, 0.0 };
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

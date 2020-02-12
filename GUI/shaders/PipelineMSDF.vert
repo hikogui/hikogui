@@ -4,42 +4,24 @@
 layout(push_constant) uniform PushConstants {
     vec2 windowExtent;
     vec2 viewportScale;
-    vec2 atlasExtent;
-    vec2 atlasScale;
 } pushConstants;
 
-layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec2 inClippingRectangleOffset;
-layout(location = 2) in vec2 inClippingRectangleExtent;
-layout(location = 3) in vec2 inAtlasPosition;
-layout(location = 4) in uint inAtlasTextureNr;
-layout(location = 5) in uint inDepth;
-layout(location = 6) in vec4 inColor;
+// In position is in window pixel position, with left-bottom origin.
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inTextureCoord;
+layout(location = 2) in vec4 inColor;
 
-layout(location = 0) out vec2 outClippingRectangleMinimum;
-layout(location = 1) out vec2 outClippingRectangleMaximum;
-layout(location = 2) out vec3 outAtlasPosition;
-layout(location = 3) out vec4 outColor;
+layout(location = 0) out vec3 outTextureCoord;
+layout(location = 1) out vec4 outColor;
 
-vec2 flipY(vec2 windowPosition) {
-    return vec2(windowPosition.x, pushConstants.windowExtent.y - windowPosition.y);
-}
-
-vec2 convertToViewport(vec2 windowPosition) {
-    return (windowPosition * pushConstants.viewportScale) - vec2(1.0, 1.0);
-}
-
-vec3 convertToTexture(vec2 atlasPosition) {
-    return vec3(atlasPosition.xy * pushConstants.atlasScale, inAtlasTextureNr);
+vec3 convertToViewport(vec3 windowPosition) {
+    float x = windowPosition.x * pushConstants.viewportScale.x - 1.0;
+    float y = (pushConstants.windowExtent.y - windowPosition.y) * pushConstants.viewportScale.y - 1.0;
+    return vec3(x, y, windowPosition.z);
 }
 
 void main() {
-    vec2 position = convertToViewport(flipY(inPosition));
-
-    gl_Position = vec4(position, 0.0, 1.0);
-
-    outClippingRectangleMinimum = flipY(inClippingRectangleOffset) - vec2(0.0, inClippingRectangleExtent.y);
-    outClippingRectangleMaximum = flipY(inClippingRectangleOffset) + vec2(inClippingRectangleExtent.x, 0.0);
-    outAtlasPosition = convertToTexture(inAtlasPosition);
+    gl_Position = vec4(convertToViewport(inPosition), 1.0);
+    outTextureCoord = inTextureCoord;
     outColor = inColor;
 }

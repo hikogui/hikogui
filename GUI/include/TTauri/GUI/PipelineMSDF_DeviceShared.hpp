@@ -5,6 +5,7 @@
 
 #include "TTauri/GUI/PipelineMSDF_TextureMap.hpp"
 #include "TTauri/GUI/PipelineMSDF_AtlasRect.hpp"
+#include "TTauri/GUI/PipelineMSDF_FragmentSpecializationConstants.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/geometry.hpp"
@@ -36,11 +37,13 @@ struct DeviceShared final {
     static constexpr int stagingImageWidth = 64; // maximum size of character that can be uploaded is 64x64
     static constexpr int stagingImageHeight = 64;
 
-    static constexpr float fontSize = 20.0f;
+    static constexpr float fontSize = 58.0f;
     static constexpr int drawBorder = 3;
 
     static constexpr float renderBorder = 2.0;
     static constexpr float scaledRenderBorder = renderBorder / fontSize;
+
+    static_assert(renderBorder < drawBorder);
 
     Device const &device;
 
@@ -49,6 +52,11 @@ struct DeviceShared final {
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
+
+    std::array<vk::SpecializationMapEntry,1> fragmentShaderSpecializationEntries;
+    vk::SpecializationInfo fragmentShaderSpecializationInfo;
+    FragmentSpecializationConstants fragmentShaderSpecializationConstants;
+
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
     std::unordered_map<Text::FontGlyphIDs,AtlasRect> glyphs_in_atlas;
