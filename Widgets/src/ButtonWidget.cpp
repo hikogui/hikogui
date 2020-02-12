@@ -41,7 +41,7 @@ void ButtonWidget::update(bool modified) noexcept
         } else {
             backgroundColor = wsRGBA{ 0x4c884cff };
             labelColor1 = wsRGBA{0.0, 0.0, 0.0, 1.0};
-            labelColor2 = wsRGBA{0.01, 0.01, 0.01, 1.0};
+            labelColor2 = wsRGBA{0.0, 0.0, 0.0, 1.0};
         }
         if (pressed()) {
             backgroundColor = wsRGBA{ 0x4c4cffff };
@@ -59,8 +59,8 @@ void ButtonWidget::update(bool modified) noexcept
         drawing.addPath(buttonPath, backgroundColor);
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
-        let labelStyle1 = TextStyle("Helvetica", FontVariant{FontWeight::Regular, false}, 12.0, labelColor1, TextDecoration::None);
-        let labelStyle2 = TextStyle("Helvetica", FontVariant{FontWeight::Regular, false}, 12.0, labelColor2, TextDecoration::None);
+        let labelStyle1 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor1, TextDecoration::None);
+        let labelStyle2 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor2, TextDecoration::None);
 
         labelShapedText1 = ShapedText(label(), labelStyle1, Alignment::MiddleCenter, box.currentExtent(), box.currentExtent());
         labelShapedText2 = ShapedText(label(), labelStyle2, Alignment::MiddleCenter, box.currentExtent(), box.currentExtent());

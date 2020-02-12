@@ -35,6 +35,10 @@ struct SDF8 : public R8SNorm {
     operator float () const noexcept {
         return (R8SNorm::operator float()) * max_distance;
     }
+
+    void repair() noexcept {
+        *this = -static_cast<float>(*this);
+    }
 };
 
 }

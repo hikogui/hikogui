@@ -382,18 +382,60 @@ void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexce
     for (let &curve: curves) {
         let [distance, orthogonality] = curve.sdf_distance(point);
 
-        if (almost_equal(std::abs(distance), std::abs(min_distance))) {
-            if (orthogonality < min_orthogonality) {
-                min_distance = distance;
-                min_orthogonality = orthogonality;
-            }
-        } else if (std::abs(distance) < std::abs(min_distance)) {
+        if (
+            std::abs(distance) < std::abs(min_distance) ||
+            (std::abs(distance) == std::abs(min_distance) && orthogonality < min_orthogonality)
+        ) {
             min_distance = distance;
             min_orthogonality = orthogonality;
         }
     }
 
     return min_distance;
+}
+
+/** Check if at least two components between two pixels have a large swing from positive to negative.
+*/
+[[nodiscard]] bool is_bad_pixel(SDF8 const &lhs, SDF8 const &rhs) noexcept
+{
+    //constexpr float threshold = 1.4142f; // 1 pixels diagonal distance sqrt(2)
+    constexpr float threshold = 0.7071f; // 1 pixels diagonal distance sqrt(1)
+
+    let lhs_ = static_cast<float>(lhs);
+    let rhs_ = static_cast<float>(rhs);
+
+    return (lhs_ >= 0) != (rhs_ >= 0) && (std::abs(lhs_ - rhs_) >= threshold);
+}
+
+[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<SDF8> const &image) noexcept
+{
+    auto r = std::vector<std::pair<int,int>>{};
+
+    auto row = image.at(0);
+    auto next_row = image.at(1);
+    for (int row_nr = 1; row_nr != (image.height - 1); ++row_nr) {
+        auto prev_row = row;
+        row = next_row;
+        next_row = image.at(row_nr + 1);
+
+        for (int column_nr = 1; column_nr != (image.width - 1); ++column_nr) {
+            let &pixel = row[column_nr];
+
+            int count = 0;
+            count += static_cast<int>(is_bad_pixel(pixel, prev_row[column_nr - 1]));
+            count += static_cast<int>(is_bad_pixel(pixel, prev_row[column_nr]));
+            count += static_cast<int>(is_bad_pixel(pixel, prev_row[column_nr + 1]));
+            count += static_cast<int>(is_bad_pixel(pixel, row[column_nr - 1]));
+            count += static_cast<int>(is_bad_pixel(pixel, row[column_nr + 1]));
+            count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr - 1]));
+            count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr]));
+            count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr + 1]));
+            if (count > 4) {
+                r.emplace_back(column_nr, row_nr);
+            }
+        }
+    }
+    return r;
 }
 
 void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept
@@ -406,6 +448,18 @@ void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcep
             row[column_nr] = generate_SDF8_pixel(glm::vec2(x, y), curves);
         }
     }
+
+    std::vector<std::pair<int,int>> bad_pixel_list;
+    for (int i = 0; i < 5; i++) {
+        bad_pixel_list = bad_pixels(image);
+        for (let [x, y]: bad_pixel_list) {
+            image[y][x].repair();
+        }
+        if (ssize(bad_pixel_list) == 0) {
+            break;
+        }
+    }
+
 }
 
 }

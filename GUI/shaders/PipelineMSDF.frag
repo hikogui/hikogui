@@ -17,11 +17,7 @@ float median(float a, float b, float c) {
 
 void main() {
     float distance = texture(sampler2D(textures[int(inTextureCoord.z)], samp), inTextureCoord.xy).r;
-    //vec4 distances = texture(sampler2D(textures[int(inTextureCoord.z)], samp), inTextureCoord.xy);
-    //float distance = (median(distances.x, distances.y, distances.z) - 0.5) * distanceMultiplier;
-    //float distance = median(distances.x, distances.y, distances.z) - 0.5;
 
-    //float w = distance > 0 ? 1.0 : 0.0;
     float w = clamp(distance / fwidth(distance) + 0.5, 0.0, 1.0);
     outColor = inColor * vec4(w, w, w, w);    
 }
