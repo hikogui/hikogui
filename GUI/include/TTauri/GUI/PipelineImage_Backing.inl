@@ -21,6 +21,8 @@ inline void Backing::loadOrDraw(Window const &window, extent2 const &currentExte
     if (futureImage && futureImage->valid()) {
         auto [newImage, newPixelMap] = futureImage->get();
 
+        // Only uploads when the state is in ::Drawing and newPixelMap != zero
+        // and switches to ::Uploading once it finishes.
         window.device->imagePipeline->uploadPixmapToAtlas(*newImage, newPixelMap);
 
         if (newImage->state == GUI::PipelineImage::Image::State::Uploaded) {
@@ -41,7 +43,7 @@ inline void Backing::loadOrDraw(Window const &window, extent2 const &currentExte
             case GUI::PipelineImage::Image::State::Drawing: {
                 auto p = std::promise<ImagePixelMap>();
                 futureImage = p.get_future();
-                p.set_value({image, PixelMap<wsRGBA>{}});
+                p.set_value({newImage, PixelMap<wsRGBA>{}});
             } break;
 
             case GUI::PipelineImage::Image::State::Uninitialized:

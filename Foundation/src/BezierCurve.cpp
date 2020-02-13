@@ -377,6 +377,10 @@ void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexce
 
 [[nodiscard]] static float generate_SDF8_pixel(glm::vec2 point, std::vector<BezierCurve> const &curves) noexcept
 {
+    if (ssize(curves) == 0) {
+        return -std::numeric_limits<float>::max();
+    }
+
     float min_distance = std::numeric_limits<float>::max();
     float min_orthogonality = 0.0f;
     for (let &curve: curves) {
@@ -394,17 +398,16 @@ void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexce
     return min_distance;
 }
 
-/** Check if at least two components between two pixels have a large swing from positive to negative.
-*/
+/*
 [[nodiscard]] bool is_bad_pixel(SDF8 const &lhs, SDF8 const &rhs) noexcept
 {
-    //constexpr float threshold = 1.4142f; // 1 pixels diagonal distance sqrt(2)
-    constexpr float threshold = 0.7071f; // 1 pixels diagonal distance sqrt(1)
+    constexpr float threshold = 1.4142f; // 1 pixels diagonal distance sqrt(2)
+    //constexpr float threshold = 0.7071f; // 1 pixels diagonal distance sqrt(1)
 
     let lhs_ = static_cast<float>(lhs);
     let rhs_ = static_cast<float>(rhs);
 
-    return (lhs_ >= 0) != (rhs_ >= 0) && (std::abs(lhs_ - rhs_) >= threshold);
+    return std::abs(lhs_ - rhs_) > threshold;
 }
 
 [[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<SDF8> const &image) noexcept
@@ -431,6 +434,52 @@ void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexce
             count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr]));
             count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr + 1]));
             if (count > 4) {
+                r.emplace_back(column_nr, row_nr);
+            }
+        }
+    }
+    return r;
+}*/
+
+[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<SDF8> const &image) noexcept
+{
+    constexpr float threshold = 0.075;
+
+    auto r = std::vector<std::pair<int,int>>{};
+
+    auto row = image.at(0);
+    auto next_row = image.at(1);
+    for (int row_nr = 1; row_nr != (image.height - 1); ++row_nr) {
+        auto prev_row = row;
+        row = next_row;
+        next_row = image.at(row_nr + 1);
+
+        for (int column_nr = 1; column_nr != (image.width - 1); ++column_nr) {
+            let &pixel = row[column_nr];
+
+            auto area = std::array{
+                static_cast<float>(prev_row[column_nr - 1]),
+                static_cast<float>(prev_row[column_nr]),
+                static_cast<float>(prev_row[column_nr + 1]),
+                static_cast<float>(row[column_nr - 1]),
+                static_cast<float>(pixel),
+                static_cast<float>(row[column_nr + 1]),
+                static_cast<float>(next_row[column_nr - 1]),
+                static_cast<float>(next_row[column_nr]),
+                static_cast<float>(next_row[column_nr + 1])
+            };
+
+            let normal_mean = mean(area.cbegin(), area.cend());
+            let normal_stddev = stddev(area.cbegin(), area.cend(), normal_mean);
+
+            static_assert(ssize(area) % 2 == 1);
+            area[ssize(area) / 2] = -area[ssize(area) / 2];
+
+            let flipped_mean = mean(area.cbegin(), area.cend());
+            let flipped_stddev = stddev(area.cbegin(), area.cend(), flipped_mean);
+
+            if ((flipped_stddev + threshold) < normal_stddev) {
+                // Flipped pixels is more homogeneous.
                 r.emplace_back(column_nr, row_nr);
             }
         }

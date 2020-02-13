@@ -12,6 +12,8 @@
 #include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <tuple>
+#include <numeric>
+#include <iterator>
 
 #if COMPILER == CC_MSVC
 #include <intrin.h>
@@ -220,6 +222,31 @@ inline bool almost_equal(float a, float b) noexcept {
     } else {
         return std::abs(a__ + b__) < 10;
     }
+}
+
+template<typename Iterator>
+auto mean(Iterator first, Iterator last)
+{
+    let init = static_cast<std::iterator_traits<Iterator>::value_type>(0);
+
+    let sum = std::reduce(first, last, init);
+    let count = static_cast<decltype(sum)>(std::distance(first, last));
+ 
+    return count > 0.0 ? sum / count : sum;
+}
+
+template<typename Iterator, typename T>
+auto stddev(Iterator first, Iterator last, T mean)
+{
+    let init = static_cast<std::iterator_traits<Iterator>::value_type>(0);
+
+    let sum = std::accumulate(first, last, init, [=](let &acc, let &value) {
+        let tmp = value - mean;
+        return acc + tmp*tmp;
+    });
+
+    let count = static_cast<decltype(sum)>(std::distance(first, last));
+    return count > 0.0 ? sum / count : sum;
 }
 
 }

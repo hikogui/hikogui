@@ -14,7 +14,7 @@ namespace TTauri {
 struct SDF8 : public R8SNorm {
     /** Max distance in pixels represented by the signed distance field.
      */
-    constexpr static float max_distance = 3.0f;
+    constexpr static float max_distance = 4.0f;
     constexpr static float one_over_max_distance = 1.0f / max_distance;
 
     SDF8() noexcept = default;

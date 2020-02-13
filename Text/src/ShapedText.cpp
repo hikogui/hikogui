@@ -137,14 +137,14 @@ struct AttributedGlyphsLine {
         
         switch (i->grapheme.front()) {
         case ' ':
-            end_of_last_word = i;
+            end_of_last_word = previous + 1;
             end_of_last_word_width = previous_width;
             previous = i;
             previous_width = width;
             break;
 
         case '\n':
-            lines.emplace_back(start_of_line, previous, previous_width, max_ascender, max_descender, max_line_gap, max_x_height);
+            lines.emplace_back(start_of_line, previous + 1, previous_width, max_ascender, max_descender, max_line_gap, max_x_height);
 
             // Reset counters to start of the new line.
             start_of_line = i + 1;

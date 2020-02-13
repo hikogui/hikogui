@@ -30,14 +30,14 @@ struct Image;
 
 struct DeviceShared final {
     // Studies in China have shown that literate individuals know and use between 3,000 and 4,000 characters.
-    // Handle up to 4096 characters with a 16 x 512 x 512, 16 x 1 MByte
-    static constexpr int atlasImageWidth = 512; // 16 characters, of 32 pixels wide.
-    static constexpr int atlasImageHeight = 512; // 16 characters, of 32 pixels height.
-    static constexpr int atlasMaximumNrImages = 16; // 16 * 512 characters, of 32x32 pixels.
-    static constexpr int stagingImageWidth = 64; // maximum size of character that can be uploaded is 64x64
-    static constexpr int stagingImageHeight = 64;
+    // Handle up to 4096 characters with a 16 x 1024 x 1024, 16 x 1 MByte
+    static constexpr int atlasImageWidth = 1024; // 16 characters, of 64 pixels wide.
+    static constexpr int atlasImageHeight = 1024; // 16 characters, of 64 pixels height.
+    static constexpr int atlasMaximumNrImages = 16; // 16 * 512 characters, of 64x64 pixels.
+    static constexpr int stagingImageWidth = 128; // maximum size of character that can be uploaded is 128x128
+    static constexpr int stagingImageHeight = 128;
 
-    static constexpr float fontSize = 58.0f;
+    static constexpr float fontSize = 64.0f;
     static constexpr int drawBorder = 3;
 
     static constexpr float renderBorder = 2.0;
