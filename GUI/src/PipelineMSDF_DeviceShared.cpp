@@ -195,6 +195,11 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         let v2 = glm::xy(vM * bounding_box.homogeneous_corner<2>());
         let v3 = glm::xy(vM * bounding_box.homogeneous_corner<3>());
 
+        constexpr float texelSize = 1.0 / fontSize;
+        constexpr float texelDistanceMultiplier = texelSize * SDF8::max_distance;
+        constexpr glm::vec3 texelDistanceMultiplerV3 = glm::vec3{texelDistanceMultiplier, texelDistanceMultiplier, 0.0f};
+        let distanceMultiplier = (vM * texelDistanceMultiplerV3).x;
+
         // If none of the vertices is inside the clipping rectangle then don't add the
         // quad to the vertex list.
         if (!(
@@ -213,10 +218,10 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         let &atlas_rect = atlas_i->second;
 
         ttauri_assert(offset + 4 <= ssize(vertices));
-        vertices[offset++] = Vertex{glm::vec3{v0, depth}, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color};
-        vertices[offset++] = Vertex{glm::vec3{v1, depth}, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color};
-        vertices[offset++] = Vertex{glm::vec3{v2, depth}, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color};
-        vertices[offset++] = Vertex{glm::vec3{v3, depth}, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color};
+        vertices[offset++] = Vertex{glm::vec3{v0, depth}, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v1, depth}, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v2, depth}, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v3, depth}, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
     }
 }
 
@@ -304,13 +309,9 @@ void DeviceShared::buildShaders()
     vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineMSDF.vert.spv"));
     fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineMSDF.frag.spv"));
 
-    fragmentShaderSpecializationConstants.rangeMultiplier = SDF8::max_distance;
-    fragmentShaderSpecializationEntries = FragmentSpecializationConstants::specializationEntries();
-    fragmentShaderSpecializationInfo = fragmentShaderSpecializationConstants.specializationInfo(fragmentShaderSpecializationEntries);
-
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main", &fragmentShaderSpecializationInfo}
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}
     };
 }
 

@@ -22,10 +22,14 @@ struct Vertex {
     //! The depth for depth test.
     R16G16B16A16SFloat color;
 
-    Vertex(glm::vec3 position, glm::vec3 textureCoord, wsRGBA color) noexcept :
+    //! The multiplier to use to convert a SDF distance from texture space to screen-space.
+    float distanceMultiplier;
+
+    Vertex(glm::vec3 position, glm::vec3 textureCoord, wsRGBA color, float distanceMultiplier) noexcept :
         position(position),
         textureCoord(textureCoord),
-        color(R16G16B16A16SFloat{color}) {}
+        color(R16G16B16A16SFloat{color}),
+        distanceMultiplier(distanceMultiplier) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -39,7 +43,8 @@ struct Vertex {
         return {
             { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position) },
             { 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, textureCoord) },                
-            { 2, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) }
+            { 2, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
+            { 3, 0, vk::Format::eR32Sfloat, offsetof(Vertex, distanceMultiplier) }
         };
     }
 };

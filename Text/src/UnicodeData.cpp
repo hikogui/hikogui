@@ -298,23 +298,24 @@ constexpr std::array unicodeRangeToBitPosition = {
 
 void UnicodeRanges::add(char32_t first, char32_t last) noexcept
 {
-    auto first_ = std::lower_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), first, [](let &a, let &b) { return a.first < b; });
-    auto last_ = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), last, [](let &a, let &b) { return a < b.first; });
-    for (auto i = first_; i != last_; ++i) {
+    ttauri_assert(first < last);
+    auto first_ = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), first, [](let &value, let &element) { return value < element.first; });
+    auto last_ = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), last, [](let &value, let &element) { return value < element.first; });
+    for (auto i = (first_ - 1); i != last_; ++i) {
         set_bit(i->second);
     }
 }
 
 void UnicodeRanges::add(char32_t c) noexcept
 {
-    auto i = std::lower_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), c, [](let &a, let &b) { return a.first < b; });
-    return set_bit(i->second);
+    auto i = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), c, [](let &value, let &element) { return value < element.first; });
+    return set_bit((i - 1)->second);
 }
 
 [[nodiscard]] bool UnicodeRanges::contains(char32_t c) const noexcept
 {
-    auto i = std::lower_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), c, [](let &a, let &b) { return a.first < b; });
-    return get_bit(i->second);
+    auto i = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), c, [](let &value, let &element) { return value < element.first; });
+    return get_bit((i - 1)->second);
 }
 
 

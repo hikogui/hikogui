@@ -5,7 +5,6 @@
 
 #include "TTauri/GUI/PipelineMSDF_TextureMap.hpp"
 #include "TTauri/GUI/PipelineMSDF_AtlasRect.hpp"
-#include "TTauri/GUI/PipelineMSDF_FragmentSpecializationConstants.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/geometry.hpp"
@@ -55,7 +54,6 @@ struct DeviceShared final {
 
     std::array<vk::SpecializationMapEntry,1> fragmentShaderSpecializationEntries;
     vk::SpecializationInfo fragmentShaderSpecializationInfo;
-    FragmentSpecializationConstants fragmentShaderSpecializationConstants;
 
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 

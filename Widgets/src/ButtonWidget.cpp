@@ -59,8 +59,8 @@ void ButtonWidget::update(bool modified) noexcept
         drawing.addPath(buttonPath, backgroundColor);
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
-        let labelStyle1 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor1, TextDecoration::None);
-        let labelStyle2 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor2, TextDecoration::None);
+        let labelStyle1 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor1, TextDecoration::None);
+        let labelStyle2 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor2, TextDecoration::None);
 
         labelShapedText1 = ShapedText(label(), labelStyle1, Alignment::BaseCenter, box.currentExtent(), box.currentExtent());
         labelShapedText2 = ShapedText(label(), labelStyle2, Alignment::BaseCenter, box.currentExtent(), box.currentExtent());
