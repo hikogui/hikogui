@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/geometry.hpp"
 #include <array>
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 /* A location inside the atlas where the character is located.
  */

@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 /*! A vertex defining a rectangle on a window.
 * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.

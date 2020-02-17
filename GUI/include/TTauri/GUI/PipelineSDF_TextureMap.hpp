@@ -9,7 +9,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 struct TextureMap {
     vk::Image image;

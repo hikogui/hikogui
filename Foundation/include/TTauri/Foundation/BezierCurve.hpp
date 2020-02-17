@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/Foundation/MSD10.hpp"
 #include "TTauri/Foundation/SDF8.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
@@ -422,12 +421,6 @@ struct BezierCurve {
  * @param curves All curves of path, in no particular order.
  */
 void fill(PixelMap<uint8_t>& image, std::vector<BezierCurve> const& curves) noexcept;
-
-/** Fill a multi-channel signed distance field image from the given contour.
- * @param image An multichannel-signed-distance-field which show distance toward the closest curve
- * @param curves All curves of path, in no particular order.
- */
-void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexcept;
 
 /** Fill a signed distance field image from the given contour.
 * @param image An signed-distance-field which show distance toward the closest curve

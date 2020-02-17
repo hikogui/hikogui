@@ -69,7 +69,7 @@ void ButtonWidget::update(bool modified) noexcept
             drawing += labelShapedText2.get_path();
         }
 
-        window->device->MSDFPipeline->prepareAtlas(labelShapedText1);
+        window->device->SDFPipeline->prepareAtlas(labelShapedText1);
     }
 
     return Widget::update(modified);
@@ -103,15 +103,15 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
     Widget::pipelineImagePlaceVertices(vertices, offset);
 }
 
-void ButtonWidget::pipelineMSDFPlaceVertices(gsl::span<GUI::PipelineMSDF::Vertex>& vertices, ssize_t& offset) noexcept
+void ButtonWidget::pipelineSDFPlaceVertices(gsl::span<GUI::PipelineSDF::Vertex>& vertices, ssize_t& offset) noexcept
 {
     ttauri_assert(window);
 
     if ((update_count / 60) % 2 == 0) {
-        window->device->MSDFPipeline->placeVertices(labelShapedText1, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
+        window->device->SDFPipeline->placeVertices(labelShapedText1, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
     }
 
-    Widget::pipelineMSDFPlaceVertices(vertices, offset);
+    Widget::pipelineSDFPlaceVertices(vertices, offset);
 }
 
 

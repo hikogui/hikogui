@@ -312,70 +312,7 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     };    
 }
 
-/** Check if at least two components between two pixels have a large swing from positive to negative.
- */
-[[nodiscard]] bool is_bad_pixel(MSD10 const &lhs, MSD10 const &rhs) noexcept
-{
-    constexpr float threshold = 2.9f; // 2 pixels diagonal distance sqrt(2**2 + 2**2)
-
-    let lhs_ = static_cast<glm::vec3>(lhs);
-    let rhs_ = static_cast<glm::vec3>(rhs);
-
-    int count = 0;
-    count += static_cast<int>(((lhs_.x >= 0) != (rhs_.x >= 0)) && (std::abs(lhs_.x - rhs_.x) >= threshold));
-    count += static_cast<int>(((lhs_.y >= 0) != (rhs_.y >= 0)) && (std::abs(lhs_.y - rhs_.y) >= threshold));
-    count += static_cast<int>(((lhs_.z >= 0) != (rhs_.z >= 0)) && (std::abs(lhs_.z - rhs_.z) >= threshold));
-    return count >= 2;
-}
- 
-[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<MSD10> const &image) noexcept
-{
-    auto r = std::vector<std::pair<int,int>>{};
-
-    auto row = image.at(0);
-    auto next_row = image.at(1);
-    for (int row_nr = 1; row_nr != (image.height - 1); ++row_nr) {
-        auto prev_row = row;
-        row = next_row;
-        next_row = image.at(row_nr + 1);
-
-        for (int column_nr = 1; column_nr != (image.width - 1); ++column_nr) {
-            let &pixel = row[column_nr];
-
-            if (
-                is_bad_pixel(pixel, prev_row[column_nr - 1]) ||
-                is_bad_pixel(pixel, prev_row[column_nr]) ||
-                is_bad_pixel(pixel, prev_row[column_nr + 1]) ||
-                is_bad_pixel(pixel, row[column_nr - 1]) ||
-                is_bad_pixel(pixel, row[column_nr + 1]) ||
-                is_bad_pixel(pixel, next_row[column_nr - 1]) ||
-                is_bad_pixel(pixel, next_row[column_nr]) || 
-                is_bad_pixel(pixel, next_row[column_nr + 1])
-            ) {
-                r.emplace_back(column_nr, row_nr);
-            }
-        }
-    }
-    return r;
-}
-
-void fill(PixelMap<MSD10> &image, std::vector<BezierCurve> const &curves) noexcept
-{
-    for (int row_nr = 0; row_nr != image.height; ++row_nr) {
-        auto row = image.at(row_nr);
-        auto y = static_cast<float>(row_nr);
-        for (int column_nr = 0; column_nr != image.width; ++column_nr) {
-            auto x = static_cast<float>(column_nr);
-            row[column_nr] = generate_MSD10_pixel(glm::vec2(x, y), curves);
-        }
-    }
-
-    for (let [x, y]: bad_pixels(image)) {
-        image[y][x].repair();
-    }
-}
-
-[[nodiscard]] static float generate_SDF8_pixel(glm::vec2 point, std::vector<BezierCurve> const &curves) noexcept
+ [[nodiscard]] static float generate_SDF8_pixel(glm::vec2 point, std::vector<BezierCurve> const &curves) noexcept
 {
     if (ssize(curves) == 0) {
         return -std::numeric_limits<float>::max();

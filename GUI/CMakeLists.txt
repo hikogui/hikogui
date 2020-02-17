@@ -12,8 +12,8 @@ add_shader(TTauri_GUI_Shader_objs
     shaders/PipelineImage.frag
     shaders/PipelineFlat.vert
     shaders/PipelineFlat.frag
-    shaders/PipelineMSDF.vert
-    shaders/PipelineMSDF.frag
+    shaders/PipelineSDF.vert
+    shaders/PipelineSDF.frag
 )
 
 set(TTauri_GUI_srcs
@@ -31,9 +31,9 @@ set(TTauri_GUI_srcs
     src/PipelineImage_DeviceShared.cpp
     src/PipelineImage_Image.cpp
     src/PipelineImage_TextureMap.cpp
-    src/PipelineMSDF.cpp
-    src/PipelineMSDF_DeviceShared.cpp
-    src/PipelineMSDF_TextureMap.cpp
+    src/PipelineSDF.cpp
+    src/PipelineSDF_DeviceShared.cpp
+    src/PipelineSDF_TextureMap.cpp
     src/VerticalSync_win32.cpp
     src/VulkanMemoryAllocator.cpp
     src/Window_base.cpp

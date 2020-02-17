@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineMSDF.hpp"
-#include "TTauri/GUI/PipelineMSDF_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineSDF.hpp"
+#include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
@@ -13,7 +13,7 @@
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 using namespace std;
 
@@ -44,7 +44,7 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
         atlasAllocationMaxHeight = 0;
 
         if (atlasAllocationPosition.z >= atlasMaximumNrImages) {
-            LOG_FATAL("PipelineMSDF atlas overflow, too many glyphs in use.");
+            LOG_FATAL("PipelineSDF atlas overflow, too many glyphs in use.");
         }
 
         if (atlasAllocationPosition.z >= size(atlasTextures)) {
@@ -237,7 +237,7 @@ void DeviceShared::buildIndexBuffer()
     {
         vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
-            sizeof (uint16_t) * PipelineMSDF::PipelineMSDF::maximumNumberOfIndices,
+            sizeof (uint16_t) * PipelineSDF::PipelineSDF::maximumNumberOfIndices,
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
             vk::SharingMode::eExclusive
         };
@@ -251,7 +251,7 @@ void DeviceShared::buildIndexBuffer()
         // Create staging vertex index buffer.
         vk::BufferCreateInfo const bufferCreateInfo = {
             vk::BufferCreateFlags(),
-            sizeof (uint16_t) * PipelineMSDF::PipelineMSDF::maximumNumberOfIndices,
+            sizeof (uint16_t) * PipelineSDF::PipelineSDF::maximumNumberOfIndices,
             vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
             vk::SharingMode::eExclusive
         };
@@ -261,7 +261,7 @@ void DeviceShared::buildIndexBuffer()
 
         // Initialize indices.
         let stagingVertexIndexBufferData = device.mapMemory<uint16_t>(stagingVertexIndexBufferAllocation);
-        for (size_t i = 0; i < PipelineMSDF::PipelineMSDF::maximumNumberOfIndices; i++) {
+        for (size_t i = 0; i < PipelineSDF::PipelineSDF::maximumNumberOfIndices; i++) {
             let vertexInRectangle = i % 6;
             let rectangleNr = i / 6;
             let rectangleBase = rectangleNr * 4;
@@ -286,7 +286,7 @@ void DeviceShared::buildIndexBuffer()
             1
             }).at(0);
         commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
-        commands.copyBuffer(stagingVertexIndexBuffer, indexBuffer, {{0, 0, sizeof (uint16_t) * PipelineMSDF::PipelineMSDF::maximumNumberOfIndices}});
+        commands.copyBuffer(stagingVertexIndexBuffer, indexBuffer, {{0, 0, sizeof (uint16_t) * PipelineSDF::PipelineSDF::maximumNumberOfIndices}});
         commands.end();
 
         vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
@@ -306,8 +306,8 @@ void DeviceShared::teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevi
 
 void DeviceShared::buildShaders()
 {
-    vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineMSDF.vert.spv"));
-    fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineMSDF.frag.spv"));
+    vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineSDF.vert.spv"));
+    fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineSDF.frag.spv"));
 
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},

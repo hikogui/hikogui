@@ -7,7 +7,7 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineFlat.hpp"
-#include "TTauri/GUI/PipelineMSDF.hpp"
+#include "TTauri/GUI/PipelineSDF.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
@@ -30,7 +30,7 @@ void Window_vulkan::initialize()
 
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
-    MSDFPipeline = std::make_unique<PipelineMSDF::PipelineMSDF>(dynamic_cast<Window &>(*this));
+    SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(dynamic_cast<Window &>(*this));
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
 }
 
@@ -143,7 +143,7 @@ void Window_vulkan::build()
         if (device) {
             flatPipeline->buildForNewDevice();
             imagePipeline->buildForNewDevice();
-            MSDFPipeline->buildForNewDevice();
+            SDFPipeline->buildForNewDevice();
             state = State::NoSurface;
         }
     }
@@ -155,7 +155,7 @@ void Window_vulkan::build()
         }
         flatPipeline->buildForNewSurface();
         imagePipeline->buildForNewSurface();
-        MSDFPipeline->buildForNewSurface();
+        SDFPipeline->buildForNewSurface();
         state = State::NoSwapchain;
     }
 
@@ -182,7 +182,7 @@ void Window_vulkan::build()
         buildSemaphores();
         flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
         imagePipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent, nrSwapchainImages);
-        MSDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
+        SDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
 
         windowChangedSize({
             numeric_cast<float>(swapchainImageExtent.width),
@@ -202,7 +202,7 @@ void Window_vulkan::teardown()
         waitIdle();
         imagePipeline->teardownForSwapchainLost();
         flatPipeline->teardownForSwapchainLost();
-        MSDFPipeline->teardownForSwapchainLost();
+        SDFPipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownFramebuffers();
         teardownRenderPasses();
@@ -213,7 +213,7 @@ void Window_vulkan::teardown()
             LOG_INFO("Tearing down because the window lost the drawable surface.");
             imagePipeline->teardownForSurfaceLost();
             flatPipeline->teardownForSurfaceLost();
-            MSDFPipeline->teardownForSurfaceLost();
+            SDFPipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = State::NoSurface;
 
@@ -222,7 +222,7 @@ void Window_vulkan::teardown()
 
                 imagePipeline->teardownForDeviceLost();
                 flatPipeline->teardownForDeviceLost();
-                MSDFPipeline->teardownForDeviceLost();
+                SDFPipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = State::NoDevice;
 
@@ -231,7 +231,7 @@ void Window_vulkan::teardown()
 
                     imagePipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
-                    MSDFPipeline->teardownForWindowLost();
+                    SDFPipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
                 }
@@ -286,7 +286,7 @@ void Window_vulkan::render()
     // images with alpha-channel.
     let flatPipelineFinishedSemaphore = flatPipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
     let imagePipelineFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
-    let renderFinishedSemaphore = MSDFPipeline->render(frameBufferIndex.value(), imagePipelineFinishedSemaphore);
+    let renderFinishedSemaphore = SDFPipeline->render(frameBufferIndex.value(), imagePipelineFinishedSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.

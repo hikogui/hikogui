@@ -131,8 +131,8 @@ Device_vulkan::~Device_vulkan()
         gsl_suppress(f.6) {
             imagePipeline->destroy(gsl::make_not_null(this));
             imagePipeline = nullptr;
-            MSDFPipeline->destroy(gsl::make_not_null(this));
-            MSDFPipeline = nullptr;
+            SDFPipeline->destroy(gsl::make_not_null(this));
+            SDFPipeline = nullptr;
             flatPipeline->destroy(gsl::make_not_null(this));
             flatPipeline = nullptr;
 
@@ -217,7 +217,7 @@ void Device_vulkan::initializeDevice(Window const &window)
 
     imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(dynamic_cast<Device &>(*this));
-    MSDFPipeline = std::make_unique<PipelineMSDF::DeviceShared>(dynamic_cast<Device &>(*this));
+    SDFPipeline = std::make_unique<PipelineSDF::DeviceShared>(dynamic_cast<Device &>(*this));
 
     Device_base::initializeDevice(window);
 }

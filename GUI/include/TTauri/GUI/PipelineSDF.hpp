@@ -4,32 +4,32 @@
 #pragma once
 
 #include "TTauri/GUI/Pipeline_vulkan.hpp"
-#include "TTauri/GUI/PipelineMSDF_PushConstants.hpp"
-#include "TTauri/GUI/PipelineMSDF_Vertex.hpp"
+#include "TTauri/GUI/PipelineSDF_PushConstants.hpp"
+#include "TTauri/GUI/PipelineSDF_Vertex.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.
  */
-class PipelineMSDF : public Pipeline_vulkan {
+class PipelineSDF : public Pipeline_vulkan {
 public:
     static constexpr int maximumNumberOfVertices = 65536;
     static constexpr int maximumNumberOfSquares = maximumNumberOfVertices / 4;
     static constexpr int maximumNumberOfTriangles = maximumNumberOfSquares * 2;
     static constexpr int maximumNumberOfIndices = maximumNumberOfTriangles * 3;
     
-    PipelineMSDF(Window const &window);
-    ~PipelineMSDF() {};
+    PipelineSDF(Window const &window);
+    ~PipelineSDF() {};
 
-    PipelineMSDF(const PipelineMSDF &) = delete;
-    PipelineMSDF &operator=(const PipelineMSDF &) = delete;
-    PipelineMSDF(PipelineMSDF &&) = delete;
-    PipelineMSDF &operator=(PipelineMSDF &&) = delete;
+    PipelineSDF(const PipelineSDF &) = delete;
+    PipelineSDF &operator=(const PipelineSDF &) = delete;
+    PipelineSDF(PipelineSDF &&) = delete;
+    PipelineSDF &operator=(PipelineSDF &&) = delete;
 
     vk::Semaphore render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore) override;
 

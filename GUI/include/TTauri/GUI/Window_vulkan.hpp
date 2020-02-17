@@ -16,8 +16,8 @@ namespace PipelineFlat {
 class PipelineFlat;
 }
 
-namespace PipelineMSDF {
-class PipelineMSDF;
+namespace PipelineSDF {
+class PipelineSDF;
 }
 
 class Window_vulkan : public Window_base {
@@ -42,7 +42,7 @@ public:
 
     std::unique_ptr<PipelineImage::PipelineImage> imagePipeline;
     std::unique_ptr<PipelineFlat::PipelineFlat> flatPipeline;
-    std::unique_ptr<PipelineMSDF::PipelineMSDF> MSDFPipeline;
+    std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
 
     Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan();

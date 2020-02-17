@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Device_base.hpp"
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineMSDF_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
@@ -42,7 +42,7 @@ public:
 
     std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
     std::unique_ptr<PipelineFlat::DeviceShared> flatPipeline;
-    std::unique_ptr<PipelineMSDF::DeviceShared> MSDFPipeline;
+    std::unique_ptr<PipelineSDF::DeviceShared> SDFPipeline;
 
     /*! List if extension required on this device.
      */

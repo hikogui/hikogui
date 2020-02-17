@@ -6,7 +6,7 @@
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 struct PushConstants {
     glm::vec2 windowExtent = { 0.0, 0.0 };

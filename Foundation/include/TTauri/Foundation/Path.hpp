@@ -9,7 +9,6 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
-#include "TTauri/Foundation/MSD10.hpp"
 #include "TTauri/Foundation/SDF8.hpp"
 #include <glm/glm.hpp>
 #include <vector>
@@ -21,7 +20,7 @@ template<typename T> struct PixelMap;
 
 /*! A path is a vector graphics object.
  * It represents:
- *  - a set of layers each with a different colour.
+ *  - a set of layers each with a different color.
  *  - a layer is a set of contours
  *  - a contour is a set of bezier point describing a closed set of bezier curves.
  */
@@ -166,7 +165,7 @@ struct Path {
      *     "Approximation of a cubic bezier curve by circular arcs and vice versa"
      *     -- Aleksas Riškus (chapter 3, formulas 8 and 9, there are a few typos in the formulas)
      *
-     * \param radius postive radius means positive arc, negative radius is a negative arc.
+     * \param radius positive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.
      */
     void arcTo(float radius, glm::vec2 position) noexcept;
@@ -260,12 +259,6 @@ void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOri
 * \param subpixel orientation to improve resolution on LCD displays.
 */
 void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
-
-/** Fill a multi-channel signed distance field image from the given path.
-* @param image An multichannel-signed-distance-field which show distance toward the closest curve
-* @param path A path.
-*/
-void fill(PixelMap<MSD10> &dst, Path const &path) noexcept;
 
 /** Fill a signed distance field image from the given path.
 * @param image An signed-distance-field which show distance toward the closest curve

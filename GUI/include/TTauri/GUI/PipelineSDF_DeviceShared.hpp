@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/GUI/PipelineMSDF_TextureMap.hpp"
-#include "TTauri/GUI/PipelineMSDF_AtlasRect.hpp"
+#include "TTauri/GUI/PipelineSDF_TextureMap.hpp"
+#include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/geometry.hpp"
@@ -23,7 +23,7 @@ namespace TTauri::Text {
 class ShapedText;
 }
 
-namespace TTauri::GUI::PipelineMSDF {
+namespace TTauri::GUI::PipelineSDF {
 
 struct Image;
 

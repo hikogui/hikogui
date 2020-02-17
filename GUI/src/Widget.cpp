@@ -52,10 +52,10 @@ void Widget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices
     }
 }
 
-void Widget::pipelineMSDFPlaceVertices(gsl::span<PipelineMSDF::Vertex> &vertices, ssize_t &offset) noexcept
+void Widget::pipelineSDFPlaceVertices(gsl::span<PipelineSDF::Vertex> &vertices, ssize_t &offset) noexcept
 {
     for (auto &child : children) {
-        child->pipelineMSDFPlaceVertices(vertices, offset);
+        child->pipelineSDFPlaceVertices(vertices, offset);
     }
 }
 
