@@ -22,54 +22,38 @@ ButtonWidget::ButtonWidget(std::string const label) noexcept :
 
 void ButtonWidget::update(bool modified) noexcept
 {
-    if ((update_count++ % 60) == 0) {
-        modified = true;
-    }
-
     if (modified) {
         // Draw something.
         let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
 
         wsRGBA backgroundColor;
-        wsRGBA labelColor1;
-        wsRGBA labelColor2;
+        wsRGBA labelColor;
         wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
         if (value()) {
             backgroundColor = wsRGBA{ 0x4c4cffff };
-            labelColor1 = wsRGBA{1.0, 1.0, 1.0, 1.0};
-            labelColor2 = wsRGBA{0.0, 1.0, 1.0, 1.0};
+            labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
         } else {
             backgroundColor = wsRGBA{ 0x4c884cff };
-            labelColor1 = wsRGBA{0.0, 0.0, 0.0, 1.0};
-            labelColor2 = wsRGBA{0.0, 0.0, 0.0, 1.0};
+            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
         }
         if (pressed()) {
             backgroundColor = wsRGBA{ 0x4c4cffff };
-            labelColor1 = wsRGBA{0.0, 0.0, 0.0, 1.0};
-            labelColor2 = wsRGBA{1.0, 0.0, 0.0, 1.0};
+            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
         }
 
-    #pragma warning(suppress: 6001)
+        auto buttonPath = Path();
         let rectangle = rect2{{0.5f, 0.5f}, { box.currentExtent().width() - 1.0f, box.currentExtent().height() - 1.0f }};
+        buttonPath.addRectangle(rectangle, backgroundShape);
 
         drawing.clear();
-
-        auto buttonPath = Path();
-        buttonPath.addRectangle(rectangle, backgroundShape);
         drawing.addPath(buttonPath, backgroundColor);
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
-        let labelStyle1 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor1, TextDecoration::None);
-        let labelStyle2 = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor2, TextDecoration::None);
+        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 12.0, labelColor, TextDecoration::None);
 
-        labelShapedText1 = ShapedText(label(), labelStyle1, Alignment::BaseCenter, box.currentExtent(), box.currentExtent());
-        labelShapedText2 = ShapedText(label(), labelStyle2, Alignment::BaseCenter, box.currentExtent(), box.currentExtent());
+        labelShapedText = ShapedText(label(), labelStyle, box.currentExtent(), Alignment::MiddleCenter);
 
-        if ((update_count / 60) % 2 == 0) {
-            drawing += labelShapedText2.get_path();
-        }
-
-        window->device->SDFPipeline->prepareAtlas(labelShapedText1);
+        window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 
     return Widget::update(modified);
@@ -79,11 +63,9 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
 {
     ttauri_assert(window);
 
-    let blink = (update_count / 60) % 2 == 0;
-
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
-    }, "Button", label(), value(), enabled(), focus(), pressed(), blink);
+    }, "Button", label(), value(), enabled(), focus(), pressed());
  
     if (backingImage.image) {
         let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
@@ -107,10 +89,8 @@ void ButtonWidget::pipelineSDFPlaceVertices(gsl::span<GUI::PipelineSDF::Vertex>&
 {
     ttauri_assert(window);
 
-    if ((update_count / 60) % 2 == 0) {
-        window->device->SDFPipeline->placeVertices(labelShapedText1, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
-    }
-
+    window->device->SDFPipeline->placeVertices(labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
+    
     Widget::pipelineSDFPlaceVertices(vertices, offset);
 }
 

@@ -14,8 +14,6 @@ namespace TTauri::GUI::Widgets {
 
 class ButtonWidget : public Widget {
 protected:
-    uint64_t update_count = 0;
-
     bool _value = false;
     bool _enabled = true;
     bool _focus = false;
@@ -23,8 +21,7 @@ protected:
     std::string _label = "<unknown>";
 
     Path drawing;
-    Text::ShapedText labelShapedText1;
-    Text::ShapedText labelShapedText2;
+    Text::ShapedText labelShapedText;
 public:
 
     ButtonWidget(std::string const label) noexcept;

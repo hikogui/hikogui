@@ -13,6 +13,9 @@ namespace TTauri {
  */
 struct SDF8 : public R8SNorm {
     /** Max distance in pixels represented by the signed distance field.
+     * The max_distance determines the maximum size of the shadow compared to the
+     * font as drawn into the atlas. The maximum distance needs to be at least
+     * the diagonal distance between two pixels for proper linear-interpolation sqrt(1.0*1.0 + 1.0*1.0).
      */
     constexpr static float max_distance = 4.0f;
     constexpr static float one_over_max_distance = 1.0f / max_distance;

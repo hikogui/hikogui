@@ -335,52 +335,9 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     return min_distance;
 }
 
-/*
-[[nodiscard]] bool is_bad_pixel(SDF8 const &lhs, SDF8 const &rhs) noexcept
-{
-    constexpr float threshold = 1.4142f; // 1 pixels diagonal distance sqrt(2)
-    //constexpr float threshold = 0.7071f; // 1 pixels diagonal distance sqrt(1)
-
-    let lhs_ = static_cast<float>(lhs);
-    let rhs_ = static_cast<float>(rhs);
-
-    return std::abs(lhs_ - rhs_) > threshold;
-}
-
 [[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<SDF8> const &image) noexcept
 {
-    auto r = std::vector<std::pair<int,int>>{};
-
-    auto row = image.at(0);
-    auto next_row = image.at(1);
-    for (int row_nr = 1; row_nr != (image.height - 1); ++row_nr) {
-        auto prev_row = row;
-        row = next_row;
-        next_row = image.at(row_nr + 1);
-
-        for (int column_nr = 1; column_nr != (image.width - 1); ++column_nr) {
-            let &pixel = row[column_nr];
-
-            int count = 0;
-            count += static_cast<int>(is_bad_pixel(pixel, prev_row[column_nr - 1]));
-            count += static_cast<int>(is_bad_pixel(pixel, prev_row[column_nr]));
-            count += static_cast<int>(is_bad_pixel(pixel, prev_row[column_nr + 1]));
-            count += static_cast<int>(is_bad_pixel(pixel, row[column_nr - 1]));
-            count += static_cast<int>(is_bad_pixel(pixel, row[column_nr + 1]));
-            count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr - 1]));
-            count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr]));
-            count += static_cast<int>(is_bad_pixel(pixel, next_row[column_nr + 1]));
-            if (count > 4) {
-                r.emplace_back(column_nr, row_nr);
-            }
-        }
-    }
-    return r;
-}*/
-
-[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<SDF8> const &image) noexcept
-{
-    constexpr float threshold = 0.075;
+    constexpr float threshold = 0.075f;
 
     auto r = std::vector<std::pair<int,int>>{};
 

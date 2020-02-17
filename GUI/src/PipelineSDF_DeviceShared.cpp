@@ -134,7 +134,11 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         // We will draw the font at 15 pt into the texture. And we need a border for the texture to
         // allow proper bi-linear interpolation on the edges.
-        let extent = static_cast<iextent2>(attr_grapheme.metrics.boundingBox.extent * fontSize) + glm::ivec2(drawBorder*2, drawBorder*2);
+        let extent = iextent2{
+            std::ceil(attr_grapheme.metrics.boundingBox.extent.width() * fontSize + drawBorder * 2),
+            std::ceil(attr_grapheme.metrics.boundingBox.extent.height() * fontSize + drawBorder * 2)
+        };
+
         auto atlas_rect = allocateRect(extent);
 
         // Now create a path of the combined glyphs. Offset and scale the path so that
@@ -149,8 +153,8 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
         uploadStagingPixmapToAtlas(atlas_rect);
 
         // The bounding box is in texture coordinates.
-        let atlas_px_offset = static_cast<glm::vec2>(glm::xy(atlas_rect.atlas_position)) + glm::vec2{drawBorder - renderBorder, drawBorder - renderBorder};
-        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent * fontSize + glm::vec2{renderBorder*2.0f, renderBorder*2.0f};
+        let atlas_px_offset = static_cast<glm::vec2>(glm::xy(atlas_rect.atlas_position));
+        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent * fontSize + glm::vec2{drawBorder*2.0f, drawBorder*2.0f};
 
         let atlas_tx_multiplier = glm::vec2{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
         let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;
@@ -182,11 +186,18 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 */
 void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, gsl::span<Vertex> &vertices, ssize_t &offset) noexcept
 {
+    auto cr = glm::vec4{
+        clippingRectangle.offset.x,
+        clippingRectangle.offset.y,
+        clippingRectangle.offset.x + clippingRectangle.extent.width(),
+        clippingRectangle.offset.y + clippingRectangle.extent.height()
+    };
+
     for (let &attr_grapheme: text) {
         // Adjust bounding box by adding a border based on the fixed font size.
         let bounding_box = rect2{
-            attr_grapheme.metrics.boundingBox.offset - glm::vec2{scaledRenderBorder, scaledRenderBorder},
-            attr_grapheme.metrics.boundingBox.extent + glm::vec2{scaledRenderBorder*2.0f, scaledRenderBorder*2.0f}
+            attr_grapheme.metrics.boundingBox.offset - glm::vec2{scaledDrawBorder, scaledDrawBorder},
+            attr_grapheme.metrics.boundingBox.extent + glm::vec2{scaledDrawBorder*2.0f, scaledDrawBorder*2.0f}
         };
 
         let vM = transform * attr_grapheme.transform;
@@ -195,7 +206,7 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         let v2 = glm::xy(vM * bounding_box.homogeneous_corner<2>());
         let v3 = glm::xy(vM * bounding_box.homogeneous_corner<3>());
 
-        constexpr float texelSize = 1.0 / fontSize;
+        constexpr float texelSize = 1.0f / fontSize;
         constexpr float texelDistanceMultiplier = texelSize * SDF8::max_distance;
         constexpr glm::vec3 texelDistanceMultiplerV3 = glm::vec3{texelDistanceMultiplier, texelDistanceMultiplier, 0.0f};
         let distanceMultiplier = (vM * texelDistanceMultiplerV3).x;
@@ -210,7 +221,6 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         )) {
             continue;
         }
-
         let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
         ttauri_assume(atlas_i != glyphs_in_atlas.end());
 
@@ -218,10 +228,10 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         let &atlas_rect = atlas_i->second;
 
         ttauri_assert(offset + 4 <= ssize(vertices));
-        vertices[offset++] = Vertex{glm::vec3{v0, depth}, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
-        vertices[offset++] = Vertex{glm::vec3{v1, depth}, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
-        vertices[offset++] = Vertex{glm::vec3{v2, depth}, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
-        vertices[offset++] = Vertex{glm::vec3{v3, depth}, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v0, depth}, cr, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v1, depth}, cr, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v2, depth}, cr, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices[offset++] = Vertex{glm::vec3{v3, depth}, cr, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
     }
 }
 

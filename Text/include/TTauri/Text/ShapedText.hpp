@@ -18,45 +18,66 @@ namespace TTauri::Text {
 /** ShapedText represent a piece of text shaped to be displayed.
  */
 class ShapedText {
+    extent2 extent;
+    Alignment alignment;
+    bool wrap;
+
     std::vector<AttributedGlyph> text;
-    extent2 box_size;
+    extent2 text_extent;
 
 public:
     ShapedText() noexcept :
-        text(), box_size(0.0f, 0.0f) {}
+        extent(0.0f, 0.0f), alignment(Alignment::BaseCenter), wrap(true), text(), text_extent(0.0f, 0.0f) {}
 
     /** Create shaped text from attributed text..
      * This function is used to draw rich-text.
      * Each grapheme comes with its own text-style.
      *
-     * @param text Text to draw.
-     * @param alignment Alignment within a box of minimum_size.
-     * @param minimum_size The minimum size of the box.
-     * @param maximum_size Size that the box may grow to.
+     * @param text The text to draw.
+     * @param extent The size of the box to draw in.
+     * @param alignment The alignment of the text within the extent.
+     * @param wrap When fitting the text in the extent wrap lines when needed.
      */
-    ShapedText(std::vector<AttributedGrapheme> const &text, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept;
+    ShapedText(
+        std::vector<AttributedGrapheme> const &text,
+        extent2 const extent,
+        Alignment const alignment=Alignment::BaseCenter,
+        bool wrap=true
+    ) noexcept;
 
     /** Create shaped text from a string.
      * This function is mostly used for drawing label text.
      *
-     * @param text Text to draw.
-     * @param style Text style
-     * @param alignment Alignment within a box of minimum_size.
-     * @param minimum_size The minimum size of the box.
-     * @param maximum_size Size that the box may grow to.
+     * @param text The text to draw.
+     * @param style The text style.
+     * @param extent The size of the box to draw in.
+     * @param alignment The alignment of the text within the extent.
+     * @param wrap When fitting the text in the extent wrap lines when needed.
      */
-    ShapedText(gstring const &text, TextStyle const &style, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept;
+    ShapedText(
+        gstring const &text,
+        TextStyle const &style,
+        extent2 const extent,
+        Alignment const alignment=Alignment::BaseCenter,
+        bool wrap=true
+    ) noexcept;
 
     /** Create shaped text from a string.
      * This function is mostly used for drawing label text.
      *
-     * @param text Text to draw.
-     * @param style Text style
-     * @param alignment Alignment within a box of minimum_size.
-     * @param minimum_size The minimum size of the box.
-     * @param maximum_size Size that the box may grow to.
+     * @param text The text to draw.
+     * @param style The text style.
+     * @param extent The size of the box to draw in.
+     * @param alignment The alignment of the text within the extent.
+     * @param wrap When fitting the text in the extent wrap lines when needed.
      */
-    ShapedText(std::string const &text, TextStyle const &style, Alignment const &alignment, extent2 const &minimum_size, extent2 const &maximum_size) noexcept;
+    ShapedText(
+        std::string const &text,
+        TextStyle const &style,
+        extent2 const extent,
+        Alignment const alignment=Alignment::BaseCenter,
+        bool wrap=true
+    ) noexcept;
 
     ShapedText(ShapedText const &other) noexcept = default;
     ShapedText(ShapedText &&other) noexcept = default;
@@ -64,12 +85,10 @@ public:
     ShapedText &operator=(ShapedText &&other) noexcept = default;
     ~ShapedText() = default;
 
-    /** Return the size of the box.
-     * The box is at least minimum_size, up to maximum_size.
+    /** Return the recommended extent for the size.
+     * @param max_width The maximum line width.
      */
-    [[nodiscard]] extent2 size() const noexcept {
-        return box_size;
-    }
+    //[[nodiscard]] extent2 size(float max_width = std::numeric_limits<float>::max()) const noexcept;
 
     [[nodiscard]] std::vector<AttributedGlyph>::const_iterator begin() const noexcept {
         return text.cbegin();

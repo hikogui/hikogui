@@ -8,22 +8,36 @@ layout(push_constant) uniform PushConstants {
 
 // In position is in window pixel position, with left-bottom origin.
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inTextureCoord;
-layout(location = 2) in vec4 inColor;
-layout(location = 3) in float inDistanceMultiplier;
+layout(location = 1) in vec4 inClippingRectangle;
+layout(location = 2) in vec3 inTextureCoord;
+layout(location = 3) in vec4 inColor;
+layout(location = 4) in float inDistanceMultiplier;
 
-layout(location = 0) out vec3 outTextureCoord;
-layout(location = 1) out vec4 outColor;
-layout(location = 2) out float outDistanceMultiplier;
+layout(location = 0) out vec4 outClippingRectangle;
+layout(location = 1) out vec3 outTextureCoord;
+layout(location = 2) out vec4 outColor;
+layout(location = 3) out float outDistanceMultiplier;
 
-vec3 convertToViewport(vec3 windowPosition) {
+vec4 convertPositionToViewport(vec3 windowPosition)
+{
     float x = windowPosition.x * pushConstants.viewportScale.x - 1.0;
     float y = (pushConstants.windowExtent.y - windowPosition.y) * pushConstants.viewportScale.y - 1.0;
-    return vec3(x, y, windowPosition.z);
+    return vec4(x, y, windowPosition.z, 1.0);
+}
+
+vec4 convertClippingRectangleToScreen(vec4 clippingRectangle)
+{
+    return vec4(
+        clippingRectangle.x,
+        pushConstants.windowExtent.y - clippingRectangle.w,
+        clippingRectangle.z,
+        pushConstants.windowExtent.y - clippingRectangle.y
+    );
 }
 
 void main() {
-    gl_Position = vec4(convertToViewport(inPosition), 1.0);
+    gl_Position = convertPositionToViewport(inPosition);
+    outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
     outTextureCoord = inTextureCoord;
     outColor = inColor;
     outDistanceMultiplier = inDistanceMultiplier;

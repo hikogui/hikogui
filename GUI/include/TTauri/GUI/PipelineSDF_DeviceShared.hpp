@@ -36,13 +36,9 @@ struct DeviceShared final {
     static constexpr int stagingImageWidth = 128; // maximum size of character that can be uploaded is 128x128
     static constexpr int stagingImageHeight = 128;
 
-    static constexpr float fontSize = 64.0f;
-    static constexpr int drawBorder = 3;
-
-    static constexpr float renderBorder = 2.0;
-    static constexpr float scaledRenderBorder = renderBorder / fontSize;
-
-    static_assert(renderBorder < drawBorder);
+    static constexpr float fontSize = 28.0f;
+    static constexpr float drawBorder = SDF8::max_distance;
+    static constexpr float scaledDrawBorder = drawBorder / fontSize;
 
     Device const &device;
 
