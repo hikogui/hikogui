@@ -1,25 +1,19 @@
+XXX Depth buffer can be used as per-primative clipping/stencil buffer.
+
 # Render architecture
 Vulkan is used as the backend for rendering windows.
 
 ## Window
 Each window will have two swap-chain images assigned to it. The swap-chain
-image are RGBA; Alpha is fixed to 1 and no need for a depth buffer.
+image are RGBA; Alpha is fixed to 1 and no need for a depth or stencil buffer.
 
-To anti-alias and potentially LCD-sub-pixel anti-alias a pipeline + shader
+## High-resolution Framebuffer
+To anti-alias and potentially with LCD-sub-pixels a pipeline + shader
 is used to super-sample a high-resolution frame buffer. This high resolution
 frame buffer is treated as a 3x3 scaled window.
 
-Since the high-resolution frame buffer is shared between windows, each window
-will be rendered in turn.
-
-## High-resolution Framebuffer
-The high resolution framebuffer is a single RGBA color attachment and a single
-32 bit float depth attachment.
-
-This framebuffer is shared between all windows (to reduce memory usage),
-t should therefor be at least 3x3 time the size of the largest window. 
-
-There are three different pipeline + shaders run on the frame buffer.
+The high resolution framebuffer is a single 32 bit RGBA color attachment and a single
+16 bit depth attachment.
 
 ## Image shader
 The image shader takes a list of square-quads, with pointers inside a texture atlas to render.
@@ -32,7 +26,7 @@ seperate article about this.
 A simple polygon shader for drawing simple objects quickly.
 
 ## Character shader
-A character shader will render individual characters in high resolution using multi-colour
+A character shader will render individual characters in high resolution using
 signed distance fields.
 
 A texture atlas is filled with glyphs that are added as needed at run-time.
@@ -50,6 +44,7 @@ Steps of text-shaping:
    The search-priority algorithm will be described below.
  - Glyph morphing: Process a sequence of glyphs from the same font through the font's glyph morphing algorithms.
    The resulting font-glyph-size-color-index may contain fewer or more glyphs due to this morphing.
+   This is also the place where ligatures like 'ffi' are constructed by the font itself.
  - Line breaking: based on a given width, extra line breaks are added to the text.
  - Advance and kerning: Each glyph is assigned a screen position based on the advance and kerning algorithms of
    the font.
