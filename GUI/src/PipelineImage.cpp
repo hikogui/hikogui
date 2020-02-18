@@ -17,26 +17,21 @@ PipelineImage::PipelineImage(Window const &window) :
 {
 }
 
-vk::Semaphore PipelineImage::render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore)
+vk::Semaphore PipelineImage::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
 {
-    ssize_t tmpNumberOfVertices = 0;
-    window.widget->pipelineImagePlaceVertices(vertexBuffersData.at(frameBufferIndex), tmpNumberOfVertices);
+    numberOfVertices = 0;
+    window.widget->pipelineImagePlaceVertices(vertexBufferData, numberOfVertices);
 
-    device().flushAllocation(vertexBuffersAllocation.at(frameBufferIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBufferAllocation, 0, numberOfVertices * sizeof (Vertex));
 
     device().imagePipeline->prepareAtlasForRendering();
    
-    if (tmpNumberOfVertices != numberOfVertices) {
-        invalidateCommandBuffers();
-        numberOfVertices = tmpNumberOfVertices;
-    }
-
-    return Pipeline_vulkan::render(frameBufferIndex, inputSemaphore);
+    return Pipeline_vulkan::render(frameBuffer, inputSemaphore);
 }
 
-void PipelineImage::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t frameBufferIndex)
+void PipelineImage::drawInCommandBuffer()
 {
-    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(frameBufferIndex) };
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
@@ -86,13 +81,12 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineImage::createDescriptorSetLa
     } };
 }
 
-vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t frameBufferIndex) const
+vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet() const
 {
     let &sharedImagePipeline = device().imagePipeline;
-    let &frameBufferObject = frameBufferObjects.at(frameBufferIndex);
 
     return { {
-        frameBufferObject.descriptorSet,
+        descriptorSet,
         0, // destBinding
         0, // arrayElement
         1, // descriptorCount
@@ -101,7 +95,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet(uint32_t 
         nullptr,  // bufferInfo
         nullptr // texelBufferView
     }, {
-        frameBufferObject.descriptorSet,
+        descriptorSet,
         1, // destBinding
         0, // arrayElement
         numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
@@ -131,43 +125,25 @@ std::vector<vk::VertexInputAttributeDescription> PipelineImage::createVertexInpu
     return Vertex::inputAttributeDescriptions();
 }
 
-void PipelineImage::buildVertexBuffers(int nrFrameBuffers)
+void PipelineImage::buildVertexBuffers()
 {
-    BOOST_ASSERT(vertexBuffers.size() == 0);
-    BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
-    BOOST_ASSERT(vertexBuffersData.size() == 0);
-    for (size_t i = 0; i < nrFrameBuffers; i++) {
-        vk::BufferCreateInfo const bufferCreateInfo = {
-            vk::BufferCreateFlags(),
-            sizeof (Vertex) * PipelineImage::maximumNumberOfVertices,
-            vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::SharingMode::eExclusive
-        };
-        VmaAllocationCreateInfo allocationCreateInfo = {};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vk::BufferCreateInfo const bufferCreateInfo = {
+        vk::BufferCreateFlags(),
+        sizeof (Vertex) * PipelineImage::maximumNumberOfVertices,
+        vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::SharingMode::eExclusive
+    };
+    VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        let [vertexBuffer, vertexBufferAllocation] = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-        let vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
-
-        vertexBuffers.push_back(vertexBuffer);
-        vertexBuffersAllocation.push_back(vertexBufferAllocation);
-        vertexBuffersData.push_back(vertexBufferData);
-    }
+    std::tie(vertexBuffer, vertexBufferAllocation) = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+    vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
 }
 
 void PipelineImage::teardownVertexBuffers()
 {
-    BOOST_ASSERT(vertexBuffers.size() == vertexBuffersAllocation.size());
-    for (size_t i = 0; i < vertexBuffers.size(); i++) {
-        auto vertexBuffer = vertexBuffers.at(i);
-        auto vertexBufferAllocation = vertexBuffersAllocation.at(i);
-
-        device().unmapMemory(vertexBufferAllocation);
-        device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
-    }
-    vertexBuffers.clear();
-    vertexBuffersAllocation.clear();
-    vertexBuffersData.clear();
+    device().unmapMemory(vertexBufferAllocation);
+    device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 }

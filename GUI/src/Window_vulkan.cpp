@@ -180,9 +180,9 @@ void Window_vulkan::build()
         buildRenderPasses();
         buildFramebuffers();
         buildSemaphores();
-        flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent, nrSwapchainImages);
-        imagePipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent, nrSwapchainImages);
-        SDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent, nrSwapchainImages);
+        flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent);
+        imagePipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent);
+        SDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent);
 
         windowChangedSize({
             numeric_cast<float>(swapchainImageExtent.width),
@@ -261,13 +261,16 @@ void Window_vulkan::render()
         return;
     }
 
-    let frameBufferIndex = acquireNextImageFromSwapchain();
-    if (!frameBufferIndex) {
+    let optionalFrameBufferIndex = acquireNextImageFromSwapchain();
+    if (!optionalFrameBufferIndex) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
         return;
     }
-    tr.set<"frame_buffer"_tag>(*frameBufferIndex);
+    let frameBufferIndex = *optionalFrameBufferIndex;
+    let frameBuffer = swapchainFramebuffers.at(frameBufferIndex);
+
+    tr.set<"frame_buffer"_tag>(frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
     // XXX maybe use one for each swap chain image or go to single command buffer.
@@ -282,15 +285,15 @@ void Window_vulkan::render()
 
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
-    let flatPipelineFinishedSemaphore = flatPipeline->render(frameBufferIndex.value(), imageAvailableSemaphore);
-    let imagePipelineFinishedSemaphore = imagePipeline->render(frameBufferIndex.value(), flatPipelineFinishedSemaphore);
-    let renderFinishedSemaphore = SDFPipeline->render(frameBufferIndex.value(), imagePipelineFinishedSemaphore);
+    let flatPipelineFinishedSemaphore = flatPipeline->render(frameBuffer, imageAvailableSemaphore);
+    let imagePipelineFinishedSemaphore = imagePipeline->render(frameBuffer, flatPipelineFinishedSemaphore);
+    let renderFinishedSemaphore = SDFPipeline->render(frameBuffer, imagePipelineFinishedSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
     device->graphicsQueue.submit(0, nullptr, renderFinishedFence);
 
-    presentImageToQueue(frameBufferIndex.value(), renderFinishedSemaphore);
+    presentImageToQueue(frameBufferIndex, renderFinishedSemaphore);
 
     // Do an early tear down of invalid vulkan objects.
     teardown();

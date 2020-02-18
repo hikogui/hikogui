@@ -30,28 +30,28 @@ public:
     PipelineFlat(PipelineFlat &&) = delete;
     PipelineFlat &operator=(PipelineFlat &&) = delete;
 
-    vk::Semaphore render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore) override;
+    vk::Semaphore render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore) override;
 
 protected:
     PushConstants pushConstants;
 
     ssize_t numberOfVertices = 0;
-    std::vector<vk::Buffer> vertexBuffers;
-    std::vector<VmaAllocation> vertexBuffersAllocation;
-    std::vector<gsl::span<Vertex>> vertexBuffersData;
+    vk::Buffer vertexBuffer;
+    VmaAllocation vertexBufferAllocation;
+    gsl::span<Vertex> vertexBufferData;
 
-    void drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t frameBufferIndex) override;
+    void drawInCommandBuffer() override;
 
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
-    std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet(uint32_t frameBufferIndex) const override;
+    std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
     virtual ssize_t getDescriptorSetVersion() const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
 
 private:
-    void buildVertexBuffers(int nrFrameBuffers) override;
+    void buildVertexBuffers() override;
     void teardownVertexBuffers() override;
 };
 

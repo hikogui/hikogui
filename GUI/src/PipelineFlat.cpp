@@ -17,24 +17,19 @@ PipelineFlat::PipelineFlat(Window const &window) :
 {
 }
 
-vk::Semaphore PipelineFlat::render(uint32_t frameBufferIndex, vk::Semaphore inputSemaphore)
+vk::Semaphore PipelineFlat::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
 {
-    ssize_t tmpNumberOfVertices = 0;
-    window.widget->pipelineFlatPlaceVertices(vertexBuffersData.at(frameBufferIndex), tmpNumberOfVertices);
+    numberOfVertices = 0;
+    window.widget->pipelineFlatPlaceVertices(vertexBufferData, numberOfVertices);
 
-    device().flushAllocation(vertexBuffersAllocation.at(frameBufferIndex), 0, tmpNumberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBufferAllocation, 0, numberOfVertices * sizeof (Vertex));
 
-    if (tmpNumberOfVertices != numberOfVertices) {
-        invalidateCommandBuffers();
-        numberOfVertices = tmpNumberOfVertices;
-    }
-
-    return Pipeline_vulkan::render(frameBufferIndex, inputSemaphore);
+    return Pipeline_vulkan::render(frameBuffer, inputSemaphore);
 }
 
-void PipelineFlat::drawInCommandBuffer(vk::CommandBuffer &commandBuffer, uint32_t frameBufferIndex)
+void PipelineFlat::drawInCommandBuffer()
 {
-    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffers.at(frameBufferIndex) };
+    std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
@@ -71,7 +66,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineFlat::createDescriptorSetLay
     return { };
 }
 
-vector<vk::WriteDescriptorSet> PipelineFlat::createWriteDescriptorSet(uint32_t frameBufferIndex) const
+vector<vk::WriteDescriptorSet> PipelineFlat::createWriteDescriptorSet() const
 {
     return { };
 }
@@ -95,43 +90,25 @@ std::vector<vk::VertexInputAttributeDescription> PipelineFlat::createVertexInput
     return Vertex::inputAttributeDescriptions();
 }
 
-void PipelineFlat::buildVertexBuffers(int nrFrameBuffers)
+void PipelineFlat::buildVertexBuffers()
 {
-    BOOST_ASSERT(vertexBuffers.size() == 0);
-    BOOST_ASSERT(vertexBuffersAllocation.size() == 0);
-    BOOST_ASSERT(vertexBuffersData.size() == 0);
-    for (size_t i = 0; i < nrFrameBuffers; i++) {
-        vk::BufferCreateInfo const bufferCreateInfo = {
-            vk::BufferCreateFlags(),
-            sizeof (Vertex) * PipelineFlat::maximumNumberOfVertices,
-            vk::BufferUsageFlagBits::eVertexBuffer,
-            vk::SharingMode::eExclusive
-        };
-        VmaAllocationCreateInfo allocationCreateInfo = {};
-        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
+    vk::BufferCreateInfo const bufferCreateInfo = {
+        vk::BufferCreateFlags(),
+        sizeof (Vertex) * PipelineFlat::maximumNumberOfVertices,
+        vk::BufferUsageFlagBits::eVertexBuffer,
+        vk::SharingMode::eExclusive
+    };
+    VmaAllocationCreateInfo allocationCreateInfo = {};
+    allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-        let [vertexBuffer, vertexBufferAllocation] = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
-        let vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
-
-        vertexBuffers.push_back(vertexBuffer);
-        vertexBuffersAllocation.push_back(vertexBufferAllocation);
-        vertexBuffersData.push_back(vertexBufferData);
-    }
+    std::tie(vertexBuffer, vertexBufferAllocation) = device().createBuffer(bufferCreateInfo, allocationCreateInfo);
+    vertexBufferData = device().mapMemory<Vertex>(vertexBufferAllocation);
 }
 
 void PipelineFlat::teardownVertexBuffers()
 {
-    BOOST_ASSERT(vertexBuffers.size() == vertexBuffersAllocation.size());
-    for (size_t i = 0; i < vertexBuffers.size(); i++) {
-        auto vertexBuffer = vertexBuffers.at(i);
-        auto vertexBufferAllocation = vertexBuffersAllocation.at(i);
-
-        device().unmapMemory(vertexBufferAllocation);
-        device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
-    }
-    vertexBuffers.clear();
-    vertexBuffersAllocation.clear();
-    vertexBuffersData.clear();
+    device().unmapMemory(vertexBufferAllocation);
+    device().destroyBuffer(vertexBuffer, vertexBufferAllocation);
 }
 
 }
