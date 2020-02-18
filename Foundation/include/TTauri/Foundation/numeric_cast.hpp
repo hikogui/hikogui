@@ -27,16 +27,38 @@ constexpr bool is_lossless_cast_v = is_lossless_cast<To,From>::value;
 /*! Convert numeric values to other type with checks.
  * When conversion fails std::terminate() is called.
  */
-template<typename T, typename U>
-constexpr T numeric_cast(U x) noexcept
+template<typename To, typename From>
+constexpr To numeric_cast(From x) noexcept
 {
-    if constexpr (!is_lossless_cast_v<T,U>) {
-        if constexpr (std::is_signed_v<U>) {
-            ttauri_assume(x >= std::numeric_limits<T>::min());
+    if constexpr (!is_lossless_cast_v<To,From>) {
+        if constexpr (std::is_signed_v<To> == std::is_signed_v<From>) {
+            // When both sides have the same signess, then they both get converted to
+            // the largest fitting type.
+            if constexpr (std::is_signed_v<To>) {
+                // Only signed numbers can be less than zero.
+                ttauri_assume(x >= std::numeric_limits<To>::min());
+            }
+            ttauri_assume(x <= std::numeric_limits<To>::max());
+
+        } else if constexpr (std::is_unsigned_v<To>) {
+            // When the destination is unsigned and source is signed.
+            ttauri_assume(x >= 0);
+            if constexpr(sizeof(To) < sizeof(From)) {
+                // When signed may not fit inside the unsigned number check by first converting
+                // the maximum destination to the larger signed type.
+                ttauri_assume(x <= static_cast<From>(std::numeric_limits<To>::max()));
+            }
+
+        } else {
+            // When the destination is signed and source is unsigned.
+            if constexpr(sizeof(To) <= sizeof(From)) {
+                // When unsigned may not fit inside the signed number check by first converting
+                // the maximum destination to the larger-or-equal unsigned type.
+                ttauri_assume(x <= static_cast<From>(std::numeric_limits<To>::max()));
+            }
         }
-        ttauri_assume(x <= std::numeric_limits<T>::max());
     }
-    return static_cast<T>(x);
+    return static_cast<To>(x);
 }
 
 /*! Fast conversion from a numeric value to a signed value of the same size.

@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/expression.hpp"
 #include <string>
-#include <stringview>
+#include <string_view>
 #include <vector>
 
 namespace TTauri::Text {
