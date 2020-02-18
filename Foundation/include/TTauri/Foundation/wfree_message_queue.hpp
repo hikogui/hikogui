@@ -32,9 +32,7 @@ public:
     wfree_message_queue_operation(wfree_message_queue_operation && other) :
         parent(other.parent), index(other.index)
     {
-        if (this == &other) {
-            return;
-        }
+        ttauri_assume(this != &other);
         other.parent = nullptr;
     }
 
@@ -55,10 +53,7 @@ public:
 
     wfree_message_queue_operation& operator=(wfree_message_queue_operation && other)
     {
-        if (this == &other) {
-            return;
-        }
-
+        ttauri_assume(this != &other);
         std::swap(index, other.index);
         std::swap(parent, other.parent);
     }

@@ -72,11 +72,17 @@ struct token_t {
         name(name), value(std::move(value)), location(), is_binary(false), precedence(0) {}
 
     token_t(token_t const &other) noexcept :
-        name(other.name), value(other.value), location(other.location), is_binary(other.is_binary), precedence(other.precedence) {}
+        name(other.name), value(other.value), location(other.location), is_binary(other.is_binary), precedence(other.precedence) {
+        ttauri_assume(this != &other);
+    }
+
     token_t(token_t &&other) noexcept :
-        name(other.name), value(std::move(other.value)), location(std::move(other.location)), is_binary(other.is_binary), precedence(other.precedence) {}
+        name(other.name), value(std::move(other.value)), location(std::move(other.location)), is_binary(other.is_binary), precedence(other.precedence) {
+        ttauri_assume(this != &other);
+    }
 
     token_t &operator=(token_t const &other) noexcept {
+        ttauri_assume(this != &other);
         name = other.name;
         value = other.value;
         location = other.location;
@@ -86,6 +92,7 @@ struct token_t {
     }
 
     token_t &operator=(token_t &&other) noexcept {
+        ttauri_assume(this != &other);
         name = other.name;
         value = std::move(other.value);
         location = std::move(other.location);

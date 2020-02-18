@@ -57,10 +57,12 @@ FileView::FileView(FileView const &other) noexcept:
     _bytes(other._bytes),
     _offset(other._offset)
 {
+    ttauri_assume(this != &other);
 }
 
 FileView &FileView::operator=(FileView const &other) noexcept
 {
+    ttauri_assume(this != &other);
     fileMappingObject = other.fileMappingObject;
     _offset = other._offset;
     _bytes = other._bytes;
@@ -72,10 +74,12 @@ FileView::FileView(FileView &&other) noexcept:
     _bytes(std::move(other._bytes)),
     _offset(other._offset)
 {
+    ttauri_assume(this != &other);
 }
 
 FileView &FileView::operator=(FileView &&other) noexcept
 {
+    ttauri_assume(this != &other);
     fileMappingObject = std::move(other.fileMappingObject);
     _offset = other._offset;
     _bytes = std::move(other._bytes);

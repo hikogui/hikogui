@@ -227,7 +227,7 @@ inline bool almost_equal(float a, float b) noexcept {
 template<typename Iterator>
 auto mean(Iterator first, Iterator last)
 {
-    let init = static_cast<std::iterator_traits<Iterator>::value_type>(0);
+    let init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
     let sum = std::reduce(first, last, init);
     let count = static_cast<decltype(sum)>(std::distance(first, last));
@@ -238,7 +238,7 @@ auto mean(Iterator first, Iterator last)
 template<typename Iterator, typename T>
 auto stddev(Iterator first, Iterator last, T mean)
 {
-    let init = static_cast<std::iterator_traits<Iterator>::value_type>(0);
+    let init = static_cast<typename std::iterator_traits<Iterator>::value_type>(0);
 
     let sum = std::accumulate(first, last, init, [=](let &acc, let &value) {
         let tmp = value - mean;

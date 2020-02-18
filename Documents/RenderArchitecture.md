@@ -3,11 +3,37 @@ XXX Depth buffer can be used as per-primative clipping/stencil buffer.
 # Render architecture
 Vulkan is used as the backend for rendering windows.
 
+```
+
+    +----------+    +----------+
+    |  Window  |    |  Window  |
+    +----------+    +----------+
+         |               |
+         +---------------+
+         |               |
+     LCD Shader          |
+         |               |
+    +----------+       Hi DPI
+    | HiDPI FB |       Bypass
+    +----------+         |
+         |               |
+         +---------------+---------------+
+         |               |               |
+     Box Shader     Text Shader     Image Shader
+                         |               |
+                    +----------+    +---------+
+                    |  Atlas   |    |  Atlas  |
+                    +----------+    +---------+
+
+```
+
 ## Window
 Each window will have two swap-chain images assigned to it. The swap-chain
 image are RGBA; Alpha is fixed to 1 and no need for a depth or stencil buffer.
 
-## High-resolution Framebuffer
+When the window is HiDPI, then the Image, 
+
+## Subpixel Pipeline
 To anti-alias and potentially with LCD-sub-pixels a pipeline + shader
 is used to super-sample a high-resolution frame buffer. This high resolution
 frame buffer is treated as a 3x3 scaled window.

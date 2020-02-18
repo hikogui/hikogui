@@ -9,23 +9,20 @@
 
 namespace TTauri {
 
-/*! Fast conversion from a numeric value to a signed value of the same size.
- * Unsigned integer values that are too large are mapped to negative values.
- */
-template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-constexpr auto to_signed(T x) noexcept
-{
-    return static_cast<std::make_signed_t<T>>(x);
-}
+template<typename To, typename From>
+struct is_lossless_cast {
+    static_assert(std::is_floating_point_v<To> || std::is_integral_v<To>, "is_lossless_cast 'To' must be float or integer");
+    static_assert(std::is_floating_point_v<From> || std::is_integral_v<From>, "is_lossless_cast 'From' must be float or integer");
 
-/*! Fast conversion from a numeric value to a unsigned value of the same size.
-* Negative signed integer values that are less than zero are mapped to large positive values.
-*/
-template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-constexpr auto to_unsigned(T x) noexcept
-{
-    return static_cast<std::make_unsigned_t<T>>(x);
-}
+    static constexpr bool value = 
+        std::is_floating_point_v<To> ||
+        (std::is_signed_v<To> && sizeof(To) > sizeof(From)) ||
+        (std::is_signed_v<To> == std::is_signed_v<To> && sizeof(To) >= sizeof(From));
+};
+
+template<typename To, typename From>
+constexpr bool is_lossless_cast_v = is_lossless_cast<To,From>::value;
+
 
 /*! Convert numeric values to other type with checks.
  * When conversion fails std::terminate() is called.
@@ -33,31 +30,29 @@ constexpr auto to_unsigned(T x) noexcept
 template<typename T, typename U>
 constexpr T numeric_cast(U x) noexcept
 {
-    if constexpr (std::is_floating_point_v<T>) {
-        // No check needed all signed and unsigned integers can be cast without overflow.
-
-    } else if constexpr (std::is_signed_v<T> && std::is_signed_v<U> && (sizeof(T) < sizeof(U))) {
-        ttauri_assume(x >= std::numeric_limits<T>::min() && x <= std::numeric_limits<T>::max());
-
-    } else if constexpr (std::is_signed_v<T> && std::is_unsigned_v<U> && (sizeof(T) <= sizeof(U))) {
-        ttauri_assume(x <= static_cast<U>(std::numeric_limits<T>::max()));
-
-    } else if constexpr (std::is_unsigned_v<T> && std::is_unsigned_v<U> && (sizeof(T) < sizeof(U))) {
-        ttauri_assume(x <= std::numeric_limits<T>::max());
-
-    } else if constexpr (std::is_unsigned_v<T> && std::is_signed_v<U>) {
-        if constexpr (sizeof(T) < sizeof(U)) {
-            ttauri_assume(x >= 0 && x <= std::numeric_limits<T>::max());
-        } else {
-            ttauri_assume(x >= 0);
+    if constexpr (!is_lossless_cast_v<T,U>) {
+        if constexpr (std::is_signed_v<U>) {
+            ttauri_assume(x >= std::numeric_limits<T>::min());
         }
+        ttauri_assume(x <= std::numeric_limits<T>::max());
     }
     return static_cast<T>(x);
 }
 
-template<typename T>
-constexpr size_t to_size(T x) noexcept {
-    return numeric_cast<size_t>(x);
+/*! Fast conversion from a numeric value to a signed value of the same size.
+ */
+template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+constexpr auto to_signed(T x) noexcept
+{
+    return numeric_cast<std::make_signed_t<T>>(x);
+}
+
+/*! Fast conversion from a numeric value to a unsigned value of the same size.
+*/
+template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+constexpr auto to_unsigned(T x) noexcept
+{
+    return numeric_cast<std::make_unsigned_t<T>>(x);
 }
 
 }

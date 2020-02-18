@@ -186,6 +186,7 @@ struct PixelMap {
     PixelMap(PixelMap const &other) = delete;
 
     PixelMap(PixelMap &&other) noexcept : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
+        ttauri_assume(this != &other);
         other.selfAllocated = false;
     }
 
@@ -199,6 +200,7 @@ struct PixelMap {
 
     gsl_suppress2(r.11,i.11)
     PixelMap &operator=(PixelMap &&other) noexcept {
+        ttauri_assume(this != &other);
         if (selfAllocated) {
             delete[] pixels;
         }
