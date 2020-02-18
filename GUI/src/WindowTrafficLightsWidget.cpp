@@ -34,7 +34,11 @@ int WindowTrafficLightsWidget::state() const noexcept {
     return r;
 }
 
-void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept
+void WindowTrafficLightsWidget::update(
+    bool modified,
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     ttauri_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
@@ -53,10 +57,10 @@ void WindowTrafficLightsWidget::pipelineImagePlaceVertices(gsl::span<PipelineIma
         location.alpha = 1.0;
         location.clippingRectangle = box.currentRectangle();
 
-        backingImage.image->placeVertices(location, vertices, offset);
+        backingImage.image->placeVertices(location, image_vertices);
     }
 
-    Widget::pipelineImagePlaceVertices(vertices, offset);
+    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept

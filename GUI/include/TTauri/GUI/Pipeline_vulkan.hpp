@@ -33,7 +33,7 @@ public:
      */
     void fillCommandBuffer(vk::Framebuffer frameBuffer);
 
-    void buildForNewDevice();
+    void buildForNewDevice(Device *device);
     void teardownForDeviceLost();
     void buildForNewSurface();
     void teardownForSurfaceLost();

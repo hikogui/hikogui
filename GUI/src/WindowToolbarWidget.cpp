@@ -68,11 +68,15 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     }
 }
 
-void WindowToolbarWidget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept
+void WindowToolbarWidget::update(
+    bool modified,
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    PipelineFlat::Vertex::placeBox(vertices, offset, box.currentRectangle(), glm::vec4{0.0,0.0,0.0,0.5}, box.currentRectangle());
+    PipelineFlat::Vertex::placeBox(flat_vertices, box.currentRectangle(), glm::vec4{0.0,0.0,0.0,0.5}, box.currentRectangle());
 
-    Widget::pipelineFlatPlaceVertices(vertices, offset);
+    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const noexcept

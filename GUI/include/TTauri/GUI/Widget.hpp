@@ -4,9 +4,6 @@
 #pragma once
 
 #include "TTauri/GUI/BoxModel.hpp"
-#include "TTauri/GUI/PipelineFlat_Delegate.hpp"
-#include "TTauri/GUI/PipelineImage_Delegate.hpp"
-#include "TTauri/GUI/PipelineSDF_Delegate.hpp"
 #include "TTauri/GUI/PipelineImage_Backing.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
@@ -18,6 +15,7 @@
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include <TTauri/Foundation/pickle.hpp>
+#include <TTauri/Foundation/vspan.hpp>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -28,6 +26,12 @@ namespace TTauri::GUI::PipelineImage {
 struct Image;
 struct Vertex;
 }
+namespace TTauri::GUI::PipelineSDF {
+struct Vertex;
+}
+namespace TTauri::GUI::PipelineFlat {
+struct Vertex;
+}
 
 namespace TTauri::GUI::Widgets {
 
@@ -36,7 +40,7 @@ namespace TTauri::GUI::Widgets {
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  */
-class Widget : public PipelineImage::Delegate, public PipelineFlat::Delegate, public PipelineSDF::Delegate {
+class Widget {
 protected:
     mutable bool _modified = true;
 
@@ -99,7 +103,12 @@ public:
      * The overriding function should call the base class's update() at the end.
      * @param modified The data in the widget has been modified.
      */
-    virtual void update(bool modified) noexcept;
+    virtual void update(
+        bool modified,
+        vspan<PipelineFlat::Vertex> &flat_vertices,
+        vspan<PipelineImage::Vertex> &image_vertices,
+        vspan<PipelineSDF::Vertex> &sdf_vertices
+    ) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
@@ -109,10 +118,6 @@ public:
     virtual void handleMouseEvent(MouseEvent event) noexcept;
 
     virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
-
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept override;
-    void pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept override;
-    void pipelineSDFPlaceVertices(gsl::span<PipelineSDF::Vertex> &vertices, ssize_t &offset) noexcept override;
 };
 
 }

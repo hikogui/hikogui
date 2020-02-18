@@ -31,31 +31,14 @@ bool Widget::modified() const noexcept
     return m;
 }
 
-void Widget::update(bool modified) noexcept
+void Widget::update(
+    bool modified,
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     for (auto &child : children) {
-        child->update(child->modified());
-    }
-}
-
-void Widget::pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept
-{
-    for (auto &child : children) {
-        child->pipelineImagePlaceVertices(vertices, offset);
-    }
-}
-
-void Widget::pipelineFlatPlaceVertices(gsl::span<PipelineFlat::Vertex> &vertices, ssize_t &offset) noexcept
-{
-    for (auto &child : children) {
-        child->pipelineFlatPlaceVertices(vertices, offset);
-    }
-}
-
-void Widget::pipelineSDFPlaceVertices(gsl::span<PipelineSDF::Vertex> &vertices, ssize_t &offset) noexcept
-{
-    for (auto &child : children) {
-        child->pipelineSDFPlaceVertices(vertices, offset);
+        child->update(child->modified(), flat_vertices, image_vertices, sdf_vertices);
     }
 }
 

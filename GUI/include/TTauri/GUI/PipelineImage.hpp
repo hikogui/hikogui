@@ -8,8 +8,8 @@
 #include "TTauri/GUI/PipelineImage_Vertex.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/Foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
-#include <gsl/gsl>
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -23,6 +23,8 @@ public:
     static constexpr int maximumNumberOfTriangles = maximumNumberOfSquares * 2;
     static constexpr int maximumNumberOfIndices = maximumNumberOfTriangles * 3;
     
+    vspan<Vertex> vertexBufferData;
+
     PipelineImage(Window const &window);
     ~PipelineImage() {};
 
@@ -37,10 +39,8 @@ protected:
     PushConstants pushConstants;
     int numberOfAtlasImagesInDescriptor = 0;
 
-    ssize_t numberOfVertices = 0;
     vk::Buffer vertexBuffer;
     VmaAllocation vertexBufferAllocation;
-    gsl::span<Vertex> vertexBufferData;
 
     void drawInCommandBuffer() override;
 

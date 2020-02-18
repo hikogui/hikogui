@@ -19,10 +19,7 @@ PipelineFlat::PipelineFlat(Window const &window) :
 
 vk::Semaphore PipelineFlat::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
 {
-    numberOfVertices = 0;
-    window.widget->pipelineFlatPlaceVertices(vertexBufferData, numberOfVertices);
-
-    device().flushAllocation(vertexBufferAllocation, 0, numberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
 
     return Pipeline_vulkan::render(frameBuffer, inputSemaphore);
 }
@@ -47,7 +44,7 @@ void PipelineFlat::drawInCommandBuffer()
         &pushConstants
     );
 
-    let numberOfRectangles = numberOfVertices / 4;
+    let numberOfRectangles = vertexBufferData.size() / 4;
     let numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
         numeric_cast<uint32_t>(numberOfTriangles * 3),

@@ -13,6 +13,7 @@ namespace TTauri::GUI {
 class Pipeline_base {
 public:
     Window const &window;
+    Device *_device = nullptr;
 
     Pipeline_base(Window const &window);
 
@@ -22,8 +23,10 @@ public:
     Pipeline_base(Pipeline_base &&) = delete;
     Pipeline_base &operator=(Pipeline_base &&) = delete;
 
-    Device const &device() const;
-
+    Device const &device() const {
+        ttauri_assume(_device != nullptr);
+        return *_device;
+    }
 };
 
 }

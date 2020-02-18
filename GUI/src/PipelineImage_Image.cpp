@@ -89,7 +89,7 @@ void Image::calculateVertexPositions(const ImageLocation &location)
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(int const index, const ImageLocation &location, gsl::span<Vertex> &vertices, ssize_t &offset) const {
+void Image::placePageVertices(int const index, const ImageLocation &location, vspan<Vertex> &vertices) const {
     let page = pages.at(index);
 
     if (page.isFullyTransparent()) {
@@ -116,10 +116,10 @@ void Image::placePageVertices(int const index, const ImageLocation &location, gs
 
     let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
 
-    vertices[offset++] = {location, p1, atlasPosition};
-    vertices[offset++] = {location, p2, {atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z}};
-    vertices[offset++] = {location, p3, {atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z}};
-    vertices[offset++] = {location, p4, {atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z}};
+    vertices.emplace_back(location, p1, atlasPosition);
+    vertices.emplace_back(location, p2, glm::ivec3{atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z});
+    vertices.emplace_back(location, p3, glm::ivec3{atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z});
+    vertices.emplace_back(location, p4, glm::ivec3{atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z});
 }
 
 /*! Place vertices for this image.
@@ -128,17 +128,12 @@ void Image::placePageVertices(int const index, const ImageLocation &location, gs
 * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
 * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
-void Image::placeVertices(const ImageLocation &location, gsl::span<Vertex> &vertices, ssize_t &offset)
+void Image::placeVertices(const ImageLocation &location, vspan<Vertex> &vertices)
 {
     calculateVertexPositions(location);
 
-    if (offset + to_signed(pages.size()) * 4 > to_signed(vertices.size())) {
-        LOG_FATAL("vertices don't fit");
-        abort();
-    }
-
     for (int index = 0; index < to_signed(pages.size()); index++) {
-        placePageVertices(index, location, vertices, offset);
+        placePageVertices(index, location, vertices);
     }
 }
 

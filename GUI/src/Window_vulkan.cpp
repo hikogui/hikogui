@@ -141,9 +141,9 @@ void Window_vulkan::build()
 
     if (state == State::NoDevice) {
         if (device) {
-            flatPipeline->buildForNewDevice();
-            imagePipeline->buildForNewDevice();
-            SDFPipeline->buildForNewDevice();
+            flatPipeline->buildForNewDevice(device);
+            imagePipeline->buildForNewDevice(device);
+            SDFPipeline->buildForNewDevice(device);
             state = State::NoSurface;
         }
     }
@@ -281,7 +281,12 @@ void Window_vulkan::render()
     device->resetFences({ renderFinishedFence });
 
     // Update the widgets before the pipelines need their vertices.
-    widget->update(widget->modified());
+    widget->update(
+        widget->modified(),
+        flatPipeline->vertexBufferData.clear(),
+        imagePipeline->vertexBufferData.clear(),
+        SDFPipeline->vertexBufferData.clear()
+    );
 
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.

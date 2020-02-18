@@ -19,10 +19,7 @@ PipelineImage::PipelineImage(Window const &window) :
 
 vk::Semaphore PipelineImage::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
 {
-    numberOfVertices = 0;
-    window.widget->pipelineImagePlaceVertices(vertexBufferData, numberOfVertices);
-
-    device().flushAllocation(vertexBufferAllocation, 0, numberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
 
     device().imagePipeline->prepareAtlasForRendering();
    
@@ -52,7 +49,7 @@ void PipelineImage::drawInCommandBuffer()
         &pushConstants
     );
 
-    let numberOfRectangles = numberOfVertices / 4;
+    let numberOfRectangles = vertexBufferData.size() / 4;
     let numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
         numeric_cast<uint32_t>(numberOfTriangles * 3),

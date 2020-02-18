@@ -19,10 +19,7 @@ PipelineSDF::PipelineSDF(Window const &window) :
 
 vk::Semaphore PipelineSDF::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
 {
-    numberOfVertices = 0;
-    window.widget->pipelineSDFPlaceVertices(vertexBufferData, numberOfVertices);
-
-    device().flushAllocation(vertexBufferAllocation, 0, numberOfVertices * sizeof (Vertex));
+    device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
 
     device().SDFPipeline->prepareAtlasForRendering();
    
@@ -49,7 +46,7 @@ void PipelineSDF::drawInCommandBuffer()
         &pushConstants
     );
 
-    let numberOfRectangles = numberOfVertices / 4;
+    let numberOfRectangles = vertexBufferData.size() / 4;
     let numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
         numeric_cast<uint32_t>(numberOfTriangles * 3),

@@ -47,10 +47,12 @@ public:
     [[nodiscard]] std::string label() const noexcept { return _label; };
     ButtonWidget &set_label(std::string rhs) noexcept { _label = std::move(rhs); _modified = true; return *this; }
 
-
-    void update(bool modified) noexcept override;
-    void pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept override;
-    void pipelineSDFPlaceVertices(gsl::span<GUI::PipelineSDF::Vertex>& vertices, ssize_t& offset) noexcept override;
+    void update(
+        bool modified,
+        vspan<PipelineFlat::Vertex> &flat_vertices,
+        vspan<PipelineImage::Vertex> &image_vertices,
+        vspan<PipelineSDF::Vertex> &sdf_vertices
+    ) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent event) noexcept override;
 

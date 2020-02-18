@@ -184,7 +184,7 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 *    v   \ |
 *    0 --> 1
 */
-void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, gsl::span<Vertex> &vertices, ssize_t &offset) noexcept
+void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, vspan<Vertex> &vertices) noexcept
 {
     auto cr = glm::vec4{
         clippingRectangle.offset.x,
@@ -227,11 +227,10 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         // Texture coordinates are upside-down.
         let &atlas_rect = atlas_i->second;
 
-        ttauri_assert(offset + 4 <= ssize(vertices));
-        vertices[offset++] = Vertex{glm::vec3{v0, depth}, cr, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
-        vertices[offset++] = Vertex{glm::vec3{v1, depth}, cr, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
-        vertices[offset++] = Vertex{glm::vec3{v2, depth}, cr, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
-        vertices[offset++] = Vertex{glm::vec3{v3, depth}, cr, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier};
+        vertices.emplace_back(glm::vec3{v0, depth}, cr, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
+        vertices.emplace_back(glm::vec3{v1, depth}, cr, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
+        vertices.emplace_back(glm::vec3{v2, depth}, cr, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
+        vertices.emplace_back(glm::vec3{v3, depth}, cr, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
     }
 }
 

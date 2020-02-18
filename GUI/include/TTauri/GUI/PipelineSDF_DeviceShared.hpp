@@ -10,6 +10,7 @@
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/logger.hpp"
+#include "TTauri/Foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -105,7 +106,7 @@ struct DeviceShared final {
 
     /** Prepare the atlas for drawing a text.
     */
-    void placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, gsl::span<Vertex> &vertices, ssize_t &offset) noexcept;
+    void placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, vspan<Vertex> &vertices) noexcept;
 
 private:
 

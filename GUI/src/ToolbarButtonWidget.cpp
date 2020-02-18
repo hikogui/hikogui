@@ -34,7 +34,11 @@ int ToolbarButtonWidget::state() const noexcept {
 }
 
 
-void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept
+void ToolbarButtonWidget::update(
+    bool modified,
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     ttauri_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
@@ -53,10 +57,10 @@ void ToolbarButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImag
         location.alpha = 1.0;
         location.clippingRectangle = box.currentRectangle();
 
-        backingImage.image->placeVertices(location, vertices, offset);
+        backingImage.image->placeVertices(location, image_vertices);
     }
 
-    Widget::pipelineImagePlaceVertices(vertices, offset);
+    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
 }
 
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept

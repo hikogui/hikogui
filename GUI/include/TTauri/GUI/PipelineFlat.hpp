@@ -8,6 +8,7 @@
 #include "TTauri/GUI/PipelineFlat_Vertex.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/Foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <gsl/gsl>
 
@@ -22,6 +23,8 @@ public:
     static constexpr int maximumNumberOfTriangles = maximumNumberOfSquares * 2;
     static constexpr int maximumNumberOfIndices = maximumNumberOfTriangles * 3;
     
+    vspan<Vertex> vertexBufferData;
+
     PipelineFlat(Window const &window);
     ~PipelineFlat() {};
 
@@ -35,10 +38,8 @@ public:
 protected:
     PushConstants pushConstants;
 
-    ssize_t numberOfVertices = 0;
     vk::Buffer vertexBuffer;
     VmaAllocation vertexBufferAllocation;
-    gsl::span<Vertex> vertexBufferData;
 
     void drawInCommandBuffer() override;
 

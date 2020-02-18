@@ -256,8 +256,10 @@ void Pipeline_vulkan::teardownPipeline()
 }
 
 
-void Pipeline_vulkan::buildForNewDevice()
+void Pipeline_vulkan::buildForNewDevice(Device *device)
 {
+    ttauri_assert(device != nullptr);
+    _device = device;
 }
 
 void Pipeline_vulkan::buildForNewSurface()
@@ -292,6 +294,7 @@ void Pipeline_vulkan::teardownForDeviceLost()
     teardownCommandBuffers();
     teardownVertexBuffers();
     buffersInitialized = false;
+    _device = nullptr;
 }
 
 void Pipeline_vulkan::teardownForWindowLost()

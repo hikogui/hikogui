@@ -14,12 +14,6 @@ Pipeline_base::Pipeline_base(Window const &window) :
 {
 }
 
-Device const &Pipeline_base::device() const
-{
-    let device = window.device;
-    ttauri_assert(device);
-    return *device;
-}
 
 
 }

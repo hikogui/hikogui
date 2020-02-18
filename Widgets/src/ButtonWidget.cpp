@@ -20,8 +20,14 @@ ButtonWidget::ButtonWidget(std::string const label) noexcept :
     box.topMargin = 10.0;
 }
 
-void ButtonWidget::update(bool modified) noexcept
+void ButtonWidget::update(
+    bool modified,
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+    ttauri_assert(window);
+
     if (modified) {
         // Draw something.
         let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
@@ -56,17 +62,10 @@ void ButtonWidget::update(bool modified) noexcept
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 
-    return Widget::update(modified);
-}
-
-void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept
-{
-    ttauri_assert(window);
-
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
     }, "Button", label(), value(), enabled(), focus(), pressed());
- 
+
     if (backingImage.image) {
         let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
 
@@ -79,21 +78,13 @@ void ButtonWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vert
         location.alpha = 1.0;
         location.clippingRectangle = box.currentRectangle();
 
-        backingImage.image->placeVertices(location, vertices, offset);
+        backingImage.image->placeVertices(location, image_vertices);
     }
 
-    Widget::pipelineImagePlaceVertices(vertices, offset);
+    window->device->SDFPipeline->placeVertices(labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth, sdf_vertices);
+
+    return Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
 }
-
-void ButtonWidget::pipelineSDFPlaceVertices(gsl::span<GUI::PipelineSDF::Vertex>& vertices, ssize_t& offset) noexcept
-{
-    ttauri_assert(window);
-
-    window->device->SDFPipeline->placeVertices(labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth, vertices, offset);
-    
-    Widget::pipelineSDFPlaceVertices(vertices, offset);
-}
-
 
 PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {

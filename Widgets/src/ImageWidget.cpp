@@ -50,7 +50,11 @@ void ImageWidget::drawBackingImage() noexcept
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Vertex> &vertices, ssize_t &offset) noexcept
+void ImageWidget::update(
+    bool modified,
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 
@@ -68,7 +72,9 @@ void ImageWidget::pipelineImagePlaceVertices(gsl::span<GUI::PipelineImage::Verte
     location.alpha = 1.0;
     location.clippingRectangle = box.currentRectangle();
 
-    backingImage->placeVertices(location, vertices, offset);
+    backingImage->placeVertices(location, image_vertices);
+
+    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
 }
 
 }

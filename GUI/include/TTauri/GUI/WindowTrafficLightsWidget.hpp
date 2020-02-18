@@ -45,7 +45,12 @@ public:
 
     int state() const noexcept;
 
-    void pipelineImagePlaceVertices(gsl::span<PipelineImage::Vertex>& vertices, ssize_t& offset) noexcept override;
+    void update(
+        bool modified,
+        vspan<PipelineFlat::Vertex> &flat_vertices,
+        vspan<PipelineImage::Vertex> &image_vertices,
+        vspan<PipelineSDF::Vertex> &sdf_vertices
+    ) noexcept override;
 
     void handleMouseEvent(MouseEvent event) noexcept override;
     HitBox hitBoxTest(glm::vec2 position) const noexcept override;
