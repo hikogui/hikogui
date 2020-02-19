@@ -32,6 +32,9 @@ struct Vertex;
 namespace TTauri::GUI::PipelineFlat {
 struct Vertex;
 }
+namespace TTauri::GUI::PipelineBox {
+struct Vertex;
+}
 
 namespace TTauri::GUI::Widgets {
 
@@ -106,6 +109,7 @@ public:
     virtual void update(
         bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
+        vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept;

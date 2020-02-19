@@ -50,6 +50,7 @@ public:
     void update(
         bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
+        vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;

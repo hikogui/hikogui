@@ -53,6 +53,7 @@ void ImageWidget::drawBackingImage() noexcept
 void ImageWidget::update(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
@@ -74,7 +75,7 @@ void ImageWidget::update(
 
     backingImage->placeVertices(location, image_vertices);
 
-    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
+    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 }

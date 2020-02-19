@@ -157,3 +157,14 @@ for drawing the audio level meters.
 ### Font Styles
 ### Button shapes
 
+## Box Pipeline
+The box-pipeline is designed to draw axis-aligned quads with:
+ - A fill color.
+ - An anti-aliases border of a certain thickness and color.
+ - An drop shadow around the border of a certain color.
+ - An inlay shadow inside the border of a certain color.
+ - Rounded and cut corners.
+
+By using "texture" coordinates the fragment shader knows the distance towards an edge.
+Together with a factor to convert the texture coordinate to pixel distance from
+each edge.

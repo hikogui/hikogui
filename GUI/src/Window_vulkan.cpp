@@ -7,6 +7,7 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineFlat.hpp"
+#include "TTauri/GUI/PipelineBox.hpp"
 #include "TTauri/GUI/PipelineSDF.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
@@ -30,6 +31,7 @@ void Window_vulkan::initialize()
 
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
+    boxPipeline = std::make_unique<PipelineBox::PipelineBox>(dynamic_cast<Window &>(*this));
     SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(dynamic_cast<Window &>(*this));
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
 }
@@ -142,6 +144,7 @@ void Window_vulkan::build()
     if (state == State::NoDevice) {
         if (device) {
             flatPipeline->buildForNewDevice(device);
+            boxPipeline->buildForNewDevice(device);
             imagePipeline->buildForNewDevice(device);
             SDFPipeline->buildForNewDevice(device);
             state = State::NoSurface;
@@ -154,6 +157,7 @@ void Window_vulkan::build()
             return;
         }
         flatPipeline->buildForNewSurface();
+        boxPipeline->buildForNewSurface();
         imagePipeline->buildForNewSurface();
         SDFPipeline->buildForNewSurface();
         state = State::NoSwapchain;
@@ -181,6 +185,7 @@ void Window_vulkan::build()
         buildFramebuffers();
         buildSemaphores();
         flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent);
+        boxPipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent);
         imagePipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent);
         SDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent);
 
@@ -202,6 +207,7 @@ void Window_vulkan::teardown()
         waitIdle();
         imagePipeline->teardownForSwapchainLost();
         flatPipeline->teardownForSwapchainLost();
+        boxPipeline->teardownForSwapchainLost();
         SDFPipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownFramebuffers();
@@ -213,6 +219,7 @@ void Window_vulkan::teardown()
             LOG_INFO("Tearing down because the window lost the drawable surface.");
             imagePipeline->teardownForSurfaceLost();
             flatPipeline->teardownForSurfaceLost();
+            boxPipeline->teardownForSurfaceLost();
             SDFPipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = State::NoSurface;
@@ -222,6 +229,7 @@ void Window_vulkan::teardown()
 
                 imagePipeline->teardownForDeviceLost();
                 flatPipeline->teardownForDeviceLost();
+                boxPipeline->teardownForDeviceLost();
                 SDFPipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = State::NoDevice;
@@ -231,6 +239,7 @@ void Window_vulkan::teardown()
 
                     imagePipeline->teardownForWindowLost();
                     flatPipeline->teardownForWindowLost();
+                    boxPipeline->teardownForWindowLost();
                     SDFPipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
@@ -284,6 +293,7 @@ void Window_vulkan::render()
     widget->update(
         widget->modified(),
         flatPipeline->vertexBufferData.clear(),
+        boxPipeline->vertexBufferData.clear(),
         imagePipeline->vertexBufferData.clear(),
         SDFPipeline->vertexBufferData.clear()
     );
@@ -291,7 +301,8 @@ void Window_vulkan::render()
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
     let flatPipelineFinishedSemaphore = flatPipeline->render(frameBuffer, imageAvailableSemaphore);
-    let imagePipelineFinishedSemaphore = imagePipeline->render(frameBuffer, flatPipelineFinishedSemaphore);
+    let boxPipelineFinishedSemaphore = boxPipeline->render(frameBuffer, flatPipelineFinishedSemaphore);
+    let imagePipelineFinishedSemaphore = imagePipeline->render(frameBuffer, boxPipelineFinishedSemaphore);
     let renderFinishedSemaphore = SDFPipeline->render(frameBuffer, imagePipelineFinishedSemaphore);
 
     // Signal the fence when all rendering has finished on the graphics queue.

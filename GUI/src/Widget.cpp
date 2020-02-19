@@ -34,11 +34,12 @@ bool Widget::modified() const noexcept
 void Widget::update(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     for (auto &child : children) {
-        child->update(child->modified(), flat_vertices, image_vertices, sdf_vertices);
+        child->update(child->modified(), flat_vertices, box_vertices, image_vertices, sdf_vertices);
     }
 }
 

@@ -37,6 +37,7 @@ int WindowTrafficLightsWidget::state() const noexcept {
 void WindowTrafficLightsWidget::update(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
@@ -60,7 +61,7 @@ void WindowTrafficLightsWidget::update(
         backingImage.image->placeVertices(location, image_vertices);
     }
 
-    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
+    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept

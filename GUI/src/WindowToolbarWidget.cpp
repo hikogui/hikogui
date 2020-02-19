@@ -71,12 +71,13 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
 void WindowToolbarWidget::update(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     PipelineFlat::Vertex::placeBox(flat_vertices, box.currentRectangle(), glm::vec4{0.0,0.0,0.0,0.5}, box.currentRectangle());
 
-    Widget::update(modified, flat_vertices, image_vertices, sdf_vertices);
+    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const noexcept

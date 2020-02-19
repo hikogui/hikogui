@@ -135,6 +135,8 @@ Device_vulkan::~Device_vulkan()
             SDFPipeline = nullptr;
             flatPipeline->destroy(gsl::make_not_null(this));
             flatPipeline = nullptr;
+            boxPipeline->destroy(gsl::make_not_null(this));
+            boxPipeline = nullptr;
 
             vmaDestroyAllocator(allocator);
 
@@ -217,6 +219,7 @@ void Device_vulkan::initializeDevice(Window const &window)
 
     imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(dynamic_cast<Device &>(*this));
+    boxPipeline = std::make_unique<PipelineBox::DeviceShared>(dynamic_cast<Device &>(*this));
     SDFPipeline = std::make_unique<PipelineSDF::DeviceShared>(dynamic_cast<Device &>(*this));
 
     Device_base::initializeDevice(window);

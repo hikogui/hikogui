@@ -9,6 +9,8 @@
 #include "shaders/PipelineImage.frag.spv.inl"
 #include "shaders/PipelineFlat.vert.spv.inl"
 #include "shaders/PipelineFlat.frag.spv.inl"
+#include "shaders/PipelineBox.vert.spv.inl"
+#include "shaders/PipelineBox.frag.spv.inl"
 #include "shaders/PipelineSDF.vert.spv.inl"
 #include "shaders/PipelineSDF.frag.spv.inl"
 
@@ -26,6 +28,8 @@ GUIGlobals::GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int
     Foundation_globals->addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
     Foundation_globals->addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
     Foundation_globals->addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
+    Foundation_globals->addStaticResource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
+    Foundation_globals->addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
     Foundation_globals->addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
     Foundation_globals->addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
 }
