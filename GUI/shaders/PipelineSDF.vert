@@ -12,11 +12,13 @@ layout(location = 1) in vec4 inClippingRectangle;
 layout(location = 2) in vec3 inTextureCoord;
 layout(location = 3) in vec4 inColor;
 layout(location = 4) in float inDistanceMultiplier;
+layout(location = 5) in float inShadowSize;
 
 layout(location = 0) out vec4 outClippingRectangle;
 layout(location = 1) out vec3 outTextureCoord;
 layout(location = 2) out vec4 outColor;
 layout(location = 3) out float outDistanceMultiplier;
+layout(location = 4) out float outShadowSize;
 
 vec4 convertPositionToViewport(vec3 windowPosition)
 {
@@ -41,4 +43,5 @@ void main() {
     outTextureCoord = inTextureCoord;
     outColor = inColor;
     outDistanceMultiplier = inDistanceMultiplier;
+    outShadowSize = inShadowSize;
 }

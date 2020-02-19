@@ -32,7 +32,7 @@ void ImageWidget::drawBackingImage() noexcept
     // XXX This probably should allocate a PixelMap and add it to this class.
     loadPNG(linearMap, path);
 
-    let text_style = TextStyle("Arial", FontVariant{}, 8, wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f }, TextDecoration{});
+    let text_style = TextStyle("Arial", FontVariant{}, 8, wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f }, 0.0, TextDecoration{});
     let shaped_text = ShapedText("g", text_style, extent2{100.0, 500.0}, Alignment::BottomLeft);
     let glyph = shaped_text.get_path();
 

@@ -55,7 +55,7 @@ void ButtonWidget::update(
         drawing.addPath(buttonPath, backgroundColor);
         drawing.addStroke(buttonPath, borderColor, 1.0);
 
-        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 12.0, labelColor, TextDecoration::None);
+        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor, 0.0, TextDecoration::None);
 
         labelShapedText = ShapedText(label(), labelStyle, box.currentExtent(), Alignment::MiddleCenter);
 

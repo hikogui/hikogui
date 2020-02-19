@@ -6,13 +6,14 @@ layout(push_constant) uniform PushConstants {
     vec2 viewportScale;
 } pushConstants;
 
-layout(set = 0, binding = 0) uniform sampler samp;
+layout(set = 0, binding = 0) uniform sampler biLinearSampler;
 layout(set = 0, binding = 1) uniform texture2D textures[16];
 
 layout(location = 0) in vec4 inClippingRectangle;
 layout(location = 1) in vec3 inTextureCoord;
 layout(location = 2) in vec4 inColor;
 layout(location = 3) in float inDistanceMultiplier;
+layout(location = 4) in float inShadowSize;
 
 layout(location = 0) out vec4 outColor;
 
@@ -33,16 +34,32 @@ void main()
         //outColor = vec4(1.0, 1.0, 0.0, 1.0); return;
     }
 
+    // Distance in screen coordinates from closest edge.
+    float distance = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), inTextureCoord.xy).r * inDistanceMultiplier;
 
-    float distance = texture(sampler2D(textures[int(inTextureCoord.z)], samp), inTextureCoord.xy).r;
-
-    float w = clamp(distance * inDistanceMultiplier + 0.5, 0.0, 1.0);
-    outColor = inColor * vec4(w, w, w, w);
+    float glyph = clamp(distance + 0.5, 0.0, 1.0);
     
-    if (w == 0.0) {
-        // XXX draw shadow and set deeper depth to properly overlap shadows of
-        // multiple glyphs.
+    if (inShadowSize > 0.0) {
+        if (glyph >= 1.0) {
+            outColor = inColor;
+
+        } else {
+            float shadow = clamp(distance * inShadowSize + 0.5, 0.0, 1.0);
+
+            if (shadow > 0.0) {
+                vec4 shadowColor = vec4(0.0, 0.0, 0.0, shadow);
+                vec4 glyphColor = inColor * glyph;
+                outColor = glyphColor + shadowColor * (1.0 - glyph);
+
+            } else {
+                discard;
+            }
+        }
+
+    } else if (glyph > 0.0) {
+        outColor = inColor * glyph;
+
+    } else {
         discard;
-        outColor = vec4(1.0, 1.0, 1.0, 0.1);
     }
 }

@@ -207,9 +207,9 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         let v3 = glm::xy(vM * bounding_box.homogeneous_corner<3>());
 
         constexpr float texelSize = 1.0f / fontSize;
-        constexpr float texelDistanceMultiplier = texelSize * SDF8::max_distance;
-        constexpr glm::vec3 texelDistanceMultiplerV3 = glm::vec3{texelDistanceMultiplier, texelDistanceMultiplier, 0.0f};
-        let distanceMultiplier = (vM * texelDistanceMultiplerV3).x;
+        constexpr float texelMaxDistance = texelSize * SDF8::max_distance;
+        constexpr glm::vec3 texelMaxDistanceV3 = glm::vec3{texelMaxDistance, texelMaxDistance, 0.0f};
+        let pixelMaxDistance = (vM * texelMaxDistanceV3).x;
 
         // If none of the vertices is inside the clipping rectangle then don't add the
         // quad to the vertex list.
@@ -227,10 +227,16 @@ void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 trans
         // Texture coordinates are upside-down.
         let &atlas_rect = atlas_i->second;
 
-        vertices.emplace_back(glm::vec3{v0, depth}, cr, get<0>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
-        vertices.emplace_back(glm::vec3{v1, depth}, cr, get<1>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
-        vertices.emplace_back(glm::vec3{v2, depth}, cr, get<2>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
-        vertices.emplace_back(glm::vec3{v3, depth}, cr, get<3>(atlas_rect.textureCoords), attr_grapheme.style.color, distanceMultiplier);
+
+        let color = R16G16B16A16SFloat{attr_grapheme.style.color};
+        let shadowSize = attr_grapheme.style.shadow_size > 0.1f ? 
+            (0.5f / std::min(attr_grapheme.style.shadow_size, pixelMaxDistance)) :
+            -1.0f;
+
+        vertices.emplace_back(glm::vec3{v0, depth}, cr, get<0>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(glm::vec3{v1, depth}, cr, get<1>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(glm::vec3{v2, depth}, cr, get<2>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(glm::vec3{v3, depth}, cr, get<3>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
     }
 }
 
@@ -417,9 +423,9 @@ void DeviceShared::buildAtlas()
         vk::Filter::eLinear, // magFilter
         vk::Filter::eLinear, // minFilter
         vk::SamplerMipmapMode::eNearest, // mipmapMode
-        vk::SamplerAddressMode::eRepeat, // addressModeU
-        vk::SamplerAddressMode::eRepeat, // addressModeV
-        vk::SamplerAddressMode::eRepeat, // addressModeW
+        vk::SamplerAddressMode::eClampToEdge, // addressModeU
+        vk::SamplerAddressMode::eClampToEdge, // addressModeV
+        vk::SamplerAddressMode::eClampToEdge, // addressModeW
         0.0, // mipLodBias
         FALSE, // anisotropyEnable
         0.0, // maxAnisotropy

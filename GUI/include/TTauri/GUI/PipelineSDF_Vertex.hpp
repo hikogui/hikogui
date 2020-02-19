@@ -22,18 +22,22 @@ struct Vertex {
     //! The x, y (relative to bottom-left) coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     glm::vec3 textureCoord;
 
-    //! The depth for depth test.
+    //! The color of the glyph.
     R16G16B16A16SFloat color;
 
     //! The multiplier to use to convert a SDF distance from texture space to screen-space.
     float distanceMultiplier;
 
-    Vertex(glm::vec3 position, glm::vec4 clippingRectangle, glm::vec3 textureCoord, wsRGBA color, float distanceMultiplier) noexcept :
+    //! The number of pixels that the shadow is, negative values make inset shadow. Should be less than or equal to the SDF8::max_distance.
+    float shadowSize;
+
+    Vertex(glm::vec3 position, glm::vec4 clippingRectangle, glm::vec3 textureCoord, R16G16B16A16SFloat color, float distanceMultiplier, float shadowSize) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),
-        color(R16G16B16A16SFloat{color}),
-        distanceMultiplier(distanceMultiplier) {}
+        color(color),
+        distanceMultiplier(distanceMultiplier),
+        shadowSize(shadowSize) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -49,7 +53,8 @@ struct Vertex {
             { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, clippingRectangle) },
             { 2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, textureCoord) },                
             { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
-            { 4, 0, vk::Format::eR32Sfloat, offsetof(Vertex, distanceMultiplier) }
+            { 4, 0, vk::Format::eR32Sfloat, offsetof(Vertex, distanceMultiplier) },
+            { 5, 0, vk::Format::eR32Sfloat, offsetof(Vertex, shadowSize) }
         };
     }
 };
