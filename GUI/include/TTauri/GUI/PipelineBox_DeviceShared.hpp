@@ -6,6 +6,7 @@
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -42,6 +43,18 @@ struct DeviceShared final {
     void destroy(gsl::not_null<Device *> vulkanDevice);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
+
+    static void placeVertices(
+        vspan<Vertex> &vertices,
+        float depth,
+        rect2 box,
+        R16G16B16A16SFloat backgroundColor,
+        float borderSize,
+        R16G16B16A16SFloat borderColor,
+        float shadowSize,
+        R16G16B16A16SFloat cornerShapes,
+        rect2 clippingRectangle
+    );
 
 private:
     void buildIndexBuffer();

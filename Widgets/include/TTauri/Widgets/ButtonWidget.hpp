@@ -20,7 +20,6 @@ protected:
     bool _pressed = false;
     std::string _label = "<unknown>";
 
-    Path drawing;
     Text::ShapedText labelShapedText;
 public:
 
@@ -56,12 +55,6 @@ public:
     ) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent event) noexcept override;
-
-
-private:
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
-
-    PipelineImage::Backing backingImage; 
 };
 
 }

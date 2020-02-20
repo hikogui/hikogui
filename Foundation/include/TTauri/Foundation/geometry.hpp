@@ -66,6 +66,14 @@ struct rect {
             (position.y < (offset.y + extent.height()));
     }
 
+    T width() const noexcept {
+        return extent.width();
+    }
+
+    T height() const noexcept {
+        return extent.height();
+    }
+
     /** Get coordinate of a corner
      *    2 <-- 3
      *    | \   ^
@@ -90,6 +98,15 @@ struct rect {
      template<int N, std::enable_if_t<S==2,int> = 0>
      glm::vec<S+1,T,Q> homogeneous_corner() const noexcept {
         return glm::vec<S+1,T,Q>{corner<N>(), 1.0f};
+     }
+
+     rect expand(float e) {
+         rect r;
+         for (int i = 0; i != S; ++i) {
+            r.offset[i] = offset[i] - e;
+            r.extent[i] = extent[i] + e * 2.0f;
+         }
+         return r;
      }
 };
 

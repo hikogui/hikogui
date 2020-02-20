@@ -29,72 +29,47 @@ void ButtonWidget::update(
 {
     ttauri_assert(window);
 
+    // Draw something.
+    let cornerShapes = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
+
+    wsRGBA backgroundColor;
+    wsRGBA labelColor;
+    wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+    if (value()) {
+        backgroundColor = wsRGBA{ 0x4c4cffff };
+        labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+    } else {
+        backgroundColor = wsRGBA{ 0x4c884cff };
+        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+    }
+    if (pressed()) {
+        backgroundColor = wsRGBA{ 0x4c4cffff };
+        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+    }
+
     if (modified) {
-        // Draw something.
-        let backgroundShape = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
-
-        wsRGBA backgroundColor;
-        wsRGBA labelColor;
-        wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
-        if (value()) {
-            backgroundColor = wsRGBA{ 0x4c4cffff };
-            labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
-        } else {
-            backgroundColor = wsRGBA{ 0x4c884cff };
-            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
-        }
-        if (pressed()) {
-            backgroundColor = wsRGBA{ 0x4c4cffff };
-            labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
-        }
-
-        auto buttonPath = Path();
-        let rectangle = rect2{{0.5f, 0.5f}, { box.currentExtent().width() - 1.0f, box.currentExtent().height() - 1.0f }};
-        buttonPath.addRectangle(rectangle, backgroundShape);
-
-        drawing.clear();
-        drawing.addPath(buttonPath, backgroundColor);
-        drawing.addStroke(buttonPath, borderColor, 1.0);
-
-        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 40.0, labelColor, 0.0, TextDecoration::None);
+        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 32.0, labelColor, 0.0, TextDecoration::None);
 
         labelShapedText = ShapedText(label(), labelStyle, box.currentExtent(), Alignment::MiddleCenter);
 
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 
-    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
-        return drawImage(image);
-    }, "Button", label(), value(), enabled(), focus(), pressed());
+    PipelineBox::DeviceShared::placeVertices(
+        box_vertices,
+        depth,
+        box.currentRectangle(),
+        R16G16B16A16SFloat{backgroundColor},
+        1.0f,
+        R16G16B16A16SFloat{borderColor},
+        6.0f,
+        R16G16B16A16SFloat{cornerShapes},
+        box.currentOuterRectangle()
+    );
 
-    if (backingImage.image) {
-        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
-
-        GUI::PipelineImage::ImageLocation location;
-        location.depth = depth + 0.0f;
-        location.origin = {0.0, 0.0};
-        location.position = box.currentPosition() + location.origin;
-        location.scale = currentScale;
-        location.rotation = 0.0;
-        location.alpha = 1.0;
-        location.clippingRectangle = box.currentRectangle();
-
-        backingImage.image->placeVertices(location, image_vertices);
-    }
-
-    window->device->SDFPipeline->placeVertices(labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth, sdf_vertices);
+    window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth);
 
     return Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
-}
-
-PipelineImage::Backing::ImagePixelMap ButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
-{
-    auto linearMap = PixelMap<wsRGBA>{image->extent};
-    fill(linearMap);
-    //composit(linearMap, drawing, window->subpixelOrientation);
-    composit(linearMap, drawing, SubpixelOrientation::Unknown);
-
-    return { std::move(image), std::move(linearMap) };
 }
 
 void ButtonWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {

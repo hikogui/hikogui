@@ -30,7 +30,7 @@ void PipelineBox::drawInCommandBuffer()
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
 
-    device().flatPipeline->drawInCommandBuffer(commandBuffer);
+    device().boxPipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
@@ -56,7 +56,7 @@ void PipelineBox::drawInCommandBuffer()
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> PipelineBox::createShaderStages() const {
-    return device().flatPipeline->shaderStages;
+    return device().boxPipeline->shaderStages;
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineBox::createDescriptorSetLayoutBindings() const {

@@ -14,7 +14,7 @@
 
 namespace TTauri::GUI::PipelineBox {
 
-/*! Pipeline for rendering simple flat shaded quats.
+/*! Pipeline for rendering simple box shaded quats.
  */
 class PipelineBox : public Pipeline_vulkan {
 public:

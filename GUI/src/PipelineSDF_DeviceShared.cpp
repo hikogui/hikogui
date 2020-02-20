@@ -184,7 +184,7 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 *    v   \ |
 *    0 --> 1
 */
-void DeviceShared::placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, vspan<Vertex> &vertices) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth) noexcept
 {
     auto cr = glm::vec4{
         clippingRectangle.offset.x,

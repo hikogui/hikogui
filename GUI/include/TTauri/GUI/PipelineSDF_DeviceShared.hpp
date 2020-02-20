@@ -104,9 +104,14 @@ struct DeviceShared final {
      */
     void prepareAtlas(Text::ShapedText const &text) noexcept;
 
-    /** Prepare the atlas for drawing a text.
-    */
-    void placeVertices(Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth, vspan<Vertex> &vertices) noexcept;
+    /** Draw the text on the screen.
+     * @param text The box of text to draw
+     * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
+     * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
+     * @param depth The depth where this text is drawn
+     * @param vertices The vertices to draw the glyphs to.
+     */
+    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth) noexcept;
 
 private:
 

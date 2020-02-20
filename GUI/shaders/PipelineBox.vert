@@ -6,30 +6,59 @@ layout(push_constant) uniform PushConstants {
     vec2 viewportScale;
 } pushConstants;
 
-layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec2 inClippingRectangleOffset;
-layout(location = 2) in vec2 inClippingRectangleExtent;
-layout(location = 3) in vec4 inColor;
-layout(location = 4) in uint inDepth;
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec4 inClippingRectangle;
+layout(location = 2) in vec4 inCornerCoordinates;
+layout(location = 3) in vec4 inBackgroundColor;
+layout(location = 4) in vec4 inBorderColor;
+layout(location = 5) in vec4 inCornerShapes;
+layout(location = 6) in float inBorderSize;
+layout(location = 7) in float inShadowSize;
 
-layout(location = 0) out vec2 outClippingRectangleMinimum;
-layout(location = 1) out vec2 outClippingRectangleMaximum;
-layout(location = 2) out vec4 outColor;
+layout(location = 0) out vec4 outClippingRectangle;
+layout(location = 1) out vec4 outCornerCoordinates;
+layout(location = 2) out vec4 outBackgroundColor;
+layout(location = 3) out vec4 outBorderColor;
+layout(location = 4) out vec4 outCornerShapes;
+layout(location = 5) out vec4 outAbsCornerShapes;
+layout(location = 6) out float outShadowSize;
+layout(location = 7) out float outOneOverShadowSize;
+layout(location = 8) out float outBorderStart;
+layout(location = 9) out float outBorderEnd;
 
-vec2 flipY(vec2 windowPosition) {
-    return vec2(windowPosition.x, pushConstants.windowExtent.y - windowPosition.y);
+vec4 convertPositionToViewport(vec3 windowPosition)
+{
+    float x = windowPosition.x * pushConstants.viewportScale.x - 1.0;
+    float y = (pushConstants.windowExtent.y - windowPosition.y) * pushConstants.viewportScale.y - 1.0;
+    return vec4(x, y, windowPosition.z, 1.0);
 }
 
-vec2 convertToViewport(vec2 windowPosition) {
-    return (windowPosition * pushConstants.viewportScale) - vec2(1.0, 1.0);
+vec4 convertClippingRectangleToScreen(vec4 clippingRectangle)
+{
+    return vec4(
+        clippingRectangle.x,
+        pushConstants.windowExtent.y - clippingRectangle.w,
+        clippingRectangle.z,
+        pushConstants.windowExtent.y - clippingRectangle.y
+    );
 }
 
 void main() {
-    vec2 position = convertToViewport(flipY(inPosition));
+    float shadowStart = 1.0;
+    float shadowEnd = shadowStart + inShadowSize;
+    float borderStart = shadowEnd;
+    float borderMiddle = borderStart + inBorderSize * 0.5;
+    float borderEnd = borderStart + inBorderSize;
 
-    gl_Position = vec4(position, 0.0, 1.0);
-
-    outClippingRectangleMinimum = flipY(inClippingRectangleOffset) - vec2(0.0, inClippingRectangleExtent.y);
-    outClippingRectangleMaximum = flipY(inClippingRectangleOffset) + vec2(inClippingRectangleExtent.x, 0.0);
-    outColor = inColor;
+    gl_Position = convertPositionToViewport(inPosition);
+    outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
+    outCornerCoordinates = inCornerCoordinates;
+    outBackgroundColor = inBackgroundColor;
+    outBorderColor = inBorderColor;
+    outCornerShapes = inCornerShapes;
+    outAbsCornerShapes = abs(inCornerShapes) + vec4(borderMiddle, borderMiddle, borderMiddle, borderMiddle);
+    outShadowSize = inShadowSize;
+    outOneOverShadowSize = 1.0 / inShadowSize;
+    outBorderStart = borderStart;
+    outBorderEnd = borderEnd;
 }
