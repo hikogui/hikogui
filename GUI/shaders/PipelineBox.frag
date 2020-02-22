@@ -88,15 +88,15 @@ void main() {
         } else if (inCornerShapes.y < -0.1) {
             distance = cutDistance(distance2D, inAbsCornerShapes.y);
         }
-    } else if (inCornerCoordinates.z < inAbsCornerShapes.z && inCornerCoordinates.w < inAbsCornerShapes.z) {
-        // Right top corner.
+    } else if (inCornerCoordinates.x < inAbsCornerShapes.z && inCornerCoordinates.w < inAbsCornerShapes.z) {
+        // Left top corner.
         if (inCornerShapes.z > 0.1) {
             distance = roundedDistance(distance2D, inAbsCornerShapes.z);
         } else if (inCornerShapes.z < -0.1) {
             distance = cutDistance(distance2D, inAbsCornerShapes.z);
         }
     } else if (inCornerCoordinates.z < inAbsCornerShapes.w && inCornerCoordinates.w < inAbsCornerShapes.w) {
-        // Left top corner.
+        // Right top corner.
         if (inCornerShapes.w > 0.1) {
             distance = roundedDistance(distance2D, inAbsCornerShapes.w);
         } else if (inCornerShapes.w < -0.1) {

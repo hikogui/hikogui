@@ -1,3 +1,4 @@
+
 XXX Depth buffer can be used as per-primative clipping/stencil buffer.
 
 # Render architecture
@@ -17,13 +18,13 @@ Vulkan is used as the backend for rendering windows.
     | HiDPI FB |       Bypass
     +----------+         |
          |               |
-         +---------------+---------------+
-         |               |               |
-     Box Shader     Text Shader     Image Shader
-                         |               |
-                    +----------+    +---------+
-                    |  Atlas   |    |  Atlas  |
-                    +----------+    +---------+
+         +---------------+---------------+---------------+
+         |               |               |               |
+     Flat Shader     Box Shader      SDF Shader     Image Shader
+                                         |               |
+                                    +----------+    +---------+
+                                    |  Atlas   |    |  Atlas  |
+                                    +----------+    +---------+
 
 ```
 
@@ -33,7 +34,9 @@ image are RGBA; Alpha is fixed to 1 and no need for a depth or stencil buffer.
 
 When the window is HiDPI, then the Image, 
 
-## Subpixel Pipeline
+## Shaders
+
+### LCD Shader
 To anti-alias and potentially with LCD-sub-pixels a pipeline + shader
 is used to super-sample a high-resolution frame buffer. This high resolution
 frame buffer is treated as a 3x3 scaled window.
@@ -41,17 +44,35 @@ frame buffer is treated as a 3x3 scaled window.
 The high resolution framebuffer is a single 32 bit RGBA color attachment and a single
 16 bit depth attachment.
 
-## Image shader
+### Flat Shader
+This pipeline is for drawing flat polygons. Useful for drawing simple boxes of
+a single colour, such as backgrounds for widgets and windows.
+
+Also useful for drawing lines, for graphs and such. The flat pipeline will not
+self anti-alias.
+
+### Box Shader
+This pipeline is for drawing axis-aligned boxes, such as buttons. Each box has the
+following properties:
+ * A rectangle. The edges of the rectangle will match the center of the border.
+ * Background color
+ * Border color
+ * Border size/width in pixels.
+ * Shadow size, the amount of pixels for the drop shadow
+ * Round/Cut radius for each corner. Corner are in the following order:
+   left-bottom, right-bottom, left-top, right-top.
+
+### Image Shader
 The image shader takes a list of square-quads, with pointers inside a texture atlas to render.
 Each polygon has the same size, and a image consists of a set of square-quads.
 
 Due to the same size square-quads it is possible to manage the atlas dynamically, see the
 seperate article about this.
 
-## Solid polygon shader
-A simple polygon shader for drawing simple objects quickly.
+The image-shader creates polygons that are self anti-aliased. This is due to linear interpolation
+of the texture map.
 
-## Character shader
+### SDF pipeline
 A character shader will render individual characters in high resolution using
 signed distance fields.
 
