@@ -89,9 +89,12 @@ std::vector<vk::VertexInputAttributeDescription> PipelineFlat::createVertexInput
 
 void PipelineFlat::buildVertexBuffers()
 {
+    using vertexIndexType = uint16_t;
+    constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
+
     vk::BufferCreateInfo const bufferCreateInfo = {
         vk::BufferCreateFlags(),
-        sizeof (Vertex) * PipelineFlat::maximumNumberOfVertices,
+        sizeof (Vertex) * numberOfVertices,
         vk::BufferUsageFlagBits::eVertexBuffer,
         vk::SharingMode::eExclusive
     };

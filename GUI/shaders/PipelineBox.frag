@@ -6,16 +6,16 @@ layout(push_constant) uniform PushConstants {
     vec2 viewportScale;
 } pushConstants;
 
-layout(location = 0) in vec4 inClippingRectangle;
+layout(location = 0) in flat vec4 inClippingRectangle;
 layout(location = 1) in vec4 inCornerCoordinates;
-layout(location = 2) in vec4 inBackgroundColor;
-layout(location = 3) in vec4 inBorderColor;
-layout(location = 4) in vec4 inCornerShapes;
-layout(location = 5) in vec4 inAbsCornerShapes;
-layout(location = 6) in float inShadowSize;
-layout(location = 7) in float inOneOverShadowSize;
-layout(location = 8) in float inBorderStart;
-layout(location = 9) in float inBorderEnd;
+layout(location = 2) in flat vec4 inBackgroundColor;
+layout(location = 3) in flat vec4 inBorderColor;
+layout(location = 4) in flat uvec4 inCornerShapes;
+layout(location = 5) in flat vec4 inCornerRadii;
+layout(location = 6) in flat float inShadowSize;
+layout(location = 7) in flat float inOneOverShadowSize;
+layout(location = 8) in flat float inBorderStart;
+layout(location = 9) in flat float inBorderEnd;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 outColor;
@@ -45,21 +45,65 @@ float smoothShadow(float distance, float oneOverShadowSize)
     return 0.5 + 0.5 * erf(distance * oneOverShadowSize);
 }
 
-float roundedDistance(vec2 distance2D, float size)
+float roundedDistance(vec2 distance2D, float cornerRadius)
 {
-    float x = size - distance2D.x;
-    float y = size - distance2D.y;
-    return size - sqrt(x*x + y*y) ;
+    float x = cornerRadius - distance2D.x;
+    float y = cornerRadius - distance2D.y;
+    return cornerRadius - sqrt(x*x + y*y) ;
 }
 
-float cutDistance(vec2 distance2D, float size)
+float cutDistance(vec2 distance2D, float cornerRadius)
 {
-    return distance2D.x + distance2D.y - size;
+    return distance2D.x + distance2D.y - cornerRadius;
 }
 
-float cornerDistance(vec2 distance2D)
+float edgeDistance(vec2 distance2D)
 {
     return min(distance2D.x, distance2D.y);
+}
+
+float cornerDistance(vec2 distance2D, float cornerRadius, uint shape)
+{
+    switch (shape) {
+    case 1: return roundedDistance(distance2D, cornerRadius);
+    case 2: return cutDistance(distance2D, cornerRadius);
+    default: return edgeDistance(distance2D);
+    }
+}
+
+bool insideBottomLeftCorner(float maximumDistanceFromCorner)
+{
+    return inCornerCoordinates.x < maximumDistanceFromCorner && inCornerCoordinates.y < maximumDistanceFromCorner;
+}
+
+bool insideBottomRightCorner(float maximumDistanceFromCorner)
+{
+    return inCornerCoordinates.z < maximumDistanceFromCorner && inCornerCoordinates.y < maximumDistanceFromCorner;
+}
+
+bool insideTopLeftCorner(float maximumDistanceFromCorner)
+{
+    return inCornerCoordinates.x < maximumDistanceFromCorner && inCornerCoordinates.z < maximumDistanceFromCorner;
+}
+
+bool insideTopRightCorner(float maximumDistanceFromCorner)
+{
+    return inCornerCoordinates.z < maximumDistanceFromCorner && inCornerCoordinates.z < maximumDistanceFromCorner;
+}
+
+float shapeAdjustedDistance(vec2 distance2D)
+{
+    if (insideBottomLeftCorner(inCornerRadii.x)) {
+        return cornerDistance(distance2D, inCornerRadii.x, inCornerShapes.x);
+    } else if (insideBottomRightCorner(inCornerRadii.y)) {
+        return cornerDistance(distance2D, inCornerRadii.y, inCornerShapes.y);
+    } else if (insideTopLeftCorner(inCornerRadii.z)) {
+        return cornerDistance(distance2D, inCornerRadii.z, inCornerShapes.z);
+    } else if (insideTopRightCorner(inCornerRadii.w)) {
+        return cornerDistance(distance2D, inCornerRadii.w, inCornerShapes.w);
+    } else {
+        return edgeDistance(distance2D);
+    }
 }
 
 void main() {
@@ -73,37 +117,8 @@ void main() {
         min(inCornerCoordinates.y, inCornerCoordinates.w)
     );
 
-    float distance = cornerDistance(distance2D);
-    if (inCornerCoordinates.x < inAbsCornerShapes.x && inCornerCoordinates.y < inAbsCornerShapes.x) {
-        // Left bottom corner.
-        if (inCornerShapes.x > 0.1) {
-            distance = roundedDistance(distance2D, inAbsCornerShapes.x);
-        } else if (inCornerShapes.x < -0.1) {
-            distance = cutDistance(distance2D, inAbsCornerShapes.x);
-        }
-    } else if (inCornerCoordinates.z < inAbsCornerShapes.y && inCornerCoordinates.y < inAbsCornerShapes.y) {
-        // Right bottom corner.
-        if (inCornerShapes.y > 0.1) {
-            distance = roundedDistance(distance2D, inAbsCornerShapes.y);
-        } else if (inCornerShapes.y < -0.1) {
-            distance = cutDistance(distance2D, inAbsCornerShapes.y);
-        }
-    } else if (inCornerCoordinates.x < inAbsCornerShapes.z && inCornerCoordinates.w < inAbsCornerShapes.z) {
-        // Left top corner.
-        if (inCornerShapes.z > 0.1) {
-            distance = roundedDistance(distance2D, inAbsCornerShapes.z);
-        } else if (inCornerShapes.z < -0.1) {
-            distance = cutDistance(distance2D, inAbsCornerShapes.z);
-        }
-    } else if (inCornerCoordinates.z < inAbsCornerShapes.w && inCornerCoordinates.w < inAbsCornerShapes.w) {
-        // Right top corner.
-        if (inCornerShapes.w > 0.1) {
-            distance = roundedDistance(distance2D, inAbsCornerShapes.w);
-        } else if (inCornerShapes.w < -0.1) {
-            distance = cutDistance(distance2D, inAbsCornerShapes.w);
-        }
-    }
-
+    float distance = shapeAdjustedDistance(distance2D);
+    
     float background = clamp(distance - inBorderEnd + 0.5, 0.0, 1.0);
     float border = clamp(distance - inBorderStart + 0.5, 0.0, 1.0);
 

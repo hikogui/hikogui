@@ -121,9 +121,12 @@ std::vector<vk::VertexInputAttributeDescription> PipelineSDF::createVertexInputA
 
 void PipelineSDF::buildVertexBuffers()
 {
+    using vertexIndexType = uint16_t;
+    constexpr ssize_t numberOfVertices = 1 << (sizeof(vertexIndexType) * CHAR_BIT);
+
     vk::BufferCreateInfo const bufferCreateInfo = {
         vk::BufferCreateFlags(),
-        sizeof (Vertex) * PipelineSDF::maximumNumberOfVertices,
+        sizeof (Vertex) * numberOfVertices,
         vk::BufferUsageFlagBits::eVertexBuffer,
         vk::SharingMode::eExclusive
     };

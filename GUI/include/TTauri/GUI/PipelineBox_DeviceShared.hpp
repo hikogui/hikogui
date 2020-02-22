@@ -22,9 +22,6 @@ struct Image;
 struct DeviceShared final {
     Device const &device;
 
-    vk::Buffer indexBuffer;
-    VmaAllocation indexBufferAllocation = {};
-
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
@@ -57,8 +54,6 @@ struct DeviceShared final {
     );
 
 private:
-    void buildIndexBuffer();
-    void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
     void buildShaders();
     void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
 };

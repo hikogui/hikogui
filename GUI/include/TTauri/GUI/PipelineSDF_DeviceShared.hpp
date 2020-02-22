@@ -43,9 +43,6 @@ struct DeviceShared final {
 
     Device const &device;
 
-    vk::Buffer indexBuffer;
-    VmaAllocation indexBufferAllocation = {};
-
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
 
@@ -114,9 +111,6 @@ struct DeviceShared final {
     void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth) noexcept;
 
 private:
-
-    void buildIndexBuffer();
-    void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
     void buildShaders();
     void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
     void addAtlasImage();

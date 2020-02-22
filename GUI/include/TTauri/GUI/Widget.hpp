@@ -12,6 +12,7 @@
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include <TTauri/Foundation/pickle.hpp>

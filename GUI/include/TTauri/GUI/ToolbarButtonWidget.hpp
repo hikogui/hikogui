@@ -20,8 +20,8 @@ public:
 
     std::variant<Path> icon;
 
-    wsRGBA hoverBackgroundColor = wsRGBA{ 0xffffff11 };
-    wsRGBA pressedBackgroundColor = wsRGBA{ 0xffffff22 };
+    R16G16B16A16SFloat hoverBackgroundColor = {1.0, 1.0, 1.0, 0.067 };
+    R16G16B16A16SFloat pressedBackgroundColor = {1.0, 1.0, 1.0, 0.133 };
 
     std::function<void()> delegate;
 

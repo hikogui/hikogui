@@ -41,6 +41,14 @@ void ToolbarButtonWidget::update(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+
+    if (pressed) {
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), depth);
+    } else if (hover && enabled) {
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), depth);
+    }
+
+
     ttauri_assert(window);
     backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
@@ -67,13 +75,7 @@ void ToolbarButtonWidget::update(
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     auto linearMap = PixelMap<wsRGBA>{image->extent};
-    if (pressed) {
-        fill(linearMap, pressedBackgroundColor);
-    } else if (hover && enabled) {
-        fill(linearMap, hoverBackgroundColor);
-    } else {
-        fill(linearMap);
-    }
+    fill(linearMap);
 
     let iconSize = numeric_cast<float>(image->extent.height());
     let iconLocation = glm::vec2{image->extent.width() / 2.0f, 0.0f};

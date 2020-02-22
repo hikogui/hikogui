@@ -18,11 +18,6 @@ namespace TTauri::GUI::PipelineBox {
  */
 class PipelineBox : public Pipeline_vulkan {
 public:
-    static constexpr int maximumNumberOfVertices = 65536;
-    static constexpr int maximumNumberOfSquares = maximumNumberOfVertices / 4;
-    static constexpr int maximumNumberOfTriangles = maximumNumberOfSquares * 2;
-    static constexpr int maximumNumberOfIndices = maximumNumberOfTriangles * 3;
-    
     vspan<Vertex> vertexBufferData;
 
     PipelineBox(Window const &window);

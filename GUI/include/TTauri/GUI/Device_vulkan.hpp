@@ -24,6 +24,10 @@ protected:
     vk::Device intrinsic;
     VmaAllocator allocator;
 
+private:
+    void initializeQuadIndexBuffer();
+    void destroyQuadIndexBuffer();
+
 public:
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
     vk::PhysicalDeviceMemoryProperties memoryProperties;
@@ -40,6 +44,19 @@ public:
     vk::CommandPool graphicsCommandPool;
     vk::CommandPool presentCommandPool;
     vk::CommandPool computeCommandPool;
+
+    /** Shared index buffer containing indices for drawing quads.
+     * The index buffer uses the following index order: 0, 1, 2, 2, 1, 3
+     * ```
+     * 2<--3
+     * |\  ^
+     * | \ |
+     * v  \|
+     * 0-->1
+     * ```
+     */
+    vk::Buffer quadIndexBuffer;
+    VmaAllocation quadIndexBufferAllocation = {};
 
     std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
     std::unique_ptr<PipelineFlat::DeviceShared> flatPipeline;
@@ -74,7 +91,6 @@ public:
     Device_vulkan &operator=(Device_vulkan &&) = delete;
 
     void initializeDevice(Window const &window) override;
-
 
     int score(vk::SurfaceKHR surface) const;
 

@@ -32,9 +32,6 @@ struct DeviceShared final {
 
     Device const &device;
 
-    vk::Buffer indexBuffer;
-    VmaAllocation indexBufferAllocation = {};
-
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
@@ -108,8 +105,6 @@ private:
 
     void updateAtlasWithStagingPixelMap(Image const &image);
 
-    void buildIndexBuffer();
-    void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
     void buildShaders();
     void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
     void addAtlasImage();

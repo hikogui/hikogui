@@ -1,42 +1,60 @@
 # TTauri Coordinate System
 
 ## Coordinates
-Window, image and path coordinates are in the number of pixels.
-X-axis pointing right, Y-axis pointing up.
-The origin (0,0) of a window, image and path start at the bottom-left
-corner. The center of the bottom-left pixel in a window and image is
-at (0.5, 0.5).
+All origins (0, 0) are at the bottom left corner. With the x-axis pointing
+right, y-axis pointing up, z-axis pointing away.
 
-Positive rotation is counter clockwise. Vertices of front faces are
-specified in counter clockwise order.
+### Window-surface coordinates
+The coordinates in a window are in pixels. With the center of the left bottom
+pixel having the coordinates (0.5, 0.5).
 
-## Glyph/Font coordinates
+There may be an intermediate 3x3 scaled window surface to handle sub-pixel
+anti-aliasing. In this case the coordinates are still in pixels, but pixels
+of the intermediate surface.
+
+Widgets should be able to figure out what the DPI is of the window-surface to
+handle proper scaling of the user interface elements.
+
+### Image coordinates
+The coordinates in a image are in pixels. With the center of the left bottom
+pixel having the coordinates (0.5, 0.5).
+
+### Path coordinates
+The coordinates in a path are free from scale and origin, when rendering a
+path to an image, the path should be first be transformed to image coordinates.
+
+### Glyph/Font coordinates
 Glyph coordinates are in the number of Em units.
 X-axis pointing right, Y-axis pointing up.
-The origin (0,0) is on the base line and left side bearing.
+The origin (0,0) is on the crossing of the base line and left side bearing.
 Vertices of front faces are specified in counter clockwise order.
 
 ## Corners
 Corners are enumerated as follows:
- - 0: left bottom
- - 1: right bottom
- - 2: right top
- - 3: left top
+ - 0: near bottom left
+ - 1: near bottom right
+ - 2: near top left
+ - 3: near top right
+ - 4: far bottom left
+ - 5: far bottom right
+ - 6: far top left
+ - 7: far top right
 
-This is the same order as the corner-shape vector.
+## Triangles
+A front facing triangle has the vertex ordered in counter-clockwise direction.
 
 ## Quads
-The vertex index order is always:
- - 0, 1, 2, 0, 2, 3
+Quads are defined as two front facing triangles.
+The vertex index order is: 0, 1, 2, 2, 1, 3
 
 As illustrated below:
 
 ```
-3 <--- 2
-|    / ^
-| B /  |
-|  / A |
-v /    |
+2 <--- 3
+| \    ^
+|  \ B |
+| A \  |
+v    \ |
 0 ---> 1
 ```
 

@@ -6,6 +6,7 @@
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -20,9 +21,6 @@ struct Image;
 
 struct DeviceShared final {
     Device const &device;
-
-    vk::Buffer indexBuffer;
-    VmaAllocation indexBufferAllocation = {};
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -43,9 +41,9 @@ struct DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
+    static void placeVerticesBox(vspan<Vertex> &vertices, rect2 box, R16G16B16A16SFloat color, rect2 clippingRectangle, float depth) noexcept;
+
 private:
-    void buildIndexBuffer();
-    void teardownIndexBuffer(gsl::not_null<Device_vulkan *> vulkanDevice);
     void buildShaders();
     void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
 };

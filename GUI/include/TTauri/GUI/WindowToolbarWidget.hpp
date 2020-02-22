@@ -18,6 +18,8 @@ public:
     ToolbarButtonWidget *maximizeWindowButton = nullptr;
     ToolbarButtonWidget *minimizeWindowButton = nullptr;
 
+    R16G16B16A16SFloat backgroundColor = R16G16B16A16SFloat{0.0f, 0.0f, 0.0f, 0.5f};
+
     WindowToolbarWidget() noexcept;
     ~WindowToolbarWidget() {}
 

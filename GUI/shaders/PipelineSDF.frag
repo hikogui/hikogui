@@ -9,11 +9,11 @@ layout(push_constant) uniform PushConstants {
 layout(set = 0, binding = 0) uniform sampler biLinearSampler;
 layout(set = 0, binding = 1) uniform texture2D textures[16];
 
-layout(location = 0) in vec4 inClippingRectangle;
+layout(location = 0) in flat vec4 inClippingRectangle;
 layout(location = 1) in vec3 inTextureCoord;
-layout(location = 2) in vec4 inColor;
-layout(location = 3) in float inDistanceMultiplier;
-layout(location = 4) in float inShadowSize;
+layout(location = 2) in flat vec4 inColor;
+layout(location = 3) in flat float inDistanceMultiplier;
+layout(location = 4) in flat float inShadowSize;
 
 layout(location = 0) out vec4 outColor;
 

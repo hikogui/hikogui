@@ -138,6 +138,8 @@ Device_vulkan::~Device_vulkan()
             boxPipeline->destroy(gsl::make_not_null(this));
             boxPipeline = nullptr;
 
+            destroyQuadIndexBuffer();
+
             vmaDestroyAllocator(allocator);
 
             for (uint32_t index = 0; index < 3; index++) {
@@ -217,6 +219,8 @@ void Device_vulkan::initializeDevice(Window const &window)
         index++;
     }
 
+    initializeQuadIndexBuffer();
+
     imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(dynamic_cast<Device &>(*this));
     boxPipeline = std::make_unique<PipelineBox::DeviceShared>(dynamic_cast<Device &>(*this));
@@ -225,6 +229,84 @@ void Device_vulkan::initializeDevice(Window const &window)
     Device_base::initializeDevice(window);
 }
 
+void Device_vulkan::initializeQuadIndexBuffer()
+{
+    using vertex_index_type = uint16_t;
+    constexpr ssize_t maximum_number_of_vertices = 1 << (sizeof(vertex_index_type) * CHAR_BIT);
+    constexpr ssize_t maximum_number_of_quads = maximum_number_of_vertices / 4;
+    constexpr ssize_t maximum_number_of_triangles = maximum_number_of_quads * 2;
+    constexpr ssize_t maximum_number_of_indices = maximum_number_of_triangles * 3;
+
+    // Create vertex index buffer
+    {
+        vk::BufferCreateInfo const bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (vertex_index_type) * maximum_number_of_indices,
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        tie(quadIndexBuffer, quadIndexBufferAllocation) = createBuffer(bufferCreateInfo, allocationCreateInfo);
+    }
+
+    // Fill in the vertex index buffer, using a staging buffer, then copying.
+    {
+        // Create staging vertex index buffer.
+        vk::BufferCreateInfo const bufferCreateInfo = {
+            vk::BufferCreateFlags(),
+            sizeof (vertex_index_type) * maximum_number_of_indices,
+            vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferSrc,
+            vk::SharingMode::eExclusive
+        };
+        VmaAllocationCreateInfo allocationCreateInfo = {};
+        allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+        let [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = createBuffer(bufferCreateInfo, allocationCreateInfo);
+
+        // Initialize indices.
+        let stagingVertexIndexBufferData = mapMemory<vertex_index_type>(stagingVertexIndexBufferAllocation);
+        for (size_t i = 0; i < maximum_number_of_indices; i++) {
+            let vertexInRectangle = i % 6;
+            let rectangleNr = i / 6;
+            let rectangleBase = rectangleNr * 4;
+
+            switch (vertexInRectangle) {
+            case 0: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 0); break;
+            case 1: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 2: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 3: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 4: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 5: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 3); break;
+            default: no_default;
+            }
+        }
+        flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
+        unmapMemory(stagingVertexIndexBufferAllocation);
+
+        // Copy indices to vertex index buffer.
+        auto commands = allocateCommandBuffers({
+            graphicsCommandPool, 
+            vk::CommandBufferLevel::ePrimary, 
+            1
+            }).at(0);
+        commands.begin({vk::CommandBufferUsageFlagBits::eOneTimeSubmit});
+        commands.copyBuffer(stagingVertexIndexBuffer, quadIndexBuffer, {{0, 0, sizeof (vertex_index_type) * maximum_number_of_indices}});
+        commands.end();
+
+        vector<vk::CommandBuffer> const commandBuffersToSubmit = { commands };
+        vector<vk::SubmitInfo> const submitInfo = { { 0, nullptr, nullptr, numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(), 0, nullptr } };
+        graphicsQueue.submit(submitInfo, vk::Fence());
+        graphicsQueue.waitIdle();
+
+        freeCommandBuffers(graphicsCommandPool, {commands});
+        destroyBuffer(stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation);
+    }
+}
+
+void Device_vulkan::destroyQuadIndexBuffer()
+{
+    destroyBuffer(quadIndexBuffer, quadIndexBufferAllocation);
+}
 
 std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndices(vk::SurfaceKHR surface) const
 {

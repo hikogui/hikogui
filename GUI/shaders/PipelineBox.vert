@@ -11,20 +11,20 @@ layout(location = 1) in vec4 inClippingRectangle;
 layout(location = 2) in vec4 inCornerCoordinates;
 layout(location = 3) in vec4 inBackgroundColor;
 layout(location = 4) in vec4 inBorderColor;
-layout(location = 5) in vec4 inCornerShapes;
+layout(location = 5) in vec4 inCornerRadiiAndShapes;
 layout(location = 6) in float inBorderSize;
 layout(location = 7) in float inShadowSize;
 
-layout(location = 0) out vec4 outClippingRectangle;
+layout(location = 0) out flat vec4 outClippingRectangle;
 layout(location = 1) out vec4 outCornerCoordinates;
-layout(location = 2) out vec4 outBackgroundColor;
-layout(location = 3) out vec4 outBorderColor;
-layout(location = 4) out vec4 outCornerShapes;
-layout(location = 5) out vec4 outAbsCornerShapes;
-layout(location = 6) out float outShadowSize;
-layout(location = 7) out float outOneOverShadowSize;
-layout(location = 8) out float outBorderStart;
-layout(location = 9) out float outBorderEnd;
+layout(location = 2) out flat vec4 outBackgroundColor;
+layout(location = 3) out flat vec4 outBorderColor;
+layout(location = 4) out flat uvec4 outCornerShapes;
+layout(location = 5) out flat vec4 outCornerRadii;
+layout(location = 6) out flat float outShadowSize;
+layout(location = 7) out flat float outOneOverShadowSize;
+layout(location = 8) out flat float outBorderStart;
+layout(location = 9) out flat float outBorderEnd;
 
 vec4 convertPositionToViewport(vec3 windowPosition)
 {
@@ -55,8 +55,13 @@ void main() {
     outCornerCoordinates = inCornerCoordinates;
     outBackgroundColor = inBackgroundColor;
     outBorderColor = inBorderColor;
-    outCornerShapes = inCornerShapes;
-    outAbsCornerShapes = abs(inCornerShapes) + vec4(borderMiddle, borderMiddle, borderMiddle, borderMiddle);
+    outCornerShapes = ivec4(
+        (inCornerRadiiAndShapes.x > 0.1) ? 1 : (inCornerRadiiAndShapes.x < -0.1) ? 2 : 0,
+        (inCornerRadiiAndShapes.y > 0.1) ? 1 : (inCornerRadiiAndShapes.y < -0.1) ? 2 : 0,
+        (inCornerRadiiAndShapes.z > 0.1) ? 1 : (inCornerRadiiAndShapes.z < -0.1) ? 2 : 0,
+        (inCornerRadiiAndShapes.w > 0.1) ? 1 : (inCornerRadiiAndShapes.w < -0.1) ? 2 : 0
+    );
+    outCornerRadii = abs(inCornerRadiiAndShapes) + vec4(borderMiddle, borderMiddle, borderMiddle, borderMiddle);
     outShadowSize = inShadowSize;
     outOneOverShadowSize = 1.0 / inShadowSize;
     outBorderStart = borderStart;

@@ -41,20 +41,27 @@ struct R16G16B16A16SFloat {
     R16G16B16A16SFloat &operator=(R16G16B16A16SFloat &&rhs) noexcept = default;
     ~R16G16B16A16SFloat() = default;
 
-    explicit R16G16B16A16SFloat(glm::vec4 const &rhs) noexcept :
+    R16G16B16A16SFloat(glm::vec4 const &rhs) noexcept :
         value(make_R16G16B16A16SFloat_value(rhs)) {}
 
-    explicit R16G16B16A16SFloat(glm::vec3 const &rhs) noexcept :
+    R16G16B16A16SFloat(glm::vec3 const &rhs) noexcept :
         value(make_R16G16B16A16SFloat_value(rhs)) {}
 
-    explicit R16G16B16A16SFloat(wsRGBA const &rhs) noexcept :
+    R16G16B16A16SFloat(wsRGBA const &rhs) noexcept :
         R16G16B16A16SFloat(static_cast<glm::vec4>(rhs)) {}
 
-    explicit R16G16B16A16SFloat(float r, float g, float b, float a) noexcept :
+    R16G16B16A16SFloat(float r, float g, float b, float a) noexcept :
         R16G16B16A16SFloat(glm::vec4{r, g, b, a}) {}
 
-    explicit R16G16B16A16SFloat(float r, float g, float b) noexcept :
+    R16G16B16A16SFloat(float r, float g, float b) noexcept :
         R16G16B16A16SFloat(glm::vec3{r, g, b}) {}
+
+    R16G16B16A16SFloat(double r, double g, double b, double a) noexcept :
+        R16G16B16A16SFloat(glm::vec4{r, g, b, a}) {}
+
+    R16G16B16A16SFloat(double r, double g, double b) noexcept :
+        R16G16B16A16SFloat(glm::vec3{r, g, b}) {}
+
 
     R16G16B16A16SFloat &operator=(glm::vec4 const &rhs) noexcept {
         value = make_R16G16B16A16SFloat_value(rhs);
