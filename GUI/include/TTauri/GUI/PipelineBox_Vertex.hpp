@@ -47,11 +47,11 @@ struct Vertex {
         rect2 clippingRectangle
     ) noexcept :
         position(position),
-        cornerCoordinate(cornerCoordinate),
         clippingRectangle(
             clippingRectangle.offset.x, clippingRectangle.offset.y,
             clippingRectangle.offset.x + clippingRectangle.extent.width(), clippingRectangle.offset.y + clippingRectangle.extent.height()
         ),
+        cornerCoordinate(cornerCoordinate),
         backgroundColor(backgroundColor),
         borderColor(borderColor),
         cornerShapes(cornerShapes),

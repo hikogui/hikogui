@@ -58,3 +58,9 @@ v    \ |
 0 ---> 1
 ```
 
+## Margins and padding
+When margins and paddings are passed as 4D vectors:
+ - x = left
+ - y = bottom
+ - z = right
+ - w = top

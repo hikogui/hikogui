@@ -88,7 +88,7 @@ public:
     float dpi = 72.0;
 
     /*! Pixels-per-Point
-     * A point references a typefraphic point, 1/72 inch.
+     * A point references a typographic point, 1/72 inch.
      * Scale all drawing and sizing on the window using this attribute.
      * This value is rounded to an integer value for drawing clean lines.
      */
@@ -164,6 +164,22 @@ protected:
     //! The current window extent as set by the GPU library.
     extent2 currentWindowExtent;
 
+    /** Incremented when the window needs to be rendered on the next vsync.
+     */
+    std::atomic<uint64_t> modificationRequest = 1;
+
+    /** Copied from renderRequest before rendering the window.
+     */
+    uint64_t modificationVersion = 0;
+
+    /** Should be called after the internal state of the widget was modified.
+    */
+    force_inline bool setModified(bool x=true) noexcept {
+        if (x) {
+            modificationRequest.fetch_add(1, std::memory_order::memory_order_relaxed);
+        }
+        return x;
+    }
 
     /*! Called when the GPU library has changed the window size.
      */
@@ -195,7 +211,7 @@ protected:
      * Most often this function is used to determine the mouse cursor.
      */
     void handleMouseEvent(MouseEvent event) noexcept {
-        return widget->handleMouseEvent(event);
+        setModified(widget->_handleMouseEvent(event));
     }
 
     /*! Test where the certain features of a window are located.
@@ -256,6 +272,16 @@ private:
         );
 
         addCurrentWindowExtentConstraints();
+    }
+
+protected:
+    force_inline void unsetModified(void) noexcept {
+        modificationVersion = modificationRequest.load(std::memory_order::memory_order_acquire);
+    }
+
+
+    [[nodiscard]] force_inline bool modified() noexcept {
+        return modificationVersion != modificationRequest.load(std::memory_order::memory_order_acquire);
     }
 
 };

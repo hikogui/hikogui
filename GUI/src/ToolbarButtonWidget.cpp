@@ -3,6 +3,7 @@
 
 #include "TTauri/GUI/ToolbarButtonWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
+#include "TTauri/Foundation/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 
@@ -34,13 +35,14 @@ int ToolbarButtonWidget::state() const noexcept {
 }
 
 
-void ToolbarButtonWidget::update(
+bool ToolbarButtonWidget::updateAndPlaceVertices(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+    auto continueRendering = false;
 
     if (pressed) {
         PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), depth);
@@ -66,19 +68,21 @@ void ToolbarButtonWidget::update(
         location.alpha = 1.0;
         location.clippingRectangle = box.currentRectangle();
 
+
         backingImage.image->placeVertices(location, image_vertices);
+
+        continueRendering |= backingImage.image->state != PipelineImage::Image::State::Uploaded;
+    } else {
+        continueRendering |= true;
     }
 
-    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering | Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
     auto linearMap = PixelMap<wsRGBA>{image->extent};
     fill(linearMap);
-
-    let iconSize = numeric_cast<float>(image->extent.height());
-    let iconLocation = glm::vec2{image->extent.width() / 2.0f, 0.0f};
 
     auto iconImage = PixelMap<wsRGBA>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
@@ -99,12 +103,13 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) noexcept {
-    hover = event.type != MouseEvent::Type::Exited;
+bool ToolbarButtonWidget::handleMouseEvent(MouseEvent event) noexcept {
+    auto r = assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
 
     if (enabled) {
         window->setCursor(Cursor::Clickable);
-        pressed = event.down.leftButton;
+
+        r |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             delegate();
@@ -113,6 +118,8 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent event) noexcept {
     } else {
         window->setCursor(Cursor::Default);
     }
+
+    return r;
 }
 
 }

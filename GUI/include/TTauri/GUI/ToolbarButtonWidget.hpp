@@ -35,7 +35,7 @@ public:
 
     void setParent(Widget *parent) noexcept override;
 
-    void update(
+    [[nodiscard]] bool updateAndPlaceVertices(
         bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
@@ -43,7 +43,7 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    void handleMouseEvent(GUI::MouseEvent event) noexcept override;
+    [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent event) noexcept override;
 
 private:
     int state() const noexcept;

@@ -45,7 +45,7 @@ public:
 
     int state() const noexcept;
 
-    void update(
+    [[nodiscard]] bool updateAndPlaceVertices(
         bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
@@ -53,8 +53,8 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    void handleMouseEvent(MouseEvent event) noexcept override;
-    HitBox hitBoxTest(glm::vec2 position) const noexcept override;
+    [[nodiscard]] bool handleMouseEvent(MouseEvent event) noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 
 private:
     std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const noexcept;

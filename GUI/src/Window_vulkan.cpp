@@ -252,14 +252,18 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render()
 {
-    auto tr = trace<"window_render"_tag, "resizing"_tag, "state"_tag, "frame_buffer"_tag>();
-    auto lock = std::scoped_lock{GUI_globals->mutex};
+    // When there is nothing to draw reduce CPU/GPU usage.
+    if (!modified()) {
+        return;
+    }
 
-    // While resizing lower the frame rate to reduce CPU usage.
-    tr.set<"resizing"_tag>(resizing);
+    // While resizing lower the frame rate to reduce CPU/GPU usage.
     if (resizing && (frameCount++ % resizeFrameRateDivider) != 0) {
         return;
     }
+
+    auto tr = trace<"window_render"_tag, "state"_tag, "frame_buffer"_tag>();
+    auto lock = std::scoped_lock{GUI_globals->mutex};
 
     // Tear down then buildup from the vulkan objects that where invalid.
     teardown();
@@ -282,7 +286,6 @@ void Window_vulkan::render()
     tr.set<"frame_buffer"_tag>(frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
-    // XXX maybe use one for each swap chain image or go to single command buffer.
     ttauri_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
@@ -290,13 +293,14 @@ void Window_vulkan::render()
     device->resetFences({ renderFinishedFence });
 
     // Update the widgets before the pipelines need their vertices.
-    widget->update(
-        widget->modified(),
+    // We unset modified before, so that modification requests are captured.
+    unsetModified();
+    setModified(widget->_updateAndPlaceVertices(
         flatPipeline->vertexBufferData.clear(),
         boxPipeline->vertexBufferData.clear(),
         imagePipeline->vertexBufferData.clear(),
         SDFPipeline->vertexBufferData.clear()
-    );
+    ));
 
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.

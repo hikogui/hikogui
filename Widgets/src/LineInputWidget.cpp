@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/ButtonWidget.hpp"
+#include "TTauri/Widgets/LineInputWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
 #include "TTauri/Foundation/utils.hpp"
 #include <cmath>
@@ -12,12 +12,12 @@ namespace TTauri::GUI::Widgets {
 using namespace TTauri::Text;
 using namespace std::literals;
 
-ButtonWidget::ButtonWidget(std::string const label) noexcept :
+LineInputWidget::LineInputWidget(std::string const label) noexcept :
     Widget(), label(std::move(label))
 {
 }
 
-bool ButtonWidget::updateAndPlaceVertices(
+bool LineInputWidget::updateAndPlaceVertices(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
@@ -69,7 +69,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-bool ButtonWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {
+bool LineInputWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {
     auto r = false;
 
     if (enabled) {

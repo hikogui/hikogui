@@ -24,23 +24,19 @@ void Widget::setParent(Widget *parent) noexcept
     this->parent = parent;
 }
 
-bool Widget::modified() const noexcept
-{
-    auto m = box.modified() || _modified;
-    _modified = false;
-    return m;
-}
-
-void Widget::update(
-    bool modified,
+bool Widget::updateAndPlaceVertices(
+    bool,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+    bool r = false;
+
     for (auto &child : children) {
-        child->update(child->modified(), flat_vertices, box_vertices, image_vertices, sdf_vertices);
+        r |= child->_updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
     }
+    return r;
 }
 
 HitBox Widget::hitBoxTest(glm::vec2 position) const noexcept
@@ -53,40 +49,44 @@ HitBox Widget::hitBoxTest(glm::vec2 position) const noexcept
     return HitBox::NoWhereInteresting;
 }
 
-void Widget::handleMouseEvent(MouseEvent const event) noexcept
+bool Widget::handleMouseEvent(MouseEvent const event) noexcept
 {
+    bool r = false;
+
     assert(event.type != MouseEvent::Type::None);
 
     let targetWidget = currentMouseTarget;
     if (targetWidget) {
         if (targetWidget->box.contains(event.position)) {
-            targetWidget->handleMouseEvent(event);
+            r |= targetWidget->handleMouseEvent(event);
             if (event.type == MouseEvent::Type::Exited) {
                 currentMouseTarget = nullptr;
             }
 
             // We completed sending the mouse event to the correct widget.
-            return;
+            return r;
 
         } else {
             // We exited the previous target widget, send a exited event.
-            targetWidget->handleMouseEvent(ExitedMouseEvent(event.position));
+            r |= targetWidget->handleMouseEvent(ExitedMouseEvent(event.position));
             currentMouseTarget = nullptr;
         }
     }
 
     if (event.type == MouseEvent::Type::Exited) {
         // We do not have any targets to send this event.
-        return;
+        return r;
     }
 
     for (auto& widget : children) {
         if (widget->box.contains(event.position)) {
             currentMouseTarget = widget.get();
-            return widget->handleMouseEvent(event);
+            return r | widget->handleMouseEvent(event);
         }
     }
     window->setCursor(Cursor::Default);
+
+    return r;
 }
 
 }

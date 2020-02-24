@@ -210,6 +210,7 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
     OSWindowRectangle.offset.y = 0 - rect.bottom;
     OSWindowRectangle.extent.width() = (rect.right - rect.left);
     OSWindowRectangle.extent.height() = (rect.bottom - rect.top);
+    setModified();
 }
 
 void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
@@ -256,6 +257,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         setOSWindowRectangleFromRECT(rect);
         } break;
 
+    case WM_PAINT:
+        setModified();
+        break;
+
     case WM_SIZE:
         switch (wParam) {
         case SIZE_MAXIMIZED:
@@ -301,7 +306,9 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
     
     case WM_ACTIVATEAPP:
+        LOG_ERROR("WM_ACTIVATEAPP");
         active = (wParam == TRUE);
+        setModified();
         break;
 
     case WM_GETMINMAXINFO: {

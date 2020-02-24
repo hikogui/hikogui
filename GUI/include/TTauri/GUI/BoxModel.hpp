@@ -9,126 +9,24 @@
 
 namespace TTauri::GUI {
 
-struct BoxModel {
-    float leftPadding = 0.0;
-    float rightPadding = 0.0;
-    float bottomPadding = 0.0;
-    float topPadding = 0.0;
-    float leftMargin = 0.0;
-    float bottomMargin = 0.0;
-    float rightMargin = 0.0;
-    float topMargin = 0.0;
+class BoxModel {
+public:
+    rhea::variable left;
+    rhea::variable bottom;
+    rhea::variable width;
+    rhea::variable height;
 
-    mutable rhea::variable left;
-    mutable rhea::variable bottom;
-    mutable rhea::variable width;
-    mutable rhea::variable height;
+    const rhea::linear_expression right = left + width;
+    const rhea::linear_expression centre = left + width * 0.5;
+    const rhea::linear_expression top = bottom + height;
+    const rhea::linear_expression middle = bottom + height * 0.5;
 
-    mutable double previous_left;
-    mutable double previous_bottom;
-    mutable double previous_width;
-    mutable double previous_height;
-
-    [[nodiscard]] bool modified() const noexcept {
-        let new_left = left.value();
-        let new_bottom = bottom.value();
-        let new_width = width.value();
-        let new_height = height.value();
-        if (
-            new_left != previous_left ||
-            new_bottom != previous_bottom ||
-            new_width != previous_width ||
-            new_height != previous_height
-        ) {
-            previous_left = new_left;
-            previous_bottom = new_bottom;
-            previous_width = new_width;
-            previous_height = new_height;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    rhea::linear_expression right() const noexcept {
-        return left + width;
-    }
-
-    rhea::linear_expression centre() const noexcept {
-        return left + width * 0.5;
-    }
-
-    rhea::linear_expression top() const noexcept {
-        return bottom + height;
-    }
-
-    rhea::linear_expression middle() const noexcept {
-        return bottom + height * 0.5;
-    }
-
-    rhea::linear_expression innerLeft() const noexcept {
-        return left + leftPadding;
-    }
-
-    rhea::linear_expression innerRight() const noexcept {
-        return right() - rightPadding;
-    }
-    
-    rhea::linear_expression innerWidth() const noexcept {
-        return width - leftPadding - rightPadding;
-    }
-
-    rhea::linear_expression innerCenter() const noexcept {
-        return innerLeft() + innerWidth() * 0.5;
-    }
-
-    rhea::linear_expression innerBottom() const noexcept {
-        return bottom + bottomPadding;
-    }
-
-    rhea::linear_expression innerTop() const noexcept {
-        return top() - topPadding;
-    }
-
-    rhea::linear_expression innerHeight() const noexcept {
-        return height - bottomPadding - topPadding;
-    }
-
-    rhea::linear_expression innerMiddle() const noexcept {
-        return innerBottom() + innerHeight() * 0.5;
-    }
-
-    rhea::linear_expression outerLeft() const noexcept {
-        return left - leftMargin;
-    }
-
-    rhea::linear_expression outerRight() const noexcept {
-        return right() + rightMargin;
-    }
-
-    rhea::linear_expression outerWidth() const noexcept {
-        return width + leftMargin + rightMargin;
-    }
-
-    rhea::linear_expression outerCenter() const noexcept {
-        return outerLeft() + outerWidth() * 0.5;
-    }
-
-    rhea::linear_expression outerBottom() const noexcept {
-        return bottom - bottomMargin;
-    }
-
-    rhea::linear_expression outerTop() const noexcept {
-        return top() + topMargin;
-    }
-
-    rhea::linear_expression outerHeight() const noexcept {
-        return height + bottomMargin + topMargin;
-    }
-
-    rhea::linear_expression outerMiddle() const noexcept {
-        return outerBottom() + outerHeight() * 0.5;
-    }
+    rhea::linear_expression outerLeft(float margin) const noexcept { return left - margin; }
+    rhea::linear_expression outerRight(float margin) const noexcept { return right + margin; }
+    rhea::linear_expression outerBottom(float margin) const noexcept { return bottom - margin; }
+    rhea::linear_expression outerTop(float margin) const noexcept { return top + margin; }
+    rhea::linear_expression outerWidth(float margin) const noexcept { return width + (margin * 2.0); }
+    rhea::linear_expression outerHeight(float margin) const noexcept { return height + (margin * 2.0); }
 
     glm::vec2 currentPosition() const noexcept {
         return { left.value(), bottom.value() };
@@ -140,30 +38,6 @@ struct BoxModel {
 
     rect2 currentRectangle() const noexcept {
         return { currentPosition(), currentExtent() };
-    }
-
-    glm::vec2 currentInnerPosition() const noexcept {
-        return { innerLeft().evaluate(), innerBottom().evaluate() };
-    }
-
-    extent2 currentInnerExtent() const noexcept {
-        return { innerWidth().evaluate(), innerHeight().evaluate() };
-    }
-
-    rect2 currentInnerRectangle() const noexcept {
-        return { currentInnerPosition(), currentInnerExtent() };
-    }
-
-    glm::vec2 currentOuterPosition() const noexcept {
-        return { outerLeft().evaluate(), outerBottom().evaluate() };
-    }
-
-    extent2 currentOuterExtent() const noexcept {
-        return { outerWidth().evaluate(), outerHeight().evaluate() };
-    }
-
-    rect2 currentOuterRectangle() const noexcept {
-        return { currentOuterPosition(), currentOuterExtent() };
     }
 
     bool contains(glm::vec2 position) const noexcept {

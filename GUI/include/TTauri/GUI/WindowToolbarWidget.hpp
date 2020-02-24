@@ -30,7 +30,7 @@ public:
 
     void setParent(Widget *parent) noexcept override;
 
-    void update(
+    [[nodiscard]] bool updateAndPlaceVertices(
         bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
@@ -38,7 +38,7 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    HitBox hitBoxTest(glm::vec2 position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 };
 
 }

@@ -5,6 +5,7 @@ set(TTauri_Widgets_srcs
     src/globals.cpp
     src/ButtonWidget.cpp
     src/ImageWidget.cpp
+    src/LineInputWidget.cpp
 )
 
 add_library(TTauri_Widgets STATIC ${TTauri_Widgets_srcs})

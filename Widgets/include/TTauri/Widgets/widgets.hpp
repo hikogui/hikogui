@@ -5,3 +5,4 @@
 
 #include "TTauri/Widgets/ButtonWidget.hpp"
 #include "TTauri/Widgets/ImageWidget.hpp"
+#include "TTauri/Widgets/LineInputWidget.hpp"

@@ -23,20 +23,20 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     trafficLightButtons = addWidget<WindowTrafficLightsWidget>(
         getResource<Path>(URL("resource:Themes/Icons/Application Icon.tticon"))
     );
-    window->addConstraint(trafficLightButtons->box.outerTop() == box.top());
-    window->addConstraint(trafficLightButtons->box.outerLeft() == box.left);
-    window->addConstraint(trafficLightButtons->box.outerBottom() == box.bottom);
+    window->addConstraint(trafficLightButtons->box.top == box.top);
+    window->addConstraint(trafficLightButtons->box.left == box.left);
+    window->addConstraint(trafficLightButtons->box.bottom == box.bottom);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         closeWindowButton = addWidget<ToolbarButtonWidget>(
             0.33f * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window->closeWindow(); }
         );
-        closeWindowButton->hoverBackgroundColor = { 0.5, 0.0, 0.0, 1.0 };
-        closeWindowButton->pressedBackgroundColor = { 1.0, 0.0, 0.0, 1.0 };
-        window->addConstraint(closeWindowButton->box.outerTop() == box.top());
-        window->addConstraint(closeWindowButton->box.outerRight() == box.right());
-        window->addConstraint(closeWindowButton->box.outerBottom() == box.bottom);
+        closeWindowButton->hoverBackgroundColor = R16G16B16A16SFloat{ 0.5, 0.0, 0.0, 1.0 };
+        closeWindowButton->pressedBackgroundColor = R16G16B16A16SFloat{ 1.0, 0.0, 0.0, 1.0 };
+        window->addConstraint(closeWindowButton->box.top == box.top);
+        window->addConstraint(closeWindowButton->box.right == box.right);
+        window->addConstraint(closeWindowButton->box.bottom == box.bottom);
 
         maximizeWindowButton = addWidget<ToolbarButtonWidget>(
             0.33f * getResource<Path>(URL("resource:Themes/Icons/Maximize%20Window.tticon")),
@@ -53,22 +53,22 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
                 }
             }
         );
-        window->addConstraint(maximizeWindowButton->box.outerTop() == box.top());
-        window->addConstraint(maximizeWindowButton->box.outerRight() == closeWindowButton->box.outerLeft());
-        window->addConstraint(maximizeWindowButton->box.outerBottom() == box.bottom);
+        window->addConstraint(maximizeWindowButton->box.top == box.top);
+        window->addConstraint(maximizeWindowButton->box.right == closeWindowButton->box.left);
+        window->addConstraint(maximizeWindowButton->box.bottom == box.bottom);
 
         minimizeWindowButton = addWidget<ToolbarButtonWidget>(
             0.33f * getResource<Path>(URL("resource:Themes/Icons/Minimize%20Window.tticon")),
             //getResource<Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
             [&]() { window->minimizeWindow(); }
         );
-        window->addConstraint(minimizeWindowButton->box.outerTop() == box.top());
-        window->addConstraint(minimizeWindowButton->box.outerRight() == maximizeWindowButton->box.outerLeft());
-        window->addConstraint(minimizeWindowButton->box.outerBottom() == box.bottom);
+        window->addConstraint(minimizeWindowButton->box.top == box.top);
+        window->addConstraint(minimizeWindowButton->box.right == maximizeWindowButton->box.left);
+        window->addConstraint(minimizeWindowButton->box.bottom == box.bottom);
     }
 }
 
-void WindowToolbarWidget::update(
+bool WindowToolbarWidget::updateAndPlaceVertices(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
@@ -77,7 +77,7 @@ void WindowToolbarWidget::update(
 {
     PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), depth);
 
-    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const noexcept

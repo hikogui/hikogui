@@ -50,7 +50,7 @@ void ImageWidget::drawBackingImage() noexcept
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-void ImageWidget::update(
+bool ImageWidget::updateAndPlaceVertices(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
@@ -75,7 +75,7 @@ void ImageWidget::update(
 
     backingImage->placeVertices(location, image_vertices);
 
-    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 }

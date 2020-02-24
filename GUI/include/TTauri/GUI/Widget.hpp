@@ -17,6 +17,7 @@
 #include "TTauri/Foundation/geometry.hpp"
 #include <TTauri/Foundation/pickle.hpp>
 #include <TTauri/Foundation/vspan.hpp>
+#include <TTauri/Foundation/utils.hpp>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -45,8 +46,15 @@ namespace TTauri::GUI::Widgets {
  * between Views.
  */
 class Widget {
-protected:
-    mutable bool _modified = true;
+private:
+    /** Incremented when the widget's state was modified.
+    */
+    std::atomic<uint64_t> modificationRequest = 1;
+
+    /** Copied from modificationRequest before processing the modificationRequest.
+    */
+    uint64_t modificationVersion = 0;
+
 
 public:
     //! Convenient reference to the Window.
@@ -68,7 +76,10 @@ public:
 
     //! Location of the frame compared to the window.
     BoxModel box;
-     
+
+    //! Rectangle, extracted from the box
+    rect2 rectangle; 
+
     float depth = 0;
 
     /*! Constructor for creating sub views.
@@ -94,20 +105,71 @@ public:
         return widget_ptr;
     }
 
-    Device *device() const noexcept;
+    [[nodiscard]] Device *device() const noexcept;
 
-    /** Check if the data in the widget is modified.
-     * Overriding functions should use clearAndPickleAppend(next_state_key, *)
-     * to add data to the key. Those overriding functions should call
-     * the base class's isModified() at the end.
-     */
-    virtual bool modified() const noexcept;
+    /** Should be called after the internal state of the widget was modified.
+    */
+    force_inline bool setModified(bool x=true) noexcept {
+        if (x) {
+            modificationRequest.fetch_add(1, std::memory_order::memory_order_relaxed);
+        }
+        return x;
+    }
 
-    /** Update the widget before placing vertices.
-     * The overriding function should call the base class's update() at the end.
-     * @param modified The data in the widget has been modified.
-     */
-    virtual void update(
+    /** Update and place vertices.
+    *
+    * This function is called by external functions.
+    * @see handleMouseEvent
+    */
+    [[nodiscard]] bool _updateAndPlaceVertices(
+        vspan<PipelineFlat::Vertex> &flat_vertices,
+        vspan<PipelineBox::Vertex> &box_vertices,
+        vspan<PipelineImage::Vertex> &image_vertices,
+        vspan<PipelineSDF::Vertex> &sdf_vertices
+    ) noexcept {
+        auto _modified = modified();
+        _modified |= assign_and_compare(rectangle, box.currentRectangle());
+        unsetModified();
+        return setModified(updateAndPlaceVertices(_modified, flat_vertices, box_vertices, image_vertices, sdf_vertices));
+    }
+
+    /** Handle mouse event.
+    * This function is called by external functions.
+    * @see handleMouseEvent
+    */
+    [[nodiscard]] virtual bool _handleMouseEvent(MouseEvent event) noexcept {
+        return setModified(handleMouseEvent(event));
+    }
+
+    [[nodiscard]] virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
+
+protected:
+    /*! Handle mouse event.
+    * Called by the operating system to show the position and button state of the mouse.
+    * This is called very often so it must be made efficient.
+    * This function is also used to determine the mouse cursor.
+    *
+    * @return true when a widgets wants to change its appearance in the next frame.
+    */
+    [[nodiscard]] virtual bool handleMouseEvent(MouseEvent event) noexcept;
+
+    /** Update and place vertices.
+    *
+    * The overriding function should call the base class's update(), the place
+    * where the call this function will determine the order of the vertices into
+    * each buffer. This is important when needing to do the painters algorithm
+    * for alpha-compositing. However the pipelines are always drawn in the same
+    * order.
+    *
+    * @param modified The data in the widget has been modified.
+    * @param flat_vertices Vertex buffer of the flat-pipeline.
+    * @param box_vertices Vertex buffer of the box-pipeline.
+    * @param image_vertices Vertex buffer of the image-pipeline.
+    * @param sdf_vertices Vertex buffer of the sdf-pipeline.
+    * @return true when a widgets is currently running an animation and wants
+    *         to change its appearance in the next frame.
+    */
+    [[nodiscard]] virtual bool updateAndPlaceVertices(
         bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
@@ -115,14 +177,15 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept;
 
-    /*! Mouse moved.
-     * Called by the operating system to show the position of the mouse.
-     * This is called very often so it must be made efficient.
-     * Most often this function is used to determine the mouse cursor.
-     */
-    virtual void handleMouseEvent(MouseEvent event) noexcept;
+private:
 
-    virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
+    force_inline void unsetModified(void) noexcept {
+        modificationVersion = modificationRequest.load(std::memory_order::memory_order_acquire);
+    }
+
+    [[nodiscard]] force_inline bool modified() noexcept {
+        return modificationVersion != modificationRequest.load(std::memory_order::memory_order_acquire);
+    }
 };
 
 }

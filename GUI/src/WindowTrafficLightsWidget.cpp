@@ -3,6 +3,7 @@
 
 #include "TTauri/GUI/WindowTrafficLightsWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
+#include "TTauri/Foundation/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 
@@ -34,7 +35,7 @@ int WindowTrafficLightsWidget::state() const noexcept {
     return r;
 }
 
-void WindowTrafficLightsWidget::update(
+bool WindowTrafficLightsWidget::updateAndPlaceVertices(
     bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
@@ -61,7 +62,7 @@ void WindowTrafficLightsWidget::update(
         backingImage.image->placeVertices(location, image_vertices);
     }
 
-    Widget::update(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept
@@ -247,12 +248,14 @@ std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRecta
     return {redButtonBox, yellowButtonBox, greenButtonBox, sysmenuButtonBox};    
 }
 
-void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event) noexcept
+bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event) noexcept
 {
+    bool r = false;
+
     window->setCursor(Cursor::Clickable);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
-        return;
+        return r;
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
         // Due to HitBox checking by Windows 10, every time cursor is on a
@@ -260,7 +263,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event) noexcept
         // The WM_MOUSELEAVE event does not include the mouse position,
         // neither inside the window, nor on the screen.
         // We can therefor not determine that the mouse is on the Widget.
-        hover = event.type != MouseEvent::Type::Exited;
+        r |= assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
 
         let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
@@ -285,22 +288,15 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event) noexcept
 
         // Only change the pressed state after checking for Button Up, the
         // button up will check which button was pressed from button down.
-        pressedRed = false;
-        pressedYellow = false;
-        pressedGreen = false;
-        if (event.down.leftButton) {
-            if (redButtonRect.contains(event.position)) {
-                pressedRed = true;
-            } else if (yellowButtonRect.contains(event.position)) {
-                pressedYellow = true;
-            } else if (greenButtonRect.contains(event.position)) {
-                pressedGreen = true;
-            }
-        }
+        r |= assign_and_compare(pressedRed, event.down.leftButton && redButtonRect.contains(event.position));
+        r |= assign_and_compare(pressedYellow, event.down.leftButton && yellowButtonRect.contains(event.position));
+        r |= assign_and_compare(pressedGreen, event.down.leftButton && greenButtonRect.contains(event.position));
 
     } else {
         no_default;
     }
+
+    return r;
 }
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const noexcept

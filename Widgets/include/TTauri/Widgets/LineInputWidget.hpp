@@ -12,7 +12,7 @@
 
 namespace TTauri::GUI::Widgets {
 
-class ButtonWidget : public Widget {
+class LineInputWidget : public Widget {
 protected:
     bool value = false;
     bool enabled = true;
@@ -24,13 +24,13 @@ protected:
     Text::ShapedText labelShapedText;
 public:
 
-    ButtonWidget(std::string const label) noexcept;
-    ~ButtonWidget() {}
+    LineInputWidget(std::string const label) noexcept;
+    ~LineInputWidget() {}
 
-    ButtonWidget(const ButtonWidget &) = delete;
-    ButtonWidget &operator=(const ButtonWidget &) = delete;
-    ButtonWidget(ButtonWidget&&) = delete;
-    ButtonWidget &operator=(ButtonWidget &&) = delete;
+    LineInputWidget(const LineInputWidget &) = delete;
+    LineInputWidget &operator=(const LineInputWidget &) = delete;
+    LineInputWidget(LineInputWidget&&) = delete;
+    LineInputWidget &operator=(LineInputWidget &&) = delete;
 
     [[nodiscard]] bool updateAndPlaceVertices(
         bool modified,

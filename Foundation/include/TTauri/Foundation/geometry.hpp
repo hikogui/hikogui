@@ -54,10 +54,6 @@ struct rect {
     glm::vec<S, T, glm::defaultp> offset = {};
     extent<S, T, glm::defaultp> extent = {};
 
-    bool operator==(const rect<S, T, Q> &other) const noexcept {
-        return offset == other.offset && extent == other.extent;
-    }
-
     bool contains(const glm::vec<S, T, glm::defaultp> &position) const noexcept {
         return
             (position.x >= offset.x) &&
@@ -108,6 +104,15 @@ struct rect {
          }
          return r;
      }
+
+     [[nodiscard]] friend bool operator==(rect<S, T, Q> const &lhs, rect<S, T, Q> const &rhs) noexcept {
+         return lhs.offset == rhs.offset && lhs.extent == rhs.extent;
+     }
+
+     [[nodiscard]] friend bool operator!=(rect<S, T, Q> const &lhs, rect<S, T, Q> const &rhs) noexcept {
+        return !(lhs == rhs);
+     }
+
 };
 
 
