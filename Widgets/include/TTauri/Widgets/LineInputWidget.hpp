@@ -40,7 +40,7 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent event) noexcept override;
+    [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
 };
 
 }

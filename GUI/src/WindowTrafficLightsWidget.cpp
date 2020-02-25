@@ -248,7 +248,7 @@ std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRecta
     return {redButtonBox, yellowButtonBox, greenButtonBox, sysmenuButtonBox};    
 }
 
-bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent event) noexcept
+bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
     bool r = false;
 

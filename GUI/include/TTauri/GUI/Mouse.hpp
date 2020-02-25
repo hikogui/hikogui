@@ -28,13 +28,13 @@ enum class Cursor {
 };
 
 struct MouseButtons {
-    bool leftButton:1;
-    bool middleButton:1;
-    bool rightButton:1;
-    bool x1Button:1;
-    bool x2Button:1;
-    bool controlKey:1;
-    bool shiftKey:1;
+    uint8_t leftButton:1;
+    uint8_t middleButton:1;
+    uint8_t rightButton:1;
+    uint8_t x1Button:1;
+    uint8_t x2Button:1;
+    uint8_t controlKey:1;
+    uint8_t shiftKey:1;
 
     MouseButtons() noexcept :
         leftButton(false),

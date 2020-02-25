@@ -235,11 +235,105 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
     }
 }
 
+[[nodiscard]] KeyboardModifiers Window_vulkan_win32::getKeyboardModifiers() noexcept
+{
+    auto r = KeyboardModifiers::Idle;
+
+    if (GetKeyState(VK_SHIFT) != 0) {
+        r |= KeyboardModifiers::Shift;
+    }
+    if (GetKeyState(VK_CONTROL) != 0) {
+        // On Windows we map ctrl to command, to match macOS.
+        r |= KeyboardModifiers::Command;
+    }
+    if (GetKeyState(VK_MENU) != 0) {
+        r |= KeyboardModifiers::Alt;
+    }
+    if (GetKeyState(VK_LWIN) != 0 || GetKeyState(VK_RWIN) != 0) {
+        // On Windows the windows-key is simular to macOS control.
+        r |= KeyboardModifiers::Control;
+    }
+
+    return r;
+}
+
+[[nodiscard]] KeyboardState Window_vulkan_win32::getKeyboardState() noexcept
+{
+    auto r = KeyboardState::Idle;
+    
+    if (GetKeyState(VK_CAPITAL) != 0) {
+        r |= KeyboardState::CapsLock;
+    }
+    if (GetKeyState(VK_NUMLOCK) != 0) {
+        r |= KeyboardState::NumLock;
+    }
+    if (GetKeyState(VK_SCROLL) != 0) {
+        r |= KeyboardState::ScrollLock;
+    }
+    return r;
+}
+
+void Window_vulkan_win32::handle_virtual_key_code(int key_code) noexcept
+{
+    LOG_ERROR("Key 0x{:x} down={}", key_code);
+
+    auto state = getKeyboardState();
+    auto modifiers = getKeyboardModifiers();
+
+    switch (key_code) {
+    case VK_SNAPSHOT: [[fallthrough]];
+    case VK_PRINT: return handleKeyboardEvent(state, modifiers, CommandKey::Print);
+    case VK_HOME: return handleKeyboardEvent(state, modifiers, CommandKey::Home);
+    case VK_END: return handleKeyboardEvent(state, modifiers, CommandKey::End);
+    case VK_LEFT: return handleKeyboardEvent(state, modifiers, CommandKey::LeftArrow);
+    case VK_RIGHT: return handleKeyboardEvent(state, modifiers, CommandKey::RightArrow);
+    case VK_UP: return handleKeyboardEvent(state, modifiers, CommandKey::UpArrow);
+    case VK_DOWN: return handleKeyboardEvent(state, modifiers, CommandKey::DownArrow);
+    case VK_BACK: return handleKeyboardEvent(state, modifiers, CommandKey::Backspace);
+    case VK_TAB: return handleKeyboardEvent(state, modifiers, CommandKey::Tab);
+    case VK_RETURN: return handleKeyboardEvent(state, modifiers, CommandKey::Enter);
+    case VK_F1: return handleKeyboardEvent(state, modifiers, CommandKey::F1);
+    case VK_F2: return handleKeyboardEvent(state, modifiers, CommandKey::F2);
+    case VK_F3: return handleKeyboardEvent(state, modifiers, CommandKey::F3);
+    case VK_F4: return handleKeyboardEvent(state, modifiers, CommandKey::F4);
+    case VK_F5: return handleKeyboardEvent(state, modifiers, CommandKey::F5);
+    case VK_F6: return handleKeyboardEvent(state, modifiers, CommandKey::F6);
+    case VK_F7: return handleKeyboardEvent(state, modifiers, CommandKey::F7);
+    case VK_F8: return handleKeyboardEvent(state, modifiers, CommandKey::F8);
+    case VK_F9: return handleKeyboardEvent(state, modifiers, CommandKey::F9);
+    case VK_F10: return handleKeyboardEvent(state, modifiers, CommandKey::F10);
+    case VK_F11: return handleKeyboardEvent(state, modifiers, CommandKey::F11);
+    case VK_F12: return handleKeyboardEvent(state, modifiers, CommandKey::F12);
+    case VK_CLEAR: return handleKeyboardEvent(state, modifiers, CommandKey::Clear);
+    case VK_PAUSE: return handleKeyboardEvent(state, modifiers, CommandKey::PauseBreak);
+    case VK_VOLUME_MUTE: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeMute);
+    case VK_INSERT: return handleKeyboardEvent(state, modifiers, CommandKey::Insert);
+    case VK_ESCAPE: return handleKeyboardEvent(state, modifiers, CommandKey::Escape);
+    case VK_PRIOR: return handleKeyboardEvent(state, modifiers, CommandKey::PageUp);
+    case VK_VOLUME_UP: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeUp);
+    case VK_VOLUME_DOWN: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeDown);
+    case VK_DELETE: return handleKeyboardEvent(state, modifiers, CommandKey::Delete);
+    default:
+        if (key_code >= 'A' && key_code <= 'Z') {
+            if (modifiers >= KeyboardModifiers::Shift) {
+                return handleKeyboardEvent(state, modifiers, key_code);
+            } else {
+                return handleKeyboardEvent(state, modifiers, (key_code - 'A') + 'a');
+            }
+        } else if (key_code >= '0' && key_code <= '9') {
+            if (!(modifiers >= KeyboardModifiers::Shift)) {
+                return handleKeyboardEvent(state, modifiers, key_code);
+            }
+        }
+    }
+}
+
 int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam)
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
     MouseEvent mouseEvent;
+    KeyboardEvent keyboardEvent;
 
     switch (uMsg) {    
     case WM_DESTROY:
@@ -306,7 +400,6 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
     
     case WM_ACTIVATEAPP:
-        LOG_ERROR("WM_ACTIVATEAPP");
         active = (wParam == TRUE);
         setModified();
         break;
@@ -320,6 +413,39 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimumWindowExtent.height());
         minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximumWindowExtent.width());
         minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximumWindowExtent.height());
+        } break;
+
+
+    case WM_UNICHAR: {
+        auto c = numeric_cast<char32_t>(wParam);
+        if (c == UNICODE_NOCHAR) {
+            // Tell the 3rd party keyboard handler application that we support WM_UNICHAR.
+            return 1;
+        } else if (c >= 0x20) {
+            auto keyboardEvent = KeyboardEvent();
+            keyboardEvent.type = KeyboardEvent::Type::Grapheme;
+            keyboardEvent.grapheme = c;
+            handleKeyboardEvent(keyboardEvent);
+        }
+        } break;
+
+    case WM_DEADCHAR: {
+        auto c = handle_suragates(numeric_cast<char32_t>(wParam));
+        if (c != 0) {
+            handleKeyboardEvent(c, false);
+        }
+        } break;
+
+    case WM_CHAR: {
+        auto c = handle_suragates(numeric_cast<char32_t>(wParam));
+        if (c >= 0x20) {
+            handleKeyboardEvent(c);
+        }
+        } break;
+
+    case WM_KEYDOWN: {
+        bool extended = (numeric_cast<uint32_t>(lParam) & 0x01000000) != 0;
+        handle_virtual_key_code(numeric_cast<int>(wParam));
         } break;
 
     case WM_LBUTTONDOWN:

@@ -49,7 +49,7 @@ HitBox Widget::hitBoxTest(glm::vec2 position) const noexcept
     return HitBox::NoWhereInteresting;
 }
 
-bool Widget::handleMouseEvent(MouseEvent const event) noexcept
+bool Widget::handleMouseEvent(MouseEvent const &event) noexcept
 {
     bool r = false;
 
@@ -58,7 +58,7 @@ bool Widget::handleMouseEvent(MouseEvent const event) noexcept
     let targetWidget = currentMouseTarget;
     if (targetWidget) {
         if (targetWidget->box.contains(event.position)) {
-            r |= targetWidget->handleMouseEvent(event);
+            r |= targetWidget->_handleMouseEvent(event);
             if (event.type == MouseEvent::Type::Exited) {
                 currentMouseTarget = nullptr;
             }
@@ -68,7 +68,7 @@ bool Widget::handleMouseEvent(MouseEvent const event) noexcept
 
         } else {
             // We exited the previous target widget, send a exited event.
-            r |= targetWidget->handleMouseEvent(ExitedMouseEvent(event.position));
+            r |= targetWidget->_handleMouseEvent(ExitedMouseEvent(event.position));
             currentMouseTarget = nullptr;
         }
     }
@@ -81,11 +81,21 @@ bool Widget::handleMouseEvent(MouseEvent const event) noexcept
     for (auto& widget : children) {
         if (widget->box.contains(event.position)) {
             currentMouseTarget = widget.get();
-            return r | widget->handleMouseEvent(event);
+            return r | widget->_handleMouseEvent(event);
         }
     }
     window->setCursor(Cursor::Default);
 
+    return r;
+}
+
+bool Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
+{
+    bool r = false;
+
+    for (auto &widget: children) {
+        r |= widget->_handleKeyboardEvent(event);
+    }
     return r;
 }
 

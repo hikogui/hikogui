@@ -76,6 +76,16 @@ public:
     force_inline explicit Grapheme(char32_t codePoint) noexcept :
         Grapheme(std::u32string_view{&codePoint, 1}) {}
 
+    Grapheme& operator=(std::u32string_view codePoints) noexcept {
+        *this = Grapheme(codePoints);
+        return *this;
+    }
+
+    Grapheme& operator=(char32_t codePoint) noexcept {
+        *this = Grapheme(codePoint);
+        return *this;
+    }
+
     explicit operator std::u32string () const noexcept {
         if (has_pointer()) {
             return {get_pointer()->data(), size()};

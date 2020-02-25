@@ -103,7 +103,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-bool ToolbarButtonWidget::handleMouseEvent(MouseEvent event) noexcept {
+bool ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     auto r = assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
 
     if (enabled) {

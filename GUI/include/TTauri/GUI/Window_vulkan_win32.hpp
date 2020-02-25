@@ -47,6 +47,25 @@ private:
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
+    char32_t high_surrogate = 0;
+    bool insert_mode = false;
+
+    [[nodiscard]] KeyboardState getKeyboardState() noexcept;
+    [[nodiscard]] KeyboardModifiers getKeyboardModifiers() noexcept;
+
+    void handle_virtual_key_code(int key_code) noexcept;
+
+    [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept {
+        if (c >= 0xd800 && c <= 0xdbff) {
+            high_surrogate = ((c - 0xd800) << 10) + 0x10000;
+            return 0;
+
+        } else if (c >= 0xdc00 && c <= 0xdfff) {
+            c = high_surrogate ? high_surrogate | (c - 0xdc00) : 0xfffd;
+        }
+        high_surrogate = 0;
+        return c;
+    }
 };
 
 }

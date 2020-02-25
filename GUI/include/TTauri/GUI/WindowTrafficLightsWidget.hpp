@@ -53,7 +53,7 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    [[nodiscard]] bool handleMouseEvent(MouseEvent event) noexcept override;
+    [[nodiscard]] bool handleMouseEvent(MouseEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(glm::vec2 position) const noexcept override;
 
 private:

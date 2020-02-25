@@ -27,11 +27,11 @@ bool LineInputWidget::updateAndPlaceVertices(
     ttauri_assert(window);
 
     // Draw something.
-    let cornerShapes = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
+    let cornerShapes = R16G16B16A16SFloat{ 0.0, 0.0, 0.0, 0.0 };
 
     wsRGBA backgroundColor;
     wsRGBA labelColor;
-    wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+    let borderColor = R16G16B16A16SFloat{1.0, 1.0, 1.0, 1.0};
     if (value) {
         backgroundColor = wsRGBA{ 0x4c4cffff };
         labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
@@ -44,10 +44,12 @@ bool LineInputWidget::updateAndPlaceVertices(
         labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
     }
 
+    auto textRectangle = box.currentRectangle().expand(-5);
+
     if (modified) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, box.currentExtent(), Alignment::MiddleCenter);
+        labelShapedText = ShapedText(label, labelStyle, textRectangle.extent, Alignment::MiddleLeft);
 
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
@@ -59,17 +61,17 @@ bool LineInputWidget::updateAndPlaceVertices(
         R16G16B16A16SFloat{backgroundColor},
         1.0f,
         R16G16B16A16SFloat{borderColor},
-        6.0f,
-        R16G16B16A16SFloat{cornerShapes},
+        0.0f,
+        cornerShapes,
         box.currentRectangle().expand(10.0)
     );
 
-    window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth);
+    window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(textRectangle.offset), box.currentRectangle(), depth);
 
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-bool LineInputWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {
+bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     auto r = false;
 
     if (enabled) {

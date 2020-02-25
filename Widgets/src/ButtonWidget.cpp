@@ -69,7 +69,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-bool ButtonWidget::handleMouseEvent(GUI::MouseEvent event) noexcept {
+bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     auto r = false;
 
     if (enabled) {

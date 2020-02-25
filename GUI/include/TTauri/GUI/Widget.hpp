@@ -8,6 +8,7 @@
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
+#include "TTauri/GUI/Keyboard.hpp"
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/Path.hpp"
@@ -137,8 +138,12 @@ public:
     * This function is called by external functions.
     * @see handleMouseEvent
     */
-    [[nodiscard]] virtual bool _handleMouseEvent(MouseEvent event) noexcept {
+    [[nodiscard]] virtual bool _handleMouseEvent(MouseEvent const &event) noexcept {
         return setModified(handleMouseEvent(event));
+    }
+
+    [[nodiscard]] virtual bool _handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+        return setModified(handleKeyboardEvent(event));
     }
 
     [[nodiscard]] virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
@@ -151,7 +156,14 @@ protected:
     *
     * @return true when a widgets wants to change its appearance in the next frame.
     */
-    [[nodiscard]] virtual bool handleMouseEvent(MouseEvent event) noexcept;
+    [[nodiscard]] virtual bool handleMouseEvent(MouseEvent const &event) noexcept;
+
+    /*! Handle keyboard event.
+    * Called by the operating system when editing text, or entering special keys
+    *
+    * @return true when a widgets wants to change its appearance in the next frame.
+    */
+    [[nodiscard]] virtual bool handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
     /** Update and place vertices.
     *

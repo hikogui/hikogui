@@ -8,6 +8,7 @@
 #include "TTauri/GUI/WindowWidget.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
+#include "TTauri/GUI/Keyboard.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/geometry.hpp"
@@ -210,8 +211,28 @@ protected:
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    void handleMouseEvent(MouseEvent event) noexcept {
+    void handleMouseEvent(MouseEvent const &event) noexcept {
         setModified(widget->_handleMouseEvent(event));
+    }
+
+    /*! Handle keyboard event.
+    * Called by the operating system to show the character that was entered
+    * or special key that was used.
+    */
+    void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+        setModified(widget->_handleKeyboardEvent(event));
+    }
+
+    void handleKeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, char key) noexcept {
+        return handleKeyboardEvent(KeyboardEvent(state, modifiers, key));
+    }
+
+    void handleKeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept {
+        return handleKeyboardEvent(KeyboardEvent(grapheme, full));
+    }
+
+    void handleKeyboardEvent(char32_t c, bool full=true) noexcept {
+        return handleKeyboardEvent(Text::Grapheme(c), full);
     }
 
     /*! Test where the certain features of a window are located.
