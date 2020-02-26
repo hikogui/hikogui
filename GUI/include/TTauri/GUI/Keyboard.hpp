@@ -32,13 +32,17 @@ constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexc
     return (lhs_ & rhs_) == rhs_;
 }
 
+/** Key modificatio keys pressed at the same time as another key.
+ *
+ * The Fn key is not always avilable on larger keyboards and is often under full
+ * control of the keyboard, therefor it is not in the list of keyboard modifiers here.
+ */
 enum class KeyboardModifiers : uint8_t {
-    Idle = 0x00,
-    Shift = 0x01,
-    Command = 0x02,
-    Control = 0x04,
-    Alt = 0x08,
-    Fn = 0x10
+    None = 0x00,
+    Shift = 0x01,   ///< The shift key is being held.
+    Control = 0x02, ///< The control key is being held.
+    Alt = 0x04,     ///< The alt-key, option-key or meta-key is being held.
+    Super = 0x08,   ///< The windows-key, command-key or super-key is being held.
 };
 
 [[nodiscard]] constexpr KeyboardModifiers operator|(KeyboardModifiers lhs, KeyboardModifiers rhs) noexcept
@@ -58,17 +62,22 @@ constexpr KeyboardModifiers &operator|=(KeyboardModifiers &lhs, KeyboardModifier
     return (lhs_ & rhs_) == rhs_;
 }
 
+/** Convert a constant string to a KeyboardModifiers instance.
+ * - '_': Shift
+ * - '^': Control
+ * - 'A': Alt
+ * - 'S': Super
+ */
 [[nodiscard]] constexpr KeyboardModifiers to_KeyboardModifiers(char const *modifiers) noexcept
 {
     auto r = KeyboardModifiers::Idle;
 
     for (ssize_t i = 0; modifiers[i] != 0; ++i) {
         switch (modifiers[i]) {
-        case '^': r |= KeyboardModifiers::Control; break;
-        case '%': r |= KeyboardModifiers::Command; break;
         case '_': r |= KeyboardModifiers::Shift; break;
-        case '>': r |= KeyboardModifiers::Alt; break;
-        case 'F': r |= KeyboardModifiers::Fn; break;
+        case '^': r |= KeyboardModifiers::Control; break;
+        case 'A': r |= KeyboardModifiers::Alt; break;
+        case 'S': r |= KeyboardModifiers::Super; break;
         default: no_default;
         }
     }
@@ -167,6 +176,11 @@ struct KeyboardEvent {
 
     KeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept :
         type(full ? Type::Grapheme : Type::PartialGrapheme), state(), grapheme(std::move(grapheme)), command() {}
+
+    /** Convert the keyboard-event to a text-edit-command.
+     * This function will be specific for the operating it is running on.
+     */
+    [[nodiscard]] TextEditCommand getTextEditCommand() noexcept;
 };
 
 }

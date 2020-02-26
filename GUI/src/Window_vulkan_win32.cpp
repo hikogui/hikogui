@@ -243,15 +243,13 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
         r |= KeyboardModifiers::Shift;
     }
     if (GetKeyState(VK_CONTROL) != 0) {
-        // On Windows we map ctrl to command, to match macOS.
-        r |= KeyboardModifiers::Command;
+        r |= KeyboardModifiers::Control;
     }
     if (GetKeyState(VK_MENU) != 0) {
         r |= KeyboardModifiers::Alt;
     }
     if (GetKeyState(VK_LWIN) != 0 || GetKeyState(VK_RWIN) != 0) {
-        // On Windows the windows-key is simular to macOS control.
-        r |= KeyboardModifiers::Control;
+        r |= KeyboardModifiers::Super;
     }
 
     return r;
@@ -315,15 +313,9 @@ void Window_vulkan_win32::handle_virtual_key_code(int key_code) noexcept
     case VK_DELETE: return handleKeyboardEvent(state, modifiers, CommandKey::Delete);
     default:
         if (key_code >= 'A' && key_code <= 'Z') {
-            if (modifiers >= KeyboardModifiers::Shift) {
-                return handleKeyboardEvent(state, modifiers, key_code);
-            } else {
-                return handleKeyboardEvent(state, modifiers, (key_code - 'A') + 'a');
-            }
+            return handleKeyboardEvent(state, modifiers, key_code);
         } else if (key_code >= '0' && key_code <= '9') {
-            if (!(modifiers >= KeyboardModifiers::Shift)) {
-                return handleKeyboardEvent(state, modifiers, key_code);
-            }
+            return handleKeyboardEvent(state, modifiers, key_code);
         }
     }
 }
