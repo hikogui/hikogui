@@ -111,7 +111,7 @@ public:
         _end = bytes_ + offset;
 
         for (size_t i = 0; i < n; i++) {
-            (void)new(const_cast<std::remove_cv_t<Byte> *>(_begin + i * sizeof(T))) T;
+            [[maybe_unused]] auto *ptr = new(const_cast<std::remove_cv_t<Byte> *>(_begin + i * sizeof(T))) T;
         }
     }
 

@@ -53,7 +53,7 @@ struct KeyboardEvent {
 
     /** Create a key-key keyboard event.
      */
-    KeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, char key) noexcept :
+    KeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept :
         type(Type::Key), state(state), grapheme(), key(modifiers, key) {}
 
     KeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept :

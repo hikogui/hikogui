@@ -223,7 +223,7 @@ protected:
         setModified(widget->_handleKeyboardEvent(event));
     }
 
-    void handleKeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, char key) noexcept {
+    void handleKeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
         return handleKeyboardEvent(KeyboardEvent(state, modifiers, key));
     }
 

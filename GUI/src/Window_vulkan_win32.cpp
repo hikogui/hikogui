@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/Window_vulkan_win32.hpp"
+#include "TTauri/GUI/KeyboardVirtualKey_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"
@@ -271,59 +272,6 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
     return r;
 }
 
-void Window_vulkan_win32::handle_virtual_key_code(int key_code) noexcept
-{
-    LOG_ERROR("Key 0x{:x} down={}", key_code);
-
-    auto state = getKeyboardState();
-    auto modifiers = getKeyboardModifiers();
-
-    switch (key_code) {
-    case VK_SNAPSHOT: [[fallthrough]];
-    case VK_PRINT: return handleKeyboardEvent(state, modifiers, KeyboardKey::Print);
-    case VK_HOME: return handleKeyboardEvent(state, modifiers, KeyboardKey::Home);
-    case VK_END: return handleKeyboardEvent(state, modifiers, KeyboardKey::End);
-    case VK_LEFT: return handleKeyboardEvent(state, modifiers, KeyboardKey::LeftArrow);
-    case VK_RIGHT: return handleKeyboardEvent(state, modifiers, KeyboardKey::RightArrow);
-    case VK_UP: return handleKeyboardEvent(state, modifiers, KeyboardKey::UpArrow);
-    case VK_DOWN: return handleKeyboardEvent(state, modifiers, KeyboardKey::DownArrow);
-    case VK_BACK: return handleKeyboardEvent(state, modifiers, KeyboardKey::Backspace);
-    case VK_TAB: return handleKeyboardEvent(state, modifiers, KeyboardKey::Tab);
-    case VK_RETURN: return handleKeyboardEvent(state, modifiers, KeyboardKey::Enter);
-    case VK_F1: return handleKeyboardEvent(state, modifiers, KeyboardKey::F1);
-    case VK_F2: return handleKeyboardEvent(state, modifiers, KeyboardKey::F2);
-    case VK_F3: return handleKeyboardEvent(state, modifiers, KeyboardKey::F3);
-    case VK_F4: return handleKeyboardEvent(state, modifiers, KeyboardKey::F4);
-    case VK_F5: return handleKeyboardEvent(state, modifiers, KeyboardKey::F5);
-    case VK_F6: return handleKeyboardEvent(state, modifiers, KeyboardKey::F6);
-    case VK_F7: return handleKeyboardEvent(state, modifiers, KeyboardKey::F7);
-    case VK_F8: return handleKeyboardEvent(state, modifiers, KeyboardKey::F8);
-    case VK_F9: return handleKeyboardEvent(state, modifiers, KeyboardKey::F9);
-    case VK_F10: return handleKeyboardEvent(state, modifiers, KeyboardKey::F10);
-    case VK_F11: return handleKeyboardEvent(state, modifiers, KeyboardKey::F11);
-    case VK_F12: return handleKeyboardEvent(state, modifiers, KeyboardKey::F12);
-    case VK_CLEAR: return handleKeyboardEvent(state, modifiers, KeyboardKey::Clear);
-    case VK_PAUSE: return handleKeyboardEvent(state, modifiers, KeyboardKey::PauseBreak);
-    case VK_VOLUME_MUTE: return handleKeyboardEvent(state, modifiers, KeyboardKey::VolumeMute);
-    case VK_INSERT: return handleKeyboardEvent(state, modifiers, KeyboardKey::Insert);
-    case VK_ESCAPE: return handleKeyboardEvent(state, modifiers, KeyboardKey::Escape);
-    case VK_PRIOR: return handleKeyboardEvent(state, modifiers, KeyboardKey::PageUp);
-    case VK_VOLUME_UP: return handleKeyboardEvent(state, modifiers, KeyboardKey::VolumeUp);
-    case VK_VOLUME_DOWN: return handleKeyboardEvent(state, modifiers, KeyboardKey::VolumeDown);
-    case VK_DELETE: return handleKeyboardEvent(state, modifiers, KeyboardKey::Delete);
-    case VK_OEM_PLUS: return handleKeyboardEvent(state, modifiers, '+');
-    case VK_OEM_COMMA: return handleKeyboardEvent(state, modifiers, ',');
-    case VK_OEM_MINUS: return handleKeyboardEvent(state, modifiers, '-');
-    case VK_OEM_PERIOD: return handleKeyboardEvent(state, modifiers, '.');
-    default:
-        if (key_code >= 'A' && key_code <= 'Z') {
-            return handleKeyboardEvent(state, modifiers, key_code);
-        } else if (key_code >= '0' && key_code <= '9') {
-            return handleKeyboardEvent(state, modifiers, key_code);
-        }
-    }
-}
-
 int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam)
 {
     std::scoped_lock lock(GUI_globals->mutex);
@@ -438,10 +386,25 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
             handleKeyboardEvent(c);
         }
         } break;
-
+        
+    case WM_SYSKEYDOWN: {
+        auto alt_pressed = (numeric_cast<uint32_t>(lParam) & 0x20000000) != 0;
+        if (!alt_pressed) {
+            return -1;
+        }
+        } [[fallthrough]];
     case WM_KEYDOWN: {
-        bool extended = (numeric_cast<uint32_t>(lParam) & 0x01000000) != 0;
-        handle_virtual_key_code(numeric_cast<int>(wParam));
+        auto extended = (numeric_cast<uint32_t>(lParam) & 0x01000000) != 0;
+        auto key_code = numeric_cast<int>(wParam);
+
+        LOG_ERROR("Key 0x{:x} extended={}", key_code, extended);
+
+        let state = getKeyboardState();
+        let modifiers = getKeyboardModifiers();
+        let virtual_key = to_KeyboardVirtualKey(key_code, extended, modifiers);
+        if (virtual_key != KeyboardVirtualKey::Nul) {
+            handleKeyboardEvent(state, modifiers, virtual_key);
+        }
         } break;
 
     case WM_LBUTTONDOWN:

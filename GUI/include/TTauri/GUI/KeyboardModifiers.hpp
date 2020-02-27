@@ -4,6 +4,8 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/strings.hpp"
 #include <cstdint>
 
 namespace TTauri::GUI {
@@ -36,6 +38,57 @@ constexpr KeyboardModifiers &operator|=(KeyboardModifiers &lhs, KeyboardModifier
     let lhs_ = static_cast<uint8_t>(lhs);
     let rhs_ = static_cast<uint8_t>(rhs);
     return (lhs_ & rhs_) == rhs_;
+}
+
+/** Parse a key-binding modifier name.
+ * @param s The modifier name, with or without the canonical trailing '+'
+ */
+inline KeyboardModifiers to_KeyboardModifiers(std::string_view s)
+{
+    if (ssize(s) == 0) {
+        TTAURI_THROW(parse_error("Empty keyboard modifier"));       
+    }
+
+    // Remove the canonical trailing '+'.
+    let s_lower = to_lower(
+        (s.back() == '+') ? s.substr(0, ssize(s) - 1) : s
+    );
+
+    if (s_lower == "shift") {
+        return KeyboardModifiers::Shift;
+    } else if (s_lower == "control" || s_lower == "ctrl" || s_lower == "cntr") {
+        return KeyboardModifiers::Control;
+    } else if (s_lower == "alt" || s_lower == "option" || s_lower == "meta") {
+        return KeyboardModifiers::Alt;
+    } else if (
+        s_lower == "windows" || s_lower == "win" ||
+        s_lower == "command" || s_lower == "cmd" ||
+        s_lower == "super"
+    ) {
+        return KeyboardModifiers::Super;
+    } else {
+        TTAURI_THROW(parse_error("Unknown keyboard modifier '{}'", s));
+    }
+}
+
+inline std::string to_string(KeyboardModifiers modifiers)
+{
+    auto r = std::string{};
+
+    if (modifiers >= KeyboardModifiers::Shift) {
+        r += "shift+";
+    }
+    if (modifiers >= KeyboardModifiers::Control) {
+        r += "control+";
+    }
+    if (modifiers >= KeyboardModifiers::Alt) {
+        r += "alt+";
+    }
+    if (modifiers >= KeyboardModifiers::Super) {
+        r += "super+";
+    }
+
+    return r;
 }
 
 }

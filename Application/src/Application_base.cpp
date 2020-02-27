@@ -18,12 +18,12 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
     i_audio(this),
 #endif
 #if defined(BUILD_TTAURI_GUI)
+    i_text(),
 #if OPERATING_SYSTEM == OS_WINDOWS
     i_gui(this, hInstance, nCmdShow),
 #else
     i_gui(this),
 #endif
-    i_text(),
     i_widgets(),
 #endif
     i_dummy()

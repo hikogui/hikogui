@@ -86,7 +86,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 
     let descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
         descriptorSetLayoutBindings,
-        [this](auto x) -> vk::DescriptorPoolSize {
+        [](auto x) -> vk::DescriptorPoolSize {
             return {
                 x.descriptorType,
                 numeric_cast<uint32_t>(x.descriptorCount)

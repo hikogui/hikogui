@@ -48,12 +48,9 @@ private:
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
     char32_t high_surrogate = 0;
-    bool insert_mode = false;
 
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] KeyboardModifiers getKeyboardModifiers() noexcept;
-
-    void handle_virtual_key_code(int key_code) noexcept;
 
     [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept {
         if (c >= 0xd800 && c <= 0xdbff) {
