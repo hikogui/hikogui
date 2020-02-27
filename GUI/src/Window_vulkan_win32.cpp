@@ -311,6 +311,10 @@ void Window_vulkan_win32::handle_virtual_key_code(int key_code) noexcept
     case VK_VOLUME_UP: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeUp);
     case VK_VOLUME_DOWN: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeDown);
     case VK_DELETE: return handleKeyboardEvent(state, modifiers, CommandKey::Delete);
+    case VK_OEM_PLUS: return handleKeyboardEvent(state, modifiers, '+');
+    case VK_OEM_COMMA: return handleKeyboardEvent(state, modifiers, ',');
+    case VK_OEM_MINUS: return handleKeyboardEvent(state, modifiers, '-');
+    case VK_OEM_PERIOD: return handleKeyboardEvent(state, modifiers, '.');
     default:
         if (key_code >= 'A' && key_code <= 'Z') {
             return handleKeyboardEvent(state, modifiers, key_code);

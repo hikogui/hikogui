@@ -105,10 +105,10 @@ public:
     constexpr static char Print = 0x01;
     constexpr static char Home = 0x02; // ASCII start-of-text
     constexpr static char End = 0x03; // ASCII end-of-text
-    constexpr static char LeftArrow = 0x04;
-    constexpr static char RightArrow = 0x05; 
-    constexpr static char UpArrow = 0x06; 
-    constexpr static char DownArrow = 0x07; 
+    constexpr static char Left = 0x04;
+    constexpr static char Right = 0x05; 
+    constexpr static char Up = 0x06; 
+    constexpr static char Down = 0x07; 
     constexpr static char Backspace = 0x08; // ASCII backspace
     constexpr static char Tab = 0x09; // ASCII tab
     constexpr static char Enter = 0x0a; // ASCII new line
