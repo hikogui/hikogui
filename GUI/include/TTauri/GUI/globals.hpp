@@ -5,6 +5,7 @@
 
 #include "TTauri/GUI/Instance_forward.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
+#include "TTauri/GUI/KeyboardBindings.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <cstdint>
 #include <mutex>
@@ -29,6 +30,9 @@ public:
      */
     std::recursive_mutex mutex;
 
+    /** Global keyboard bindings.
+     */
+    KeyboardBindings keyboard_bindings;
 
     static constexpr uint32_t defaultNumberOfSwapchainImages = 2;
 

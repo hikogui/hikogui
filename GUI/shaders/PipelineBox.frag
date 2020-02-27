@@ -83,12 +83,12 @@ bool insideBottomRightCorner(float maximumDistanceFromCorner)
 
 bool insideTopLeftCorner(float maximumDistanceFromCorner)
 {
-    return inCornerCoordinates.x < maximumDistanceFromCorner && inCornerCoordinates.z < maximumDistanceFromCorner;
+    return inCornerCoordinates.x < maximumDistanceFromCorner && inCornerCoordinates.w < maximumDistanceFromCorner;
 }
 
 bool insideTopRightCorner(float maximumDistanceFromCorner)
 {
-    return inCornerCoordinates.z < maximumDistanceFromCorner && inCornerCoordinates.z < maximumDistanceFromCorner;
+    return inCornerCoordinates.z < maximumDistanceFromCorner && inCornerCoordinates.w < maximumDistanceFromCorner;
 }
 
 float shapeAdjustedDistance(vec2 distance2D)

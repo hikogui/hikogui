@@ -237,7 +237,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
 
 [[nodiscard]] KeyboardModifiers Window_vulkan_win32::getKeyboardModifiers() noexcept
 {
-    auto r = KeyboardModifiers::Idle;
+    auto r = KeyboardModifiers::None;
 
     if (GetKeyState(VK_SHIFT) != 0) {
         r |= KeyboardModifiers::Shift;
@@ -280,37 +280,37 @@ void Window_vulkan_win32::handle_virtual_key_code(int key_code) noexcept
 
     switch (key_code) {
     case VK_SNAPSHOT: [[fallthrough]];
-    case VK_PRINT: return handleKeyboardEvent(state, modifiers, CommandKey::Print);
-    case VK_HOME: return handleKeyboardEvent(state, modifiers, CommandKey::Home);
-    case VK_END: return handleKeyboardEvent(state, modifiers, CommandKey::End);
-    case VK_LEFT: return handleKeyboardEvent(state, modifiers, CommandKey::LeftArrow);
-    case VK_RIGHT: return handleKeyboardEvent(state, modifiers, CommandKey::RightArrow);
-    case VK_UP: return handleKeyboardEvent(state, modifiers, CommandKey::UpArrow);
-    case VK_DOWN: return handleKeyboardEvent(state, modifiers, CommandKey::DownArrow);
-    case VK_BACK: return handleKeyboardEvent(state, modifiers, CommandKey::Backspace);
-    case VK_TAB: return handleKeyboardEvent(state, modifiers, CommandKey::Tab);
-    case VK_RETURN: return handleKeyboardEvent(state, modifiers, CommandKey::Enter);
-    case VK_F1: return handleKeyboardEvent(state, modifiers, CommandKey::F1);
-    case VK_F2: return handleKeyboardEvent(state, modifiers, CommandKey::F2);
-    case VK_F3: return handleKeyboardEvent(state, modifiers, CommandKey::F3);
-    case VK_F4: return handleKeyboardEvent(state, modifiers, CommandKey::F4);
-    case VK_F5: return handleKeyboardEvent(state, modifiers, CommandKey::F5);
-    case VK_F6: return handleKeyboardEvent(state, modifiers, CommandKey::F6);
-    case VK_F7: return handleKeyboardEvent(state, modifiers, CommandKey::F7);
-    case VK_F8: return handleKeyboardEvent(state, modifiers, CommandKey::F8);
-    case VK_F9: return handleKeyboardEvent(state, modifiers, CommandKey::F9);
-    case VK_F10: return handleKeyboardEvent(state, modifiers, CommandKey::F10);
-    case VK_F11: return handleKeyboardEvent(state, modifiers, CommandKey::F11);
-    case VK_F12: return handleKeyboardEvent(state, modifiers, CommandKey::F12);
-    case VK_CLEAR: return handleKeyboardEvent(state, modifiers, CommandKey::Clear);
-    case VK_PAUSE: return handleKeyboardEvent(state, modifiers, CommandKey::PauseBreak);
-    case VK_VOLUME_MUTE: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeMute);
-    case VK_INSERT: return handleKeyboardEvent(state, modifiers, CommandKey::Insert);
-    case VK_ESCAPE: return handleKeyboardEvent(state, modifiers, CommandKey::Escape);
-    case VK_PRIOR: return handleKeyboardEvent(state, modifiers, CommandKey::PageUp);
-    case VK_VOLUME_UP: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeUp);
-    case VK_VOLUME_DOWN: return handleKeyboardEvent(state, modifiers, CommandKey::VolumeDown);
-    case VK_DELETE: return handleKeyboardEvent(state, modifiers, CommandKey::Delete);
+    case VK_PRINT: return handleKeyboardEvent(state, modifiers, KeyboardKey::Print);
+    case VK_HOME: return handleKeyboardEvent(state, modifiers, KeyboardKey::Home);
+    case VK_END: return handleKeyboardEvent(state, modifiers, KeyboardKey::End);
+    case VK_LEFT: return handleKeyboardEvent(state, modifiers, KeyboardKey::LeftArrow);
+    case VK_RIGHT: return handleKeyboardEvent(state, modifiers, KeyboardKey::RightArrow);
+    case VK_UP: return handleKeyboardEvent(state, modifiers, KeyboardKey::UpArrow);
+    case VK_DOWN: return handleKeyboardEvent(state, modifiers, KeyboardKey::DownArrow);
+    case VK_BACK: return handleKeyboardEvent(state, modifiers, KeyboardKey::Backspace);
+    case VK_TAB: return handleKeyboardEvent(state, modifiers, KeyboardKey::Tab);
+    case VK_RETURN: return handleKeyboardEvent(state, modifiers, KeyboardKey::Enter);
+    case VK_F1: return handleKeyboardEvent(state, modifiers, KeyboardKey::F1);
+    case VK_F2: return handleKeyboardEvent(state, modifiers, KeyboardKey::F2);
+    case VK_F3: return handleKeyboardEvent(state, modifiers, KeyboardKey::F3);
+    case VK_F4: return handleKeyboardEvent(state, modifiers, KeyboardKey::F4);
+    case VK_F5: return handleKeyboardEvent(state, modifiers, KeyboardKey::F5);
+    case VK_F6: return handleKeyboardEvent(state, modifiers, KeyboardKey::F6);
+    case VK_F7: return handleKeyboardEvent(state, modifiers, KeyboardKey::F7);
+    case VK_F8: return handleKeyboardEvent(state, modifiers, KeyboardKey::F8);
+    case VK_F9: return handleKeyboardEvent(state, modifiers, KeyboardKey::F9);
+    case VK_F10: return handleKeyboardEvent(state, modifiers, KeyboardKey::F10);
+    case VK_F11: return handleKeyboardEvent(state, modifiers, KeyboardKey::F11);
+    case VK_F12: return handleKeyboardEvent(state, modifiers, KeyboardKey::F12);
+    case VK_CLEAR: return handleKeyboardEvent(state, modifiers, KeyboardKey::Clear);
+    case VK_PAUSE: return handleKeyboardEvent(state, modifiers, KeyboardKey::PauseBreak);
+    case VK_VOLUME_MUTE: return handleKeyboardEvent(state, modifiers, KeyboardKey::VolumeMute);
+    case VK_INSERT: return handleKeyboardEvent(state, modifiers, KeyboardKey::Insert);
+    case VK_ESCAPE: return handleKeyboardEvent(state, modifiers, KeyboardKey::Escape);
+    case VK_PRIOR: return handleKeyboardEvent(state, modifiers, KeyboardKey::PageUp);
+    case VK_VOLUME_UP: return handleKeyboardEvent(state, modifiers, KeyboardKey::VolumeUp);
+    case VK_VOLUME_DOWN: return handleKeyboardEvent(state, modifiers, KeyboardKey::VolumeDown);
+    case VK_DELETE: return handleKeyboardEvent(state, modifiers, KeyboardKey::Delete);
     default:
         if (key_code >= 'A' && key_code <= 'Z') {
             return handleKeyboardEvent(state, modifiers, key_code);

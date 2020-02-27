@@ -153,4 +153,4 @@ constexpr size_t index_of_tag(string_tag tag) noexcept
     }
 }
 
-};
+}
