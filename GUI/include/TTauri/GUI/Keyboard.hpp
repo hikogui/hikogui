@@ -33,6 +33,7 @@ constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexc
     return (lhs_ & rhs_) == rhs_;
 }
 
+
 struct KeyboardEvent {
     enum class Type : uint8_t {
         Idle,
