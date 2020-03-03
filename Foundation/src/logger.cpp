@@ -83,7 +83,7 @@ void logger_type::display_counters() noexcept {
     let keys = counter_map.keys();
     for (let &tag: keys) {
         let [count, count_since_last_read] = read_counter(tag);
-        logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18} {:+9}", tag_to_string(tag), count, count_since_last_read);
+        logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18} {:+9}", tt5_decode(tag), count, count_since_last_read);
     }
 }
 
@@ -96,7 +96,7 @@ void logger_type::display_trace_statistics() noexcept {
 
         if (stat_result.last_count <= 0) {
             logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:18n}",
-                tag_to_string(tag),
+                tt5_decode(tag),
                 stat_result.count,
                 stat_result.last_count
             );
@@ -106,7 +106,7 @@ void logger_type::display_trace_statistics() noexcept {
             let duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
             let duration_peak = format_engineering(stat_result.peak_duration);
             logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:+9n} mean: {}/iter, peak: {}",
-                tag_to_string(tag),
+                tt5_decode(tag),
                 stat_result.count,
                 stat_result.last_count, duration_per_iter, duration_peak
             );

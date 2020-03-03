@@ -30,5 +30,6 @@ template<typename... Args>
 #define TTAURI_THROW_OVERFLOW_ERROR(...) throw_overflow_error(__FILE__, __LINE__, __VA_ARGS__);
 #define TTAURI_THROW_PARSE_ERROR(...) throw_parse_error(__FILE__, __LINE__, __VA_ARGS__);
 
+#define _parse_assert(x) if (!(x)) { TTAURI_THROW_PARSE_ERROR("{}", #x ); }
 
 }

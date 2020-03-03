@@ -40,7 +40,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     void *data;
     if ((data = MapViewOfFile(fileMappingObject->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
         TTAURI_THROW(io_error("Could not map view of file.")
-            .set<"error_message"_tag>(getLastErrorMessage())
+            .set<"error_msg"_tag>(getLastErrorMessage())
             .set<"url"_tag>(location())
         );
     }
@@ -103,7 +103,7 @@ void FileView::flush(void* base, size_t size)
 {
     if (!FlushViewOfFile(base, size)) {
         TTAURI_THROW(io_error("Could not flush file")
-            .set<"error_message"_tag>(getLastErrorMessage())
+            .set<"error_msg"_tag>(getLastErrorMessage())
             .set<"url"_tag>(location())
         );
     }

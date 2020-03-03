@@ -53,7 +53,7 @@ public:
 
     /*! Return the name of the exception.
     */
-    std::string name() const noexcept { return tag_to_string(tag()); }
+    std::string name() const noexcept { return tt5_decode(tag()); }
 
     std::string string() const noexcept {
         return fmt::format("{}: {}. {}",
@@ -150,7 +150,7 @@ class sub_error final : public error {
         if (error_info.has(info_tag) == 1) {
             error_info.get(info_tag) = info_value;
         } else {
-            LOG_WARNING("Unknown error_info '{}' on error '{}'", tag_to_string(info_tag), tag_to_string(Tag));
+            LOG_WARNING("Unknown error_info '{}' on error '{}'", tt5_decode(info_tag), tt5_decode(Tag));
         }
         return *this;
     }
@@ -159,7 +159,7 @@ class sub_error final : public error {
         if (error_info.has(info_tag) == 1) {
             error_info.get(info_tag) = std::move(info_value);
         } else {
-            LOG_WARNING("Unknown error_info '{}' on error '{}'", tag_to_string(info_tag), tag_to_string(Tag));
+            LOG_WARNING("Unknown error_info '{}' on error '{}'", tt5_decode(info_tag), tt5_decode(Tag));
         }
         return *this;
     }
@@ -250,7 +250,7 @@ public:
             };
 
             r += fmt::format("{}={}",
-                tag_to_string(error_info.get_tag(i)),
+                tt5_decode(error_info.get_tag(i)),
                 error_info[i].repr()
             );
         }
@@ -275,7 +275,7 @@ using parse_error = sub_error<"parse_error"_tag, "url"_tag, "line"_tag, "column"
 using invalid_operation_error = sub_error<"invalid_op"_tag, "url"_tag, "line"_tag, "column"_tag>;
 
 using url_error = sub_error<"url_error"_tag, "url"_tag>;
-using io_error = sub_error<"io_error"_tag, "url"_tag, "errno"_tag, "error_message"_tag>;
+using io_error = sub_error<"io_error"_tag, "url"_tag, "errno"_tag, "error_msg"_tag>;
 using key_error = sub_error<"key_error"_tag, "key"_tag>;
 using gui_error = sub_error<"gui_error"_tag, "vk_result"_tag>;
 using bounds_error = sub_error<"bounds_error"_tag>;

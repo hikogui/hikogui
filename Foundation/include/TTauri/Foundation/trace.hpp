@@ -1,4 +1,5 @@
-
+// Copyright 2019 Pokitec
+// All rights reserved.
 
 #include "TTauri/Foundation/counters.hpp"
 #include "TTauri/Foundation/datum.hpp"
@@ -115,7 +116,7 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
         if (counter++ > 0) {
             info_string += ", ";
         }
-        info_string += tag_to_string(rhs.info.get_tag(i));
+        info_string += tt5_decode(rhs.info.get_tag(i));
         info_string += "=";
         info_string += static_cast<std::string>(rhs.info[i]);
     }

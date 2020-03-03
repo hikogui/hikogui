@@ -89,7 +89,7 @@ File::File(URL const &location, AccessMode accessMode) :
     }
 
     TTAURI_THROW(io_error("Could not open file")
-        .set<"error_message"_tag>(getLastErrorMessage())
+        .set<"error_msg"_tag>(getLastErrorMessage())
         .set<"url"_tag>(location)
     );
 }
@@ -104,7 +104,7 @@ void File::close()
     if (fileHandle != INVALID_HANDLE_VALUE) {
         if (!CloseHandle(fileHandle)) {
             TTAURI_THROW(io_error("Could not close file")
-                .set<"error_message"_tag>(getLastErrorMessage())
+                .set<"error_msg"_tag>(getLastErrorMessage())
                 .set<"url"_tag>(location)
             );
         }
@@ -126,7 +126,7 @@ ssize_t File::write(std::byte const *data, ssize_t size)
 
         if (!WriteFile(fileHandle, data, write_size, &written_size, nullptr)) {
             TTAURI_THROW(io_error("Could not write to file")
-                .set<"error_message"_tag>(getLastErrorMessage())
+                .set<"error_msg"_tag>(getLastErrorMessage())
                 .set<"url"_tag>(location)
             );
         } else if (written_size == 0) {
@@ -182,7 +182,7 @@ void File::createDirectory(URL const &url, bool hierarchy)
     }
 
     TTAURI_THROW(io_error("Could not create directory")
-        .set<"error_message"_tag>(getLastErrorMessage())
+        .set<"error_msg"_tag>(getLastErrorMessage())
         .set<"url"_tag>(url)
     );
 }

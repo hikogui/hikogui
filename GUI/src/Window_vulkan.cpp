@@ -262,7 +262,7 @@ void Window_vulkan::render()
         return;
     }
 
-    auto tr = trace<"window_render"_tag, "state"_tag, "frame_buffer"_tag>();
+    auto tr = trace<"win_render"_tag, "state"_tag, "frame_buffer"_tag>();
     auto lock = std::scoped_lock{GUI_globals->mutex};
 
     // Tear down then buildup from the vulkan objects that where invalid.

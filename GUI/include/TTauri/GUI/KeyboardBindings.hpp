@@ -5,7 +5,6 @@
 
 #include "TTauri/GUI/KeyboardKey.hpp"
 #include "TTauri/Foundation/string_tag.hpp"
-#include "TTauri/Foundation/string_longtag.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include <unordered_map>
 #include <tuple>
@@ -28,35 +27,35 @@ class KeyboardBindings {
      * key = context,key
      * value = command,system-binding
      */
-    std::unordered_map<std::pair<string_tag,KeyboardKey>, std::pair<string_longtag,bool>> bindings;
+    std::unordered_map<std::pair<string_tag,KeyboardKey>, std::pair<string_ltag,bool>> bindings;
 
 public:
     KeyboardBindings() noexcept :
         bindings() {}
 
-    void addBinding(string_tag context, KeyboardKey key, string_longtag command, bool system_binding) noexcept {
+    void addBinding(string_tag context, KeyboardKey key, string_ltag command, bool system_binding) noexcept {
         bindings[std::pair{context,key}] = std::pair{command,system_binding};
     }
 
-    void addSystemBinding(string_tag context, KeyboardKey key, string_longtag command) noexcept {
+    void addSystemBinding(string_tag context, KeyboardKey key, string_ltag command) noexcept {
         addBinding(context, key, command, true);
     }
 
-    void addUserBinding(string_tag context, KeyboardKey key, string_longtag command) noexcept {
+    void addUserBinding(string_tag context, KeyboardKey key, string_ltag command) noexcept {
         addBinding(context, key, command, false);
     }
 
     /** translate a key press in the empty-context to a command.
     */
-    [[nodiscard]] string_longtag translate(KeyboardKey key) const noexcept {
+    [[nodiscard]] string_ltag translate(KeyboardKey key) const noexcept {
         let i = bindings.find(std::pair{string_tag{},key});
-        return (i != bindings.cend()) ? i->second.first : string_longtag{};
+        return (i != bindings.cend()) ? i->second.first : string_ltag{};
     }
 
     /** translate a key press in a context to a command.
      * This will first search the current context, before trying the empty context.
      */
-    [[nodiscard]] string_longtag translate(string_tag context, KeyboardKey key) const noexcept {
+    [[nodiscard]] string_ltag translate(string_tag context, KeyboardKey key) const noexcept {
         let i = bindings.find(std::pair{context,key});
         return (i != bindings.cend()) ? i->second.first : translate(key);
     }

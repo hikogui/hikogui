@@ -82,7 +82,7 @@ void FoundationGlobals::maintenanceThreadProcedure() noexcept
         let t = trace<"maintenance"_tag>{};
 
         {
-            let t = trace<"calibrate_clk"_tag>{};
+            let t = trace<"calibrate"_tag>{};
             sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
             sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
         }

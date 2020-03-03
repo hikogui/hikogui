@@ -7,6 +7,6 @@
 
 namespace TTauri::Text {
 
-using FontFamilyID = tagged_id<uint16_t, "fontfamily_id"_tag>;
+using FontFamilyID = tagged_id<uint16_t, "font-family"_tag>;
 
 }

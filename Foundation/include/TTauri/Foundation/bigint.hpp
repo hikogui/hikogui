@@ -85,6 +85,15 @@ struct bigint {
     constexpr explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
     constexpr explicit operator char () const noexcept { return static_cast<char>(digits[0]); }
 
+    constexpr operator bool () const noexcept {
+        for (ssize_t i = 0; i != N; ++i) {
+            if (digits[i] != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     template<int O>
     constexpr explicit operator bigint<T,O> () const noexcept {
         bigint<T,O> r;

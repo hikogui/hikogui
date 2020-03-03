@@ -74,9 +74,9 @@ inline std::pair<int64_t, int64_t> read_counter(string_tag tag) noexcept
     return {count, count_since_last_read};
 }
 
-inline std::pair<int64_t, int64_t> read_counter(std::string_view name) noexcept
+inline std::pair<int64_t, int64_t> read_counter(std::string const &name) noexcept
 {
-    return read_counter(string_to_tag(name));
+    return read_counter(tt5_encode<string_tag>(name));
 }
 
 }
