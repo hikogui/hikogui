@@ -13,12 +13,12 @@ namespace TTauri {
 
 [[nodiscard]] inline glm::u16vec4 make_R16G16B16A16SFloat_value(glm::vec4 const &rhs) noexcept
 {
-    __m128 floats = _mm_load_ps(reinterpret_cast<float const *>(&rhs));
+    __m128 floats = _mm_loadu_ps(reinterpret_cast<float const *>(&rhs));
     __m128i halfs = _mm_cvtps_ph(floats, _MM_FROUND_CUR_DIRECTION);
 
     // The first 4 entries are the converted floats, the second 4 are not used.
     __m128i buffer;
-    _mm_store_si128(&buffer, halfs);
+    _mm_storeu_si128(&buffer, halfs);
 
     glm::u16vec4 ret;
     std::memcpy(&ret, &buffer, sizeof(ret));
