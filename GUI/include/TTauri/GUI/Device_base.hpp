@@ -70,11 +70,10 @@ public:
     void render() noexcept {
         for (auto &window: windows) {
             window->render();
-
-            if (window->isClosed()) {
-                remove(*window);
-            }
         }
+
+        let new_end = std::remove_if(windows.begin(), windows.end(), [](let &window) { return window->isClosed(); });
+        windows.erase(new_end, windows.end());
     }
 };
 
