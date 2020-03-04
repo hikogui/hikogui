@@ -59,6 +59,7 @@ struct KeyboardEvent {
     KeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept :
         type(full ? Type::Grapheme : Type::PartialGrapheme), state(), grapheme(std::move(grapheme)), key() {}
 
+    [[nodiscard]] string_ltag getCommand(string_tag context) const noexcept;
 };
 
 }

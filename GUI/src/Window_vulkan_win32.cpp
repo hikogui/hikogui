@@ -240,16 +240,19 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
 {
     auto r = KeyboardModifiers::None;
 
-    if (GetKeyState(VK_SHIFT) != 0) {
+    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_SHIFT)) & 0x8000) != 0) {
         r |= KeyboardModifiers::Shift;
     }
-    if (GetKeyState(VK_CONTROL) != 0) {
+    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_CONTROL)) & 0x8000) != 0) {
         r |= KeyboardModifiers::Control;
     }
-    if (GetKeyState(VK_MENU) != 0) {
+    if ((static_cast<uint16_t>(GetAsyncKeyState(VK_MENU)) & 0x8000) != 0) {
         r |= KeyboardModifiers::Alt;
     }
-    if (GetKeyState(VK_LWIN) != 0 || GetKeyState(VK_RWIN) != 0) {
+    if (
+        (static_cast<uint16_t>(GetAsyncKeyState(VK_LWIN)) & 0x8000) != 0 ||
+        (static_cast<uint16_t>(GetAsyncKeyState(VK_RWIN)) & 0x8000) != 0
+    ) {
         r |= KeyboardModifiers::Super;
     }
 

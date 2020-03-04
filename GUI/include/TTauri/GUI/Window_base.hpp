@@ -8,7 +8,7 @@
 #include "TTauri/GUI/WindowWidget.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Mouse.hpp"
-#include "TTauri/GUI/Keyboard.hpp"
+#include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/geometry.hpp"

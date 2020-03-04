@@ -32,6 +32,12 @@ GUIGlobals::GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int
     Foundation_globals->addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
     Foundation_globals->addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
     Foundation_globals->addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
+
+    try {
+        keyboard_bindings.loadSystemBindings();
+    } catch (error &e) {
+        LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
+    }
 }
 
 GUIGlobals::~GUIGlobals()

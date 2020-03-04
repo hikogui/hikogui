@@ -196,12 +196,12 @@ template<typename T>
                 if (locked_page != 2) {
                     r <<= 5;
                     r |= 0x1f; // S2
-                    _parse_assert((nr_bits += 5) <= max_nr_bits);
+                    _parse_assert2((nr_bits += 5) <= max_nr_bits, "String too long");
                 }
 
                 r <<= 5;
                 r |= 0x18 + next_page; // L0, L1, L2
-                _parse_assert((nr_bits += 5) <= max_nr_bits);
+                _parse_assert2((nr_bits += 5) <= max_nr_bits, "String too long");
 
                 locked_page = next_page;
 
@@ -210,12 +210,12 @@ template<typename T>
 
                 r <<= 5;
                 r |= 0x1e + static_cast<int>(second_shift); // S0, S1, S2
-                _parse_assert((nr_bits += 5) <= max_nr_bits);
+                _parse_assert2((nr_bits += 5) <= max_nr_bits, "String too long");
             }
         }
 
         nr_bits += tt5_add_code(r, static_cast<uint16_t>(ring));
-        _parse_assert(nr_bits <= max_nr_bits);
+        _parse_assert2(nr_bits <= max_nr_bits, "String too long");
 
         // Add one code to the ring buffer.
         later_code = (later_code) ? tt5_code_from_char(*(str++)) : 0;

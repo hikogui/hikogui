@@ -35,11 +35,6 @@ enum class KeyboardVirtualKey : uint8_t {
     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
     F13, F14, F15, F16, F17, F18, F19, F20, F21, F22, F23, F24,
 
-    Numpad0, Numpad1, Numpad2, Numpad3, Numpad4,
-    Numpad5, Numpad6, Numpad7, Numpad8, Numpad9,
-    NumpadDivide, NumpadMultiply, NumpadSubtract, NumpadAdd,
-    NumpadEnter, NumpadDecimal, NumpadDelete,
-
     BrowserBack, BrowserForward, BrowserRefresh, BrowserStop,
     BrowserSearch, BrowserFavorites, BrowserHome,
     VolumeMute, VolumeUp, VolumeDown,
@@ -157,23 +152,6 @@ inline let string_to_KeyboardVirtualKey_table = std::unordered_map<std::string,K
     {"f22", KeyboardVirtualKey::F22},
     {"f23", KeyboardVirtualKey::F23},
     {"f24", KeyboardVirtualKey::F24},
-    {"num0", KeyboardVirtualKey::Numpad0},
-    {"num1", KeyboardVirtualKey::Numpad1},
-    {"num2", KeyboardVirtualKey::Numpad2},
-    {"num3", KeyboardVirtualKey::Numpad3},
-    {"num4", KeyboardVirtualKey::Numpad4},
-    {"num5", KeyboardVirtualKey::Numpad5},
-    {"num6", KeyboardVirtualKey::Numpad6},
-    {"num7", KeyboardVirtualKey::Numpad7},
-    {"num8", KeyboardVirtualKey::Numpad8},
-    {"num9", KeyboardVirtualKey::Numpad9},
-    {"num/", KeyboardVirtualKey::NumpadDivide},
-    {"num*", KeyboardVirtualKey::NumpadMultiply},
-    {"num-", KeyboardVirtualKey::NumpadSubtract},
-    {"num-plus", KeyboardVirtualKey::NumpadAdd},
-    {"num-enter", KeyboardVirtualKey::NumpadEnter},
-    {"num.", KeyboardVirtualKey::NumpadDecimal},
-    {"num-delete", KeyboardVirtualKey::NumpadDelete},
     {"media-next", KeyboardVirtualKey::MediaNextTrack},
     {"media-prev", KeyboardVirtualKey::MediaPrevTrack},
     {"media-stop", KeyboardVirtualKey::MediaStop},
@@ -313,23 +291,6 @@ constexpr char const *to_const_string(KeyboardVirtualKey key) noexcept
     case KeyboardVirtualKey::F22: return "f22";
     case KeyboardVirtualKey::F23: return "f23";
     case KeyboardVirtualKey::F24: return "f24";
-    case KeyboardVirtualKey::Numpad0: return "num0";
-    case KeyboardVirtualKey::Numpad1: return "num1";
-    case KeyboardVirtualKey::Numpad2: return "num2";
-    case KeyboardVirtualKey::Numpad3: return "num3";
-    case KeyboardVirtualKey::Numpad4: return "num4";
-    case KeyboardVirtualKey::Numpad5: return "num5";
-    case KeyboardVirtualKey::Numpad6: return "num6";
-    case KeyboardVirtualKey::Numpad7: return "num7";
-    case KeyboardVirtualKey::Numpad8: return "num8";
-    case KeyboardVirtualKey::Numpad9: return "num9";
-    case KeyboardVirtualKey::NumpadDivide: return "num/";
-    case KeyboardVirtualKey::NumpadMultiply: return "num*";
-    case KeyboardVirtualKey::NumpadSubtract: return "num-";
-    case KeyboardVirtualKey::NumpadAdd: return "num-plus";
-    case KeyboardVirtualKey::NumpadEnter: return "num-enter";
-    case KeyboardVirtualKey::NumpadDecimal: return "num.";
-    case KeyboardVirtualKey::NumpadDelete: return "num-delete";
     case KeyboardVirtualKey::MediaNextTrack: return "media-next";
     case KeyboardVirtualKey::MediaPrevTrack: return "media-prev";
     case KeyboardVirtualKey::MediaStop: return "media-stop";

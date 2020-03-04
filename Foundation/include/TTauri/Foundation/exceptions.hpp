@@ -285,7 +285,7 @@ using overflow_error = sub_error<"overflow"_tag>;
 #define TTAURI_THROW(x) throw std::move((x).log(__FILE__, __LINE__));
 
 #define parse_assert(x) if (!(x)) { TTAURI_THROW(parse_error("{}", #x )); }
-#define parse_assert2(x, msg) if (!(x)) { TTAURI_THROW(parse_error(msg)); }
+#define parse_assert2(x, ...) if (!(x)) { TTAURI_THROW(parse_error(__VA_ARGS__)); }
 
 #define hresult_assert_or_throw(x) ([](HRESULT result) {\
         if (ttauri_unlikely(FAILED(result))) {\

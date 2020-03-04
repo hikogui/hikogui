@@ -49,6 +49,8 @@ set(TTauri_GUI_srcs
     src/ToolbarButtonWidget.cpp
     src/WindowTrafficLightsWidget.cpp
     src/theme.cpp
+    src/KeyboardBindings.cpp
+    src/KeyboardEvent.cpp
 )
 
 add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs})
