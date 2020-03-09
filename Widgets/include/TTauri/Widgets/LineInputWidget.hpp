@@ -41,6 +41,7 @@ public:
     ) noexcept override;
 
     [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
+    [[nodiscard]] bool handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept override;
 };
 
 }

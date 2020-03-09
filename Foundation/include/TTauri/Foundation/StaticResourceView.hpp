@@ -28,15 +28,17 @@ public:
     StaticResourceView(StaticResourceView &&other) = default;
     StaticResourceView &operator=(StaticResourceView &&other) = default;
 
-    size_t offset() const noexcept override { return 0; }
+    [[nodiscard]] size_t offset() const noexcept override { return 0; }
 
-    size_t size() const noexcept override { return _bytes.size(); }
+    [[nodiscard]] size_t size() const noexcept override { return _bytes.size(); }
 
-    void const *data() const noexcept override { return _bytes.data(); }
+    [[nodiscard]] void const *data() const noexcept override { return _bytes.data(); }
 
-    gsl::span<std::byte const> bytes() const noexcept override { return _bytes; }
+    [[nodiscard]] gsl::span<std::byte const> bytes() const noexcept override { return _bytes; }
 
-    static std::unique_ptr<ResourceView> loadView(std::string const &location) {
+    [[nodiscard]] std::string_view string_view() const noexcept override { return {reinterpret_cast<char const*>(data()), size()}; }
+
+    [[nodiscard]] static std::unique_ptr<ResourceView> loadView(std::string const &location) {
         return std::make_unique<StaticResourceView>(location);
     }
 };

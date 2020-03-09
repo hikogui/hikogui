@@ -164,6 +164,14 @@ public:
 
     [[nodiscard]] std::u32string NFKD() const noexcept;
 
+    [[nodiscard]] friend std::string to_string(Grapheme const &g) noexcept {
+        return translateString<std::string>(g.NFC());
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, Grapheme const &rhs) {
+        return lhs << to_string(rhs);
+    }
+
 private:
     [[nodiscard]] force_inline bool has_pointer() const noexcept {
         return (value & 1) == 0;

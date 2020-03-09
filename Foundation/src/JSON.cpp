@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/datum.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/JSON.hpp"
 #include <vector>
 #include <optional>
@@ -181,10 +181,10 @@ struct parse_context_t {
     return root;
 }
 
-[[nodiscard]] datum parseJSON(TTauri::URL const &file)
+[[nodiscard]] datum parseJSON(URL const &file)
 {
-    auto view = TTauri::FileView(file);
-    return parseJSON(view.string_view());
+    auto view = ResourceView::loadView(file);
+    return parseJSON(view->string_view());
 }
 
 static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)

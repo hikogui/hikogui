@@ -71,6 +71,22 @@ bool LineInputWidget::updateAndPlaceVertices(
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
+bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
+{
+    switch (event.type) {
+    case GUI::KeyboardEvent::Type::Grapheme:
+        LOG_ERROR("Received grapheme: {}", event.grapheme);
+        break;
+    case GUI::KeyboardEvent::Type::PartialGrapheme:
+        LOG_ERROR("Received deakey: {}", event.grapheme);
+        break;
+    case GUI::KeyboardEvent::Type::Key:
+        LOG_ERROR("Received command: {}", tt5_decode(event.getCommand("text"_tag)));
+        break;
+    }
+    return false;
+}
+
 bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     auto r = false;
 

@@ -6,6 +6,7 @@
 #include "TTauri/GUI/KeyboardKey.hpp"
 #include "TTauri/Foundation/string_tag.hpp"
 #include "TTauri/Foundation/URL.hpp"
+#include "TTauri/Foundation/os_detect.hpp"
 #include <unordered_map>
 #include <tuple>
 
@@ -71,16 +72,22 @@ public:
 
     /** Load bindings from a JSON file.
      */
-    void loadBindings(URL url);
+    void loadBindings(URL url, bool system_binding);
 
     /** Load system bindings.
     */
-    void loadSystemBindings() noexcept;
+    void loadSystemBindings() {
+        if constexpr (operatingSystem == OperatingSystem::Windows) {
+            return loadBindings(URL{"resource:Themes/keybinds_win32.json"}, true);
+        } else {
+            no_default;
+        }
+    }
 
     void loadUserBindings(URL url) {
         clear();
         loadSystemBindings();
-        loadBindings(url);
+        loadBindings(url, false);
     }
 
     /** Save user bindings

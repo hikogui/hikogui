@@ -78,7 +78,7 @@ public:
 
     /*! String view to the mapping into memory.
      */
-    [[nodiscard]] std::string_view const string_view() const noexcept {
+    [[nodiscard]] std::string_view string_view() const noexcept override {
         return std::string_view{reinterpret_cast<char const *>(data()), size()};
     }
 
