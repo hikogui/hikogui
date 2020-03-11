@@ -16,13 +16,29 @@ namespace TTauri {
  * If you need a 3D vector or point, you can use this vector class
  * as a homogenious coordinate.
  *
+ * Since the __m64 data type is not supported by MSVC on x64 it does
+ * not yield a performance improvement to create a seperate 2D vector
+ * class. For simplicity use the 4D class with the z-value set to 0.0
+ * when working with 2D vectors.
+ *
  * If you use this vector as a color, then x=Red, y=Green, z=Blue, w=Alpha.
- *  - Alpha is linear: 0.0 is transparent, 1.0 is opaque
+ *  - Alpha is linear: 0.0 is transparent, 1.0 is opaque.
+ *    The Red/Green/Blue are not pre-multiplied with the alpha.
  *  - Red/Green/Blue are based on the linear-scRGB floating point format:
  *    values between 0.0 and 1.0 is equivilant to linear-sRGB (no gamma curve).
  *    values are allowed to be outside of this range for high-dynamic-range
  *    and high-color-gamut. 1.0,1.0,1.0 equals 80 cd/m2 and should be the maximum
  *    value for user interfaces.
+ *
+ * This class supports swizzeling. Swizzeling is done using member functions which
+ * will return a `vec`. The name of the member function consists of 2 to 4 of the
+ * following characters: 'x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', '0' & '1'.
+ * If the swizzle member function name would start with a '0' or '1' character it
+ * will be prefixed with an underscore '_'.
+ *
+ * Since swizzle member functions always return a 4D vec, the third and forth
+ * element will default to '0' and 'w'. This allows a 2D vector to maintain its
+ * homogeniousness, or a color to maintain its alpha value.
  */ 
 class vec {
     /* Intrinsic value of the vec.
@@ -144,6 +160,14 @@ public:
         return *this = _mm_div_ps(*this, rhs);
     }
 
+    force_inline vec &normalize() noexcept {
+        return *this = normalize(*this);
+    }
+
+    force_inline vec &homogeneous_divide noexcept {
+        return *this = homogeneous_divide(*this);
+    }
+
     [[nodiscard]] force_inline __m128 _length_squared() const noexcept {
         let tmp1 = _mm_mul_ps(*this, *this);
         let tmp2 = _mm_hadd_ps(tmp1, tmp1);
@@ -232,6 +256,19 @@ public:
     */
     [[nodiscard]] force_inline friend int operator>=(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmpge_ps(lhs, rhs));
+    }
+
+    [[nodiscard]] force_inline friend vec normalize(vec const &lhs) noexcept {
+        auto ___l = lhs._length_squared();
+        auto llll = _mm_permute_ps(___l, _MM_SHUFFLE(0,0,0,0));
+        auto iiii = _mm_rsqrt_ps(llll);
+        return _mm_mul_ps(lhs, iiii);
+    }
+
+    [[nodiscard]] force_inline friend vec homogeneous_divide(vec const &lhs) noexcept {
+        auto wwww = _mm_permute_ps(lhs, _MM_SHUFFLE(3,3,3,3));
+        auto rcp_wwww = _mm_rcp_ps(llll);
+        return _mm_mul_ps(lhs, rcp_wwww);
     }
 
     [[nodiscard]] force_inline friend float dot(vec const &lhs, vec const &rhs) noexcept {

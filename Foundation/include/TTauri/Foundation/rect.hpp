@@ -7,6 +7,8 @@
 
 namespace TTauri {
 
+/** Class which represents an axis-aligned box.
+ */
 class rect {
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:
@@ -36,20 +38,45 @@ public:
         return v;
     }
 
+    /** Create a box from the position and size.
+     *
+     * @param x The x location of the left-bottom corner of the box
+     * @param y The y location of the left-bottom corner of the box
+     * @param width The width of the box.
+     * @param height The height of the box.
+     */
     force_inline rect(float x, float y, float width, float height) noexcept :
         rect(vec(x, y, x + width, y + height)) {}
 
+    /** Create a box from the position and size.
+     *
+     * @param offset The position of the left-bottom corner of the box
+     * @param extent The size of the box.
+     */
     force_inline rect(vec const &offset, vec const &extent) noexcept :
         rect(offset.xyxy() + extent._00xy()) {}
 
+    /** Extpand the current rectangle to include the new rectangle.
+     * This is mostly used for extending bounding a bounding box.
+     *
+     * @param rhs The new rectangle to include in the current rectangle.
+     */
     rect &operator|=(rect const &rhs) noexcept {
         return *this = *this | rhs;
     }
 
+    /** Translate the box to a new position.
+     *
+     * @param rhs The vector to add to the coordinates of the rectangle.
+     */
     rect &operator+=(vec const &rhs) noexcept {
         return *this = *this + rhs;
     }
 
+    /** Translate the box to a new position.
+     *
+     * @param rhs The vector to subtract from the coordinates of the rectangle.
+     */
     rect &operator-=(vec const &rhs) noexcept {
         return *this = *this - rhs;
     }
@@ -63,7 +90,9 @@ public:
     }
 
     /** Get coordinate of a corner.
+    *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
+    * @return The homogenious coordinate of the corner.
     */
     template<size_t I>
     [[nodiscard]] force_inline vec corner() const noexcept {
@@ -80,14 +109,27 @@ public:
     }
 
     /** Get coordinate of a corner.
+    *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
+    * @param z The z coordinate to insert in the resulting coordinate.
+    * @return The homogenious coordinate of the corner.
     */
     template<size_t I>
     [[nodiscard]] force_inline vec corner(float z) const noexcept {
         return corner<I>().z(z);
     }
 
+    /** Get coordinate of the bottom-left corner
+    *
+    * @return The homogenious coordinate of the bottom-left corner.
+    */
     [[nodiscard]] force_inline vec offset() const noexcept { return corner<0>(); }
+
+    /** Get coordinate of the bottom-left corner
+    *
+    * @param z The z coordinate to insert in the resulting coordinate.
+    * @return The homogenious coordinate of the bottom-left corner.
+    */
     [[nodiscard]] force_inline vec offset(float z) const noexcept { return corner<0>(z); }
 
     [[nodiscard]] vec extent() const noexcept {

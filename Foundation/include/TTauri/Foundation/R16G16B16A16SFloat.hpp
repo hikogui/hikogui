@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
@@ -32,7 +33,10 @@ namespace TTauri {
 
 struct R16G16B16A16SFloat {
     // Red, Green, Blue, Alpha in binary16 (native endian).
-    glm::u16vec4 value;
+    uint16_t r;
+    uint16_t g;
+    uint16_t b;
+    uint16_t a;
 
     R16G16B16A16SFloat() = default;
     R16G16B16A16SFloat(R16G16B16A16SFloat const &rhs) noexcept = default;
