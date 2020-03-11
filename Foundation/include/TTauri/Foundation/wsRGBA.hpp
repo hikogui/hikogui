@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/algorithm.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 #include <fmt/format.h>
@@ -75,6 +76,30 @@ struct wsRGBA {
      */
     explicit wsRGBA(glm::i16vec4 c) noexcept :
         color(c) {}
+
+    wsRGBA(vec const &rhs) noexcept {
+        let max_mmmm = _mm_set_ps1(F32_MAX_SRGB);
+        let max_000m = _mm_set_ss(F32_MAX_ALPHA);
+        let max_abgr = _mm_insert_ps(max_mmmm, max_000m, 0b00'11'0000);
+        let color_fp = (rhs._1aaa() * rhs) * vec{max_abgr};
+        let color_i32 = _mm_cvtps_epi32(color_fp);
+        let color_i16 = _mm_packs_epi32(color_i32, color_i32);
+        _mm_storeu_si64(this, color_i16);
+    }
+
+    wsRGBA &operator=(vec const &rhs) noexcept {
+        let max_mmmm = _mm_set_ps1(F32_MAX_SRGB);
+        let max_000m = _mm_set_ss(F32_MAX_ALPHA);
+        let max_abgr = _mm_insert_ps(max_mmmm, max_000m, 0b00'11'0000);
+        let color_fp = (rhs._1aaa() * rhs) * vec{max_abgr};
+        let color_i32 = _mm_cvtps_epi32(color_fp);
+        let color_i16 = _mm_packs_epi32(color_i32, color_i32);
+        _mm_storeu_si64(this, color_i16);
+        return *this;
+    }
+
+
+
 
     /*! Set the color with linear-sRGB values.
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gamut should be between -0.5 - 7.5.

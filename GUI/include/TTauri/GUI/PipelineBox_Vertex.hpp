@@ -5,7 +5,11 @@
 
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vspan.hpp"
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
+#include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
+#include "TTauri/Foundation/R32G32B32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 #include <gsl/gsl>
 
@@ -16,13 +20,13 @@ namespace TTauri::GUI::PipelineBox {
 */
 struct Vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    glm::vec3 position;
+    R32G32B32SFloat position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    glm::vec4 clippingRectangle;
+    R32G32B32A32SFloat clippingRectangle;
 
     //! Double 2D coordinates inside the quad, used to determine the distance from the sides and corner inside the fragment shader.
-    glm::vec4 cornerCoordinate;
+    R32G32B32A32SFloat cornerCoordinate;
 
     //! background color of the box.
     R16G16B16A16SFloat backgroundColor;
@@ -37,20 +41,17 @@ struct Vertex {
     float shadowSize;
 
     Vertex(
-        glm::vec3 position,
-        glm::vec4 cornerCoordinate,
-        R16G16B16A16SFloat backgroundColor,
+        vec position,
+        vec cornerCoordinate,
+        vec backgroundColor,
         float borderSize,
-        R16G16B16A16SFloat borderColor,
+        vec borderColor,
         float shadowSize,
-        R16G16B16A16SFloat cornerShapes,
-        rect2 clippingRectangle
+        vec cornerShapes,
+        rect clippingRectangle
     ) noexcept :
         position(position),
-        clippingRectangle(
-            clippingRectangle.offset.x, clippingRectangle.offset.y,
-            clippingRectangle.offset.x + clippingRectangle.extent.width(), clippingRectangle.offset.y + clippingRectangle.extent.height()
-        ),
+        clippingRectangle(clippingRectangle),
         cornerCoordinate(cornerCoordinate),
         backgroundColor(backgroundColor),
         borderColor(borderColor),

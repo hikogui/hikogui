@@ -27,7 +27,7 @@ void WindowWidget::setParentWindow(gsl::not_null<Window *> window) noexcept
     window->addConstraint(box.left == 0);
     window->addConstraint(box.bottom == 0);
 
-    backgroundColor = wsRGBA{ 0x444f19ff };
+    backgroundColor = vec{0.058, 0.078, 0.010, 1.0};
 }
 
 HitBox WindowWidget::hitBoxTest(glm::vec2 position) const noexcept

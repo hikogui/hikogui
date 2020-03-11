@@ -4,6 +4,8 @@
 #pragma once
 
 #include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <rhea/linear_expression.hpp>
 
@@ -38,6 +40,10 @@ public:
 
     rect2 currentRectangle() const noexcept {
         return { currentPosition(), currentExtent() };
+    }
+
+    rect currentRect() const noexcept {
+        return {left.value(), bottom.value(), width.value(), height.value()};
     }
 
     bool contains(glm::vec2 position) const noexcept {

@@ -94,17 +94,17 @@ ssize_t Path::endLayer(ssize_t layerNr) const noexcept
     return layerEndContours.at(layerNr).first + 1;
 }
 
-wsRGBA Path::getColorOfLayer(ssize_t layerNr) const noexcept
+vec Path::getColorOfLayer(ssize_t layerNr) const noexcept
 {
     return layerEndContours.at(layerNr).second;
 }
 
-void Path::setColorOfLayer(ssize_t layerNr, wsRGBA fillColor) noexcept
+void Path::setColorOfLayer(ssize_t layerNr, vec fillColor) noexcept
 {
     layerEndContours.at(layerNr).second = fillColor;
 }
 
-std::pair<Path,wsRGBA> Path::getLayer(ssize_t layerNr) const noexcept
+std::pair<Path,vec> Path::getLayer(ssize_t layerNr) const noexcept
 {
     ttauri_assert(hasLayers());
 
@@ -199,7 +199,7 @@ bool Path::isLayerOpen() const noexcept
     }
 }
 
-void Path::closeLayer(wsRGBA fillColor) noexcept
+void Path::closeLayer(vec fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
@@ -415,13 +415,13 @@ void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
     closeContour();
 }
 
-void Path::addPath(Path const &path, wsRGBA fillColor) noexcept
+void Path::addPath(Path const &path, vec fillColor) noexcept
 {
     *this += path;
     closeLayer(fillColor);
 }
 
-void Path::addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
+void Path::addStroke(Path const &path, vec strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     *this += path.toStroke(strokeWidth, lineJoinStyle, tolerance);
     closeLayer(strokeColor);
@@ -549,7 +549,7 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept
     return lhs;
 }
 
-void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &path, SubpixelOrientation subpixelOrientation) noexcept
+void composit(PixelMap<wsRGBA>& dst, vec color, Path const &path, SubpixelOrientation subpixelOrientation) noexcept
 {
     ttauri_assert(!path.hasLayers());
     ttauri_assert(!path.isContourOpen());

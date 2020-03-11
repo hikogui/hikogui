@@ -27,21 +27,21 @@ bool LineInputWidget::updateAndPlaceVertices(
     ttauri_assert(window);
 
     // Draw something.
-    let cornerShapes = R16G16B16A16SFloat{ 0.0, 0.0, 0.0, 0.0 };
+    let cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
 
-    wsRGBA backgroundColor;
-    wsRGBA labelColor;
-    let borderColor = R16G16B16A16SFloat{1.0, 1.0, 1.0, 1.0};
+    vec backgroundColor;
+    vec labelColor;
+    let borderColor = vec{1.0, 1.0, 1.0, 1.0};
     if (value) {
-        backgroundColor = wsRGBA{ 0x4c4cffff };
-        labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
+        labelColor = vec{1.0, 1.0, 1.0, 1.0};
     } else {
-        backgroundColor = wsRGBA{ 0x4c884cff };
-        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+        backgroundColor = vec{0.072, 0.246, 0.072, 1.0};
+        labelColor = vec{0.0, 0.0, 0.0, 1.0};
     }
     if (pressed) {
-        backgroundColor = wsRGBA{ 0x4c4cffff };
-        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
+        labelColor = vec{0.0, 0.0, 0.0, 1.0};
     }
 
     auto textRectangle = box.currentRectangle().expand(-5);
@@ -57,13 +57,13 @@ bool LineInputWidget::updateAndPlaceVertices(
     PipelineBox::DeviceShared::placeVertices(
         box_vertices,
         depth,
-        box.currentRectangle(),
-        R16G16B16A16SFloat{backgroundColor},
+        box.currentRect(),
+        backgroundColor,
         1.0f,
-        R16G16B16A16SFloat{borderColor},
+        borderColor,
         0.0f,
         cornerShapes,
-        box.currentRectangle().expand(10.0)
+        expand(box.currentRect(), 10.0)
     );
 
     window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(textRectangle.offset), box.currentRectangle(), depth);

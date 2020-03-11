@@ -36,27 +36,29 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
     float depth,
-    rect2 box,
-    R16G16B16A16SFloat backgroundColor,
+    rect box,
+    vec backgroundColor,
     float borderSize,
-    R16G16B16A16SFloat borderColor,
+    vec borderColor,
     float shadowSize,
-    R16G16B16A16SFloat cornerShapes,
-    rect2 clippingRectangle
+    vec cornerShapes,
+    rect clippingRectangle
 )
 {
     let extraSpace = (borderSize * 0.5f) + shadowSize + 1.0f;
-    let outerBox = box.expand(extraSpace);
+    let outerBox = expand(box, extraSpace);
 
-    let v0 = glm::vec3{outerBox.corner<0>(), depth};
-    let v1 = glm::vec3{outerBox.corner<1>(), depth};
-    let v2 = glm::vec3{outerBox.corner<2>(), depth};
-    let v3 = glm::vec3{outerBox.corner<3>(), depth};
+    let v0 = outerBox.corner<0>(depth);
+    let v1 = outerBox.corner<1>(depth);
+    let v2 = outerBox.corner<2>(depth);
+    let v3 = outerBox.corner<3>(depth);
 
-    let t0 = glm::vec4{0.0f, 0.0f, outerBox.width(), outerBox.height()};
-    let t1 = glm::vec4{outerBox.width(), 0.0f, 0.0f, outerBox.height()};
-    let t2 = glm::vec4{0.0f, outerBox.height(), outerBox.width(), 0.0f};
-    let t3 = glm::vec4{outerBox.width(), outerBox.height(), 0.0f, 0.0f};
+    let outerExtent = outerBox.extent();
+
+    let t0 = outerExtent._00xy();
+    let t1 = outerExtent.x00y();
+    let t2 = outerExtent._0yx0();
+    let t3 = outerExtent.xy00();
 
     vertices.emplace_back(v0, t0, backgroundColor, borderSize, borderColor, shadowSize, cornerShapes, clippingRectangle);
     vertices.emplace_back(v1, t1, backgroundColor, borderSize, borderColor, shadowSize, cornerShapes, clippingRectangle);

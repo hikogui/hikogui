@@ -17,10 +17,10 @@ class rect {
      *  - 95:64 - max-x
      *  - 127:96 - max-y
      */
-    __m128 v;
+    vec v;
 
 public:
-    force_inline rect() : noexcept : rect(_mm_setzero_ps()) {}
+    force_inline rect() noexcept = delete;
     force_inline rect(rect const &rhs) noexcept = default;
     force_inline rect &operator=(rect const &rhs) noexcept = default;
     force_inline rect(rect &&rhs) noexcept = default;
@@ -46,6 +46,9 @@ public:
      * @param height The height of the box.
      */
     force_inline rect(float x, float y, float width, float height) noexcept :
+        rect(vec(x, y, x + width, y + height)) {}
+
+    force_inline rect(double x, double y, double width, double height) noexcept :
         rect(vec(x, y, x + width, y + height)) {}
 
     /** Create a box from the position and size.
@@ -137,11 +140,7 @@ public:
     }
 
     [[nodiscard]] bool contains(vec const &rhs) const noexcept {
-        return contains(*this, rhs);
-    }
-
-    rect &expand(float rhs) noexcept {
-        return *this = expand(*this, rhs);
+        return (v >= rhs.xyxy()) == 0b0011;
     }
 
     [[nodiscard]] friend bool operator==(rect const &lhs, rect const &rhs) noexcept {
@@ -153,28 +152,23 @@ public:
     }
 
     [[nodiscard]] friend rect operator|(rect const &lhs, rect const &rhs) noexcept {
-        return {_mm_blend_ps(min(lhs, rhs), max(lhs, rhs), 0x1100)};
+        return _mm_blend_ps(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b1100);
     }
 
     [[nodiscard]] friend rect operator+(rect const &lhs, vec const &rhs) noexcept {
-        return lhs + rhs.xyxy();
+        return static_cast<__m128>(lhs.v + rhs.xyxy());
     }
 
     [[nodiscard]] friend rect operator-(rect const &lhs, vec const &rhs) noexcept {
-        return lhs - rhs.xyxy();
+        return static_cast<__m128>(lhs.v - rhs.xyxy());
     }
 
     [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
         let _000r = _mm_set_ss(rhs);
-        let _00rr = _mm_permute_ps(_000r, _MM_SHUFFLE(1,1,0,0));
-        let _rr00 = _mm_permute_ps(_000r, _MM_SHUFFLE(0,0,1,1));
-        return (lhs - _00rr) + _rr00;
+        let _00rr = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(1,1,0,0))};
+        let _rr00 = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(0,0,1,1))};
+        return static_cast<__m128>((lhs.v - _00rr) + _rr00);
     }
-
-    [[nodiscard]] friend bool contains(rect const &lhs, vec const &rhs) const noexcept {
-        return (lhs >= rhs.xyxy()) == 0b0011;
-    }
-
 };
 
 }

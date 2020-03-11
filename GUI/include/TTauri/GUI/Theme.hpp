@@ -114,7 +114,7 @@ struct Theme {
     std::array<std::string,4> language_tags;
 
     /// 16 colors.
-    std::array<wsRGBA,nr_items_v<ColorID>> color_palette;
+    std::array<vec,nr_items_v<ColorID>> color_palette;
     ColorID default_accent_color;
 
     std::array<TTauri::Text::TextStyle,nr_items_v<FontStyleID>> text_styles;

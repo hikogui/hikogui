@@ -8,6 +8,7 @@
 #include "TTauri/Foundation/TTauriIconParser.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/SDF8.hpp"
 #include <glm/glm.hpp>
@@ -35,7 +36,7 @@ struct Path {
 
     /*! An color and index into \see contourEndPoints where each layer ends.
      */
-    std::vector<std::pair<ssize_t,wsRGBA>> layerEndContours;
+    std::vector<std::pair<ssize_t,vec>> layerEndContours;
 
     /** Clear the path.
      */
@@ -89,11 +90,11 @@ struct Path {
 
     [[nodiscard]] std::vector<BezierCurve> getBeziers() const noexcept;
 
-    [[nodiscard]] std::pair<Path,wsRGBA> getLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] std::pair<Path,vec> getLayer(ssize_t layerNr) const noexcept;
 
-    [[nodiscard]] wsRGBA getColorOfLayer(ssize_t layerNr) const noexcept;
+    [[nodiscard]] vec getColorOfLayer(ssize_t layerNr) const noexcept;
 
-    void setColorOfLayer(ssize_t layerNr, wsRGBA fillColor) noexcept;
+    void setColorOfLayer(ssize_t layerNr, vec fillColor) noexcept;
 
     /*! Return true if there is an open contour.
      */
@@ -115,7 +116,7 @@ struct Path {
     /*! Close current contour.
     * No operation if there is no open layer.
     */
-    void closeLayer(wsRGBA fillColor) noexcept;
+    void closeLayer(vec fillColor) noexcept;
 
     /** Optimize layers.
      * Merge contiguous layers with the same color.
@@ -200,11 +201,11 @@ struct Path {
 
     /*! Add path and close layer.
      */
-    void addPath(Path const &path, wsRGBA fillColor) noexcept;
+    void addPath(Path const &path, vec fillColor) noexcept;
 
     /*! Stroke a path and close layer.
      */
-    void addStroke(Path const &path, wsRGBA strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
+    void addStroke(Path const &path, vec strokeColor, float strokeWidth, LineJoinStyle lineJoinStyle=LineJoinStyle::Miter, float tolerance=0.05f) noexcept;
 
     /*! Convert path to stroke-path.
      *
@@ -250,7 +251,7 @@ Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept;
  * \param mask mask where the color will be composited on the destination.
  * \param subpixel orientation to improve resolution on LCD displays.
  */
-void composit(PixelMap<wsRGBA>& dst, wsRGBA color, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
+void composit(PixelMap<wsRGBA>& dst, vec color, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
 
 /*! Composit color onto the destination image where the mask is solid.
 *

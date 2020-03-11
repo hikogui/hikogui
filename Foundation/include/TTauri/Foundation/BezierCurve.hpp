@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/SDF8.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/math.hpp"

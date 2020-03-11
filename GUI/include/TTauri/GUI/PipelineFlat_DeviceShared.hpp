@@ -6,6 +6,8 @@
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
@@ -41,7 +43,7 @@ struct DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    static void placeVerticesBox(vspan<Vertex> &vertices, rect2 box, R16G16B16A16SFloat color, rect2 clippingRectangle, float depth) noexcept;
+    static void placeVerticesBox(vspan<Vertex> &vertices, rect box, R16G16B16A16SFloat color, rect clippingRectangle, float depth) noexcept;
 
 private:
     void buildShaders();

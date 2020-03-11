@@ -164,44 +164,44 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage
     drawing.addCircle(redCenter, RADIUS);
     
     if (!window->active && !hover) {
-        drawing.closeLayer(wsRGBA{ 0x888888ff });
+        drawing.closeLayer(vec{0.246, 0.246, 0.246, 1.0});
     } else if (pressedRed) {
-        drawing.closeLayer(wsRGBA{ 0xff877fff });
+        drawing.closeLayer(vec{1.0, 0.242, 0.212, 1.0});
     } else {
-        drawing.closeLayer(wsRGBA{ 0xff5951ff });
+        drawing.closeLayer(vec{1.0, 0.1, 0.082, 1.0});
     }
 
     drawing.addCircle(yellowCenter, RADIUS);
     if (!window->active && !hover) {
-        drawing.closeLayer(wsRGBA{ 0x888888ff });
+        drawing.closeLayer(vec{0.246, 0.246, 0.246, 1.0});
     } else if (pressedYellow) {
-        drawing.closeLayer(wsRGBA{ 0xffed56ff });
+        drawing.closeLayer(vec{1.0, 0.847, 0.093, 1.0});
     } else {
-        drawing.closeLayer(wsRGBA{ 0xe5bf28ff });
+        drawing.closeLayer(vec{0.784, 0.521, 0.021, 1.0});
     }
 
     drawing.addCircle(greenCenter, RADIUS);
     if (!window->active && !hover) {
-        drawing.closeLayer(wsRGBA{ 0x888888ff });
+        drawing.closeLayer(vec{0.246, 0.246, 0.246, 1.0});
     } else if (pressedGreen) {
-        drawing.closeLayer(wsRGBA{ 0x82ef59ff });
+        drawing.closeLayer(vec{0.223, 0.863, 0.1, 1.0});
     } else {
-        drawing.closeLayer(wsRGBA{ 0x51c12bff });
+        drawing.closeLayer(vec{0.082, 0.533, 0.024, 1.0});
     }
 
     if (hover) {
         drawCross(drawing, redCenter, RADIUS);
-        drawing.closeLayer(wsRGBA{ 0x990000ff });
+        drawing.closeLayer(vec{0.319, 0.0, 0.0, 1.0});
 
         drawing.addRectangle({{yellowCenter.x - RADIUS * 0.5 - 0.5, yellowCenter.y - 0.5}, {RADIUS * 1.0 + 1.0, 1.0}});
-        drawing.closeLayer(wsRGBA{ 0x7f5900ff });
+        drawing.closeLayer(vec{0.212, 0.1, 0.0, 1.0});
 
         if (window->size == Window::Size::Maximized) {
             drawTrianglesInward(drawing, greenCenter, RADIUS);
         } else {
             drawTrianglesOutward(drawing, greenCenter, RADIUS);
         }
-        drawing.closeLayer(wsRGBA{ 0x006600ff });
+        drawing.closeLayer(vec{0.0, 0.133, 0.0, 1.0});
     }
 
     composit(linearMap, drawing, window->subpixelOrientation);

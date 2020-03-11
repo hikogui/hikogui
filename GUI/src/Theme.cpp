@@ -160,7 +160,21 @@ void parse_Theme_text_styles(Theme &r, datum const &map)
     }
 }
 
-[[nodiscard]] static wsRGBA parse_Theme_color(datum const &vector)
+[[nodiscard]] float gamma_to_linear(int x)
+{
+    if (x < 0 || x > 255) {
+        TTAURI_THROW(parse_error("Expect integer color component values to be between 0 and 255. got {}", x));
+    }
+
+    let u = numeric_cast<float>(x) / 255.0f;
+    if (u <= 0.04045f) {
+        return u / 12.92f;
+    } else {
+        return std::pow((u + 0.055f) / 1.055f, 2.4f);
+    }
+}
+
+[[nodiscard]] static vec parse_Theme_color(datum const &vector)
 {
     if (!vector.is_vector()) {
         TTAURI_THROW(parse_error("Expect a color to be an array, got type {}", vector.type_name()));
@@ -176,17 +190,17 @@ void parse_Theme_text_styles(Theme &r, datum const &map)
 
     if (red.is_integer() && green.is_integer() && blue.is_integer()) {
         // Gamma correct sRGBA values.
-        let red_ = static_cast<uint8_t>(red);
-        let green_ = static_cast<uint8_t>(green);
-        let blue_ = static_cast<uint8_t>(blue);
-        return wsRGBA{red_, green_, blue_};
+        let red_ = gamma_to_linear(static_cast<int>(red));
+        let green_ = gamma_to_linear(static_cast<int>(green));
+        let blue_ = gamma_to_linear(static_cast<int>(blue));
+        return vec{red_, green_, blue_};
 
     } else if (red.is_float() && green.is_float() && blue.is_float()) {
         // Wide gamut linear sRGBA values.
         let red_ = static_cast<float>(red);
         let green_ = static_cast<float>(green);
         let blue_ = static_cast<float>(blue);
-        return wsRGBA{red_, green_, blue_};
+        return vec{red_, green_, blue_};
 
     } else {
         TTAURI_THROW(parse_error("Expect a color to be an array of three floats or three integers"));

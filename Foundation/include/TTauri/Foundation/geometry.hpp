@@ -50,7 +50,7 @@ struct extent<3, T, Q> : public glm::vec<3, T, Q> {
 };
 
 template <int S, typename T, glm::qualifier Q>
-struct rect {
+struct _rect {
     glm::vec<S, T, glm::defaultp> offset = {};
     extent<S, T, glm::defaultp> extent = {};
 
@@ -96,8 +96,8 @@ struct rect {
         return glm::vec<S+1,T,Q>{corner<N>(), 1.0f};
      }
 
-     rect expand(float e) {
-         rect r;
+     _rect expand(float e) {
+         _rect r;
          for (int i = 0; i != S; ++i) {
             r.offset[i] = offset[i] - e;
             r.extent[i] = extent[i] + e * 2.0f;
@@ -105,11 +105,11 @@ struct rect {
          return r;
      }
 
-     [[nodiscard]] friend bool operator==(rect<S, T, Q> const &lhs, rect<S, T, Q> const &rhs) noexcept {
+     [[nodiscard]] friend bool operator==(_rect<S, T, Q> const &lhs, _rect<S, T, Q> const &rhs) noexcept {
          return lhs.offset == rhs.offset && lhs.extent == rhs.extent;
      }
 
-     [[nodiscard]] friend bool operator!=(rect<S, T, Q> const &lhs, rect<S, T, Q> const &rhs) noexcept {
+     [[nodiscard]] friend bool operator!=(_rect<S, T, Q> const &lhs, _rect<S, T, Q> const &rhs) noexcept {
         return !(lhs == rhs);
      }
 
@@ -118,8 +118,8 @@ struct rect {
 
 using extent2 = extent<2, float, glm::defaultp>;
 using iextent2 = extent<2, int, glm::defaultp>;
-using irect2 = rect<2, int, glm::defaultp>;
-using rect2 = rect<2, float, glm::defaultp>;
+using irect2 = _rect<2, int, glm::defaultp>;
+using rect2 = _rect<2, float, glm::defaultp>;
 
 
 inline rect2 &operator*=(rect2 &lhs, glm::mat3x3 const &rhs) noexcept

@@ -45,9 +45,9 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
     auto continueRendering = false;
 
     if (pressed) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), depth);
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRect(), pressedBackgroundColor, box.currentRect(), depth);
     } else if (hover && enabled) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), depth);
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRect(), hoverBackgroundColor, box.currentRect(), depth);
     }
 
 
@@ -87,7 +87,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     auto iconImage = PixelMap<wsRGBA>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
         auto p = std::get<Path>(icon).centerScale(static_cast<extent2>(image->extent), 10.0);
-        p.closeLayer(wsRGBA{1.0, 1.0, 1.0, 1.0});
+        p.closeLayer(vec{1.0, 1.0, 1.0, 1.0});
 
         fill(iconImage);
         composit(iconImage, p, SubpixelOrientation::RedLeft);

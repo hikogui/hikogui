@@ -32,8 +32,8 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
             0.33f * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window->closeWindow(); }
         );
-        closeWindowButton->hoverBackgroundColor = R16G16B16A16SFloat{ 0.5, 0.0, 0.0, 1.0 };
-        closeWindowButton->pressedBackgroundColor = R16G16B16A16SFloat{ 1.0, 0.0, 0.0, 1.0 };
+        closeWindowButton->hoverBackgroundColor = vec{ 0.5, 0.0, 0.0, 1.0 };
+        closeWindowButton->pressedBackgroundColor = vec{ 1.0, 0.0, 0.0, 1.0 };
         window->addConstraint(closeWindowButton->box.top == box.top);
         window->addConstraint(closeWindowButton->box.right == box.right);
         window->addConstraint(closeWindowButton->box.bottom == box.bottom);
@@ -75,7 +75,7 @@ bool WindowToolbarWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), depth);
+    PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRect(), backgroundColor, box.currentRect(), depth);
 
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }

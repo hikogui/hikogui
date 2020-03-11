@@ -23,19 +23,12 @@ DeviceShared::~DeviceShared()
 {
 }
 
-void DeviceShared::placeVerticesBox(vspan<Vertex> &vertices, rect2 box, R16G16B16A16SFloat color, rect2 clippingRectangle, float depth) noexcept
+void DeviceShared::placeVerticesBox(vspan<Vertex> &vertices, rect box, R16G16B16A16SFloat color, rect clippingRectangle, float depth) noexcept
 {
-    auto cr = glm::vec4{
-        clippingRectangle.offset.x,
-        clippingRectangle.offset.y,
-        clippingRectangle.offset.x + clippingRectangle.extent.width(),
-        clippingRectangle.offset.y + clippingRectangle.extent.height()
-    };
-
-    vertices.emplace_back(glm::vec3{box.corner<0>(), depth}, cr, color);
-    vertices.emplace_back(glm::vec3{box.corner<1>(), depth}, cr, color);
-    vertices.emplace_back(glm::vec3{box.corner<2>(), depth}, cr ,color);
-    vertices.emplace_back(glm::vec3{box.corner<3>(), depth}, cr, color);
+    vertices.emplace_back(box.corner<0>(depth), clippingRectangle, color);
+    vertices.emplace_back(box.corner<1>(depth), clippingRectangle, color);
+    vertices.emplace_back(box.corner<2>(depth), clippingRectangle, color);
+    vertices.emplace_back(box.corner<3>(depth), clippingRectangle, color);
 }
 
 void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)

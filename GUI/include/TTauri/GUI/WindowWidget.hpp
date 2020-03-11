@@ -19,7 +19,7 @@ public:
 
     WindowToolbarWidget *toolbar = nullptr;
 
-    wsRGBA backgroundColor;
+    vec backgroundColor;
 
     WindowWidget() noexcept;
 

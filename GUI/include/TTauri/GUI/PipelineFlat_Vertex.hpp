@@ -5,7 +5,11 @@
 
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vspan.hpp"
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
+#include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
+#include "TTauri/Foundation/R32G32B32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 #include <gsl/gsl>
 
@@ -16,16 +20,16 @@ namespace TTauri::GUI::PipelineFlat {
 */
 struct Vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    glm::vec3 position;
+    R32G32B32SFloat position;
 
     //! The position in pixels of the clipping rectangle relative to the bottom-left corner of the window, and extent in pixels.
-    glm::vec4 clippingRectangle;
+    R32G32B32A32SFloat clippingRectangle;
 
     //! transparency of the image.
     R16G16B16A16SFloat color;
 
 
-    Vertex(glm::vec3 position, glm::vec4 clippingRectangle, R16G16B16A16SFloat color) noexcept :
+    force_inline Vertex(vec position, rect clippingRectangle, vec color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         color(color) {}

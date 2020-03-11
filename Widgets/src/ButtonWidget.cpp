@@ -27,21 +27,21 @@ bool ButtonWidget::updateAndPlaceVertices(
     ttauri_assert(window);
 
     // Draw something.
-    let cornerShapes = glm::vec4{ 10.0, 10.0, -10.0, 0.0 };
+    R16G16B16A16SFloat cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
 
-    wsRGBA backgroundColor;
-    wsRGBA labelColor;
-    wsRGBA borderColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+    R16G16B16A16SFloat backgroundColor;
+    R16G16B16A16SFloat labelColor;
+    R16G16B16A16SFloat borderColor = vec{1.0, 1.0, 1.0, 1.0};
     if (value) {
-        backgroundColor = wsRGBA{ 0x4c4cffff };
-        labelColor = wsRGBA{1.0, 1.0, 1.0, 1.0};
+        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
+        labelColor = vec{1.0, 1.0, 1.0, 1.0};
     } else {
-        backgroundColor = wsRGBA{ 0x4c884cff };
-        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+        backgroundColor = vec{0.072, 0.246, 0.072, 1.0};
+        labelColor = vec{0.0, 0.0, 0.0, 1.0};
     }
     if (pressed) {
-        backgroundColor = wsRGBA{ 0x4c4cffff };
-        labelColor = wsRGBA{0.0, 0.0, 0.0, 1.0};
+        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
+        labelColor = vec{0.0, 0.0, 0.0, 1.0};
     }
 
     if (modified) {
@@ -55,13 +55,13 @@ bool ButtonWidget::updateAndPlaceVertices(
     PipelineBox::DeviceShared::placeVertices(
         box_vertices,
         depth,
-        box.currentRectangle(),
-        R16G16B16A16SFloat{backgroundColor},
+        box.currentRect(),
+        backgroundColor,
         1.0f,
-        R16G16B16A16SFloat{borderColor},
+        borderColor,
         6.0f,
-        R16G16B16A16SFloat{cornerShapes},
-        box.currentRectangle().expand(10.0)
+        cornerShapes,
+        expand(box.currentRect(), 10.0)
     );
 
     window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth);

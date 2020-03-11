@@ -5,7 +5,6 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/decimal.hpp"
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/type_traits.hpp"
@@ -58,7 +57,6 @@ enum class datum_type_t {
     URL,
     Map,
     Vector,
-    wsRGBA,
     YearMonthDay,
 };
 
@@ -77,7 +75,6 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
     case datum_type_t::URL: lhs << "URL"; break;
     case datum_type_t::Map: lhs << "Map"; break;
     case datum_type_t::Vector: lhs << "Vector"; break;
-    case datum_type_t::wsRGBA: lhs << "wsRGBA"; break;
     case datum_type_t::YearMonthDay: lhs << "YearMonthDay"; break;
     default: no_default;
     }
@@ -96,7 +93,6 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
  *  - String
  *  - Vector of datum
  *  - Unordered map of datum:datum.
- *  - wsRGBA color.
  *  - YearMonthDay.
  *
  * Due to the recursive nature of the datum type (through vector and map)
@@ -205,9 +201,9 @@ private:
     static constexpr uint16_t phy_integer_ptr_id   = make_id(0b11010);
     static constexpr uint16_t phy_vector_ptr_id    = make_id(0b11011);
     static constexpr uint16_t phy_map_ptr_id       = make_id(0b11100);
-    static constexpr uint16_t phy_wsrgba_ptr_id    = make_id(0b11101);
-    static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b11110);
-    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11111);
+    static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b11101);
+    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11110);
+    static constexpr uint16_t phy_reserved_ptr_id1 = make_id(0b11111);
 
     static constexpr uint64_t small_mask = id_to_mask(phy_small_id);
     static constexpr uint64_t undefined_mask = small_mask | small_undefined;
@@ -226,7 +222,6 @@ private:
     static constexpr uint64_t integer_ptr_mask = id_to_mask(phy_integer_ptr_id);
     static constexpr uint64_t vector_ptr_mask = id_to_mask(phy_vector_ptr_id);
     static constexpr uint64_t map_ptr_mask = id_to_mask(phy_map_ptr_id);
-    static constexpr uint64_t wsrgba_ptr_mask = id_to_mask(phy_wsrgba_ptr_id);
     static constexpr uint64_t decimal_ptr_mask = id_to_mask(phy_decimal_ptr_id);
 
     union {
@@ -298,10 +293,6 @@ private:
         return HasLargeObjects && type_id() == phy_map_ptr_id;
     }
 
-    force_inline bool is_phy_wsrgba_ptr() const noexcept {
-        return HasLargeObjects && type_id() == phy_wsrgba_ptr_id;
-    }
-
     force_inline bool is_phy_decimal_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_decimal_ptr_id;
     }
@@ -338,7 +329,6 @@ private:
             case phy_url_ptr_id: delete get_pointer<URL>(); break;
             case phy_vector_ptr_id: delete get_pointer<datum_impl::vector>(); break;
             case phy_map_ptr_id: delete get_pointer<datum_impl::map>(); break;
-            case phy_wsrgba_ptr_id: delete get_pointer<wsRGBA>(); break;
             case phy_decimal_ptr_id: delete get_pointer<decimal>(); break;
             default: no_default;
             }
@@ -376,11 +366,6 @@ private:
             case phy_map_ptr_id: {
                 auto * const p = new datum_impl::map(*other.get_pointer<datum_impl::map>());
                 u64 = make_pointer(map_ptr_mask, p);
-            } break;
-
-            case phy_wsrgba_ptr_id: {
-                auto* const p = new wsRGBA(*other.get_pointer<wsRGBA>());
-                u64 = make_pointer(wsrgba_ptr_mask, p);
             } break;
 
             case phy_decimal_ptr_id: {
@@ -572,12 +557,6 @@ public:
     datum_impl(datum_impl::map &&value) noexcept {
         auto * const p = new datum_impl::map(std::move(value));
         u64 = make_pointer(map_ptr_mask, p);
-    }
-
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl(wsRGBA const &value) noexcept {
-        auto * const p = new wsRGBA(value);
-        u64 = make_pointer(wsrgba_ptr_mask, p);
     }
 
     datum_impl &operator=(datum_impl::undefined rhs) noexcept {
@@ -821,18 +800,6 @@ public:
         return *this;
     }
 
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    datum_impl &operator=(wsRGBA const &rhs) {
-        if (ttauri_unlikely(is_phy_pointer())) {
-            delete_pointer();
-        }
-
-        auto * const p = new wsRGBA(rhs);
-        u64 = make_pointer(wsrgba_ptr_mask, p);
-
-        return *this;
-    }
-
     explicit operator double() const {
         if (is_phy_float()) {
             return f64;
@@ -998,7 +965,6 @@ public:
         case phy_url_ptr_id: return true;
         case phy_vector_ptr_id: return this->size() > 0;
         case phy_map_ptr_id: return this->size() > 0;
-        case phy_wsrgba_ptr_id: return !(get_pointer<wsRGBA>()->isTransparent());
         case phy_decimal_ptr_id: return static_cast<decimal>(*this) != 0;
         default:
             if (ttauri_likely(is_phy_float())) {
@@ -1074,13 +1040,6 @@ public:
         case phy_url_ptr_id:
             if constexpr (HasLargeObjects) {
                 return get_pointer<URL>()->string();
-            } else {
-                no_default;
-            }
-
-        case phy_wsrgba_ptr_id:
-            if constexpr (HasLargeObjects) {
-                return to_string(*get_pointer<wsRGBA>());
             } else {
                 no_default;
             }
@@ -1172,15 +1131,6 @@ public:
             return *get_pointer<datum_impl::map>();
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a Map", this->repr(), this->type_name());
-        }
-    }
-
-    template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
-    explicit operator wsRGBA() const {
-        if (is_wsrgba()) {
-            return *get_pointer<wsRGBA>();
-        } else {
-            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a wsRGBA", this->repr(), this->type_name());
         }
     }
 
@@ -1451,7 +1401,6 @@ public:
         case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
         case phy_vector_ptr_id: return static_cast<std::string>(*this);
         case phy_map_ptr_id: return static_cast<std::string>(*this);
-        case phy_wsrgba_ptr_id: return fmt::format("<wsRGBA {}>", static_cast<std::string>(*this));
         default:
             if (ttauri_likely(is_phy_float())) {
                 return static_cast<std::string>(*this);
@@ -1544,9 +1493,7 @@ public:
 
     force_inline bool is_vector() const noexcept { return is_phy_vector_ptr(); }
     force_inline bool is_map() const noexcept { return is_phy_map_ptr(); }
-    force_inline bool is_wsrgba() const noexcept { return is_phy_wsrgba_ptr(); }
     force_inline bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
-    force_inline bool is_color() const noexcept { return is_wsrgba(); }
 
     datum_type_t type() const noexcept {
         switch (type_id()) {
@@ -1584,7 +1531,6 @@ public:
         case phy_url_ptr_id: return datum_type_t::URL;
         case phy_vector_ptr_id: return datum_type_t::Vector;
         case phy_map_ptr_id: return datum_type_t::Map;
-        case phy_wsrgba_ptr_id: return datum_type_t::wsRGBA;
         default:
             if (ttauri_likely(is_phy_float())) {
                 return datum_type_t::Float;
@@ -1630,7 +1576,6 @@ public:
         case phy_url_ptr_id: return "URL";
         case phy_vector_ptr_id: return "Vector";
         case phy_map_ptr_id: return "Map";
-        case phy_wsrgba_ptr_id: return "wsRGBA";
         default:
             if (ttauri_likely(is_phy_float())) {
                 return "Float";
@@ -1652,7 +1597,6 @@ public:
         case phy_string_ptr_id: return get_pointer<std::string>()->size();
         case phy_vector_ptr_id: return get_pointer<datum_impl::vector>()->size();
         case phy_map_ptr_id: return get_pointer<datum_impl::map>()->size();
-        case phy_wsrgba_ptr_id: return 4;
         default: TTAURI_THROW_INVALID_OPERATION_ERROR("Can't get size of value {} of type {}.", this->repr(), this->type_name());
         }
     }
@@ -1710,8 +1654,6 @@ public:
                 return std::accumulate(map_begin(), map_end(), size_t{0}, [](size_t a, auto x) {
                     return a ^ (x.first.hash() ^ x.second.hash());
                     });
-            case phy_wsrgba_ptr_id:
-                return std::hash<wsRGBA>{}(*get_pointer<wsRGBA>());
             case phy_decimal_ptr_id:
                 return std::hash<decimal>{}(*get_pointer<decimal>());
             default: no_default;
@@ -1877,8 +1819,6 @@ public:
             return rhs.is_vector() && *lhs.get_pointer<datum_impl::vector>() == *rhs.get_pointer<datum_impl::vector>();
         case datum_impl::phy_map_ptr_id:
             return rhs.is_map() && *lhs.get_pointer<datum_impl::map>() == *rhs.get_pointer<datum_impl::map>();
-        case datum_impl::phy_wsrgba_ptr_id:
-            return rhs.is_wsrgba() && *lhs.get_pointer<wsRGBA>() == *rhs.get_pointer<wsRGBA>();
         default:
             if (lhs.is_phy_float()) {
                 return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
@@ -1964,12 +1904,6 @@ public:
             } else {
                 return lhs.type_order() < rhs.type_order();
             }
-        case datum_impl::phy_wsrgba_ptr_id:
-            if (rhs.is_wsrgba()) {
-                return *lhs.get_pointer<wsRGBA>() < *rhs.get_pointer<wsRGBA>();
-            } else {
-                return lhs.type_order() < rhs.type_order();
-            }
         default:
             if (lhs.is_phy_float()) {
                 if (rhs.is_numeric()) {
@@ -2033,11 +1967,6 @@ public:
                 rhs_.try_emplace(item.first, item.second);
             }
             return datum_impl{std::move(rhs_)};
-
-        } else if (lhs.is_wsrgba() && rhs.is_wsrgba()) {
-            auto lhs_ = static_cast<wsRGBA>(lhs);
-            lhs_.composit(*(rhs.get_pointer<wsRGBA>()));
-            return datum_impl{lhs_};
 
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Can't add '+' value {} of type {} to value {} of type {}",
@@ -2313,8 +2242,6 @@ inline bool will_cast_to(datum_impl<HasLargeObjects> const &rhs) {
         return rhs.is_vector();
     } else if constexpr (std::is_same_v<T, typename datum_impl<HasLargeObjects>::map>) {
         return rhs.is_map();
-    } else if constexpr (std::is_same_v<T, wsRGBA>) {
-        return rhs.is_wsrgba();
     } else if constexpr (std::is_same_v<T, URL>) {
         return rhs.is_url() || rhs.is_string();
     } else if constexpr (std::is_same_v<T, std::string>) {

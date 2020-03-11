@@ -4,7 +4,7 @@
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/endian.hpp"
 
 namespace TTauri {
@@ -61,13 +61,13 @@ struct little_scRGB_buf_t {
     little_uint16_buf_t blue;
     little_uint16_buf_t alpha;
 
-    wsRGBA value() const noexcept {
-        return wsRGBA{glm::vec4{
+    vec value() const noexcept {
+        return vec{
             (static_cast<float>(red.value()) - 4096.0f) / 8192.0f,
             (static_cast<float>(green.value()) - 4096.0f) / 8192.0f,
             (static_cast<float>(blue.value()) - 4096.0f) / 8192.0f,
             static_cast<float>(alpha.value()) / 65535.0f
-        }};
+        };
     }
 };
 
@@ -89,8 +89,8 @@ struct contour_buf_t {
 
 struct Layer {
     Path path;
-    wsRGBA fillColor;
-    wsRGBA strokeColor;
+    vec fillColor;
+    vec strokeColor;
     float strokeWidth;
     LineJoinStyle lineJoinStyle;
 };
@@ -152,10 +152,10 @@ Path parseTTauriIcon(gsl::span<std::byte const> bytes)
     for (int i = 0; i < nr_paths; i++) {
         let layer = parsePath(bytes, offset);
 
-        if (!layer.fillColor.isTransparent()) {
+        if (layer.fillColor.a() > 0.001) {
             drawing.addPath(layer.path, layer.fillColor);
         }
-        if (!layer.strokeColor.isTransparent()) {
+        if (layer.strokeColor.a() > 0.001) {
             drawing.addStroke(layer.path, layer.strokeColor, layer.strokeWidth, layer.lineJoinStyle);
         }
     }

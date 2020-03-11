@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <string>

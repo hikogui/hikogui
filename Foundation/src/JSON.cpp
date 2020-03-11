@@ -224,13 +224,6 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         result += '"';
         break;
 
-    case datum_type_t::wsRGBA: {
-        auto color_value = static_cast<wsRGBA>(value);
-        result += '"';
-        result += to_string(color_value);
-        result += '"';
-        } break;
-
     case datum_type_t::Vector:
         result.append(' ', indent);
         result += '[';

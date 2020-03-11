@@ -26,18 +26,18 @@ void ImageWidget::drawBackingImage() noexcept
     auto vulkanDevice = device();
 
     auto linearMap = PixelMap<wsRGBA>{ backingImage->extent };
-    fill(linearMap, wsRGBA{ 0x000000ff });
+    fill(linearMap, wsRGBA{vec{0.0, 0.0, 0.0, 1.0}});
 
     // Draw image in the fullPixelMap.
     // XXX This probably should allocate a PixelMap and add it to this class.
     loadPNG(linearMap, path);
 
-    let text_style = TextStyle("Arial", FontVariant{}, 8, wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f }, 0.0, TextDecoration{});
+    let text_style = TextStyle("Arial", FontVariant{}, 8, vec{ 0.5f, 1.0f, 0.5f, 1.0f }, 0.0, TextDecoration{});
     let shaped_text = ShapedText("g", text_style, extent2{100.0, 500.0}, Alignment::BottomLeft);
     let glyph = shaped_text.get_path();
 
     // Draw something.
-    let color = wsRGBA{ 0.5f, 1.0f, 0.5f, 1.0f };
+    let color = vec{ 0.5f, 1.0f, 0.5f, 1.0f };
     let path1 = T2D({20.0, 30.0}) * glyph;
     composit(linearMap, color, path1, SubpixelOrientation::Unknown);
 

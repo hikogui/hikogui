@@ -3,11 +3,13 @@
 
 #pragma once
 
-#include <stdexcept>
+#include "TTauri/Foundation/required.hpp"
 #include <xmmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
-#include "TTauri/Foundation/required.hpp"
+#include <cstdint>
+#include <stdexcept>
+#include <array>
 
 namespace TTauri {
 
@@ -77,6 +79,12 @@ public:
         return v;
     }
 
+    explicit force_inline operator std::array<float,4> () const noexcept {
+        std::array<float,4> r;
+        _mm_storeu_ps(r.data(), *this);
+        return r;
+    }
+
     /** Initialize a vec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
@@ -103,6 +111,14 @@ public:
     */
     force_inline vec(float x, float y, float z=0.0f, float w=0.0f) noexcept :
         vec(_mm_set_ps(w, z, y, x)) {}
+
+    force_inline vec(double x, double y, double z=0.0, double w=0.0) noexcept :
+        vec(_mm_set_ps(
+            static_cast<float>(w),
+            static_cast<float>(z),
+            static_cast<float>(y),
+            static_cast<float>(x)
+        )) {}
 
     template<size_t I>
     force_inline vec &set(float rhs) noexcept {
@@ -158,14 +174,6 @@ public:
 
     force_inline vec &operator/=(vec const &rhs) noexcept {
         return *this = _mm_div_ps(*this, rhs);
-    }
-
-    force_inline vec &normalize() noexcept {
-        return *this = normalize(*this);
-    }
-
-    force_inline vec &homogeneous_divide noexcept {
-        return *this = homogeneous_divide(*this);
     }
 
     [[nodiscard]] force_inline __m128 _length_squared() const noexcept {
@@ -267,7 +275,7 @@ public:
 
     [[nodiscard]] force_inline friend vec homogeneous_divide(vec const &lhs) noexcept {
         auto wwww = _mm_permute_ps(lhs, _MM_SHUFFLE(3,3,3,3));
-        auto rcp_wwww = _mm_rcp_ps(llll);
+        auto rcp_wwww = _mm_rcp_ps(wwww);
         return _mm_mul_ps(lhs, rcp_wwww);
     }
 
