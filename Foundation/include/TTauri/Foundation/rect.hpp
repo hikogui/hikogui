@@ -7,15 +7,13 @@
 
 namespace TTauri {
 
-/** Class which represents an axis-aligned box.
+/** Class which represents an axis-aligned rectangle.
  */
 class rect {
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:
-     *  - 31:0 - min-x
-     *  - 63:32 - min-y
-     *  - 95:64 - max-x
-     *  - 127:96 - max-y
+     *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
+     *  - (z, w) 2D-coordinate of right-top corner of the rectangle
      */
     vec v;
 
@@ -48,6 +46,13 @@ public:
     force_inline rect(float x, float y, float width, float height) noexcept :
         rect(vec(x, y, x + width, y + height)) {}
 
+    /** Create a box from the position and size.
+     *
+     * @param x The x location of the left-bottom corner of the box
+     * @param y The y location of the left-bottom corner of the box
+     * @param width The width of the box.
+     * @param height The height of the box.
+     */
     force_inline rect(double x, double y, double width, double height) noexcept :
         rect(vec(x, y, x + width, y + height)) {}
 
@@ -82,14 +87,6 @@ public:
      */
     rect &operator-=(vec const &rhs) noexcept {
         return *this = *this - rhs;
-    }
-
-    [[nodiscard]] force_inline float x() const noexcept {
-        return v.x();
-    }
-
-    [[nodiscard]] force_inline float y() const noexcept {
-        return v.y();
     }
 
     /** Get coordinate of a corner.
@@ -135,10 +132,18 @@ public:
     */
     [[nodiscard]] force_inline vec offset(float z) const noexcept { return corner<0>(z); }
 
+    /** Get size of the rectangle
+    *
+    * @return The (x, y) vector representing the width and height of the rectangle.
+    */
     [[nodiscard]] vec extent() const noexcept {
         return corner<3>() - corner<0>();
     }
 
+    /** Check if a 2D coordinate is inside the rectangle.
+     *
+     * @param rhs The coordinate of the point to test.
+     */
     [[nodiscard]] bool contains(vec const &rhs) const noexcept {
         return (v >= rhs.xyxy()) == 0b0011;
     }
@@ -163,6 +168,12 @@ public:
         return static_cast<__m128>(lhs.v - rhs.xyxy());
     }
 
+    /** Expand the rectangle for the same amount in all directions.
+     * @param lhs The original rectangle.
+     * @param rhs How much should be added on each side of the rectangle,
+     *            this value may be zero or negative.
+     * @return A new rectangle expanded on each side.
+     */
     [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
         let _000r = _mm_set_ss(rhs);
         let _00rr = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(1,1,0,0))};
