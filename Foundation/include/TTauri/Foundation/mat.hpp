@@ -5,6 +5,10 @@
 
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
+#include <glm/glm.hpp>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
+#include <ostream>
 
 namespace TTauri {
 
@@ -32,12 +36,48 @@ public:
     force_inline mat(mat &&rhs) noexcept = default;
     force_inline mat &operator=(mat &&rhs) noexcept = default;
 
+    explicit operator glm::mat3x3 () const noexcept {
+        return {
+            static_cast<glm::vec3>(col0),
+            static_cast<glm::vec3>(col1),
+            static_cast<glm::vec3>(col2)
+        };
+    }
+
     /** Create a matrix for 4 vector-columns
      */
     force_inline mat(vec col0, vec col1, vec col2, vec col3) noexcept :
         col0(col0), col1(col1), col2(col2), col3(col3) {}
 
     constexpr size_t size() noexcept { return 4; }
+
+    template<size_t I>
+    [[nodiscard]] force_inline vec &get() noexcept {
+        static_assert(I <= 3);
+        if constexpr (I == 0) {
+            return col0;
+        } else if constexpr (I == 1) {
+            return col1;
+        } else if constexpr (I == 2) {
+            return col2;
+        } else {
+            return col3;
+        }
+    }
+
+    template<size_t I>
+    [[nodiscard]] force_inline vec get() const noexcept {
+        static_assert(I <= 3);
+        if constexpr (I == 0) {
+            return col0;
+        } else if constexpr (I == 1) {
+            return col1;
+        } else if constexpr (I == 2) {
+            return col2;
+        } else {
+            return col3;
+        }
+    }
 
     /** Transpose this matrix.
      */
@@ -46,10 +86,31 @@ public:
         return *this;
     }
 
+    /** Extract scale.
+     * This scale will only work with positive scale matrices.
+     */
+    [[nodiscard]] force_inline vec scale() const noexcept {
+        auto tmp0_sq = _mm_mul_ps(col0, col0);
+        auto tmp1_sq = _mm_mul_ps(col1, col1);
+        auto tmp2_sq = _mm_mul_ps(col2, col2);
+        auto tmp3_sq = _mm_setzero_ps();
+        _MM_TRANSPOSE4_PS(tmp0_sq, tmp1_sq, tmp2_sq, tmp3_sq);
+        let sum01_sq = _mm_add_ps(tmp0_sq, tmp1_sq);
+        let sum012_sq = _mm_add_ps(sum01_sq, tmp2_sq);
+        return _mm_sqrt_ps(sum012_sq);
+    }
+
+    /** Extract scale on x-axis.
+    * This scale will only work with positive scale matrices 
+    */
+    [[nodiscard]] force_inline float scaleX() const noexcept {
+        return col0.length();
+    }
+
     /** Matrix/Vector multiplication.
      * Used for transforming vectors.
      */
-    [[nodiscard]] force_inline friend vec<N> operator*(mat const &lhs, vec<N> const &rhs) noexcept {
+    [[nodiscard]] force_inline friend vec operator*(mat const &lhs, vec const &rhs) noexcept {
         return
             (lhs.col0 * rhs.xxxx() + lhs.col1 * rhs.yyyy()) +
             (lhs.col2 * rhs.zzzz() + lhs.col3 * rhs.wwww());
@@ -63,7 +124,7 @@ public:
 
     /** Matrix transpose.
      */
-    [[nodiscard]] friend mat transpose(mat const rhs) noexcept {
+    [[nodiscard]] friend mat transpose(mat rhs) noexcept {
         return rhs.transpose();
     }
 
@@ -134,6 +195,39 @@ public:
         }
     }
 
+    [[nodiscard]] static mat T2D(vec position, float scale=1.0f, float rotation=0.0f) noexcept
+    {
+        let S = mat::scale(vec{scale, scale});
+        let R = mat::rotate(rotation);
+        let T = mat::translate(position);
+        //return S * R * T;
+        return T * R * S;
+    }
+
+
+    [[nodiscard]] static mat T(vec position, vec scale, float rotation=0.0f) noexcept
+    {
+        let S = mat::scale(scale);
+        let R = mat::rotate(rotation);
+        let T = mat::translate(position);
+        return S * R * T;
+    }
+
+    [[nodiscard]] static mat T(vec position, mat scale, float rotation=0.0f) noexcept
+    {
+        let S = scale;
+        let R = mat::rotate(rotation);
+        let T = mat::translate(position);
+        return S * R * T;
+    }
+
+    [[nodiscard]] friend std::string to_string(mat const &rhs) noexcept {
+        return fmt::format("[{}, {}, {}, {}]", rhs.col0, rhs.col1, rhs.col2, rhs.col3);
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, mat const &rhs) noexcept {
+        return lhs << to_string(rhs);
+    }
 };
 
 }

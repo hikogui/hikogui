@@ -23,21 +23,16 @@ layout(location = 0) out vec4 outColor;
 
 bool isClipped()
 {
-    return (
-        gl_FragCoord.x < inClippingRectangle.x ||
-        gl_FragCoord.x > inClippingRectangle.z ||
-        gl_FragCoord.y < inClippingRectangle.y ||
-        gl_FragCoord.y > inClippingRectangle.w
-    );
+    return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) == bvec4(true, false, false, true);
 }
 
 float erf(float x) {
-  float s = sign(x);
-  float a = abs(x);
-
-  x = 1.0 + (0.278393 + (0.230389 + 0.078108 * (a * a)) * a) * a;
-  x *= x;
-  return s - s / (x * x);
+    float s = sign(x);
+    float a = abs(x);
+    
+    x = 1.0 + (0.278393 + (0.230389 + 0.078108 * (a * a)) * a) * a;
+    x *= x;
+    return s - s / (x * x);
 }
 
 float smoothShadow(float distance, float oneOverShadowSize)

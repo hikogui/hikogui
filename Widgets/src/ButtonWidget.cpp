@@ -64,7 +64,13 @@ bool ButtonWidget::updateAndPlaceVertices(
         expand(box.currentRect(), 10.0)
     );
 
-    window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(box.currentPosition()), box.currentRectangle(), depth);
+    window->device->SDFPipeline->placeVertices(
+        sdf_vertices,
+        labelShapedText,
+        mat::T2D(static_cast<vec>(box.currentPosition())),
+        box.currentRect(),
+        depth
+    );
 
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }

@@ -1,0 +1,187 @@
+// Copyright 2020 Pokitec
+// All rights reserved.
+
+#pragma once
+
+#include "TTauri/Foundation/ivec.hpp"
+
+namespace TTauri {
+
+/** Class which represents an axis-aligned rectangle.
+ */
+class irect {
+    /** Intrinsic of the rectangle.
+     * Elements are assigned as follows:
+     *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
+     *  - (z, w) 2D-coordinate of right-top corner of the rectangle
+     */
+    ivec v;
+
+public:
+    force_inline irect() noexcept = delete;
+    force_inline irect(irect const &rhs) noexcept = default;
+    force_inline irect &operator=(irect const &rhs) noexcept = default;
+    force_inline irect(irect &&rhs) noexcept = default;
+    force_inline irect &operator=(irect &&rhs) noexcept = default;
+
+    irect(__m128i rhs) noexcept :
+        v(rhs) {}
+
+    irect &operator=(__m128i rhs) noexcept {
+        v = rhs;
+        return *this;
+    }
+
+    operator __m128i () const noexcept {
+        return v;
+    }
+
+    /** Create a box from the position and size.
+     *
+     * @param x The x location of the left-bottom corner of the box
+     * @param y The y location of the left-bottom corner of the box
+     * @param width The width of the box.
+     * @param height The height of the box.
+     */
+    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    force_inline irect(T x, T y, T width, T height) noexcept :
+        irect(ivec(x, y, x + width, y + height)) {}
+
+    /** Create a box from the position and size.
+     *
+     * @param offset The position of the left-bottom corner of the box
+     * @param extent The size of the box (z and w must be zero).
+     */
+    force_inline irect(ivec const &offset, ivec const &extent) noexcept :
+        irect(offset.xyxy() + extent.zwxy()) {}
+
+    /** Extpand the current rectangle to include the new rectangle.
+     * This is mostly used for extending bounding a bounding box.
+     *
+     * @param rhs The new rectangle to include in the current rectangle.
+     */
+    irect &operator|=(irect const &rhs) noexcept {
+        return *this = *this | rhs;
+    }
+
+    /** Translate the box to a new position.
+     *
+     * @param rhs The ivector to add to the coordinates of the rectangle.
+     */
+    irect &operator+=(ivec const &rhs) noexcept {
+        return *this = *this + rhs;
+    }
+
+    /** Translate the box to a new position.
+     *
+     * @param rhs The ivector to subtract from the coordinates of the rectangle.
+     */
+    irect &operator-=(ivec const &rhs) noexcept {
+        return *this = *this - rhs;
+    }
+
+    /** Get coordinate of a corner.
+    *
+    * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
+    * @return The homogenious coordinate of the corner.
+    */
+    template<size_t I>
+    [[nodiscard]] force_inline ivec corner() const noexcept {
+        static_assert(I <= 3);
+        if constexpr (I == 0) {
+            return v.xy01();
+        } else if constexpr (I == 1) {
+            return v.zy01();
+        } else if constexpr (I == 2) {
+            return v.xw01();
+        } else {
+            return v.zw01();
+        }
+    }
+
+    /** Get coordinate of a corner.
+    *
+    * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
+    * @param z The z coordinate to insert in the resulting coordinate.
+    * @return The homogenious coordinate of the corner.
+    */
+    template<size_t I, typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    [[nodiscard]] force_inline ivec corner(T z) const noexcept {
+        return corner<I>().z(z);
+    }
+
+    /** Get coordinate of the bottom-left corner
+    *
+    * @return The homogenious coordinate of the bottom-left corner.
+    */
+    [[nodiscard]] force_inline ivec offset() const noexcept { return corner<0>(); }
+
+    /** Get coordinate of the bottom-left corner
+    *
+    * @param z The z coordinate to insert in the resulting coordinate.
+    * @return The homogenious coordinate of the bottom-left corner.
+    */
+    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    [[nodiscard]] force_inline ivec offset(T z) const noexcept { return corner<0>(z); }
+
+    /** Get size of the rectangle
+    *
+    * @return The (x, y) ivector representing the width and height of the rectangle.
+    */
+    [[nodiscard]] ivec extent() const noexcept {
+        return corner<3>() - corner<0>();
+    }
+
+    [[nodiscard]] force_inline int x1() const noexcept { return v.x(); } 
+    [[nodiscard]] force_inline int y1() const noexcept { return v.y(); } 
+    [[nodiscard]] force_inline int x2() const noexcept { return v.z(); } 
+    [[nodiscard]] force_inline int y2() const noexcept { return v.w(); } 
+    [[nodiscard]] force_inline int width() const noexcept { return extent().x(); }
+    [[nodiscard]] force_inline int height() const noexcept { return extent().y(); }
+
+    /** Check if a 2D coordinate is inside the rectangle.
+     *
+     * @param rhs The coordinate of the point to test.
+     */
+    [[nodiscard]] bool contains(ivec const &rhs) const noexcept {
+        return (v < rhs.xyxy()) == 0xff00;
+    }
+
+    [[nodiscard]] friend bool operator==(irect const &lhs, irect const &rhs) noexcept {
+        return lhs.v == rhs.v;
+    }
+
+    [[nodiscard]] friend bool operator!=(irect const &lhs, irect const &rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
+    [[nodiscard]] friend irect operator|(irect const &lhs, irect const &rhs) noexcept {
+        return _mm_blend_epi16(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b11'11'00'00);
+    }
+
+    [[nodiscard]] friend irect operator+(irect const &lhs, ivec const &rhs) noexcept {
+        return static_cast<__m128i>(lhs.v + rhs.xyxy());
+    }
+
+    [[nodiscard]] friend irect operator-(irect const &lhs, ivec const &rhs) noexcept {
+        return static_cast<__m128i>(lhs.v - rhs.xyxy());
+    }
+
+    /** Expand the rectangle for the same amount in all directions.
+     * @param lhs The original rectangle.
+     * @param rhs How much should be added on each side of the rectangle,
+     *            this value may be zero or negative.
+     * @return A new rectangle expanded on each side.
+     */
+    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    [[nodiscard]] friend irect expand(irect const &lhs, T rhs) noexcept {
+        let _0000 = _mm_setzero_si128();
+        let _000r = _mm_insert_epi32(_0000, rhs, 0);
+        let _00rr = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(1,1,0,0))};
+        let _rr00 = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(0,0,1,1))};
+        return static_cast<__m128i>((lhs.v - _00rr) + _rr00);
+    }
+};
+
+}
+

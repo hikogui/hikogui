@@ -94,6 +94,7 @@ set(TTauri_Foundation_tests
     tests/math_tests.cpp
     tests/TT5_tests.cpp
     tests/vec_tests.cpp
+    tests/mat_tests.cpp
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})

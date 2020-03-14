@@ -6,6 +6,7 @@
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Text/AttributedGrapheme.hpp"
 #include "TTauri/Text/GlyphMetrics.hpp"
+#include "TTauri/Foundation/mat.hpp"
 
 namespace TTauri::Text {
 
@@ -32,7 +33,7 @@ struct AttributedGlyph {
 
     /** Transform includes position, and scale of the glyph.
      */
-    glm::mat3x3 transform;
+    mat transform;
 
     AttributedGlyph(AttributedGrapheme const &attr_grapheme, FontGlyphIDs glyphs) noexcept :
         glyphs(std::move(glyphs)), grapheme(attr_grapheme.grapheme), index(attr_grapheme.index), style(attr_grapheme.style), metrics() {}

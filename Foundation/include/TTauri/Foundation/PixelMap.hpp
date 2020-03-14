@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/irect.hpp"
 #include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <string>
@@ -218,28 +218,32 @@ struct PixelMap {
      * @param rect offset and extent of the rectangle to return.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    PixelMap<T> submap(irect2 rect) const noexcept {
+    PixelMap<T> submap(irect rect) const noexcept {
         ttauri_assert(
-            (rect.offset.x >= 0) &&
-            (rect.offset.y >= 0) &&
-            (rect.extent.width() >= 0) &&
-            (rect.extent.height() >= 0)
+            (rect.x1() >= 0) &&
+            (rect.y2() >= 0) &&
+            (rect.width() >= 0) &&
+            (rect.height() >= 0)
         );
         ttauri_assert(
-            (rect.offset.x + rect.extent.width() <= width) &&
-            (rect.offset.y + rect.extent.height() <= height)
+            (rect.x2() <= width) &&
+            (rect.y2() <= height)
         );
 
-        let offset = rect.offset.y * stride + rect.offset.x;
+        let offset = rect.y1() * stride + rect.x1();
 
-        if (rect.extent.width() == 0 || rect.extent.height() == 0) {
+        if (rect.width() == 0 || rect.height() == 0) {
             // Image of zero width or height needs zero pixels returned.
             return { };
         } else {
-            return { pixels + offset, rect.extent.x, rect.extent.y, stride };
+            return { pixels + offset, rect.width(), rect.height(), stride };
         }
     }
     
+    [[deprecated]] PixelMap<T> submap(irect2 r) const noexcept {
+        return submap(irect{r.offset.x, r.offset.y, r.extent.width(), r.extent.height()});
+    }
+
     /** Get a (smaller) view of the map.
      * @param x x-offset in the current pixel-map
      * @param y y-offset in the current pixel-map
@@ -248,7 +252,7 @@ struct PixelMap {
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
     PixelMap<T> submap(int const x, int const y, int const width, int const height) const noexcept {
-        return submap(irect2{{x, y}, {width, height}});
+        return submap(irect{x, y, width, height});
     }
 
     PixelRow<T> const operator[](int const rowNr) const noexcept {

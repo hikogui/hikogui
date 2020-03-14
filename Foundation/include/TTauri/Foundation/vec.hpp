@@ -4,6 +4,8 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/geometry.hpp"
+#include <glm/glm.hpp>
 #include <xmmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
@@ -85,6 +87,18 @@ public:
         return r;
     }
 
+    [[deprecated]] explicit force_inline vec(glm::vec2 const &rhs) noexcept :
+        vec(rhs.x, rhs.y) {}
+
+    [[deprecated]] explicit operator glm::vec3 () const noexcept {
+        return {x(), y(), z()};
+    }
+
+    [[deprecated]] explicit operator extent2 () const noexcept {
+        return {x(), y()};
+    }
+
+        
     /** Initialize a vec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
@@ -549,7 +563,12 @@ public:
 
 }
 
-// Remove the vec_utils.hpp
 #undef SWIZZLE4
+#undef SWIZZLE4_GEN1
+#undef SWIZZLE4_GEN2
+#undef SWIZZLE4_GEN3
 #undef SWIZZLE3
+#undef SWIZZLE3_GEN1
+#undef SWIZZLE3_GEN2
 #undef SWIZZLE2
+#undef SWIZZLE2_GEN1

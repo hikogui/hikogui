@@ -251,7 +251,7 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 te
 
         auto position = glm::vec2{x, y};
         for (auto &glyph: line) {
-            glyph.transform = T2D(position, glyph.style.size);
+            glyph.transform = mat::T2D(vec{position}, glyph.style.size);
             position += glyph.metrics.advance * glyph.style.size;
         }
     }

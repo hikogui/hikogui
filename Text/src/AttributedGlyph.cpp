@@ -8,7 +8,7 @@ namespace TTauri::Text {
 
 [[nodiscard]] Path AttributedGlyph::get_path() const noexcept
 {
-    auto r = transform * glyphs.get_path();
+    auto r = static_cast<glm::mat3x3>(transform) * glyphs.get_path();
     r.closeLayer(style.color);
     return r;
 }

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/geometry.hpp"
 
 namespace TTauri {
 
@@ -35,6 +36,9 @@ public:
     operator __m128 () const noexcept {
         return v;
     }
+
+    [[deprecated]] force_inline rect(rect2 r) noexcept :
+        rect(r.offset.x, r.offset.y, r.extent.width(), r.extent.height()) {}
 
     /** Create a box from the position and size.
      *
@@ -145,7 +149,7 @@ public:
      * @param rhs The coordinate of the point to test.
      */
     [[nodiscard]] bool contains(vec const &rhs) const noexcept {
-        return (v >= rhs.xyxy()) == 0b0011;
+        return (v >= rhs.xyxy()) == 0b1100;
     }
 
     [[nodiscard]] friend bool operator==(rect const &lhs, rect const &rhs) noexcept {

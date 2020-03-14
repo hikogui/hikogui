@@ -14,12 +14,7 @@ layout(location = 0) out vec4 outColor;
 
 bool isClipped()
 {
-    return (
-        gl_FragCoord.x < inClippingRectangle.x ||
-        gl_FragCoord.x > inClippingRectangle.z ||
-        gl_FragCoord.y < inClippingRectangle.y ||
-        gl_FragCoord.y > inClippingRectangle.w
-    );
+    return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) == bvec4(true, false, false, true);
 }
 
 void main() {

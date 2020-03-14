@@ -4,7 +4,11 @@
 #pragma once
 
 #include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
+#include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
+#include "TTauri/Foundation/R32G32B32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace TTauri::GUI::PipelineSDF {
@@ -14,13 +18,13 @@ namespace TTauri::GUI::PipelineSDF {
 */
 struct Vertex {
     //! The pixel-coordinates where the origin is located relative to the bottom-left corner of the window.
-    glm::vec3 position;
+    R32G32B32SFloat position;
 
     //! Clipping rectangle. (x,y)=bottom-left, (z,w)=top-right
-    glm::vec4 clippingRectangle;
+    R32G32B32A32SFloat clippingRectangle;
 
     //! The x, y (relative to bottom-left) coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
-    glm::vec3 textureCoord;
+    R32G32B32SFloat textureCoord;
 
     //! The color of the glyph.
     R16G16B16A16SFloat color;
@@ -31,7 +35,7 @@ struct Vertex {
     //! The number of pixels that the shadow is, negative values make inset shadow. Should be less than or equal to the SDF8::max_distance.
     float shadowSize;
 
-    Vertex(glm::vec3 position, glm::vec4 clippingRectangle, glm::vec3 textureCoord, R16G16B16A16SFloat color, float distanceMultiplier, float shadowSize) noexcept :
+    Vertex(vec position, rect clippingRectangle, vec textureCoord, vec color, float distanceMultiplier, float shadowSize) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),

@@ -44,12 +44,12 @@ bool LineInputWidget::updateAndPlaceVertices(
         labelColor = vec{0.0, 0.0, 0.0, 1.0};
     }
 
-    auto textRectangle = box.currentRectangle().expand(-5);
+    auto textRectangle = expand(box.currentRect(), -5.0f);
 
     if (modified) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, textRectangle.extent, Alignment::MiddleLeft);
+        labelShapedText = ShapedText(label, labelStyle, static_cast<extent2>(textRectangle.extent()), Alignment::MiddleLeft);
 
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
@@ -66,7 +66,13 @@ bool LineInputWidget::updateAndPlaceVertices(
         expand(box.currentRect(), 10.0)
     );
 
-    window->device->SDFPipeline->placeVertices(sdf_vertices, labelShapedText, T2D(textRectangle.offset), box.currentRectangle(), depth);
+    window->device->SDFPipeline->placeVertices(
+        sdf_vertices,
+        labelShapedText,
+        mat::T2D(textRectangle.offset()),
+        box.currentRectangle(),
+        depth
+    );
 
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }

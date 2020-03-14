@@ -10,6 +10,9 @@
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "TTauri/Foundation/BezierCurve.hpp"
+#include "TTauri/Foundation/ivec.hpp"
+#include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/mat.hpp"
 #include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
@@ -34,31 +37,31 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] AtlasRect DeviceShared::allocateRect(iextent2 extent) noexcept {
-    if (atlasAllocationPosition.y + extent.height() > atlasImageHeight) {
-        atlasAllocationPosition.x = 0; 
-        atlasAllocationPosition.y = 0; 
-        ++(atlasAllocationPosition.z);
-        atlasAllocationMaxHeight = 0;
+[[nodiscard]] AtlasRect DeviceShared::allocateRect(ivec extent) noexcept
+{
+    if (atlasAllocationPosition.y() + extent.y() > atlasImageHeight) {
+        atlasAllocationPosition.x(0); 
+        atlasAllocationPosition.y(0);
+        atlasAllocationPosition.z(atlasAllocationPosition.z() + 1);
 
-        if (atlasAllocationPosition.z >= atlasMaximumNrImages) {
+        if (atlasAllocationPosition.z() >= atlasMaximumNrImages) {
             LOG_FATAL("PipelineSDF atlas overflow, too many glyphs in use.");
         }
 
-        if (atlasAllocationPosition.z >= size(atlasTextures)) {
+        if (atlasAllocationPosition.z() >= size(atlasTextures)) {
             addAtlasImage();
         }
     }
 
-    if (atlasAllocationPosition.x + extent.width() > atlasImageWidth) {
-        atlasAllocationPosition.x = 0;
-        atlasAllocationPosition.y += atlasAllocationMaxHeight;
+    if (atlasAllocationPosition.x() + extent.x() > atlasImageWidth) {
+        atlasAllocationPosition.x(0);
+        atlasAllocationPosition.y(atlasAllocationPosition.y() + atlasAllocationMaxHeight);
     }
 
     auto r = AtlasRect{atlasAllocationPosition, extent};
     
-    atlasAllocationPosition.x += extent.width();
-    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, extent.height());
+    atlasAllocationPosition.x(atlasAllocationPosition.x() + extent.x());
+    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, extent.y());
 
     return r;
 }
@@ -81,11 +84,11 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
         { 0, 0, 0 },
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-        { numeric_cast<int32_t>(location.atlas_position.x), numeric_cast<int32_t>(location.atlas_position.y), 0 },
-        { numeric_cast<uint32_t>(location.atlas_extent.width()), numeric_cast<uint32_t>(location.atlas_extent.height()), 1}
+        { numeric_cast<int32_t>(location.atlas_position.x()), numeric_cast<int32_t>(location.atlas_position.y()), 0 },
+        { numeric_cast<uint32_t>(location.atlas_extent.x()), numeric_cast<uint32_t>(location.atlas_extent.y()), 1}
     }};
 
-    auto &atlasTexture = atlasTextures.at(location.atlas_position.z);
+    auto &atlasTexture = atlasTextures.at(location.atlas_position.z());
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regionsToCopy));
@@ -132,9 +135,9 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         // We will draw the font at 15 pt into the texture. And we need a border for the texture to
         // allow proper bi-linear interpolation on the edges.
-        let extent = iextent2{
-            std::ceil(attr_grapheme.metrics.boundingBox.extent.width() * fontSize + drawBorder * 2),
-            std::ceil(attr_grapheme.metrics.boundingBox.extent.height() * fontSize + drawBorder * 2)
+        let extent = ivec{
+            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.extent.width() * fontSize + drawBorder * 2)),
+            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.extent.height() * fontSize + drawBorder * 2))
         };
 
         auto atlas_rect = allocateRect(extent);
@@ -146,23 +149,24 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         // Draw glyphs into staging buffer of the atlas.
         prepareStagingPixmapForDrawing();
-        auto pixmap = stagingTexture.pixelMap.submap(irect2{glm::ivec2{0,0}, extent});
+        auto pixmap = stagingTexture.pixelMap.submap(irect{ivec{}, extent});
         fill(pixmap, path);
         uploadStagingPixmapToAtlas(atlas_rect);
 
         // The bounding box is in texture coordinates.
-        let atlas_px_offset = static_cast<glm::vec2>(glm::xy(atlas_rect.atlas_position));
-        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent * fontSize + glm::vec2{drawBorder*2.0f, drawBorder*2.0f};
+        let atlas_px_offset = static_cast<vec>(atlas_rect.atlas_position.xy00());
+        let atlas_px_extent = static_cast<vec>(attr_grapheme.metrics.boundingBox.extent) * fontSize + vec{drawBorder*2.0f, drawBorder*2.0f};
 
-        let atlas_tx_multiplier = glm::vec2{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
+        let atlas_tx_multiplier = vec{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
         let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;
         let atlas_tx_extent = atlas_px_extent * atlas_tx_multiplier;
-        let atlas_tx_box = rect2{atlas_tx_offset, atlas_tx_extent};
+        let atlas_tx_box = rect{atlas_tx_offset, atlas_tx_extent};
 
-        get<0>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<0>(), atlas_rect.atlas_position.z};
-        get<1>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<1>(), atlas_rect.atlas_position.z};
-        get<2>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<2>(), atlas_rect.atlas_position.z};
-        get<3>(atlas_rect.textureCoords) = glm::vec3{atlas_tx_box.corner<3>(), atlas_rect.atlas_position.z};
+        let atlas_z = numeric_cast<float>(atlas_rect.atlas_position.z());
+        get<0>(atlas_rect.textureCoords) = atlas_tx_box.corner<0>(atlas_z);
+        get<1>(atlas_rect.textureCoords) = atlas_tx_box.corner<1>(atlas_z);
+        get<2>(atlas_rect.textureCoords) = atlas_tx_box.corner<2>(atlas_z);
+        get<3>(atlas_rect.textureCoords) = atlas_tx_box.corner<3>(atlas_z);
 
         glyphs_in_atlas[attr_grapheme.glyphs] = atlas_rect;
     }
@@ -182,32 +186,23 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 *    v   \ |
 *    0 --> 1
 */
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle, float depth) noexcept
 {
-    auto cr = glm::vec4{
-        clippingRectangle.offset.x,
-        clippingRectangle.offset.y,
-        clippingRectangle.offset.x + clippingRectangle.extent.width(),
-        clippingRectangle.offset.y + clippingRectangle.extent.height()
-    };
-
     for (let &attr_grapheme: text) {
         // Adjust bounding box by adding a border based on the fixed font size.
-        let bounding_box = rect2{
-            attr_grapheme.metrics.boundingBox.offset - glm::vec2{scaledDrawBorder, scaledDrawBorder},
-            attr_grapheme.metrics.boundingBox.extent + glm::vec2{scaledDrawBorder*2.0f, scaledDrawBorder*2.0f}
-        };
+        let bounding_box = expand(rect{attr_grapheme.metrics.boundingBox}, scaledDrawBorder);
 
         let vM = transform * attr_grapheme.transform;
-        let v0 = glm::xy(vM * bounding_box.homogeneous_corner<0>());
-        let v1 = glm::xy(vM * bounding_box.homogeneous_corner<1>());
-        let v2 = glm::xy(vM * bounding_box.homogeneous_corner<2>());
-        let v3 = glm::xy(vM * bounding_box.homogeneous_corner<3>());
+        let v0 = vM * bounding_box.corner<0>(depth);
+        let v1 = vM * bounding_box.corner<1>(depth);
+        let v2 = vM * bounding_box.corner<2>(depth);
+        let v3 = vM * bounding_box.corner<3>(depth);
 
         constexpr float texelSize = 1.0f / fontSize;
         constexpr float texelMaxDistance = texelSize * SDF8::max_distance;
-        constexpr glm::vec3 texelMaxDistanceV3 = glm::vec3{texelMaxDistance, texelMaxDistance, 0.0f};
-        let pixelMaxDistance = (vM * texelMaxDistanceV3).x;
+
+        // Extract the max distance in pixels, after scaling the font.
+        let pixelMaxDistance = texelMaxDistance * vM.scaleX();
 
         // If none of the vertices is inside the clipping rectangle then don't add the
         // quad to the vertex list.
@@ -222,19 +217,17 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
         let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
         ttauri_assume(atlas_i != glyphs_in_atlas.end());
 
-        // Texture coordinates are upside-down.
         let &atlas_rect = atlas_i->second;
 
-
-        let color = R16G16B16A16SFloat{attr_grapheme.style.color};
+        let color = vec{attr_grapheme.style.color};
         let shadowSize = attr_grapheme.style.shadow_size > 0.1f ? 
             (0.5f / std::min(attr_grapheme.style.shadow_size, pixelMaxDistance)) :
             -1.0f;
 
-        vertices.emplace_back(glm::vec3{v0, depth}, cr, get<0>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
-        vertices.emplace_back(glm::vec3{v1, depth}, cr, get<1>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
-        vertices.emplace_back(glm::vec3{v2, depth}, cr, get<2>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
-        vertices.emplace_back(glm::vec3{v3, depth}, cr, get<3>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
     }
 }
 

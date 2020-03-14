@@ -11,6 +11,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vspan.hpp"
+#include "TTauri/Foundation/ivec.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -18,6 +19,8 @@
 
 namespace TTauri {
 template<typename T> struct PixelMap;
+class vec;
+class mat;
 }
 
 namespace TTauri::Text {
@@ -59,7 +62,7 @@ struct DeviceShared final {
     vk::Sampler atlasSampler;
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
-    glm::ivec3 atlasAllocationPosition = {0, 0, 0};
+    ivec atlasAllocationPosition = {};
     /// During allocation on a row, we keep track of the tallest glyph.
     int atlasAllocationMaxHeight = 0;
 
@@ -80,7 +83,7 @@ struct DeviceShared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] AtlasRect allocateRect(iextent2 extent) noexcept;
+    [[nodiscard]] AtlasRect allocateRect(ivec extent) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -108,7 +111,7 @@ struct DeviceShared final {
      * @param depth The depth where this text is drawn
      * @param vertices The vertices to draw the glyphs to.
      */
-    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, glm::mat3x3 transform, rect2 clippingRectangle, float depth) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle, float depth) noexcept;
 
 private:
     void buildShaders();
