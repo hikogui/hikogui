@@ -122,6 +122,14 @@ public:
         return {lhs * rhs.col0, lhs * rhs.col1, lhs * rhs.col2, lhs * rhs.col3};
     }
 
+    [[nodiscard]] friend bool operator==(mat const &lhs, mat const &rhs) noexcept {
+        return lhs.col0 == rhs.col0 && lhs.col1 == rhs.col1 && lhs.col2 == rhs.col2 && lhs.col3 == rhs.col3;
+    }
+
+    [[nodiscard]] friend bool operator!=(mat const &lhs, mat const &rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
     /** Matrix transpose.
      */
     [[nodiscard]] friend mat transpose(mat rhs) noexcept {

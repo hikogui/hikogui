@@ -38,14 +38,7 @@ irect Image::indexToRect(int const pageIndex) const noexcept
 
 static std::tuple<vec, vec, bool>calculatePosition(float x, float y, float width, float height, const ImageLocation &location)
 {
-    auto p = vec{x, y};
-    p -= location.origin;
-    p = p * location.scale;
-
-    let R = mat::rotate(location.rotation);
-    p = R * p;
-    p += location.position;
-
+    auto p = location.transform * vec::point(x, y);
     return {p, {width, height}, location.clippingRectangle.contains(p)};
 }
 

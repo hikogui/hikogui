@@ -51,10 +51,9 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        location.origin = vec::point(0.0, 0.0);
-        location.position = box.currentPosition(depth) + location.origin;
-        location.scale = currentScale;
-        location.rotation = 0.0;
+        let T = mat::translate(box.currentPosition(depth));
+        let S = mat::scale(currentScale);
+        location.transform = T * S;
         location.clippingRectangle = box.currentRectangle();
 
         backingImage.image->placeVertices(location, image_vertices);

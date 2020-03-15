@@ -65,10 +65,13 @@ bool ImageWidget::updateAndPlaceVertices(
     backingImage = vulkanDevice->imagePipeline->getImage(key, box.currentExtent());
     drawBackingImage();
 
+    let origin = vec{backingImage->extent} * -0.5;
+
     GUI::PipelineImage::ImageLocation location;
-    location.origin = vec{backingImage->extent.x() * 0.5, backingImage->extent.y() * 0.5};
-    location.position = box.currentPosition(depth) + location.origin;
-    location.rotation = rotation;
+    let O = mat::translate(origin);
+    let R = mat::rotate(rotation);
+    let T = mat::translate(box.currentPosition(depth));
+    location.transform = T * R * O;
     location.clippingRectangle = box.currentRectangle();
 
     backingImage->placeVertices(location, image_vertices);
