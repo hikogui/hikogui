@@ -54,10 +54,10 @@ public:
     ) noexcept override;
 
     [[nodiscard]] bool handleMouseEvent(MouseEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(glm::vec2 position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
 private:
-    std::tuple<rect2, rect2, rect2, rect2> getButtonRectangles() const noexcept;
+    std::tuple<rect, rect, rect, rect> getButtonRectangles() const noexcept;
 
     PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
     PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;

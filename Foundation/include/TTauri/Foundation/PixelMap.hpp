@@ -152,8 +152,14 @@ struct PixelMap {
      *
      * @param extent The width and height of the image.
      */
-    PixelMap(iextent2 extent) noexcept : PixelMap(extent.width(), extent.height()) {}
+    [[deprecated]] PixelMap(iextent2 extent) noexcept : PixelMap(extent.width(), extent.height()) {}
 
+    /** Construct an pixel-map.
+    * This constructor will allocate its own memory.
+    *
+    * @param extent The width and height of the image.
+    */
+    PixelMap(ivec extent) noexcept : PixelMap(extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixel A pointer to pixels received from the API.

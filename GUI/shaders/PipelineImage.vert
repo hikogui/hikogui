@@ -8,37 +8,32 @@ layout(push_constant) uniform PushConstants {
     vec2 atlasScale;
 } pushConstants;
 
-layout(location = 0) in vec2 inPosition;
-layout(location = 1) in vec2 inClippingRectangleOffset;
-layout(location = 2) in vec2 inClippingRectangleExtent;
-layout(location = 3) in uvec3 inAtlasPosition;
-layout(location = 4) in uint inDepth;
-layout(location = 5) in uint inAlpha;
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec4 inClippingRectangle;
+layout(location = 2) in vec3 inTextureCoord;
 
-layout(location = 0) out vec2 outClippingRectangleMinimum;
-layout(location = 1) out vec2 outClippingRectangleMaximum;
-layout(location = 2) out vec3 outAtlasPosition;
-layout(location = 3) out float outAlpha;
+layout(location = 0) out flat vec4 outClippingRectangle;
+layout(location = 1) out vec3 outTextureCoord;
 
-vec2 flipY(vec2 windowPosition) {
-    return vec2(windowPosition.x, pushConstants.windowExtent.y - windowPosition.y);
+vec4 convertPositionToViewport(vec3 windowPosition)
+{
+    float x = windowPosition.x * pushConstants.viewportScale.x - 1.0;
+    float y = (pushConstants.windowExtent.y - windowPosition.y) * pushConstants.viewportScale.y - 1.0;
+    return vec4(x, y, windowPosition.z, 1.0);
 }
 
-vec2 convertToViewport(vec2 windowPosition) {
-    return (windowPosition * pushConstants.viewportScale) - vec2(1.0, 1.0);
-}
-
-vec3 convertToTexture(vec3 atlasPosition) {
-    return vec3(atlasPosition.xy * pushConstants.atlasScale, atlasPosition.z);
+vec4 convertClippingRectangleToScreen(vec4 clippingRectangle)
+{
+    return vec4(
+        clippingRectangle.x,
+        pushConstants.windowExtent.y - clippingRectangle.w,
+        clippingRectangle.z,
+        pushConstants.windowExtent.y - clippingRectangle.y
+    );
 }
 
 void main() {
-    vec2 position = convertToViewport(flipY(inPosition));
-
-    gl_Position = vec4(position, 0.0, 1.0);
-
-    outClippingRectangleMinimum = flipY(inClippingRectangleOffset) - vec2(0.0, inClippingRectangleExtent.y);
-    outClippingRectangleMaximum = flipY(inClippingRectangleOffset) + vec2(inClippingRectangleExtent.x, 0.0);
-    outAtlasPosition = convertToTexture(inAtlasPosition);
-    outAlpha = inAlpha;
+    gl_Position = convertPositionToViewport(inPosition);
+    outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
+    outTextureCoord = inTextureCoord * vec3(pushConstants.atlasScale, 1.0);
 }

@@ -18,7 +18,7 @@ class irect {
     ivec v;
 
 public:
-    force_inline irect() noexcept = delete;
+    force_inline irect() noexcept : v() {}
     force_inline irect(irect const &rhs) noexcept = default;
     force_inline irect &operator=(irect const &rhs) noexcept = default;
     force_inline irect(irect &&rhs) noexcept = default;
@@ -55,7 +55,11 @@ public:
     force_inline irect(ivec const &offset, ivec const &extent) noexcept :
         irect(offset.xyxy() + extent.zwxy()) {}
 
-    /** Extpand the current rectangle to include the new rectangle.
+    [[nodiscard]] force_inline static irect p1p2(ivec const &p1, ivec const &p2) noexcept {
+        return _mm_blend_epi16(p1, p2.xyxy(), 0b11'11'00'00);
+    }
+
+    /** Expand the current rectangle to include the new rectangle.
      * This is mostly used for extending bounding a bounding box.
      *
      * @param rhs The new rectangle to include in the current rectangle.
@@ -144,7 +148,9 @@ public:
      * @param rhs The coordinate of the point to test.
      */
     [[nodiscard]] bool contains(ivec const &rhs) const noexcept {
-        return (v < rhs.xyxy()) == 0xff00;
+        return
+            (((rhs >= v) & 0x00ff) == 0x00ff) &&
+            (((rhs <= v) & 0xff00) == 0xff00);
     }
 
     [[nodiscard]] friend bool operator==(irect const &lhs, irect const &rhs) noexcept {

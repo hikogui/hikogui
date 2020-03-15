@@ -12,6 +12,10 @@
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/ivec.hpp"
+#include "TTauri/Foundation/irect.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>
@@ -154,16 +158,16 @@ protected:
      * resize to determine the extent of the surface when the GPU library can
      * not figure this out by itself.
      */
-    irect2 OSWindowRectangle;
+    irect OSWindowRectangle;
 
     //! The minimum window extent as calculated by laying out all the widgets.
-    extent2 minimumWindowExtent;
+    ivec minimumWindowExtent;
 
     //! The maximum window extent as calculated by laying out all the widgets.
-    extent2 maximumWindowExtent;
+    ivec maximumWindowExtent;
 
     //! The current window extent as set by the GPU library.
-    extent2 currentWindowExtent;
+    ivec currentWindowExtent;
 
     /** Incremented when the window needs to be rendered on the next vsync.
      */
@@ -184,7 +188,7 @@ protected:
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void windowChangedSize(extent2 extent) {
+    virtual void windowChangedSize(ivec extent) {
         removeCurrentWindowExtentConstraints();
         currentWindowExtent = extent;
         addCurrentWindowExtentConstraints();
@@ -237,7 +241,7 @@ protected:
 
     /*! Test where the certain features of a window are located.
      */
-    HitBox hitBoxTest(glm::vec2 position) noexcept {
+    HitBox hitBoxTest(vec position) noexcept {
         return widget->hitBoxTest(position);
     }
 
@@ -264,8 +268,8 @@ private:
 
     void addCurrentWindowExtentConstraints() {
         if (!currentWindowExtentConstraintActive) {
-            auto widthEquation = widget->box.width == currentWindowExtent.width();
-            auto heightEquation = widget->box.height == currentWindowExtent.height();
+            auto widthEquation = widget->box.width == currentWindowExtent.x();
+            auto heightEquation = widget->box.height == currentWindowExtent.y();
 
             currentWindowExtentWidthConstraint = rhea::constraint(widthEquation, rhea::strength::weak(), 1.0);
             currentWindowExtentHeightConstraint = rhea::constraint(heightEquation, rhea::strength::weak(), 1.0);
@@ -286,11 +290,7 @@ private:
         widgetSolver.suggest(widget->box.height, static_cast<double>(std::numeric_limits<uint32_t>::max()));
         maximumWindowExtent = widget->box.currentExtent();
 
-        LOG_INFO("Window '{}' minimumExtent({},{}) maximumExtent({},{})",
-            title,
-            minimumWindowExtent.width(), minimumWindowExtent.height(),
-            maximumWindowExtent.width(), maximumWindowExtent.height()
-        );
+        LOG_INFO("Window '{}' minimumExtent={} maximumExtent={}", title, minimumWindowExtent, maximumWindowExtent);
 
         addCurrentWindowExtentConstraints();
     }

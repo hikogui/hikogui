@@ -79,7 +79,7 @@ public:
     BoxModel box;
 
     //! Rectangle, extracted from the box
-    rect2 rectangle; 
+    rect rectangle; 
 
     float depth = 0;
 
@@ -146,7 +146,7 @@ public:
         return setModified(handleKeyboardEvent(event));
     }
 
-    [[nodiscard]] virtual HitBox hitBoxTest(glm::vec2 position) const noexcept;
+    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept;
 
 protected:
     /*! Handle mouse event.

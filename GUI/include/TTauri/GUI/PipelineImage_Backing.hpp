@@ -50,7 +50,7 @@ struct Backing {
      *  * That multiple state changes will not cause overlapping calls to draw_function().
      */
     template<typename... Args>
-    void loadOrDraw(Window const &window, extent2 const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs);
+    void loadOrDraw(Window const &window, vec const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs);
 };
 
 }

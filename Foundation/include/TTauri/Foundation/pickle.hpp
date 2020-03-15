@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/memory.hpp"
-#include <glm/glm.hpp>
+#include "TTauri/Foundation/vec.hpp"
 #include <string>
 #include <vector>
 #include <map>
@@ -24,7 +24,7 @@ enum class pickle_type_t {
     Map,
     Vector,
     Double,
-    GLMVec,
+    Vec,
     URL,
     Reserved
 };
@@ -44,7 +44,7 @@ constexpr uint8_t PICKLE_OBJECT = 0xfa;
 constexpr uint8_t PICKLE_MAP = 0xf9;
 constexpr uint8_t PICKLE_VECTOR = 0xf8;
 constexpr uint8_t PICKLE_DOUBLE = 0xf7;
-constexpr uint8_t PICKLE_GLM_VEC = 0xf6;
+constexpr uint8_t PICKLE_VEC = 0xf6;
 constexpr uint8_t PICKLE_URL = 0xf5;
 
 constexpr uint8_t PICKLE_RESERVED_MIN = 0x40;
@@ -67,7 +67,7 @@ inline pickle_type_t pickle_type(Iter &i, Iter const &end)
     case PICKLE_MAP: return pickle_type_t::Map;
     case PICKLE_VECTOR: return pickle_type_t::Vector;
     case PICKLE_DOUBLE: return pickle_type_t::Double;
-    case PICKLE_GLM_VEC: return pickle_type_t::GLMVec;
+    case PICKLE_VEC: return pickle_type_t::Vec;
     case PICKLE_URL: return pickle_type_t::URL;
     default:
         if (c_ >= PICKLE_SMALL_STRING_MIN && c_ <= PICKLE_SMALL_STRING_MAX) {
@@ -464,13 +464,17 @@ inline void pickleAppend(std::string &lhs, std::string const &rhs) noexcept
     return pickleAppend(lhs, std::string_view(rhs));
 }
 
-template<int S, typename T, glm::qualifier Q>
-inline void pickleAppend(std::string &lhs, glm::vec<S,T,Q> const &rhs) noexcept
+inline void pickleAppend(std::string &lhs, vec const &rhs) noexcept
 {
-    lhs.push_back(PICKLE_GLM_VEC);
+    lhs.push_back(PICKLE_VEC);
 
-    for (typename glm::vec<S,T,Q>::length_type i = 0; i < S; i++) {
-        pickleAppend(lhs, rhs[i]);
+    pickleAppend(lhs, rhs.x());
+    pickleAppend(lhs, rhs.y());
+    if (rhs.z() != 0.0 || rhs.w() != 0.0) {
+        pickleAppend(lhs, rhs.z());
+    }
+    if (rhs.w() != 0.0) {
+        pickleAppend(lhs, rhs.w());
     }
 
     lhs.push_back(PICKLE_END_MARK);

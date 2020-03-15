@@ -12,9 +12,9 @@
 namespace TTauri::GUI::PipelineImage {
 
 template<typename... Args>
-inline void Backing::loadOrDraw(Window const &window, extent2 const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs) {
+inline void Backing::loadOrDraw(Window const &window, vec const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs) {
     ttauri_assert(window.device);
-    ttauri_assert(currentExtent.width() > 0 && currentExtent.height() > 0);
+    ttauri_assert(currentExtent.x() > 0 && currentExtent.y() > 0);
 
     clearAndPickleAppend(keyCache, currentExtent, keyArgs...);
 

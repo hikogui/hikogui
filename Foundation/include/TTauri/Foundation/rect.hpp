@@ -19,7 +19,7 @@ class rect {
     vec v;
 
 public:
-    force_inline rect() noexcept = delete;
+    force_inline rect() noexcept : v() {}
     force_inline rect(rect const &rhs) noexcept = default;
     force_inline rect &operator=(rect const &rhs) noexcept = default;
     force_inline rect(rect &&rhs) noexcept = default;
@@ -149,7 +149,9 @@ public:
      * @param rhs The coordinate of the point to test.
      */
     [[nodiscard]] bool contains(vec const &rhs) const noexcept {
-        return (v >= rhs.xyxy()) == 0b1100;
+        return
+            (((rhs >= v) & 0b0011) == 0b0011) &&
+            (((rhs.xyxy() <= v) & 0b1100) == 0b1100);
     }
 
     [[nodiscard]] friend bool operator==(rect const &lhs, rect const &rhs) noexcept {

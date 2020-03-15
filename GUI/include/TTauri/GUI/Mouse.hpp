@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <glm/glm.hpp>
+#include "TTauri/Foundation/vec.hpp"
 
 namespace TTauri::GUI {
 
@@ -52,7 +52,7 @@ struct MouseEvent {
     enum class Type { None, Exited, Move, ButtonDown, ButtonUp, ButtonDoubleClick };
 
     Type type;
-    glm::vec2 position;
+    vec position;
 
     //! Buttons which has caused this event.
     MouseButtons cause;
@@ -69,7 +69,7 @@ struct MouseEvent {
     }
 };
 
-inline MouseEvent ExitedMouseEvent(glm::vec2 position={0.0, 0.0}) noexcept {
+inline MouseEvent ExitedMouseEvent(vec position=vec::point(0.0, 0.0)) noexcept {
     MouseEvent event;
     event.position = position;
     event.type = MouseEvent::Type::Exited;

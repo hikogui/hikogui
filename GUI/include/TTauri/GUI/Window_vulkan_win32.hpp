@@ -27,7 +27,7 @@ public:
     void closingWindow() override;
     void openingWindow() override;
 
-    void createWindow(const std::string &title, extent2 extent);
+    void createWindow(const std::string &title, vec extent);
     int windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam);
 
     vk::SurfaceKHR getSurface() const override;

@@ -75,12 +75,12 @@ bool WindowToolbarWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRect(), backgroundColor, box.currentRect(), depth);
+    PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), depth);
 
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-HitBox WindowToolbarWidget::hitBoxTest(glm::vec2 position) const noexcept
+HitBox WindowToolbarWidget::hitBoxTest(vec position) const noexcept
 {
     if (trafficLightButtons->box.contains(position)) {
         return trafficLightButtons->hitBoxTest(position);

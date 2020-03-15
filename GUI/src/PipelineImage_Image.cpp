@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #include "TTauri/GUI/PipelineImage_Image.hpp"
@@ -8,6 +8,9 @@
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/mat.hpp"
+#include "TTauri/Foundation/ivec.hpp"
+#include "TTauri/Foundation/irect.hpp"
 #include <glm/gtx/rotate_vector.hpp>
 
 namespace TTauri::GUI::PipelineImage {
@@ -18,65 +21,55 @@ Image::~Image()
     parent->returnPages(pages);
 }
 
-irect2 Image::indexToRect(int const pageIndex) const noexcept
+irect Image::indexToRect(int const pageIndex) const noexcept
 {
-    let indexY = pageIndex / pageExtent.x;
-    let indexX = pageIndex % pageExtent.x;
+    let pageWH = ivec{Page::width, Page::height};
 
-    let left = indexX * Page::width;
-    let top = indexY * Page::height;
-    let right = left + Page::width;
-    let bottom = top + Page::height;
-    let rightOverflow = right - std::min(right, extent.x);
-    let bottomOverflow = bottom - std::min(bottom, extent.y);
-    let width = Page::width - rightOverflow;
-    let height = Page::height - bottomOverflow;
+    let p1 = ivec::point(
+        pageIndex % pageExtent.x(),
+        pageIndex / pageExtent.x()
+    ) * pageWH;
 
-    return {{left, top}, {width, height}};
+    // Limit the rectangle to the size of the image.
+    let p2 = min(p1 + pageWH, extent);
+
+    return irect::p1p2(p1, p2);
 }
 
-static bool inside(glm::vec2 point, rect2 clip) noexcept
+static std::tuple<vec, vec, bool>calculatePosition(float x, float y, float width, float height, const ImageLocation &location)
 {
-    return (
-        (point.x >= clip.offset.x) &&
-        (point.x <= (clip.offset.x + clip.extent.width())) &&
-        (point.y >= clip.offset.y) &&
-        (point.y <= (clip.offset.y + clip.extent.height()))
-    );
-}
-
-static std::tuple<glm::vec2, iextent2, bool>calculatePosition(int x, int y, int width, int height, const ImageLocation &location)
-{
-    auto p = glm::vec2{x, y};
+    auto p = vec{x, y};
     p -= location.origin;
     p = p * location.scale;
-    p = glm::rotate(p, location.rotation);
+
+    let R = mat::rotate(location.rotation);
+    p = R * p;
     p += location.position;
 
-    return {p, {width, height}, inside(p, location.clippingRectangle)};
+    return {p, {width, height}, location.clippingRectangle.contains(p)};
 }
 
 void Image::calculateVertexPositions(const ImageLocation &location)
 {
     tmpVertexPositions.clear();
 
-    let restWidth = extent.width() % Page::width;
-    let restHeight = extent.height() % Page::height;
+    let restWidth = extent.x() % Page::width;
+    let restHeight = extent.y() % Page::height;
     let lastWidth = restWidth ? restWidth : Page::width;
     let lastHeight = restHeight ? restHeight : Page::height;
 
-    for (int y = 0; y < extent.height(); y += Page::height) {
-        for (int x = 0; x < extent.width(); x += Page::width) {
+    for (int y = 0; y < extent.y(); y += Page::height) {
+        for (int x = 0; x < extent.x(); x += Page::width) {
             tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, Page::height, location));
         }
-        tmpVertexPositions.push_back(calculatePosition(extent.width(), y, lastWidth, Page::height, location));
+        tmpVertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, Page::height, location));
     }
 
-    int const y = extent.height();
-    for (int x = 0; x < extent.width(); x += Page::width) {
+    int const y = extent.y();
+    for (int x = 0; x < extent.x(); x += Page::width) {
         tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, lastHeight, location));
     }
-    tmpVertexPositions.push_back(calculatePosition(extent.width(), y, lastWidth, lastHeight, location));
+    tmpVertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, lastHeight, location));
 }
 
 /** Places vertices.
@@ -97,10 +90,10 @@ void Image::placePageVertices(int const index, const ImageLocation &location, vs
         return;
     }
 
-    let vertexY = index / pageExtent.width();
-    let vertexX = index % pageExtent.width();
+    let vertexY = index / pageExtent.x();
+    let vertexX = index % pageExtent.x();
 
-    let vertexStride = pageExtent.width() + 1;
+    let vertexStride = pageExtent.x() + 1;
     let vertexIndex = vertexY * vertexStride + vertexX;
 
     // Point, Extent, Inside
@@ -115,18 +108,19 @@ void Image::placePageVertices(int const index, const ImageLocation &location, vs
     }
 
     let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
+    let atlasRect = rect{vec{atlasPosition}, e4};
 
-    vertices.emplace_back(location, p1, atlasPosition);
-    vertices.emplace_back(location, p2, glm::ivec3{atlasPosition.x + e2.width(), atlasPosition.y, atlasPosition.z});
-    vertices.emplace_back(location, p3, glm::ivec3{atlasPosition.x, atlasPosition.y + e3.height(), atlasPosition.z});
-    vertices.emplace_back(location, p4, glm::ivec3{atlasPosition.x + e4.width(), atlasPosition.y + e4.height(), atlasPosition.z});
+    vertices.emplace_back(location, p1, atlasRect.corner<0>(atlasPosition.z()));
+    vertices.emplace_back(location, p2, atlasRect.corner<1>(atlasPosition.z()));
+    vertices.emplace_back(location, p3, atlasRect.corner<2>(atlasPosition.z()));
+    vertices.emplace_back(location, p4, atlasRect.corner<3>(atlasPosition.z()));
 }
 
 /*! Place vertices for this image.
 * An image is build out of atlas pages, that need to be individual rendered.
 *
-* \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
-* \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
+* \param position The position (x, y) from the left-top of the window in pixels. Z equals depth.
+* \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
 void Image::placeVertices(const ImageLocation &location, vspan<Vertex> &vertices)
 {

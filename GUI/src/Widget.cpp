@@ -39,7 +39,7 @@ bool Widget::updateAndPlaceVertices(
     return r;
 }
 
-HitBox Widget::hitBoxTest(glm::vec2 position) const noexcept
+HitBox Widget::hitBoxTest(vec position) const noexcept
 {
     for (auto& widget : children) {
         if (widget->box.contains(position)) {

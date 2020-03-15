@@ -30,7 +30,7 @@ public:
 
     void setParentWindow(gsl::not_null<Window *> window) noexcept;
 
-    HitBox hitBoxTest(glm::vec2 position) const noexcept override;
+    HitBox hitBoxTest(vec position) const noexcept override;
 };
 
 }

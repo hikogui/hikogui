@@ -327,11 +327,11 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     ttauri_assert(device);
     surfaceCapabilities = device->getSurfaceCapabilitiesKHR(intrinsic);
 
-    LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {}), osExtent=({}, {})",
+    LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {}), osExtent=({})",
         surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height,
         surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height,
         surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height,
-        OSWindowRectangle.extent.width(), OSWindowRectangle.extent.height()
+        OSWindowRectangle.extent()
     );
 
     let currentExtentSet =
@@ -350,11 +350,11 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
         surfaceCapabilities.currentExtent :
         (vk::Extent2D{
             std::clamp(
-                static_cast<uint32_t>(OSWindowRectangle.extent.width()),
+                static_cast<uint32_t>(OSWindowRectangle.width()),
                 surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width
             ),
             std::clamp(
-                static_cast<uint32_t>(OSWindowRectangle.extent.height()),
+                static_cast<uint32_t>(OSWindowRectangle.height()),
                 surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height
             )
         });
@@ -373,8 +373,8 @@ bool Window_vulkan::readSurfaceExtent()
     }
 
     if (
-        swapchainImageExtent.width < minimumWindowExtent.width() ||
-        swapchainImageExtent.height < minimumWindowExtent.height()
+        numeric_cast<int>(swapchainImageExtent.width) < minimumWindowExtent.x() ||
+        numeric_cast<int>(swapchainImageExtent.height) < minimumWindowExtent.y()
     ) {
         // Due to vulkan surface being extended across the window decoration;
         // On Windows 10 the swapchain-extent on a minimized window is no longer 0x0 instead
@@ -388,12 +388,12 @@ bool Window_vulkan::readSurfaceExtent()
     }
 
     if (
-        swapchainImageExtent.width > maximumWindowExtent.width() ||
-        swapchainImageExtent.height < maximumWindowExtent.height()
+        numeric_cast<int>(swapchainImageExtent.width) > maximumWindowExtent.x() ||
+        numeric_cast<int>(swapchainImageExtent.height) > maximumWindowExtent.y()
         ) {
-        LOG_ERROR("Window too large to draw current=({}, {}), maximum=({}, {})",
+        LOG_ERROR("Window too large to draw current=({}, {}), maximum=({})",
             swapchainImageExtent.width, swapchainImageExtent.height,
-            maximumWindowExtent.width(), maximumWindowExtent.height()
+            maximumWindowExtent
         );
         return false;
     }

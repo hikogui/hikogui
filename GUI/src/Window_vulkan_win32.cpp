@@ -77,7 +77,7 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
+void Window_vulkan_win32::createWindow(const std::string &title, vec extent)
 {
     createWindowClass();
 
@@ -93,8 +93,8 @@ void Window_vulkan_win32::createWindow(const std::string &title, extent2 extent)
         // Size and position
         500,
         500,
-        numeric_cast<int>(extent.width()),
-        numeric_cast<int>(extent.height()),
+        numeric_cast<int>(extent.x()),
+        numeric_cast<int>(extent.y()),
 
         NULL, // Parent window
         NULL, // Menu
@@ -190,8 +190,7 @@ void Window_vulkan_win32::openingWindow()
 
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
-        extent2 windowExtent = minimumWindowExtent;
-        createWindow(title, windowExtent);
+        createWindow(title, minimumWindowExtent);
     });
 }
 
@@ -207,10 +206,12 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 {
     // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
-    OSWindowRectangle.offset.x = rect.left;
-    OSWindowRectangle.offset.y = 0 - rect.bottom;
-    OSWindowRectangle.extent.width() = (rect.right - rect.left);
-    OSWindowRectangle.extent.height() = (rect.bottom - rect.top);
+    OSWindowRectangle = irect{
+        rect.left,
+        0 - rect.bottom,
+        rect.right - rect.left,
+        rect.bottom - rect.top
+    };
     setModified();
 }
 
@@ -354,12 +355,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_GETMINMAXINFO: {
         let minmaxinfo = to_ptr<MINMAXINFO>(lParam);
         // XXX - figure out size of decoration to remove these constants.
-        minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximumWindowExtent.width());
-        minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximumWindowExtent.height());
-        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimumWindowExtent.width());
-        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimumWindowExtent.height());
-        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximumWindowExtent.width());
-        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximumWindowExtent.height());
+        minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximumWindowExtent.x());
+        minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximumWindowExtent.y());
+        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimumWindowExtent.x());
+        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimumWindowExtent.y());
+        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximumWindowExtent.x());
+        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximumWindowExtent.y());
         } break;
 
 
@@ -473,8 +474,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         goto parseMouseEvent;
 
     parseMouseEvent:
-        mouseEvent.position.x = numeric_cast<float>(GET_X_LPARAM(lParam));
-        mouseEvent.position.y = numeric_cast<float>(currentWindowExtent.height() - GET_Y_LPARAM(lParam));
+        mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
         mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
         mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
         mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
@@ -510,12 +510,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_NCHITTEST: {
-        let screenPosition = glm::vec2{
-            numeric_cast<float>(GET_X_LPARAM(lParam)),
-            0.0 - numeric_cast<float>(GET_Y_LPARAM(lParam))
+        let screenPosition = vec{
+            GET_X_LPARAM(lParam),
+            0.0 - GET_Y_LPARAM(lParam)
         };
 
-        let insideWindowPosition = screenPosition - glm::vec2(OSWindowRectangle.offset);
+        let insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
 
         switch (hitBoxTest(insideWindowPosition)) {
         case HitBox::BottomResizeBorder: return HTBOTTOM;

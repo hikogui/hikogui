@@ -54,7 +54,7 @@ void DeviceShared::returnPages(std::vector<Page> const &pages)
     atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
 }
 
-std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const iextent2 extent)
+std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const ivec extent)
 {
 
     let i = imageCache.find(key);
@@ -67,12 +67,12 @@ std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const iext
     // Cleanup only after the happy flow failed.
     cleanupWeakPointers(imageCache);
 
-    let pageExtent = iextent2{
-        (extent.width() + (Page::width - 1)) / Page::width,
-        (extent.height() + (Page::height - 1)) / Page::height
+    let pageExtent = ivec{
+        (extent.x() + (Page::width - 1)) / Page::width,
+        (extent.y() + (Page::height - 1)) / Page::height
     };
 
-    let pages = getFreePages(pageExtent.x * pageExtent.y);
+    let pages = getFreePages(pageExtent.x() * pageExtent.y());
     let image = std::make_shared<Image>(this, key, extent, pageExtent, pages);
 
     imageCache.try_emplace(key, image);
@@ -93,15 +93,14 @@ TTauri::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     // Start with the actual image inside the stagingImage.
-    auto rectangle = irect2{
-        {Page::border, Page::border},
+    auto rectangle = irect{
+        ivec{Page::border, Page::border},
         image.extent
     };
     // Add one pixel of border around the actual image and keep extending
     // until the full border with is finished.
     for (int b = 0; b < Page::border; b++) {
-        rectangle.offset -= glm::ivec2(1, 1);
-        rectangle.extent += glm::ivec2(2, 2);
+        rectangle = expand(rectangle, 1);
 
         auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
         addTransparentBorder(pixelMap);
@@ -111,7 +110,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     device.flushAllocation(
         stagingTexture.allocation,
         0,
-        ((image.extent.height() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
+        ((image.extent.x() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
     );
     
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
@@ -125,24 +124,24 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
             continue;
         }
 
-        auto imageRect = image.indexToRect(index);
+        let imageRect = image.indexToRect(index);
         // Adjust the position to be inside the stagingImage, excluding its border.
-        imageRect.offset += glm::ivec2(Page::border, Page::border);
-        let atlasPosition = getAtlasPositionFromPage(page);
+        let imageRectInStagingImage = imageRect + ivec(Page::border, Page::border);
 
-        // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbour sampling
+        // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbor sampling
         // on the edge of a page.
-        imageRect.offset -= glm::ivec2(Page::border, Page::border);
-        imageRect.extent += glm::ivec2(Page::border*2, Page::border*2);
-        let atlasOffset = xy(atlasPosition) - glm::ivec2(Page::border, Page::border);
+        let imageRectToCopy = expand(imageRectInStagingImage, Page::border);
 
-        auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPosition.z);
+        // We are copying the border into the atlas as well.
+        let atlasPositionIncludingBorder = getAtlasPositionFromPage(page) - ivec(Page::border, Page::border);
+
+        auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPositionIncludingBorder.z());
         regionsToCopy.push_back({
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { numeric_cast<int32_t>(imageRect.offset.x), numeric_cast<int32_t>(imageRect.offset.y), 0 },
+            { numeric_cast<int32_t>(imageRectToCopy.x1()), numeric_cast<int32_t>(imageRectToCopy.y1()), 0 },
             { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-            { numeric_cast<int32_t>(atlasOffset.x), numeric_cast<int32_t>(atlasOffset.y), 0 },
-            { numeric_cast<uint32_t>(imageRect.extent.width()), numeric_cast<uint32_t>(imageRect.extent.height()), 1}
+            { numeric_cast<int32_t>(atlasPositionIncludingBorder.x()), numeric_cast<int32_t>(atlasPositionIncludingBorder.y()), 0 },
+            { numeric_cast<uint32_t>(imageRectToCopy.width()), numeric_cast<uint32_t>(imageRectToCopy.height()), 1}
         });
     }
 

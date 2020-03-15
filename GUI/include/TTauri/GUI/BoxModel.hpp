@@ -30,23 +30,19 @@ public:
     rhea::linear_expression outerWidth(float margin) const noexcept { return width + (margin * 2.0); }
     rhea::linear_expression outerHeight(float margin) const noexcept { return height + (margin * 2.0); }
 
-    glm::vec2 currentPosition() const noexcept {
-        return { left.value(), bottom.value() };
+    vec currentPosition(float depth=0.0f) const noexcept {
+        return { left.value(), bottom.value(), depth, 1.0 };
     }
 
-    extent2 currentExtent() const noexcept {
+    vec currentExtent() const noexcept {
         return { width.value(), height.value() };
     }
 
-    rect2 currentRectangle() const noexcept {
-        return { currentPosition(), currentExtent() };
-    }
-
-    rect currentRect() const noexcept {
+    rect currentRectangle() const noexcept {
         return {left.value(), bottom.value(), width.value(), height.value()};
     }
 
-    bool contains(glm::vec2 position) const noexcept {
+    bool contains(vec position) const noexcept {
         return currentRectangle().contains(position);
     }
 };

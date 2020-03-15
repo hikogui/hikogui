@@ -59,11 +59,11 @@ struct DeviceShared final {
     */
     void destroy(gsl::not_null<Device *> vulkanDevice);
 
-    /*! Get the coordinate in the atlast from a page index.
+    /*! Get the coordinate in the atlas from a page index.
      * \param page number in the atlas
-     * \return x, y pixel coordine in an atlasTexture and z the atlasTextureIndex.
+     * \return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex.
      */
-    static glm::ivec3 getAtlasPositionFromPage(Page page) noexcept {
+    static ivec getAtlasPositionFromPage(Page page) noexcept {
         let imageIndex = page.nr / atlasNrPagesPerImage;
         let pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 
@@ -73,7 +73,7 @@ struct DeviceShared final {
         let x = pageX * Page::widthIncludingBorder + Page::border;
         let y = pageY * Page::heightIncludingBorder + Page::border;
 
-        return {x, y, imageIndex};
+        return ivec{x, y, imageIndex, 1};
     }
 
     std::vector<Page> getFreePages(int const nrPages);
@@ -84,11 +84,7 @@ struct DeviceShared final {
      * \param key of the image.
      * \param extent of the image.
      */
-    std::shared_ptr<Image> getImage(std::string const &key, iextent2 extent);
-
-    std::shared_ptr<Image> getImage(std::string const &key, extent2 extent) {
-        return getImage(key, iextent2{extent.width(), extent.height()});
-    }
+    std::shared_ptr<Image> getImage(std::string const &key, ivec extent);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -99,7 +95,7 @@ struct DeviceShared final {
     void prepareAtlasForRendering();
 
 private:
-    TTauri::PixelMap<uint32_t> getStagingPixelMap(iextent2 extent) {
+    TTauri::PixelMap<uint32_t> getStagingPixelMap(ivec extent) {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 

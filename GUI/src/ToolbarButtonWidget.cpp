@@ -45,9 +45,9 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
     auto continueRendering = false;
 
     if (pressed) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRect(), pressedBackgroundColor, box.currentRect(), depth);
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), depth);
     } else if (hover && enabled) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRect(), hoverBackgroundColor, box.currentRect(), depth);
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), depth);
     }
 
 
@@ -57,17 +57,14 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
     }, "ToolbarButtonWidget", this, state());
 
     if (backingImage.image) {
-        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
+        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        location.depth = depth + 0.0f;
-        location.origin = {0.0, 0.0};
-        location.position = box.currentPosition() + location.origin;
+        location.origin = vec::point(0.0, 0.0);
+        location.position = box.currentPosition(depth) + location.origin;
         location.scale = currentScale;
         location.rotation = 0.0;
-        location.alpha = 1.0;
         location.clippingRectangle = box.currentRectangle();
-
 
         backingImage.image->placeVertices(location, image_vertices);
 
@@ -86,7 +83,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
 
     auto iconImage = PixelMap<wsRGBA>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
-        auto p = std::get<Path>(icon).centerScale(static_cast<extent2>(image->extent), 10.0);
+        auto p = std::get<Path>(icon).centerScale(static_cast<extent2>(vec{image->extent}), 10.0);
         p.closeLayer(vec{1.0, 1.0, 1.0, 1.0});
 
         fill(iconImage);

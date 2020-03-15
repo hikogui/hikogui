@@ -48,15 +48,13 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         }, "WindowTrafficLightsWidget", state());
 
     if (backingImage.image) {
-        let currentScale = box.currentExtent() / extent2{backingImage.image->extent};
+        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        location.depth = depth + 0.0f;
-        location.origin = {0.0, 0.0};
-        location.position = box.currentPosition() + location.origin;
+        location.origin = vec::point(0.0, 0.0);
+        location.position = box.currentPosition(depth) + location.origin;
         location.scale = currentScale;
         location.rotation = 0.0;
-        location.alpha = 1.0;
         location.clippingRectangle = box.currentRectangle();
 
         backingImage.image->placeVertices(location, image_vertices);
@@ -129,7 +127,7 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineIma
     auto linearMap = PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
-    let iconPath = applicationIcon.centerScale(static_cast<extent2>(image.extent), 5.0);
+    let iconPath = applicationIcon.centerScale(static_cast<extent2>(vec{image.extent}), 5.0);
 
     fill(linearMap);
     composit(linearMap, iconPath, window->subpixelOrientation);
@@ -219,28 +217,28 @@ PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::
     }
 }
 
-std::tuple<rect2, rect2, rect2, rect2> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
+std::tuple<rect, rect, rect, rect> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
 {
     let left = box.left.value();
     let bottom = box.bottom.value();
     let height = box.height.value();
 
-    let sysmenuButtonBox = rect2{
+    let sysmenuButtonBox = rect{
         {left, bottom},
         {height, height}
     };
 
-    let redButtonBox = rect2{
+    let redButtonBox = rect{
         {left + MARGIN, bottom + MARGIN},
         {DIAMETER, DIAMETER}
     };
 
-    let yellowButtonBox = rect2{
+    let yellowButtonBox = rect{
         {left + MARGIN + DIAMETER + SPACING, bottom + MARGIN},
         {DIAMETER, DIAMETER}
     };
 
-    let greenButtonBox = rect2{
+    let greenButtonBox = rect{
         {left + MARGIN + DIAMETER * 2.0 + SPACING * 2.0, bottom + MARGIN},
         {DIAMETER, DIAMETER}
     };
@@ -299,7 +297,7 @@ bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     return r;
 }
 
-HitBox WindowTrafficLightsWidget::hitBoxTest(glm::vec2 position) const noexcept
+HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
     let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 

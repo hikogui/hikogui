@@ -66,11 +66,9 @@ bool ImageWidget::updateAndPlaceVertices(
     drawBackingImage();
 
     GUI::PipelineImage::ImageLocation location;
-    location.depth = depth + 0.0f;
-    location.origin = {backingImage->extent.x * 0.5, backingImage->extent.y * 0.5};
-    location.position = box.currentPosition() + location.origin;
+    location.origin = vec{backingImage->extent.x() * 0.5, backingImage->extent.y() * 0.5};
+    location.position = box.currentPosition(depth) + location.origin;
     location.rotation = rotation;
-    location.alpha = 1.0;
     location.clippingRectangle = box.currentRectangle();
 
     backingImage->placeVertices(location, image_vertices);

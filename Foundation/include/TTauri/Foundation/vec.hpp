@@ -123,16 +123,30 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    force_inline vec(float x, float y, float z=0.0f, float w=0.0f) noexcept :
-        vec(_mm_set_ps(w, z, y, x)) {}
-
-    force_inline vec(double x, double y, double z=0.0, double w=0.0) noexcept :
+    template<typename T, typename U, typename V=float, typename W=float,
+        std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
+    force_inline vec(T x, U y, V z=0.0f, W w=0.0f) noexcept :
         vec(_mm_set_ps(
-            static_cast<float>(w),
-            static_cast<float>(z),
-            static_cast<float>(y),
-            static_cast<float>(x)
+            numeric_cast<float>(w),
+            numeric_cast<float>(z),
+            numeric_cast<float>(y),
+            numeric_cast<float>(x)
         )) {}
+
+    /** Create a point out of 2 to 4 values.
+    * This vector is used as a homogenious coordinate, meaning:
+    *  - vectors have w=0.0 (A direction and distance)
+    *  - points have w=1.0 (A position in space)
+    *
+    * When this vector is used for color then:
+    *  - x=Red, y=Green, z=Blue, w=Alpha
+    *
+    */
+    template<typename T, typename U, typename V=float, typename W=float,
+    std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
+    [[nodiscard]] force_inline static vec point(T x, U y, V z=0.0f, W w=1.0f) noexcept {
+        return vec{x, y, z, w};
+    }
 
     template<size_t I>
     force_inline vec &set(float rhs) noexcept {

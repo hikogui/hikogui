@@ -90,7 +90,7 @@ public:
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
      */
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec(T rhs) noexcept:
         vec(_mm_set1_epi32(numeric_cast<int32_t>(rhs))) {}
 
@@ -98,9 +98,9 @@ public:
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
      */
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &operator=(T rhs) noexcept {
-        return *this = _mm_set1_epi32(rhs);
+        return *this = _mm_set1_epi32(numeric_cast<int32_t>(rhs));
     }
 
     /** Create a ivec out of 2 to 4 values.
@@ -108,8 +108,9 @@ public:
     *  - vectors have w=0 (A direction and distance)
     *  - points have w=1 (A position in space)
     */
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-    force_inline ivec(T x, T y, T z=0, T w=0) noexcept :
+    template<typename T, typename U, typename V=int, typename W=int,
+        std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
+    force_inline ivec(T x, U y, V z=0, W w=0) noexcept :
         ivec(_mm_set_epi32(
             numeric_cast<int32_t>(w),
             numeric_cast<int32_t>(z),
@@ -117,7 +118,18 @@ public:
             numeric_cast<int32_t>(x)
             )) {}
 
-    template<size_t I, typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    /** Create a ivec out of 2 to 4 values.
+    * This vector is used as a homogenious coordinate, meaning:
+    *  - vectors have w=0 (A direction and distance)
+    *  - points have w=1 (A position in space)
+    */
+    template<typename T, typename U, typename V=int, typename W=int,
+    std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
+    [[nodiscard]] force_inline static ivec point(T x, U y, V z=0, W w=1) noexcept {
+        return ivec(x, y, z, w);
+    }
+
+    template<size_t I, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &set(T rhs) noexcept {
         static_assert(I <= 3);
         return *this = _mm_insert_epi32(*this, numeric_cast<int32_t>(rhs), I);
@@ -131,16 +143,16 @@ public:
 
     constexpr size_t size() const noexcept { return 4; }
 
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &x(T rhs) noexcept { return set<0>(rhs); }
 
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &y(T rhs) noexcept { return set<1>(rhs); }
 
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &z(T rhs) noexcept { return set<2>(rhs); }
 
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &w(T rhs) noexcept { return set<3>(rhs); }
 
     force_inline int x() const noexcept { return get<0>(); }
@@ -209,6 +221,14 @@ public:
     */
     [[nodiscard]] force_inline friend int operator>(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmpgt_epi32(lhs, rhs));
+    }
+
+    [[nodiscard]] force_inline friend int operator<=(ivec const &lhs, ivec const &rhs) noexcept {
+        return (~(lhs > rhs)) & 0xffff;
+    }
+
+    [[nodiscard]] force_inline friend int operator>=(ivec const &lhs, ivec const &rhs) noexcept {
+        return (~(lhs < rhs)) & 0xffff;
     }
 
     [[nodiscard]] friend std::string to_string(ivec const &rhs) noexcept {

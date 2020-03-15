@@ -44,7 +44,7 @@ bool LineInputWidget::updateAndPlaceVertices(
         labelColor = vec{0.0, 0.0, 0.0, 1.0};
     }
 
-    auto textRectangle = expand(box.currentRect(), -5.0f);
+    auto textRectangle = expand(box.currentRectangle(), -5.0f);
 
     if (modified) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
@@ -57,13 +57,13 @@ bool LineInputWidget::updateAndPlaceVertices(
     PipelineBox::DeviceShared::placeVertices(
         box_vertices,
         depth,
-        box.currentRect(),
+        box.currentRectangle(),
         backgroundColor,
         1.0f,
         borderColor,
         0.0f,
         cornerShapes,
-        expand(box.currentRect(), 10.0)
+        expand(box.currentRectangle(), 10.0)
     );
 
     window->device->SDFPipeline->placeVertices(
