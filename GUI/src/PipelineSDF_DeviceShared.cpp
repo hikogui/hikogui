@@ -136,16 +136,16 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
         // We will draw the font at 15 pt into the texture. And we need a border for the texture to
         // allow proper bi-linear interpolation on the edges.
         let extent = ivec{
-            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.extent.width() * fontSize + drawBorder * 2)),
-            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.extent.height() * fontSize + drawBorder * 2))
+            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.width() * fontSize + drawBorder * 2)),
+            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.height() * fontSize + drawBorder * 2))
         };
 
         auto atlas_rect = allocateRect(extent);
 
         // Now create a path of the combined glyphs. Offset and scale the path so that
         // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
-        let offset = glm::vec2{drawBorder, drawBorder} - (attr_grapheme.metrics.boundingBox.offset * fontSize);
-        let path = T2D(offset, fontSize) * attr_grapheme.glyphs.get_path();
+        let offset = vec{drawBorder, drawBorder} - (attr_grapheme.metrics.boundingBox.offset() * fontSize);
+        let path = (mat::T(offset) * mat::S(fontSize)) * attr_grapheme.glyphs.get_path();
 
         // Draw glyphs into staging buffer of the atlas.
         prepareStagingPixmapForDrawing();
@@ -155,7 +155,7 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         // The bounding box is in texture coordinates.
         let atlas_px_offset = static_cast<vec>(atlas_rect.atlas_position.xy00());
-        let atlas_px_extent = static_cast<vec>(attr_grapheme.metrics.boundingBox.extent) * fontSize + vec{drawBorder*2.0f, drawBorder*2.0f};
+        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent() * fontSize + 2.0f * vec{drawBorder, drawBorder};
 
         let atlas_tx_multiplier = vec{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
         let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;

@@ -4,7 +4,7 @@
 #include "TTauri/Foundation/FileView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/endian.hpp"
 
 namespace TTauri {
@@ -33,8 +33,8 @@ struct little_point_buf_t {
     little_fixed1_13_buf_t x;
     little_fixed1_13_buf_t y;
 
-    glm::vec2 coord() const noexcept {
-        return { x.value(), y.value() };
+    vec coord() const noexcept {
+        return vec::point(x.value(), y.value());
     }
 
     BezierPoint::Type type() const noexcept {

@@ -62,9 +62,9 @@ private:
     PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
     PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;
 
-    static void drawCross(Path &path, glm::vec2 position, float radius) noexcept;
-    static void drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept;
-    static void drawTrianglesInward(Path &path, glm::vec2 position, float radius) noexcept;
+    static void drawCross(Path &path, vec position, float radius) noexcept;
+    static void drawTrianglesOutward(Path &path, vec position, float radius) noexcept;
+    static void drawTrianglesInward(Path &path, vec position, float radius) noexcept;
 
     PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
 

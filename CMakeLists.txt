@@ -29,6 +29,9 @@ if (MSVC)
             add_compile_options(-GL)
             add_link_options(-LTCG)
         endif()
+    else()
+        # Clang will complain about __builtin_assume even on constexpr functions and operators, this warning is absolutely useless.
+        add_definitions(-Wno-assume)
     endif()
 endif ()
 

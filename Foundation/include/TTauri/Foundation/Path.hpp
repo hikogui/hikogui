@@ -9,9 +9,10 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/SDF8.hpp"
-#include <glm/glm.hpp>
 #include <vector>
 
 namespace TTauri {
@@ -60,7 +61,7 @@ struct Path {
 
     /** Calculate bounding box.
      */
-    [[nodiscard]] rect2 boundingBox() const noexcept;
+    [[nodiscard]] rect boundingBox() const noexcept;
 
     /*! Try to move the layers in a path.
      * Layers are removed if there are layers, and all the layers have
@@ -126,37 +127,37 @@ struct Path {
     /*! Get the currentPosition of the open contour.
      * Returns {0, 0} when there is no contour open.
      */
-    [[nodiscard]] glm::vec2 currentPosition() const noexcept;
+    [[nodiscard]] vec currentPosition() const noexcept;
 
     /*! Start a new contour at position.
      * closes current subpath.
      */
-    void moveTo(glm::vec2 position) noexcept;
+    void moveTo(vec position) noexcept;
 
     /*! Start a new contour relative to current position.
      * closes current subpath.
      */
-    void moveRelativeTo(glm::vec2 direction) noexcept;
+    void moveRelativeTo(vec direction) noexcept;
 
-    void lineTo(glm::vec2 position) noexcept;
+    void lineTo(vec position) noexcept;
 
-    void lineRelativeTo(glm::vec2 direction) noexcept;
+    void lineRelativeTo(vec direction) noexcept;
 
-    void quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) noexcept;
-
-    /*! Draw curve from the current position to the new direction.
-     * \param controlDirection control point of the curve relative from the start of the curve.
-     * \param direction end point of the curve relative from the start of the curve.
-     */
-    void quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) noexcept;
-
-    void cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) noexcept;
+    void quadraticCurveTo(vec controlPosition, vec position) noexcept;
 
     /*! Draw curve from the current position to the new direction.
      * \param controlDirection control point of the curve relative from the start of the curve.
      * \param direction end point of the curve relative from the start of the curve.
      */
-    void cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) noexcept;
+    void quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcept;
+
+    void cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position) noexcept;
+
+    /*! Draw curve from the current position to the new direction.
+     * \param controlDirection control point of the curve relative from the start of the curve.
+     * \param direction end point of the curve relative from the start of the curve.
+     */
+    void cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, vec direction) noexcept;
 
     /*! Draw an circular arc.
      * The arc is drawn from the current position to the position given
@@ -169,20 +170,20 @@ struct Path {
      * \param radius positive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.
      */
-    void arcTo(float radius, glm::vec2 position) noexcept;
+    void arcTo(float radius, vec position) noexcept;
 
     /*! Draw a rectangle.
      * \param rect the offset and size of the rectangle.
-     * \param corner radius of <bottom-left, bottom-right, top-right, top-left>
+     * \param corner radius of <bottom-left, bottom-right, top-left, top-right>
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(rect2 rect, glm::vec4 corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(rect r, vec corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /*! Draw a circle.
     * \param position position of the center of the circle.
     * \param radius radius of the circle
     */
-    void addCircle(glm::vec2 position, float radius) noexcept;
+    void addCircle(vec position, float radius) noexcept;
 
     /*! Contour with the given bezier curves.
     * The first anchor will be ignored.
@@ -222,26 +223,20 @@ struct Path {
 
     /** Center and scale a path inside the extent with padding.
      */
-    [[nodiscard]] Path centerScale(extent2 extent, float padding=0.0) const noexcept;
+    [[nodiscard]] Path centerScale(vec extent, float padding=0.0) const noexcept;
 };
 
 Path operator+(Path lhs, Path const &rhs) noexcept;
 
 Path &operator+=(Path &lhs, Path const &rhs) noexcept;
 
-Path operator*(glm::mat3x3 const &lhs, Path rhs) noexcept;
+Path operator*(mat const &lhs, Path rhs) noexcept;
 
-Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept;
+Path operator+(vec const &lhs, Path rhs) noexcept;
 
-Path operator*(float const lhs, Path rhs) noexcept;
+Path &operator*=(Path &lhs, mat const &rhs) noexcept;
 
-Path &operator*=(Path &lhs, float const rhs) noexcept;
-
-Path operator+(glm::vec2 const &lhs, Path rhs) noexcept;
-
-Path operator+(Path lhs, glm::vec2 const &rhs) noexcept;
-
-Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept;
+Path &operator+=(Path &lhs, vec const &rhs) noexcept;
 
 
 /*! Composit color onto the destination image where the mask is solid.

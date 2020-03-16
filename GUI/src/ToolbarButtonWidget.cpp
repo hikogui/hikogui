@@ -60,8 +60,8 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        let T = mat::translate(box.currentPosition(depth));
-        let S = mat::scale(currentScale);
+        let T = mat::T(box.currentPosition(depth));
+        let S = mat::S(currentScale);
         location.transform = T * S;
         location.clippingRectangle = box.currentRectangle();
 
@@ -82,7 +82,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
 
     auto iconImage = PixelMap<wsRGBA>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
-        auto p = std::get<Path>(icon).centerScale(static_cast<extent2>(vec{image->extent}), 10.0);
+        auto p = std::get<Path>(icon).centerScale(vec{image->extent}, 10.0);
         p.closeLayer(vec{1.0, 1.0, 1.0, 1.0});
 
         fill(iconImage);

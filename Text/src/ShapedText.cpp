@@ -126,7 +126,7 @@ struct AttributedGlyphsLine {
         default:;
         }
 
-        width += (i->metrics.advance.x * i->style.size);
+        width += (i->metrics.advance.x() * i->style.size);
 
         if ((width > maximum_width) && (start_of_line != end_of_word)) {
             // Line is to long, and exists of at least a full word.
@@ -154,7 +154,7 @@ void calculate_line_sizes(std::vector<AttributedGlyphsLine> &lines) noexcept
             let font_size = glyph.style.size;
             let &metrics = glyph.metrics;
 
-            line.width += metrics.advance.x * font_size;
+            line.width += metrics.advance.x() * font_size;
             line.ascender = std::max(line.ascender, metrics.ascender * font_size);
             line.descender = std::max(line.descender, -metrics.descender * font_size);
             line.lineGap = std::max(line.lineGap, metrics.lineGap * font_size);
@@ -249,10 +249,10 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 te
             no_default;
         }
 
-        auto position = glm::vec2{x, y};
+        auto position = vec(x, y);
         for (auto &glyph: line) {
-            glyph.transform = mat::T2D(vec{position}, glyph.style.size);
-            position += glyph.metrics.advance * glyph.style.size;
+            glyph.transform = mat::T(position) * mat::S(glyph.style.size);
+            position += glyph.style.size * glyph.metrics.advance;
         }
     }
 }

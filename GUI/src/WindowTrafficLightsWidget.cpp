@@ -51,8 +51,8 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        let T = mat::translate(box.currentPosition(depth));
-        let S = mat::scale(currentScale);
+        let T = mat::T(box.currentPosition(depth));
+        let S = mat::S(currentScale);
         location.transform = T * S;
         location.clippingRectangle = box.currentRectangle();
 
@@ -62,61 +62,61 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
     return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, glm::vec2 position, float radius) noexcept
+void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, vec position, float radius) noexcept
 {
     let L = radius * 0.5;
     let W = radius * 0.3;
 
-    path.moveTo({position.x - L, position.y - L});
-    path.lineTo({position.x + W, position.y - L});
-    path.lineTo({position.x - L, position.y + W});
+    path.moveTo({position.x() - L, position.y() - L});
+    path.lineTo({position.x() + W, position.y() - L});
+    path.lineTo({position.x() - L, position.y() + W});
     path.closeContour();
 
-    path.moveTo({position.x + L, position.y + L});
-    path.lineTo({position.x - W, position.y + L});
-    path.lineTo({position.x + L, position.y - W});
+    path.moveTo({position.x() + L, position.y() + L});
+    path.lineTo({position.x() - W, position.y() + L});
+    path.lineTo({position.x() + L, position.y() - W});
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawTrianglesInward(Path &path, glm::vec2 position, float radius) noexcept
+void WindowTrafficLightsWidget::drawTrianglesInward(Path &path, vec position, float radius) noexcept
 {
     let L = radius * 0.8;
 
-    path.moveTo({position.x, position.y});
-    path.lineTo({position.x - L, position.y});
-    path.lineTo({position.x, position.y - L});
+    path.moveTo({position.x(), position.y()});
+    path.lineTo({position.x() - L, position.y()});
+    path.lineTo({position.x(), position.y() - L});
     path.closeContour();
 
-    path.moveTo({position.x, position.y});
-    path.lineTo({position.x + L, position.y});
-    path.lineTo({position.x, position.y + L});
+    path.moveTo({position.x(), position.y()});
+    path.lineTo({position.x() + L, position.y()});
+    path.lineTo({position.x(), position.y() + L});
     path.closeContour();
 }
 
-void WindowTrafficLightsWidget::drawCross(Path &path, glm::vec2 position, float radius) noexcept
+void WindowTrafficLightsWidget::drawCross(Path &path, vec position, float radius) noexcept
 {
     let W = sqrt(0.5);
     let L = radius * 0.5;
     
     // Left bottom line.
-    path.moveTo({position.x - W, position.y});
-    path.lineTo({position.x - L, position.y - L + W});
-    path.lineTo({position.x - L + W, position.y - L});
-    path.lineTo({position.x, position.y - W});
+    path.moveTo({position.x() - W, position.y()});
+    path.lineTo({position.x() - L, position.y() - L + W});
+    path.lineTo({position.x() - L + W, position.y() - L});
+    path.lineTo({position.x(), position.y() - W});
 
     // Right bottom line.
-    path.lineTo({position.x + L - W, position.y - L});
-    path.lineTo({position.x + L, position.y - L + W});
-    path.lineTo({position.x + W, position.y});
+    path.lineTo({position.x() + L - W, position.y() - L});
+    path.lineTo({position.x() + L, position.y() - L + W});
+    path.lineTo({position.x() + W, position.y()});
 
     // Right top line.
-    path.lineTo({position.x + L, position.y + L - W});
-    path.lineTo({position.x + L - W, position.y + L});
-    path.lineTo({position.x, position.y + W});
+    path.lineTo({position.x() + L, position.y() + L - W});
+    path.lineTo({position.x() + L - W, position.y() + L});
+    path.lineTo({position.x(), position.y() + W});
 
     // Left top line.
-    path.lineTo({position.x - L + W, position.y + L});
-    path.lineTo({position.x - L, position.y + L - W});
+    path.lineTo({position.x() - L + W, position.y() + L});
+    path.lineTo({position.x() - L, position.y() + L - W});
 
     path.closeContour();
 }
@@ -126,7 +126,7 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineIma
     auto linearMap = PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
-    let iconPath = applicationIcon.centerScale(static_cast<extent2>(vec{image.extent}), 5.0);
+    let iconPath = applicationIcon.centerScale(vec{image.extent}, 5.0);
 
     fill(linearMap);
     composit(linearMap, iconPath, window->subpixelOrientation);
@@ -144,15 +144,15 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage
 
     let height = box.height.value();
 
-    let redCenter = glm::vec2{
+    let redCenter = vec{
         MARGIN + RADIUS,
         height / 2.0
     };
-    let yellowCenter = glm::vec2{
+    let yellowCenter = vec{
         MARGIN + DIAMETER + SPACING + RADIUS,
         height / 2.0
     };
-    let greenCenter = glm::vec2{
+    let greenCenter = vec{
         MARGIN + DIAMETER + SPACING + DIAMETER + SPACING + RADIUS,
         height / 2.0
     };
@@ -190,7 +190,7 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage
         drawCross(drawing, redCenter, RADIUS);
         drawing.closeLayer(vec{0.319, 0.0, 0.0, 1.0});
 
-        drawing.addRectangle({{yellowCenter.x - RADIUS * 0.5 - 0.5, yellowCenter.y - 0.5}, {RADIUS * 1.0 + 1.0, 1.0}});
+        drawing.addRectangle({yellowCenter.x() - RADIUS * 0.5 - 0.5, yellowCenter.y() - 0.5, RADIUS * 1.0 + 1.0, 1.0});
         drawing.closeLayer(vec{0.212, 0.1, 0.0, 1.0});
 
         if (window->size == Window::Size::Maximized) {

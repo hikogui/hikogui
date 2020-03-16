@@ -24,13 +24,7 @@ class mat {
 public:
     /** Create an identity matrix.
      */
-    force_inline mat() noexcept {
-        col0 = _mm_set_ss(1.0);
-        col1 = _mm_permute_ps(col0, _MM_SHUFFLE(3,3,0,3));
-        col2 = _mm_permute_ps(col0, _MM_SHUFFLE(3,0,3,3));
-        col3 = _mm_permute_ps(col0, _MM_SHUFFLE(0,3,3,3));
-    }
-
+    force_inline mat() noexcept {}
     force_inline mat(mat const &rhs) noexcept = default;
     force_inline mat &operator=(mat const &rhs) noexcept = default;
     force_inline mat(mat &&rhs) noexcept = default;
@@ -104,7 +98,7 @@ public:
     * This scale will only work with positive scale matrices 
     */
     [[nodiscard]] force_inline float scaleX() const noexcept {
-        return col0.length();
+        return length(col0);
     }
 
     /** Matrix/Vector multiplication.
@@ -114,6 +108,13 @@ public:
         return
             (lhs.col0 * rhs.xxxx() + lhs.col1 * rhs.yyyy()) +
             (lhs.col2 * rhs.zzzz() + lhs.col3 * rhs.wwww());
+    }
+
+    /** Matrix/Vector multiplication.
+    * Used for transforming vectors.
+    */
+    [[nodiscard]] force_inline friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
+        return rect::p1p2(lhs * rhs.p1(), lhs * rhs.p2());
     }
 
     /** Matrix/Matrix multiplication.
@@ -136,9 +137,19 @@ public:
         return rhs.transpose();
     }
 
+    /** Create an identity matrix.
+    */
+    [[nodiscard]] static mat I() noexcept {
+        let col0 = _mm_set_ss(1.0);
+        let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(3,3,0,3));
+        let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(3,0,3,3));
+        let col3 = _mm_permute_ps(col0, _MM_SHUFFLE(0,3,3,3));
+        return {col0, col1, col2, col3};
+    }
+
     /** Create a translation matrix.
      */
-    [[nodiscard]] static mat translate(vec rhs) noexcept {
+    [[nodiscard]] static mat T(vec rhs) noexcept {
         let col0 = _mm_set_ss(1.0f);
         let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
         let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
@@ -148,7 +159,7 @@ public:
 
     /** Create a scaling matrix.
      */
-    [[nodiscard]] static mat scale(vec rhs) noexcept {
+    [[nodiscard]] static mat S(vec rhs) noexcept {
         let tmp = _mm_set_ps1(1.0f);
         let col0 = _mm_insert_ps(tmp, rhs, 0b00'00'1110);
         let col1 = _mm_insert_ps(tmp, rhs, 0b01'01'1101);
@@ -159,7 +170,7 @@ public:
 
     /** Create a scaling matrix.
      */
-    [[nodiscard]] static mat scale(float rhs) noexcept {
+    [[nodiscard]] static mat S(float rhs) noexcept {
         let _0001 = _mm_set_ss(1.0f);
         let _000s = _mm_set_ss(rhs);
         let _00s1 = _mm_insert_ps(_0001, _000s, 0b00'01'1100);
@@ -171,12 +182,22 @@ public:
         return {col0, col1, col2, col3};
     }
 
+    /** Create a 2D or 3D scaling matrix.
+    */
+    [[nodiscard]] static mat S(float x, float y, float z=1.0f) noexcept {
+        return S(vec{x, y, z, 1.0f});
+    }
+
+    /** Create a 2D shearing matrix.
+    */
+    //[[nodiscard]] static mat S(float _00, float _01, float _10, float _11) noexcept {
+
     /** Create a rotation matrix.
      * @param N 0 = rotate around x-axis, 1=rotate around y-axis, 2=rotate around z-axis
      * @param rhs Angle in radials counter-clockwise.
      */
     template<int N=2>
-    [[nodiscard]] static mat rotate(float rhs) noexcept {
+    [[nodiscard]] static mat R(float rhs) noexcept {
         let s = sin(rhs);
         let c = cos(rhs);
         let tmp1 = _mm_set_ps(c, s, 1.0f, 0.0f);
@@ -205,29 +226,14 @@ public:
 
     [[nodiscard]] static mat T2D(vec position, float scale=1.0f, float rotation=0.0f) noexcept
     {
-        let S = mat::scale(vec{scale, scale});
-        let R = mat::rotate(rotation);
-        let T = mat::translate(position);
-        //return S * R * T;
+        let S = mat::S(vec{scale, scale});
+        let R = mat::R(rotation);
+        let T = mat::T(position);
         return T * R * S;
     }
 
 
-    [[nodiscard]] static mat T(vec position, vec scale, float rotation=0.0f) noexcept
-    {
-        let S = mat::scale(scale);
-        let R = mat::rotate(rotation);
-        let T = mat::translate(position);
-        return S * R * T;
-    }
-
-    [[nodiscard]] static mat T(vec position, mat scale, float rotation=0.0f) noexcept
-    {
-        let S = scale;
-        let R = mat::rotate(rotation);
-        let T = mat::translate(position);
-        return S * R * T;
-    }
+    
 
     [[nodiscard]] friend std::string to_string(mat const &rhs) noexcept {
         return fmt::format("[{}, {}, {}, {}]", rhs.col0, rhs.col1, rhs.col2, rhs.col3);

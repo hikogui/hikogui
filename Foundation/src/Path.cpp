@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #include "TTauri/Foundation/Path.hpp"
@@ -42,23 +42,19 @@ bool Path::allLayersHaveSameColor() const noexcept
     return true;
 }
 
-[[nodiscard]] rect2 Path::boundingBox() const noexcept
+[[nodiscard]] rect Path::boundingBox() const noexcept
 {
     if (ssize(points) == 0) {
-        return rect2{{0.0, 0.0}, {0.0, 0.0}};
+        return rect{0.0, 0.0, 0.0, 0.0};
     }
 
-    glm::vec2 left_bottom = points.front().p;
-    glm::vec2 right_top = points.front().p;
+    auto r = rect::p1p2(points.front().p, points.front().p);
 
     for (let &point: points) {
-        left_bottom.x = std::min(left_bottom.x, point.p.x);
-        left_bottom.y = std::min(left_bottom.y, point.p.y);
-        right_top.x = std::max(right_top.x, point.p.x);
-        right_top.y = std::max(right_top.y, point.p.y);
+        r |= point.p;
     }
 
-    return rect2{left_bottom, right_top - left_bottom};
+    return r;
 }
 
 void Path::tryRemoveLayers() noexcept
@@ -207,77 +203,98 @@ void Path::closeLayer(vec fillColor) noexcept
     }
 }
 
-glm::vec2 Path::currentPosition() const noexcept
+vec Path::currentPosition() const noexcept
 {
     if (isContourOpen()) {
         return points.back().p;
     } else {
-        return {0.0f, 0.0f};
+        return vec::point(0.0f, 0.0f);
     }
 }
 
-void Path::moveTo(glm::vec2 position) noexcept
+void Path::moveTo(vec position) noexcept
 {
+    ttauri_assume(position.is_point());
     closeContour();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::moveRelativeTo(glm::vec2 direction) noexcept
+void Path::moveRelativeTo(vec direction) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(direction.is_vector());
 
     let lastPosition = currentPosition();
     closeContour();
     points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::lineTo(glm::vec2 position) noexcept
+void Path::lineTo(vec position) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(position.is_point());
+
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::lineRelativeTo(glm::vec2 direction) noexcept
+void Path::lineRelativeTo(vec direction) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(direction.is_vector());
+
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveTo(glm::vec2 controlPosition, glm::vec2 position) noexcept
+void Path::quadraticCurveTo(vec controlPosition, vec position) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(controlPosition.is_point());
+    ttauri_assume(position.is_point());
+
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::quadraticCurveRelativeTo(glm::vec2 controlDirection, glm::vec2 direction) noexcept
+void Path::quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(controlDirection.is_vector());
+    ttauri_assume(direction.is_vector());
+
     let p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveTo(glm::vec2 controlPosition1, glm::vec2 controlPosition2, glm::vec2 position) noexcept
+void Path::cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(controlPosition1.is_point());
+    ttauri_assume(controlPosition2.is_point());
+    ttauri_assume(position.is_point());
+
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
     points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
-void Path::cubicCurveRelativeTo(glm::vec2 controlDirection1, glm::vec2 controlDirection2, glm::vec2 direction) noexcept
+void Path::cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, vec direction) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(controlDirection1.is_vector());
+    ttauri_assume(controlDirection2.is_vector());
+    ttauri_assume(direction.is_vector());
+
     let p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
     points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
 
-void Path::arcTo(float radius, glm::vec2 position) noexcept
+void Path::arcTo(float radius, vec position) noexcept
 {
     ttauri_assert(isContourOpen());
+    ttauri_assume(position.is_point());
 
     let r = std::abs(radius);
     let P1 = currentPosition();
@@ -287,7 +304,7 @@ void Path::arcTo(float radius, glm::vec2 position) noexcept
     let Vm2 = P2 - Pm;
 
     // Calculate the half angle between vectors P0 - C and P2 - C.
-    let alpha = std::asin(glm::length(Vm2) / r);
+    let alpha = std::asin(length(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
     let C = Pm + normal(Vm2) * std::cos(alpha) * radius;
@@ -296,83 +313,84 @@ void Path::arcTo(float radius, glm::vec2 position) noexcept
     let VC1 = P1 - C;
     let VC2 = P2 - C;
 
-    let q1 = VC1.x * VC1.x + VC1.y * VC1.y;
-    let q2 = q1 + VC1.x * VC2.x + VC1.y * VC2.y;
-    let k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / (VC1.x*VC2.y - VC1.y*VC2.x);
+    let q1 = length_squared(VC1);
+    let q2 = q1 + dot(VC1, VC2);
+    let k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross(VC1, VC2);
 
     // Calculate the control points.
-    let C1 = glm::vec2{
-        (C.x + VC1.x) - k2 * VC1.y,
-        (C.y + VC1.y) + k2 * VC1.x
-    };
-    let C2 = glm::vec2{
-        (C.x + VC2.x) + k2 * VC2.y,
-        (C.y + VC2.y) - k2 * VC2.x
-    };
+    let C1 = vec::point(
+        (C.x() + VC1.x()) - k2 * VC1.y(),
+        (C.y() + VC1.y()) + k2 * VC1.x()
+    );
+    let C2 = vec::point(
+        (C.x() + VC2.x()) + k2 * VC2.y(),
+        (C.y() + VC2.y()) - k2 * VC2.x()
+    );
 
     cubicCurveTo(C1, C2, P2);
 }
 
-void Path::addRectangle(rect2 rect, glm::vec4 corners) noexcept
+void Path::addRectangle(rect r, vec corners) noexcept
 {
     ttauri_assert(!isContourOpen());
 
-    glm::vec4 radii = glm::abs(corners);
+    let radii = abs(corners);
 
-    let blc = rect.offset;
-    let brc = rect.offset + glm::vec2{rect.extent.x, 0.0f};
-    let trc = rect.offset + rect.extent;
-    let tlc = rect.offset + glm::vec2{0.0f, rect.extent.y};
+    let blc = r.corner<0>();
+    let brc = r.corner<1>();
+    let tlc = r.corner<2>();
+    let trc = r.corner<3>();
 
-    let blc1 = blc + glm::vec2{0.0f, radii.x};
-    let blc2 = blc + glm::vec2{radii.x, 0.0f};
-    let brc1 = brc + glm::vec2{-radii.y, 0.0f};
-    let brc2 = brc + glm::vec2{0.0f, radii.y};
-    let trc1 = trc + glm::vec2{0.0f, -radii.z};
-    let trc2 = trc + glm::vec2{-radii.z, 0.0f};
-    let tlc1 = tlc + glm::vec2{radii.w, 0.0f};
-    let tlc2 = tlc + glm::vec2{0.0, -radii.w};
+    let blc1 = blc + vec{0.0f, radii.x()};
+    let blc2 = blc + vec{radii.x(), 0.0f};
+    let brc1 = brc + vec{-radii.y(), 0.0f};
+    let brc2 = brc + vec{0.0f, radii.y()};
+    let tlc1 = tlc + vec{radii.z(), 0.0f};
+    let tlc2 = tlc + vec{0.0, -radii.z()};
+    let trc1 = trc + vec{0.0f, -radii.w()};
+    let trc2 = trc + vec{-radii.w(), 0.0f};
 
     moveTo(blc1);
-    if (corners.x > 0.0) {
-        arcTo(radii.x, blc2);
-    } else if (corners.x < 0.0) {
+    if (corners.x() > 0.0) {
+        arcTo(radii.x(), blc2);
+    } else if (corners.x() < 0.0) {
         lineTo(blc2);
     }
 
     lineTo(brc1);
-    if (corners.y > 0.0) {
-        arcTo(radii.y, brc2);
-    } else if (corners.y < 0.0) {
+    if (corners.y() > 0.0) {
+        arcTo(radii.y(), brc2);
+    } else if (corners.y() < 0.0) {
         lineTo(blc2);
     }
 
-    lineTo(trc1);
-    if (corners.z > 0.0) {
-        arcTo(radii.z, trc2);
-    } else if (corners.z < 0.0) {
-        lineTo(trc2);
+    lineTo(tlc1);
+    if (corners.z() > 0.0) {
+        arcTo(radii.z(), tlc2);
+    } else if (corners.z() < 0.0) {
+        lineTo(tlc2);
     }
 
-    lineTo(tlc1);
-    if (corners.w > 0.0) {
-        arcTo(radii.w, tlc2);
-    } else if (corners.w < 0.0) {
-        lineTo(tlc2);
+    lineTo(trc1);
+    if (corners.w() > 0.0) {
+        arcTo(radii.w(), trc2);
+    } else if (corners.w() < 0.0) {
+        lineTo(trc2);
     }
 
     closeContour();
 }
 
-void Path::addCircle(glm::vec2 position, float radius) noexcept
+void Path::addCircle(vec position, float radius) noexcept
 {
     ttauri_assert(!isContourOpen());
+    ttauri_assume(position.is_point());
 
-    moveTo({position.x, position.y - radius});
-    arcTo(radius, {position.x + radius, position.y});
-    arcTo(radius, {position.x, position.y + radius});
-    arcTo(radius, {position.x - radius, position.y});
-    arcTo(radius, {position.x, position.y - radius});
+    moveTo(vec::point(position.x(), position.y() - radius));
+    arcTo(radius, vec(position.x() + radius, position.y()));
+    arcTo(radius, vec(position.x(), position.y() + radius));
+    arcTo(radius, vec(position.x() - radius, position.y()));
+    arcTo(radius, vec(position.x(), position.y() - radius));
     closeContour();
 }
 
@@ -480,68 +498,50 @@ Path &operator+=(Path &lhs, Path const &rhs) noexcept
     return lhs;
 }
 
-Path Path::centerScale(extent2 extent, float padding) const noexcept
+Path Path::centerScale(vec extent, float padding) const noexcept
 {
-    
-    auto max_size = extent2{
-        std::max(1.0f, extent.width() - (padding * 2.0f)),
-        std::max(1.0f, extent.width() - (padding * 2.0f))
+    ttauri_assume(extent.is_vector());
+
+    auto max_size = vec{
+        std::max(1.0f, extent.x() - (padding * 2.0f)),
+        std::max(1.0f, extent.y() - (padding * 2.0f))
     };
 
     auto bbox = boundingBox();
-    if (bbox.extent.width() <= 0.0 || bbox.extent.height() <= 0.0) {
+    if (bbox.width() <= 0.0 || bbox.height() <= 0.0) {
         return {};
     }
 
     let scale = std::min(
-        max_size.width() / bbox.extent.width(),
-        max_size.height() / bbox.extent.height()
+        max_size.x() / bbox.width(),
+        max_size.y() / bbox.height()
     );
     bbox *= scale;
     
-    let offset = -bbox.offset + (extent - bbox.extent) * 0.5f;
+    let offset = -bbox.offset() + (extent - bbox.extent()) * 0.5f;
 
-    return T2D(offset, scale) * *this;
+    return mat::T2D(offset, scale) * *this;
 }
 
-Path &operator*=(Path &lhs, glm::mat3x3 const &rhs) noexcept
-{
-    for (auto &point: lhs.points) {
-        point *= rhs;
-    }
-    return lhs;
-}
-
-Path &operator*=(Path &lhs, float const rhs) noexcept
-{
-    for (auto &point: lhs.points) {
-        point *= rhs;
-    }
-    return lhs;
-}
-
-Path operator*(glm::mat3x3 const &lhs, Path rhs) noexcept
+Path operator*(mat const &lhs, Path rhs) noexcept
 {
     return rhs *= lhs;
 }
 
-Path operator*(float const lhs, Path rhs) noexcept
-{
-    return rhs *= lhs;
-}
-
-
-Path operator+(glm::vec2 const &lhs, Path rhs) noexcept
+Path operator+(vec const &lhs, Path rhs) noexcept
 {
     return rhs += lhs;
 }
 
-Path operator+(Path lhs, glm::vec2 const &rhs) noexcept
+Path &operator*=(Path &lhs, mat const &rhs) noexcept
 {
-    return lhs += rhs;
+    for (auto &point: lhs.points) {
+        point *= rhs;
+    }
+    return lhs;
 }
 
-Path &operator+=(Path &lhs, glm::vec2 const &rhs) noexcept
+Path &operator+=(Path &lhs, vec const &rhs) noexcept
 {
     for (auto &point: lhs.points) {
         point += rhs;
@@ -558,8 +558,9 @@ void composit(PixelMap<wsRGBA>& dst, vec color, Path const &path, SubpixelOrient
 
     auto curves = path.getBeziers();
     if (renderSubpixels) {
-        curves = transform<std::vector<BezierCurve>>(curves, [](auto const &curve) {
-            return curve * glm::vec2{3.0f, 1.0f};
+        let scale = mat::S(3.0f, 1.0f);
+        curves = transform<std::vector<BezierCurve>>(curves, [&](auto const &curve) {
+            return scale * curve;
         });
     }
 

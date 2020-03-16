@@ -68,7 +68,11 @@ public:
     force_inline rect(vec const &offset, vec const &extent) noexcept :
         rect(offset.xyxy() + extent._00xy()) {}
 
-    /** Extpand the current rectangle to include the new rectangle.
+    [[nodiscard]] force_inline static rect p1p2(vec const &p1, vec const &p2) noexcept {
+        return _mm_shuffle_ps(p1, p2, _MM_SHUFFLE(1,0,1,0));
+    }
+
+    /** Expand the current rectangle to include the new rectangle.
      * This is mostly used for extending bounding a bounding box.
      *
      * @param rhs The new rectangle to include in the current rectangle.
@@ -76,6 +80,16 @@ public:
     rect &operator|=(rect const &rhs) noexcept {
         return *this = *this | rhs;
     }
+
+    /** Expand the current rectangle to include the new point.
+    * This is mostly used for extending bounding a bounding box.
+    *
+    * @param rhs The new rectangle to include in the current rectangle.
+    */
+    rect &operator|=(vec const &rhs) noexcept {
+        return *this = *this | rhs;
+    }
+
 
     /** Translate the box to a new position.
      *
@@ -91,6 +105,14 @@ public:
      */
     rect &operator-=(vec const &rhs) noexcept {
         return *this = *this - rhs;
+    }
+
+    /** Scale the box by moving the positions (scaling the vectors).
+    *
+    * @param rhs By how much to scale the positions of the two points
+    */
+    rect &operator*=(float rhs) noexcept {
+        return *this = *this * rhs;
     }
 
     /** Get coordinate of a corner.
@@ -111,6 +133,10 @@ public:
             return v.zw01();
         }
     }
+
+    [[nodiscard]] force_inline vec p1() const noexcept { return corner<0>(); }
+    [[nodiscard]] force_inline vec p2() const noexcept { return corner<3>(); }
+
 
     /** Get coordinate of a corner.
     *
@@ -141,8 +167,17 @@ public:
     * @return The (x, y) vector representing the width and height of the rectangle.
     */
     [[nodiscard]] vec extent() const noexcept {
-        return corner<3>() - corner<0>();
+        return (v.zwzw() - v).xy00();
     }
+
+    [[nodiscard]] force_inline float width() const noexcept {
+        return (v.zwzw() - v).x();
+    }
+
+    [[nodiscard]] force_inline float height() const noexcept {
+        return (v.zwzw() - v).y();
+    }
+
 
     /** Check if a 2D coordinate is inside the rectangle.
      *
@@ -166,6 +201,11 @@ public:
         return _mm_blend_ps(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b1100);
     }
 
+    [[nodiscard]] friend rect operator|(rect const &lhs, vec const &rhs) noexcept {
+        ttauri_assume(rhs.w() == 1.0f);
+        return _mm_blend_ps(min(lhs.v, rhs), max(lhs.v, rhs.xyxy()), 0b1100);
+    }
+
     [[nodiscard]] friend rect operator+(rect const &lhs, vec const &rhs) noexcept {
         return static_cast<__m128>(lhs.v + rhs.xyxy());
     }
@@ -173,6 +213,11 @@ public:
     [[nodiscard]] friend rect operator-(rect const &lhs, vec const &rhs) noexcept {
         return static_cast<__m128>(lhs.v - rhs.xyxy());
     }
+
+    [[nodiscard]] friend rect operator*(rect const &lhs, float rhs) noexcept {
+        return static_cast<__m128>(lhs.v * vec{rhs});
+    }
+
 
     /** Expand the rectangle for the same amount in all directions.
      * @param lhs The original rectangle.

@@ -148,6 +148,21 @@ public:
         return vec{x, y, z, w};
     }
 
+    /** Create a color out of 2 to 4 values.
+    * This vector is used as a homogenious coordinate, meaning:
+    *  - vectors have w=0.0 (A direction and distance)
+    *  - points have w=1.0 (A position in space)
+    *
+    * When this vector is used for color then:
+    *  - x=Red, y=Green, z=Blue, w=Alpha
+    *
+    */
+    template<typename T, typename U, typename V=float, typename W=float,
+        std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
+        [[nodiscard]] force_inline static vec color(T r, U g, V b=0.0f, W a=1.0f) noexcept {
+        return vec{r, g, b, a};
+    }
+
     template<size_t I>
     force_inline vec &set(float rhs) noexcept {
         static_assert(I <= 3);
@@ -162,7 +177,17 @@ public:
         return _mm_cvtss_f32(tmp);
     }
 
-    constexpr size_t size() const noexcept { return 4; }
+    force_inline bool is_point() const noexcept {
+        return w() == 1.0f;
+    }
+
+    force_inline bool is_vector() const noexcept {
+        return w() == 0.0f;
+    }
+
+    constexpr size_t size() const noexcept {
+        return 4;
+    }
 
     force_inline float operator[](size_t i) const noexcept {
         ttauri_assume(i <= 3);
@@ -204,19 +229,8 @@ public:
         return *this = _mm_div_ps(*this, rhs);
     }
 
-    [[nodiscard]] force_inline __m128 _length_squared() const noexcept {
-        let tmp1 = _mm_mul_ps(*this, *this);
-        let tmp2 = _mm_hadd_ps(tmp1, tmp1);
-        return _mm_hadd_ps(tmp2, tmp2);
-    }
-
-    [[nodiscard]] float length_squared() const noexcept {
-        return _mm_cvtss_f32(_length_squared());
-    }
-
-    [[nodiscard]] float length() const noexcept {
-        let tmp = _mm_sqrt_ps(_length_squared());
-        return _mm_cvtss_f32(tmp);
+    [[nodiscard]] force_inline friend vec operator-(vec const &rhs) noexcept {
+        return _mm_sub_ps(_mm_setzero_ps(), rhs);
     }
 
     [[nodiscard]] force_inline friend vec operator+(vec const &lhs, vec const &rhs) noexcept {
@@ -241,6 +255,10 @@ public:
 
     [[nodiscard]] force_inline friend vec min(vec const &lhs, vec const &rhs) noexcept {
         return _mm_min_ps(lhs, rhs);
+    }
+
+    [[nodiscard]] force_inline friend vec abs(vec const &rhs) noexcept {
+        return max(rhs, -rhs);
     }
 
     [[nodiscard]] force_inline friend bool operator==(vec const &lhs, vec const &rhs) noexcept {
@@ -294,17 +312,32 @@ public:
         return _mm_movemask_ps(_mm_cmpge_ps(lhs, rhs));
     }
 
-    [[nodiscard]] force_inline friend vec normalize(vec const &lhs) noexcept {
-        auto ___l = lhs._length_squared();
-        auto llll = _mm_permute_ps(___l, _MM_SHUFFLE(0,0,0,0));
-        auto iiii = _mm_rsqrt_ps(llll);
-        return _mm_mul_ps(lhs, iiii);
+    [[nodiscard]] force_inline friend __m128 _length_squared(vec const &rhs) noexcept {
+        let tmp1 = _mm_mul_ps(rhs, rhs);
+        let tmp2 = _mm_hadd_ps(tmp1, tmp1);
+        return _mm_hadd_ps(tmp2, tmp2);
     }
 
-    [[nodiscard]] force_inline friend vec homogeneous_divide(vec const &lhs) noexcept {
-        auto wwww = _mm_permute_ps(lhs, _MM_SHUFFLE(3,3,3,3));
+    [[nodiscard]] force_inline friend float length_squared(vec const &rhs) noexcept {
+        return _mm_cvtss_f32(_length_squared(rhs));
+    }
+
+    [[nodiscard]] force_inline friend float length(vec const &rhs) noexcept {
+        let tmp = _mm_sqrt_ps(_length_squared(rhs));
+        return _mm_cvtss_f32(tmp);
+    }
+
+    [[nodiscard]] force_inline friend vec normalize(vec const &rhs) noexcept {
+        auto ___l = _length_squared(rhs);
+        auto llll = _mm_permute_ps(___l, _MM_SHUFFLE(0,0,0,0));
+        auto iiii = _mm_rsqrt_ps(llll);
+        return _mm_mul_ps(rhs, iiii);
+    }
+
+    [[nodiscard]] force_inline friend vec homogeneous_divide(vec const &rhs) noexcept {
+        auto wwww = _mm_permute_ps(rhs, _MM_SHUFFLE(3,3,3,3));
         auto rcp_wwww = _mm_rcp_ps(wwww);
-        return _mm_mul_ps(lhs, rcp_wwww);
+        return _mm_mul_ps(rhs, rcp_wwww);
     }
 
     [[nodiscard]] force_inline friend float dot(vec const &lhs, vec const &rhs) noexcept {
@@ -335,6 +368,25 @@ public:
         let b_right = _mm_permute_ps(rhs, _MM_SHUFFLE(3,0,2,1));
         let right = _mm_mul_ps(a_right, b_right);
         return _mm_sub_ps(left, right);
+    }
+
+    /** Calculate the 2D normal on a 2D vector.
+     */
+    [[nodiscard]] force_inline friend vec normal(vec const &rhs) noexcept {
+        ttauri_assume(rhs.z() == 0.0f && rhs.w() == 0.0f);
+        return normalize(vec{-rhs.y(), rhs.x()});
+    }
+
+    /** Find a point at the midpoint between two points.
+     */
+    [[nodiscard]] friend vec midpoint(vec const &p1, vec const &p2) noexcept {
+        return (p1 + p2) * 0.5;
+    }
+
+    /** Find the point on the other side and at the same distance of an anchor-point.
+     */
+    [[nodiscard]] friend vec reflect_point(vec const &p, vec const anchor) noexcept {
+        return anchor - (p - anchor);
     }
 
     [[nodiscard]] friend std::string to_string(vec const &rhs) noexcept {

@@ -38,13 +38,13 @@ void ImageWidget::drawBackingImage() noexcept
 
     // Draw something.
     let color = vec{ 0.5f, 1.0f, 0.5f, 1.0f };
-    let path1 = T2D({20.0, 30.0}) * glyph;
+    let path1 = mat::T({20.0, 30.0}) * glyph;
     composit(linearMap, color, path1, SubpixelOrientation::Unknown);
 
-    let path2 = T2D({30.0, 30.0}) * glyph;
+    let path2 = mat::T({30.0, 30.0}) * glyph;
     composit(linearMap, color, path2, SubpixelOrientation::RedLeft);
 
-    let path3 = T2D({40.0, 30.0}) * glyph;
+    let path3 = mat::T({40.0, 30.0}) * glyph;
     composit(linearMap, color, path3, SubpixelOrientation::RedRight);
 
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
@@ -68,9 +68,9 @@ bool ImageWidget::updateAndPlaceVertices(
     let origin = vec{backingImage->extent} * -0.5;
 
     GUI::PipelineImage::ImageLocation location;
-    let O = mat::translate(origin);
-    let R = mat::rotate(rotation);
-    let T = mat::translate(box.currentPosition(depth));
+    let O = mat::T(origin);
+    let R = mat::R(rotation);
+    let T = mat::T(box.currentPosition(depth));
     location.transform = T * R * O;
     location.clippingRectangle = box.currentRectangle();
 

@@ -54,8 +54,8 @@ TEST(Vec, Arithmatic) {
 TEST(Vec, Length) {
     let tmp = vec(2.0f, 3.0f, 4.0f, 0.0f);
 
-    ASSERT_EQ(tmp.length_squared(), 29.0f);
-    ASSERT_NEAR(tmp.length(), 5.3851f, 0.001f);
+    ASSERT_EQ(length_squared(tmp), 29.0f);
+    ASSERT_NEAR(length(tmp), 5.3851f, 0.001f);
 }
 
 TEST(Vec, DotProduct) {

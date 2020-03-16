@@ -791,7 +791,7 @@ struct KERNFormat0_entry {
     FWord_buf_t value;
 };
 
-static void getKerningFormat0(gsl::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, glm::vec2 &r) noexcept
+static void getKerningFormat0(gsl::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
 {
     size_t offset = 0;
 
@@ -814,28 +814,28 @@ static void getKerningFormat0(gsl::span<std::byte const> const &bytes, uint16_t 
     if (glyph1_id == i->left.value() && glyph2_id == i->right.value()) {
         // Writing direction is assumed horizontal.
         switch (coverage & 0xf) {
-        case 0x1: r.x += i->value.value(unitsPerEm); break;
-        case 0x3: r.x = std::min(r.x, i->value.value(unitsPerEm)); break;
-        case 0x5: r.y += i->value.value(unitsPerEm); break;
-        case 0x7: r.y = std::min(r.y, i->value.value(unitsPerEm)); break;
+        case 0x1: r.x(r.x() + i->value.value(unitsPerEm)); break;
+        case 0x3: r.x(std::min(r.x(), i->value.value(unitsPerEm))); break;
+        case 0x5: r.y(r.y() + i->value.value(unitsPerEm)); break;
+        case 0x7: r.y(std::min(r.y(), i->value.value(unitsPerEm))); break;
         // Override
-        case 0x9: r.x = i->value.value(unitsPerEm); break;
-        case 0xb: r.x = i->value.value(unitsPerEm); break;
-        case 0xd: r.y = i->value.value(unitsPerEm); break;
-        case 0xf: r.y = i->value.value(unitsPerEm); break;
+        case 0x9: r.x(i->value.value(unitsPerEm)); break;
+        case 0xb: r.x(i->value.value(unitsPerEm)); break;
+        case 0xd: r.y(i->value.value(unitsPerEm)); break;
+        case 0xf: r.y(i->value.value(unitsPerEm)); break;
         default:;
         }
     }
 }
 
-static void getKerningFormat3(gsl::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, glm::vec2 &r) noexcept
+static void getKerningFormat3(gsl::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
 {
     not_implemented;
 }
 
-[[nodiscard]] static glm::vec2 getKerning(gsl::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
+[[nodiscard]] static vec getKerning(gsl::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
 {
-    auto r = glm::vec2(0.0f, 0.0f);
+    auto r = vec(0.0f, 0.0f);
     size_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
@@ -916,9 +916,9 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
         leftSideBearing = leftSideBearings[static_cast<uint16_t>(glyph_id) - numberOfHMetrics].value(unitsPerEm);
     }
 
-    metrics.advance = glm::vec2{advanceWidth, 0.0f};
-    metrics.leftSideBearing = glm::vec2{leftSideBearing, 0.0f};
-    metrics.rightSideBearing = glm::vec2{advanceWidth - (leftSideBearing + metrics.boundingBox.extent.width()), 0.0f};
+    metrics.advance = vec{advanceWidth, 0.0f};
+    metrics.leftSideBearing = leftSideBearing;
+    metrics.rightSideBearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
     metrics.ascender = ascender;
     metrics.descender = descender;
     metrics.lineGap = lineGap;
@@ -1090,18 +1090,16 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         Path subGlyph;
         assert_or_return(loadGlyph(GlyphID{subGlyphIndex}, subGlyph), false);
 
-        glm::vec2 subGlyphOffset;
+        auto subGlyphOffset = vec{0.0, 0.0};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<FWord_buf_t>(bytes, offset, 2), false);
                 let tmp = unsafe_make_placement_array<FWord_buf_t>(bytes, offset, 2);
-                subGlyphOffset.x = tmp[0].value(unitsPerEm);
-                subGlyphOffset.y = tmp[1].value(unitsPerEm);
+                subGlyphOffset = { tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             } else {
                 assert_or_return(check_placement_array<FByte_buf_t>(bytes, offset, 2), false);
                 let tmp = unsafe_make_placement_array<FByte_buf_t>(bytes, offset, 2);
-                subGlyphOffset.x = tmp[0].value(unitsPerEm);
-                subGlyphOffset.y = tmp[1].value(unitsPerEm);
+                subGlyphOffset = { tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
             size_t pointNr1;
@@ -1123,34 +1121,43 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         }
 
         // Start with an identity matrix.
-        auto subGlyphScale = glm::mat2x2(1.0f);
+        auto subGlyphScale = mat::I();
         if (flags & FLAG_WE_HAVE_A_SCALE) {
             assert_or_return(check_placement_ptr<shortFrac_buf_t>(bytes, offset), false);
-            subGlyphScale[0][0] = unsafe_make_placement_ptr<shortFrac_buf_t>(bytes, offset)->value();
-            subGlyphScale[1][1] = subGlyphScale[0][0];
+            subGlyphScale = mat::S(
+                unsafe_make_placement_ptr<shortFrac_buf_t>(bytes, offset)->value()
+            );
+
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(bytes, offset, 2), false);
             let tmp = unsafe_make_placement_array<shortFrac_buf_t>(bytes, offset, 2);
-            subGlyphScale[0][0] = tmp[0].value();
-            subGlyphScale[1][1] = tmp[1].value();
+            subGlyphScale = mat::S(
+                tmp[0].value(),
+                tmp[1].value()
+            );
+
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(bytes, offset, 4), false);
             let tmp = unsafe_make_placement_array<shortFrac_buf_t>(bytes, offset, 4);
-            subGlyphScale[0][0] = tmp[0].value();
-            subGlyphScale[0][1] = tmp[1].value();
-            subGlyphScale[1][0] = tmp[2].value();
-            subGlyphScale[1][1] = tmp[3].value();
+            not_implemented;
+            //subGlyphScale = mat::S(
+            //    tmp[0].value(),
+            //    tmp[1].value(),
+            //    tmp[2].value(),
+            //    tmp[3].value()
+            //)
         }
 
         if (flags & FLAG_SCALED_COMPONENT_OFFSET) {
-            subGlyphOffset = subGlyphOffset * subGlyphScale;
+            subGlyphOffset = subGlyphScale * subGlyphOffset;
         }
 
         if (flags & FLAG_USE_MY_METRICS) {
             metrics_glyph_id = subGlyphIndex;
         }
 
-        glyph += T2D(subGlyphOffset, subGlyphScale) * subGlyph;
+        let transform = mat::T(subGlyphOffset) * subGlyphScale;
+        glyph += transform * subGlyph;
 
     } while (flags & FLAG_MORE_COMPONENTS);
     // Ignore trailing instructions.
@@ -1251,12 +1258,9 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
         let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
         let numberOfContours = entry->numberOfContours.value();
 
-        let position = glm::vec2{ entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) };
-        let extent = extent2{
-            entry->xMax.value(unitsPerEm) - position.x,
-            entry->yMax.value(unitsPerEm) - position.y
-        };
-        metrics.boundingBox = { position, extent };
+        let xyMin = vec::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
+        let xyMax = vec::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
+        metrics.boundingBox = rect::p1p2(xyMin, xyMax);
 
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.
@@ -1378,7 +1382,7 @@ void TrueTypeFont::parseFontDirectory()
         if (glyph_id) {
             GlyphMetrics metrics;
             loadGlyphMetrics(glyph_id, metrics);
-            description.xHeight = metrics.boundingBox.extent.height();
+            description.xHeight = metrics.boundingBox.height();
         }
     }
 
@@ -1389,7 +1393,7 @@ void TrueTypeFont::parseFontDirectory()
         if (glyph_id) {
             GlyphMetrics metrics;
             loadGlyphMetrics(glyph_id, metrics);
-            description.HHeight = metrics.boundingBox.extent.height();
+            description.HHeight = metrics.boundingBox.height();
         }
     }
 }

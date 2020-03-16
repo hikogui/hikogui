@@ -28,8 +28,10 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     window->addConstraint(trafficLightButtons->box.bottom == box.bottom);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
+        let scale = mat::S(0.33f);
+
         closeWindowButton = addWidget<ToolbarButtonWidget>(
-            0.33f * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
+            scale * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window->closeWindow(); }
         );
         closeWindowButton->hoverBackgroundColor = vec{ 0.5, 0.0, 0.0, 1.0 };
@@ -39,7 +41,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
         window->addConstraint(closeWindowButton->box.bottom == box.bottom);
 
         maximizeWindowButton = addWidget<ToolbarButtonWidget>(
-            0.33f * getResource<Path>(URL("resource:Themes/Icons/Maximize%20Window.tticon")),
+            scale * getResource<Path>(URL("resource:Themes/Icons/Maximize%20Window.tticon")),
             [&]() { 
                 switch (window->size) {
                 case Window::Size::Normal:
@@ -58,7 +60,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
         window->addConstraint(maximizeWindowButton->box.bottom == box.bottom);
 
         minimizeWindowButton = addWidget<ToolbarButtonWidget>(
-            0.33f * getResource<Path>(URL("resource:Themes/Icons/Minimize%20Window.tticon")),
+            scale * getResource<Path>(URL("resource:Themes/Icons/Minimize%20Window.tticon")),
             //getResource<Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
             [&]() { window->minimizeWindow(); }
         );

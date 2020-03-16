@@ -6,9 +6,8 @@
 #include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
-#include <glm/glm.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtx/vec_swizzle.hpp>
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/mat.hpp"
 #include <vector>
 
 namespace TTauri {
@@ -20,10 +19,13 @@ struct BezierPoint {
     enum class Type { Anchor, QuadraticControl, CubicControl1, CubicControl2 };
 
     Type type;
-    glm::vec2 p;
+    vec p;
 
-    BezierPoint(glm::vec2 const p, Type const type) noexcept : type(type), p(p) {}
-    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint({x, y}, type) {}
+    BezierPoint(vec const p, Type const type) noexcept : type(type), p(p) {
+        ttauri_assume(p.is_point());
+    }
+
+    BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(vec::point(x, y), type) {}
 
     /*! Normalize points in a list.
      * The following normalizations are executed:
@@ -74,7 +76,7 @@ struct BezierPoint {
                 if (previousPoint.type == BezierPoint::Type::Anchor) {
                     ttauri_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
 
-                    r.emplace_back(glm::reflect(previousPreviousPoint.p, previousPoint.p), BezierPoint::Type::CubicControl1);
+                    r.emplace_back(reflect_point(previousPreviousPoint.p, previousPoint.p), BezierPoint::Type::CubicControl1);
                 } else {
                     ttauri_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
                 }
@@ -101,18 +103,17 @@ struct BezierPoint {
         ttauri_assert(false);
     }
 
-    inline BezierPoint &operator*=(glm::mat3x3 const &rhs) noexcept {
-        this->p = glm::xy(rhs * glm::vec3{this->p, 1.0f});
+    /** Transform the point.
+     */
+    inline BezierPoint &operator*=(mat const &rhs) noexcept {
+        p = rhs * p;
         return *this;
     }
 
-    inline BezierPoint &operator*=(float const rhs) noexcept {
-        this->p = glm::xy(rhs * glm::vec3{this->p, 1.0f});
-        return *this;
-    }
-
-    inline BezierPoint &operator+=(glm::vec2 const rhs) noexcept {
-        this->p += rhs;
+    /** Translate the point.
+     */
+    [[deprecated]] inline BezierPoint &operator+=(vec rhs) noexcept {
+        p = rhs + p;
         return *this;
     }
 
@@ -120,20 +121,16 @@ struct BezierPoint {
         return (lhs.p == rhs.p) && (lhs.type == rhs.type);
     }
 
-    [[nodiscard]] friend BezierPoint operator*(glm::mat2x2 const &lhs, BezierPoint const &rhs) noexcept {
+    /** Transform the point.
+    */
+    [[nodiscard]] friend BezierPoint operator*(mat const &lhs, BezierPoint const &rhs) noexcept {
         return { lhs * rhs.p, rhs.type };
     }
 
-    [[nodiscard]] friend BezierPoint operator*(glm::mat3x3 const &lhs, BezierPoint const &rhs) noexcept {
-        return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
-    }
-
-    [[nodiscard]] friend BezierPoint operator*(float const lhs, BezierPoint const &rhs) noexcept {
-        return { glm::xy(lhs * glm::vec3{rhs.p, 1.0f}), rhs.type };
-    }
-
-    [[nodiscard]] friend BezierPoint operator+(BezierPoint const &lhs, glm::vec2 rhs) noexcept {
-        return { lhs.p + rhs, lhs.type };
+    /** Translate the point.
+    */
+    [[deprecated]] [[nodiscard]] friend BezierPoint operator+(vec lhs, BezierPoint const &rhs) noexcept {
+        return { lhs + rhs.p, rhs.type };
     }
 };
 

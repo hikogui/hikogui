@@ -48,7 +48,7 @@ TEST(PixelMapTests, renderMaskFromPath) {
 
     auto beziers = path.getBeziers();
     for (auto &&bezier: beziers) {
-        bezier *= glm::vec2{3.0, 1.0};
+        bezier *= mat::S(3.0, 1.0, 1.0);
     }
 
     fill(mask, beziers);

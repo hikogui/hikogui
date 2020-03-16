@@ -9,7 +9,8 @@
 #include "TTauri/Foundation/math.hpp"
 #include "TTauri/Foundation/bezier.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include <glm/glm.hpp>
+#include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/mat.hpp"
 #include <tuple>
 #include <limits>
 #include <algorithm>
@@ -27,10 +28,10 @@ struct BezierCurve {
 
     Type type;
     Color color;
-    glm::vec2 P1; //!< First point
-    glm::vec2 C1; //!< Control point
-    glm::vec2 C2; //!< Control point
-    glm::vec2 P2; //!< Last point
+    vec P1; //!< First point
+    vec C1; //!< Control point
+    vec C2; //!< Control point
+    vec P2; //!< Last point
 
     BezierCurve() noexcept = delete;
     BezierCurve(BezierCurve const &other) noexcept = default;
@@ -40,23 +41,46 @@ struct BezierCurve {
 
     /*! Construct a linear bezier-curve.
      */
-    BezierCurve(glm::vec2 const P1, glm::vec2 const P2, Color color=Color::White) noexcept :
-        type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {}
+    BezierCurve(vec const P1, vec const P2, Color color=Color::White) noexcept :
+        type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {
+        ttauri_assume(P1.is_point() && P2.is_point());    
+    }
 
     /*! Construct a quadratic bezier-curve.
      */
-    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const P2, Color color=Color::White) noexcept :
-        type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(C1), P2(P2) {}
+    BezierCurve(vec const P1, vec const C1, vec const P2, Color color=Color::White) noexcept :
+        type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(), P2(P2) {
+        ttauri_assume(P1.is_point() && C1.is_point() && P2.is_point());    
+    }
 
     /*! Construct a cubic bezier-curve.
      */
-    BezierCurve(glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2, Color color=Color::White) noexcept :
-        type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {}
+    BezierCurve(vec const P1, vec const C1, vec const C2, vec const P2, Color color=Color::White) noexcept :
+        type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
+        ttauri_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
+    }
 
     /*! Construct a bezier-curve of any type.
     */
-    BezierCurve(Type const type, glm::vec2 const P1, glm::vec2 const C1, glm::vec2 const C2, glm::vec2 const P2, Color color=Color::White) noexcept :
-        type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {}
+    BezierCurve(Type const type, vec const P1, vec const C1, vec const C2, vec const P2, Color color=Color::White) noexcept :
+        type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
+        switch (type) {
+        case Type::Linear:
+            ttauri_assume(P1.is_point() && P2.is_point());
+            break;
+
+        case Type::Quadratic:
+            ttauri_assume(P1.is_point() && C1.is_point() && P2.is_point());
+            break;
+
+        case Type::Cubic:
+            ttauri_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+            break;
+
+        default:
+            no_default;
+        }
+    }
 
 
     [[nodiscard]] bool has_red() const noexcept {
@@ -78,7 +102,7 @@ struct BezierCurve {
      * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
      * \return the coordinates of the point on the curve.
      */ 
-    [[nodiscard]] glm::vec2 pointAt(float const t) const noexcept {
+    [[nodiscard]] vec pointAt(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return bezierPointAt(P1, P2, t);
         case Type::Quadratic: return bezierPointAt(P1, C1, P2, t);
@@ -94,7 +118,7 @@ struct BezierCurve {
     * \param t a relative distance between 0.0 (point P1) and 1.0 (point P2).
     * \return the tangent-vector at point t on the curve
     */ 
-    [[nodiscard]] glm::vec2 tangentAt(float const t) const noexcept {
+    [[nodiscard]] vec tangentAt(float const t) const noexcept {
         switch (type) {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
         case Type::Quadratic: return bezierTangentAt(P1, C1, P2, t);
@@ -116,7 +140,7 @@ struct BezierCurve {
         }
     }
 
-    [[nodiscard]] results<float,3> solveTForNormalsIntersectingPoint(glm::vec2 P) const noexcept {
+    [[nodiscard]] results<float,3> solveTForNormalsIntersectingPoint(vec P) const noexcept {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
         case Type::Quadratic: return bezierFindTForNormalsIntersectingPoint(P1, C1, P2, P);
@@ -125,40 +149,19 @@ struct BezierCurve {
         }
     }
 
-    struct msdf_result_t {
-        float squared_distance;
-        float angle;
-        float t;
-
-        constexpr msdf_result_t() noexcept :
-            squared_distance(std::numeric_limits<float>::max()), angle(0.0f), t(0.0f) {}
-
-        constexpr msdf_result_t(float squared_distance, float angle, float t) noexcept :
-            squared_distance(squared_distance), angle(angle), t(t) {}
-
-        [[nodiscard]] friend constexpr bool operator<(msdf_result_t const &lhs, msdf_result_t const &rhs) noexcept {
-            if (lhs.squared_distance != rhs.squared_distance) {
-                return lhs.squared_distance < rhs.squared_distance;
-            } else {
-                // Maximize orthogonality.
-                return std::abs(lhs.angle) > std::abs(rhs.angle);
-            }
-        }
-    };
-
     /** Find the distance from the point to the curve.
      */
-    [[nodiscard]] std::pair<float,float> sdf_distance(glm::vec2 P) const noexcept {
+    [[nodiscard]] std::pair<float,float> sdf_distance(vec P) const noexcept {
         auto min_square_distance = std::numeric_limits<float>::max();
         auto min_t = 0.0f;
-        auto min_normal = glm::vec2{0.0f, 1.0f};
+        auto min_normal = vec{0.0f, 1.0f};
 
         let ts = solveTForNormalsIntersectingPoint(P);
         for (auto t: ts) {
             t = std::clamp(t, 0.0f, 1.0f);
 
             let normal = P - pointAt(t);
-            let square_distance = glm::dot(normal, normal);
+            let square_distance = length_squared(normal);
             if (square_distance < min_square_distance) {
                 min_square_distance = square_distance;
                 min_t = t;
@@ -166,57 +169,17 @@ struct BezierCurve {
             }
         }
 
-        let unit_normal = glm::normalize(min_normal);
-        let unit_tangent = glm::normalize(tangentAt(min_t));
-        let orthogonality = viktorCross(unit_normal, unit_tangent);
+        let unit_normal = normalize(min_normal);
+        let unit_tangent = normalize(tangentAt(min_t));
+        let orthogonality = viktor_cross(unit_normal, unit_tangent);
 
         let tangent = tangentAt(min_t);
         let distance = std::sqrt(min_square_distance);
 
-        let sdistance = viktorCross(tangent, min_normal) < 0.0 ? distance : -distance;
+        let sdistance = viktor_cross(tangent, min_normal) < 0.0 ? distance : -distance;
 
         // Use the original angle, for determining which side of the curve the point is.
         return {sdistance, orthogonality};
-    }
-
-    /** Find the distance from the point to the curve.
-     */
-    [[nodiscard]] msdf_result_t msdf_fast_distance(glm::vec2 P) const noexcept {
-        auto min_square_distance = std::numeric_limits<float>::max();
-        auto min_clamped_t = 0.0f;
-        auto min_t = 0.0f;
-        auto min_normal = glm::vec2{0.0f, 1.0f};
-
-        let ts = solveTForNormalsIntersectingPoint(P);
-        for (let t: ts) {
-            let clamped_t = std::clamp(t, 0.0f, 1.0f);
-
-            let normal = P - pointAt(clamped_t);
-            let square_distance = glm::dot(normal, normal);
-            if (square_distance < min_square_distance) {
-                min_square_distance = square_distance;
-                min_clamped_t = clamped_t;
-                min_t = t;
-                min_normal = normal;
-            }
-        }
-
-        let unit_normal = glm::normalize(min_normal);
-        let unit_tangent = glm::normalize(tangentAt(min_clamped_t));
-        auto angle = viktorCross(unit_normal, unit_tangent);
-
-        return {min_square_distance, angle, min_t};
-    }
-
-    /** Find the distance from the point to the curve.
-    * @return distance to the curve; 0.0 on the curve, positive is inside, negative is outside.
-    */
-    [[nodiscard]] float signed_pseudo_distance(msdf_result_t result, glm::vec2 P) const noexcept {
-        // Use the non-clamped t, to get the distance to the extrapolated curve.
-        let distance = glm::length(P - pointAt(result.t));
-
-        // Use the original angle, for determining which side of the curve the point is.
-        return result.angle < 0.0f ? -distance : distance;
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.
@@ -312,21 +275,22 @@ struct BezierCurve {
         }
     }
 
-    BezierCurve &operator*=(glm::vec2 const rhs) noexcept {
-        this->P1 *= rhs;
-        this->C1 *= rhs;
-        this->C2 *= rhs;
-        this->P2 *= rhs;
-        return *this;
-    }
-
-    BezierCurve &operator+=(glm::vec2 const rhs) noexcept {
+    BezierCurve &operator+=(vec const rhs) noexcept {
         this->P1 += rhs;
         this->C1 += rhs;
         this->C2 += rhs;
         this->P2 += rhs;
         return *this;
     }
+
+    BezierCurve &operator*=(mat const rhs) noexcept {
+        P1 = rhs * P1;
+        C1 = rhs * C1;
+        C2 = rhs * C2;
+        P2 = rhs * P2;
+        return *this;
+    }
+
 
     /*! Return a line-segment from a curve at a certain distance.
      * \param offset positive means the parallel line will be on the starboard of the curve.
@@ -353,25 +317,19 @@ struct BezierCurve {
         }
     }
 
-    [[nodiscard]] friend BezierCurve operator*(glm::mat3x3 const &lhs, BezierCurve const &rhs) noexcept {
+    [[nodiscard]] friend BezierCurve operator*(mat const &lhs, BezierCurve const &rhs) noexcept {
         return {
             rhs.type,
-            glm::xy(lhs * glm::vec3(rhs.P1, 1.0)),
-            glm::xy(lhs * glm::vec3(rhs.C1, 1.0)),
-            glm::xy(lhs * glm::vec3(rhs.C2, 1.0)),
-            glm::xy(lhs * glm::vec3(rhs.P2, 1.0))
+            lhs * rhs.P1,
+            lhs * rhs.C1,
+            lhs * rhs.C2,
+            lhs * rhs.P2
         };
     }
 
-    [[nodiscard]] friend BezierCurve operator*(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
-        return { lhs.type, lhs.P1 * rhs, lhs.C1 * rhs, lhs.C2 * rhs, lhs.P2 * rhs };
-    }
-
-
-    [[nodiscard]] friend BezierCurve operator+(BezierCurve const &lhs, glm::vec2 const rhs) noexcept {
+    [[nodiscard]] friend BezierCurve operator+(BezierCurve const &lhs, vec const &rhs) noexcept {
         return { lhs.type, lhs.P1 + rhs, lhs.C1 + rhs, lhs.C2 + rhs, lhs.P2 + rhs };
     }
-
 
     /*! Reverse direction of a curve.
      */
