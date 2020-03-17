@@ -519,7 +519,7 @@ Path Path::centerScale(vec extent, float padding) const noexcept
     
     let offset = -bbox.offset() + (extent - bbox.extent()) * 0.5f;
 
-    return mat::T2D(offset, scale) * *this;
+    return (mat::T(offset) * mat::S(scale)) * *this;
 }
 
 Path operator*(mat const &lhs, Path rhs) noexcept

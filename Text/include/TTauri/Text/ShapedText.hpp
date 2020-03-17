@@ -6,24 +6,21 @@
 #include "TTauri/Text/AttributedGlyph.hpp"
 #include "TTauri/Text/gstring.hpp"
 #include "TTauri/Foundation/attributes.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include <string_view>
 
 namespace TTauri::Text {
 
-
-
-
 /** ShapedText represent a piece of text shaped to be displayed.
  */
 class ShapedText {
-    extent2 extent;
+    vec extent;
     Alignment alignment;
     bool wrap;
 
     std::vector<AttributedGlyph> text;
-    extent2 text_extent;
+    vec text_extent;
 
 public:
     ShapedText() noexcept :
@@ -40,7 +37,7 @@ public:
      */
     ShapedText(
         std::vector<AttributedGrapheme> const &text,
-        extent2 const extent,
+        vec const extent,
         Alignment const alignment=Alignment::BaseCenter,
         bool wrap=true
     ) noexcept;
@@ -57,7 +54,7 @@ public:
     ShapedText(
         gstring const &text,
         TextStyle const &style,
-        extent2 const extent,
+        vec const extent,
         Alignment const alignment=Alignment::BaseCenter,
         bool wrap=true
     ) noexcept;
@@ -74,7 +71,7 @@ public:
     ShapedText(
         std::string const &text,
         TextStyle const &style,
-        extent2 const extent,
+        vec const extent,
         Alignment const alignment=Alignment::BaseCenter,
         bool wrap=true
     ) noexcept;
@@ -84,11 +81,6 @@ public:
     ShapedText &operator=(ShapedText const &other) noexcept = default;
     ShapedText &operator=(ShapedText &&other) noexcept = default;
     ~ShapedText() = default;
-
-    /** Return the recommended extent for the size.
-     * @param max_width The maximum line width.
-     */
-    //[[nodiscard]] extent2 size(float max_width = std::numeric_limits<float>::max()) const noexcept;
 
     [[nodiscard]] std::vector<AttributedGlyph>::const_iterator begin() const noexcept {
         return text.cbegin();
@@ -108,7 +100,7 @@ public:
      * @param coordinate A coordinate within the box.
      * @return index of the selected grapheme, or -1 if no grapheme was found near the coordinate.
      */
-    [[nodiscard]] int indexFromCoordinate(glm::vec2 coordinate) const noexcept;
+    [[nodiscard]] int indexFromCoordinate(vec coordinate) const noexcept;
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the ShapedText.
@@ -117,7 +109,7 @@ public:
      * @param current The current coordinate of the mouse pointer, during the drag.
      * @return indices of all the graphemes selected during a drag.
      */
-    [[nodiscard]] std::vector<int> indicesFromCoordinates(glm::vec2 start, glm::vec2 current) const noexcept;
+    [[nodiscard]] std::vector<int> indicesFromCoordinates(vec start, vec current) const noexcept;
 };
 
 

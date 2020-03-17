@@ -29,8 +29,16 @@ public:
     rhea::linear_expression outerWidth(float margin) const noexcept { return width + (margin * 2.0); }
     rhea::linear_expression outerHeight(float margin) const noexcept { return height + (margin * 2.0); }
 
-    vec currentPosition(float depth=0.0f) const noexcept {
-        return { left.value(), bottom.value(), depth, 1.0 };
+    vec currentBegin(float depth=0.0f) const noexcept {
+        return vec::point(left.value(), bottom.value(), depth);
+    }
+
+    vec currentEnd(float depth=0.0f) const noexcept {
+        return vec::point(right.evaluate(), top.evaluate(), depth);
+    }
+
+    vec currentOffset(float depth=0.0f) const noexcept {
+        return { left.value(), bottom.value(), depth };
     }
 
     vec currentExtent() const noexcept {

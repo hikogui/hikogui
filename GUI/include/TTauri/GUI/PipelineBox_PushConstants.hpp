@@ -9,8 +9,8 @@
 namespace TTauri::GUI::PipelineBox {
 
 struct PushConstants {
-    R32G32SFloat windowExtent = { 0.0, 0.0 };
-    R32G32SFloat viewportScale = { 0.0, 0.0 };
+    R32G32SFloat windowExtent = vec{ 0.0, 0.0 };
+    R32G32SFloat viewportScale = vec{ 0.0, 0.0 };
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

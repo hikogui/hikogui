@@ -1095,11 +1095,11 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<FWord_buf_t>(bytes, offset, 2), false);
                 let tmp = unsafe_make_placement_array<FWord_buf_t>(bytes, offset, 2);
-                subGlyphOffset = { tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
+                subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             } else {
                 assert_or_return(check_placement_array<FByte_buf_t>(bytes, offset, 2), false);
                 let tmp = unsafe_make_placement_array<FByte_buf_t>(bytes, offset, 2);
-                subGlyphOffset = { tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
+                subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
             size_t pointNr1;
@@ -1178,12 +1178,6 @@ bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
         assert_or_return(check_placement_ptr<GLYFEntry>(bytes), false);
         let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
         let numberOfContours = entry->numberOfContours.value();
-
-        //let position = glm::vec2{ entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) };
-        //let extent = extent2{
-        //    entry->xMax.value(unitsPerEm) - position.x,
-        //    entry->yMax.value(unitsPerEm) - position.y
-        //};
 
         if (numberOfContours > 0) {
             assert_or_return(loadSimpleGlyph(bytes, glyph), false);

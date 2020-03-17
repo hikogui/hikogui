@@ -4,8 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/geometry.hpp"
-#include <glm/glm.hpp>
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <xmmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
@@ -86,18 +85,6 @@ public:
         _mm_storeu_ps(r.data(), *this);
         return r;
     }
-
-    [[deprecated]] explicit force_inline vec(glm::vec2 const &rhs) noexcept :
-        vec(rhs.x, rhs.y) {}
-
-    [[deprecated]] explicit operator glm::vec3 () const noexcept {
-        return {x(), y(), z()};
-    }
-
-    [[deprecated]] explicit operator extent2 () const noexcept {
-        return {x(), y()};
-    }
-
         
     /** Initialize a vec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
@@ -143,9 +130,13 @@ public:
     *
     */
     template<typename T, typename U, typename V=float, typename W=float,
-    std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-    [[nodiscard]] force_inline static vec point(T x, U y, V z=0.0f, W w=1.0f) noexcept {
-        return vec{x, y, z, w};
+    std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V>,int> = 0>
+    [[nodiscard]] force_inline static vec point(T x, U y, V z=0.0f) noexcept {
+        return vec{x, y, z, 1.0};
+    }
+
+    [[nodiscard]] force_inline static vec origin() noexcept {
+        return vec{_mm_permute_ps(_mm_set_ss(1.0f), 0b00'01'10'11)};
     }
 
     /** Create a color out of 2 to 4 values.
@@ -204,6 +195,9 @@ public:
     force_inline vec &g(float rhs) noexcept { return set<1>(rhs); }
     force_inline vec &b(float rhs) noexcept { return set<2>(rhs); }
     force_inline vec &a(float rhs) noexcept { return set<3>(rhs); }
+    force_inline vec &width(float rhs) noexcept { return set<0>(rhs); }
+    force_inline vec &height(float rhs) noexcept { return set<1>(rhs); }
+    force_inline vec &depth(float rhs) noexcept { return set<2>(rhs); }
     force_inline float x() const noexcept { return get<0>(); }
     force_inline float y() const noexcept { return get<1>(); }
     force_inline float z() const noexcept { return get<2>(); }
@@ -212,6 +206,10 @@ public:
     force_inline float g() const noexcept { return get<1>(); }
     force_inline float b() const noexcept { return get<2>(); }
     force_inline float a() const noexcept { return get<3>(); }
+    force_inline float width() const noexcept { return get<0>(); }
+    force_inline float height() const noexcept { return get<1>(); }
+    force_inline float depth() const noexcept { return get<2>(); }
+
 
     force_inline vec &operator+=(vec const &rhs) noexcept {
         return *this = _mm_add_ps(*this, rhs);

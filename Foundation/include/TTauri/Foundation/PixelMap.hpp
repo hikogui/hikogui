@@ -146,13 +146,6 @@ struct PixelMap {
     }
 
     /** Construct an pixel-map.
-     * This constructor will allocate its own memory.
-     *
-     * @param extent The width and height of the image.
-     */
-    [[deprecated]] PixelMap(ivec extent) noexcept : PixelMap(extent.x(), extent.y()) {}
-
-    /** Construct an pixel-map.
     * This constructor will allocate its own memory.
     *
     * @param extent The width and height of the image.

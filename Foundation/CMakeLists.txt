@@ -98,7 +98,7 @@ set(TTauri_Foundation_tests
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL glm zlib png)
+target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL zlib png)
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>

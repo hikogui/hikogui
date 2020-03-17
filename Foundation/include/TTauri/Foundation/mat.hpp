@@ -5,7 +5,6 @@
 
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
-#include <glm/glm.hpp>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <ostream>
@@ -29,14 +28,6 @@ public:
     force_inline mat &operator=(mat const &rhs) noexcept = default;
     force_inline mat(mat &&rhs) noexcept = default;
     force_inline mat &operator=(mat &&rhs) noexcept = default;
-
-    explicit operator glm::mat3x3 () const noexcept {
-        return {
-            static_cast<glm::vec3>(col0),
-            static_cast<glm::vec3>(col1),
-            static_cast<glm::vec3>(col2)
-        };
-    }
 
     /** Create a matrix for 4 vector-columns
      */
@@ -114,7 +105,7 @@ public:
     * Used for transforming vectors.
     */
     [[nodiscard]] force_inline friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
-        return rect::p1p2(lhs * rhs.p1(), lhs * rhs.p2());
+        return rect::p1p2(lhs * rhs.begin(), lhs * rhs.end());
     }
 
     /** Matrix/Matrix multiplication.
@@ -150,6 +141,7 @@ public:
     /** Create a translation matrix.
      */
     [[nodiscard]] static mat T(vec rhs) noexcept {
+        ttauri_assume(rhs.is_vector());
         let col0 = _mm_set_ss(1.0f);
         let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
         let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
@@ -160,6 +152,7 @@ public:
     /** Create a scaling matrix.
      */
     [[nodiscard]] static mat S(vec rhs) noexcept {
+        ttauri_assume(rhs.is_vector());
         let tmp = _mm_set_ps1(1.0f);
         let col0 = _mm_insert_ps(tmp, rhs, 0b00'00'1110);
         let col1 = _mm_insert_ps(tmp, rhs, 0b01'01'1101);
@@ -185,7 +178,7 @@ public:
     /** Create a 2D or 3D scaling matrix.
     */
     [[nodiscard]] static mat S(float x, float y, float z=1.0f) noexcept {
-        return S(vec{x, y, z, 1.0f});
+        return S(vec{x, y, z});
     }
 
     /** Create a 2D shearing matrix.
@@ -196,10 +189,10 @@ public:
      * @param N 0 = rotate around x-axis, 1=rotate around y-axis, 2=rotate around z-axis
      * @param rhs Angle in radials counter-clockwise.
      */
-    template<int N=2>
-    [[nodiscard]] static mat R(float rhs) noexcept {
-        let s = sin(rhs);
-        let c = cos(rhs);
+    template<int N=2, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    [[nodiscard]] static mat R(T rhs) noexcept {
+        let s = sin(numeric_cast<float>(rhs));
+        let c = cos(numeric_cast<float>(rhs));
         let tmp1 = _mm_set_ps(c, s, 1.0f, 0.0f);
         let tmp2 = _mm_insert_ps(tmp1, _mm_set_ss(-s), 0b00'10'0000);
 
@@ -223,17 +216,6 @@ public:
             return {col0, col1, col2, col3};
         }
     }
-
-    [[nodiscard]] static mat T2D(vec position, float scale=1.0f, float rotation=0.0f) noexcept
-    {
-        let S = mat::S(vec{scale, scale});
-        let R = mat::R(rotation);
-        let T = mat::T(position);
-        return T * R * S;
-    }
-
-
-    
 
     [[nodiscard]] friend std::string to_string(mat const &rhs) noexcept {
         return fmt::format("[{}, {}, {}, {}]", rhs.col0, rhs.col1, rhs.col2, rhs.col3);

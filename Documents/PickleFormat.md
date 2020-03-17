@@ -8,7 +8,7 @@
  0b10VVVVVV                                 | Positive integers.
  0b110LLLLL byte ...                        | string with length.
  0xe0 - 0xf5                                | Reserved for future use.
- 0xf6 value ... end-mark                    | glm::vec<>
+ 0xf6 value ... end-mark                    | vector trailing 0.0 are not encoded.
  0xf7 binary64                              | 64 bit floating point number.
  0xf8 value ... end-mark                    | vector<>
  0xf9 (key value) ... end-mark              | map<>

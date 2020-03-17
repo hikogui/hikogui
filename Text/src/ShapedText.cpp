@@ -166,25 +166,29 @@ void calculate_line_sizes(std::vector<AttributedGlyphsLine> &lines) noexcept
 /** Calculate the size of the text.
  * @return The extent of the text and the base line position of the middle line.
  */
-[[nodiscard]] static std::pair<extent2,float> calculate_text_size(std::vector<AttributedGlyphsLine> const &lines) noexcept
+[[nodiscard]] static std::pair<vec,float> calculate_text_size(std::vector<AttributedGlyphsLine> const &lines) noexcept
 {
-    auto size = extent2{0.0f, 0.0f};
+    auto size = vec{0.0f, 0.0f};
 
     if (ssize(lines) == 0) {
         return {size, 0.0f};
     }
 
     // Top of first line.
-    size.width() = lines.front().width;
-    size.height() = lines.front().lineGap + lines.front().ascender;
+    size = vec{
+        lines.front().width,
+        lines.front().lineGap + lines.front().ascender
+    };
     auto base_line = size.height();
 
     auto nr_lines = ssize(lines);
     auto half_nr_lines = nr_lines / 2;
     auto odd_nr_lines = nr_lines % 2 == 1;
     for (ssize_t i = 1; i != nr_lines; ++i) {
-        size.width() = std::max(size.width(), lines[i].width);
-        size.height() += lines[i-1].descender + std::max(lines[i-1].lineGap, lines[i].lineGap) + lines[i].ascender;
+        size = vec{
+            std::max(size.width(), lines[i].width),
+            size.height() + lines[i-1].descender + std::max(lines[i-1].lineGap, lines[i].lineGap) + lines[i].ascender
+        };
 
         if (i == half_nr_lines) {
             if (odd_nr_lines) {
@@ -198,14 +202,14 @@ void calculate_line_sizes(std::vector<AttributedGlyphsLine> &lines) noexcept
     }
 
     // Bottom of last line.
-    size.height() += lines.back().descender + lines.back().lineGap;
+    size.height(size.height() + lines.back().descender + lines.back().lineGap);
 
     return {size, size.height() - base_line};
 }
 
 /**
  */
-static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 text_extent, float text_base, extent2 box_extent, Alignment alignment) noexcept
+static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_extent, float text_base, vec box_extent, Alignment alignment) noexcept
 {
     // Calculate where text should be drawn compared to the text.
     float y = 0.0f;
@@ -275,7 +279,7 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 te
 * @param alignment How the text should be aligned in the box.
 * @return size of the resulting text, shaped text.
 */
-[[nodiscard]] static std::pair<extent2,std::vector<AttributedGlyph>> shape_text(std::vector<AttributedGrapheme> text, extent2 extent, Alignment alignment, bool wrap) noexcept
+[[nodiscard]] static std::pair<vec,std::vector<AttributedGlyph>> shape_text(std::vector<AttributedGrapheme> text, vec extent, Alignment alignment, bool wrap) noexcept
 {
     std::vector<AttributedGlyph> attributed_glyphs;
 
@@ -307,16 +311,16 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, extent2 te
 }
 
 
-ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, extent2 extent, Alignment alignment, bool wrap) noexcept :
+ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, vec extent, Alignment alignment, bool wrap) noexcept :
     extent(extent), alignment(alignment), wrap(wrap)
 {
     std::tie(this->text_extent, this->text) = shape_text(text, extent, alignment, wrap);
 }
 
-ShapedText::ShapedText(gstring const &text, TextStyle const &style, extent2 extent, Alignment alignment, bool wrap) noexcept :
+ShapedText::ShapedText(gstring const &text, TextStyle const &style, vec extent, Alignment alignment, bool wrap) noexcept :
     ShapedText(makeAttributedGraphemeVector(text, style), extent, alignment, wrap) {}
 
-ShapedText::ShapedText(std::string const &text, TextStyle const &style, extent2 extent, Alignment alignment, bool wrap) noexcept :
+ShapedText::ShapedText(std::string const &text, TextStyle const &style, vec extent, Alignment alignment, bool wrap) noexcept :
     ShapedText(translateString<gstring>(text), style, extent, alignment, wrap) {}
 
 [[nodiscard]] Path ShapedText::get_path() const noexcept

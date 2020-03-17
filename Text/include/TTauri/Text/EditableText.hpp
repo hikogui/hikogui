@@ -37,15 +37,15 @@ public:
 
     /*! Find the nearest character at position and return it's index.
      */
-    size_t characterIndexAtPosition(glm::vec2 position) const noexcept;
+    size_t characterIndexAtPosition(vec position) const noexcept;
 
     /*! Find the nearest break between characters at position and return the index of the character after the break.
      */
-    size_t breakIndexAtPosition(glm::vec2 position) const noexcept;
+    size_t breakIndexAtPosition(vec position) const noexcept;
 
     /*! Return the position of the character.
      */
-    glm::vec2 positionAtIndex(size_t index) const noexcept;
+    vec positionAtIndex(size_t index) const noexcept;
 
     /*! Set cursor at the break before the character at the index.
      */

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 
 namespace TTauri {
 
@@ -37,9 +36,6 @@ public:
         return v;
     }
 
-    [[deprecated]] force_inline rect(rect2 r) noexcept :
-        rect(r.offset.x, r.offset.y, r.extent.width(), r.extent.height()) {}
-
     /** Create a box from the position and size.
      *
      * @param x The x location of the left-bottom corner of the box
@@ -47,18 +43,15 @@ public:
      * @param width The width of the box.
      * @param height The height of the box.
      */
-    force_inline rect(float x, float y, float width, float height) noexcept :
-        rect(vec(x, y, x + width, y + height)) {}
-
-    /** Create a box from the position and size.
-     *
-     * @param x The x location of the left-bottom corner of the box
-     * @param y The y location of the left-bottom corner of the box
-     * @param width The width of the box.
-     * @param height The height of the box.
-     */
-    force_inline rect(double x, double y, double width, double height) noexcept :
-        rect(vec(x, y, x + width, y + height)) {}
+    template<typename X, typename Y, typename W=float, typename H=float,
+        std::enable_if_t<std::is_arithmetic_v<X> && std::is_arithmetic_v<Y> && std::is_arithmetic_v<W> && std::is_arithmetic_v<H>,int> = 0>
+    force_inline rect(X x, Y y, W width, H height) noexcept :
+        rect(vec(
+            numeric_cast<float>(x),
+            numeric_cast<float>(y),
+            numeric_cast<float>(x) + numeric_cast<float>(width),
+            numeric_cast<float>(y) + numeric_cast<float>(height)
+        )) {}
 
     /** Create a box from the position and size.
      *
@@ -118,7 +111,7 @@ public:
     /** Get coordinate of a corner.
     *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
-    * @return The homogenious coordinate of the corner.
+    * @return The homogeneous coordinate of the corner.
     */
     template<size_t I>
     [[nodiscard]] force_inline vec corner() const noexcept {
@@ -134,33 +127,38 @@ public:
         }
     }
 
-    [[nodiscard]] force_inline vec p1() const noexcept { return corner<0>(); }
-    [[nodiscard]] force_inline vec p2() const noexcept { return corner<3>(); }
+    [[nodiscard]] force_inline vec begin() const noexcept { return corner<0>(); }
+    [[nodiscard]] force_inline vec end() const noexcept { return corner<3>(); }
 
 
     /** Get coordinate of a corner.
     *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
     * @param z The z coordinate to insert in the resulting coordinate.
-    * @return The homogenious coordinate of the corner.
+    * @return The homogeneous coordinate of the corner.
     */
-    template<size_t I>
-    [[nodiscard]] force_inline vec corner(float z) const noexcept {
-        return corner<I>().z(z);
+    template<size_t I, typename Z, std::enable_if_t<std::is_arithmetic_v<Z>,int> = 0>
+    [[nodiscard]] force_inline vec corner(Z z) const noexcept {
+        return corner<I>().z(numeric_cast<float>(z));
     }
 
-    /** Get coordinate of the bottom-left corner
+    /** Get vector from origin to the bottom-left corner
     *
-    * @return The homogenious coordinate of the bottom-left corner.
+    * @return The homogeneous coordinate of the bottom-left corner.
     */
-    [[nodiscard]] force_inline vec offset() const noexcept { return corner<0>(); }
+    [[nodiscard]] force_inline vec offset() const noexcept {
+        return v.xy00();
+    }
 
-    /** Get coordinate of the bottom-left corner
+    /** Get vector from origin to the bottom-left corner
     *
     * @param z The z coordinate to insert in the resulting coordinate.
-    * @return The homogenious coordinate of the bottom-left corner.
+    * @return The homogeneous coordinate of the bottom-left corner.
     */
-    [[nodiscard]] force_inline vec offset(float z) const noexcept { return corner<0>(z); }
+    [[nodiscard]] force_inline vec offset(float z) const noexcept {
+        let _000z = _mm_set_ss(z); 
+        return _mm_insert_ps(v, _000z, 0b00'10'1000);
+    }
 
     /** Get size of the rectangle
     *

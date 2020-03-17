@@ -3,13 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/algorithm.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include <glm/glm.hpp>
-#include <glm/gtx/vec_swizzle.hpp>
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <string>
 #include <algorithm>
 #include <array>
@@ -59,7 +57,7 @@ inline int16_t linear_alpha_i16(uint8_t u) noexcept
  * for compositing.
  */
 struct wsRGBA {
-    glm::i16vec4 color;
+    std::array<int16_t,4> color;
 
     static constexpr int64_t I64_MAX_ALPHA = 32767;
     static constexpr int64_t I64_MAX_COLOR = 32767;
@@ -74,7 +72,7 @@ struct wsRGBA {
     /*! Set the color using the pixel value.
      * No conversion is done with the given value.
      */
-    explicit wsRGBA(glm::i16vec4 c) noexcept :
+    explicit wsRGBA(std::array<int16_t,4> c) noexcept :
         color(c) {}
 
     wsRGBA(vec const &rhs) noexcept {
@@ -84,7 +82,7 @@ struct wsRGBA {
         let color_fp = (rhs._1aaa() * rhs) * vec{max_abgr};
         let color_i32 = _mm_cvtps_epi32(color_fp);
         let color_i16 = _mm_packs_epi32(color_i32, color_i32);
-        _mm_storeu_si64(this, color_i16);
+        _mm_storeu_si64(color.data(), color_i16);
     }
 
     wsRGBA &operator=(vec const &rhs) noexcept {
@@ -94,108 +92,77 @@ struct wsRGBA {
         let color_fp = (rhs._1aaa() * rhs) * vec{max_abgr};
         let color_i32 = _mm_cvtps_epi32(color_fp);
         let color_i16 = _mm_packs_epi32(color_i32, color_i32);
-        _mm_storeu_si64(this, color_i16);
+        _mm_storeu_si64(color.data(), color_i16);
         return *this;
     }
 
-
-
-
     /*! Set the color with linear-sRGB values.
      * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gamut should be between -0.5 - 7.5.
      * This constructor expect color which has not been pre-multiplied with the alpha.
      */
-    explicit wsRGBA(glm::vec4 c) noexcept :
-        color(static_cast<glm::i16vec4>(glm::vec4{
-            glm::xyz(c) * c.a * F32_MAX_SRGB,
-            c.a * F32_MAX_ALPHA })) {}
-
-    /*! Set the color with linear-sRGB values.
-     * sRGB values are between 0.0 and 1.0, values outside of the sRGB color gamut should be between -0.5 - 7.5.
-     * This constructor expect color which has not been pre-multiplied with the alpha.
-     */
-    explicit wsRGBA(double r, double g, double b, double a=1.0) noexcept :
-        wsRGBA(glm::vec4{r, g, b, a}) {}
-
-    /*! Set the color with gamma corrected sRGB values.
-    */
-    explicit wsRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a=255) noexcept {
-        let colorWithoutPreMultiply = glm::i64vec4{
-            gamma_to_linear_i16(r),
-            gamma_to_linear_i16(g),
-            gamma_to_linear_i16(b),
-            linear_alpha_i16(a)
-        };
-
-        color = static_cast<glm::i16vec4>(
-            glm::i64vec4(
-                (glm::xyz(colorWithoutPreMultiply) * colorWithoutPreMultiply.a) / I64_MAX_ALPHA,
-                colorWithoutPreMultiply.a
-            )
-        );
-    }
+    [[deprecated]] explicit wsRGBA(double r, double g, double b, double a=1.0) noexcept :
+        wsRGBA(vec{r, g, b, a}) {}
 
     /** Return floating point values.
      * Alpha is not pre-multiplied.
      */
-    explicit operator glm::vec4 () const noexcept {
-        let floatColor = static_cast<glm::vec4>(color);
-        if (floatColor.a == 0.0) {
+    explicit operator vec () const noexcept {
+        let floatColor = vec(color[0], color[1], color[2], color[3]);
+        if (floatColor.a() == 0.0) {
             return {0.0, 0.0, 0.0, 0.0};
         } else {
-            let alpha = floatColor.a * F32_ALPHA_MUL;
+            let alpha = floatColor.a() * F32_ALPHA_MUL;
             let oneOverAlpha = 1.0f / alpha;
-            return {
-                glm::xyz(floatColor) * F32_SRGB_MUL * oneOverAlpha,
-                alpha
-            };
+            return (floatColor * F32_SRGB_MUL * oneOverAlpha).a(alpha);
         }
     }
 
-    /*! Set the color with gamma corrected sRGB values.
-    */
-    explicit wsRGBA(uint32_t c) noexcept :
-        wsRGBA(static_cast<uint8_t>(c >> 24), static_cast<uint8_t>(c >> 16), static_cast<uint8_t>(c >> 8), static_cast<uint8_t>(c)) {}
+    int16_t const &r() const noexcept { return color[0]; }
+    int16_t const &g() const noexcept { return color[1]; }
+    int16_t const &b() const noexcept { return color[2]; }
+    int16_t const &a() const noexcept { return color[3]; }
 
-    int16_t const &r() const noexcept { return color.r; }
-    int16_t const &g() const noexcept { return color.g; }
-    int16_t const &b() const noexcept { return color.b; }
-    int16_t const &a() const noexcept { return color.a; }
-
-    int16_t &r() noexcept { return color.r; }
-    int16_t &g() noexcept { return color.g; }
-    int16_t &b() noexcept { return color.b; }
-    int16_t &a() noexcept { return color.a; }
+    int16_t &r() noexcept { return color[0]; }
+    int16_t &g() noexcept { return color[1]; }
+    int16_t &b() noexcept { return color[2]; }
+    int16_t &a() noexcept { return color[3]; }
 
     int16_t operator[](size_t i) const {
-        return color[static_cast<typename decltype(color)::length_type>(i)];
+        return color[i];
     }
 
     int16_t &operator[](size_t i) {
-        return color[static_cast<typename decltype(color)::length_type>(i)];
+        return color[i];
     }
 
-    bool isTransparent() const noexcept { return color.a <= 0; }
-    bool isOpaque() const noexcept { return color.a == I64_MAX_ALPHA; }
+    bool isTransparent() const noexcept { return color[3] <= 0; }
+    bool isOpaque() const noexcept { return color[3] == I64_MAX_ALPHA; }
 
     /*! Return a 32 bit gamma corrected sRGBA colour with normal alpha.
     */
     uint32_t to_sRGBA_u32() const noexcept {
-        let i64colorPM = static_cast<glm::i64vec4>(color);
-        if (i64colorPM.a == 0) {
+        let i64colorPM = std::array<int64_t,4>{color[0], color[1], color[2], color[3]};
+        if (i64colorPM[3] == 0) {
             return 0;
         }
 
-        let i64color = glm::i64vec4{
-            (glm::xyz(i64colorPM) * I64_MAX_ALPHA) / i64colorPM.a,
-            i64colorPM.a
+        let i64color = std::array<int64_t,4>{
+            (i64colorPM[0] * I64_MAX_ALPHA) / i64colorPM[3],
+            (i64colorPM[1] * I64_MAX_ALPHA) / i64colorPM[3],
+            (i64colorPM[2] * I64_MAX_ALPHA) / i64colorPM[3],
+            i64colorPM[3]
         };
-        let i16color = static_cast<glm::i16vec4>(i64color);
+        let i16color = std::array<int16_t,4>{
+            static_cast<int16_t>(i64color[0]),
+            static_cast<int16_t>(i64color[1]),
+            static_cast<int16_t>(i64color[2]),
+            static_cast<int16_t>(i64color[3])
+        };
 
-        let red = linear_to_gamma_u8(i16color.r);
-        let green = linear_to_gamma_u8(i16color.g);
-        let blue = linear_to_gamma_u8(i16color.b);
-        let alpha = linear_alpha_u8(i16color.a);
+        let red = linear_to_gamma_u8(i16color[0]);
+        let green = linear_to_gamma_u8(i16color[1]);
+        let blue = linear_to_gamma_u8(i16color[2]);
+        let alpha = linear_alpha_u8(i16color[3]);
         return
             (static_cast<uint32_t>(red) << 24) |
             (static_cast<uint32_t>(green) << 16) |
@@ -236,26 +203,36 @@ struct wsRGBA {
 
         // 15 bit
         constexpr int64_t OVERV_MAX = I64_MAX_COLOR;
-        let overV = static_cast<glm::i64vec4>(over.color);
+        let overV = std::array<int64_t,4>{over.color[0], over.color[1], over.color[2], over.color[3]};
 
         // 15 bit
         constexpr int64_t UNDERV_MAX = I64_MAX_COLOR;
-        let underV = static_cast<glm::i64vec4>(color);
+        let underV = std::array<int64_t,4>{color[0], color[1], color[2], color[3]};
 
         // 15 bit
         constexpr int64_t ONE = OVERV_MAX;
         constexpr int64_t ONEMINUSOVERALPHA_MAX = OVERV_MAX;
-        let oneMinusOverAlpha = ONE - overV.a;
+        let oneMinusOverAlpha = ONE - overV[3];
 
         static_assert(OVERV_MAX * ONE == UNDERV_MAX * ONEMINUSOVERALPHA_MAX);
 
         // 15 bit + 15 bit == 15 bit + 15 bit
         constexpr int64_t RESULTV_MAX = UNDERV_MAX * ONEMINUSOVERALPHA_MAX;
-        let resultV = (overV * ONE) + (underV * oneMinusOverAlpha);
+        let resultV = std::array<int64_t,4>{
+            (overV[0] * ONE) + (underV[0] * oneMinusOverAlpha),
+            (overV[1] * ONE) + (underV[1] * oneMinusOverAlpha),
+            (overV[2] * ONE) + (underV[2] * oneMinusOverAlpha),
+            (overV[3] * ONE) + (underV[3] * oneMinusOverAlpha)
+        };
 
         constexpr int64_t RESULTV_DIVIDER = RESULTV_MAX / I64_MAX_COLOR;
         static_assert(RESULTV_DIVIDER == 0x7fff);
-        color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
+        color = std::array<int16_t,4>{
+            static_cast<int16_t>(resultV[0] / RESULTV_DIVIDER),
+            static_cast<int16_t>(resultV[1] / RESULTV_DIVIDER),
+            static_cast<int16_t>(resultV[2] / RESULTV_DIVIDER),
+            static_cast<int16_t>(resultV[3] / RESULTV_DIVIDER)
+        };
     }
 
     void composit(wsRGBA over, uint8_t mask) noexcept {
@@ -269,10 +246,20 @@ struct wsRGBA {
             // calculate 'over' by multiplying all components with the new alpha.
             // This means that the color stays pre-multiplied.
             constexpr int64_t NEWOVERV_MAX = I64_MAX_COLOR * MASK_MAX;
-            let newOverV = static_cast<glm::i64vec4>(over.color) * static_cast<int64_t>(mask);
+            let newOverV = std::array<int64_t,4>{
+                static_cast<int64_t>(over.color[0]) * static_cast<int64_t>(mask),
+                static_cast<int64_t>(over.color[1]) * static_cast<int64_t>(mask),
+                static_cast<int64_t>(over.color[2]) * static_cast<int64_t>(mask),
+                static_cast<int64_t>(over.color[3]) * static_cast<int64_t>(mask)
+            };
 
             constexpr int64_t NEWOVERV_DIVIDER = NEWOVERV_MAX / I64_MAX_COLOR;
-            let newOver = wsRGBA{ static_cast<glm::i16vec4>(newOverV / NEWOVERV_DIVIDER) };
+            let newOver = wsRGBA{ std::array<int16_t,4>{
+                static_cast<int16_t>(newOverV[0] / NEWOVERV_DIVIDER),
+                static_cast<int16_t>(newOverV[1] / NEWOVERV_DIVIDER),
+                static_cast<int16_t>(newOverV[2] / NEWOVERV_DIVIDER),
+                static_cast<int16_t>(newOverV[3] / NEWOVERV_DIVIDER)
+            }};
             return composit(newOver);
         }
     }
@@ -286,46 +273,72 @@ struct wsRGBA {
 
         // 8 bit
         constexpr int64_t MASKV_MAX = MASK_MAX;
-        let maskV = glm::i64vec4{
-            mask[0], mask[1], mask[2]
+        let maskV = std::array<int64_t,4>{
+            mask[0],
+            mask[1],
+            mask[2],
             (static_cast<int64_t>(mask[0]) + static_cast<int64_t>(mask[1]) + static_cast<int64_t>(mask[2])) / 3
         };
 
         // 15 bit
         constexpr int64_t UNDERV_MAX = I64_MAX_COLOR;
-        let underV = static_cast<glm::i64vec4>(color);
+        let underV = std::array<int64_t,4>{color[0], color[1], color[2], color[3]};
 
         // 15 bit
         constexpr int64_t _OVERV_MAX = I64_MAX_COLOR;
-        let _overV = static_cast<glm::i64vec4>(over.color);
+        let _overV = std::array<int64_t,4>{over.color[0], over.color[1], over.color[2], over.color[3]};
 
         // The over color was already pre-multiplied with it's own alpha, so
         // it only needs to be pre multiplied with the mask.
         // 15 bit + 8 bit = 23 bit
         constexpr int64_t OVER_MAX = _OVERV_MAX * MASKV_MAX;
-        let overV = _overV * maskV;
+        let overV = std::array<int64_t,4>{
+            _overV[0] * maskV[0],
+            _overV[1] * maskV[1],
+            _overV[2] * maskV[2],
+            _overV[3] * maskV[3]
+        };
 
         // The alpha for each component is the subpixel-mask multiplied by the alpha of the original over.
         // 8 bit + 15 bit = 23 bit
         constexpr int64_t ALPHAV_MAX = MASKV_MAX * _OVERV_MAX;
-        let alphaV = maskV * _overV.a;
+        let alphaV = std::array<int64_t,4>{
+            maskV[0] * _overV[3],
+            maskV[1] * _overV[3],
+            maskV[2] * _overV[3],
+            maskV[3] * _overV[3]
+        };
 
         // 23 bit
         constexpr int64_t ONEMINUSOVERALPHAV_MAX = ALPHAV_MAX;
-        constexpr glm::i64vec4 oneV = { ALPHAV_MAX, ALPHAV_MAX, ALPHAV_MAX, ALPHAV_MAX };
-        let oneMinusOverAlphaV = oneV - alphaV;
+        let oneMinusOverAlphaV = std::array<int64_t,4>{
+            ALPHAV_MAX - alphaV[0],
+            ALPHAV_MAX - alphaV[1],
+            ALPHAV_MAX - alphaV[2],
+            ALPHAV_MAX - alphaV[3]
+        };
 
 
         // 23 bit + 15 bit == 15bit + 23bit == 38bit
         constexpr int64_t ONE = 0x7fff;
         static_assert(OVER_MAX * ONE == UNDERV_MAX * ONEMINUSOVERALPHAV_MAX);
         constexpr int64_t RESULTV_MAX = OVER_MAX * ONE;
-        let resultV = (overV * ONE) + (underV * oneMinusOverAlphaV);
+        let resultV = std::array<int64_t,4>{
+            (overV[0] * ONE) + (underV[0] * oneMinusOverAlphaV[0]),
+            (overV[1] * ONE) + (underV[1] * oneMinusOverAlphaV[1]),
+            (overV[2] * ONE) + (underV[2] * oneMinusOverAlphaV[2]),
+            (overV[3] * ONE) + (underV[3] * oneMinusOverAlphaV[3])
+        };
 
         // 38bit - 15bit = 23bit.
         constexpr int64_t RESULTV_DIVIDER = RESULTV_MAX / I64_MAX_COLOR;
         static_assert(RESULTV_DIVIDER == 0x7fff * 0xff);
-        color = static_cast<glm::i16vec4>(resultV / RESULTV_DIVIDER);
+        color = std::array<int16_t,4>{
+            static_cast<int16_t>(resultV[0] / RESULTV_DIVIDER),
+            static_cast<int16_t>(resultV[1] / RESULTV_DIVIDER),
+            static_cast<int16_t>(resultV[2] / RESULTV_DIVIDER),
+            static_cast<int16_t>(resultV[3] / RESULTV_DIVIDER)
+        };
     }
 
     friend bool operator==(wsRGBA const &lhs, wsRGBA const &rhs) noexcept
@@ -355,35 +368,21 @@ struct wsRGBA {
 
     friend std::string to_string(wsRGBA const &x) noexcept
     {
-        let floatColor = static_cast<glm::vec4>(x);
+        let floatColor = static_cast<vec>(x);
         if (
-            floatColor.r >= 0.0 && floatColor.r <= 1.0 &&
-            floatColor.g >= 0.0 && floatColor.g <= 1.0 &&
-            floatColor.b >= 0.0 && floatColor.b <= 1.0
+            floatColor.r() >= 0.0 && floatColor.r() <= 1.0 &&
+            floatColor.g() >= 0.0 && floatColor.g() <= 1.0 &&
+            floatColor.b() >= 0.0 && floatColor.b() <= 1.0
             ) {
             // This color is inside the sRGB gamut.
             return fmt::format("#{:08x}", x.to_sRGBA_u32());
 
         } else {
-            return fmt::format("<{:.3f}, {:.3f}, {:.3f}, {:.3f}>", floatColor.r, floatColor.g, floatColor.b, floatColor.a);
+            return fmt::format("rgba{}", floatColor);
         }
     }
 };
 
-
-
-// http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
-const glm::mat3x3 matrix_sRGB_to_XYZ = {
-    0.4124564, 0.3575761, 0.1804375,
-    0.2126729, 0.7151522, 0.0721750,
-    0.0193339, 0.1191920, 0.9503041
-};
-
-const glm::mat3x3 matrix_XYZ_to_sRGB = {
-    3.2404542, -1.5371385, -0.4985314,
-    -0.9692660, 1.8760108, 0.0415560,
-    0.0556434, -0.2040259,  1.0572252
-};
 
 }
 

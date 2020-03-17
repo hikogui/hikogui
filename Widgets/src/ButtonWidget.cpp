@@ -47,7 +47,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     if (modified) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, extent2{box.currentExtent()}, Alignment::MiddleCenter);
+        labelShapedText = ShapedText(label, labelStyle, box.currentExtent(), Alignment::MiddleCenter);
 
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
@@ -67,7 +67,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
-        mat::T2D(static_cast<vec>(box.currentPosition())),
+        mat::T(box.currentOffset()),
         box.currentRectangle(),
         depth
     );

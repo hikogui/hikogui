@@ -49,7 +49,7 @@ bool LineInputWidget::updateAndPlaceVertices(
     if (modified) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, static_cast<extent2>(textRectangle.extent()), Alignment::MiddleLeft);
+        labelShapedText = ShapedText(label, labelStyle, textRectangle.extent(), Alignment::MiddleLeft);
 
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
@@ -69,7 +69,7 @@ bool LineInputWidget::updateAndPlaceVertices(
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
-        mat::T2D(textRectangle.offset()),
+        mat::T(textRectangle.offset()),
         box.currentRectangle(),
         depth
     );
@@ -81,14 +81,15 @@ bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
 {
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:
-        LOG_ERROR("Received grapheme: {}", event.grapheme);
+        LOG_DEBUG("Received grapheme: {}", event.grapheme);
         break;
     case GUI::KeyboardEvent::Type::PartialGrapheme:
-        LOG_ERROR("Received deakey: {}", event.grapheme);
+        LOG_DEBUG("Received dead-key: {}", event.grapheme);
         break;
     case GUI::KeyboardEvent::Type::Key:
-        LOG_ERROR("Received command: {}", tt5_decode(event.getCommand("text"_tag)));
+        LOG_DEBUG("Received command: {}", tt5_decode(event.getCommand("text"_tag)));
         break;
+    default: no_default;
     }
     return false;
 }

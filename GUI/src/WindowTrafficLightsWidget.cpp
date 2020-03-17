@@ -51,7 +51,7 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        let T = mat::T(box.currentPosition(depth));
+        let T = mat::T(box.currentOffset(depth));
         let S = mat::S(currentScale);
         location.transform = T * S;
         location.clippingRectangle = box.currentRectangle();
@@ -126,7 +126,7 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineIma
     auto linearMap = PixelMap<wsRGBA>{image.extent};
     fill(linearMap);
 
-    let iconPath = applicationIcon.centerScale(vec{image.extent}, 5.0);
+    let iconPath = applicationIcon.centerScale(vec{image.extent}, 3.0);
 
     fill(linearMap);
     composit(linearMap, iconPath, window->subpixelOrientation);

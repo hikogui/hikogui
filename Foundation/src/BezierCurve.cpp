@@ -5,6 +5,7 @@
 #include "TTauri/Foundation/BezierPoint.hpp"
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/memory.hpp"
+#include <optional>
 
 namespace TTauri {
 

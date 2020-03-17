@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/mat.hpp"
 #include <array>
+#include <optional>
 
 namespace TTauri {
 

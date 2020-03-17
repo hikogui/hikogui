@@ -111,7 +111,7 @@ struct BezierPoint {
 
     /** Translate the point.
      */
-    [[deprecated]] inline BezierPoint &operator+=(vec rhs) noexcept {
+    inline BezierPoint &operator+=(vec rhs) noexcept {
         p = rhs + p;
         return *this;
     }

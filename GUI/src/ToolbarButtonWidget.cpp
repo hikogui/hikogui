@@ -60,7 +60,7 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        let T = mat::T(box.currentPosition(depth));
+        let T = mat::T(box.currentOffset(depth));
         let S = mat::S(currentScale);
         location.transform = T * S;
         location.clippingRectangle = box.currentRectangle();

@@ -143,7 +143,9 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         // Now create a path of the combined glyphs. Offset and scale the path so that
         // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
-        let offset = vec{drawBorder, drawBorder} - (attr_grapheme.metrics.boundingBox.offset() * fontSize);
+        let offset =
+            vec{drawBorder, drawBorder} -
+            attr_grapheme.metrics.boundingBox.offset() * fontSize;
         let path = (mat::T(offset) * mat::S(fontSize)) * attr_grapheme.glyphs.get_path();
 
         // Draw glyphs into staging buffer of the atlas.

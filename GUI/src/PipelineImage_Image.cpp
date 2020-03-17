@@ -35,10 +35,10 @@ irect Image::indexToRect(int const pageIndex) const noexcept
     return irect::p1p2(p1, p2);
 }
 
-static std::tuple<vec, vec, bool>calculatePosition(float x, float y, float width, float height, const ImageLocation &location)
+static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, const ImageLocation &location)
 {
     auto p = location.transform * vec::point(x, y);
-    return {p, {width, height}, location.clippingRectangle.contains(p)};
+    return {p, vec{width, height}, location.clippingRectangle.contains(p)};
 }
 
 void Image::calculateVertexPositions(const ImageLocation &location)
