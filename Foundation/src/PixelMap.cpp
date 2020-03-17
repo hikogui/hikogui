@@ -109,7 +109,7 @@ void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> co
         let maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
         for (auto maskColumnNr = 0, columnNr = 0; columnNr < static_cast<size_t>(underRow.width); columnNr++, maskColumnNr += 3) {
-            let maskRGBValue = glm::u8vec3{
+            let maskRGBValue = std::array<uint8_t,3>{
                 maskRow[maskColumnNr],
                 maskRow[maskColumnNr + 1],
                 maskRow[maskColumnNr + 2]

@@ -7,7 +7,6 @@
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include <glm/gtx/matrix_transform_2d.hpp>
 
 namespace TTauri {
 

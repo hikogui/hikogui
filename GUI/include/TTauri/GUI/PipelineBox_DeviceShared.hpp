@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/GUI/Device_forward.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"

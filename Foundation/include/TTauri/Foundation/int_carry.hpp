@@ -8,7 +8,6 @@
 #include <complex>
 #include <cmath>
 #include <limits>
-#include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <tuple>
 

@@ -11,7 +11,6 @@
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/irect.hpp"
-#include <glm/gtx/rotate_vector.hpp>
 
 namespace TTauri::GUI::PipelineImage {
 

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/polynomial.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/mat.hpp"
 #include <array>

@@ -11,7 +11,6 @@
 #include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/ivec.hpp"

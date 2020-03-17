@@ -13,7 +13,6 @@
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/irect.hpp"
 #include "TTauri/Foundation/mat.hpp"
-#include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
 namespace TTauri::GUI::PipelineSDF {

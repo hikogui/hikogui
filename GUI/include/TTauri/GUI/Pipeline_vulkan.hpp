@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/GUI/Pipeline_base.hpp"
-#include <glm/glm.hpp>
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>

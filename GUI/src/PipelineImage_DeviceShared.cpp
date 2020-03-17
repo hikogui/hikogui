@@ -9,7 +9,6 @@
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
-#include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
 namespace TTauri::GUI::PipelineImage {

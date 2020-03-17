@@ -277,18 +277,18 @@ struct wsRGBA {
         }
     }
 
-    void subpixelComposit(wsRGBA over, glm::u8vec3 mask) noexcept {
+    void subpixelComposit(wsRGBA over, std::array<uint8_t,3> mask) noexcept {
         constexpr int64_t MASK_MAX = 255;
 
-        if (mask.r == mask.g && mask.r == mask.b) {
-            return composit(over, mask.r);
+        if (mask[0] == mask[1] && mask[0] == mask[2]) {
+            return composit(over, mask[0]);
         }
 
         // 8 bit
         constexpr int64_t MASKV_MAX = MASK_MAX;
         let maskV = glm::i64vec4{
-            mask,
-            (static_cast<int64_t>(mask.r) + static_cast<int64_t>(mask.g) + static_cast<int64_t>(mask.b)) / 3
+            mask[0], mask[1], mask[2]
+            (static_cast<int64_t>(mask[0]) + static_cast<int64_t>(mask[1]) + static_cast<int64_t>(mask[2])) / 3
         };
 
         // 15 bit

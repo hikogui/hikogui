@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/geometry.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
 #include <algorithm>
 
 namespace TTauri {

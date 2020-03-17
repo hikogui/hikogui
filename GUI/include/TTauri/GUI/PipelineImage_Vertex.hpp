@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/R32G32B32SFloat.hpp"

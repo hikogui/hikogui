@@ -4,7 +4,6 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include <array>

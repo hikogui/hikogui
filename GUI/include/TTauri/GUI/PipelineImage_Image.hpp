@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/irect.hpp"

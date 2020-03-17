@@ -7,7 +7,6 @@
 #include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vspan.hpp"

@@ -3,10 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/geometry.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/irect.hpp"
-#include <glm/glm.hpp>
 #include <gsl/gsl>
 #include <string>
 #include <algorithm>
@@ -152,7 +150,7 @@ struct PixelMap {
      *
      * @param extent The width and height of the image.
      */
-    [[deprecated]] PixelMap(iextent2 extent) noexcept : PixelMap(extent.width(), extent.height()) {}
+    [[deprecated]] PixelMap(ivec extent) noexcept : PixelMap(extent.x(), extent.y()) {}
 
     /** Construct an pixel-map.
     * This constructor will allocate its own memory.
@@ -172,14 +170,14 @@ struct PixelMap {
      * @param pixel A pointer to pixels received from the API.
      * @param extent The width and height of the image.
      */
-    PixelMap(T *pixels, iextent2 extent) noexcept : PixelMap(pixels, extent.width(), extent.height()) {}
+    PixelMap(T *pixels, ivec extent) noexcept : PixelMap(pixels, extent.x(), extent.y()) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixel A pointer to pixels received from the API.
      * @param extent The width and height of the image.
      * @param stride Number of pixel elements until the next row.
      */
-    PixelMap(T *pixels, iextent2 extent, int stride) noexcept : PixelMap(pixels, extent.width(), extent.height(), stride) {}
+    PixelMap(T *pixels, ivec extent, int stride) noexcept : PixelMap(pixels, extent.x(), extent.y(), stride) {}
 
     gsl_suppress2(r.11,i.11)
     ~PixelMap() {
@@ -246,10 +244,6 @@ struct PixelMap {
         }
     }
     
-    [[deprecated]] PixelMap<T> submap(irect2 r) const noexcept {
-        return submap(irect{r.offset.x, r.offset.y, r.extent.width(), r.extent.height()});
-    }
-
     /** Get a (smaller) view of the map.
      * @param x x-offset in the current pixel-map
      * @param y y-offset in the current pixel-map

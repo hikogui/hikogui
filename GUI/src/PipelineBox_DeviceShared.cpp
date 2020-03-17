@@ -6,7 +6,6 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include <glm/gtx/vec_swizzle.hpp>
 #include <array>
 
 namespace TTauri::GUI::PipelineBox {
