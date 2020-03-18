@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/float16.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>
@@ -12,7 +13,7 @@ namespace TTauri {
 
 class R16G16B16A16SFloat {
     // Red, Green, Blue, Alpha in binary16 (native endian).
-    std::array<uint16_t,4> v;
+    std::array<float16,4> v;
 
 public:
     force_inline R16G16B16A16SFloat() = default;
@@ -35,6 +36,10 @@ public:
     force_inline operator vec () const noexcept {
         let rhs_fp16 = _mm_loadu_si64(v.data());
         return _mm_cvtph_ps(rhs_fp16);
+    }
+
+    std::array<float16,4> const &get() const noexcept {
+        return v;
     }
 
     [[nodiscard]] force_inline friend bool operator==(R16G16B16A16SFloat const &lhs, R16G16B16A16SFloat const &rhs) noexcept {

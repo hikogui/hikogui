@@ -176,6 +176,14 @@ public:
         return w() == 0.0f;
     }
 
+    force_inline bool is_opaque() const noexcept {
+        return a() == 1.0f;
+    }
+
+    force_inline bool is_transparent() const noexcept {
+        return a() == 0.0f;
+    }
+
     constexpr size_t size() const noexcept {
         return 4;
     }
@@ -381,6 +389,40 @@ public:
         return (p1 + p2) * 0.5;
     }
 
+    [[nodiscard]] friend vec desaturate(vec const &color, float brightness) noexcept {
+        // Use luminance ratios and change the brightness.
+        // luminance ratios according to BT.709.
+        let _0LLL = color * vec{0.2126, 0.7152, 0.0722} * brighness;
+        let __LL = _mm_hadd_ps(_0LLL _0LLL);
+        let ___L = _mm_hadd_ps(__LL, __LL);
+
+        // grayscale, with original alpha. 
+        return _mm_blend_ps(_mm_set1_ps(L), color, 0b1000);
+    }
+
+    [[nodiscard]] friend vec composit(vec &under, vec &over) noexcept {
+        if (over.is_transparent()) {
+            return under;
+        }
+        if (over.is_opaque()) {
+            return over;
+        }
+
+        let over_alpha = over.aaaa();
+        let under_alpha = under.aaaa();
+
+        let over_color = over.rgb1();
+        let under_color = over.rgb1();
+
+        output_color =
+            over_color * over_alpha +
+            under_color * under_alpha * (vec{1.0} - over_alpha);
+
+        output_color /= output_color.aaa1();
+
+        return output_color;
+    }
+
     /** Find the point on the other side and at the same distance of an anchor-point.
      */
     [[nodiscard]] friend vec reflect_point(vec const &p, vec const anchor) noexcept {
@@ -398,13 +440,6 @@ public:
     template<std::size_t I>
     [[nodiscard]] force_inline friend float get(vec const &rhs) noexcept {
         return rhs.get<I>();
-    }
-
-    [[nodiscard]] force_inline friend float at(vec const &rhs, size_t i) {
-        if (i > 3) {
-            throw std::out_of_range("range check");
-        }
-        return rhs[i];
     }
 
     template<char a, char b, char c, char d>
