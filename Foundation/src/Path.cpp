@@ -5,7 +5,6 @@
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/BezierCurve.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
 #include "TTauri/Foundation/required.hpp"
 
 namespace TTauri {
@@ -548,44 +547,28 @@ Path &operator+=(Path &lhs, vec const &rhs) noexcept
     return lhs;
 }
 
-void composit(PixelMap<wsRGBA>& dst, vec color, Path const &path, SubpixelOrientation subpixelOrientation) noexcept
+void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &path) noexcept
 {
     ttauri_assert(!path.hasLayers());
     ttauri_assert(!path.isContourOpen());
 
-    let renderSubpixels = subpixelOrientation != SubpixelOrientation::Unknown;
-
-    auto curves = path.getBeziers();
-    if (renderSubpixels) {
-        let scale = mat::S(3.0f, 1.0f);
-        curves = transform<std::vector<BezierCurve>>(curves, [&](auto const &curve) {
-            return scale * curve;
-        });
-    }
-
-    auto mask = PixelMap<uint8_t>(renderSubpixels ? dst.width * 3 : dst.width, dst.height);
+    auto mask = PixelMap<uint8_t>(dst.width, dst.height);
     fill(mask);
+
+    let curves = path.getBeziers();
     fill(mask, curves);
 
-    if (renderSubpixels) {
-        subpixelFilter(mask);
-        if (subpixelOrientation == SubpixelOrientation::RedRight) {
-            subpixelFlip(mask);
-        }
-        subpixelComposit(dst, color, mask);
-    } else {
-        composit(dst, color, mask);
-    }
+    composit(dst, color, mask);
 }
 
-void composit(PixelMap<wsRGBA>& dst, Path const &src, SubpixelOrientation subpixelOrientation) noexcept
+void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &src) noexcept
 {
     ttauri_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
         let [layer, fillColor] = src.getLayer(layerNr);
 
-        composit(dst, fillColor, layer, subpixelOrientation);
+        composit(dst, fillColor, layer);
     }
 }
 

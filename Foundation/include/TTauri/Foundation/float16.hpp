@@ -11,19 +11,21 @@ class float16 {
     uint16_t v;
 
 public:
-    template<typename T, std:enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    float16() noexcept : v() {}
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     float16(T const &rhs) noexcept {
         let tmp1 = numeric_cast<float>(rhs);
-        let tmp2 = _mm_set_ss(tmp1, _MM_FROUND_CUR_DIRECTION);
-        let tmp3 = _mm_cvtps_ph(tmp2);
+        let tmp2 = _mm_set_ss(tmp1);
+        let tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si16(&v, tmp3);
     }
 
-    template<typename T, std:enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     float16 &operator=(T const &rhs) noexcept {
         let tmp1 = numeric_cast<float>(rhs);
-        let tmp2 = _mm_set_ss(tmp1, _MM_FROUND_CUR_DIRECTION);
-        let tmp3 = _mm_cvtps_ph(tmp2);
+        let tmp2 = _mm_set_ss(tmp1);
+        let tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si16(&v, tmp3);
         return *this;
     }

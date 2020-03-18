@@ -11,7 +11,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/SDF8.hpp"
 #include <vector>
 
@@ -238,23 +238,20 @@ Path &operator*=(Path &lhs, mat const &rhs) noexcept;
 
 Path &operator+=(Path &lhs, vec const &rhs) noexcept;
 
-
 /*! Composit color onto the destination image where the mask is solid.
- *
- * \param dst destination image.
- * \param color color to composit.
- * \param mask mask where the color will be composited on the destination.
- * \param subpixel orientation to improve resolution on LCD displays.
- */
-void composit(PixelMap<wsRGBA>& dst, vec color, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
+*
+* \param dst destination image.
+* \param color color to composit.
+* \param mask mask where the color will be composited on the destination.
+*/
+void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &mask) noexcept;
 
 /*! Composit color onto the destination image where the mask is solid.
 *
 * \param dst destination image.
 * \param mask mask where the color will be composited on the destination.
-* \param subpixel orientation to improve resolution on LCD displays.
 */
-void composit(PixelMap<wsRGBA>& dst, Path const &mask, SubpixelOrientation subpixelOrientation) noexcept;
+void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &mask) noexcept;
 
 /** Fill a signed distance field image from the given path.
 * @param image An signed-distance-field which show distance toward the closest curve

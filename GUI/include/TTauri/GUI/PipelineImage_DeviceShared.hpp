@@ -7,6 +7,8 @@
 #include "TTauri/GUI/PipelineImage_Page.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/A8B8G8R8SrgbPack32.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -87,14 +89,14 @@ struct DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    TTauri::PixelMap<uint32_t> getStagingPixelMap();
+    TTauri::PixelMap<A8B8G8R8SrgbPack32> getStagingPixelMap();
 
-    void uploadPixmapToAtlas(Image const &image, PixelMap<wsRGBA> const &pixelMap);
+    void uploadPixmapToAtlas(Image const &image, PixelMap<R16G16B16A16SFloat> const &pixelMap);
 
     void prepareAtlasForRendering();
 
 private:
-    TTauri::PixelMap<uint32_t> getStagingPixelMap(ivec extent) {
+    TTauri::PixelMap<A8B8G8R8SrgbPack32> getStagingPixelMap(ivec extent) {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 

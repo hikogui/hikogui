@@ -11,10 +11,6 @@
 #include <vector>
 
 namespace TTauri {
-struct wsRGBA;
-}
-
-namespace TTauri {
 
 /** A row of pixels.
  */
@@ -26,7 +22,7 @@ struct PixelRow {
 
     /** Number of pixels in the row.
      */
-    int width;
+    ssize_t width;
 
     /** Get a pointer to the pixel data.
      */
@@ -44,7 +40,7 @@ struct PixelRow {
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    T const &operator[](int columnNr) const noexcept {
+    T const &operator[](ssize_t columnNr) const noexcept {
         return pixels[columnNr];
     }
 
@@ -52,7 +48,7 @@ struct PixelRow {
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    T &operator[](int columnNr) noexcept {
+    T &operator[](ssize_t columnNr) noexcept {
         return pixels[columnNr];
     }
 
@@ -62,7 +58,7 @@ struct PixelRow {
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    T const &at(int columnNr) const noexcept {
+    T const &at(ssize_t columnNr) const noexcept {
         ttauri_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
@@ -73,7 +69,7 @@ struct PixelRow {
      * @param columnNr The column number in the row.
      * @return a reference to a pixel.
      */
-    T &at(int columnNr) noexcept {
+    T &at(ssize_t columnNr) noexcept {
         ttauri_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
@@ -91,16 +87,16 @@ struct PixelMap {
 
     /** Number of horizontal pixels.
      */
-    int width;
+    ssize_t width;
 
     /** Number of vertical pixels.
      */
-    int height;
+    ssize_t height;
 
     /** Number of pixel element until the next row.
      * This is used when the alignment of each row is different from the width of the canvas.
      */
-    int stride;
+    ssize_t stride;
 
     /** True if the memory was allocated by this class, false if the canvas was received from another API.
      */
@@ -116,7 +112,7 @@ struct PixelMap {
      * @param height The height of the image.
      * @param stride Number of pixel elements until the next row.
      */
-    PixelMap(T *pixels, int width, int height, int stride) noexcept : pixels(pixels), width(width), height(height), stride(stride) {
+    PixelMap(T *pixels, ssize_t width, ssize_t height, ssize_t stride) noexcept : pixels(pixels), width(width), height(height), stride(stride) {
         if (pixels) {
             ttauri_assert(stride >= width);
             ttauri_assert(width > 0);
@@ -134,7 +130,7 @@ struct PixelMap {
      * @param height The height of the image.
      */
     gsl_suppress(r.11)
-    PixelMap(int width, int height) noexcept : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
+    PixelMap(ssize_t width, ssize_t height) noexcept : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
         if (pixels) {
             ttauri_assert(stride >= width);
             ttauri_assert(width > 0);
@@ -157,7 +153,7 @@ struct PixelMap {
      * @param width The width of the image.
      * @param height The height of the image.
      */
-    PixelMap(T *pixels, int width, int height) noexcept : PixelMap(pixels, width, height, width) {}
+    PixelMap(T *pixels, ssize_t width, ssize_t height) noexcept : PixelMap(pixels, width, height, width) {}
 
     /** Construct an pixel-map from memory received from an API.
      * @param pixel A pointer to pixels received from the API.
@@ -170,7 +166,7 @@ struct PixelMap {
      * @param extent The width and height of the image.
      * @param stride Number of pixel elements until the next row.
      */
-    PixelMap(T *pixels, ivec extent, int stride) noexcept : PixelMap(pixels, extent.x(), extent.y(), stride) {}
+    PixelMap(T *pixels, ivec extent, ssize_t stride) noexcept : PixelMap(pixels, extent.x(), extent.y(), stride) {}
 
     gsl_suppress2(r.11,i.11)
     ~PixelMap() {
@@ -244,24 +240,24 @@ struct PixelMap {
      * @param height height of the returned image.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    PixelMap<T> submap(int const x, int const y, int const width, int const height) const noexcept {
+    PixelMap<T> submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept {
         return submap(irect{x, y, width, height});
     }
 
-    PixelRow<T> const operator[](int const rowNr) const noexcept {
+    PixelRow<T> const operator[](ssize_t rowNr) const noexcept {
         return { pixels + (rowNr * stride), width };
     }
 
-    PixelRow<T> operator[](int const rowNr) noexcept {
+    PixelRow<T> operator[](ssize_t rowNr) noexcept {
         return { pixels + (rowNr * stride), width };
     }
 
-    PixelRow<T> const at(int const rowNr) const noexcept {
+    PixelRow<T> const at(ssize_t rowNr) const noexcept {
         ttauri_assert(rowNr < height);
         return (*this)[rowNr];
     }
 
-    PixelRow<T> at(int const rowNr) noexcept {
+    PixelRow<T> at(ssize_t rowNr) noexcept {
         ttauri_assert(rowNr < height);
         return (*this)[rowNr];
     }
@@ -312,35 +308,6 @@ void rotate270(PixelMap<T> &dst, PixelMap<T> const &src) noexcept;
 /*! Merge two image by applying std::max on each pixel.
  */
 void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept;
-
-/*! Make the pixel around the border transparent.
- * But copy the color information from the neighbour pixel so that linear
- * interpolation near the border will work propertly.
- */
-void addTransparentBorder(PixelMap<uint32_t>& pixelMap) noexcept;
-
-/*! Copy a image with linear 16bit-per-color-component to a
- * gamma corrected 8bit-per-color-component image.
- */
-void fill(PixelMap<uint32_t>& dst, PixelMap<wsRGBA> const& src) noexcept;
-
-/*! Composit the image `over` onto the image `under`.
- */
-void composit(PixelMap<wsRGBA> &under, PixelMap<wsRGBA> const &over) noexcept;
-
-/*! Composit the color `over` onto the image `under` based on the pixel mask.
- */
-void composit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask) noexcept;
-
-/*! Desaturate an image.
- * \param brightness The image colours are multiplied by the brightness.
- */
-void desaturate(PixelMap<wsRGBA> &dst, float brightness=1.0) noexcept;
-
-/*! Composit the color `over` onto the image `under` based on the subpixel mask.
- * Mask should be passed to subpixelFilter() before use.
- */
-void subpixelComposit(PixelMap<wsRGBA>& under, wsRGBA over, PixelMap<uint8_t> const& mask) noexcept;
 
 /*! Execute a slight horiontal blur filter to reduce colour fringes with subpixel compositing.
  */

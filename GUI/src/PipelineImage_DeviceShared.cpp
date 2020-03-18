@@ -78,7 +78,7 @@ std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const ivec
     return image;
 }
 
-TTauri::PixelMap<uint32_t> DeviceShared::getStagingPixelMap()
+TTauri::PixelMap<A8B8G8R8SrgbPack32> DeviceShared::getStagingPixelMap()
 {
 
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
@@ -157,7 +157,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     }
 }
 
-void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<wsRGBA> const &pixelMap)
+void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<R16G16B16A16SFloat> const &pixelMap)
 {
     if (image.state == GUI::PipelineImage::Image::State::Drawing && pixelMap) {
         auto stagingMap = getStagingPixelMap(image.extent);
@@ -166,6 +166,7 @@ void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<wsRGBA> cons
         image.state = GUI::PipelineImage::Image::State::Uploaded;
     }
 }
+
 
 void DeviceShared::prepareAtlasForRendering()
 {
@@ -275,13 +276,13 @@ void DeviceShared::buildAtlas()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    let data = device.mapMemory<uint32_t>(allocation);
+    let data = device.mapMemory<A8B8G8R8SrgbPack32>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<uint32_t>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
+        TTauri::PixelMap<A8B8G8R8SrgbPack32>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

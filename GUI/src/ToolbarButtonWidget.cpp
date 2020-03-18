@@ -77,16 +77,14 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
 
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
-    auto linearMap = PixelMap<wsRGBA>{image->extent};
-    fill(linearMap);
 
-    auto iconImage = PixelMap<wsRGBA>{image->extent};
+    auto iconImage = PixelMap<R16G16B16A16SFloat>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
         auto p = std::get<Path>(icon).centerScale(vec{image->extent}, 10.0);
-        p.closeLayer(vec{1.0, 1.0, 1.0, 1.0});
+        p.closeLayer(vec::color(1.0, 1.0, 1.0));
 
         fill(iconImage);
-        composit(iconImage, p, SubpixelOrientation::RedLeft);
+        composit(iconImage, p);
     } else {
         no_default;
     }
@@ -94,6 +92,9 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     if (!(hover || window->active)) {
         desaturate(iconImage, 0.5f);
     }
+
+    auto linearMap = PixelMap<R16G16B16A16SFloat>{image->extent};
+    fill(linearMap);
 
     composit(linearMap, iconImage);
     return { std::move(image), std::move(linearMap) };
