@@ -62,7 +62,7 @@ public:
 
 inline void fill(PixelMap<R16G16B16A16SFloat> &image, vec color) noexcept {
     for (ssize_t y = 0; y != image.height; ++y) {
-        auto &row = image[y];
+        auto row = image[y];
         for (ssize_t x = 0; x != image.width; ++x) {
             row[x] = color;
         }
@@ -71,9 +71,9 @@ inline void fill(PixelMap<R16G16B16A16SFloat> &image, vec color) noexcept {
 
 inline void desaturate(PixelMap<R16G16B16A16SFloat> &image, float brightness) noexcept {
     for (ssize_t y = 0; y != image.height; ++y) {
-        auto &row = image[y];
+        auto row = image[y];
         for (ssize_t x = 0; x != image.width; ++x) {
-            row[x] = desaturate(row[x], brightness);
+            row[x] = desaturate(static_cast<vec>(row[x]), brightness);
         }
     }
 }
@@ -90,7 +90,7 @@ inline void composit(PixelMap<R16G16B16A16SFloat> &under, PixelMap<R16G16B16A16S
             let &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
-            underPixel = composit(underPixel, overPixel);
+            underPixel = composit(static_cast<vec>(underPixel), static_cast<vec>(overPixel));
         }
     }
 }

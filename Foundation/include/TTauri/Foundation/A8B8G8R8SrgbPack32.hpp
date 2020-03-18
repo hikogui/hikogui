@@ -51,8 +51,6 @@ public:
     force_inline A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
         let &rhs_v = rhs.get();
 
-        let V = vec{rhs};
-
         let r = sRGB_linear16_to_gamma8(rhs_v[0]);
         let g = sRGB_linear16_to_gamma8(rhs_v[1]);
         let b = sRGB_linear16_to_gamma8(rhs_v[2]);
