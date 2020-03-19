@@ -392,15 +392,15 @@ public:
     [[nodiscard]] friend vec desaturate(vec const &color, float brightness) noexcept {
         // Use luminance ratios and change the brightness.
         // luminance ratios according to BT.709.
-        let _0LLL = color * vec{0.2126, 0.7152, 0.0722} * brighness;
-        let __LL = _mm_hadd_ps(_0LLL _0LLL);
-        let ___L = _mm_hadd_ps(__LL, __LL);
-
+        let _0BGR = color * vec{0.2126, 0.7152, 0.0722} * brightness;
+        let __SS = _mm_hadd_ps(_0BGR, _0BGR);
+        let ___L = _mm_hadd_ps(__SS, __SS);
+        let LLLL = _mm_permute_ps(___L, _MM_SHUFFLE(0,0,0,0));
         // grayscale, with original alpha. 
-        return _mm_blend_ps(_mm_set1_ps(L), color, 0b1000);
+        return _mm_blend_ps(LLLL, color, 0b1000);
     }
 
-    [[nodiscard]] friend vec composit(vec &under, vec &over) noexcept {
+    [[nodiscard]] friend vec composit(vec const &under, vec const &over) noexcept {
         if (over.is_transparent()) {
             return under;
         }
@@ -412,15 +412,13 @@ public:
         let under_alpha = under.aaaa();
 
         let over_color = over.rgb1();
-        let under_color = over.rgb1();
+        let under_color = under.rgb1();
 
-        output_color =
+        let output_color =
             over_color * over_alpha +
             under_color * under_alpha * (vec{1.0} - over_alpha);
 
-        output_color /= output_color.aaa1();
-
-        return output_color;
+        return output_color / output_color.aaa1();
     }
 
     /** Find the point on the other side and at the same distance of an anchor-point.

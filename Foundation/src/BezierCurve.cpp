@@ -185,7 +185,7 @@ static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::v
     return r;
 }
 
-static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const startX, float const endX) noexcept
+static void fillPartialPixels(PixelRow<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
     let pixelCoverage =
         std::clamp(endX, i + 0.0f, i + 1.0f) -
@@ -196,11 +196,11 @@ static void fillPartialPixels(PixelRow<uint8_t> row, int const i, float const st
 }
 
 gsl_suppress2(26489,lifetime.1)
-static void fillFullPixels(PixelRow<uint8_t> row, int const start, int const size) noexcept
+static void fillFullPixels(PixelRow<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
 {
     if (size < 16) {
         let end = start + size;
-        for (int i = start; i < end; i++) {
+        for (ssize_t i = start; i < end; i++) {
             row[i] += 0x33;
         }
     } else {
@@ -237,10 +237,10 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
         return;
     }
 
-    let startX_int = static_cast<int>(startX);
+    let startX_int = numeric_cast<ssize_t>(startX);
     let endXplusOne = endX + 1.0f;
-    let endX_int = static_cast<int>(endXplusOne);
-    let startColumn = std::max(startX_int, 0);
+    let endX_int = numeric_cast<ssize_t>(endXplusOne);
+    let startColumn = std::max(startX_int, ssize_t{0});
     let endColumn = std::min(endX_int, row.width);
     let nrColumns = endColumn - startColumn;
 

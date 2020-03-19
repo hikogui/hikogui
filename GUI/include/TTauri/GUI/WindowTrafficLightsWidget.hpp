@@ -59,8 +59,8 @@ public:
 private:
     std::tuple<rect, rect, rect, rect> getButtonRectangles() const noexcept;
 
-    PixelMap<wsRGBA> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
-    PixelMap<wsRGBA> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;
+    PixelMap<R16G16B16A16SFloat> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
+    PixelMap<R16G16B16A16SFloat> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;
 
     static void drawCross(Path &path, vec position, float radius) noexcept;
     static void drawTrianglesOutward(Path &path, vec position, float radius) noexcept;

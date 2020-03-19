@@ -18,7 +18,6 @@ set(TTauri_Foundation_srcs
     src/URL.cpp
     src/url_parser.cpp
     src/JSON.cpp
-    src/wsRGBA.cpp
     src/globals.cpp
     src/hires_utc_clock.cpp
     src/logger.cpp
@@ -70,7 +69,6 @@ set(TTauri_Foundation_tests
     tests/strings_tests.cpp
     tests/url_parser_tests.cpp
     tests/URL_tests.cpp
-    tests/wsRGBA_tests.cpp
     tests/bigint_tests.cpp
     tests/int_overflow_tests.cpp
     tests/counters_tests.cpp

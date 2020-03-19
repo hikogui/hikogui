@@ -121,15 +121,13 @@ void WindowTrafficLightsWidget::drawCross(Path &path, vec position, float radius
     path.closeContour();
 }
 
-PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image) noexcept
+PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image) noexcept
 {
-    auto linearMap = PixelMap<wsRGBA>{image.extent};
+    auto linearMap = PixelMap<R16G16B16A16SFloat>{image.extent};
     fill(linearMap);
 
     let iconPath = applicationIcon.centerScale(vec{image.extent}, 3.0);
-
-    fill(linearMap);
-    composit(linearMap, iconPath, window->subpixelOrientation);
+    composit(linearMap, iconPath);
 
     if (!window->active) {
         desaturate(linearMap, 0.5f);
@@ -137,11 +135,8 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineIma
     return linearMap;
 }
 
-PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
+PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
 {
-    auto linearMap = PixelMap<wsRGBA>{image.extent};
-    fill(linearMap);
-
     let height = box.height.value();
 
     let redCenter = vec{
@@ -201,7 +196,9 @@ PixelMap<wsRGBA> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage
         drawing.closeLayer(vec{0.0, 0.133, 0.0, 1.0});
     }
 
-    composit(linearMap, drawing, window->subpixelOrientation);
+    auto linearMap = PixelMap<R16G16B16A16SFloat>{image.extent};
+    fill(linearMap);
+    composit(linearMap, drawing);
     return linearMap;
 }
 

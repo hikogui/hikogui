@@ -4,7 +4,7 @@
 #pragma once
 
 namespace TTauri {
-struct wsRGBA;
+class R16G16B16A16SFloat;
 class URL;
 }
 
@@ -17,6 +17,6 @@ template<typename T> struct PixelMap;
  *
  * \return A pixelMap the size of the actual PNG file, a submap() from pixelMap.
  */
-PixelMap<wsRGBA> loadPNG(const PixelMap<wsRGBA> &pixelMap, const URL &path);
+PixelMap<R16G16B16A16SFloat> loadPNG(const PixelMap<R16G16B16A16SFloat> &pixelMap, const URL &path);
 
 }

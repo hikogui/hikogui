@@ -4,7 +4,6 @@
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/BezierCurve.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -80,7 +79,7 @@ TEST(PixelMapTests, renderMaskFromPath) {
     ASSERT_EQ(mask[2][7], 0);
     ASSERT_EQ(mask[2][8], 0);
 }
-
+/*
 TEST(PixelMapTests, maskComposit) {
     auto mask = PixelMap<uint8_t>(9, 3);
     fill(mask);
@@ -120,7 +119,7 @@ TEST(PixelMapTests, maskComposit2) {
     subpixelComposit(image, color, mask);
 
     ASSERT_EQ(image[1][1], color);
-}
+}*/
 
 /*TEST(PixelMapTests, maskComposit3) {
     auto mask = PixelMap<uint8_t>(9, 3);

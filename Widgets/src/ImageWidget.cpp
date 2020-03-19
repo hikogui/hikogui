@@ -25,8 +25,8 @@ void ImageWidget::drawBackingImage() noexcept
 
     auto vulkanDevice = device();
 
-    auto linearMap = PixelMap<wsRGBA>{ backingImage->extent };
-    fill(linearMap, wsRGBA{vec{0.0, 0.0, 0.0, 1.0}});
+    auto linearMap = PixelMap<R16G16B16A16SFloat>{ backingImage->extent };
+    fill(linearMap, vec::color(0.0, 0.0, 0.0));
 
     // Draw image in the fullPixelMap.
     // XXX This probably should allocate a PixelMap and add it to this class.
@@ -37,15 +37,15 @@ void ImageWidget::drawBackingImage() noexcept
     let glyph = shaped_text.get_path();
 
     // Draw something.
-    let color = vec{ 0.5f, 1.0f, 0.5f, 1.0f };
+    let color = vec::color(0.5f, 1.0f, 0.5f);
     let path1 = mat::T({20.0, 30.0}) * glyph;
-    composit(linearMap, color, path1, SubpixelOrientation::Unknown);
+    composit(linearMap, color, path1);
 
     let path2 = mat::T({30.0, 30.0}) * glyph;
-    composit(linearMap, color, path2, SubpixelOrientation::RedLeft);
+    composit(linearMap, color, path2);
 
     let path3 = mat::T({40.0, 30.0}) * glyph;
-    composit(linearMap, color, path3, SubpixelOrientation::RedRight);
+    composit(linearMap, color, path3);
 
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }

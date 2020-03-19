@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/wsRGBA.hpp"
+#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
@@ -16,7 +16,7 @@ namespace TTauri {
 
 using namespace std;
 
-PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
+PixelMap<R16G16B16A16SFloat> loadPNG(PixelMap<R16G16B16A16SFloat> &pixelMap, const URL &path)
 {
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;
@@ -78,8 +78,8 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
     png_set_expand_16(png_ptr);
     // First set the default when the color space was not set in the png file.
     png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
-    // Now override with how we want to to look.
-    png_set_alpha_mode(png_ptr, PNG_ALPHA_PREMULTIPLIED, PNG_GAMMA_LINEAR);
+    // Now override with how we want to look.
+    png_set_alpha_mode(png_ptr, PNG_ALPHA_PNG, PNG_GAMMA_LINEAR);
 
     auto row_pointers = pixelMap.rowPointers();
     std::reverse(row_pointers.begin(), row_pointers.end());
@@ -94,6 +94,23 @@ PixelMap<wsRGBA> loadPNG(PixelMap<wsRGBA> &pixelMap, const URL &path)
     png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
 
     fclose(fp);
+
+    // The format as written by PNG is 16 bit linear integer. Now convert to float16 between 0.0 and 1.0
+    for (ssize_t y = 0; y < height; ++y) {
+        auto row = pixelMap[y];
+        for (ssize_t x = 0; x < width; ++x) {
+            auto &pixel = row[x];
+
+            let pixel_f16 = pixel.get();
+            let pixel_u16 = _mm_loadu_si64(pixel_f16.data());
+            let pixel_u32 = _mm_cvtepu16_epi32(pixel_u16);
+            let pixel_f32 = _mm_cvtepi32_ps(pixel_u32);
+            let scale_f32 = _mm_set1_ps(1.0f / 65535.0f);
+            let pixel_f32_scaled = _mm_mul_ps(pixel_f32, scale_f32);
+
+            pixel = pixel_f32_scaled;
+        }
+    }
 
     return pixelMap.submap(0, 0, width, height);
 }
