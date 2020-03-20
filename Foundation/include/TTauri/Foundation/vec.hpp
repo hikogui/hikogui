@@ -5,12 +5,14 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
 #include <cstdint>
 #include <stdexcept>
 #include <array>
+#include <ostream>
 
 namespace TTauri {
 

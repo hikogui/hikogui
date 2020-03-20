@@ -3,6 +3,7 @@ project(TTauri_Application CXX)
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
+set(BUILD_TTAURI_NET OFF CACHE BOOL "Enable TTAURI Networking") 
 
 set(TTauri_Foundation_srcs
     src/Application_base.cpp
@@ -19,6 +20,10 @@ set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
 endif()
 
 set(TTauri_Application_Libraries TTauri_Foundation)
+if(BUILD_TTAURI_NET)
+message("TTauri::Application Networking Enabled")
+set(TTauri_Application_Libraries ${TTauri_Application_Libraries} TTauri_Net)
+endif()
 if(BUILD_TTAURI_AUDIO)
 message("TTauri::Application Audio Enabled")
 set(TTauri_Application_Libraries ${TTauri_Application_Libraries} TTauri_Audio)
