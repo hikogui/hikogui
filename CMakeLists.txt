@@ -10,6 +10,7 @@ project(TTauri CXX)
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
+set(BUILD_TTAURI_NET OFF CACHE BOOL "Enable TTAURI Networking") 
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
 include(AddIcon)
@@ -39,6 +40,10 @@ add_subdirectory(ThirdPartyLibraries)
 add_subdirectory(Utilities)
 
 add_subdirectory(Foundation)
+if(BUILD_TTAURI_NET)
+message("TTauri Networking enabled")
+add_subdirectory(Net)
+endif()
 if(BUILD_TTAURI_AUDIO)
 message("TTauri Audio enabled")
 add_subdirectory(Audio)

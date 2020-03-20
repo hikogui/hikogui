@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/vec.hpp"
+#include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
@@ -13,6 +14,7 @@
 #include <stdexcept>
 #include <array>
 #include <type_traits>
+#include <ostream>
 
 namespace TTauri {
 
