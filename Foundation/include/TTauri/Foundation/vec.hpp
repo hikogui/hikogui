@@ -16,22 +16,8 @@ namespace TTauri {
 
 /** A 4D vector.
  *
- * If you need a 3D vector or point, you can use this vector class
+ * If you need a 2D or 3D vector, point or color, you can use this vector class
  * as a homogenious coordinate.
- *
- * Since the __m64 data type is not supported by MSVC on x64 it does
- * not yield a performance improvement to create a seperate 2D vector
- * class. For simplicity use the 4D class with the z-value set to 0.0
- * when working with 2D vectors.
- *
- * If you use this vector as a color, then x=Red, y=Green, z=Blue, w=Alpha.
- *  - Alpha is linear: 0.0 is transparent, 1.0 is opaque.
- *    The Red/Green/Blue are not pre-multiplied with the alpha.
- *  - Red/Green/Blue are based on the linear-scRGB floating point format:
- *    values between 0.0 and 1.0 is equivilant to linear-sRGB (no gamma curve).
- *    values are allowed to be outside of this range for high-dynamic-range
- *    and high-color-gamut. 1.0,1.0,1.0 equals 80 cd/m2 and should be the maximum
- *    value for user interfaces.
  *
  * This class supports swizzeling. Swizzeling is done using member functions which
  * will return a `vec`. The name of the member function consists of 2 to 4 of the
@@ -45,6 +31,10 @@ namespace TTauri {
  */ 
 class vec {
     /* Intrinsic value of the vec.
+     * Since the __m64 data type is not supported by MSVC on x64 it does
+     * not yield a performance improvement to create a seperate 2D vector
+     * class.
+     *
      * The elements in __m128 are assigned as follows.
      *  - [127:96] w, alpha
      *  - [95:64] z, blue
@@ -135,19 +125,30 @@ public:
         return vec{x, y, z, 1.0};
     }
 
+    /** Get a origin vector(0.0, 0.0, 0.0, 1.0).
+     * The origin of a window or image are in the left-bottom corner. The
+     * center of the first pixel in the left-bottom corner is at coordinate
+     * (0.5, 0.5). The origin of a glyph lies on the crossing of the
+     * baseline and left-side-bearing. Paths have a specific location of the
+     * origin.
+     */
     [[nodiscard]] force_inline static vec origin() noexcept {
         return vec{_mm_permute_ps(_mm_set_ss(1.0f), 0b00'01'10'11)};
     }
 
     /** Create a color out of 2 to 4 values.
-    * This vector is used as a homogenious coordinate, meaning:
-    *  - vectors have w=0.0 (A direction and distance)
-    *  - points have w=1.0 (A position in space)
-    *
-    * When this vector is used for color then:
-    *  - x=Red, y=Green, z=Blue, w=Alpha
-    *
-    */
+     * If you use this vector as a color:
+     *  - Red = x, Green = y, Blue = z, Alpha = w.
+     *  - Alpha is linear: 0.0 is transparent, 1.0 is opaque.
+     *    The Red/Green/Blue are not pre-multiplied with the alpha.
+     *  - Red/Green/Blue are based on the linear-scRGB floating point format:
+     *    values between 0.0 and 1.0 is equal to linear-sRGB (no gamma curve).
+     *    1.0,1.0,1.0 equals 80 cd/m2 and should be the maximum value for
+     *    user interfaces. Values above 1.0 would cause brighter colors on
+     *    HDR (high dynamic range) displays.
+     *    Values below 0.0 will cause colours outside the sRGB color gamut
+     *    for use with high-gamut displays
+     */
     template<typename T, typename U, typename V=float, typename W=float,
         std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
         [[nodiscard]] force_inline static vec color(T r, U g, V b=0.0f, W a=1.0f) noexcept {
