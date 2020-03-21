@@ -19,8 +19,14 @@ enum class tokenizer_state_t: uint8_t {
     Float,
     Date,
     Time,
+    DQuote,                 // Could be the start of a string, an empty string, or block string.
+    DoubleDQuote,           // Is an empty string or a block string.
     String,
     StringEscape,
+    BlockString,
+    BlockStringDQuote,
+    BlockStringDoubleDQuote,
+    BlockStringCaptureDQuote,
     Slash,                  // Could be the start of a LineComment, BlockComment, or an operator.
     LineComment,
     BlockComment,
@@ -441,6 +447,49 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockC
     return r;
 }
 
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DQuote()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '"') {
+            transition.next = tokenizer_state_t::DoubleDQuote;
+            transition.action = tokenizer_action_t::Read;
+        } else {
+            transition.next = tokenizer_state_t::String;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_DoubleDQuote()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '"') {
+            transition.next = tokenizer_state_t::BlockString;
+            transition.action = tokenizer_action_t::Read;
+        } else {
+            // Empty string.
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::StringLiteral;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
 constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String()
 {
     std::array<tokenizer_transition_t,256> r{};
@@ -501,6 +550,96 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_String
 
         transition.next = tokenizer_state_t::String;
         transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockString()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '\0') {
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::ErrorEOTInString;
+        } else if (c == '"') {
+            transition.next = tokenizer_state_t::BlockStringDQuote;
+            transition.action = tokenizer_action_t::Read;
+        } else if (isWhitespace(c)) {
+            transition.next = tokenizer_state_t::BlockString;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | c;
+        } else {
+            transition.next = tokenizer_state_t::BlockString;
+            transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringDQuote()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '"') {
+            transition.next = tokenizer_state_t::BlockStringDoubleDQuote;
+            transition.action = tokenizer_action_t::Read;
+        } else {
+            transition.next = tokenizer_state_t::BlockString;
+            transition.action = tokenizer_action_t::Capture;
+            transition.c = '"';
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringDoubleDQuote()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        if (c == '"') {
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found | tokenizer_action_t::Read;
+            transition.name = tokenizer_name_t::StringLiteral;
+        } else {
+            transition.next = tokenizer_state_t::BlockStringCaptureDQuote;
+            transition.action = tokenizer_action_t::Capture;
+            transition.c = '"';
+        }
+
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringCaptureDQuote()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        transition.next = tokenizer_state_t::BlockString;
+        transition.action = tokenizer_action_t::Capture;
+        transition.c = '"';
+
         r[i] = transition;
     }
     return r;
@@ -660,7 +799,7 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Initia
             transition.next = tokenizer_state_t::Dot;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | tokenizer_action_t::Start;
         } else if (c == '"') {
-            transition.next = tokenizer_state_t::String;
+            transition.next = tokenizer_state_t::DQuote;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Start;
         } else if (isWhitespace(c)) {
             transition.next = tokenizer_state_t::Initial;
@@ -712,8 +851,14 @@ constexpr transitionTable_t calculateTransitionTable()
     CALCULATE_SUB_TABLE(Date);
     CALCULATE_SUB_TABLE(Time);
     CALCULATE_SUB_TABLE(Float);
+    CALCULATE_SUB_TABLE(DQuote);
+    CALCULATE_SUB_TABLE(DoubleDQuote);
     CALCULATE_SUB_TABLE(String);
     CALCULATE_SUB_TABLE(StringEscape);
+    CALCULATE_SUB_TABLE(BlockString);
+    CALCULATE_SUB_TABLE(BlockStringDQuote);
+    CALCULATE_SUB_TABLE(BlockStringDoubleDQuote);
+    CALCULATE_SUB_TABLE(BlockStringCaptureDQuote);
     CALCULATE_SUB_TABLE(Slash);
     CALCULATE_SUB_TABLE(LineComment);
     CALCULATE_SUB_TABLE(BlockComment);
