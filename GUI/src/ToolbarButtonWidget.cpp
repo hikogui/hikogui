@@ -101,22 +101,26 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
 }
 
 bool ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
-    auto r = assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
+    auto continueRendering = assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
 
     if (enabled) {
-        window->setCursor(Cursor::Clickable);
-
-        r |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
+        continueRendering |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             delegate();
         }
-
-    } else {
-        window->setCursor(Cursor::Default);
     }
 
-    return r;
+    return continueRendering;
+}
+
+HitBox ToolbarButtonWidget::hitBoxTest(vec position) noexcept
+{
+    if (box.contains(position)) {
+        return HitBox{this, depth, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+    } else {
+        return HitBox{};
+    }
 }
 
 }

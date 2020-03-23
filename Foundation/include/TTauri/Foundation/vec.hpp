@@ -82,8 +82,9 @@ public:
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
      */
-    force_inline vec(float rhs) noexcept:
-        vec(_mm_set_ps1(rhs)) {}
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    explicit force_inline vec(T rhs) noexcept:
+        vec(_mm_set_ps1(numeric_cast<float>(rhs))) {}
 
     /** Initialize a vec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
@@ -389,13 +390,13 @@ public:
     /** Find a point at the midpoint between two points.
      */
     [[nodiscard]] friend vec midpoint(vec const &p1, vec const &p2) noexcept {
-        return (p1 + p2) * 0.5;
+        return (p1 + p2) * vec{0.5};
     }
 
     [[nodiscard]] friend vec desaturate(vec const &color, float brightness) noexcept {
         // Use luminance ratios and change the brightness.
         // luminance ratios according to BT.709.
-        let _0BGR = color * vec{0.2126, 0.7152, 0.0722} * brightness;
+        let _0BGR = color * vec{0.2126, 0.7152, 0.0722} * vec{brightness};
         let __SS = _mm_hadd_ps(_0BGR, _0BGR);
         let ___L = _mm_hadd_ps(__SS, __SS);
         let LLLL = _mm_permute_ps(___L, _MM_SHUFFLE(0,0,0,0));

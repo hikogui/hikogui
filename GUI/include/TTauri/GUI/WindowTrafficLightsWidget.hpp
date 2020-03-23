@@ -54,7 +54,7 @@ public:
     ) noexcept override;
 
     [[nodiscard]] bool handleMouseEvent(MouseEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 
 private:
     std::tuple<rect, rect, rect, rect> getButtonRectangles() const noexcept;

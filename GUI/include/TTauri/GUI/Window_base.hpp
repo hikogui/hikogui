@@ -7,7 +7,9 @@
 #include "TTauri/GUI/WindowDelegate.hpp"
 #include "TTauri/GUI/WindowWidget.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
-#include "TTauri/GUI/Mouse.hpp"
+#include "TTauri/GUI/Cursor.hpp"
+#include "TTauri/GUI/HitBox.hpp"
+#include "TTauri/GUI/MouseEvent.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
@@ -52,7 +54,7 @@ public:
 
     State state = State::NoDevice;
 
-    /*! The current cursor that is being displayed.
+    /** The current cursor.
      */
     Cursor currentCursor = Cursor::None;
 
@@ -100,6 +102,17 @@ public:
 
     //! The widget covering the complete window.
     std::shared_ptr<Widgets::WindowWidget> widget;
+
+    /** Target of the mouse
+     * Since any mouse event will change the target this is used
+     * to check if the target has changed, to send exit events to the previous mouse target.
+     */
+    Widgets::Widget *mouseTargetWidget = nullptr;
+
+    /** Target of the keyboard
+     * widget where keyboard events are sent to.
+     */
+    Widgets::Widget *keyboardTargetWidget = nullptr;
 
     Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     virtual ~Window_base();
@@ -216,7 +229,23 @@ protected:
      * Most often this function is used to determine the mouse cursor.
      */
     void handleMouseEvent(MouseEvent const &event) noexcept {
-        setModified(widget->_handleMouseEvent(event));
+        let hitbox = hitBoxTest(event.position);
+
+        auto continueRendering = false;
+
+
+        if (hitbox.widget != mouseTargetWidget) {
+            if (mouseTargetWidget != nullptr) {
+                continueRendering |= mouseTargetWidget->_handleMouseEvent(MouseEvent::exited());
+            }
+            mouseTargetWidget = hitbox.widget;
+        }
+
+        if (mouseTargetWidget != nullptr) {
+            continueRendering |= mouseTargetWidget->_handleMouseEvent(event);
+        }
+
+        setModified(continueRendering);
     }
 
     /*! Handle keyboard event.

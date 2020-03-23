@@ -110,7 +110,7 @@ struct DeviceShared final {
      * @param depth The depth where this text is drawn
      * @param vertices The vertices to draw the glyphs to.
      */
-    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle, float depth) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept;
 
 private:
     void buildShaders();

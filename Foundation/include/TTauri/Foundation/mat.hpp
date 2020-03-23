@@ -149,6 +149,10 @@ public:
         return {col0, col1, col2, col3};
     }
 
+    [[nodiscard]] static mat T(float x, float y, float z=0.0f) noexcept {
+        return T(vec{x, y, z});
+    }
+
     /** Create a scaling matrix.
      */
     [[nodiscard]] static mat S(vec rhs) noexcept {
@@ -158,20 +162,6 @@ public:
         let col1 = _mm_insert_ps(tmp, rhs, 0b01'01'1101);
         let col2 = _mm_insert_ps(tmp, rhs, 0b10'10'1011);
         let col3 = _mm_insert_ps(tmp, tmp, 0b11'11'0111);
-        return {col0, col1, col2, col3};
-    }
-
-    /** Create a scaling matrix.
-     */
-    [[nodiscard]] static mat S(float rhs) noexcept {
-        let _0001 = _mm_set_ss(1.0f);
-        let _000s = _mm_set_ss(rhs);
-        let _00s1 = _mm_insert_ps(_0001, _000s, 0b00'01'1100);
-
-        let col0 = _mm_permute_ps(_00s1, _MM_SHUFFLE(2,2,2,1));
-        let col1 = _mm_permute_ps(_00s1, _MM_SHUFFLE(2,2,1,2));
-        let col2 = _mm_permute_ps(_00s1, _MM_SHUFFLE(2,1,2,2));
-        let col3 = _mm_permute_ps(_00s1, _MM_SHUFFLE(0,2,2,2));
         return {col0, col1, col2, col3};
     }
 

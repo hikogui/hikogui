@@ -66,9 +66,9 @@ struct GlyphMetrics {
     * a potential ligature.
     */
     vec advanceForGrapheme(int index) const noexcept {
-        let ligatureRatio = 1.0f / numberOfGraphemes;
+        let ligatureRatio = vec{1.0f / numberOfGraphemes};
 
-        return (advance * ligatureRatio) * static_cast<float>(index);
+        return advance * ligatureRatio * vec{index};
     }
 };
 
@@ -93,7 +93,7 @@ inline GlyphMetrics &operator*=(GlyphMetrics &lhs, float const rhs) noexcept
     lhs.boundingBox *= rhs;
     lhs.leftSideBearing *= rhs;
     lhs.rightSideBearing *= rhs;
-    lhs.advance *= rhs;
+    lhs.advance *= vec{rhs, rhs, 1.0f};
     lhs.ascender *= rhs;
     lhs.descender *= rhs;
     lhs.lineGap *= rhs;

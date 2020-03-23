@@ -7,7 +7,8 @@
 #include "TTauri/GUI/PipelineImage_Backing.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
-#include "TTauri/GUI/Mouse.hpp"
+#include "TTauri/GUI/MouseEvent.hpp"
+#include "TTauri/GUI/HitBox.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/attributes.hpp"
@@ -79,7 +80,7 @@ public:
     //! Rectangle, extracted from the box
     rect rectangle; 
 
-    float depth = 0;
+    float depth = 1.0;
 
     /*! Constructor for creating sub views.
      */
@@ -144,7 +145,9 @@ public:
         return setModified(handleKeyboardEvent(event));
     }
 
-    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept;
+    /** Find the widget that is under the mouse cursor.
+     */
+    [[nodiscard]] virtual HitBox hitBoxTest(vec position) noexcept;
 
 protected:
     /*! Handle mouse event.

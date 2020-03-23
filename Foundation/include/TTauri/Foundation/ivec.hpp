@@ -90,15 +90,15 @@ public:
 
     /** Initialize a ivec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
-     * arithmatic operator.
+     * arithmetic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    force_inline ivec(T rhs) noexcept:
-        vec(_mm_set1_epi32(numeric_cast<int32_t>(rhs))) {}
+    explicit force_inline ivec(T rhs) noexcept:
+        ivec(_mm_set1_epi32(numeric_cast<int32_t>(rhs))) {}
 
     /** Initialize a ivec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
-     * arithmatic operator.
+     * arithmetic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     force_inline ivec &operator=(T rhs) noexcept {
@@ -106,7 +106,7 @@ public:
     }
 
     /** Create a ivec out of 2 to 4 values.
-    * This vector is used as a homogenious coordinate, meaning:
+    * This vector is used as a homogeneous coordinate, meaning:
     *  - vectors have w=0 (A direction and distance)
     *  - points have w=1 (A position in space)
     */
@@ -121,7 +121,7 @@ public:
             )) {}
 
     /** Create a ivec out of 2 to 4 values.
-    * This vector is used as a homogenious coordinate, meaning:
+    * This vector is used as a homogeneous coordinate, meaning:
     *  - vectors have w=0 (A direction and distance)
     *  - points have w=1 (A position in space)
     */

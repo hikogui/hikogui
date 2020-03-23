@@ -247,20 +247,13 @@ std::tuple<rect, rect, rect, rect> WindowTrafficLightsWidget::getButtonRectangle
 
 bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    bool r = false;
-
-    window->setCursor(Cursor::Clickable);
+    auto continueRendering = false;
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
-        return r;
+        return continueRendering;
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
-        // Due to HitBox checking by Windows 10, every time cursor is on a
-        // non client-area the WM_MOUSELEAVE event is send to the window.
-        // The WM_MOUSELEAVE event does not include the mouse position,
-        // neither inside the window, nor on the screen.
-        // We can therefor not determine that the mouse is on the Widget.
-        r |= assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
+        continueRendering |= assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
 
         let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
@@ -285,26 +278,26 @@ bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 
         // Only change the pressed state after checking for Button Up, the
         // button up will check which button was pressed from button down.
-        r |= assign_and_compare(pressedRed, event.down.leftButton && redButtonRect.contains(event.position));
-        r |= assign_and_compare(pressedYellow, event.down.leftButton && yellowButtonRect.contains(event.position));
-        r |= assign_and_compare(pressedGreen, event.down.leftButton && greenButtonRect.contains(event.position));
+        continueRendering |= assign_and_compare(pressedRed, event.down.leftButton && redButtonRect.contains(event.position));
+        continueRendering |= assign_and_compare(pressedYellow, event.down.leftButton && yellowButtonRect.contains(event.position));
+        continueRendering |= assign_and_compare(pressedGreen, event.down.leftButton && greenButtonRect.contains(event.position));
 
     } else {
         no_default;
     }
 
-    return r;
+    return continueRendering;
 }
 
-HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
+HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) noexcept
 {
     let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
+    auto r = HitBox{};
+
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         if (sysmenuButtonBox.contains(position)) {
-            return HitBox::ApplicationIcon;
-        } else {
-            return HitBox::MoveArea;
+            r = HitBox{this, depth, HitBox::Type::ApplicationIcon};
         }
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
@@ -312,14 +305,14 @@ HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
             yellowButtonRect.contains(position) ||
             greenButtonRect.contains(position)
         ) {
-            return HitBox::NoWhereInteresting;
-        } else {
-            return HitBox::MoveArea;
+            r = HitBox{this, depth, HitBox::Type::Button};
         }
 
     } else {
         no_default;
     }
+
+    return r;
 }
 
 }

@@ -305,7 +305,7 @@ void Path::arcTo(float radius, vec position) noexcept
     let alpha = std::asin(length(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    let C = Pm + normal(Vm2) * std::cos(alpha) * radius;
+    let C = Pm + normal(Vm2) * vec{std::cos(alpha)} * vec{radius};
 
     // Calculate vectors from center to end points.
     let VC1 = P1 - C;
@@ -516,9 +516,9 @@ Path Path::centerScale(vec extent, float padding) const noexcept
     );
     bbox *= scale;
     
-    let offset = -bbox.offset() + (extent - bbox.extent()) * 0.5f;
+    let offset = -bbox.offset() + (extent - bbox.extent()) * vec{0.5f};
 
-    return (mat::T(offset) * mat::S(scale)) * *this;
+    return (mat::T(offset) * mat::S(scale, scale, 1.0f)) * *this;
 }
 
 Path operator*(mat const &lhs, Path rhs) noexcept

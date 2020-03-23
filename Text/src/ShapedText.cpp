@@ -255,8 +255,8 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_e
 
         auto position = vec(x, y);
         for (auto &glyph: line) {
-            glyph.transform = mat::T(position) * mat::S(glyph.style.size);
-            position += glyph.style.size * glyph.metrics.advance;
+            glyph.transform = mat::T(position) * mat::S(glyph.style.size, glyph.style.size);
+            position += vec{glyph.style.size, glyph.style.size, 1.0} * glyph.metrics.advance;
         }
     }
 }

@@ -1125,6 +1125,7 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         if (flags & FLAG_WE_HAVE_A_SCALE) {
             assert_or_return(check_placement_ptr<shortFrac_buf_t>(bytes, offset), false);
             subGlyphScale = mat::S(
+                unsafe_make_placement_ptr<shortFrac_buf_t>(bytes, offset)->value(),
                 unsafe_make_placement_ptr<shortFrac_buf_t>(bytes, offset)->value()
             );
 

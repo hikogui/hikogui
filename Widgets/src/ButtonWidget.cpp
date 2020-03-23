@@ -68,9 +68,8 @@ bool ButtonWidget::updateAndPlaceVertices(
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
-        mat::T(box.currentOffset()),
-        box.currentRectangle(),
-        depth
+        mat::T(box.currentOffset().z(depth)),
+        box.currentRectangle()
     );
 
     continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
@@ -80,20 +79,26 @@ bool ButtonWidget::updateAndPlaceVertices(
 bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     auto r = false;
 
-    if (enabled) {
-        window->setCursor(GUI::Cursor::Clickable);
+    LOG_DEBUG("ButtonWidget handleMouseEvent");
 
+    if (enabled) {
         r |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
 
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             r |= assign_and_compare(value, !value);
         }
-
-    } else {
-        window->setCursor(GUI::Cursor::Default);
     }
 
     return r;
+}
+
+HitBox ButtonWidget::hitBoxTest(vec position) noexcept
+{
+    if (box.contains(position)) {
+        return HitBox{this, depth, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+    } else {
+        return HitBox{};
+    }
 }
 
 }

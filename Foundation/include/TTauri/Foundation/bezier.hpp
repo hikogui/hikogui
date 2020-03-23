@@ -25,9 +25,10 @@ inline std::array<T,2> bezierToPolynomial(T P1, T P2) noexcept
 template<typename T>
 inline std::array<T,3> bezierToPolynomial(T P1, T C, T P2) noexcept
 {
+    let _2 = T{2.0};
     return {
-        P1 - C * 2.0f + P2,
-        (C - P1) * 2.0f,
+        P1 - C * _2 + P2,
+        (C - P1) * _2,
         P1
     };
 }
@@ -36,10 +37,13 @@ inline std::array<T,3> bezierToPolynomial(T P1, T C, T P2) noexcept
 template<typename T>
 inline std::array<T,4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 {
+    let _3 = T{3.0};
+    let min_3 = T{-3.0};
+    let _6 = T{6.0};
     return {
-        -P1 + C1 * 3.0f - C2 * 3.0f + P2,
-        P1 * 3.0f - C1 * 6.0f + C2 * 3.0f,
-        P1 * -3.0f + C1 * 3.0f,
+        -P1 + C1 * _3 - C2 * _3 + P2,
+        P1 * _3 - C1 * _6 + C2 * _3,
+        P1 * min_3 + C1 * _3,
         P1
     };
 }
@@ -48,7 +52,8 @@ inline vec bezierPointAt(vec P1, vec P2, float t) noexcept {
     ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
     let [a, b] = bezierToPolynomial(P1, P2);
-    return a*t + b;
+    let t_ = vec{t};
+    return a * t_ + b;
 }
 
 inline vec bezierPointAt(vec P1, vec C, vec P2, float t) noexcept
@@ -56,7 +61,9 @@ inline vec bezierPointAt(vec P1, vec C, vec P2, float t) noexcept
     ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
 
     let [a, b, c] = bezierToPolynomial(P1, C, P2);
-    return a*t*t + b*t + c;
+
+    let t_ = vec{t};
+    return a*t_*t_ + b*t_ + c;
 }
 
 inline vec bezierPointAt(vec P1, vec C1, vec C2, vec P2, float t) noexcept
@@ -64,7 +71,8 @@ inline vec bezierPointAt(vec P1, vec C1, vec C2, vec P2, float t) noexcept
     ttauri_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() && P2.w() == 1.0f);
 
     let [a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
-    return a*t*t*t + b*t*t + c*t + d;
+    let t_ = vec{t};
+    return a*t_*t_*t_ + b*t_*t_ + c*t_ + d;
 }
 
 inline vec bezierTangentAt(vec P1, vec P2, float t) noexcept
@@ -78,17 +86,23 @@ inline vec bezierTangentAt(vec P1, vec C, vec P2, float t) noexcept
 {
     ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
 
-    return 2.0f * t * (P2 - 2.0f * C + P1) + 2.0f * (C - P1);
+    let _2 = vec{2.0};
+    let _t = vec{t};
+    return _2 * _t * (P2 - _2 * C + P1) + _2 * (C - P1);
 } 
 
 inline vec bezierTangentAt(vec P1, vec C1, vec C2, vec P2, float t) noexcept
 {
     ttauri_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() && P2.w() == 1.0f);
 
+    let _2 = vec{2.0};
+    let _3 = vec{3.0};
+    let _6 = vec{6.0};
+    let _t = vec{t};
     return 
-        3.0f * t * t * (P2 - 3.0f * C2 + 3.0f * C1 - P1) +
-        6.0f * t * (C2 - 2.0f * C1 + P1) +
-        3.0f * (C1 - P1);
+        _3 * _t * _t * (P2 - _3 * C2 + _3 * C1 - P1) +
+        _6 * _t * (C2 - _2 * C1 + P1) +
+        _3 * (C1 - P1);
 }
 
 inline results<float,1> bezierFindT(float P1, float P2, float x) noexcept
@@ -134,14 +148,15 @@ inline results<float,3> bezierFindTForNormalsIntersectingPoint(vec P1, vec C, ve
 {
     ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f && P.w() == 1.0f);
 
-    auto p = P - P1;
-    auto p1 = C - P1;
-    auto p2 = P2 - (2.0f * C) + P1;
+    let _2 = vec{2.0};
+    let p = P - P1;
+    let p1 = C - P1;
+    let p2 = P2 - (_2 * C) + P1;
 
-    auto a = dot(p2, p2);
-    auto b = 3.0f * dot(p1, p2);
-    auto c = dot(2.0f * p1, p1) - dot(p2, p);
-    auto d = -dot(p1, p);
+    let a = dot(p2, p2);
+    let b = 3.0f * dot(p1, p2);
+    let c = dot(_2 * p1, p1) - dot(p2, p);
+    let d = -dot(p1, p);
     return solvePolynomial(a, b, c, d);
 }
 
@@ -273,11 +288,12 @@ inline std::pair<vec, vec> parrallelLine(vec P1, vec P2, float distance) noexcep
 {
     ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
+    let _distance = vec{distance};
     let v = P2 - P1;
     let n = normal(v);
     return {
-        P1 + n * distance,
-        P2 + n * distance
+        P1 + n * _distance,
+        P2 + n * _distance
     };
 }
 

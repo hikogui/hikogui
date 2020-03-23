@@ -216,25 +216,27 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 }
 
 void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
-    if (cursor == currentCursor) {
+    static auto idcAppStarting = LoadCursorW(nullptr, IDC_APPSTARTING);
+    static auto idcArrow = LoadCursorW(nullptr, IDC_ARROW);
+    static auto idcHand = LoadCursorW(nullptr, IDC_HAND);
+    static auto idcIBeam = LoadCursorW(nullptr, IDC_IBEAM);
+    static auto idcNo = LoadCursorW(nullptr, IDC_NO);
+
+    if (currentCursor == cursor) {
         return;
     }
-    currentCursor = cursor;
 
+    auto idc = idcNo;
     switch (cursor) {
-    case Cursor::None:
-        SetCursor(LoadCursorW(nullptr, IDC_APPSTARTING));
-        break;
-    case Cursor::Default:
-        SetCursor(LoadCursorW(nullptr, IDC_ARROW));
-        break;
-    case Cursor::Clickable:
-        SetCursor(LoadCursorW(nullptr, IDC_HAND));
-        break;
-    default:
-        SetCursor(LoadCursorW(nullptr, IDC_NO));
-        break;
+    case Cursor::None: idc = idcAppStarting; break;
+    case Cursor::Default: idc = idcArrow; break;
+    case Cursor::Button: idc = idcHand; break;
+    case Cursor::TextEdit: idc = idcIBeam; break;
+    default: no_default;
     }
+
+    SetCursor(idc);
+    currentCursor = cursor;
 }
 
 [[nodiscard]] KeyboardModifiers Window_vulkan_win32::getKeyboardModifiers() noexcept
@@ -494,7 +496,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         // state when the mouse reenters it.
         currentCursor = Cursor::None;
 
-        handleMouseEvent(ExitedMouseEvent());
+        handleMouseEvent(MouseEvent::exited());
         break;
 
     case WM_NCCALCSIZE:
@@ -518,18 +520,21 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
         let insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
 
-        switch (hitBoxTest(insideWindowPosition)) {
-        case HitBox::BottomResizeBorder: return HTBOTTOM;
-        case HitBox::TopResizeBorder: return HTTOP;
-        case HitBox::LeftResizeBorder: return HTLEFT;
-        case HitBox::RightResizeBorder: return HTRIGHT;
-        case HitBox::BottomLeftResizeCorner: return HTBOTTOMLEFT;
-        case HitBox::BottomRightResizeCorner: return HTBOTTOMRIGHT;
-        case HitBox::TopLeftResizeCorner: return HTTOPLEFT;
-        case HitBox::TopRightResizeCorner: return HTTOPRIGHT;
-        case HitBox::ApplicationIcon: return HTSYSMENU;
-        case HitBox::MoveArea: return HTCAPTION;
-        case HitBox::NoWhereInteresting: currentCursor = Cursor::None; return HTCLIENT;
+        switch (hitBoxTest(insideWindowPosition).type) {
+        case HitBox::Type::BottomResizeBorder: currentCursor = Cursor::None; return HTBOTTOM;
+        case HitBox::Type::TopResizeBorder: currentCursor = Cursor::None; return HTTOP;
+        case HitBox::Type::LeftResizeBorder: currentCursor = Cursor::None; return HTLEFT;
+        case HitBox::Type::RightResizeBorder: currentCursor = Cursor::None; return HTRIGHT;
+        case HitBox::Type::BottomLeftResizeCorner: currentCursor = Cursor::None; return HTBOTTOMLEFT;
+        case HitBox::Type::BottomRightResizeCorner: currentCursor = Cursor::None; return HTBOTTOMRIGHT;
+        case HitBox::Type::TopLeftResizeCorner: currentCursor = Cursor::None; return HTTOPLEFT;
+        case HitBox::Type::TopRightResizeCorner: currentCursor = Cursor::None; return HTTOPRIGHT;
+        case HitBox::Type::ApplicationIcon: currentCursor = Cursor::None; return HTSYSMENU;
+        case HitBox::Type::MoveArea: currentCursor = Cursor::None; return HTCAPTION;
+        case HitBox::Type::TextEdit: setCursor(Cursor::TextEdit); return HTCLIENT;
+        case HitBox::Type::Button: setCursor(Cursor::Button); return HTCLIENT;
+        case HitBox::Type::Default: setCursor(Cursor::Default); return HTCLIENT;
+        case HitBox::Type::Outside: currentCursor = Cursor::None; return HTCLIENT;
         default: no_default;
         }
         } break;

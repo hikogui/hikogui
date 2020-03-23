@@ -28,7 +28,7 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
     window->addConstraint(trafficLightButtons->box.bottom == box.bottom);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
-        let scale = mat::S(0.33f);
+        let scale = mat::S(0.33f, 0.33f);
 
         closeWindowButton = addWidget<ToolbarButtonWidget>(
             scale * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
@@ -84,18 +84,22 @@ bool WindowToolbarWidget::updateAndPlaceVertices(
     return continueRendering;
 }
 
-HitBox WindowToolbarWidget::hitBoxTest(vec position) const noexcept
+HitBox WindowToolbarWidget::hitBoxTest(vec position) noexcept
 {
-    if (trafficLightButtons->box.contains(position)) {
-        return trafficLightButtons->hitBoxTest(position);
-    }
+    auto r = box.contains(position) ?
+        HitBox{this, depth, HitBox::Type::MoveArea} :
+        HitBox{};
+
+    r = std::max(r, trafficLightButtons->hitBoxTest(position));
+
+    r = std::max(r, closeWindowButton->hitBoxTest(position));
+    r = std::max(r, maximizeWindowButton->hitBoxTest(position));
+    r = std::max(r, minimizeWindowButton->hitBoxTest(position));
 
     for (auto& widget : children) {
-        if (widget->box.contains(position)) {
-            return widget->hitBoxTest(position);
-        }
+        r = std::max(r, widget->hitBoxTest(position));
     }
-    return HitBox::MoveArea;
+    return r;
 }
 
 }

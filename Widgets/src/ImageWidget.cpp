@@ -67,7 +67,7 @@ bool ImageWidget::updateAndPlaceVertices(
     backingImage = vulkanDevice->imagePipeline->getImage(key, box.currentExtent());
     drawBackingImage();
 
-    let origin = vec{backingImage->extent} * -0.5;
+    let origin = vec{backingImage->extent} * vec{-0.5};
 
     GUI::PipelineImage::ImageLocation location;
     let O = mat::T(origin);

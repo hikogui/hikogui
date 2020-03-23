@@ -145,8 +145,8 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
         // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
         let offset =
             vec{drawBorder, drawBorder} -
-            attr_grapheme.metrics.boundingBox.offset() * fontSize;
-        let path = (mat::T(offset) * mat::S(fontSize)) * attr_grapheme.glyphs.get_path();
+            attr_grapheme.metrics.boundingBox.offset() * vec{fontSize, fontSize, 1.0};
+        let path = (mat::T(offset) * mat::S(fontSize, fontSize)) * attr_grapheme.glyphs.get_path();
 
         // Draw glyphs into staging buffer of the atlas.
         prepareStagingPixmapForDrawing();
@@ -156,7 +156,7 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         // The bounding box is in texture coordinates.
         let atlas_px_offset = static_cast<vec>(atlas_rect.atlas_position.xy00());
-        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent() * fontSize + 2.0f * vec{drawBorder, drawBorder};
+        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent() * vec{fontSize, fontSize, 1.0} + vec{2.0f} * vec{drawBorder, drawBorder};
 
         let atlas_tx_multiplier = vec{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
         let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;
@@ -187,17 +187,17 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 *    v   \ |
 *    0 --> 1
 */
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle, float depth) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept
 {
     for (let &attr_grapheme: text) {
         // Adjust bounding box by adding a border based on the fixed font size.
         let bounding_box = expand(rect{attr_grapheme.metrics.boundingBox}, scaledDrawBorder);
 
         let vM = transform * attr_grapheme.transform;
-        let v0 = vM * bounding_box.corner<0>(depth);
-        let v1 = vM * bounding_box.corner<1>(depth);
-        let v2 = vM * bounding_box.corner<2>(depth);
-        let v3 = vM * bounding_box.corner<3>(depth);
+        let v0 = vM * bounding_box.corner<0>();
+        let v1 = vM * bounding_box.corner<1>();
+        let v2 = vM * bounding_box.corner<2>();
+        let v3 = vM * bounding_box.corner<3>();
 
         constexpr float texelSize = 1.0f / fontSize;
         constexpr float texelMaxDistance = texelSize * SDF8::max_distance;

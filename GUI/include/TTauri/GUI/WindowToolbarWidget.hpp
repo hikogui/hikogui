@@ -38,7 +38,7 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 };
 
 }

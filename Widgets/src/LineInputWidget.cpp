@@ -71,9 +71,8 @@ bool LineInputWidget::updateAndPlaceVertices(
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
-        mat::T(textRectangle.offset()),
-        box.currentRectangle(),
-        depth
+        mat::T(textRectangle.offset().z(depth)),
+        box.currentRectangle()
     );
 
     continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
@@ -101,19 +100,23 @@ bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     auto r = false;
 
     if (enabled) {
-        window->setCursor(GUI::Cursor::Clickable);
-
         r |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
 
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             r |= assign_and_compare(value, !value);
         }
-
-    } else {
-        window->setCursor(GUI::Cursor::Default);
     }
 
     return r;
+}
+
+HitBox LineInputWidget::hitBoxTest(vec position) noexcept
+{
+    if (box.contains(position)) {
+        return HitBox{this, depth, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+    } else {
+        return HitBox{};
+    }
 }
 
 }

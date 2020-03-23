@@ -45,6 +45,8 @@ public:
 
     [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
 
+    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
+
 private:
     int state() const noexcept;
 
