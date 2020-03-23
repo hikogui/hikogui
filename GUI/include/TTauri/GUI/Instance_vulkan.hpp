@@ -19,7 +19,6 @@ protected:
     //! Vulkan dynamic loader of library functions.
     vk::DispatchLoaderDynamic _loader;
 
-    bool stopDebugUtilsMessagerLogging = false;
     vk::DebugUtilsMessengerEXT debugUtilsMessager;
 
 public:

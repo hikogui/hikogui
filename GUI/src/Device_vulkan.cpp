@@ -661,7 +661,7 @@ vk::ShaderModule Device_vulkan::loadShader(uint32_t const *data, size_t size) co
     LOG_INFO("Loading shader");
 
     // Check uint32_t alignment of pointer.
-    BOOST_ASSERT((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
+    ttauri_assume((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
 
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }

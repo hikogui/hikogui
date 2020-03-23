@@ -32,7 +32,7 @@ vk::Semaphore Pipeline_vulkan::render(vk::Framebuffer framebuffer, vk::Semaphore
 
     std::array<vk::Semaphore, 1> const waitSemaphores = { inputSemaphore };
     std::array<vk::PipelineStageFlags, 1> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-    BOOST_ASSERT(waitSemaphores.size() == waitStages.size());
+    ttauri_assume(waitSemaphores.size() == waitStages.size());
 
     std::array<vk::Semaphore, 1> const signalSemaphores = { renderFinishedSemaphore };
     std::array<vk::CommandBuffer, 1> const commandBuffersToSubmit = { commandBuffer };

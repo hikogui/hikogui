@@ -101,7 +101,6 @@ target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL zlib png)
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_compile_definitions(TTauri_Foundation PUBLIC -DGLM_FORCE_RADIANS -DGLM_ENABLE_EXPERIMENTAL)
 set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 
 # 

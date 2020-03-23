@@ -97,7 +97,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { renderFinishedSemaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
     std::array<uint32_t, 1> const presentImageIndices = { frameBufferIndex };
-    BOOST_ASSERT(presentSwapchains.size() == presentImageIndices.size());
+    ttauri_assume(presentSwapchains.size() == presentImageIndices.size());
 
     try {
         //LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
@@ -520,8 +520,8 @@ void Window_vulkan::buildFramebuffers()
         swapchainFramebuffers.push_back(framebuffer);
     }
 
-    BOOST_ASSERT(swapchainImageViews.size() == swapchainImages.size());
-    BOOST_ASSERT(swapchainFramebuffers.size() == swapchainImages.size());
+    ttauri_assume(swapchainImageViews.size() == swapchainImages.size());
+    ttauri_assume(swapchainFramebuffers.size() == swapchainImages.size());
 }
 
 void Window_vulkan::teardownFramebuffers()

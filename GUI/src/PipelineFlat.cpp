@@ -28,7 +28,7 @@ void PipelineFlat::drawInCommandBuffer()
 {
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
-    BOOST_ASSERT(tmpVertexBuffers.size() == tmpOffsets.size());
+    ttauri_assume(tmpVertexBuffers.size() == tmpOffsets.size());
 
     device().flatPipeline->drawInCommandBuffer(commandBuffer);
 
