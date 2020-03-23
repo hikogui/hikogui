@@ -257,7 +257,6 @@ TEST(Tokenizer, ParseBlockString1) {
     auto str = "++\"\"\"foo\nbar\"\"\"++";
     auto v = std::string_view(str);
     auto tokens = parseTokens(v);
-    ASSERT_EQ(ssize(tokens), 4);
     ASSERT_TOKEN_EQ(tokens[0], Operator, "++");
     ASSERT_TOKEN_EQ(tokens[1], StringLiteral, "foo\nbar");
     ASSERT_TOKEN_EQ(tokens[2], Operator, "++");
@@ -268,7 +267,6 @@ TEST(Tokenizer, ParseBlockString2) {
     auto str = "++\"\"\"foo\"bar\"\"\"++";
     auto v = std::string_view(str);
     auto tokens = parseTokens(v);
-    ASSERT_EQ(ssize(tokens), 4);
     ASSERT_TOKEN_EQ(tokens[0], Operator, "++");
     ASSERT_TOKEN_EQ(tokens[1], StringLiteral, "foo\"bar");
     ASSERT_TOKEN_EQ(tokens[2], Operator, "++");
@@ -279,14 +277,21 @@ TEST(Tokenizer, ParseBlockString3) {
     auto str = "++\"\"\"foo\"\"bar\"\"\"++";
     auto v = std::string_view(str);
     auto tokens = parseTokens(v);
-    ASSERT_EQ(ssize(tokens), 4);
     ASSERT_TOKEN_EQ(tokens[0], Operator, "++");
     ASSERT_TOKEN_EQ(tokens[1], StringLiteral, "foo\"\"bar");
     ASSERT_TOKEN_EQ(tokens[2], Operator, "++");
     ASSERT_TOKEN_EQ(tokens[3], End, "");
 }
 
-
+TEST(Tokenizer, ParseBlockString4) {
+    auto str = "++\"\"\"foo\\\nbar\"\"\"++";
+    auto v = std::string_view(str);
+    auto tokens = parseTokens(v);
+    ASSERT_TOKEN_EQ(tokens[0], Operator, "++");
+    ASSERT_TOKEN_EQ(tokens[1], StringLiteral, "foo\nbar");
+    ASSERT_TOKEN_EQ(tokens[2], Operator, "++");
+    ASSERT_TOKEN_EQ(tokens[3], End, "");
+}
 
 TEST(Tokenizer, ParseName) {
     auto str = "++_Foo_++";

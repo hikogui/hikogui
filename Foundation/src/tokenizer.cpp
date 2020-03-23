@@ -27,6 +27,7 @@ enum class tokenizer_state_t: uint8_t {
     BlockStringDQuote,
     BlockStringDoubleDQuote,
     BlockStringCaptureDQuote,
+    BlockStringEscape,
     Slash,                  // Could be the start of a LineComment, BlockComment, or an operator.
     LineComment,
     BlockComment,
@@ -185,9 +186,12 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_Number
         let c = static_cast<char>(i);
         tokenizer_transition_t transition = {c};
 
-        if (isDigit(c) || c == '_' || c == '\'') {
+        if (isDigit(c)) {
             transition.next = tokenizer_state_t::Number;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
+        } else if (c == '_' || c == '\'') {
+            transition.next = tokenizer_state_t::Number;
+            transition.action = tokenizer_action_t::Read;
         } else if (c == '.') {
             transition.next = tokenizer_state_t::Float;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
@@ -573,6 +577,9 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
         } else if (isWhitespace(c)) {
             transition.next = tokenizer_state_t::BlockString;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture | c;
+        } else if (c == '\\') {
+            transition.next = tokenizer_state_t::BlockStringEscape;
+            transition.action = tokenizer_action_t::Read;
         } else {
             transition.next = tokenizer_state_t::BlockString;
             transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
@@ -640,6 +647,38 @@ constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockS
         transition.action = tokenizer_action_t::Capture;
         transition.c = '"';
 
+        r[i] = transition;
+    }
+    return r;
+}
+
+constexpr std::array<tokenizer_transition_t,256> calculateTransitionTable_BlockStringEscape()
+{
+    std::array<tokenizer_transition_t,256> r{};
+
+    for (uint16_t i = 0; i < r.size(); i++) {
+        let c = static_cast<char>(i);
+        tokenizer_transition_t transition = {c};
+
+        switch (c) {
+        case '\0':
+            transition.next = tokenizer_state_t::Initial;
+            transition.action = tokenizer_action_t::Found;
+            transition.name = tokenizer_name_t::ErrorEOTInString;
+            r[i] = transition;
+            continue;
+
+        case 'a': transition.c = '\a'; break;
+        case 'b': transition.c = '\b'; break;
+        case 'f': transition.c = '\f'; break;
+        case 'n': transition.c = '\n'; break;
+        case 'r': transition.c = '\r'; break;
+        case 't': transition.c = '\t'; break;
+        case 'v': transition.c = '\v'; break;
+        }
+
+        transition.next = tokenizer_state_t::BlockString;
+        transition.action = tokenizer_action_t::Read | tokenizer_action_t::Capture;
         r[i] = transition;
     }
     return r;
@@ -859,6 +898,7 @@ constexpr transitionTable_t calculateTransitionTable()
     CALCULATE_SUB_TABLE(BlockStringDQuote);
     CALCULATE_SUB_TABLE(BlockStringDoubleDQuote);
     CALCULATE_SUB_TABLE(BlockStringCaptureDQuote);
+    CALCULATE_SUB_TABLE(BlockStringEscape);
     CALCULATE_SUB_TABLE(Slash);
     CALCULATE_SUB_TABLE(LineComment);
     CALCULATE_SUB_TABLE(BlockComment);
