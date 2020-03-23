@@ -11,7 +11,7 @@
 namespace TTauri::GUI::PipelineImage {
 
 template<typename... Args>
-inline void Backing::loadOrDraw(Window const &window, vec const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs) {
+inline bool Backing::loadOrDraw(Window const &window, vec const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs) {
     ttauri_assert(window.device);
     ttauri_assert(currentExtent.x() > 0 && currentExtent.y() > 0);
 
@@ -37,13 +37,16 @@ inline void Backing::loadOrDraw(Window const &window, vec const &currentExtent, 
             switch (newImage->state) {
             case GUI::PipelineImage::Image::State::Uploaded:
                 image = newImage;
-                break;
+                // The image was finished uploading, no need to render the next frame.
+                return false;
 
             case GUI::PipelineImage::Image::State::Drawing: {
                     auto p = std::promise<ImagePixelMap>();
                     futureImage = p.get_future();
                     p.set_value({newImage, PixelMap<R16G16B16A16SFloat>{}});
-                } break;
+                }
+                // Render the next frame as the image is being drawn.
+                return true;
 
             case GUI::PipelineImage::Image::State::Uninitialized:
                 // Try and draw the image, multiple calls will be dropped by the callee.
@@ -61,9 +64,19 @@ inline void Backing::loadOrDraw(Window const &window, vec const &currentExtent, 
                 // Synchronize to make debugging easier.
                 (*futureImage).wait();
 #endif
-                break;
+                // Render the next frame as the image is going to be drawn.
+                return true;
+            default:
+                no_default;
             }
+        } else {
+            // The image was the same and no future image is being drawn.
+            return false;
         }
+    } else {
+        // After a resize we may need to redraw the image.
+        return true;
     }
 }
+
 }

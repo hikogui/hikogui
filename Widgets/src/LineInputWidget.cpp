@@ -26,6 +26,8 @@ bool LineInputWidget::updateAndPlaceVertices(
 {
     ttauri_assert(window);
 
+    auto continueRendering = false;
+
     // Draw something.
     let cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
 
@@ -74,7 +76,8 @@ bool LineInputWidget::updateAndPlaceVertices(
         depth
     );
 
-    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
 }
 
 bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept

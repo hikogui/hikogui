@@ -77,9 +77,11 @@ bool WindowToolbarWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+    auto continueRendering = false;
     PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), depth);
 
-    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(vec position) const noexcept

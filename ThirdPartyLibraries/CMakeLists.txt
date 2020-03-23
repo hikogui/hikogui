@@ -1,6 +1,3 @@
-set(GLM_TEST_ENABLE_CXX_17 ON)
-set(GLM_TEST_ENABLE OFF)
-set(GLM_TEST_ENABLE_SIMD_AVX2 ON)
 set(gtest_force_shared_crt ON)
 
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)    # png comparison is always false.

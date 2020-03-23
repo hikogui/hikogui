@@ -50,9 +50,8 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
         PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), depth);
     }
 
-
     ttauri_assert(window);
-    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+    continueRendering |= backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
     }, "ToolbarButtonWidget", this, state());
 
@@ -72,7 +71,8 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
         continueRendering |= true;
     }
 
-    return continueRendering | Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
 }
 
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept

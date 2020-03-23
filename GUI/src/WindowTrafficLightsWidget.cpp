@@ -42,8 +42,10 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+    auto continueRendering = false;
+
     ttauri_assert(window);
-    backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+    continueRendering |= backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
         }, "WindowTrafficLightsWidget", state());
 
@@ -59,7 +61,8 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         backingImage.image->placeVertices(location, image_vertices);
     }
 
-    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, vec position, float radius) noexcept

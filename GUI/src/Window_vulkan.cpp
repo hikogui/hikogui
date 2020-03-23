@@ -254,7 +254,7 @@ void Window_vulkan::render()
 {
     // When there is nothing to draw reduce CPU/GPU usage.
     if (!modified()) {
-        //return;
+        return;
     }
 
     // While resizing lower the frame rate to reduce CPU/GPU usage.

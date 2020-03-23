@@ -47,9 +47,11 @@ struct Backing {
     *  * draw_function() will only be called when the window is not being resized.
     *  * That for a state change the draw_function() is only called once.
     *  * That multiple state changes will not cause overlapping calls to draw_function().
+    *
+    * @return true when the widget needs to be redrawn on the next frame.
     */
     template<typename... Args>
-    void loadOrDraw(Window const &window, vec const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs);
+    bool loadOrDraw(Window const &window, vec const &currentExtent, std::function<ImagePixelMap(std::shared_ptr<GUI::PipelineImage::Image>)> draw_function, Args&&... keyArgs);
 };
 
 }

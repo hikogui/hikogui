@@ -64,12 +64,12 @@ public:
      * We can disable expensive redraws during rendering until this
      * is false again.
      */
-    bool resizing = false;
+    std::atomic<bool> resizing = false;
 
     /*! The window is currently active.
      * Widgets may want to reduce redraws, or change colors.
      */
-    bool active = false;
+    std::atomic<bool> active = false;
 
     /*! Current size state of the window.
      */
@@ -177,7 +177,8 @@ protected:
     uint64_t modificationVersion = 0;
 
     /** Should be called after the internal state of the widget was modified.
-    */
+     * This function may be called from other threads.
+     */
     force_inline bool setModified(bool x=true) noexcept {
         if (x) {
             modificationRequest.fetch_add(1, std::memory_order::memory_order_relaxed);

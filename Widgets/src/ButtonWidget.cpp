@@ -25,6 +25,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     ttauri_assert(window);
+    auto continueRendering = false;
 
     // Draw something.
     R16G16B16A16SFloat cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
@@ -72,7 +73,8 @@ bool ButtonWidget::updateAndPlaceVertices(
         depth
     );
 
-    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
 }
 
 bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {

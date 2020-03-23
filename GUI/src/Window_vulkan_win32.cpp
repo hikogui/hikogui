@@ -341,10 +341,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     case WM_ENTERSIZEMOVE:
         resizing = true;
+        setModified();
         break;
 
     case WM_EXITSIZEMOVE:
         resizing = false;
+        setModified();
         break;
     
     case WM_ACTIVATEAPP:
@@ -354,7 +356,6 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     case WM_GETMINMAXINFO: {
         let minmaxinfo = to_ptr<MINMAXINFO>(lParam);
-        // XXX - figure out size of decoration to remove these constants.
         minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximumWindowExtent.x());
         minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximumWindowExtent.y());
         minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimumWindowExtent.x());

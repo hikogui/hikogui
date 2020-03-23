@@ -57,6 +57,8 @@ bool ImageWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
+    auto continueRendering = false;
+
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 
     auto vulkanDevice = device();
@@ -76,7 +78,8 @@ bool ImageWidget::updateAndPlaceVertices(
 
     backingImage->placeVertices(location, image_vertices);
 
-    return Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
 }
 
 }
