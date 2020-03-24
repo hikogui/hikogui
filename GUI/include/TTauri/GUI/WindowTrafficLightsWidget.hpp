@@ -25,8 +25,6 @@ public:
     static constexpr float WIDTH = DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING;
     static constexpr float HEIGHT = DIAMETER + 2.0 * MARGIN;
 
-    bool windowFocus = true;
-    bool hover = false;
     bool pressedRed = false;
     bool pressedYellow = false;
     bool pressedGreen = false;
@@ -46,7 +44,6 @@ public:
     int state() const noexcept;
 
     [[nodiscard]] bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,

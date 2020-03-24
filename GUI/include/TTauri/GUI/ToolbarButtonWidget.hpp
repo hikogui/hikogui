@@ -14,8 +14,6 @@ namespace TTauri::GUI::Widgets {
 
 class ToolbarButtonWidget : public Widget {
 public:
-    bool enabled = true;
-    bool hover = false;
     bool pressed = false;
 
     std::variant<Path> icon;
@@ -36,7 +34,6 @@ public:
     void setParent(Widget *parent) noexcept override;
 
     [[nodiscard]] bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,

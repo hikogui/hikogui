@@ -212,7 +212,7 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
         rect.right - rect.left,
         rect.bottom - rect.top
     };
-    setModified();
+    setModifiedRecursive();
 }
 
 void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
@@ -302,7 +302,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_PAINT:
-        setModified();
+        setModifiedRecursive();
         break;
 
     case WM_SIZE:
@@ -343,17 +343,15 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     case WM_ENTERSIZEMOVE:
         resizing = true;
-        setModified();
         break;
 
     case WM_EXITSIZEMOVE:
         resizing = false;
-        setModified();
         break;
     
     case WM_ACTIVATEAPP:
         active = (wParam == TRUE);
-        setModified();
+        setModifiedRecursive();
         break;
 
     case WM_GETMINMAXINFO: {

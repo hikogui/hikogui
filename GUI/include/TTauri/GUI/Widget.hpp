@@ -64,7 +64,13 @@ public:
 
     std::vector<std::unique_ptr<Widget>> children;
 
-    Widget *currentMouseTarget = nullptr;
+    /** The next widget to select when pressing tab.
+    */
+    Widgets::Widget *nextKeyboardWidget = nullptr;
+
+    /** The prev widget to select when pressing shift-tab.
+     */
+    Widgets::Widget *prevKeyboardWidget = nullptr;
 
     /** A key for checking if the state of the widget has changed.
      */
@@ -80,7 +86,19 @@ public:
     //! Rectangle, extracted from the box
     rect rectangle; 
 
-    float depth = 1.0;
+    float elevation = 0.0;
+
+    /** The widget is enabled.
+     */
+    bool enabled = true;
+
+    /** Mouse cursor is hovering over the widget.
+     */
+    bool hover = false;
+
+    /** The widget has keyboard focus.
+     */
+    bool focus = false;
 
     /*! Constructor for creating sub views.
      */
@@ -116,55 +134,38 @@ public:
         return x;
     }
 
-    /** Update and place vertices.
-    *
-    * This function is called by external functions.
-    * @see handleMouseEvent
-    */
-    [[nodiscard]] bool _updateAndPlaceVertices(
-        vspan<PipelineFlat::Vertex> &flat_vertices,
-        vspan<PipelineBox::Vertex> &box_vertices,
-        vspan<PipelineImage::Vertex> &image_vertices,
-        vspan<PipelineSDF::Vertex> &sdf_vertices
-    ) noexcept {
-        auto _modified = modified();
-        _modified |= assign_and_compare(rectangle, box.currentRectangle());
-        unsetModified();
-        return setModified(updateAndPlaceVertices(_modified, flat_vertices, box_vertices, image_vertices, sdf_vertices));
+    /** Check if the state of the widget is modified.
+     */
+    [[nodiscard]] force_inline bool modified() noexcept {
+        let request = modificationRequest.load(std::memory_order::memory_order_acquire);
+        if (modificationVersion != request) {
+            modificationVersion = request;
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    /** Handle mouse event.
-    * This function is called by external functions.
-    * @see handleMouseEvent
+    /** Force all widgets to redraw themselves.
+    * This will be called when the widgets are being laid out because of
+    * window resize or widgets being added.
     */
-    [[nodiscard]] virtual bool _handleMouseEvent(MouseEvent const &event) noexcept {
-        return setModified(handleMouseEvent(event));
-    }
-
-    [[nodiscard]] virtual bool _handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        return setModified(handleKeyboardEvent(event));
+    void setModifiedRecursive() noexcept {
+        setModified();
+        for (let &child: children) {
+            child->setModifiedRecursive();
+        }
     }
 
     /** Find the widget that is under the mouse cursor.
      */
     [[nodiscard]] virtual HitBox hitBoxTest(vec position) noexcept;
 
-protected:
-    /*! Handle mouse event.
-    * Called by the operating system to show the position and button state of the mouse.
-    * This is called very often so it must be made efficient.
-    * This function is also used to determine the mouse cursor.
-    *
-    * @return true when a widgets wants to change its appearance in the next frame.
-    */
-    [[nodiscard]] virtual bool handleMouseEvent(MouseEvent const &event) noexcept;
-
-    /*! Handle keyboard event.
-    * Called by the operating system when editing text, or entering special keys
-    *
-    * @return true when a widgets wants to change its appearance in the next frame.
-    */
-    [[nodiscard]] virtual bool handleKeyboardEvent(KeyboardEvent const &event) noexcept;
+    /** Check if the widget will accept keyboard focus.
+     */
+    [[nodiscard]] virtual bool acceptsFocus() noexcept {
+        return false;
+    }
 
     /** Update and place vertices.
     *
@@ -183,22 +184,48 @@ protected:
     *         to change its appearance in the next frame.
     */
     [[nodiscard]] virtual bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept;
 
-private:
-
-    force_inline void unsetModified(void) noexcept {
-        modificationVersion = modificationRequest.load(std::memory_order::memory_order_acquire);
+    /*! Handle mouse event.
+    * Called by the operating system to show the position and button state of the mouse.
+    * This is called very often so it must be made efficient.
+    * This function is also used to determine the mouse cursor.
+    *
+    * @return true when a widgets wants to change its appearance in the next frame.
+    */
+    [[nodiscard]] virtual bool handleMouseEvent(MouseEvent const &event) noexcept {
+        if (event.type == MouseEvent::Type::Entered) {
+            hover = true;
+            return true;
+        } else if (event.type == MouseEvent::Type::Exited) {
+            hover = false;
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    [[nodiscard]] force_inline bool modified() noexcept {
-        return modificationVersion != modificationRequest.load(std::memory_order::memory_order_acquire);
+    /*! Handle keyboard event.
+    * Called by the operating system when editing text, or entering special keys
+    *
+    * @return true when a widgets wants to change its appearance in the next frame.
+    */
+    [[nodiscard]] virtual bool handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+        if (event.type == KeyboardEvent::Type::Entered) {
+            focus = true;
+            return true;
+        } else if (event.type == KeyboardEvent::Type::Exited) {
+            focus = false;
+            return true;
+        } else {
+            return false;
+        }
     }
+
 };
 
 }

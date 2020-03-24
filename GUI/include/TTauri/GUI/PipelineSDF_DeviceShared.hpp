@@ -107,7 +107,6 @@ struct DeviceShared final {
      * @param text The box of text to draw
      * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
-     * @param depth The depth where this text is drawn
      * @param vertices The vertices to draw the glyphs to.
      */
     void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept;

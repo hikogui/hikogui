@@ -31,7 +31,6 @@ public:
     void setParent(Widget *parent) noexcept override;
 
     [[nodiscard]] bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,

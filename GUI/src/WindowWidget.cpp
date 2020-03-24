@@ -34,7 +34,7 @@ HitBox WindowWidget::hitBoxTest(vec position) noexcept
 {
     constexpr float BORDER_WIDTH = 5.0;
 
-    auto r = HitBox{this, depth};
+    auto r = HitBox{this, elevation};
 
     if (position.x() <= (box.left.value() + BORDER_WIDTH)) {
         if (position.y() <= (box.bottom.value() + BORDER_WIDTH)) {

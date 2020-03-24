@@ -71,30 +71,23 @@ void WindowToolbarWidget::setParent(Widget *parent) noexcept
 }
 
 bool WindowToolbarWidget::updateAndPlaceVertices(
-    bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
     auto continueRendering = false;
-    PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), depth);
+    PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), elevation);
 
-    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
     return continueRendering;
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(vec position) noexcept
 {
     auto r = box.contains(position) ?
-        HitBox{this, depth, HitBox::Type::MoveArea} :
+        HitBox{this, elevation, HitBox::Type::MoveArea} :
         HitBox{};
-
-    r = std::max(r, trafficLightButtons->hitBoxTest(position));
-
-    r = std::max(r, closeWindowButton->hitBoxTest(position));
-    r = std::max(r, maximizeWindowButton->hitBoxTest(position));
-    r = std::max(r, minimizeWindowButton->hitBoxTest(position));
 
     for (auto& widget : children) {
         r = std::max(r, widget->hitBoxTest(position));

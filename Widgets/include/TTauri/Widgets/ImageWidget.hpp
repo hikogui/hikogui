@@ -27,7 +27,6 @@ public:
     void drawBackingImage() noexcept;
 
     [[nodiscard]] bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,

@@ -18,7 +18,6 @@ ButtonWidget::ButtonWidget(std::string const label) noexcept :
 }
 
 bool ButtonWidget::updateAndPlaceVertices(
-    bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
@@ -32,20 +31,43 @@ bool ButtonWidget::updateAndPlaceVertices(
 
     R16G16B16A16SFloat backgroundColor;
     R16G16B16A16SFloat labelColor;
-    R16G16B16A16SFloat borderColor = vec{1.0, 1.0, 1.0, 1.0};
+    R16G16B16A16SFloat borderColor;
+    float shadowSize;
+
     if (value) {
-        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
-        labelColor = vec{1.0, 1.0, 1.0, 1.0};
+        if (hover) {
+            backgroundColor = vec::color(0.3, 0.3, 1.0);
+        } else if (pressed) {
+            backgroundColor = vec::color(0.1, 0.1, 0.1);
+        } else {
+            backgroundColor = vec::color(0.072, 0.072, 1.0);
+        }
     } else {
-        backgroundColor = vec{0.072, 0.246, 0.072, 1.0};
-        labelColor = vec{0.0, 0.0, 0.0, 1.0};
-    }
-    if (pressed) {
-        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
-        labelColor = vec{0.0, 0.0, 0.0, 1.0};
+        if (hover) {
+            backgroundColor = vec::color(0.3, 0.3, 0.3);
+        } else if (pressed) {
+            backgroundColor = vec::color(0.072, 0.072, 1.0);
+        } else {
+            backgroundColor = vec::color(0.1, 0.1, 0.1);
+        }
     }
 
-    if (modified) {
+    if (focus) {
+        borderColor = vec::color(0.072, 0.072, 1.0);
+    } else {
+        borderColor = vec::color(0.3, 0.3, 0.3);
+    }
+
+    labelColor = vec{1.0, 1.0, 1.0, 1.0};
+
+    if (value || pressed) {
+        shadowSize = 0.0;
+    } else {
+        shadowSize = 6.0;
+    }
+
+
+    if (modified()) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
         labelShapedText = ShapedText(label, labelStyle, box.currentExtent(), Alignment::MiddleCenter);
@@ -55,12 +77,12 @@ bool ButtonWidget::updateAndPlaceVertices(
 
     PipelineBox::DeviceShared::placeVertices(
         box_vertices,
-        depth,
+        elevation,
         box.currentRectangle(),
         backgroundColor,
         1.0f,
         borderColor,
-        6.0f,
+        shadowSize,
         cornerShapes,
         expand(box.currentRectangle(), 10.0)
     );
@@ -68,34 +90,47 @@ bool ButtonWidget::updateAndPlaceVertices(
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
-        mat::T(box.currentOffset().z(depth)),
+        mat::T(box.currentOffset().z(elevation)),
         box.currentRectangle()
     );
 
-    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
+}
+
+bool ButtonWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept {
+    auto continueRendering = Widget::handleKeyboardEvent(event);
+
+    if (enabled) {
+        if (event.type == GUI::KeyboardEvent::Type::Key) {
+            let cmd = event.getCommand("gui"_tag);
+            if (cmd == "gui.activate"_ltag) {
+                continueRendering |= assign_and_compare(value, !value);
+            }
+        }
+    }
+
     return continueRendering;
 }
 
 bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
-    auto r = false;
-
-    LOG_DEBUG("ButtonWidget handleMouseEvent");
+    auto continueRendering = Widget::handleMouseEvent(event);
 
     if (enabled) {
-        r |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
+        continueRendering |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
 
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            r |= assign_and_compare(value, !value);
+            continueRendering |= assign_and_compare(value, !value);
         }
     }
 
-    return r;
+    return continueRendering;
 }
 
 HitBox ButtonWidget::hitBoxTest(vec position) noexcept
 {
     if (box.contains(position)) {
-        return HitBox{this, depth, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

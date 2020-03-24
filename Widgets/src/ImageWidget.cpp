@@ -51,7 +51,6 @@ void ImageWidget::drawBackingImage() noexcept
 }
 
 bool ImageWidget::updateAndPlaceVertices(
-    bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
@@ -72,13 +71,13 @@ bool ImageWidget::updateAndPlaceVertices(
     GUI::PipelineImage::ImageLocation location;
     let O = mat::T(origin);
     let R = mat::R(rotation);
-    let T = mat::T(box.currentOffset(depth));
+    let T = mat::T(box.currentOffset(elevation));
     location.transform = T * R * O;
     location.clippingRectangle = box.currentRectangle();
 
     backingImage->placeVertices(location, image_vertices);
 
-    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
     return continueRendering;
 }
 

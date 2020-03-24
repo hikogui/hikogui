@@ -14,11 +14,6 @@ namespace TTauri::GUI::Widgets {
 
 class LineInputWidget : public Widget {
 protected:
-    bool value = false;
-    bool enabled = true;
-    bool focus = false;
-    bool pressed = false;
-
     std::string label = "<unknown>";
 
     Text::ShapedText labelShapedText;
@@ -33,7 +28,6 @@ public:
     LineInputWidget &operator=(LineInputWidget &&) = delete;
 
     [[nodiscard]] bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
@@ -43,6 +37,9 @@ public:
     [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
     [[nodiscard]] bool handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept;
+    [[nodiscard]] bool acceptsFocus() noexcept override {
+        return enabled;
+    }
 
 };
 

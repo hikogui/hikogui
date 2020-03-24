@@ -36,7 +36,6 @@ int WindowTrafficLightsWidget::state() const noexcept {
 }
 
 bool WindowTrafficLightsWidget::updateAndPlaceVertices(
-    bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
@@ -53,7 +52,7 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
 
         GUI::PipelineImage::ImageLocation location;
-        let T = mat::T(box.currentOffset(depth));
+        let T = mat::T(box.currentOffset(elevation));
         let S = mat::S(currentScale);
         location.transform = T * S;
         location.clippingRectangle = box.currentRectangle();
@@ -61,7 +60,7 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         backingImage.image->placeVertices(location, image_vertices);
     }
 
-    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
     return continueRendering;
 }
 
@@ -247,14 +246,12 @@ std::tuple<rect, rect, rect, rect> WindowTrafficLightsWidget::getButtonRectangle
 
 bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    auto continueRendering = false;
+    auto continueRendering = Widget::handleMouseEvent(event);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         return continueRendering;
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
-        continueRendering |= assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
-
         let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
@@ -297,7 +294,7 @@ HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) noexcept
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         if (sysmenuButtonBox.contains(position)) {
-            r = HitBox{this, depth, HitBox::Type::ApplicationIcon};
+            r = HitBox{this, elevation, HitBox::Type::ApplicationIcon};
         }
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
@@ -305,7 +302,7 @@ HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) noexcept
             yellowButtonRect.contains(position) ||
             greenButtonRect.contains(position)
         ) {
-            r = HitBox{this, depth, HitBox::Type::Button};
+            r = HitBox{this, elevation, HitBox::Type::Button};
         }
 
     } else {

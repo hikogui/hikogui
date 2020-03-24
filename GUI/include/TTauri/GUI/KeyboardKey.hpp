@@ -65,6 +65,14 @@ public:
     [[nodiscard]] friend bool operator!=(KeyboardKey const &lhs, KeyboardKey const &rhs) noexcept {
         return !(lhs == rhs);
     }
+
+    [[nodiscard]] friend std::string to_string(KeyboardKey const &rhs) noexcept {
+        return fmt::format("{}{}", rhs.modifiers, rhs.virtualKey);
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, KeyboardKey const &rhs) {
+        return lhs << to_string(rhs);
+    }
 };
 
 }

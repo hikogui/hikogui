@@ -55,6 +55,11 @@ public:
     State state = State::NoDevice;
 
     /** The current cursor.
+     * Used for optimizing when the operating system cursor is updated.
+     * Set to Cursor::None at the start (for the wait icon) and when the
+     * operating system is going to display another icon to make sure
+     * when it comes back in the application the cursor will be updated
+     * correctly.
      */
     Cursor currentCursor = Cursor::None;
 
@@ -114,6 +119,18 @@ public:
      */
     Widgets::Widget *keyboardTargetWidget = nullptr;
 
+    /** The first widget in the window that needs to be selected.
+     * This widget is selected when the window is opened and when
+     * pressing tab when no other widget is selected.
+     */
+    Widgets::Widget *firstKeyboardWidget = nullptr;
+
+    /** The first widget in the window that needs to be selected.
+     * This widget is selected when pressing shift-tab when no other widget is selected.
+     */
+    Widgets::Widget *lastKeyboardWidget = nullptr;
+
+
     Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     virtual ~Window_base();
 
@@ -146,12 +163,14 @@ public:
     rhea::solver& addConstraint(rhea::constraint const& constraint) {
         auto &r = widgetSolver.add_constraint(constraint);
         calculateMinimumAndMaximumWindowExtent();
+        setModifiedRecursive();
         return r;
     }
 
     rhea::solver& removeConstraint(rhea::constraint const& constraint) {
         auto &r = widgetSolver.remove_constraint(constraint);
         calculateMinimumAndMaximumWindowExtent();
+        setModifiedRecursive();
         return r;
     }
 
@@ -189,6 +208,17 @@ protected:
      */
     uint64_t modificationVersion = 0;
 
+    [[nodiscard]] force_inline bool modified() noexcept {
+        let request = modificationRequest.load(std::memory_order::memory_order_acquire);
+
+        if (modificationVersion != request) {
+            modificationVersion = request;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /** Should be called after the internal state of the widget was modified.
      * This function may be called from other threads.
      */
@@ -199,12 +229,18 @@ protected:
         return x;
     }
 
+    void setModifiedRecursive() noexcept {
+        widget->setModifiedRecursive();
+        setModified();
+    }
+
     /*! Called when the GPU library has changed the window size.
      */
     virtual void windowChangedSize(ivec extent) {
         removeCurrentWindowExtentConstraints();
         currentWindowExtent = extent;
         addCurrentWindowExtentConstraints();
+        setModifiedRecursive();
     }
 
     /*! call openingWindow() on the delegate. 
@@ -223,6 +259,71 @@ protected:
      */
     virtual void build() = 0;
 
+    [[nodiscard]] bool updateMouseTarget(Widgets::Widget *newTargetWidget) noexcept {
+        auto continueRendering = false;
+
+        if (newTargetWidget != mouseTargetWidget) {
+            if (mouseTargetWidget != nullptr) {
+                continueRendering |= mouseTargetWidget->setModified(
+                    mouseTargetWidget->handleMouseEvent(MouseEvent::exited())
+                );
+            }
+            mouseTargetWidget = newTargetWidget;
+            if (mouseTargetWidget != nullptr) {
+                continueRendering |= mouseTargetWidget->setModified(
+                    mouseTargetWidget->handleMouseEvent(MouseEvent::entered())
+                );
+            }
+        }
+
+        return continueRendering;
+    }
+
+    [[nodiscard]] bool updateKeyboardTarget(Widgets::Widget *newTargetWidget) noexcept {
+        if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
+            newTargetWidget = nullptr;
+        }
+
+        auto continueRendering = false;
+        if (newTargetWidget != keyboardTargetWidget) {
+            if (keyboardTargetWidget != nullptr) {
+                continueRendering |= keyboardTargetWidget->setModified(
+                    keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited())
+                );
+            }
+            keyboardTargetWidget = newTargetWidget;
+            if (keyboardTargetWidget != nullptr) {
+                continueRendering |= keyboardTargetWidget->setModified(
+                    keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered())
+                );
+            }
+        }
+
+        return continueRendering;
+    }
+
+    [[nodiscard]] bool updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
+        Widgets::Widget *newTargetWidget =
+            currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
+
+        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+            newTargetWidget = newTargetWidget->nextKeyboardWidget;
+        }
+
+        return updateKeyboardTarget(newTargetWidget);
+    }
+
+    [[nodiscard]] bool updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
+        Widgets::Widget *newTargetWidget =
+            currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
+
+        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+            newTargetWidget = newTargetWidget->prevKeyboardWidget;
+        }
+
+        return updateKeyboardTarget(newTargetWidget);
+    }
+
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
@@ -231,18 +332,18 @@ protected:
     void handleMouseEvent(MouseEvent const &event) noexcept {
         let hitbox = hitBoxTest(event.position);
 
-        auto continueRendering = false;
+        auto continueRendering = updateMouseTarget(hitbox.widget);
 
-
-        if (hitbox.widget != mouseTargetWidget) {
-            if (mouseTargetWidget != nullptr) {
-                continueRendering |= mouseTargetWidget->_handleMouseEvent(MouseEvent::exited());
-            }
-            mouseTargetWidget = hitbox.widget;
+        // On click change keyboard-focus to the widget if it accepts it.
+        if (event.down.leftButton) {
+            continueRendering |= updateKeyboardTarget(hitbox.widget);
         }
 
+        // Send event to target-widget.
         if (mouseTargetWidget != nullptr) {
-            continueRendering |= mouseTargetWidget->_handleMouseEvent(event);
+            continueRendering |= mouseTargetWidget->setModified(
+                mouseTargetWidget->handleMouseEvent(event)
+            );
         }
 
         setModified(continueRendering);
@@ -253,7 +354,24 @@ protected:
     * or special key that was used.
     */
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        setModified(widget->_handleKeyboardEvent(event));
+        auto continueRendering = false;
+        if (keyboardTargetWidget != nullptr) {
+            continueRendering |= keyboardTargetWidget->setModified(
+                keyboardTargetWidget->handleKeyboardEvent(event)
+            );
+        }
+
+        if (!continueRendering && event.type == KeyboardEvent::Type::Key) {
+            // If the widget doesn't need rendering it probably means it didn't handle the key.
+            let cmd = event.getCommand("gui"_tag);
+            if (cmd == "gui.widget.next"_ltag) {
+                continueRendering |= updateToNextKeyboardTarget(keyboardTargetWidget);
+            } else if (cmd == "gui.widget.prev"_ltag) {
+                continueRendering |= updateToPrevKeyboardTarget(keyboardTargetWidget);
+            }
+        }
+
+        setModified(continueRendering);
     }
 
     void handleKeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
@@ -324,15 +442,6 @@ private:
         addCurrentWindowExtentConstraints();
     }
 
-protected:
-    force_inline void unsetModified(void) noexcept {
-        modificationVersion = modificationRequest.load(std::memory_order::memory_order_acquire);
-    }
-
-
-    [[nodiscard]] force_inline bool modified() noexcept {
-        return modificationVersion != modificationRequest.load(std::memory_order::memory_order_acquire);
-    }
 
 };
 

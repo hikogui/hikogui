@@ -30,15 +30,15 @@ struct HitBox {
     };
 
     Widgets::Widget *widget;
-    float depth;
+    float elevation;
     Type type;
 
-    HitBox(Widgets::Widget *widget=nullptr, float depth=std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
-        widget(widget), depth(depth), type(type) {}
+    HitBox(Widgets::Widget *widget=nullptr, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
+        widget(widget), elevation(elevation), type(type) {}
 
 
     friend bool operator==(HitBox const &lhs, HitBox const &rhs) noexcept {
-        return lhs.widget == rhs.widget && lhs.depth == rhs.depth && lhs.type == rhs.type;
+        return lhs.widget == rhs.widget && lhs.elevation == rhs.elevation && lhs.type == rhs.type;
     }
 
     friend bool operator!=(HitBox const &lhs, HitBox const &rhs) noexcept {
@@ -47,12 +47,12 @@ struct HitBox {
 
     friend bool operator<(HitBox const &lhs, HitBox const &rhs) noexcept {
         if ((lhs.widget == nullptr) == (rhs.widget == nullptr)) {
-            if (lhs.depth == rhs.depth) {
+            if (lhs.elevation == rhs.elevation) {
                 return static_cast<int>(lhs.type) < static_cast<int>(rhs.type);
             } else {
                 // We actually want to check if a hitbox is above another hitbox;
                 // which means the inverse of depth.
-                return lhs.depth > rhs.depth;
+                return lhs.elevation < rhs.elevation;
             }
         } else {
             return lhs.widget == nullptr;

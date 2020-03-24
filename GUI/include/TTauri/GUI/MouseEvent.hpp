@@ -9,7 +9,7 @@
 namespace TTauri::GUI {
 
 struct MouseEvent {
-    enum class Type { None, Exited, Move, ButtonDown, ButtonUp, ButtonDoubleClick };
+    enum class Type { None, Entered, Exited, Move, ButtonDown, ButtonUp, ButtonDoubleClick };
 
     Type type;
     vec position;
@@ -28,6 +28,12 @@ struct MouseEvent {
     {
     }
 
+    static MouseEvent entered(vec position=vec::point(0.0, 0.0)) noexcept {
+        MouseEvent event;
+        event.position = position;
+        event.type = MouseEvent::Type::Entered;
+        return event;
+    }
     static MouseEvent exited(vec position=vec::point(0.0, 0.0)) noexcept {
         MouseEvent event;
         event.position = position;

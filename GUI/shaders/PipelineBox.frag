@@ -118,7 +118,7 @@ void main() {
     float border = clamp(distance - inBorderStart + 0.5, 0.0, 1.0);
 
     float shadow = 0.0;
-    if (border < 1.0) {
+    if (border < 1.0 && inShadowSize >= 1.0) {
         // Only calculate the shadow when we are on the border or beyond.
         shadow = clamp(smoothShadow(distance - inShadowSize, inOneOverShadowSize), 0.0, 1.0);
     }

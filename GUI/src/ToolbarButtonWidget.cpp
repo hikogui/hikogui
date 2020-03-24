@@ -34,47 +34,6 @@ int ToolbarButtonWidget::state() const noexcept {
     return r;
 }
 
-
-bool ToolbarButtonWidget::updateAndPlaceVertices(
-    bool modified,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
-{
-    auto continueRendering = false;
-
-    if (pressed) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), depth);
-    } else if (hover && enabled) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), depth);
-    }
-
-    ttauri_assert(window);
-    continueRendering |= backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
-        return drawImage(image);
-    }, "ToolbarButtonWidget", this, state());
-
-    if (backingImage.image) {
-        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
-
-        GUI::PipelineImage::ImageLocation location;
-        let T = mat::T(box.currentOffset(depth));
-        let S = mat::S(currentScale);
-        location.transform = T * S;
-        location.clippingRectangle = box.currentRectangle();
-
-        backingImage.image->placeVertices(location, image_vertices);
-
-        continueRendering |= backingImage.image->state != PipelineImage::Image::State::Uploaded;
-    } else {
-        continueRendering |= true;
-    }
-
-    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
-}
-
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
 
@@ -100,8 +59,47 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
+bool ToolbarButtonWidget::updateAndPlaceVertices(
+    vspan<PipelineFlat::Vertex> &flat_vertices,
+    vspan<PipelineBox::Vertex> &box_vertices,
+    vspan<PipelineImage::Vertex> &image_vertices,
+    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+{
+    auto continueRendering = false;
+
+    if (pressed) {
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), elevation);
+    } else if (hover && enabled) {
+        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), elevation);
+    }
+
+    ttauri_assert(window);
+    continueRendering |= backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+        return drawImage(image);
+    }, "ToolbarButtonWidget", this, state());
+
+    if (backingImage.image) {
+        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
+
+        GUI::PipelineImage::ImageLocation location;
+        let T = mat::T(box.currentOffset(elevation));
+        let S = mat::S(currentScale);
+        location.transform = T * S;
+        location.clippingRectangle = box.currentRectangle();
+
+        backingImage.image->placeVertices(location, image_vertices);
+
+        continueRendering |= backingImage.image->state != PipelineImage::Image::State::Uploaded;
+    } else {
+        continueRendering |= true;
+    }
+
+    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    return continueRendering;
+}
+
 bool ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
-    auto continueRendering = assign_and_compare(hover, event.type != MouseEvent::Type::Exited);
+    auto continueRendering = Widget::handleMouseEvent(event);
 
     if (enabled) {
         continueRendering |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
@@ -117,7 +115,7 @@ bool ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 HitBox ToolbarButtonWidget::hitBoxTest(vec position) noexcept
 {
     if (box.contains(position)) {
-        return HitBox{this, depth, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

@@ -24,7 +24,7 @@ constexpr string_tag operator""_tag(char const *str, size_t) noexcept
 
 /*! _tag literal
 */
-constexpr string_tag operator""_ltag(char const *str, size_t) noexcept
+constexpr string_ltag operator""_ltag(char const *str, size_t) noexcept
 {
     return tt5_encode<string_ltag>(str);
 }

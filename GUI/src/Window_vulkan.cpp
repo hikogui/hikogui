@@ -252,8 +252,11 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render()
 {
-    // When there is nothing to draw reduce CPU/GPU usage.
-    if (!modified()) {
+    // If the state is nominal (ReadyToRender) we can reduce CPU/GPU
+    // usage by checking if the window was modified.
+    // If the state is not-nominal then we want to get into nominal state
+    // as quick as possible.
+    if (state == State::ReadyToRender && !modified()) {
         return;
     }
 
@@ -294,8 +297,7 @@ void Window_vulkan::render()
 
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
-    unsetModified();
-    setModified(widget->_updateAndPlaceVertices(
+    setModified(widget->updateAndPlaceVertices(
         flatPipeline->vertexBufferData.clear(),
         boxPipeline->vertexBufferData.clear(),
         imagePipeline->vertexBufferData.clear(),

@@ -18,7 +18,6 @@ LineInputWidget::LineInputWidget(std::string const label) noexcept :
 }
 
 bool LineInputWidget::updateAndPlaceVertices(
-    bool modified,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
@@ -33,22 +32,25 @@ bool LineInputWidget::updateAndPlaceVertices(
 
     vec backgroundColor;
     vec labelColor;
-    let borderColor = vec{1.0, 1.0, 1.0, 1.0};
-    if (value) {
-        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
-        labelColor = vec{1.0, 1.0, 1.0, 1.0};
+    vec borderColor;
+
+    if (hover || focus) {
+        backgroundColor = vec::color(0.3, 0.3, 0.3);
     } else {
-        backgroundColor = vec{0.072, 0.246, 0.072, 1.0};
-        labelColor = vec{0.0, 0.0, 0.0, 1.0};
+        backgroundColor = vec::color(0.1, 0.1, 0.1);
     }
-    if (pressed) {
-        backgroundColor = vec{0.072, 0.072, 1.0, 1.0};
-        labelColor = vec{0.0, 0.0, 0.0, 1.0};
+
+    if (hover || focus) {
+        borderColor = vec::color(0.072, 0.072, 1.0);
+    } else {
+        borderColor = vec::color(0.3, 0.3, 0.3);
     }
+
+    labelColor = vec{1.0, 1.0, 1.0, 1.0};
 
     auto textRectangle = expand(box.currentRectangle(), -5.0f);
 
-    if (modified) {
+    if (modified()) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
         labelShapedText = ShapedText(label, labelStyle, textRectangle.extent(), Alignment::MiddleLeft);
@@ -58,7 +60,7 @@ bool LineInputWidget::updateAndPlaceVertices(
 
     PipelineBox::DeviceShared::placeVertices(
         box_vertices,
-        depth,
+        elevation,
         box.currentRectangle(),
         backgroundColor,
         1.0f,
@@ -71,16 +73,19 @@ bool LineInputWidget::updateAndPlaceVertices(
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
-        mat::T(textRectangle.offset().z(depth)),
+        mat::T(textRectangle.offset().z(elevation)),
         box.currentRectangle()
     );
 
-    continueRendering |= Widget::updateAndPlaceVertices(modified, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
     return continueRendering;
 }
 
 bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
 {
+    LOG_DEBUG("keyboard {}", static_cast<int>(event.type));
+    auto continueRendering = Widget::handleKeyboardEvent(event);
+
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:
         LOG_DEBUG("Received grapheme: {}", event.grapheme);
@@ -91,29 +96,25 @@ bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     case GUI::KeyboardEvent::Type::Key:
         LOG_DEBUG("Received command: {}", tt5_decode(event.getCommand("text"_tag)));
         break;
-    default: no_default;
+    default:;
     }
-    return false;
+
+    return continueRendering;
 }
 
 bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
-    auto r = false;
+    auto continueRendering = Widget::handleMouseEvent(event);
 
     if (enabled) {
-        r |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
-
-        if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            r |= assign_and_compare(value, !value);
-        }
     }
 
-    return r;
+    return continueRendering;
 }
 
 HitBox LineInputWidget::hitBoxTest(vec position) noexcept
 {
     if (box.contains(position)) {
-        return HitBox{this, depth, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+        return HitBox{this, elevation, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

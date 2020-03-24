@@ -172,7 +172,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         vk::Viewport{
             0.0f, 0.0f,
             numeric_cast<float>(extent.width), numeric_cast<float>(extent.height),
-            0.0f, 1.0f
+            // Reverse-z, with float buffer this will give a linear depth buffer.
+            1.0f, 0.0f
         }
     };
 
@@ -235,7 +236,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         &pipelineViewportStateCreateInfo,
         &pipelineRasterizationStateCreateInfo,
         &pipelineMultisampleStateCreateInfo,
-        nullptr, // pipelineDepthStencilCrateInfo
+        nullptr, // pipelineDepthStencilCrateInfo XXX use reverse-Z.
         &pipelineColorBlendStateCreateInfo,
         nullptr, // pipelineDynamicsStateCreateInfo
         pipelineLayout,

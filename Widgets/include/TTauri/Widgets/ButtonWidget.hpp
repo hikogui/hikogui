@@ -15,8 +15,6 @@ namespace TTauri::GUI::Widgets {
 class ButtonWidget : public Widget {
 protected:
     bool value = false;
-    bool enabled = true;
-    bool focus = false;
     bool pressed = false;
 
     std::string label = "<unknown>";
@@ -33,7 +31,6 @@ public:
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
     [[nodiscard]] bool updateAndPlaceVertices(
-        bool modified,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
@@ -41,8 +38,12 @@ public:
     ) noexcept override;
 
     [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
+    [[nodiscard]] bool handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept;
+    [[nodiscard]] bool acceptsFocus() noexcept override {
+        return enabled;
+    }
 
 };
 

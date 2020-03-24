@@ -1,5 +1,11 @@
 {"bindings": [
-    // General
+    // General GUI
+    {"key": "space",            "command": "gui.activate",              "context": "gui"},
+    {"key": "enter",            "command": "gui.activate",              "context": "gui"},
+    {"key": "tab",              "command": "gui.widget.next",           "context": "gui"},
+    {"key": "shift+tab",        "command": "gui.widget.prev",           "context": "gui"},
+
+    // General text editing
     {"key": "ctrl+x",           "command": "text.edit.cut",             "context": "text"},
     {"key": "shift+delete",     "command": "text.edit.cut",             "context": "text"},
     {"key": "ctrl+c",           "command": "text.edit.copy",            "context": "text"},

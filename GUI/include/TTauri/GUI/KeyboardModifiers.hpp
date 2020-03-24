@@ -91,6 +91,11 @@ inline std::string to_string(KeyboardModifiers modifiers)
     return r;
 }
 
+inline std::ostream &operator<<(std::ostream &lhs, KeyboardModifiers const &rhs)
+{
+    return lhs << to_string(rhs);
+}
+
 }
 
 namespace std {

@@ -314,6 +314,10 @@ inline std::string to_string(KeyboardVirtualKey key) noexcept
     return std::string{to_const_string(key)};
 }
 
+inline std::ostream &operator<<(std::ostream &lhs, KeyboardVirtualKey const &rhs) {
+    return lhs << to_string(rhs);
+}
+
 }
 
 namespace std {

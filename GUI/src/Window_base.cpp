@@ -52,6 +52,7 @@ void Window_base::openingWindow() {
 
     std::scoped_lock lock(GUI_globals->mutex);
     state = State::NoDevice;
+    updateToNextKeyboardTarget(nullptr);
 }
 
 void Window_base::closingWindow() {
