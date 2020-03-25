@@ -6,11 +6,11 @@
 
 namespace TTauri::GUI {
 
-string_ltag KeyboardEvent::getCommand(string_tag context) const noexcept
+std::vector<string_ltag> const &KeyboardEvent::getCommands() const noexcept
 {
     ttauri_assume(type == Type::Key);
     ttauri_assume(GUI_globals != nullptr);
-    return GUI_globals->keyboard_bindings.translate(context, key);
+    return GUI_globals->keyboard_bindings.translate(key);
 }
 
 

@@ -190,6 +190,13 @@ public:
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept;
 
+    /** Handle command.
+     * @return true when a widgets wants to change its appearance in the next frame.
+     */
+    [[nodiscard]] virtual bool handleCommand(string_ltag command) noexcept {
+        return false;
+    }
+
     /*! Handle mouse event.
     * Called by the operating system to show the position and button state of the mouse.
     * This is called very often so it must be made efficient.
@@ -215,15 +222,28 @@ public:
     * @return true when a widgets wants to change its appearance in the next frame.
     */
     [[nodiscard]] virtual bool handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        if (event.type == KeyboardEvent::Type::Entered) {
+        auto continueRendering = false;
+
+        switch (event.type) {
+        case KeyboardEvent::Type::Entered:
             focus = true;
-            return true;
-        } else if (event.type == KeyboardEvent::Type::Exited) {
+            continueRendering |= true;
+            break;
+
+        case KeyboardEvent::Type::Exited:
             focus = false;
-            return true;
-        } else {
-            return false;
+            continueRendering |= true;
+            break;
+
+        case KeyboardEvent::Type::Key:
+            for (let command : event.getCommands()) {
+                continueRendering |= handleCommand(command);
+            }
+            break;
+
+        default:;
         }
+        return continueRendering;
     }
 
 };

@@ -31,8 +31,8 @@ class Application_base_dummy {};
 
 /*! A singleton that represents the application.
  * An Application should be instantiated in a local variable in main.
- * This will allow the appliation to destruct Application systems in the
- * correct order when main() goes out of scope and before the global varaibles
+ * This will allow the application to destruct Application systems in the
+ * correct order when main() goes out of scope and before the global variables
  * are destructed.
  *
  */

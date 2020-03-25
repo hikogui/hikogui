@@ -98,19 +98,16 @@ bool ButtonWidget::updateAndPlaceVertices(
     return continueRendering;
 }
 
-bool ButtonWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept {
-    auto continueRendering = Widget::handleKeyboardEvent(event);
-
-    if (enabled) {
-        if (event.type == GUI::KeyboardEvent::Type::Key) {
-            let cmd = event.getCommand("gui"_tag);
-            if (cmd == "gui.activate"_ltag) {
-                continueRendering |= assign_and_compare(value, !value);
-            }
-        }
+bool ButtonWidget::handleCommand(string_ltag command) noexcept {
+    if (!enabled) {
+        return false;
     }
 
-    return continueRendering;
+    if (command == "gui.activate"_ltag) {
+        return assign_and_compare(value, !value);
+    }
+
+    return false;
 }
 
 bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
@@ -120,7 +117,7 @@ bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         continueRendering |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
 
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            continueRendering |= assign_and_compare(value, !value);
+            continueRendering |= handleCommand("gui.activate"_ltag);
         }
     }
 

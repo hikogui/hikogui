@@ -69,7 +69,7 @@ struct KeyboardEvent {
         return KeyboardEvent(Type::Exited);
     }
 
-    [[nodiscard]] string_ltag getCommand(string_tag context) const noexcept;
+    [[nodiscard]] std::vector<string_ltag> const &getCommands() const noexcept;
 
     [[nodiscard]] friend std::string to_string(KeyboardEvent const &rhs) noexcept {
         auto r = std::string{"<KeyboardEvent "};

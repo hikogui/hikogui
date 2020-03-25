@@ -363,11 +363,12 @@ protected:
 
         if (!continueRendering && event.type == KeyboardEvent::Type::Key) {
             // If the widget doesn't need rendering it probably means it didn't handle the key.
-            let cmd = event.getCommand("gui"_tag);
-            if (cmd == "gui.widget.next"_ltag) {
-                continueRendering |= updateToNextKeyboardTarget(keyboardTargetWidget);
-            } else if (cmd == "gui.widget.prev"_ltag) {
-                continueRendering |= updateToPrevKeyboardTarget(keyboardTargetWidget);
+            for (let cmd : event.getCommands()) {
+                if (cmd == "gui.widget.next"_ltag) {
+                    continueRendering |= updateToNextKeyboardTarget(keyboardTargetWidget);
+                } else if (cmd == "gui.widget.prev"_ltag) {
+                    continueRendering |= updateToPrevKeyboardTarget(keyboardTargetWidget);
+                }
             }
         }
 

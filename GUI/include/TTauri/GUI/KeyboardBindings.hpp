@@ -24,41 +24,104 @@ struct hash<std::pair<TTauri::string_tag,TTauri::GUI::KeyboardKey>> {
 namespace TTauri::GUI {
 
 class KeyboardBindings {
-    /** All known key-bindings.
-     * key = context,key
-     * value = command,system-binding
+    struct commands_t {
+        /** Loading bindings from system-binding-file. */
+        std::vector<string_ltag> system = {};
+
+        /** Ignored system bindings loaded from user-binding-file. */
+        std::vector<string_ltag> ignored = {};
+
+        /** Added bindings loaded from user-binding-file. */
+        std::vector<string_ltag> user = {};
+
+        /** Combined system-/ignored-/added-commands. */
+        std::vector<string_ltag> cache = {};
+
+        [[nodiscard]] std::vector<string_ltag> const &get_commands() const noexcept {
+            return cache;
+        }
+
+        void add_system_command(string_ltag cmd) noexcept {
+            let i = std::find(system.cbegin(), system.cend(), cmd);
+            if (i == system.cend()) {
+                system.push_back(cmd);
+                update_cache();
+            }
+        }
+
+        void add_ignored_command(string_ltag cmd) noexcept {
+            let i = std::find(ignored.cbegin(), ignored.cend(), cmd);
+            if (i == ignored.cend()) {
+                ignored.push_back(cmd);
+                update_cache();
+            }
+        }
+
+        void add_user_command(string_ltag cmd) noexcept {
+            let i = std::find(user.cbegin(), user.cend(), cmd);
+            if (i == user.cend()) {
+                user.push_back(cmd);
+                update_cache();
+            }
+        }
+
+        void update_cache() noexcept {
+            cache.reserve(ssize(system) + ssize(user));
+
+            for (let cmd: system) {
+                let i = std::find(cache.cbegin(), cache.cend(), cmd);
+                if (i == cache.cend()) {
+                    cache.push_back(cmd);
+                }
+            }
+
+            for (let cmd: ignored) {
+                let i = std::find(cache.cbegin(), cache.cend(), cmd);
+                if (i != cache.cend()) {
+                    cache.erase(i);
+                }
+            }
+
+            for (let cmd: user) {
+                let i = std::find(cache.cbegin(), cache.cend(), cmd);
+                if (i == cache.cend()) {
+                    cache.push_back(cmd);
+                }
+            }
+        }
+    };
+
+    /** Bindings made by the user which may be saved for the user.
      */
-    std::unordered_map<std::pair<string_tag,KeyboardKey>, std::pair<string_ltag,bool>> bindings;
+    std::unordered_map<KeyboardKey,commands_t> bindings;
 
 public:
     KeyboardBindings() noexcept :
         bindings() {}
 
-    void addBinding(string_tag context, KeyboardKey key, string_ltag command, bool system_binding) noexcept {
-        bindings[std::pair{context,key}] = std::pair{command,system_binding};
+    void addSystemBinding(KeyboardKey key, string_ltag command) noexcept {
+        bindings[key].add_system_command(command);
     }
 
-    void addSystemBinding(string_tag context, KeyboardKey key, string_ltag command) noexcept {
-        addBinding(context, key, command, true);
+    void addIgnoredBinding(KeyboardKey key, string_ltag command) noexcept {
+        bindings[key].add_ignored_command(command);
     }
 
-    void addUserBinding(string_tag context, KeyboardKey key, string_ltag command) noexcept {
-        addBinding(context, key, command, false);
+    void addUserBinding(KeyboardKey key, string_ltag command) noexcept {
+        bindings[key].add_user_command(command);
     }
 
     /** translate a key press in the empty-context to a command.
     */
-    [[nodiscard]] string_ltag translate(KeyboardKey key) const noexcept {
-        let i = bindings.find(std::pair{string_tag{},key});
-        return (i != bindings.cend()) ? i->second.first : string_ltag{};
-    }
+    [[nodiscard]] std::vector<string_ltag> const &translate(KeyboardKey key) const noexcept {
+        static std::vector<string_ltag> empty_commands = {};
 
-    /** translate a key press in a context to a command.
-     * This will first search the current context, before trying the empty context.
-     */
-    [[nodiscard]] string_ltag translate(string_tag context, KeyboardKey key) const noexcept {
-        let i = bindings.find(std::pair{context,key});
-        return (i != bindings.cend()) ? i->second.first : translate(key);
+        let i = bindings.find(key);
+        if (i != bindings.cend()) {
+            return i->second.get_commands();
+        } else {
+            return empty_commands;
+        }
     }
 
     /** Clear all bindings.

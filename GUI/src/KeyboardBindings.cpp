@@ -25,26 +25,32 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
                 "Expecting required 'key' and 'command' for a binding, got {}", binding
             );
 
-            let key_name = binding["key"];
-            let command_name = binding["command"];
-            let context_name = binding.contains("context") ? binding["context"] : datum{""};
+            let key_name = static_cast<std::string>(binding["key"]);
+            let key = KeyboardKey(key_name);
 
-            let key = KeyboardKey(static_cast<std::string>(key_name));
+            auto command_name = static_cast<std::string>(binding["command"]);
+
+            // Commands starting with '-' are ignored system-bindings.
+            bool ignored_binding = false;
+            if (command_name.size() >= 1 && command_name[0] == '-') {
+                ignored_binding = true;
+                command_name = command_name.substr(1);
+            }
 
             auto command_tag = string_ltag{};
             try {
-                command_tag = tt5_encode<string_ltag>(static_cast<std::string>(command_name));
+                command_tag = tt5_encode<string_ltag>(command_name);
             } catch (parse_error &e) {
                 TTAURI_THROW(parse_error("Could not parse command '{}'", command_name).caused_by(e));
             }
 
-            auto context_tag = string_tag{};
-            try {
-                context_tag = tt5_encode<string_tag>(static_cast<std::string>(context_name));
-            } catch (parse_error &e) {
-                TTAURI_THROW(parse_error("Could not parse context '{}'", context_name).caused_by(e));
+            if (ignored_binding) {
+                addIgnoredBinding(key, command_tag);
+            } else if (system_binding) {
+                addSystemBinding(key, command_tag);
+            } else {
+                addUserBinding(key, command_tag);
             }
-            addBinding(context_tag, key, command_tag, system_binding);
         }
 
     } catch (error &e) {

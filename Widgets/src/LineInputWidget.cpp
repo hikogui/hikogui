@@ -81,21 +81,38 @@ bool LineInputWidget::updateAndPlaceVertices(
     return continueRendering;
 }
 
+
+bool LineInputWidget::handleCommand(string_ltag command) noexcept
+{
+    LOG_DEBUG("LineInputWidget: Received command: {}", tt5_decode(command));
+    if (!enabled) {
+        return false;
+    }
+
+    if (command == "text."_ltag) {
+
+    }
+
+    return false;
+}
+
 bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
 {
-    LOG_DEBUG("keyboard {}", static_cast<int>(event.type));
     auto continueRendering = Widget::handleKeyboardEvent(event);
+
+    if (!enabled) {
+        return false;
+    }
 
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:
-        LOG_DEBUG("Received grapheme: {}", event.grapheme);
-        break;
+        //text.insertGrapheme(grapheme);
+        return true;
+
     case GUI::KeyboardEvent::Type::PartialGrapheme:
-        LOG_DEBUG("Received dead-key: {}", event.grapheme);
-        break;
-    case GUI::KeyboardEvent::Type::Key:
-        LOG_DEBUG("Received command: {}", tt5_decode(event.getCommand("text"_tag)));
-        break;
+        //text.insertPartialGrapheme(event.grapheme);
+        return true;
+
     default:;
     }
 
@@ -105,7 +122,8 @@ bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
 bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     auto continueRendering = Widget::handleMouseEvent(event);
 
-    if (enabled) {
+    if (!enabled) {
+        return false;
     }
 
     return continueRendering;
