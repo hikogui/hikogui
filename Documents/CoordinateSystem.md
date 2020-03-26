@@ -15,6 +15,20 @@ of the intermediate surface.
 Widgets should be able to figure out what the DPI is of the window-surface to
 handle proper scaling of the user interface elements.
 
+### Window depth
+Z-coordinate for a window is between 0.0 (far) to 1.0 (near).
+For better precission we use a reverse-z method, to combine
+1/z together with float with linear precission.
+
+ - The window-widget is set to depth 0.0.
+ - Each nested widget is 0.001 nearer.
+ - Widgets which extends accross other widgets, such as a combo-box-widget
+   will be 0.1 nearer.
+ - A utlity sub-window is set to a depth of 0.25
+ - A sheet over the window is set to a depth of 0.5
+ - A modal dialogue is set to a depth of 0.75
+ - A privacy-overlay/screen-saver is set to a depth of 0.95
+
 ### Image coordinates
 The coordinates in a image are in pixels. With the center of the left bottom
 pixel having the coordinates (0.5, 0.5).
@@ -39,6 +53,12 @@ Corners are enumerated as follows:
  - 5: far bottom right
  - 6: far top left
  - 7: far top right
+
+When corners are passing as 4D vectors:
+ - x = bottom-left
+ - y = bottom-right
+ - z = top-left
+ - w = top-right
 
 ## Triangles
 A front facing triangle has the vertex ordered in counter-clockwise direction.
