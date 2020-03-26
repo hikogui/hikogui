@@ -13,11 +13,20 @@ namespace TTauri::Text {
 
     int index = 0;
     for (let &grapheme: text) {
-        r.emplace_back(grapheme, index++, style);
+        r.emplace_back(grapheme, style, index++);
     }
 
     return r;
 }
+
+static void index_graphemes(std::vector<AttributedGrapheme> &text) noexcept
+{
+    ssize_t index = 0;
+    for (auto &ag: text) {
+        ag.index = index++;
+    }
+}
+
 
 static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
 {
@@ -283,6 +292,9 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_e
 {
     std::vector<AttributedGlyph> attributed_glyphs;
 
+    // Index graphemes.
+    index_graphemes(text);
+
     // Put graphemes in left-to-right display order using the UnicodeData's bidi_algorithm.
     bidi_algorithm(text);
 
@@ -322,6 +334,43 @@ ShapedText::ShapedText(gstring const &text, TextStyle const &style, vec extent, 
 
 ShapedText::ShapedText(std::string const &text, TextStyle const &style, vec extent, Alignment alignment, bool wrap) noexcept :
     ShapedText(translateString<gstring>(text), style, extent, alignment, wrap) {}
+
+
+[[nodiscard]] std::pair<vec,vec> ShapedText::carets(ssize_t position) const noexcept
+{
+    for (let &attr_glyph: text) {
+        if (position > attr_glyph.index && position < attr_glyph.index + attr_glyph.grapheme_count) {
+            // The position is inside a ligature.
+            // Place the cursor proportional inside the ligature, based on the font-metrics.
+            let grapheme_index = attr_glyph.index - position;
+            let ligature_advance = attr_glyph.metrics.advanceForGrapheme(numeric_cast<int>(grapheme_index));
+
+            let caret_position = attr_glyph.transform * vec::point(ligature_advance);
+            return {caret_position, vec{}};
+
+        } else if ((position - 1) == attr_glyph.index && attr_glyph.grapheme != '\n') {
+            // There is a non-linefeed glyph in the left side of the position, place the cursor
+            // to the right of that glyph.
+            let caret_position = attr_glyph.transform * vec::point(attr_glyph.metrics.advance);
+            return {caret_position, vec{}};
+
+        }
+    }
+
+    // Either there was no glyph on the left of the position or it was a line-feed.
+    // In both cases we need to know where the left-side of the glyph on the right.
+    for (let &attr_glyph: text) {
+        if (position == attr_glyph.index) {
+            let caret_position = attr_glyph.transform * vec::point();
+            return {caret_position, vec{}};
+        }
+    }
+
+    // If there are no glyphs on the left, or right, there must be no text at all.
+    ttauri_assert(position == 0);
+    // Let the caller figure out how to draw the cursor based on the selected character set.
+    return {vec{}, vec{}};
+}
 
 [[nodiscard]] Path ShapedText::get_path() const noexcept
 {

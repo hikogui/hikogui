@@ -209,6 +209,20 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         VK_FALSE // alphaToOneEnable
     };
 
+    // Reverse-z depth configuration
+    const vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {
+        vk::PipelineDepthStencilStateCreateFlags(),
+        VK_TRUE, // depthTestEnable;
+        VK_TRUE, // depthWriteEnable;
+        vk::CompareOp::eGreaterOrEqual, // depthCompareOp
+        VK_FALSE, // depthBoundsTestEnable
+        VK_FALSE, // stencilTestEnable,
+        vk::StencilOpState(), // front
+        vk::StencilOpState(), // back
+        1.0f, // minDepthBounds
+        0.0f, // maxDepthBounds
+    };
+   
     const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
         VK_TRUE, // blendEnable
         vk::BlendFactor::eSrcAlpha, // srcColorBlendFactor
@@ -236,7 +250,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         &pipelineViewportStateCreateInfo,
         &pipelineRasterizationStateCreateInfo,
         &pipelineMultisampleStateCreateInfo,
-        nullptr, // pipelineDepthStencilCrateInfo XXX use reverse-Z.
+        &pipelineDepthStencilStateCreateInfo,
         &pipelineColorBlendStateCreateInfo,
         nullptr, // pipelineDynamicsStateCreateInfo
         pipelineLayout,
@@ -310,15 +324,19 @@ void Pipeline_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    vk::ClearColorValue _backgroundColor = static_cast<std::array<float,4>>(window.widget->backgroundColor);
-    std::array<vk::ClearValue, 1> const clearColors = { vk::ClearValue{ _backgroundColor } };
+    vk::ClearColorValue colorClearValue = static_cast<std::array<float,4>>(window.widget->backgroundColor);
+    vk::ClearDepthStencilValue depthClearValue = {0.0, 0};
+    std::array const clearValues = {
+        vk::ClearValue{ colorClearValue },
+        vk::ClearValue{ depthClearValue }
+    };
 
     commandBuffer.beginRenderPass({
             renderPass, 
             frameBuffer,
             scissor, 
-            numeric_cast<uint32_t>(clearColors.size()),
-            clearColors.data()
+            numeric_cast<uint32_t>(clearValues.size()),
+            clearValues.data()
         }, vk::SubpassContents::eInline
     );
 

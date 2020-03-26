@@ -81,7 +81,7 @@ Instance_vulkan::~Instance_vulkan()
 
 void Instance_vulkan::initialize() noexcept(false)
 {
-    scoped_lock lock(GUI_globals->mutex);
+    std::scoped_lock lock(GUI_globals->mutex);
 
 #if defined(_WIN32) && !defined(NDEBUG)
     debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({

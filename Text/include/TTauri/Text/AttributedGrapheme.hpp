@@ -10,13 +10,12 @@ namespace TTauri::Text {
 
 struct AttributedGrapheme {
     Grapheme grapheme;
-    int index;
-
     /** All information about the shape and color needed to render this grapheme. */
     TextStyle style;
+    ssize_t index;
 
-    AttributedGrapheme(Grapheme grapheme, int index, TextStyle style) :
-        grapheme(std::move(grapheme)), index(index), style(std::move(style)) {}
+    AttributedGrapheme(Grapheme grapheme, TextStyle style, ssize_t index=0) :
+        grapheme(std::move(grapheme)), style(std::move(style)), index(index) {}
 };
 
 }

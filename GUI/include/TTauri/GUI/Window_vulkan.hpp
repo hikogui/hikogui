@@ -5,6 +5,7 @@
 
 #include "TTauri/GUI/Window_base.hpp"
 #include <vulkan/vulkan.hpp>
+#include <vma/vk_mem_alloc.h>
 #include <optional>
 
 namespace TTauri::GUI {
@@ -34,6 +35,11 @@ public:
     std::vector<vk::Image> swapchainImages;
     std::vector<vk::ImageView> swapchainImageViews;
     std::vector<vk::Framebuffer> swapchainFramebuffers;
+
+    static const vk::Format depthImageFormat = vk::Format::eD32Sfloat;
+    VmaAllocation depthImageAllocation;
+    vk::Image depthImage;
+    vk::ImageView depthImageView;
 
     vk::RenderPass firstRenderPass;
     vk::RenderPass followUpRenderPass;

@@ -227,6 +227,23 @@ private:
         }
         return true;
     }
+
+    [[nodiscard]] friend bool operator==(Grapheme const &lhs, char32_t const &rhs) noexcept {
+        return (ssize(lhs) == 1) && (lhs[0] == rhs);
+    }
+
+    [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char32_t const &rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
+    [[nodiscard]] friend bool operator==(Grapheme const &lhs, char const &rhs) noexcept {
+        return lhs == static_cast<char32_t>(rhs);
+    }
+
+    [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char const &rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
 };
 
 }

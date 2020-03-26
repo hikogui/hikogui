@@ -24,7 +24,8 @@ vec4 convertPositionToViewport(vec3 windowPosition)
 {
     float x = windowPosition.x * pushConstants.viewportScale.x - 1.0;
     float y = (pushConstants.windowExtent.y - windowPosition.y) * pushConstants.viewportScale.y - 1.0;
-    return vec4(x, y, windowPosition.z, 1.0);
+    // Get reverse-z to work, where windowsPosition.z = 0.0 is far.
+    return vec4(x, y, 1.0 - windowPosition.z, 1.0);
 }
 
 vec4 convertClippingRectangleToScreen(vec4 clippingRectangle)

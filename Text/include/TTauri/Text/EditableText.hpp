@@ -1,9 +1,10 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
-#include "TTauri/Text/Grapheme.hpp"
+#include "TTauri/Text/AttributedGrapheme.hpp"
+#include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Text/Font.hpp"
 #include <string>
 #include <vector>
@@ -11,28 +12,52 @@
 namespace TTauri::Text {
 
 class EditableText {
-    std::vector<Grapheme> graphemes;
+    std::vector<AttributedGrapheme> text;
+    ShapedText _shapedText;
 
-    mutable size_t cursorPosition = 0;
-    mutable ssize_t endSelection = -1;
-    mutable int styleAtCursor = 0;
-    Grapheme partialCharacter = {};
+    vec extent;
+
+    ssize_t cursorPosition = 0;
+    ssize_t endSelection = -1;
+    TextStyle currentStyle;
+
+    /** Partial grapheme is inserted before cursorPosition.
+     */
+    bool hasPartialGrapheme = false;
 
 public:
-    auto begin() noexcept {
-        return graphemes.begin();
+    EditableText(TextStyle style) :
+        text(), _shapedText(), extent(0.0, 0.0), cursorPosition(0), endSelection(-1), currentStyle(style) {}
+
+
+    /** Update the shaped text after changed to text.
+     */
+    bool updateShapedText() noexcept {
+        _shapedText = ShapedText(text, extent, Alignment::TopLeft, true);
+        return true;
     }
 
-    auto end() noexcept {
-        return graphemes.end();
+    [[nodiscard]] ShapedText shapedText() const noexcept {
+        return _shapedText;
+    }
+
+    void setExtent(vec extent) noexcept {
+        this->extent = extent;
+        updateShapedText();
+    }
+
+    void setCurrentStyle(TextStyle style) noexcept {
+        this->currentStyle = style;
     }
 
     size_t size() const noexcept {
-        return graphemes.size();
+        return text.size();
     }
 
-    Grapheme &operator[](size_t i) noexcept {
-        return graphemes[i];
+    /** Get carets at the cursor position.
+     */
+    std::pair<vec,vec> carets() const noexcept {
+        return _shapedText.carets(cursorPosition);
     }
 
     /*! Find the nearest character at position and return it's index.
@@ -71,30 +96,11 @@ public:
 
     /*! Return the selected text.
      */
-    text copySelection() const noexcept;
+    //text copySelection() const noexcept;
 
     /*! Return and delete the selected text.
      */
-    text cutSelection() noexcept;
-
-    /*! Set the current style.
-     * If text is selected the style of the selected text changes.
-     * Otherwise the style at the cursor changes.
-     */
-    void setStyle(int styleIndex) noexcept;
-
-    /*! Get the current style.
-     * This is the style at the cursor or the style of the first selected character.
-     * The style at the cursor is determined when the cursor position changes or
-     * by a call to setStyle().
-     *
-     * If the cursor moved from left->right or up->down the cursor style is taken from
-     * the character directly before the new cursor position.
-     *
-     * If the cursor moved from right->left or down->up the cursor style is taken from
-     * the character directly after the new cursor position.
-     */
-    int getStyle(void) const noexcept;
+    //text cutSelection() noexcept;
 
     /*! Undo a text operation.
      */
@@ -117,28 +123,56 @@ public:
      *
      * Since the insertion has not been completed any selected text should not yet be deleted.
      */
-    void insertPartialCharacter(Grapheme character) noexcept;
+    bool insertPartialGrapheme(Grapheme character) noexcept {
+        ttauri_assume(cursorPosition <= ssize(text));
+        auto updated = cancelPartialGrapheme();
 
-    /*! Cancel the temporary partial character.
-     * Cancellation may happen when another widget or piece of text is selected by the user
-     * during character construction.
-     */
-    void cancelPartialCharacter() noexcept;
+        text.emplace(text.cbegin() + cursorPosition++, character, currentStyle);
+        hasPartialGrapheme = true;
+        return updated | updateShapedText();
+    }
+
+    bool cancelPartialGrapheme() noexcept {
+        ttauri_assume(cursorPosition <= ssize(text));
+
+        if (hasPartialGrapheme) {
+            ttauri_assume(cursorPosition >= 1);
+
+            text.erase(text.cbegin() + --cursorPosition);
+            hasPartialGrapheme = false;
+            return updateShapedText();
+
+        } else {
+            return false;
+        }
+    }
 
     /*! insert character at the cursor position.
      * Selected text will be deleted.
      */
-    void insertCharacter(Grapheme character) noexcept;
+    bool insertGrapheme(Grapheme character) noexcept {
+        ttauri_assume(cursorPosition <= ssize(text));
+        cancelPartialGrapheme();
 
-    /*! insert text at the cursor position.
-     * Selected text will be deleted.
-     */
-    void pasteText(text text) noexcept;
+        text.emplace(text.cbegin() + cursorPosition++, character, currentStyle);
+        return updateShapedText();
+    }
 
-private:
-    /*! Calculate metrics and position for each grapheme.
-     */
-    void shapeText() noexcept;
+    bool handleCommand(string_ltag command) noexcept {
+        ttauri_assume(cursorPosition <= ssize(text));
+        cancelPartialGrapheme();
+
+        auto updated = false;
+
+        if (command == "text.delete.char.prev"_ltag) {
+            if (cursorPosition >= 1) {
+                text.erase(text.cbegin() + --cursorPosition);
+                updated |= updateShapedText();
+            }
+        }
+
+        return updated;
+    }
 };
 
 

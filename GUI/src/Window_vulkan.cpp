@@ -479,6 +479,29 @@ Window_base::State Window_vulkan::buildSwapchain()
     LOG_INFO(" - extent=({}, {})", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);
     LOG_INFO(" - colorSpace={}, format={}", vk::to_string(swapchainCreateInfo.imageColorSpace), vk::to_string(swapchainCreateInfo.imageFormat));
     LOG_INFO(" - presentMode={}, imageCount={}", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
+
+    // Create depth matching the swapchain.
+    // Create atlas image
+    vk::ImageCreateInfo const depthImageCreateInfo = {
+        vk::ImageCreateFlags(),
+        vk::ImageType::e2D,
+        depthImageFormat,
+        vk::Extent3D(swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 1),
+        1, // mipLevels
+        1, // arrayLayers
+        vk::SampleCountFlagBits::e1,
+        vk::ImageTiling::eOptimal,
+        vk::ImageUsageFlagBits::eDepthStencilAttachment,
+        vk::SharingMode::eExclusive,
+        0, nullptr,
+        vk::ImageLayout::eUndefined
+    };
+
+    VmaAllocationCreateInfo depthAllocationCreateInfo = {};
+    depthAllocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+
+    std::tie(depthImage, depthImageAllocation) = device->createImage(depthImageCreateInfo, depthAllocationCreateInfo);
+
     return State::ReadyToRender;
 }
 
@@ -488,11 +511,21 @@ void Window_vulkan::teardownSwapchain()
 
     ttauri_assert(device);
     device->destroy(swapchain);
+    device->destroyImage(depthImage, depthImageAllocation);
 }
 
 void Window_vulkan::buildFramebuffers()
 {
     std::scoped_lock lock(GUI_globals->mutex);
+
+    depthImageView = device->createImageView({
+        vk::ImageViewCreateFlags(),
+        depthImage,
+        vk::ImageViewType::e2D,
+        depthImageFormat,
+        vk::ComponentMapping(),
+        { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
+    });
 
     ttauri_assert(device);
     swapchainImages = device->getSwapchainImagesKHR(swapchain);
@@ -508,7 +541,10 @@ void Window_vulkan::buildFramebuffers()
 
         swapchainImageViews.push_back(imageView);
 
-        std::array<vk::ImageView, 1> attachments = { imageView };
+        std::array<vk::ImageView, 2> attachments = {
+            imageView,
+            depthImageView
+        };
 
         auto framebuffer = device->createFramebuffer({
             vk::FramebufferCreateFlags(),
@@ -540,13 +576,15 @@ void Window_vulkan::teardownFramebuffers()
         device->destroy(imageView);
     }
     swapchainImageViews.clear();
+
+    device->destroy(depthImageView);
 }
 
 void Window_vulkan::buildRenderPasses()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    std::array<vk::AttachmentDescription, 1> attachmentDescriptions = {
+    std::array<vk::AttachmentDescription, 2> attachmentDescriptions = {
         vk::AttachmentDescription{
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
@@ -557,6 +595,17 @@ void Window_vulkan::buildRenderPasses()
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
             vk::ImageLayout::eColorAttachmentOptimal // finalLayout
+
+        }, vk::AttachmentDescription{
+            vk::AttachmentDescriptionFlags(),
+            depthImageFormat,
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eStore,
+            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+            vk::ImageLayout::eUndefined, // initialLayout
+            vk::ImageLayout::eDepthStencilAttachmentOptimal // finalLayout
         }
     };
 
@@ -566,6 +615,10 @@ void Window_vulkan::buildRenderPasses()
         vk::AttachmentReference{ 0, vk::ImageLayout::eColorAttachmentOptimal }
     };
 
+    vk::AttachmentReference const depthAttachmentReferences = {
+        1, vk::ImageLayout::eDepthStencilAttachmentOptimal
+    };
+
     std::array<vk::SubpassDescription, 1> const subpassDescriptions = {
         vk::SubpassDescription{
             vk::SubpassDescriptionFlags(),
@@ -573,7 +626,9 @@ void Window_vulkan::buildRenderPasses()
             numeric_cast<uint32_t>(inputAttachmentReferences.size()),
             inputAttachmentReferences.data(),
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
-            colorAttachmentReferences.data()
+            colorAttachmentReferences.data(),
+            nullptr, //resolveAttachments
+            &depthAttachmentReferences
         }
     };
 
@@ -590,12 +645,12 @@ void Window_vulkan::buildRenderPasses()
 
     vk::RenderPassCreateInfo const renderPassCreateInfo = {
         vk::RenderPassCreateFlags(),
-        numeric_cast<uint32_t>(attachmentDescriptions.size()),
-        attachmentDescriptions.data(),
-        numeric_cast<uint32_t>(subpassDescriptions.size()),
-        subpassDescriptions.data(),
-        numeric_cast<uint32_t>(subpassDependency.size()),
-        subpassDependency.data()
+        numeric_cast<uint32_t>(attachmentDescriptions.size()), // attachmentCount
+        attachmentDescriptions.data(), // attachments
+        numeric_cast<uint32_t>(subpassDescriptions.size()), // subpassCount
+        subpassDescriptions.data(), // subpasses
+        numeric_cast<uint32_t>(subpassDependency.size()), // dependencyCount
+        subpassDependency.data() // dependencies
     };
 
     ttauri_assert(device);
@@ -603,12 +658,12 @@ void Window_vulkan::buildRenderPasses()
 
     attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
     attachmentDescriptions.at(0).initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
-    attachmentDescriptions.at(0).finalLayout = vk::ImageLayout::eColorAttachmentOptimal;
+    attachmentDescriptions.at(1).loadOp = vk::AttachmentLoadOp::eLoad;
+    attachmentDescriptions.at(1).initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     followUpRenderPass = device->createRenderPass(renderPassCreateInfo);
 
-    attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
-    attachmentDescriptions.at(0).initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
     attachmentDescriptions.at(0).finalLayout = vk::ImageLayout::ePresentSrcKHR;
+    attachmentDescriptions.at(1).storeOp = vk::AttachmentStoreOp::eDontCare;
     lastRenderPass = device->createRenderPass(renderPassCreateInfo);
 }
 

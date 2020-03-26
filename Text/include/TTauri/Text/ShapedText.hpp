@@ -25,6 +25,11 @@ class ShapedText {
 public:
     ShapedText() noexcept :
         extent(0.0f, 0.0f), alignment(Alignment::BaseCenter), wrap(true), text(), text_extent(0.0f, 0.0f) {}
+    ShapedText(ShapedText const &other) = default;
+    ShapedText(ShapedText &&other) noexcept = default;
+    ShapedText &operator=(ShapedText const &other) = default;
+    ShapedText &operator=(ShapedText &&other) noexcept = default;
+    ~ShapedText() = default;
 
     /** Create shaped text from attributed text..
      * This function is used to draw rich-text.
@@ -76,12 +81,6 @@ public:
         bool wrap=true
     ) noexcept;
 
-    ShapedText(ShapedText const &other) noexcept = default;
-    ShapedText(ShapedText &&other) noexcept = default;
-    ShapedText &operator=(ShapedText const &other) noexcept = default;
-    ShapedText &operator=(ShapedText &&other) noexcept = default;
-    ~ShapedText() = default;
-
     [[nodiscard]] std::vector<AttributedGlyph>::const_iterator begin() const noexcept {
         return text.cbegin();
     }
@@ -89,6 +88,19 @@ public:
     [[nodiscard]] std::vector<AttributedGlyph>::const_iterator end() const noexcept {
         return text.cend();
     }
+
+    /** Return the cursor-carets.
+     * For left-to-right caret:
+     *   - The position is the right side of the character on the left.
+     *   - If position is at the start of a line:
+     *     - The character on the right is used.
+     *     - 
+     * 
+     * @param position Logical grapheme position.
+     * @return left-to-right caret position, right-to-left caret position.
+     *         Both values are the same when there is only a single caret.
+     */
+    [[nodiscard]] std::pair<vec,vec> carets(ssize_t position) const noexcept;
 
     /** Convert the whole shaped text into a layered path.
      */

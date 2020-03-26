@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #include "TTauri/Widgets/LineInputWidget.hpp"
@@ -12,8 +12,11 @@ namespace TTauri::GUI::Widgets {
 using namespace TTauri::Text;
 using namespace std::literals;
 
-LineInputWidget::LineInputWidget(std::string const label) noexcept :
-    Widget(), label(std::move(label))
+LineInputWidget::LineInputWidget(std::string const label, TextStyle style) noexcept :
+    Widget(),
+    label(std::move(label)),
+    field(style),
+    shapedText()
 {
 }
 
@@ -35,15 +38,15 @@ bool LineInputWidget::updateAndPlaceVertices(
     vec borderColor;
 
     if (hover || focus) {
-        backgroundColor = vec::color(0.3, 0.3, 0.3);
-    } else {
         backgroundColor = vec::color(0.1, 0.1, 0.1);
+    } else {
+        backgroundColor = vec::color(0.01, 0.01, 0.01);
     }
 
     if (hover || focus) {
         borderColor = vec::color(0.072, 0.072, 1.0);
     } else {
-        borderColor = vec::color(0.3, 0.3, 0.3);
+        borderColor = vec::color(0.1, 0.1, 0.1);
     }
 
     labelColor = vec{1.0, 1.0, 1.0, 1.0};
@@ -51,11 +54,18 @@ bool LineInputWidget::updateAndPlaceVertices(
     auto textRectangle = expand(box.currentRectangle(), -5.0f);
 
     if (modified()) {
-        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
+        field.setExtent(textRectangle.extent());
+        std::tie(leftCaretPosition, rightCaretPosition) = field.carets();
 
-        labelShapedText = ShapedText(label, labelStyle, textRectangle.extent(), Alignment::MiddleLeft);
+        if (ssize(field) == 0) {
+            let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
+            shapedText = ShapedText(label, labelStyle, textRectangle.extent(), Alignment::MiddleLeft);
 
-        window->device->SDFPipeline->prepareAtlas(labelShapedText);
+        } else {
+            shapedText = field.shapedText();
+        }
+
+        window->device->SDFPipeline->prepareAtlas(shapedText);
     }
 
     PipelineBox::DeviceShared::placeVertices(
@@ -70,12 +80,26 @@ bool LineInputWidget::updateAndPlaceVertices(
         expand(box.currentRectangle(), 10.0)
     );
 
+    let text_translate = mat::T(textRectangle.offset().z(elevation));
+
     window->device->SDFPipeline->placeVertices(
         sdf_vertices,
-        labelShapedText,
-        mat::T(textRectangle.offset().z(elevation)),
+        shapedText,
+        text_translate,
         box.currentRectangle()
     );
+
+    if (leftCaretPosition.w() == 1.0) {
+        let leftCaretBox = rect(leftCaretPosition, vec{1.0, 14.0});
+
+        PipelineFlat::DeviceShared::placeVerticesBox(
+            flat_vertices,
+            text_translate * leftCaretBox,
+            vec::color(1.0, 0.5, 0.5),
+            box.currentRectangle(),
+            elevation + 0.0005f
+        );
+    }
 
     continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
     return continueRendering;
@@ -89,11 +113,15 @@ bool LineInputWidget::handleCommand(string_ltag command) noexcept
         return false;
     }
 
-    if (command == "text."_ltag) {
+    // This lock is held during rendering, only update the field when holding this lock.
+    std::scoped_lock lock(GUI_globals->mutex);
 
-    }
+    auto continueRendering = false;
 
-    return false;
+    continueRendering |= field.handleCommand(command);
+    
+
+    return continueRendering;
 }
 
 bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
@@ -104,14 +132,15 @@ bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
         return false;
     }
 
+    // This lock is held during rendering, only update the field when holding this lock.
+    std::scoped_lock lock(GUI_globals->mutex);
+
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:
-        //text.insertGrapheme(grapheme);
-        return true;
+        return continueRendering | field.insertGrapheme(event.grapheme);
 
     case GUI::KeyboardEvent::Type::PartialGrapheme:
-        //text.insertPartialGrapheme(event.grapheme);
-        return true;
+        return continueRendering | field.insertPartialGrapheme(event.grapheme);
 
     default:;
     }

@@ -1,9 +1,10 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
 #include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Text/EditableText.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -16,10 +17,25 @@ class LineInputWidget : public Widget {
 protected:
     std::string label = "<unknown>";
 
-    Text::ShapedText labelShapedText;
+    Text::EditableText field;
+    Text::ShapedText shapedText;
+
+    vec leftCaretPosition = vec{};
+    vec rightCaretPosition = vec{};
 public:
 
-    LineInputWidget(std::string const label) noexcept;
+    LineInputWidget(
+        std::string const label,
+        Text::TextStyle style=Text::TextStyle(
+            "Arial",
+            Text::FontVariant{Text::FontWeight::Regular, false},
+            14.0,
+            vec::color(1.0,1.0,1.0),
+            0.0,
+            Text::TextDecoration::None
+        )
+    ) noexcept;
+
     ~LineInputWidget() {}
 
     LineInputWidget(const LineInputWidget &) = delete;

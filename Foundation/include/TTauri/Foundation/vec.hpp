@@ -49,10 +49,10 @@ public:
     /* Create a zeroed out vec.
      */
     force_inline vec() noexcept : vec(_mm_setzero_ps()) {}
-    force_inline vec(vec const &rhs) = default;
-    force_inline vec &operator=(vec const &rhs) = default;
-    force_inline vec(vec &&rhs) = default;
-    force_inline vec &operator=(vec &&rhs) = default;
+    force_inline vec(vec const &rhs) noexcept = default;
+    force_inline vec &operator=(vec const &rhs) noexcept = default;
+    force_inline vec(vec &&rhs) noexcept = default;
+    force_inline vec &operator=(vec &&rhs) noexcept = default;
 
     /** Create a vec out of a __m128
      */
@@ -114,7 +114,7 @@ public:
         )) {}
 
     /** Create a point out of 2 to 4 values.
-    * This vector is used as a homogenious coordinate, meaning:
+    * This vector is used as a homogeneous coordinate, meaning:
     *  - vectors have w=0.0 (A direction and distance)
     *  - points have w=1.0 (A position in space)
     *
@@ -122,10 +122,23 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    template<typename T, typename U, typename V=float, typename W=float,
+    template<typename T=float, typename U=float, typename V=float, typename W=float,
     std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V>,int> = 0>
-    [[nodiscard]] force_inline static vec point(T x, U y, V z=0.0f) noexcept {
-        return vec{x, y, z, 1.0};
+    [[nodiscard]] force_inline static vec point(T x=0.0f, U y=0.0f, V z=0.0f) noexcept {
+        return vec{x, y, z, 1.0f};
+    }
+
+    /** Create a point out of 2 to 4 values.
+    * This vector is used as a homogeneous coordinate, meaning:
+    *  - vectors have w=0.0 (A direction and distance)
+    *  - points have w=1.0 (A position in space)
+    *
+    * When this vector is used for color then:
+    *  - x=Red, y=Green, z=Blue, w=Alpha
+    *
+    */
+    [[nodiscard]] force_inline static vec point(vec rhs) noexcept {
+        return rhs.xyz1();
     }
 
     /** Get a origin vector(0.0, 0.0, 0.0, 1.0).
