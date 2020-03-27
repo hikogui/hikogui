@@ -59,7 +59,7 @@ bool LineInputWidget::updateAndPlaceVertices(
 
         if (ssize(field) == 0) {
             let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
-            shapedText = ShapedText(label, labelStyle, textRectangle.extent(), Alignment::MiddleLeft);
+            shapedText = ShapedText(label, labelStyle, HorizontalAlignment::Left, textRectangle.width());
 
         } else {
             shapedText = field.shapedText();

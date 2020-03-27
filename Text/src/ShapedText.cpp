@@ -16,25 +16,27 @@ namespace TTauri::Text {
         r.emplace_back(grapheme, style, index++);
     }
 
+    if (ssize(text) == 0 || text.back() != '\n') {
+        r.emplace_back(Grapheme{'\n'}, style, index++);
+    }
+
     return r;
 }
 
-static void index_graphemes(std::vector<AttributedGrapheme> &text) noexcept
-{
-    ssize_t index = 0;
-    for (auto &ag: text) {
-        ag.index = index++;
-    }
-}
-
-
 static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
 {
-
+    // First remember the logical position before reordering the glyphs.
+    ssize_t logicalIndex = 0;
+    for (auto &ag: text) {
+        ag.logicalIndex = logicalIndex++;
+    }
 }
 
 [[nodiscard]] static std::vector<AttributedGlyph> graphemes_to_glyphs(std::vector<AttributedGrapheme> const &text) noexcept
 {
+    // The end-of-paragraph (linefeed) must end text.
+    ttauri_assume(ssize(text) >= 1 && text.back().grapheme == '\n');
+
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
 
@@ -43,7 +45,11 @@ static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
 
     for (let &ag: text) {
         let font_id = font_book.find_font(ag.style.family_id, ag.style.variant);
-        glyphs.emplace_back(ag, font_book.find_glyph(font_id, ag.grapheme));
+
+        // The end-of-paragraph is represented by a space glyph, which is usefull for
+        // producing a correct cursor at an empty line at the end of a paragraph.
+        let g = (ag.grapheme == '\n') ? Grapheme{0} : ag.grapheme;
+        glyphs.emplace_back(ag, font_book.find_glyph(font_id, g));
     }
 
     return glyphs;
@@ -90,92 +96,60 @@ static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexce
             }
         }
 
+        // Scale the metrics according to font-size of this glyph.
+        i->metrics *= i->style.size;
+
         // XXX merge the bounding box of combining glyphs in the metrics.
     }
 }
 
-struct AttributedGlyphsLine {
-    std::vector<AttributedGlyph>::iterator _begin;
-    std::vector<AttributedGlyph>::iterator _end;
-
-    float width = 0.0;
-    float ascender = 0.0;
-    float descender = 0.0;
-    float lineGap = 0.0;
-    float xHeight = 0.0;
-
-    AttributedGlyphsLine(std::vector<AttributedGlyph>::iterator begin, std::vector<AttributedGlyph>::iterator end) :
-        _begin(begin), _end(end), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f), xHeight(0.0f) {}
-
-    auto begin() const noexcept { return _begin; }
-    auto end() const noexcept { return _end; }
-};
-
-[[nodiscard]] static std::vector<AttributedGlyphsLine> make_lines(std::vector<AttributedGlyph> &glyphs, float maximum_width) noexcept
+[[nodiscard]] static std::vector<AttributedGlyphLine> make_lines(std::vector<AttributedGlyph> &glyphs, float maximum_width) noexcept
 {
-    std::vector<AttributedGlyphsLine> lines;
+    std::vector<AttributedGlyphLine> lines;
 
     float width = 0.0f;
     auto start_of_line = glyphs.begin();
     auto end_of_word = glyphs.begin();
+    float end_of_word_width = 0.0f;
 
     for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
-        switch (i->grapheme.front()) {
-        case '\n':
-            lines.emplace_back(start_of_line, i);
-            width = 0.0f;
-            start_of_line = i + 1;
+        if (i->breakableWhitespace) {
+            // When a line is created the whitespace should be appended to the
+            // end-of-line so cursor position can still be calculated correctly.
             end_of_word = i + 1;
-            continue;
-
-        case ' ':
-            end_of_word = i;
-            break;
-
-        default:;
+            // For the width we do not count the whitespace after the word.
+            end_of_word_width = width;
         }
 
-        width += (i->metrics.advance.x() * i->style.size);
+        if (!i->endOfParagraph) {
+            // Do not include the width of the endOfParagraph marker.
+            width += i->metrics.advance.x();
+        }
 
         if ((width > maximum_width) && (start_of_line != end_of_word)) {
             // Line is to long, and exists of at least a full word.
-            lines.emplace_back(start_of_line, end_of_word);
+            lines.emplace_back(start_of_line, end_of_word, end_of_word_width);
 
             // Skip back in the for-loop.
-            // The position of the white-space, the white-space will be skipped over by the end-of-for-loop.
             i = end_of_word;
-            start_of_line = i + 1;
-            end_of_word = i + 1;
+            start_of_line = end_of_word;
+            end_of_word = end_of_word;
+            end_of_word_width = 0.0f;
         }
     }
 
     if (start_of_line != glyphs.end()) {
-        lines.emplace_back(start_of_line, glyphs.end());
+        // Any whitespace at the end of the paragraph should be kept in the last line.
+        lines.emplace_back(start_of_line, glyphs.end(), width);
     }
 
     return lines;
 }
 
-void calculate_line_sizes(std::vector<AttributedGlyphsLine> &lines) noexcept
-{
-    for (auto &line: lines) {
-        for (let &glyph: line) {
-            let font_size = glyph.style.size;
-            let &metrics = glyph.metrics;
-
-            line.width += metrics.advance.x() * font_size;
-            line.ascender = std::max(line.ascender, metrics.ascender * font_size);
-            line.descender = std::max(line.descender, -metrics.descender * font_size);
-            line.lineGap = std::max(line.lineGap, metrics.lineGap * font_size);
-            line.xHeight = std::max(line.xHeight, metrics.xHeight * font_size);
-        }
-    }
-}
-
 /** Calculate the size of the text.
  * @return The extent of the text and the base line position of the middle line.
  */
-[[nodiscard]] static std::pair<vec,float> calculate_text_size(std::vector<AttributedGlyphsLine> const &lines) noexcept
+[[nodiscard]] static std::pair<vec,float> calculate_text_size(std::vector<AttributedGlyphLine> const &lines) noexcept
 {
     auto size = vec{0.0f, 0.0f};
 
@@ -216,34 +190,12 @@ void calculate_line_sizes(std::vector<AttributedGlyphsLine> &lines) noexcept
     return {size, size.height() - base_line};
 }
 
-/**
- */
-static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_extent, float text_base, vec box_extent, Alignment alignment) noexcept
+static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalAlignment alignment, vec extent) noexcept
 {
-    // Calculate where text should be drawn compared to the text.
-    float y = 0.0f;
-    if (alignment == VerticalAlignment::Base) {
-        // Center text based on the total height.
-        y = box_extent.height() * 0.5f - text_base;
-
-    } else if (alignment == VerticalAlignment::Top) {
-        y = box_extent.height() - text_extent.height();
-
-    } else if (alignment == VerticalAlignment::Bottom) {
-        y = 0.0f;
-
-    } else if (alignment == VerticalAlignment::Middle) {
-        // Center text based on the total height.
-        y = box_extent.height() * 0.5f - text_extent.height() * 0.5f;
-
-    } else {
-        no_default;
-    }
-
     // Draw lines from the top-to-down.
-    y += text_extent.height();
+    float y = extent.height();
     for (ssize_t i = 0; i != ssize(lines); ++i) {
-        let &line = lines[i];
+        auto &line = lines[i];
         if (i == 0) {
             y -= line.lineGap + line.ascender;
         } else {
@@ -255,17 +207,17 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_e
         if (alignment == HorizontalAlignment::Left) {
             x = 0.0f;
         } else if (alignment == HorizontalAlignment::Right) {
-            x = box_extent.width() - line.width;
+            x = extent.width() - line.width;
         } else if (alignment == HorizontalAlignment::Center) {
-            x = box_extent.width() * 0.5f - line.width * 0.5f;
+            x = extent.width() * 0.5f - line.width * 0.5f;
         } else {
             no_default;
         }
 
         auto position = vec(x, y);
         for (auto &glyph: line) {
-            glyph.transform = mat::T(position) * mat::S(glyph.style.size, glyph.style.size);
-            position += vec{glyph.style.size, glyph.style.size, 1.0} * glyph.metrics.advance;
+            glyph.position = position;
+            position += glyph.metrics.advance;
         }
     }
 }
@@ -284,16 +236,16 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_e
 *  - Align the text within the given extent size.
 *
 * @param text The text to be shaped.
+* @param alignment How the text should be horizontally-aligned inside the maximum_width.
 * @param max_width Maximum width that the text should flow into.
-* @param alignment How the text should be aligned in the box.
 * @return size of the resulting text, shaped text.
 */
-[[nodiscard]] static std::pair<vec,std::vector<AttributedGlyph>> shape_text(std::vector<AttributedGrapheme> text, vec extent, Alignment alignment, bool wrap) noexcept
+[[nodiscard]] static std::pair<vec,std::vector<AttributedGlyphLine>> shape_text(
+    std::vector<AttributedGrapheme> text,
+    HorizontalAlignment alignment,
+    float maximum_width=std::numeric_limits<float>::max()) noexcept
 {
     std::vector<AttributedGlyph> attributed_glyphs;
-
-    // Index graphemes.
-    index_graphemes(text);
 
     // Put graphemes in left-to-right display order using the UnicodeData's bidi_algorithm.
     bidi_algorithm(text);
@@ -308,50 +260,54 @@ static void position_glyphs(std::vector<AttributedGlyphsLine> &lines, vec text_e
     load_metrics_for_glyphs(glyphs);
 
     // Split the text up in lines, based on line-feeds and line-wrapping.
-    auto lines = make_lines(glyphs, wrap ? extent.width() : std::numeric_limits<float>::max());
-
-    // Calculate sizes of each line.
-    calculate_line_sizes(lines);
+    auto lines = make_lines(glyphs, maximum_width);
 
     // Calculate actual size of the box, no smaller than the minimum_size.
-    let [text_extent, text_base] = calculate_text_size(lines);
+    let [extent, base] = calculate_text_size(lines);
 
     // Align the text within the actual box size.
-    position_glyphs(lines, text_extent, text_base, extent, alignment);
+    position_glyphs(lines, alignment, extent);
 
-    return {text_extent, glyphs};
+    return {extent, lines};
 }
 
 
-ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, vec extent, Alignment alignment, bool wrap) noexcept :
-    extent(extent), alignment(alignment), wrap(wrap)
+ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, HorizontalAlignment alignment, float maximum_width) noexcept
 {
-    std::tie(this->text_extent, this->text) = shape_text(text, extent, alignment, wrap);
+    ttauri_assume((alignment == HorizontalAlignment::Left) || (maximum_width < std::numeric_limits<float>::max()));
+    std::tie(this->extent, this->lines) = shape_text(text, alignment, maximum_width);
 }
 
-ShapedText::ShapedText(gstring const &text, TextStyle const &style, vec extent, Alignment alignment, bool wrap) noexcept :
-    ShapedText(makeAttributedGraphemeVector(text, style), extent, alignment, wrap) {}
+ShapedText::ShapedText(gstring const &text, TextStyle const &style, HorizontalAlignment alignment, float maximum_width) noexcept :
+    ShapedText(makeAttributedGraphemeVector(text, style), alignment, maximum_width) {}
 
-ShapedText::ShapedText(std::string const &text, TextStyle const &style, vec extent, Alignment alignment, bool wrap) noexcept :
-    ShapedText(translateString<gstring>(text), style, extent, alignment, wrap) {}
+ShapedText::ShapedText(std::string const &text, TextStyle const &style, HorizontalAlignment alignment, float maximum_width) noexcept :
+    ShapedText(translateString<gstring>(text), style, alignment, maximum_width) {}
 
+
+[[nodiscard]] ShapedText::const_iterator ShapedText::find(ssize_t index) const noexcept
+{
+    return std::find_if(cbegin(), cend(), [=](let &x) {
+        return x.containsLogicalIndex(index);
+    });
+}
 
 [[nodiscard]] std::pair<vec,vec> ShapedText::carets(ssize_t position) const noexcept
 {
-    for (let &attr_glyph: text) {
-        if (position > attr_glyph.index && position < attr_glyph.index + attr_glyph.grapheme_count) {
+    for (let &attr_glyph: *this) {
+        if (position > attr_glyph.logicalIndex && position < attr_glyph.logicalIndex + attr_glyph.graphemeCount) {
             // The position is inside a ligature.
             // Place the cursor proportional inside the ligature, based on the font-metrics.
-            let grapheme_index = attr_glyph.index - position;
+            let grapheme_index = attr_glyph.logicalIndex - position;
             let ligature_advance = attr_glyph.metrics.advanceForGrapheme(numeric_cast<int>(grapheme_index));
 
-            let caret_position = attr_glyph.transform * vec::point(ligature_advance);
+            let caret_position = attr_glyph.position + vec::point(ligature_advance);
             return {caret_position, vec{}};
 
-        } else if ((position - 1) == attr_glyph.index && attr_glyph.grapheme != '\n') {
+        } else if ((position - 1) == attr_glyph.logicalIndex && attr_glyph.endOfParagraph) {
             // There is a non-linefeed glyph in the left side of the position, place the cursor
             // to the right of that glyph.
-            let caret_position = attr_glyph.transform * vec::point(attr_glyph.metrics.advance);
+            let caret_position = attr_glyph.position + vec::point(attr_glyph.metrics.advance);
             return {caret_position, vec{}};
 
         }
@@ -359,9 +315,9 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, vec exte
 
     // Either there was no glyph on the left of the position or it was a line-feed.
     // In both cases we need to know where the left-side of the glyph on the right.
-    for (let &attr_glyph: text) {
-        if (position == attr_glyph.index) {
-            let caret_position = attr_glyph.transform * vec::point();
+    for (let &attr_glyph: *this) {
+        if (position == attr_glyph.logicalIndex) {
+            let caret_position = attr_glyph.position + vec::point();
             return {caret_position, vec{}};
         }
     }
@@ -376,11 +332,11 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, vec exte
 {
     Path r;
 
-    if (ssize(text) == 0) {
+    if (ssize(*this) == 0) {
         return r;
     }
 
-    for (let &attr_glyph: text) {
+    for (let &attr_glyph: *this) {
         r += attr_glyph.get_path();
     }
     r.optimizeLayers();

@@ -27,13 +27,16 @@ class EditableText {
 
 public:
     EditableText(TextStyle style) :
-        text(), _shapedText(), extent(0.0, 0.0), cursorPosition(0), endSelection(-1), currentStyle(style) {}
+        text(), _shapedText(), extent(0.0, 0.0), cursorPosition(0), endSelection(-1), currentStyle(style)
+    {
+        text.emplace_back(Grapheme('\n'), style, 0);
+    }
 
 
     /** Update the shaped text after changed to text.
      */
     bool updateShapedText() noexcept {
-        _shapedText = ShapedText(text, extent, Alignment::TopLeft, true);
+        _shapedText = ShapedText(text, HorizontalAlignment::Left, extent.width());
         return true;
     }
 
@@ -169,6 +172,9 @@ public:
                 text.erase(text.cbegin() + --cursorPosition);
                 updated |= updateShapedText();
             }
+        } else if (command == "text.cursor.char.left"_ltag) {
+            //cursorPosition = _shapedText.positionCharLeft(cursorPosition);
+            //updated |= true;
         }
 
         return updated;

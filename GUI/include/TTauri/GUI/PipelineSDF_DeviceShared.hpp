@@ -42,6 +42,7 @@ struct DeviceShared final {
     static constexpr float fontSize = 28.0f;
     static constexpr float drawBorder = SDF8::max_distance;
     static constexpr float scaledDrawBorder = drawBorder / fontSize;
+    static constexpr float scaledMaxDistance = SDF8::max_distance / fontSize;
 
     Device const &device;
 

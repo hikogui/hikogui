@@ -3,28 +3,37 @@
 
 #pragma once
 
-#include "TTauri/Text/AttributedGlyph.hpp"
+#include "TTauri/Text/AttributedGlyphLine.hpp"
 #include "TTauri/Text/gstring.hpp"
+#include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/nested_vector_iterator.hpp"
 #include <string_view>
 
 namespace TTauri::Text {
 
+
 /** ShapedText represent a piece of text shaped to be displayed.
  */
 class ShapedText {
-    vec extent;
-    Alignment alignment;
-    bool wrap;
+    using iterator = nested_vector_iterator<
+        std::vector<AttributedGlyphLine>::const_iterator,
+        std::vector<AttributedGlyphLine>::iterator,
+        AttributedGlyphLine::iterator>;
 
-    std::vector<AttributedGlyph> text;
-    vec text_extent;
+    using const_iterator = nested_vector_iterator<
+        std::vector<AttributedGlyphLine>::const_iterator,
+        std::vector<AttributedGlyphLine>::const_iterator,
+        AttributedGlyphLine::const_iterator>;
+
+    vec extent;
+    std::vector<AttributedGlyphLine> lines;
 
 public:
     ShapedText() noexcept :
-        extent(0.0f, 0.0f), alignment(Alignment::BaseCenter), wrap(true), text(), text_extent(0.0f, 0.0f) {}
+        extent(0.0f, 0.0f), lines() {}
     ShapedText(ShapedText const &other) = default;
     ShapedText(ShapedText &&other) noexcept = default;
     ShapedText &operator=(ShapedText const &other) = default;
@@ -42,9 +51,8 @@ public:
      */
     ShapedText(
         std::vector<AttributedGrapheme> const &text,
-        vec const extent,
-        Alignment const alignment=Alignment::BaseCenter,
-        bool wrap=true
+        HorizontalAlignment const alignment=HorizontalAlignment::Center,
+        float maximum_width=std::numeric_limits<float>::max()
     ) noexcept;
 
     /** Create shaped text from a string.
@@ -59,9 +67,8 @@ public:
     ShapedText(
         gstring const &text,
         TextStyle const &style,
-        vec const extent,
-        Alignment const alignment=Alignment::BaseCenter,
-        bool wrap=true
+        HorizontalAlignment const alignment=HorizontalAlignment::Center,
+        float maximum_width=std::numeric_limits<float>::max()
     ) noexcept;
 
     /** Create shaped text from a string.
@@ -76,18 +83,29 @@ public:
     ShapedText(
         std::string const &text,
         TextStyle const &style,
-        vec const extent,
-        Alignment const alignment=Alignment::BaseCenter,
-        bool wrap=true
+        HorizontalAlignment const alignment=HorizontalAlignment::Center,
+        float maximum_width=std::numeric_limits<float>::max()
     ) noexcept;
 
-    [[nodiscard]] std::vector<AttributedGlyph>::const_iterator begin() const noexcept {
-        return text.cbegin();
+    [[nodiscard]] size_t size() const noexcept {
+        ssize_t count = 0;
+        for (let &line: lines) {
+            count += ssize(line);
+        }
+        return numeric_cast<size_t>(count);
     }
 
-    [[nodiscard]] std::vector<AttributedGlyph>::const_iterator end() const noexcept {
-        return text.cend();
-    }
+    [[nodiscard]] iterator begin() noexcept { return nested_vector_iterator_begin(lines); }
+    [[nodiscard]] const_iterator begin() const noexcept { return nested_vector_iterator_cbegin(lines); }
+    [[nodiscard]] const_iterator cbegin() const noexcept { return nested_vector_iterator_cbegin(lines); }
+
+    [[nodiscard]] iterator end() noexcept { return nested_vector_iterator_end(lines); }
+    [[nodiscard]] const_iterator end() const noexcept { return nested_vector_iterator_cend(lines); }
+    [[nodiscard]] const_iterator cend() const noexcept { return nested_vector_iterator_cend(lines); }
+
+    /** Find a glyph that corresponds to position.
+     */
+    [[nodiscard]] const_iterator find(ssize_t position) const noexcept;
 
     /** Return the cursor-carets.
      * For left-to-right caret:
@@ -101,6 +119,11 @@ public:
      *         Both values are the same when there is only a single caret.
      */
     [[nodiscard]] std::pair<vec,vec> carets(ssize_t position) const noexcept;
+
+    /** Return the position of the character to the left of the current position.
+     * @param position The current position;
+     */
+    [[nodiscard]] ssize_t positionCharLeft(ssize_t position) const noexcept;
 
     /** Convert the whole shaped text into a layered path.
      */

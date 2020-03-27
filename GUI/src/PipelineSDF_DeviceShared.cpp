@@ -125,6 +125,10 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 {
     int count = 0;
     for (let &attr_grapheme: text) {
+        if (attr_grapheme.breakableWhitespace || attr_grapheme.endOfParagraph) {
+            continue;
+        }
+
         let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
         if (atlas_i != glyphs_in_atlas.end()) {
             continue;
@@ -132,31 +136,37 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 
         ++count;
 
-        // We will draw the font at 15 pt into the texture. And we need a border for the texture to
-        // allow proper bi-linear interpolation on the edges.
-        let extent = ivec{
-            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.width() * fontSize + drawBorder * 2)),
-            numeric_cast<int>(std::ceil(attr_grapheme.metrics.boundingBox.height() * fontSize + drawBorder * 2))
-        };
+        // The metrics of the glyph are already scaled to the screen size.
+        // We need to rescale the metrics for drawing into the atlas.
+        let rescale = fontSize / attr_grapheme.style.size;
+        let rescale_v = vec{rescale, rescale, 1.0f};
+        let rescale_M = mat::S(rescale, rescale);
 
-        auto atlas_rect = allocateRect(extent);
+        let glyphBoundingBox = rescale_M * attr_grapheme.metrics.boundingBox;
+
+        // We will draw the font at a fixed size into the texture. And we need a border for the texture to
+        // allow proper bi-linear interpolation on the edges.
+        let offset = vec{drawBorder, drawBorder} - glyphBoundingBox.offset();
+        let extent = ivec{
+            numeric_cast<int>(std::ceil(glyphBoundingBox.width() + drawBorder * 2)),
+            numeric_cast<int>(std::ceil(glyphBoundingBox.height() + drawBorder * 2))
+        };
 
         // Now create a path of the combined glyphs. Offset and scale the path so that
         // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
-        let offset =
-            vec{drawBorder, drawBorder} -
-            attr_grapheme.metrics.boundingBox.offset() * vec{fontSize, fontSize, 1.0};
         let path = (mat::T(offset) * mat::S(fontSize, fontSize)) * attr_grapheme.glyphs.get_path();
 
         // Draw glyphs into staging buffer of the atlas.
         prepareStagingPixmapForDrawing();
         auto pixmap = stagingTexture.pixelMap.submap(irect{ivec{}, extent});
         fill(pixmap, path);
+
+        auto atlas_rect = allocateRect(extent);
         uploadStagingPixmapToAtlas(atlas_rect);
 
         // The bounding box is in texture coordinates.
         let atlas_px_offset = static_cast<vec>(atlas_rect.atlas_position.xy00());
-        let atlas_px_extent = attr_grapheme.metrics.boundingBox.extent() * vec{fontSize, fontSize, 1.0} + vec{2.0f} * vec{drawBorder, drawBorder};
+        let atlas_px_extent = glyphBoundingBox.extent() + vec{2.0f} * vec{drawBorder, drawBorder};
 
         let atlas_tx_multiplier = vec{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
         let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;
@@ -190,20 +200,22 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept
 {
     for (let &attr_grapheme: text) {
-        // Adjust bounding box by adding a border based on the fixed font size.
-        let bounding_box = expand(rect{attr_grapheme.metrics.boundingBox}, scaledDrawBorder);
+        if (attr_grapheme.breakableWhitespace || attr_grapheme.endOfParagraph) {
+            continue;
+        }
 
-        let vM = transform * attr_grapheme.transform;
+        // Adjust bounding box by adding a border based on the font size.
+        let bounding_box = expand(attr_grapheme.metrics.boundingBox, scaledDrawBorder * attr_grapheme.style.size);
+
+        let vM = transform * mat::T(attr_grapheme.position);
         let v0 = vM * bounding_box.corner<0>();
         let v1 = vM * bounding_box.corner<1>();
         let v2 = vM * bounding_box.corner<2>();
         let v3 = vM * bounding_box.corner<3>();
 
-        constexpr float texelSize = 1.0f / fontSize;
-        constexpr float texelMaxDistance = texelSize * SDF8::max_distance;
 
-        // Extract the max distance in pixels, after scaling the font.
-        let pixelMaxDistance = texelMaxDistance * vM.scaleX();
+        // Extract the max distance in pixels, based on the actual font size and scaling of the transform.
+        let maxDistance = scaledMaxDistance * attr_grapheme.style.size * vM.scaleX();
 
         // If none of the vertices is inside the clipping rectangle then don't add the
         // quad to the vertex list.
@@ -222,13 +234,13 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
 
         let color = vec{attr_grapheme.style.color};
         let shadowSize = attr_grapheme.style.shadow_size > 0.1f ? 
-            (0.5f / std::min(attr_grapheme.style.shadow_size, pixelMaxDistance)) :
+            (0.5f / std::min(attr_grapheme.style.shadow_size, maxDistance)) :
             -1.0f;
 
-        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
-        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
-        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
-        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color, pixelMaxDistance, shadowSize);
+        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
+        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
+        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
+        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
     }
 }
 

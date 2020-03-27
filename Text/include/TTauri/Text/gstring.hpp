@@ -27,13 +27,17 @@ struct gstring {
         return graphemes.at(i);
     }
 
-    auto begin() const noexcept {
-        return graphemes.begin();
-    }
+    decltype(auto) begin() noexcept { return graphemes.begin(); }
+    decltype(auto) begin() const noexcept { return graphemes.begin(); }
+    decltype(auto) cbegin() const noexcept { return graphemes.cbegin(); }
+    decltype(auto) end() noexcept { return graphemes.end(); }
+    decltype(auto) end() const noexcept { return graphemes.end(); }
+    decltype(auto) cend() const noexcept { return graphemes.cend(); }
 
-    auto end() const noexcept {
-        return graphemes.end();
-    }
+    decltype(auto) front() noexcept { return graphemes.front(); }
+    decltype(auto) front() const noexcept { return graphemes.front(); }
+    decltype(auto) back() noexcept { return graphemes.back(); }
+    decltype(auto) back() const noexcept { return graphemes.back(); }
 
     gstring &operator+=(gstring const &rhs) noexcept {
         for (let &rhs_grapheme: rhs.graphemes) {

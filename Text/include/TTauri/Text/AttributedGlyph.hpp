@@ -15,15 +15,20 @@ namespace TTauri::Text {
 struct AttributedGlyph {
     FontGlyphIDs glyphs;
 
-    Grapheme grapheme;
-
-    /** Copied from the original attributed-grapheme.
-    * An attributed-glyph always represents one or more (ligature) graphemes, a grapheme is never split.
+    /** The logical index of the grapheme before bidi-algorithm.
     */
-    ssize_t index;
+    ssize_t logicalIndex;
 
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
-    uint8_t grapheme_count;
+    int8_t graphemeCount;
+
+    /** This glyph represents a breakable-whitespace
+    */
+    bool breakableWhitespace;
+
+    /** This the end-of-paragraph marker.
+     */
+    bool endOfParagraph;
 
     /** Copied from the original attributed-grapheme. */
     TextStyle style;
@@ -31,18 +36,32 @@ struct AttributedGlyph {
     /** Metrics taken from the font file. */
     GlyphMetrics metrics;
 
-    /** Transform includes position, and scale of the glyph.
+    /** Position of the glyph.
      */
-    mat transform;
+    vec position;
 
     AttributedGlyph(AttributedGrapheme const &attr_grapheme, FontGlyphIDs glyphs) noexcept :
-        glyphs(std::move(glyphs)), grapheme(attr_grapheme.grapheme), index(attr_grapheme.index), grapheme_count(1), style(attr_grapheme.style), metrics() {}
+        glyphs(std::move(glyphs)),
+        logicalIndex(attr_grapheme.logicalIndex),
+        graphemeCount(1),
+        breakableWhitespace(attr_grapheme.grapheme == ' '),
+        endOfParagraph(attr_grapheme.grapheme == '\n'),
+        style(attr_grapheme.style),
+        metrics() {}
 
     AttributedGlyph(AttributedGlyph const &other) = default;
     AttributedGlyph(AttributedGlyph &&other) noexcept = default;
     AttributedGlyph &operator=(AttributedGlyph const &other) = default;
     AttributedGlyph &operator=(AttributedGlyph &&other) noexcept = default;
     ~AttributedGlyph() = default;
+
+    /** Check if this glyph contains the grapheme at index.
+     */
+    [[nodiscard]] bool containsLogicalIndex(ssize_t index) const noexcept {
+        let first = logicalIndex;
+        let last = first + graphemeCount;
+        return index >= first && index < last;
+    }
 
     [[nodiscard]] Path get_path() const noexcept;
 };

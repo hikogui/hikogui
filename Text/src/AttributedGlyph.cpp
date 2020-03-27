@@ -8,7 +8,9 @@ namespace TTauri::Text {
 
 [[nodiscard]] Path AttributedGlyph::get_path() const noexcept
 {
-    auto r = transform * glyphs.get_path();
+    let M = mat::T(position) * mat::S(style.size, style.size);
+
+    auto r = M * glyphs.get_path();
     r.closeLayer(style.color);
     return r;
 }

@@ -70,7 +70,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     if (modified()) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, box.currentExtent(), Alignment::MiddleCenter);
+        labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, numeric_cast<float>(box.width.value()));
 
         window->device->SDFPipeline->prepareAtlas(labelShapedText);
     }
