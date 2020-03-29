@@ -36,11 +36,7 @@ void Window_base::initialize()
 {
     std::scoped_lock lock(GUI_globals->mutex);
 
-    widget = std::make_shared<Widgets::WindowWidget>();
-
-    auto _window = dynamic_cast<Window *>(this);
-    ttauri_assert(_window);
-    widget->setParentWindow(_window);
+    widget = std::make_unique<Widgets::WindowWidget>(*static_cast<Window *>(this));
 
     openingWindow();
 }

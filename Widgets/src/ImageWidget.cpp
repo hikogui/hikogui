@@ -11,8 +11,8 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 
-ImageWidget::ImageWidget(URL path) noexcept :
-    Widget(), path(std::move(path))
+ImageWidget::ImageWidget(Window &window, Widget *parent, URL path) noexcept :
+    Widget(window, parent), path(std::move(path))
 {
 }
 

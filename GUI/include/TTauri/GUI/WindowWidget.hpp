@@ -21,14 +21,12 @@ public:
 
     vec backgroundColor;
 
-    WindowWidget() noexcept;
+    WindowWidget(Window &window) noexcept;
 
     WindowWidget(const WindowWidget&) = delete;
     WindowWidget &operator=(const WindowWidget&) = delete;
     WindowWidget(WindowWidget&&) = delete;
     WindowWidget &operator=(WindowWidget&&) = delete;
-
-    void setParentWindow(gsl::not_null<Window *> window) noexcept;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 };

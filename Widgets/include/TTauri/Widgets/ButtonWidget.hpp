@@ -22,7 +22,7 @@ protected:
     Text::ShapedText labelShapedText;
 public:
 
-    ButtonWidget(std::string const label) noexcept;
+    ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
     ~ButtonWidget() {}
 
     ButtonWidget(const ButtonWidget &) = delete;

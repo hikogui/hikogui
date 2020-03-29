@@ -12,8 +12,8 @@ namespace TTauri::GUI::Widgets {
 using namespace TTauri::Text;
 using namespace std::literals;
 
-ButtonWidget::ButtonWidget(std::string const label) noexcept :
-    Widget(), label(std::move(label))
+ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
+    Widget(window, parent), label(std::move(label))
 {
 }
 
@@ -23,7 +23,6 @@ bool ButtonWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    ttauri_assert(window);
     auto continueRendering = false;
 
     // Draw something.
@@ -72,7 +71,7 @@ bool ButtonWidget::updateAndPlaceVertices(
 
         labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, numeric_cast<float>(box.width.value()));
 
-        window->device->SDFPipeline->prepareAtlas(labelShapedText);
+        window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 
     PipelineBox::DeviceShared::placeVertices(
@@ -87,7 +86,7 @@ bool ButtonWidget::updateAndPlaceVertices(
         expand(box.currentRectangle(), 10.0)
     );
 
-    window->device->SDFPipeline->placeVertices(
+    window.device->SDFPipeline->placeVertices(
         sdf_vertices,
         labelShapedText,
         mat::T(box.currentOffset().z(elevation)),

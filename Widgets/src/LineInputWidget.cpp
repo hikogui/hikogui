@@ -12,8 +12,8 @@ namespace TTauri::GUI::Widgets {
 using namespace TTauri::Text;
 using namespace std::literals;
 
-LineInputWidget::LineInputWidget(std::string const label, TextStyle style) noexcept :
-    Widget(),
+LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string const label, TextStyle style) noexcept :
+    Widget(window, parent),
     label(std::move(label)),
     field(style),
     shapedText()
@@ -26,8 +26,6 @@ bool LineInputWidget::updateAndPlaceVertices(
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    ttauri_assert(window);
-
     auto continueRendering = false;
 
     // Draw something.
@@ -65,7 +63,7 @@ bool LineInputWidget::updateAndPlaceVertices(
             shapedText = field.shapedText();
         }
 
-        window->device->SDFPipeline->prepareAtlas(shapedText);
+        window.device->SDFPipeline->prepareAtlas(shapedText);
     }
 
     PipelineBox::DeviceShared::placeVertices(
@@ -82,7 +80,7 @@ bool LineInputWidget::updateAndPlaceVertices(
 
     let text_translate = mat::T(textRectangle.offset().z(elevation));
 
-    window->device->SDFPipeline->placeVertices(
+    window.device->SDFPipeline->placeVertices(
         sdf_vertices,
         shapedText,
         text_translate,

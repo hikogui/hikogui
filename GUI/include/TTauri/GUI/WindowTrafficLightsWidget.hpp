@@ -31,15 +31,13 @@ public:
 
     Path applicationIcon;
 
-    WindowTrafficLightsWidget(Path applicationIcon) noexcept;
+    WindowTrafficLightsWidget(Window &window, Widget *parent, Path applicationIcon) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     WindowTrafficLightsWidget(const WindowTrafficLightsWidget &) = delete;
     WindowTrafficLightsWidget &operator=(const WindowTrafficLightsWidget &) = delete;
     WindowTrafficLightsWidget(WindowTrafficLightsWidget &&) = delete;
     WindowTrafficLightsWidget &operator=(WindowTrafficLightsWidget &&) = delete;
-
-    void setParent(Widget *parent) noexcept override;
 
     int state() const noexcept;
 

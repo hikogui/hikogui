@@ -10,22 +10,16 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std;
 
-WindowWidget::WindowWidget() noexcept :
-    Widget()
+WindowWidget::WindowWidget(Window &window) noexcept :
+    Widget(window)
 {
-}
+    toolbar = &addWidget<WindowToolbarWidget>();
+    window.addConstraint(toolbar->box.left == box.left);
+    window.addConstraint(toolbar->box.right == box.right);
+    window.addConstraint(toolbar->box.top == box.top);
 
-void WindowWidget::setParentWindow(gsl::not_null<Window *> window) noexcept
-{
-    this->window = window;
-
-    toolbar = addWidget<WindowToolbarWidget>();
-    window->addConstraint(toolbar->box.left == box.left);
-    window->addConstraint(toolbar->box.right == box.right);
-    window->addConstraint(toolbar->box.top == box.top);
-
-    window->addConstraint(box.left == 0);
-    window->addConstraint(box.bottom == 0);
+    window.addConstraint(box.left == 0);
+    window.addConstraint(box.bottom == 0);
 
     backgroundColor = vec{0.058, 0.078, 0.010, 1.0};
 }

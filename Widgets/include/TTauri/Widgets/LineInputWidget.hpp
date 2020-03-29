@@ -25,6 +25,7 @@ protected:
 public:
 
     LineInputWidget(
+        Window &window, Widget *parent,
         std::string const label,
         Text::TextStyle style=Text::TextStyle(
             "Arial",

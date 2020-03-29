@@ -29,21 +29,21 @@ public:
     {
         auto margin = 10.0;
 
-        auto button1 = window.widget->addWidget<ButtonWidget>(u8"H\u00eb""ll\u00f6 W\u00f6""rld");
-        window.addConstraint(button1->box.width == 100);
-        window.addConstraint(button1->box.height == 30);
-        window.addConstraint(button1->box.left + margin == window.widget->box.left);
-        window.addConstraint(button1->box.bottom + margin == window.widget->box.bottom);
-        window.addConstraint(button1->box.top - margin <= window.widget->toolbar->box.bottom);
+        auto &button1 = window.addWidget<ButtonWidget>(u8"H\u00eb""ll\u00f6 W\u00f6""rld");
+        window.addConstraint(button1.box.width == 100);
+        window.addConstraint(button1.box.height == 30);
+        window.addConstraint(button1.box.left + margin == window.widget->box.left);
+        window.addConstraint(button1.box.bottom + margin == window.widget->box.bottom);
+        window.addConstraint(button1.box.top - margin <= window.widget->toolbar->box.bottom);
 
-        auto button2 = window.widget->addWidget<ButtonWidget>(u8"Foo Bar");
-        window.addConstraint(button2->box.width >= 100);
-        window.addConstraint(button2->box.width <= 1500);
-        window.addConstraint(button2->box.height == 30);
-        window.addConstraint(button2->box.left + margin == button1->box.right);
-        window.addConstraint(button2->box.bottom + margin == window.widget->box.bottom);
-        window.addConstraint(button2->box.right - margin == window.widget->box.right);
-        window.addConstraint(button2->box.top - margin <= window.widget->toolbar->box.bottom);
+        auto &button2 = window.addWidget<ButtonWidget>(u8"Foo Bar");
+        window.addConstraint(button2.box.width >= 100);
+        window.addConstraint(button2.box.width <= 1500);
+        window.addConstraint(button2.box.height == 30);
+        window.addConstraint(button2.box.left + margin == button1.box.right);
+        window.addConstraint(button2.box.bottom + margin == window.widget->box.bottom);
+        window.addConstraint(button2.box.right - margin == window.widget->box.right);
+        window.addConstraint(button2.box.top - margin <= window.widget->toolbar->box.bottom);
     }
 
     void closingWindow(const Window &window) override

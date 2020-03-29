@@ -106,7 +106,7 @@ public:
     float ppp = 1.0;
 
     //! The widget covering the complete window.
-    std::shared_ptr<Widgets::WindowWidget> widget;
+    std::unique_ptr<Widgets::WindowWidget> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
@@ -160,17 +160,29 @@ public:
         return state == State::NoWindow;
     }
 
-    rhea::solver& addConstraint(rhea::constraint const& constraint) {
+    template<typename T, typename... Args>
+    T &addWidget(Args... args) {
+        ttauri_assume(widget);
+        return widget->addWidget<T>(args...);
+    }
+
+    rhea::solver& addConstraint(rhea::constraint const& constraint) noexcept {
         auto &r = widgetSolver.add_constraint(constraint);
-        calculateMinimumAndMaximumWindowExtent();
-        setModifiedRecursive();
+        // During the construction of WindowWidget `widget` is not yet set.
+        if (widget) {
+            calculateMinimumAndMaximumWindowExtent();
+            setModifiedRecursive();
+        }
         return r;
     }
 
-    rhea::solver& removeConstraint(rhea::constraint const& constraint) {
+    rhea::solver& removeConstraint(rhea::constraint const& constraint) noexcept {
         auto &r = widgetSolver.remove_constraint(constraint);
-        calculateMinimumAndMaximumWindowExtent();
-        setModifiedRecursive();
+        // During the construction of WindowWidget `widget` is not yet set.
+        if (widget) {
+            calculateMinimumAndMaximumWindowExtent();
+            setModifiedRecursive();
+        }
         return r;
     }
 
@@ -407,6 +419,8 @@ private:
     bool currentWindowExtentConstraintActive = false;
 
     void removeCurrentWindowExtentConstraints() {
+        ttauri_assume(widget);
+
         if (currentWindowExtentConstraintActive) {
             widgetSolver.remove_constraint(currentWindowExtentWidthConstraint);
             widgetSolver.remove_constraint(currentWindowExtentHeightConstraint);
@@ -415,6 +429,8 @@ private:
     }
 
     void addCurrentWindowExtentConstraints() {
+        ttauri_assume(widget);
+
         if (!currentWindowExtentConstraintActive) {
             auto widthEquation = widget->box.width == currentWindowExtent.x();
             auto heightEquation = widget->box.height == currentWindowExtent.y();
@@ -428,6 +444,8 @@ private:
     }
 
     void calculateMinimumAndMaximumWindowExtent() {
+        ttauri_assume(widget);
+
         removeCurrentWindowExtentConstraints();
 
         widgetSolver.suggest(widget->box.width, 0);

@@ -58,7 +58,7 @@ private:
 
 public:
     //! Convenient reference to the Window.
-    Window *window;
+    Window &window;
 
     Widget *parent;
 
@@ -102,7 +102,7 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    Widget() noexcept;
+    Widget(Window &window, Widget *parent=nullptr) noexcept;
     virtual ~Widget() {}
 
     Widget(const Widget &) = delete;
@@ -110,17 +110,13 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
-    virtual void setParent(Widget *parent) noexcept;
-
     template<typename T, typename... Args>
-    T *addWidget(Args... args) noexcept {
-        auto widget = std::make_unique<T>(args...);
-        auto widget_ptr = widget.get();
-
-        widget->setParent(this);
-
+    T &addWidget(Args... args) {
+        auto widget = std::make_unique<T>(window, this, args...);
+        let widget_ptr = widget.get();
         children.push_back(move(widget));
-        return widget_ptr;
+        ttauri_assume(widget_ptr);
+        return *widget_ptr;
     }
 
     [[nodiscard]] Device *device() const noexcept;

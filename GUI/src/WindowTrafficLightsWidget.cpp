@@ -9,28 +9,22 @@
 
 namespace TTauri::GUI::Widgets {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Path applicationIcon) noexcept :
-    Widget(), applicationIcon(std::move(applicationIcon))
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent, Path applicationIcon) noexcept :
+    Widget(window, parent), applicationIcon(std::move(applicationIcon))
 {
-}
-
-void WindowTrafficLightsWidget::setParent(Widget *parent) noexcept
-{
-    Widget::setParent(parent);
-
-    this->window->addConstraint(box.height == HEIGHT);
-    this->window->addConstraint(box.width == WIDTH);
+    window.addConstraint(box.height == HEIGHT);
+    window.addConstraint(box.width == WIDTH);
 }
 
 int WindowTrafficLightsWidget::state() const noexcept {
     int r = 0;
-    r |= window->active ? 1 : 0;
+    r |= window.active ? 1 : 0;
     if constexpr (operatingSystem == OperatingSystem::MacOS) {
         r |= hover ? 2 : 0;
         r |= pressedRed ? 4 : 0;
         r |= pressedYellow ? 8 : 0;
         r |= pressedGreen ? 16 : 0;
-        r |= (window->size == Window::Size::Maximized) ? 32 : 0;
+        r |= (window.size == Window::Size::Maximized) ? 32 : 0;
     }
     return r;
 }
@@ -43,8 +37,7 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
 {
     auto continueRendering = false;
 
-    ttauri_assert(window);
-    continueRendering |= backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+    continueRendering |= backingImage.loadOrDraw(window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
         }, "WindowTrafficLightsWidget", state());
 
@@ -131,7 +124,7 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawApplicationIconImage
     let iconPath = applicationIcon.centerScale(vec{image.extent}, 3.0);
     composit(linearMap, iconPath);
 
-    if (!window->active) {
+    if (!window.active) {
         desaturate(linearMap, 0.5f);
     }
     return linearMap;
@@ -157,7 +150,7 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(P
     auto drawing = Path();
     drawing.addCircle(redCenter, RADIUS);
     
-    if (!window->active && !hover) {
+    if (!window.active && !hover) {
         drawing.closeLayer(vec{0.246, 0.246, 0.246, 1.0});
     } else if (pressedRed) {
         drawing.closeLayer(vec{1.0, 0.242, 0.212, 1.0});
@@ -166,7 +159,7 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(P
     }
 
     drawing.addCircle(yellowCenter, RADIUS);
-    if (!window->active && !hover) {
+    if (!window.active && !hover) {
         drawing.closeLayer(vec{0.246, 0.246, 0.246, 1.0});
     } else if (pressedYellow) {
         drawing.closeLayer(vec{1.0, 0.847, 0.093, 1.0});
@@ -175,7 +168,7 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(P
     }
 
     drawing.addCircle(greenCenter, RADIUS);
-    if (!window->active && !hover) {
+    if (!window.active && !hover) {
         drawing.closeLayer(vec{0.246, 0.246, 0.246, 1.0});
     } else if (pressedGreen) {
         drawing.closeLayer(vec{0.223, 0.863, 0.1, 1.0});
@@ -190,7 +183,7 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(P
         drawing.addRectangle({yellowCenter.x() - RADIUS * 0.5 - 0.5, yellowCenter.y() - 0.5, RADIUS * 1.0 + 1.0, 1.0});
         drawing.closeLayer(vec{0.212, 0.1, 0.0, 1.0});
 
-        if (window->size == Window::Size::Maximized) {
+        if (window.size == Window::Size::Maximized) {
             drawTrianglesInward(drawing, greenCenter, RADIUS);
         } else {
             drawTrianglesOutward(drawing, greenCenter, RADIUS);
@@ -256,16 +249,16 @@ bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             if (pressedRed) {
-                window->closeWindow();
+                window.closeWindow();
             } else if (pressedYellow) {
-                window->minimizeWindow();
+                window.minimizeWindow();
             } else if (pressedGreen) {
-                switch (window->size) {
+                switch (window.size) {
                 case Window::Size::Normal:
-                    window->maximizeWindow();
+                    window.maximizeWindow();
                     break;
                 case Window::Size::Maximized:
-                    window->normalizeWindow();
+                    window.normalizeWindow();
                     break;
                 default:
                     no_default;

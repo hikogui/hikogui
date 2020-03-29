@@ -6,23 +6,14 @@
 
 namespace TTauri::GUI::Widgets {
 
-Widget::Widget() noexcept
-{
-}
+Widget::Widget(Window &window, Widget *parent) noexcept :
+    window(window), parent(parent), elevation(parent ? parent->elevation + 0.001f : 0.0f) {}
 
 Device *Widget::device() const noexcept
 {
-    ttauri_assert(window);
-    auto device = window->device;
+    auto device = window.device;
     ttauri_assert(device);
     return device;
-}
-
-void Widget::setParent(Widget *parent) noexcept
-{
-    this->window = parent->window;
-    this->parent = parent;
-    this->elevation = parent->elevation + 0.001f;
 }
 
 bool Widget::updateAndPlaceVertices(

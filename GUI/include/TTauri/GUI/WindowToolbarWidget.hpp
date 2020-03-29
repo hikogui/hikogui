@@ -20,15 +20,13 @@ public:
 
     R16G16B16A16SFloat backgroundColor = vec{0.0f, 0.0f, 0.0f, 0.5f};
 
-    WindowToolbarWidget() noexcept;
+    WindowToolbarWidget(Window &window, Widget *parent) noexcept;
     ~WindowToolbarWidget() {}
 
     WindowToolbarWidget(const WindowToolbarWidget &) = delete;
     WindowToolbarWidget &operator=(const WindowToolbarWidget &) = delete;
     WindowToolbarWidget(WindowToolbarWidget &&) = delete;
     WindowToolbarWidget &operator=(WindowToolbarWidget &&) = delete;
-
-    void setParent(Widget *parent) noexcept override;
 
     [[nodiscard]] bool updateAndPlaceVertices(
         vspan<PipelineFlat::Vertex> &flat_vertices,

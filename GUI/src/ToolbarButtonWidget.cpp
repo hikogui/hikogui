@@ -11,23 +11,18 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 
-ToolbarButtonWidget::ToolbarButtonWidget(Path icon, std::function<void()> delegate) noexcept :
-    Widget(), delegate(delegate)
+ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, Path icon, std::function<void()> delegate) noexcept :
+    Widget(window, parent), delegate(delegate)
 {
+    window.addConstraint(box.height == box.width);
+
     icon.tryRemoveLayers();
     this->icon = std::move(icon);
 }
 
-void ToolbarButtonWidget::setParent(Widget *parent) noexcept
-{
-    Widget::setParent(parent);
-
-    window->addConstraint(box.height == box.width);
-}
-
 int ToolbarButtonWidget::state() const noexcept {
     int r = 0;
-    r |= window->active ? 1 : 0;
+    r |= window.active ? 1 : 0;
     r |= hover ? 2 : 0;
     r |= pressed ? 4 : 0;
     r |= enabled ? 8 : 0;
@@ -48,7 +43,7 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
         no_default;
     }
 
-    if (!(hover || window->active)) {
+    if (!(hover || window.active)) {
         desaturate(iconImage, 0.5f);
     }
 
@@ -73,8 +68,7 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
         PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), elevation);
     }
 
-    ttauri_assert(window);
-    continueRendering |= backingImage.loadOrDraw(*window, box.currentExtent(), [&](auto image) {
+    continueRendering |= backingImage.loadOrDraw(window, box.currentExtent(), [&](auto image) {
         return drawImage(image);
     }, "ToolbarButtonWidget", this, state());
 

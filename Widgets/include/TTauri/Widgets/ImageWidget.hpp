@@ -16,7 +16,7 @@ public:
 
     std::shared_ptr<GUI::PipelineImage::Image> backingImage;
 
-    ImageWidget(const URL path) noexcept;
+    ImageWidget(Window &window, Widget *parent, const URL path) noexcept;
     ~ImageWidget() {}
 
     ImageWidget(const ImageWidget&) = delete;

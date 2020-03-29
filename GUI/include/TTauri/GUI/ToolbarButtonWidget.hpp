@@ -23,15 +23,13 @@ public:
 
     std::function<void()> delegate;
 
-    ToolbarButtonWidget(Path const icon, std::function<void()> delegate) noexcept;
+    ToolbarButtonWidget(Window &window, Widget *parent, Path const icon, std::function<void()> delegate) noexcept;
     ~ToolbarButtonWidget() {}
 
     ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;
     ToolbarButtonWidget &operator=(const ToolbarButtonWidget &) = delete;
     ToolbarButtonWidget(ToolbarButtonWidget &&) = delete;
     ToolbarButtonWidget &operator=(ToolbarButtonWidget &&) = delete;
-
-    void setParent(Widget *parent) noexcept override;
 
     [[nodiscard]] bool updateAndPlaceVertices(
         vspan<PipelineFlat::Vertex> &flat_vertices,
