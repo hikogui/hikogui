@@ -9,6 +9,9 @@
 namespace TTauri
 {
 
+
+/** An iterator for a vector inside another vector.
+ */
 template<
     typename ParentCIt,
     typename ParentIt,
