@@ -595,11 +595,11 @@ char32_t UnicodeData::compose(char32_t startCodePoint, char32_t composingCodePoi
     } else {
         let compositions = unsafe_make_placement_array<UnicodeData_Composition>(
             bytes, rvalue_cast(compositions_offset), compositions_count
-            );
+        );
 
         let i = std::lower_bound(compositions.begin(), compositions.end(), searchValue, [](auto &element, auto value) {
             return element.searchValue() < value;
-            });
+        });
 
         if (i != compositions.end() && i->searchValue() == searchValue) {
             return i->composedCharacter();
