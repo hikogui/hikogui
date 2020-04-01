@@ -11,6 +11,7 @@
 #include "TTauri/GUI/HitBox.hpp"
 #include "TTauri/GUI/MouseEvent.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
+#include "TTauri/Text/gstring.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vec.hpp"
@@ -193,6 +194,9 @@ public:
     virtual void minimizeWindow() = 0;
     virtual void maximizeWindow() = 0;
     virtual void normalizeWindow() = 0;
+
+    [[nodiscard]] virtual std::string getTextFromClipboard() const noexcept = 0;
+    virtual void setTextOnClipboard(std::string str) noexcept = 0;
 
 protected:
     /*! The current rectangle which has been set by the operating system.

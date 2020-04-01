@@ -22,13 +22,7 @@ struct AttributedGlyph {
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
     int8_t graphemeCount;
 
-    /** This glyph represents a breakable-whitespace
-    */
-    bool breakableWhitespace;
-
-    /** This the end-of-paragraph marker.
-     */
-    bool endOfParagraph;
+    GeneralCharacterClass charClass;
 
     /** Copied from the original attributed-grapheme. */
     TextStyle style;
@@ -44,8 +38,7 @@ struct AttributedGlyph {
         glyphs(std::move(glyphs)),
         logicalIndex(attr_grapheme.logicalIndex),
         graphemeCount(1),
-        breakableWhitespace(attr_grapheme.grapheme == ' '),
-        endOfParagraph(attr_grapheme.grapheme == '\n'),
+        charClass(attr_grapheme.charClass),
         style(attr_grapheme.style),
         metrics() {}
 
@@ -61,6 +54,16 @@ struct AttributedGlyph {
         let first = logicalIndex;
         let last = first + graphemeCount;
         return index >= first && index < last;
+    }
+
+    /** Find the logical index closest to the coordinate.
+     * For a non-ligature, left of the halfway-point returnes the current logicalIndex,
+     * right of the halfway-point return the next logicalIndex.
+     */
+    [[nodiscard]] ssize_t relativeIndexAtCoordinate(vec coordinate) const noexcept {
+        let relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
+        let relativePositionPerGrapheme = relativePositionInGlyph * numeric_cast<float>(graphemeCount);
+        return numeric_cast<ssize_t>(std::round(relativePositionPerGrapheme));
     }
 
     [[nodiscard]] Path get_path() const noexcept;

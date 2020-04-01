@@ -41,8 +41,10 @@ bool LineInputWidget::updateAndPlaceVertices(
         backgroundColor = vec::color(0.01, 0.01, 0.01);
     }
 
-    if (hover || focus) {
+    if (focus) {
         borderColor = vec::color(0.072, 0.072, 1.0);
+    } else if (hover) {
+        borderColor = vec::color(0.2, 0.2, 0.2);
     } else {
         borderColor = vec::color(0.1, 0.1, 0.1);
     }
@@ -53,7 +55,8 @@ bool LineInputWidget::updateAndPlaceVertices(
 
     if (modified()) {
         field.setExtent(textRectangle.extent());
-        std::tie(leftCaretPosition, rightCaretPosition) = field.carets();
+        leftToRightCaret = field.leftToRightCaret();
+        selectionRectangles = field.selectionRectangles();
 
         if (ssize(field) == 0) {
             let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
@@ -78,7 +81,7 @@ bool LineInputWidget::updateAndPlaceVertices(
         expand(box.currentRectangle(), 10.0)
     );
 
-    let text_translate = mat::T(textRectangle.offset().z(elevation));
+    let text_translate = mat::T(textRectangle.offset().z(elevation + 0.0002f));
 
     window.device->SDFPipeline->placeVertices(
         sdf_vertices,
@@ -87,15 +90,23 @@ bool LineInputWidget::updateAndPlaceVertices(
         box.currentRectangle()
     );
 
-    if (leftCaretPosition.w() == 1.0) {
-        let leftCaretBox = rect(leftCaretPosition, vec{1.0, 14.0});
-
+    for (let selectionRectangle: selectionRectangles) {
         PipelineFlat::DeviceShared::placeVerticesBox(
             flat_vertices,
-            text_translate * leftCaretBox,
+            text_translate * selectionRectangle,
+            vec::color(0.0, 0.0, 1.0),
+            box.currentRectangle(),
+            elevation + 0.0001f
+        );
+    }
+
+    if (leftToRightCaret) {
+        PipelineFlat::DeviceShared::placeVerticesBox(
+            flat_vertices,
+            text_translate * leftToRightCaret,
             vec::color(1.0, 0.5, 0.5),
             box.currentRectangle(),
-            elevation + 0.0005f
+            elevation + 0.0003f
         );
     }
 
@@ -116,8 +127,16 @@ bool LineInputWidget::handleCommand(string_ltag command) noexcept
 
     auto continueRendering = false;
 
-    continueRendering |= field.handleCommand(command);
-    
+    if (command == "text.edit.paste"_ltag) {
+        continueRendering |= field.handlePaste(window.getTextFromClipboard());
+    } else if (command == "text.edit.copy"_ltag) {
+        window.setTextOnClipboard(field.handleCopy());
+    } else if (command == "text.edit.cut"_ltag) {
+        window.setTextOnClipboard(field.handleCut());
+        continueRendering |= true;
+    } else {
+        continueRendering |= field.handleCommand(command);
+    }
 
     return continueRendering;
 }
@@ -151,6 +170,22 @@ bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
     if (!enabled) {
         return false;
+    }
+
+    if (event.type == GUI::MouseEvent::Type::ButtonDown && event.cause.leftButton) {
+        auto textRectangle = expand(box.currentRectangle(), -5.0f);
+        if (textRectangle.contains(event.position)) {
+            let textPosition = event.position - textRectangle.offset();
+
+            continueRendering |= field.setCursorAtCoordinate(textPosition);
+        }
+    } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
+        auto textRectangle = expand(box.currentRectangle(), -5.0f);
+        if (textRectangle.contains(event.position)) {
+            let textPosition = event.position - textRectangle.offset();
+
+            continueRendering |= field.dragCursorAtCoordinate(textPosition);
+        }
     }
 
     return continueRendering;

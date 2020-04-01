@@ -20,8 +20,8 @@ protected:
     Text::EditableText field;
     Text::ShapedText shapedText;
 
-    vec leftCaretPosition = vec{};
-    vec rightCaretPosition = vec{};
+    rect leftToRightCaret = rect{};
+    std::vector<rect> selectionRectangles = {};
 public:
 
     LineInputWidget(

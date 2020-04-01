@@ -65,6 +65,10 @@ public:
         return _mm_shuffle_ps(p1, p2, _MM_SHUFFLE(1,0,1,0));
     }
 
+    operator bool () const noexcept {
+        return v.xyxy() != v.zwzw();
+    }
+
     /** Expand the current rectangle to include the new rectangle.
      * This is mostly used for extending bounding a bounding box.
      *
@@ -176,6 +180,17 @@ public:
         return (v.zwzw() - v).y();
     }
 
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    force_inline rect &width(T newWidth) noexcept {
+        v = v.xyxw() + vec::make_z(newWidth);
+        return *this;
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    force_inline rect &height(T newHeight) noexcept {
+        v = v.xyzy() + vec::make_w(newHeight);
+        return *this;
+    }
 
     /** Check if a 2D coordinate is inside the rectangle.
      *
@@ -193,6 +208,17 @@ public:
 
     [[nodiscard]] friend bool operator!=(rect const &lhs, rect const &rhs) noexcept {
         return !(lhs == rhs);
+    }
+
+    [[nodiscard]] friend bool overlaps(rect const &lhs, rect const &rhs) noexcept {
+        let rhs_swap = rhs.v.zwxy();
+        if (((lhs.v > rhs_swap) & 0x0011) != 0) {
+            return false;
+        }
+        if (((lhs.v < rhs_swap) & 0x1100) != 0) {
+            return false;
+        }
+        return true;
     }
 
     [[nodiscard]] friend rect operator|(rect const &lhs, rect const &rhs) noexcept {

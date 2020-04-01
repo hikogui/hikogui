@@ -441,8 +441,9 @@ static std::optional<std::string> getStringFromNameTable(gsl::span<std::byte con
             parse_error(is_aligned(p));
             parse_error(lengthInBytes % 2 == 0);
 
-            let s = std::u16string_view(p, l);
-            return translateString<std::string>(s, TranslateStringOptions{}.byteSwap(endian == Endian::Little));
+            let s_big_endian = std::u16string_view(p, l);
+            let s_native = u16string_big_to_native(s_big_endian);
+            return TTauri::to_string(s_native);
         }
         break;
 
@@ -460,8 +461,9 @@ static std::optional<std::string> getStringFromNameTable(gsl::span<std::byte con
             parse_error(is_aligned(p));
             parse_error(lengthInBytes % 2 == 0);
 
-            let s = std::u16string_view(p, l);
-            return translateString<std::string>(s, TranslateStringOptions{}.byteSwap(endian == Endian::Little));
+            let s_big_endian = std::u16string_view(p, l);
+            let s_native = u16string_big_to_native(s_big_endian);
+            return TTauri::to_string(s_native);
         }
         break;
 

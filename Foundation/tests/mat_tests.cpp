@@ -17,10 +17,10 @@ using namespace TTauri;
 TEST(Mat, Translate) {
     let tmp = vec{2.0, 3.0, 4.0, 1.0};
 
-    let M1 = mat::T({1.0, 2.0, 3.0});
+    let M1 = mat::T(vec{1.0, 2.0, 3.0});
     ASSERT_EQ(M1 * tmp, vec(3.0, 5.0, 7.0, 1.0));
 
-    let M2 = mat::T({2.0, 2.0, 2.0});
+    let M2 = mat::T(vec{2.0, 2.0, 2.0});
     ASSERT_EQ(M2 * (M1 * tmp), vec(5.0, 7.0, 9.0, 1.0));
 
     let M3 = M2 * M1;
@@ -30,10 +30,10 @@ TEST(Mat, Translate) {
 TEST(Mat, Scale) {
     let tmp = vec{2.0, 3.0, 4.0, 1.0};
 
-    let M1 = mat::S(vec{2.0});
+    let M1 = mat::S(2.0, 2.0, 2.0);
     ASSERT_EQ(M1 * tmp, vec(4.0, 6.0, 8.0, 1.0));
 
-    let M2 = mat::S(vec{3.0});
+    let M2 = mat::S(3.0, 3.0, 3.0);
     ASSERT_EQ(M2 * (M1 * tmp), vec(12.0, 18.0, 24.0, 1.0));
 
     let M3 = M2 * M1;
@@ -44,10 +44,10 @@ TEST(Mat, TranslateScale) {
     let tmp = vec{2.0, 3.0, 4.0, 1.0};
 
     {
-        let M1 = mat::T({1.0, 2.0, 3.0});
+        let M1 = mat::T(1.0, 2.0, 3.0);
         ASSERT_EQ(M1 * tmp, vec(3.0, 5.0, 7.0, 1.0));
 
-        let M2 = mat::S(vec{2.0});
+        let M2 = mat::S(2.0, 2.0, 2.0);
         ASSERT_EQ(M2 * (M1 * tmp), vec(6.0, 10.0, 14.0, 1.0));
 
         let M3 = M2 * M1;
@@ -55,7 +55,7 @@ TEST(Mat, TranslateScale) {
     }
 
     {
-        let M1 = mat::S(vec{2.0});
+        let M1 = mat::S(2.0, 2.0, 2.0);
         ASSERT_EQ(M1 * tmp, vec(4.0, 6.0, 8.0, 1.0));
 
         let M2 = mat::T({1.0, 2.0, 3.0});

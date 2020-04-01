@@ -165,7 +165,7 @@ public:
     [[nodiscard]] std::u32string NFKD() const noexcept;
 
     [[nodiscard]] friend std::string to_string(Grapheme const &g) noexcept {
-        return translateString<std::string>(g.NFC());
+        return TTauri::to_string(g.NFC());
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, Grapheme const &rhs) {

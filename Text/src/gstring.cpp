@@ -5,40 +5,31 @@
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/strings.hpp"
 
-namespace TTauri {
+namespace TTauri::Text {
 
-template<>
-TTauri::Text::gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept
+[[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
-    let normalizedString = TTauri::Text::Text_globals->unicode_data->toNFC(inputString, true, true);
+    let normalizedString = TTauri::Text::Text_globals->unicode_data->toNFC(rhs, true, true);
 
-    auto outputString = TTauri::Text::gstring{};
+    auto r = TTauri::Text::gstring{};
     auto breakState = TTauri::Text::GraphemeBreakState{};
     auto cluster = std::u32string{};
 
     for (let codePoint : normalizedString) {
         if (TTauri::Text::Text_globals->unicode_data->checkGraphemeBreak(codePoint, breakState)) {
             if (cluster.size() > 0) {
-                outputString += TTauri::Text::Grapheme{cluster};
+                r += TTauri::Text::Grapheme{cluster};
             }
             cluster.clear();
         }
 
         cluster += codePoint;
     }
-    outputString += TTauri::Text::Grapheme{cluster};
-    return outputString;
-}
-
-template<>
-std::u32string translateString(const TTauri::Text::gstring& inputString, TranslateStringOptions options) noexcept
-{
-    std::u32string outputString;
-
-    for (let c : inputString) {
-        outputString += c.NFC();
+    if (ssize(cluster) != 0) {
+        r += TTauri::Text::Grapheme{cluster};
     }
-    return outputString;
+    return r;
 }
+
 
 }

@@ -47,7 +47,11 @@ public:
         ttauri_assume(parent_it_end == parent_it);
     }
 
-    /** Dont check the child_it at end.
+    /** Get the current parent iterator.
+     */
+    ParentIt parent() const noexcept { return parent_it; }
+
+    /** Don't need to check the child_it at end.
      */
     [[nodiscard]] bool at_end() const noexcept { return parent_it == parent_it_end; }
 
@@ -133,6 +137,8 @@ public:
             }
 
         } while (rhs);
+
+        return *this;
     }
 
     [[nodiscard]] friend bool operator==(nested_vector_iterator const &lhs, nested_vector_iterator const &rhs) noexcept {

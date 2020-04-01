@@ -25,10 +25,14 @@ namespace TTauri::Text {
 
 static void bidi_algorithm(std::vector<AttributedGrapheme> &text) noexcept
 {
-    // First remember the logical position before reordering the glyphs.
     ssize_t logicalIndex = 0;
     for (auto &ag: text) {
+        // First remember the logical index before reordering the glyphs.
         ag.logicalIndex = logicalIndex++;
+
+        // Classify each grapheme based on the first code-point.
+        ag.bidiClass = Text_globals->unicode_data->getBidirectionalClass(ag.grapheme[0]);
+        ag.charClass = to_GeneralCharacterClass(ag.bidiClass);
     }
 }
 
@@ -113,7 +117,7 @@ static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexce
     float end_of_word_width = 0.0f;
 
     for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
-        if (i->breakableWhitespace) {
+        if (i->charClass == GeneralCharacterClass::WhiteSpace) {
             // When a line is created the whitespace should be appended to the
             // end-of-line so cursor position can still be calculated correctly.
             end_of_word = i + 1;
@@ -121,7 +125,7 @@ static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexce
             end_of_word_width = width;
         }
 
-        if (!i->endOfParagraph) {
+        if (i->charClass != GeneralCharacterClass::ParagraphSeparator) {
             // Do not include the width of the endOfParagraph marker.
             width += i->metrics.advance.x();
         }
@@ -282,7 +286,7 @@ ShapedText::ShapedText(gstring const &text, TextStyle const &style, HorizontalAl
     ShapedText(makeAttributedGraphemeVector(text, style), alignment, maximum_width) {}
 
 ShapedText::ShapedText(std::string const &text, TextStyle const &style, HorizontalAlignment alignment, float maximum_width) noexcept :
-    ShapedText(translateString<gstring>(text), style, alignment, maximum_width) {}
+    ShapedText(to_gstring(text), style, alignment, maximum_width) {}
 
 
 [[nodiscard]] ShapedText::const_iterator ShapedText::find(ssize_t index) const noexcept
@@ -292,40 +296,194 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
     });
 }
 
-[[nodiscard]] std::pair<vec,vec> ShapedText::carets(ssize_t position) const noexcept
+[[nodiscard]] rect ShapedText::rectangleOfGrapheme(ssize_t index) const noexcept
 {
-    for (let &attr_glyph: *this) {
-        if (position > attr_glyph.logicalIndex && position < attr_glyph.logicalIndex + attr_glyph.graphemeCount) {
-            // The position is inside a ligature.
-            // Place the cursor proportional inside the ligature, based on the font-metrics.
-            let grapheme_index = attr_glyph.logicalIndex - position;
-            let ligature_advance = attr_glyph.metrics.advanceForGrapheme(numeric_cast<int>(grapheme_index));
+    let i = find(index);
 
-            let caret_position = attr_glyph.position + vec::point(ligature_advance);
-            return {caret_position, vec{}};
+    // The shaped text will always end with a paragraph separator '\n'.
+    // Therefor even if the index points beyond the last character, it will still
+    // be on the paragraph separator.
+    ttauri_assume(i != cend());
 
-        } else if ((position - 1) == attr_glyph.logicalIndex && attr_glyph.endOfParagraph) {
-            // There is a non-linefeed glyph in the left side of the position, place the cursor
-            // to the right of that glyph.
-            let caret_position = attr_glyph.position + vec::point(attr_glyph.metrics.advance);
-            return {caret_position, vec{}};
+    // We need the line to figure out the ascender/descender height of the line so that
+    // the caret does not jump up and down as we walk the text.
+    let line_i = i.parent();
 
+    // This is a ligature.
+    // The position is inside a ligature.
+    // Place the cursor proportional inside the ligature, based on the font-metrics.
+    let ligature_index = numeric_cast<int>(i->logicalIndex - index);
+    let ligature_advance_left = i->metrics.advanceForGrapheme(ligature_index);
+    let ligature_advance_right = i->metrics.advanceForGrapheme(ligature_index + 1);
+
+    let ligature_position_left = i->position + ligature_advance_left;
+    let ligature_position_right = i->position + ligature_advance_right;
+
+    let p1 = ligature_position_left - vec(0.0, line_i->descender);
+    let p2 = ligature_position_right + vec(0.0, line_i->ascender);
+    return rect::p1p2(p1, p2);
+}
+
+[[nodiscard]] rect ShapedText::leftToRightCaret(ssize_t index, bool overwrite) const noexcept
+{
+    auto r = rectangleOfGrapheme(index);
+
+    if (!overwrite) {
+        // Change width to a single pixel.
+        r.width(1.0);
+    }
+
+    return r;
+}
+
+[[nodiscard]] std::vector<rect> ShapedText::selectionRectangles(ssize_t first, ssize_t last) const noexcept
+{
+    auto r = std::vector<rect>{};
+
+    for (ssize_t i = first; i != last; ++i) {
+        auto newRect = rectangleOfGrapheme(i);
+        if (ssize(r) > 0 && overlaps(r.back(), newRect)) {
+            r.back() |= newRect;
+        } else {
+            r.push_back(newRect);
         }
     }
 
-    // Either there was no glyph on the left of the position or it was a line-feed.
-    // In both cases we need to know where the left-side of the glyph on the right.
-    for (let &attr_glyph: *this) {
-        if (position == attr_glyph.logicalIndex) {
-            let caret_position = attr_glyph.position + vec::point();
-            return {caret_position, vec{}};
+    return r;
+}
+
+
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfCharAtCoordinate(vec coordinate) const noexcept
+{
+    for (let &line: lines) {
+        auto i = line.find(coordinate);
+        if (i == line.cend()) {
+            continue;
+        }
+
+        if ((i + 1) == line.cend()) {
+            // This character is the end of line, or end of paragraph.
+            return i->logicalIndex;
+
+        } else {
+            let newLogicalIndex = i->relativeIndexAtCoordinate(coordinate);
+            if (newLogicalIndex < 0) {
+                return i->logicalIndex;
+            } else if (newLogicalIndex >= i->graphemeCount) {
+                // Closer to the next glyph.
+                return (i+1)->logicalIndex;
+            } else {
+                return i->logicalIndex + newLogicalIndex;
+            }
         }
     }
+    return {};
+}
 
-    // If there are no glyphs on the left, or right, there must be no text at all.
-    ttauri_assert(position == 0);
-    // Let the caller figure out how to draw the cursor based on the selected character set.
-    return {vec{}, vec{}};
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfCharOnTheLeft(ssize_t logicalIndex) const noexcept
+{
+    auto i = find(logicalIndex);
+    if (i == cbegin()) {
+        return {};
+    } else if (logicalIndex != i->logicalIndex) {
+        // Go left inside a ligature.
+        return logicalIndex - 1;
+    } else {
+        --i;
+        return i->logicalIndex + i->graphemeCount - 1;
+    }
+}
+
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfCharOnTheRight(ssize_t logicalIndex) const noexcept
+{
+    auto i = find(logicalIndex);
+    if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
+        return {};
+    } else if (logicalIndex < (i->logicalIndex + i->graphemeCount)) {
+        // Go right inside a ligature.
+        return logicalIndex + 1;
+    } else {
+        ++i;
+        return i->logicalIndex;
+    }
+}
+
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfWordOnTheLeft(ssize_t logicalIndex) const noexcept
+{
+    auto i = find(logicalIndex);
+
+    if (i == cbegin()) {
+        return {};
+    }
+
+    auto foundPreviousWord = false;
+    while (true) {
+        --i;
+
+        if (i == cbegin()) {
+            // At start of paragraph.
+            return i->logicalIndex;
+
+        } else if (i->charClass == GeneralCharacterClass::WhiteSpace) {
+            if (foundPreviousWord) {
+                // Return the start of the (previous/current)-word on a symbol
+                return (i + 1)->logicalIndex;
+            } else {
+                // Ignore white space if we have not found letters/digits/symbols.
+                ;
+            }
+
+        } else if (i->charClass == GeneralCharacterClass::Letter || i->charClass == GeneralCharacterClass::Digit) {
+            foundPreviousWord = true;
+
+        } else {
+            if (foundPreviousWord) {
+                // Return the start of the (previous/current)-word on a symbol
+                return (i+1)->logicalIndex;
+            } else {
+                // If there was no previous/current-word return the previous symbol.
+                return i->logicalIndex;
+            }
+        }
+    }
+}
+
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfWordOnTheRight(ssize_t logicalIndex) const noexcept
+{
+    auto i = find(logicalIndex);
+
+    auto foundWhitespace = false;
+
+    if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
+        return {};
+    } else if (!(
+        i->charClass == GeneralCharacterClass::Letter ||
+        i->charClass == GeneralCharacterClass::Digit ||
+        i->charClass == GeneralCharacterClass::WhiteSpace
+    )) {
+        foundWhitespace = true;
+    }
+
+    while (true) {
+        ++i;
+
+        if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
+            // At end of paragraph.
+            return i->logicalIndex;
+
+        } else if (i->charClass == GeneralCharacterClass::Letter || i->charClass == GeneralCharacterClass::Digit) {
+            if (foundWhitespace) {
+                return i->logicalIndex;
+            }
+
+        } else if (i->charClass == GeneralCharacterClass::WhiteSpace) {
+            foundWhitespace = true;
+
+        } else {
+            // Any other symbol will mark the start of the previous word immediately.
+            return i->logicalIndex;
+        }
+    }
 }
 
 [[nodiscard]] Path ShapedText::get_path() const noexcept

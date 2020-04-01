@@ -59,6 +59,48 @@ enum class BidirectionalClass : uint8_t {
     PDI
 };
 
+/** General Character class.
+ */
+enum GeneralCharacterClass {
+    Unknown,
+    Digit,
+    Letter,
+    WhiteSpace,
+    ParagraphSeparator
+};
+
+/** This function should be called before reclassification by the bidi-algorithm.
+ */
+[[nodiscard]] constexpr GeneralCharacterClass to_GeneralCharacterClass(BidirectionalClass bidiClass) noexcept {
+    switch (bidiClass) {
+    case BidirectionalClass::Unknown: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::L: return GeneralCharacterClass::Letter;
+    case BidirectionalClass::R: return GeneralCharacterClass::Letter;
+    case BidirectionalClass::AL: return GeneralCharacterClass::Letter;
+    case BidirectionalClass::EN: return GeneralCharacterClass::Digit;
+    case BidirectionalClass::ES: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::ET: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::AN: return GeneralCharacterClass::Digit;
+    case BidirectionalClass::CS: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::NSM: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::BN: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::B: return GeneralCharacterClass::ParagraphSeparator;
+    case BidirectionalClass::S: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::WS: return GeneralCharacterClass::WhiteSpace;
+    case BidirectionalClass::ON: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::LRE: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::LRO: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::RLE: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::RLO: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::PDF: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::LRI: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::RLI: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::FSI: return GeneralCharacterClass::Unknown;
+    case BidirectionalClass::PDI: return GeneralCharacterClass::Unknown;
+    default: no_default;
+    }
+}
+
 struct GraphemeBreakState {
     GraphemeUnitType previous = GraphemeUnitType::Other;
     int RICount = 0;

@@ -50,16 +50,32 @@ struct gstring {
         graphemes.push_back(grapheme);
         return *this;
     }
+
+    [[nodiscard]] friend std::u32string to_u32string(gstring const &rhs) noexcept {
+        std::u32string r;
+        r.reserve(ssize(rhs));
+        for (let c : rhs) {
+            r += c.NFC();
+        }
+        return r;
+    }
+
+    [[nodiscard]] friend std::string to_string(gstring const &rhs) noexcept {
+        return TTauri::to_string(to_u32string(rhs));
+    }
+
+
+    friend std::ostream &operator<<(std::ostream &lhs, gstring const &rhs) {
+        return lhs << to_string(rhs);
+    }
 };
 
+[[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept;
+
+[[nodiscard]] inline gstring to_gstring(std::string_view rhs) noexcept {
+    return to_gstring(TTauri::to_u32string(rhs));
 }
 
-namespace TTauri {
 
-template<>
-TTauri::Text::gstring translateString(std::u32string_view const inputString, TranslateStringOptions options) noexcept;
-
-template<>
-std::u32string translateString(const TTauri::Text::gstring& inputString, TranslateStringOptions options) noexcept;
 
 }

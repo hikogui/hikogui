@@ -5,6 +5,7 @@
 
 #include "TTauri/Text/Grapheme.hpp"
 #include "TTauri/Text/TextStyle.hpp"
+#include "TTauri/Text/UnicodeData.hpp"
 
 namespace TTauri::Text {
 
@@ -19,8 +20,15 @@ struct AttributedGrapheme {
      */
     ssize_t logicalIndex;
 
+    /** The bidirectional classification.
+     */
+    BidirectionalClass bidiClass;
+
+    GeneralCharacterClass charClass;
+
     AttributedGrapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
-        grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex) {}
+        grapheme(std::move(grapheme)), style(std::move(style)), logicalIndex(logicalIndex),
+        bidiClass(BidirectionalClass::Unknown), charClass(GeneralCharacterClass::Unknown) {}
 };
 
 }

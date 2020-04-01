@@ -25,7 +25,7 @@ constexpr Endian endian = Endian::Little;
 #endif
 
 template<typename T>
-force_inline std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,T> 
 byte_swap(T x) noexcept
 {
 #if COMPILER == CC_CLANG || COMPILER == CC_GCC
@@ -54,14 +54,14 @@ byte_swap(T x) noexcept
 }
 
 template<typename T>
-force_inline std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>,T> 
 byte_swap(T x) noexcept
 {
     return static_cast<T>(byte_swap(static_cast<std::make_unsigned_t<T>>(x)));
 }
 
 template<typename T>
-force_inline std::enable_if_t<std::is_floating_point_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_floating_point_v<T>,T> 
 byte_swap(T x) noexcept
 {
     if constexpr (std::is_same_v<T, float>) {
@@ -78,7 +78,7 @@ byte_swap(T x) noexcept
 }
 
 template<typename T>
-force_inline std::enable_if_t<std::is_integral_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_integral_v<T>,T> 
 little_to_native(T x)
 {
     if constexpr (endian == Endian::Little) {
@@ -89,7 +89,7 @@ little_to_native(T x)
 }
 
 template<typename T>
-force_inline std::enable_if_t<std::is_integral_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_integral_v<T>,T> 
 big_to_native(T x)
 {
     if constexpr (endian == Endian::Big) {
@@ -100,7 +100,7 @@ big_to_native(T x)
 }
 
 template<typename T>
-force_inline std::enable_if_t<std::is_integral_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_integral_v<T>,T> 
 native_to_little(T x)
 {
     if constexpr (endian == Endian::Little) {
@@ -111,7 +111,7 @@ native_to_little(T x)
 }
 
 template<typename T>
-force_inline std::enable_if_t<std::is_integral_v<T>,T> 
+[[nodiscard]] force_inline std::enable_if_t<std::is_integral_v<T>,T> 
 native_to_big(T x)
 {
     if constexpr (endian == Endian::Big) {
@@ -125,7 +125,7 @@ template<typename T,Endian E,size_t A=alignof(T)>
 struct endian_buf_t {
     alignas(A) std::byte _value[sizeof(T)];
 
-    force_inline T value() const noexcept {
+    [[nodiscard]] force_inline T value() const noexcept {
         T aligned_value;
         std::memcpy(&aligned_value, &_value[0], sizeof(T));
 

@@ -1,5 +1,9 @@
+// Copyright 2020 Pokitec
+// All rights reserved.
 
 #pragma once
+
+#include <cstddef>
 
 namespace TTauri {
 
@@ -12,7 +16,7 @@ namespace TTauri {
     } else {
         switch (inputCharacter) {
         case 0x80: return 0x20ac;
-        case 0x81: return UNICODE_Replacement_Character;
+        case 0x81: return 0xfffd; // Replacement character.
         case 0x82: return 0x201a;
         case 0x83: return 0x0192;
         case 0x84: return 0x201e;
@@ -24,10 +28,10 @@ namespace TTauri {
         case 0x8a: return 0x0160;
         case 0x8b: return 0x2039;
         case 0x8c: return 0x0152;
-        case 0x8d: return UNICODE_Replacement_Character;
+        case 0x8d: return 0xfffd; // Replacement character.
         case 0x8e: return 0x017d;
-        case 0x8f: return UNICODE_Replacement_Character;
-        case 0x90: return UNICODE_Replacement_Character;
+        case 0x8f: return 0xfffd; // Replacement character.
+        case 0x90: return 0xfffd; // Replacement character.
         case 0x91: return 0x2018;
         case 0x92: return 0x2019;
         case 0x93: return 0x201c;
@@ -40,10 +44,10 @@ namespace TTauri {
         case 0x9a: return 0x0161;
         case 0x9b: return 0x203a;
         case 0x9c: return 0x0153;
-        case 0x9d: return UNICODE_Replacement_Character;
+        case 0x9d: return 0xfffd; // Replacement character.
         case 0x9e: return 0x017e;
         case 0x9f: return 0x0178;
-        default: return UNICODE_Replacement_Character;
+        default: return 0xfffd; // Replacement character.
         }
     }
 }

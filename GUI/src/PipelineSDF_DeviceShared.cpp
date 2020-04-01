@@ -125,7 +125,7 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 {
     int count = 0;
     for (let &attr_grapheme: text) {
-        if (attr_grapheme.breakableWhitespace || attr_grapheme.endOfParagraph) {
+        if (attr_grapheme.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_grapheme.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
             continue;
         }
 
@@ -200,7 +200,7 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept
 {
     for (let &attr_grapheme: text) {
-        if (attr_grapheme.breakableWhitespace || attr_grapheme.endOfParagraph) {
+        if (attr_grapheme.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_grapheme.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
             continue;
         }
 

@@ -11,6 +11,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/nested_vector_iterator.hpp"
 #include <string_view>
+#include <optional>
 
 namespace TTauri::Text {
 
@@ -107,27 +108,68 @@ public:
      */
     [[nodiscard]] const_iterator find(ssize_t position) const noexcept;
 
-    /** Return the cursor-carets.
-     * For left-to-right caret:
-     *   - The position is the right side of the character on the left.
-     *   - If position is at the start of a line:
-     *     - The character on the right is used.
-     *     - 
-     * 
-     * @param position Logical grapheme position.
-     * @return left-to-right caret position, right-to-left caret position.
-     *         Both values are the same when there is only a single caret.
+    /** Get a rectangle for the grapheme.
+     * The rectangle describes the edges of the grapheme:
+     *  - From left side bearing to right side bearing of the glyph.
+     *  - from descender to ascender of the line that the glyph is part of.
+     *
+     * @param index 
+     * @return A rectangle describing the position of the grapheme.
      */
-    [[nodiscard]] std::pair<vec,vec> carets(ssize_t position) const noexcept;
+    [[nodiscard]] rect rectangleOfGrapheme(ssize_t index) const noexcept;
 
-    /** Return the position of the character to the left of the current position.
-     * @param position The current position;
+    /** Return the cursor-carets.
+     * The caret will be to the left of the character at position.
+     * 
+     * @param index Logical grapheme index.
+     * @param overwrite When true display a overwrite cursor.
+     * @return left-to-right caret rectangle to display.
      */
-    [[nodiscard]] ssize_t positionCharLeft(ssize_t position) const noexcept;
+    [[nodiscard]] rect leftToRightCaret(ssize_t index, bool overwrite) const noexcept;
+
+    /** Return a list of merged rectangles to display for the selection.
+     * The selection may be discontinues due to bidirectional text.
+     *
+     * @param first The first logical grapheme that is selected.
+     * @param last One beyond the last logical grapheme that is selected.
+     * @return A list of rectangles to display.
+     */
+    [[nodiscard]] std::vector<rect> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
+
+    /** Return the index of the character .
+    * @param logicalIndex The character at logicalIndex.
+    * @return logicalIndex of the character to the left.
+    */
+    [[nodiscard]] std::optional<ssize_t> indexOfCharAtCoordinate(vec coordinate) const noexcept;
+
+    /** Return the index of the character to the left.
+     * @param logicalIndex The character at logicalIndex.
+     * @return logicalIndex of the character to the left.
+     */
+    [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheLeft(ssize_t logicalIndex) const noexcept;
+
+    /** Return the index of the character to the right.
+    * @param logicalIndex The character at logicalIndex.
+    * @return logicalIndex of the character to the right.
+    */
+    [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheRight(ssize_t logicalIndex) const noexcept;
+
+    /** Return the index of the word to the left.
+    * @param logicalIndex The character at logicalIndex.
+    * @return logicalIndex of the character at the start of the word to the left.
+    */
+    [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheLeft(ssize_t logicalIndex) const noexcept;
+
+    /** Return the index of the word to the right.
+    * @param logicalIndex The character at logicalIndex.
+    * @return logicalIndex of the character at the start of the next word to the right.
+    */
+    [[nodiscard]] std::optional<ssize_t> indexOfWordOnTheRight(ssize_t logicalIndex) const noexcept;
 
     /** Convert the whole shaped text into a layered path.
      */
     [[nodiscard]] Path get_path() const noexcept;
+
 
     /** Get the index into the text from a coordinate.
      * The index returned is from the text that was used to construct the ShapedText.

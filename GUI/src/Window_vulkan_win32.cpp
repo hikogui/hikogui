@@ -194,6 +194,108 @@ void Window_vulkan_win32::openingWindow()
     });
 }
 
+[[nodiscard]] std::string Window_vulkan_win32::getTextFromClipboard() const noexcept
+{
+    auto r = std::string{};
+
+    if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
+        LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
+        return r;
+    }
+
+    UINT format = 0;
+
+    while (format = EnumClipboardFormats(format)) {
+        switch (format) {
+        case CF_TEXT:
+        case CF_OEMTEXT:
+        case CF_UNICODETEXT: {
+            let cb_data = GetClipboardData(CF_UNICODETEXT);
+            if (cb_data == nullptr) {
+                LOG_ERROR("Could not get clipboard data: '{}'", getLastErrorMessage());
+                goto done;
+            }
+
+            let wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
+            if (wstr_c == nullptr) {
+                LOG_ERROR("Could not lock clipboard data: '{}'", getLastErrorMessage());
+                goto done;
+            }
+
+            let wstr = std::wstring_view(wstr_c);
+            r = TTauri::to_string(wstr);
+            LOG_DEBUG("getTextFromClipboad '{}'", r);
+
+            if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
+                LOG_ERROR("Could not unlock clipboard data: '{}'", getLastErrorMessage());
+                goto done;
+            }
+
+            } goto done;
+
+        default:;
+        }
+    }
+
+    if (GetLastError() != ERROR_SUCCESS) {
+        LOG_ERROR("Could not enumerator clipboard formats: '{}'", getLastErrorMessage());
+    }
+
+done:
+    CloseClipboard();
+
+    return r;
+}
+
+void Window_vulkan_win32::setTextOnClipboard(std::string str) noexcept
+{
+    if (!OpenClipboard(reinterpret_cast<HWND>(win32Window))) {
+        LOG_ERROR("Could not open win32 clipboard '{}'", getLastErrorMessage());
+        return;
+    }
+
+    if (!EmptyClipboard()) {
+        LOG_ERROR("Could not empty win32 clipboard '{}'", getLastErrorMessage());
+        goto done;
+    }
+
+    {
+        auto wstr = TTauri::to_wstring(str);
+
+        auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
+        if (wstr_handle == nullptr) {
+            LOG_ERROR("Could not allocate clipboard data '{}'", getLastErrorMessage());
+            goto done;
+        }
+
+        auto wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(wstr_handle));
+        if (wstr_c == nullptr) {
+            LOG_ERROR("Could not lock clipboard data '{}'", getLastErrorMessage());
+            GlobalFree(wstr_handle);
+            goto done;
+        }
+
+        std::memcpy(wstr_c, wstr.c_str(), (ssize(wstr) + 1) * sizeof(wchar_t));
+
+        if (!GlobalUnlock(wstr_handle) && GetLastError() != ERROR_SUCCESS) {
+            LOG_ERROR("Could not unlock clipboard data '{}'", getLastErrorMessage());
+            GlobalFree(wstr_handle);
+            goto done;
+        }
+
+        auto handle = SetClipboardData(CF_UNICODETEXT, wstr_handle);
+        if (handle == nullptr) {
+            LOG_ERROR("Could not set clipboard data '{}'", getLastErrorMessage());
+            GlobalFree(wstr_handle);
+            goto done;
+        }
+    }
+
+done:
+    CloseClipboard();
+}
+
+
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
     return GUI_globals->instance().createWin32SurfaceKHR({
@@ -475,6 +577,9 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         goto parseMouseEvent;
 
     parseMouseEvent:
+        // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
+        // of the vertical bar. But most applications do not fix this problem.
+
         mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
         mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
         mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;

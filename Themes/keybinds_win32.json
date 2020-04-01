@@ -52,8 +52,8 @@
     // Text selection
     {"key": "shift+left",       "command": "text.select.char.left"},
     {"key": "shift+right",      "command": "text.select.char.right"},
-    {"key": "shift+up",         "command": "text.select.char.left"},
-    {"key": "shift+down",       "command": "text.select.char.right"},
+    {"key": "shift+up",         "command": "text.select.char.up"},
+    {"key": "shift+down",       "command": "text.select.char.down"},
     {"key": "shift+ctrl+left",  "command": "text.select.word.left"},
     {"key": "shift+ctrl+right", "command": "text.select.word.right"},
     {"key": "shift+end",        "command": "text.select.line.end"},

@@ -113,6 +113,26 @@ public:
             numeric_cast<float>(x)
         )) {}
 
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    force_inline static vec make_x(T x) noexcept {
+        return vec{_mm_set_ss(numeric_cast<float>(x))};
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    force_inline static vec make_y(T y) noexcept {
+        return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(y)), _MM_SHUFFLE(1,1,0,1))};
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    force_inline static vec make_z(T z) noexcept {
+        return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(z)), _MM_SHUFFLE(1,0,1,1))};
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
+    force_inline static vec make_w(T w) noexcept {
+        return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(w)), _MM_SHUFFLE(0,1,1,1))};
+    }
+
     /** Create a point out of 2 to 4 values.
     * This vector is used as a homogeneous coordinate, meaning:
     *  - vectors have w=0.0 (A direction and distance)

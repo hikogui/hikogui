@@ -42,6 +42,10 @@ public:
 
     void normalizeWindow() override;
 
+    [[nodiscard]] std::string getTextFromClipboard() const noexcept override;
+
+    void setTextOnClipboard(std::string str) noexcept override;
+
 private:
     void setOSWindowRectangleFromRECT(RECT rect) noexcept;
 
