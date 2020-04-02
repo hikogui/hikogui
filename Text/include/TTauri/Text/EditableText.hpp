@@ -140,6 +140,16 @@ public:
         }
     }
 
+    [[nodiscard]] bool selectWordAtCoordinate(vec coordinate) noexcept {
+        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     [[nodiscard]] bool dragCursorAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newCursorPosition;
@@ -148,6 +158,34 @@ public:
             return false;
         }
     }
+
+    [[nodiscard]] bool dragWordAtCoordinate(vec coordinate) noexcept {
+        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            let [a, b] = _shapedText.indicesOfWord(*newCursorPosition);
+
+            if (selectionIndex <= cursorIndex) {
+                if (a < selectionIndex) {
+                    // Reverse selection
+                    selectionIndex = cursorIndex;
+                    cursorIndex = a;
+                } else {
+                    cursorIndex = b;
+                }
+            } else {
+                if (b > selectionIndex) {
+                    // Reverse selection
+                    selectionIndex = cursorIndex;
+                    cursorIndex = b;
+                } else {
+                    cursorIndex = a;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     /*! Insert a temporary partial character.
      * This partial character is currently being constructed by the operating system.
@@ -278,6 +316,14 @@ public:
                 cursorIndex = *newCursorPosition;
                 updated |= true;
             }
+        } else if (command == "text.select.word"_ltag) {
+            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(cursorIndex);
+            updated |= true;
+        } else if (command == "text.select.document"_ltag) {
+            selectionIndex = 0;
+            cursorIndex = size() - 1; // Upto end-of-paragraph marker.
+            updated |= true;
+            
         } else if (command == "text.delete.char.prev"_ltag) {
             if (cursorIndex != selectionIndex) {
                 updated |= deleteSelection();

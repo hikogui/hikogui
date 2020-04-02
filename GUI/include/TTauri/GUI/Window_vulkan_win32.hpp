@@ -51,6 +51,7 @@ private:
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
+    int clickCount = 0;
     char32_t high_surrogate = 0;
 
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;

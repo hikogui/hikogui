@@ -68,6 +68,8 @@ static void createWindowClass()
          // Register the window class.
         win32WindowClassName = L"TTauri Window Class";
 
+        std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
+        win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
         win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(GUI_globals->hInstance);
         win32WindowClass.lpszClassName = win32WindowClassName;
@@ -515,53 +517,65 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_LBUTTONDOWN:
+        clickCount = 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.leftButton = true;
         goto parseMouseEvent;
     case WM_LBUTTONUP:
+        clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.leftButton = true;
         goto parseMouseEvent;
     case WM_LBUTTONDBLCLK:
-        mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+        clickCount = 2;
+        mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.leftButton = true;
         goto parseMouseEvent;
     case WM_MBUTTONDOWN:
+        clickCount = 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.middleButton = true;
         goto parseMouseEvent;
     case WM_MBUTTONUP:
+        clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.middleButton = true;
         goto parseMouseEvent;
     case WM_MBUTTONDBLCLK:
-        mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+        clickCount = 2;
+        mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.middleButton = true;
         goto parseMouseEvent;
     case WM_RBUTTONDOWN:
+        clickCount = 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.rightButton = true;
         goto parseMouseEvent;
     case WM_RBUTTONUP:
+        clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.rightButton = true;
         goto parseMouseEvent;
     case WM_RBUTTONDBLCLK:
-        mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+        clickCount = 2;
+        mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.rightButton = true;
         goto parseMouseEvent;
     case WM_XBUTTONDOWN:
+        clickCount = 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         goto parseMouseEvent;
     case WM_XBUTTONUP:
+        clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         goto parseMouseEvent;
     case WM_XBUTTONDBLCLK:
-        mouseEvent.type = MouseEvent::Type::ButtonDoubleClick;
+        clickCount = 2;
+        mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         goto parseMouseEvent;
@@ -588,6 +602,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         mouseEvent.down.shiftKey = (GET_KEYSTATE_WPARAM(wParam) & MK_SHIFT) > 0;
         mouseEvent.down.x1Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
         mouseEvent.down.x2Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
+        mouseEvent.clickCount = clickCount;
         handleMouseEvent(mouseEvent);
         break;
 

@@ -397,7 +397,7 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
 [[nodiscard]] std::optional<ssize_t> ShapedText::indexOfCharOnTheRight(ssize_t logicalIndex) const noexcept
 {
     auto i = find(logicalIndex);
-    if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
+    if (i->isParagraphSeparator()) {
         return {};
     } else if (logicalIndex < (i->logicalIndex + i->graphemeCount)) {
         // Go right inside a ligature.
@@ -408,82 +408,72 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
     }
 }
 
-[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfWordOnTheLeft(ssize_t logicalIndex) const noexcept
+/** Return the index at the left side of a word
+*/
+[[nodiscard]] std::pair<ssize_t,ssize_t> ShapedText::indicesOfWord(ssize_t logicalIndex) const noexcept
 {
     auto i = find(logicalIndex);
 
-    if (i == cbegin()) {
-        return {};
-    }
-
-    auto foundPreviousWord = false;
-    while (true) {
-        --i;
-
+    // If the position is the paragraph separator, adjust to one glyph to the left.
+    if (i->isParagraphSeparator()) {
         if (i == cbegin()) {
-            // At start of paragraph.
-            return i->logicalIndex;
-
-        } else if (i->charClass == GeneralCharacterClass::WhiteSpace) {
-            if (foundPreviousWord) {
-                // Return the start of the (previous/current)-word on a symbol
-                return (i + 1)->logicalIndex;
-            } else {
-                // Ignore white space if we have not found letters/digits/symbols.
-                ;
-            }
-
-        } else if (i->charClass == GeneralCharacterClass::Letter || i->charClass == GeneralCharacterClass::Digit) {
-            foundPreviousWord = true;
-
+            return {0, 0};
         } else {
-            if (foundPreviousWord) {
-                // Return the start of the (previous/current)-word on a symbol
-                return (i+1)->logicalIndex;
-            } else {
-                // If there was no previous/current-word return the previous symbol.
-                return i->logicalIndex;
-            }
+            --i;
         }
     }
+
+    if (i->isWhiteSpace()) {
+        if (i == cbegin()) {
+            // Whitespace at start of line is counted as a word.
+            ;
+        } else if (!(i-1)->isWhiteSpace()) {
+            // The glyph on the left is not a white space, means we need to select the word on the left
+            --i;
+        } else {
+            // Double white space select all the white spaces in a row.
+            ;
+        }
+    }
+
+    // Expand the word to left and right.
+    auto [s, e] = bifind_cluster(cbegin(), cend(), i, [](let &x) {
+        return x.isWord() ? 0 : x.isWhiteSpace() ? 1 : 2;
+    });
+
+    ttauri_assume(e != i);
+    --e;
+    return {s->logicalIndex, e->logicalIndex + e->graphemeCount};
+}
+
+[[nodiscard]] std::optional<ssize_t> ShapedText::indexOfWordOnTheLeft(ssize_t logicalIndex) const noexcept
+{
+    // Find edge of current word.
+    let [s, e] = indicesOfWord(logicalIndex);
+    
+    // If the cursor was already on that edge, find the edges of the previous word.
+    if (s == logicalIndex) {
+        if (let tmp = indexOfCharOnTheLeft(s)) {
+            let [s2, e2] = indicesOfWord(*tmp);
+            return s2;
+        }
+    }
+    return s;
 }
 
 [[nodiscard]] std::optional<ssize_t> ShapedText::indexOfWordOnTheRight(ssize_t logicalIndex) const noexcept
 {
-    auto i = find(logicalIndex);
+    // Find edge of current word.
+    let [s, e] = indicesOfWord(logicalIndex);
 
-    auto foundWhitespace = false;
-
-    if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
-        return {};
-    } else if (!(
-        i->charClass == GeneralCharacterClass::Letter ||
-        i->charClass == GeneralCharacterClass::Digit ||
-        i->charClass == GeneralCharacterClass::WhiteSpace
-    )) {
-        foundWhitespace = true;
+    // If the cursor was already on that edge, find the edges of the next word.
+    if (e == logicalIndex || find(e)->isWhiteSpace()) {
+        if (let tmp = indexOfCharOnTheRight(e)) {
+            let [s2, e2] = indicesOfWord(*tmp);
+            return s2 == e ? e2 : s2;
+        }       
     }
-
-    while (true) {
-        ++i;
-
-        if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
-            // At end of paragraph.
-            return i->logicalIndex;
-
-        } else if (i->charClass == GeneralCharacterClass::Letter || i->charClass == GeneralCharacterClass::Digit) {
-            if (foundWhitespace) {
-                return i->logicalIndex;
-            }
-
-        } else if (i->charClass == GeneralCharacterClass::WhiteSpace) {
-            foundWhitespace = true;
-
-        } else {
-            // Any other symbol will mark the start of the previous word immediately.
-            return i->logicalIndex;
-        }
-    }
+    return e;
 }
 
 [[nodiscard]] Path ShapedText::get_path() const noexcept

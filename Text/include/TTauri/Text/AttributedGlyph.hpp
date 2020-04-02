@@ -56,6 +56,12 @@ struct AttributedGlyph {
         return index >= first && index < last;
     }
 
+    [[nodiscard]] bool isLetter() const noexcept { return charClass == GeneralCharacterClass::Letter; }
+    [[nodiscard]] bool isDigit() const noexcept { return charClass == GeneralCharacterClass::Digit; }
+    [[nodiscard]] bool isWord() const noexcept { return isLetter() || isDigit(); }
+    [[nodiscard]] bool isWhiteSpace() const noexcept { return charClass == GeneralCharacterClass::WhiteSpace; }
+    [[nodiscard]] bool isParagraphSeparator() const noexcept { return charClass == GeneralCharacterClass::ParagraphSeparator; }
+
     /** Find the logical index closest to the coordinate.
      * For a non-ligature, left of the halfway-point returnes the current logicalIndex,
      * right of the halfway-point return the next logicalIndex.

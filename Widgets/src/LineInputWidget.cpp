@@ -177,14 +177,22 @@ bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 
-            continueRendering |= field.setCursorAtCoordinate(textPosition);
+            if (event.clickCount == 1) {
+                continueRendering |= field.setCursorAtCoordinate(textPosition);
+            } else if (event.clickCount == 2) {
+                continueRendering |= field.selectWordAtCoordinate(textPosition);
+            }
         }
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
         auto textRectangle = expand(box.currentRectangle(), -5.0f);
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 
-            continueRendering |= field.dragCursorAtCoordinate(textPosition);
+            if (event.clickCount == 1) {
+                continueRendering |= field.dragCursorAtCoordinate(textPosition);
+            } else if (event.clickCount == 2) {
+                continueRendering |= field.dragWordAtCoordinate(textPosition);
+            }
         }
     }
 

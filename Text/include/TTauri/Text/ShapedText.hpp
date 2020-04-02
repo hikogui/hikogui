@@ -154,6 +154,14 @@ public:
     */
     [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheRight(ssize_t logicalIndex) const noexcept;
 
+    /** Return the index at the left side of a word
+     */
+    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfWord(ssize_t logicalIndex) const noexcept;
+
+    /** Return the index at the left side of a word
+    */
+    [[nodiscard]] ssize_t indexAtRightSideOfWord(ssize_t logicalIndex) const noexcept;
+
     /** Return the index of the word to the left.
     * @param logicalIndex The character at logicalIndex.
     * @return logicalIndex of the character at the start of the word to the left.

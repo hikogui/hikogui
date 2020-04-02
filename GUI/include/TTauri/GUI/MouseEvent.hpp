@@ -9,7 +9,7 @@
 namespace TTauri::GUI {
 
 struct MouseEvent {
-    enum class Type { None, Entered, Exited, Move, ButtonDown, ButtonUp, ButtonDoubleClick };
+    enum class Type { None, Entered, Exited, Move, ButtonDown, ButtonUp };
 
     Type type;
     vec position;
@@ -20,11 +20,15 @@ struct MouseEvent {
     //! Buttons that are pressed/held down.
     MouseButtons down;
 
+    //! Number of clicks from the last button clicked.
+    int clickCount;
+
     MouseEvent() noexcept :
         type(Type::None),
         position(),
         cause(),
-        down()
+        down(),
+        clickCount(0)
     {
     }
 

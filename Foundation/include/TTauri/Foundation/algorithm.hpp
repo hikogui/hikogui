@@ -82,10 +82,74 @@ constexpr It rfind(It const first, It const last, T const &value)
     return rfind_if(first, last, [&](auto const &x) { return x == value; });
 }
 
+/** Find the start of the current cluster.
+* @param last The last iterator, where this function will stop iterating.
+* @param start Where to start the search
+* @param predicate A function returning the identifier of the cluster.
+* @return One beyond the last iterator where the cluster is the same as start.
+*/
+template<typename ConstIt, typename It, typename UnaryPredicate>
+constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
+{
+    let cluster_id = predicate(*start);
+
+    for (auto i = start + 1; i != last; ++i) {
+        if (predicate(*i) != cluster_id) {
+            return i;
+        }
+    }
+    return last;
+}
+
+/** Find the start of the current cluster.
+ * @param first The first iterator, where this function will stop iterating.
+ * @param start Where to start the search
+ * @param predicate A function returning the identifier of the cluster.
+ * @return The first iterator where the cluster is the same as start.
+ */
+template<typename ConstIt, typename It, typename UnaryPredicate>
+constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
+{
+    let cluster_id = predicate(*start);
+
+    if (start == first) {
+        return first;
+    }
+
+    auto i = start - 1;
+    while (true) {
+        if (predicate(*i) != cluster_id) {
+            return (i + 1);
+        }
+
+        if (i == first) {
+            return i;
+        }
+        --i;
+    }
+    ttauri_unreachable();
+}
+
+/** Find the begin and end of the current cluster.
+* @param first The first iterator, where this function will stop iterating.
+* @param first The last iterator, where this function will stop iterating.
+* @param start Where to start the search
+* @param predicate A function returning the identifier of the cluster.
+* @return The first and one beyond last iterator where the cluster is the same as start.
+*/
+template<typename ConstIt, typename It, typename UnaryPredicate>
+constexpr std::pair<It,It> bifind_cluster(ConstIt first, ConstIt last, It start, UnaryPredicate predicate)
+{
+    return {
+        rfind_cluster(first, start, predicate),
+        find_cluster(last, start, predicate)
+    };
+}
+
 /*! For each cluster.
  * func() is executed for each cluster that is found between first-last.
- * A cluster is found between two seperators, a seperator is detected with IsClusterSeperator().
- * A cluster does not include the seperator itself.
+ * A cluster is found between two separators, a separator is detected with IsClusterSeperator().
+ * A cluster does not include the separator itself.
  */
 template<typename It, typename S, typename F>
 inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function)
