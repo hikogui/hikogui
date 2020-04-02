@@ -1,16 +1,49 @@
-# TTauri Coordinate System
+# TTauri Geometry System
+
+## Data Types
+### vec
+The `vec` class is a 4D homogenious coordinate.  
+Internally this is a `__m128` on x64 CPUs, where the bits are:
+ - x [31:0]
+ - y [63:32]
+ - z [95:64]
+ - w [127:96]
+
+The `vec()` constructor will default with w=0.0. There are also the
+`vec::point()` and `vec::color()` factories which default w=1.0.
+
+### mat
+The `mat` class is a 4x4 homogenious transformation matrix in column-major
+order. Internally this a `vec` for each column.
+
+Vector * matrix multiplications are performed as if the vector is a column.
+
+### rect
+The `rect` class is a 2D axis-aligned rectangle.
+
+Internally this is a `vec` where:
+ - x - left-bottom point x.
+ - y - left-bottom point y.
+ - z - right-top point x.
+ - w - right-top point y.
 
 ## Coordinates
-All origins (0, 0) are at the bottom left corner. With the x-axis pointing
+All origins (0, 0, 0) are at the bottom-left-far corner. With the x-axis pointing
 right, y-axis pointing up, z-axis pointing away.
+
+This is true for:
+ - Window
+ - Images
+ - Paths
+ - Font-glyphs
 
 ### Window-surface coordinates
 The coordinates in a window are in pixels. With the center of the left bottom
 pixel having the coordinates (0.5, 0.5).
 
 There may be an intermediate 3x3 scaled window surface to handle sub-pixel
-anti-aliasing. In this case the coordinates are still in pixels, but pixels
-of the intermediate surface.
+anti-aliasing. In this case the coordinates are still the same as the
+original window surface, the shader will automatically scale the coordinates.
 
 Widgets should be able to figure out what the DPI is of the window-surface to
 handle proper scaling of the user interface elements.

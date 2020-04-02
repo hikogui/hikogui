@@ -1,0 +1,82 @@
+// Copyright 2020 Pokitec
+// All rights reserved.
+
+#pragma once
+
+#include "TTauri/Foundation/string_tag.hpp"
+#include <vector>
+#include <variant>
+#include <string>
+
+namespace TTauri {
+
+struct UndoElement {
+    struct range_type { ssize_t first; ssize_t last; };
+    struct text_type { ssize_t first; std::string text; };
+
+    string_ltag command;
+    std::variant<range_type,text_type> argument;
+
+    UndoElement(string_ltag command, ssize_t first, ssize_t last) noexcept :
+        command(command), argument(range_type{first, last}) {}
+
+    UndoElement(string_ltag command, ssize_t first, std::string text) noexcept :
+        command(command), argument(text_type{first, std::move(text)}) {}
+};
+
+class UndoStack {
+    using stack_type = std::vector<UndoElement>;
+    using iterator = stack_type::iterator;
+    using const_iterator = stack_type::const_iterator;
+
+    stack_type stack;
+    ssize_t undoPosition;
+
+public:
+    UndoStack() noexcept :
+        stack(), undoPosition(0) {}
+
+    [[nodiscard]] ssize_t undoDepth() const noexcept {
+        return undo_position;
+    }
+
+    [[nodiscard]] ssize_t redoDepth() const noexcept {
+        return ssize(stack) - undoPosition;
+    }
+
+    void clearRedo() noexcept {
+        stack.erase(stack.cbegin() + undoPosition, stack.cend());
+    }
+
+    void push_back(UndoElement const &element) noexcept {A
+        clearRedo();
+        stack.push_back(element);
+        ++undoPosition;
+    }
+
+    void push_back(UndoElement &&element) noexcept {
+        clearRedo();
+        stack.push_back(std::move(element));
+        ++undoPosition;
+    }
+
+    template<typename... Args>
+    void emplace(Args &&... args) noexcept {
+        clearRedo();
+        stack.emplace_back(args...);
+        ++undoPosition;
+    }
+
+    [[nodiscard]] UndoElement const &undo() noexcept {
+        ttauri_assume(undoPosition != 0);
+        return stack[--undoPosition];
+    }
+
+    [[nodiscard]] UndoElement const &redo() noexcept {
+        ttauri_assume(undoPosition < ssize(stack));
+        return stack[undoPosition++];
+    }
+
+};
+
+}
