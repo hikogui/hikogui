@@ -30,7 +30,7 @@ private:
 
 public:
     vk::PhysicalDeviceType deviceType = vk::PhysicalDeviceType::eOther;
-    vk::PhysicalDeviceMemoryProperties memoryProperties;
+    vk::PhysicalDeviceProperties physicalProperties;
 
     uint32_t graphicsQueueFamilyIndex = 0;
     uint32_t presentQueueFamilyIndex = 0;
@@ -139,7 +139,14 @@ public:
 
     void flushAllocation(const VmaAllocation &allocation, VkDeviceSize offset, VkDeviceSize size) const {
         std::scoped_lock lock(GUI_globals->mutex);
-        vmaFlushAllocation(allocator, allocation, offset, size);
+
+        let alignment = physicalProperties.limits.nonCoherentAtomSize;
+
+        let alignedOffset = (offset / alignment) * alignment;
+        let adjustedSize = size + (offset - alignedOffset);
+        let alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
+
+        vmaFlushAllocation(allocator, allocation, alignedOffset, alignedSize);
     }
 
     vk::ShaderModule loadShader(uint32_t const *data, size_t size) const;

@@ -324,11 +324,11 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
     return rect::p1p2(p1, p2);
 }
 
-[[nodiscard]] rect ShapedText::leftToRightCaret(ssize_t index, bool overwrite) const noexcept
+[[nodiscard]] rect ShapedText::leftToRightCaret(ssize_t index, bool insertMode) const noexcept
 {
     auto r = rectangleOfGrapheme(index);
 
-    if (!overwrite) {
+    if (insertMode) {
         // Change width to a single pixel.
         r.width(1.0);
     }

@@ -17,6 +17,10 @@ class EditableText {
 
     vec extent;
 
+    /** Insert-mode vs overwrite-mode.
+     */
+    bool insertMode = true;
+
     /** The index into the text where the cursor is located.
      */
     ssize_t cursorIndex = 0;
@@ -90,9 +94,20 @@ public:
     }
 
     /** Get carets at the cursor position.
+    */
+    rect partialGraphemeCaret() const noexcept {
+        if (hasPartialGrapheme) {
+            ttauri_assume(cursorIndex != 0);
+            return _shapedText.leftToRightCaret(cursorIndex - 1, false);
+        } else {
+            return {};
+        }
+    }
+
+    /** Get carets at the cursor position.
      */
     rect leftToRightCaret() const noexcept {
-        return _shapedText.leftToRightCaret(cursorIndex, false);
+        return _shapedText.leftToRightCaret(cursorIndex, insertMode);
     }
 
     /** Get a set of rectangles for which text is selected.
@@ -186,6 +201,19 @@ public:
         }
     }
 
+    bool cancelPartialGrapheme() noexcept {
+        if (hasPartialGrapheme) {
+            ttauri_assume(cursorIndex >= 1);
+
+            selectionIndex = --cursorIndex;
+            text.erase(cit(cursorIndex));
+            hasPartialGrapheme = false;
+            return updateShapedText();
+
+        } else {
+            return false;
+        }
+    }
 
     /*! Insert a temporary partial character.
      * This partial character is currently being constructed by the operating system.
@@ -202,20 +230,6 @@ public:
         return updateShapedText();
     }
 
-    bool cancelPartialGrapheme() noexcept {
-        if (hasPartialGrapheme) {
-            ttauri_assume(cursorIndex >= 1);
-
-            selectionIndex = --cursorIndex;
-            text.erase(cit(cursorIndex));
-            hasPartialGrapheme = false;
-            return updateShapedText();
-
-        } else {
-            return false;
-        }
-    }
-
     /*! insert character at the cursor position.
      * Selected text will be deleted.
      */
@@ -223,6 +237,9 @@ public:
         cancelPartialGrapheme();
         deleteSelection();
 
+        if (!insertMode) {
+            handleCommand("text.delete.char.next"_ltag);
+        }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
         return updateShapedText();
@@ -296,11 +313,17 @@ public:
                 selectionIndex = cursorIndex = *newCursorPosition;
                 updated |= true;
             }
-        } else if (command == "text.select.char.left"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
-                cursorIndex = *newCursorPosition;
+        } else if (command == "text.cursor.word.right"_ltag) {
+            if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
+                selectionIndex = cursorIndex = *newCursorPosition;
                 updated |= true;
             }
+        } else if (command == "text.cursor.line.end"_ltag) {
+            selectionIndex = cursorIndex = size() - 1;
+            updated |= true;
+        } else if (command == "text.cursor.line.begin"_ltag) {
+            selectionIndex = cursorIndex = 0;
+            updated |= true;
         } else if (command == "text.select.char.right"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
@@ -319,11 +342,19 @@ public:
         } else if (command == "text.select.word"_ltag) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(cursorIndex);
             updated |= true;
+        } else if (command == "text.select.line.end"_ltag) {
+            cursorIndex = size() - 1;
+            updated |= true;
+        } else if (command == "text.select.line.begin"_ltag) {
+            cursorIndex = 0;
+            updated |= true;
         } else if (command == "text.select.document"_ltag) {
             selectionIndex = 0;
             cursorIndex = size() - 1; // Upto end-of-paragraph marker.
             updated |= true;
-            
+        } else if (command == "text.mode.insert"_ltag) {
+            insertMode = !insertMode;
+            updated |= true;
         } else if (command == "text.delete.char.prev"_ltag) {
             if (cursorIndex != selectionIndex) {
                 updated |= deleteSelection();

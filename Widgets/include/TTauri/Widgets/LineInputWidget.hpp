@@ -20,7 +20,8 @@ protected:
     Text::EditableText field;
     Text::ShapedText shapedText;
 
-    rect leftToRightCaret = rect{};
+    rect leftToRightCaret = {};
+    rect partialGraphemeCaret = {};
     std::vector<rect> selectionRectangles = {};
 public:
 

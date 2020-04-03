@@ -56,6 +56,7 @@ bool LineInputWidget::updateAndPlaceVertices(
     if (modified()) {
         field.setExtent(textRectangle.extent());
         leftToRightCaret = field.leftToRightCaret();
+        partialGraphemeCaret = field.partialGraphemeCaret();
         selectionRectangles = field.selectionRectangles();
 
         if (ssize(field) == 0) {
@@ -100,13 +101,23 @@ bool LineInputWidget::updateAndPlaceVertices(
         );
     }
 
+    if (partialGraphemeCaret) {
+        PipelineFlat::DeviceShared::placeVerticesBox(
+            flat_vertices,
+            text_translate * partialGraphemeCaret,
+            vec::color(0.2, 0.2, 0.0),
+            box.currentRectangle(),
+            elevation + 0.0001f
+        );
+    }
+
     if (leftToRightCaret) {
         PipelineFlat::DeviceShared::placeVerticesBox(
             flat_vertices,
             text_translate * leftToRightCaret,
-            vec::color(1.0, 0.5, 0.5),
+            vec::color(0.5, 0.5, 0.5),
             box.currentRectangle(),
-            elevation + 0.0003f
+            elevation + 0.0001f
         );
     }
 
@@ -177,10 +188,14 @@ bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 
-            if (event.clickCount == 1) {
-                continueRendering |= field.setCursorAtCoordinate(textPosition);
-            } else if (event.clickCount == 2) {
-                continueRendering |= field.selectWordAtCoordinate(textPosition);
+            if (event.down.shiftKey) {
+                continueRendering |= field.dragCursorAtCoordinate(textPosition);
+            } else {
+                if (event.clickCount == 1) {
+                    continueRendering |= field.setCursorAtCoordinate(textPosition);
+                } else if (event.clickCount == 2) {
+                    continueRendering |= field.selectWordAtCoordinate(textPosition);
+                }
             }
         }
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
