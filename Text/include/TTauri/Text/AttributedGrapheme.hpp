@@ -24,6 +24,10 @@ struct AttributedGrapheme {
      */
     BidirectionalClass bidiClass;
 
+    /** Embedding level needed by the bidi-algorithm.
+     */
+    int8_t embeddingLevel;
+
     GeneralCharacterClass charClass;
 
     AttributedGrapheme(Grapheme grapheme, TextStyle style, ssize_t logicalIndex=0) :
