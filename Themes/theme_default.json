@@ -1,0 +1,81 @@
+{
+    "theme": "TTauri",
+
+    "color": {
+        // Color values, one value for each sub-theme:
+        // - "C": Color, for all sub-themes.
+        // - "L": Light-mode, if not set copied from "C"
+        // - "D": Dark-mode, if not set copied from "C"
+        // - "LA": Light-accessibiliy-mode, if not set copied from "L"
+        // - "DA": Dark-accessibiliy-mode, if not set copied from "D"
+        //
+        // The colors values themselves.
+        // - integers are in sRGB
+        // - floats are in linear scRGB
+        // - string name of an color in the theme.
+
+        // Fixed colors:
+        "black"      : { "C": [  0,   0,   1] },
+        "white"      : { "C": [250, 250, 255] },
+
+        // Bright colors, fitting theme.
+        "blue"       : { "L": [  0, 122, 355], "D": [ 10, 132, 255], "LA": [  0,  64, 221], "DA": [ 64, 156, 255] },
+        "green"      : { "L": [ 52, 199,  89], "D": [ 48, 209,  88], "LA": [ 36, 138,  61], "DA": [ 48, 219,  92] },
+        "indigo"     : { "L": [ 88,  86, 214], "D": [ 94,  92, 230], "LA": [ 54,  52, 163], "DA": [125, 122, 255] },
+        "orange"     : { "L": [255, 149,   0], "D": [255, 159,  10], "LA": [201,  52,   0], "DA": [255, 179,  64] },
+        "pink"       : { "L": [255,  45,  85], "D": [255,  55,  95], "LA": [211,  15,  69], "DA": [255, 100, 130] },
+        "purple"     : { "L": [175,  82, 222], "D": [191,  90, 242], "LA": [137,  68, 171], "DA": [218, 143, 255] },
+        "red"        : { "L": [255,  59,  48], "D": [255,  69,  58], "LA": [215,   0,  21], "DA": [255, 105,  97] },
+        "teal"       : { "L": [ 90, 200, 250], "D": [100, 210, 255], "LA": [  0, 113, 164], "DA": [112, 215, 255] },
+        "yellow"     : { "L": [255, 204,   0], "D": [255, 214,  10], "LA": [178,  80,   0], "DA": [255, 212,  38] },
+
+        // Gray-scale.
+        "foreground" : { "L": "color.black",   "D": "color.white"   },
+        "gray+5"     : { "L": [ 28,  28,  30], "D": [242, 242, 247] },
+        "gray+4"     : { "L": [ 44,  44,  46], "D": [229, 229, 234] },
+        "gray+3"     : { "L": [ 58,  58,  60], "D": [209, 209, 214] },
+        "gray+2"     : { "L": [ 72,  72,  74], "D": [199, 199, 204] },
+        "gray+1"     : { "L": [ 99,  99, 102], "D": [174, 174, 178] },
+        "gray"       : { "L": [142, 142, 147], "D": [142, 142, 147] },
+        "gray-1"     : { "L": [174, 174, 178], "D": [ 99,  99, 102] },
+        "gray-2"     : { "L": [199, 199, 204], "D": [ 72,  72,  74] },
+        "gray-3"     : { "L": [209, 209, 214], "D": [ 58,  58,  60] },
+        "gray-4"     : { "L": [229, 229, 234], "D": [ 44,  44,  46] },
+        "gray-5"     : { "L": [242, 242, 247], "D": [ 28,  28,  30] },
+        "background" : { "L": "color.white",   "D": "color.black"   },
+
+        // Semantic colors
+        "highlight"  : { "L": [234, 229,   0], "D": [ 46,  44,   0] }
+
+        "text": "color.foreground",
+        "text-1": "color.gray+5",
+        "text-2": "color.gray+4",
+        "text-3": "color.gray+3",
+        "dark-text": "color.black",
+        "light-text": "color.white",
+        "placeholder-text": "color.gray-2",
+        "link-text": "color.blue",
+
+        "background": "color.background",
+        "background-1": "color.gray-5",
+        "background-2": "color.gray-4",
+        "seperator": "color.gray",
+        "accent": "color.blue",
+        "insert-caret": "color.foreground",
+        "overwrite-caret": "color.gray",
+        "deadkey-caret":  "color.highlight",
+        "selection":  "color.selection"
+
+    },
+
+    "wiget.*": {
+
+
+    },
+
+    "font.label": ["Arial", 10.0],
+    "font.label-1": ["Arial", 10.0],
+    "font.label-2": ["Arial", 10.0],
+    "font.label-3": ["Arial", 10.0],
+
+}
