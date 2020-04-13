@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Text/UnicodeData.hpp"
+#include "TTauri/Text/UnicodeRanges.hpp"
 #include "TTauri/Text/GlyphID.hpp"
 #include "TTauri/Text/FontWeight.hpp"
 #include "TTauri/Text/FontVariant.hpp"

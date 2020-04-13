@@ -86,7 +86,7 @@ FontID FontBook::register_font(URL url, bool post_process)
     auto font = parseResource<Font>(url);
     auto &description = font->description;
 
-    LOG_INFO("Parsed font {}: {}", url, to_string(description));
+    //LOG_INFO("Parsed font {}: {}", url, to_string(description));
 
     let font_id = FontID(ssize(font_entries));
     font_entries.emplace_back(url, description);
@@ -135,7 +135,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
         // Add the new best fallback font, or stop.
         if (max_font_id >= 0) {
             let &fallback_entry = font_entries[max_font_id];
-            LOG_DEBUG("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
+            //LOG_DEBUG("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
 
             entry.fallbacks.push_back(FontID{max_font_id});
             total_ranges |= fallback_entry.description.unicode_ranges;
@@ -157,7 +157,7 @@ void FontBook::post_process() noexcept
         auto &entry = font_entries[i];
         entry.fallbacks.clear();
 
-        LOG_DEBUG("Looking for fallback fonts for: {}", to_string(entry.description));
+        //LOG_DEBUG("Looking for fallback fonts for: {}", to_string(entry.description));
         calculate_fallback_fonts(entry, [](let &current, let &fallback) {
             return
                 starts_with(fallback.family_name, current.family_name) &&

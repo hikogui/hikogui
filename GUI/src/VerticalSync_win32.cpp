@@ -3,10 +3,12 @@
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"
+#include "TTauri/Foundation/cpu_utc_clock.hpp"
 #define WIN32_NO_STATUS 1
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
+#include <algorithm>
 
 typedef UINT D3DKMT_HANDLE;
 typedef UINT D3DDDI_VIDEO_PRESENT_SOURCE_ID;
@@ -42,7 +44,7 @@ namespace TTauri::GUI {
 using namespace std;
 using namespace gsl;
 
-VerticalSync_win32::VerticalSync_win32(std::function<void(void*)> callback, void* callbackData) noexcept :
+VerticalSync_win32::VerticalSync_win32(std::function<void(void*,cpu_utc_clock::time_point)> callback, void* callbackData) noexcept :
     callback(callback), callbackData(callbackData)
 {
     state = State::ADAPTER_CLOSED;
@@ -140,7 +142,20 @@ void VerticalSync_win32::closeAdapter() noexcept
     }
 }
 
-void VerticalSync_win32::wait() noexcept
+cpu_utc_clock::duration VerticalSync_win32::averageFrameDuration(cpu_utc_clock::time_point frameTimestamp) noexcept 
+{
+    let currentDuration = frameDurationDataCounter == 0 ? 16ms : frameTimestamp - previousFrameTimestamp;
+    previousFrameTimestamp = frameTimestamp;
+
+    frameDurationData[frameDurationDataCounter++ % frameDurationData.size()] = currentDuration;
+
+    let number_of_elements = std::min(frameDurationDataCounter, frameDurationData.size());
+    let last_i = frameDurationData.cbegin() + number_of_elements;
+    let sum = std::reduce(frameDurationData.cbegin(), last_i);
+    return sum / number_of_elements;
+}
+
+cpu_utc_clock::time_point VerticalSync_win32::wait() noexcept
 {
     if (state == State::ADAPTER_CLOSED) {
         openAdapter();
@@ -172,13 +187,17 @@ void VerticalSync_win32::wait() noexcept
     if (state != State::ADAPTER_OPEN) {
         std::this_thread::sleep_for(16ms);
     }
+
+    let now = cpu_utc_clock::now();
+
+    return now + averageFrameDuration(now);
 }
 
 void VerticalSync_win32::verticalSyncThread() noexcept
 {
     while (!stop) {
-        wait();
-        callback(callbackData);
+        let displayTimePoint = wait();
+        callback(callbackData, displayTimePoint);
     }
 }
 

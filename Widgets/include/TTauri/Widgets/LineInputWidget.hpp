@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "TTauri/Foundation/cpu_utc_clock.hpp"
 #include "TTauri/GUI/Widget.hpp"
 #include "TTauri/Text/EditableText.hpp"
 #include <memory>
@@ -23,6 +24,8 @@ protected:
     rect leftToRightCaret = {};
     rect partialGraphemeCaret = {};
     std::vector<rect> selectionRectangles = {};
+
+    cpu_utc_clock::time_point lastUpdateTimePoint;
 public:
 
     LineInputWidget(
@@ -45,17 +48,18 @@ public:
     LineInputWidget(LineInputWidget&&) = delete;
     LineInputWidget &operator=(LineInputWidget &&) = delete;
 
-    [[nodiscard]] bool updateAndPlaceVertices(
+    void updateAndPlaceVertices(
+        cpu_utc_clock::time_point displayTimePoint,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    [[nodiscard]] bool handleCommand(string_ltag command) noexcept;
+    void handleCommand(string_ltag command) noexcept;
 
-    [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
-    [[nodiscard]] bool handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept override;
+    void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
+    void handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept;
     [[nodiscard]] bool acceptsFocus() noexcept override {
         return enabled;

@@ -20,14 +20,13 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
 {
 }
 
-bool LineInputWidget::updateAndPlaceVertices(
+void LineInputWidget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    auto continueRendering = false;
-
     // Draw something.
     let cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
 
@@ -53,7 +52,7 @@ bool LineInputWidget::updateAndPlaceVertices(
 
     auto textRectangle = expand(box.currentRectangle(), -5.0f);
 
-    if (modified()) {
+    if (renderTrigger.check(displayTimePoint) >= 2) {
         field.setExtent(textRectangle.extent());
         leftToRightCaret = field.leftToRightCaret();
         partialGraphemeCaret = field.partialGraphemeCaret();
@@ -68,6 +67,8 @@ bool LineInputWidget::updateAndPlaceVertices(
         }
 
         window.device->SDFPipeline->prepareAtlas(shapedText);
+
+        lastUpdateTimePoint = displayTimePoint;
     }
 
     PipelineBox::DeviceShared::placeVertices(
@@ -111,7 +112,15 @@ bool LineInputWidget::updateAndPlaceVertices(
         );
     }
 
-    if (leftToRightCaret) {
+    // Display the caret and handle blinking.
+    auto durationSinceLastUpdate = displayTimePoint - lastUpdateTimePoint;
+    auto nrHalfBlinks = static_cast<int64_t>(durationSinceLastUpdate / 500ms);
+
+    auto nextHalfBlinkTime = lastUpdateTimePoint + ((nrHalfBlinks + 1) * 500ms);
+    renderTrigger += nextHalfBlinkTime;
+
+    auto blinkIsOn = nrHalfBlinks % 2 == 0;
+    if (leftToRightCaret && blinkIsOn && focus && window.active) {
         PipelineFlat::DeviceShared::placeVerticesBox(
             flat_vertices,
             text_translate * leftToRightCaret,
@@ -121,43 +130,42 @@ bool LineInputWidget::updateAndPlaceVertices(
         );
     }
 
-    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
+    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 
-bool LineInputWidget::handleCommand(string_ltag command) noexcept
+void LineInputWidget::handleCommand(string_ltag command) noexcept
 {
     LOG_DEBUG("LineInputWidget: Received command: {}", tt5_decode(command));
     if (!enabled) {
-        return false;
+        return;
     }
 
     // This lock is held during rendering, only update the field when holding this lock.
     std::scoped_lock lock(GUI_globals->mutex);
 
-    auto continueRendering = false;
-
     if (command == "text.edit.paste"_ltag) {
-        continueRendering |= field.handlePaste(window.getTextFromClipboard());
+        field.handlePaste(window.getTextFromClipboard());
     } else if (command == "text.edit.copy"_ltag) {
         window.setTextOnClipboard(field.handleCopy());
     } else if (command == "text.edit.cut"_ltag) {
         window.setTextOnClipboard(field.handleCut());
-        continueRendering |= true;
     } else {
-        continueRendering |= field.handleCommand(command);
+        field.handleCommand(command);
     }
 
-    return continueRendering;
+    renderTrigger += 2;
+
+    // Make sure changing keyboard focus is handled.
+    Widget::handleCommand(command);
 }
 
-bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
+void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
 {
-    auto continueRendering = Widget::handleKeyboardEvent(event);
+    Widget::handleKeyboardEvent(event);
 
     if (!enabled) {
-        return false;
+        return;
     }
 
     // This lock is held during rendering, only update the field when holding this lock.
@@ -165,22 +173,24 @@ bool LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
 
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:
-        return continueRendering | field.insertGrapheme(event.grapheme);
+        field.insertGrapheme(event.grapheme);
+        break;
 
     case GUI::KeyboardEvent::Type::PartialGrapheme:
-        return continueRendering | field.insertPartialGrapheme(event.grapheme);
+        field.insertPartialGrapheme(event.grapheme);
+        break;
 
     default:;
     }
 
-    return continueRendering;
+    renderTrigger += 2;
 }
 
-bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
-    auto continueRendering = Widget::handleMouseEvent(event);
+void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
+    Widget::handleMouseEvent(event);
 
     if (!enabled) {
-        return false;
+        return;
     }
 
     if (event.type == GUI::MouseEvent::Type::ButtonDown && event.cause.leftButton) {
@@ -189,29 +199,30 @@ bool LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
             let textPosition = event.position - textRectangle.offset();
 
             if (event.down.shiftKey) {
-                continueRendering |= field.dragCursorAtCoordinate(textPosition);
+                field.dragCursorAtCoordinate(textPosition);
             } else {
                 if (event.clickCount == 1) {
-                    continueRendering |= field.setCursorAtCoordinate(textPosition);
+                    field.setCursorAtCoordinate(textPosition);
                 } else if (event.clickCount == 2) {
-                    continueRendering |= field.selectWordAtCoordinate(textPosition);
+                    field.selectWordAtCoordinate(textPosition);
                 }
             }
         }
+        renderTrigger += 2;
+
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
         auto textRectangle = expand(box.currentRectangle(), -5.0f);
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 
             if (event.clickCount == 1) {
-                continueRendering |= field.dragCursorAtCoordinate(textPosition);
+                field.dragCursorAtCoordinate(textPosition);
             } else if (event.clickCount == 2) {
-                continueRendering |= field.dragWordAtCoordinate(textPosition);
+                field.dragWordAtCoordinate(textPosition);
             }
         }
+        renderTrigger += 2;
     }
-
-    return continueRendering;
 }
 
 HitBox LineInputWidget::hitBoxTest(vec position) noexcept

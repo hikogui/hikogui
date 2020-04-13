@@ -67,9 +67,9 @@ public:
 
     void remove(Window &window) noexcept;
 
-    void render() noexcept {
+    void render(cpu_utc_clock::time_point displayTimePoint) noexcept {
         for (auto &window: windows) {
-            window->render();
+            window->render(displayTimePoint);
         }
 
         let new_end = std::remove_if(windows.begin(), windows.end(), [](let &window) { return window->isClosed(); });

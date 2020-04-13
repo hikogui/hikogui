@@ -50,11 +50,11 @@ ssize_t Instance_base::getNumberOfWindows()
     return numberOfWindows;
 }
 
-void Instance_base::_handleVerticalSync(void *data)
+void Instance_base::_handleVerticalSync(void *data, cpu_utc_clock::time_point displayTimePoint)
 {
     auto self = static_cast<Instance_base *>(data);
 
-    self->handleVerticalSync();
+    self->handleVerticalSync(displayTimePoint);
 }
 
 

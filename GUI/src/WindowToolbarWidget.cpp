@@ -64,17 +64,16 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
     }
 }
 
-bool WindowToolbarWidget::updateAndPlaceVertices(
+void WindowToolbarWidget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    auto continueRendering = false;
     PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), backgroundColor, box.currentRectangle(), elevation);
 
-    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
+    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 HitBox WindowToolbarWidget::hitBoxTest(vec position) noexcept

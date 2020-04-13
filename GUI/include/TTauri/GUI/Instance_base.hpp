@@ -70,9 +70,9 @@ public:
      */
     ssize_t getNumberOfWindows();
 
-    void render() {
+    void render(cpu_utc_clock::time_point displayTimePoint) {
         for (auto &device: devices) {
-            device->render();
+            device->render(displayTimePoint);
         }
         let currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
@@ -81,13 +81,13 @@ public:
         previousNumberOfWindows = currentNumberOfWindows;
     }
 
-    void handleVerticalSync()
+    void handleVerticalSync(cpu_utc_clock::time_point displayTimePoint)
     {
-        render();
+        render(displayTimePoint);
     }
 
 
-    static void _handleVerticalSync(void *data);
+    static void _handleVerticalSync(void *data, cpu_utc_clock::time_point displayTimePoint);
 
 protected:
     Device *findBestDeviceForWindow(Window const &window);

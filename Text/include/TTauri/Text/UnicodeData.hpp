@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Text/Grapheme.hpp"
+#include "TTauri/Text/UnicodeBidi.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/math.hpp"
 #include "TTauri/Foundation/URL.hpp"
@@ -31,75 +32,7 @@ enum class GraphemeUnitType : uint8_t {
     Extended_Pictographic = 14
 };
 
-enum class BidirectionalClass : uint8_t {
-    Unknown = 0,
-    L = 1,
-    R = 2,
-    AL = 3,
-    EN = 4,
-    ES = 5,
-    ET = 6,
-    AN = 7,
-    CS = 8,
-    NSM = 9,
-    BN = 10,
-    B = 11,
-    S = 12,
-    WS = 13,
-    ON = 14,
-    // Explicit values.
-    LRE,
-    LRO,
-    RLE,
-    RLO,
-    PDF,
-    LRI,
-    RLI,
-    FSI,
-    PDI
-};
 
-/** General Character class.
- */
-enum GeneralCharacterClass {
-    Unknown,
-    Digit,
-    Letter,
-    WhiteSpace,
-    ParagraphSeparator
-};
-
-/** This function should be called before reclassification by the bidi-algorithm.
- */
-[[nodiscard]] constexpr GeneralCharacterClass to_GeneralCharacterClass(BidirectionalClass bidiClass) noexcept {
-    switch (bidiClass) {
-    case BidirectionalClass::Unknown: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::L: return GeneralCharacterClass::Letter;
-    case BidirectionalClass::R: return GeneralCharacterClass::Letter;
-    case BidirectionalClass::AL: return GeneralCharacterClass::Letter;
-    case BidirectionalClass::EN: return GeneralCharacterClass::Digit;
-    case BidirectionalClass::ES: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::ET: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::AN: return GeneralCharacterClass::Digit;
-    case BidirectionalClass::CS: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::NSM: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::BN: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::B: return GeneralCharacterClass::ParagraphSeparator;
-    case BidirectionalClass::S: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::WS: return GeneralCharacterClass::WhiteSpace;
-    case BidirectionalClass::ON: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::LRE: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::LRO: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::RLE: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::RLO: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::PDF: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::LRI: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::RLI: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::FSI: return GeneralCharacterClass::Unknown;
-    case BidirectionalClass::PDI: return GeneralCharacterClass::Unknown;
-    default: no_default;
-    }
-}
 
 struct GraphemeBreakState {
     GraphemeUnitType previous = GraphemeUnitType::Other;
@@ -115,106 +48,79 @@ struct GraphemeBreakState {
     }
 };
 
-/** Unicode Ranges based on the OS/2 table in TrueType fonts.
+
+/** Bidirectional class
+ * Unicode Standard Annex #9: https://unicode.org/reports/tr9/
  */
-struct UnicodeRanges {
-    uint32_t value[4];
-
-    UnicodeRanges() noexcept {
-        value[0] = 0;
-        value[1] = 0;
-        value[2] = 0;
-        value[3] = 0;
-    }
-
-    UnicodeRanges(char32_t c) noexcept : UnicodeRanges() {
-        add(c);
-    }
-
-    UnicodeRanges(Grapheme g) noexcept : UnicodeRanges() {
-        for (ssize_t i = 0; i != ssize(g); ++i) {
-            add(g[i]);
-        }
-    }
-
-    operator bool () const noexcept {
-        return (value[0] != 0) || (value[1] != 0) || (value[2] != 0) || (value[3] != 0);
-    }
-
-    /** Add code point to unicode-ranges.
-    */
-    void add(char32_t c) noexcept;
-
-    /** Add code points to unicode-ranges.
-     * @param first First code point.
-     * @param last One beyond the last code point.
-     */
-    void add(char32_t first, char32_t last) noexcept;
-
-    /** Check if the code point is present in the unicode-ranges.
-     */
-    [[nodiscard]] bool contains(char32_t c) const noexcept;
-
-    [[nodiscard]] bool contains(Grapheme g) const noexcept {
-        for (ssize_t i = 0; i != ssize(g); ++i) {
-            if (!contains(g[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    void set_bit(int i) noexcept {
-        ttauri_assume(i >= 0 && i < 128);
-        value[i / 32] |= static_cast<uint32_t>(1) << (i % 32);
-    }
-
-    bool get_bit(int i) const noexcept {
-        ttauri_assume(i >= 0 && i < 128);
-        return (value[i / 32] & static_cast<uint32_t>(1) << (i % 32)) != 0;
-    }
-
-    int popcount() const noexcept {
-        int r = 0;
-        for (int i = 0; i != 4; ++i) {
-            r += ::TTauri::popcount(value[i]);
-        }
-        return r;
-    }
-
-
-    UnicodeRanges &operator|=(UnicodeRanges const &rhs) noexcept {
-        for (int i = 0; i != 4; ++i) {
-            value[i] |= rhs.value[i];
-        }
-        return *this;
-    }
-
-    [[nodiscard]] friend std::string to_string(UnicodeRanges const &rhs) noexcept {
-        return fmt::format("{:08x}:{:08x}:{:08x}:{:08x}", rhs.value[3], rhs.value[2], rhs.value[1], rhs.value[0]);
-    }
-
-    /** The lhs has at least all bits on the rhs set.
-     */
-    [[nodiscard]] friend bool operator>=(UnicodeRanges const &lhs, UnicodeRanges const &rhs) noexcept {
-        for (int i = 0; i < 4; i++) {
-            if (!((lhs.value[i] & rhs.value[i]) == rhs.value[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    [[nodiscard]] friend UnicodeRanges operator|(UnicodeRanges const &lhs, UnicodeRanges const &rhs) noexcept {
-        auto r = lhs;
-        r |= rhs;
-        return r;
-    }
-
-    friend std::ostream &operator<<(std::ostream &lhs, UnicodeRanges const &rhs) {
-        return lhs << to_string(rhs);
-    }
+enum class BidiClass : uint8_t {
+    Unknown = 0,
+    L = 1, ///< Left-to-Right
+    R = 2, ///< Right-to-Left
+    AL = 3, ///< Right-to-Left Arabic
+    EN = 4, ///< European Number
+    ES = 5, ///< European Number Separator
+    ET = 6, ///< European Number Terminator
+    AN = 7, ///< Arabic Number
+    CS = 8, ///< Common Number Separator
+    NSM = 9, ///< Nonspacing Mark
+    BN = 10, ///< Boundary Neutral
+    B = 11, ///< Paragraph Separator
+    S = 12, ///< Segment Separator
+    WS = 13, ///< Whitespace
+    ON = 14, ///< Other Neutrals
+    // Explicit values.
+    LRE, ///< Left-to-Right Embedding
+    LRO, ///< Left-to-Right Override
+    RLE, ///< Right-to-Left Embedding
+    RLO, ///< Right-to-left Override
+    PDF, ///< Pop Directional Format
+    LRI, ///< Left-to-Right Isolate
+    RLI, ///< Right-to-Left Isolate
+    FSI, ///< First Strong Isolate
+    PDI ///< Pop Directional Isolate
 };
+
+/** General Character class.
+*/
+enum GeneralCharacterClass {
+    Unknown,
+    Digit,
+    Letter,
+    WhiteSpace,
+    ParagraphSeparator
+};
+
+/** This function should be called before reclassification by the bidi-algorithm.
+*/
+[[nodiscard]] constexpr GeneralCharacterClass to_GeneralCharacterClass(BidiClass bidiClass) noexcept {
+    switch (bidiClass) {
+    case BidiClass::Unknown: return GeneralCharacterClass::Unknown;
+    case BidiClass::L: return GeneralCharacterClass::Letter;
+    case BidiClass::R: return GeneralCharacterClass::Letter;
+    case BidiClass::AL: return GeneralCharacterClass::Letter;
+    case BidiClass::EN: return GeneralCharacterClass::Digit;
+    case BidiClass::ES: return GeneralCharacterClass::Unknown;
+    case BidiClass::ET: return GeneralCharacterClass::Unknown;
+    case BidiClass::AN: return GeneralCharacterClass::Digit;
+    case BidiClass::CS: return GeneralCharacterClass::Unknown;
+    case BidiClass::NSM: return GeneralCharacterClass::Unknown;
+    case BidiClass::BN: return GeneralCharacterClass::Unknown;
+    case BidiClass::B: return GeneralCharacterClass::ParagraphSeparator;
+    case BidiClass::S: return GeneralCharacterClass::Unknown;
+    case BidiClass::WS: return GeneralCharacterClass::WhiteSpace;
+    case BidiClass::ON: return GeneralCharacterClass::Unknown;
+    case BidiClass::LRE: return GeneralCharacterClass::Unknown;
+    case BidiClass::LRO: return GeneralCharacterClass::Unknown;
+    case BidiClass::RLE: return GeneralCharacterClass::Unknown;
+    case BidiClass::RLO: return GeneralCharacterClass::Unknown;
+    case BidiClass::PDF: return GeneralCharacterClass::Unknown;
+    case BidiClass::LRI: return GeneralCharacterClass::Unknown;
+    case BidiClass::RLI: return GeneralCharacterClass::Unknown;
+    case BidiClass::FSI: return GeneralCharacterClass::Unknown;
+    case BidiClass::PDI: return GeneralCharacterClass::Unknown;
+    default: no_default;
+    }
+}
 
 /** Unicode Data used for characterizing unicode code-points.
  */
@@ -304,9 +210,9 @@ public:
 
     /** Get the bidirectional class for a code-point.
      * Do not pass code-units above 0x1f'ffff nor the code-unit 0x00'ffff.
-     * Code units between 0x11'0000 and 0x1f'ffff will be treated as BidirectionalClass::Unknown. 
+     * Code units between 0x11'0000 and 0x1f'ffff will be treated as BidiClass::Unknown. 
      */
-    BidirectionalClass getBidirectionalClass(char32_t codePoint) const noexcept;
+    BidiClass getBidiClass(char32_t codePoint) const noexcept;
 
 private:
     void initialize();

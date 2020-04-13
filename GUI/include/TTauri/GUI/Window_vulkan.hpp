@@ -62,7 +62,7 @@ public:
     Window_vulkan &operator=(Window_vulkan &&) = delete;
 
     void initialize() override;
-    void render() override;
+    void render(cpu_utc_clock::time_point displayTimePoint) override;
 
 protected:
     void teardown() override;

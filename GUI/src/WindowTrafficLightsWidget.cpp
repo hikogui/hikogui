@@ -29,17 +29,25 @@ int WindowTrafficLightsWidget::state() const noexcept {
     return r;
 }
 
-bool WindowTrafficLightsWidget::updateAndPlaceVertices(
+void WindowTrafficLightsWidget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    auto continueRendering = false;
+    auto drawingBackingImage = backingImage.loadOrDraw(
+        window,
+        box.currentExtent(),
+        [&](auto image) {
+            return drawImage(image);
+        },
+        "WindowTrafficLightsWidget", state()
+    );
 
-    continueRendering |= backingImage.loadOrDraw(window, box.currentExtent(), [&](auto image) {
-        return drawImage(image);
-        }, "WindowTrafficLightsWidget", state());
+    if (drawingBackingImage) {
+        ++renderTrigger;
+    }
 
     if (backingImage.image) {
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
@@ -53,8 +61,7 @@ bool WindowTrafficLightsWidget::updateAndPlaceVertices(
         backingImage.image->placeVertices(location, image_vertices);
     }
 
-    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
+    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, vec position, float radius) noexcept
@@ -237,12 +244,12 @@ std::tuple<rect, rect, rect, rect> WindowTrafficLightsWidget::getButtonRectangle
     return {redButtonBox, yellowButtonBox, greenButtonBox, sysmenuButtonBox};    
 }
 
-bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
+void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    auto continueRendering = Widget::handleMouseEvent(event);
+    Widget::handleMouseEvent(event);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
-        return continueRendering;
+        return;
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
         let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
@@ -268,15 +275,17 @@ bool WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 
         // Only change the pressed state after checking for Button Up, the
         // button up will check which button was pressed from button down.
-        continueRendering |= assign_and_compare(pressedRed, event.down.leftButton && redButtonRect.contains(event.position));
-        continueRendering |= assign_and_compare(pressedYellow, event.down.leftButton && yellowButtonRect.contains(event.position));
-        continueRendering |= assign_and_compare(pressedGreen, event.down.leftButton && greenButtonRect.contains(event.position));
+        auto stateHasChanged = false;
+        stateHasChanged |= assign_and_compare(pressedRed, event.down.leftButton && redButtonRect.contains(event.position));
+        stateHasChanged |= assign_and_compare(pressedYellow, event.down.leftButton && yellowButtonRect.contains(event.position));
+        stateHasChanged |= assign_and_compare(pressedGreen, event.down.leftButton && greenButtonRect.contains(event.position));
+        if (stateHasChanged) {
+            ++renderTrigger;
+        }
 
     } else {
         no_default;
     }
-
-    return continueRendering;
 }
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) noexcept

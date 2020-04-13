@@ -14,7 +14,7 @@ namespace TTauri {
 
 static uint8_t base93_crc(ubig128 number) noexcept
 {
-    return number.crc(0b100101);
+    return static_cast<uint8_t>(number.crc(0b100101));
 }
 
 static bool base93_crc_check(ubig128 number) noexcept
@@ -108,7 +108,7 @@ static ubig128 base93_bytes_to_number(bstring_view bytes) noexcept
 
 static std::string base93_number_to_characters(ubig128 number, size_t nr_bytes) noexcept
 {
-    static auto oneOver93 = bigint_reciprocal<uint64_t,4>(93);
+    static auto oneOver93 = bigint_reciprocal(bigint<uint64_t,4>{93});
 
     let nr_digits = base93_nr_bytes_to_nr_digits(nr_bytes);
     auto r = std::string(nr_digits, '!');

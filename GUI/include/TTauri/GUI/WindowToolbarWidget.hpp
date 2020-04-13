@@ -18,7 +18,7 @@ public:
     ToolbarButtonWidget *maximizeWindowButton = nullptr;
     ToolbarButtonWidget *minimizeWindowButton = nullptr;
 
-    R16G16B16A16SFloat backgroundColor = vec{0.0f, 0.0f, 0.0f, 0.5f};
+    vec backgroundColor = {0.0f, 0.0f, 0.0f, 0.5f};
 
     WindowToolbarWidget(Window &window, Widget *parent) noexcept;
     ~WindowToolbarWidget() {}
@@ -28,7 +28,8 @@ public:
     WindowToolbarWidget(WindowToolbarWidget &&) = delete;
     WindowToolbarWidget &operator=(WindowToolbarWidget &&) = delete;
 
-    [[nodiscard]] bool updateAndPlaceVertices(
+    void updateAndPlaceVertices(
+        cpu_utc_clock::time_point displayTimePoint,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,

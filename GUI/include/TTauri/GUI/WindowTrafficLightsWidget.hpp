@@ -41,14 +41,15 @@ public:
 
     int state() const noexcept;
 
-    [[nodiscard]] bool updateAndPlaceVertices(
+    void updateAndPlaceVertices(
+        cpu_utc_clock::time_point displayTimePoint,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    [[nodiscard]] bool handleMouseEvent(MouseEvent const &event) noexcept override;
+    void handleMouseEvent(MouseEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 
 private:

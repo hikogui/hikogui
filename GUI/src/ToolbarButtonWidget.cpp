@@ -54,23 +54,32 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-bool ToolbarButtonWidget::updateAndPlaceVertices(
+void ToolbarButtonWidget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    auto continueRendering = false;
-
     if (pressed) {
         PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), elevation);
     } else if (hover && enabled) {
         PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), elevation);
     }
 
-    continueRendering |= backingImage.loadOrDraw(window, box.currentExtent(), [&](auto image) {
-        return drawImage(image);
-    }, "ToolbarButtonWidget", this, state());
+    auto drawingBackingImage = backingImage.loadOrDraw(
+        window,
+        box.currentExtent(),
+        [&](auto image) {
+            return drawImage(image);
+        },
+        "ToolbarButtonWidget",
+        this,
+        state()
+    );
+    if (drawingBackingImage) {
+        ++renderTrigger;
+    }
 
     if (backingImage.image) {
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
@@ -83,27 +92,28 @@ bool ToolbarButtonWidget::updateAndPlaceVertices(
 
         backingImage.image->placeVertices(location, image_vertices);
 
-        continueRendering |= backingImage.image->state != PipelineImage::Image::State::Uploaded;
+        if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {
+            ++renderTrigger;
+        }
     } else {
-        continueRendering |= true;
+        ++renderTrigger;
     }
 
-    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
+    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-bool ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
-    auto continueRendering = Widget::handleMouseEvent(event);
+void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
+    Widget::handleMouseEvent(event);
 
     if (enabled) {
-        continueRendering |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
+        if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
+            ++renderTrigger;
+        }
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             delegate();
         }
     }
-
-    return continueRendering;
 }
 
 HitBox ToolbarButtonWidget::hitBoxTest(vec position) noexcept

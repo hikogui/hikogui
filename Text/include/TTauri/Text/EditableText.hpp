@@ -47,9 +47,8 @@ public:
 
     /** Update the shaped text after changed to text.
      */
-    bool updateShapedText() noexcept {
+    void updateShapedText() noexcept {
         _shapedText = ShapedText(text, HorizontalAlignment::Left, extent.width());
-        return true;
     }
 
     [[nodiscard]] ShapedText shapedText() const noexcept {
@@ -125,20 +124,16 @@ public:
     /** Delete a selection.
      * This function should be called when a selection is active while new text
      * is being inserted.
-     *
-     * @return true if text is modified.
      */
-    bool deleteSelection() noexcept {
+    void deleteSelection() noexcept {
         if (selectionIndex < cursorIndex) {
             text.erase(cit(selectionIndex), cit(cursorIndex));
             cursorIndex = selectionIndex;
-            return updateShapedText();
+            updateShapedText();
         } else if (selectionIndex > cursorIndex) {
             text.erase(cit(cursorIndex), cit(selectionIndex));
             selectionIndex = cursorIndex;
-            return updateShapedText();
-        } else {
-            return false;
+            updateShapedText();
         }
     }
 
@@ -146,35 +141,26 @@ public:
      */
     ssize_t characterIndexAtPosition(vec position) const noexcept;
 
-    [[nodiscard]] bool setCursorAtCoordinate(vec coordinate) noexcept {
+    void setCursorAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             selectionIndex = cursorIndex = *newCursorPosition;
-            return true;
-        } else {
-            return false;
         }
     }
 
-    [[nodiscard]] bool selectWordAtCoordinate(vec coordinate) noexcept {
+    void selectWordAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
-            return true;
-        } else {
-            return false;
         }
     }
 
 
-    [[nodiscard]] bool dragCursorAtCoordinate(vec coordinate) noexcept {
+    void dragCursorAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newCursorPosition;
-            return true;
-        } else {
-            return false;
         }
     }
 
-    [[nodiscard]] bool dragWordAtCoordinate(vec coordinate) noexcept {
+    void dragWordAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             let [a, b] = _shapedText.indicesOfWord(*newCursorPosition);
 
@@ -195,23 +181,17 @@ public:
                     cursorIndex = a;
                 }
             }
-            return true;
-        } else {
-            return false;
         }
     }
 
-    bool cancelPartialGrapheme() noexcept {
+    void cancelPartialGrapheme() noexcept {
         if (hasPartialGrapheme) {
             ttauri_assume(cursorIndex >= 1);
 
             selectionIndex = --cursorIndex;
             text.erase(cit(cursorIndex));
             hasPartialGrapheme = false;
-            return updateShapedText();
-
-        } else {
-            return false;
+            updateShapedText();
         }
     }
 
@@ -220,20 +200,20 @@ public:
      *
      * Since the insertion has not been completed any selected text should not yet be deleted.
      */
-    bool insertPartialGrapheme(Grapheme character) noexcept {
+    void insertPartialGrapheme(Grapheme character) noexcept {
         cancelPartialGrapheme();
         deleteSelection();
 
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
         hasPartialGrapheme = true;
-        return updateShapedText();
+        updateShapedText();
     }
 
     /*! insert character at the cursor position.
      * Selected text will be deleted.
      */
-    bool insertGrapheme(Grapheme character) noexcept {
+    void insertGrapheme(Grapheme character) noexcept {
         cancelPartialGrapheme();
         deleteSelection();
 
@@ -242,10 +222,10 @@ public:
         }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
-        return updateShapedText();
+        updateShapedText();
     }
 
-    bool handlePaste(std::string str) noexcept {
+    void handlePaste(std::string str) noexcept {
         cancelPartialGrapheme();
         deleteSelection();
 
@@ -259,7 +239,7 @@ public:
 
         text.insert(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
         selectionIndex = cursorIndex += ssize(str_attr);
-        return updateShapedText();
+        updateShapedText();
     }
 
     std::string handleCopy() noexcept {
@@ -286,96 +266,81 @@ public:
         return r;
     }
 
-    bool handleCommand(string_ltag command) noexcept {
+    void handleCommand(string_ltag command) noexcept {
         ttauri_assume(cursorIndex <= ssize(text));
         cancelPartialGrapheme();
-
-        auto updated = false;
 
         if (command == "text.cursor.char.left"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 // XXX Change currentStyle based on the grapheme at the new cursor position.
                 selectionIndex = cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.cursor.char.right"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.cursor.word.left"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.cursor.word.right"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.cursor.word.right"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.cursor.line.end"_ltag) {
             selectionIndex = cursorIndex = size() - 1;
-            updated |= true;
         } else if (command == "text.cursor.line.begin"_ltag) {
             selectionIndex = cursorIndex = 0;
-            updated |= true;
+        } else if (command == "text.select.char.left"_ltag) {
+            if (let newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
+                cursorIndex = *newCursorPosition;
+            }
         } else if (command == "text.select.char.right"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.select.word.left"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.select.word.right"_ltag) {
             if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
-                updated |= true;
             }
         } else if (command == "text.select.word"_ltag) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(cursorIndex);
-            updated |= true;
         } else if (command == "text.select.line.end"_ltag) {
             cursorIndex = size() - 1;
-            updated |= true;
         } else if (command == "text.select.line.begin"_ltag) {
             cursorIndex = 0;
-            updated |= true;
         } else if (command == "text.select.document"_ltag) {
             selectionIndex = 0;
             cursorIndex = size() - 1; // Upto end-of-paragraph marker.
-            updated |= true;
         } else if (command == "text.mode.insert"_ltag) {
             insertMode = !insertMode;
-            updated |= true;
         } else if (command == "text.delete.char.prev"_ltag) {
             if (cursorIndex != selectionIndex) {
-                updated |= deleteSelection();
+                deleteSelection();
 
             } else if (cursorIndex >= 1) {
                 selectionIndex = --cursorIndex;
                 text.erase(cit(cursorIndex));
-                updated |= updateShapedText();
+                updateShapedText();
             }
         } else if (command == "text.delete.char.next"_ltag) {
             if (cursorIndex != selectionIndex) {
-                updated |= deleteSelection();
+                deleteSelection();
 
             } else if (cursorIndex < (ssize(text) - 1)) {
                 // Don't delete the trailing paragraph separator.
                 text.erase(cit(cursorIndex));
-                updated |= updateShapedText();
+                updateShapedText();
             }
         }
-
-        return updated;
     }
 };
 

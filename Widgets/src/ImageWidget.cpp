@@ -50,14 +50,13 @@ void ImageWidget::drawBackingImage() noexcept
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-bool ImageWidget::updateAndPlaceVertices(
+void ImageWidget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    auto continueRendering = false;
-
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 
     auto vulkanDevice = device();
@@ -77,8 +76,7 @@ bool ImageWidget::updateAndPlaceVertices(
 
     backingImage->placeVertices(location, image_vertices);
 
-    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
+    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
 }

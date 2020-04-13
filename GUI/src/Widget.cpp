@@ -7,7 +7,7 @@
 namespace TTauri::GUI::Widgets {
 
 Widget::Widget(Window &window, Widget *parent) noexcept :
-    window(window), parent(parent), elevation(parent ? parent->elevation + 0.001f : 0.0f) {}
+    window(window), parent(parent), renderTrigger(&window.renderTrigger), elevation(parent ? parent->elevation + 0.001f : 0.0f) {}
 
 Device *Widget::device() const noexcept
 {
@@ -16,18 +16,24 @@ Device *Widget::device() const noexcept
     return device;
 }
 
-bool Widget::updateAndPlaceVertices(
+void Widget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
     vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
 {
-    bool r = false;
-
     for (auto &child : children) {
-        r |= child->updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
+        child->updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
     }
-    return r;
+}
+
+void Widget::handleCommand(string_ltag command) noexcept {
+    if (command == "gui.widget.next"_ltag) {
+        window.updateToNextKeyboardTarget(this);
+    } else if (command == "gui.widget.prev"_ltag) {
+        window.updateToPrevKeyboardTarget(this);
+    }
 }
 
 HitBox Widget::hitBoxTest(vec position) noexcept

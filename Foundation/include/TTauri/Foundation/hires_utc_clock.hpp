@@ -22,8 +22,8 @@ struct hires_utc_clock {
 	static time_point now() noexcept;
 
     static std::chrono::system_clock::time_point to_system_time_point(time_point x) noexcept {
-        static_assert(std::chrono::system_clock::period::num == 1, "Percission of system clock must be 1 second or better.");
-        static_assert(std::chrono::system_clock::period::den <= 1000000000, "Percission of system clock must be 1ns or worse.");
+        static_assert(std::chrono::system_clock::period::num == 1, "Precision of system clock must be 1 second or better.");
+        static_assert(std::chrono::system_clock::period::den <= 1000000000, "Precision of system clock must be 1ns or worse.");
 
         constexpr int64_t nano_to_sys_ratio = 1000000000LL / std::chrono::system_clock::period::den;
 

@@ -335,7 +335,7 @@ constexpr void fill_buffer_from_tt5(char *str, T const &value) noexcept
     uint8_t current_page = 0;
     uint8_t locked_page = 0;
     while (value_) {
-        uint8_t code = value_ & 0x1f;
+        auto code = static_cast<uint8_t>(value_ & 0x1f);
         value_ >>= 5;
 
         switch (current_page & 3) {

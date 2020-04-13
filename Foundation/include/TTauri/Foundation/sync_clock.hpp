@@ -72,7 +72,12 @@ public:
     * Should be called from the maintenance thread every 100ms.
     */
     void calibrate_tick() noexcept {
-        auto backoff = calibration_nr * 10s;
+        auto backoff = 0s;
+
+        if (calibration_nr > 2) {
+            backoff = (calibration_nr - 2) * 10s;
+        }
+
         if (backoff > 120s) {
             backoff = 120s;
         }
@@ -85,7 +90,7 @@ public:
 private:
     static time_point_pair makeCalibrationPoint() noexcept {
         // We are going to read the slow clock twice sandwiched by fast clocks,
-        // we expect that it will not be interupted by a time-slice more than once.
+        // we expect that it will not be interrupted by a time-slice more than once.
         let f1 = fast_clock::now();
         let s1 = slow_clock::now();
         let f2 = fast_clock::now();
@@ -128,7 +133,7 @@ private:
         // Multiply with the integer gain, that is pre-multiplied.
         tmp *= new_gain;
 
-        // Add half of the lost precission for propper rounding.
+        // Add half of the lost precision for proper rounding.
         tmp += (1LL << (gainShift - 1));
 
         // Remove gain-pre-multiplier.
@@ -201,12 +206,15 @@ private:
     }
 
     typename slow_clock::duration convert(int64_t new_gain, typename fast_clock::duration fast_duration) const noexcept {
-        auto u128_count = static_cast<ubig128>(fast_duration.count());
-        u128_count *= new_gain;
-        u128_count += (1LL << (gainShift - 1));
-        u128_count >>= gainShift;
+        let _new_gain = static_cast<uint64_t>(new_gain);
+        let _fast_duration = static_cast<uint64_t>(fast_duration.count());
 
-        return typename slow_clock::duration(static_cast<typename slow_clock::rep>(u128_count));
+        let [lo, hi] = wide_multiply(_new_gain, _fast_duration);
+
+        static_assert(gainShift < 64);
+        let slow_duration = (lo >> gainShift) | (hi << (64 - gainShift));
+
+        return typename slow_clock::duration(static_cast<typename slow_clock::rep>(slow_duration));
     }
 
     typename slow_clock::time_point convert(int64_t new_gain, typename slow_clock::duration new_bias, typename fast_clock::time_point fast_time) const noexcept {
@@ -219,7 +227,7 @@ template<typename C1, typename C2>
 inline sync_clock_calibration_type<C1,C2> *sync_clock_calibration = nullptr;
 
 /*! A clock which converts one clock to another clock.
- * The new clock is simular to C1 (slow clock), except that leap seconds from C1 are filtered out.
+ * The new clock is similar to C1 (slow clock), except that leap seconds from C1 are filtered out.
  * Leap seconds are filtered out because calibration to the slow clock does not happen often
  * enough to react in-time to a leap second.
  *

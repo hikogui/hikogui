@@ -18,6 +18,8 @@
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/Trigger.hpp"
+#include "TTauri/Foundation/cpu_utc_clock.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>
@@ -131,6 +133,9 @@ public:
      */
     Widgets::Widget *lastKeyboardWidget = nullptr;
 
+    /** Trigger to check when to render the window.
+     */
+    Trigger<cpu_utc_clock> renderTrigger;
 
     Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     virtual ~Window_base();
@@ -154,7 +159,7 @@ public:
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render() = 0;
+    virtual void render(cpu_utc_clock::time_point displayTimePoint) = 0;
 
     bool isClosed() {
         std::scoped_lock lock(GUI_globals->mutex);
@@ -172,7 +177,7 @@ public:
         // During the construction of WindowWidget `widget` is not yet set.
         if (widget) {
             calculateMinimumAndMaximumWindowExtent();
-            setModifiedRecursive();
+            widget->handleWindowResize();
         }
         return r;
     }
@@ -182,7 +187,7 @@ public:
         // During the construction of WindowWidget `widget` is not yet set.
         if (widget) {
             calculateMinimumAndMaximumWindowExtent();
-            setModifiedRecursive();
+            widget->handleWindowResize();
         }
         return r;
     }
@@ -197,6 +202,28 @@ public:
 
     [[nodiscard]] virtual std::string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::string str) noexcept = 0;
+
+    void updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
+        Widgets::Widget *newTargetWidget =
+            currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
+
+        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+            newTargetWidget = newTargetWidget->nextKeyboardWidget;
+        }
+
+        updateKeyboardTarget(newTargetWidget);
+    }
+
+    void updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
+        Widgets::Widget *newTargetWidget =
+            currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
+
+        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+            newTargetWidget = newTargetWidget->prevKeyboardWidget;
+        }
+
+        updateKeyboardTarget(newTargetWidget);
+    }
 
 protected:
     /*! The current rectangle which has been set by the operating system.
@@ -216,47 +243,14 @@ protected:
     //! The current window extent as set by the GPU library.
     ivec currentWindowExtent;
 
-    /** Incremented when the window needs to be rendered on the next vsync.
-     */
-    std::atomic<uint64_t> modificationRequest = 1;
-
-    /** Copied from renderRequest before rendering the window.
-     */
-    uint64_t modificationVersion = 0;
-
-    [[nodiscard]] force_inline bool modified() noexcept {
-        let request = modificationRequest.load(std::memory_order::memory_order_acquire);
-
-        if (modificationVersion != request) {
-            modificationVersion = request;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /** Should be called after the internal state of the widget was modified.
-     * This function may be called from other threads.
-     */
-    force_inline bool setModified(bool x=true) noexcept {
-        if (x) {
-            modificationRequest.fetch_add(1, std::memory_order::memory_order_relaxed);
-        }
-        return x;
-    }
-
-    void setModifiedRecursive() noexcept {
-        widget->setModifiedRecursive();
-        setModified();
-    }
-
     /*! Called when the GPU library has changed the window size.
      */
     virtual void windowChangedSize(ivec extent) {
         removeCurrentWindowExtentConstraints();
         currentWindowExtent = extent;
         addCurrentWindowExtentConstraints();
-        setModifiedRecursive();
+
+        widget->handleWindowResize();
     }
 
     /*! call openingWindow() on the delegate. 
@@ -275,69 +269,32 @@ protected:
      */
     virtual void build() = 0;
 
-    [[nodiscard]] bool updateMouseTarget(Widgets::Widget *newTargetWidget) noexcept {
-        auto continueRendering = false;
-
+    void updateMouseTarget(Widgets::Widget *newTargetWidget) noexcept {
         if (newTargetWidget != mouseTargetWidget) {
             if (mouseTargetWidget != nullptr) {
-                continueRendering |= mouseTargetWidget->setModified(
-                    mouseTargetWidget->handleMouseEvent(MouseEvent::exited())
-                );
+                mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
             }
             mouseTargetWidget = newTargetWidget;
             if (mouseTargetWidget != nullptr) {
-                continueRendering |= mouseTargetWidget->setModified(
-                    mouseTargetWidget->handleMouseEvent(MouseEvent::entered())
-                );
+                mouseTargetWidget->handleMouseEvent(MouseEvent::entered());
             }
         }
-
-        return continueRendering;
     }
 
-    [[nodiscard]] bool updateKeyboardTarget(Widgets::Widget *newTargetWidget) noexcept {
+    void updateKeyboardTarget(Widgets::Widget *newTargetWidget) noexcept {
         if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
             newTargetWidget = nullptr;
         }
 
-        auto continueRendering = false;
         if (newTargetWidget != keyboardTargetWidget) {
             if (keyboardTargetWidget != nullptr) {
-                continueRendering |= keyboardTargetWidget->setModified(
-                    keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited())
-                );
+                keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
             }
             keyboardTargetWidget = newTargetWidget;
             if (keyboardTargetWidget != nullptr) {
-                continueRendering |= keyboardTargetWidget->setModified(
-                    keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered())
-                );
+                keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
             }
         }
-
-        return continueRendering;
-    }
-
-    [[nodiscard]] bool updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
-        Widgets::Widget *newTargetWidget =
-            currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
-
-        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
-            newTargetWidget = newTargetWidget->nextKeyboardWidget;
-        }
-
-        return updateKeyboardTarget(newTargetWidget);
-    }
-
-    [[nodiscard]] bool updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
-        Widgets::Widget *newTargetWidget =
-            currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
-
-        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
-            newTargetWidget = newTargetWidget->prevKeyboardWidget;
-        }
-
-        return updateKeyboardTarget(newTargetWidget);
     }
 
     /*! Mouse moved.
@@ -348,21 +305,17 @@ protected:
     void handleMouseEvent(MouseEvent const &event) noexcept {
         let hitbox = hitBoxTest(event.position);
 
-        auto continueRendering = updateMouseTarget(hitbox.widget);
+        updateMouseTarget(hitbox.widget);
 
         // On click change keyboard-focus to the widget if it accepts it.
         if (event.down.leftButton) {
-            continueRendering |= updateKeyboardTarget(hitbox.widget);
+            updateKeyboardTarget(hitbox.widget);
         }
 
         // Send event to target-widget.
         if (mouseTargetWidget != nullptr) {
-            continueRendering |= mouseTargetWidget->setModified(
-                mouseTargetWidget->handleMouseEvent(event)
-            );
+            mouseTargetWidget->handleMouseEvent(event);
         }
-
-        setModified(continueRendering);
     }
 
     /*! Handle keyboard event.
@@ -370,25 +323,19 @@ protected:
     * or special key that was used.
     */
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        auto continueRendering = false;
         if (keyboardTargetWidget != nullptr) {
-            continueRendering |= keyboardTargetWidget->setModified(
-                keyboardTargetWidget->handleKeyboardEvent(event)
-            );
-        }
+            keyboardTargetWidget->handleKeyboardEvent(event);
 
-        if (!continueRendering && event.type == KeyboardEvent::Type::Key) {
-            // If the widget doesn't need rendering it probably means it didn't handle the key.
-            for (let cmd : event.getCommands()) {
-                if (cmd == "gui.widget.next"_ltag) {
-                    continueRendering |= updateToNextKeyboardTarget(keyboardTargetWidget);
-                } else if (cmd == "gui.widget.prev"_ltag) {
-                    continueRendering |= updateToPrevKeyboardTarget(keyboardTargetWidget);
+        } else if (event.type == KeyboardEvent::Type::Key) {
+            // If no widgets have been selected handle the keyboard-focus changes.
+            for (let command : event.getCommands()) {
+                if (command == "gui.widget.next"_ltag) {
+                    updateToNextKeyboardTarget(nullptr);
+                } else if (command == "gui.widget.prev"_ltag) {
+                    updateToPrevKeyboardTarget(nullptr);
                 }
             }
         }
-
-        setModified(continueRendering);
     }
 
     void handleKeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {

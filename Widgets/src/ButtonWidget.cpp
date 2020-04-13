@@ -17,7 +17,8 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 {
 }
 
-bool ButtonWidget::updateAndPlaceVertices(
+void ButtonWidget::updateAndPlaceVertices(
+    cpu_utc_clock::time_point displayTimePoint,
     vspan<PipelineFlat::Vertex> &flat_vertices,
     vspan<PipelineBox::Vertex> &box_vertices,
     vspan<PipelineImage::Vertex> &image_vertices,
@@ -26,11 +27,11 @@ bool ButtonWidget::updateAndPlaceVertices(
     auto continueRendering = false;
 
     // Draw something.
-    R16G16B16A16SFloat cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
+    vec cornerShapes = { 10.0, 10.0, -10.0, 0.0 };
 
-    R16G16B16A16SFloat backgroundColor;
-    R16G16B16A16SFloat labelColor;
-    R16G16B16A16SFloat borderColor;
+    vec backgroundColor;
+    vec labelColor;
+    vec borderColor;
     float shadowSize;
 
     if (value) {
@@ -66,7 +67,7 @@ bool ButtonWidget::updateAndPlaceVertices(
     }
 
 
-    if (modified()) {
+    if (renderTrigger.check(displayTimePoint) >= 2) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 
         labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, numeric_cast<float>(box.width.value()));
@@ -93,34 +94,34 @@ bool ButtonWidget::updateAndPlaceVertices(
         box.currentRectangle()
     );
 
-    continueRendering |= Widget::updateAndPlaceVertices(flat_vertices, box_vertices, image_vertices, sdf_vertices);
-    return continueRendering;
+    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
 }
 
-bool ButtonWidget::handleCommand(string_ltag command) noexcept {
+void ButtonWidget::handleCommand(string_ltag command) noexcept {
     if (!enabled) {
-        return false;
+        return;
     }
 
     if (command == "gui.activate"_ltag) {
-        return assign_and_compare(value, !value);
-    }
-
-    return false;
-}
-
-bool ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
-    auto continueRendering = Widget::handleMouseEvent(event);
-
-    if (enabled) {
-        continueRendering |= assign_and_compare(pressed, static_cast<bool>(event.down.leftButton));
-
-        if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            continueRendering |= handleCommand("gui.activate"_ltag);
+        if (assign_and_compare(value, !value)) {
+            ++renderTrigger;
         }
     }
+    Widget::handleCommand(command);
+}
 
-    return continueRendering;
+void ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
+    Widget::handleMouseEvent(event);
+
+    if (enabled) {
+        if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
+            ++renderTrigger;
+        }
+
+        if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+            handleCommand("gui.activate"_ltag);
+        }
+    }
 }
 
 HitBox ButtonWidget::hitBoxTest(vec position) noexcept

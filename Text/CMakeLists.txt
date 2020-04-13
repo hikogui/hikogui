@@ -6,6 +6,8 @@ include(GoogleTest)
 set(TTauri_Text_srcs
     src/globals.cpp
     src/UnicodeData.cpp
+    src/UnicodeBidi.cpp
+    src/UnicodeRanges.cpp
     src/Font.cpp
     src/TrueTypeFont.cpp
     src/FontBook.cpp

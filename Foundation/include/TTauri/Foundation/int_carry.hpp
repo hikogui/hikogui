@@ -89,6 +89,36 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
 }
 
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+constexpr std::pair<T, T> wide_multiply(T a, T b) noexcept
+{
+    if constexpr (sizeof(T) == 1) {
+        uint16_t r = static_cast<uint16_t>(a) * static_cast<uint16_t>(b);
+        return { static_cast<uint8_t>(r), static_cast<uint8_t>(r >> 8) };
+
+    } else if constexpr (sizeof(T) == 2) {
+        uint32_t r = static_cast<uint32_t>(a) * static_cast<uint32_t>(b);
+        return { static_cast<uint16_t>(r), static_cast<uint16_t>(r >> 16) };
+
+    } else if constexpr (sizeof(T) == 4) {
+        uint64_t r = static_cast<uint64_t>(a) * static_cast<uint64_t>(b);
+        return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
+
+    } else if constexpr (sizeof(T) == 8) {
+#if COMPILER == CC_MSVC
+        uint64_t hi = 0;
+        uint64_t lo = _umul128(a, b, &hi);
+        return { lo, hi }; 
+
+#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
+        auto r = static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b);
+        return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
+#else
+#error "Not implemented"
+#endif
+    }
+}
+
+template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 0) noexcept
 {
     if constexpr (sizeof(T) == 1) {

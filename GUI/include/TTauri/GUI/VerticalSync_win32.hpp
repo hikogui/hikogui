@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "TTauri/Foundation/cpu_utc_clock.hpp"
 #include <gsl/gsl>
 #include <thread>
 
@@ -23,17 +24,29 @@ class VerticalSync_win32 {
 
     std::thread verticalSyncThreadID;
     bool stop = false;
-    std::function<void(void *)> callback;
+    std::function<void(void *,cpu_utc_clock::time_point)> callback;
     void *callbackData;
+
+    cpu_utc_clock::time_point previousFrameTimestamp;
+    std::array<cpu_utc_clock::duration,15> frameDurationData;
+    size_t frameDurationDataCounter = 0;
 
     void openAdapter() noexcept;
     void closeAdapter() noexcept;
-    void wait() noexcept;
+
+    /** Returns the median duration between two frames.
+     */
+    [[nodiscard]] cpu_utc_clock::duration averageFrameDuration(cpu_utc_clock::time_point frameTimestamp) noexcept;
+
+    /** Waits for vertical-sync
+     * @return Timestamp when the current frame will be displayed.
+     */
+    [[nodiscard]] cpu_utc_clock::time_point wait() noexcept;
 
     void verticalSyncThread() noexcept;
 
 public:
-    VerticalSync_win32(std::function<void(void *)> callback, void *callbackData) noexcept;
+    VerticalSync_win32(std::function<void(void *,cpu_utc_clock::time_point)> callback, void *callbackData) noexcept;
     ~VerticalSync_win32();
 };
 

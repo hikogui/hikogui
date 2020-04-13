@@ -30,15 +30,16 @@ public:
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
-    [[nodiscard]] bool updateAndPlaceVertices(
+    void updateAndPlaceVertices(
+        cpu_utc_clock::time_point displayTimePoint,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept override;
 
-    [[nodiscard]] bool handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
-    [[nodiscard]] bool handleCommand(string_ltag command) noexcept override;
+    void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
+    void handleCommand(string_ltag command) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept;
     [[nodiscard]] bool acceptsFocus() noexcept override {

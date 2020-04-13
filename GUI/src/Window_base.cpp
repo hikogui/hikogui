@@ -48,7 +48,7 @@ void Window_base::openingWindow() {
 
     std::scoped_lock lock(GUI_globals->mutex);
     state = State::NoDevice;
-    [[maybe_unused]] auto continueRendering = updateToNextKeyboardTarget(nullptr);
+    updateToNextKeyboardTarget(nullptr);
 }
 
 void Window_base::closingWindow() {

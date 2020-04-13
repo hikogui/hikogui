@@ -18,6 +18,8 @@
 #include <TTauri/Foundation/pickle.hpp>
 #include <TTauri/Foundation/vspan.hpp>
 #include <TTauri/Foundation/utils.hpp>
+#include <TTauri/Foundation/Trigger.hpp>
+#include <TTauri/Foundation/cpu_utc_clock.hpp>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -46,21 +48,13 @@ namespace TTauri::GUI::Widgets {
  * between Views.
  */
 class Widget {
-private:
-    /** Incremented when the widget's state was modified.
-    */
-    std::atomic<uint64_t> modificationRequest = 1;
-
-    /** Copied from modificationRequest before processing the modificationRequest.
-    */
-    uint64_t modificationVersion = 0;
-
-
 public:
     //! Convenient reference to the Window.
     Window &window;
 
     Widget *parent;
+
+    Trigger<cpu_utc_clock> renderTrigger;
 
     std::vector<std::unique_ptr<Widget>> children;
 
@@ -68,7 +62,7 @@ public:
     */
     Widgets::Widget *nextKeyboardWidget = nullptr;
 
-    /** The prev widget to select when pressing shift-tab.
+    /** The previous widget to select when pressing shift-tab.
      */
     Widgets::Widget *prevKeyboardWidget = nullptr;
 
@@ -121,38 +115,6 @@ public:
 
     [[nodiscard]] Device *device() const noexcept;
 
-    /** Should be called after the internal state of the widget was modified.
-    */
-    force_inline bool setModified(bool x=true) noexcept {
-        if (x) {
-            modificationRequest.fetch_add(1, std::memory_order::memory_order_relaxed);
-        }
-        return x;
-    }
-
-    /** Check if the state of the widget is modified.
-     */
-    [[nodiscard]] force_inline bool modified() noexcept {
-        let request = modificationRequest.load(std::memory_order::memory_order_acquire);
-        if (modificationVersion != request) {
-            modificationVersion = request;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /** Force all widgets to redraw themselves.
-    * This will be called when the widgets are being laid out because of
-    * window resize or widgets being added.
-    */
-    void setModifiedRecursive() noexcept {
-        setModified();
-        for (let &child: children) {
-            child->setModifiedRecursive();
-        }
-    }
-
     /** Find the widget that is under the mouse cursor.
      */
     [[nodiscard]] virtual HitBox hitBoxTest(vec position) noexcept;
@@ -176,70 +138,66 @@ public:
     * @param box_vertices Vertex buffer of the box-pipeline.
     * @param image_vertices Vertex buffer of the image-pipeline.
     * @param sdf_vertices Vertex buffer of the sdf-pipeline.
-    * @return true when a widgets is currently running an animation and wants
-    *         to change its appearance in the next frame.
     */
-    [[nodiscard]] virtual bool updateAndPlaceVertices(
+    virtual void updateAndPlaceVertices(
+        cpu_utc_clock::time_point displayTimePoint,
         vspan<PipelineFlat::Vertex> &flat_vertices,
         vspan<PipelineBox::Vertex> &box_vertices,
         vspan<PipelineImage::Vertex> &image_vertices,
         vspan<PipelineSDF::Vertex> &sdf_vertices
     ) noexcept;
 
-    /** Handle command.
-     * @return true when a widgets wants to change its appearance in the next frame.
-     */
-    [[nodiscard]] virtual bool handleCommand(string_ltag command) noexcept {
-        return false;
+    virtual void handleWindowResize() noexcept {
+        renderTrigger += std::numeric_limits<int>::max();
+        for (auto &child: children) {
+            child->handleWindowResize();
+        }
     }
+
+    /** Handle command.
+     */
+    virtual void handleCommand(string_ltag command) noexcept;
 
     /*! Handle mouse event.
     * Called by the operating system to show the position and button state of the mouse.
     * This is called very often so it must be made efficient.
     * This function is also used to determine the mouse cursor.
     *
-    * @return true when a widgets wants to change its appearance in the next frame.
     */
-    [[nodiscard]] virtual bool handleMouseEvent(MouseEvent const &event) noexcept {
+    virtual void handleMouseEvent(MouseEvent const &event) noexcept {
         if (event.type == MouseEvent::Type::Entered) {
             hover = true;
-            return true;
+            ++renderTrigger;
         } else if (event.type == MouseEvent::Type::Exited) {
             hover = false;
-            return true;
-        } else {
-            return false;
+            ++renderTrigger;
         }
     }
 
     /*! Handle keyboard event.
     * Called by the operating system when editing text, or entering special keys
     *
-    * @return true when a widgets wants to change its appearance in the next frame.
     */
-    [[nodiscard]] virtual bool handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        auto continueRendering = false;
-
+    virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
         switch (event.type) {
         case KeyboardEvent::Type::Entered:
             focus = true;
-            continueRendering |= true;
+            ++renderTrigger;
             break;
 
         case KeyboardEvent::Type::Exited:
             focus = false;
-            continueRendering |= true;
+            ++renderTrigger;
             break;
 
         case KeyboardEvent::Type::Key:
             for (let command : event.getCommands()) {
-                continueRendering |= handleCommand(command);
+                handleCommand(command);
             }
             break;
 
         default:;
         }
-        return continueRendering;
     }
 
 };
