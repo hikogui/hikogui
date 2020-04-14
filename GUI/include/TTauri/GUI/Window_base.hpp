@@ -85,6 +85,15 @@ public:
      */
     Size size = Size::Normal;
 
+    //! The minimum window extent as calculated by laying out all the widgets.
+    ivec minimumWindowExtent;
+
+    //! The maximum window extent as calculated by laying out all the widgets.
+    ivec maximumWindowExtent;
+
+    //! The current window extent as set by the GPU library.
+    ivec currentWindowExtent;
+
     std::shared_ptr<WindowDelegate> delegate;
 
     std::string title;
@@ -233,15 +242,6 @@ protected:
      * not figure this out by itself.
      */
     irect OSWindowRectangle;
-
-    //! The minimum window extent as calculated by laying out all the widgets.
-    ivec minimumWindowExtent;
-
-    //! The maximum window extent as calculated by laying out all the widgets.
-    ivec maximumWindowExtent;
-
-    //! The current window extent as set by the GPU library.
-    ivec currentWindowExtent;
 
     /*! Called when the GPU library has changed the window size.
      */

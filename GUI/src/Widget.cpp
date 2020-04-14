@@ -16,15 +16,10 @@ Device *Widget::device() const noexcept
     return device;
 }
 
-void Widget::updateAndPlaceVertices(
-    cpu_utc_clock::time_point displayTimePoint,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+void Widget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     for (auto &child : children) {
-        child->updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+        child->draw(drawContext, displayTimePoint);
     }
 }
 

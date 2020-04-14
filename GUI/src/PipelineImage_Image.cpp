@@ -35,13 +35,13 @@ irect Image::indexToRect(int const pageIndex) const noexcept
     return irect::p1p2(p1, p2);
 }
 
-static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, const ImageLocation &location)
+static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, mat transform, rect clippingRectangle)
 {
-    auto p = location.transform * vec::point(x, y);
-    return {p, vec{width, height}, location.clippingRectangle.contains(p)};
+    auto p = transform * vec::point(x, y);
+    return {p, vec{width, height}, clippingRectangle.contains(p)};
 }
 
-void Image::calculateVertexPositions(const ImageLocation &location)
+void Image::calculateVertexPositions(mat transform, rect clippingRectangle)
 {
     tmpVertexPositions.clear();
 
@@ -52,16 +52,16 @@ void Image::calculateVertexPositions(const ImageLocation &location)
 
     for (int y = 0; y < extent.y(); y += Page::height) {
         for (int x = 0; x < extent.x(); x += Page::width) {
-            tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, Page::height, location));
+            tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, Page::height, transform, clippingRectangle));
         }
-        tmpVertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, Page::height, location));
+        tmpVertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, Page::height, transform, clippingRectangle));
     }
 
     int const y = extent.y();
     for (int x = 0; x < extent.x(); x += Page::width) {
-        tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, lastHeight, location));
+        tmpVertexPositions.push_back(calculatePosition(x, y, Page::width, lastHeight, transform, clippingRectangle));
     }
-    tmpVertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, lastHeight, location));
+    tmpVertexPositions.push_back(calculatePosition(extent.x(), y, lastWidth, lastHeight, transform, clippingRectangle));
 }
 
 /** Places vertices.
@@ -74,7 +74,7 @@ void Image::calculateVertexPositions(const ImageLocation &location)
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(int const index, const ImageLocation &location, vspan<Vertex> &vertices) const {
+void Image::placePageVertices(vspan<Vertex> &vertices, int const index, rect clippingRectangle) const {
     let page = pages.at(index);
 
     if (page.isFullyTransparent()) {
@@ -102,10 +102,10 @@ void Image::placePageVertices(int const index, const ImageLocation &location, vs
     let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
     let atlasRect = rect{vec{atlasPosition}, e4};
 
-    vertices.emplace_back(location, p1, atlasRect.corner<0>(atlasPosition.z()));
-    vertices.emplace_back(location, p2, atlasRect.corner<1>(atlasPosition.z()));
-    vertices.emplace_back(location, p3, atlasRect.corner<2>(atlasPosition.z()));
-    vertices.emplace_back(location, p4, atlasRect.corner<3>(atlasPosition.z()));
+    vertices.emplace_back(p1, atlasRect.corner<0>(atlasPosition.z()), clippingRectangle);
+    vertices.emplace_back(p2, atlasRect.corner<1>(atlasPosition.z()), clippingRectangle);
+    vertices.emplace_back(p3, atlasRect.corner<2>(atlasPosition.z()), clippingRectangle);
+    vertices.emplace_back(p4, atlasRect.corner<3>(atlasPosition.z()), clippingRectangle);
 }
 
 /*! Place vertices for this image.
@@ -114,12 +114,12 @@ void Image::placePageVertices(int const index, const ImageLocation &location, vs
 * \param position The position (x, y) from the left-top of the window in pixels. Z equals depth.
 * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
-void Image::placeVertices(const ImageLocation &location, vspan<Vertex> &vertices)
+void Image::placeVertices(vspan<Vertex> &vertices, mat transform, rect clippingRectangle)
 {
-    calculateVertexPositions(location);
+    calculateVertexPositions(transform, clippingRectangle);
 
     for (int index = 0; index < to_signed(pages.size()); index++) {
-        placePageVertices(index, location, vertices);
+        placePageVertices(vertices, index, clippingRectangle);
     }
 }
 

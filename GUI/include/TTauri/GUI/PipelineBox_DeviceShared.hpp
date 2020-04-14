@@ -18,6 +18,7 @@ template<typename T> struct PixelMap;
 namespace TTauri::GUI::PipelineBox {
 
 struct Image;
+struct Vertex;
 
 struct DeviceShared final {
     Device const &device;

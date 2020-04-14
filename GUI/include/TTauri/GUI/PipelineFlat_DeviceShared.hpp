@@ -42,8 +42,6 @@ struct DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    static void placeVerticesBox(vspan<Vertex> &vertices, rect box, R16G16B16A16SFloat color, rect clippingRectangle, float depth) noexcept;
-
 private:
     void buildShaders();
     void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);

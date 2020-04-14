@@ -146,6 +146,15 @@ public:
         return corner<I>().z(numeric_cast<float>(z));
     }
 
+    [[nodiscard]] force_inline vec p1() const noexcept {
+        return corner<0>();
+    }
+
+    [[nodiscard]] force_inline vec p2() const noexcept {
+        return corner<3>();
+    }
+
+
     /** Get vector from origin to the bottom-left corner
     *
     * @return The homogeneous coordinate of the bottom-left corner.

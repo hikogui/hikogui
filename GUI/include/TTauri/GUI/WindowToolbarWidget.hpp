@@ -28,13 +28,7 @@ public:
     WindowToolbarWidget(WindowToolbarWidget &&) = delete;
     WindowToolbarWidget &operator=(WindowToolbarWidget &&) = delete;
 
-    void updateAndPlaceVertices(
-        cpu_utc_clock::time_point displayTimePoint,
-        vspan<PipelineFlat::Vertex> &flat_vertices,
-        vspan<PipelineBox::Vertex> &box_vertices,
-        vspan<PipelineImage::Vertex> &image_vertices,
-        vspan<PipelineSDF::Vertex> &sdf_vertices
-    ) noexcept override;
+    void draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 };

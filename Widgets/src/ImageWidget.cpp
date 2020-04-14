@@ -50,13 +50,11 @@ void ImageWidget::drawBackingImage() noexcept
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);
 }
 
-void ImageWidget::updateAndPlaceVertices(
-    cpu_utc_clock::time_point displayTimePoint,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+void ImageWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    auto context = drawContext;
+    context.clippingRectangle = box.currentRectangle();
+
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 
     auto vulkanDevice = device();
@@ -67,16 +65,13 @@ void ImageWidget::updateAndPlaceVertices(
 
     let origin = vec{backingImage->extent} * vec{-0.5};
 
-    GUI::PipelineImage::ImageLocation location;
     let O = mat::T(origin);
     let R = mat::R(rotation);
     let T = mat::T(box.currentOffset(elevation));
-    location.transform = T * R * O;
-    location.clippingRectangle = box.currentRectangle();
+    context.transform = T * R * O;
+    context.drawImage(*backingImage);
 
-    backingImage->placeVertices(location, image_vertices);
-
-    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    Widget::draw(drawContext, displayTimePoint);
 }
 
 }

@@ -9,6 +9,7 @@
 #include "TTauri/GUI/PipelineFlat.hpp"
 #include "TTauri/GUI/PipelineBox.hpp"
 #include "TTauri/GUI/PipelineSDF.hpp"
+#include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
@@ -297,13 +298,14 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
 
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
-    widget->updateAndPlaceVertices(
-        displayTimePoint,
-        flatPipeline->vertexBufferData.clear(),
-        boxPipeline->vertexBufferData.clear(),
-        imagePipeline->vertexBufferData.clear(),
-        SDFPipeline->vertexBufferData.clear()
+    auto drawContext = DrawContext(
+        reinterpret_cast<Window &>(*this),
+        flatPipeline->vertexBufferData,
+        boxPipeline->vertexBufferData,
+        imagePipeline->vertexBufferData,
+        SDFPipeline->vertexBufferData
     );
+    widget->draw(drawContext, displayTimePoint);
 
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
