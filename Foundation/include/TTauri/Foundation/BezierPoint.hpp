@@ -104,15 +104,9 @@ struct BezierPoint {
 
     /** Transform the point.
      */
-    inline BezierPoint &operator*=(mat const &rhs) noexcept {
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    inline BezierPoint &operator*=(M const &rhs) noexcept {
         p = rhs * p;
-        return *this;
-    }
-
-    /** Translate the point.
-     */
-    inline BezierPoint &operator+=(vec rhs) noexcept {
-        p = rhs + p;
         return *this;
     }
 
@@ -122,14 +116,9 @@ struct BezierPoint {
 
     /** Transform the point.
     */
-    [[nodiscard]] friend BezierPoint operator*(mat const &lhs, BezierPoint const &rhs) noexcept {
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    [[nodiscard]] friend BezierPoint operator*(M const &lhs, BezierPoint const &rhs) noexcept {
         return { lhs * rhs.p, rhs.type };
-    }
-
-    /** Translate the point.
-    */
-    [[deprecated]] [[nodiscard]] friend BezierPoint operator+(vec lhs, BezierPoint const &rhs) noexcept {
-        return { lhs + rhs.p, rhs.type };
     }
 };
 

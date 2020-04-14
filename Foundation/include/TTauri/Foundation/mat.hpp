@@ -34,6 +34,93 @@ public:
     force_inline mat(vec col0, vec col1, vec col2, vec col3) noexcept :
         col0(col0), col1(col1), col2(col2), col3(col3) {}
 
+    /** Optimized scale matrix.
+    */
+    struct S {
+        vec s;
+
+        explicit S(vec rhs) noexcept :
+            s(rhs) { ttauri_assume(rhs.is_point()); }
+
+        S(float x, float y, float z=0.0f) noexcept :
+            s(x, y, z, 1.0f) {}
+
+        /** Create a scaling matrix.
+        */
+        operator mat () const noexcept {
+            ttauri_assume(s.is_point());
+            let tmp = _mm_setzero_ps();
+            let col0 = _mm_insert_ps(tmp, s, 0b00'00'1110);
+            let col1 = _mm_insert_ps(tmp, s, 0b01'01'1101);
+            let col2 = _mm_insert_ps(tmp, s, 0b10'10'1011);
+            let col3 = _mm_insert_ps(tmp, s, 0b11'11'0111);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] float scaleX() const noexcept {
+            return s.x();
+        }
+
+        [[nodiscard]] friend mat::S operator*(mat::S const &lhs, mat::S const &rhs) noexcept {
+            return mat::S{lhs.s * rhs.s};
+        }
+
+        [[nodiscard]] friend vec operator*(mat::S const &lhs, vec const &rhs) noexcept {
+            return vec{lhs.s * rhs};
+        }
+    };
+
+    /** Optimized translate matrix.
+    */
+    struct T {
+        vec t;
+
+        explicit T(vec rhs) noexcept :
+            t(rhs) { ttauri_assume(rhs.is_vector()); }
+
+        T(float x, float y, float z=0.0f) noexcept :
+            t(x, y, z) {}
+
+        operator mat () const noexcept {
+            ttauri_assume(t.is_vector());
+            let col0 = _mm_set_ss(1.0f);
+            let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
+            let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
+            let col3 = _mm_insert_ps(t, col0, 0b00'11'0000);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] float scaleX() const noexcept {
+            return 1.0f;
+        }
+
+        [[nodiscard]] friend mat::T operator*(mat::T const &lhs, mat::T const &rhs) noexcept {
+            return mat::T{lhs.t + rhs.t};
+        }
+
+        [[nodiscard]] friend mat operator*(mat::T const &lhs, mat::S const &rhs) noexcept {
+            let tmp = _mm_setzero_ps();
+            let col0 = _mm_insert_ps(tmp, rhs.s, 0b00'00'1110);
+            let col1 = _mm_insert_ps(tmp, rhs.s, 0b01'01'1101);
+            let col2 = _mm_insert_ps(tmp, rhs.s, 0b10'10'1011);
+            let col3 = _mm_insert_ps(lhs.t, rhs.s, 0b11'11'0000);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] friend mat operator*(mat::S const &lhs, mat::T const &rhs) noexcept {
+            let tmp = _mm_setzero_ps();
+            let col0 = _mm_insert_ps(tmp, lhs.s, 0b00'00'1110);
+            let col1 = _mm_insert_ps(tmp, lhs.s, 0b01'01'1101);
+            let col2 = _mm_insert_ps(tmp, lhs.s, 0b10'10'1011);
+            let col3 = _mm_insert_ps(lhs.s * rhs.t, lhs.s, 0b11'11'0000);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] friend vec operator*(mat::T const &lhs, vec const &rhs) noexcept {
+            return vec{lhs.t + rhs};
+        }
+    };
+
     constexpr size_t size() noexcept { return 4; }
 
     template<size_t I>
@@ -114,6 +201,18 @@ public:
         return {lhs * rhs.col0, lhs * rhs.col1, lhs * rhs.col2, lhs * rhs.col3};
     }
 
+    /** Scale/Matrix multiplication.
+    */
+    [[nodiscard]] friend mat operator*(S const &lhs, mat const &rhs) noexcept {
+        return {lhs.s * rhs.col0, lhs.s * rhs.col1, lhs.s * rhs.col2, lhs.s * rhs.col3};
+    }
+
+    /** Translate/Matrix multiplication.
+    */
+    [[nodiscard]] friend mat operator*(T const &lhs, mat const &rhs) noexcept {
+        return {rhs.col0, rhs.col1, rhs.col2, lhs.t + rhs.col3};
+    }
+
     [[nodiscard]] friend bool operator==(mat const &lhs, mat const &rhs) noexcept {
         return lhs.col0 == rhs.col0 && lhs.col1 == rhs.col1 && lhs.col2 == rhs.col2 && lhs.col3 == rhs.col3;
     }
@@ -138,38 +237,7 @@ public:
         return {col0, col1, col2, col3};
     }
 
-    /** Create a translation matrix.
-     */
-    [[nodiscard]] static mat T(vec rhs) noexcept {
-        ttauri_assume(rhs.is_vector());
-        let col0 = _mm_set_ss(1.0f);
-        let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
-        let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
-        let col3 = _mm_insert_ps(rhs, col0, 0b00'11'0000);
-        return {col0, col1, col2, col3};
-    }
-
-    [[nodiscard]] static mat T(float x, float y, float z=0.0f) noexcept {
-        return T(vec{x, y, z});
-    }
-
-    /** Create a scaling matrix.
-     */
-    [[nodiscard]] static mat S(vec rhs) noexcept {
-        ttauri_assume(rhs.is_vector());
-        let tmp = _mm_set_ps1(1.0f);
-        let col0 = _mm_insert_ps(tmp, rhs, 0b00'00'1110);
-        let col1 = _mm_insert_ps(tmp, rhs, 0b01'01'1101);
-        let col2 = _mm_insert_ps(tmp, rhs, 0b10'10'1011);
-        let col3 = _mm_insert_ps(tmp, tmp, 0b11'11'0111);
-        return {col0, col1, col2, col3};
-    }
-
-    /** Create a 2D or 3D scaling matrix.
-    */
-    [[nodiscard]] static mat S(float x, float y, float z=1.0f) noexcept {
-        return S(vec{x, y, z});
-    }
+    
 
     /** Create a 2D shearing matrix.
     */
@@ -215,5 +283,13 @@ public:
         return lhs << to_string(rhs);
     }
 };
+
+template<typename M> struct is_mat : std::false_type {};
+template<> struct is_mat<mat> : std::true_type {};
+template<> struct is_mat<mat::T> : std::true_type {};
+template<> struct is_mat<mat::S> : std::true_type {};
+
+template<typename M>
+inline constexpr bool is_mat_v = is_mat<M>::value;
 
 }

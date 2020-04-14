@@ -38,13 +38,13 @@ void ImageWidget::drawBackingImage() noexcept
 
     // Draw something.
     let color = vec::color(0.5f, 1.0f, 0.5f);
-    let path1 = mat::T({20.0, 30.0}) * glyph;
+    let path1 = mat::T(20.0, 30.0) * glyph;
     composit(linearMap, color, path1);
 
-    let path2 = mat::T({30.0, 30.0}) * glyph;
+    let path2 = mat::T(30.0, 30.0) * glyph;
     composit(linearMap, color, path2);
 
-    let path3 = mat::T({40.0, 30.0}) * glyph;
+    let path3 = mat::T(40.0, 30.0) * glyph;
     composit(linearMap, color, path3);
 
     vulkanDevice->imagePipeline->uploadPixmapToAtlas(*backingImage, linearMap);

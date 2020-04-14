@@ -466,34 +466,29 @@ Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolera
     return r;
 }
 
-Path operator+(Path lhs, Path const &rhs) noexcept
+Path &Path::operator+=(Path const &rhs) noexcept
 {
-    return lhs += rhs;
-}
-
-Path &operator+=(Path &lhs, Path const &rhs) noexcept
-{
-    ttauri_assert(!lhs.isContourOpen());
+    ttauri_assert(!isContourOpen());
     ttauri_assert(!rhs.isContourOpen());
 
     // Left hand layer can only be open if the right hand side contains no layers.
-    ttauri_assert(!rhs.hasLayers() || !lhs.isLayerOpen());
+    ttauri_assert(!rhs.hasLayers() || !isLayerOpen());
 
-    let pointOffset = to_signed(lhs.points.size());
-    let contourOffset = to_signed(lhs.contourEndPoints.size());
+    let pointOffset = to_signed(points.size());
+    let contourOffset = to_signed(contourEndPoints.size());
 
-    lhs.layerEndContours.reserve(lhs.layerEndContours.size() + rhs.layerEndContours.size());
+    layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
     for (let [x, fillColor]: rhs.layerEndContours) {
-        lhs.layerEndContours.emplace_back(contourOffset + x, fillColor);
+        layerEndContours.emplace_back(contourOffset + x, fillColor);
     }
 
-    lhs.contourEndPoints.reserve(lhs.contourEndPoints.size() + rhs.contourEndPoints.size());
+    contourEndPoints.reserve(contourEndPoints.size() + rhs.contourEndPoints.size());
     for (let x: rhs.contourEndPoints) {
-        lhs.contourEndPoints.push_back(pointOffset + x);
+        contourEndPoints.push_back(pointOffset + x);
     }
 
-    lhs.points.insert(lhs.points.end(), rhs.points.begin(), rhs.points.end());
-    return lhs;
+    points.insert(points.end(), rhs.points.begin(), rhs.points.end());
+    return *this;
 }
 
 Path Path::centerScale(vec extent, float padding) const noexcept
@@ -521,31 +516,7 @@ Path Path::centerScale(vec extent, float padding) const noexcept
     return (mat::T(offset) * mat::S(scale, scale, 1.0f)) * *this;
 }
 
-Path operator*(mat const &lhs, Path rhs) noexcept
-{
-    return rhs *= lhs;
-}
 
-Path operator+(vec const &lhs, Path rhs) noexcept
-{
-    return rhs += lhs;
-}
-
-Path &operator*=(Path &lhs, mat const &rhs) noexcept
-{
-    for (auto &point: lhs.points) {
-        point *= rhs;
-    }
-    return lhs;
-}
-
-Path &operator+=(Path &lhs, vec const &rhs) noexcept
-{
-    for (auto &point: lhs.points) {
-        point += rhs;
-    }
-    return lhs;
-}
 
 void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &path) noexcept
 {

@@ -58,7 +58,7 @@ TEST(Mat, TranslateScale) {
         let M1 = mat::S(2.0, 2.0, 2.0);
         ASSERT_EQ(M1 * tmp, vec(4.0, 6.0, 8.0, 1.0));
 
-        let M2 = mat::T({1.0, 2.0, 3.0});
+        let M2 = mat::T(vec{1.0, 2.0, 3.0});
         ASSERT_EQ(M2 * (M1 * tmp), vec(5.0, 8.0, 11.0, 1.0));
 
         let M3 = M2 * M1;

@@ -224,19 +224,30 @@ struct Path {
     /** Center and scale a path inside the extent with padding.
      */
     [[nodiscard]] Path centerScale(vec extent, float padding=0.0) const noexcept;
+
+    Path &operator+=(Path const &rhs) noexcept;
+
+    [[nodiscard]] friend Path operator+(Path lhs, Path const &rhs) noexcept {
+        return lhs += rhs;
+    }
+
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    Path &operator*=(M const &rhs) noexcept {
+        for (auto &&point: points) {
+            point *= rhs;
+        }
+        return *this;
+    }
+
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    friend Path operator*(M const &lhs, Path rhs) noexcept {
+        return rhs *= lhs;
+    }
 };
 
-Path operator+(Path lhs, Path const &rhs) noexcept;
 
-Path &operator+=(Path &lhs, Path const &rhs) noexcept;
 
-Path operator*(mat const &lhs, Path rhs) noexcept;
 
-Path operator+(vec const &lhs, Path rhs) noexcept;
-
-Path &operator*=(Path &lhs, mat const &rhs) noexcept;
-
-Path &operator+=(Path &lhs, vec const &rhs) noexcept;
 
 /*! Composit color onto the destination image where the mask is solid.
 *

@@ -82,7 +82,7 @@ void ToolbarButtonWidget::updateAndPlaceVertices(
     }
 
     if (backingImage.image) {
-        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy10();
+        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
 
         GUI::PipelineImage::ImageLocation location;
         let T = mat::T(box.currentOffset(elevation));

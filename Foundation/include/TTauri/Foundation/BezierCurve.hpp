@@ -275,22 +275,14 @@ struct BezierCurve {
         }
     }
 
-    BezierCurve &operator+=(vec const rhs) noexcept {
-        this->P1 += rhs;
-        this->C1 += rhs;
-        this->C2 += rhs;
-        this->P2 += rhs;
-        return *this;
-    }
-
-    BezierCurve &operator*=(mat const rhs) noexcept {
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    BezierCurve &operator*=(M const rhs) noexcept {
         P1 = rhs * P1;
         C1 = rhs * C1;
         C2 = rhs * C2;
         P2 = rhs * P2;
         return *this;
     }
-
 
     /*! Return a line-segment from a curve at a certain distance.
      * \param offset positive means the parallel line will be on the starboard of the curve.
@@ -317,7 +309,8 @@ struct BezierCurve {
         }
     }
 
-    [[nodiscard]] friend BezierCurve operator*(mat const &lhs, BezierCurve const &rhs) noexcept {
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    [[nodiscard]] friend BezierCurve operator*(M const &lhs, BezierCurve const &rhs) noexcept {
         return {
             rhs.type,
             lhs * rhs.P1,
@@ -325,10 +318,6 @@ struct BezierCurve {
             lhs * rhs.C2,
             lhs * rhs.P2
         };
-    }
-
-    [[nodiscard]] friend BezierCurve operator+(BezierCurve const &lhs, vec const &rhs) noexcept {
-        return { lhs.type, lhs.P1 + rhs, lhs.C1 + rhs, lhs.C2 + rhs, lhs.P2 + rhs };
     }
 
     /*! Reverse direction of a curve.

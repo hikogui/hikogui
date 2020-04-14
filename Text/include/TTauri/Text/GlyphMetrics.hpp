@@ -70,63 +70,30 @@ struct GlyphMetrics {
 
         return advance * ligatureRatio * vec{index};
     }
+
+    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
+    GlyphMetrics &operator*=(M const &rhs) noexcept
+    {
+        let scale = rhs.scaleX();
+
+        boundingBox = rhs * boundingBox;
+        leftSideBearing *= scale; 
+        rightSideBearing *= scale;
+        advance = rhs * advance;
+        ascender *= scale;
+        descender *= scale;
+        lineGap *= scale;
+        capHeight *= scale;
+        xHeight *= scale;
+        return *this;
+    }
+
+    friend GlyphMetrics operator*(mat const &lhs, GlyphMetrics rhs) noexcept
+    {
+        return rhs *= lhs;
+    }
 };
 
-inline GlyphMetrics &operator*=(GlyphMetrics &lhs, mat const &rhs) noexcept
-{
-    let scale = rhs.scaleX();
-
-    lhs.boundingBox = rhs * lhs.boundingBox;
-    lhs.leftSideBearing *= scale; 
-    lhs.rightSideBearing *= scale;
-    lhs.advance = rhs * lhs.advance;
-    lhs.ascender *= scale;
-    lhs.descender *= scale;
-    lhs.lineGap *= scale;
-    lhs.capHeight *= scale;
-    lhs.xHeight *= scale;
-    return lhs;
-}
-
-inline GlyphMetrics &operator*=(GlyphMetrics &lhs, float const rhs) noexcept
-{
-    lhs.boundingBox *= rhs;
-    lhs.leftSideBearing *= rhs;
-    lhs.rightSideBearing *= rhs;
-    lhs.advance *= vec{rhs, rhs, 1.0f};
-    lhs.ascender *= rhs;
-    lhs.descender *= rhs;
-    lhs.lineGap *= rhs;
-    lhs.capHeight *= rhs;
-    lhs.xHeight *= rhs;
-    return lhs;
-}
-
-inline GlyphMetrics operator*(mat const &lhs, GlyphMetrics rhs) noexcept
-{
-    return rhs *= lhs;
-}
-
-inline GlyphMetrics operator*(float const lhs, GlyphMetrics rhs) noexcept
-{
-    return rhs *= lhs;
-}
-
-inline GlyphMetrics &operator+=(GlyphMetrics &lhs, vec const &rhs) noexcept
-{
-    lhs.boundingBox += rhs;
-    return lhs;
-}
-
-inline GlyphMetrics operator+(vec const &lhs, GlyphMetrics rhs) noexcept
-{
-    return rhs += lhs;
-}
-
-inline GlyphMetrics operator+(GlyphMetrics lhs, vec const &rhs) noexcept
-{
-    return lhs += rhs;
-}
 
 
 }
