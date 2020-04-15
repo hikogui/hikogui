@@ -151,7 +151,7 @@ struct BezierCurve {
 
     /** Find the distance from the point to the curve.
      */
-    [[nodiscard]] std::pair<float,float> sdf_distance(vec P) const noexcept {
+    [[nodiscard]] float sdf_distance(vec P) const noexcept {
         auto min_square_distance = std::numeric_limits<float>::max();
         auto min_t = 0.0f;
         auto min_normal = vec{0.0f, 1.0f};
@@ -169,17 +169,10 @@ struct BezierCurve {
             }
         }
 
-        let unit_normal = normalize(min_normal);
-        let unit_tangent = normalize(tangentAt(min_t));
-        let orthogonality = viktor_cross(unit_normal, unit_tangent);
-
         let tangent = tangentAt(min_t);
         let distance = std::sqrt(min_square_distance);
-
         let sdistance = viktor_cross(tangent, min_normal) < 0.0 ? distance : -distance;
-
-        // Use the original angle, for determining which side of the curve the point is.
-        return {sdistance, orthogonality};
+        return sdistance;
     }
 
     /*! Split a cubic bezier-curve into two cubic bezier-curve.
