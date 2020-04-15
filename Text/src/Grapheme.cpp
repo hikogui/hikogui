@@ -9,7 +9,7 @@ namespace TTauri::Text {
 Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     value(0)
 {
-    let codePoints_ = Text_globals->unicode_data->toNFC(codePoints);
+    let codePoints_ = unicodeData->toNFC(codePoints);
 
     switch (codePoints_.size()) {
     case 3:
@@ -34,15 +34,15 @@ Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
 }
 
 [[nodiscard]] std::u32string Grapheme::NFD() const noexcept {
-    return Text_globals->unicode_data->toNFD(static_cast<std::u32string>(*this));
+    return unicodeData->toNFD(static_cast<std::u32string>(*this));
 }
 
 [[nodiscard]] std::u32string Grapheme::NFKC() const noexcept {
-    return Text_globals->unicode_data->toNFKC(static_cast<std::u32string>(*this));
+    return unicodeData->toNFKC(static_cast<std::u32string>(*this));
 }
 
 [[nodiscard]] std::u32string Grapheme::NFKD() const noexcept {
-    return Text_globals->unicode_data->toNFKD(static_cast<std::u32string>(*this));
+    return unicodeData->toNFKD(static_cast<std::u32string>(*this));
 }
 
 

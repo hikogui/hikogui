@@ -22,7 +22,7 @@ struct BidiCharacter {
     BidiCharacter(char32_t codePoint) noexcept :
         codePoint(codePoint),
         embeddingLevel(0),
-        bidiClass(Text_globals->unicode_data->getBidiClass(codePoint)),
+        bidiClass(unicodeData->getBidiClass(codePoint)),
         origBidiClass(bidiClass) {}
 };
 
@@ -59,7 +59,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
     auto isolateLevel = 0;
     for (auto &character: context.characters) {
         // Classify each grapheme based on the first code-point.
-        character.bidiClass = Text_globals->unicode_data->getBidiClass(character.codePoint);
+        character.bidiClass = unicodeData->getBidiClass(character.codePoint);
 
         // P2. Find first L, AR or R bidi-class, ignoring isolated sections.
         switch (character.bidiClass) {

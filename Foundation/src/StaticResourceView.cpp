@@ -7,7 +7,7 @@
 namespace TTauri {
 
 StaticResourceView::StaticResourceView(std::string const &filename) :
-    _bytes(Foundation_globals->getStaticResource(filename))
+    _bytes(getStaticResource(filename))
 {
 }
 

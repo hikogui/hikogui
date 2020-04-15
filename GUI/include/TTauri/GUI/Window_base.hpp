@@ -171,7 +171,7 @@ public:
     virtual void render(cpu_utc_clock::time_point displayTimePoint) = 0;
 
     bool isClosed() {
-        std::scoped_lock lock(GUI_globals->mutex);
+        auto lock = std::scoped_lock(guiMutex);
         return state == State::NoWindow;
     }
 

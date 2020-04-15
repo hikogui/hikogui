@@ -17,6 +17,8 @@ const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
 AudioSystem_win32::AudioSystem_win32(AudioSystemDelegate *delegate) :
     AudioSystem(delegate)
 {
+    hresult_assert_or_throw(CoInitializeEx(NULL, COINIT_MULTITHREADED));
+
     hresult_assert_or_throw(CoCreateInstance(
         CLSID_MMDeviceEnumerator, NULL,
         CLSCTX_ALL, IID_IMMDeviceEnumerator,

@@ -27,7 +27,7 @@ void set_thread_name(std::string_view name)
 
 bool is_main_thread()
 {
-    return std::this_thread::get_id() == Foundation_globals->main_thread_id;
+    return std::this_thread::get_id() == mainThreadID;
 }
 
 void run_on_main_thread(std::function<void()> f)
@@ -35,8 +35,8 @@ void run_on_main_thread(std::function<void()> f)
     if (is_main_thread()) {
         return f();
 
-    } else if (Foundation_globals->main_thread_runner) {
-        Foundation_globals->main_thread_runner(f);
+    } else if (mainThreadRunner) {
+        mainThreadRunner(f);
 
     } else {
         // We could not run the thread on the main thread.

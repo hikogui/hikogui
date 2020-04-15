@@ -13,38 +13,41 @@
 
 namespace TTauri::GUI {
 
-struct GUIGlobals;
-inline GUIGlobals *GUI_globals = nullptr;
+/** Delegate for GUI related events.
+ */
+inline InstanceDelegate *guiDelegate = nullptr;
 
-struct GUIGlobals {
-private:
-    // Cannot use unique_ptr due to Instance not being a complete type.
-    Instance *_instance = nullptr;
-    InstanceDelegate *instance_delegate = nullptr;
+inline Instance *guiSystem = nullptr;
 
-public:
-    void *hInstance = nullptr;
-    int nCmdShow = 0;
+/** Windows GUI-application instance handle.
+ */
+inline void *hInstance = nullptr;
 
-    /*! Global mutex for GUI functionality.
-     */
-    std::recursive_mutex mutex;
+/** Windows GUI-application startup command.
+ */
+inline int nCmdShow = 0;
 
-    /** Global keyboard bindings.
-     */
-    KeyboardBindings keyboard_bindings;
+/*! Global mutex for GUI functionality.
+*/
+inline std::recursive_mutex guiMutex;
 
-    static constexpr uint32_t defaultNumberOfSwapchainImages = 2;
+/** Global keyboard bindings.
+*/
+inline KeyboardBindings keyboardBindings;
 
-    GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int nCmdShow);
-    ~GUIGlobals();
-    GUIGlobals(GUIGlobals const &) = delete;
-    GUIGlobals &operator=(GUIGlobals const &) = delete;
-    GUIGlobals(GUIGlobals &&) = delete;
-    GUIGlobals &operator=(GUIGlobals &&) = delete;
+inline constexpr uint32_t defaultNumberOfSwapchainImages = 2;
 
-    Instance &instance();
-};
+/** Reference counter to determine the amount of startup/shutdowns.
+ */
+inline std::atomic<uint64_t> startupCount = 0;
+
+/** Startup the GUI library.
+ */
+void startup();
+
+/** Shutdown the GUI library.
+*/
+void shutdown();
 
 }
 

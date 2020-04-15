@@ -12,36 +12,44 @@ namespace TTauri {
 using namespace std;
 
 Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance, int nCmdShow) :
-    delegate(applicationDelegate),
-    i_foundation(std::this_thread::get_id(), applicationDelegate->configuration(arguments), applicationDelegate->applicationName(), URL::urlFromResourceDirectory() / "tzdata"),
-#if defined(BUILD_TTAURI_AUDIO)
-    i_audio(this),
-#endif
-#if defined(BUILD_TTAURI_GUI)
-    i_text(),
-#if OPERATING_SYSTEM == OS_WINDOWS
-    i_gui(this, hInstance, nCmdShow),
-#else
-    i_gui(this),
-#endif
-    i_widgets(),
-#endif
-    i_dummy()
+    delegate(applicationDelegate)
 {
     ttauri_assert(delegate);
-    ttauri_assert(_application == nullptr);
-    _application = this;
 
-    LOG_AUDIT("Starting application '{}'.", Foundation_globals->applicationName);
+    TTauri::applicationName = applicationDelegate->applicationName();
+    TTauri::configuration = applicationDelegate->configuration(arguments);
+    TTauri::startup();
+
+#if defined(BUILD_TTAURI_AUDIO)
+    TTauri::Audio::audioDelegate = this;
+    TTauri::Audio::startup();
+#endif
+
+#if defined(BUILD_TTAURI_GUI)
+    TTauri::Text::startup();
+#if OPERATING_SYSTEM == OS_WINDOWS
+    TTauri::GUI::hInstance = hInstance;
+    TTauri::GUI::nCmdShow = nCmdShow;
+#endif
+    TTauri::GUI::guiDelegate = this;
+    TTauri::GUI::startup();
+    TTauri::GUI::Widgets::startup();
+#endif
+    LOG_AUDIT("Starting application '{}'.", applicationName);
 }
 
 Application_base::~Application_base()
 {
+#if defined(BUILD_TTAURI_GUI)
+    TTauri::GUI::Widgets::shutdown();
+    TTauri::GUI::shutdown();
+    TTauri::Text::shutdown();
+#endif
+#if defined(BUILD_TTAURI_AUDIO)
+    TTauri::Audio::shutdown();
+#endif
+    TTauri::shutdown();
     LOG_AUDIT("Stopping application.");
-
-    // Application should be destructed only once.
-    ttauri_assert(_application == this);
-    _application = nullptr;
 }
 
 bool Application_base::startingLoop()

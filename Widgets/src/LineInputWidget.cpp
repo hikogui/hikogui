@@ -106,7 +106,7 @@ void LineInputWidget::handleCommand(string_ltag command) noexcept
     }
 
     // This lock is held during rendering, only update the field when holding this lock.
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     if (command == "text.edit.paste"_ltag) {
         field.handlePaste(window.getTextFromClipboard());
@@ -133,7 +133,7 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     }
 
     // This lock is held during rendering, only update the field when holding this lock.
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:

@@ -94,10 +94,10 @@ public:
     {
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
-        GUI_globals->instance().initialize();
-        GUI_globals->instance().addWindow<Window>(myWindowDelegate, "Hello World 1");
+        guiSystem->initialize();
+        guiSystem->addWindow<Window>(myWindowDelegate, "Hello World 1");
 
-        Audio_globals->audioSystem().initialize();
+        audioSystem->initialize();
         return true;
     }
 

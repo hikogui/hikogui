@@ -34,7 +34,7 @@ Window_base::~Window_base()
 
 void Window_base::initialize()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     widget = std::make_unique<Widgets::WindowWidget>(*static_cast<Window *>(this));
 
@@ -46,7 +46,7 @@ void Window_base::openingWindow() {
     assert(thisWindow);
     delegate->openingWindow(*thisWindow);
 
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
     state = State::NoDevice;
     updateToNextKeyboardTarget(nullptr);
 }
@@ -56,13 +56,13 @@ void Window_base::closingWindow() {
     assert(thisWindow);
     delegate->closingWindow(*thisWindow);
 
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
     state = State::NoWindow;
 }
 
 void Window_base::setDevice(Device *newDevice)
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     if (device) {
         state = State::DeviceLost;

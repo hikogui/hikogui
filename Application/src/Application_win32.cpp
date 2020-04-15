@@ -47,7 +47,7 @@ void Application_win32::lastWindowClosed()
         // Let the application have a chance to open new windows from the main thread.
         delegate->lastWindowClosed();
 
-        if (GUI::GUI_globals->instance().getNumberOfWindows() == 0) {
+        if (GUI::guiSystem->getNumberOfWindows() == 0) {
             LOG_INFO("Application quiting due to all windows having been closed.");
             PostQuitMessage(0);
         }
@@ -76,7 +76,7 @@ int Application_win32::loop()
         return 0;
     }
 
-    Foundation_globals->main_thread_runner = [=](std::function<void()> f) {
+    mainThreadRunner = [=](std::function<void()> f) {
         return this->runOnMainThread(f);
     };
 
@@ -95,8 +95,7 @@ int Application_win32::loop()
         DispatchMessage(&msg);
     }
 
-    Foundation_globals->main_thread_runner = {};
-
+    mainThreadRunner = {};
     return 0;
 }
 

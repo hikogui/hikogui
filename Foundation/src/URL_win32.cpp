@@ -54,7 +54,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     }
 
     let base_localAppData = URL::urlFromWPath(wchar_localAppData);
-    return base_localAppData / Foundation_globals->applicationName;
+    return base_localAppData / applicationName;
 }
 
 URL URL::urlFromSystemFontDirectory() noexcept

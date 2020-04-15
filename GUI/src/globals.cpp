@@ -3,6 +3,7 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Instance.hpp"
+#include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
 #include "shaders/PipelineImage.vert.spv.inl"
@@ -17,47 +18,47 @@
 
 namespace TTauri::GUI {
 
-GUIGlobals::GUIGlobals(InstanceDelegate *instance_delegate, void *hInstance, int nCmdShow) :
-    instance_delegate(instance_delegate), hInstance(hInstance), nCmdShow(nCmdShow)
-{
-    ttauri_assert(Foundation_globals != nullptr);
-    ttauri_assert(GUI_globals == nullptr);
-    GUI_globals = this;
 
-    Foundation_globals->addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
-    Foundation_globals->addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
+void startup()
+{
+    if (startupCount.fetch_add(1) != 0) {
+        // The library has already been initialized.
+        return;
+    }
+
+    TTauri::startup();
+    TTauri::Text::startup();
+    LOG_AUDIT("TTauri::GUI startup");
+
+    addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
+    addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
+    addStaticResource(PipelineFlat_vert_spv_filename, PipelineFlat_vert_spv_bytes);
+    addStaticResource(PipelineFlat_frag_spv_filename, PipelineFlat_frag_spv_bytes);
+    addStaticResource(PipelineBox_vert_spv_filename, PipelineBox_vert_spv_bytes);
+    addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
+    addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
+    addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
 
     try {
-        keyboard_bindings.loadSystemBindings();
+        keyboardBindings.loadSystemBindings();
     } catch (error &e) {
         LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
     }
+
+    guiSystem = new Instance(guiDelegate);
 }
 
-GUIGlobals::~GUIGlobals()
+void shutdown()
 {
-    delete _instance;
-
-    ttauri_assert(GUI_globals == this);
-    GUI_globals = nullptr;
-}
-
-Instance &GUIGlobals::instance()
-{
-    if (_instance == nullptr) {
-        let lock = std::scoped_lock(mutex);
-        if (_instance == nullptr) {
-            ttauri_assert(instance_delegate != nullptr);
-            _instance = new Instance(instance_delegate);
-        }
+    if (startupCount.fetch_sub(1) != 1) {
+        // This is not the last instantiation.
+        return;
     }
-    return *_instance;
+    LOG_AUDIT("TTauri::GUI shutdown");
+
+    delete guiSystem;
+    TTauri::Text::shutdown();
+    TTauri::shutdown();
 }
 
 }

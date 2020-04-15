@@ -12,7 +12,7 @@ using namespace gsl;
 
 Device *Instance_base::findBestDeviceForWindow(Window const &window)
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     int bestScore = -1;
     Device *bestDevice = nullptr;
@@ -40,7 +40,7 @@ Device *Instance_base::findBestDeviceForWindow(Window const &window)
 
 ssize_t Instance_base::getNumberOfWindows()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ssize_t numberOfWindows = 0;
     for (const auto &device: devices) {

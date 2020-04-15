@@ -7,25 +7,37 @@
 
 namespace TTauri::Text {
 
-TextGlobals::TextGlobals()
+void startup()
 {
-    ttauri_assert(Foundation_globals != nullptr);
-    ttauri_assert(Text_globals == nullptr);
-    Text_globals = this;
+    if (startupCount.fetch_add(1) != 0) {
+        // The library has already been initialized.
+        return;
+    }
 
-    Foundation_globals->addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
-    unicode_data = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
+    TTauri::startup();
+    LOG_AUDIT("TTauri::Text startup");
 
-    font_book = std::make_unique<FontBook>(std::vector<URL>{
+    addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
+
+    unicodeData = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
+
+    fontBook = new FontBook(std::vector<URL>{
         URL::urlFromSystemFontDirectory()
     });
 }
 
-TextGlobals::~TextGlobals()
+void shutdown()
 {
-    ttauri_assert(Text_globals == this);
-    Text_globals = nullptr;
-}
+    if (startupCount.fetch_sub(1) != 1) {
+        // This is not the last instantiation.
+        return;
+    }
+    LOG_AUDIT("TTauri::Text shutdown");
 
+    unicodeData.release();
+    delete fontBook;
+
+    TTauri::shutdown();
+}
 
 }

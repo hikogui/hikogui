@@ -19,7 +19,7 @@ public:
     Instance_vulkan_win32 &operator=(Instance_vulkan_win32 &&) = delete;
 
     vk::ResultValueType<vk::SurfaceKHR>::type createWin32SurfaceKHR(const vk::Win32SurfaceCreateInfoKHR& createInfo) const {
-        std::scoped_lock lock(GUI_globals->mutex);
+        auto lock = std::scoped_lock(guiMutex);
         return intrinsic.createWin32SurfaceKHR(createInfo);
     }
 };
