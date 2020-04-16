@@ -64,13 +64,14 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
     }
 }
 
-void WindowToolbarWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void WindowToolbarWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto context = mat::T(0.0, 0.0, elevation) * drawContext;
-    context.clippingRectangle = box.currentRectangle();
+    auto context = drawContext;
+
+    let rectangle = rect{vec{0.0, 0.0}, box.currentExtent()};
 
     context.fillColor = backgroundColor;
-    context.drawFilledQuad(context.clippingRectangle);
+    context.drawFilledQuad(rectangle);
 
     Widget::draw(drawContext, displayTimePoint);
 }

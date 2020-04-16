@@ -30,7 +30,7 @@ public:
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
-    void draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
     void handleCommand(string_ltag command) noexcept override;

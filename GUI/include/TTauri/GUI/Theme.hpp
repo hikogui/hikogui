@@ -197,4 +197,6 @@ public:
     //TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 };
 
+inline Theme theme;
+
 }

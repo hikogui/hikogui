@@ -29,10 +29,11 @@ class ShapedText {
         std::vector<AttributedGlyphLine>::const_iterator,
         AttributedGlyphLine::const_iterator>;
 
-    vec extent;
     std::vector<AttributedGlyphLine> lines;
 
 public:
+    vec extent;
+
     ShapedText() noexcept :
         extent(0.0f, 0.0f), lines() {}
     ShapedText(ShapedText const &other) = default;

@@ -53,11 +53,8 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-void ToolbarButtonWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto context = drawContext;
-    context.clippingRectangle = box.currentRectangle();
-
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,
         box.currentExtent(),
@@ -72,20 +69,22 @@ void ToolbarButtonWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_poi
         ++renderTrigger;
     }
 
-    context.transform = mat::T(0.0, 0.0, elevation);
     if (pressed) {
+        auto context = drawContext;
         context.fillColor = pressedBackgroundColor;
-        context.drawFilledQuad(context.clippingRectangle);
+        context.drawFilledQuad(rect{vec{}, box.currentExtent()});
 
     } else if (hover && enabled) {
+        auto context = drawContext;
         context.fillColor = hoverBackgroundColor;
-        context.drawFilledQuad(context.clippingRectangle);
+        context.drawFilledQuad(rect{vec{}, box.currentExtent()});
     }
 
     if (backingImage.image) {
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
 
-        context.transform = mat::T(box.currentOffset(elevation)) * mat::S(currentScale);
+        auto context = drawContext;
+        context.transform = context.transform * mat::S(currentScale);
         context.drawImage(*(backingImage.image));
 
         if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/attributes.hpp"
 
 namespace TTauri {
 
@@ -211,6 +212,41 @@ public:
             (((rhs.xyxy() <= v) & 0b1100) == 0b1100);
     }
 
+    [[nodiscard]] vec align(vec extent, Alignment alignment) const noexcept {
+        float x;
+        if (alignment == HorizontalAlignment::Left) {
+            x = p1().x();
+
+        } else if (alignment == HorizontalAlignment::Right) {
+            x = p2().x() - extent.width();
+
+        } else if (alignment == HorizontalAlignment::Center) {
+            x = (p1().x() + (width() * 0.5f)) - (extent.width() * 0.5f);
+
+        } else {
+            no_default;
+        }
+
+        float y;
+        if (alignment == VerticalAlignment::Bottom) {
+            y = p1().y();
+
+        } else if (alignment == VerticalAlignment::Top) {
+            y = p2().y() - extent.height();
+
+        } else if (alignment == VerticalAlignment::Middle) {
+            y = (p1().y() + (height() * 0.5f)) - (extent.height() * 0.5f);
+
+        } else if (alignment == VerticalAlignment::Base) {
+            y = (p1().y() + (height() * 0.5f)) - (extent.height() * 0.5f);
+
+        } else {
+            no_default;
+        }
+
+        return vec{x, y};
+    }
+
     [[nodiscard]] friend bool operator==(rect const &lhs, rect const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
@@ -264,6 +300,18 @@ public:
         let _rr00 = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(0,0,1,1))};
         return static_cast<__m128>((lhs.v - _00rr) + _rr00);
     }
+
+    /** Shrink the rectangle for the same amount in all directions.
+    * @param lhs The original rectangle.
+    * @param rhs How much should be added on each side of the rectangle,
+    *            this value may be zero or negative.
+    * @return A new rectangle shrank on each side.
+    */
+    [[nodiscard]] friend rect shrink(rect const &lhs, float rhs) noexcept {
+        return expand(lhs, -rhs);
+    }
+
+    
 };
 
 }

@@ -9,6 +9,7 @@
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/GUI/PipelineImage_Backing.inl"
 #include "TTauri/GUI/DrawContext.hpp"
+#include "TTauri/GUI/Theme.hpp"
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/PNG.hpp"

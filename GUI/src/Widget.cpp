@@ -7,7 +7,7 @@
 namespace TTauri::GUI::Widgets {
 
 Widget::Widget(Window &window, Widget *parent) noexcept :
-    window(window), parent(parent), renderTrigger(&window.renderTrigger), elevation(parent ? parent->elevation + 0.001f : 0.0f) {}
+    window(window), parent(parent), renderTrigger(&window.renderTrigger), elevation(parent ? parent->elevation + 1.0f : 0.0f) {}
 
 Device *Widget::device() const noexcept
 {
@@ -16,10 +16,22 @@ Device *Widget::device() const noexcept
     return device;
 }
 
-void Widget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    constexpr float elevationToDepth = 0.01f;
+
+    let offset = box.currentOffset(elevation * elevationToDepth);
+
+    auto childContext = drawContext;
     for (auto &child : children) {
-        child->draw(drawContext, displayTimePoint);
+        let childRectangle = child->box.currentRectangle();
+
+        let relativeOffset = childRectangle.offset(child->elevation * elevationToDepth) - offset;
+        let translation = mat::T(relativeOffset);
+
+        childContext.clippingRectangle = childRectangle;
+        childContext.transform = translation * drawContext.transform;
+        child->draw(childContext, displayTimePoint);
     }
 }
 

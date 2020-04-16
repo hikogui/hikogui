@@ -20,10 +20,9 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
 {
 }
 
-void LineInputWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
-    context.clippingRectangle = expand(box.currentRectangle(), 10.0);
 
     // Draw something.
     context.cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
@@ -43,10 +42,13 @@ void LineInputWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point d
     }
 
     context.color = vec{1.0, 1.0, 1.0, 1.0};
-    context.transform = mat::T(0.0, 0.0, elevation);
-    context.drawBox(box.currentRectangle());
 
-    auto textRectangle = expand(box.currentRectangle(), -5.0f);
+    let padding = 5.0f;
+    let inputFieldRectangle = shrink(rect{vec{}, box.currentExtent()}, padding);
+    context.drawBox(inputFieldRectangle);
+
+    let textRectangle = shrink(inputFieldRectangle, 2.0);
+
     if (renderTrigger.check(displayTimePoint) >= 2) {
         field.setExtent(textRectangle.extent());
         leftToRightCaret = field.leftToRightCaret();
@@ -66,11 +68,9 @@ void LineInputWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point d
         lastUpdateTimePoint = displayTimePoint;
     }
 
-    context.clippingRectangle = box.currentRectangle();
-    context.transform = mat::T(textRectangle.offset(elevation + 0.0002f));
-    context.drawText(shapedText);
-   
-    context.transform = mat::T(textRectangle.offset(elevation + 0.0001f));
+    auto textOffset = textRectangle.align(shapedText.extent, Alignment::MiddleLeft);
+    context.transform = context.transform * mat::T(textOffset.z(0.0001f));
+
     for (let selectionRectangle: selectionRectangles) {
         context.fillColor = vec::color(0.0, 0.0, 1.0);
         context.drawFilledQuad(selectionRectangle);
@@ -93,6 +93,9 @@ void LineInputWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point d
         context.fillColor = vec::color(0.5, 0.5, 0.5);
         context.drawFilledQuad(leftToRightCaret);
     }
+
+    context.transform = context.transform * mat::T(0.0f, 0.0f, 0.001f);
+    context.drawText(shapedText);
 
     Widget::draw(drawContext, displayTimePoint);
 }

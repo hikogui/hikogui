@@ -48,7 +48,7 @@ public:
     LineInputWidget(LineInputWidget&&) = delete;
     LineInputWidget &operator=(LineInputWidget &&) = delete;
 
-    void draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleCommand(string_ltag command) noexcept;
 

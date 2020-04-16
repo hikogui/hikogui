@@ -17,10 +17,9 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 {
 }
 
-void ButtonWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
-    context.clippingRectangle = expand(box.currentRectangle(), 10.0);
 
     context.cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
     if (value) {
@@ -56,18 +55,21 @@ void ButtonWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point disp
         context.shadowSize = 6.0;
     }
 
+    let padding = 5.0;
+    let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, padding);
+    context.drawBox(buttonRectangle);
+
     if (renderTrigger.check(displayTimePoint) >= 2) {
         let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, numeric_cast<float>(box.width.value()));
+        labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, buttonRectangle.width());
 
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 
-    context.transform = mat::T(0.0, 0.0, elevation);
-    context.drawBox(box.currentRectangle());
+    auto textOffset = buttonRectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
 
-    context.transform = mat::T(box.currentOffset(elevation));
+    context.transform = context.transform * mat::T{textOffset.z(0.001f)};
     context.drawText(labelShapedText);
 
     Widget::draw(drawContext, displayTimePoint);

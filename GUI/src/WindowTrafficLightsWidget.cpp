@@ -29,11 +29,8 @@ int WindowTrafficLightsWidget::state() const noexcept {
     return r;
 }
 
-void WindowTrafficLightsWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto context = drawContext;
-    context.clippingRectangle = box.currentRectangle();
-
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,
         box.currentExtent(),
@@ -51,7 +48,7 @@ void WindowTrafficLightsWidget::draw(DrawContext &drawContext, cpu_utc_clock::ti
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
 
         auto context = drawContext;
-        context.transform = mat::T(box.currentOffset(elevation)) * mat::S(currentScale);
+        context.transform = context.transform * mat::S(currentScale);
         context.drawImage(*(backingImage.image));
     }
 

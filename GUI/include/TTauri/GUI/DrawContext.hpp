@@ -1,4 +1,5 @@
-// Copyright 2019 Pokitec
+
+// Copyright 2020 Pokitec
 // All rights reserved.
 
 #pragma once
@@ -25,6 +26,7 @@ namespace TTauri::GUI {
 /** Draw context for drawing using the TTauri shaders.
  */
 class DrawContext {
+private:
     Window &window;
     vspan<PipelineFlat::Vertex> &flatVertices;
     vspan<PipelineBox::Vertex> &boxVertices;
@@ -106,12 +108,11 @@ public:
      *  - clippingRectangle
      *  - fillColor
      */
-    DrawContext &drawFilledQuad(vec p1, vec p2, vec p3, vec p4) noexcept {
+    void drawFilledQuad(vec p1, vec p2, vec p3, vec p4) const noexcept {
         flatVertices.emplace_back(transform * p1, clippingRectangle, fillColor);
         flatVertices.emplace_back(transform * p2, clippingRectangle, fillColor);
         flatVertices.emplace_back(transform * p3, clippingRectangle, fillColor);
         flatVertices.emplace_back(transform * p4, clippingRectangle, fillColor);
-        return *this;
     }
 
     /** Draw a rectangle of one color.
@@ -121,8 +122,8 @@ public:
     *  - clippingRectangle
     *  - fillColor
     */
-    DrawContext &drawFilledQuad(rect r) noexcept {
-        return drawFilledQuad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
+    void drawFilledQuad(rect r) const noexcept {
+        drawFilledQuad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
     }
 
     /** Draw an axis aligned box
@@ -136,7 +137,7 @@ public:
     *  - shadowSize
     *  - cornerShapes
     */
-    DrawContext &drawBox(rect r) noexcept {
+    void drawBox(rect r) const noexcept {
         let p1 = transform * r.p1();
         let p2 = transform * r.p2();
         r = rect::p1p2(p1, p2);
@@ -152,7 +153,6 @@ public:
             cornerShapes,
             clippingRectangle
         );
-        return *this;
     }
 
     /** Draw an image
@@ -161,9 +161,8 @@ public:
     *  - transform, to transform the image.
     *  - clippingRectangle
     */
-    DrawContext &drawImage(PipelineImage::Image &image) noexcept {
+    void drawImage(PipelineImage::Image &image) const noexcept {
         image.placeVertices(imageVertices, transform, clippingRectangle);
-        return *this;
     }
 
     /** Draw shaped text.
@@ -173,21 +172,15 @@ public:
      *  - transform, to transform the shaped-text's bounding box
      *  - clippingRectangle
      */
-    DrawContext &drawText(Text::ShapedText &text) noexcept {
+    void drawText(Text::ShapedText &text) const noexcept {
         window.device->SDFPipeline->placeVertices(
             sdfVertices,
             text,
             transform,
             clippingRectangle
         );
-        return *this;
     }
 
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    friend DrawContext operator*(M const &lhs, DrawContext rhs) noexcept {
-        rhs.transform = lhs * rhs.transform;
-        return rhs;
-    }
 };
 
 }

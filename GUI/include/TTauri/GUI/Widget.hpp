@@ -136,7 +136,7 @@ public:
     * for alpha-compositing. However the pipelines are always drawn in the same
     * order.
     */
-    virtual void draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept;
+    virtual void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept;
 
     virtual void handleWindowResize() noexcept {
         renderTrigger += std::numeric_limits<int>::max();

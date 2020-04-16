@@ -22,13 +22,6 @@ public:
     const rhea::linear_expression top = bottom + height;
     const rhea::linear_expression middle = bottom + height * 0.5;
 
-    rhea::linear_expression outerLeft(float margin) const noexcept { return left - margin; }
-    rhea::linear_expression outerRight(float margin) const noexcept { return right + margin; }
-    rhea::linear_expression outerBottom(float margin) const noexcept { return bottom - margin; }
-    rhea::linear_expression outerTop(float margin) const noexcept { return top + margin; }
-    rhea::linear_expression outerWidth(float margin) const noexcept { return width + (margin * 2.0); }
-    rhea::linear_expression outerHeight(float margin) const noexcept { return height + (margin * 2.0); }
-
     vec currentBegin(float depth=0.0f) const noexcept {
         return vec::point(left.value(), bottom.value(), depth);
     }
