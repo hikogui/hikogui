@@ -48,7 +48,8 @@ set(TTauri_GUI_srcs
     src/WindowToolbarWidget.cpp
     src/ToolbarButtonWidget.cpp
     src/WindowTrafficLightsWidget.cpp
-    src/theme.cpp
+    src/ThemeMode_win32.cpp
+    src/Theme.cpp
     src/KeyboardBindings.cpp
     src/KeyboardEvent.cpp
 )

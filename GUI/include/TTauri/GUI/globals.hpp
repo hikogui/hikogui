@@ -6,6 +6,7 @@
 #include "TTauri/GUI/Instance_forward.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
 #include "TTauri/GUI/KeyboardBindings.hpp"
+#include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <cstdint>
 #include <mutex>
@@ -17,6 +18,8 @@ namespace TTauri::GUI {
  */
 inline InstanceDelegate *guiDelegate = nullptr;
 
+/** The GUI system.
+ */
 inline Instance *guiSystem = nullptr;
 
 /** Windows GUI-application instance handle.

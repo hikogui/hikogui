@@ -1,21 +1,15 @@
-// Copyright 2019 Pokitec
+// Copyright 2020 Pokitec
 // All rights reserved.
 
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Text/FontDescription.hpp"
 #include "TTauri/Text/TextStyle.hpp"
+#include "TTauri/GUI/ThemeMode.hpp"
 #include <array>
 
 namespace TTauri::GUI {
 
-enum class SubThemeType {
-    Light,
-    Dark,
-    LightAccessable,
-    DarkAccessable
-};
 
 class SubTheme {
     std::vector<vec> colors;
@@ -24,13 +18,13 @@ class SubTheme {
 
     std::array<vec,11> grayColors;
 
-    std::vector<TextStyle> labelStyles;
+    std::vector<Text::TextStyle> labelStyles;
 
 public:
-    TextStyle warningLabelStyle;
-    TextStyle errorLabelStyle;
-    TextStyle helpLabelStyle;
-    TextStyle linkLabelStyle;
+    Text::TextStyle warningLabelStyle;
+    Text::TextStyle errorLabelStyle;
+    Text::TextStyle helpLabelStyle;
+    Text::TextStyle linkLabelStyle;
 
     // Themed bright colors.
     vec blueColor;
@@ -55,6 +49,7 @@ public:
      */
     [[nodiscard]] vec color(int nestingLevel) const noexcept {
         ttauri_assume(nestingLevel >= 0);
+        ttauri_assume(ssize(colors) > 0);
         return colors[nestingLevel % ssize(colors)];
     }
 
@@ -63,6 +58,7 @@ public:
      */
     [[nodiscard]] vec fillColor(int nestingLevel) const noexcept {
         ttauri_assume(nestingLevel >= 0);
+        ttauri_assume(ssize(fillColors) > 0);
         return fillColors[nestingLevel % ssize(fillColors)];
     }
 
@@ -71,6 +67,7 @@ public:
      */
     [[nodiscard]] vec borderColor(int nestingLevel) const noexcept {
         ttauri_assume(nestingLevel >= 0);
+        ttauri_assume(ssize(borderColors) > 0);
         return borderColors[nestingLevel % ssize(borderColors)];
     }
 
@@ -79,7 +76,7 @@ public:
      * @param level Color 5 foreground, 0 mid-gray, -5 background
      */
     [[nodiscard]] vec grayColor(int level) const noexcept {
-        constexpr int maxLevel = static_cast<int>(grayColors.size()) / 2;
+        constexpr int maxLevel = static_cast<int>(std::tuple_size_v<decltype(grayColors)>) / 2;
         constexpr int minLevel = -maxLevel;
         int level_ = std::clamp(minLevel, level, maxLevel) + maxLevel;
         return borderColors[level_];
@@ -89,9 +86,10 @@ public:
     /** Get border color
      * @param nestingLevel The nesting level.
      */
-    [[nodiscard]] TextStyle const &labelStyle(int nestingLevel) const noexcept {
+    [[nodiscard]] Text::TextStyle const &labelStyle(int nestingLevel) const noexcept {
         ttauri_assume(nestingLevel >= 0);
-        return labelStyle[nestingLevel % ssize(labelStyles)];
+        ttauri_assume(ssize(labelStyles) > 0);
+        return labelStyles[nestingLevel % ssize(labelStyles)];
     }
 };
 
@@ -99,8 +97,8 @@ class Theme {
 private:
     std::array<SubTheme,4> subThemes;
 
-    SubTheme const &subTheme(SubThemeType type) const noexcept {
-        return subThemes[static_cast<int>(type)];
+    SubTheme const &subTheme(ThemeMode mode) const noexcept {
+        return subThemes[static_cast<int>(mode)];
     }
 
 public:
@@ -109,21 +107,21 @@ public:
      * @param nestingLevel The nesting level.
      */
     [[nodiscard]] vec color(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).color(nestingLevel);
+        return subTheme(themeMode).color(nestingLevel);
     }
 
     /** Get fill color
      * @param nestingLevel The nesting level.
      */
     [[nodiscard]] vec fillColor(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).fillColors(nestingLevel);
+        return subTheme(themeMode).fillColor(nestingLevel);
     }
 
     /** Get border color
      * @param nestingLevel The nesting level.
      */
     [[nodiscard]] vec borderColor(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).borderColors(nestingLevel);
+        return subTheme(themeMode).borderColor(nestingLevel);
     }
 
     /** Get grey scale color
@@ -131,44 +129,44 @@ public:
      * @param level Color 5 foreground, 0 mid-gray, -5 background
      */
     [[nodiscard]] vec grayColor(int level) const noexcept {
-        return subTheme(selectedSubTheme).grayColor(level);
+        return subTheme(themeMode).grayColor(level);
     }
 
 
     [[nodiscard]] vec blueColor() const noexcept {
-        return subTheme(selectedSubTheme).blueColor;
+        return subTheme(themeMode).blueColor;
     }
 
     [[nodiscard]] vec greenColor() const noexcept {
-        return subTheme(selectedSubTheme).greenColor;
+        return subTheme(themeMode).greenColor;
     }
 
     [[nodiscard]] vec indigoColor() const noexcept {
-        return subTheme(selectedSubTheme).indigoColor;
+        return subTheme(themeMode).indigoColor;
     }
 
     [[nodiscard]] vec orangeColor() const noexcept {
-        return subTheme(selectedSubTheme).orangeColor;
+        return subTheme(themeMode).orangeColor;
     }
 
     [[nodiscard]] vec pinkColor() const noexcept {
-        return subTheme(selectedSubTheme).pinkColor;
+        return subTheme(themeMode).pinkColor;
     }
 
     [[nodiscard]] vec purpleColor() const noexcept {
-        return subTheme(selectedSubTheme).purpleColor;
+        return subTheme(themeMode).purpleColor;
     }
 
     [[nodiscard]] vec redColor() const noexcept {
-        return subTheme(selectedSubTheme).redColor;
+        return subTheme(themeMode).redColor;
     }
 
     [[nodiscard]] vec tealColor() const noexcept {
-        return subTheme(selectedSubTheme).tealColor;
+        return subTheme(themeMode).tealColor;
     }
 
     [[nodiscard]] vec yellowColor() const noexcept {
-        return subTheme(selectedSubTheme).yellowColor;
+        return subTheme(themeMode).yellowColor;
     }
 
 
@@ -176,24 +174,24 @@ public:
     /** Get text style for labels
      * @param nestingLevel The nesting level.
      */
-    [[nodiscard]] TextStyle &labelStyle(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).labelStyles(nestingLevel);
+    [[nodiscard]] Text::TextStyle const &labelStyle(int nestingLevel) const noexcept {
+        return subTheme(themeMode).labelStyle(nestingLevel);
     }
 
-    [[nodiscard]] TextStyle &warningLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).warningLabelStyle;
+    [[nodiscard]] Text::TextStyle const &warningLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(themeMode).warningLabelStyle;
     }
 
-    [[nodiscard]] TextStyle &errorLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).errorLabelStyle;
+    [[nodiscard]] Text::TextStyle const &errorLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(themeMode).errorLabelStyle;
     }
 
-    [[nodiscard]] TextStyle &helpLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).helpLabelStyle;
+    [[nodiscard]] Text::TextStyle const &helpLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(themeMode).helpLabelStyle;
     }
 
-    [[nodiscard]] TextStyle &linkLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(selectedSubTheme).linkLabelStyle;
+    [[nodiscard]] Text::TextStyle const &linkLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(themeMode).linkLabelStyle;
     }
 
     //TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);

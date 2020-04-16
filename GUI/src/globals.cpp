@@ -3,6 +3,7 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
@@ -38,6 +39,9 @@ void startup()
     addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
     addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
     addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
+
+    themeMode = readOSThemeMode();
+    LOG_INFO("Operating system theme mode is {}", themeMode);
 
     try {
         keyboardBindings.loadSystemBindings();

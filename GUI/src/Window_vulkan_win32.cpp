@@ -4,6 +4,7 @@
 #include "TTauri/GUI/Window_vulkan_win32.hpp"
 #include "TTauri/GUI/KeyboardVirtualKey_win32.hpp"
 #include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"
 #include <windowsx.h>
@@ -656,6 +657,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         default: no_default;
         }
         } break;
+
+    case WM_WININICHANGE:
+        themeMode = readOSThemeMode();
+        LOG_INFO("Operating system changed theme mode to {}", themeMode);
+        widget->handleWindowResize();
+        break;
 
     default:
         break;
