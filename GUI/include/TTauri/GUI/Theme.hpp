@@ -10,116 +10,193 @@
 
 namespace TTauri::GUI {
 
-/** Semantic colors.
-*/
-enum class ColorID {
-    // Bright colors, used for accents in widgets or color-coding.
-    // Blue is the default ON state color of a widget.
-    Clear                   = 0x00, ///< Fully transparent
-    Gray60                  = 0x01, ///< 60 % Gray compared to background
-    Gray40                  = 0x02, ///< 40 % Gray compared to background
-    Gray20                  = 0x03, ///< 20 % Gray compared to background
-    Blue                    = 0x04, ///< Color of part or whole of the widget that is in on state
-    Green                   = 0x05, ///< Color of part or whole of the widget that is in on state
-    Indigo                  = 0x06, ///< Color of part or whole of the widget that is in on state
-    Orange                  = 0x07, ///< Color of part or whole of the widget that is in on state
-    Pink                    = 0x08, ///< Color of part or whole of the widget that is in on state
-    Purple                  = 0x09, ///< Color of part or whole of the widget that is in on state
-    Red                     = 0x0a, ///< Color of part or whole of the widget that is in on state
-    Teal                    = 0x0b, ///< Color of part or whole of the widget that is in on state
-    Yellow                  = 0x0c, ///< Color of part or whole of the widget that is in on state
-
-    // Semantic colors.
-    Background              = 0x0d, ///< Main background color of a window
-    BackgroundSecondary     = 0x0e, ///< Background color of container within a window
-    BackgroundTernary       = 0x0f, ///< Background color of container within a container
-    Foreground              = 0x10, ///< Main text or icon color
-    ForegroundSecondary     = 0x11, ///< Secondary text or icon color
-    Fill                    = 0x12, ///< Color used to draw widgets and placeholder text.
-    FillSecondary           = 0x13, ///< Secondary color to draw widgets
-    Reserved1               = 0x14, ///< Reserved semantic color
-    Reserved2               = 0x15, ///< Reserved semantic color
-    Reserved3               = 0x16, ///< Reserved semantic color
-    Reserved4               = 0x17, ///< Reserved semantic color
-
-    // Custom colors are used by the application to draw custom widgets and text.
-    Custom1                 = 0x18,
-    Custom2                 = 0x19,
-    Custom3                 = 0x1a,
-    Custom4                 = 0x1b,
-    Custom5                 = 0x1c,
-    Custom6                 = 0x1d,
-    Custom7                 = 0x1e,
-    Custom8                 = 0x1f,
-
-    max = Custom8
+enum class SubThemeType {
+    Light,
+    Dark,
+    LightAccessable,
+    DarkAccessable
 };
 
-inline auto const ColorID_from_string_table = std::unordered_map<std::string,ColorID>{
-    {"gray-60", ColorID::Gray60},
-    {"gray-40", ColorID::Gray40},
-    {"gray-20", ColorID::Gray20},
-    {"blue", ColorID::Blue},
-    {"green", ColorID::Green},
-    {"indigo", ColorID::Indigo},
-    {"orange", ColorID::Orange},
-    {"pink", ColorID::Pink},
-    {"purple", ColorID::Purple},
-    {"red", ColorID::Red},
-    {"teal", ColorID::Teal},
-    {"yellow", ColorID::Yellow},
-    {"background", ColorID::Background},
-    {"background-secondary", ColorID::BackgroundSecondary},
-    {"background-ternary", ColorID::BackgroundTernary},
-    {"foreground", ColorID::Foreground},
-    {"foreground-secondary", ColorID::ForegroundSecondary},
-    {"fill", ColorID::FillSecondary},
-    {"custom-1", ColorID::Custom1},
-    {"custom-2", ColorID::Custom2},
-    {"custom-3", ColorID::Custom3},
-    {"custom-4", ColorID::Custom4},
-    {"custom-5", ColorID::Custom5},
-    {"custom-6", ColorID::Custom6},
-    {"custom-7", ColorID::Custom7},
-    {"custom-8", ColorID::Custom8},
+class SubTheme {
+    std::vector<vec> colors;
+    std::vector<vec> fillColors;
+    std::vector<vec> borderColors;
+
+    std::array<vec,11> grayColors;
+
+    std::vector<TextStyle> labelStyles;
+
+public:
+    TextStyle warningLabelStyle;
+    TextStyle errorLabelStyle;
+    TextStyle helpLabelStyle;
+    TextStyle linkLabelStyle;
+
+    // Themed bright colors.
+    vec blueColor;
+    vec greenColor;
+    vec indigoColor;
+    vec orangeColor;
+    vec pinkColor;
+    vec purpleColor;
+    vec redColor;
+    vec tealColor;
+    vec yellowColor;
+
+    // Semantic colors
+    vec accentColor;
+    vec keyboardFocusColor;
+    vec textSelectColor;
+    vec cursorColor;
+    vec incompleteGlyphColor;
+
+    /** Get color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] vec color(int nestingLevel) const noexcept {
+        ttauri_assume(nestingLevel >= 0);
+        return colors[nestingLevel % ssize(colors)];
+    }
+
+    /** Get fill color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] vec fillColor(int nestingLevel) const noexcept {
+        ttauri_assume(nestingLevel >= 0);
+        return fillColors[nestingLevel % ssize(fillColors)];
+    }
+
+    /** Get border color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] vec borderColor(int nestingLevel) const noexcept {
+        ttauri_assume(nestingLevel >= 0);
+        return borderColors[nestingLevel % ssize(borderColors)];
+    }
+
+    /** Get grey scale color
+     * This color is reversed between light and dark themes.
+     * @param level Color 5 foreground, 0 mid-gray, -5 background
+     */
+    [[nodiscard]] vec grayColor(int level) const noexcept {
+        constexpr int maxLevel = static_cast<int>(grayColors.size()) / 2;
+        constexpr int minLevel = -maxLevel;
+        int level_ = std::clamp(minLevel, level, maxLevel) + maxLevel;
+        return borderColors[level_];
+    }
+
+
+    /** Get border color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] TextStyle const &labelStyle(int nestingLevel) const noexcept {
+        ttauri_assume(nestingLevel >= 0);
+        return labelStyle[nestingLevel % ssize(labelStyles)];
+    }
 };
 
-enum class FontStyleID {
-    Label,
-    Text,
-    Link,
-    Heading,
-    InputField,
-    InputFieldPlaceholder,
+class Theme {
+private:
+    std::array<SubTheme,4> subThemes;
 
-    max = InputFieldPlaceholder
+    SubTheme const &subTheme(SubThemeType type) const noexcept {
+        return subThemes[static_cast<int>(type)];
+    }
+
+public:
+
+    /** Get color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] vec color(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).color(nestingLevel);
+    }
+
+    /** Get fill color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] vec fillColor(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).fillColors(nestingLevel);
+    }
+
+    /** Get border color
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] vec borderColor(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).borderColors(nestingLevel);
+    }
+
+    /** Get grey scale color
+     * This color is reversed between light and dark themes.
+     * @param level Color 5 foreground, 0 mid-gray, -5 background
+     */
+    [[nodiscard]] vec grayColor(int level) const noexcept {
+        return subTheme(selectedSubTheme).grayColor(level);
+    }
+
+
+    [[nodiscard]] vec blueColor() const noexcept {
+        return subTheme(selectedSubTheme).blueColor;
+    }
+
+    [[nodiscard]] vec greenColor() const noexcept {
+        return subTheme(selectedSubTheme).greenColor;
+    }
+
+    [[nodiscard]] vec indigoColor() const noexcept {
+        return subTheme(selectedSubTheme).indigoColor;
+    }
+
+    [[nodiscard]] vec orangeColor() const noexcept {
+        return subTheme(selectedSubTheme).orangeColor;
+    }
+
+    [[nodiscard]] vec pinkColor() const noexcept {
+        return subTheme(selectedSubTheme).pinkColor;
+    }
+
+    [[nodiscard]] vec purpleColor() const noexcept {
+        return subTheme(selectedSubTheme).purpleColor;
+    }
+
+    [[nodiscard]] vec redColor() const noexcept {
+        return subTheme(selectedSubTheme).redColor;
+    }
+
+    [[nodiscard]] vec tealColor() const noexcept {
+        return subTheme(selectedSubTheme).tealColor;
+    }
+
+    [[nodiscard]] vec yellowColor() const noexcept {
+        return subTheme(selectedSubTheme).yellowColor;
+    }
+
+
+
+    /** Get text style for labels
+     * @param nestingLevel The nesting level.
+     */
+    [[nodiscard]] TextStyle &labelStyle(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).labelStyles(nestingLevel);
+    }
+
+    [[nodiscard]] TextStyle &warningLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).warningLabelStyle;
+    }
+
+    [[nodiscard]] TextStyle &errorLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).errorLabelStyle;
+    }
+
+    [[nodiscard]] TextStyle &helpLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).helpLabelStyle;
+    }
+
+    [[nodiscard]] TextStyle &linkLabelStyle(int nestingLevel) const noexcept {
+        return subTheme(selectedSubTheme).linkLabelStyle;
+    }
+
+    //TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
 };
-
-inline auto const FontStyleID_from_string_table = std::unordered_map<std::string,FontStyleID>{
-    {"label", FontStyleID::Label},
-    {"text", FontStyleID::Text},
-    {"link", FontStyleID::Link},
-    {"heading", FontStyleID::Heading},
-    {"input-field", FontStyleID::InputField},
-    {"input-field-placeholder", FontStyleID::InputFieldPlaceholder},
-};
-
-
-
-
-struct Theme {
-    std::string name;
-
-    /// IETF language tags.
-    std::array<std::string,4> language_tags;
-
-    /// 16 colors.
-    std::array<vec,nr_items_v<ColorID>> color_palette;
-    ColorID default_accent_color;
-
-    std::array<TTauri::Text::TextStyle,nr_items_v<FontStyleID>> text_styles;
-};
-
-[[nodiscard]] Theme parse_theme(URL const &url);
 
 }
