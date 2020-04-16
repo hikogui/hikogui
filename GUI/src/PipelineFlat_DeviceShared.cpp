@@ -22,13 +22,6 @@ DeviceShared::~DeviceShared()
 {
 }
 
-void DeviceShared::placeVerticesBox(vspan<Vertex> &vertices, rect box, R16G16B16A16SFloat color, rect clippingRectangle, float depth) noexcept
-{
-    vertices.emplace_back(box.corner<0>(depth), clippingRectangle, color);
-    vertices.emplace_back(box.corner<1>(depth), clippingRectangle, color);
-    vertices.emplace_back(box.corner<2>(depth), clippingRectangle, color);
-    vertices.emplace_back(box.corner<3>(depth), clippingRectangle, color);
-}
 
 void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
 {

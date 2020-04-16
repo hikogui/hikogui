@@ -9,6 +9,7 @@
 #include "TTauri/GUI/PipelineFlat.hpp"
 #include "TTauri/GUI/PipelineBox.hpp"
 #include "TTauri/GUI/PipelineSDF.hpp"
+#include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
@@ -27,7 +28,7 @@ Window_vulkan::~Window_vulkan()
 
 void Window_vulkan::initialize()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
@@ -38,7 +39,7 @@ void Window_vulkan::initialize()
 
 void Window_vulkan::waitIdle()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
@@ -48,7 +49,7 @@ void Window_vulkan::waitIdle()
 
 std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
@@ -92,7 +93,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 {
     ttauri_assert(device);
 
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { renderFinishedSemaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
@@ -139,7 +140,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
 void Window_vulkan::build()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     if (state == State::NoDevice) {
         if (device) {
@@ -199,7 +200,7 @@ void Window_vulkan::build()
 
 void Window_vulkan::teardown()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
     auto nextState = state;
 
     if (state >= State::SwapchainLost) {
@@ -266,7 +267,7 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
     }
 
     auto tr = trace<"win_render"_tag, "state"_tag, "frame_buffer"_tag>();
-    auto lock = std::scoped_lock{GUI_globals->mutex};
+    auto lock = std::scoped_lock(guiMutex);
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
@@ -297,13 +298,14 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
 
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
-    widget->updateAndPlaceVertices(
-        displayTimePoint,
-        flatPipeline->vertexBufferData.clear(),
-        boxPipeline->vertexBufferData.clear(),
-        imagePipeline->vertexBufferData.clear(),
-        SDFPipeline->vertexBufferData.clear()
+    auto drawContext = DrawContext(
+        reinterpret_cast<Window &>(*this),
+        flatPipeline->vertexBufferData,
+        boxPipeline->vertexBufferData,
+        imagePipeline->vertexBufferData,
+        SDFPipeline->vertexBufferData
     );
+    widget->draw(drawContext, displayTimePoint);
 
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
     // images with alpha-channel.
@@ -324,7 +326,7 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
 
 std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
     ttauri_assert(device);
@@ -346,8 +348,8 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     }
 
     uint32_t const imageCount = surfaceCapabilities.maxImageCount ?
-        std::clamp(GUI_globals->defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount) :
-        std::max(GUI_globals->defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount);
+        std::clamp(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount) :
+        std::max(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount);
 
     vk::Extent2D const imageExtent = currentExtentSet ?
         surfaceCapabilities.currentExtent :
@@ -432,7 +434,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 {
     ttauri_assert(device);
 
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     LOG_INFO("Building swap chain");
 
@@ -508,7 +510,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 
 void Window_vulkan::teardownSwapchain()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
     device->destroy(swapchain);
@@ -517,7 +519,7 @@ void Window_vulkan::teardownSwapchain()
 
 void Window_vulkan::buildFramebuffers()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     depthImageView = device->createImageView({
         vk::ImageViewCreateFlags(),
@@ -565,7 +567,7 @@ void Window_vulkan::buildFramebuffers()
 
 void Window_vulkan::teardownFramebuffers()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
     for (auto frameBuffer : swapchainFramebuffers) {
@@ -583,7 +585,7 @@ void Window_vulkan::teardownFramebuffers()
 
 void Window_vulkan::buildRenderPasses()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     std::array<vk::AttachmentDescription, 2> attachmentDescriptions = {
         vk::AttachmentDescription{
@@ -670,7 +672,7 @@ void Window_vulkan::buildRenderPasses()
 
 void Window_vulkan::teardownRenderPasses()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
     device->destroy(firstRenderPass);
@@ -680,7 +682,7 @@ void Window_vulkan::teardownRenderPasses()
 
 void Window_vulkan::buildSemaphores()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
     imageAvailableSemaphore = device->createSemaphore({});
@@ -693,7 +695,7 @@ void Window_vulkan::buildSemaphores()
 
 void Window_vulkan::teardownSemaphores()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
     device->destroy(imageAvailableSemaphore);
@@ -702,14 +704,14 @@ void Window_vulkan::teardownSemaphores()
 
 void Window_vulkan::teardownSurface()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
-    GUI_globals->instance().destroySurfaceKHR(intrinsic);
+    guiSystem->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     device = nullptr;
 }

@@ -10,7 +10,7 @@ namespace TTauri::Text {
 [[nodiscard]] Path FontGlyphIDs::get_path() const noexcept {
     Path r;
 
-    let &font = Text_globals->font_book->get_font(font_id());
+    let &font = fontBook->get_font(font_id());
 
     for (ssize_t i = 0; i < ssize(*this); i++) {
         let glyph_id = (*this)[i];

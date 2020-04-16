@@ -288,23 +288,77 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     }
 
     float min_distance = std::numeric_limits<float>::max();
-    float min_orthogonality = 0.0f;
     for (let &curve: curves) {
-        let [distance, orthogonality] = curve.sdf_distance(point);
+        let distance = curve.sdf_distance(point);
 
-        if (
-            std::abs(distance) < std::abs(min_distance) ||
-            (std::abs(distance) == std::abs(min_distance) && orthogonality < min_orthogonality)
-        ) {
+        if (std::abs(distance) < std::abs(min_distance)) {
             min_distance = distance;
-            min_orthogonality = orthogonality;
         }
     }
 
     return min_distance;
 }
 
-[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels(PixelMap<SDF8> const &image) noexcept
+static void bad_pixels_edges(PixelMap<SDF8> &image) noexcept
+{
+    // Bottom edge.
+    auto row = image[0];
+    for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
+        auto &pixel = row[column_nr];
+        if (static_cast<float>(pixel) > 0.0) {
+            pixel.repair();
+        }
+    }
+
+    // Top edge
+    row = image[image.height - 1];
+    for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
+        auto &pixel = row[column_nr];
+        if (static_cast<float>(pixel) > 0.0) {
+            pixel.repair();
+        }
+    }
+
+    // Left and right edge
+    for (ssize_t row_nr = 0; row_nr != image.height; ++row_nr) {
+        row = image[row_nr];
+
+        auto &left_pixel = row[0];
+        if (static_cast<float>(left_pixel) > 0.0) {
+            left_pixel.repair();
+        }
+
+        auto &right_pixel = row[image.width - 1];
+        if (static_cast<float>(right_pixel) > 0.0) {
+            right_pixel.repair();
+        }
+    }
+}
+
+static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
+{
+    for (ssize_t row_nr = 0; row_nr != image.height; ++row_nr) {
+        auto row = image[row_nr];
+        // The left edge of the signed distance field should be outside of the glyph -float_max
+        auto prev_pixel_value = SDF8(-std::numeric_limits<float>::max());
+        for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
+            auto &pixel = row[column_nr];
+            let pixel_value = static_cast<float>(pixel);
+
+            let normal_delta = std::abs(prev_pixel_value - pixel_value);
+            let flipped_delta = std::abs(prev_pixel_value - -pixel_value);
+
+            if ((flipped_delta + 3.0) < normal_delta) {
+                pixel = -pixel_value;
+                prev_pixel_value = -pixel_value;
+            } else {
+                prev_pixel_value = pixel_value;
+            }
+        }
+    }
+}
+
+[[nodiscard]] std::vector<std::pair<int,int>> bad_pixels_homogenious(PixelMap<SDF8> const &image) noexcept
 {
     constexpr float threshold = 0.075f;
 
@@ -350,6 +404,7 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     return r;
 }
 
+
 void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcept
 {
     for (int row_nr = 0; row_nr != image.height; ++row_nr) {
@@ -361,17 +416,20 @@ void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcep
         }
     }
 
+    bad_pixels_horizontally(image);
+    bad_pixels_edges(image);
+
     std::vector<std::pair<int,int>> bad_pixel_list;
-    for (int i = 0; i < 5; i++) {
-        bad_pixel_list = bad_pixels(image);
-        for (let [x, y]: bad_pixel_list) {
-            image[y][x].repair();
-        }
+    for (int i = 0; i < 10; i++) {
+        bad_pixel_list = bad_pixels_homogenious(image);
         if (ssize(bad_pixel_list) == 0) {
             break;
         }
+    
+        for (let [x, y]: bad_pixel_list) {
+            image[y][x].repair();
+        }
     }
-
 }
 
 }

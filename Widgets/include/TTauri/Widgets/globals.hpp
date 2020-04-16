@@ -3,19 +3,20 @@
 
 #pragma once
 
+#include <atomic>
+
 namespace TTauri::GUI::Widgets {
 
-struct WidgetsGlobals;
-inline WidgetsGlobals *Widgets_globals = nullptr;
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+inline std::atomic<uint64_t> startupCount = 0;
 
-struct WidgetsGlobals {
-public:
-    WidgetsGlobals();
-    ~WidgetsGlobals();
-    WidgetsGlobals(WidgetsGlobals const &) = delete;
-    WidgetsGlobals &operator=(WidgetsGlobals const &) = delete;
-    WidgetsGlobals(WidgetsGlobals &&) = delete;
-    WidgetsGlobals &operator=(WidgetsGlobals &&) = delete;
-};
+/** Startup the Text library.
+*/
+void startup();
+
+/** Shutdown the Text library.
+*/
+void shutdown();
 
 }

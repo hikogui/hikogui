@@ -71,7 +71,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(GUI_globals->hInstance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(hInstance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -100,7 +100,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, vec extent)
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(GUI_globals->hInstance), // Instance handle
+        reinterpret_cast<HINSTANCE>(hInstance), // Instance handle
         this
     );
 
@@ -116,7 +116,7 @@ void Window_vulkan_win32::createWindow(const std::string &title, vec extent)
     }
 
     if (!firstWindowHasBeenOpened) {
-        ShowWindow(reinterpret_cast<HWND>(win32Window), GUI_globals->nCmdShow);
+        ShowWindow(reinterpret_cast<HWND>(win32Window), nCmdShow);
         firstWindowHasBeenOpened = true;
     }
 
@@ -186,7 +186,7 @@ void Window_vulkan_win32::closingWindow()
 void Window_vulkan_win32::openingWindow()
 {
     run_on_main_thread([&]() {
-        std::scoped_lock lock(GUI_globals->mutex);
+        auto lock = std::scoped_lock(guiMutex);
 
         Window_vulkan::openingWindow();
 
@@ -300,9 +300,9 @@ done:
 
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
-    return GUI_globals->instance().createWin32SurfaceKHR({
+    return guiSystem->createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
-        reinterpret_cast<HINSTANCE>(GUI_globals->hInstance),
+        reinterpret_cast<HINSTANCE>(hInstance),
         reinterpret_cast<HWND>(win32Window)
     });
 }
@@ -384,7 +384,7 @@ void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
 
 int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t lParam)
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     MouseEvent mouseEvent;
     KeyboardEvent keyboardEvent;

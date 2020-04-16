@@ -7,18 +7,28 @@
 
 namespace TTauri::GUI::Widgets {
 
-WidgetsGlobals::WidgetsGlobals()
+void startup()
 {
-    ttauri_assert(Foundation_globals != nullptr);
-    ttauri_assert(GUI::GUI_globals != nullptr);
-    ttauri_assert(Widgets_globals == nullptr);
-    Widgets_globals = this;
+    if (startupCount.fetch_add(1) != 0) {
+        // The library has already been initialized.
+        return;
+    }
+
+    TTauri::startup();
+    TTauri::GUI::startup();
+    LOG_AUDIT("TTauri::GUI::Widgets startup");
 }
 
-WidgetsGlobals::~WidgetsGlobals()
+void shutdown()
 {
-    ttauri_assert(Widgets_globals == this);
-    Widgets_globals = nullptr;
+    if (startupCount.fetch_sub(1) != 1) {
+        // This is not the last instantiation.
+        return;
+    }
+    LOG_AUDIT("TTauri::GUI::Widgets shutdown");
+
+    TTauri::GUI::shutdown();
+    TTauri::shutdown();
 }
 
 }

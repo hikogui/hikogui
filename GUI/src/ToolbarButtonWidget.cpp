@@ -31,7 +31,6 @@ int ToolbarButtonWidget::state() const noexcept {
 
 PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
 {
-
     auto iconImage = PixelMap<R16G16B16A16SFloat>{image->extent};
     if (std::holds_alternative<Path>(icon)) {
         auto p = std::get<Path>(icon).centerScale(vec{image->extent}, 10.0);
@@ -54,18 +53,10 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
     return { std::move(image), std::move(linearMap) };
 }
 
-void ToolbarButtonWidget::updateAndPlaceVertices(
-    cpu_utc_clock::time_point displayTimePoint,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+void ToolbarButtonWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    if (pressed) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), pressedBackgroundColor, box.currentRectangle(), elevation);
-    } else if (hover && enabled) {
-        PipelineFlat::DeviceShared::placeVerticesBox(flat_vertices, box.currentRectangle(), hoverBackgroundColor, box.currentRectangle(), elevation);
-    }
+    auto context = drawContext;
+    context.clippingRectangle = box.currentRectangle();
 
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,
@@ -81,16 +72,21 @@ void ToolbarButtonWidget::updateAndPlaceVertices(
         ++renderTrigger;
     }
 
+    context.transform = mat::T(0.0, 0.0, elevation);
+    if (pressed) {
+        context.fillColor = pressedBackgroundColor;
+        context.drawFilledQuad(context.clippingRectangle);
+
+    } else if (hover && enabled) {
+        context.fillColor = hoverBackgroundColor;
+        context.drawFilledQuad(context.clippingRectangle);
+    }
+
     if (backingImage.image) {
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
 
-        GUI::PipelineImage::ImageLocation location;
-        let T = mat::T(box.currentOffset(elevation));
-        let S = mat::S(currentScale);
-        location.transform = T * S;
-        location.clippingRectangle = box.currentRectangle();
-
-        backingImage.image->placeVertices(location, image_vertices);
+        context.transform = mat::T(box.currentOffset(elevation)) * mat::S(currentScale);
+        context.drawImage(*(backingImage.image));
 
         if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {
             ++renderTrigger;
@@ -99,7 +95,7 @@ void ToolbarButtonWidget::updateAndPlaceVertices(
         ++renderTrigger;
     }
 
-    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    Widget::draw(drawContext, displayTimePoint);
 }
 
 void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {

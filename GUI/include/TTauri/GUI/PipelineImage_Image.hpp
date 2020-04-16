@@ -8,6 +8,7 @@
 #include "TTauri/Foundation/irect.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/mat.hpp"
 #include <gsl/gsl>
 #include <atomic>
 #include <string>
@@ -66,19 +67,16 @@ struct Image {
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.
      * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
-     *
-     * \param position Position (x, y) from the left-top of the window in pixels. Z equals depth.
-     * \param origin Origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
-     */
-    void placeVertices(const ImageLocation &location, vspan<Vertex> &vertices);
+     *     */
+    void placeVertices(vspan<Vertex> &vertices, mat transform, rect clippingRectangle);
 
 private:
     //! Temporary memory used for pre calculating vertices.
     std::vector<std::tuple<vec, vec, bool>> tmpVertexPositions;
 
-    void calculateVertexPositions(const ImageLocation &location);
+    void calculateVertexPositions(mat transform, rect clippingRectangle);
 
-    void placePageVertices(int const index, const ImageLocation &location, vspan<Vertex> &vertices) const;
+    void placePageVertices(vspan<Vertex> &vertices, int const index, rect clippingRectangle) const;
 
 };
 

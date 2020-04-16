@@ -33,7 +33,7 @@ std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs) {
 }
 
 [[noreturn]] void terminateOnFatalError(std::string &&message) noexcept {
-    Foundation_globals->stopMaintenanceThread();
+    stopMaintenanceThread();
 
     if (debugger_is_present()) {
         debugger_log(message);

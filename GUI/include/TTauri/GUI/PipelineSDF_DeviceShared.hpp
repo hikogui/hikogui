@@ -29,6 +29,7 @@ class ShapedText;
 namespace TTauri::GUI::PipelineSDF {
 
 struct Image;
+struct Vertex;
 
 struct DeviceShared final {
     // Studies in China have shown that literate individuals know and use between 3,000 and 4,000 characters.

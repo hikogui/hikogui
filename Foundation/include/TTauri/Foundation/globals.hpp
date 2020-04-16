@@ -13,38 +13,48 @@
 
 namespace TTauri {
 
-struct FoundationGlobals;
-inline FoundationGlobals *Foundation_globals = nullptr;
+/** The system timezone.
+ */
+inline date::time_zone const *timeZone = nullptr;
 
-struct FoundationGlobals {
-private:
-    std::unordered_map<std::string,gsl::span<std::byte const>> staticResources;
+/** Thread id of the main thread.
+ */
+inline std::thread::id mainThreadID;
 
-    std::thread maintenanceThread;
-    bool _stopMaintenanceThread = false;
+/** Function which will pass a given function to the main thread.
+ */
+inline std::function<void(std::function<void()>)> mainThreadRunner;
 
-    mutable std::mutex mutex;
+/** The global configuration.
+ */
+inline datum configuration;
 
-public:
-    date::time_zone const *time_zone = nullptr;
-    std::thread::id main_thread_id;
-    std::function<void(std::function<void()>)> main_thread_runner;
-    datum configuration;
-    std::string applicationName;
+/** The name of the application.
+ */
+inline std::string applicationName;
 
-    FoundationGlobals(std::thread::id main_thread_id, datum configuration, std::string applicationName, URL tzdata_location) noexcept;
-    ~FoundationGlobals();
-    FoundationGlobals(FoundationGlobals const &) = delete;
-    FoundationGlobals &operator=(FoundationGlobals const &) = delete;
-    FoundationGlobals(FoundationGlobals &&) = delete;
-    FoundationGlobals &operator=(FoundationGlobals &&) = delete;
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+inline std::atomic<uint64_t> startupCount = 0;
 
-    void addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept;
+/** Add a static resource.
+*/
+void addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept;
 
-    gsl::span<std::byte const> getStaticResource(std::string const &key) const;
+/** Request a static resource.
+*/
+gsl::span<std::byte const> getStaticResource(std::string const &key);
 
-    void stopMaintenanceThread() noexcept;
-    void maintenanceThreadProcedure() noexcept;
-};
+/** Stop the maintenance thread.
+ */
+void stopMaintenanceThread() noexcept;
+
+/** Startup the Foundation library.
+*/
+void startup();
+
+/** Shutdown the Foundation library.
+*/
+void shutdown();
 
 }

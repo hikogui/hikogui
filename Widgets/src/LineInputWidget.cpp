@@ -20,38 +20,33 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
 {
 }
 
-void LineInputWidget::updateAndPlaceVertices(
-    cpu_utc_clock::time_point displayTimePoint,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+void LineInputWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    // Draw something.
-    let cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
+    auto context = drawContext;
+    context.clippingRectangle = expand(box.currentRectangle(), 10.0);
 
-    vec backgroundColor;
-    vec labelColor;
-    vec borderColor;
+    // Draw something.
+    context.cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
 
     if (hover || focus) {
-        backgroundColor = vec::color(0.1, 0.1, 0.1);
+        context.fillColor = vec::color(0.1, 0.1, 0.1);
     } else {
-        backgroundColor = vec::color(0.01, 0.01, 0.01);
+        context.fillColor = vec::color(0.01, 0.01, 0.01);
     }
 
     if (focus) {
-        borderColor = vec::color(0.072, 0.072, 1.0);
+        context.borderColor = vec::color(0.072, 0.072, 1.0);
     } else if (hover) {
-        borderColor = vec::color(0.2, 0.2, 0.2);
+        context.borderColor = vec::color(0.2, 0.2, 0.2);
     } else {
-        borderColor = vec::color(0.1, 0.1, 0.1);
+        context.borderColor = vec::color(0.1, 0.1, 0.1);
     }
 
-    labelColor = vec{1.0, 1.0, 1.0, 1.0};
+    context.color = vec{1.0, 1.0, 1.0, 1.0};
+    context.transform = mat::T(0.0, 0.0, elevation);
+    context.drawBox(box.currentRectangle());
 
     auto textRectangle = expand(box.currentRectangle(), -5.0f);
-
     if (renderTrigger.check(displayTimePoint) >= 2) {
         field.setExtent(textRectangle.extent());
         leftToRightCaret = field.leftToRightCaret();
@@ -59,7 +54,7 @@ void LineInputWidget::updateAndPlaceVertices(
         selectionRectangles = field.selectionRectangles();
 
         if (ssize(field) == 0) {
-            let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
+            let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
             shapedText = ShapedText(label, labelStyle, HorizontalAlignment::Left, textRectangle.width());
 
         } else {
@@ -71,45 +66,19 @@ void LineInputWidget::updateAndPlaceVertices(
         lastUpdateTimePoint = displayTimePoint;
     }
 
-    PipelineBox::DeviceShared::placeVertices(
-        box_vertices,
-        elevation,
-        box.currentRectangle(),
-        backgroundColor,
-        1.0f,
-        borderColor,
-        0.0f,
-        cornerShapes,
-        expand(box.currentRectangle(), 10.0)
-    );
-
-    let text_translate = mat::T(textRectangle.offset().z(elevation + 0.0002f));
-
-    window.device->SDFPipeline->placeVertices(
-        sdf_vertices,
-        shapedText,
-        text_translate,
-        box.currentRectangle()
-    );
-
+    context.clippingRectangle = box.currentRectangle();
+    context.transform = mat::T(textRectangle.offset(elevation + 0.0002f));
+    context.drawText(shapedText);
+   
+    context.transform = mat::T(textRectangle.offset(elevation + 0.0001f));
     for (let selectionRectangle: selectionRectangles) {
-        PipelineFlat::DeviceShared::placeVerticesBox(
-            flat_vertices,
-            text_translate * selectionRectangle,
-            vec::color(0.0, 0.0, 1.0),
-            box.currentRectangle(),
-            elevation + 0.0001f
-        );
+        context.fillColor = vec::color(0.0, 0.0, 1.0);
+        context.drawFilledQuad(selectionRectangle);
     }
 
     if (partialGraphemeCaret) {
-        PipelineFlat::DeviceShared::placeVerticesBox(
-            flat_vertices,
-            text_translate * partialGraphemeCaret,
-            vec::color(0.2, 0.2, 0.0),
-            box.currentRectangle(),
-            elevation + 0.0001f
-        );
+        context.fillColor = vec::color(0.2, 0.2, 0.0);
+        context.drawFilledQuad(partialGraphemeCaret);
     }
 
     // Display the caret and handle blinking.
@@ -121,16 +90,11 @@ void LineInputWidget::updateAndPlaceVertices(
 
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
     if (leftToRightCaret && blinkIsOn && focus && window.active) {
-        PipelineFlat::DeviceShared::placeVerticesBox(
-            flat_vertices,
-            text_translate * leftToRightCaret,
-            vec::color(0.5, 0.5, 0.5),
-            box.currentRectangle(),
-            elevation + 0.0001f
-        );
+        context.fillColor = vec::color(0.5, 0.5, 0.5);
+        context.drawFilledQuad(leftToRightCaret);
     }
 
-    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    Widget::draw(drawContext, displayTimePoint);
 }
 
 
@@ -142,7 +106,7 @@ void LineInputWidget::handleCommand(string_ltag command) noexcept
     }
 
     // This lock is held during rendering, only update the field when holding this lock.
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     if (command == "text.edit.paste"_ltag) {
         field.handlePaste(window.getTextFromClipboard());
@@ -169,7 +133,7 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     }
 
     // This lock is held during rendering, only update the field when holding this lock.
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     switch (event.type) {
     case GUI::KeyboardEvent::Type::Grapheme:

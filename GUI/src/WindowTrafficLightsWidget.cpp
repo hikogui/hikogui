@@ -29,13 +29,11 @@ int WindowTrafficLightsWidget::state() const noexcept {
     return r;
 }
 
-void WindowTrafficLightsWidget::updateAndPlaceVertices(
-    cpu_utc_clock::time_point displayTimePoint,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+void WindowTrafficLightsWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    auto context = drawContext;
+    context.clippingRectangle = box.currentRectangle();
+
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,
         box.currentExtent(),
@@ -52,16 +50,12 @@ void WindowTrafficLightsWidget::updateAndPlaceVertices(
     if (backingImage.image) {
         let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
 
-        GUI::PipelineImage::ImageLocation location;
-        let T = mat::T(box.currentOffset(elevation));
-        let S = mat::S(currentScale);
-        location.transform = T * S;
-        location.clippingRectangle = box.currentRectangle();
-
-        backingImage.image->placeVertices(location, image_vertices);
+        auto context = drawContext;
+        context.transform = mat::T(box.currentOffset(elevation)) * mat::S(currentScale);
+        context.drawImage(*(backingImage.image));
     }
 
-    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    Widget::draw(drawContext, displayTimePoint);
 }
 
 void WindowTrafficLightsWidget::drawTrianglesOutward(Path &path, vec position, float radius) noexcept

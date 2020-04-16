@@ -85,6 +85,15 @@ public:
      */
     Size size = Size::Normal;
 
+    //! The minimum window extent as calculated by laying out all the widgets.
+    ivec minimumWindowExtent;
+
+    //! The maximum window extent as calculated by laying out all the widgets.
+    ivec maximumWindowExtent;
+
+    //! The current window extent as set by the GPU library.
+    ivec currentWindowExtent;
+
     std::shared_ptr<WindowDelegate> delegate;
 
     std::string title;
@@ -162,7 +171,7 @@ public:
     virtual void render(cpu_utc_clock::time_point displayTimePoint) = 0;
 
     bool isClosed() {
-        std::scoped_lock lock(GUI_globals->mutex);
+        auto lock = std::scoped_lock(guiMutex);
         return state == State::NoWindow;
     }
 
@@ -233,15 +242,6 @@ protected:
      * not figure this out by itself.
      */
     irect OSWindowRectangle;
-
-    //! The minimum window extent as calculated by laying out all the widgets.
-    ivec minimumWindowExtent;
-
-    //! The maximum window extent as calculated by laying out all the widgets.
-    ivec maximumWindowExtent;
-
-    //! The current window extent as set by the GPU library.
-    ivec currentWindowExtent;
 
     /*! Called when the GPU library has changed the window size.
      */

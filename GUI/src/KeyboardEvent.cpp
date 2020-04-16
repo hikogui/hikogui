@@ -9,8 +9,7 @@ namespace TTauri::GUI {
 std::vector<string_ltag> const &KeyboardEvent::getCommands() const noexcept
 {
     ttauri_assume(type == Type::Key);
-    ttauri_assume(GUI_globals != nullptr);
-    return GUI_globals->keyboard_bindings.translate(key);
+    return keyboardBindings.translate(key);
 }
 
 

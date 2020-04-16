@@ -17,84 +17,60 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 {
 }
 
-void ButtonWidget::updateAndPlaceVertices(
-    cpu_utc_clock::time_point displayTimePoint,
-    vspan<PipelineFlat::Vertex> &flat_vertices,
-    vspan<PipelineBox::Vertex> &box_vertices,
-    vspan<PipelineImage::Vertex> &image_vertices,
-    vspan<PipelineSDF::Vertex> &sdf_vertices) noexcept
+void ButtonWidget::draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto continueRendering = false;
+    auto context = drawContext;
+    context.clippingRectangle = expand(box.currentRectangle(), 10.0);
 
-    // Draw something.
-    vec cornerShapes = { 10.0, 10.0, -10.0, 0.0 };
-
-    vec backgroundColor;
-    vec labelColor;
-    vec borderColor;
-    float shadowSize;
-
+    context.cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
     if (value) {
         if (hover) {
-            backgroundColor = vec::color(0.3, 0.3, 1.0);
+            context.fillColor = vec::color(0.3, 0.3, 1.0);
         } else if (pressed) {
-            backgroundColor = vec::color(0.1, 0.1, 0.1);
+            context.fillColor = vec::color(0.1, 0.1, 0.1);
         } else {
-            backgroundColor = vec::color(0.072, 0.072, 1.0);
+            context.fillColor = vec::color(0.072, 0.072, 1.0);
         }
     } else {
         if (hover) {
-            backgroundColor = vec::color(0.3, 0.3, 0.3);
+            context.fillColor = vec::color(0.3, 0.3, 0.3);
         } else if (pressed) {
-            backgroundColor = vec::color(0.072, 0.072, 1.0);
+            context.fillColor = vec::color(0.072, 0.072, 1.0);
         } else {
-            backgroundColor = vec::color(0.1, 0.1, 0.1);
+            context.fillColor = vec::color(0.1, 0.1, 0.1);
         }
     }
 
     if (focus) {
-        borderColor = vec::color(0.072, 0.072, 1.0);
+        context.borderColor = vec::color(0.072, 0.072, 1.0);
     } else {
-        borderColor = vec::color(0.3, 0.3, 0.3);
+        context.borderColor = vec::color(0.3, 0.3, 0.3);
     }
+    context.borderSize = 1.0;
 
-    labelColor = vec{1.0, 1.0, 1.0, 1.0};
+    context.color = vec{1.0, 1.0, 1.0, 1.0};
 
     if (value || pressed) {
-        shadowSize = 0.0;
+        context.shadowSize = 0.0;
     } else {
-        shadowSize = 6.0;
+        context.shadowSize = 6.0;
     }
 
-
     if (renderTrigger.check(displayTimePoint) >= 2) {
-        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
+        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
 
         labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, numeric_cast<float>(box.width.value()));
 
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 
-    PipelineBox::DeviceShared::placeVertices(
-        box_vertices,
-        elevation,
-        box.currentRectangle(),
-        backgroundColor,
-        1.0f,
-        borderColor,
-        shadowSize,
-        cornerShapes,
-        expand(box.currentRectangle(), 10.0)
-    );
+    context.transform = mat::T(0.0, 0.0, elevation);
+    context.drawBox(box.currentRectangle());
 
-    window.device->SDFPipeline->placeVertices(
-        sdf_vertices,
-        labelShapedText,
-        mat::T(box.currentOffset().z(elevation)),
-        box.currentRectangle()
-    );
+    context.transform = mat::T(box.currentOffset(elevation));
+    context.drawText(labelShapedText);
 
-    Widget::updateAndPlaceVertices(displayTimePoint, flat_vertices, box_vertices, image_vertices, sdf_vertices);
+    Widget::draw(drawContext, displayTimePoint);
 }
 
 void ButtonWidget::handleCommand(string_ltag command) noexcept {

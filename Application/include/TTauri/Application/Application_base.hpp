@@ -53,17 +53,6 @@ public:
      */
     std::vector<std::string> arguments;
 
-    FoundationGlobals i_foundation;
-#if defined(BUILD_TTAURI_AUDIO)
-    Audio::AudioGlobals i_audio;
-#endif
-#if defined(BUILD_TTAURI_GUI)
-    Text::TextGlobals i_text;
-    GUI::GUIGlobals i_gui;
-    GUI::Widgets::WidgetsGlobals i_widgets;
-#endif
-    int i_dummy;
-
     Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance = nullptr, int nCmdShow = 0);
     virtual ~Application_base();
     Application_base(const Application_base &) = delete;

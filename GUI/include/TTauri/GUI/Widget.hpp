@@ -26,6 +26,9 @@
 #include <mutex>
 #include <typeinfo>
 
+namespace TTauri::GUI {
+class DrawContext;
+}
 namespace TTauri::GUI::PipelineImage {
 struct Image;
 struct Vertex;
@@ -125,27 +128,15 @@ public:
         return false;
     }
 
-    /** Update and place vertices.
+    /** Draw widget.
     *
-    * The overriding function should call the base class's update(), the place
+    * The overriding function should call the base class's draw(), the place
     * where the call this function will determine the order of the vertices into
     * each buffer. This is important when needing to do the painters algorithm
     * for alpha-compositing. However the pipelines are always drawn in the same
     * order.
-    *
-    * @param modified The data in the widget has been modified.
-    * @param flat_vertices Vertex buffer of the flat-pipeline.
-    * @param box_vertices Vertex buffer of the box-pipeline.
-    * @param image_vertices Vertex buffer of the image-pipeline.
-    * @param sdf_vertices Vertex buffer of the sdf-pipeline.
     */
-    virtual void updateAndPlaceVertices(
-        cpu_utc_clock::time_point displayTimePoint,
-        vspan<PipelineFlat::Vertex> &flat_vertices,
-        vspan<PipelineBox::Vertex> &box_vertices,
-        vspan<PipelineImage::Vertex> &image_vertices,
-        vspan<PipelineSDF::Vertex> &sdf_vertices
-    ) noexcept;
+    virtual void draw(DrawContext &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept;
 
     virtual void handleWindowResize() noexcept {
         renderTrigger += std::numeric_limits<int>::max();

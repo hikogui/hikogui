@@ -33,16 +33,13 @@ namespace TTauri::Text {
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
 
-    ttauri_assume(Text_globals->font_book);
-    let &font_book = *(Text_globals->font_book);
-
     for (let &ag: text) {
-        let font_id = font_book.find_font(ag.style.family_id, ag.style.variant);
+        let font_id = fontBook->find_font(ag.style.family_id, ag.style.variant);
 
         // The end-of-paragraph is represented by a space glyph, which is usefull for
         // producing a correct cursor at an empty line at the end of a paragraph.
         let g = (ag.grapheme == '\n') ? Grapheme{0} : ag.grapheme;
-        glyphs.emplace_back(ag, font_book.find_glyph(font_id, g));
+        glyphs.emplace_back(ag, fontBook->find_glyph(font_id, g));
     }
 
     return glyphs;
@@ -55,9 +52,6 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 
 static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 {
-    ttauri_assume(Text_globals->font_book);
-    let &font_book = *(Text_globals->font_book);
-
     auto font_id = FontID{};
     Font const *font = nullptr;
     auto next_i = glyphs.begin();
@@ -68,7 +62,7 @@ static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexce
         let new_font_id = i->glyphs.font_id();
         if (font_id != new_font_id) {
             font_id = new_font_id;
-            font = &(font_book.get_font(font_id));
+            font = &(fontBook->get_font(font_id));
         }
         ttauri_assume(font != nullptr);
         let next_is_same_font = (next_i != glyphs.end()) && (next_i->glyphs.font_id() == font_id);
@@ -245,7 +239,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalA
     ssize_t logicalIndex = 0;
     for (auto &c: text) {
         c.logicalIndex = logicalIndex++;
-        c.bidiClass = Text_globals->unicode_data->getBidiClass(c.grapheme[0]);
+        c.bidiClass = unicodeData->getBidiClass(c.grapheme[0]);
         c.charClass = to_GeneralCharacterClass(c.bidiClass);
     }
     ttauri_assume(text.back().bidiClass == BidiClass::B);

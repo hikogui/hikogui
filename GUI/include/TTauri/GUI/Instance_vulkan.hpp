@@ -59,7 +59,7 @@ public:
     }
 
     void destroySurfaceKHR(vk::SurfaceKHR surface) {
-        std::scoped_lock lock(GUI_globals->mutex);
+        auto lock = std::scoped_lock(guiMutex);
         intrinsic.destroySurfaceKHR(surface);
     }
 

@@ -7,32 +7,27 @@
 #include <cstdint>
 #include <string>
 #include <mutex>
+#include <atomic>
 
 namespace TTauri::Audio {
-class AudioSystem;
+
 class AudioSystemDelegate;
+class AudioSystem;
 
-struct AudioGlobals;
-inline AudioGlobals *Audio_globals = nullptr;
+inline AudioSystemDelegate *audioDelegate = nullptr;
 
-struct AudioGlobals {
-private:
-    AudioSystem *_audioSystem = nullptr;
-    AudioSystemDelegate *audioSystem_delegate = nullptr;
+inline AudioSystem *audioSystem = nullptr;
 
-public:
-    /*! Global mutex for Audio functionality.
-    */
-    std::recursive_mutex mutex;
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+inline std::atomic<uint64_t> startupCount = 0;
 
-    AudioGlobals(AudioSystemDelegate *audioSystem_delegate);
-    ~AudioGlobals();
-    AudioGlobals(AudioGlobals const &) = delete;
-    AudioGlobals &operator=(AudioGlobals const &) = delete;
-    AudioGlobals(AudioGlobals &&) = delete;
-    AudioGlobals &operator=(AudioGlobals &&) = delete;
+/** Startup the Text library.
+*/
+void startup();
 
-    AudioSystem &audioSystem() noexcept;
-};
+/** Shutdown the Text library.
+*/
+void shutdown();
 
 }

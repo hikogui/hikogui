@@ -29,7 +29,7 @@ Instance_vulkan::Instance_vulkan(InstanceDelegate *delegate, const std::vector<c
     Instance_base(delegate),
     requiredExtensions(std::move(extensionNames))
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
     applicationInfo = vk::ApplicationInfo(
         "TTauri App", VK_MAKE_VERSION(0, 1, 0), "TTauri Engine", VK_MAKE_VERSION(0, 1, 0), VK_API_VERSION_1_0);
@@ -81,7 +81,7 @@ Instance_vulkan::~Instance_vulkan()
 
 void Instance_vulkan::initialize() noexcept(false)
 {
-    std::scoped_lock lock(GUI_globals->mutex);
+    auto lock = std::scoped_lock(guiMutex);
 
 #if defined(_WIN32) && !defined(NDEBUG)
     debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
