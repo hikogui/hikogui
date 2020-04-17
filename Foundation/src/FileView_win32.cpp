@@ -55,34 +55,30 @@ FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, si
 FileView::FileView(FileView const &other) noexcept:
     fileMappingObject(other.fileMappingObject),
     _bytes(other._bytes),
-    _offset(other._offset)
-{
-    ttauri_assume(this != &other);
-}
+    _offset(other._offset) {}
 
 FileView &FileView::operator=(FileView const &other) noexcept
 {
-    ttauri_assume(this != &other);
-    fileMappingObject = other.fileMappingObject;
-    _offset = other._offset;
-    _bytes = other._bytes;
+    if (this != &other) {
+        fileMappingObject = other.fileMappingObject;
+        _offset = other._offset;
+        _bytes = other._bytes;
+    }
     return *this;
 }
 
 FileView::FileView(FileView &&other) noexcept:
     fileMappingObject(std::move(other.fileMappingObject)),
     _bytes(std::move(other._bytes)),
-    _offset(other._offset)
-{
-    ttauri_assume(this != &other);
-}
+    _offset(other._offset) {}
 
 FileView &FileView::operator=(FileView &&other) noexcept
 {
-    ttauri_assume(this != &other);
-    fileMappingObject = std::move(other.fileMappingObject);
-    _offset = other._offset;
-    _bytes = std::move(other._bytes);
+    if (this != &other) {
+        fileMappingObject = std::move(other.fileMappingObject);
+        _offset = other._offset;
+        _bytes = std::move(other._bytes);
+    }
     return *this;
 }
 

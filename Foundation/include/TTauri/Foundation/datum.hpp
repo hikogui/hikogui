@@ -397,7 +397,6 @@ public:
     }
 
     datum_impl(datum_impl const &other) noexcept {
-        ttauri_assume(this != &other);
         if (ttauri_unlikely(other.is_phy_pointer())) {
             copy_pointer(other);
         } else {
@@ -407,29 +406,32 @@ public:
     }
 
     datum_impl &operator=(datum_impl const &other) noexcept {
-        ttauri_assume(this != &other);
-        if (ttauri_unlikely(is_phy_pointer())) {
-            delete_pointer();
-        }
-        if (ttauri_unlikely(other.is_phy_pointer())) {
-            copy_pointer(other);
-        } else {
-            // We do a memcpy, because we don't know the type in the union.
-            std::memcpy(this, &other, sizeof(*this));
+        if (this != &other) {
+            if (ttauri_unlikely(is_phy_pointer())) {
+                delete_pointer();
+            }
+            if (ttauri_unlikely(other.is_phy_pointer())) {
+                copy_pointer(other);
+            } else {
+                // We do a memcpy, because we don't know the type in the union.
+                std::memcpy(this, &other, sizeof(*this));
+            }
         }
         return *this;
     }
 
     datum_impl(datum_impl &&other) noexcept : u64(undefined_mask) {
-        ttauri_assume(this != &other);
         // We do a memcpy, because we don't know the type in the union.
         std::memcpy(this, &other, sizeof(*this));
         other.u64 = undefined_mask;
     }
 
     datum_impl &operator=(datum_impl &&other) noexcept {
-        ttauri_assume(this != &other);
-        swap(*this, other);
+        if (this != &other) {
+            // We do a memcpy, because we don't know the type in the union.
+            std::memcpy(this, &other, sizeof(*this));
+        }
+        other.u64 = undefined_mask;
         return *this;
     }
 

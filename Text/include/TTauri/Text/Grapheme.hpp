@@ -51,10 +51,12 @@ public:
     }
 
     force_inline Grapheme& operator=(const Grapheme& other) noexcept {
-        delete_pointer();
-        value = other.value;
-        if (other.has_pointer()) {
-            value = create_pointer(other.get_pointer()->data(), other.size());
+        if (this != &other) {
+            delete_pointer();
+            value = other.value;
+            if (other.has_pointer()) {
+                value = create_pointer(other.get_pointer()->data(), other.size());
+            }
         }
         return *this;
     }

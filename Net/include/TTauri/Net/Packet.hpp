@@ -36,12 +36,6 @@ public:
         rhs.data = nullptr;
     }
 
-    Packet operator=(Packet &&rhs) noexcept {
-        data = rhs.data;
-        data_end = rhs.data_end;
-        first = rhs.first;
-        last = rhs.last;
-    }
 
     [[nodiscard]] std::byte *begin() noexcept {
         return first;

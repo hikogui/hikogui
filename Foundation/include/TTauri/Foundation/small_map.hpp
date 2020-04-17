@@ -53,25 +53,25 @@ public:
     }
 
     small_map &operator=(small_map const &other) {
-        ttauri_assume(this != &other);
-        _end = items.begin();
-        for (let &other_item: other) {
-            auto &this_item = *(_end++);
-            this_item = other_item;
+        if (this != &other) {
+            _end = items.begin();
+            for (let &other_item: other) {
+                auto &this_item = *(_end++);
+                this_item = other_item;
+            }
         }
         return *this;
     }
 
     small_map &operator=(small_map &&other) {
-        ttauri_assume(this != &other);
-        using std::swap;
-
-        _end = items.begin();
-        for (let &other_item: other) {
-            auto &this_item = *(_end++);
-            this_item = other_item;
+        if (this != &other) {
+            _end = items.begin();
+            for (let &other_item: other) {
+                auto &this_item = *(_end++);
+                this_item = std::move(other_item);
+            }
+            other._end = other.begin();
         }
-        // All items in other are valid, no reason to set other._end.
         return *this;
     }
 

@@ -104,17 +104,21 @@ public:
     }
 
     FontGlyphIDs &operator=(FontGlyphIDs const &rhs) {
-        delete_pointer();
-        value = rhs.value;
-        if (rhs.has_pointer()) {
-            value = new_pointer(*(rhs.get_pointer()));
+        if (this != &rhs) {
+            delete_pointer();
+            value = rhs.value;
+            if (rhs.has_pointer()) {
+                value = new_pointer(*(rhs.get_pointer()));
+            }
         }
         return *this;
     }
 
     force_inline FontGlyphIDs &operator=(FontGlyphIDs &&rhs) {
-        using std::swap;
-        swap(value, rhs.value);
+        if (this != &rhs) {
+            using std::swap;
+            swap(value, rhs.value);
+        }
         return *this;
     }
 

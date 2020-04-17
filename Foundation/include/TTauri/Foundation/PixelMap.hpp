@@ -194,7 +194,7 @@ struct PixelMap {
 
     gsl_suppress2(r.11,i.11)
     PixelMap &operator=(PixelMap &&other) noexcept {
-        ttauri_assume(this != &other);
+        // Compatible with self-move.
         if (selfAllocated) {
             delete[] pixels;
         }
