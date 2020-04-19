@@ -24,27 +24,28 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     context.cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
     if (value) {
         if (hover) {
-            context.fillColor = vec::color(0.3, 0.3, 1.0);
+            context.fillColor = theme.accentColor();
         } else if (pressed) {
-            context.fillColor = vec::color(0.1, 0.1, 0.1);
+            context.fillColor = theme.fillColor(elevation);
         } else {
-            context.fillColor = vec::color(0.072, 0.072, 1.0);
+            context.fillColor = theme.activeColor();
         }
     } else {
         if (hover) {
-            context.fillColor = vec::color(0.3, 0.3, 0.3);
+            context.fillColor = theme.fillColor(elevation);
         } else if (pressed) {
-            context.fillColor = vec::color(0.072, 0.072, 1.0);
+            context.fillColor = theme.activeColor();
         } else {
-            context.fillColor = vec::color(0.1, 0.1, 0.1);
+            context.fillColor = theme.fillColor(elevation - 1);
         }
     }
 
     if (focus) {
-        context.borderColor = vec::color(0.072, 0.072, 1.0);
+        context.borderColor = theme.keyboardFocusColor();
     } else {
-        context.borderColor = vec::color(0.3, 0.3, 0.3);
+        context.borderColor = theme.borderColor(elevation);
     }
+
     context.borderSize = 1.0;
 
     context.color = vec{1.0, 1.0, 1.0, 1.0};
@@ -60,9 +61,9 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     context.drawBox(buttonRectangle);
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
-        let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
+        //let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
 
-        labelShapedText = ShapedText(label, labelStyle, HorizontalAlignment::Center, buttonRectangle.width());
+        labelShapedText = ShapedText(label, theme.labelStyle(), HorizontalAlignment::Center, buttonRectangle.width());
 
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }
