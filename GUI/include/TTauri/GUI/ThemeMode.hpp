@@ -11,17 +11,13 @@ namespace TTauri::GUI {
 
 enum class ThemeMode {
     Light,
-    Dark,
-    LightAccessable,
-    DarkAccessable
+    Dark
 };
 
 [[nodiscard]] constexpr char const *to_const_string(ThemeMode rhs) noexcept {
     switch (rhs) {
     case ThemeMode::Light: return "Light";
     case ThemeMode::Dark: return "Dark";
-    case ThemeMode::LightAccessable: return "LightAccessable";
-    case ThemeMode::DarkAccessable: return "DarkAccessable";
     default: no_default;
     }
 }

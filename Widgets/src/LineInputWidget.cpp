@@ -12,10 +12,10 @@ namespace TTauri::GUI::Widgets {
 using namespace TTauri::Text;
 using namespace std::literals;
 
-LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string const label, TextStyle style) noexcept :
+LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string const label) noexcept :
     Widget(window, parent),
     label(std::move(label)),
-    field(style),
+    field(theme->labelStyle),
     shapedText()
 {
 }
@@ -23,41 +23,36 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
 void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
+    context.cornerShapes = theme->lineInputCornerShapes;
+    context.lineWidth = theme->lineInputBorderWidth;
 
-    // Draw something.
-    context.cornerShapes = vec{0.0, 0.0, 0.0, 0.0};
-
-    if (hover || focus) {
-        context.fillColor = vec::color(0.1, 0.1, 0.1);
-    } else {
-        context.fillColor = vec::color(0.01, 0.01, 0.01);
-    }
 
     if (focus) {
-        context.borderColor = vec::color(0.072, 0.072, 1.0);
+        context.color = theme->accentColor;
+        context.fillColor = theme->fillColor(nestingLevel() + 1);
     } else if (hover) {
-        context.borderColor = vec::color(0.2, 0.2, 0.2);
+        context.color = theme->accentColor;
+        context.fillColor = theme->fillColor(nestingLevel() + 1);
     } else {
-        context.borderColor = vec::color(0.1, 0.1, 0.1);
+        context.color = theme->fillColor(nestingLevel() + 1);
+        context.fillColor = theme->fillColor(nestingLevel());
     }
 
-    context.color = vec{1.0, 1.0, 1.0, 1.0};
-
-    let padding = 5.0f;
-    let inputFieldRectangle = shrink(rect{vec{}, box.currentExtent()}, padding);
+    let inputFieldRectangle = shrink(rect{vec{}, box.currentExtent()}, theme->padding);
     context.drawBox(inputFieldRectangle);
 
     let textRectangle = shrink(inputFieldRectangle, 2.0);
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
+        field.setStyleOfAll(theme->labelStyle);
+
         field.setExtent(textRectangle.extent());
         leftToRightCaret = field.leftToRightCaret();
         partialGraphemeCaret = field.partialGraphemeCaret();
         selectionRectangles = field.selectionRectangles();
 
         if (ssize(field) == 0) {
-            let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
-            shapedText = ShapedText(label, labelStyle, HorizontalAlignment::Left, textRectangle.width());
+            shapedText = ShapedText(label, theme->placeholderLabelStyle, HorizontalAlignment::Left, textRectangle.width());
 
         } else {
             shapedText = field.shapedText();
@@ -72,12 +67,12 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
     context.transform = context.transform * mat::T(textOffset.z(0.0001f));
 
     for (let selectionRectangle: selectionRectangles) {
-        context.fillColor = vec::color(0.0, 0.0, 1.0);
+        context.fillColor = theme->textSelectColor;
         context.drawFilledQuad(selectionRectangle);
     }
 
     if (partialGraphemeCaret) {
-        context.fillColor = vec::color(0.2, 0.2, 0.0);
+        context.fillColor = theme->incompleteGlyphColor;
         context.drawFilledQuad(partialGraphemeCaret);
     }
 
@@ -90,7 +85,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
 
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
     if (leftToRightCaret && blinkIsOn && focus && window.active) {
-        context.fillColor = vec::color(0.5, 0.5, 0.5);
+        context.fillColor = theme->cursorColor;
         context.drawFilledQuad(leftToRightCaret);
     }
 

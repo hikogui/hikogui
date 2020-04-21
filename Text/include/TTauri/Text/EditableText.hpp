@@ -64,6 +64,16 @@ public:
         this->currentStyle = style;
     }
 
+    /** Change the text style of all graphemes.
+     */
+    void setStyleOfAll(TextStyle style) noexcept {
+        setCurrentStyle(style);
+        for (auto &c: text) {
+            c.style = style;
+        }
+        updateShapedText();
+    }
+
     size_t size() const noexcept {
         return text.size();
     }

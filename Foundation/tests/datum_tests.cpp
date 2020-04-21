@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/datum.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -107,4 +108,22 @@ TEST(Datum, WillCastTo) {
 
     ASSERT_TRUE(will_cast_to<int>(v));
     ASSERT_FALSE(will_cast_to<URL>(v));
+}
+
+TEST(Datum, ArrayOperations) {
+    let v = datum{datum::vector{11, 12, 13, 14, 15}};
+
+    ASSERT_EQ(v[0], 11);
+    ASSERT_EQ(v[1], 12);
+    ASSERT_EQ(v[2], 13);
+    ASSERT_EQ(v[3], 14);
+    ASSERT_EQ(v[4], 15);
+    ASSERT_THROW(v[5], invalid_operation_error);
+
+    ASSERT_THROW(v[-6], invalid_operation_error);
+    ASSERT_EQ(v[-5], 11);
+    ASSERT_EQ(v[-4], 12);
+    ASSERT_EQ(v[-3], 13);
+    ASSERT_EQ(v[-2], 14);
+    ASSERT_EQ(v[-1], 15);
 }

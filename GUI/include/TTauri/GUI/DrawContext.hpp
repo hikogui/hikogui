@@ -40,11 +40,8 @@ public:
     /// Fill color.
     vec fillColor = vec::color(0.0, 0.0, 0.0, 0.0);
 
-    /// Border color.
-    vec borderColor = vec::color(1.0, 1.0, 1.0, 1.0);
-
-    /// Size of the border.
-    float borderSize = 1.0;
+    /// Size of lines.
+    float lineWidth = 1.0;
 
     /// Size of the drop shadow.
     float shadowSize = 0.0;
@@ -147,8 +144,8 @@ public:
             p1.z(),
             r,
             fillColor,
-            borderSize,
-            borderColor,
+            lineWidth,
+            color,
             shadowSize,
             cornerShapes,
             clippingRectangle

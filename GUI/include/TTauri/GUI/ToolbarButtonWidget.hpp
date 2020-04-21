@@ -18,8 +18,8 @@ public:
 
     std::variant<Path> icon;
 
-    R16G16B16A16SFloat hoverBackgroundColor = vec{1.0, 1.0, 1.0, 0.067 };
-    R16G16B16A16SFloat pressedBackgroundColor = vec{1.0, 1.0, 1.0, 0.133 };
+    vec hoverBackgroundColor = vec::color(1.0, 1.0, 1.0, 0.067);
+    vec pressedBackgroundColor = vec::color(1.0, 1.0, 1.0, 0.133);
 
     std::function<void()> delegate;
 

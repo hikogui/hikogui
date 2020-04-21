@@ -18,8 +18,6 @@ public:
     ToolbarButtonWidget *maximizeWindowButton = nullptr;
     ToolbarButtonWidget *minimizeWindowButton = nullptr;
 
-    vec backgroundColor = {0.0f, 0.0f, 0.0f, 0.5f};
-
     WindowToolbarWidget(Window &window, Widget *parent) noexcept;
     ~WindowToolbarWidget() {}
 

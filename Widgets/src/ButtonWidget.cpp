@@ -21,49 +21,38 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
 {
     auto context = drawContext;
 
-    context.cornerShapes = vec{ 10.0, 10.0, -10.0, 0.0 };
+    context.cornerShapes = theme->buttonCornerShapes;
     if (value) {
         if (hover) {
-            context.fillColor = theme.accentColor();
+            context.fillColor = theme->accentColor;
         } else if (pressed) {
-            context.fillColor = theme.fillColor(elevation);
+            context.fillColor = theme->fillColor(nestingLevel() + 1);
         } else {
-            context.fillColor = theme.activeColor();
+            context.fillColor = theme->accentColor;
         }
     } else {
         if (hover) {
-            context.fillColor = theme.fillColor(elevation);
+            context.fillColor = theme->fillColor(nestingLevel() + 1);
         } else if (pressed) {
-            context.fillColor = theme.activeColor();
+            context.fillColor = theme->accentColor;
         } else {
-            context.fillColor = theme.fillColor(elevation - 1);
+            context.fillColor = theme->fillColor(nestingLevel());
         }
     }
 
     if (focus) {
-        context.borderColor = theme.keyboardFocusColor();
+        context.color = theme->accentColor;
     } else {
-        context.borderColor = theme.borderColor(elevation);
+        context.color = theme->fillColor(nestingLevel() + 1);
     }
 
-    context.borderSize = 1.0;
+    context.lineWidth = theme->buttonBorderWidth;
 
-    context.color = vec{1.0, 1.0, 1.0, 1.0};
-
-    if (value || pressed) {
-        context.shadowSize = 0.0;
-    } else {
-        context.shadowSize = 6.0;
-    }
-
-    let padding = 5.0;
-    let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, padding);
+    let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, theme->padding);
     context.drawBox(buttonRectangle);
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
-        //let labelStyle = TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, context.color, 0.0, TextDecoration::None);
-
-        labelShapedText = ShapedText(label, theme.labelStyle(), HorizontalAlignment::Center, buttonRectangle.width());
+        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, buttonRectangle.width());
 
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }

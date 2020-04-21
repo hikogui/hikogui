@@ -1,0 +1,92 @@
+{
+    "name": "TTauri",
+    "mode": "light",
+
+    // The colors values are either:
+    // - integers are in sRGB
+    // - floats are in linear scRGB
+    // - string name of an color in the theme.
+
+    // Bright colors, fitting theme.
+    "blue"       : [  0, 122, 355],
+    "green"      : [ 52, 199,  89],
+    "indigo"     : [ 88,  86, 214],
+    "orange"     : [255, 149,   0],
+    "pink"       : [255,  45,  85],
+    "purple"     : [175,  82, 222],
+    "red"        : [255,  59,  48],
+    "teal"       : [ 90, 200, 250],
+    "yellow"     : [255, 204,   0],
+
+    // Gray-scale: ordered background to foreground, the middle entry must be middle gray.
+    "gray-shades": [
+        [250, 250, 255], // 0, -13
+        [242, 242, 247], // 1, -12
+        [229, 229, 234], // 2, -11
+        [209, 209, 214], // 3, -10
+        [199, 199, 204], // 4, -9
+        [174, 174, 178], // 5, -8
+        [142, 142, 147], // 6, -7
+        [ 99,  99, 102], // 7, -6
+        [ 72,  72,  74], // 8, -5
+        [ 58,  58,  60], // 9, -4
+        [ 44,  44,  46], // 10, -3
+        [ 28,  28,  30], // 11, -2
+        [  0,   0,   1]  // 12, -1
+    ],
+
+    // Colors used by widgets, to show nesting inside containers,
+    // and for internal elements and disabled icons.
+    "fill-shades": [
+        [250, 250, 255],
+        [242, 242, 247],
+        [229, 229, 234],
+        [209, 209, 214]
+    ],
+
+    // Color for textual or primary elements like icons.
+    "foreground-color":       [0, 0, 1],
+
+    // Accent color used by widgets, to show icons, hover and keyboard focus
+    "accent-color":           [  0, 122, 355],
+    "text-select-color":      [  0, 122, 355],
+    "cursor-color":           [142, 142, 147],
+    "incomplete-glyph-color": [255, 204,   0],
+
+    "label-style": {
+        "family": "Arial",
+        "weight": "Regular",
+        "size": 12.0,
+        "color": "foreground-color"
+    },
+    "warning-label-style": {
+        "family": "Arial",
+        "weight": "Regular",
+        "size": 12.0,
+        "color": [255, 204, 0]
+    },
+    "error-label-style": {
+        "family": "Arial",
+        "weight": "Regular",
+        "size": 12.0,
+        "color": [255, 59, 48]
+    },
+    "help-label-style": {
+        "family": "Arial",
+        "weight": "Regular",
+        "size": 12.0,
+        "color": [88, 86, 214]
+    },
+    "placeholder-label-style": {
+        "family": "Arial",
+        "weight": "Regular",
+        "size": 12.0,
+        "color": [142, 142, 147]
+    },
+    "link-label-style": {
+        "family": "Arial",
+        "weight": "Regular",
+        "size": 12.0,
+        "color": [0, 122, 355]
+    }
+}

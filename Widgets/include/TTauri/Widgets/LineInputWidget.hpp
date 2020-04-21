@@ -30,15 +30,7 @@ public:
 
     LineInputWidget(
         Window &window, Widget *parent,
-        std::string const label,
-        Text::TextStyle style=Text::TextStyle(
-            "Arial",
-            Text::FontVariant{Text::FontWeight::Regular, false},
-            14.0,
-            vec::color(1.0,1.0,1.0),
-            0.0,
-            Text::TextDecoration::None
-        )
+        std::string const label
     ) noexcept;
 
     ~LineInputWidget() {}

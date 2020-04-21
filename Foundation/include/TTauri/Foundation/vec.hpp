@@ -5,6 +5,9 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/sRGB.hpp"
+#include "TTauri/Foundation/strings.hpp"
+#include "TTauri/Foundation/exceptions.hpp"
 #include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
@@ -185,10 +188,54 @@ public:
      *    Values below 0.0 will cause colours outside the sRGB color gamut
      *    for use with high-gamut displays
      */
-    template<typename T, typename U, typename V=float, typename W=float,
-        std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-        [[nodiscard]] force_inline static vec color(T r, U g, V b=0.0f, W a=1.0f) noexcept {
+    template<typename R, typename G, typename B, typename A=float,
+        std::enable_if_t<std::is_floating_point_v<R> && std::is_floating_point_v<G> && std::is_floating_point_v<B> && std::is_floating_point_v<A>,int> = 0>
+        [[nodiscard]] force_inline static vec color(R r, G g, B b, A a=1.0f) noexcept {
         return vec{r, g, b, a};
+    }
+
+    
+
+    template<typename R, typename G, typename B, typename A=float,
+        std::enable_if_t<std::is_floating_point_v<R> && std::is_floating_point_v<G> && std::is_floating_point_v<B> && std::is_floating_point_v<A>,int> = 0>
+    [[nodiscard]] force_inline static vec colorFromSRGB(R r, G g, B b, A a=1.0f) noexcept {
+        return vec{
+            sRGB_gamma_to_linear(numeric_cast<float>(r)),
+            sRGB_gamma_to_linear(numeric_cast<float>(g)),
+            sRGB_gamma_to_linear(numeric_cast<float>(b)),
+            a
+        };
+    }
+
+    template<typename R, typename G, typename B, typename A=int,
+        std::enable_if_t<std::is_integral_v<R> && std::is_integral_v<G> && std::is_integral_v<B> && std::is_integral_v<A>,int> = 0>
+    [[nodiscard]] force_inline static vec colorFromSRGB(R r, G g, B b, A a=255) noexcept {
+        return colorFromSRGB(
+            a / 255.0f,
+            g / 255.0f,
+            b / 255.0f,
+            a / 255.0f
+        );
+    }
+
+    [[nodiscard]] force_inline static vec colorFromSRGB(std::string_view str) {
+        auto tmp = std::string{str};
+
+        if (starts_with(tmp, "#"s)) {
+            tmp = tmp.substr(1);
+        }
+        if (ssize(tmp) != 6 || ssize(tmp) != 8) {
+            TTAURI_THROW(parse_error("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str));
+        }
+        if (ssize(tmp) == 6) {
+            tmp += "ff";
+        }
+
+        int r = (char_to_nibble(tmp[0]) << 4) | char_to_nibble(tmp[1]);
+        int g = (char_to_nibble(tmp[2]) << 4) | char_to_nibble(tmp[3]);
+        int b = (char_to_nibble(tmp[4]) << 4) | char_to_nibble(tmp[5]);
+        int a = (char_to_nibble(tmp[6]) << 4) | char_to_nibble(tmp[7]);
+        return colorFromSRGB(r, g, b, a);
     }
 
     template<size_t I>

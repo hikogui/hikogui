@@ -21,7 +21,7 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     window.addConstraint(box.left == 0);
     window.addConstraint(box.bottom == 0);
 
-    backgroundColor = vec{0.058, 0.078, 0.010, 1.0};
+    backgroundColor = theme->fillColor(nestingLevel());
 }
 
 HitBox WindowWidget::hitBoxTest(vec position) noexcept

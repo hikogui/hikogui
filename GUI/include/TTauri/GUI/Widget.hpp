@@ -128,6 +128,10 @@ public:
         return false;
     }
 
+    [[nodiscard]] ssize_t nestingLevel() noexcept {
+        return numeric_cast<ssize_t>(elevation);
+    }
+
     /** Draw widget.
     *
     * The overriding function should call the base class's draw(), the place

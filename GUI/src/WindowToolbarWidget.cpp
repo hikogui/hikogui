@@ -70,7 +70,7 @@ void WindowToolbarWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
 
     let rectangle = rect{vec{0.0, 0.0}, box.currentExtent()};
 
-    context.fillColor = backgroundColor;
+    context.fillColor = theme->fillColor(nestingLevel());
     context.drawFilledQuad(rectangle);
 
     Widget::draw(drawContext, displayTimePoint);

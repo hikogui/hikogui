@@ -1152,18 +1152,22 @@ public:
         }
 
         if (is_map()) {
-            auto *m = get_pointer<datum_impl::map>();
-            auto [i, did_insert] = m->try_emplace(rhs);
+            auto &m = *get_pointer<datum_impl::map>();
+            auto [i, did_insert] = m.try_emplace(rhs);
             return i->second;
 
         } else if (is_vector() && rhs.is_integer()) {
-            let index = static_cast<int64_t>(rhs);
-            auto *v = get_pointer<datum_impl::vector>();
+            auto index = static_cast<int64_t>(rhs);
+            auto &v = *get_pointer<datum_impl::vector>();
 
-            if (index < 0 || index >= to_signed(v->size())) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, v->size());
+            if (index < 0) {
+                index = ssize(v) + index;
+            }
+
+            if (index < 0 || index >= ssize(v)) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, ssize(v));
             } else {
-                return (*v)[index];
+                return v[index];
             }
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
@@ -1180,21 +1184,25 @@ public:
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl operator[](datum_impl const &rhs) const {
         if (is_map()) {
-            auto *m = get_pointer<datum_impl::map>();
-            let i = m->find(rhs);
-            if (i == m->end()) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Could not find key {} in map of size {}", rhs.repr(), m->size());
+            let &m = *get_pointer<datum_impl::map>();
+            let i = m.find(rhs);
+            if (i == m.cend()) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Could not find key {} in map of size {}", rhs.repr(), ssize(m));
             }
             return i->second;
 
         } else if (is_vector() && rhs.is_integer()) {
-            let index = static_cast<int64_t>(rhs);
-            auto *v = get_pointer<datum_impl::vector>();
+            auto index = static_cast<int64_t>(rhs);
+            let &v = *get_pointer<datum_impl::vector>();
 
-            if (index < 0 || index >= to_signed(v->size())) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, v->size());
+            if (index < 0) {
+                index = ssize(v) + index;
+            }
+
+            if (index < 0 || index >= ssize(v)) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, ssize(v));
             } else {
-                return (*v)[index];
+                return v[index];
             }
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Cannot index value of type {} with {} of type {}", type_name(), rhs.repr(), rhs.type_name());
@@ -1212,15 +1220,19 @@ public:
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     bool contains(datum_impl const &rhs) const noexcept {
         if (is_map()) {
-            auto *m = get_pointer<datum_impl::map>();
-            let i = m->find(rhs);
-            return i != m->end();
+            let &m = *get_pointer<datum_impl::map>();
+            let i = m.find(rhs);
+            return i != m.cend();
 
         } else if (is_vector() && rhs.is_integer()) {
-            let index = static_cast<int64_t>(rhs);
-            auto *v = get_pointer<datum_impl::vector>();
+            auto index = static_cast<int64_t>(rhs);
+            let &v = *get_pointer<datum_impl::vector>();
 
-            return index >= 0 && index < to_signed(v->size());
+            if (index < 0) {
+                index = ssize(v) + index;
+            }
+
+            return index >= 0 && index < ssize(v);
 
         } else {
             return false;

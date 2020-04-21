@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/float16.hpp"
 #include <cmath>
+#include <array>
 
 namespace TTauri {
 

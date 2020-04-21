@@ -8,276 +8,251 @@
 
 namespace TTauri::GUI {
 
+Theme::Theme(URL const &url)
+{
+    try {
+        let data = parseJSON(url);
+        parse(data);
+    } catch (error &e) {
+        e.set<"url"_tag>(url);
+        throw;
+    }
+}
 
+[[nodiscard]] std::string Theme::parseString(datum const &data, char const *name)
+{
+    // Extract name
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", name));
+    }
+    let object = data[name];
+    if (!object.is_string()) {
+        TTAURI_THROW(parse_error("'{}' attribute must be a string, got {}.", name, object.type_name()));
+    }
+    return static_cast<std::string>(name);
+}
 
-//[[nodiscard]] FontStyleID parse_Theme_text_style_index(datum data)
-//{
-//    if (data.is_integer()) {
-//        let index = static_cast<int>(data);
-//        if (index < 0 || index > 7) {
-//            TTAURI_THROW(parse_error("Expect a text-style index to be an integer between 0 and 7, got {}", index));
-//        }
-//
-//        return static_cast<FontStyleID>(index);
-//
-//    } else if (data.is_string()) {
-//        let key = static_cast<std::string>(data);
-//
-//        let i = FontStyleID_from_string_table.find(key);
-//        if (i == FontStyleID_from_string_table.end()) {
-//            TTAURI_THROW(parse_error("Unknown text-style index {}"));
-//        } else {
-//            return i->second;
-//        }
-//    } else {
-//        TTAURI_THROW(parse_error("Expect a text-style index to be an integer or a string {}"));
-//    }
-//}
-//
-//[[nodiscard]] ColorID parse_Theme_color_index(datum data)
-//{
-//    if (data.is_integer()) {
-//        let index = static_cast<int>(data);
-//        if (index < 0 || index > 0x1f) {
-//            TTAURI_THROW(parse_error("Expect a color index to be an integer between 0 and 31, got {}", index));
-//        }
-//
-//        return static_cast<ColorID>(index);
-//
-//    } else if (data.is_string()) {
-//        let key = static_cast<std::string>(data);
-//
-//        let i = ColorID_from_string_table.find(key);
-//        if (i == ColorID_from_string_table.end()) {
-//            TTAURI_THROW(parse_error("Unknown color id {}", key));
-//        } else {
-//            return i->second;
-//        }
-//    } else {
-//        TTAURI_THROW(parse_error("Expect a color index to be an integer or a string, got {}", data));
-//    }
-//}
-//
-//[[nodiscard]] TTauri::Text::FontWeight parse_Theme_font_weight(datum data)
-//{
-//    if (data.is_integer()) {
-//        let index = static_cast<int>(data);
-//        return TTauri::Text::FontWeight_from_int(index);
-//
-//    } else if (data.is_string()) {
-//        let key = static_cast<std::string>(data);
-//
-//        let i = TTauri::Text::FontWeight_from_string_table.find(key);
-//        if (i == TTauri::Text::FontWeight_from_string_table.end()) {
-//            TTAURI_THROW(parse_error("Unknown font-weight {}"));
-//        } else {
-//            return i->second;
-//        }
-//    } else {
-//        TTAURI_THROW(parse_error("Expect font-weight to be an integer or a string, got {}", data));
-//    }
-//}
-//
-//[[nodiscard]] TTauri::Text::TextDecoration parse_Theme_decoration(datum data)
-//{
-//    if (data.is_string()) {
-//        let key = static_cast<std::string>(data);
-//
-//        let i = TTauri::Text::TextDecoration_from_string_table.find(key);
-//        if (i == TTauri::Text::TextDecoration_from_string_table.end()) {
-//            TTAURI_THROW(parse_error("Unknown decoration {}"));
-//        } else {
-//            return i->second;
-//        }
-//    } else {
-//        TTAURI_THROW(parse_error("Expecting decoration attribute to have a string value, got {}", data));
-//    }
-//}
-//
-//[[nodiscard]] static TTauri::Text::TextStyle parse_Theme_text_style(datum const &map)
-//{
-//    if (!map.is_map()) {
-//        TTAURI_THROW(parse_error("Expect a text-styles to be an object, got type {}", map.type_name()));
-//    }
-//
-//    auto r = TTauri::Text::TextStyle{};
-//    for (auto i = map.map_begin(); i != map.map_end(); ++i) {
-//        let key = static_cast<std::string>(i->first);
-//
-//        if (key == "family") {
-//            if (!i->second.is_string()) {
-//                TTAURI_THROW(parse_error("Expect super-family attribute of a font style to be a string, got {}", i->second));
-//            }
-//            // Will never fail; automatic fall-back to "Noto".
-//            //r.set_family(Foundation_globals->font_book->find_family(static_cast<std::string>(i->second)));
-//
-//        } else if (key == "italic") {
-//            if (!i->second.is_bool()) {
-//                TTAURI_THROW(parse_error("Expect italic attribute of a font style to be a boolean, got {}", i->second));
-//            }
-//            r.variant.set_italic(static_cast<bool>(i->second));
-//
-//        } else if (key == "weight") {
-//            r.variant.set_weight(parse_Theme_font_weight(i->second));
-//
-//        } else if (key == "size") {
-//            if (!(i->second.is_string() || i->second.is_float())) {
-//                TTAURI_THROW(parse_error("Expect size attribute of a font style to be a numeric value, got {}", i->second));
-//            }
-//            r.size = static_cast<float>(i->second);
-//
-//        } else if (key == "color") {
-//            not_implemented;
-//            //r.color = parse_Theme_color_index(i->second);
-//
-//        } else if (key == "decoration") {
-//            r.decoration = parse_Theme_decoration(i->second);
-//
-//        } else {
-//            TTAURI_THROW(parse_error("Unknown font style attribute '{}'", key));
-//        }
-//    }
-//
-//    return r;
-//}
-//
-//
-//
-//void parse_Theme_text_styles(Theme &r, datum const &map)
-//{
-//    ttauri_assert(map.is_map());
-//
-//    for (auto i = map.map_begin(); i != map.map_end(); ++i) {
-//        let key = static_cast<std::string>(i->first);
-//
-//        try {
-//            let text_style_id = parse_Theme_text_style_index(key);
-//            r.text_styles[static_cast<int>(text_style_id)] = parse_Theme_text_style(i->second);
-//
-//        } catch (error &e) {
-//            TTAURI_THROW(parse_error("Failed to assign font style {} in text-styles", key).caused_by(e));
-//        }
-//    }
-//}
-//
-//[[nodiscard]] float gamma_to_linear(int x)
-//{
-//    if (x < 0 || x > 255) {
-//        TTAURI_THROW(parse_error("Expect integer color component values to be between 0 and 255. got {}", x));
-//    }
-//
-//    let u = numeric_cast<float>(x) / 255.0f;
-//    if (u <= 0.04045f) {
-//        return u / 12.92f;
-//    } else {
-//        return std::pow((u + 0.055f) / 1.055f, 2.4f);
-//    }
-//}
-//
-//[[nodiscard]] static vec parse_Theme_color(datum const &vector)
-//{
-//    if (!vector.is_vector()) {
-//        TTAURI_THROW(parse_error("Expect a color to be an array, got type {}", vector.type_name()));
-//    }
-//
-//    if (ssize(vector) != 3) {
-//        TTAURI_THROW(parse_error("Expect a color to be an array of three items, got {} items", ssize(vector)));
-//    }
-//
-//    let red = vector[0];
-//    let green = vector[1];
-//    let blue = vector[2];
-//
-//    if (red.is_integer() && green.is_integer() && blue.is_integer()) {
-//        // Gamma correct sRGBA values.
-//        let red_ = gamma_to_linear(static_cast<int>(red));
-//        let green_ = gamma_to_linear(static_cast<int>(green));
-//        let blue_ = gamma_to_linear(static_cast<int>(blue));
-//        return vec{red_, green_, blue_};
-//
-//    } else if (red.is_float() && green.is_float() && blue.is_float()) {
-//        // Wide gamut linear sRGBA values.
-//        let red_ = static_cast<float>(red);
-//        let green_ = static_cast<float>(green);
-//        let blue_ = static_cast<float>(blue);
-//        return vec{red_, green_, blue_};
-//
-//    } else {
-//        TTAURI_THROW(parse_error("Expect a color to be an array of three floats or three integers"));
-//    }
-//}
-//
-//void parse_Theme_colors(Theme &r, datum const &map)
-//{
-//    ttauri_assert(map.is_map());
-//
-//    for (auto i = map.map_begin(); i != map.map_end(); ++i) {
-//        let key = static_cast<std::string>(i->first);
-//
-//        try {
-//            let color_index = parse_Theme_color_index(key);
-//            r.color_palette[static_cast<int>(color_index)] = parse_Theme_color(i->second);
-//
-//        } catch (error &e) {
-//            TTAURI_THROW(parse_error("Failed to assign color {} in color-palette", key).caused_by(e));
-//        }
-//    }
-//}
-//
-//[[nodiscard]] static Theme _parse_Theme(URL const &url)
-//{
-//    auto r = Theme{};
-//
-//    let data = parseJSON(url);
-//    ttauri_assert(data.is_map());
-//
-//    // Extract name
-//    if (!data.contains("name")) {
-//        TTAURI_THROW(parse_error("Missing 'name' in Theme"));
-//    }
-//    let name = data["name"];
-//    if (!name.is_string()) {
-//        TTAURI_THROW(parse_error("'name' attribute in Theme must be a JSON string, got {}.", name.type_name()));
-//    }
-//    r.name = static_cast<std::string>(name);
-//
-//    // Extract color-palette
-//    if (!data.contains("color-palette")) {
-//        TTAURI_THROW(parse_error("Missing 'color-palette' section in Theme '{}'", name));
-//    }
-//    let color_palette = data["color-palette"];
-//    if (!color_palette.is_map()) {
-//        TTAURI_THROW(parse_error("'color-palette' section in Theme '{}' must be a JSON object, got {}.", name, color_palette.type_name()));
-//    }
-//    parse_Theme_colors(r, color_palette);
-//
-//    // Extract default color accent.
-//    if (!data.contains("default-accent-color")) {
-//        TTAURI_THROW(parse_error("Missing 'default-accent-color' attribute in Theme '{}'", name));
-//    }
-//    r.default_accent_color = parse_Theme_color_index(data["default-accent-color"]);
-//
-//    // Extract text-styles.
-//    if (!data.contains("text-styles")) {
-//        TTAURI_THROW(parse_error("Missing 'text-styles' section in Theme '{}'", name));
-//    }
-//    let text_styles = data["text-styles"];
-//    if (!text_styles.is_map()) {
-//        TTAURI_THROW(parse_error("'text-styles' section in Theme '{}' must be a JSON object, got {}.", name, text_styles.type_name()));
-//    }
-//    parse_Theme_text_styles(r, text_styles);
-//
-//    return r;
-//}
-//
-//[[nodiscard]] Theme parse_Theme(URL const &url)
-//{
-//    try {
-//        return _parse_Theme(url);
-//    } catch (error &e) {
-//        e.set<"url"_tag>(url);
-//        throw;
-//    }
-//}
+[[nodiscard]] float Theme::parseFloat(datum const &data, char const *name)
+{
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", name));
+    }
+
+    let object = data[name];
+    if (!object.is_numeric()) {
+        TTAURI_THROW(parse_error("'{}' attribute must be a number, got {}.", name, object.type_name()));
+    }
+
+    return static_cast<float>(object);
+}
+
+[[nodiscard]] bool Theme::parseBool(datum const &data, char const *name)
+{
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", name));
+    }
+
+    let object = data[name];
+    if (!object.is_bool()) {
+        TTAURI_THROW(parse_error("'{}' attribute must be a boolean, got {}.", name, object.type_name()));
+    }
+
+    return static_cast<bool>(object);
+}
+
+[[nodiscard]] vec Theme::parseColorValue(datum const &data)
+{
+    if (data.is_vector()) {
+        if (ssize(data) != 3 || ssize(data) != 4) {
+            TTAURI_THROW(parse_error("Expect 3 or 4 values for a color, got {}.", data));
+        }
+        let r = data[0];
+        let g = data[1];
+        let b = data[2];
+        let a = ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
+
+        if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
+            return vec::colorFromSRGB(
+                static_cast<int>(r),
+                static_cast<int>(g),
+                static_cast<int>(b),
+                static_cast<int>(a)
+            );
+        } else if (r.is_float() && g.is_float() && b.is_float() && a.is_float()) {
+            return vec::color(
+                static_cast<float>(r),
+                static_cast<float>(g),
+                static_cast<float>(b),
+                static_cast<float>(a)
+            );
+        } else {
+            TTAURI_THROW(parse_error("Expect all integers or all floating point numbers in a color, got {}.", data));
+        }
+
+    } else if (data.is_string()) {
+        let color_name = to_lower(static_cast<std::string>(data));
+        if (starts_with(color_name, "#"s)) {
+            return vec::colorFromSRGB(color_name);
+
+        } else if (color_name == "blue") { return blue;
+        } else if (color_name == "green") { return green;
+        } else if (color_name == "indigo") { return indigo;
+        } else if (color_name == "orange") { return orange;
+        } else if (color_name == "pink") { return pink;
+        } else if (color_name == "purple") { return purple;
+        } else if (color_name == "red") { return red;
+        } else if (color_name == "teal") { return teal;
+        } else if (color_name == "yellow") { return yellow;
+        } else if (color_name == "foreground-color") { return foregroundColor;
+        } else if (color_name == "accent-color") { return accentColor;
+        } else if (color_name == "text-select-color") { return textSelectColor;
+        } else if (color_name == "cursor-color") { return cursorColor;
+        } else if (color_name == "incomplete-glyph-color") { return incompleteGlyphColor;
+        } else {
+            TTAURI_THROW(parse_error("Unable to parse color, got {}.", data));
+        }
+    } else {
+        TTAURI_THROW(parse_error("Unable to parse color, got {}.", data));
+    }
+}
+
+[[nodiscard]] vec Theme::parseColor(datum const &data, char const *name)
+{
+    // Extract name
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing color '{}'", name));
+    }
+
+    let colorObject = data[name];
+    try {
+        return parseColorValue(colorObject);
+    } catch (parse_error &e) {
+        TTAURI_THROW(parse_error("Could not parse color '{}'", name).caused_by(e));
+    }
+}
+
+[[nodiscard]] std::vector<vec> Theme::parseColorList(datum const &data, char const *name)
+{
+    // Extract name
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing color list '{}'", name));
+    }
+
+    let colorListObject = data[name];
+    if (!colorListObject.is_vector()) {
+        TTAURI_THROW(parse_error("Expecting color list '{}' to be a list of colors, got {}", name, colorListObject.type_name()));
+    }
+
+    auto r = std::vector<vec>{};
+    ssize_t i = 0;
+    for (auto it = colorListObject.vector_begin(); it != colorListObject.vector_end(); ++it, ++i) {
+        try {
+            r.push_back(parseColorValue(*it));
+        } catch (parse_error &e) {
+            TTAURI_THROW(parse_error("Could not parse {}nd entry of color list '{}'", i + 1, name).caused_by(e));
+        }
+    }
+    return r;
+}
+
+[[nodiscard]] Text::FontWeight Theme::parseFontWeight(datum const &data, char const *name)
+{
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", name));
+    }
+
+    let object = data[name];
+    if (object.is_numeric()) {
+        return Text::FontWeight_from_int(static_cast<int>(object));
+    } else if (object.is_string()) {
+        return Text::FontWeight_from_string(static_cast<std::string>(object));
+    } else {
+        TTAURI_THROW(parse_error("Unable to parse font weight, got {}.", object.type_name()));
+    }
+}
+
+[[nodiscard]] Text::TextStyle Theme::parseTextStyleValue(datum const &data)
+{
+    if (!data.is_map()) {
+        TTAURI_THROW(parse_error("Expect a text-style to be an object, got '{}'", data));
+    }
+
+    Text::TextStyle r;
+
+    r.family_id = Text::fontBook->find_family(parseString(data, "family"));
+    r.size = parseFloat(data, "size");
+
+    if (data.contains("weight")) {
+        r.variant.set_weight(parseFontWeight(data, "weight"));
+    } else {
+        r.variant.set_weight(Text::FontWeight::Regular);
+    }
+
+    if (data.contains("italic")) {
+        r.variant.set_italic(parseBool(data, "italic"));
+    } else {
+        r.variant.set_italic(false);
+    }
+
+    r.color = parseColor(data, "color");
+    return r;
+}
+
+[[nodiscard]] Text::TextStyle Theme::parseTextStyle(datum const &data, char const *name)
+{
+    // Extract name
+    if (!data.contains(name)) {
+        TTAURI_THROW(parse_error("Missing text-style '{}'", name));
+    }
+
+    let textStyleObject = data[name];
+    try {
+        return parseTextStyleValue(textStyleObject);
+    } catch (parse_error &e) {
+        TTAURI_THROW(parse_error("Could not parse text-style '{}'", name).caused_by(e));
+    }
+}
+
+void Theme::parse(datum const &data)
+{
+    ttauri_assert(data.is_map());
+
+    this->name = parseString(data, "name");
+
+    let mode = to_lower(parseString(data, "mode"));
+    if (mode == "light") {
+        this->mode = ThemeMode::Light;
+    } else if (mode == "dark") {
+        this->mode = ThemeMode::Dark;
+    } else {
+        TTAURI_THROW(parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode));
+    }
+
+    this->blue = parseColor(data, "blue");
+    this->green = parseColor(data, "green");
+    this->indigo = parseColor(data, "indigo");
+    this->orange = parseColor(data, "orange");
+    this->pink = parseColor(data, "pink");
+    this->purple = parseColor(data, "purple");
+    this->red = parseColor(data, "red");
+    this->teal = parseColor(data, "teal");
+    this->yellow = parseColor(data, "yellow");
+
+    this->grayShades = parseColorList(data, "gray-shades");
+    this->fillShades = parseColorList(data, "fill-shades");
+
+    this->foregroundColor = parseColor(data, "foreground-color");
+    this->accentColor = parseColor(data, "accent-color");
+    this->textSelectColor = parseColor(data, "text-select-color");
+    this->cursorColor = parseColor(data, "cursor-color");
+    this->incompleteGlyphColor = parseColor(data, "incomplete-glyph-color");
+
+    this->labelStyle = parseTextStyle(data, "label-style");
+    this->warningLabelStyle = parseTextStyle(data, "warning-label-style");
+    this->errorLabelStyle = parseTextStyle(data, "error-label-style");
+    this->helpLabelStyle = parseTextStyle(data, "help-label-style");
+    this->placeholderLabelStyle = parseTextStyle(data, "placeholder-label-style");
+    this->linkLabelStyle = parseTextStyle(data, "link-label-style");
+}
 
 }

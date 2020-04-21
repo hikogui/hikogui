@@ -10,193 +10,92 @@
 
 namespace TTauri::GUI {
 
-
-class SubTheme {
-    std::vector<vec> colors;
-    std::vector<vec> fillColors;
-    std::vector<vec> borderColors;
-
-    std::array<vec,11> grayColors;
-
-    std::vector<Text::TextStyle> labelStyles;
+class Theme {
+private:
+    std::vector<vec> fillShades;
+    std::vector<vec> grayShades;
 
 public:
-    Text::TextStyle warningLabelStyle;
-    Text::TextStyle errorLabelStyle;
-    Text::TextStyle helpLabelStyle;
-    Text::TextStyle linkLabelStyle;
+    std::string name;
+    ThemeMode mode;
+
+    float buttonBorderWidth = 1.0f;
+    vec buttonCornerShapes = vec{0.0f, 0.0f, 0.0f, 0.0f};
+    float lineInputBorderWidth = 1.0f;
+    vec lineInputCornerShapes = vec{0.0f, 0.0f, 0.0f, 0.0f};
+    float padding = 0.0f;
 
     // Themed bright colors.
-    vec blueColor;
-    vec greenColor;
-    vec indigoColor;
-    vec orangeColor;
-    vec pinkColor;
-    vec purpleColor;
-    vec redColor;
-    vec tealColor;
-    vec yellowColor;
+    vec blue;
+    vec green;
+    vec indigo;
+    vec orange;
+    vec pink;
+    vec purple;
+    vec red;
+    vec teal;
+    vec yellow;
 
     // Semantic colors
+    vec foregroundColor;
     vec accentColor;
-    vec keyboardFocusColor;
     vec textSelectColor;
     vec cursorColor;
     vec incompleteGlyphColor;
 
-    /** Get color
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] vec color(int nestingLevel) const noexcept {
-        ttauri_assume(nestingLevel >= 0);
-        ttauri_assume(ssize(colors) > 0);
-        return colors[nestingLevel % ssize(colors)];
-    }
+    Text::TextStyle labelStyle;
+    Text::TextStyle warningLabelStyle;
+    Text::TextStyle errorLabelStyle;
+    Text::TextStyle helpLabelStyle;
+    Text::TextStyle placeholderLabelStyle;
+    Text::TextStyle linkLabelStyle;
 
-    /** Get fill color
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] vec fillColor(int nestingLevel) const noexcept {
-        ttauri_assume(nestingLevel >= 0);
-        ttauri_assume(ssize(fillColors) > 0);
-        return fillColors[nestingLevel % ssize(fillColors)];
-    }
+    Theme() noexcept = delete;
+    Theme(Theme const &) noexcept = delete;
+    Theme(Theme &&) noexcept = delete;
+    Theme &operator=(Theme const &) noexcept = delete;
+    Theme &operator=(Theme &&) noexcept = delete;
 
-    /** Get border color
-     * @param nestingLevel The nesting level.
+    /** Open and parse a theme file.
      */
-    [[nodiscard]] vec borderColor(int nestingLevel) const noexcept {
+    Theme(URL const &url);
+
+    /** Get fill color of elements of widgets and child widgets.
+    * @param nestingLevel The nesting level.
+    */
+    [[nodiscard]] vec fillColor(ssize_t nestingLevel) const noexcept {
         ttauri_assume(nestingLevel >= 0);
-        ttauri_assume(ssize(borderColors) > 0);
-        return borderColors[nestingLevel % ssize(borderColors)];
+        ttauri_assume(ssize(fillShades) > 0);
+        return fillShades[nestingLevel % ssize(fillShades)];
     }
 
     /** Get grey scale color
-     * This color is reversed between light and dark themes.
-     * @param level Color 5 foreground, 0 mid-gray, -5 background
-     */
-    [[nodiscard]] vec grayColor(int level) const noexcept {
-        constexpr int maxLevel = static_cast<int>(std::tuple_size_v<decltype(grayColors)>) / 2;
-        constexpr int minLevel = -maxLevel;
-        int level_ = std::clamp(minLevel, level, maxLevel) + maxLevel;
-        return borderColors[level_];
+    * This color is reversed between light and dark themes.
+    * @param level Gray level: 0 is background, positive values increase in foregroundness.
+    *              -1 is foreground, more negative values go toward background.
+    */
+    [[nodiscard]] vec gray(ssize_t level) const noexcept {
+        if (level < 0) {
+            level = ssize(grayShades) + level;
+        }
+
+        level = std::clamp(level, ssize_t{0}, ssize(grayShades) - 1);
+        return grayShades[level];
     }
 
-
-    /** Get border color
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] Text::TextStyle const &labelStyle(int nestingLevel) const noexcept {
-        ttauri_assume(nestingLevel >= 0);
-        ttauri_assume(ssize(labelStyles) > 0);
-        return labelStyles[nestingLevel % ssize(labelStyles)];
-    }
-};
-
-class Theme {
 private:
-    std::array<SubTheme,4> subThemes;
-
-    SubTheme const &subTheme(ThemeMode mode) const noexcept {
-        return subThemes[static_cast<int>(mode)];
-    }
-
-public:
-
-    /** Get color
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] vec color(int nestingLevel) const noexcept {
-        return subTheme(themeMode).color(nestingLevel);
-    }
-
-    /** Get fill color
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] vec fillColor(int nestingLevel) const noexcept {
-        return subTheme(themeMode).fillColor(nestingLevel);
-    }
-
-    /** Get border color
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] vec borderColor(int nestingLevel) const noexcept {
-        return subTheme(themeMode).borderColor(nestingLevel);
-    }
-
-    /** Get grey scale color
-     * This color is reversed between light and dark themes.
-     * @param level Color 5 foreground, 0 mid-gray, -5 background
-     */
-    [[nodiscard]] vec grayColor(int level) const noexcept {
-        return subTheme(themeMode).grayColor(level);
-    }
-
-
-    [[nodiscard]] vec blueColor() const noexcept {
-        return subTheme(themeMode).blueColor;
-    }
-
-    [[nodiscard]] vec greenColor() const noexcept {
-        return subTheme(themeMode).greenColor;
-    }
-
-    [[nodiscard]] vec indigoColor() const noexcept {
-        return subTheme(themeMode).indigoColor;
-    }
-
-    [[nodiscard]] vec orangeColor() const noexcept {
-        return subTheme(themeMode).orangeColor;
-    }
-
-    [[nodiscard]] vec pinkColor() const noexcept {
-        return subTheme(themeMode).pinkColor;
-    }
-
-    [[nodiscard]] vec purpleColor() const noexcept {
-        return subTheme(themeMode).purpleColor;
-    }
-
-    [[nodiscard]] vec redColor() const noexcept {
-        return subTheme(themeMode).redColor;
-    }
-
-    [[nodiscard]] vec tealColor() const noexcept {
-        return subTheme(themeMode).tealColor;
-    }
-
-    [[nodiscard]] vec yellowColor() const noexcept {
-        return subTheme(themeMode).yellowColor;
-    }
-
-
-
-    /** Get text style for labels
-     * @param nestingLevel The nesting level.
-     */
-    [[nodiscard]] Text::TextStyle const &labelStyle(int nestingLevel) const noexcept {
-        return subTheme(themeMode).labelStyle(nestingLevel);
-    }
-
-    [[nodiscard]] Text::TextStyle const &warningLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(themeMode).warningLabelStyle;
-    }
-
-    [[nodiscard]] Text::TextStyle const &errorLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(themeMode).errorLabelStyle;
-    }
-
-    [[nodiscard]] Text::TextStyle const &helpLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(themeMode).helpLabelStyle;
-    }
-
-    [[nodiscard]] Text::TextStyle const &linkLabelStyle(int nestingLevel) const noexcept {
-        return subTheme(themeMode).linkLabelStyle;
-    }
-
-    //TextStyle("Times New Roman", FontVariant{FontWeight::Regular, false}, 14.0, labelColor, 0.0, TextDecoration::None);
+    [[nodiscard]] float parseFloat(datum const &data, char const *name);
+    [[nodiscard]] bool parseBool(datum const &data, char const *name);
+    [[nodiscard]] std::string parseString(datum const &data, char const *name);
+    [[nodiscard]] vec parseColorValue(datum const &data);
+    [[nodiscard]] std::vector<vec> parseColorList(datum const &data, char const *name);
+    [[nodiscard]] vec parseColor(datum const &data, char const *name);
+    [[nodiscard]] Text::TextStyle parseTextStyleValue(datum const &data);
+    [[nodiscard]] Text::FontWeight parseFontWeight(datum const &data, char const *name);
+    [[nodiscard]] Text::TextStyle parseTextStyle(datum const &data, char const *name);
+    void parse(datum const &data);
 };
 
-inline Theme theme;
+inline Theme *theme;
 
 }
