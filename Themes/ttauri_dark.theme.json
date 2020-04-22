@@ -38,10 +38,10 @@
     // Colors used by widgets, to show nesting inside containers,
     // and for internal elements and disabled icons.
     "fill-shades": [
-        [  0,   0,   1],
         [ 28,  28,  30],
         [ 44,  44,  46],
-        [ 58,  58,  60]
+        [ 58,  58,  60],
+        [ 72,  72,  74]
     ],
 
     // Color for textual or primary elements like icons.

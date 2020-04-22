@@ -48,7 +48,8 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
 
     context.lineWidth = theme->buttonBorderWidth;
 
-    let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, theme->padding);
+    // Move the border of the button in the middle of a pixel.
+    let buttonRectangle = mat::T(0.5, 0.5) * shrink(rect{vec{}, box.currentExtent()}, theme->padding * 2);
     context.drawBox(buttonRectangle);
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
