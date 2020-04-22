@@ -59,31 +59,31 @@
         "size": 12.0,
         "color": [250, 250, 255]
     },
-    "warning-style": {
+    "warning-label-style": {
         "family": "Arial",
         "weight": "Normal",
         "size": 12.0,
         "color": [255, 204, 0]
     },
-    "error-style": {
+    "error-label-style": {
         "family": "Arial",
         "weight": "Normal",
         "size": 12.0,
         "color": [255, 59, 48]
     },
-    "help-style": {
+    "help-label-style": {
         "family": "Arial",
         "weight": "Normal",
         "size": 12.0,
         "color": [88, 86, 214]
     },
-    "placeholder-style": {
+    "placeholder-label-style": {
         "family": "Arial",
         "weight": "Normal",
         "size": 12.0,
         "color": [142, 142, 147]
     },
-    "link-style": {
+    "link-label-style": {
         "family": "Arial",
         "weight": "Normal",
         "size": 12.0,

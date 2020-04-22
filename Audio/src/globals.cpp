@@ -16,7 +16,7 @@ void startup()
     }
 
     TTauri::startup();
-    LOG_AUDIT("TTauri::Audio startup");
+    LOG_INFO("TTauri::Audio startup");
 
     audioSystem = new AudioSystem_win32(audioDelegate);
 }
@@ -27,7 +27,7 @@ void shutdown()
         // This is not the last instantiation.
         return;
     }
-    LOG_AUDIT("TTauri::Audio shutdown");
+    LOG_INFO("TTauri::Audio shutdown");
 
     delete audioSystem;
 

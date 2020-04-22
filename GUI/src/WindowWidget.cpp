@@ -24,6 +24,12 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     backgroundColor = theme->fillColor(nestingLevel());
 }
 
+void WindowWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+{
+    backgroundColor = theme->fillColor(nestingLevel());
+    Widget::draw(drawContext, displayTimePoint);
+}
+
 HitBox WindowWidget::hitBoxTest(vec position) noexcept
 {
     constexpr float BORDER_WIDTH = 5.0;

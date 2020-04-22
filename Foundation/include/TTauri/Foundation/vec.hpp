@@ -211,7 +211,7 @@ public:
         std::enable_if_t<std::is_integral_v<R> && std::is_integral_v<G> && std::is_integral_v<B> && std::is_integral_v<A>,int> = 0>
     [[nodiscard]] force_inline static vec colorFromSRGB(R r, G g, B b, A a=255) noexcept {
         return colorFromSRGB(
-            a / 255.0f,
+            r / 255.0f,
             g / 255.0f,
             b / 255.0f,
             a / 255.0f

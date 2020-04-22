@@ -35,7 +35,7 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
     TTauri::GUI::startup();
     TTauri::GUI::Widgets::startup();
 #endif
-    LOG_AUDIT("Starting application '{}'.", applicationName);
+    LOG_INFO("Starting application '{}'.", applicationName);
 }
 
 Application_base::~Application_base()
@@ -49,7 +49,7 @@ Application_base::~Application_base()
     TTauri::Audio::shutdown();
 #endif
     TTauri::shutdown();
-    LOG_AUDIT("Stopping application.");
+    LOG_INFO("Stopping application.");
 }
 
 bool Application_base::startingLoop()

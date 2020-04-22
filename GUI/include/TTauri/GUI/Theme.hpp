@@ -20,10 +20,10 @@ public:
     ThemeMode mode;
 
     float buttonBorderWidth = 1.0f;
-    vec buttonCornerShapes = vec{0.0f, 0.0f, 0.0f, 0.0f};
+    vec buttonCornerShapes = vec{2.0f, 2.0f, 2.0f, 2.0f};
     float lineInputBorderWidth = 1.0f;
     vec lineInputCornerShapes = vec{0.0f, 0.0f, 0.0f, 0.0f};
-    float padding = 0.0f;
+    float padding = 5.0f;
 
     // Themed bright colors.
     vec blue;
@@ -94,6 +94,14 @@ private:
     [[nodiscard]] Text::FontWeight parseFontWeight(datum const &data, char const *name);
     [[nodiscard]] Text::TextStyle parseTextStyle(datum const &data, char const *name);
     void parse(datum const &data);
+
+    [[nodiscard]] friend std::string to_string(Theme const &rhs) noexcept {
+        return fmt::format("{}:{}", rhs.name, rhs.mode);
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, Theme const &rhs) {
+        return lhs << to_string(rhs);
+    }
 };
 
 inline Theme *theme;

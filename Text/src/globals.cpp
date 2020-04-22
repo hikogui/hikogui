@@ -15,7 +15,7 @@ void startup()
     }
 
     TTauri::startup();
-    LOG_AUDIT("TTauri::Text startup");
+    LOG_INFO("TTauri::Text startup");
 
     addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
 
@@ -32,7 +32,7 @@ void shutdown()
         // This is not the last instantiation.
         return;
     }
-    LOG_AUDIT("TTauri::Text shutdown");
+    LOG_INFO("TTauri::Text shutdown");
 
     unicodeData.release();
     delete fontBook;

@@ -82,7 +82,7 @@ void startup()
         // The library has already been initialized.
         return;
     }
-    LOG_AUDIT("TTauri startup");
+    LOG_INFO("TTauri startup");
 
     mainThreadID = std::this_thread::get_id();
 
@@ -118,7 +118,7 @@ void shutdown()
         // This is not the last instantiation.
         return;
     }
-    LOG_AUDIT("TTauri shutdown");
+    LOG_INFO("TTauri shutdown");
 
     stopMaintenanceThread();
 

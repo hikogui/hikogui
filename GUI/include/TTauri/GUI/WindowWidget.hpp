@@ -28,6 +28,8 @@ public:
     WindowWidget(WindowWidget&&) = delete;
     WindowWidget &operator=(WindowWidget&&) = delete;
 
+    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
+
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 };
 

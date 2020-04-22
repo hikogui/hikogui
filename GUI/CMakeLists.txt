@@ -50,6 +50,7 @@ set(TTauri_GUI_srcs
     src/WindowTrafficLightsWidget.cpp
     src/ThemeMode_win32.cpp
     src/Theme.cpp
+    src/ThemeBook.cpp
     src/KeyboardBindings.cpp
     src/KeyboardEvent.cpp
 )

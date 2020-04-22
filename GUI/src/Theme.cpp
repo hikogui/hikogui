@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
 #include "TTauri/GUI/Theme.hpp"
@@ -11,6 +11,7 @@ namespace TTauri::GUI {
 Theme::Theme(URL const &url)
 {
     try {
+        LOG_INFO("Parsing theme at {}", url);
         let data = parseJSON(url);
         parse(data);
     } catch (error &e) {
@@ -29,7 +30,7 @@ Theme::Theme(URL const &url)
     if (!object.is_string()) {
         TTAURI_THROW(parse_error("'{}' attribute must be a string, got {}.", name, object.type_name()));
     }
-    return static_cast<std::string>(name);
+    return static_cast<std::string>(object);
 }
 
 [[nodiscard]] float Theme::parseFloat(datum const &data, char const *name)
@@ -63,7 +64,7 @@ Theme::Theme(URL const &url)
 [[nodiscard]] vec Theme::parseColorValue(datum const &data)
 {
     if (data.is_vector()) {
-        if (ssize(data) != 3 || ssize(data) != 4) {
+        if (ssize(data) != 3 && ssize(data) != 4) {
             TTAURI_THROW(parse_error("Expect 3 or 4 values for a color, got {}.", data));
         }
         let r = data[0];

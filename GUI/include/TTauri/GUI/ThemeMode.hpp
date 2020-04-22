@@ -33,8 +33,4 @@ inline std::ostream &operator<<(std::ostream &lhs, ThemeMode rhs) {
 
 ThemeMode readOSThemeMode() noexcept;
 
-/** The current theme mode.
- */
-inline ThemeMode themeMode = ThemeMode::Light;
-
 }

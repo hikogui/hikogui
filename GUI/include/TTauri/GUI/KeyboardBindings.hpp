@@ -141,7 +141,7 @@ public:
     */
     void loadSystemBindings() {
         if constexpr (operatingSystem == OperatingSystem::Windows) {
-            return loadBindings(URL{"resource:Themes/keybinds_win32.json"}, true);
+            return loadBindings(URL{"resource:Themes/win32.keybinds.json"}, true);
         } else {
             no_default;
         }

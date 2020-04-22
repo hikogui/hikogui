@@ -16,7 +16,7 @@ void startup()
 
     TTauri::startup();
     TTauri::GUI::startup();
-    LOG_AUDIT("TTauri::GUI::Widgets startup");
+    LOG_INFO("TTauri::GUI::Widgets startup");
 }
 
 void shutdown()
@@ -25,7 +25,7 @@ void shutdown()
         // This is not the last instantiation.
         return;
     }
-    LOG_AUDIT("TTauri::GUI::Widgets shutdown");
+    LOG_INFO("TTauri::GUI::Widgets shutdown");
 
     TTauri::GUI::shutdown();
     TTauri::shutdown();

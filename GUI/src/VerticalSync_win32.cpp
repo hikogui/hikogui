@@ -77,9 +77,9 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*,cpu_utc_clock::t
 
     verticalSyncThreadID = std::thread([=]() {
         set_thread_name("VerticalSync");
-        LOG_AUDIT("Started: vertical-sync thread.");
+        LOG_INFO("Started: vertical-sync thread.");
         this->verticalSyncThread();
-        LOG_AUDIT("Finished: vertical-sync thread.");
+        LOG_INFO("Finished: vertical-sync thread.");
     });
 }
 

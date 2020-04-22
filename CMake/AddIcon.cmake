@@ -2,7 +2,7 @@
 include(GetRelativePath)
 
 function(add_icon RET)
-    find_package(python COMPONENTS Interpreter)
+    find_package(Python COMPONENTS Interpreter)
     set(SVG2TTICON_PY ${CMAKE_CURRENT_LIST_FILE}/../Utilities/SVG2TTIcon.py)
 
     foreach(SOURCE_FILE IN LISTS ARGN)

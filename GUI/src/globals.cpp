@@ -30,11 +30,13 @@ void startup()
 
     TTauri::startup();
     TTauri::Text::startup();
-    LOG_AUDIT("TTauri::GUI startup");
+    LOG_INFO("TTauri::GUI startup");
 
     themeBook = new ThemeBook(std::vector<URL>{
-        URL::urlFromResourceDirectory() / "themes"
+        URL::urlFromResourceDirectory() / "Themes"
     });
+
+    themeBook->setThemeMode(readOSThemeMode());
 
     addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
     addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
@@ -45,8 +47,6 @@ void startup()
     addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
     addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
 
-    themeMode = readOSThemeMode();
-    LOG_INFO("Operating system theme mode is {}", themeMode);
 
     try {
         keyboardBindings.loadSystemBindings();
@@ -63,7 +63,7 @@ void shutdown()
         // This is not the last instantiation.
         return;
     }
-    LOG_AUDIT("TTauri::GUI shutdown");
+    LOG_INFO("TTauri::GUI shutdown");
 
     delete guiSystem;
     delete themeBook;

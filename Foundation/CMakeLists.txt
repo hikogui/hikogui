@@ -6,7 +6,7 @@ set(BUILD_TTAURI_AUDIO ON CACHE BOOL "Enable Audio")
 set(BUILD_TTAURI_NET ON CACHE BOOL "Enable Networking")
 
 find_package(GTest)
-find_package(python COMPONENTS Interpreter)
+find_package(Python COMPONENTS Interpreter)
 
 configure_file(
     include/TTauri/Foundation/config.hpp.in 
