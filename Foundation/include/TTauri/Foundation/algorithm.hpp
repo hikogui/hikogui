@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
 #include <tuple>
+#include <cmath>
 
 namespace TTauri {
 
@@ -223,6 +224,23 @@ template<typename Container1, typename Container2>
 inline bool ends_with(Container1 haystack, Container2 needle) noexcept
 {
     return ends_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
+}
+
+template<typename T>
+T smoothstep(T x) noexcept {
+    x = std::clamp(x, T{0.0}, T{1.0});
+    return x * x * (3 - 2 * x);
+}
+
+template<typename T>
+T inverse_smoothstep(T x) {
+  return T{0.5} - std::sin(std::asin(T{1.0} - T{2.0} * x) / T{3.0});
+}
+
+template<typename ValueType, typename MixType>
+ValueType mix(ValueType const &x, ValueType const &y, MixType a) noexcept {
+    a = std::clamp(a, MixType{0.0}, MixType{1.0});
+    return x * (MixType{1.0} - a) + y * a;
 }
 
 }

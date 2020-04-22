@@ -4,6 +4,7 @@
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
+#include "TTauri/GUI/ThemeBook.hpp"
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
@@ -30,6 +31,10 @@ void startup()
     TTauri::startup();
     TTauri::Text::startup();
     LOG_AUDIT("TTauri::GUI startup");
+
+    themeBook = new ThemeBook(std::vector<URL>{
+        URL::urlFromResourceDirectory() / "themes"
+    });
 
     addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
     addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
@@ -61,6 +66,7 @@ void shutdown()
     LOG_AUDIT("TTauri::GUI shutdown");
 
     delete guiSystem;
+    delete themeBook;
     TTauri::Text::shutdown();
     TTauri::shutdown();
 }
