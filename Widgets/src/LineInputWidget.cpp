@@ -39,7 +39,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
     }
 
     // Place the border of the input field rectangle in the middle of a pixel.
-    let inputFieldRectangle = mat::T(0.5, 0.5) * shrink(rect{vec{}, box.currentExtent()}, theme->padding * 2);
+    let inputFieldRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);
     context.drawBox(inputFieldRectangle);
 
     let textRectangle = shrink(inputFieldRectangle, 2.0);

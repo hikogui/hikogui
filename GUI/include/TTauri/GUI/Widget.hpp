@@ -10,6 +10,7 @@
 #include "TTauri/GUI/MouseEvent.hpp"
 #include "TTauri/GUI/HitBox.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
+#include "TTauri/GUI/Theme.hpp"
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/Path.hpp"
@@ -115,6 +116,22 @@ public:
         ttauri_assume(widget_ptr);
         return *widget_ptr;
     }
+
+    void placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
+    void placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;
+
+    void placeLeftOf(Widget const &rhs, float margin=theme->margin) const noexcept;
+
+    void placeRightOf(Widget const &rhs, float margin=theme->margin) const noexcept;
+
+    void shareTopEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+
+    void shareBottomEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+
+    void shareLeftEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+
+    void shareRightEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+
 
     [[nodiscard]] Device *device() const noexcept;
 

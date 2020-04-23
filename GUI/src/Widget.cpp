@@ -16,6 +16,38 @@ Device *Widget::device() const noexcept
     return device;
 }
 
+void Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.top + margin == rhs.box.bottom);
+}
+
+void Widget::placeAbove(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.bottom == rhs.box.top + margin);
+}
+
+void Widget::placeLeftOf(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.right + margin == rhs.box.left);
+}
+
+void Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.left == rhs.box.right + margin);
+}
+
+void Widget::shareTopEdgeWith(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.top + margin == rhs.box.top);
+}
+
+void Widget::shareBottomEdgeWith(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.bottom - margin == rhs.box.bottom);
+}
+
+void Widget::shareLeftEdgeWith(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.left - margin == rhs.box.left);
+}
+
+void Widget::shareRightEdgeWith(Widget const &rhs, float margin) const noexcept {
+    window.addConstraint(this->box.right + margin == rhs.box.right);
+}
+
 void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     constexpr float elevationToDepth = 0.01f;
@@ -29,7 +61,7 @@ void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point disp
         let relativeOffset = childRectangle.offset(child->elevation * elevationToDepth) - offset;
         let translation = mat::T(relativeOffset);
 
-        childContext.clippingRectangle = childRectangle;
+        childContext.clippingRectangle = expand(childRectangle, theme->margin);
         childContext.transform = translation * drawContext.transform;
         child->draw(childContext, displayTimePoint);
     }

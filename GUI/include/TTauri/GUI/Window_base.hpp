@@ -403,8 +403,8 @@ private:
         widgetSolver.suggest(widget->box.height, 0);
         minimumWindowExtent = widget->box.currentExtent();
 
-        widgetSolver.suggest(widget->box.width, static_cast<double>(std::numeric_limits<uint32_t>::max()));
-        widgetSolver.suggest(widget->box.height, static_cast<double>(std::numeric_limits<uint32_t>::max()));
+        widgetSolver.suggest(widget->box.width, std::numeric_limits<uint32_t>::max());
+        widgetSolver.suggest(widget->box.height, std::numeric_limits<uint32_t>::max());
         maximumWindowExtent = widget->box.currentExtent();
 
         LOG_INFO("Window '{}' minimumExtent={} maximumExtent={}", title, minimumWindowExtent, maximumWindowExtent);

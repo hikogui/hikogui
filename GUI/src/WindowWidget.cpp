@@ -20,6 +20,10 @@ WindowWidget::WindowWidget(Window &window) noexcept :
 
     window.addConstraint(box.left == 0);
     window.addConstraint(box.bottom == 0);
+    // A upper bound constraint is needed to allow the suggest(width, limit::max()) and suggest(height, limit::max()) to
+    // fallback on a upper bound, otherwise it will select the lower bounds instead.
+    window.addConstraint(box.width <= std::numeric_limits<uint16_t>::max());
+    window.addConstraint(box.height <= std::numeric_limits<uint16_t>::max());
 
     backgroundColor = theme->fillColor(nestingLevel());
 }

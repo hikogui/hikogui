@@ -20,10 +20,10 @@ public:
     ThemeMode mode;
 
     float buttonBorderWidth = 1.0f;
-    vec buttonCornerShapes = vec{2.0f, 2.0f, 2.0f, 2.0f};
+    vec buttonCornerShapes = vec{3.0f, 3.0f, 3.0f, 3.0f};
     float lineInputBorderWidth = 1.0f;
     vec lineInputCornerShapes = vec{0.0f, 0.0f, 0.0f, 0.0f};
-    float padding = 2.0f;
+    float margin = 5.0f;
 
     // Themed bright colors.
     vec blue;
