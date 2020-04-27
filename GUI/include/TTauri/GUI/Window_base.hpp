@@ -176,9 +176,9 @@ public:
     }
 
     template<typename T, typename... Args>
-    T &addWidget(Args... args) {
+    T &addWidget(Args &&... args) {
         ttauri_assume(widget);
-        return widget->addWidget<T>(args...);
+        return widget->addWidget<T>(std::forward<Args>(args)...);
     }
 
     rhea::solver& addConstraint(rhea::constraint const& constraint) noexcept {

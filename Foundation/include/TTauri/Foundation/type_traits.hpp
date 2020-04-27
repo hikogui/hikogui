@@ -112,4 +112,27 @@ struct remove_cvref {
 template< class T >
 using remove_cvref_t = typename remove_cvref<T>::type;
 
+template <typename T> struct has_value_type 
+{
+    template <typename C> static std::true_type test(typename C::value_type *);
+    template <typename> static std::false_type test(...);
+
+    static const bool value = std::is_same_v<decltype(test<T>(nullptr)), std::true_type>;
+};
+
+template<typename T>
+inline constexpr bool has_value_type_v = has_value_type<T>::value;
+
+template<typename T, typename Enable=void>
+struct make_value_type {};
+
+template<typename T>
+struct make_value_type<T, std::enable_if_t<!has_value_type_v<T>>> { using type = T; };
+
+template<typename T>
+struct make_value_type<T, std::enable_if_t<has_value_type_v<T>>> { using type = typename T::value_type; };
+
+template<typename T>
+using make_value_type_t = typename make_value_type<T>::type;
+
 }

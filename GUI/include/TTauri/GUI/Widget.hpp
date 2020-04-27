@@ -109,8 +109,8 @@ public:
     Widget &operator=(Widget &&) = delete;
 
     template<typename T, typename... Args>
-    T &addWidget(Args... args) {
-        auto widget = std::make_unique<T>(window, this, args...);
+    T &addWidget(Args &&... args) {
+        auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         let widget_ptr = widget.get();
         children.push_back(move(widget));
         ttauri_assume(widget_ptr);

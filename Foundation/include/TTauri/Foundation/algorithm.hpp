@@ -237,11 +237,18 @@ T inverse_smoothstep(T x) {
   return T{0.5} - std::sin(std::asin(T{1.0} - T{2.0} * x) / T{3.0});
 }
 
-template<typename ValueType, typename MixType>
-ValueType mix(ValueType const &x, ValueType const &y, MixType a) noexcept {
-    a = std::clamp(a, MixType{0.0}, MixType{1.0});
-    return x * (MixType{1.0} - a) + y * a;
+template<typename T, typename MixType, std::enable_if_t<std::is_floating_point_v<MixType>, int> = 0>
+T mix(MixType mix_value, T const &lhs, T const &rhs) noexcept
+{
+    if (mix_value >= MixType(1.0)) {
+        return rhs;
+    } else if (mix_value <= MixType(0.0)) {
+        return lhs;
+    } else {
+        return lhs + (rhs - lhs) * mix_value;
+    }
 }
+
 
 }
 

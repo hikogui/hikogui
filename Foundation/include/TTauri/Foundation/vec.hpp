@@ -335,6 +335,16 @@ public:
         return _mm_mul_ps(lhs, rhs);
     }
 
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    [[nodiscard]] force_inline friend vec operator*(vec const &lhs, T const &rhs) noexcept {
+        return lhs * vec{rhs};
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    [[nodiscard]] force_inline friend vec operator*(T const &lhs, vec const &rhs) noexcept {
+        return vec{lhs} * rhs;
+    }
+
     [[nodiscard]] force_inline friend vec operator/(vec const &lhs, vec const &rhs) noexcept {
         return _mm_div_ps(lhs, rhs);
     }
