@@ -42,7 +42,7 @@ void main() {
     gl_Position = convertPositionToViewport(inPosition);
     outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
     outTextureCoord = inTextureCoord;
-    outColor = inColor;
+    outColor = vec4(inColor.rgb * inColor.a, inColor.a);
     outDistanceMultiplier = inDistanceMultiplier;
     outShadowSize = inShadowSize;
 }

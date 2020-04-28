@@ -54,8 +54,8 @@ void main() {
     gl_Position = convertPositionToViewport(inPosition);
     outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
     outCornerCoordinates = inCornerCoordinates;
-    outBackgroundColor = inBackgroundColor;
-    outBorderColor = inBorderColor;
+    outBackgroundColor = vec4(inBackgroundColor.rgb * inBackgroundColor.a, inBackgroundColor.a);
+    outBorderColor = vec4(inBorderColor.rgb * inBorderColor.a, inBorderColor.a);
     outCornerShapes = ivec4(
         (inCornerRadiiAndShapes.x > 0.1) ? 1 : (inCornerRadiiAndShapes.x < -0.1) ? 2 : 0,
         (inCornerRadiiAndShapes.y > 0.1) ? 1 : (inCornerRadiiAndShapes.y < -0.1) ? 2 : 0,

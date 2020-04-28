@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2020 Pokitec
 // All rights reserved.
 
 #pragma once
@@ -17,8 +17,6 @@ namespace TTauri::GUI::Widgets {
 class ToggleWidget : public Widget {
 protected:
     animated<observer<bool>> value;
-
-    bool pressed = false;
 
     std::string label = "<unknown>";
 

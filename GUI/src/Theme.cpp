@@ -241,6 +241,7 @@ void Theme::parse(datum const &data)
 
     this->grayShades = parseColorList(data, "gray-shades");
     this->fillShades = parseColorList(data, "fill-shades");
+    this->borderShades = parseColorList(data, "border-shades");
 
     this->foregroundColor = parseColor(data, "foreground-color");
     this->accentColor = parseColor(data, "accent-color");
@@ -249,6 +250,7 @@ void Theme::parse(datum const &data)
     this->incompleteGlyphColor = parseColor(data, "incomplete-glyph-color");
 
     this->labelStyle = parseTextStyle(data, "label-style");
+    this->smallLabelStyle = parseTextStyle(data, "small-label-style");
     this->warningLabelStyle = parseTextStyle(data, "warning-label-style");
     this->errorLabelStyle = parseTextStyle(data, "error-label-style");
     this->helpLabelStyle = parseTextStyle(data, "help-label-style");

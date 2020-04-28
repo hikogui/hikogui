@@ -56,13 +56,37 @@ void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point disp
 
     auto childContext = drawContext;
     for (auto &child : children) {
+
         let childRectangle = child->box.currentRectangle();
+        let childNestingLevel = child->nestingLevel();
 
         let relativeOffset = childRectangle.offset(child->elevation * elevationToDepth) - offset;
         let translation = mat::T(relativeOffset);
 
         childContext.clippingRectangle = expand(childRectangle, theme->margin);
         childContext.transform = translation * drawContext.transform;
+
+        // The default fill and border colors.
+        childContext.color = theme->borderColor(childNestingLevel);
+        childContext.fillColor = theme->fillColor(childNestingLevel);
+
+        if (child->enabled) {
+            if (child->focus) {
+                childContext.color = theme->accentColor;
+            } else if (child->hover) {
+                childContext.color = theme->borderColor(childNestingLevel + 1);
+            }
+
+            if (child->hover) {
+                childContext.fillColor = theme->fillColor(childNestingLevel + 1);
+            }
+
+        } else {
+            // Disabled, only the outline is shown.
+            childContext.color = theme->borderColor(childNestingLevel - 1);
+            childContext.fillColor = theme->fillColor(childNestingLevel - 1);
+        }
+
         child->draw(childContext, displayTimePoint);
     }
 }

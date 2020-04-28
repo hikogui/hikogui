@@ -13,17 +13,42 @@ namespace TTauri::GUI {
 class Theme {
 private:
     std::vector<vec> fillShades;
+    std::vector<vec> borderShades;
     std::vector<vec> grayShades;
 
 public:
+    /** Distance between widgets and between widgets and the border of the container.
+     */
+    static constexpr float margin = 6.0f;
+
+    /** The line-width of a border.
+     */
+    static constexpr float borderWidth = 1.0f;
+
+    /** The rounding radius of boxes with rounded corners.
+     */
+    static constexpr float roundingRadius = 3.0f;
+
+    /** The height of smaller widget like labels, toggles, checkboxes and radio buttons.
+     */
+    static constexpr float smallHeight = 16.0f;
+
+    /** The width of smaller widget like labels, toggles, checkboxes and radio buttons.
+     * Small widgets which include labels should be right aligned to the `smallWidth`
+     * with a `margin` between the widget and the included label.
+     */
+    static constexpr float smallWidth = smallHeight * 2.0f;
+
+    /** The height of the larger widgets like buttons, text-input and drop-down-lists.
+     */
+    static constexpr float height = 22.0f;
+
+    /** The width of the larger widgets and smaller widgets with included labels.
+     */
+    static constexpr float width = 150.0f;
+
     std::string name;
     ThemeMode mode;
-
-    float buttonBorderWidth = 1.0f;
-    vec buttonCornerShapes = vec{3.0f, 3.0f, 3.0f, 3.0f};
-    float lineInputBorderWidth = 1.0f;
-    vec lineInputCornerShapes = vec{0.0f, 0.0f, 0.0f, 0.0f};
-    float margin = 5.0f;
 
     // Themed bright colors.
     vec blue;
@@ -44,6 +69,7 @@ public:
     vec incompleteGlyphColor;
 
     Text::TextStyle labelStyle;
+    Text::TextStyle smallLabelStyle;
     Text::TextStyle warningLabelStyle;
     Text::TextStyle errorLabelStyle;
     Text::TextStyle helpLabelStyle;
@@ -68,6 +94,16 @@ public:
         ttauri_assume(ssize(fillShades) > 0);
         return fillShades[nestingLevel % ssize(fillShades)];
     }
+
+    /** Get border color of elements of widgets and child widgets.
+    * @param nestingLevel The nesting level.
+    */
+    [[nodiscard]] vec borderColor(ssize_t nestingLevel) const noexcept {
+        ttauri_assume(nestingLevel >= 0);
+        ttauri_assume(ssize(borderShades) > 0);
+        return borderShades[nestingLevel % ssize(borderShades)];
+    }
+
 
     /** Get grey scale color
     * This color is reversed between light and dark themes.

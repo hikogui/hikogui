@@ -18,25 +18,13 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     field(theme->labelStyle),
     shapedText()
 {
+    window.addConstraint(box.width >= Theme::width);
+    window.addConstraint(box.height >= Theme::height);
 }
 
 void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
-    context.cornerShapes = theme->lineInputCornerShapes;
-    context.lineWidth = theme->lineInputBorderWidth;
-
-
-    if (focus) {
-        context.color = theme->accentColor;
-        context.fillColor = theme->fillColor(nestingLevel() + 1);
-    } else if (hover) {
-        context.color = theme->accentColor;
-        context.fillColor = theme->fillColor(nestingLevel() + 1);
-    } else {
-        context.color = theme->fillColor(nestingLevel() + 1);
-        context.fillColor = theme->fillColor(nestingLevel());
-    }
 
     // Place the border of the input field rectangle in the middle of a pixel.
     let inputFieldRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);

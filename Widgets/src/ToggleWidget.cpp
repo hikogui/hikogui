@@ -1,4 +1,4 @@
-// Copyright 2019 Pokitec
+// Copyright 2020 Pokitec
 // All rights reserved.
 
 #include "TTauri/Widgets/ToggleWidget.hpp"
@@ -14,75 +14,76 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value, std::string const label) noexcept :
-    Widget(window, parent), value(250ms, value, [this](bool){ ++this->renderTrigger; }), label(std::move(label))
+    Widget(window, parent), value(150ms, value, [this](bool){ ++this->renderTrigger; }), label(std::move(label))
 {
+    if (ssize(label) != 0) {
+        window.addConstraint(box.width >= Theme::width);
+    } else {
+        window.addConstraint(box.width >= Theme::smallWidth);
+    }
+    window.addConstraint(box.height >= Theme::smallHeight);
 }
 
 void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    constexpr float toggle_height = 20.0f;
-    constexpr float toggle_half_height = toggle_height / 2;
-    constexpr float toggle_width = toggle_height t* 3.0;
-    constexpr float toggle_move = toggle_width - toggle_height;
-    constexpr float label_offset_x = toggle_width + toggle_height * 0.5;
-    float toggle_offset_y = (box.height() - toggle_height) * 0.5;
-    float label_width = box.width() - label_offset_x;
-    let onLabelRectangle = rect{label_offset_x, 0.0, label_width, box.height()};
-    let labelRectangle = rect{label_offset_x, 0.0, label_width, box.height()};
-
-    auto context = drawContext;
-
-    // Prepare labels.
-    if (renderTrigger.check(displayTimePoint) >= 2) {
-        OnLabelShapedText = ShapedText(onLabel, theme->smallLabelStyle, HorizontalAlignment::Left, onLabelRectangle.width());
-        window.device->SDFPipeline->prepareAtlas(labelShapedText);
-
-        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, labelWidth);
-        window.device->SDFPipeline->prepareAtlas(labelShapedText);
-    }
-    auto onLabelOffset = onLabelRectangle.align(onLabelShapedText.extent, Alignment::MiddleLeft);
-    auto labelOffset = labelRectangle.align(labelShapedText.extent, Alignment::MiddleLeft);
-
     // Prepare animation values.
     let [animation_progress, curr_value] = value.animation_tick(displayTimePoint);
     if (animation_progress < 1.0) {
         ++renderTrigger;
     }
 
+    // Prepare coordinates.
+    let rectangle = box.currentRectangle();
+
+    let toggle_height = Theme::smallHeight;
+    let toggle_width = Theme::smallWidth;
+    let toggle_x = 0.0f;
+    let toggle_y = (rectangle.height() - toggle_height) * 0.5f;
+    let toggle_rectangle = expand(rect{toggle_x, toggle_y, toggle_width, toggle_height}, 0.5f);
+
+    let slider_move = toggle_width - toggle_height;
+    let slider_x = toggle_x + Theme::borderWidth + slider_move * curr_value;
+    let slider_y = toggle_y + Theme::borderWidth;
+    let slider_width = toggle_height - 2.0f * Theme::borderWidth;
+    let slider_height = toggle_height - 2.0f * Theme::borderWidth;
+    let slider_rectangle = expand(rect{slider_x, slider_y, slider_width, slider_height}, 0.5f);
+
+    let label_x = Theme::smallWidth + theme->margin;
+    let label_y = 0.0f;
+    let label_width = rectangle.width() - label_x;
+    let label_height = rectangle.height();
+    let label_rectangle = rect{label_x, label_y, label_width, label_height};
+
+    // Prepare labels.
+    if (renderTrigger.check(displayTimePoint) >= 2) {
+        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
+        window.device->SDFPipeline->prepareAtlas(labelShapedText);
+    }
+    let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
+
     // Outside oval.
-    if (focus) {
-        context.color = theme->accentColor;
-    } else {
-        context.color = theme->fillColor(nestingLevel() + 1);
-    }
-    if (hover) {
-        context,fillColor = theme->fillColor(nestingLevel());
-    } else {
-        context,fillColor = theme->fillColor(nestingLevel() - 1);
-    }
-    context.lineWidth = theme->toggleBorderWidth;
-    context.cornerShapes = vec{toggle_half_height};
-    context.drawBox(expand(rect{
-        0.0, toggle_offset_y,
-        toggle_width, toggle_height
-    }, 0.5));
+    auto context = drawContext;
+    context.cornerShapes = vec{toggle_rectangle.height() * 0.5f};
+    context.drawBox(toggle_rectangle);
 
     // Inside circle
-    context.color = theme->fillColor(nestingLevel() + 1);
-    if (hover) {
-        context.fillColor = mix(curr_value, theme->fillColor(nestingLevel() + 1), theme->accentColor);
-    } else if (pressed) {
-        context.fillColor = mix(curr_value, theme->accentColor, theme->fillColor(nestingLevel() + 1));
+    if (enabled) {
+        if (value) {
+            context.fillColor = theme->accentColor;
+        } else if (hover) {
+            context.fillColor = theme->borderColor(nestingLevel() + 1);
+        } else {
+            context.fillColor = theme->borderColor(nestingLevel());
+        }
     } else {
-        context.fillColor = mix(curr_value, theme->fillColor(nestingLevel()), theme->accentColor);
+        context.fillColor = theme->borderColor(nestingLevel() - 1);
     }
-    context.drawBox(expand(rect{
-        curr_value * toggle_move, toggle_offset_y,
-        toggle_height, toggle_height
-    }, 0.5));
+    context.color = vec::color(0.0, 0.0, 0.0, 0.0);
+    context.cornerShapes = vec{slider_rectangle.height() * 0.5f};
+    context.drawBox(slider_rectangle);
 
-
-    context.transform = context.transform * mat::T{textOffset.z(0.001f)};
+    // user defined label.
+    context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};
     context.drawText(labelShapedText);
 
     Widget::draw(drawContext, displayTimePoint);
@@ -105,10 +106,6 @@ void ToggleWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
     if (enabled) {
-        if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
-            ++renderTrigger;
-        }
-
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             handleCommand("gui.activate"_ltag);
         }

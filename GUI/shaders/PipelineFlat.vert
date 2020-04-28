@@ -34,5 +34,5 @@ vec4 convertClippingRectangleToScreen(vec4 clippingRectangle)
 void main() {
     gl_Position = convertPositionToViewport(inPosition);
     outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
-    outColor = inColor;
+    outColor = vec4(inColor.rgb * inColor.a, inColor.a);
 }

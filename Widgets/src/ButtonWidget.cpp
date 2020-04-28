@@ -15,38 +15,18 @@ using namespace std::literals;
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
     Widget(window, parent), label(std::move(label))
 {
+    window.addConstraint(box.width >= Theme::width);
+    window.addConstraint(box.height >= Theme::height);
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
 
-    context.cornerShapes = theme->buttonCornerShapes;
+    context.cornerShapes = vec{Theme::roundingRadius};
     if (value) {
-        if (hover) {
-            context.fillColor = theme->accentColor;
-        } else if (pressed) {
-            context.fillColor = theme->fillColor(nestingLevel() + 1);
-        } else {
-            context.fillColor = theme->accentColor;
-        }
-    } else {
-        if (hover) {
-            context.fillColor = theme->fillColor(nestingLevel() + 1);
-        } else if (pressed) {
-            context.fillColor = theme->accentColor;
-        } else {
-            context.fillColor = theme->fillColor(nestingLevel());
-        }
+        context.fillColor = theme->accentColor;
     }
-
-    if (focus) {
-        context.color = theme->accentColor;
-    } else {
-        context.color = theme->fillColor(nestingLevel() + 1);
-    }
-
-    context.lineWidth = theme->buttonBorderWidth;
 
     // Move the border of the button in the middle of a pixel.
     let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);
@@ -54,7 +34,6 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
         labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, buttonRectangle.width());
-
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }
 

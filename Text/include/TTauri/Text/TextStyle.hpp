@@ -18,7 +18,7 @@ struct TextStyle {
     float shadow_size;
     TextDecoration decoration;
 
-    TextStyle() :
+        TextStyle() :
         family_id(), variant(), size(0.0), color(), shadow_size(0.0), decoration(TextDecoration::None) {}
 
     TextStyle(TTauri::Text::FontFamilyID family_id, TTauri::Text::FontVariant variant, float size, R16G16B16A16SFloat color, float shadow_size, TextDecoration decoration) :

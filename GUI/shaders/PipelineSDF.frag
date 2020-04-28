@@ -35,9 +35,10 @@ void main()
 
     float glyph = clamp(distance + 0.5, 0.0, 1.0);
     
+    vec4 pixelColor;
     if (inShadowSize > 0.0) {
         if (glyph >= 1.0) {
-            outColor = inColor;
+            pixelColor = inColor;
 
         } else {
             float shadow = clamp(distance * inShadowSize + 0.5, 0.0, 1.0);
@@ -45,7 +46,7 @@ void main()
             if (shadow > 0.0) {
                 vec4 shadowColor = vec4(0.0, 0.0, 0.0, shadow);
                 vec4 glyphColor = inColor * glyph;
-                outColor = glyphColor + shadowColor * (1.0 - glyph);
+                pixelColor = glyphColor + shadowColor * (1.0 - glyph);
 
             } else {
                 discard;
@@ -53,9 +54,15 @@ void main()
         }
 
     } else if (glyph > 0.0) {
-        outColor = inColor * glyph;
+        pixelColor = inColor * glyph;
 
     } else {
         discard;
     }
+
+    // pixelColor is already pre-multiplied with alpha, why do I need to do this again
+    // to make it look good in both dark-on-light and light-on-dark.
+    //outColor = vec4(pixelColor.rgb * pixelColor.a, pixelColor.a);
+    outColor = pixelColor;
+
 }

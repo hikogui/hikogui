@@ -8,6 +8,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/vspan.hpp"
+#include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
@@ -84,6 +85,11 @@ public:
         boxVertices(boxVertices),
         imageVertices(imageVertices),
         sdfVertices(sdfVertices),
+        color(0.0, 1.0, 0.0, 1.0),
+        fillColor(1.0, 1.0, 0.0, 1.0),
+        lineWidth(Theme::borderWidth),
+        shadowSize(0.0f),
+        cornerShapes(),
         clippingRectangle(vec{0.0, 0.0}, static_cast<vec>(window.currentWindowExtent))
     {
         flatVertices.clear();
