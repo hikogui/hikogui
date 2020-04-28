@@ -20,14 +20,55 @@ ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value
 
 void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    constexpr float toggle_height = 20.0f;
+    constexpr float toggle_half_height = toggle_height / 2;
+    constexpr float toggle_width = toggle_height t* 3.0;
+    constexpr float toggle_move = toggle_width - toggle_height;
+    constexpr float label_offset_x = toggle_width + toggle_height * 0.5;
+    float toggle_offset_y = (box.height() - toggle_height) * 0.5;
+    float label_width = box.width() - label_offset_x;
+    let onLabelRectangle = rect{label_offset_x, 0.0, label_width, box.height()};
+    let labelRectangle = rect{label_offset_x, 0.0, label_width, box.height()};
+
     auto context = drawContext;
 
+    // Prepare labels.
+    if (renderTrigger.check(displayTimePoint) >= 2) {
+        OnLabelShapedText = ShapedText(onLabel, theme->smallLabelStyle, HorizontalAlignment::Left, onLabelRectangle.width());
+        window.device->SDFPipeline->prepareAtlas(labelShapedText);
+
+        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, labelWidth);
+        window.device->SDFPipeline->prepareAtlas(labelShapedText);
+    }
+    auto onLabelOffset = onLabelRectangle.align(onLabelShapedText.extent, Alignment::MiddleLeft);
+    auto labelOffset = labelRectangle.align(labelShapedText.extent, Alignment::MiddleLeft);
+
+    // Prepare animation values.
     let [animation_progress, curr_value] = value.animation_tick(displayTimePoint);
     if (animation_progress < 1.0) {
         ++renderTrigger;
     }
 
-    context.cornerShapes = theme->buttonCornerShapes;
+    // Outside oval.
+    if (focus) {
+        context.color = theme->accentColor;
+    } else {
+        context.color = theme->fillColor(nestingLevel() + 1);
+    }
+    if (hover) {
+        context,fillColor = theme->fillColor(nestingLevel());
+    } else {
+        context,fillColor = theme->fillColor(nestingLevel() - 1);
+    }
+    context.lineWidth = theme->toggleBorderWidth;
+    context.cornerShapes = vec{toggle_half_height};
+    context.drawBox(expand(rect{
+        0.0, toggle_offset_y,
+        toggle_width, toggle_height
+    }, 0.5));
+
+    // Inside circle
+    context.color = theme->fillColor(nestingLevel() + 1);
     if (hover) {
         context.fillColor = mix(curr_value, theme->fillColor(nestingLevel() + 1), theme->accentColor);
     } else if (pressed) {
@@ -35,26 +76,11 @@ void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     } else {
         context.fillColor = mix(curr_value, theme->fillColor(nestingLevel()), theme->accentColor);
     }
+    context.drawBox(expand(rect{
+        curr_value * toggle_move, toggle_offset_y,
+        toggle_height, toggle_height
+    }, 0.5));
 
-    if (focus) {
-        context.color = theme->accentColor;
-    } else {
-        context.color = theme->fillColor(nestingLevel() + 1);
-    }
-
-    context.lineWidth = theme->buttonBorderWidth;
-
-    // Move the border of the button in the middle of a pixel.
-    let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);
-    context.drawBox(buttonRectangle);
-
-    if (renderTrigger.check(displayTimePoint) >= 2) {
-        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, buttonRectangle.width());
-
-        window.device->SDFPipeline->prepareAtlas(labelShapedText);
-    }
-
-    auto textOffset = buttonRectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
 
     context.transform = context.transform * mat::T{textOffset.z(0.001f)};
     context.drawText(labelShapedText);
