@@ -14,17 +14,16 @@ struct TextStyle {
     FontFamilyID family_id;
     FontVariant variant;
     float size;
-    R16G16B16A16SFloat color;
-    float shadow_size;
+    vec color;
     TextDecoration decoration;
 
         TextStyle() :
-        family_id(), variant(), size(0.0), color(), shadow_size(0.0), decoration(TextDecoration::None) {}
+        family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
 
-    TextStyle(TTauri::Text::FontFamilyID family_id, TTauri::Text::FontVariant variant, float size, R16G16B16A16SFloat color, float shadow_size, TextDecoration decoration) :
-        family_id(family_id), variant(variant), size(size), color(color), shadow_size(shadow_size), decoration(decoration) {}
+    TextStyle(TTauri::Text::FontFamilyID family_id, TTauri::Text::FontVariant variant, float size, vec color, TextDecoration decoration) :
+        family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
 
-    TextStyle(std::string_view family_name, TTauri::Text::FontVariant variant, float size, R16G16B16A16SFloat color, float shadow_size, TextDecoration decoration);
+    TextStyle(std::string_view family_name, TTauri::Text::FontVariant variant, float size, vec color, TextDecoration decoration);
 };
 
 }

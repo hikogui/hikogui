@@ -24,6 +24,8 @@ protected:
 
     Text::ShapedText labelShapedText;
     Text::ShapedText checkShapedText;
+    Text::ShapedText whiteXShapedText;
+    Text::ShapedText blackXShapedText;
 public:
 
     CheckboxWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
@@ -66,11 +68,22 @@ public:
             window.device->SDFPipeline->prepareAtlas(labelShapedText);
 
             let checkStyle = Text::TextStyle{
-                //"Arial", Text::FontVariant{}, button_rectangle.height(), theme->accentColor, 0.0f, Text::TextDecoration::None
-                "Arial", Text::FontVariant{}, button_rectangle.height(), vec::color(1.0, 0.0, 0.0, 0.5), 0.0f, Text::TextDecoration::None
+                "Arial", Text::FontVariant{}, button_rectangle.height(), theme->accentColor, Text::TextDecoration::None
             };
             checkShapedText = Text::ShapedText(check, checkStyle, HorizontalAlignment::Left, label_width);
             window.device->SDFPipeline->prepareAtlas(checkShapedText);
+
+            let whiteStyle = Text::TextStyle{
+                "Arial", Text::FontVariant{}, button_rectangle.height(), vec::color(1.0, 1.0, 1.0), Text::TextDecoration::None
+            };
+
+            let blackStyle = Text::TextStyle{
+                "Arial", Text::FontVariant{}, button_rectangle.height(), vec::color(0.0, 0.0, 0.0), Text::TextDecoration::None
+            };
+
+            whiteXShapedText = Text::ShapedText("x"s, whiteStyle, HorizontalAlignment::Left, Theme::smallHeight);
+            blackXShapedText = Text::ShapedText("x"s, blackStyle, HorizontalAlignment::Left, Theme::smallHeight);
+            window.device->SDFPipeline->prepareAtlas(whiteXShapedText);
         }
         let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
         let check_translate = mat::T{button_rectangle.align(checkShapedText.extent, Alignment::MiddleCenter)};
@@ -106,6 +119,38 @@ public:
         // user defined label.
         context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};
         context.drawText(labelShapedText);
+
+        // Test pattern.
+        if (false) {
+            context = drawContext;
+            context.fillColor = vec::color(0.0, 0.0, 0.0, 1.0);
+            context.drawFilledQuad(rect{0, 0, Theme::smallHeight, Theme::smallHeight * 0.25f});
+            context.fillColor = vec::color(0.5, 0.5, 0.5, 1.0);
+            context.drawFilledQuad(rect{0, Theme::smallHeight * 0.25f, Theme::smallHeight, Theme::smallHeight * 0.25f});
+            context.fillColor = vec::color(1.5, 1.5, 1.5, 1.0);
+            context.drawFilledQuad(rect{0, Theme::smallHeight * 0.5f, Theme::smallHeight, Theme::smallHeight * 0.25f});
+            context.fillColor = vec::color(0.5, 0.5, 0.5, 0.5);
+            context.drawFilledQuad(rect{Theme::smallHeight * 0.25f, 0, Theme::smallHeight * 0.25f, Theme::smallHeight});
+        }
+
+        if (false) {
+            context = drawContext;
+
+            let rectangle = rect{0, 0, Theme::smallHeight, Theme::smallHeight};
+            let whiteX_translate = mat::T{rectangle.align(whiteXShapedText.extent, Alignment::MiddleCenter)};
+            context.transform = context.transform * mat::T{0.0f, 0.0f, 0.005f} * whiteX_translate;
+
+            context.fillColor = vec::color(0.0, 0.0, 0.0, 1.0);
+            context.drawFilledQuad(rectangle);
+            context.drawText(whiteXShapedText);
+
+            context.transform = context.transform * mat::T{Theme::smallHeight, 0};
+            context.fillColor = vec::color(1.0, 1.0, 1.0, 1.0);
+            context.drawFilledQuad(rectangle);
+            context.drawText(blackXShapedText);
+
+        }
+
 
         Widget::draw(drawContext, displayTimePoint);
     }

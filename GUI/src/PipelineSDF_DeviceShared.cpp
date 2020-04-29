@@ -233,14 +233,11 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
         let &atlas_rect = atlas_i->second;
 
         let color = vec{attr_grapheme.style.color};
-        let shadowSize = attr_grapheme.style.shadow_size > 0.1f ? 
-            (0.5f / std::min(attr_grapheme.style.shadow_size, maxDistance)) :
-            -1.0f;
 
-        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
-        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
-        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
-        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color, maxDistance, shadowSize);
+        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color, maxDistance);
+        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color, maxDistance);
+        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color, maxDistance);
+        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color, maxDistance);
     }
 }
 

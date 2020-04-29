@@ -223,17 +223,6 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         0.0f, // maxDepthBounds
     };
    
-    /*const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
-        VK_TRUE, // blendEnable
-        vk::BlendFactor::eSrcAlpha, // srcColorBlendFactor
-        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
-        vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eOne, // dstAlphaBlendFactor
-        vk::BlendOp::eAdd, // aphaBlendOp
-        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    } };*/
-
     /* Pre-multiplied alpha blending.
      */
     const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {

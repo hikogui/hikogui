@@ -28,11 +28,11 @@ namespace TTauri::GUI {
  */
 class DrawContext {
 private:
-    Window &window;
-    vspan<PipelineFlat::Vertex> &flatVertices;
-    vspan<PipelineBox::Vertex> &boxVertices;
-    vspan<PipelineImage::Vertex> &imageVertices;
-    vspan<PipelineSDF::Vertex> &sdfVertices;
+    Window *window;
+    vspan<PipelineFlat::Vertex> *flatVertices;
+    vspan<PipelineBox::Vertex> *boxVertices;
+    vspan<PipelineImage::Vertex> *imageVertices;
+    vspan<PipelineSDF::Vertex> *sdfVertices;
 
 public:
     /// Foreground color.
@@ -80,11 +80,11 @@ public:
         vspan<PipelineImage::Vertex> &imageVertices,
         vspan<PipelineSDF::Vertex> &sdfVertices
     ) noexcept :
-        window(window),
-        flatVertices(flatVertices),
-        boxVertices(boxVertices),
-        imageVertices(imageVertices),
-        sdfVertices(sdfVertices),
+        window(&window),
+        flatVertices(&flatVertices),
+        boxVertices(&boxVertices),
+        imageVertices(&imageVertices),
+        sdfVertices(&sdfVertices),
         color(0.0, 1.0, 0.0, 1.0),
         fillColor(1.0, 1.0, 0.0, 1.0),
         lineWidth(Theme::borderWidth),
@@ -112,10 +112,11 @@ public:
      *  - fillColor
      */
     void drawFilledQuad(vec p1, vec p2, vec p3, vec p4) const noexcept {
-        flatVertices.emplace_back(transform * p1, clippingRectangle, fillColor);
-        flatVertices.emplace_back(transform * p2, clippingRectangle, fillColor);
-        flatVertices.emplace_back(transform * p3, clippingRectangle, fillColor);
-        flatVertices.emplace_back(transform * p4, clippingRectangle, fillColor);
+        ttauri_assume(flatVertices != nullptr);
+        flatVertices->emplace_back(transform * p1, clippingRectangle, fillColor);
+        flatVertices->emplace_back(transform * p2, clippingRectangle, fillColor);
+        flatVertices->emplace_back(transform * p3, clippingRectangle, fillColor);
+        flatVertices->emplace_back(transform * p4, clippingRectangle, fillColor);
     }
 
     /** Draw a rectangle of one color.
@@ -141,12 +142,14 @@ public:
     *  - cornerShapes
     */
     void drawBox(rect r) const noexcept {
+        ttauri_assume(boxVertices != nullptr);
+
         let p1 = transform * r.p1();
         let p2 = transform * r.p2();
         r = rect::p1p2(p1, p2);
 
         PipelineBox::DeviceShared::placeVertices(
-            boxVertices,
+            *boxVertices,
             p1.z(),
             r,
             fillColor,
@@ -165,7 +168,9 @@ public:
     *  - clippingRectangle
     */
     void drawImage(PipelineImage::Image &image) const noexcept {
-        image.placeVertices(imageVertices, transform, clippingRectangle);
+        ttauri_assume(imageVertices != nullptr);
+
+        image.placeVertices(*imageVertices, transform, clippingRectangle);
     }
 
     /** Draw shaped text.
@@ -176,8 +181,11 @@ public:
      *  - clippingRectangle
      */
     void drawText(Text::ShapedText &text) const noexcept {
-        window.device->SDFPipeline->placeVertices(
-            sdfVertices,
+        ttauri_assume(window != nullptr);
+        ttauri_assume(sdfVertices != nullptr);
+
+        window->device->SDFPipeline->placeVertices(
+            *sdfVertices,
             text,
             transform,
             clippingRectangle

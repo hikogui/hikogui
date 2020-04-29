@@ -13,7 +13,6 @@ layout(location = 0) in flat vec4 inClippingRectangle;
 layout(location = 1) in vec3 inTextureCoord;
 layout(location = 2) in flat vec4 inColor;
 layout(location = 3) in flat float inDistanceMultiplier;
-layout(location = 4) in flat float inShadowSize;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 outColor;
@@ -33,36 +32,25 @@ void main()
     // Distance in screen coordinates from closest edge.
     float distance = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), inTextureCoord.xy).r * inDistanceMultiplier;
 
-    float glyph = clamp(distance + 0.5, 0.0, 1.0);
-    
-    vec4 pixelColor;
-    if (inShadowSize > 0.0) {
-        if (glyph >= 1.0) {
-            pixelColor = inColor;
+    // Mathamatically we should add 0.5 to the distance to get the antialiasing to be centered on the edge of
+    // the glyph. However glyphs are designed to be drawn black-on-white, using linear alpha compositing.
+    // By using a smaller value we make the glyph slightly thinner, so that our perceptual alpha compositing
+    // will draw the font at the correct thickingness.
+    float alpha = clamp(distance + 0.42, 0.0, 1.0);
 
-        } else {
-            float shadow = clamp(distance * inShadowSize + 0.5, 0.0, 1.0);
+    // Although alpha compositing needs to be done linearilly on colors,
+    // the alpha value itself should be calculated perceptually (non-linear).
+    // We are using a gamma of 2 because it is fast.
+    // This makes dark on light and light on dark text have the same thickness.
+    if (inColor.g > 0.75) {
+        alpha = alpha * alpha;
+    } else if (inColor.g < 0.25) {
+        alpha = sqrt(alpha);
+    }
 
-            if (shadow > 0.0) {
-                vec4 shadowColor = vec4(0.0, 0.0, 0.0, shadow);
-                vec4 glyphColor = inColor * glyph;
-                pixelColor = glyphColor + shadowColor * (1.0 - glyph);
-
-            } else {
-                discard;
-            }
-        }
-
-    } else if (glyph > 0.0) {
-        pixelColor = inColor * glyph;
-
+    if (alpha > 0.0) {
+        outColor = inColor * alpha;
     } else {
         discard;
     }
-
-    // pixelColor is already pre-multiplied with alpha, why do I need to do this again
-    // to make it look good in both dark-on-light and light-on-dark.
-    //outColor = vec4(pixelColor.rgb * pixelColor.a, pixelColor.a);
-    outColor = pixelColor;
-
 }

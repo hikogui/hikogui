@@ -31,16 +31,12 @@ struct Vertex {
     //! The multiplier to use to convert a SDF distance from texture space to screen-space.
     float distanceMultiplier;
 
-    //! The number of pixels that the shadow is, negative values make inset shadow. Should be less than or equal to the SDF8::max_distance.
-    float shadowSize;
-
-    Vertex(vec position, rect clippingRectangle, vec textureCoord, vec color, float distanceMultiplier, float shadowSize) noexcept :
+    Vertex(vec position, rect clippingRectangle, vec textureCoord, vec color, float distanceMultiplier) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),
         color(color),
-        distanceMultiplier(distanceMultiplier),
-        shadowSize(shadowSize) {}
+        distanceMultiplier(distanceMultiplier) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -56,8 +52,7 @@ struct Vertex {
             { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, clippingRectangle) },
             { 2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, textureCoord) },                
             { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
-            { 4, 0, vk::Format::eR32Sfloat, offsetof(Vertex, distanceMultiplier) },
-            { 5, 0, vk::Format::eR32Sfloat, offsetof(Vertex, shadowSize) }
+            { 4, 0, vk::Format::eR32Sfloat, offsetof(Vertex, distanceMultiplier) }
         };
     }
 };
