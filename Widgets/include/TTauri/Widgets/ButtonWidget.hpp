@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Widget.hpp"
+#include <rhea/constraint.hpp>
 #include <memory>
 #include <string>
 #include <array>
@@ -20,10 +21,13 @@ protected:
     std::string label = "<unknown>";
 
     Text::ShapedText labelShapedText;
+
+    rhea::constraint widthConstraint;
+    rhea::constraint heightConstraint;
 public:
 
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
-    ~ButtonWidget() {}
+    ~ButtonWidget();
 
     ButtonWidget(const ButtonWidget &) = delete;
     ButtonWidget &operator=(const ButtonWidget &) = delete;

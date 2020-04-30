@@ -181,24 +181,23 @@ public:
         return widget->addWidget<T>(std::forward<Args>(args)...);
     }
 
-    rhea::solver& addConstraint(rhea::constraint const& constraint) noexcept {
-        auto &r = widgetSolver.add_constraint(constraint);
+    rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept {
+        widgetSolver.add_constraint(constraint);
         // During the construction of WindowWidget `widget` is not yet set.
         if (widget) {
             calculateMinimumAndMaximumWindowExtent();
             widget->handleWindowResize();
         }
-        return r;
+        return constraint;
     }
 
-    rhea::solver& removeConstraint(rhea::constraint const& constraint) noexcept {
-        auto &r = widgetSolver.remove_constraint(constraint);
+    void removeConstraint(rhea::constraint const& constraint) noexcept {
+        widgetSolver.remove_constraint(constraint);
         // During the construction of WindowWidget `widget` is not yet set.
         if (widget) {
             calculateMinimumAndMaximumWindowExtent();
             widget->handleWindowResize();
         }
-        return r;
     }
 
     virtual void setCursor(Cursor cursor) = 0;

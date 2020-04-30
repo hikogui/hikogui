@@ -12,10 +12,8 @@ layout(location = 2) in flat vec4 inBackgroundColor;
 layout(location = 3) in flat vec4 inBorderColor;
 layout(location = 4) in flat uvec4 inCornerShapes;
 layout(location = 5) in flat vec4 inCornerRadii;
-layout(location = 6) in flat float inShadowSize;
-layout(location = 7) in flat float inOneOverShadowSize;
-layout(location = 8) in flat float inBorderStart;
-layout(location = 9) in flat float inBorderEnd;
+layout(location = 6) in flat float inBorderStart;
+layout(location = 7) in flat float inBorderEnd;
 
 layout(origin_upper_left) in vec4 gl_FragCoord;
 layout(location = 0) out vec4 outColor;
@@ -24,20 +22,6 @@ layout(location = 0) out vec4 outColor;
 bool isClipped()
 {
     return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) == bvec4(true, false, false, true);
-}
-
-float erf(float x) {
-    float s = sign(x);
-    float a = abs(x);
-    
-    x = 1.0 + (0.278393 + (0.230389 + 0.078108 * (a * a)) * a) * a;
-    x *= x;
-    return s - s / (x * x);
-}
-
-float smoothShadow(float distance, float oneOverShadowSize)
-{
-    return 0.5 + 0.5 * erf(distance * oneOverShadowSize);
 }
 
 float roundedDistance(vec2 distance2D, float cornerRadius)
@@ -117,16 +101,8 @@ void main() {
     float background = clamp(distance - inBorderEnd + 0.5, 0.0, 1.0);
     float border = clamp(distance - inBorderStart + 0.5, 0.0, 1.0);
 
-    float shadow = 0.0;
-    if (border < 1.0 && inShadowSize >= 1.0) {
-        // Only calculate the shadow when we are on the border or beyond.
-        shadow = clamp(smoothShadow(distance - inShadowSize, inOneOverShadowSize), 0.0, 1.0);
-    }
-
-    vec4 shadowColor = vec4(0.0, 0.0, 0.0, shadow);
     vec4 borderColor = inBorderColor * border;
     vec4 backgroundColor = inBackgroundColor * background;
 
-    vec4 tmpColor = borderColor + shadowColor * (1.0 - border);
-    outColor = backgroundColor + tmpColor * (1.0 - background);
+    outColor = backgroundColor + borderColor * (1.0 - background);
 }

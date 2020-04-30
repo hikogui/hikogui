@@ -49,7 +49,6 @@ struct DeviceShared final {
         vec backgroundColor,
         float borderSize,
         vec borderColor,
-        float shadowSize,
         vec cornerShapes,
         rect clippingRectangle
     );

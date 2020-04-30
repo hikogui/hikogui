@@ -42,13 +42,12 @@ void main()
     // the alpha value itself should be calculated perceptually (non-linear).
     // We are using a gamma of 2 because it is fast.
     // This makes dark on light and light on dark text have the same thickness.
-    if (inColor.g > 0.75) {
+    if (inColor.g > 0.5) {
         alpha = alpha * alpha;
-    } else if (inColor.g < 0.25) {
+    } else {
         alpha = 1.0 - alpha;
         alpha = alpha * alpha;
         alpha = 1.0 - alpha;
-        //alpha = sqrt(alpha);
     }
 
     if (alpha > 0.0) {

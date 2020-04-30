@@ -39,12 +39,11 @@ void DeviceShared::placeVertices(
     vec backgroundColor,
     float borderSize,
     vec borderColor,
-    float shadowSize,
     vec cornerShapes,
     rect clippingRectangle
 )
 {
-    let extraSpace = (borderSize * 0.5f) + shadowSize + 1.0f;
+    let extraSpace = (borderSize * 0.5f) + 1.0f;
     let outerBox = expand(box, extraSpace);
 
     let v0 = outerBox.corner<0>(depth);
@@ -59,10 +58,10 @@ void DeviceShared::placeVertices(
     let t2 = outerExtent._0yx0();
     let t3 = outerExtent.xy00();
 
-    vertices.emplace_back(v0, t0, backgroundColor, borderSize, borderColor, shadowSize, cornerShapes, clippingRectangle);
-    vertices.emplace_back(v1, t1, backgroundColor, borderSize, borderColor, shadowSize, cornerShapes, clippingRectangle);
-    vertices.emplace_back(v2, t2, backgroundColor, borderSize, borderColor, shadowSize, cornerShapes, clippingRectangle);
-    vertices.emplace_back(v3, t3, backgroundColor, borderSize, borderColor, shadowSize, cornerShapes, clippingRectangle);
+    vertices.emplace_back(v0, t0, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
+    vertices.emplace_back(v1, t1, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
+    vertices.emplace_back(v2, t2, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
+    vertices.emplace_back(v3, t3, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
 }
 
 void DeviceShared::buildShaders()

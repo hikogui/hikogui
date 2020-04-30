@@ -37,7 +37,6 @@ struct Vertex {
     R16G16B16A16SFloat cornerShapes;
 
     float borderSize;
-    float shadowSize;
 
     Vertex(
         vec position,
@@ -45,7 +44,6 @@ struct Vertex {
         vec backgroundColor,
         float borderSize,
         vec borderColor,
-        float shadowSize,
         vec cornerShapes,
         rect clippingRectangle
     ) noexcept :
@@ -55,8 +53,7 @@ struct Vertex {
         backgroundColor(backgroundColor),
         borderColor(borderColor),
         cornerShapes(cornerShapes),
-        borderSize(borderSize),
-        shadowSize(shadowSize) {}
+        borderSize(borderSize) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -75,7 +72,6 @@ struct Vertex {
             { 4, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, borderColor) },
             { 5, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, cornerShapes) },
             { 6, 0, vk::Format::eR32Sfloat, offsetof(Vertex, borderSize) },
-            { 7, 0, vk::Format::eR32Sfloat, offsetof(Vertex, shadowSize) },
         };
     }
 };

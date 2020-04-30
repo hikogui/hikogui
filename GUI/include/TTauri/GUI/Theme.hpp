@@ -47,6 +47,10 @@ public:
      */
     static constexpr float width = 150.0f;
 
+    /** Max width of labels in widgets.
+     */
+    static constexpr float maxLabelWidth = 300.0f;
+
     std::string name;
     ThemeMode mode;
 

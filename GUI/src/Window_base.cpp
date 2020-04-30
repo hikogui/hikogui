@@ -19,11 +19,14 @@ Window_base::Window_base(const std::shared_ptr<WindowDelegate> delegate, const s
 
 Window_base::~Window_base()
 {
+    // Destroy the top-level widget, before automatic destruction of the constraint solver
+    // and other objects that the widgets require from the window during their destruction.
+    widget.release();
+
     try {
         gsl_suppress(f.6) {
             if (state != State::NoWindow) {
                 LOG_FATAL("Window '{}' was not properly teardown before destruction.", title);
-                abort();
             }
             LOG_INFO("Window '{}' has been propertly destructed.", title);
         }

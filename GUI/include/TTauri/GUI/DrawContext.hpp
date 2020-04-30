@@ -44,9 +44,6 @@ public:
     /// Size of lines.
     float lineWidth = 1.0;
 
-    /// Size of the drop shadow.
-    float shadowSize = 0.0;
-
     /** Shape of the corners of a box.
      * The vector holds information for each corner:
      *  - x: left-bottom
@@ -88,7 +85,6 @@ public:
         color(0.0, 1.0, 0.0, 1.0),
         fillColor(1.0, 1.0, 0.0, 1.0),
         lineWidth(Theme::borderWidth),
-        shadowSize(0.0f),
         cornerShapes(),
         clippingRectangle(vec{0.0, 0.0}, static_cast<vec>(window.currentWindowExtent))
     {
@@ -155,7 +151,6 @@ public:
             fillColor,
             lineWidth,
             color,
-            shadowSize,
             cornerShapes,
             clippingRectangle
         );

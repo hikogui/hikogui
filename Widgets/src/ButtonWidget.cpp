@@ -15,12 +15,28 @@ using namespace std::literals;
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
     Widget(window, parent), label(std::move(label))
 {
-    window.addConstraint(box.width >= Theme::width);
-    window.addConstraint(box.height >= Theme::height);
+    widthConstraint = window.addConstraint(box.width >= Theme::width);
+    heightConstraint = window.addConstraint(box.height >= Theme::height);
+}
+
+ButtonWidget::~ButtonWidget() {
+    window.removeConstraint(widthConstraint);
+    window.removeConstraint(heightConstraint);
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    if (renderTrigger.check(displayTimePoint) >= 2) {
+        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, Theme::maxLabelWidth);
+        window.device->SDFPipeline->prepareAtlas(labelShapedText);
+
+        // Add minimumSize extent to the Widget, then only when the minimumSize changes due to fontShaping
+        // should the constraints be modified.
+        //
+        //window.removeConstraint(widthConstraint);
+        //widthConstraint = window.addConstraint(box.width >= labelShapedText.extent.width());
+    }
+
     auto context = drawContext;
 
     context.cornerShapes = vec{Theme::roundingRadius};
@@ -31,11 +47,6 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     // Move the border of the button in the middle of a pixel.
     let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);
     context.drawBox(buttonRectangle);
-
-    if (renderTrigger.check(displayTimePoint) >= 2) {
-        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, buttonRectangle.width());
-        window.device->SDFPipeline->prepareAtlas(labelShapedText);
-    }
 
     auto textOffset = buttonRectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
 

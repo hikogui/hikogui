@@ -133,7 +133,7 @@ public:
             context.drawFilledQuad(rect{Theme::smallHeight * 0.25f, 0, Theme::smallHeight * 0.25f, Theme::smallHeight});
         }
 
-        if (false) {
+        if (true) {
             context = drawContext;
 
             let rectangle = rect{0, 0, Theme::smallHeight, Theme::smallHeight};
