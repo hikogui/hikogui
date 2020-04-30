@@ -36,7 +36,7 @@ void main()
     // the glyph. However glyphs are designed to be drawn black-on-white, using linear alpha compositing.
     // By using a smaller value we make the glyph slightly thinner, so that our perceptual alpha compositing
     // will draw the font at the correct thickingness.
-    float alpha = clamp(distance + 0.42, 0.0, 1.0);
+    float alpha = clamp(distance + 0.45, 0.0, 1.0);
 
     // Although alpha compositing needs to be done linearilly on colors,
     // the alpha value itself should be calculated perceptually (non-linear).
