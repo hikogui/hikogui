@@ -36,17 +36,17 @@ void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     let rectangle = box.currentRectangle();
 
     let toggle_height = Theme::smallHeight;
-    let toggle_width = Theme::smallWidth;
-    let toggle_x = 0.0f;
+    let toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
+    let toggle_x = -0.5f;  // Expand horizontally due to rounded shape
     let toggle_y = (rectangle.height() - toggle_height) * 0.5f;
-    let toggle_rectangle = expand(rect{toggle_x, toggle_y, toggle_width, toggle_height}, 0.5f);
+    let toggle_rectangle = rect{toggle_x, toggle_y, toggle_width, toggle_height};
 
     let slider_move = toggle_width - toggle_height;
     let slider_x = toggle_x + Theme::borderWidth + slider_move * curr_value;
     let slider_y = toggle_y + Theme::borderWidth;
     let slider_width = toggle_height - 2.0f * Theme::borderWidth;
     let slider_height = toggle_height - 2.0f * Theme::borderWidth;
-    let slider_rectangle = expand(rect{slider_x, slider_y, slider_width, slider_height}, 0.5f);
+    let slider_rectangle = rect{slider_x, slider_y, slider_width, slider_height};
 
     let label_x = Theme::smallWidth + theme->margin;
     let label_y = 0.0f;

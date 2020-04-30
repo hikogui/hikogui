@@ -123,6 +123,7 @@ public:
     *  - fillColor
     */
     void drawFilledQuad(rect r) const noexcept {
+        r = expand(r, 0.5f);
         drawFilledQuad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
     }
 
@@ -165,7 +166,7 @@ public:
     void drawImage(PipelineImage::Image &image) const noexcept {
         ttauri_assume(imageVertices != nullptr);
 
-        image.placeVertices(*imageVertices, transform, clippingRectangle);
+        image.placeVertices(*imageVertices, mat::T{-0.5, -0.5} * transform, clippingRectangle);
     }
 
     /** Draw shaped text.

@@ -26,11 +26,10 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
 {
     auto context = drawContext;
 
-    // Place the border of the input field rectangle in the middle of a pixel.
-    let inputFieldRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);
+    let inputFieldRectangle = rect{vec{}, box.currentExtent()};
     context.drawBox(inputFieldRectangle);
 
-    let textRectangle = shrink(inputFieldRectangle, 2.0);
+    let textRectangle = shrink(inputFieldRectangle, Theme::margin);
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
         field.setStyleOfAll(theme->labelStyle);

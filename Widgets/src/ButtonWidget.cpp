@@ -45,7 +45,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     }
 
     // Move the border of the button in the middle of a pixel.
-    let buttonRectangle = shrink(rect{vec{}, box.currentExtent()}, 0.5);
+    let buttonRectangle = rect{vec{}, box.currentExtent()};
     context.drawBox(buttonRectangle);
 
     auto textOffset = buttonRectangle.align(labelShapedText.extent, Alignment::MiddleCenter);

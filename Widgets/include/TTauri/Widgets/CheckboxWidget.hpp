@@ -54,7 +54,7 @@ public:
         let button_width = Theme::smallHeight;
         let button_x = Theme::smallWidth - button_width;
         let button_y = (rectangle.height() - button_height) * 0.5f;
-        let button_rectangle = shrink(rect{button_x, button_y, button_width, button_height}, 0.5);
+        let button_rectangle = rect{button_x, button_y, button_width, button_height};
 
         let label_x = Theme::smallWidth + theme->margin;
         let label_y = 0.0f;
@@ -102,7 +102,7 @@ public:
             } else {
                 context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
                 context.fillColor = theme->accentColor;
-                context.drawFilledQuad(shrink(button_rectangle, 4.5f));
+                context.drawFilledQuad(shrink(button_rectangle, 4.0f));
             }
         } else {
             if (value == TrueValue) {
@@ -113,7 +113,7 @@ public:
             } else {
                 context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
                 context.fillColor = theme->borderColor(nestingLevel() - 1);
-                context.drawFilledQuad(shrink(button_rectangle, 4.5f));
+                context.drawFilledQuad(shrink(button_rectangle, 4.0f));
             }
         }
         // user defined label.
@@ -133,7 +133,7 @@ public:
             context.drawFilledQuad(rect{Theme::smallHeight * 0.25f, 0, Theme::smallHeight * 0.25f, Theme::smallHeight});
         }
 
-        if (true) {
+        if (false) {
             context = drawContext;
 
             let rectangle = rect{0, 0, Theme::smallHeight, Theme::smallHeight};

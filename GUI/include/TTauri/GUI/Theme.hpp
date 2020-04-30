@@ -31,7 +31,7 @@ public:
 
     /** The height of smaller widget like labels, toggles, checkboxes and radio buttons.
      */
-    static constexpr float smallHeight = 16.0f;
+    static constexpr float smallHeight = 15.0f;
 
     /** The width of smaller widget like labels, toggles, checkboxes and radio buttons.
      * Small widgets which include labels should be right aligned to the `smallWidth`

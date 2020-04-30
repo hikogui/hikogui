@@ -37,16 +37,52 @@ This is true for:
  - Paths
  - Font-glyphs
 
-### Window-surface coordinates
-The coordinates in a window are in pixels. With the center of the left bottom
-pixel having the coordinates (0.5, 0.5).
+### Window and Widget-surface coordinates
+The local coordinates in a window and widgets are in points.
+With the origin in the center of the left bottom most point.
 
-There may be an intermediate 3x3 scaled window surface to handle sub-pixel
-anti-aliasing. In this case the coordinates are still the same as the
-original window surface, the shader will automatically scale the coordinates.
+The mapping of the point-origin to pixel-based-media is shown
+in the exampled below. These example shows that when you draw a 1-point border/line
+it will draw this line sharply on the pixel boundaries when anti-aliasing.
 
-Widgets should be able to figure out what the DPI is of the window-surface to
-handle proper scaling of the user interface elements.
+Origin on a 1:1 pixel:point scaled window
+```
+ +-+-+-+-+-+-+-+-+
+ |       |       |
+ |       |       |
+ |       |       |
+ +-+-+-+-+-+-+-+-+
+ |       |       |
+ |   O   |       |
+ |       |       |
+ +-+-+-+-+-+-+-+-+
+```
+
+Origin on a 2:1 pixel:point scaled window
+```
+ +-+-+-+-+-+-+-+-+
+ |       |       |
+ |       |       |
+ |       |       |
+ +-+-+-+-O-+-+-+-+
+ |       |       |
+ |       |       |
+ |       |       |
+ +-+-+-+-+-+-+-+-+
+```
+
+Origin on a 3:1 pixel:point scaled window
+```
+ +-+-+-+-+-+-+-+-+
+ |       |       |
+ |       |   O   |
+ |       |       |
+ +-+-+-+-+-+-+-+-+
+ |       |       |
+ |       |       |
+ |       |       |
+ +-+-+-+-+-+-+-+-+
+```
 
 ### Window depth
 Z-coordinate for a window is between 0.0 (far) to 1.0 (near).

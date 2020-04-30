@@ -305,6 +305,7 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
         imagePipeline->vertexBufferData,
         SDFPipeline->vertexBufferData
     );
+    drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
     widget->draw(drawContext, displayTimePoint);
 
     // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below

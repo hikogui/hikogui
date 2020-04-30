@@ -50,9 +50,10 @@ public:
         let button_width = Theme::smallHeight;
         let button_x = Theme::smallWidth - button_width;
         let button_y = (rectangle.height() - button_height) * 0.5f;
+        // Radio button should be slightly larger due to its round shape.
         let button_rectangle = expand(rect{button_x, button_y, button_width, button_height}, 0.5f);
 
-        let pip_rectangle = shrink(button_rectangle, 3.0f);
+        let pip_rectangle = shrink(button_rectangle, Theme::borderWidth + 1.0f);
 
         let label_x = Theme::smallWidth + theme->margin;
         let label_y = 0.0f;
