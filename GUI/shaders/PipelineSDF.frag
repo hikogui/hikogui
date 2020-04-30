@@ -45,7 +45,10 @@ void main()
     if (inColor.g > 0.75) {
         alpha = alpha * alpha;
     } else if (inColor.g < 0.25) {
-        alpha = sqrt(alpha);
+        alpha = 1.0 - alpha;
+        alpha = alpha * alpha;
+        alpha = 1.0 - alpha;
+        //alpha = sqrt(alpha);
     }
 
     if (alpha > 0.0) {
