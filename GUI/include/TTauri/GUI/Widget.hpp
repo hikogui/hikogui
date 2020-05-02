@@ -81,6 +81,11 @@ public:
     //! Location of the frame compared to the window.
     BoxModel box;
 
+    /** The minimum size the widget should be.
+     * This value could change based on the content of the widget.
+     */
+    vec minimumExtent;
+
     //! Rectangle, extracted from the box
     rect rectangle; 
 

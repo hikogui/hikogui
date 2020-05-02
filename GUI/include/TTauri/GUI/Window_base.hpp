@@ -200,6 +200,17 @@ public:
         }
     }
 
+    rhea::constraint replaceConstraint(rhea::constraint const &oldConstraint, rhea::constraint const &newConstraint) noexcept {
+        widgetSolver.remove_constraint(oldConstraint);
+        widgetSolver.add_constraint(newConstraint);
+        // During the construction of WindowWidget `widget` is not yet set.
+        if (widget) {
+            calculateMinimumAndMaximumWindowExtent();
+            widget->handleWindowResize();
+        }
+        return newConstraint;
+    }
+
     virtual void setCursor(Cursor cursor) = 0;
 
     virtual void closeWindow() = 0;

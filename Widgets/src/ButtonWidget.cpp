@@ -15,13 +15,30 @@ using namespace std::literals;
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
     Widget(window, parent), label(std::move(label))
 {
-    widthConstraint = window.addConstraint(box.width >= Theme::width);
-    heightConstraint = window.addConstraint(box.height >= Theme::height);
+    minimumExtent = vec{Theme::width, Theme::height};
+    minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());
+    minimumHeightConstraint = window.addConstraint(box.height >= minimumExtent.height());
 }
 
 ButtonWidget::~ButtonWidget() {
-    window.removeConstraint(widthConstraint);
-    window.removeConstraint(heightConstraint);
+    window.removeConstraint(minimumWidthConstraint);
+    window.removeConstraint(minimumHeightConstraint);
+}
+
+void ButtonWidget::setMinimumExtent(vec newMinimumExtent) noexcept {
+    if (newMinimumExtent != minimumExtent) {
+        minimumExtent = newMinimumExtent;
+
+        minimumWidthConstraint = window.replaceConstraint(
+            minimumWidthConstraint,
+            box.width >= minimumExtent.width()
+        );
+
+        minimumHeightConstraint = window.replaceConstraint(
+            minimumHeightConstraint,
+            box.height >= minimumExtent.height()
+        );
+    }
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept

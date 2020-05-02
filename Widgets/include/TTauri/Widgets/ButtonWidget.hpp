@@ -22,8 +22,8 @@ protected:
 
     Text::ShapedText labelShapedText;
 
-    rhea::constraint widthConstraint;
-    rhea::constraint heightConstraint;
+    rhea::constraint minimumWidthConstraint;
+    rhea::constraint minimumHeightConstraint;
 public:
 
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
@@ -33,6 +33,8 @@ public:
     ButtonWidget &operator=(const ButtonWidget &) = delete;
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
+
+    void setMinimumExtent(vec newMinimumExtent) noexcept;
 
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
