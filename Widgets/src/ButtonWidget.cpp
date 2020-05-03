@@ -13,45 +13,27 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent), label(std::move(label))
+    ControlWidget(window, parent, vec{Theme::width, Theme::height}), label(std::move(label))
 {
-    minimumExtent = vec{Theme::width, Theme::height};
-    minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());
-    minimumHeightConstraint = window.addConstraint(box.height >= minimumExtent.height());
 }
 
 ButtonWidget::~ButtonWidget() {
-    window.removeConstraint(minimumWidthConstraint);
-    window.removeConstraint(minimumHeightConstraint);
 }
 
-void ButtonWidget::setMinimumExtent(vec newMinimumExtent) noexcept {
-    if (newMinimumExtent != minimumExtent) {
-        minimumExtent = newMinimumExtent;
 
-        minimumWidthConstraint = window.replaceConstraint(
-            minimumWidthConstraint,
-            box.width >= minimumExtent.width()
-        );
-
-        minimumHeightConstraint = window.replaceConstraint(
-            minimumHeightConstraint,
-            box.height >= minimumExtent.height()
-        );
-    }
-}
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    let rectangle = rect{vec{}, box.currentExtent()};
+
     if (renderTrigger.check(displayTimePoint) >= 2) {
-        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, Theme::maxLabelWidth);
+        let labelWidth = rectangle.width() - Theme::margin * 2.0;
+
+        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, labelWidth);
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
 
-        // Add minimumSize extent to the Widget, then only when the minimumSize changes due to fontShaping
-        // should the constraints be modified.
-        //
-        //window.removeConstraint(widthConstraint);
-        //widthConstraint = window.addConstraint(box.width >= labelShapedText.extent.width());
+        setMinimumExtent(Theme::width, labelShapedText.extent.height());
+        //setPreferedExtent(labelShapedText.preferedExtent);
     }
 
     auto context = drawContext;
@@ -62,10 +44,9 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     }
 
     // Move the border of the button in the middle of a pixel.
-    let buttonRectangle = rect{vec{}, box.currentExtent()};
-    context.drawBox(buttonRectangle);
+    context.drawBox(rectangle);
 
-    auto textOffset = buttonRectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
+    auto textOffset = rectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
 
     context.transform = context.transform * mat::T{textOffset.z(0.001f)};
     context.drawText(labelShapedText);

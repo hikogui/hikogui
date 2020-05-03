@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Widgets/ControlWidget.hpp"
 #include <rhea/constraint.hpp>
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@
 
 namespace TTauri::GUI::Widgets {
 
-class ButtonWidget : public Widget {
+class ButtonWidget : public ControlWidget {
 protected:
     bool value = false;
     bool pressed = false;
@@ -22,8 +22,6 @@ protected:
 
     Text::ShapedText labelShapedText;
 
-    rhea::constraint minimumWidthConstraint;
-    rhea::constraint minimumHeightConstraint;
 public:
 
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
@@ -33,8 +31,6 @@ public:
     ButtonWidget &operator=(const ButtonWidget &) = delete;
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
-
-    void setMinimumExtent(vec newMinimumExtent) noexcept;
 
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 

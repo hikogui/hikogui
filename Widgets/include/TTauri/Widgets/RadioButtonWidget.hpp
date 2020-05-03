@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Widgets/ControlWidget.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>
@@ -15,7 +15,7 @@
 namespace TTauri::GUI::Widgets {
 
 template<typename ValueType, ValueType ActiveValue>
-class RadioButtonWidget : public Widget {
+class RadioButtonWidget : public ControlWidget {
 protected:
     observer<ValueType> value;
 
@@ -25,14 +25,10 @@ protected:
 public:
 
     RadioButtonWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
-        Widget(window, parent), value(value, [this](ValueType){ ++this->renderTrigger; }), label(std::move(label))
+        ControlWidget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
+        value(value, [this](ValueType){ ++this->renderTrigger; }),
+        label(std::move(label))
     {
-        if (ssize(label) != 0) {
-            window.addConstraint(box.width >= Theme::width);
-        } else {
-            window.addConstraint(box.width >= Theme::smallWidth);
-        }
-        window.addConstraint(box.height >= Theme::smallHeight);
     }
 
     ~RadioButtonWidget() {}
@@ -65,6 +61,9 @@ public:
         if (renderTrigger.check(displayTimePoint) >= 2) {
             labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
             window.device->SDFPipeline->prepareAtlas(labelShapedText);
+
+            // XXX font extents height of widget slightly.
+            //setMinimumExtent(labelShapedText.extent + vec{label_x, 0.0f});
         }
         let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
 
