@@ -47,12 +47,14 @@ protected:
     virtual std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const = 0;
     virtual std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const = 0;
     virtual ssize_t getDescriptorSetVersion() const = 0;
-    virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const = 0;
-    virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const = 0;
-    virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const = 0;
+    virtual std::vector<vk::PushConstantRange> createPushConstantRanges() const { return {}; }
+    virtual vk::VertexInputBindingDescription createVertexInputBindingDescription() const { return{}; }
+    virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const { return {}; }
 
-    virtual void buildVertexBuffers() = 0;
-    virtual void teardownVertexBuffers() = 0;
+    virtual vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const;
+
+    virtual void buildVertexBuffers() {};
+    virtual void teardownVertexBuffers() {};
     virtual void buildDescriptorSets();
     virtual void teardownDescriptorSets();
     virtual void buildSemaphores();

@@ -22,6 +22,9 @@ class PipelineBox;
 namespace PipelineSDF {
 class PipelineSDF;
 }
+namespace PipelineToneMapper {
+class PipelineToneMapper;
+}
 
 class Window_vulkan : public Window_base {
 public:
@@ -41,6 +44,12 @@ public:
     vk::Image depthImage;
     vk::ImageView depthImageView;
 
+    static const vk::Format colorImageFormat = vk::Format::eR16G16B16A16Sfloat;
+    VmaAllocation colorImageAllocation;
+    vk::Image colorImage;
+    vk::ImageView colorImageView;
+    vk::DescriptorImageInfo colorDescriptorImageInfo;
+
     vk::RenderPass renderPass;
 
     vk::CommandBuffer commandBuffer;
@@ -53,6 +62,7 @@ public:
     std::unique_ptr<PipelineFlat::PipelineFlat> flatPipeline;
     std::unique_ptr<PipelineBox::PipelineBox> boxPipeline;
     std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
+    std::unique_ptr<PipelineToneMapper::PipelineToneMapper> toneMapperPipeline;
 
     Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     ~Window_vulkan();

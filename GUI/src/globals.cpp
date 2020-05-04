@@ -16,6 +16,8 @@
 #include "shaders/PipelineBox.frag.spv.inl"
 #include "shaders/PipelineSDF.vert.spv.inl"
 #include "shaders/PipelineSDF.frag.spv.inl"
+#include "shaders/PipelineToneMapper.vert.spv.inl"
+#include "shaders/PipelineToneMapper.frag.spv.inl"
 
 
 namespace TTauri::GUI {
@@ -46,6 +48,8 @@ void startup()
     addStaticResource(PipelineBox_frag_spv_filename, PipelineBox_frag_spv_bytes);
     addStaticResource(PipelineSDF_vert_spv_filename, PipelineSDF_vert_spv_bytes);
     addStaticResource(PipelineSDF_frag_spv_filename, PipelineSDF_frag_spv_bytes);
+    addStaticResource(PipelineToneMapper_vert_spv_filename, PipelineToneMapper_vert_spv_bytes);
+    addStaticResource(PipelineToneMapper_frag_spv_filename, PipelineToneMapper_frag_spv_bytes);
 
 
     try {

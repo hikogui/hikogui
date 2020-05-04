@@ -4,10 +4,11 @@
 #pragma once
 
 #include "TTauri/GUI/Device_base.hpp"
-#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineBox_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "TTauri/GUI/PipelineToneMapper_DeviceShared.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
@@ -58,14 +59,19 @@ public:
     vk::Buffer quadIndexBuffer;
     VmaAllocation quadIndexBufferAllocation = {};
 
-    std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
     std::unique_ptr<PipelineFlat::DeviceShared> flatPipeline;
     std::unique_ptr<PipelineBox::DeviceShared> boxPipeline;
+    std::unique_ptr<PipelineImage::DeviceShared> imagePipeline;
     std::unique_ptr<PipelineSDF::DeviceShared> SDFPipeline;
+    std::unique_ptr<PipelineToneMapper::DeviceShared> toneMapperPipeline;
 
     /*! List if extension required on this device.
      */
     std::vector<const char *> requiredExtensions;
+
+    bool supportsLazyTransientImages = false;
+    vk::ImageUsageFlags transientImageUsageFlags = vk::ImageUsageFlags{};
+    VmaMemoryUsage lazyMemoryUsage = VMA_MEMORY_USAGE_GPU_ONLY;
 
     /*! Sorted list of queueFamilies and their capabilities.
      * score(window) must be called before initializeDevice(window);

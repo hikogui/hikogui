@@ -16,6 +16,8 @@ add_shader(TTauri_GUI_Shader_objs
     shaders/PipelineBox.frag
     shaders/PipelineSDF.vert
     shaders/PipelineSDF.frag
+    shaders/PipelineToneMapper.vert
+    shaders/PipelineToneMapper.frag
 )
 
 set(TTauri_GUI_srcs
@@ -29,6 +31,8 @@ set(TTauri_GUI_srcs
     src/Pipeline_vulkan.cpp
     src/PipelineFlat.cpp
     src/PipelineFlat_DeviceShared.cpp
+    src/PipelineToneMapper.cpp
+    src/PipelineToneMapper_DeviceShared.cpp
     src/PipelineBox.cpp
     src/PipelineBox_DeviceShared.cpp
     src/PipelineImage.cpp

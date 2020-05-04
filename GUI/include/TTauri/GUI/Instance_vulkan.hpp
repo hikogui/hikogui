@@ -13,8 +13,6 @@ namespace TTauri::GUI {
  */
 class Instance_vulkan : public Instance_base {
 protected:
-    //! Vulkan instance.
-    vk::Instance intrinsic;
 
     //! Vulkan dynamic loader of library functions.
     vk::DispatchLoaderDynamic _loader;
@@ -22,6 +20,9 @@ protected:
     vk::DebugUtilsMessengerEXT debugUtilsMessager;
 
 public:
+    //! Vulkan instance.
+    vk::Instance intrinsic;
+
     //! List of extension that where requested when the instance was created.
     std::vector<const char *> requiredExtensions;
 

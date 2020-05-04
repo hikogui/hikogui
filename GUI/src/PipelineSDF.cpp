@@ -58,42 +58,62 @@ std::vector<vk::PipelineShaderStageCreateInfo> PipelineSDF::createShaderStages()
 }
 
 std::vector<vk::DescriptorSetLayoutBinding> PipelineSDF::createDescriptorSetLayoutBindings() const {
-    return { {
-        0, // binding
-        vk::DescriptorType::eSampler,
-        1, // descriptorCount
-        vk::ShaderStageFlagBits::eFragment
-    }, {
-        1, // binding
-        vk::DescriptorType::eSampledImage,
-        numeric_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
-        vk::ShaderStageFlagBits::eFragment
-    } };
+    return {
+        {
+            0, // binding
+            vk::DescriptorType::eSampler,
+            1, // descriptorCount
+            vk::ShaderStageFlagBits::eFragment
+        }, {
+            1, // binding
+            vk::DescriptorType::eSampledImage,
+            numeric_cast<uint32_t>(DeviceShared::atlasMaximumNrImages), // descriptorCount
+            vk::ShaderStageFlagBits::eFragment
+        },
+        //{
+        //    2, // binding
+        //    vk::DescriptorType::eInputAttachment,
+        //    1, // descriptorCount
+        //    vk::ShaderStageFlagBits::eFragment
+        //}
+    };
 }
 
 vector<vk::WriteDescriptorSet> PipelineSDF::createWriteDescriptorSet() const
 {
     let &sharedImagePipeline = device().SDFPipeline;
 
-    return { {
-        descriptorSet,
-        0, // destBinding
-        0, // arrayElement
-        1, // descriptorCount
-        vk::DescriptorType::eSampler,
-        &sharedImagePipeline->atlasSamplerDescriptorImageInfo,
-        nullptr,  // bufferInfo
-        nullptr // texelBufferView
-    }, {
-        descriptorSet,
-        1, // destBinding
-        0, // arrayElement
-        numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
-        vk::DescriptorType::eSampledImage,
-        sharedImagePipeline->atlasDescriptorImageInfos.data(),
-        nullptr, // bufferInfo
-        nullptr // texelBufferView
-    } };
+    return {
+        {
+            descriptorSet,
+            0, // destBinding
+            0, // arrayElement
+            1, // descriptorCount
+            vk::DescriptorType::eSampler,
+            &sharedImagePipeline->atlasSamplerDescriptorImageInfo,
+            nullptr,  // bufferInfo
+            nullptr // texelBufferView
+        }, {
+            descriptorSet,
+            1, // destBinding
+            0, // arrayElement
+            numeric_cast<uint32_t>(sharedImagePipeline->atlasDescriptorImageInfos.size()), // descriptorCount
+            vk::DescriptorType::eSampledImage,
+            sharedImagePipeline->atlasDescriptorImageInfos.data(),
+            nullptr, // bufferInfo
+            nullptr // texelBufferView
+        }, 
+        //{
+        //    descriptorSet,
+        //    2, // destBinding
+        //    0, // arrayElement
+        //    1, // descriptorCount
+        //    vk::DescriptorType::eInputAttachment,
+        //    &inputDescriptorImageInfo,
+        //    nullptr, // bufferInfo
+        //    nullptr // texelBufferView
+        //}
+    };
 }
 
 ssize_t PipelineSDF::getDescriptorSetVersion() const

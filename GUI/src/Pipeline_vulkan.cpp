@@ -100,6 +100,23 @@ void Pipeline_vulkan::teardownSemaphores()
     device().destroy(renderFinishedSemaphore);
 }
 
+vk::PipelineDepthStencilStateCreateInfo Pipeline_vulkan::getPipelineDepthStencilStateCreateInfo() const
+{
+    // Reverse-z depth configuration
+    return {
+        vk::PipelineDepthStencilStateCreateFlags(),
+        VK_TRUE, // depthTestEnable;
+        VK_TRUE, // depthWriteEnable;
+        vk::CompareOp::eGreaterOrEqual, // depthCompareOp
+        VK_FALSE, // depthBoundsTestEnable
+        VK_FALSE, // stencilTestEnable,
+        vk::StencilOpState(), // front
+        vk::StencilOpState(), // back
+        1.0f, // minDepthBounds
+        0.0f, // maxDepthBounds
+    };
+}
+
 void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent)
 {
     LOG_INFO("buildPipeline previous size ({}, {})", this->extent.width, this->extent.height);
@@ -176,19 +193,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         VK_FALSE // alphaToOneEnable
     };
 
-    // Reverse-z depth configuration
-    const vk::PipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo = {
-        vk::PipelineDepthStencilStateCreateFlags(),
-        VK_TRUE, // depthTestEnable;
-        VK_TRUE, // depthWriteEnable;
-        vk::CompareOp::eGreaterOrEqual, // depthCompareOp
-        VK_FALSE, // depthBoundsTestEnable
-        VK_FALSE, // stencilTestEnable,
-        vk::StencilOpState(), // front
-        vk::StencilOpState(), // back
-        1.0f, // minDepthBounds
-        0.0f, // maxDepthBounds
-    };
+    let pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
+    
    
     /* Pre-multiplied alpha blending.
      */

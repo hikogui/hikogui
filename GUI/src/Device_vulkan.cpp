@@ -126,14 +126,16 @@ Device_vulkan::~Device_vulkan()
 {
     try {
         gsl_suppress(f.6) {
-            imagePipeline->destroy(gsl::make_not_null(this));
-            imagePipeline = nullptr;
+            toneMapperPipeline->destroy(gsl::make_not_null(this));
+            toneMapperPipeline = nullptr;
             SDFPipeline->destroy(gsl::make_not_null(this));
             SDFPipeline = nullptr;
-            flatPipeline->destroy(gsl::make_not_null(this));
-            flatPipeline = nullptr;
+            imagePipeline->destroy(gsl::make_not_null(this));
+            imagePipeline = nullptr;
             boxPipeline->destroy(gsl::make_not_null(this));
             boxPipeline = nullptr;
+            flatPipeline->destroy(gsl::make_not_null(this));
+            flatPipeline = nullptr;
 
             destroyQuadIndexBuffer();
 
@@ -186,7 +188,19 @@ void Device_vulkan::initializeDevice(Window const &window)
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
     allocatorCreateInfo.device = intrinsic;
+    allocatorCreateInfo.instance = guiSystem->intrinsic;
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+
+    VmaAllocationCreateInfo lazyAllocationInfo = {};
+    lazyAllocationInfo.usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+    uint32_t typeIndexOut = 0;
+    supportsLazyTransientImages =
+        vmaFindMemoryTypeIndex(allocator, 0, &lazyAllocationInfo, &typeIndexOut) != VK_ERROR_FEATURE_NOT_PRESENT;
+    
+    if (supportsLazyTransientImages) {
+        lazyMemoryUsage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+        transientImageUsageFlags = vk::ImageUsageFlagBits::eTransientAttachment;
+    }
 
     uint32_t index = 0;
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
@@ -218,10 +232,11 @@ void Device_vulkan::initializeDevice(Window const &window)
 
     initializeQuadIndexBuffer();
 
-    imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
     flatPipeline = std::make_unique<PipelineFlat::DeviceShared>(dynamic_cast<Device &>(*this));
     boxPipeline = std::make_unique<PipelineBox::DeviceShared>(dynamic_cast<Device &>(*this));
+    imagePipeline = std::make_unique<PipelineImage::DeviceShared>(dynamic_cast<Device &>(*this));
     SDFPipeline = std::make_unique<PipelineSDF::DeviceShared>(dynamic_cast<Device &>(*this));
+    toneMapperPipeline = std::make_unique<PipelineToneMapper::DeviceShared>(dynamic_cast<Device &>(*this));
 
     Device_base::initializeDevice(window);
 }

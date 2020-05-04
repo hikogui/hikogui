@@ -5,10 +5,11 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/Device.hpp"
-#include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineFlat.hpp"
 #include "TTauri/GUI/PipelineBox.hpp"
+#include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineSDF.hpp"
+#include "TTauri/GUI/PipelineToneMapper.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
@@ -33,8 +34,9 @@ void Window_vulkan::initialize()
     Window_base::initialize();
     flatPipeline = std::make_unique<PipelineFlat::PipelineFlat>(dynamic_cast<Window &>(*this));
     boxPipeline = std::make_unique<PipelineBox::PipelineBox>(dynamic_cast<Window &>(*this));
-    SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(dynamic_cast<Window &>(*this));
     imagePipeline = std::make_unique<PipelineImage::PipelineImage>(dynamic_cast<Window &>(*this));
+    SDFPipeline = std::make_unique<PipelineSDF::PipelineSDF>(dynamic_cast<Window &>(*this));
+    toneMapperPipeline = std::make_unique<PipelineToneMapper::PipelineToneMapper>(dynamic_cast<Window &>(*this));
 }
 
 void Window_vulkan::waitIdle()
@@ -148,6 +150,7 @@ void Window_vulkan::build()
             boxPipeline->buildForNewDevice(device);
             imagePipeline->buildForNewDevice(device);
             SDFPipeline->buildForNewDevice(device);
+            toneMapperPipeline->buildForNewDevice(device);
             state = State::NoSurface;
         }
     }
@@ -161,6 +164,7 @@ void Window_vulkan::build()
         boxPipeline->buildForNewSurface();
         imagePipeline->buildForNewSurface();
         SDFPipeline->buildForNewSurface();
+        toneMapperPipeline->buildForNewSurface();
         state = State::NoSwapchain;
     }
 
@@ -190,6 +194,7 @@ void Window_vulkan::build()
         boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
         imagePipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
         SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
+        toneMapperPipeline->buildForNewSwapchain(renderPass, 4, swapchainImageExtent);
 
         windowChangedSize({
             numeric_cast<float>(swapchainImageExtent.width),
@@ -207,10 +212,11 @@ void Window_vulkan::teardown()
     if (state >= State::SwapchainLost) {
         LOG_INFO("Tearing down because the window lost the swapchain.");
         waitIdle();
-        imagePipeline->teardownForSwapchainLost();
-        flatPipeline->teardownForSwapchainLost();
-        boxPipeline->teardownForSwapchainLost();
+        toneMapperPipeline->teardownForSwapchainLost();
         SDFPipeline->teardownForSwapchainLost();
+        imagePipeline->teardownForSwapchainLost();
+        boxPipeline->teardownForSwapchainLost();
+        flatPipeline->teardownForSwapchainLost();
         teardownSemaphores();
         teardownFramebuffers();
         teardownRenderPasses();
@@ -220,30 +226,33 @@ void Window_vulkan::teardown()
 
         if (state >= State::SurfaceLost) {
             LOG_INFO("Tearing down because the window lost the drawable surface.");
-            imagePipeline->teardownForSurfaceLost();
-            flatPipeline->teardownForSurfaceLost();
-            boxPipeline->teardownForSurfaceLost();
+            toneMapperPipeline->teardownForSurfaceLost();
             SDFPipeline->teardownForSurfaceLost();
+            imagePipeline->teardownForSurfaceLost();
+            boxPipeline->teardownForSurfaceLost();
+            flatPipeline->teardownForSurfaceLost();
             teardownSurface();
             nextState = State::NoSurface;
 
             if (state >= State::DeviceLost) {
                 LOG_INFO("Tearing down because the window lost the vulkan device.");
 
-                imagePipeline->teardownForDeviceLost();
-                flatPipeline->teardownForDeviceLost();
-                boxPipeline->teardownForDeviceLost();
+                toneMapperPipeline->teardownForDeviceLost();
                 SDFPipeline->teardownForDeviceLost();
+                imagePipeline->teardownForDeviceLost();
+                boxPipeline->teardownForDeviceLost();
+                flatPipeline->teardownForDeviceLost();
                 teardownDevice();
                 nextState = State::NoDevice;
 
                 if (state >= State::WindowLost) {
                     LOG_INFO("Tearing down because the window doesn't exist anymore.");
 
-                    imagePipeline->teardownForWindowLost();
-                    flatPipeline->teardownForWindowLost();
-                    boxPipeline->teardownForWindowLost();
+                    toneMapperPipeline->teardownForWindowLost();
                     SDFPipeline->teardownForWindowLost();
+                    imagePipeline->teardownForWindowLost();
+                    boxPipeline->teardownForWindowLost();
+                    flatPipeline->teardownForWindowLost();
                     // State::NO_WINDOW will be set after finishing delegate.closingWindow() on the mainThread
                     closingWindow();
                 }
@@ -264,7 +273,8 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
     }
 
     // While resizing lower the frame rate to reduce CPU/GPU usage.
-    if (resizing && (frameCount++ % resizeFrameRateDivider) != 0) {
+    frameCount++;
+    if (resizing && (frameCount % resizeFrameRateDivider) != 0) {
         return;
     }
 
@@ -336,6 +346,7 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
     let depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
     let clearValues = std::array{
         vk::ClearValue{ colorClearValue },
+        vk::ClearValue{ colorClearValue },
         vk::ClearValue{ depthClearValue }
     };
 
@@ -360,6 +371,9 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 
     commandBuffer.nextSubpass(vk::SubpassContents::eInline);
     SDFPipeline->drawInCommandBuffer(commandBuffer);
+
+    commandBuffer.nextSubpass(vk::SubpassContents::eInline);
+    toneMapperPipeline->drawInCommandBuffer(commandBuffer);
 
     commandBuffer.endRenderPass();
     commandBuffer.end();
@@ -552,7 +566,6 @@ Window_base::State Window_vulkan::buildSwapchain()
     LOG_INFO(" - presentMode={}, imageCount={}", vk::to_string(swapchainCreateInfo.presentMode), swapchainCreateInfo.minImageCount);
 
     // Create depth matching the swapchain.
-    // Create atlas image
     vk::ImageCreateInfo const depthImageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
@@ -562,17 +575,36 @@ Window_base::State Window_vulkan::buildSwapchain()
         1, // arrayLayers
         vk::SampleCountFlagBits::e1,
         vk::ImageTiling::eOptimal,
-        vk::ImageUsageFlagBits::eDepthStencilAttachment,
+        vk::ImageUsageFlagBits::eDepthStencilAttachment | device->transientImageUsageFlags,
         vk::SharingMode::eExclusive,
         0, nullptr,
         vk::ImageLayout::eUndefined
     };
 
     VmaAllocationCreateInfo depthAllocationCreateInfo = {};
-    depthAllocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-
+    depthAllocationCreateInfo.usage = device->lazyMemoryUsage;
     std::tie(depthImage, depthImageAllocation) = device->createImage(depthImageCreateInfo, depthAllocationCreateInfo);
 
+    // Create color image matching the swapchain.
+    vk::ImageCreateInfo const colorImageCreateInfo = {
+        vk::ImageCreateFlags(),
+        vk::ImageType::e2D,
+        colorImageFormat,
+        vk::Extent3D(swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height, 1),
+        1, // mipLevels
+        1, // arrayLayers
+        vk::SampleCountFlagBits::e1,
+        vk::ImageTiling::eOptimal,
+        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment | device->transientImageUsageFlags,
+        vk::SharingMode::eExclusive,
+        0, nullptr,
+        vk::ImageLayout::eUndefined
+    };
+    
+    VmaAllocationCreateInfo colorAllocationCreateInfo = {};
+    colorAllocationCreateInfo.usage = device->lazyMemoryUsage;
+    std::tie(colorImage, colorImageAllocation) = device->createImage(colorImageCreateInfo, colorAllocationCreateInfo);
+    
     return State::ReadyToRender;
 }
 
@@ -583,6 +615,7 @@ void Window_vulkan::teardownSwapchain()
     ttauri_assert(device);
     device->destroy(swapchain);
     device->destroyImage(depthImage, depthImageAllocation);
+    device->destroyImage(colorImage, colorImageAllocation);
 }
 
 void Window_vulkan::buildFramebuffers()
@@ -598,6 +631,21 @@ void Window_vulkan::buildFramebuffers()
         { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
     });
 
+    colorImageView = device->createImageView({
+        vk::ImageViewCreateFlags(),
+        colorImage,
+        vk::ImageViewType::e2D,
+        colorImageFormat,
+        vk::ComponentMapping(),
+        { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+    });
+
+    colorDescriptorImageInfo = {
+        vk::Sampler(),
+        colorImageView,
+        vk::ImageLayout::eShaderReadOnlyOptimal
+    };
+
     ttauri_assert(device);
     swapchainImages = device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
@@ -612,8 +660,9 @@ void Window_vulkan::buildFramebuffers()
 
         swapchainImageViews.push_back(imageView);
 
-        std::array<vk::ImageView, 2> attachments = {
+        let attachments = std::array{
             imageView,
+            colorImageView,
             depthImageView
         };
 
@@ -656,16 +705,27 @@ void Window_vulkan::buildRenderPasses()
     auto lock = std::scoped_lock(guiMutex);
 
     let attachmentDescriptions = std::array{
-        vk::AttachmentDescription{ // Color attachment.
+        vk::AttachmentDescription{ // Swapchain attachment.
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
             vk::SampleCountFlagBits::e1,
-            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentLoadOp::eDontCare,
             vk::AttachmentStoreOp::eStore,
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
             vk::ImageLayout::ePresentSrcKHR // finalLayout
+
+        }, vk::AttachmentDescription{ // Color attachment
+            vk::AttachmentDescriptionFlags(),
+            colorImageFormat,
+            vk::SampleCountFlagBits::e1,
+            vk::AttachmentLoadOp::eClear,
+            vk::AttachmentStoreOp::eDontCare,
+            vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
+            vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
+            vk::ImageLayout::eUndefined, // initialLayout
+            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
 
         }, vk::AttachmentDescription{ // Depth attachment
             vk::AttachmentDescriptionFlags(),
@@ -683,19 +743,27 @@ void Window_vulkan::buildRenderPasses()
     std::array<vk::AttachmentReference, 0> const inputAttachmentReferences = {};
 
     let colorAttachmentReferences = std::array{
+        vk::AttachmentReference{ 1, vk::ImageLayout::eColorAttachmentOptimal }
+    };
+
+    let colorInputAttachmentReferences = std::array{
+        vk::AttachmentReference{ 1, vk::ImageLayout::eShaderReadOnlyOptimal }
+    };
+
+    let swapchainAttachmentReferences = std::array{
         vk::AttachmentReference{ 0, vk::ImageLayout::eColorAttachmentOptimal }
     };
 
     let depthAttachmentReference = vk::AttachmentReference{
-        1, vk::ImageLayout::eDepthStencilAttachmentOptimal
+        2, vk::ImageLayout::eDepthStencilAttachmentOptimal
     };
 
     let subpassDescriptions = std::array{
         vk::SubpassDescription{ // Subpass 0
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-            inputAttachmentReferences.data(),
+            0, // inputAttchmentReferencesCount
+            nullptr, // inputAttachmentReferences
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
@@ -704,8 +772,8 @@ void Window_vulkan::buildRenderPasses()
         }, vk::SubpassDescription{ // Subpass 1
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-            inputAttachmentReferences.data(),
+            0, // inputAttchmentReferencesCount
+            nullptr, // inputAttachmentReferences
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
@@ -714,8 +782,8 @@ void Window_vulkan::buildRenderPasses()
         }, vk::SubpassDescription{ // Subpass 2
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-            inputAttachmentReferences.data(),
+            0, // inputAttchmentReferencesCount
+            nullptr, // inputAttachmentReferences
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
@@ -724,12 +792,22 @@ void Window_vulkan::buildRenderPasses()
         }, vk::SubpassDescription{ // Subpass 3
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
-            inputAttachmentReferences.data(),
+            0,
+            nullptr,
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
-            nullptr, //resolveAttachments
+            nullptr, // resolveAttachments
             &depthAttachmentReference
+
+        }, vk::SubpassDescription{ // Subpass 4 tone-mapper
+            vk::SubpassDescriptionFlags(),
+            vk::PipelineBindPoint::eGraphics,
+            numeric_cast<uint32_t>(colorInputAttachmentReferences.size()),
+            colorInputAttachmentReferences.data(),
+            numeric_cast<uint32_t>(swapchainAttachmentReferences.size()),
+            swapchainAttachmentReferences.data(),
+            nullptr,
+            nullptr
         }
     };
 
@@ -758,6 +836,18 @@ void Window_vulkan::buildRenderPasses()
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eShaderRead,
+            vk::DependencyFlagBits::eByRegion
+        }, vk::SubpassDependency{ // Subpass 3 -> Subpass 4
+            3,
+            4,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            (
+                vk::AccessFlagBits::eColorAttachmentWrite |
+                vk::AccessFlagBits::eColorAttachmentRead |
+                vk::AccessFlagBits::eInputAttachmentRead
+            ),
             vk::AccessFlagBits::eShaderRead,
             vk::DependencyFlagBits::eByRegion
         }
