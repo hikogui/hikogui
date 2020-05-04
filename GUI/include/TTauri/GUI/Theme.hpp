@@ -45,7 +45,7 @@ public:
 
     /** The width of the larger widgets and smaller widgets with included labels.
      */
-    static constexpr float width = 150.0f;
+    static constexpr float width = 50.0f;
 
     /** Max width of labels in widgets.
      */

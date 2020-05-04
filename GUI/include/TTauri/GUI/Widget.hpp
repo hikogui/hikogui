@@ -62,6 +62,12 @@ public:
 
     std::vector<std::unique_ptr<Widget>> children;
 
+    /** The content area of this widget.
+     * This is a widget that contains the widgets that are added
+     * by the user, as opposed to the child widgets that controls this widget.
+     */
+    Widgets::Widget *content = nullptr;
+
     /** The next widget to select when pressing tab.
     */
     Widgets::Widget *nextKeyboardWidget = nullptr;
@@ -80,14 +86,6 @@ public:
 
     //! Location of the frame compared to the window.
     BoxModel box;
-
-    /** The minimum size the widget should be.
-     * This value could change based on the content of the widget.
-     */
-    vec minimumExtent;
-
-    //! Rectangle, extracted from the box
-    rect rectangle; 
 
     float elevation = 0.0;
 
@@ -114,12 +112,21 @@ public:
     Widget &operator=(Widget &&) = delete;
 
     template<typename T, typename... Args>
-    T &addWidget(Args &&... args) {
+    T &addWidgetDirectly(Args &&... args) {
         auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         let widget_ptr = widget.get();
         children.push_back(move(widget));
         ttauri_assume(widget_ptr);
         return *widget_ptr;
+    }
+
+    template<typename T, typename... Args>
+    T &addWidget(Args &&... args) {
+        if (content != nullptr) {
+            return content->addWidget<T>(std::forward<Args>(args)...);
+        } else {
+            return addWidgetDirectly<T>(std::forward<Args>(args)...);
+        }
     }
 
     void placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
@@ -129,13 +136,13 @@ public:
 
     void placeRightOf(Widget const &rhs, float margin=theme->margin) const noexcept;
 
-    void shareTopEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+    void shareTopEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
 
-    void shareBottomEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+    void shareBottomEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
 
-    void shareLeftEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+    void shareLeftEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
 
-    void shareRightEdgeWith(Widget const &rhs, float margin=theme->margin) const noexcept;
+    void shareRightEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
 
 
     [[nodiscard]] Device *device() const noexcept;
@@ -217,6 +224,9 @@ public:
         }
     }
 
+    static inline std::function<std::unique_ptr<Widget>(Window &)> make_unique_WindowWidget;
 };
+
+
 
 }

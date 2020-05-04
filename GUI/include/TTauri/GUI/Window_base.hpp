@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/WindowDelegate.hpp"
-#include "TTauri/GUI/WindowWidget.hpp"
+#include "TTauri/GUI/Widget.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Cursor.hpp"
 #include "TTauri/GUI/HitBox.hpp"
@@ -118,7 +118,7 @@ public:
     float ppp = 1.0;
 
     //! The widget covering the complete window.
-    std::unique_ptr<Widgets::WindowWidget> widget;
+    std::unique_ptr<Widgets::Widget> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
@@ -218,6 +218,7 @@ public:
     virtual void minimizeWindow() = 0;
     virtual void maximizeWindow() = 0;
     virtual void normalizeWindow() = 0;
+    virtual void setWindowSize(ivec extent) = 0;
 
     [[nodiscard]] virtual std::string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::string str) noexcept = 0;
@@ -418,6 +419,20 @@ private:
         maximumWindowExtent = widget->box.currentExtent();
 
         LOG_INFO("Window '{}' minimumExtent={} maximumExtent={}", title, minimumWindowExtent, maximumWindowExtent);
+
+        if (
+            (currentWindowExtent.x() < minimumWindowExtent.x()) ||
+            (currentWindowExtent.y() < minimumWindowExtent.y())
+        ) {
+            setWindowSize(minimumWindowExtent);
+        }
+
+        if (
+            (currentWindowExtent.x() > maximumWindowExtent.x()) ||
+            (currentWindowExtent.y() > maximumWindowExtent.y())
+            ) {
+            setWindowSize(maximumWindowExtent);
+        }
 
         addCurrentWindowExtentConstraints();
     }

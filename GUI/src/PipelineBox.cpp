@@ -17,15 +17,12 @@ PipelineBox::PipelineBox(Window const &window) :
 {
 }
 
-vk::Semaphore PipelineBox::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
+void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
+    Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+
     device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
 
-    return Pipeline_vulkan::render(frameBuffer, inputSemaphore);
-}
-
-void PipelineBox::drawInCommandBuffer()
-{
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     ttauri_assume(tmpVertexBuffers.size() == tmpOffsets.size());

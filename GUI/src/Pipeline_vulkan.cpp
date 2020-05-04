@@ -19,7 +19,7 @@ Pipeline_vulkan::~Pipeline_vulkan()
 {
 }
 
-vk::Semaphore Pipeline_vulkan::render(vk::Framebuffer framebuffer, vk::Semaphore inputSemaphore)
+void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
     if (descriptorSetVersion < getDescriptorSetVersion()) {
         let writeDescriptorSets = createWriteDescriptorSet();
@@ -28,45 +28,13 @@ vk::Semaphore Pipeline_vulkan::render(vk::Framebuffer framebuffer, vk::Semaphore
         descriptorSetVersion = getDescriptorSetVersion();
     }
 
-    fillCommandBuffer(framebuffer);
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    std::array<vk::Semaphore, 1> const waitSemaphores = { inputSemaphore };
-    std::array<vk::PipelineStageFlags, 1> const waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
-    ttauri_assume(waitSemaphores.size() == waitStages.size());
-
-    std::array<vk::Semaphore, 1> const signalSemaphores = { renderFinishedSemaphore };
-    std::array<vk::CommandBuffer, 1> const commandBuffersToSubmit = { commandBuffer };
-
-    std::array<vk::SubmitInfo, 1> const submitInfo = {
-        vk::SubmitInfo{
-            numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
-            numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
-            numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
-        }
-    };
-
-    device().graphicsQueue.submit(submitInfo, vk::Fence());
-
-    return renderFinishedSemaphore;
+    if (hasDescriptorSets) {
+        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {descriptorSet}, {});
+    }
 }
 
-void Pipeline_vulkan::buildCommandBuffers()
-{
-    let commandBuffers = device().allocateCommandBuffers({
-        device().graphicsCommandPool, 
-        vk::CommandBufferLevel::ePrimary, 
-        1
-    });
-
-    commandBuffer = commandBuffers.at(0);
-}
-
-void Pipeline_vulkan::teardownCommandBuffers()
-{
-    let commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
-
-    device().freeCommandBuffers(device().graphicsCommandPool, commandBuffers);
-}
 
 void Pipeline_vulkan::buildDescriptorSets()
 {
@@ -132,13 +100,10 @@ void Pipeline_vulkan::teardownSemaphores()
     device().destroy(renderFinishedSemaphore);
 }
 
-void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _extent)
+void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent)
 {
-    LOG_INFO("buildPipeline previous size ({}, {})", extent.width, extent.height);
-
-    renderPass = move(_renderPass);
-    extent = move(_extent);
-    scissor = vk::Rect2D{vk::Offset2D{ 0, 0 }, extent};
+    LOG_INFO("buildPipeline previous size ({}, {})", this->extent.width, this->extent.height);
+    this->extent = extent;
 
     const auto pushConstantRanges = createPushConstantRanges();
     const auto vertexInputBindingDescription = createVertexInputBindingDescription();
@@ -177,7 +142,9 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         }
     };
 
-    const std::array<vk::Rect2D, 1> scissors = { scissor };
+    let scissor = vk::Rect2D{vk::Offset2D{ 0, 0 }, extent};
+
+    let scissors = std::array{ scissor };
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
@@ -258,7 +225,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass _renderPass, vk::Extent2D _ex
         nullptr, // pipelineDynamicsStateCreateInfo
         pipelineLayout,
         renderPass,
-        0, // subpass
+        renderSubpass, // subpass
         vk::Pipeline(), // basePipelineHandle
         -1 // basePipelineIndex
     };
@@ -284,16 +251,15 @@ void Pipeline_vulkan::buildForNewSurface()
 {
 }
 
-void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, vk::Extent2D extent)
+void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent)
 {
     if (!buffersInitialized) {
         buildVertexBuffers();
-        buildCommandBuffers();
         buildDescriptorSets();
         buildSemaphores();
         buffersInitialized = true;
     }
-    buildPipeline(renderPass, extent);
+    buildPipeline(renderPass, renderSubpass, extent);
 }
 
 void Pipeline_vulkan::teardownForSwapchainLost()
@@ -309,7 +275,6 @@ void Pipeline_vulkan::teardownForDeviceLost()
 {
     teardownSemaphores();
     teardownDescriptorSets();
-    teardownCommandBuffers();
     teardownVertexBuffers();
     buffersInitialized = false;
     _device = nullptr;
@@ -317,43 +282,6 @@ void Pipeline_vulkan::teardownForDeviceLost()
 
 void Pipeline_vulkan::teardownForWindowLost()
 {
-}
-
-void Pipeline_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
-{
-    auto t = trace<"cmdbuffer"_tag>{};
-
-    commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
-
-    commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
-
-    vk::ClearColorValue colorClearValue = static_cast<std::array<float,4>>(window.widget->backgroundColor);
-    vk::ClearDepthStencilValue depthClearValue = {0.0, 0};
-    std::array const clearValues = {
-        vk::ClearValue{ colorClearValue },
-        vk::ClearValue{ depthClearValue }
-    };
-
-    commandBuffer.beginRenderPass({
-            renderPass, 
-            frameBuffer,
-            scissor, 
-            numeric_cast<uint32_t>(clearValues.size()),
-            clearValues.data()
-        }, vk::SubpassContents::eInline
-    );
-
-    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
-
-    if (hasDescriptorSets) {
-        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {descriptorSet}, {});
-    }
-
-    drawInCommandBuffer();
-
-    commandBuffer.endRenderPass();
-
-    commandBuffer.end();
 }
 
 }

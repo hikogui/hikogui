@@ -151,31 +151,48 @@ Window_vulkan_win32::~Window_vulkan_win32()
 
 void Window_vulkan_win32::closeWindow()
 {
-    run_on_main_thread([&]() {
+    run_on_main_thread([=]() {
         DestroyWindow(reinterpret_cast<HWND>(win32Window));
     });
 }
 
 void Window_vulkan_win32::minimizeWindow()
 {
-    run_on_main_thread([&]() {
+    run_on_main_thread([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MINIMIZE);
     });
 }
 
 void Window_vulkan_win32::maximizeWindow()
 {
-    run_on_main_thread([&]() {
+    run_on_main_thread([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_MAXIMIZE);
     });
 }
 
 void Window_vulkan_win32::normalizeWindow()
 {
-    run_on_main_thread([&]() {
+    run_on_main_thread([=]() {
         ShowWindow(reinterpret_cast<HWND>(win32Window), SW_RESTORE);
     });
 }
+
+void Window_vulkan_win32::setWindowSize(ivec extent)
+{
+    run_on_main_thread([=]() {
+
+        SetWindowPos(
+            reinterpret_cast<HWND>(win32Window),
+            HWND_NOTOPMOST,
+            0,
+            0,
+            extent.x(),
+            extent.y(),
+            SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_DEFERERASE | SWP_NOCOPYBITS | SWP_FRAMECHANGED
+        );
+    });
+}
+
 
 void Window_vulkan_win32::closingWindow()
 {

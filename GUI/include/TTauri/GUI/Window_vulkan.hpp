@@ -41,11 +41,12 @@ public:
     vk::Image depthImage;
     vk::ImageView depthImageView;
 
-    vk::RenderPass firstRenderPass;
-    vk::RenderPass followUpRenderPass;
-    vk::RenderPass lastRenderPass;
+    vk::RenderPass renderPass;
+
+    vk::CommandBuffer commandBuffer;
 
     vk::Semaphore imageAvailableSemaphore;
+    vk::Semaphore renderFinishedSemaphore;
     vk::Fence renderFinishedFence;
 
     std::unique_ptr<PipelineImage::PipelineImage> imagePipeline;
@@ -76,6 +77,9 @@ private:
     std::optional<uint32_t> acquireNextImageFromSwapchain();
     void presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore);
 
+    void fillCommandBuffer(vk::Framebuffer frameBuffer);
+    void submitCommandBuffer();
+
     bool readSurfaceExtent();
     bool checkSurfaceExtent();
 
@@ -84,6 +88,8 @@ private:
     void teardownSemaphores();
     State buildSwapchain();
     void teardownSwapchain();
+    void buildCommandBuffers();
+    void teardownCommandBuffers();
     void buildRenderPasses();
     void teardownRenderPasses();
     void buildFramebuffers();

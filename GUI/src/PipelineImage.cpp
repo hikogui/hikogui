@@ -17,17 +17,14 @@ PipelineImage::PipelineImage(Window const &window) :
 {
 }
 
-vk::Semaphore PipelineImage::render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore)
+
+void PipelineImage::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
+    Pipeline_vulkan::drawInCommandBuffer(commandBuffer);
+
     device().flushAllocation(vertexBufferAllocation, 0, vertexBufferData.size() * sizeof (Vertex));
-
     device().imagePipeline->prepareAtlasForRendering();
-   
-    return Pipeline_vulkan::render(frameBuffer, inputSemaphore);
-}
 
-void PipelineImage::drawInCommandBuffer()
-{
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
     ttauri_assume(tmpVertexBuffers.size() == tmpOffsets.size());

@@ -29,7 +29,7 @@ public:
     PipelineSDF(PipelineSDF &&) = delete;
     PipelineSDF &operator=(PipelineSDF &&) = delete;
 
-    vk::Semaphore render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore) override;
+    void drawInCommandBuffer(vk::CommandBuffer commandBuffer) override;
 
 protected:
     PushConstants pushConstants;
@@ -37,8 +37,6 @@ protected:
 
     vk::Buffer vertexBuffer;
     VmaAllocation vertexBufferAllocation;
-
-    void drawInCommandBuffer() override;
 
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;

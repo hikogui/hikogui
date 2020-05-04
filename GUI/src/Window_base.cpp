@@ -4,7 +4,7 @@
 #include "TTauri/GUI/Window_base.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Device.hpp"
-#include "TTauri/GUI/WindowWidget.hpp"
+#include "TTauri/GUI/Widget.hpp"
 
 namespace TTauri::GUI {
 
@@ -39,7 +39,7 @@ void Window_base::initialize()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    widget = std::make_unique<Widgets::WindowWidget>(*static_cast<Window *>(this));
+    widget = Widgets::Widget::make_unique_WindowWidget(*static_cast<Window *>(this));
 
     openingWindow();
 }

@@ -42,6 +42,9 @@ public:
 
     void normalizeWindow() override;
 
+    void setWindowSize(ivec extent) override;
+
+
     [[nodiscard]] std::string getTextFromClipboard() const noexcept override;
 
     void setTextOnClipboard(std::string str) noexcept override;

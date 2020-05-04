@@ -32,20 +32,36 @@ void Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
     window.addConstraint(this->box.left == rhs.box.right + margin);
 }
 
-void Widget::shareTopEdgeWith(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.top + margin == rhs.box.top);
+void Widget::shareTopEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
+    if (parent.content != nullptr && useContentArea) {
+        shareTopEdgeWith(*parent.content, margin);
+    } else {
+        window.addConstraint(this->box.top + margin == parent.box.top);
+    }
 }
 
-void Widget::shareBottomEdgeWith(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.bottom - margin == rhs.box.bottom);
+void Widget::shareBottomEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
+    if (parent.content != nullptr && useContentArea) {
+        shareBottomEdgeWith(*parent.content, margin);
+    } else {
+        window.addConstraint(this->box.bottom - margin == parent.box.bottom);
+    }
 }
 
-void Widget::shareLeftEdgeWith(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.left - margin == rhs.box.left);
+void Widget::shareLeftEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
+    if (parent.content != nullptr && useContentArea) {
+        shareLeftEdgeWith(*parent.content, margin);
+    } else {
+        window.addConstraint(this->box.left - margin == parent.box.left);
+    }
 }
 
-void Widget::shareRightEdgeWith(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.right + margin == rhs.box.right);
+void Widget::shareRightEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
+    if (parent.content != nullptr && useContentArea) {
+        shareRightEdgeWith(*parent.content, margin);
+    } else {
+        window.addConstraint(this->box.right + margin == parent.box.right);
+    }
 }
 
 void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept

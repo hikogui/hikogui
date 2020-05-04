@@ -182,13 +182,14 @@ void Window_vulkan::build()
             teardownSwapchain();
             return;
         }
+        buildCommandBuffers();
         buildRenderPasses();
         buildFramebuffers();
         buildSemaphores();
-        flatPipeline->buildForNewSwapchain(firstRenderPass, swapchainImageExtent);
-        boxPipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent);
-        imagePipeline->buildForNewSwapchain(followUpRenderPass, swapchainImageExtent);
-        SDFPipeline->buildForNewSwapchain(lastRenderPass, swapchainImageExtent);
+        flatPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
+        boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
+        imagePipeline->buildForNewSwapchain(renderPass, 2, swapchainImageExtent);
+        SDFPipeline->buildForNewSwapchain(renderPass, 3, swapchainImageExtent);
 
         windowChangedSize({
             numeric_cast<float>(swapchainImageExtent.width),
@@ -214,6 +215,7 @@ void Window_vulkan::teardown()
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
+        teardownCommandBuffers();
         nextState = State::NoSwapchain;
 
         if (state >= State::SurfaceLost) {
@@ -308,12 +310,8 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
     drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
     widget->draw(drawContext, displayTimePoint);
 
-    // The flat pipeline goes first, because it will not have anti-aliasing, and often it needs to be drawn below
-    // images with alpha-channel.
-    let flatPipelineFinishedSemaphore = flatPipeline->render(frameBuffer, imageAvailableSemaphore);
-    let boxPipelineFinishedSemaphore = boxPipeline->render(frameBuffer, flatPipelineFinishedSemaphore);
-    let imagePipelineFinishedSemaphore = imagePipeline->render(frameBuffer, boxPipelineFinishedSemaphore);
-    let renderFinishedSemaphore = SDFPipeline->render(frameBuffer, imagePipelineFinishedSemaphore);
+    fillCommandBuffer(frameBuffer);
+    submitCommandBuffer();
 
     // Signal the fence when all rendering has finished on the graphics queue.
     // When the fence is signaled we can modify/destroy the command buffers.
@@ -323,6 +321,75 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
 
     // Do an early tear down of invalid vulkan objects.
     teardown();
+}
+
+void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
+{
+    auto t = trace<"cmdbuffer"_tag>{};
+
+    commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
+    commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
+
+    let colorClearValue = vk::ClearColorValue{
+        static_cast<std::array<float,4>>(theme->fillColor(0))
+    };
+    let depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
+    let clearValues = std::array{
+        vk::ClearValue{ colorClearValue },
+        vk::ClearValue{ depthClearValue }
+    };
+
+    let renderArea = vk::Rect2D{vk::Offset2D{ 0, 0 }, swapchainImageExtent};
+
+    commandBuffer.beginRenderPass({
+        renderPass, 
+        frameBuffer,
+        renderArea, 
+        numeric_cast<uint32_t>(clearValues.size()),
+        clearValues.data()
+        }, vk::SubpassContents::eInline
+    );
+
+    flatPipeline->drawInCommandBuffer(commandBuffer);
+
+    commandBuffer.nextSubpass(vk::SubpassContents::eInline);
+    boxPipeline->drawInCommandBuffer(commandBuffer);
+
+    commandBuffer.nextSubpass(vk::SubpassContents::eInline);
+    imagePipeline->drawInCommandBuffer(commandBuffer);
+
+    commandBuffer.nextSubpass(vk::SubpassContents::eInline);
+    SDFPipeline->drawInCommandBuffer(commandBuffer);
+
+    commandBuffer.endRenderPass();
+    commandBuffer.end();
+}
+
+void Window_vulkan::submitCommandBuffer()
+{
+    let waitSemaphores = std::array{
+        imageAvailableSemaphore
+    };
+
+    let waitStages = std::array{
+        vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}
+    };
+
+    ttauri_assume(waitSemaphores.size() == waitStages.size());
+
+    let signalSemaphores = std::array{ renderFinishedSemaphore };
+    let commandBuffersToSubmit = std::array{ commandBuffer };
+
+    let submitInfo = std::array{
+        vk::SubmitInfo{
+            numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
+            numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
+            numeric_cast<uint32_t>(signalSemaphores.size()), signalSemaphores.data()
+        }
+    };
+
+    ttauri_assume(device != nullptr);
+    device->graphicsQueue.submit(submitInfo, vk::Fence());
 }
 
 std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
@@ -552,7 +619,7 @@ void Window_vulkan::buildFramebuffers()
 
         auto framebuffer = device->createFramebuffer({
             vk::FramebufferCreateFlags(),
-            firstRenderPass,
+            renderPass,
             numeric_cast<uint32_t>(attachments.size()),
             attachments.data(),
             swapchainImageExtent.width,
@@ -588,8 +655,8 @@ void Window_vulkan::buildRenderPasses()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    std::array<vk::AttachmentDescription, 2> attachmentDescriptions = {
-        vk::AttachmentDescription{
+    let attachmentDescriptions = std::array{
+        vk::AttachmentDescription{ // Color attachment.
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
             vk::SampleCountFlagBits::e1,
@@ -598,14 +665,14 @@ void Window_vulkan::buildRenderPasses()
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
-            vk::ImageLayout::eColorAttachmentOptimal // finalLayout
+            vk::ImageLayout::ePresentSrcKHR // finalLayout
 
-        }, vk::AttachmentDescription{
+        }, vk::AttachmentDescription{ // Depth attachment
             vk::AttachmentDescriptionFlags(),
             depthImageFormat,
             vk::SampleCountFlagBits::e1,
             vk::AttachmentLoadOp::eClear,
-            vk::AttachmentStoreOp::eStore,
+            vk::AttachmentStoreOp::eDontCare,
             vk::AttachmentLoadOp::eDontCare, // stencilLoadOp
             vk::AttachmentStoreOp::eDontCare, // stencilStoreOp
             vk::ImageLayout::eUndefined, // initialLayout
@@ -615,16 +682,16 @@ void Window_vulkan::buildRenderPasses()
 
     std::array<vk::AttachmentReference, 0> const inputAttachmentReferences = {};
 
-    std::array<vk::AttachmentReference, 1> const colorAttachmentReferences = {
+    let colorAttachmentReferences = std::array{
         vk::AttachmentReference{ 0, vk::ImageLayout::eColorAttachmentOptimal }
     };
 
-    vk::AttachmentReference const depthAttachmentReferences = {
+    let depthAttachmentReference = vk::AttachmentReference{
         1, vk::ImageLayout::eDepthStencilAttachmentOptimal
     };
 
-    std::array<vk::SubpassDescription, 1> const subpassDescriptions = {
-        vk::SubpassDescription{
+    let subpassDescriptions = std::array{
+        vk::SubpassDescription{ // Subpass 0
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
             numeric_cast<uint32_t>(inputAttachmentReferences.size()),
@@ -632,18 +699,67 @@ void Window_vulkan::buildRenderPasses()
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, //resolveAttachments
-            &depthAttachmentReferences
+            &depthAttachmentReference
+
+        }, vk::SubpassDescription{ // Subpass 1
+            vk::SubpassDescriptionFlags(),
+            vk::PipelineBindPoint::eGraphics,
+            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+            inputAttachmentReferences.data(),
+            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            colorAttachmentReferences.data(),
+            nullptr, //resolveAttachments
+            &depthAttachmentReference
+
+        }, vk::SubpassDescription{ // Subpass 2
+            vk::SubpassDescriptionFlags(),
+            vk::PipelineBindPoint::eGraphics,
+            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+            inputAttachmentReferences.data(),
+            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            colorAttachmentReferences.data(),
+            nullptr, //resolveAttachments
+            &depthAttachmentReference
+
+        }, vk::SubpassDescription{ // Subpass 3
+            vk::SubpassDescriptionFlags(),
+            vk::PipelineBindPoint::eGraphics,
+            numeric_cast<uint32_t>(inputAttachmentReferences.size()),
+            inputAttachmentReferences.data(),
+            numeric_cast<uint32_t>(colorAttachmentReferences.size()),
+            colorAttachmentReferences.data(),
+            nullptr, //resolveAttachments
+            &depthAttachmentReference
         }
     };
 
-    std::array<vk::SubpassDependency, 1> const subpassDependency = {
-        vk::SubpassDependency{
-            VK_SUBPASS_EXTERNAL,
+    let subpassDependency = std::array{
+        vk::SubpassDependency{ // Subpass 0 -> Subpass 1
             0,
+            1,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eShaderRead,
+            vk::DependencyFlagBits::eByRegion
+
+        }, vk::SubpassDependency{ // Subpass 1 -> Subpass 2
+            1,
+            2,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::AccessFlags(),
-            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eShaderRead,
+            vk::DependencyFlagBits::eByRegion
+
+        }, vk::SubpassDependency{ // Subpass 2 -> Subpass 3
+            2,
+            3,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eShaderRead,
+            vk::DependencyFlagBits::eByRegion
         }
     };
 
@@ -658,17 +774,7 @@ void Window_vulkan::buildRenderPasses()
     };
 
     ttauri_assert(device);
-    firstRenderPass = device->createRenderPass(renderPassCreateInfo);
-
-    attachmentDescriptions.at(0).loadOp = vk::AttachmentLoadOp::eLoad;
-    attachmentDescriptions.at(0).initialLayout = vk::ImageLayout::eColorAttachmentOptimal;
-    attachmentDescriptions.at(1).loadOp = vk::AttachmentLoadOp::eLoad;
-    attachmentDescriptions.at(1).initialLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    followUpRenderPass = device->createRenderPass(renderPassCreateInfo);
-
-    attachmentDescriptions.at(0).finalLayout = vk::ImageLayout::ePresentSrcKHR;
-    attachmentDescriptions.at(1).storeOp = vk::AttachmentStoreOp::eDontCare;
-    lastRenderPass = device->createRenderPass(renderPassCreateInfo);
+    renderPass = device->createRenderPass(renderPassCreateInfo);
 }
 
 void Window_vulkan::teardownRenderPasses()
@@ -676,9 +782,7 @@ void Window_vulkan::teardownRenderPasses()
     auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
-    device->destroy(firstRenderPass);
-    device->destroy(followUpRenderPass);
-    device->destroy(lastRenderPass);
+    device->destroy(renderPass);
 }
 
 void Window_vulkan::buildSemaphores()
@@ -687,6 +791,7 @@ void Window_vulkan::buildSemaphores()
 
     ttauri_assert(device);
     imageAvailableSemaphore = device->createSemaphore({});
+    renderFinishedSemaphore = device->createSemaphore({});
 
     // This fence is used to wait for the Window and its Pipelines to be idle.
     // It should therefor be signed at the start so that when no rendering has been
@@ -701,6 +806,27 @@ void Window_vulkan::teardownSemaphores()
     ttauri_assert(device);
     device->destroy(imageAvailableSemaphore);
     device->destroy(renderFinishedFence);
+}
+
+void Window_vulkan::buildCommandBuffers()
+{
+    ttauri_assume(device != nullptr);
+
+    let commandBuffers = device->allocateCommandBuffers({
+        device->graphicsCommandPool, 
+        vk::CommandBufferLevel::ePrimary, 
+        1
+    });
+
+    commandBuffer = commandBuffers.at(0);
+}
+
+void Window_vulkan::teardownCommandBuffers()
+{
+    let commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
+
+    ttauri_assume(device != nullptr);
+    device->freeCommandBuffers(device->graphicsCommandPool, commandBuffers);
 }
 
 void Window_vulkan::teardownSurface()

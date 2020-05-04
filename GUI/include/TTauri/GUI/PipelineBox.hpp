@@ -28,15 +28,13 @@ public:
     PipelineBox(PipelineBox &&) = delete;
     PipelineBox &operator=(PipelineBox &&) = delete;
 
-    vk::Semaphore render(vk::Framebuffer frameBuffer, vk::Semaphore inputSemaphore) override;
+    void drawInCommandBuffer(vk::CommandBuffer commandBuffer) override;
 
 protected:
     PushConstants pushConstants;
 
     vk::Buffer vertexBuffer;
     VmaAllocation vertexBufferAllocation;
-
-    void drawInCommandBuffer() override;
 
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;

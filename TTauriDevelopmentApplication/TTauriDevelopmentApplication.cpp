@@ -2,7 +2,6 @@
 #include "TTauri/Widgets/widgets.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/WindowDelegate.hpp"
-#include "TTauri/GUI/WindowToolbarWidget.hpp"
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystem.hpp"
@@ -27,21 +26,16 @@ class MyWindowDelegate : public WindowDelegate {
 public:
     void openingWindow(Window &window) override
     {
-        auto &button1 = window.addWidget<ButtonWidget>(u8"H\u00eb""ll\u00f6 W\u00f6""rld");
-        window.addConstraint(button1.box.width == 100);
-        window.addConstraint(button1.box.height == 30);
-        window.addConstraint(button1.box.left == window.widget->box.left);
-        window.addConstraint(button1.box.bottom == window.widget->box.bottom);
-        window.addConstraint(button1.box.top <= window.widget->toolbar->box.bottom);
+        auto &button1 = window.addWidget<GUI::Widgets::ButtonWidget>(u8"Hello \u4e16\u754c");
+        button1.shareLeftEdgeWith(*window.widget);
+        button1.shareTopEdgeWith(*window.widget);
+        button1.shareBottomEdgeWith(*window.widget);
 
-        auto &button2 = window.addWidget<ButtonWidget>(u8"Foo Bar");
-        window.addConstraint(button2.box.width >= 100);
-        window.addConstraint(button2.box.width <= 1500);
-        window.addConstraint(button2.box.height == 30);
-        window.addConstraint(button2.box.left == button1.box.right);
-        window.addConstraint(button2.box.bottom == window.widget->box.bottom);
-        window.addConstraint(button2.box.right == window.widget->box.right);
-        window.addConstraint(button2.box.top <= window.widget->toolbar->box.bottom);
+        auto &button2 = window.addWidget<GUI::Widgets::ButtonWidget>(u8"Hello world");
+        button2.shareRightEdgeWith(*window.widget);
+        button2.shareTopEdgeWith(*window.widget);
+        button2.placeRightOf(button1);
+        button2.shareBottomEdgeWith(*window.widget);
     }
 
     void closingWindow(const Window &window) override

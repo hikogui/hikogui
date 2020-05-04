@@ -44,10 +44,6 @@ set(TTauri_GUI_srcs
     src/Window_vulkan.cpp
     src/Window_vulkan_win32.cpp
     src/Widget.cpp
-    src/WindowWidget.cpp
-    src/WindowToolbarWidget.cpp
-    src/ToolbarButtonWidget.cpp
-    src/WindowTrafficLightsWidget.cpp
     src/ThemeMode_win32.cpp
     src/Theme.cpp
     src/ThemeBook.cpp

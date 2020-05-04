@@ -26,33 +26,55 @@ void main()
 {
     if (isClipped()) {
         discard;
-        //outColor = vec4(1.0, 1.0, 0.0, 1.0); return;
     }
 
-    // Distance in screen coordinates from closest edge.
-    float distance = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), inTextureCoord.xy).r * inDistanceMultiplier;
+    float pixel_distance = fwidth(inTextureCoord.x);
+    float sub_pixel_distance = pixel_distance / 3.0;
+    vec2 sub_pixel_offset = vec2(sub_pixel_distance * 0.333333, 0.0);
 
-    // Mathamatically we should add 0.5 to the distance to get the antialiasing to be centered on the edge of
-    // the glyph. However glyphs are designed to be drawn black-on-white, using linear alpha compositing.
-    // By using a smaller value we make the glyph slightly thinner, so that our perceptual alpha compositing
-    // will draw the font at the correct thickingness.
-    float alpha = clamp(distance + 0.45, 0.0, 1.0);
+    vec2 green_coordinate = inTextureCoord.xy;
+    float green_radius = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), green_coordinate).r * inDistanceMultiplier;
+
+    if (green_radius < -0.7071067811865476) {
+        // Fully outside the fragment, early exit.
+        discard;
+    } // It is very rare to be fully inside, so don't test for this.
+
+    vec2 red_coordinate = inTextureCoord.xy - sub_pixel_offset;
+    float red_radius   = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), red_coordinate).r * inDistanceMultiplier;
+
+    vec2 blue_coordinate = inTextureCoord.xy + sub_pixel_offset;
+    float blue_radius  = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), blue_coordinate).r * inDistanceMultiplier;
+
+    vec3 rgb_radius = vec3(red_radius, green_radius, blue_radius);
+    vec3 rgb_coverage = clamp((rgb_radius * 1) + 0.5, 0.0, 1.0);
+  
+    if (inColor.g > 0.5) {
+        rgb_coverage = rgb_coverage * rgb_coverage;
+    } else {
+        rgb_coverage = 1.0 - rgb_coverage;
+        rgb_coverage = rgb_coverage * rgb_coverage;
+        rgb_coverage = 1.0 - rgb_coverage;
+    }
+
+    // Turn off sub-pixel rendering.
+    //rgb_coverage = vec3(rgb_coverage.g, rgb_coverage.g, rgb_coverage.g);
+
+    vec3 color = inColor.rgb * rgb_coverage;
+    float alpha = (rgb_coverage.r + rgb_coverage.g + rgb_coverage.b) / 3.0;
+    outColor = vec4(color.rgb, alpha);
 
     // Although alpha compositing needs to be done linearilly on colors,
     // the alpha value itself should be calculated perceptually (non-linear).
     // We are using a gamma of 2 because it is fast.
     // This makes dark on light and light on dark text have the same thickness.
-    if (inColor.g > 0.5) {
-        alpha = alpha * alpha;
-    } else {
-        alpha = 1.0 - alpha;
-        alpha = alpha * alpha;
-        alpha = 1.0 - alpha;
-    }
-
-    if (alpha > 0.0) {
-        outColor = inColor * alpha;
-    } else {
-        discard;
-    }
+    //float alpha;
+    //if (inColor.g > 0.5) {
+    //    alpha = green_coverage * green_coverage;
+    //} else {
+    //    alpha = 1.0 - green_coverage;
+    //    alpha = 1.0 - (alpha * alpha);
+    //}
+//
+    //outColor = inColor * alpha;
 }
