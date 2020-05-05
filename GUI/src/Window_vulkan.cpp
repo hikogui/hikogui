@@ -791,8 +791,8 @@ void Window_vulkan::buildRenderPasses()
         }, vk::SubpassDescription{ // Subpass 3
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
-            0,
-            nullptr,
+            numeric_cast<uint32_t>(colorInputAttachmentReferences.size()),
+            colorInputAttachmentReferences.data(),
             numeric_cast<uint32_t>(colorAttachmentReferences.size()),
             colorAttachmentReferences.data(),
             nullptr, // resolveAttachments
@@ -818,7 +818,6 @@ void Window_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eMemoryRead,
             vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite,
             vk::DependencyFlagBits::eByRegion
-
         },
         // Subpass 0: Render single color polygons to color+depth attachment.
         vk::SubpassDependency{
@@ -837,7 +836,6 @@ void Window_vulkan::buildRenderPasses()
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eColorAttachmentRead,
             vk::DependencyFlagBits::eByRegion
-
         },
         // Subpass 2: Render texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{
@@ -845,9 +843,8 @@ void Window_vulkan::buildRenderPasses()
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eColorAttachmentRead,
+            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eShaderRead,
             vk::DependencyFlagBits::eByRegion
-
         },
         // Subpass 3: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
         vk::SubpassDependency{

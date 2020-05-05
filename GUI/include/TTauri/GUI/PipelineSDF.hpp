@@ -41,10 +41,11 @@ protected:
     std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const override;
     std::vector<vk::DescriptorSetLayoutBinding> createDescriptorSetLayoutBindings() const override;
     std::vector<vk::WriteDescriptorSet> createWriteDescriptorSet() const override;
-    virtual ssize_t getDescriptorSetVersion() const override;
+    ssize_t getDescriptorSetVersion() const override;
     std::vector<vk::PushConstantRange> createPushConstantRanges() const override;
     vk::VertexInputBindingDescription createVertexInputBindingDescription() const override;
     std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const override;
+    std::vector<vk::PipelineColorBlendAttachmentState> getPipelineColorBlendAttachmentStates() const override;
 
 private:
     void buildVertexBuffers() override;

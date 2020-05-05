@@ -50,6 +50,7 @@ protected:
     virtual std::vector<vk::VertexInputAttributeDescription> createVertexInputAttributeDescriptions() const { return {}; }
 
     virtual vk::PipelineDepthStencilStateCreateInfo getPipelineDepthStencilStateCreateInfo() const;
+    virtual std::vector<vk::PipelineColorBlendAttachmentState> getPipelineColorBlendAttachmentStates() const;
 
     virtual void buildVertexBuffers() {};
     virtual void teardownVertexBuffers() {};

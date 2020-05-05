@@ -112,6 +112,22 @@ vk::PipelineDepthStencilStateCreateInfo Pipeline_vulkan::getPipelineDepthStencil
     };
 }
 
+/* Pre-multiplied alpha blending.
+*/
+std::vector<vk::PipelineColorBlendAttachmentState> Pipeline_vulkan::getPipelineColorBlendAttachmentStates() const
+{
+    return { {
+        VK_TRUE, // blendEnable
+        vk::BlendFactor::eOne, // srcColorBlendFactor
+        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
+        vk::BlendOp::eAdd, // colorBlendOp
+        vk::BlendFactor::eOne, // srcAlphaBlendFactor
+        vk::BlendFactor::eZero, // dstAlphaBlendFactor
+        vk::BlendOp::eAdd, // aphaBlendOp
+        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+    } };
+}
+
 void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent)
 {
     LOG_INFO("buildPipeline previous size ({}, {})", this->extent.width, this->extent.height);
@@ -193,18 +209,8 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
    
     /* Pre-multiplied alpha blending.
      */
-    const std::vector<vk::PipelineColorBlendAttachmentState> pipelineColorBlendAttachmentStates = { {
-        VK_TRUE, // blendEnable
-        vk::BlendFactor::eOne, // srcColorBlendFactor
-        vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor
-        vk::BlendOp::eAdd, // colorBlendOp
-        vk::BlendFactor::eOne, // srcAlphaBlendFactor
-        vk::BlendFactor::eZero, // dstAlphaBlendFactor
-        vk::BlendOp::eAdd, // aphaBlendOp
-        vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    } };
-
-
+    let pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
+    
     const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo =  {
         vk::PipelineColorBlendStateCreateFlags(),
         VK_FALSE, // logicOpenable

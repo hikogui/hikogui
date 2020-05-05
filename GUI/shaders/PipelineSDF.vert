@@ -41,6 +41,7 @@ void main() {
     gl_Position = convertPositionToViewport(inPosition);
     outClippingRectangle = convertClippingRectangleToScreen(inClippingRectangle);
     outTextureCoord = inTextureCoord;
-    outColor = vec4(inColor.rgb * inColor.a, inColor.a);
+    // Do not pre-multiply the alpha due to subpixel compositing. 
+    outColor = inColor;
     outDistanceMultiplier = inDistanceMultiplier;
 }

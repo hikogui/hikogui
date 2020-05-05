@@ -7,8 +7,9 @@ layout(push_constant) uniform PushConstants {
     vec2 viewportScale;
 } pushConstants;
 
-layout(set = 0, binding = 0) uniform sampler biLinearSampler;
-layout(set = 0, binding = 1) uniform texture2D textures[16];
+layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput inputColor;
+layout(set = 0, binding = 1) uniform sampler biLinearSampler;
+layout(set = 0, binding = 2) uniform texture2D textures[16];
 
 layout(location = 0) in flat vec4 inClippingRectangle;
 layout(location = 1) in vec3 inTextureCoord;
@@ -22,6 +23,18 @@ bool isClipped()
 {
     return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) == bvec4(true, false, false, true);
 }
+
+// Use a perceptional curve of gamma 2.0.
+vec3 coverage_to_alpha(vec3 x, bool light_to_dark)
+{
+    if (light_to_dark) {
+        return x * x;
+    } else {
+        x = 1.0 - x;
+        return 1.0 - (x * x);
+    }
+}
+
 
 void main()
 {
@@ -48,34 +61,14 @@ void main()
     float blue_radius  = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), blue_coordinate).r * inDistanceMultiplier;
 
     vec3 rgb_radius = vec3(red_radius, green_radius, blue_radius);
-    vec3 rgb_coverage = clamp((rgb_radius * 1) + 0.5, 0.0, 1.0);
+
+    vec3 rgb_coverage = clamp(rgb_radius + 0.45, 0.0, 1.0);
   
-    if (inColor.g > 0.5) {
-        rgb_coverage = rgb_coverage * rgb_coverage;
-    } else {
-        rgb_coverage = 1.0 - rgb_coverage;
-        rgb_coverage = rgb_coverage * rgb_coverage;
-        rgb_coverage = 1.0 - rgb_coverage;
-    }
+    vec3 rgb_alpha = coverage_to_alpha(rgb_coverage, inColor.g > 0.7) * inColor.a;
 
-    // Turn off sub-pixel rendering.
-    //rgb_coverage = vec3(rgb_coverage.g, rgb_coverage.g, rgb_coverage.g);
-
-    vec3 color = inColor.rgb * rgb_coverage;
-    float alpha = (rgb_coverage.r + rgb_coverage.g + rgb_coverage.b) / 3.0;
-    outColor = vec4(color.rgb, alpha);
-
-    // Although alpha compositing needs to be done linearilly on colors,
-    // the alpha value itself should be calculated perceptually (non-linear).
-    // We are using a gamma of 2 because it is fast.
-    // This makes dark on light and light on dark text have the same thickness.
-    //float alpha;
-    //if (inColor.g > 0.5) {
-    //    alpha = green_coverage * green_coverage;
-    //} else {
-    //    alpha = 1.0 - green_coverage;
-    //    alpha = 1.0 - (alpha * alpha);
-    //}
-//
-    //outColor = inColor * alpha;
+    // Output alpha is always 1.0
+    outColor = vec4(
+        inColor.rgb * rgb_alpha + subpassLoad(inputColor).rgb * (1.0 - rgb_alpha),
+        1.0
+    );
 }
