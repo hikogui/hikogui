@@ -54,6 +54,10 @@ Instance_vulkan::Instance_vulkan(InstanceDelegate *delegate, const std::vector<c
     instanceCreateInfo.setEnabledExtensionCount(numeric_cast<uint32_t>(requiredExtensions.size()));
     instanceCreateInfo.setPpEnabledExtensionNames(requiredExtensions.data());
 
+#if !defined(NDEBUG)
+    requiredFeatures.robustBufferAccess = VK_TRUE;
+#endif
+
 #if defined(_WIN32) && !defined(NDEBUG)
     requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
     //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");

@@ -21,17 +21,19 @@ Pipeline_vulkan::~Pipeline_vulkan()
 
 void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 {
-    if (descriptorSetVersion < getDescriptorSetVersion()) {
-        let writeDescriptorSets = createWriteDescriptorSet();
-        device().updateDescriptorSets(writeDescriptorSets, {});
-
-        descriptorSetVersion = getDescriptorSetVersion();
-    }
-
     commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, intrinsic);
 
-    if (hasDescriptorSets) {
-        commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, {descriptorSet}, {});
+    if (descriptorSet) {
+        if (descriptorSetVersion < getDescriptorSetVersion()) {
+            descriptorSetVersion = getDescriptorSetVersion();
+
+            device().updateDescriptorSets(createWriteDescriptorSet(), {});
+        }
+
+        commandBuffer.bindDescriptorSets(
+            vk::PipelineBindPoint::eGraphics,
+            pipelineLayout, 0, {descriptorSet}, {}
+        );
     }
 }
 
@@ -40,12 +42,13 @@ void Pipeline_vulkan::buildDescriptorSets()
 {
     let descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
-    hasDescriptorSets = descriptorSetLayoutBindings.size() > 0;
-    if (!hasDescriptorSets) {
+    if (ssize(descriptorSetLayoutBindings) == 0) {
+        // Make sure that there is no descriptor set.
+        descriptorSet = nullptr;
         return;
     }
 
-    const vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = {
+    let descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
         vk::DescriptorSetLayoutCreateFlags(),
         numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
     };
@@ -68,7 +71,9 @@ void Pipeline_vulkan::buildDescriptorSets()
         numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
     });
 
-    std::vector<vk::DescriptorSetLayout> const descriptorSetLayouts(1, descriptorSetLayout);
+    let descriptorSetLayouts = std::array{
+        descriptorSetLayout
+    };
     
     let descriptorSets = device().allocateDescriptorSets({
         descriptorPool,
@@ -81,23 +86,13 @@ void Pipeline_vulkan::buildDescriptorSets()
 
 void Pipeline_vulkan::teardownDescriptorSets()
 {
-    if (!hasDescriptorSets) {
+    if (!descriptorSet) {
         return;
     }
 
     device().destroy(descriptorPool);
     device().destroy(descriptorSetLayout);
-}
-
-void Pipeline_vulkan::buildSemaphores()
-{
-    let semaphoreCreateInfo = vk::SemaphoreCreateInfo();
-    renderFinishedSemaphore = device().createSemaphore(semaphoreCreateInfo);
-}
-
-void Pipeline_vulkan::teardownSemaphores()
-{
-    device().destroy(renderFinishedSemaphore);
+    descriptorSet = nullptr;
 }
 
 vk::PipelineDepthStencilStateCreateInfo Pipeline_vulkan::getPipelineDepthStencilStateCreateInfo() const
@@ -128,7 +123,7 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
     const auto shaderStages = createShaderStages();
 
     std::vector<vk::DescriptorSetLayout> descriptorSetLayouts;
-    if (hasDescriptorSets) {
+    if (descriptorSet) {
         descriptorSetLayouts.push_back(descriptorSetLayout);
     }
 
@@ -261,16 +256,18 @@ void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t r
 {
     if (!buffersInitialized) {
         buildVertexBuffers();
-        buildDescriptorSets();
-        buildSemaphores();
         buffersInitialized = true;
     }
+    // Input attachments described by the descriptor set will change when a
+    // new swap chain is created.
+    buildDescriptorSets();
     buildPipeline(renderPass, renderSubpass, extent);
 }
 
 void Pipeline_vulkan::teardownForSwapchainLost()
 {
     teardownPipeline();
+    teardownDescriptorSets();
 }
 
 void Pipeline_vulkan::teardownForSurfaceLost()
@@ -279,8 +276,6 @@ void Pipeline_vulkan::teardownForSurfaceLost()
 
 void Pipeline_vulkan::teardownForDeviceLost()
 {
-    teardownSemaphores();
-    teardownDescriptorSets();
     teardownVertexBuffers();
     buffersInitialized = false;
     _device = nullptr;

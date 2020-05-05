@@ -186,9 +186,9 @@ void Window_vulkan::build()
             teardownSwapchain();
             return;
         }
+        buildRenderPasses(); // Render-pass requires the swapchain/color/depth image-format.
+        buildFramebuffers(); // Framebuffer required render passes.
         buildCommandBuffers();
-        buildRenderPasses();
-        buildFramebuffers();
         buildSemaphores();
         flatPipeline->buildForNewSwapchain(renderPass, 0, swapchainImageExtent);
         boxPipeline->buildForNewSwapchain(renderPass, 1, swapchainImageExtent);
@@ -218,10 +218,10 @@ void Window_vulkan::teardown()
         boxPipeline->teardownForSwapchainLost();
         flatPipeline->teardownForSwapchainLost();
         teardownSemaphores();
+        teardownCommandBuffers();
         teardownFramebuffers();
         teardownRenderPasses();
         teardownSwapchain();
-        teardownCommandBuffers();
         nextState = State::NoSwapchain;
 
         if (state >= State::SurfaceLost) {
@@ -649,7 +649,7 @@ void Window_vulkan::buildFramebuffers()
     ttauri_assert(device);
     swapchainImages = device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
-        auto imageView = device->createImageView({
+        let swapchainImageView = device->createImageView({
             vk::ImageViewCreateFlags(),
             image,
             vk::ImageViewType::e2D,
@@ -658,15 +658,15 @@ void Window_vulkan::buildFramebuffers()
             { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
         });
 
-        swapchainImageViews.push_back(imageView);
+        swapchainImageViews.push_back(swapchainImageView);
 
         let attachments = std::array{
-            imageView,
+            swapchainImageView,
             colorImageView,
             depthImageView
         };
 
-        auto framebuffer = device->createFramebuffer({
+        let framebuffer = device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
             numeric_cast<uint32_t>(attachments.size()),
@@ -698,6 +698,7 @@ void Window_vulkan::teardownFramebuffers()
     swapchainImageViews.clear();
 
     device->destroy(depthImageView);
+    device->destroy(colorImageView);
 }
 
 void Window_vulkan::buildRenderPasses()
@@ -739,8 +740,6 @@ void Window_vulkan::buildRenderPasses()
             vk::ImageLayout::eDepthStencilAttachmentOptimal // finalLayout
         }
     };
-
-    std::array<vk::AttachmentReference, 0> const inputAttachmentReferences = {};
 
     let colorAttachmentReferences = std::array{
         vk::AttachmentReference{ 1, vk::ImageLayout::eColorAttachmentOptimal }
@@ -812,43 +811,60 @@ void Window_vulkan::buildRenderPasses()
     };
 
     let subpassDependency = std::array{
-        vk::SubpassDependency{ // Subpass 0 -> Subpass 1
-            0,
-            1,
+        vk::SubpassDependency{
+            VK_SUBPASS_EXTERNAL, 0,
+            vk::PipelineStageFlagBits::eBottomOfPipe,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eFragmentShader,
-            vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eShaderRead,
+            vk::AccessFlagBits::eMemoryRead,
+            vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite,
             vk::DependencyFlagBits::eByRegion
 
-        }, vk::SubpassDependency{ // Subpass 1 -> Subpass 2
-            1,
-            2,
+        },
+        // Subpass 0: Render single color polygons to color+depth attachment.
+        vk::SubpassDependency{
+            0, 1,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
-            vk::AccessFlagBits::eShaderRead,
+            vk::AccessFlagBits::eColorAttachmentRead,
+            vk::DependencyFlagBits::eByRegion
+        },
+        // Subpass 1: Render shaded polygons to color+depth with fixed function alpha compositing
+        vk::SubpassDependency{
+            1, 2,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eColorAttachmentRead,
             vk::DependencyFlagBits::eByRegion
 
-        }, vk::SubpassDependency{ // Subpass 2 -> Subpass 3
-            2,
-            3,
+        },
+        // Subpass 2: Render texture mapped polygons to color+depth with fixed function alpha compositing
+        vk::SubpassDependency{
+            2, 3,
+            vk::PipelineStageFlagBits::eColorAttachmentOutput,
+            vk::PipelineStageFlagBits::eFragmentShader,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eColorAttachmentRead,
+            vk::DependencyFlagBits::eByRegion
+
+        },
+        // Subpass 3: Render SDF-texture mapped polygons to color+depth with fixed function alpha compositing
+        vk::SubpassDependency{
+            3, 4,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
             vk::PipelineStageFlagBits::eFragmentShader,
             vk::AccessFlagBits::eColorAttachmentWrite,
             vk::AccessFlagBits::eShaderRead,
             vk::DependencyFlagBits::eByRegion
-        }, vk::SubpassDependency{ // Subpass 3 -> Subpass 4
-            3,
-            4,
+        },
+        // Subpass 4: Tone mapping color to swapchain.
+        vk::SubpassDependency{
+            4, VK_SUBPASS_EXTERNAL,
             vk::PipelineStageFlagBits::eColorAttachmentOutput,
-            vk::PipelineStageFlagBits::eFragmentShader,
-            (
-                vk::AccessFlagBits::eColorAttachmentWrite |
-                vk::AccessFlagBits::eColorAttachmentRead |
-                vk::AccessFlagBits::eInputAttachmentRead
-            ),
-            vk::AccessFlagBits::eShaderRead,
+            vk::PipelineStageFlagBits::eBottomOfPipe,
+            vk::AccessFlagBits::eColorAttachmentWrite,
+            vk::AccessFlagBits::eMemoryRead,
             vk::DependencyFlagBits::eByRegion
         }
     };
@@ -894,6 +910,7 @@ void Window_vulkan::teardownSemaphores()
     auto lock = std::scoped_lock(guiMutex);
 
     ttauri_assert(device);
+    device->destroy(renderFinishedSemaphore);
     device->destroy(imageAvailableSemaphore);
     device->destroy(renderFinishedFence);
 }

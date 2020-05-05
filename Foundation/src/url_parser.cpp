@@ -124,14 +124,16 @@ static void parse_path_split(url_parts &parts, std::vector<std::string_view> seg
 
     // Extract optional drive from file path.
     if (segments.size() >= 2 && segments.at(0).size() == 0 && segments.at(1).find(':') != std::string_view::npos) {
-        // Due to how file URLs with authority requires absolute paths, it may be that the
-        // drive letter follows a leading slash, but this does not mean it is an absolute path.
-        let i = segments.at(1).find(':');
-        parts.drive = segments.at(1).substr(0, i);
-        segments.at(1) = segments.at(1).substr(i + 1);
+        // Drive following a UNC/URL server/authority name (the server/authority may be empty)
+        // First strip off the slash in front of the drive letter.
+        segments.erase(segments.begin());
+
+        let i = segments.at(0).find(':');
+        parts.drive = segments.at(0).substr(0, i);
+        segments.at(0) = segments.at(0).substr(i + 1);
 
     } else if (segments.size() >= 1 && segments.at(0).find(':') != std::string_view::npos) {
-        // This is more sane, a drive letter as the first segment of a path.
+        // A drive letter as the first segment of a path.
         let i = segments.at(0).find(':');
         parts.drive = segments.at(0).substr(0, i);
         segments.at(0) = segments.at(0).substr(i + 1);

@@ -5,6 +5,7 @@
 #include "TTauri/GUI/Instance.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/GUI/ThemeBook.hpp"
+#include "TTauri/GUI/RenderDoc.hpp"
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
@@ -33,6 +34,8 @@ void startup()
     TTauri::startup();
     TTauri::Text::startup();
     LOG_INFO("TTauri::GUI startup");
+
+    renderDoc = new RenderDoc();
 
     themeBook = new ThemeBook(std::vector<URL>{
         URL::urlFromResourceDirectory() / "Themes"
@@ -71,6 +74,7 @@ void shutdown()
 
     delete guiSystem;
     delete themeBook;
+    delete renderDoc;
     TTauri::Text::shutdown();
     TTauri::shutdown();
 }

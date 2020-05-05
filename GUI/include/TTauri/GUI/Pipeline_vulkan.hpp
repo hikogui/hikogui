@@ -34,11 +34,9 @@ public:
 
 protected:
     bool buffersInitialized = false;
-    vk::Semaphore renderFinishedSemaphore;
     vk::DescriptorSet descriptorSet;
     ssize_t descriptorSetVersion = 0;
     vk::Extent2D extent;
-    bool hasDescriptorSets = false;
     vk::DescriptorSetLayout descriptorSetLayout;
     vk::PipelineLayout pipelineLayout;
     vk::DescriptorPool descriptorPool;
@@ -57,8 +55,6 @@ protected:
     virtual void teardownVertexBuffers() {};
     virtual void buildDescriptorSets();
     virtual void teardownDescriptorSets();
-    virtual void buildSemaphores();
-    virtual void teardownSemaphores();
     virtual void buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent);
     virtual void teardownPipeline();
 };
