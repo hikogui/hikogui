@@ -127,6 +127,12 @@ void Window_vulkan_win32::createWindow(const std::string &title, vec extent)
     trackMouseLeaveEventParameters.dwHoverTime = HOVER_DEFAULT;
 
     ShowWindow(reinterpret_cast<HWND>(win32Window), SW_SHOW);
+
+    auto _dpi = GetDpiForWindow(reinterpret_cast<HWND>(win32Window));
+    if (_dpi == 0) {
+        TTAURI_THROW(gui_error("Could not retrieve dpi for window."));
+    }
+    dpi = numeric_cast<float>(_dpi);
 }
 
 Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
@@ -677,6 +683,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     case WM_WININICHANGE:
         themeBook->setThemeMode(readOSThemeMode());
+        widget->handleWindowResize();
+        break;
+
+    case WM_DPICHANGED:
+        // x-axis dpi value.
+        dpi = numeric_cast<float>(LOWORD(wParam));
         widget->handleWindowResize();
         break;
 

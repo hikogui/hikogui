@@ -27,12 +27,14 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     let rectangle = rect{vec{}, box.currentExtent()};
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
-        let labelWidth = rectangle.width() - Theme::margin * 2.0;
+        let labelWidth = rectangle.width() - Theme::margin * 2.0f;
 
-        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Center, labelWidth);
+        LOG_DEBUG("Shaping button label {}", to_string(theme->warningLabelStyle));
+        labelShapedText = ShapedText(label, theme->warningLabelStyle, HorizontalAlignment::Center, labelWidth);
         window.device->SDFPipeline->prepareAtlas(labelShapedText);
 
-        setMinimumExtent(Theme::width, labelShapedText.extent.height());
+        setMinimumExtent(Theme::maxLabelWidth, Theme::height);
+        //setMinimumExtent(Theme::width, labelShapedText.extent.height());
         //setPreferedExtent(labelShapedText.preferedExtent);
     }
 

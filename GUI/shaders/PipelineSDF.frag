@@ -44,7 +44,7 @@ void main()
 
     float pixel_distance = fwidth(inTextureCoord.x);
     float sub_pixel_distance = pixel_distance / 3.0;
-    vec2 sub_pixel_offset = vec2(sub_pixel_distance * 0.333333, 0.0);
+    vec2 sub_pixel_offset = vec2(sub_pixel_distance, 0.0);
 
     vec2 green_coordinate = inTextureCoord.xy;
     float green_radius = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), green_coordinate).r * inDistanceMultiplier;
@@ -62,13 +62,14 @@ void main()
 
     vec3 rgb_radius = vec3(red_radius, green_radius, blue_radius);
 
-    vec3 rgb_coverage = clamp(rgb_radius + 0.45, 0.0, 1.0);
+    vec3 rgb_coverage = clamp(rgb_radius + 0.5, 0.0, 1.0);
   
     vec3 rgb_alpha = coverage_to_alpha(rgb_coverage, inColor.g > 0.7) * inColor.a;
+    //vec3 rgb_alpha = rgb_coverage;
 
     // Output alpha is always 1.0
     outColor = vec4(
         inColor.rgb * rgb_alpha + subpassLoad(inputColor).rgb * (1.0 - rgb_alpha),
-        1.0
+        1.0 
     );
 }

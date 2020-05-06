@@ -13,6 +13,7 @@ using namespace gsl;
 Instance_vulkan_win32::Instance_vulkan_win32(InstanceDelegate *delegate) :
     Instance_vulkan(delegate, { VK_KHR_WIN32_SURFACE_EXTENSION_NAME })
 {
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
 }
 
 Instance_vulkan_win32::~Instance_vulkan_win32()

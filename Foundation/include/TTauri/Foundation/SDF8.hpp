@@ -17,7 +17,7 @@ struct SDF8 : public R8SNorm {
      * font as drawn into the atlas. The maximum distance needs to be at least
      * the diagonal distance between two pixels for proper linear-interpolation sqrt(1.0*1.0 + 1.0*1.0).
      */
-    constexpr static float max_distance = 2.0f;
+    constexpr static float max_distance = 3.0f;
     constexpr static float one_over_max_distance = 1.0f / max_distance;
 
     SDF8() noexcept = default;

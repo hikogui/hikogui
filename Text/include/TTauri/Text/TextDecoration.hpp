@@ -5,6 +5,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <ostream>
 
 namespace TTauri::Text {
 
@@ -29,5 +30,26 @@ inline auto const TextDecoration_from_string_table = std::unordered_map<std::str
     {"wavy-underline", TextDecoration::WavyUnderline},
     {"strike-through", TextDecoration::StrikeThrough},
 };
+
+[[nodiscard]] inline char const *to_const_string(TextDecoration const &rhs) noexcept
+{
+    switch (rhs) {
+    case TextDecoration::None: return "none"; 
+    case TextDecoration::Underline: return "underline"; 
+    case TextDecoration::WavyUnderline: return "wavy-underline"; 
+    case TextDecoration::StrikeThrough: return "strike-through";
+    default: no_default;
+    }
+}
+
+[[nodiscard]] inline std::string to_string(TextDecoration const &rhs) noexcept
+{
+    return to_const_string(rhs);
+}
+
+inline std::ostream &operator<<(std::ostream &lhs, TextDecoration const &rhs)
+{
+    return lhs << to_const_string(rhs);
+}
 
 }

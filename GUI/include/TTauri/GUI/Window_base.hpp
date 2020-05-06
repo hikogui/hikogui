@@ -110,12 +110,12 @@ public:
      */
     float dpi = 72.0;
 
-    /*! Pixels-per-Point
-     * A point references a typographic point, 1/72 inch.
-     * Scale all drawing and sizing on the window using this attribute.
-     * This value is rounded to an integer value for drawing clean lines.
+    /** By how much the font needs to be scaled compared to current windowScale.
+     * Widgets should pass this value to the text-shaper.
      */
-    float ppp = 1.0;
+    [[nodiscard]] float fontScale() const noexcept {
+        return dpi / (windowScale() * 72.0f);
+    }
 
     //! The widget covering the complete window.
     std::unique_ptr<Widgets::Widget> widget;
@@ -246,6 +246,7 @@ public:
     }
 
 protected:
+
     /*! The current rectangle which has been set by the operating system.
      * This value may lag behind the actual window extent as seen by the GPU
      * library. This value should only be read by the GPU library during
@@ -253,6 +254,14 @@ protected:
      * not figure this out by itself.
      */
     irect OSWindowRectangle;
+
+    /** By how much graphic elements should be scaled to match a point.
+    * The widget should not care much about this value, since the
+    * transformation matrix will match the window scaling.
+    */
+    [[nodiscard]] float windowScale() const noexcept {
+        return std::ceil(dpi / 100.0f);
+    }
 
     /*! Called when the GPU library has changed the window size.
      */

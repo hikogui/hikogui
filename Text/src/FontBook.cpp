@@ -86,7 +86,7 @@ FontID FontBook::register_font(URL url, bool post_process)
     auto font = parseResource<Font>(url);
     auto &description = font->description;
 
-    //LOG_INFO("Parsed font {}: {}", url, to_string(description));
+    LOG_INFO("Parsed font {}: {}", url, to_string(description));
 
     let font_id = FontID(ssize(font_entries));
     font_entries.emplace_back(url, description);

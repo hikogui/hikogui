@@ -60,6 +60,14 @@ public:
         let it = italic() == (i < half());
         return {w, it};
     }
+
+    [[nodiscard]] friend std::string to_string(FontVariant const &rhs) noexcept {
+        return fmt::format("{}", rhs.weight(), rhs.italic() ? "/italic" : "");
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, FontVariant const &rhs) {
+        return lhs << to_string(rhs);
+    }
 };
 
 }

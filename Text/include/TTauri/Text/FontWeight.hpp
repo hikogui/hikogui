@@ -110,14 +110,14 @@ inline bool almost_equal(FontWeight const &lhs, FontWeight const &rhs) noexcept 
 {
     std::array<FontWeight,100> r = {FontWeight::Regular};
 
-    for (int w = 0; w < 8; ++w) {
+    for (int w = 0; w < 10; ++w) {
         auto min_w = w;
         auto max_w = w;
         auto new_w = w;
         auto forward = false;
 
         for (int i = 0; i < 10; ++i) {
-            r[(w << 3) | i] = static_cast<FontWeight>(new_w);
+            r[w * 10 + i] = static_cast<FontWeight>(new_w);
 
             // Change direction to not overflow.
             if ((forward && max_w == 9) || (!forward && min_w == 0)) {

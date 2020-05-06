@@ -70,14 +70,14 @@
     "label-style": {
         "family": "Arial",
         "weight": "Normal",
-        "size": 12.0,
+        "size": 16.0,
         "color": "foreground-color"
     },
     "warning-label-style": {
-        "family": "Arial",
+        "family": "Times New Roman",
         "weight": "Normal",
-        "size": 12.0,
-        "color": [255, 204, 0]
+        "size": 16.0,
+        "color": "foreground-color"
     },
     "error-label-style": {
         "family": "Arial",
