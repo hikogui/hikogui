@@ -41,12 +41,6 @@ enum class LineJoinStyle {
     Rounded
 };
 
-enum class SubpixelOrientation {
-    RedLeft,
-    RedRight,
-    Unknown
-};
-
 inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexcept
 {
     switch (lhs) {

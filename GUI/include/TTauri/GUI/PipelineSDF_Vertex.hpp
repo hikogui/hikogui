@@ -28,15 +28,11 @@ struct Vertex {
     //! The color of the glyph.
     R16G16B16A16SFloat color;
 
-    //! The multiplier to use to convert a SDF distance from texture space to screen-space.
-    float distanceMultiplier;
-
-    Vertex(vec position, rect clippingRectangle, vec textureCoord, vec color, float distanceMultiplier) noexcept :
+    Vertex(vec position, rect clippingRectangle, vec textureCoord, vec color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),
-        color(color),
-        distanceMultiplier(distanceMultiplier) {}
+        color(color) {}
 
     static vk::VertexInputBindingDescription inputBindingDescription()
     {
@@ -51,8 +47,7 @@ struct Vertex {
             { 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position) },
             { 1, 0, vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, clippingRectangle) },
             { 2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, textureCoord) },                
-            { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) },
-            { 4, 0, vk::Format::eR32Sfloat, offsetof(Vertex, distanceMultiplier) }
+            { 3, 0, vk::Format::eR16G16B16A16Sfloat, offsetof(Vertex, color) }
         };
     }
 };

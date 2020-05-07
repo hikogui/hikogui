@@ -309,12 +309,4 @@ void rotate270(PixelMap<T> &dst, PixelMap<T> const &src) noexcept;
  */
 void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept;
 
-/*! Execute a slight horiontal blur filter to reduce colour fringes with subpixel compositing.
- */
-void subpixelFilter(PixelMap<uint8_t> &image) noexcept;
-
-/*! Swap R and B values of each RGB pixel.
- */
-void subpixelFlip(PixelMap<uint8_t> &image) noexcept;
-
 }

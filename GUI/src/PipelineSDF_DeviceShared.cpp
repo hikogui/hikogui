@@ -213,10 +213,6 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
         let v2 = vM * bounding_box.corner<2>();
         let v3 = vM * bounding_box.corner<3>();
 
-
-        // Extract the max distance in pixels, based on the actual font size and scaling of the transform.
-        let maxDistance = scaledMaxDistance * attr_grapheme.style.size * vM.scaleX();
-
         // If none of the vertices is inside the clipping rectangle then don't add the
         // quad to the vertex list.
         if (!(
@@ -234,10 +230,10 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
 
         let color = vec{attr_grapheme.style.color};
 
-        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color, maxDistance);
-        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color, maxDistance);
-        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color, maxDistance);
-        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color, maxDistance);
+        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color);
+        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color);
+        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color);
+        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color);
     }
 }
 
@@ -249,12 +245,19 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
 void DeviceShared::buildShaders()
 {
+    specializationConstants.SDF8maxDistance = SDF8::max_distance;
+    specializationConstants.atlasImageWidth = atlasImageWidth;
+
+    fragmentShaderSpecializationMapEntries = SpecializationConstants::specializationConstantMapEntries();
+    fragmentShaderSpecializationInfo = specializationConstants.specializationInfo(fragmentShaderSpecializationMapEntries);
+
     vertexShaderModule = device.loadShader(URL("resource:GUI/PipelineSDF.vert.spv"));
     fragmentShaderModule = device.loadShader(URL("resource:GUI/PipelineSDF.frag.spv"));
 
+
     shaderStages = {
         {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eVertex, vertexShaderModule, "main"},
-        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main"}
+        {vk::PipelineShaderStageCreateFlags(), vk::ShaderStageFlagBits::eFragment, fragmentShaderModule, "main", &fragmentShaderSpecializationInfo}
     };
 }
 

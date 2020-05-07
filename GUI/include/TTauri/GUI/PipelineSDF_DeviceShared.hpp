@@ -5,6 +5,7 @@
 
 #include "TTauri/GUI/PipelineSDF_TextureMap.hpp"
 #include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
+#include "TTauri/GUI/PipelineSDF_SpecializationConstants.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/required.hpp"
@@ -36,6 +37,8 @@ struct DeviceShared final {
     // Handle up to 4096 characters with a 16 x 1024 x 1024, 16 x 1 MByte
     static constexpr int atlasImageWidth = 1024; // 16 characters, of 64 pixels wide.
     static constexpr int atlasImageHeight = 1024; // 16 characters, of 64 pixels height.
+    static_assert(atlasImageWidth == atlasImageHeight, "needed for fwidth(textureCoord)");
+
     static constexpr int atlasMaximumNrImages = 16; // 16 * 512 characters, of 64x64 pixels.
     static constexpr int stagingImageWidth = 128; // maximum size of character that can be uploaded is 128x128
     static constexpr int stagingImageHeight = 128;
@@ -43,16 +46,15 @@ struct DeviceShared final {
     static constexpr float fontSize = 28.0f;
     static constexpr float drawBorder = SDF8::max_distance;
     static constexpr float scaledDrawBorder = drawBorder / fontSize;
-    static constexpr float scaledMaxDistance = SDF8::max_distance / fontSize;
 
     Device const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
 
-    std::array<vk::SpecializationMapEntry,1> fragmentShaderSpecializationEntries;
+    SpecializationConstants specializationConstants;
+    std::vector<vk::SpecializationMapEntry> fragmentShaderSpecializationMapEntries;
     vk::SpecializationInfo fragmentShaderSpecializationInfo;
-
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
     std::unordered_map<Text::FontGlyphIDs,AtlasRect> glyphs_in_atlas;

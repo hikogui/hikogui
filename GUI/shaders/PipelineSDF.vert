@@ -5,6 +5,7 @@
 layout(push_constant) uniform PushConstants {
     vec2 windowExtent;
     vec2 viewportScale;
+    vec2 blueOffset;
 } pushConstants;
 
 // In position is in window pixel position, with left-bottom origin.
@@ -12,12 +13,10 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inClippingRectangle;
 layout(location = 2) in vec3 inTextureCoord;
 layout(location = 3) in vec4 inColor;
-layout(location = 4) in float inDistanceMultiplier;
 
 layout(location = 0) out flat vec4 outClippingRectangle;
 layout(location = 1) out vec3 outTextureCoord;
 layout(location = 2) out flat vec4 outColor;
-layout(location = 3) out flat float outDistanceMultiplier;
 
 vec4 convertPositionToViewport(vec3 windowPosition)
 {
@@ -43,5 +42,4 @@ void main() {
     outTextureCoord = inTextureCoord;
     // Do not pre-multiply the alpha due to subpixel compositing. 
     outColor = inColor;
-    outDistanceMultiplier = inDistanceMultiplier;
 }

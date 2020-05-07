@@ -71,13 +71,13 @@
     "label-style": {
         "family": "Arial",
         "weight": "Regular",
-        "size": 16.0,
+        "size": 12.0,
         "color": "foreground-color"
     },
     "warning-label-style": {
         "family": "Times New Roman",
         "weight": "Regular",
-        "size": 16.0,
+        "size": 30.0,
         "color": "foreground-color"
     },
     "error-label-style": {

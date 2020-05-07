@@ -27,30 +27,4 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
     }
 }
 
-void subpixelFilter(PixelMap<uint8_t> &image) noexcept
-{
-    horizontalFilter<5>(image, [](auto values) {
-        return static_cast<uint8_t>((
-            (values & 0xff) +
-            ((values >> 8) & 0xff) * 2 +
-            ((values >> 16) & 0xff) * 3 +
-            ((values >> 24) & 0xff) * 2 +
-            ((values >> 32) & 0xff)
-            ) / 9);
-        }
-    );
-}
-
-void subpixelFlip(PixelMap<uint8_t> &image) noexcept
-{
-    ttauri_assert(image.width % 3 == 0);
-
-    for (auto rowNr = 0; rowNr < image.height; rowNr++) {
-        auto row = image.at(rowNr);
-        for (auto columnNr = 0; columnNr < static_cast<size_t>(row.width); columnNr += 3) {
-            std::swap(row[columnNr], row[columnNr + 2]);
-        }
-    }
-}
-
 }
