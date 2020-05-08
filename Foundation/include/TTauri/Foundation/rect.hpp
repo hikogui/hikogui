@@ -132,10 +132,6 @@ public:
         }
     }
 
-    [[nodiscard]] force_inline vec begin() const noexcept { return corner<0>(); }
-    [[nodiscard]] force_inline vec end() const noexcept { return corner<3>(); }
-
-
     /** Get coordinate of a corner.
     *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.

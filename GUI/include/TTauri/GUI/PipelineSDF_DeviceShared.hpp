@@ -43,9 +43,10 @@ struct DeviceShared final {
     static constexpr int stagingImageWidth = 128; // maximum size of character that can be uploaded is 128x128
     static constexpr int stagingImageHeight = 128;
 
-    static constexpr float fontSize = 28.0f;
+    static constexpr float atlasTextureCoordinateMultiplier = 1.0f / atlasImageWidth;
+    static constexpr float drawFontSize = 28.0f;
     static constexpr float drawBorder = SDF8::max_distance;
-    static constexpr float scaledDrawBorder = drawBorder / fontSize;
+    static constexpr float scaledDrawBorder = drawBorder / drawFontSize;
 
     Device const &device;
 
@@ -86,7 +87,7 @@ struct DeviceShared final {
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
      */
-    [[nodiscard]] AtlasRect allocateRect(ivec extent) noexcept;
+    [[nodiscard]] AtlasRect allocateRect(vec drawExtent) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -121,6 +122,14 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice);
+
+    AtlasRect addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept;
+
+    /**
+     * @return The Atlas rectangle and true if a new glyph was added to the atlas.
+     */
+    std::pair<AtlasRect,bool> getGlyphFromAtlas(Text::FontGlyphIDs glyph) noexcept;
+
 };
 
 }

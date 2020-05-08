@@ -10,9 +10,10 @@ namespace TTauri::Text {
 {
     let M = mat::T(position) * mat::S(style.size, style.size);
 
-    auto r = M * glyphs.get_path();
-    r.closeLayer(style.color);
-    return r;
+    auto [glyph_path, glyph_bounding_box] = glyphs.getPathAndBoundingBox();
+    auto transformed_glyph_path = M * glyph_path;
+    transformed_glyph_path.closeLayer(style.color);
+    return transformed_glyph_path;
 }
 
 }

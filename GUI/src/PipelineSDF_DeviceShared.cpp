@@ -36,9 +36,12 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-[[nodiscard]] AtlasRect DeviceShared::allocateRect(ivec extent) noexcept
+[[nodiscard]] AtlasRect DeviceShared::allocateRect(vec drawExtent) noexcept
 {
-    if (atlasAllocationPosition.y() + extent.y() > atlasImageHeight) {
+    auto imageWidth = numeric_cast<int>(std::ceil(drawExtent.width()));
+    auto imageHeight = numeric_cast<int>(std::ceil(drawExtent.height()));
+
+    if (atlasAllocationPosition.y() + imageHeight > atlasImageHeight) {
         atlasAllocationPosition.x(0); 
         atlasAllocationPosition.y(0);
         atlasAllocationPosition.z(atlasAllocationPosition.z() + 1);
@@ -52,15 +55,15 @@ void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
         }
     }
 
-    if (atlasAllocationPosition.x() + extent.x() > atlasImageWidth) {
+    if (atlasAllocationPosition.x() + imageWidth > atlasImageWidth) {
         atlasAllocationPosition.x(0);
         atlasAllocationPosition.y(atlasAllocationPosition.y() + atlasAllocationMaxHeight);
     }
 
-    auto r = AtlasRect{atlasAllocationPosition, extent};
+    auto r = AtlasRect{atlasAllocationPosition, drawExtent};
     
-    atlasAllocationPosition.x(atlasAllocationPosition.x() + extent.x());
-    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, extent.y());
+    atlasAllocationPosition.x(atlasAllocationPosition.x() + imageWidth);
+    atlasAllocationMaxHeight = std::max(atlasAllocationMaxHeight, imageHeight);
 
     return r;
 }
@@ -83,11 +86,11 @@ void DeviceShared::uploadStagingPixmapToAtlas(AtlasRect location)
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
         { 0, 0, 0 },
         { vk::ImageAspectFlagBits::eColor, 0, 0, 1 },
-        { numeric_cast<int32_t>(location.atlas_position.x()), numeric_cast<int32_t>(location.atlas_position.y()), 0 },
-        { numeric_cast<uint32_t>(location.atlas_extent.x()), numeric_cast<uint32_t>(location.atlas_extent.y()), 1}
+        { numeric_cast<int32_t>(location.atlasPosition.x()), numeric_cast<int32_t>(location.atlasPosition.y()), 0 },
+        { numeric_cast<uint32_t>(location.atlasExtent.x()), numeric_cast<uint32_t>(location.atlasExtent.y()), 1}
     }};
 
-    auto &atlasTexture = atlasTextures.at(location.atlas_position.z());
+    auto &atlasTexture = atlasTextures.at(location.atlasPosition.z());
     atlasTexture.transitionLayout(device, vk::Format::eR8Snorm, vk::ImageLayout::eTransferDstOptimal);
 
     device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, std::move(regionsToCopy));
@@ -105,6 +108,9 @@ void DeviceShared::prepareAtlasForRendering()
     }
 }
 
+
+
+
 /** Prepare the atlas for drawing a text.
  *
  *  +---------------------+
@@ -121,69 +127,45 @@ void DeviceShared::prepareAtlasForRendering()
  *  |                     |
  *  O---------------------+
 */
-void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
+AtlasRect DeviceShared::addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept
 {
-    int count = 0;
-    for (let &attr_grapheme: text) {
-        if (attr_grapheme.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_grapheme.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
-            continue;
-        }
+    let [glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
 
-        let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
-        if (atlas_i != glyphs_in_atlas.end()) {
-            continue;
-        }
+    let drawScale = mat::S(drawFontSize, drawFontSize);
+    let scaledBoundingBox = drawScale * glyphBoundingBox;
 
-        ++count;
+    // We will draw the font at a fixed size into the texture. And we need a border for the texture to
+    // allow proper bi-linear interpolation on the edges.
 
-        // The metrics of the glyph are already scaled to the screen size.
-        // We need to rescale the metrics for drawing into the atlas.
-        let rescale = fontSize / attr_grapheme.style.size;
-        let rescale_v = vec{rescale, rescale, 1.0f};
-        let rescale_M = mat::S(rescale, rescale);
+    // Determine the size of the image in the atlas.
+    // This is the bounding box sized to the fixed font size and a border
+    let drawOffset = vec{drawBorder, drawBorder} - scaledBoundingBox.offset();
+    let drawExtent = scaledBoundingBox.extent() + 2.0f * vec{drawBorder, drawBorder};
+    let drawTranslate = mat::T(drawOffset);
 
-        let glyphBoundingBox = rescale_M * attr_grapheme.metrics.boundingBox;
+    // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
+    let drawPath = (drawTranslate * drawScale) * glyphPath;
 
-        // We will draw the font at a fixed size into the texture. And we need a border for the texture to
-        // allow proper bi-linear interpolation on the edges.
-        let offset = vec{drawBorder, drawBorder} - glyphBoundingBox.offset();
-        let extent = ivec{
-            numeric_cast<int>(std::ceil(glyphBoundingBox.width() + drawBorder * 2)),
-            numeric_cast<int>(std::ceil(glyphBoundingBox.height() + drawBorder * 2))
-        };
+    // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
+    prepareStagingPixmapForDrawing();
+    auto atlas_rect = allocateRect(drawExtent);
+    auto pixmap = stagingTexture.pixelMap.submap(irect{ivec{}, atlas_rect.atlasExtent});
+    fill(pixmap, drawPath);
+    uploadStagingPixmapToAtlas(atlas_rect);
 
-        // Now create a path of the combined glyphs. Offset and scale the path so that
-        // it is rendered at a fixed font size and that the bounding box of the glyph matches the bounding box in the atlas.
-        let path = (mat::T(offset) * mat::S(fontSize, fontSize)) * attr_grapheme.glyphs.get_path();
+    return atlas_rect;
+}
 
-        // Draw glyphs into staging buffer of the atlas.
-        prepareStagingPixmapForDrawing();
-        auto pixmap = stagingTexture.pixelMap.submap(irect{ivec{}, extent});
-        fill(pixmap, path);
+std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(Text::FontGlyphIDs glyph) noexcept
+{
+    let i = glyphs_in_atlas.find(glyph);
+    if (i != glyphs_in_atlas.cend()) {
+        return {i->second, false};
 
-        auto atlas_rect = allocateRect(extent);
-        uploadStagingPixmapToAtlas(atlas_rect);
-
-        // The bounding box is in texture coordinates.
-        let atlas_px_offset = static_cast<vec>(atlas_rect.atlas_position.xy00());
-        let atlas_px_extent = glyphBoundingBox.extent() + vec{2.0f} * vec{drawBorder, drawBorder};
-
-        let atlas_tx_multiplier = vec{1.0f / atlasImageWidth, 1.0f / atlasImageHeight};
-        let atlas_tx_offset = atlas_px_offset * atlas_tx_multiplier;
-        let atlas_tx_extent = atlas_px_extent * atlas_tx_multiplier;
-        let atlas_tx_box = rect{atlas_tx_offset, atlas_tx_extent};
-
-        let atlas_z = numeric_cast<float>(atlas_rect.atlas_position.z());
-        get<0>(atlas_rect.textureCoords) = atlas_tx_box.corner<0>(atlas_z);
-        get<1>(atlas_rect.textureCoords) = atlas_tx_box.corner<1>(atlas_z);
-        get<2>(atlas_rect.textureCoords) = atlas_tx_box.corner<2>(atlas_z);
-        get<3>(atlas_rect.textureCoords) = atlas_tx_box.corner<3>(atlas_z);
-
-        glyphs_in_atlas[attr_grapheme.glyphs] = atlas_rect;
-    }
-
-    if (count != 0) {
-        prepareAtlasForRendering();
+    } else {
+        let rect = addGlyphToAtlas(glyph);
+        glyphs_in_atlas.emplace(glyph, rect);
+        return {rect, true};
     }
 }
 
@@ -199,19 +181,23 @@ void DeviceShared::prepareAtlas(Text::ShapedText const &text) noexcept
 */
 void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept
 {
-    for (let &attr_grapheme: text) {
-        if (attr_grapheme.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_grapheme.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
+    auto atlas_was_updated = false;
+
+    for (let &attr_glyph: text) {
+        if (attr_glyph.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
             continue;
         }
 
-        // Adjust bounding box by adding a border based on the font size.
-        let bounding_box = expand(attr_grapheme.metrics.boundingBox, scaledDrawBorder * attr_grapheme.style.size);
+        let [atlas_rect, glyph_was_added] = getGlyphFromAtlas(attr_glyph.glyphs);
+        atlas_was_updated = atlas_was_updated || glyph_was_added;
 
-        let vM = transform * mat::T(attr_grapheme.position);
-        let v0 = vM * bounding_box.corner<0>();
-        let v1 = vM * bounding_box.corner<1>();
-        let v2 = vM * bounding_box.corner<2>();
-        let v3 = vM * bounding_box.corner<3>();
+        // Adjust bounding box by adding a border based on 1EM.
+        let bounding_box = transform * attr_glyph.boundingBox(scaledDrawBorder);
+        
+        let v0 = bounding_box.corner<0>();
+        let v1 = bounding_box.corner<1>();
+        let v2 = bounding_box.corner<2>();
+        let v3 = bounding_box.corner<3>();
 
         // If none of the vertices is inside the clipping rectangle then don't add the
         // quad to the vertex list.
@@ -223,17 +209,17 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
         )) {
             continue;
         }
-        let atlas_i = glyphs_in_atlas.find(attr_grapheme.glyphs);
-        ttauri_assume(atlas_i != glyphs_in_atlas.end());
 
-        let &atlas_rect = atlas_i->second;
-
-        let color = vec{attr_grapheme.style.color};
+        let color = attr_glyph.style.color;
 
         vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color);
         vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color);
         vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color);
         vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color);
+    }
+
+    if (atlas_was_updated) {
+        prepareAtlasForRendering();
     }
 }
 

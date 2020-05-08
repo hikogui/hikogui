@@ -60,7 +60,6 @@ public:
         // Prepare labels.
         if (renderTrigger.check(displayTimePoint) >= 2) {
             labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
-            window.device->SDFPipeline->prepareAtlas(labelShapedText);
 
             // XXX font extents height of widget slightly.
             //setMinimumExtent(labelShapedText.extent + vec{label_x, 0.0f});

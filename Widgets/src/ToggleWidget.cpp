@@ -57,7 +57,6 @@ void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     // Prepare labels.
     if (renderTrigger.check(displayTimePoint) >= 2) {
         labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
-        window.device->SDFPipeline->prepareAtlas(labelShapedText);
     }
     let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
 

@@ -1168,24 +1168,24 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
     return true;
 }
 
-bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
+std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
 {
-    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
+    assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 
     gsl::span<std::byte const> bytes;
-    assert_or_return(getGlyphBytes(glyph_id, bytes), false);
+    assert_or_return(getGlyphBytes(glyph_id, bytes), {});
 
     auto metrics_glyph_id = glyph_id;
 
     if (bytes.size() > 0) {
-        assert_or_return(check_placement_ptr<GLYFEntry>(bytes), false);
+        assert_or_return(check_placement_ptr<GLYFEntry>(bytes), {});
         let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
         let numberOfContours = entry->numberOfContours.value();
 
         if (numberOfContours > 0) {
-            assert_or_return(loadSimpleGlyph(bytes, glyph), false);
+            assert_or_return(loadSimpleGlyph(bytes, glyph), {});
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundGlyph(bytes, glyph, metrics_glyph_id), false);
+            assert_or_return(loadCompoundGlyph(bytes, glyph, metrics_glyph_id), {});
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1194,7 +1194,7 @@ bool TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) const noexcept
         // Empty glyph, such as white-space ' '.
     }
 
-    return true;
+    return metrics_glyph_id;
 }
 
 bool TrueTypeFont::loadCompoundGlyphMetrics(gsl::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept

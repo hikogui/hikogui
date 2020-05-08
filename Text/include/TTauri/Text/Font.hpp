@@ -50,9 +50,9 @@ public:
     * 
     * \param glyphIndex the index of a glyph inside the font.
     * \param path The path constructed by the loader.
-    * \return true on success, false on error.
+    * \return empty on failure, or the glyphID of the metrics to use.
     */
-    virtual bool loadGlyph(GlyphID glyph_id, Path &path) const noexcept = 0;
+    virtual std::optional<GlyphID> loadGlyph(GlyphID glyph_id, Path &path) const noexcept = 0;
 
     /*! Load a glyph into a path.
     * The glyph is directly loaded from the font file.

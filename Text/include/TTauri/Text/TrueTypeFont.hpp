@@ -98,9 +98,9 @@ public:
      * 
      * \param glyph_id the index of a glyph inside the font.
      * \param path The path constructed by the loader.
-     * \return 1 on success, 0 on not implemented
+     * \return empty on failure, or the glyphID of the metrics to use.
      */
-    bool loadGlyph(GlyphID glyph_id, Path &path) const noexcept override;
+    std::optional<GlyphID> loadGlyph(GlyphID glyph_id, Path &path) const noexcept override;
 
     /*! Load a glyphMetrics into a path.
     * The glyph is directly loaded from the font file.

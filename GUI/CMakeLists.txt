@@ -43,6 +43,7 @@ set(TTauri_GUI_srcs
     src/PipelineSDF.cpp
     src/PipelineSDF_DeviceShared.cpp
     src/PipelineSDF_TextureMap.cpp
+    src/PipelineSDF_AtlasRect.cpp
     src/VerticalSync_win32.cpp
     src/VulkanMemoryAllocator.cpp
     src/Window_base.cpp

@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include <array>
 
 namespace TTauri::GUI::PipelineSDF {
@@ -13,10 +14,12 @@ namespace TTauri::GUI::PipelineSDF {
 /* A location inside the atlas where the character is located.
  */
 struct AtlasRect {
-    ivec atlas_position;
-    ivec atlas_extent;
+    ivec atlasPosition;
+    ivec atlasExtent;
 
     std::array<vec,4> textureCoords;
+
+    AtlasRect(ivec atlasPosition, vec drawExtent) noexcept;
 };
 
 }

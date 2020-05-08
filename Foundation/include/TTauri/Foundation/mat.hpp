@@ -192,7 +192,7 @@ public:
     * Used for transforming vectors.
     */
     [[nodiscard]] force_inline friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
-        return rect::p1p2(lhs * rhs.begin(), lhs * rhs.end());
+        return rect::p1p2(lhs * rhs.p1(), lhs * rhs.p2());
     }
 
     /** Matrix/Matrix multiplication.

@@ -27,7 +27,7 @@ struct AttributedGlyph {
     /** Copied from the original attributed-grapheme. */
     TextStyle style;
 
-    /** Metrics taken from the font file. */
+    /** Metrics taken from the font file, pre-scaled to the font-size. */
     GlyphMetrics metrics;
 
     /** Position of the glyph.
@@ -61,6 +61,14 @@ struct AttributedGlyph {
     [[nodiscard]] bool isWord() const noexcept { return isLetter() || isDigit(); }
     [[nodiscard]] bool isWhiteSpace() const noexcept { return charClass == GeneralCharacterClass::WhiteSpace; }
     [[nodiscard]] bool isParagraphSeparator() const noexcept { return charClass == GeneralCharacterClass::ParagraphSeparator; }
+
+    /** Get the bounding box for this glyph.
+     * Get the scaled and positioned bounding box.
+     * @param border The 1EM scaled border around the glyph bounding box.
+     */
+    [[nodiscard]] rect boundingBox(float border) const noexcept {
+        return mat::T(position) * expand(metrics.boundingBox, border * style.size);
+    }
 
     /** Find the logical index closest to the coordinate.
      * For a non-ligature, left of the halfway-point returnes the current logicalIndex,

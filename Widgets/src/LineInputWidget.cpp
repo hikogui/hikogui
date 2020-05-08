@@ -46,8 +46,6 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
             shapedText = field.shapedText();
         }
 
-        window.device->SDFPipeline->prepareAtlas(shapedText);
-
         lastUpdateTimePoint = displayTimePoint;
     }
 

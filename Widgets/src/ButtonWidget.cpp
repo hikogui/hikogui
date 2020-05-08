@@ -31,7 +31,6 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
 
         LOG_DEBUG("Shaping button label {}", to_string(theme->warningLabelStyle));
         labelShapedText = ShapedText(label, theme->warningLabelStyle, HorizontalAlignment::Center, labelWidth);
-        window.device->SDFPipeline->prepareAtlas(labelShapedText);
 
         setMinimumExtent(Theme::maxLabelWidth, Theme::height);
         //setMinimumExtent(Theme::width, labelShapedText.extent.height());

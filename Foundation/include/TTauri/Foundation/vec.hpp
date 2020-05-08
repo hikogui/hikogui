@@ -477,6 +477,18 @@ public:
         return normalize(vec{-rhs.y(), rhs.x()});
     }
 
+    [[nodiscard]] friend vec ceil(vec const &rhs) noexcept {
+        return _mm_ceil_ps(rhs);
+    }
+
+    [[nodiscard]] friend vec floor(vec const &rhs) noexcept {
+        return _mm_floor_ps(rhs);
+    }
+
+    [[nodiscard]] friend vec round(vec const &rhs) noexcept {
+        return _mm_round_ps(rhs, _MM_FROUND_CUR_DIRECTION);
+    }
+
     /** Find a point at the midpoint between two points.
      */
     [[nodiscard]] friend vec midpoint(vec const &p1, vec const &p2) noexcept {

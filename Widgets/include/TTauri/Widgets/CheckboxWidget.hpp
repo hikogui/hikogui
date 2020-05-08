@@ -65,13 +65,11 @@ public:
         // Prepare labels.
         if (renderTrigger.check(displayTimePoint) >= 2) {
             labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
-            window.device->SDFPipeline->prepareAtlas(labelShapedText);
 
             let checkStyle = Text::TextStyle{
                 "Arial", Text::FontVariant{}, button_rectangle.height(), theme->accentColor, Text::TextDecoration::None
             };
             checkShapedText = Text::ShapedText(check, checkStyle, HorizontalAlignment::Left, label_width);
-            window.device->SDFPipeline->prepareAtlas(checkShapedText);
 
             let whiteStyle = Text::TextStyle{
                 "Arial", Text::FontVariant{}, button_rectangle.height(), vec::color(1.0, 1.0, 1.0), Text::TextDecoration::None
@@ -83,7 +81,6 @@ public:
 
             whiteXShapedText = Text::ShapedText("x"s, whiteStyle, HorizontalAlignment::Left, Theme::smallHeight);
             blackXShapedText = Text::ShapedText("x"s, blackStyle, HorizontalAlignment::Left, Theme::smallHeight);
-            window.device->SDFPipeline->prepareAtlas(whiteXShapedText);
         }
         let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
         let check_translate = mat::T{button_rectangle.align(checkShapedText.extent, Alignment::MiddleCenter)};
