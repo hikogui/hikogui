@@ -103,31 +103,13 @@ public:
         }
     }
 
-    /** Get coordinate of a corner.
-    *
-    * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
-    * @param z The z coordinate to insert in the resulting coordinate.
-    * @return The homogenious coordinate of the corner.
-    */
-    template<size_t I, typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-    [[nodiscard]] force_inline ivec corner(T z) const noexcept {
-        return corner<I>().z(z);
-    }
-
     /** Get coordinate of the bottom-left corner
     *
     * @return The homogenious coordinate of the bottom-left corner.
     */
     [[nodiscard]] force_inline ivec offset() const noexcept { return corner<0>(); }
 
-    /** Get coordinate of the bottom-left corner
-    *
-    * @param z The z coordinate to insert in the resulting coordinate.
-    * @return The homogenious coordinate of the bottom-left corner.
-    */
-    template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-    [[nodiscard]] force_inline ivec offset(T z) const noexcept { return corner<0>(z); }
-
+    
     /** Get size of the rectangle
     *
     * @return The (x, y) ivector representing the width and height of the rectangle.

@@ -3,6 +3,7 @@
 
 #include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "TTauri/Foundation/mat.hpp"
 
 namespace TTauri::GUI::PipelineSDF {
 
@@ -10,18 +11,22 @@ AtlasRect::AtlasRect(ivec atlasPosition, vec drawExtent) noexcept :
     atlasPosition(atlasPosition),
     atlasExtent(ceil(drawExtent))
 {
-    let atlas_px_offset = static_cast<vec>(atlasPosition.xy00());
-    let atlas_px_extent = drawExtent;
-    let atlas_z = numeric_cast<float>(atlasPosition.z());
-
-    let atlas_tx_box = aarect{
-        atlas_px_offset * DeviceShared::atlasTextureCoordinateMultiplier,
-        atlas_px_extent * DeviceShared::atlasTextureCoordinateMultiplier
+    let atlas_px_rect = rect{
+        vec{atlasPosition.xyz1()},
+        drawExtent
     };
-    get<0>(textureCoords) = atlas_tx_box.corner<0>(atlas_z);
-    get<1>(textureCoords) = atlas_tx_box.corner<1>(atlas_z);
-    get<2>(textureCoords) = atlas_tx_box.corner<2>(atlas_z);
-    get<3>(textureCoords) = atlas_tx_box.corner<3>(atlas_z);
+
+    let textureCoordinateScale = mat::S{
+        DeviceShared::atlasTextureCoordinateMultiplier,
+        DeviceShared::atlasTextureCoordinateMultiplier
+    };
+
+    let atlas_tx_rect = textureCoordinateScale * atlas_px_rect;
+
+    get<0>(textureCoords) = atlas_tx_rect.corner<0>();
+    get<1>(textureCoords) = atlas_tx_rect.corner<1>();
+    get<2>(textureCoords) = atlas_tx_rect.corner<2>();
+    get<3>(textureCoords) = atlas_tx_rect.corner<3>();
 }
 
 }

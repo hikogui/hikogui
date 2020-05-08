@@ -68,15 +68,17 @@ void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point disp
 {
     constexpr float elevationToDepth = 0.01f;
 
-    let offset = box.currentOffset(elevation * elevationToDepth);
+    let depth = elevation * elevationToDepth;
+    let offset = box.currentOffset(depth);
 
     auto childContext = drawContext;
     for (auto &child : children) {
-
         let childRectangle = child->box.currentRectangle();
         let childNestingLevel = child->nestingLevel();
+        let childDepth = child->elevation * elevationToDepth;
+        let childOffset = mat::T{0.0, 0.0, childDepth} * childRectangle.offset();
 
-        let relativeOffset = childRectangle.offset(child->elevation * elevationToDepth) - offset;
+        let relativeOffset = childOffset - offset;
         let translation = mat::T(relativeOffset);
 
         childContext.clippingRectangle = expand(childRectangle, theme->margin);

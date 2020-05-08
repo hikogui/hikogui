@@ -43,7 +43,7 @@ public:
         explicit S(vec rhs) noexcept :
             s(rhs) { ttauri_assume(rhs.is_point()); }
 
-        S(float x, float y, float z=0.0f) noexcept :
+        S(float x, float y, float z=1.0f) noexcept :
             s(x, y, z, 1.0f) {}
 
         /** Create a scaling matrix.
@@ -127,6 +127,17 @@ public:
 
         [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept {
             return vec{lhs.t + rhs};
+        }
+
+        /** Matrix/aarect multiplication.
+        */
+        [[nodiscard]] force_inline friend rect operator*(T const &lhs, aarect const &rhs) noexcept {
+            return rect{
+                lhs.t + rhs.corner<0>(),
+                lhs.t + rhs.corner<1>(),
+                lhs.t + rhs.corner<2>(),
+                lhs.t + rhs.corner<3>()
+            };
         }
 
         [[nodiscard]] friend rect operator*(T const &lhs, rect const &rhs) noexcept {

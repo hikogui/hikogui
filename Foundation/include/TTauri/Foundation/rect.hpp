@@ -38,6 +38,19 @@ public:
         return *this;
     }
 
+    rect(vec corner0, vec extent) noexcept :
+        corners({
+            corner0,
+            corner0 + extent.x000(),
+            corner0 + extent._0y00(),
+            corner0 + extent.xy00()
+        })
+    {
+        ttauri_assume(corner0.is_point());
+        ttauri_assume(extent.is_vector());
+        ttauri_assume(extent.z() == 0.0);
+    }
+
     /** Get coordinate of a corner.
     *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.

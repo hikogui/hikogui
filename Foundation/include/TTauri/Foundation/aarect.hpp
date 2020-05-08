@@ -138,10 +138,10 @@ public:
     * @param z The z coordinate to insert in the resulting coordinate.
     * @return The homogeneous coordinate of the corner.
     */
-    template<size_t I, typename Z, std::enable_if_t<std::is_arithmetic_v<Z>,int> = 0>
-    [[nodiscard]] force_inline vec corner(Z z) const noexcept {
-        return corner<I>().z(numeric_cast<float>(z));
-    }
+    //template<size_t I, typename Z, std::enable_if_t<std::is_arithmetic_v<Z>,int> = 0>
+    //[[nodiscard]] force_inline vec corner(Z z) const noexcept {
+    //    return corner<I>().z(numeric_cast<float>(z));
+    //}
 
     [[nodiscard]] force_inline vec p1() const noexcept {
         return corner<0>();
@@ -165,10 +165,10 @@ public:
     * @param z The z coordinate to insert in the resulting coordinate.
     * @return The homogeneous coordinate of the bottom-left corner.
     */
-    [[nodiscard]] force_inline vec offset(float z) const noexcept {
-        let _000z = _mm_set_ss(z); 
-        return _mm_insert_ps(v, _000z, 0b00'10'1000);
-    }
+    //[[nodiscard]] force_inline vec offset(float z) const noexcept {
+    //    let _000z = _mm_set_ss(z); 
+    //    return _mm_insert_ps(v, _000z, 0b00'10'1000);
+    //}
 
     /** Get size of the rectangle
     *

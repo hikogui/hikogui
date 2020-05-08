@@ -100,12 +100,12 @@ void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect c
     }
 
     let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
-    let atlasRect = aarect{vec{atlasPosition}, e4};
+    let atlasRect = mat::T(vec{atlasPosition.xyz0()}) * aarect{vec{}, e4};
 
-    vertices.emplace_back(p1, atlasRect.corner<0>(atlasPosition.z()), clippingRectangle);
-    vertices.emplace_back(p2, atlasRect.corner<1>(atlasPosition.z()), clippingRectangle);
-    vertices.emplace_back(p3, atlasRect.corner<2>(atlasPosition.z()), clippingRectangle);
-    vertices.emplace_back(p4, atlasRect.corner<3>(atlasPosition.z()), clippingRectangle);
+    vertices.emplace_back(p1, atlasRect.corner<0>(), clippingRectangle);
+    vertices.emplace_back(p2, atlasRect.corner<1>(), clippingRectangle);
+    vertices.emplace_back(p3, atlasRect.corner<2>(), clippingRectangle);
+    vertices.emplace_back(p4, atlasRect.corner<3>(), clippingRectangle);
 }
 
 /*! Place vertices for this image.
