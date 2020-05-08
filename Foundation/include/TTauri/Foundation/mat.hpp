@@ -250,20 +250,6 @@ public:
         return *this;
     }
 
-    /** Extract scale.
-     * This scale will only work with positive scale matrices.
-     */
-    /*[[nodiscard]] force_inline vec scale() const noexcept {
-        auto tmp0_sq = _mm_mul_ps(col0, col0);
-        auto tmp1_sq = _mm_mul_ps(col1, col1);
-        auto tmp2_sq = _mm_mul_ps(col2, col2);
-        auto tmp3_sq = _mm_setzero_ps();
-        _MM_TRANSPOSE4_PS(tmp0_sq, tmp1_sq, tmp2_sq, tmp3_sq);
-        let sum01_sq = _mm_add_ps(tmp0_sq, tmp1_sq);
-        let sum012_sq = _mm_add_ps(sum01_sq, tmp2_sq);
-        return _mm_sqrt_ps(sum012_sq);
-    }*/
-
     /** Matrix/Vector multiplication.
      * Used for transforming vectors.
      */
