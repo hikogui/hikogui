@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/aarect.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <ostream>
@@ -57,16 +58,28 @@ public:
             return {col0, col1, col2, col3};
         }
 
-        [[nodiscard]] float scaleX() const noexcept {
-            return s.x();
+        [[nodiscard]] friend S operator*(S const &lhs, S const &rhs) noexcept {
+            return S{lhs.s * rhs.s};
         }
 
-        [[nodiscard]] friend mat::S operator*(mat::S const &lhs, mat::S const &rhs) noexcept {
-            return mat::S{lhs.s * rhs.s};
-        }
-
-        [[nodiscard]] friend vec operator*(mat::S const &lhs, vec const &rhs) noexcept {
+        [[nodiscard]] friend vec operator*(S const &lhs, vec const &rhs) noexcept {
             return vec{lhs.s * rhs};
+        }
+
+        /** Matrix/Vector multiplication.
+        * Used for transforming vectors.
+        */
+        [[nodiscard]] force_inline friend aarect operator*(S const &lhs, aarect const &rhs) noexcept {
+            return aarect::p1p2(lhs.s * rhs.p1(), lhs.s * rhs.p2());
+        }
+
+        [[nodiscard]] friend rect operator*(S const &lhs, rect const &rhs) noexcept {
+            return rect{
+                lhs.s * rhs.corner<0>(),
+                lhs.s * rhs.corner<1>(),
+                lhs.s * rhs.corner<2>(),
+                lhs.s * rhs.corner<3>()
+            };
         }
     };
 
@@ -90,15 +103,11 @@ public:
             return {col0, col1, col2, col3};
         }
 
-        [[nodiscard]] float scaleX() const noexcept {
-            return 1.0f;
+        [[nodiscard]] friend T operator*(T const &lhs, T const &rhs) noexcept {
+            return T{lhs.t + rhs.t};
         }
 
-        [[nodiscard]] friend mat::T operator*(mat::T const &lhs, mat::T const &rhs) noexcept {
-            return mat::T{lhs.t + rhs.t};
-        }
-
-        [[nodiscard]] friend mat operator*(mat::T const &lhs, mat::S const &rhs) noexcept {
+        [[nodiscard]] friend mat operator*(T const &lhs, mat::S const &rhs) noexcept {
             let tmp = _mm_setzero_ps();
             let col0 = _mm_insert_ps(tmp, rhs.s, 0b00'00'1110);
             let col1 = _mm_insert_ps(tmp, rhs.s, 0b01'01'1101);
@@ -107,7 +116,7 @@ public:
             return {col0, col1, col2, col3};
         }
 
-        [[nodiscard]] friend mat operator*(mat::S const &lhs, mat::T const &rhs) noexcept {
+        [[nodiscard]] friend mat operator*(mat::S const &lhs, T const &rhs) noexcept {
             let tmp = _mm_setzero_ps();
             let col0 = _mm_insert_ps(tmp, lhs.s, 0b00'00'1110);
             let col1 = _mm_insert_ps(tmp, lhs.s, 0b01'01'1101);
@@ -116,8 +125,91 @@ public:
             return {col0, col1, col2, col3};
         }
 
-        [[nodiscard]] friend vec operator*(mat::T const &lhs, vec const &rhs) noexcept {
+        [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept {
             return vec{lhs.t + rhs};
+        }
+
+        [[nodiscard]] friend rect operator*(T const &lhs, rect const &rhs) noexcept {
+            return rect{
+                lhs.t + rhs.corner<0>(),
+                lhs.t + rhs.corner<1>(),
+                lhs.t + rhs.corner<2>(),
+                lhs.t + rhs.corner<3>()
+            };
+        }
+    };
+
+    /** Optimized 2D translate matrix.
+    */
+    struct T2 {
+        vec t;
+
+        explicit T2(vec rhs) noexcept : t(rhs) {
+            ttauri_assume(rhs.is_vector());
+            ttauri_assume(rhs.z() == 0.0);
+        }
+
+        T2(float x, float y) noexcept :
+            t(x, y, 0.0) {}
+
+        operator mat::T () const noexcept {
+            return mat::T{t};
+        }
+
+        operator mat () const noexcept {
+            ttauri_assume(t.is_vector());
+            let col0 = _mm_set_ss(1.0f);
+            let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
+            let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
+            let col3 = _mm_insert_ps(t, col0, 0b00'11'0000);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] friend T2 operator*(T2 const &lhs, T2 const &rhs) noexcept {
+            return T2{lhs.t + rhs.t};
+        }
+
+        [[nodiscard]] friend mat::T operator*(mat::T const &lhs, T2 const &rhs) noexcept {
+            return mat::T{lhs.t + rhs.t};
+        }
+
+        [[nodiscard]] friend mat::T operator*(T2 const &lhs, mat::T const &rhs) noexcept {
+            return mat::T{lhs.t + rhs.t};
+        }
+
+        [[nodiscard]] friend mat operator*(T2 const &lhs, mat::S const &rhs) noexcept {
+            let tmp = _mm_setzero_ps();
+            let col0 = _mm_insert_ps(tmp, rhs.s, 0b00'00'1110);
+            let col1 = _mm_insert_ps(tmp, rhs.s, 0b01'01'1101);
+            let col2 = _mm_insert_ps(tmp, rhs.s, 0b10'10'1011);
+            let col3 = _mm_insert_ps(lhs.t, rhs.s, 0b11'11'0000);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] friend mat operator*(mat::S const &lhs, T2 const &rhs) noexcept {
+            let tmp = _mm_setzero_ps();
+            let col0 = _mm_insert_ps(tmp, lhs.s, 0b00'00'1110);
+            let col1 = _mm_insert_ps(tmp, lhs.s, 0b01'01'1101);
+            let col2 = _mm_insert_ps(tmp, lhs.s, 0b10'10'1011);
+            let col3 = _mm_insert_ps(lhs.s * rhs.t, lhs.s, 0b11'11'0000);
+            return {col0, col1, col2, col3};
+        }
+
+        [[nodiscard]] friend vec operator*(T2 const &lhs, vec const &rhs) noexcept {
+            return vec{lhs.t + rhs};
+        }
+
+        [[nodiscard]] friend aarect operator*(T2 const &lhs, aarect const &rhs) noexcept {
+            return aarect::p1p2(lhs.t + rhs.p1(), lhs.t + rhs.p2());
+        }
+
+        [[nodiscard]] friend rect operator*(T2 const &lhs, rect const &rhs) noexcept {
+            return rect{
+                lhs.t + rhs.corner<0>(),
+                lhs.t + rhs.corner<1>(),
+                lhs.t + rhs.corner<2>(),
+                lhs.t + rhs.corner<3>()
+            };
         }
     };
 
@@ -161,7 +253,7 @@ public:
     /** Extract scale.
      * This scale will only work with positive scale matrices.
      */
-    [[nodiscard]] force_inline vec scale() const noexcept {
+    /*[[nodiscard]] force_inline vec scale() const noexcept {
         auto tmp0_sq = _mm_mul_ps(col0, col0);
         auto tmp1_sq = _mm_mul_ps(col1, col1);
         auto tmp2_sq = _mm_mul_ps(col2, col2);
@@ -170,14 +262,7 @@ public:
         let sum01_sq = _mm_add_ps(tmp0_sq, tmp1_sq);
         let sum012_sq = _mm_add_ps(sum01_sq, tmp2_sq);
         return _mm_sqrt_ps(sum012_sq);
-    }
-
-    /** Extract scale on x-axis.
-    * This scale will only work with positive scale matrices 
-    */
-    [[nodiscard]] force_inline float scaleX() const noexcept {
-        return length(col0);
-    }
+    }*/
 
     /** Matrix/Vector multiplication.
      * Used for transforming vectors.
@@ -188,11 +273,26 @@ public:
             (lhs.col2 * rhs.zzzz() + lhs.col3 * rhs.wwww());
     }
 
-    /** Matrix/Vector multiplication.
-    * Used for transforming vectors.
+    /** Matrix/aarect multiplication.
     */
-    [[nodiscard]] force_inline friend aarect operator*(mat const &lhs, aarect const &rhs) noexcept {
-        return aarect::p1p2(lhs * rhs.p1(), lhs * rhs.p2());
+    [[nodiscard]] force_inline friend rect operator*(mat const &lhs, aarect const &rhs) noexcept {
+        return rect{
+            lhs * rhs.corner<0>(),
+            lhs * rhs.corner<1>(),
+            lhs * rhs.corner<2>(),
+            lhs * rhs.corner<3>()
+        };
+    }
+
+    /** Matrix/rect multiplication.
+    */
+    [[nodiscard]] force_inline friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
+        return rect{
+            lhs * rhs.corner<0>(),
+            lhs * rhs.corner<1>(),
+            lhs * rhs.corner<2>(),
+            lhs * rhs.corner<3>()
+        };
     }
 
     /** Matrix/Matrix multiplication.
@@ -287,6 +387,7 @@ public:
 template<typename M> struct is_mat : std::false_type {};
 template<> struct is_mat<mat> : std::true_type {};
 template<> struct is_mat<mat::T> : std::true_type {};
+template<> struct is_mat<mat::T2> : std::true_type {};
 template<> struct is_mat<mat::S> : std::true_type {};
 
 template<typename M>

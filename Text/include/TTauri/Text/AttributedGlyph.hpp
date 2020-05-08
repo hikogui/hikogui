@@ -67,7 +67,7 @@ struct AttributedGlyph {
      * @param border The 1EM scaled border around the glyph bounding box.
      */
     [[nodiscard]] aarect boundingBox(float border) const noexcept {
-        return mat::T(position) * expand(metrics.boundingBox, border * style.size);
+        return mat::T2(position) * expand(metrics.boundingBox, border * style.size);
     }
 
     /** Find the logical index closest to the coordinate.

@@ -71,26 +71,20 @@ struct GlyphMetrics {
         return advance * ligatureRatio * vec{index};
     }
 
-    template<typename M, std::enable_if_t<is_mat_v<M>, int> = 0>
-    GlyphMetrics &operator*=(M const &rhs) noexcept
+    GlyphMetrics &scale(float rhs) noexcept
     {
-        let scale = rhs.scaleX();
+        auto S = mat::S(rhs, rhs);
 
-        boundingBox = rhs * boundingBox;
-        leftSideBearing *= scale; 
-        rightSideBearing *= scale;
-        advance = rhs * advance;
-        ascender *= scale;
-        descender *= scale;
-        lineGap *= scale;
-        capHeight *= scale;
-        xHeight *= scale;
+        boundingBox = S * boundingBox;
+        leftSideBearing *= rhs; 
+        rightSideBearing *= rhs;
+        advance = S * advance;
+        ascender *= rhs;
+        descender *= rhs;
+        lineGap *= rhs;
+        capHeight *= rhs;
+        xHeight *= rhs;
         return *this;
-    }
-
-    friend GlyphMetrics operator*(mat const &lhs, GlyphMetrics rhs) noexcept
-    {
-        return rhs *= lhs;
     }
 };
 

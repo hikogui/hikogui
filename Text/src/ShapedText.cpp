@@ -84,7 +84,7 @@ static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexce
         }
 
         // Scale the metrics according to font-size of this glyph.
-        i->metrics *= mat::S(i->style.size, i->style.size);
+        i->metrics.scale(i->style.size);
 
         // XXX merge the bounding box of combining glyphs in the metrics.
     }
