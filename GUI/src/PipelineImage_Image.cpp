@@ -10,7 +10,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/iaarect.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -20,7 +20,7 @@ Image::~Image()
     parent->returnPages(pages);
 }
 
-irect Image::indexToRect(int const pageIndex) const noexcept
+iaarect Image::indexToRect(int const pageIndex) const noexcept
 {
     let pageWH = ivec{Page::width, Page::height};
 
@@ -32,7 +32,7 @@ irect Image::indexToRect(int const pageIndex) const noexcept
     // Limit the rectangle to the size of the image.
     let p2 = min(p1 + pageWH, extent);
 
-    return irect::p1p2(p1, p2);
+    return iaarect::p1p2(p1, p2);
 }
 
 static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, mat transform, rect clippingRectangle)

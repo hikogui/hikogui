@@ -334,7 +334,7 @@ vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 {
     // XXX Without screen height, it is not possible to calculate the y of the left-bottom corner.
-    OSWindowRectangle = irect{
+    OSWindowRectangle = iaarect{
         rect.left,
         0 - rect.bottom,
         rect.right - rect.left,

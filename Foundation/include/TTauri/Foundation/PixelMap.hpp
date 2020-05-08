@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/iaarect.hpp"
 #include <gsl/gsl>
 #include <string>
 #include <algorithm>
@@ -211,7 +211,7 @@ struct PixelMap {
      * @param rect offset and extent of the rectangle to return.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    PixelMap<T> submap(irect rect) const noexcept {
+    PixelMap<T> submap(iaarect rect) const noexcept {
         ttauri_assert(
             (rect.x1() >= 0) &&
             (rect.y2() >= 0) &&
@@ -241,7 +241,7 @@ struct PixelMap {
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
     PixelMap<T> submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept {
-        return submap(irect{x, y, width, height});
+        return submap(iaarect{x, y, width, height});
     }
 
     PixelRow<T> const operator[](ssize_t rowNr) const noexcept {

@@ -9,7 +9,7 @@ namespace TTauri {
 
 /** Class which represents an axis-aligned rectangle.
  */
-class irect {
+class iaarect {
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:
      *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
@@ -18,16 +18,16 @@ class irect {
     ivec v;
 
 public:
-    force_inline irect() noexcept : v() {}
-    force_inline irect(irect const &rhs) noexcept = default;
-    force_inline irect &operator=(irect const &rhs) noexcept = default;
-    force_inline irect(irect &&rhs) noexcept = default;
-    force_inline irect &operator=(irect &&rhs) noexcept = default;
+    force_inline iaarect() noexcept : v() {}
+    force_inline iaarect(iaarect const &rhs) noexcept = default;
+    force_inline iaarect &operator=(iaarect const &rhs) noexcept = default;
+    force_inline iaarect(iaarect &&rhs) noexcept = default;
+    force_inline iaarect &operator=(iaarect &&rhs) noexcept = default;
 
-    irect(__m128i rhs) noexcept :
+    iaarect(__m128i rhs) noexcept :
         v(rhs) {}
 
-    irect &operator=(__m128i rhs) noexcept {
+    iaarect &operator=(__m128i rhs) noexcept {
         v = rhs;
         return *this;
     }
@@ -44,18 +44,18 @@ public:
      * @param height The height of the box.
      */
     template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-    force_inline irect(T x, T y, T width, T height) noexcept :
-        irect(ivec(x, y, x + width, y + height)) {}
+    force_inline iaarect(T x, T y, T width, T height) noexcept :
+        iaarect(ivec(x, y, x + width, y + height)) {}
 
     /** Create a box from the position and size.
      *
      * @param offset The position of the left-bottom corner of the box
      * @param extent The size of the box (z and w must be zero).
      */
-    force_inline irect(ivec const &offset, ivec const &extent) noexcept :
-        irect(offset.xyxy() + extent.zwxy()) {}
+    force_inline iaarect(ivec const &offset, ivec const &extent) noexcept :
+        iaarect(offset.xyxy() + extent.zwxy()) {}
 
-    [[nodiscard]] force_inline static irect p1p2(ivec const &p1, ivec const &p2) noexcept {
+    [[nodiscard]] force_inline static iaarect p1p2(ivec const &p1, ivec const &p2) noexcept {
         return _mm_blend_epi16(p1, p2.xyxy(), 0b11'11'00'00);
     }
 
@@ -64,7 +64,7 @@ public:
      *
      * @param rhs The new rectangle to include in the current rectangle.
      */
-    irect &operator|=(irect const &rhs) noexcept {
+    iaarect &operator|=(iaarect const &rhs) noexcept {
         return *this = *this | rhs;
     }
 
@@ -72,7 +72,7 @@ public:
      *
      * @param rhs The ivector to add to the coordinates of the rectangle.
      */
-    irect &operator+=(ivec const &rhs) noexcept {
+    iaarect &operator+=(ivec const &rhs) noexcept {
         return *this = *this + rhs;
     }
 
@@ -80,7 +80,7 @@ public:
      *
      * @param rhs The ivector to subtract from the coordinates of the rectangle.
      */
-    irect &operator-=(ivec const &rhs) noexcept {
+    iaarect &operator-=(ivec const &rhs) noexcept {
         return *this = *this - rhs;
     }
 
@@ -153,23 +153,23 @@ public:
             (((rhs <= v) & 0xff00) == 0xff00);
     }
 
-    [[nodiscard]] friend bool operator==(irect const &lhs, irect const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(iaarect const &lhs, iaarect const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
 
-    [[nodiscard]] friend bool operator!=(irect const &lhs, irect const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(iaarect const &lhs, iaarect const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend irect operator|(irect const &lhs, irect const &rhs) noexcept {
+    [[nodiscard]] friend iaarect operator|(iaarect const &lhs, iaarect const &rhs) noexcept {
         return _mm_blend_epi16(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b11'11'00'00);
     }
 
-    [[nodiscard]] friend irect operator+(irect const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend iaarect operator+(iaarect const &lhs, ivec const &rhs) noexcept {
         return static_cast<__m128i>(lhs.v + rhs.xyxy());
     }
 
-    [[nodiscard]] friend irect operator-(irect const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend iaarect operator-(iaarect const &lhs, ivec const &rhs) noexcept {
         return static_cast<__m128i>(lhs.v - rhs.xyxy());
     }
 
@@ -180,7 +180,7 @@ public:
      * @return A new rectangle expanded on each side.
      */
     template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-    [[nodiscard]] friend irect expand(irect const &lhs, T rhs) noexcept {
+    [[nodiscard]] friend iaarect expand(iaarect const &lhs, T rhs) noexcept {
         let _0000 = _mm_setzero_si128();
         let _000r = _mm_insert_epi32(_0000, rhs, 0);
         let _00rr = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(1,1,0,0))};

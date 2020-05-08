@@ -17,7 +17,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/iaarect.hpp"
 #include "TTauri/Foundation/Trigger.hpp"
 #include "TTauri/Foundation/cpu_utc_clock.hpp"
 #include <rhea/simplex_solver.hpp>
@@ -253,7 +253,7 @@ protected:
      * resize to determine the extent of the surface when the GPU library can
      * not figure this out by itself.
      */
-    irect OSWindowRectangle;
+    iaarect OSWindowRectangle;
 
     /** By how much graphic elements should be scaled to match a point.
     * The widget should not care much about this value, since the

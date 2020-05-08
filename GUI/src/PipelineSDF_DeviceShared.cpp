@@ -11,7 +11,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "TTauri/Foundation/BezierCurve.hpp"
 #include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/iaarect.hpp"
 #include "TTauri/Foundation/mat.hpp"
 #include <array>
 
@@ -149,7 +149,7 @@ AtlasRect DeviceShared::addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     prepareStagingPixmapForDrawing();
     auto atlas_rect = allocateRect(drawExtent);
-    auto pixmap = stagingTexture.pixelMap.submap(irect{ivec{}, atlas_rect.atlasExtent});
+    auto pixmap = stagingTexture.pixelMap.submap(iaarect{ivec{}, atlas_rect.atlasExtent});
     fill(pixmap, drawPath);
     uploadStagingPixmapToAtlas(atlas_rect);
 

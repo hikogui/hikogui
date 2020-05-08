@@ -92,7 +92,7 @@ TTauri::PixelMap<A8B8G8R8SrgbPack32> DeviceShared::getStagingPixelMap()
 void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 {
     // Start with the actual image inside the stagingImage.
-    auto rectangle = irect{
+    auto rectangle = iaarect{
         ivec{Page::border, Page::border},
         image.extent
     };

@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/irect.hpp"
+#include "TTauri/Foundation/iaarect.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
 #include "TTauri/Foundation/mat.hpp"
@@ -62,7 +62,7 @@ struct Image {
      * @return The rectangle within the image representing a quad to be drawn.
      *         This rectangle is already size-adjusted for the quads on the edge.
      */
-    irect indexToRect(int const pageIndex) const noexcept;
+    iaarect indexToRect(int const pageIndex) const noexcept;
 
     /*! Place vertices for this image.
      * An image is build out of atlas pages, that need to be individual rendered.
