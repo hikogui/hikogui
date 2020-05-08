@@ -34,16 +34,16 @@ public:
         return _mm_loadu_ps(v.data());
     }
 
-    force_inline R32G32B32A32SFloat(rect const &rhs) noexcept {
+    force_inline R32G32B32A32SFloat(aarect const &rhs) noexcept {
         _mm_storeu_ps(v.data(), rhs);
     }
 
-    force_inline R32G32B32A32SFloat &operator=(rect const &rhs) noexcept {
+    force_inline R32G32B32A32SFloat &operator=(aarect const &rhs) noexcept {
         _mm_storeu_ps(v.data(), rhs);
         return *this;
     }
 
-    force_inline operator rect () const noexcept {
+    force_inline operator aarect () const noexcept {
         return _mm_loadu_ps(v.data());
     }
 

@@ -117,7 +117,7 @@ public:
      * @param index 
      * @return A rectangle describing the position of the grapheme.
      */
-    [[nodiscard]] rect rectangleOfGrapheme(ssize_t index) const noexcept;
+    [[nodiscard]] aarect rectangleOfGrapheme(ssize_t index) const noexcept;
 
     /** Return the cursor-carets.
      * The caret will be to the left of the character at position.
@@ -126,7 +126,7 @@ public:
      * @param overwrite When true display a overwrite cursor.
      * @return left-to-right caret rectangle to display.
      */
-    [[nodiscard]] rect leftToRightCaret(ssize_t index, bool overwrite) const noexcept;
+    [[nodiscard]] aarect leftToRightCaret(ssize_t index, bool overwrite) const noexcept;
 
     /** Return a list of merged rectangles to display for the selection.
      * The selection may be discontinues due to bidirectional text.
@@ -135,7 +135,7 @@ public:
      * @param last One beyond the last logical grapheme that is selected.
      * @return A list of rectangles to display.
      */
-    [[nodiscard]] std::vector<rect> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
+    [[nodiscard]] std::vector<aarect> selectionRectangles(ssize_t first, ssize_t last) const noexcept;
 
     /** Return the index of the character .
     * @param logicalIndex The character at logicalIndex.

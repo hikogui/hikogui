@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/iaarect.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/mat.hpp"
 #include <gsl/gsl>
 #include <atomic>
@@ -68,15 +68,15 @@ struct Image {
      * An image is build out of atlas pages, that need to be individual rendered.
      * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
      *     */
-    void placeVertices(vspan<Vertex> &vertices, mat transform, rect clippingRectangle);
+    void placeVertices(vspan<Vertex> &vertices, mat transform, aarect clippingRectangle);
 
 private:
     //! Temporary memory used for pre calculating vertices.
     std::vector<std::tuple<vec, vec, bool>> tmpVertexPositions;
 
-    void calculateVertexPositions(mat transform, rect clippingRectangle);
+    void calculateVertexPositions(mat transform, aarect clippingRectangle);
 
-    void placePageVertices(vspan<Vertex> &vertices, int const index, rect clippingRectangle) const;
+    void placePageVertices(vspan<Vertex> &vertices, int const index, aarect clippingRectangle) const;
 
 };
 

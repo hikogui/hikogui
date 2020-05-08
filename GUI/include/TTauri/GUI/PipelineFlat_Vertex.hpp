@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32SFloat.hpp"
@@ -28,7 +28,7 @@ struct Vertex {
     R16G16B16A16SFloat color;
 
 
-    force_inline Vertex(vec position, rect clippingRectangle, vec color) noexcept :
+    force_inline Vertex(vec position, aarect clippingRectangle, vec color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         color(color) {}

@@ -47,7 +47,7 @@ public:
         let button_x = Theme::smallWidth - button_width;
         let button_y = (rectangle.height() - button_height) * 0.5f;
         // Radio button should be slightly larger due to its round shape.
-        let button_rectangle = expand(rect{button_x, button_y, button_width, button_height}, 0.5f);
+        let button_rectangle = expand(aarect{button_x, button_y, button_width, button_height}, 0.5f);
 
         let pip_rectangle = shrink(button_rectangle, Theme::borderWidth + 1.0f);
 
@@ -55,7 +55,7 @@ public:
         let label_y = 0.0f;
         let label_width = rectangle.width() - label_x;
         let label_height = rectangle.height();
-        let label_rectangle = rect{label_x, label_y, label_width, label_height};
+        let label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
         // Prepare labels.
         if (renderTrigger.check(displayTimePoint) >= 2) {

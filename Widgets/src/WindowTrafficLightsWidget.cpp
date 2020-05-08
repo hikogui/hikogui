@@ -206,28 +206,28 @@ PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::
     }
 }
 
-std::tuple<rect, rect, rect, rect> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
+std::tuple<aarect, aarect, aarect, aarect> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
 {
     let left = box.left.value();
     let bottom = box.bottom.value();
     let height = box.height.value();
 
-    let sysmenuButtonBox = rect{
+    let sysmenuButtonBox = aarect{
         {left, bottom},
         {height, height}
     };
 
-    let redButtonBox = rect{
+    let redButtonBox = aarect{
         {left + MARGIN, bottom + MARGIN},
         {DIAMETER, DIAMETER}
     };
 
-    let yellowButtonBox = rect{
+    let yellowButtonBox = aarect{
         {left + MARGIN + DIAMETER + SPACING, bottom + MARGIN},
         {DIAMETER, DIAMETER}
     };
 
-    let greenButtonBox = rect{
+    let greenButtonBox = aarect{
         {left + MARGIN + DIAMETER * 2.0 + SPACING * 2.0, bottom + MARGIN},
         {DIAMETER, DIAMETER}
     };

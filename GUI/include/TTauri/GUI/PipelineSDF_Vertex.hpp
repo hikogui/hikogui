@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32SFloat.hpp"
@@ -28,7 +28,7 @@ struct Vertex {
     //! The color of the glyph.
     R16G16B16A16SFloat color;
 
-    Vertex(vec position, rect clippingRectangle, vec textureCoord, vec color) noexcept :
+    Vertex(vec position, aarect clippingRectangle, vec textureCoord, vec color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         textureCoord(textureCoord),

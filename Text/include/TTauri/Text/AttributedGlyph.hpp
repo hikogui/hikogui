@@ -66,7 +66,7 @@ struct AttributedGlyph {
      * Get the scaled and positioned bounding box.
      * @param border The 1EM scaled border around the glyph bounding box.
      */
-    [[nodiscard]] rect boundingBox(float border) const noexcept {
+    [[nodiscard]] aarect boundingBox(float border) const noexcept {
         return mat::T(position) * expand(metrics.boundingBox, border * style.size);
     }
 

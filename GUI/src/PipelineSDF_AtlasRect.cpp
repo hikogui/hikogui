@@ -14,7 +14,7 @@ AtlasRect::AtlasRect(ivec atlasPosition, vec drawExtent) noexcept :
     let atlas_px_extent = drawExtent;
     let atlas_z = numeric_cast<float>(atlasPosition.z());
 
-    let atlas_tx_box = rect{
+    let atlas_tx_box = aarect{
         atlas_px_offset * DeviceShared::atlasTextureCoordinateMultiplier,
         atlas_px_extent * DeviceShared::atlasTextureCoordinateMultiplier
     };

@@ -15,7 +15,7 @@
 #include "TTauri/Text/gstring.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/iaarect.hpp"
 #include "TTauri/Foundation/Trigger.hpp"

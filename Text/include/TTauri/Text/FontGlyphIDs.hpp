@@ -7,7 +7,7 @@
 #include "TTauri/Text/FontID.hpp"
 #include "TTauri/Foundation/hash.hpp"
 #include "TTauri/Foundation/tagged_id.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include <tuple>
 
 namespace TTauri {
@@ -203,7 +203,7 @@ public:
         }
     }
 
-    [[nodiscard]] std::pair<Path,rect> getPathAndBoundingBox() const noexcept;
+    [[nodiscard]] std::pair<Path,aarect> getPathAndBoundingBox() const noexcept;
 
 private:
     [[nodiscard]] force_inline bool has_pointer() const noexcept {

@@ -24,7 +24,7 @@ ButtonWidget::~ButtonWidget() {
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    let rectangle = rect{vec{}, box.currentExtent()};
+    let rectangle = aarect{vec{}, box.currentExtent()};
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
         let labelWidth = rectangle.width() - Theme::margin * 2.0f;

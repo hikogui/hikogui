@@ -26,7 +26,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
 {
     auto context = drawContext;
 
-    let inputFieldRectangle = rect{vec{}, box.currentExtent()};
+    let inputFieldRectangle = aarect{vec{}, box.currentExtent()};
     context.drawBox(inputFieldRectangle);
 
     let textRectangle = shrink(inputFieldRectangle, Theme::margin);

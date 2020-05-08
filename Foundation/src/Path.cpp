@@ -40,13 +40,13 @@ bool Path::allLayersHaveSameColor() const noexcept
     return true;
 }
 
-[[nodiscard]] rect Path::boundingBox() const noexcept
+[[nodiscard]] aarect Path::boundingBox() const noexcept
 {
     if (ssize(points) == 0) {
-        return rect{0.0, 0.0, 0.0, 0.0};
+        return aarect{0.0, 0.0, 0.0, 0.0};
     }
 
-    auto r = rect::p1p2(points.front().p, points.front().p);
+    auto r = aarect::p1p2(points.front().p, points.front().p);
 
     for (let &point: points) {
         r |= point.p;
@@ -328,7 +328,7 @@ void Path::arcTo(float radius, vec position) noexcept
     cubicCurveTo(C1, C2, P2);
 }
 
-void Path::addRectangle(rect r, vec corners) noexcept
+void Path::addRectangle(aarect r, vec corners) noexcept
 {
     ttauri_assert(!isContourOpen());
 

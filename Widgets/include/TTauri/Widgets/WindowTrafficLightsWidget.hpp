@@ -47,7 +47,7 @@ public:
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
 
 private:
-    std::tuple<rect, rect, rect, rect> getButtonRectangles() const noexcept;
+    std::tuple<aarect, aarect, aarect, aarect> getButtonRectangles() const noexcept;
 
     PixelMap<R16G16B16A16SFloat> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
     PixelMap<R16G16B16A16SFloat> drawTrafficLightsImage(PipelineImage::Image &image) noexcept;

@@ -21,9 +21,9 @@ protected:
     Text::EditableText field;
     Text::ShapedText shapedText;
 
-    rect leftToRightCaret = {};
-    rect partialGraphemeCaret = {};
-    std::vector<rect> selectionRectangles = {};
+    aarect leftToRightCaret = {};
+    aarect partialGraphemeCaret = {};
+    std::vector<aarect> selectionRectangles = {};
 
     cpu_utc_clock::time_point lastUpdateTimePoint;
 public:

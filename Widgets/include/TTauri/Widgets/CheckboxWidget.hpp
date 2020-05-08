@@ -54,13 +54,13 @@ public:
         let button_width = Theme::smallHeight;
         let button_x = Theme::smallWidth - button_width;
         let button_y = (rectangle.height() - button_height) * 0.5f;
-        let button_rectangle = rect{button_x, button_y, button_width, button_height};
+        let button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
         let label_x = Theme::smallWidth + theme->margin;
         let label_y = 0.0f;
         let label_width = rectangle.width() - label_x;
         let label_height = rectangle.height();
-        let label_rectangle = rect{label_x, label_y, label_width, label_height};
+        let label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
         // Prepare labels.
         if (renderTrigger.check(displayTimePoint) >= 2) {
@@ -121,19 +121,19 @@ public:
         if (false) {
             context = drawContext;
             context.fillColor = vec::color(0.0, 0.0, 0.0, 1.0);
-            context.drawFilledQuad(rect{0, 0, Theme::smallHeight, Theme::smallHeight * 0.25f});
+            context.drawFilledQuad(aarect{0, 0, Theme::smallHeight, Theme::smallHeight * 0.25f});
             context.fillColor = vec::color(0.5, 0.5, 0.5, 1.0);
-            context.drawFilledQuad(rect{0, Theme::smallHeight * 0.25f, Theme::smallHeight, Theme::smallHeight * 0.25f});
+            context.drawFilledQuad(aarect{0, Theme::smallHeight * 0.25f, Theme::smallHeight, Theme::smallHeight * 0.25f});
             context.fillColor = vec::color(1.5, 1.5, 1.5, 1.0);
-            context.drawFilledQuad(rect{0, Theme::smallHeight * 0.5f, Theme::smallHeight, Theme::smallHeight * 0.25f});
+            context.drawFilledQuad(aarect{0, Theme::smallHeight * 0.5f, Theme::smallHeight, Theme::smallHeight * 0.25f});
             context.fillColor = vec::color(0.5, 0.5, 0.5, 0.5);
-            context.drawFilledQuad(rect{Theme::smallHeight * 0.25f, 0, Theme::smallHeight * 0.25f, Theme::smallHeight});
+            context.drawFilledQuad(aarect{Theme::smallHeight * 0.25f, 0, Theme::smallHeight * 0.25f, Theme::smallHeight});
         }
 
         if (false) {
             context = drawContext;
 
-            let rectangle = rect{0, 0, Theme::smallHeight, Theme::smallHeight};
+            let rectangle = aarect{0, 0, Theme::smallHeight, Theme::smallHeight};
             let whiteX_translate = mat::T{rectangle.align(whiteXShapedText.extent, Alignment::MiddleCenter)};
             context.transform = context.transform * mat::T{0.0f, 0.0f, 0.005f} * whiteX_translate;
 

@@ -18,8 +18,8 @@ order. Internally this a `vec` for each column.
 
 Vector * matrix multiplications are performed as if the vector is a column.
 
-### rect
-The `rect` class is a 2D axis-aligned rectangle.
+### aarect
+The `aarect` class is a 2D axis-aligned rectangle.
 
 Internally this is a `vec` where:
  - x - left-bottom point x.

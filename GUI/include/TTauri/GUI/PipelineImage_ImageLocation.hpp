@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 
 namespace TTauri::GUI::PipelineImage {
 
@@ -17,7 +17,7 @@ struct ImageLocation {
     mat transform;
 
     //! The position in pixels of the clipping rectangle relative to the top-left corner of the window, and extent in pixels.
-    rect clippingRectangle;
+    aarect clippingRectangle;
 
     bool operator==(const ImageLocation &other) noexcept {
         return (

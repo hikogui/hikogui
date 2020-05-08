@@ -35,13 +35,13 @@ iaarect Image::indexToRect(int const pageIndex) const noexcept
     return iaarect::p1p2(p1, p2);
 }
 
-static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, mat transform, rect clippingRectangle)
+static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)
 {
     auto p = transform * vec::point(x, y);
     return {p, vec{width, height}, clippingRectangle.contains(p)};
 }
 
-void Image::calculateVertexPositions(mat transform, rect clippingRectangle)
+void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
 {
     tmpVertexPositions.clear();
 
@@ -74,7 +74,7 @@ void Image::calculateVertexPositions(mat transform, rect clippingRectangle)
  *    v   \ |
  *    0 --> 1
  */
-void Image::placePageVertices(vspan<Vertex> &vertices, int const index, rect clippingRectangle) const {
+void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect clippingRectangle) const {
     let page = pages.at(index);
 
     if (page.isFullyTransparent()) {
@@ -100,7 +100,7 @@ void Image::placePageVertices(vspan<Vertex> &vertices, int const index, rect cli
     }
 
     let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
-    let atlasRect = rect{vec{atlasPosition}, e4};
+    let atlasRect = aarect{vec{atlasPosition}, e4};
 
     vertices.emplace_back(p1, atlasRect.corner<0>(atlasPosition.z()), clippingRectangle);
     vertices.emplace_back(p2, atlasRect.corner<1>(atlasPosition.z()), clippingRectangle);
@@ -114,7 +114,7 @@ void Image::placePageVertices(vspan<Vertex> &vertices, int const index, rect cli
 * \param position The position (x, y) from the left-top of the window in pixels. Z equals depth.
 * \param origin The origin (x, y) from the left-top of the image in pixels. Z equals rotation clockwise around the origin in radials.
 */
-void Image::placeVertices(vspan<Vertex> &vertices, mat transform, rect clippingRectangle)
+void Image::placeVertices(vspan<Vertex> &vertices, mat transform, aarect clippingRectangle)
 {
     calculateVertexPositions(transform, clippingRectangle);
 

@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include <array>
 
 namespace TTauri::GUI::PipelineSDF {

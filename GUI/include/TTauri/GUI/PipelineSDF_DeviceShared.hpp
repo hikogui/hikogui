@@ -114,7 +114,7 @@ struct DeviceShared final {
      * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
      * @param vertices The vertices to draw the glyphs to.
      */
-    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept;
+    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle) noexcept;
 
 private:
     void buildShaders();

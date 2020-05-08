@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>

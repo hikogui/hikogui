@@ -10,7 +10,7 @@ namespace TTauri {
 
 /** Class which represents an axis-aligned rectangle.
  */
-class rect {
+class aarect {
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:
      *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
@@ -19,16 +19,16 @@ class rect {
     vec v;
 
 public:
-    force_inline rect() noexcept : v() {}
-    force_inline rect(rect const &rhs) noexcept = default;
-    force_inline rect &operator=(rect const &rhs) noexcept = default;
-    force_inline rect(rect &&rhs) noexcept = default;
-    force_inline rect &operator=(rect &&rhs) noexcept = default;
+    force_inline aarect() noexcept : v() {}
+    force_inline aarect(aarect const &rhs) noexcept = default;
+    force_inline aarect &operator=(aarect const &rhs) noexcept = default;
+    force_inline aarect(aarect &&rhs) noexcept = default;
+    force_inline aarect &operator=(aarect &&rhs) noexcept = default;
 
-    rect(__m128 rhs) noexcept :
+    aarect(__m128 rhs) noexcept :
         v(rhs) {}
 
-    rect &operator=(__m128 rhs) noexcept {
+    aarect &operator=(__m128 rhs) noexcept {
         v = rhs;
         return *this;
     }
@@ -46,8 +46,8 @@ public:
      */
     template<typename X, typename Y, typename W=float, typename H=float,
         std::enable_if_t<std::is_arithmetic_v<X> && std::is_arithmetic_v<Y> && std::is_arithmetic_v<W> && std::is_arithmetic_v<H>,int> = 0>
-    force_inline rect(X x, Y y, W width, H height) noexcept :
-        rect(vec(
+    force_inline aarect(X x, Y y, W width, H height) noexcept :
+        aarect(vec(
             numeric_cast<float>(x),
             numeric_cast<float>(y),
             numeric_cast<float>(x) + numeric_cast<float>(width),
@@ -59,10 +59,10 @@ public:
      * @param offset The position of the left-bottom corner of the box
      * @param extent The size of the box.
      */
-    force_inline rect(vec const &offset, vec const &extent) noexcept :
-        rect(offset.xyxy() + extent._00xy()) {}
+    force_inline aarect(vec const &offset, vec const &extent) noexcept :
+        aarect(offset.xyxy() + extent._00xy()) {}
 
-    [[nodiscard]] force_inline static rect p1p2(vec const &p1, vec const &p2) noexcept {
+    [[nodiscard]] force_inline static aarect p1p2(vec const &p1, vec const &p2) noexcept {
         return _mm_shuffle_ps(p1, p2, _MM_SHUFFLE(1,0,1,0));
     }
 
@@ -75,7 +75,7 @@ public:
      *
      * @param rhs The new rectangle to include in the current rectangle.
      */
-    rect &operator|=(rect const &rhs) noexcept {
+    aarect &operator|=(aarect const &rhs) noexcept {
         return *this = *this | rhs;
     }
 
@@ -84,7 +84,7 @@ public:
     *
     * @param rhs The new rectangle to include in the current rectangle.
     */
-    rect &operator|=(vec const &rhs) noexcept {
+    aarect &operator|=(vec const &rhs) noexcept {
         return *this = *this | rhs;
     }
 
@@ -93,7 +93,7 @@ public:
      *
      * @param rhs The vector to add to the coordinates of the rectangle.
      */
-    rect &operator+=(vec const &rhs) noexcept {
+    aarect &operator+=(vec const &rhs) noexcept {
         return *this = *this + rhs;
     }
 
@@ -101,7 +101,7 @@ public:
      *
      * @param rhs The vector to subtract from the coordinates of the rectangle.
      */
-    rect &operator-=(vec const &rhs) noexcept {
+    aarect &operator-=(vec const &rhs) noexcept {
         return *this = *this - rhs;
     }
 
@@ -109,7 +109,7 @@ public:
     *
     * @param rhs By how much to scale the positions of the two points
     */
-    rect &operator*=(float rhs) noexcept {
+    aarect &operator*=(float rhs) noexcept {
         return *this = *this * rhs;
     }
 
@@ -187,13 +187,13 @@ public:
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    force_inline rect &width(T newWidth) noexcept {
+    force_inline aarect &width(T newWidth) noexcept {
         v = v.xyxw() + vec::make_z(newWidth);
         return *this;
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    force_inline rect &height(T newHeight) noexcept {
+    force_inline aarect &height(T newHeight) noexcept {
         v = v.xyzy() + vec::make_w(newHeight);
         return *this;
     }
@@ -243,15 +243,15 @@ public:
         return vec{x, y};
     }
 
-    [[nodiscard]] friend bool operator==(rect const &lhs, rect const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(aarect const &lhs, aarect const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
 
-    [[nodiscard]] friend bool operator!=(rect const &lhs, rect const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(aarect const &lhs, aarect const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend bool overlaps(rect const &lhs, rect const &rhs) noexcept {
+    [[nodiscard]] friend bool overlaps(aarect const &lhs, aarect const &rhs) noexcept {
         let rhs_swap = rhs.v.zwxy();
         if (((lhs.v > rhs_swap) & 0x0011) != 0) {
             return false;
@@ -262,24 +262,24 @@ public:
         return true;
     }
 
-    [[nodiscard]] friend rect operator|(rect const &lhs, rect const &rhs) noexcept {
+    [[nodiscard]] friend aarect operator|(aarect const &lhs, aarect const &rhs) noexcept {
         return _mm_blend_ps(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b1100);
     }
 
-    [[nodiscard]] friend rect operator|(rect const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend aarect operator|(aarect const &lhs, vec const &rhs) noexcept {
         ttauri_assume(rhs.w() == 1.0f);
         return _mm_blend_ps(min(lhs.v, rhs), max(lhs.v, rhs.xyxy()), 0b1100);
     }
 
-    [[nodiscard]] friend rect operator+(rect const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend aarect operator+(aarect const &lhs, vec const &rhs) noexcept {
         return static_cast<__m128>(lhs.v + rhs.xyxy());
     }
 
-    [[nodiscard]] friend rect operator-(rect const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend aarect operator-(aarect const &lhs, vec const &rhs) noexcept {
         return static_cast<__m128>(lhs.v - rhs.xyxy());
     }
 
-    [[nodiscard]] friend rect operator*(rect const &lhs, float rhs) noexcept {
+    [[nodiscard]] friend aarect operator*(aarect const &lhs, float rhs) noexcept {
         return static_cast<__m128>(lhs.v * vec{rhs});
     }
 
@@ -290,7 +290,7 @@ public:
      *            this value may be zero or negative.
      * @return A new rectangle expanded on each side.
      */
-    [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
+    [[nodiscard]] friend aarect expand(aarect const &lhs, float rhs) noexcept {
         let _000r = _mm_set_ss(rhs);
         let _00rr = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(1,1,0,0))};
         let _rr00 = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(0,0,1,1))};
@@ -303,7 +303,7 @@ public:
     *            this value may be zero or negative.
     * @return A new rectangle shrank on each side.
     */
-    [[nodiscard]] friend rect shrink(rect const &lhs, float rhs) noexcept {
+    [[nodiscard]] friend aarect shrink(aarect const &lhs, float rhs) noexcept {
         return expand(lhs, -rhs);
     }
 

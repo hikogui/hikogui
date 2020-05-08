@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -45,12 +45,12 @@ struct DeviceShared final {
     static void placeVertices(
         vspan<Vertex> &vertices,
         float depth,
-        rect box,
+        aarect box,
         vec backgroundColor,
         float borderSize,
         vec borderColor,
         vec cornerShapes,
-        rect clippingRectangle
+        aarect clippingRectangle
     );
 
 private:

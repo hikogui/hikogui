@@ -35,12 +35,12 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
     float depth,
-    rect box,
+    aarect box,
     vec backgroundColor,
     float borderSize,
     vec borderColor,
     vec cornerShapes,
-    rect clippingRectangle
+    aarect clippingRectangle
 )
 {
     let extraSpace = (borderSize * 0.5f) + 1.0f;

@@ -163,9 +163,9 @@ std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(Text::FontGlyphIDs gly
         return {i->second, false};
 
     } else {
-        let rect = addGlyphToAtlas(glyph);
-        glyphs_in_atlas.emplace(glyph, rect);
-        return {rect, true};
+        let aarect = addGlyphToAtlas(glyph);
+        glyphs_in_atlas.emplace(glyph, aarect);
+        return {aarect, true};
     }
 }
 
@@ -179,7 +179,7 @@ std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(Text::FontGlyphIDs gly
 *    v   \ |
 *    0 --> 1
 */
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, rect clippingRectangle) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle) noexcept
 {
     auto atlas_was_updated = false;
 

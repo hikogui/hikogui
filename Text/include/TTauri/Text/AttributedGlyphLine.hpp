@@ -36,7 +36,7 @@ struct AttributedGlyphLine {
         }
     }
 
-    [[nodiscard]] rect boundingBox() const noexcept {
+    [[nodiscard]] aarect boundingBox() const noexcept {
         ttauri_assume(ssize(line) >= 1);
 
         let p1 = vec::point(
@@ -49,7 +49,7 @@ struct AttributedGlyphLine {
             line.back().position.y() + ascender
         );
 
-        return rect::p1p2(p1, p2);
+        return aarect::p1p2(p1, p2);
     }
 
     [[nodiscard]] bool contains(vec coordinate) const noexcept {

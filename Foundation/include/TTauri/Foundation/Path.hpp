@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/SDF8.hpp"
@@ -61,7 +61,7 @@ struct Path {
 
     /** Calculate bounding box.
      */
-    [[nodiscard]] rect boundingBox() const noexcept;
+    [[nodiscard]] aarect boundingBox() const noexcept;
 
     /*! Try to move the layers in a path.
      * Layers are removed if there are layers, and all the layers have
@@ -173,11 +173,11 @@ struct Path {
     void arcTo(float radius, vec position) noexcept;
 
     /*! Draw a rectangle.
-     * \param rect the offset and size of the rectangle.
+     * \param aarect the offset and size of the rectangle.
      * \param corner radius of <bottom-left, bottom-right, top-left, top-right>
      *        positive corner are rounded, negative curves are cut.
      */
-    void addRectangle(rect r, vec corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
+    void addRectangle(aarect r, vec corners={0.0f, 0.0f, 0.0f, 0.0f}) noexcept;
 
     /*! Draw a circle.
     * \param position position of the center of the circle.

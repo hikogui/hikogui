@@ -286,7 +286,7 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
     });
 }
 
-[[nodiscard]] rect ShapedText::rectangleOfGrapheme(ssize_t index) const noexcept
+[[nodiscard]] aarect ShapedText::rectangleOfGrapheme(ssize_t index) const noexcept
 {
     let i = find(index);
 
@@ -311,10 +311,10 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
 
     let p1 = ligature_position_left - vec(0.0, line_i->descender);
     let p2 = ligature_position_right + vec(0.0, line_i->ascender);
-    return rect::p1p2(p1, p2);
+    return aarect::p1p2(p1, p2);
 }
 
-[[nodiscard]] rect ShapedText::leftToRightCaret(ssize_t index, bool insertMode) const noexcept
+[[nodiscard]] aarect ShapedText::leftToRightCaret(ssize_t index, bool insertMode) const noexcept
 {
     auto r = rectangleOfGrapheme(index);
 
@@ -326,9 +326,9 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Horizont
     return r;
 }
 
-[[nodiscard]] std::vector<rect> ShapedText::selectionRectangles(ssize_t first, ssize_t last) const noexcept
+[[nodiscard]] std::vector<aarect> ShapedText::selectionRectangles(ssize_t first, ssize_t last) const noexcept
 {
-    auto r = std::vector<rect>{};
+    auto r = std::vector<aarect>{};
 
     for (ssize_t i = first; i != last; ++i) {
         auto newRect = rectangleOfGrapheme(i);

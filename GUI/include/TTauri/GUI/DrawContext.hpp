@@ -6,7 +6,7 @@
 
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/Window.hpp"
@@ -62,7 +62,7 @@ public:
      * The clipping rectangle is passes as-is to the pipelines and
      * is not modified by the transform.
      */
-    rect clippingRectangle;
+    aarect clippingRectangle;
 
     /** Transform used on the given coordinates.
      * The z-axis translate is used for specifying the elevation
@@ -122,7 +122,7 @@ public:
     *  - clippingRectangle
     *  - fillColor
     */
-    void drawFilledQuad(rect r) const noexcept {
+    void drawFilledQuad(aarect r) const noexcept {
         r = expand(r, 0.5f);
         drawFilledQuad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
     }
@@ -138,12 +138,12 @@ public:
     *  - shadowSize
     *  - cornerShapes
     */
-    void drawBox(rect r) const noexcept {
+    void drawBox(aarect r) const noexcept {
         ttauri_assume(boxVertices != nullptr);
 
         let p1 = transform * r.p1();
         let p2 = transform * r.p2();
-        r = rect::p1p2(p1, p2);
+        r = aarect::p1p2(p1, p2);
 
         PipelineBox::DeviceShared::placeVertices(
             *boxVertices,

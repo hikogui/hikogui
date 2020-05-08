@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/R32G32B32SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
@@ -25,7 +25,7 @@ struct Vertex {
     //! The x, y coordinate inside the texture-atlas, z is used as an index in the texture-atlas array
     R32G32B32SFloat atlasPosition;
 
-    Vertex(vec position, vec atlasPosition, rect clippingRectangle) noexcept :
+    Vertex(vec position, vec atlasPosition, aarect clippingRectangle) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         atlasPosition(atlasPosition) {}

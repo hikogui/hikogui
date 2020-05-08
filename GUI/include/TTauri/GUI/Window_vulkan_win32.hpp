@@ -50,7 +50,7 @@ public:
     void setTextOnClipboard(std::string str) noexcept override;
 
 private:
-    void setOSWindowRectangleFromRECT(RECT rect) noexcept;
+    void setOSWindowRectangleFromRECT(RECT aarect) noexcept;
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;

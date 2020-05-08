@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include <rhea/linear_expression.hpp>
 
@@ -38,7 +38,7 @@ public:
         return { width.value(), height.value() };
     }
 
-    rect currentRectangle() const noexcept {
+    aarect currentRectangle() const noexcept {
         return {left.value(), bottom.value(), width.value(), height.value()};
     }
 

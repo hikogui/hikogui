@@ -7,9 +7,9 @@
 
 namespace TTauri::Text {
 
-[[nodiscard]] std::pair<Path,rect> FontGlyphIDs::getPathAndBoundingBox() const noexcept {
+[[nodiscard]] std::pair<Path,aarect> FontGlyphIDs::getPathAndBoundingBox() const noexcept {
     Path path;
-    auto boundingBox = rect{};
+    auto boundingBox = aarect{};
 
     let &font = fontBook->get_font(font_id());
     for (ssize_t i = 0; i < ssize(*this); i++) {

@@ -72,12 +72,12 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
     if (pressed) {
         auto context = drawContext;
         context.fillColor = pressedBackgroundColor;
-        context.drawFilledQuad(rect{vec{}, box.currentExtent()});
+        context.drawFilledQuad(aarect{vec{}, box.currentExtent()});
 
     } else if (hover && enabled) {
         auto context = drawContext;
         context.fillColor = hoverBackgroundColor;
-        context.drawFilledQuad(rect{vec{}, box.currentExtent()});
+        context.drawFilledQuad(aarect{vec{}, box.currentExtent()});
     }
 
     if (backingImage.image) {

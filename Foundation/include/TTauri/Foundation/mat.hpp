@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <ostream>
@@ -191,8 +191,8 @@ public:
     /** Matrix/Vector multiplication.
     * Used for transforming vectors.
     */
-    [[nodiscard]] force_inline friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
-        return rect::p1p2(lhs * rhs.p1(), lhs * rhs.p2());
+    [[nodiscard]] force_inline friend aarect operator*(mat const &lhs, aarect const &rhs) noexcept {
+        return aarect::p1p2(lhs * rhs.p1(), lhs * rhs.p2());
     }
 
     /** Matrix/Matrix multiplication.

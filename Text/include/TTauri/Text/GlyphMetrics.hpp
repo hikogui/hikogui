@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 
 namespace TTauri::Text {
 
@@ -17,7 +17,7 @@ namespace TTauri::Text {
 struct GlyphMetrics {
     /*! Bounding box of the path.
     */
-    rect boundingBox = {};
+    aarect boundingBox = {};
 
     /*! This is the position where the left side of the glyph
     * starts. This includes some leading white space so that the glyph

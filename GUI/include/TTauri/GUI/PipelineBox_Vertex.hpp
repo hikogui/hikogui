@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32SFloat.hpp"
@@ -45,7 +45,7 @@ struct Vertex {
         float borderSize,
         vec borderColor,
         vec cornerShapes,
-        rect clippingRectangle
+        aarect clippingRectangle
     ) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
