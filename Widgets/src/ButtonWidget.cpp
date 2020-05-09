@@ -45,11 +45,12 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     }
 
     // Move the border of the button in the middle of a pixel.
+    context.transform = drawContext.transform * mat::R(0.08726646259971647);
     context.drawBox(rectangle);
 
     auto textOffset = rectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
 
-    context.transform = context.transform * mat::T{textOffset.z(0.001f)};
+    context.transform = drawContext.transform * mat::T{textOffset.z(0.001f)} * mat::R(0.08726646259971647);
     context.drawText(labelShapedText);
 
     Widget::draw(drawContext, displayTimePoint);

@@ -138,17 +138,12 @@ public:
     *  - shadowSize
     *  - cornerShapes
     */
-    void drawBox(aarect r) const noexcept {
+    void drawBox(aarect box) const noexcept {
         ttauri_assume(boxVertices != nullptr);
-
-        let p1 = transform * r.p1();
-        let p2 = transform * r.p2();
-        r = aarect::p1p2(p1, p2);
 
         PipelineBox::DeviceShared::placeVertices(
             *boxVertices,
-            p1.z(),
-            r,
+            transform * box,
             fillColor,
             lineWidth,
             color,

@@ -34,8 +34,7 @@ void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 
 void DeviceShared::placeVertices(
     vspan<Vertex> &vertices,
-    float depth,
-    aarect box,
+    rect box,
     vec backgroundColor,
     float borderSize,
     vec borderColor,
@@ -46,10 +45,10 @@ void DeviceShared::placeVertices(
     let extraSpace = (borderSize * 0.5f) + 1.0f;
     let outerBox = expand(box, extraSpace);
 
-    let v0 = outerBox.corner<0>().z(depth);
-    let v1 = outerBox.corner<1>().z(depth);
-    let v2 = outerBox.corner<2>().z(depth);
-    let v3 = outerBox.corner<3>().z(depth);
+    let v0 = outerBox.corner<0>();
+    let v1 = outerBox.corner<1>();
+    let v2 = outerBox.corner<2>();
+    let v3 = outerBox.corner<3>();
 
     let outerExtent = outerBox.extent();
 

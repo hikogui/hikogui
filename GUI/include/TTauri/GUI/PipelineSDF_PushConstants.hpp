@@ -11,7 +11,7 @@ namespace TTauri::GUI::PipelineSDF {
 struct PushConstants {
     R32G32SFloat windowExtent = vec{ 0.0, 0.0 };
     R32G32SFloat viewportScale = vec{ 0.0, 0.0 };
-    R32G32SFloat blueOffset = vec{ 0.0, 0.0 };
+    int32_t subpixelOrientation = 0;
 
     static std::vector<vk::PushConstantRange> pushConstantRanges()
     {

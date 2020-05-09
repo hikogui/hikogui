@@ -5,7 +5,7 @@
 layout(push_constant) uniform PushConstants {
     vec2 windowExtent;
     vec2 viewportScale;
-    vec2 blueOffset;
+    int subpixelOrientation; // 0:Unknown, 1:BlueRight, 2:BlueLeft, 3:BlueTop, 4:BlueBottom
 } pushConstants;
 
 layout(constant_id = 0) const float SDFmaxDistance = 1.0;
@@ -55,7 +55,12 @@ void main()
         discard;
     }
 
-    float pixelDistance = fwidth(inTextureCoord.x);
+    // The amount of distance and direction covered in 2D inside the texture when
+    // stepping one fragment to the right.
+    vec2 horizontalTextureStride = dFdxFine(inTextureCoord.xy);
+    vec2 verticalTextureStride = vec2(-horizontalTextureStride.y, horizontalTextureStride.x);
+    float pixelDistance = length(horizontalTextureStride);
+
     float distanceMultiplier = SDFmaxDistance / (pixelDistance * atlastImageWidth);
 
     float greenRadius = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), inTextureCoord.xy).r * distanceMultiplier;
@@ -64,7 +69,7 @@ void main()
         // Fully outside the fragment, early exit.
         discard;
 
-    } else if (pushConstants.blueOffset == vec2(0.0, 0.0)) {
+    } else if (pushConstants.subpixelOrientation == 0) {
         // Normal anti-aliasing.
         float coverage = clamp(greenRadius + 0.5, 0.0, 1.0);
         float alpha = coverage_to_alpha(coverage, inColor.g > 0.7) * inColor.a;
@@ -76,13 +81,33 @@ void main()
         );
 
     } else {
-        vec2 bluePixelOffset = pixelDistance * pushConstants.blueOffset;
+        vec2 redOffset;
+        vec2 blueOffset;
+
+        switch (pushConstants.subpixelOrientation) {
+        case 1: // Red-left, Blue-right
+            redOffset = horizontalTextureStride / -3.0;
+            blueOffset = horizontalTextureStride / 3.0;
+            break;
+        case 2: // Blue-left, Red-right
+            blueOffset = horizontalTextureStride / -3.0;
+            redOffset = horizontalTextureStride / 3.0;
+            break;
+        case 3: // Red-bottom, Blue-top
+            redOffset = verticalTextureStride / -3.0;
+            blueOffset = verticalTextureStride / 3.0;
+            break;
+        case 4: // Blue-bottom, Red-top
+            blueOffset = verticalTextureStride / -3.0;
+            redOffset = verticalTextureStride / 3.0;
+            break;
+        }
 
         // Subpixel anti-aliasing
-        vec2 redCoordinate = inTextureCoord.xy - bluePixelOffset;
+        vec2 redCoordinate = inTextureCoord.xy + redOffset;
         float redRadius   = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), redCoordinate).r * distanceMultiplier;
 
-        vec2 blueCoordinate = inTextureCoord.xy + bluePixelOffset;
+        vec2 blueCoordinate = inTextureCoord.xy + blueOffset;
         float blueRadius  = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), blueCoordinate).r * distanceMultiplier;
 
         vec3 RGBCoverage = clamp(vec3(redRadius, greenRadius, blueRadius) + 0.5, 0.0, 1.0);

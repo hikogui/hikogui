@@ -51,6 +51,30 @@ public:
         ttauri_assume(extent.z() == 0.0);
     }
 
+    /** Get the right vector of a rectangle.
+     */
+    vec right() const noexcept {
+        return corner<1>() - corner<0>();
+    }
+
+    /** Get the up vector of a rectangle.
+    */
+    vec up() const noexcept {
+        return corner<2>() - corner<0>();
+    }
+
+    float width() const noexcept {
+        return length(right());
+    }
+
+    float height() const noexcept {
+        return length(up());
+    }
+
+    vec extent() const noexcept {
+        return {width(), height()};
+    }
+
     /** Get coordinate of a corner.
     *
     * @param I Corner number: 0 = left-bottom, 1 = right-bottom, 2 = left-top, 3 = right-top.
@@ -60,6 +84,18 @@ public:
     [[nodiscard]] force_inline vec corner() const noexcept {
         static_assert(I <= 3);
         return get<I>(corners);
+    }
+
+    [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
+        let rightDirection = normalize(lhs.right());
+        let upDirection = normalize(lhs.up());
+
+        return {
+            lhs.corner<0>() + rhs * -rightDirection + rhs * -upDirection,
+            lhs.corner<1>() + rhs *  rightDirection + rhs * -upDirection,
+            lhs.corner<2>() + rhs * -rightDirection + rhs *  upDirection,
+            lhs.corner<3>() + rhs *  rightDirection + rhs *  upDirection
+        };
     }
 
 };
