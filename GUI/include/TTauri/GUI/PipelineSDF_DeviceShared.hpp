@@ -25,6 +25,7 @@ class mat;
 
 namespace TTauri::Text {
 class ShapedText;
+struct AttributedGlyph;
 }
 
 namespace TTauri::GUI::PipelineSDF {
@@ -107,6 +108,8 @@ struct DeviceShared final {
     /** Prepare the atlas for drawing a text.
      */
     void prepareAtlas(Text::ShapedText const &text) noexcept;
+
+    bool placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw

@@ -16,11 +16,11 @@ class ToolbarButtonWidget : public Widget {
 public:
     bool pressed = false;
 
+    /** This is a close button, show background in red.
+     */
+    bool closeButton = false;
+
     std::variant<Path> icon;
-
-    vec hoverBackgroundColor = vec::color(1.0, 1.0, 1.0, 0.067);
-    vec pressedBackgroundColor = vec::color(1.0, 1.0, 1.0, 0.133);
-
     std::function<void()> delegate;
 
     ToolbarButtonWidget(Window &window, Widget *parent, Path const icon, std::function<void()> delegate) noexcept;

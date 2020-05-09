@@ -28,8 +28,7 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
             scale * getResource<Path>(URL("resource:Themes/Icons/Close%20Window.tticon")),
             [&]() { window.closeWindow(); }
         );
-        closeWindowButton->hoverBackgroundColor = vec{ 0.5, 0.0, 0.0, 1.0 };
-        closeWindowButton->pressedBackgroundColor = vec{ 1.0, 0.0, 0.0, 1.0 };
+        closeWindowButton->closeButton = true;
         window.addConstraint(closeWindowButton->box.top == box.top);
         window.addConstraint(closeWindowButton->box.right == box.right);
         window.addConstraint(closeWindowButton->box.bottom == box.bottom);

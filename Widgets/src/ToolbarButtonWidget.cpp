@@ -69,14 +69,17 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         ++renderTrigger;
     }
 
-    if (pressed) {
+    // Draw background of button.
+    {
         auto context = drawContext;
-        context.fillColor = pressedBackgroundColor;
-        context.drawFilledQuad(aarect{vec{}, box.currentExtent()});
 
-    } else if (hover && enabled) {
-        auto context = drawContext;
-        context.fillColor = hoverBackgroundColor;
+        if (pressed) {
+            context.fillColor = closeButton ? vec::color(1.0, 0.0, 0.0) : theme->fillColor(nestingLevel() + 1);
+        } else if (hover && enabled) {
+            context.fillColor = closeButton ? vec::color(0.5, 0.0, 0.0) : theme->fillColor(nestingLevel());
+        } else {
+            context.fillColor = theme->fillColor(nestingLevel() - 1);
+        }
         context.drawFilledQuad(aarect{vec{}, box.currentExtent()});
     }
 

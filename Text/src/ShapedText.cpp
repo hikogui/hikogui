@@ -33,61 +33,21 @@ namespace TTauri::Text {
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
 
-    for (let &ag: text) {
-        let font_id = fontBook->find_font(ag.style.family_id, ag.style.variant);
+    AttributedGlyph const *next_glyph = nullptr;
 
-        // The end-of-paragraph is represented by a space glyph, which is usefull for
-        // producing a correct cursor at an empty line at the end of a paragraph.
-        let g = (ag.grapheme == '\n') ? Grapheme{0} : ag.grapheme;
-        glyphs.emplace_back(ag, fontBook->find_glyph(font_id, g));
+    // Reverse through the text, since the metrics of a glyph depend on the next glyph.
+    for (auto i = text.crbegin(); i != text.crend(); ++i) {
+        next_glyph = &glyphs.emplace_back(*i, next_glyph);
     }
 
+    // Reverse it back.
+    std::reverse(glyphs.begin(), glyphs.end());
     return glyphs;
 }
 
 static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 {
 
-}
-
-static void load_metrics_for_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
-{
-    auto font_id = FontID{};
-    Font const *font = nullptr;
-    auto next_i = glyphs.begin();
-    for (auto i = next_i; i != glyphs.end(); i = next_i) {
-        next_i = i + 1;
-
-        // Get a pointer to the actual font, when the font_id of the glyph changes.
-        let new_font_id = i->glyphs.font_id();
-        if (font_id != new_font_id) {
-            font_id = new_font_id;
-            font = &(fontBook->get_font(font_id));
-        }
-        ttauri_assume(font != nullptr);
-        let next_is_same_font = (next_i != glyphs.end()) && (next_i->glyphs.font_id() == font_id);
-
-        // Get the metrics of the main glyph.
-        let first_glyph = i->glyphs.front();
-        let next_glyph = next_is_same_font ? next_i->glyphs.front() : GlyphID{};
-
-        if (!font->loadGlyphMetrics(first_glyph, i->metrics, next_glyph)) {
-            LOG_ERROR("Could not load metrics for glyph {} in font {} - {}", static_cast<int>(i->glyphs[0]), font->description.family_name, font->description.sub_family_name);
-            // failed to load metrics. Switch to glyph zero and load again.
-            i->glyphs.clear();
-            i->glyphs.set_font_id(font_id);
-            i->glyphs += GlyphID{0};
-            if (!font->loadGlyphMetrics(i->glyphs[0], i->metrics)) {
-                // Using null-metrics when even the null-glyph can not be found.
-                LOG_ERROR("Could not load metrics for null-glyph in font {} - {}", font->description.family_name, font->description.sub_family_name);
-            }
-        }
-
-        // Scale the metrics according to font-size of this glyph.
-        i->metrics.scale(i->style.size);
-
-        // XXX merge the bounding box of combining glyphs in the metrics.
-    }
 }
 
 [[nodiscard]] static std::vector<AttributedGlyphLine> make_lines(std::vector<AttributedGlyph> &glyphs, float maximum_width) noexcept
@@ -249,9 +209,6 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalA
 
     // Morph attributed-glyphs using the Font's morph algorithm.
     morph_glyphs(glyphs);
-
-    // Load metric for each attributed-glyph using many of the Font's tables.
-    load_metrics_for_glyphs(glyphs);
 
     // Split the text up in lines, based on line-feeds and line-wrapping.
     auto lines = make_lines(glyphs, maximum_width);

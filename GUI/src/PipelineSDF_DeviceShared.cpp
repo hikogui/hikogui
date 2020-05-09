@@ -169,6 +169,54 @@ std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(Text::FontGlyphIDs gly
     }
 }
 
+bool DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept
+{
+    if (attr_glyph.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
+        return false;
+    }
+
+    let [atlas_rect, glyph_was_added] = getGlyphFromAtlas(attr_glyph.glyphs);
+
+    // Adjust bounding box by adding a border based on 1EM.
+    let bounding_box = transform * attr_glyph.boundingBox(scaledDrawBorder);
+
+    let v0 = bounding_box.corner<0>();
+    let v1 = bounding_box.corner<1>();
+    let v2 = bounding_box.corner<2>();
+    let v3 = bounding_box.corner<3>();
+
+    // If none of the vertices is inside the clipping rectangle then don't add the
+    // quad to the vertex list.
+    if (!(
+        clippingRectangle.contains(v0) ||
+        clippingRectangle.contains(v1) ||
+        clippingRectangle.contains(v2) ||
+        clippingRectangle.contains(v3)
+        )) {
+        return glyph_was_added;
+    }
+
+    let color = attr_glyph.style.color;
+
+    vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color);
+    vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color);
+    vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color);
+    vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color);
+
+    return glyph_was_added;
+}
+
+//bool DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::AttributedGrapheme const &attr_grapheme, mat transform, aarect clippingRectangle) noexcept
+//{
+//
+//    let glyph = attr_grapheme.style.
+//    let glyph_was_added = placeVertices(vertices, attr_glyph, transform, clippingRectangle);
+//
+//    if (glyph_was_added) {
+//        prepareAtlasForRendering();
+//    }
+//}
+
 /** Places vertices.
 *
 * This is the format of a quad.
@@ -184,38 +232,8 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
     auto atlas_was_updated = false;
 
     for (let &attr_glyph: text) {
-        if (attr_glyph.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
-            continue;
-        }
-
-        let [atlas_rect, glyph_was_added] = getGlyphFromAtlas(attr_glyph.glyphs);
-        atlas_was_updated = atlas_was_updated || glyph_was_added;
-
-        // Adjust bounding box by adding a border based on 1EM.
-        let bounding_box = transform * attr_glyph.boundingBox(scaledDrawBorder);
-        
-        let v0 = bounding_box.corner<0>();
-        let v1 = bounding_box.corner<1>();
-        let v2 = bounding_box.corner<2>();
-        let v3 = bounding_box.corner<3>();
-
-        // If none of the vertices is inside the clipping rectangle then don't add the
-        // quad to the vertex list.
-        if (!(
-            clippingRectangle.contains(v0) ||
-            clippingRectangle.contains(v1) ||
-            clippingRectangle.contains(v2) ||
-            clippingRectangle.contains(v3)
-        )) {
-            continue;
-        }
-
-        let color = attr_glyph.style.color;
-
-        vertices.emplace_back(v0, clippingRectangle, get<0>(atlas_rect.textureCoords), color);
-        vertices.emplace_back(v1, clippingRectangle, get<1>(atlas_rect.textureCoords), color);
-        vertices.emplace_back(v2, clippingRectangle, get<2>(atlas_rect.textureCoords), color);
-        vertices.emplace_back(v3, clippingRectangle, get<3>(atlas_rect.textureCoords), color);
+        let glyph_added = placeVertices(vertices, attr_glyph, transform, clippingRectangle);
+        atlas_was_updated = atlas_was_updated || glyph_added;
     }
 
     if (atlas_was_updated) {

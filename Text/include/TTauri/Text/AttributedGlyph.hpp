@@ -34,13 +34,7 @@ struct AttributedGlyph {
      */
     vec position;
 
-    AttributedGlyph(AttributedGrapheme const &attr_grapheme, FontGlyphIDs glyphs) noexcept :
-        glyphs(std::move(glyphs)),
-        logicalIndex(attr_grapheme.logicalIndex),
-        graphemeCount(1),
-        charClass(attr_grapheme.charClass),
-        style(attr_grapheme.style),
-        metrics() {}
+    AttributedGlyph(AttributedGrapheme const &attr_grapheme, AttributedGlyph const *next_attr_glyph=nullptr) noexcept;
 
     AttributedGlyph(AttributedGlyph const &other) = default;
     AttributedGlyph(AttributedGlyph &&other) noexcept = default;
