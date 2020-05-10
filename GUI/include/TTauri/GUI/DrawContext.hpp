@@ -171,7 +171,7 @@ public:
      *  - transform, to transform the shaped-text's bounding box
      *  - clippingRectangle
      */
-    void drawText(Text::ShapedText &text) const noexcept {
+    void drawText(Text::ShapedText const &text) const noexcept {
         ttauri_assume(window != nullptr);
         ttauri_assume(sdfVertices != nullptr);
 
@@ -179,6 +179,19 @@ public:
             *sdfVertices,
             text,
             transform,
+            clippingRectangle
+        );
+    }
+
+    void drawGlyph(Text::FontGlyphIDs const &glyph, aarect box) const noexcept {
+        ttauri_assume(window != nullptr);
+        ttauri_assume(sdfVertices != nullptr);
+
+        window->device->SDFPipeline->placeVertices(
+            *sdfVertices,
+            glyph,
+            transform * box,
+            color,
             clippingRectangle
         );
     }

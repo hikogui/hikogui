@@ -15,7 +15,6 @@ namespace TTauri::Text {
 
 inline std::unique_ptr<UnicodeData> unicodeData;
 
-inline FontBook *fontBook;
 
 /** Reference counter to determine the amount of startup/shutdowns.
 */

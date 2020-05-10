@@ -38,6 +38,10 @@ public:
         return { width.value(), height.value() };
     }
 
+    aarect currentOriginRectangle() const noexcept {
+        return {vec{}, currentExtent()};
+    }
+
     aarect currentRectangle() const noexcept {
         return {left.value(), bottom.value(), width.value(), height.value()};
     }

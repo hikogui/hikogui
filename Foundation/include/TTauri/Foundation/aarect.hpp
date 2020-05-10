@@ -243,6 +243,24 @@ public:
         return vec{x, y};
     }
 
+    /** Align a box inside this box.
+     * This will look only at the extent of the other box.
+     */
+    [[nodiscard]] aarect align(aarect other, Alignment alignment) const noexcept {
+        let extent = other.extent();
+        let offset = align(extent, alignment);
+        return {offset, extent};
+    }
+
+    /** Resize to fit and align a box inside this box
+     * @param other The box to resize and align inside this box.
+     */
+    [[nodiscard]] aarect alignFit(aarect other, Alignment alignment) const noexcept {
+        let new_extent = other.extent().resize2DRetainingAspectRatio(extent());
+        let offset = align(new_extent, alignment);
+        return {offset, new_extent};
+    }
+
     [[nodiscard]] friend bool operator==(aarect const &lhs, aarect const &rhs) noexcept {
         return lhs.v == rhs.v;
     }

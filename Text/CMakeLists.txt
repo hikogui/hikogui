@@ -40,8 +40,8 @@ add_custom_command(
 
 set(TTauri_Text_resources
     ${UNICODE_DATA_BIN}
+    data/elusiveicons-webfont.ttf
 )
-
 
 add_library(TTauri_Text STATIC ${TTauri_Text_srcs})
 target_link_libraries(TTauri_Text TTauri_Foundation)

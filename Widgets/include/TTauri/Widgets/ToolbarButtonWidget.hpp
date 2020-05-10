@@ -5,6 +5,8 @@
 
 #include "TTauri/GUI/Widget.hpp"
 #include "TTauri/Foundation/Path.hpp"
+#include "TTauri/Text/FontGlyphIDs.hpp"
+#include "TTauri/Text/ElusiveIcons.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -20,10 +22,12 @@ public:
      */
     bool closeButton = false;
 
-    std::variant<Path> icon;
+    using icon_type = std::variant<Path,Text::FontGlyphIDs>;
+    icon_type icon;
     std::function<void()> delegate;
 
-    ToolbarButtonWidget(Window &window, Widget *parent, Path const icon, std::function<void()> delegate) noexcept;
+    ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept;
+    ToolbarButtonWidget(Window &window, Widget *parent, Text::ElusiveIcon icon, std::function<void()> delegate) noexcept;
     ~ToolbarButtonWidget() {}
 
     ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;

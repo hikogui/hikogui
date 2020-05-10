@@ -12,6 +12,7 @@
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/Foundation/ivec.hpp"
+#include "TTauri/Foundation/rect.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -109,7 +110,18 @@ struct DeviceShared final {
      */
     void prepareAtlas(Text::ShapedText const &text) noexcept;
 
-    bool placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
+    /** Get the bounding box, including draw border of a glyph.
+     */
+    static aarect getBoundingBox(Text::FontGlyphIDs const &glyphs) noexcept;
+    
+    /** Place vertices for a single glyph.
+    * @param vertices The list of vertices to add to.
+    * @param glyphs The font-id, composed-glyphs to render
+    * @param box The rectangle of the glyph in window coordinates; including the draw border.
+    * @param color The color of the glyph.
+    * @param clippingRectangle The rectangle to clip the glyph.
+    */
+    void placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept;
 
     /** Draw the text on the screen.
      * @param text The box of text to draw
@@ -125,6 +137,30 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice);
+
+    /** Place vertices for a single glyph.
+     * This function will not execute prepareAtlasForRendering().
+     *
+     * @param vertices The list of vertices to add to.
+     * @param glyphs The font-id, composed-glyphs to render
+     * @param box The rectangle of the glyph in window coordinates; including the draw border.
+     * @param color The color of the glyph.
+     * @param clippingRectangle The rectangle to clip the glyph.
+     * @return True if the glyph was added to the atlas.
+     */
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept;
+
+    /** Place an single attributed glyph.
+    * This function will not execute prepareAtlasForRendering().
+    *
+    * @param vertices The list of vertices to add to.
+    * @param attr_glyph The attributed glyph; scaled and positioned.
+    * @param transform Extra transformation on the glyph.
+    * @param clippingRectangle The rectangle to clip the glyph.
+    * @return True if the glyph was added to the atlas.
+    */
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
+
 
     AtlasRect addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept;
 

@@ -68,6 +68,8 @@ void main()
     if (greenRadius < -0.7071067811865476) {
         // Fully outside the fragment, early exit.
         discard;
+        //outColor = vec4(1.0, 1.0, 0.0, 1.0);
+        //return;
 
     } else if (pushConstants.subpixelOrientation == 0) {
         // Normal anti-aliasing.

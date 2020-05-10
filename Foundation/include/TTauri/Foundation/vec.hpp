@@ -434,6 +434,16 @@ public:
         return _mm_mul_ps(rhs, iiii);
     }
 
+    /** Resize an extent while retaining aspect ratio.
+    * @param rhs The extent to match.
+    * @return The extent resized to match rhs, while retaining aspect ratio.
+    */
+    [[nodiscard]] vec resize2DRetainingAspectRatio(vec const &rhs) noexcept {
+        let ratio2D = rhs / *this;
+        let ratio = std::min(ratio2D.x(), ratio2D.y());
+        return *this * ratio;
+    }
+
     [[nodiscard]] force_inline friend vec homogeneous_divide(vec const &rhs) noexcept {
         auto wwww = _mm_permute_ps(rhs, _MM_SHUFFLE(3,3,3,3));
         auto rcp_wwww = _mm_rcp_ps(wwww);

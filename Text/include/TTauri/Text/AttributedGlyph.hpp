@@ -34,6 +34,16 @@ struct AttributedGlyph {
      */
     vec position;
 
+    /** Constructed an attributed glyph from an attributed grapheme.
+     * When converting a string of graphemes into a string of glyphs you should
+     * process the graphemes in reverse order so that you can pass the next_attr_glyph
+     * to this constructor for font-based-kerning.
+     *
+     * The string of graphemes should already be in display-order; after Unicode-bidi-algorithm.
+     *
+     * @param attr_grapheme The grapheme to turn into a glyph.
+     * @param next_attr_glyph The next glyph in display-ordering, used for kerning.
+     */
     AttributedGlyph(AttributedGrapheme const &attr_grapheme, AttributedGlyph const *next_attr_glyph=nullptr) noexcept;
 
     AttributedGlyph(AttributedGlyph const &other) = default;

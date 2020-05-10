@@ -11,14 +11,19 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std::literals;
 
-ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, Path icon, std::function<void()> delegate) noexcept :
-    Widget(window, parent), delegate(delegate)
+ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept :
+    Widget(window, parent), icon(std::move(icon)), delegate(delegate)
 {
     window.addConstraint(box.height == box.width);
 
-    icon.tryRemoveLayers();
-    this->icon = std::move(icon);
+    if (auto path = std::get_if<Path>(&this->icon)) {
+        path->tryRemoveLayers();
+    }
 }
+
+ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, Text::ElusiveIcon icon, std::function<void()> delegate) noexcept :
+    ToolbarButtonWidget(window, parent, Text::to_FontGlyphIDs(icon), std::move(delegate)) {}
+
 
 int ToolbarButtonWidget::state() const noexcept {
     int r = 0;
@@ -55,20 +60,6 @@ PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared
 
 void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto drawingBackingImage = backingImage.loadOrDraw(
-        window,
-        box.currentExtent(),
-        [&](auto image) {
-            return drawImage(image);
-        },
-        "ToolbarButtonWidget",
-        this,
-        state()
-    );
-    if (drawingBackingImage) {
-        ++renderTrigger;
-    }
-
     // Draw background of button.
     {
         auto context = drawContext;
@@ -83,18 +74,46 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         context.drawFilledQuad(aarect{vec{}, box.currentExtent()});
     }
 
-    if (backingImage.image) {
-        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
-
-        auto context = drawContext;
-        context.transform = context.transform * mat::S(currentScale);
-        context.drawImage(*(backingImage.image));
-
-        if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {
+    if (std::holds_alternative<Path>(icon)) {
+        auto drawingBackingImage = backingImage.loadOrDraw(
+            window,
+            box.currentExtent(),
+            [&](auto image) {
+                return drawImage(image);
+            },
+            "ToolbarButtonWidget",
+            this,
+            state()
+        );
+        if (drawingBackingImage) {
             ++renderTrigger;
         }
+
+        if (backingImage.image) {
+            let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
+
+            auto context = drawContext;
+            context.transform = context.transform * mat::S(currentScale);
+            context.drawImage(*(backingImage.image));
+
+            if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {
+                ++renderTrigger;
+            }
+        } else {
+            ++renderTrigger;
+        }
+
+    } else if (auto icon_glyph = std::get_if<Text::FontGlyphIDs>(&icon)) {
+        auto context = drawContext;
+        context.color = theme->foregroundColor;
+
+        let buttonBox = shrink(box.currentOriginRectangle(), 5.0);
+
+        let glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
+        let box = buttonBox.alignFit(glyphBoundingBox, Alignment::MiddleCenter);
+        context.drawGlyph(*icon_glyph, box);
     } else {
-        ++renderTrigger;
+        no_default;
     }
 
     Widget::draw(drawContext, displayTimePoint);

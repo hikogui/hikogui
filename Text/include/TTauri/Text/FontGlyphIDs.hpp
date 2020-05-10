@@ -204,6 +204,7 @@ public:
     }
 
     [[nodiscard]] std::pair<Path,aarect> getPathAndBoundingBox() const noexcept;
+    [[nodiscard]] aarect getBoundingBox() const noexcept;
 
 private:
     [[nodiscard]] force_inline bool has_pointer() const noexcept {

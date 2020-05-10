@@ -2,8 +2,10 @@
 // All rights reserved.
 
 #include "TTauri/Text/globals.hpp"
+#include "TTauri/Text/ElusiveIcons.hpp"
 #include "TTauri/Foundation/globals.hpp"
 #include "data/UnicodeData.bin.inl"
+#include "data/elusiveicons-webfont.ttf.inl"
 
 namespace TTauri::Text {
 
@@ -18,12 +20,14 @@ void startup()
     LOG_INFO("TTauri::Text startup");
 
     addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
+    addStaticResource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
 
     unicodeData = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
 
     fontBook = new FontBook(std::vector<URL>{
         URL::urlFromSystemFontDirectory()
     });
+    ElusiveIcons_font_id = fontBook->register_font(URL("resource:elusiveicons-webfont.ttf"));
 }
 
 void shutdown()
@@ -34,8 +38,9 @@ void shutdown()
     }
     LOG_INFO("TTauri::Text shutdown");
 
-    unicodeData.release();
+    ElusiveIcons_font_id = FontID{};
     delete fontBook;
+    unicodeData.release();
 
     TTauri::shutdown();
 }
