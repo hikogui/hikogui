@@ -64,7 +64,7 @@ public:
             // XXX font extents height of widget slightly.
             //setMinimumExtent(labelShapedText.extent + vec{label_x, 0.0f});
         }
-        let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
+        let label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
 
         // button.
         auto context = drawContext;
@@ -84,7 +84,7 @@ public:
         context.drawBox(pip_rectangle);
 
         // user defined label.
-        context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};
+        context.transform = drawContext.transform * (mat::T{0.0, 0.0, 0.001f} * label_translate);
         context.drawText(labelShapedText);
 
         Widget::draw(drawContext, displayTimePoint);

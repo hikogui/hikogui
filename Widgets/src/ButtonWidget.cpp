@@ -24,7 +24,7 @@ ButtonWidget::~ButtonWidget() {
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    let rectangle = aarect{vec{}, box.currentExtent()};
+    let rectangle = aarect{box.currentExtent()};
 
     if (renderTrigger.check(displayTimePoint) >= 2) {
         let labelWidth = rectangle.width() - Theme::margin * 2.0f;
@@ -48,9 +48,9 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     context.transform = drawContext.transform;
     context.drawBox(rectangle);
 
-    auto textOffset = rectangle.align(labelShapedText.extent, Alignment::MiddleCenter);
+    auto textTranslate = mat::align(rectangle, aarect{labelShapedText.extent}, Alignment::MiddleCenter);
 
-    context.transform = drawContext.transform * mat::T{textOffset.z(0.001f)};
+    context.transform = drawContext.transform * (mat::T{0.0f, 0.0f, 0.001f} * textTranslate);
     context.drawText(labelShapedText);
 
     Widget::draw(drawContext, displayTimePoint);

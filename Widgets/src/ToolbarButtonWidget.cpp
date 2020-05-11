@@ -21,9 +21,6 @@ ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_ty
     }
 }
 
-ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, Text::ElusiveIcon icon, std::function<void()> delegate) noexcept :
-    ToolbarButtonWidget(window, parent, Text::to_FontGlyphIDs(icon), std::move(delegate)) {}
-
 
 int ToolbarButtonWidget::state() const noexcept {
     int r = 0;
@@ -71,7 +68,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         } else {
             context.fillColor = theme->fillColor(nestingLevel() - 1);
         }
-        context.drawFilledQuad(aarect{vec{}, box.currentExtent()});
+        context.drawFilledQuad(aarect{box.currentExtent()});
     }
 
     if (std::holds_alternative<Path>(icon)) {
@@ -107,10 +104,12 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         auto context = drawContext;
         context.color = theme->foregroundColor;
 
-        let buttonBox = shrink(box.currentOriginRectangle(), 5.0);
+        let buttonBox = shrink(aarect{box.currentExtent()}, Theme::margin);
 
         let glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
-        let box = buttonBox.alignFit(glyphBoundingBox, Alignment::MiddleCenter);
+
+        let box = align(buttonBox, scale(glyphBoundingBox, Theme::iconSize), Alignment::MiddleCenter);
+
         context.drawGlyph(*icon_glyph, box);
     } else {
         no_default;

@@ -11,12 +11,29 @@ namespace TTauri {
 /** Class which represents an axis-aligned rectangle.
  */
 class aarect {
+private:
+    friend class R32G32B32A32SFloat;
+
     /** Intrinsic of the rectangle.
      * Elements are assigned as follows:
      *  - (x, y) 2D-coordinate of left-bottom corner of the rectangle
      *  - (z, w) 2D-coordinate of right-top corner of the rectangle
      */
     vec v;
+
+    /** Create an aarect directly from a __m128 register.
+    */
+    [[nodiscard]] static force_inline aarect m128(__m128 v) noexcept {
+        aarect r;
+        r.v = v;
+        return r;
+    }
+
+    /** Return a m128 directly from the aarect.
+    */
+    [[nodiscard]] force_inline __m128 m128() const noexcept {
+        return v;
+    }
 
 public:
     force_inline aarect() noexcept : v() {}
@@ -25,18 +42,7 @@ public:
     force_inline aarect(aarect &&rhs) noexcept = default;
     force_inline aarect &operator=(aarect &&rhs) noexcept = default;
 
-    aarect(__m128 rhs) noexcept :
-        v(rhs) {}
-
-    aarect &operator=(__m128 rhs) noexcept {
-        v = rhs;
-        return *this;
-    }
-
-    operator __m128 () const noexcept {
-        return v;
-    }
-
+    
     /** Create a box from the position and size.
      *
      * @param x The x location of the left-bottom corner of the box
@@ -47,23 +53,38 @@ public:
     template<typename X, typename Y, typename W=float, typename H=float,
         std::enable_if_t<std::is_arithmetic_v<X> && std::is_arithmetic_v<Y> && std::is_arithmetic_v<W> && std::is_arithmetic_v<H>,int> = 0>
     force_inline aarect(X x, Y y, W width, H height) noexcept :
-        aarect(vec(
+        v(vec(
             numeric_cast<float>(x),
             numeric_cast<float>(y),
             numeric_cast<float>(x) + numeric_cast<float>(width),
             numeric_cast<float>(y) + numeric_cast<float>(height)
         )) {}
 
-    /** Create a box from the position and size.
+    /** Create a rectangle from the position and size.
      *
-     * @param offset The position of the left-bottom corner of the box
+     * @param position The position of the left-bottom corner of the box
      * @param extent The size of the box.
      */
-    force_inline aarect(vec const &offset, vec const &extent) noexcept :
-        aarect(offset.xyxy() + extent._00xy()) {}
+    force_inline aarect(vec const &position, vec const &extent) noexcept :
+        v(position.xyxy() + extent._00xy()) {
+        ttauri_assume(position.is_point());
+        ttauri_assume(position.z() == 0.0);
+        ttauri_assume(extent.is_vector());
+        ttauri_assume(extent.z() == 0.0);
+    }
+
+    /** Create a rectangle from the size.
+    * The rectangle's left bottom corner is at the origin.
+    * @param extent The size of the box.
+    */
+    force_inline aarect(vec const &extent) noexcept :
+        v(extent._00xy()) {
+        ttauri_assume(extent.is_vector());
+        ttauri_assume(extent.z() == 0.0);
+    }
 
     [[nodiscard]] force_inline static aarect p1p2(vec const &p1, vec const &p2) noexcept {
-        return _mm_shuffle_ps(p1, p2, _MM_SHUFFLE(1,0,1,0));
+        return aarect::m128(_mm_shuffle_ps(p1, p2, _MM_SHUFFLE(1,0,1,0)));
     }
 
     operator bool () const noexcept {
@@ -208,16 +229,22 @@ public:
             (((rhs.xyxy() <= v) & 0b1100) == 0b1100);
     }
 
-    [[nodiscard]] vec align(vec extent, Alignment alignment) const noexcept {
+    /** Align a rectangle within another rectangle.
+     * @param outside The outside rectangle
+     * @param inside The inside rectangle; to be aligned.
+     * @param alignment How the inside rectangle should be aligned.
+     * @return The repositioned inside rectangle.
+     */
+    [[nodiscard]] friend aarect align(aarect outside, aarect inside, Alignment alignment) noexcept {
         float x;
         if (alignment == HorizontalAlignment::Left) {
-            x = p1().x();
+            x = outside.p1().x();
 
         } else if (alignment == HorizontalAlignment::Right) {
-            x = p2().x() - extent.width();
+            x = outside.p2().x() - inside.width();
 
         } else if (alignment == HorizontalAlignment::Center) {
-            x = (p1().x() + (width() * 0.5f)) - (extent.width() * 0.5f);
+            x = (outside.p1().x() + (outside.width() * 0.5f)) - (inside.width() * 0.5f);
 
         } else {
             no_default;
@@ -225,40 +252,28 @@ public:
 
         float y;
         if (alignment == VerticalAlignment::Bottom) {
-            y = p1().y();
+            y = outside.p1().y();
 
         } else if (alignment == VerticalAlignment::Top) {
-            y = p2().y() - extent.height();
+            y = outside.p2().y() - inside.height();
 
         } else if (alignment == VerticalAlignment::Middle) {
-            y = (p1().y() + (height() * 0.5f)) - (extent.height() * 0.5f);
+            y = (outside.p1().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
 
         } else if (alignment == VerticalAlignment::Base) {
-            y = (p1().y() + (height() * 0.5f)) - (extent.height() * 0.5f);
+            y = (outside.p1().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
 
         } else {
             no_default;
         }
 
-        return vec{x, y};
+        return {vec::point(x, y), inside.extent()};
     }
 
-    /** Align a box inside this box.
-     * This will look only at the extent of the other box.
+    /** Need to call the hiden friend function from within another class.
      */
-    [[nodiscard]] aarect align(aarect other, Alignment alignment) const noexcept {
-        let extent = other.extent();
-        let offset = align(extent, alignment);
-        return {offset, extent};
-    }
-
-    /** Resize to fit and align a box inside this box
-     * @param other The box to resize and align inside this box.
-     */
-    [[nodiscard]] aarect alignFit(aarect other, Alignment alignment) const noexcept {
-        let new_extent = other.extent().resize2DRetainingAspectRatio(extent());
-        let offset = align(new_extent, alignment);
-        return {offset, new_extent};
+    [[nodiscard]] static aarect _align(aarect outside, aarect inside, Alignment alignment) noexcept {
+        return align(outside, inside, alignment);
     }
 
     [[nodiscard]] friend bool operator==(aarect const &lhs, aarect const &rhs) noexcept {
@@ -281,24 +296,40 @@ public:
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, aarect const &rhs) noexcept {
-        return _mm_blend_ps(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b1100);
+        return aarect::m128(_mm_blend_ps(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b1100));
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, vec const &rhs) noexcept {
         ttauri_assume(rhs.w() == 1.0f);
-        return _mm_blend_ps(min(lhs.v, rhs), max(lhs.v, rhs.xyxy()), 0b1100);
+        return aarect::m128(_mm_blend_ps(min(lhs.v, rhs), max(lhs.v, rhs.xyxy()), 0b1100));
     }
 
     [[nodiscard]] friend aarect operator+(aarect const &lhs, vec const &rhs) noexcept {
-        return static_cast<__m128>(lhs.v + rhs.xyxy());
+        return aarect::m128(lhs.v + rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator-(aarect const &lhs, vec const &rhs) noexcept {
-        return static_cast<__m128>(lhs.v - rhs.xyxy());
+        return aarect::m128(lhs.v - rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator*(aarect const &lhs, float rhs) noexcept {
-        return static_cast<__m128>(lhs.v * vec{rhs});
+        return aarect::m128(lhs.v * vec{rhs});
+    }
+
+    /** Expand the rectangle for the same amount in all directions.
+    * @param lhs The original rectangle.
+    * @param rhs How much the width and height should be scaled by.
+    * @return A new rectangle expanded on each side.
+    */
+    [[nodiscard]] friend aarect scale(aarect const &lhs, float rhs) noexcept {
+        let extent = lhs.extent();
+        let scaled_extent = extent * rhs;
+        let diff_extent = scaled_extent - extent;
+        let half_diff_extent = diff_extent * 0.5f;
+
+        let p1 = lhs.p1() - half_diff_extent;
+        let p2 = lhs.p2() + half_diff_extent;
+        return aarect::p1p2(p1, p2);
     }
 
 
@@ -312,7 +343,7 @@ public:
         let _000r = _mm_set_ss(rhs);
         let _00rr = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(1,1,0,0))};
         let _rr00 = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(0,0,1,1))};
-        return static_cast<__m128>((lhs.v - _00rr) + _rr00);
+        return aarect::m128((lhs.v - _00rr) + _rr00);
     }
 
     /** Shrink the rectangle for the same amount in all directions.

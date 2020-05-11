@@ -25,7 +25,7 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
         let scale = mat::S(0.33f, 0.33f);
 
         closeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::ElusiveIcon::Off,
+            Text::TTauriIcon::CloseWindow,
             [&]() { window.closeWindow(); }
         );
         closeWindowButton->closeButton = true;
@@ -34,7 +34,7 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
         window.addConstraint(closeWindowButton->box.bottom == box.bottom);
 
         maximizeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::ElusiveIcon::ResizeFull,
+            Text::TTauriIcon::MaximizeWindow,
             [&]() { 
             switch (window.size) {
             case Window::Size::Normal:
@@ -53,7 +53,7 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
         window.addConstraint(maximizeWindowButton->box.bottom == box.bottom);
 
         minimizeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::ElusiveIcon::ResizeSmall,
+            Text::TTauriIcon::MinimizeWindow,
             //getResource<Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
             [&]() { window.minimizeWindow(); }
         );
@@ -67,9 +67,9 @@ void WindowToolbarWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
 {
     auto context = drawContext;
 
-    let rectangle = aarect{vec{0.0, 0.0}, box.currentExtent()};
+    let rectangle = aarect{box.currentExtent()};
 
-    context.drawBox(rectangle);
+    context.drawFilledQuad(rectangle);
 
     Widget::draw(drawContext, displayTimePoint);
 }

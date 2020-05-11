@@ -26,7 +26,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
 {
     auto context = drawContext;
 
-    let inputFieldRectangle = aarect{vec{}, box.currentExtent()};
+    let inputFieldRectangle = aarect{box.currentExtent()};
     context.drawBox(inputFieldRectangle);
 
     let textRectangle = shrink(inputFieldRectangle, Theme::margin);
@@ -49,8 +49,8 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
         lastUpdateTimePoint = displayTimePoint;
     }
 
-    auto textOffset = textRectangle.align(shapedText.extent, Alignment::MiddleLeft);
-    context.transform = context.transform * mat::T(textOffset.z(0.0001f));
+    auto textTranslate = mat::align(textRectangle, aarect{shapedText.extent}, Alignment::MiddleLeft);
+    context.transform = context.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
     for (let selectionRectangle: selectionRectangles) {
         context.fillColor = theme->textSelectColor;

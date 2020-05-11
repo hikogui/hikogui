@@ -51,6 +51,10 @@ public:
      */
     static constexpr float maxLabelWidth = 300.0f;
 
+    /** Size of icons in buttons, based on the original 1EM.
+     */
+    static constexpr float iconSize = 10.0;
+
     std::string name;
     ThemeMode mode;
 

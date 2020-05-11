@@ -1,0 +1,166 @@
+SplineFontDB: 3.2
+FontName: TTauriIcons
+FullName: TTauri Icons
+FamilyName: TTauri Icons
+Weight: Regular
+Copyright: Copyright (c) 2020, Pokitec
+UComments: "Icons are centered with the 1EM which is 1024 x 1024 units.+AAoA-Width of stems is 100 units"
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -122
+UnderlineWidth: 61
+Ascent: 1024
+Descent: 0
+InvalidEm: 0
+LayerCount: 2
+Layer: 0 1 "Back" 1
+Layer: 1 1 "Fore" 0
+XUID: [1021 1010 350632005 11497]
+FSType: 0
+OS2Version: 0
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1589190071
+ModificationTime: 1589198779
+PfmFamily: 17
+TTFWeight: 400
+TTFWidth: 5
+LineGap: 110
+VLineGap: 0
+OS2TypoAscent: 0
+OS2TypoAOffset: 1
+OS2TypoDescent: 0
+OS2TypoDOffset: 1
+OS2TypoLinegap: 110
+OS2WinAscent: 0
+OS2WinAOffset: 1
+OS2WinDescent: 0
+OS2WinDOffset: 1
+HheadAscent: 0
+HheadAOffset: 1
+HheadDescent: 0
+HheadDOffset: 1
+OS2Vendor: 'PfEd'
+MarkAttachClasses: 1
+DEI: 91125
+LangName: 1033
+Encoding: UnicodeBmp
+UnicodeInterp: none
+NameList: AGL For New Fonts
+DisplaySize: -48
+AntiAlias: 1
+FitToEm: 0
+WinInfo: 62118 21 9
+BeginPrivate: 0
+EndPrivate
+GridOrder2: 1
+Grid
+512 1632 m 0,0,-1
+ 512 -825 l 1024
+-1245 513 m 0,2,-1
+ 2442 513 l 1024
+EndSplineSet
+TeXData: 1 0 0 346030 173015 115343 0 1048576 115343 783286 444596 497025 792723 393216 433062 380633 303038 157286 324010 404750 52429 2506097 1059062 262144
+BeginChars: 65536 4
+
+StartChar: uniF301
+Encoding: 62209 62209 0
+Width: 1024
+VWidth: 1229
+Flags: W
+LayerCount: 2
+Fore
+SplineSet
+0 561 m 1,0,-1
+ 1023 561 l 1,1,-1
+ 1023 463 l 5,2,-1
+ 0 463 l 5,3,-1
+ 0 561 l 1,0,-1
+EndSplineSet
+Validated: 1
+Comment: "Minimize Window"
+EndChar
+
+StartChar: uniF302
+Encoding: 62210 62210 1
+Width: 1024
+VWidth: 1229
+Flags: W
+LayerCount: 2
+Fore
+SplineSet
+96 926 m 1,0,-1
+ 96 100 l 1,1,-1
+ 924 100 l 5,2,-1
+ 924 926 l 5,3,-1
+ 96 926 l 1,0,-1
+0 1023 m 1,4,-1
+ 1024 1023 l 1,5,-1
+ 1024 0 l 1,6,-1
+ 0 0 l 1,7,-1
+ 0 1023 l 1,4,-1
+EndSplineSet
+Validated: 1
+Comment: "Maximize Window"
+EndChar
+
+StartChar: uniF304
+Encoding: 62212 62212 2
+Width: 1024
+VWidth: 1229
+Flags: W
+LayerCount: 2
+Fore
+SplineSet
+512 583 m 5,0,-1
+ 965 1036 l 5,1,-1
+ 1036 965 l 5,2,-1
+ 583 512 l 5,3,-1
+ 1036 59 l 5,4,-1
+ 965 -12 l 5,5,-1
+ 512 441 l 5,6,-1
+ 59 -12 l 5,7,-1
+ -12 59 l 5,8,-1
+ 441 512 l 5,9,-1
+ -12 965 l 5,10,-1
+ 59 1036 l 5,11,-1
+ 512 583 l 5,0,-1
+EndSplineSet
+Comment: "Close Window"
+EndChar
+
+StartChar: uniF303
+Encoding: 62211 62211 3
+Width: 1024
+VWidth: 1229
+Flags: W
+LayerCount: 2
+Fore
+SplineSet
+1024 1024 m 1,0,-1
+ 1024 203 l 1,1,-1
+ 824 203 l 1,2,-1
+ 824 3 l 1,3,-1
+ 0 3 l 1,4,-1
+ 0 824 l 1,5,-1
+ 200 824 l 1,6,-1
+ 200 1024 l 1,7,-1
+ 1024 1024 l 1,0,-1
+724 724 m 5,8,-1
+ 98 724 l 1,9,-1
+ 98 102 l 1,10,-1
+ 724 102 l 5,11,-1
+ 724 724 l 5,8,-1
+298 824 m 1,12,-1
+ 824 824 l 1,13,-1
+ 824 302 l 1,14,-1
+ 924 302 l 1,15,-1
+ 924 924 l 1,16,-1
+ 298 924 l 1,17,-1
+ 298 824 l 1,12,-1
+EndSplineSet
+Validated: 1
+Comment: "Restore Window"
+EndChar
+EndChars
+EndSplineFont

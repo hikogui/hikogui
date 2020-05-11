@@ -213,22 +213,22 @@ std::tuple<aarect, aarect, aarect, aarect> WindowTrafficLightsWidget::getButtonR
     let height = box.height.value();
 
     let sysmenuButtonBox = aarect{
-        {left, bottom},
+        vec::point(left, bottom),
         {height, height}
     };
 
     let redButtonBox = aarect{
-        {left + MARGIN, bottom + MARGIN},
+        vec::point(left + MARGIN, bottom + MARGIN),
         {DIAMETER, DIAMETER}
     };
 
     let yellowButtonBox = aarect{
-        {left + MARGIN + DIAMETER + SPACING, bottom + MARGIN},
+        vec::point(left + MARGIN + DIAMETER + SPACING, bottom + MARGIN),
         {DIAMETER, DIAMETER}
     };
 
     let greenButtonBox = aarect{
-        {left + MARGIN + DIAMETER * 2.0 + SPACING * 2.0, bottom + MARGIN},
+        vec::point(left + MARGIN + DIAMETER * 2.0 + SPACING * 2.0, bottom + MARGIN),
         {DIAMETER, DIAMETER}
     };
 

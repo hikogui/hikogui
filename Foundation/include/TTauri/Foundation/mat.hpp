@@ -372,6 +372,17 @@ public:
         }
     }
 
+    /** Align a rectangle within another rectangle.
+    * @param outside The outside rectangle
+    * @param inside The inside rectangle; to be aligned.
+    * @param alignment How the inside rectangle should be aligned.
+    * @return Translation matrix to draw the inside rectangle as if the inside
+    *         rectangle's left-bottom corner is positioned at the origin.
+    */
+    [[nodiscard]] static mat::T align(aarect outside, aarect inside, Alignment alignment) noexcept {
+        return mat::T{aarect::_align(outside, inside, alignment).offset()};
+    }
+
     [[nodiscard]] friend std::string to_string(mat const &rhs) noexcept {
         return fmt::format("[{}, {}, {}, {}]", rhs.col0, rhs.col1, rhs.col2, rhs.col3);
     }
@@ -380,6 +391,7 @@ public:
         return lhs << to_string(rhs);
     }
 };
+
 
 template<typename M> struct is_mat : std::false_type {};
 template<> struct is_mat<mat> : std::true_type {};

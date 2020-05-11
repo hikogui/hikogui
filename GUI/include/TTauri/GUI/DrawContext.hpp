@@ -86,7 +86,7 @@ public:
         fillColor(1.0, 1.0, 0.0, 1.0),
         lineWidth(Theme::borderWidth),
         cornerShapes(),
-        clippingRectangle(vec{0.0, 0.0}, static_cast<vec>(window.currentWindowExtent))
+        clippingRectangle(static_cast<vec>(window.currentWindowExtent))
     {
         flatVertices.clear();
         boxVertices.clear();

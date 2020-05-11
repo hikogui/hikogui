@@ -20,12 +20,11 @@ protected:
     observer<ValueType> value;
 
     std::string label = "<unknown>";
-    std::string check = u8"\u2713";
+    char32_t check = 0x2713;
 
     Text::ShapedText labelShapedText;
-    Text::ShapedText checkShapedText;
-    Text::ShapedText whiteXShapedText;
-    Text::ShapedText blackXShapedText;
+    Text::FontGlyphIDs checkGlyph;
+    aarect checkBoundingBox;
 public:
 
     CheckboxWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
@@ -66,24 +65,13 @@ public:
         if (renderTrigger.check(displayTimePoint) >= 2) {
             labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
 
-            let checkStyle = Text::TextStyle{
-                "Arial", Text::FontVariant{}, button_rectangle.height(), theme->accentColor, Text::TextDecoration::None
-            };
-            checkShapedText = Text::ShapedText(check, checkStyle, HorizontalAlignment::Left, label_width);
-
-            let whiteStyle = Text::TextStyle{
-                "Arial", Text::FontVariant{}, button_rectangle.height(), vec::color(1.0, 1.0, 1.0), Text::TextDecoration::None
-            };
-
-            let blackStyle = Text::TextStyle{
-                "Arial", Text::FontVariant{}, button_rectangle.height(), vec::color(0.0, 0.0, 0.0), Text::TextDecoration::None
-            };
-
-            whiteXShapedText = Text::ShapedText("x"s, whiteStyle, HorizontalAlignment::Left, Theme::smallHeight);
-            blackXShapedText = Text::ShapedText("x"s, blackStyle, HorizontalAlignment::Left, Theme::smallHeight);
+            let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
+            checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});
+            checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.3f);
         }
-        let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
-        let check_translate = mat::T{button_rectangle.align(checkShapedText.extent, Alignment::MiddleCenter)};
+
+        let label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
+        let check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
         // button.
         auto context = drawContext;
@@ -91,63 +79,33 @@ public:
 
         // Checkmark or tristate.
         if (enabled) {
+            context.fillColor = theme->accentColor;
+            context.color = theme->accentColor;
             if (value == TrueValue) {
-                context.transform = drawContext.transform * check_translate * mat::T{0.0, 0.0, 0.001f};
-                context.drawText(checkShapedText);
+                context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+                context.drawGlyph(checkGlyph, check_rectangle);
             } else if (value == FalseValue) {
                 ;
             } else {
                 context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.fillColor = theme->accentColor;
                 context.drawFilledQuad(shrink(button_rectangle, 4.0f));
             }
         } else {
+            context.fillColor = theme->borderColor(nestingLevel() - 1);
+            context.color = theme->borderColor(nestingLevel() - 1);
             if (value == TrueValue) {
-                context.transform = drawContext.transform * check_translate * mat::T{0.0, 0.0, 0.001f};
-                context.drawText(checkShapedText);
+                context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+                context.drawGlyph(checkGlyph, check_rectangle);
             } else if (value == FalseValue) {
                 ;
             } else {
                 context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.fillColor = theme->borderColor(nestingLevel() - 1);
                 context.drawFilledQuad(shrink(button_rectangle, 4.0f));
             }
         }
         // user defined label.
         context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};
         context.drawText(labelShapedText);
-
-        // Test pattern.
-        if (false) {
-            context = drawContext;
-            context.fillColor = vec::color(0.0, 0.0, 0.0, 1.0);
-            context.drawFilledQuad(aarect{0, 0, Theme::smallHeight, Theme::smallHeight * 0.25f});
-            context.fillColor = vec::color(0.5, 0.5, 0.5, 1.0);
-            context.drawFilledQuad(aarect{0, Theme::smallHeight * 0.25f, Theme::smallHeight, Theme::smallHeight * 0.25f});
-            context.fillColor = vec::color(1.5, 1.5, 1.5, 1.0);
-            context.drawFilledQuad(aarect{0, Theme::smallHeight * 0.5f, Theme::smallHeight, Theme::smallHeight * 0.25f});
-            context.fillColor = vec::color(0.5, 0.5, 0.5, 0.5);
-            context.drawFilledQuad(aarect{Theme::smallHeight * 0.25f, 0, Theme::smallHeight * 0.25f, Theme::smallHeight});
-        }
-
-        if (false) {
-            context = drawContext;
-
-            let rectangle = aarect{0, 0, Theme::smallHeight, Theme::smallHeight};
-            let whiteX_translate = mat::T{rectangle.align(whiteXShapedText.extent, Alignment::MiddleCenter)};
-            context.transform = context.transform * mat::T{0.0f, 0.0f, 0.005f} * whiteX_translate;
-
-            context.fillColor = vec::color(0.0, 0.0, 0.0, 1.0);
-            context.drawFilledQuad(rectangle);
-            context.drawText(whiteXShapedText);
-
-            context.transform = context.transform * mat::T{Theme::smallHeight, 0};
-            context.fillColor = vec::color(1.0, 1.0, 1.0, 1.0);
-            context.drawFilledQuad(rectangle);
-            context.drawText(blackXShapedText);
-
-        }
-
 
         Widget::draw(drawContext, displayTimePoint);
     }

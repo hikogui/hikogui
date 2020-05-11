@@ -35,16 +35,16 @@ public:
     }
 
     force_inline R32G32B32A32SFloat(aarect const &rhs) noexcept {
-        _mm_storeu_ps(v.data(), rhs);
+        _mm_storeu_ps(v.data(), rhs.m128());
     }
 
     force_inline R32G32B32A32SFloat &operator=(aarect const &rhs) noexcept {
-        _mm_storeu_ps(v.data(), rhs);
+        _mm_storeu_ps(v.data(), rhs.m128());
         return *this;
     }
 
     force_inline operator aarect () const noexcept {
-        return _mm_loadu_ps(v.data());
+        return aarect::m128(_mm_loadu_ps(v.data()));
     }
 
     [[nodiscard]] force_inline friend bool operator==(R32G32B32A32SFloat const &lhs, R32G32B32A32SFloat const &rhs) noexcept {

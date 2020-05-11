@@ -58,7 +58,7 @@ void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     if (renderTrigger.check(displayTimePoint) >= 2) {
         labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
     }
-    let label_translate = mat::T{label_rectangle.align(labelShapedText.extent, Alignment::MiddleLeft)};
+    let label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
 
     // Outside oval.
     auto context = drawContext;

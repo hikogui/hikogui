@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Text/ElusiveIcons.hpp"
+#include "TTauri/Text/TTauriIcons.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -27,7 +28,12 @@ public:
     std::function<void()> delegate;
 
     ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept;
-    ToolbarButtonWidget(Window &window, Widget *parent, Text::ElusiveIcon icon, std::function<void()> delegate) noexcept;
+
+    ToolbarButtonWidget(Window &window, Widget *parent, Text::ElusiveIcon icon, std::function<void()> delegate) noexcept :
+        ToolbarButtonWidget(window, parent, Text::to_FontGlyphIDs(icon), std::move(delegate)) {}
+    ToolbarButtonWidget(Window &window, Widget *parent, Text::TTauriIcon icon, std::function<void()> delegate) noexcept :
+        ToolbarButtonWidget(window, parent, Text::to_FontGlyphIDs(icon), std::move(delegate)) {}
+
     ~ToolbarButtonWidget() {}
 
     ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;
