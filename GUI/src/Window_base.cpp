@@ -41,7 +41,46 @@ void Window_base::initialize()
 
     widget = Widgets::Widget::make_unique_WindowWidget(*static_cast<Window *>(this));
 
+    // The width and height of the window will be modified by the user and also for
+    // testing the minimum and maximum size of the window.
+    widgetSolver.add_stay(widget->box.width, rhea::strength::medium());
+    widgetSolver.add_stay(widget->box.height, rhea::strength::medium());
+
     openingWindow();
+}
+
+void Window_base::render(cpu_utc_clock::time_point displayTimePoint)
+{
+    layout();
+}
+
+void Window_base::layout()
+{
+    auto changed = layoutChildren(forceLayout.exchange(false));
+    if (changed) {
+        calculateMinimumAndMaximumWindowExtent();
+    }
+}
+
+bool Window_base::layoutChildren(bool force) {
+    constexpr int layout_retries = 10;
+
+    auto changed = false;
+
+    for (auto i = 0; i != layout_retries; ++i) {
+        bool widget_changed = false;
+        if (force || widget->needsLayout()) {
+            widget_changed = widget->layout();
+        }
+
+        // Grandchildren need to be layed out when the child has changed.
+        changed = widget->layoutChildren(force || widget_changed);
+
+        if (!changed) {
+            return i != 0;
+        }
+    }
+    LOG_FATAL("Unable to layout child widgets");
 }
 
 void Window_base::openingWindow() {
@@ -52,6 +91,9 @@ void Window_base::openingWindow() {
     auto lock = std::scoped_lock(guiMutex);
     state = State::NoDevice;
     updateToNextKeyboardTarget(nullptr);
+
+    // Execute a layout to determine initial window size.
+    layout();
 }
 
 void Window_base::closingWindow() {

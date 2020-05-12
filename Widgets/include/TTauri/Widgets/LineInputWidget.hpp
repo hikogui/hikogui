@@ -21,6 +21,7 @@ protected:
     Text::EditableText field;
     Text::ShapedText shapedText;
 
+    aarect textRectangle = {};
     aarect leftToRightCaret = {};
     aarect partialGraphemeCaret = {};
     std::vector<aarect> selectionRectangles = {};
@@ -40,6 +41,8 @@ public:
     LineInputWidget(LineInputWidget&&) = delete;
     LineInputWidget &operator=(LineInputWidget &&) = delete;
 
+    [[nodiscard]] bool needsLayout() const noexcept override;
+    [[nodiscard]] bool layout() noexcept override;
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleCommand(string_ltag command) noexcept;

@@ -21,7 +21,7 @@ protected:
     std::string label = "<unknown>";
 
     Text::ShapedText labelShapedText;
-
+    mat::T textTranslate;
 public:
 
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
@@ -31,6 +31,9 @@ public:
     ButtonWidget &operator=(const ButtonWidget &) = delete;
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
+
+    [[nodiscard]] bool needsLayout() const noexcept override;
+    [[nodiscard]] bool layout() noexcept override;
 
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 

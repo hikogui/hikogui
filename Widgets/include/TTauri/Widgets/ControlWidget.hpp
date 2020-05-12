@@ -34,13 +34,15 @@ public:
     {
         minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());
         minimumHeightConstraint = window.addConstraint(box.height >= minimumExtent.height());
-        //preferedWidthConstraint = window.addConstraint(box.width >= preferedExtent.width());
-        //preferedHeightConstraint = window.addConstraint(box.height >= preferedExtent.height());
+        preferedWidthConstraint = window.addConstraint(box.width >= preferedExtent.width(), rhea::strength::strong());
+        preferedHeightConstraint = window.addConstraint(box.height >= preferedExtent.height(), rhea::strength::strong());
     }
 
     ~ControlWidget() {
         window.removeConstraint(minimumWidthConstraint);
         window.removeConstraint(minimumHeightConstraint);
+        window.removeConstraint(preferedWidthConstraint);
+        window.removeConstraint(preferedHeightConstraint);
     }
 
     ControlWidget(const ControlWidget &) = delete;
@@ -48,7 +50,7 @@ public:
     ControlWidget(ControlWidget &&) = delete;
     ControlWidget &operator=(ControlWidget &&) = delete;
 
-    void setMinimumExtent(vec newMinimumExtent) noexcept {
+    bool setMinimumExtent(vec newMinimumExtent) noexcept {
         if (newMinimumExtent != minimumExtent) {
             minimumExtent = newMinimumExtent;
 
@@ -61,6 +63,30 @@ public:
                 minimumHeightConstraint,
                 box.height >= minimumExtent.height()
             );
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    bool setPreferedExtent(vec newPreferedExtent) noexcept {
+        if (newPreferedExtent != preferedExtent) {
+            preferedExtent = newPreferedExtent;
+
+            preferedWidthConstraint = window.replaceConstraint(
+                preferedWidthConstraint,
+                box.width >= preferedExtent.width(),
+                rhea::strength::weak()
+            );
+
+            preferedHeightConstraint = window.replaceConstraint(
+                preferedHeightConstraint,
+                box.height >= preferedExtent.height(),
+                rhea::strength::weak()
+            );
+            return true;
+        } else {
+            return false;
         }
     }
 

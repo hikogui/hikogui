@@ -21,6 +21,23 @@ protected:
     std::string label = "<unknown>";
 
     Text::ShapedText labelShapedText;
+
+    float toggle_height;
+    float toggle_width;
+    float toggle_x;
+    float toggle_y;
+    aarect toggle_rectangle;
+
+    float slider_move;
+    float slider_width;
+    float slider_height;
+
+    float label_x;
+    float label_y;
+    float label_width;
+    float label_height;
+    aarect label_rectangle;
+    mat::T label_translate;
 public:
 
     ToggleWidget(Window &window, Widget *parent, observed<bool> &value, std::string const label) noexcept;
@@ -31,6 +48,8 @@ public:
     ToggleWidget(ToggleWidget&&) = delete;
     ToggleWidget &operator=(ToggleWidget &&) = delete;
 
+    [[nodiscard]] bool needsLayout() const noexcept override;
+    [[nodiscard]] bool layout() noexcept override;
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;

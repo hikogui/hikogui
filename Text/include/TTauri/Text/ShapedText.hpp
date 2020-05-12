@@ -33,6 +33,7 @@ class ShapedText {
 
 public:
     vec extent;
+    vec preferedExtent;
 
     ShapedText() noexcept :
         extent(0.0f, 0.0f), lines() {}

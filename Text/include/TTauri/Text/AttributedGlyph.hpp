@@ -19,6 +19,13 @@ struct AttributedGlyph {
     */
     ssize_t logicalIndex;
 
+    /** Metrics taken from the font file, pre-scaled to the font-size. */
+    GlyphMetrics metrics;
+
+    /** Position of the glyph.
+    */
+    vec position;
+
     /** Number of graphemes merged (ligature) into this attributed-glyph. */
     int8_t graphemeCount;
 
@@ -26,13 +33,6 @@ struct AttributedGlyph {
 
     /** Copied from the original attributed-grapheme. */
     TextStyle style;
-
-    /** Metrics taken from the font file, pre-scaled to the font-size. */
-    GlyphMetrics metrics;
-
-    /** Position of the glyph.
-     */
-    vec position;
 
     /** Constructed an attributed glyph from an attributed grapheme.
      * When converting a string of graphemes into a string of glyphs you should

@@ -68,7 +68,11 @@ public:
 
     /*! The current frame number that is being rendered.
      */
-    long long frameCount = 0; 
+    long long frameCount = 0;
+
+    /** When set to true the widgets will be layed out.
+     */
+    std::atomic<bool> forceLayout = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -165,10 +169,16 @@ public:
      */
     void unsetDevice() { setDevice({}); }
 
+    void layout();
+
+    /** Layout the widgets in the window.
+     */
+    bool layoutChildren(bool force);
+
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render(cpu_utc_clock::time_point displayTimePoint) = 0;
+    virtual void render(cpu_utc_clock::time_point displayTimePoint);
 
     bool isClosed() {
         auto lock = std::scoped_lock(guiMutex);
@@ -183,32 +193,54 @@ public:
 
     rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept {
         widgetSolver.add_constraint(constraint);
-        // During the construction of WindowWidget `widget` is not yet set.
-        if (widget) {
-            calculateMinimumAndMaximumWindowExtent();
-            widget->handleWindowResize();
-        }
         return constraint;
+    }
+
+    rhea::constraint addConstraint(
+        rhea::linear_equation const& equation,
+        rhea::strength const &strength = rhea::strength::required(),
+        double weight = 1.0
+    ) noexcept {
+        return addConstraint(rhea::constraint(equation, strength, weight));
+    }
+
+    rhea::constraint addConstraint(
+        rhea::linear_inequality const& equation,
+        rhea::strength const &strength = rhea::strength::required(),
+        double weight = 1.0
+    ) noexcept {
+        return addConstraint(rhea::constraint(equation, strength, weight));
     }
 
     void removeConstraint(rhea::constraint const& constraint) noexcept {
         widgetSolver.remove_constraint(constraint);
-        // During the construction of WindowWidget `widget` is not yet set.
-        if (widget) {
-            calculateMinimumAndMaximumWindowExtent();
-            widget->handleWindowResize();
-        }
     }
 
-    rhea::constraint replaceConstraint(rhea::constraint const &oldConstraint, rhea::constraint const &newConstraint) noexcept {
+    rhea::constraint replaceConstraint(
+        rhea::constraint const &oldConstraint,
+        rhea::constraint const &newConstraint
+    ) noexcept {
         widgetSolver.remove_constraint(oldConstraint);
         widgetSolver.add_constraint(newConstraint);
-        // During the construction of WindowWidget `widget` is not yet set.
-        if (widget) {
-            calculateMinimumAndMaximumWindowExtent();
-            widget->handleWindowResize();
-        }
         return newConstraint;
+    }
+
+    rhea::constraint replaceConstraint(
+        rhea::constraint const &oldConstraint,
+        rhea::linear_equation const &newEquation,
+        rhea::strength const &strength = rhea::strength::required(),
+        double weight = 1.0
+    ) noexcept {
+        return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
+    }
+
+    rhea::constraint replaceConstraint(
+        rhea::constraint const &oldConstraint,
+        rhea::linear_inequality const &newEquation,
+        rhea::strength const &strength = rhea::strength::required(),
+        double weight = 1.0
+    ) noexcept {
+        return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
     }
 
     virtual void setCursor(Cursor cursor) = 0;
@@ -266,11 +298,9 @@ protected:
     /*! Called when the GPU library has changed the window size.
      */
     virtual void windowChangedSize(ivec extent) {
-        removeCurrentWindowExtentConstraints();
         currentWindowExtent = extent;
-        addCurrentWindowExtentConstraints();
-
-        widget->handleWindowResize();
+        calculateMinimumAndMaximumWindowExtent();
+        forceLayout.store(true);
     }
 
     /*! call openingWindow() on the delegate. 
@@ -379,6 +409,8 @@ protected:
 private:
     //! This solver determines size and position of all widgets in this window.
     rhea::simplex_solver widgetSolver;
+    rhea::simplex_solver minWidgetSolver;
+    rhea::simplex_solver maxWidgetSolver;
 
     //! Stay constraint for the currentWindowExtent width.
     rhea::constraint currentWindowExtentWidthConstraint;
@@ -386,48 +418,18 @@ private:
     //! Stay constraint for the currentWindowExtent height.
     rhea::constraint currentWindowExtentHeightConstraint;
 
-    //! Flag to determine in the currentWindowExtent constrains are active.
-    bool currentWindowExtentConstraintActive = false;
-
-    void removeCurrentWindowExtentConstraints() {
-        ttauri_assume(widget);
-
-        if (currentWindowExtentConstraintActive) {
-            widgetSolver.remove_constraint(currentWindowExtentWidthConstraint);
-            widgetSolver.remove_constraint(currentWindowExtentHeightConstraint);
-            currentWindowExtentConstraintActive = false;
-        }
-    }
-
-    void addCurrentWindowExtentConstraints() {
-        ttauri_assume(widget);
-
-        if (!currentWindowExtentConstraintActive) {
-            auto widthEquation = widget->box.width == currentWindowExtent.x();
-            auto heightEquation = widget->box.height == currentWindowExtent.y();
-
-            currentWindowExtentWidthConstraint = rhea::constraint(widthEquation, rhea::strength::weak(), 1.0);
-            currentWindowExtentHeightConstraint = rhea::constraint(heightEquation, rhea::strength::weak(), 1.0);
-            widgetSolver.add_constraint(currentWindowExtentWidthConstraint);
-            widgetSolver.add_constraint(currentWindowExtentHeightConstraint);
-            currentWindowExtentConstraintActive = true;
-        }
-    }
-
     void calculateMinimumAndMaximumWindowExtent() {
         ttauri_assume(widget);
 
-        removeCurrentWindowExtentConstraints();
-
+        // Test for minimum extent.
         widgetSolver.suggest(widget->box.width, 0);
         widgetSolver.suggest(widget->box.height, 0);
         minimumWindowExtent = widget->box.currentExtent();
 
+        // Test for maximum extent.
         widgetSolver.suggest(widget->box.width, std::numeric_limits<uint32_t>::max());
         widgetSolver.suggest(widget->box.height, std::numeric_limits<uint32_t>::max());
         maximumWindowExtent = widget->box.currentExtent();
-
-        LOG_INFO("Window '{}' minimumExtent={} maximumExtent={}", title, minimumWindowExtent, maximumWindowExtent);
 
         if (
             (currentWindowExtent.x() < minimumWindowExtent.x()) ||
@@ -443,7 +445,17 @@ private:
             setWindowSize(maximumWindowExtent);
         }
 
-        addCurrentWindowExtentConstraints();
+        // Set to actual window size.
+        widgetSolver.suggest(widget->box.width, currentWindowExtent.width());
+        widgetSolver.suggest(widget->box.height, currentWindowExtent.height());
+
+        LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
+            title,
+            minimumWindowExtent,
+            maximumWindowExtent,
+            currentWindowExtent
+        );
+
     }
 
 

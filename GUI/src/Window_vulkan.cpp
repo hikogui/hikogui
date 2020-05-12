@@ -308,6 +308,9 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     device->resetFences({ renderFinishedFence });
 
+    // Make sure the widget's layout is updated before draw, but after window resize.
+    Window_base::render(displayTimePoint);
+
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.
     auto drawContext = DrawContext(

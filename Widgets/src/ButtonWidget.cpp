@@ -20,23 +20,28 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 ButtonWidget::~ButtonWidget() {
 }
 
+bool ButtonWidget::needsLayout() const noexcept
+{
+    return ControlWidget::needsLayout();
+}
 
+bool ButtonWidget::layout() noexcept 
+{
+    auto changed = ControlWidget::layout();
+
+    let labelWidth = rectangle.width() - Theme::margin * 2.0f;
+
+    LOG_DEBUG("Shaping button label {}", to_string(theme->warningLabelStyle));
+    labelShapedText = ShapedText(label, theme->warningLabelStyle, HorizontalAlignment::Center, labelWidth);
+    textTranslate = mat::align(rectangle, aarect{labelShapedText.extent}, Alignment::MiddleCenter);
+
+    changed |= setMinimumExtent(vec{Theme::width, Theme::height});
+    changed |= setPreferedExtent(labelShapedText.preferedExtent + vec{Theme::margin, Theme::margin} * 2.0f);
+    return changed;
+}
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
-    let rectangle = aarect{box.currentExtent()};
-
-    if (renderTrigger.check(displayTimePoint) >= 2) {
-        let labelWidth = rectangle.width() - Theme::margin * 2.0f;
-
-        LOG_DEBUG("Shaping button label {}", to_string(theme->warningLabelStyle));
-        labelShapedText = ShapedText(label, theme->warningLabelStyle, HorizontalAlignment::Center, labelWidth);
-
-        setMinimumExtent(Theme::maxLabelWidth, Theme::height);
-        //setMinimumExtent(Theme::width, labelShapedText.extent.height());
-        //setPreferedExtent(labelShapedText.preferedExtent);
-    }
-
     auto context = drawContext;
 
     context.cornerShapes = vec{Theme::roundingRadius};
@@ -47,8 +52,6 @@ void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     // Move the border of the button in the middle of a pixel.
     context.transform = drawContext.transform;
     context.drawBox(rectangle);
-
-    auto textTranslate = mat::align(rectangle, aarect{labelShapedText.extent}, Alignment::MiddleCenter);
 
     context.transform = drawContext.transform * (mat::T{0.0f, 0.0f, 0.001f} * textTranslate);
     context.drawText(labelShapedText);

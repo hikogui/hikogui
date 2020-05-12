@@ -58,6 +58,8 @@ public:
 
     Widget *parent;
 
+    mutable std::atomic<bool> forceLayout = true;
+
     Trigger<cpu_utc_clock> renderTrigger;
 
     std::vector<std::unique_ptr<Widget>> children;
@@ -87,6 +89,12 @@ public:
     //! Location of the frame compared to the window.
     BoxModel box;
 
+    /** The rectangle of the widget.
+     * The rectangle's left bottom corner is at (0, 0)
+     * in the current DrawContext's coordinate system.
+     */
+    aarect rectangle;
+
     float elevation = 0.0;
 
     /** The widget is enabled.
@@ -113,6 +121,7 @@ public:
 
     template<typename T, typename... Args>
     T &addWidgetDirectly(Args &&... args) {
+        window.forceLayout.store(true);
         auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         let widget_ptr = widget.get();
         children.push_back(move(widget));
@@ -122,6 +131,7 @@ public:
 
     template<typename T, typename... Args>
     T &addWidget(Args &&... args) {
+        window.forceLayout.store(true);
         if (content != nullptr) {
             return content->addWidget<T>(std::forward<Args>(args)...);
         } else {
@@ -161,6 +171,32 @@ public:
         return numeric_cast<ssize_t>(elevation);
     }
 
+    /** Check if the widget wants to be layed out.
+     * super::needsLayout() should be called at start of the overriden function.
+     */
+    [[nodiscard]] virtual bool needsLayout() const noexcept;
+
+    /** Layout the widget.
+     * super::layout() should be called at start of the overriden function.
+     *
+     * @return True when the layout of the widget has changed.
+     *         This will force the children to be layout.
+     *         And layout() should be retried before drawing.
+     */
+    [[nodiscard]] virtual bool layout() noexcept;
+
+    /** Layout children of this widget.
+    *
+    * @param force Force the layout of the widget.
+    * @return True when the layout of a child-widget has changed.
+    *         And layoutChildren() should be retried before drawing.
+    */
+    [[nodiscard]] bool layoutChildren(bool force) noexcept;
+
+    /** Check if the widgets needs to be redrawn.
+     */
+    [[nodiscard]] virtual bool needsRedraw() const noexcept;
+
     /** Draw widget.
     *
     * The overriding function should call the base class's draw(), the place
@@ -170,13 +206,6 @@ public:
     * order.
     */
     virtual void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept;
-
-    virtual void handleWindowResize() noexcept {
-        renderTrigger += std::numeric_limits<int>::max();
-        for (auto &child: children) {
-            child->handleWindowResize();
-        }
-    }
 
     /** Handle command.
      */

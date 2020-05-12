@@ -25,6 +25,21 @@ protected:
     Text::ShapedText labelShapedText;
     Text::FontGlyphIDs checkGlyph;
     aarect checkBoundingBox;
+
+    float button_height;
+    float button_width;
+    float button_x;
+    float button_y;
+    aarect button_rectangle;
+
+    float label_x;
+    float label_y;
+    float label_width;
+    float label_height;
+    aarect label_rectangle;
+
+    mat::T label_translate;
+    aarect check_rectangle;
 public:
 
     CheckboxWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
@@ -45,34 +60,38 @@ public:
     CheckboxWidget(CheckboxWidget&&) = delete;
     CheckboxWidget &operator=(CheckboxWidget &&) = delete;
 
-    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override{
-        // Prepare coordinates.
-        let rectangle = box.currentRectangle();
+    bool needsLayout() const noexcept override {
+        return Widget::needsLayout();
+    }
 
-        let button_height = Theme::smallHeight;
-        let button_width = Theme::smallHeight;
-        let button_x = Theme::smallWidth - button_width;
-        let button_y = (rectangle.height() - button_height) * 0.5f;
-        let button_rectangle = aarect{button_x, button_y, button_width, button_height};
+    bool layout() noexcept override {
+        auto changed = Widget::layout();
 
-        let label_x = Theme::smallWidth + theme->margin;
-        let label_y = 0.0f;
-        let label_width = rectangle.width() - label_x;
-        let label_height = rectangle.height();
-        let label_rectangle = aarect{label_x, label_y, label_width, label_height};
+        button_height = Theme::smallHeight;
+        button_width = Theme::smallHeight;
+        button_x = Theme::smallWidth - button_width;
+        button_y = (rectangle.height() - button_height) * 0.5f;
+        button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
-        // Prepare labels.
-        if (renderTrigger.check(displayTimePoint) >= 2) {
-            labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
+        label_x = Theme::smallWidth + theme->margin;
+        label_y = 0.0f;
+        label_width = rectangle.width() - label_x;
+        label_height = rectangle.height();
+        label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
-            let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
-            checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});
-            checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.3f);
-        }
+        label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
+        check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
-        let label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
-        let check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
 
+        let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
+        checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});
+        checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.3f);
+
+        return changed;
+    }
+
+    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override {
         // button.
         auto context = drawContext;
         context.drawBox(button_rectangle);

@@ -161,6 +161,8 @@ public:
     force_inline int y() const noexcept { return get<1>(); }
     force_inline int z() const noexcept { return get<2>(); }
     force_inline int w() const noexcept { return get<3>(); }
+    force_inline int width() const noexcept { return get<0>(); }
+    force_inline int height() const noexcept { return get<1>(); }
 
     force_inline ivec &operator+=(ivec const &rhs) noexcept {
         return *this = _mm_add_epi32(*this, rhs);

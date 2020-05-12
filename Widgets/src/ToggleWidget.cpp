@@ -24,6 +24,34 @@ ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value
     window.addConstraint(box.height >= Theme::smallHeight);
 }
 
+bool ToggleWidget::needsLayout() const noexcept {
+    return Widget::needsLayout();
+}
+
+bool ToggleWidget::layout() noexcept {
+    auto changed = Widget::layout();
+
+    toggle_height = Theme::smallHeight;
+    toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
+    toggle_x = -0.5f;  // Expand horizontally due to rounded shape
+    toggle_y = (rectangle.height() - toggle_height) * 0.5f;
+    toggle_rectangle = aarect{toggle_x, toggle_y, toggle_width, toggle_height};
+
+    slider_move = toggle_width - toggle_height;
+    slider_width = toggle_height - 2.0f * Theme::borderWidth;
+    slider_height = toggle_height - 2.0f * Theme::borderWidth;
+
+    label_x = Theme::smallWidth + theme->margin;
+    label_y = 0.0f;
+    label_width = rectangle.width() - label_x;
+    label_height = rectangle.height();
+    label_rectangle = aarect{label_x, label_y, label_width, label_height};
+
+    labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
+    label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
+    return changed;
+}
+
 void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     // Prepare animation values.
@@ -32,40 +60,16 @@ void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
         ++renderTrigger;
     }
 
-    // Prepare coordinates.
-    let rectangle = box.currentRectangle();
-
-    let toggle_height = Theme::smallHeight;
-    let toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
-    let toggle_x = -0.5f;  // Expand horizontally due to rounded shape
-    let toggle_y = (rectangle.height() - toggle_height) * 0.5f;
-    let toggle_rectangle = aarect{toggle_x, toggle_y, toggle_width, toggle_height};
-
-    let slider_move = toggle_width - toggle_height;
-    let slider_x = toggle_x + Theme::borderWidth + slider_move * curr_value;
-    let slider_y = toggle_y + Theme::borderWidth;
-    let slider_width = toggle_height - 2.0f * Theme::borderWidth;
-    let slider_height = toggle_height - 2.0f * Theme::borderWidth;
-    let slider_rectangle = aarect{slider_x, slider_y, slider_width, slider_height};
-
-    let label_x = Theme::smallWidth + theme->margin;
-    let label_y = 0.0f;
-    let label_width = rectangle.width() - label_x;
-    let label_height = rectangle.height();
-    let label_rectangle = aarect{label_x, label_y, label_width, label_height};
-
-    // Prepare labels.
-    if (renderTrigger.check(displayTimePoint) >= 2) {
-        labelShapedText = ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
-    }
-    let label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
-
     // Outside oval.
     auto context = drawContext;
     context.cornerShapes = vec{toggle_rectangle.height() * 0.5f};
     context.drawBox(toggle_rectangle);
 
     // Inside circle
+    let slider_x = toggle_x + Theme::borderWidth + slider_move * curr_value;
+    let slider_y = toggle_y + Theme::borderWidth;
+    let slider_rectangle = aarect{slider_x, slider_y, slider_width, slider_height};
+
     if (enabled) {
         if (value) {
             context.fillColor = theme->accentColor;

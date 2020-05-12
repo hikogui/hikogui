@@ -64,6 +64,42 @@ void Widget::shareRightEdgeWith(Widget const &parent, float margin, bool useCont
     }
 }
 
+bool Widget::needsLayout() const noexcept
+{
+    return
+        (forceLayout.exchange(false)) ||
+        (rectangle != aarect{box.currentExtent()});
+}
+
+bool Widget::layout() noexcept
+{
+    auto changed = rectangle != box.currentExtent();
+    rectangle = box.currentExtent();
+    return changed;
+}
+
+bool Widget::layoutChildren(bool force) noexcept
+{
+    auto changed = false;
+    for (auto &&child: children) {
+        bool child_changed = false;
+        if (force || child->needsLayout()) {
+            child_changed = child->layout();
+            changed |= child_changed;
+        }
+
+        // Grandchildren need to be layed out when the child has changed.
+        changed |= child->layoutChildren(force || child_changed);
+    }
+    return changed;
+}
+
+bool Widget::needsRedraw() const noexcept
+{
+    return true;
+}
+
+
 void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     constexpr float elevationToDepth = 0.01f;

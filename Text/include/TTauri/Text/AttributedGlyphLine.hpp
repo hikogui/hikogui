@@ -16,24 +16,48 @@ struct AttributedGlyphLine {
     using value_type = vector_type::value_type;
 
     vector_type line;
+    float width;
+    float ascender;
+    float descender;
+    float lineGap;
 
-    float width = 0.0;
-    float ascender = 0.0;
-    float descender = 0.0;
-    float lineGap = 0.0;
-    float xHeight = 0.0;
+    AttributedGlyphLine(vector_type &&line, float width, float ascender, float descender, float lineGap) noexcept :
+        line(line), width(width), ascender(ascender), descender(descender), lineGap(lineGap) {}
 
-    AttributedGlyphLine(std::vector<AttributedGlyph>::iterator begin, std::vector<AttributedGlyph>::iterator end, float width) :
-        line(begin, end), width(width), ascender(0.0f), descender(0.0f), lineGap(0.0f), xHeight(0.0f)
-    {
-        for (let &glyph: line) {
-            let &metrics = glyph.metrics;
+    [[nodiscard]] AttributedGlyphLine wrap(float maximumWidth) noexcept {
+        ttauri_assume(width > maximumWidth);
 
-            ascender = std::max(ascender, metrics.ascender);
-            descender = std::max(descender, -metrics.descender);
-            lineGap = std::max(lineGap, metrics.lineGap);
-            xHeight = std::max(xHeight, metrics.xHeight);
+        auto word_end = line.begin();
+        auto word_line_width = 0.0f;
+
+        auto line_width = 0.0f;
+        auto i = line.begin();
+        for (; i != line.end(); ++i) {
+            line_width += i->metrics.advance.x();
+
+            if (line_width > maximumWidth) {
+                // Found position where to wrap.
+                break;
+
+            } else if (
+                i->charClass == GeneralCharacterClass::WhiteSpace ||
+                i->charClass == GeneralCharacterClass::ParagraphSeparator
+            ) {
+                // Include the whitespace in the word, as it should belong at the end of the line.
+                word_end = i + 1;
+                word_line_width = line_width;
+            }
         }
+
+        auto split_position =
+            (word_end != line.begin()) ? word_end : // Wrap at word boundary
+            (i != line.begin()) ? i : // Wrap at character boundary
+            i + 1; // Include at least one character.
+
+        auto reset_of_line = AttributedGlyphLine(split_position, line.end());
+        line.erase(split_position, line.cend());
+        calculateLineMetrics();
+        return reset_of_line;
     }
 
     [[nodiscard]] aarect boundingBox() const noexcept {
@@ -75,6 +99,31 @@ struct AttributedGlyphLine {
     [[nodiscard]] iterator end() noexcept { return line.end(); }
     [[nodiscard]] const_iterator end() const noexcept { return line.cend(); }
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
+
+private:
+    /** This constructor will move the data from first to last.
+    */
+    AttributedGlyphLine(iterator first, iterator last) noexcept :
+        line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f)
+    {
+        line.reserve(std::distance(first, last));
+        std::move(first, last, std::back_inserter(line));
+        calculateLineMetrics();
+    }
+
+    void calculateLineMetrics() noexcept {
+        width = 0.0f;
+        ascender = 0.0f;
+        descender = 0.0f;
+        lineGap = 0.0f;
+
+        for (let &g: line) {
+            width += g.metrics.advance.x();
+            ascender = std::max(ascender, g.metrics.ascender);
+            descender = std::max(descender, g.metrics.descender);
+            lineGap = std::max(lineGap, g.metrics.lineGap);
+        }
+    }
 
 };
 

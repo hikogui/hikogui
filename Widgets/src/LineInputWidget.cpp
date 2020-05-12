@@ -22,32 +22,43 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     window.addConstraint(box.height >= Theme::height);
 }
 
+bool LineInputWidget::needsLayout() const noexcept
+{
+    return Widget::needsLayout();
+}
+
+bool LineInputWidget::layout() noexcept 
+{
+    auto changed = Widget::layout();
+
+    textRectangle = shrink(rectangle, Theme::margin);
+
+    field.setStyleOfAll(theme->labelStyle);
+
+    field.setExtent(textRectangle.extent());
+    leftToRightCaret = field.leftToRightCaret();
+    partialGraphemeCaret = field.partialGraphemeCaret();
+    selectionRectangles = field.selectionRectangles();
+
+    if (ssize(field) == 0) {
+        shapedText = ShapedText(label, theme->placeholderLabelStyle, HorizontalAlignment::Left, textRectangle.width());
+
+    } else {
+        shapedText = field.shapedText();
+    }
+
+    // Record the last time the text is modified, so that the carret remains lit.
+    lastUpdateTimePoint = cpu_utc_clock::now();
+    return changed;
+}
+
 void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
 
-    let inputFieldRectangle = aarect{box.currentExtent()};
-    context.drawBox(inputFieldRectangle);
+    context.drawBox(rectangle);
 
-    let textRectangle = shrink(inputFieldRectangle, Theme::margin);
-
-    if (renderTrigger.check(displayTimePoint) >= 2) {
-        field.setStyleOfAll(theme->labelStyle);
-
-        field.setExtent(textRectangle.extent());
-        leftToRightCaret = field.leftToRightCaret();
-        partialGraphemeCaret = field.partialGraphemeCaret();
-        selectionRectangles = field.selectionRectangles();
-
-        if (ssize(field) == 0) {
-            shapedText = ShapedText(label, theme->placeholderLabelStyle, HorizontalAlignment::Left, textRectangle.width());
-
-        } else {
-            shapedText = field.shapedText();
-        }
-
-        lastUpdateTimePoint = displayTimePoint;
-    }
+    let textRectangle = shrink(rectangle, Theme::margin);
 
     auto textTranslate = mat::align(textRectangle, aarect{shapedText.extent}, Alignment::MiddleLeft);
     context.transform = context.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
@@ -102,7 +113,7 @@ void LineInputWidget::handleCommand(string_ltag command) noexcept
         field.handleCommand(command);
     }
 
-    renderTrigger += 2;
+    forceLayout.store(true);
 
     // Make sure changing keyboard focus is handled.
     Widget::handleCommand(command);
@@ -131,7 +142,7 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     default:;
     }
 
-    renderTrigger += 2;
+    forceLayout.store(true);
 }
 
 void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
@@ -156,7 +167,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
                 }
             }
         }
-        renderTrigger += 2;
+        forceLayout.store(true);
 
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
         auto textRectangle = expand(box.currentRectangle(), -5.0f);
@@ -169,7 +180,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
                 field.dragWordAtCoordinate(textPosition);
             }
         }
-        renderTrigger += 2;
+        forceLayout.store(true);
     }
 }
 

@@ -53,7 +53,6 @@ void ImageWidget::drawBackingImage() noexcept
 void ImageWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
-    context.clippingRectangle = box.currentRectangle();
 
     clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
 

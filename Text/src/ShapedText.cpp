@@ -50,58 +50,69 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 
 }
 
-[[nodiscard]] static std::vector<AttributedGlyphLine> make_lines(std::vector<AttributedGlyph> &glyphs, float maximum_width) noexcept
+/** Make lines from the glyphs.
+ */
+[[nodiscard]] static std::vector<AttributedGlyphLine> make_lines(std::vector<AttributedGlyph> &&glyphs) noexcept
 {
     std::vector<AttributedGlyphLine> lines;
 
-    float width = 0.0f;
-    auto start_of_line = glyphs.begin();
-    auto end_of_word = glyphs.begin();
-    float end_of_word_width = 0.0f;
+    auto line_start = glyphs.begin();
+    auto line_width = 0.0f;
+    auto line_ascender = 0.0f;
+    auto line_descender = 0.0f;
+    auto line_lineGap = 0.0f;
 
-    for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
-        if (i->charClass == GeneralCharacterClass::WhiteSpace) {
-            // When a line is created the whitespace should be appended to the
-            // end-of-line so cursor position can still be calculated correctly.
-            end_of_word = i + 1;
-            // For the width we do not count the whitespace after the word.
-            end_of_word_width = width;
-        }
+    for (auto i = line_start; i != glyphs.end(); ++i) {
+        if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
+            // The paragraph seperator stays with the line.
+            auto line_end = i + 1;
 
-        if (i->charClass != GeneralCharacterClass::ParagraphSeparator) {
-            // Do not include the width of the endOfParagraph marker.
-            width += i->metrics.advance.x();
-        }
+            // Move the glyphs into a line.
+            auto line = std::vector<AttributedGlyph>{};
+            line.reserve(std::distance(line_start, line_end));
+            std::move(line_start, line_end, std::back_inserter(line));
 
-        if ((width > maximum_width) && (start_of_line != end_of_word)) {
-            // Line is to long, and exists of at least a full word.
-            lines.emplace_back(start_of_line, end_of_word, end_of_word_width);
+            lines.emplace_back(std::move(line), line_width, line_ascender, line_descender, line_lineGap);
 
-            // Skip back in the for-loop.
-            i = end_of_word;
-            start_of_line = end_of_word;
-            end_of_word = end_of_word;
-            end_of_word_width = 0.0f;
+            // Reset values for the next line.
+            line_start = i + 1;
+            line_width = 0.0f;
+            line_ascender = 0.0f;
+            line_descender = 0.0f;
+            line_lineGap = 0.0f;
+
+        } else {
+            line_width += i->metrics.advance.x();
+            line_ascender = std::max(line_ascender, i->metrics.ascender);
+            line_descender = std::max(line_descender, i->metrics.descender);
+            line_lineGap = std::max(line_lineGap, i->metrics.lineGap);
         }
     }
 
-    if (start_of_line != glyphs.end()) {
-        // Any whitespace at the end of the paragraph should be kept in the last line.
-        lines.emplace_back(start_of_line, glyphs.end(), width);
-    }
-
+    glyphs.clear();
     return lines;
+}
+
+static void wrap_lines(std::vector<AttributedGlyphLine> &glyphs, float maximum_width) noexcept
+{
+    for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
+        while (i->width > maximum_width) {
+            // Wrap will modify the current line to the maximum width and return
+            // the rest of that line, which we insert here after it.
+            i = glyphs.insert(i+1, i->wrap(maximum_width)); 
+        }
+    }
 }
 
 /** Calculate the size of the text.
  * @return The extent of the text and the base line position of the middle line.
  */
-[[nodiscard]] static std::pair<vec,float> calculate_text_size(std::vector<AttributedGlyphLine> const &lines) noexcept
+[[nodiscard]] static vec calculate_text_size(std::vector<AttributedGlyphLine> const &lines) noexcept
 {
     auto size = vec{0.0f, 0.0f};
 
     if (ssize(lines) == 0) {
-        return {size, 0.0f};
+        return size;
     }
 
     // Top of first line.
@@ -109,7 +120,6 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
         lines.front().width,
         lines.front().lineGap + lines.front().ascender
     };
-    auto base_line = size.height();
 
     auto nr_lines = ssize(lines);
     auto half_nr_lines = nr_lines / 2;
@@ -119,22 +129,12 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
             std::max(size.width(), lines[i].width),
             size.height() + lines[i-1].descender + std::max(lines[i-1].lineGap, lines[i].lineGap) + lines[i].ascender
         };
-
-        if (i == half_nr_lines) {
-            if (odd_nr_lines) {
-                // Take the base line of the middle line.
-                base_line = size.height();
-            } else {
-                // Take the base line of the line-gap between the two middle lines.
-                base_line = size.height() - lines[i].ascender - std::max(lines[i-1].lineGap, lines[i].lineGap) * 0.5f;
-            }
-        }
     }
 
     // Bottom of last line.
     size.height(size.height() + lines.back().descender + lines.back().lineGap);
 
-    return {size, size.height() - base_line};
+    return size;
 }
 
 static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalAlignment alignment, vec extent) noexcept
@@ -185,9 +185,9 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalA
 * @param text The text to be shaped.
 * @param alignment How the text should be horizontally-aligned inside the maximum_width.
 * @param max_width Maximum width that the text should flow into.
-* @return size of the resulting text, shaped text.
+* @return prefered size of the text, size of the resulting text, shaped text.
 */
-[[nodiscard]] static std::pair<vec,std::vector<AttributedGlyphLine>> shape_text(
+[[nodiscard]] static std::tuple<vec,vec,std::vector<AttributedGlyphLine>> shape_text(
     std::vector<AttributedGrapheme> text,
     HorizontalAlignment alignment,
     float maximum_width=std::numeric_limits<float>::max()) noexcept
@@ -207,26 +207,31 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalA
     // Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
 
-    // Morph attributed-glyphs using the Font's morph algorithm.
-    morph_glyphs(glyphs);
-
     // Split the text up in lines, based on line-feeds and line-wrapping.
-    auto lines = make_lines(glyphs, maximum_width);
+    auto lines = make_lines(std::move(glyphs));
 
     // Calculate actual size of the box, no smaller than the minimum_size.
-    let [extent, base] = calculate_text_size(lines);
+    let prefered_extent = calculate_text_size(lines);
+
+    wrap_lines(lines, maximum_width);
+
+    // Morph attributed-glyphs using the Font's morph algorithm.
+    //morph_glyphs(glyphs);
+
+    // Calculate actual size of the box, no smaller than the minimum_size.
+    let extent = calculate_text_size(lines);
 
     // Align the text within the actual box size.
     position_glyphs(lines, alignment, extent);
 
-    return {extent, lines};
+    return {prefered_extent, extent, lines};
 }
 
 
 ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, HorizontalAlignment alignment, float maximum_width) noexcept
 {
     ttauri_assume((alignment == HorizontalAlignment::Left) || (maximum_width < std::numeric_limits<float>::max()));
-    std::tie(this->extent, this->lines) = shape_text(text, alignment, maximum_width);
+    std::tie(this->preferedExtent, this->extent, this->lines) = shape_text(text, alignment, maximum_width);
 }
 
 ShapedText::ShapedText(gstring const &text, TextStyle const &style, HorizontalAlignment alignment, float maximum_width) noexcept :

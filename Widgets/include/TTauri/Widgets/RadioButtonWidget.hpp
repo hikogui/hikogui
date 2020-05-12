@@ -22,6 +22,19 @@ protected:
     std::string label = "<unknown>";
 
     Text::ShapedText labelShapedText;
+
+    float button_height;
+    float button_width;
+    float button_x;
+    float button_y;
+    aarect button_rectangle;
+    aarect pip_rectangle;
+    float label_x;
+    float label_y;
+    float label_width;
+    float label_height;
+    aarect label_rectangle;
+    mat::T label_translate;
 public:
 
     RadioButtonWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
@@ -38,33 +51,39 @@ public:
     RadioButtonWidget(RadioButtonWidget&&) = delete;
     RadioButtonWidget &operator=(RadioButtonWidget &&) = delete;
 
-    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override{
+    bool needsLayout() const noexcept override {
+        return Widget::needsLayout();
+    }
+
+    bool layout() noexcept override {
+        auto changed = Widget::layout();
+
         // Prepare coordinates.
-        let rectangle = box.currentRectangle();
-
-        let button_height = Theme::smallHeight;
-        let button_width = Theme::smallHeight;
-        let button_x = Theme::smallWidth - button_width;
-        let button_y = (rectangle.height() - button_height) * 0.5f;
+        button_height = Theme::smallHeight;
+        button_width = Theme::smallHeight;
+        button_x = Theme::smallWidth - button_width;
+        button_y = (rectangle.height() - button_height) * 0.5f;
+        
         // Radio button should be slightly larger due to its round shape.
-        let button_rectangle = expand(aarect{button_x, button_y, button_width, button_height}, 0.5f);
+        button_rectangle = expand(aarect{button_x, button_y, button_width, button_height}, 0.5f);
 
-        let pip_rectangle = shrink(button_rectangle, Theme::borderWidth + 1.0f);
+        pip_rectangle = shrink(button_rectangle, Theme::borderWidth + 1.0f);
 
-        let label_x = Theme::smallWidth + theme->margin;
-        let label_y = 0.0f;
-        let label_width = rectangle.width() - label_x;
-        let label_height = rectangle.height();
-        let label_rectangle = aarect{label_x, label_y, label_width, label_height};
+        label_x = Theme::smallWidth + theme->margin;
+        label_y = 0.0f;
+        label_width = rectangle.width() - label_x;
+        label_height = rectangle.height();
+        label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
         // Prepare labels.
-        if (renderTrigger.check(displayTimePoint) >= 2) {
-            labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
 
-            // XXX font extents height of widget slightly.
-            //setMinimumExtent(labelShapedText.extent + vec{label_x, 0.0f});
-        }
-        let label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
+        label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
+        return changed;
+    }
+
+    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override{
+        
 
         // button.
         auto context = drawContext;

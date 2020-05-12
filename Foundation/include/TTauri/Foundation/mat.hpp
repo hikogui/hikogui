@@ -88,6 +88,12 @@ public:
     struct T {
         vec t;
 
+        T() noexcept : t() {}
+        T(T const &rhs) noexcept = default;
+        T(T &&rhs) noexcept = default;
+        T &operator=(T const &rhs) noexcept = default;
+        T &operator=(T &&rhs) noexcept = default;
+
         explicit T(vec rhs) noexcept :
             t(rhs) { ttauri_assume(rhs.is_vector()); }
 
