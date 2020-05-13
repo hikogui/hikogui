@@ -68,13 +68,13 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         } else {
             context.fillColor = theme->fillColor(nestingLevel() - 1);
         }
-        context.drawFilledQuad(aarect{box.currentExtent()});
+        context.drawFilledQuad(aarect{box.extent()});
     }
 
     if (std::holds_alternative<Path>(icon)) {
         auto drawingBackingImage = backingImage.loadOrDraw(
             window,
-            box.currentExtent(),
+            box.extent(),
             [&](auto image) {
                 return drawImage(image);
             },
@@ -87,7 +87,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         }
 
         if (backingImage.image) {
-            let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
+            let currentScale = (box.extent() / vec{backingImage.image->extent}).xy11();
 
             auto context = drawContext;
             context.transform = context.transform * mat::S(currentScale);
@@ -104,7 +104,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
         auto context = drawContext;
         context.color = theme->foregroundColor;
 
-        let buttonBox = shrink(aarect{box.currentExtent()}, Theme::margin);
+        let buttonBox = shrink(aarect{box.extent()}, Theme::margin);
 
         let glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
 

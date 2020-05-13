@@ -62,7 +62,7 @@ static size_t base93_nr_digits_to_nr_bytes(size_t nr_digits)
     }
 }
 
-static size_t base93_nr_bytes_to_nr_digits(size_t nr_bytes) noexcept
+static ssize_t base93_nr_bytes_to_nr_digits(size_t nr_bytes) noexcept
 {
     switch (nr_bytes) {
     case 1: return 2;
@@ -96,7 +96,7 @@ static ubig128 base93_bytes_to_number(bstring_view bytes) noexcept
 {
     auto number = ubig128{0};
 
-    for (ssize_t i = to_signed(bytes.size()) - 1; i >= 0; i--) {
+    for (ssize_t i = ssize(bytes) - 1; i >= 0; i--) {
         number <<= 8;
         number |= static_cast<uint8_t>(bytes.at(i));
     }
@@ -113,7 +113,7 @@ static std::string base93_number_to_characters(ubig128 number, size_t nr_bytes) 
     let nr_digits = base93_nr_bytes_to_nr_digits(nr_bytes);
     auto r = std::string(nr_digits, '!');
 
-    for (ssize_t i = to_signed(nr_digits) - 1; i >= 0; i--) {
+    for (ssize_t i = nr_digits - 1; i >= 0; i--) {
         let [quotient, remainder] = div(number, 93, oneOver93);
         r.at(i) = static_cast<char>(remainder) + '!';
         number = quotient;

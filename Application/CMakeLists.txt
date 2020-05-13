@@ -1,5 +1,5 @@
 
-project(TTauri_Application CXX)
+project(TTauri_Application LANGUAGES)
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 

@@ -68,13 +68,13 @@ bool Widget::needsLayout() const noexcept
 {
     return
         (forceLayout.exchange(false)) ||
-        (rectangle != aarect{box.currentExtent()});
+        (rectangle != aarect{box.extent()});
 }
 
 bool Widget::layout() noexcept
 {
-    auto changed = rectangle != box.currentExtent();
-    rectangle = box.currentExtent();
+    auto changed = rectangle != box.extent();
+    rectangle = box.extent();
     return changed;
 }
 
@@ -105,11 +105,11 @@ void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point disp
     constexpr float elevationToDepth = 0.01f;
 
     let depth = elevation * elevationToDepth;
-    let offset = box.currentOffset(depth);
+    let offset = box.offset() + vec{0.0, 0.0, depth};
 
     auto childContext = drawContext;
     for (auto &child : children) {
-        let childRectangle = child->box.currentRectangle();
+        let childRectangle = child->box.rectangle();
         let childNestingLevel = child->nestingLevel();
         let childDepth = child->elevation * elevationToDepth;
         let childOffset = mat::T{0.0, 0.0, childDepth} * childRectangle.offset();

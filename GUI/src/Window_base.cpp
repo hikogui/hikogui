@@ -56,10 +56,7 @@ void Window_base::render(cpu_utc_clock::time_point displayTimePoint)
 
 void Window_base::layout()
 {
-    auto changed = layoutChildren(forceLayout.exchange(false));
-    if (changed) {
-        calculateMinimumAndMaximumWindowExtent();
-    }
+    [[maybe_unused]] auto changed = layoutChildren(forceLayout.exchange(false));
 }
 
 bool Window_base::layoutChildren(bool force) {
@@ -78,6 +75,12 @@ bool Window_base::layoutChildren(bool force) {
 
         if (!changed) {
             return i != 0;
+        }
+
+        // Layout may have changed the constraints, in that case recalculate them.
+        if (constraintsUpdated) {
+            constraintsUpdated = false;
+            calculateMinimumAndMaximumWindowExtent();
         }
     }
     LOG_FATAL("Unable to layout child widgets");

@@ -99,7 +99,7 @@ static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, s
 {
     let header = make_placement_ptr<contour_buf_t>(bytes, offset);
 
-    let nr_points = to_signed(header->nr_points.value());
+    let nr_points = int{header->nr_points.value()};
 
     auto contour = std::vector<BezierPoint>{};
     contour.reserve(nr_points);
@@ -123,7 +123,7 @@ static Layer parsePath(gsl::span<std::byte const> bytes, size_t &offset)
     layer.strokeWidth = header->stroke_width.value();
     layer.lineJoinStyle = header->stroke_width.flag() ? LineJoinStyle::Bevel : LineJoinStyle::Miter;
 
-    let nr_contours = to_signed(header->nr_contours.value());
+    let nr_contours = int{header->nr_contours.value()};
     for (int i = 0; i < nr_contours; i++) {
         layer.path.addContour(parseContour(bytes, offset));
     }
@@ -146,7 +146,7 @@ Path parseTTauriIcon(gsl::span<std::byte const> bytes)
         TTAURI_THROW(parse_error("Expected 'TTIC' magic in header"));
     }
 
-    let nr_paths = to_signed(header->nr_paths.value());
+    let nr_paths = int{header->nr_paths.value()};
 
     auto drawing = Path{};
     for (int i = 0; i < nr_paths; i++) {

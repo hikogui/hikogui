@@ -29,14 +29,15 @@ bool ButtonWidget::layout() noexcept
 {
     auto changed = ControlWidget::layout();
 
-    let labelWidth = rectangle.width() - Theme::margin * 2.0f;
+    let labelWidth = 1.0f + rectangle.width() - Theme::margin * 2.0f;
 
-    LOG_DEBUG("Shaping button label {}", to_string(theme->warningLabelStyle));
     labelShapedText = ShapedText(label, theme->warningLabelStyle, HorizontalAlignment::Center, labelWidth);
     textTranslate = mat::align(rectangle, aarect{labelShapedText.extent}, Alignment::MiddleCenter);
 
-    changed |= setMinimumExtent(vec{Theme::width, Theme::height});
-    changed |= setPreferedExtent(labelShapedText.preferedExtent + vec{Theme::margin, Theme::margin} * 2.0f);
+    changed |= setMinimumExtent(vec{Theme::width, labelShapedText.extent.height() + Theme::margin * 2.0f});
+
+    let preferedExtent = labelShapedText.preferedExtent + Theme::margin2D * 2.0f;
+    changed |= setPreferedExtent(preferedExtent);
     return changed;
 }
 

@@ -54,19 +54,19 @@ void ImageWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point
 {
     auto context = drawContext;
 
-    clearAndPickleAppend(key, "ImageView", box.currentExtent(), path);
+    clearAndPickleAppend(key, "ImageView", box.extent(), path);
 
     auto vulkanDevice = device();
 
     // backingImage keeps track of use count.
-    backingImage = vulkanDevice->imagePipeline->getImage(key, box.currentExtent());
+    backingImage = vulkanDevice->imagePipeline->getImage(key, box.extent());
     drawBackingImage();
 
     let origin = vec{backingImage->extent} * vec{-0.5};
 
     let O = mat::T(origin);
     let R = mat::R(rotation);
-    let T = mat::T(box.currentOffset(elevation));
+    let T = mat::T(box.offset()) * mat::T{0.0, 0.0, elevation};
     context.transform = T * R * O;
     context.drawImage(*backingImage);
 

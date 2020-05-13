@@ -21,6 +21,12 @@ public:
      */
     static constexpr float margin = 6.0f;
 
+    static inline const vec margin2D = vec{margin, margin};
+
+    /** Baseline offset above the center.
+     */
+    static constexpr float baselineOffset = -5.0;
+
     /** The line-width of a border.
      */
     static constexpr float borderWidth = 1.0f;

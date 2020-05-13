@@ -67,7 +67,7 @@ void WindowToolbarWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
 {
     auto context = drawContext;
 
-    let rectangle = aarect{box.currentExtent()};
+    let rectangle = aarect{box.extent()};
 
     context.drawFilledQuad(rectangle);
 

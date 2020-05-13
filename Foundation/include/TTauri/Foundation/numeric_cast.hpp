@@ -61,20 +61,4 @@ constexpr To numeric_cast(From x) noexcept
     return static_cast<To>(x);
 }
 
-/*! Fast conversion from a numeric value to a signed value of the same size.
- */
-template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-constexpr auto to_signed(T x) noexcept
-{
-    return numeric_cast<std::make_signed_t<T>>(x);
-}
-
-/*! Fast conversion from a numeric value to a unsigned value of the same size.
-*/
-template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-constexpr auto to_unsigned(T x) noexcept
-{
-    return numeric_cast<std::make_unsigned_t<T>>(x);
-}
-
 }

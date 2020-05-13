@@ -1607,7 +1607,7 @@ public:
         case phy_string_id3:
         case phy_string_id4:
         case phy_string_id5:
-        case phy_string_id6: return to_signed(((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48);
+        case phy_string_id6: return ((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48;
         case phy_string_ptr_id: return get_pointer<std::string>()->size();
         case phy_vector_ptr_id: return get_pointer<datum_impl::vector>()->size();
         case phy_map_ptr_id: return get_pointer<datum_impl::map>()->size();

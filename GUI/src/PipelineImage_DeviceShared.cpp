@@ -115,7 +115,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
-    for (int index = 0; index < to_signed(image.pages.size()); index++) {
+    for (int index = 0; index < ssize(image.pages); index++) {
         let page = image.pages.at(index);
 
         if (page.isFullyTransparent()) {
@@ -144,7 +144,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         });
     }
 
-    for (int atlasTextureIndex = 0; atlasTextureIndex < to_signed(atlasTextures.size()); atlasTextureIndex++) {
+    for (int atlasTextureIndex = 0; atlasTextureIndex < ssize(atlasTextures); atlasTextureIndex++) {
         let &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
         if (regionsToCopy.size() == 0) {
             continue;
@@ -199,7 +199,7 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    let currentImageIndex = to_signed(atlasTextures.size());
+    let currentImageIndex = ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -245,7 +245,7 @@ void DeviceShared::addAtlasImage()
     }
 
     // Build image descriptor info.
-    for (int i = 0; i < to_signed(atlasDescriptorImageInfos.size()); i++) {
+    for (int i = 0; i < ssize(atlasDescriptorImageInfos); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {
@@ -282,7 +282,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<A8B8G8R8SrgbPack32>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
+        TTauri::PixelMap<A8B8G8R8SrgbPack32>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

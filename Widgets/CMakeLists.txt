@@ -1,5 +1,5 @@
 
-project(TTauri_Widgets CXX)
+project(TTauri_Widgets LANGUAGES)
 
 set(TTauri_Widgets_srcs
     src/globals.cpp

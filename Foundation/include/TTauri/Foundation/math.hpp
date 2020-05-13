@@ -72,15 +72,15 @@ constexpr int bsr(T x) noexcept
 #elif COMPILER == CC_CLANG || COMPILER == CC_GCC
     if constexpr (std::is_same_v<T,unsigned int>) {
         auto tmp = __builtin_clz(x);
-        return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
+        return x == 0 ? -1 : ssizeof(T) * 8 - tmp - 1;
 
     } else if constexpr (std::is_same_v<T,unsigned long>) {
         auto tmp = __builtin_clzl(x);
-        return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
+        return x == 0 ? -1 : ssizeof(T) * 8 - tmp - 1;
 
     } else if constexpr (std::is_same_v<T,unsigned long long>) {
         auto tmp = __builtin_clzll(x);
-        return x == 0 ? -1 : to_signed(sizeof(T)) * 8 - tmp - 1;
+        return x == 0 ? -1 : ssizeof(T) * 8 - tmp - 1;
 
     } else {
         not_implemented;

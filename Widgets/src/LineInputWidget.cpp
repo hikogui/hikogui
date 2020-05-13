@@ -153,7 +153,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     }
 
     if (event.type == GUI::MouseEvent::Type::ButtonDown && event.cause.leftButton) {
-        auto textRectangle = expand(box.currentRectangle(), -5.0f);
+        auto textRectangle = expand(box.rectangle(), -5.0f);
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 
@@ -170,7 +170,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         forceLayout.store(true);
 
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
-        auto textRectangle = expand(box.currentRectangle(), -5.0f);
+        auto textRectangle = expand(box.rectangle(), -5.0f);
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 

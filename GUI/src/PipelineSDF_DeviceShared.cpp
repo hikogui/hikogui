@@ -266,7 +266,7 @@ void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    //let currentImageIndex = to_signed(atlasTextures.size());
+    //let currentImageIndex = ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -306,7 +306,7 @@ void DeviceShared::addAtlasImage()
     atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
 
     // Build image descriptor info.
-    for (int i = 0; i < to_signed(atlasDescriptorImageInfos.size()); i++) {
+    for (int i = 0; i < ssize(atlasDescriptorImageInfos); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {
@@ -343,7 +343,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<SDF8>{data.data(), to_signed(imageCreateInfo.extent.width), to_signed(imageCreateInfo.extent.height)}
+        TTauri::PixelMap<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

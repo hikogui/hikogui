@@ -18,7 +18,7 @@ inline bstring get_bytes(T &generator, ssize_t count)
     auto data = bstring(static_cast<size_t>(count), std::byte{0});
 
     ssize_t i = 0;
-    while (i < count - to_signed(sizeof(random_number)) - 1) {
+    while (i < count - ssizeof(random_number) - 1) {
         random_number = generator();
         for (int j = 0; j < sizeof(random_number); j++) {
             data[i++] = static_cast<std::byte>(random_number);

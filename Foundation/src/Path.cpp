@@ -11,12 +11,12 @@ namespace TTauri {
 
 ssize_t Path::numberOfContours() const noexcept
 {
-    return to_signed(contourEndPoints.size());
+    return ssize(contourEndPoints);
 }
 
 ssize_t Path::numberOfLayers() const noexcept
 {
-    return to_signed(layerEndContours.size());
+    return ssize(layerEndContours);
 }
 
 bool Path::hasLayers() const noexcept
@@ -169,14 +169,14 @@ bool Path::isContourOpen() const noexcept
     } else if (contourEndPoints.size() == 0) {
         return true;
     } else {
-        return contourEndPoints.back() != (to_signed(points.size()) - 1);
+        return contourEndPoints.back() != (ssize(points) - 1);
     }
 }
 
 void Path::closeContour() noexcept
 {
     if (isContourOpen()) {
-        contourEndPoints.push_back(to_signed(points.size()) - 1);
+        contourEndPoints.push_back(ssize(points) - 1);
     }
 }
 
@@ -197,7 +197,7 @@ void Path::closeLayer(vec fillColor) noexcept
 {
     closeContour();
     if (isLayerOpen()) {
-        layerEndContours.emplace_back(to_signed(contourEndPoints.size()) - 1, fillColor);
+        layerEndContours.emplace_back(ssize(contourEndPoints) - 1, fillColor);
     }
 }
 
@@ -474,8 +474,8 @@ Path &Path::operator+=(Path const &rhs) noexcept
     // Left hand layer can only be open if the right hand side contains no layers.
     ttauri_assert(!rhs.hasLayers() || !isLayerOpen());
 
-    let pointOffset = to_signed(points.size());
-    let contourOffset = to_signed(contourEndPoints.size());
+    let pointOffset = ssize(points);
+    let contourOffset = ssize(contourEndPoints);
 
     layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
     for (let [x, fillColor]: rhs.layerEndContours) {

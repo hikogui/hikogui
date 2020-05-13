@@ -1,5 +1,5 @@
 
-project(TTauri_Text CXX)
+project(TTauri_Text LANGUAGES)
 
 include(GoogleTest)
 

@@ -1,5 +1,5 @@
 
-project(TTauri_Net CXX)
+project(TTauri_Net LANGUAGES)
 
 set(TTauri_Net_srcs
     src/globals.cpp

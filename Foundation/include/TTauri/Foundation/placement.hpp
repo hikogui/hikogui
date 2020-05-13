@@ -68,7 +68,7 @@ force_inline placement_ptr<T,Byte> unsafe_make_placement_ptr(gsl::span<Byte> byt
 template<typename T,typename Byte>
 force_inline bool check_placement_ptr(gsl::span<Byte> bytes, size_t offset = 0)
 {
-    return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= to_unsigned(bytes.size()));
+    return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= usize(bytes));
 }
 
 template<typename T,typename Byte>
@@ -161,7 +161,7 @@ force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte>
 template<typename T,typename Byte>
 force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, size_t &offset)
 {
-    let n = static_cast<size_t>(to_unsigned(bytes.size()) / sizeof(T));
+    let n = usize(bytes) / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
@@ -175,7 +175,7 @@ force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte>
 template<typename T,typename Byte>
 force_inline bool check_placement_array(gsl::span<Byte> bytes, size_t offset, size_t n)
 {
-    return check_alignment<T>(bytes.data()) && (offset + (n * sizeof(T)) <= to_unsigned(bytes.size()));
+    return check_alignment<T>(bytes.data()) && (offset + (n * sizeof(T)) <= usize(bytes));
 }
 
 template<typename T,typename Byte>
@@ -201,7 +201,7 @@ force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes,
 template<typename T,typename Byte>
 force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, size_t &offset)
 {
-    let n = static_cast<size_t>(to_unsigned(bytes.size()) / sizeof(T));
+    let n = static_cast<size_t>(usize(bytes) / sizeof(T));
     return make_placement_array<T>(bytes, offset, n);
 }
 

@@ -11,6 +11,7 @@
 namespace TTauri::GUI {
 
 RenderDoc::RenderDoc() noexcept {
+#if !defined(NDEBUG)
     let dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},
@@ -52,6 +53,7 @@ found_dll:
     //}
 
     setOverlay(false, false, false);
+#endif
 }
 
 void RenderDoc::setOverlay(bool frameRate, bool frameNumber, bool captureList) noexcept {

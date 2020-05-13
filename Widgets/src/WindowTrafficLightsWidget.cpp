@@ -33,7 +33,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, cpu_utc_clo
 {
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,
-        box.currentExtent(),
+        box.extent(),
         [&](auto image) {
             return drawImage(image);
         },
@@ -45,7 +45,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, cpu_utc_clo
     }
 
     if (backingImage.image) {
-        let currentScale = (box.currentExtent() / vec{backingImage.image->extent}).xy11();
+        let currentScale = (box.extent() / vec{backingImage.image->extent}).xy11();
 
         auto context = drawContext;
         context.transform = context.transform * mat::S(currentScale);

@@ -243,7 +243,7 @@ public:
         auto s = std::to_string(std::abs(m));
 
         auto decimal_position = -e;
-        auto leading_zeros = (decimal_position - to_signed(s.size())) + 1;
+        auto leading_zeros = (decimal_position - ssize(s)) + 1;
         if (leading_zeros > 0) {
             s.insert(0, leading_zeros, '0');
         }

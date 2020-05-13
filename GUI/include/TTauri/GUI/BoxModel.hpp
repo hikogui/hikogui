@@ -22,28 +22,36 @@ public:
     const rhea::linear_expression top = bottom + height;
     const rhea::linear_expression middle = bottom + height * 0.5;
 
-    vec currentBegin(float depth=0.0f) const noexcept {
-        return vec::point(left.value(), bottom.value(), depth);
+    float leftValue() const noexcept {
+        return std::round(numeric_cast<float>(left.value()));
     }
 
-    vec currentEnd(float depth=0.0f) const noexcept {
-        return vec::point(right.evaluate(), top.evaluate(), depth);
+    float bottomValue() const noexcept {
+        return std::round(numeric_cast<float>(bottom.value()));
     }
 
-    vec currentOffset(float depth=0.0f) const noexcept {
-        return { left.value(), bottom.value(), depth };
+    float widthValue() const noexcept {
+        return std::round(numeric_cast<float>(width.value()));
     }
 
-    vec currentExtent() const noexcept {
-        return { width.value(), height.value() };
+    float heightValue() const noexcept {
+        return std::round(numeric_cast<float>(height.value()));
     }
 
-    aarect currentRectangle() const noexcept {
-        return {left.value(), bottom.value(), width.value(), height.value()};
+    vec offset() const noexcept {
+        return { leftValue(), bottomValue() };
+    }
+
+    vec extent() const noexcept {
+        return { widthValue(), heightValue() };
+    }
+
+    aarect rectangle() const noexcept {
+        return { leftValue(), bottomValue(), widthValue(), heightValue() };
     }
 
     bool contains(vec position) const noexcept {
-        return currentRectangle().contains(position);
+        return rectangle().contains(position);
     }
 };
 

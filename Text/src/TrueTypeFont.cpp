@@ -429,7 +429,7 @@ struct NAMERecord {
 
 static std::optional<std::string> getStringFromNameTable(gsl::span<std::byte const> bytes, size_t offset, size_t lengthInBytes, uint16_t platformID, uint16_t platformSpecificID, uint16_t languageID)
 {
-    parse_assert(to_signed(offset + lengthInBytes) <= bytes.size());
+    parse_assert(offset + lengthInBytes <= usize(bytes));
 
     switch (platformID) {
     case 2: // Deprecated, but compatible with unicode.
@@ -1303,7 +1303,7 @@ void TrueTypeFont::parseFontDirectory()
         int64_t offset = entry.offset.value();
         int64_t length = entry.length.value();
 
-        if (offset + length > to_signed(bytes.size())) {
+        if (offset + length > ssize(bytes)) {
             TTAURI_THROW(parse_error("sfnt table-entry is out of range"));
         }
 

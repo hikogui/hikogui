@@ -193,6 +193,7 @@ public:
 
     rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept {
         widgetSolver.add_constraint(constraint);
+        constraintsUpdated = true;
         return constraint;
     }
 
@@ -214,6 +215,7 @@ public:
 
     void removeConstraint(rhea::constraint const& constraint) noexcept {
         widgetSolver.remove_constraint(constraint);
+        constraintsUpdated = true;
     }
 
     rhea::constraint replaceConstraint(
@@ -222,6 +224,7 @@ public:
     ) noexcept {
         widgetSolver.remove_constraint(oldConstraint);
         widgetSolver.add_constraint(newConstraint);
+        constraintsUpdated = true;
         return newConstraint;
     }
 
@@ -299,7 +302,7 @@ protected:
      */
     virtual void windowChangedSize(ivec extent) {
         currentWindowExtent = extent;
-        calculateMinimumAndMaximumWindowExtent();
+        setWidgetToCurrentExtent();
         forceLayout.store(true);
     }
 
@@ -409,8 +412,10 @@ protected:
 private:
     //! This solver determines size and position of all widgets in this window.
     rhea::simplex_solver widgetSolver;
-    rhea::simplex_solver minWidgetSolver;
-    rhea::simplex_solver maxWidgetSolver;
+
+    /** Constraints have been updated.
+    */
+    bool constraintsUpdated = false;
 
     //! Stay constraint for the currentWindowExtent width.
     rhea::constraint currentWindowExtentWidthConstraint;
@@ -418,18 +423,23 @@ private:
     //! Stay constraint for the currentWindowExtent height.
     rhea::constraint currentWindowExtentHeightConstraint;
 
+    void setWidgetToCurrentExtent() {
+        widgetSolver.suggest(widget->box.width, currentWindowExtent.width());
+        widgetSolver.suggest(widget->box.height, currentWindowExtent.height());
+    }
+
     void calculateMinimumAndMaximumWindowExtent() {
         ttauri_assume(widget);
 
         // Test for minimum extent.
         widgetSolver.suggest(widget->box.width, 0);
         widgetSolver.suggest(widget->box.height, 0);
-        minimumWindowExtent = widget->box.currentExtent();
+        minimumWindowExtent = widget->box.extent();
 
         // Test for maximum extent.
         widgetSolver.suggest(widget->box.width, std::numeric_limits<uint32_t>::max());
         widgetSolver.suggest(widget->box.height, std::numeric_limits<uint32_t>::max());
-        maximumWindowExtent = widget->box.currentExtent();
+        maximumWindowExtent = widget->box.extent();
 
         if (
             (currentWindowExtent.x() < minimumWindowExtent.x()) ||
@@ -446,8 +456,7 @@ private:
         }
 
         // Set to actual window size.
-        widgetSolver.suggest(widget->box.width, currentWindowExtent.width());
-        widgetSolver.suggest(widget->box.height, currentWindowExtent.height());
+        setWidgetToCurrentExtent();
 
         LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
             title,

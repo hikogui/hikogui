@@ -118,7 +118,7 @@ void Image::placeVertices(vspan<Vertex> &vertices, mat transform, aarect clippin
 {
     calculateVertexPositions(transform, clippingRectangle);
 
-    for (int index = 0; index < to_signed(pages.size()); index++) {
+    for (int index = 0; index < ssize(pages); index++) {
         placePageVertices(vertices, index, clippingRectangle);
     }
 }

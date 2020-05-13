@@ -1,5 +1,5 @@
 
-project(TTauri_GUI CXX)
+project(TTauri_GUI LANGUAGES)
 
 find_package(Vulkan REQUIRED)
 

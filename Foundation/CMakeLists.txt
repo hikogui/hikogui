@@ -1,5 +1,5 @@
 
-project(TTauri_Foundation CXX)
+project(TTauri_Foundation LANGUAGES)
 
 set(BUILD_TTAURI_GUI ON CACHE BOOL "Enable GUI")
 set(BUILD_TTAURI_AUDIO ON CACHE BOOL "Enable Audio")

@@ -16,7 +16,7 @@ struct gstring {
     using value_type = Grapheme;
 
     ssize_t size() const noexcept {
-        return to_signed(graphemes.size());
+        return ssize(graphemes);
     }
 
     Grapheme const &at(ssize_t i) const {

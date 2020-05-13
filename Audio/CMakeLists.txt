@@ -1,5 +1,5 @@
 
-project(TTauri_Audio CXX)
+project(TTauri_Audio LANGUAGES)
 
 set(TTauri_Audio_srcs
     src/globals.cpp
