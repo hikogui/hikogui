@@ -59,10 +59,11 @@ struct bigint {
 
     template<int R, std::enable_if_t<R < N, int> = 0>
     force_inline bigint &operator=(bigint<T,R> const &rhs) noexcept {
-        for (auto i = 0; i != R; ++i) {
+        int i = 0;
+        for (; i != R; ++i) {
             digits[i] = rhs.digits[i];
         }
-        for (i != N; ++i) {
+        for (; i != N; ++i) {
             digits[i] = 0;
         }
         return *this;

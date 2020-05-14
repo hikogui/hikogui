@@ -9,12 +9,13 @@ namespace TTauri {
 
 [[nodiscard]] constexpr char32_t CP1252_to_UTF32(char inputCharacter) noexcept
 {
-    if (inputCharacter >= 0 && inputCharacter <= 0x7f) {
-        return inputCharacter;
-    } else if (inputCharacter >= 0xa0 && inputCharacter <= 0xff) {
-        return inputCharacter;
+    let inputCharacter_ = static_cast<uint8_t>(inputCharacter);
+    if (inputCharacter_ >= 0 && inputCharacter_ <= 0x7f) {
+        return inputCharacter_;
+    } else if (inputCharacter_ >= 0xa0) {
+        return inputCharacter_;
     } else {
-        switch (inputCharacter) {
+        switch (inputCharacter_) {
         case 0x80: return 0x20ac;
         case 0x81: return 0xfffd; // Replacement character.
         case 0x82: return 0x201a;

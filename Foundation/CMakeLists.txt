@@ -124,9 +124,11 @@ elseif (MSVC)
     target_compile_options(TTauri_Foundation PUBLIC -arch:AVX)
 endif()
 
-# Some of our constexpr take a while to calculate.
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+    # clang bug does not recognize functions without side-effects in __builtin_assume()
+    target_compile_options(TTauri_Foundation PUBLIC -Wno-assume)
     if (NOT MSVC)
+        # Some of our constexpr take a while to calculate.
         target_compile_options(TTauri_Foundation PUBLIC -fconstexpr-steps=100000000)
     endif()
 elseif (MSVC)
