@@ -19,6 +19,7 @@ namespace TTauri::Text {
 /** ShapedText represent a piece of text shaped to be displayed.
  */
 class ShapedText {
+public:
     using iterator = nested_vector_iterator<
         std::vector<AttributedGlyphLine>::const_iterator,
         std::vector<AttributedGlyphLine>::iterator,
@@ -29,14 +30,18 @@ class ShapedText {
         std::vector<AttributedGlyphLine>::const_iterator,
         AttributedGlyphLine::const_iterator>;
 
+    Alignment alignment;
+    float capHeight;
+    float xHeight;
+    aarect boundingBox;
+    vec preferedExtent;
+
+private:
     std::vector<AttributedGlyphLine> lines;
 
 public:
-    vec extent;
-    vec preferedExtent;
-
     ShapedText() noexcept :
-        extent(0.0f, 0.0f), lines() {}
+        lines(), boundingBox(), preferedExtent() {}
     ShapedText(ShapedText const &other) = default;
     ShapedText(ShapedText &&other) noexcept = default;
     ShapedText &operator=(ShapedText const &other) = default;
@@ -47,6 +52,18 @@ public:
      * This function is used to draw rich-text.
      * Each grapheme comes with its own text-style.
      *
+     * Vertical alignment is based on base line at y=0.0:
+     *  * Bottom -> base line of the last line is at y=0.0
+     *  * Top -> base line of the first line is at y=0.0
+     *  * Middle ->
+     *    * Odd # lines -> base line of middle line is at y=0.0
+     *    * Even # lines -> gap between the two middle lines is at y=0.0
+     *
+     * Horizontal alignment is based on the given width:
+     *  * Left -> first character starts at x=0.0
+     *  * Right -> last visible character end at x=maximum_width
+     *  * Center -> middle of the visible text at x=maximum_width/2
+     *
      * @param text The text to draw.
      * @param extent The size of the box to draw in.
      * @param alignment The alignment of the text within the extent.
@@ -54,8 +71,8 @@ public:
      */
     ShapedText(
         std::vector<AttributedGrapheme> const &text,
-        HorizontalAlignment const alignment=HorizontalAlignment::Center,
-        float maximum_width=std::numeric_limits<float>::max()
+        Alignment const alignment=Alignment::MiddleCenter,
+        float width=std::numeric_limits<float>::max()
     ) noexcept;
 
     /** Create shaped text from a string.
@@ -70,8 +87,8 @@ public:
     ShapedText(
         gstring const &text,
         TextStyle const &style,
-        HorizontalAlignment const alignment=HorizontalAlignment::Center,
-        float maximum_width=std::numeric_limits<float>::max()
+        Alignment const alignment=Alignment::MiddleCenter,
+        float width=std::numeric_limits<float>::max()
     ) noexcept;
 
     /** Create shaped text from a string.
@@ -86,8 +103,8 @@ public:
     ShapedText(
         std::string const &text,
         TextStyle const &style,
-        HorizontalAlignment const alignment=HorizontalAlignment::Center,
-        float maximum_width=std::numeric_limits<float>::max()
+        Alignment const alignment=Alignment::MiddleCenter,
+        float width=std::numeric_limits<float>::max()
     ) noexcept;
 
     [[nodiscard]] size_t size() const noexcept {
@@ -105,6 +122,30 @@ public:
     [[nodiscard]] iterator end() noexcept { return nested_vector_iterator_end(lines); }
     [[nodiscard]] const_iterator end() const noexcept { return nested_vector_iterator_cend(lines); }
     [[nodiscard]] const_iterator cend() const noexcept { return nested_vector_iterator_cend(lines); }
+
+    float baselineOffset(float height) noexcept {
+        if (alignment == VerticalAlignment::Top) {
+            return height - lines.front().ascender;
+        } else if (alignment == VerticalAlignment::Bottom) {
+            return lines.back().descender;
+        } else if (alignment == VerticalAlignment::Middle) {
+            return height * 0.5f - capHeight * 0.5f;
+        } else {
+            no_default;
+        }
+    }
+
+    /** Get the translation for where to place the text.
+    * @param rectangle The rectangle where the text should be aligned into.
+    *                  The width is ignored and assumed to be the same as the width
+    *                  passed during text shaping.
+    */
+    mat::T T(aarect rectangle) noexcept {
+        return {
+            rectangle.x(),
+            rectangle.y() + baselineOffset(rectangle.height())
+        };
+    }
 
     /** Find a glyph that corresponds to position.
      */

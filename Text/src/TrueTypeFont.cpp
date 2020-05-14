@@ -922,7 +922,7 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
     metrics.leftSideBearing = leftSideBearing;
     metrics.rightSideBearing = advanceWidth - (leftSideBearing + metrics.boundingBox.width());
     metrics.ascender = ascender;
-    metrics.descender = descender;
+    metrics.descender = -descender;
     metrics.lineGap = lineGap;
     metrics.xHeight = description.xHeight;
     metrics.capHeight = description.HHeight;

@@ -1,6 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
+#include "TTauri/Foundation/small_map.hpp"
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Text/globals.hpp"
 
@@ -22,8 +23,6 @@ namespace TTauri::Text {
 
     return r;
 }
-
-
 
 [[nodiscard]] static std::vector<AttributedGlyph> graphemes_to_glyphs(std::vector<AttributedGrapheme> const &text) noexcept
 {
@@ -50,6 +49,37 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
 
 }
 
+[[nodiscard]] std::pair<float,float> get_cap_and_x_height(std::vector<AttributedGlyph> const &glyphs) noexcept
+{
+    auto capHeightCounts = small_map<float,int,8>{};
+    auto xHeightCounts = small_map<float,int,8>{};
+
+    for (let &g: glyphs) {
+        capHeightCounts.increment(g.metrics.capHeight);
+        xHeightCounts.increment(g.metrics.xHeight);
+    }
+
+    float maxCapHeight = 0.0;
+    int maxCapHeightCount = 0;
+    for (let &[height, count] : capHeightCounts) {
+        if (count > maxCapHeightCount) {
+            maxCapHeightCount = count;
+            maxCapHeight = height;
+        }
+    }
+
+    float maxXHeight = 0.0;
+    int maxXHeightCount = 0;
+    for (let &[height, count] : xHeightCounts) {
+        if (count > maxXHeightCount) {
+            maxXHeightCount = count;
+            maxXHeight = height;
+        }
+    }
+
+    return {maxCapHeight, maxXHeight};
+}
+
 /** Make lines from the glyphs.
  */
 [[nodiscard]] static std::vector<AttributedGlyphLine> make_lines(std::vector<AttributedGlyph> &&glyphs) noexcept
@@ -57,35 +87,12 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
     std::vector<AttributedGlyphLine> lines;
 
     auto line_start = glyphs.begin();
-    auto line_width = 0.0f;
-    auto line_ascender = 0.0f;
-    auto line_descender = 0.0f;
-    auto line_lineGap = 0.0f;
 
     for (auto i = line_start; i != glyphs.end(); ++i) {
         if (i->charClass == GeneralCharacterClass::ParagraphSeparator) {
             // The paragraph seperator stays with the line.
-            auto line_end = i + 1;
-
-            // Move the glyphs into a line.
-            auto line = std::vector<AttributedGlyph>{};
-            line.reserve(std::distance(line_start, line_end));
-            std::move(line_start, line_end, std::back_inserter(line));
-
-            lines.emplace_back(std::move(line), line_width, line_ascender, line_descender, line_lineGap);
-
-            // Reset values for the next line.
+            lines.emplace_back(line_start, i + 1);
             line_start = i + 1;
-            line_width = 0.0f;
-            line_ascender = 0.0f;
-            line_descender = 0.0f;
-            line_lineGap = 0.0f;
-
-        } else {
-            line_width += i->metrics.advance.x();
-            line_ascender = std::max(line_ascender, i->metrics.ascender);
-            line_descender = std::max(line_descender, i->metrics.descender);
-            line_lineGap = std::max(line_lineGap, i->metrics.lineGap);
         }
     }
 
@@ -93,13 +100,13 @@ static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
     return lines;
 }
 
-static void wrap_lines(std::vector<AttributedGlyphLine> &glyphs, float maximum_width) noexcept
+static void wrap_lines(std::vector<AttributedGlyphLine> &glyphs, float width) noexcept
 {
     for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
-        while (i->width > maximum_width) {
+        while (i->width > width) {
             // Wrap will modify the current line to the maximum width and return
             // the rest of that line, which we insert here after it.
-            i = glyphs.insert(i+1, i->wrap(maximum_width)); 
+            i = glyphs.insert(i+1, i->wrap(width)); 
         }
     }
 }
@@ -137,37 +144,126 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &glyphs, float maximum_w
     return size;
 }
 
-static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalAlignment alignment, vec extent) noexcept
+static aarect calculate_bounding_box(std::vector<AttributedGlyphLine> &lines, float width) noexcept
 {
-    // Draw lines from the top-to-down.
-    float y = extent.height();
-    for (ssize_t i = 0; i != ssize(lines); ++i) {
-        auto &line = lines[i];
-        if (i == 0) {
-            y -= line.lineGap + line.ascender;
-        } else {
-            let &prev_line = lines[i-1];
-            y -= prev_line.descender + std::max(prev_line.lineGap, line.lineGap) + line.ascender;
-        }
+    let min_y = lines.back().y - lines.back().descender;
+    let max_y = lines.front().y + lines.front().ascender;
 
-        float x = 0.0f;
-        if (alignment == HorizontalAlignment::Left) {
-            x = 0.0f;
-        } else if (alignment == HorizontalAlignment::Right) {
-            x = extent.width() - line.width;
-        } else if (alignment == HorizontalAlignment::Center) {
-            x = extent.width() * 0.5f - line.width * 0.5f;
-        } else {
-            no_default;
-        }
+    return {
+        0.0, min_y,
+        width, max_y - min_y
+    };
+}
 
-        auto position = vec(x, y);
-        for (auto &glyph: line) {
-            glyph.position = position;
-            position += glyph.metrics.advance;
+static float position_x(Alignment alignment, float line_width, float width) noexcept
+{
+    if (alignment == HorizontalAlignment::Left) {
+        return 0.0f;
+    } else if (alignment == HorizontalAlignment::Right) {
+        return width - line_width;
+    } else if (alignment == HorizontalAlignment::Center) {
+        return width * 0.5f - line_width * 0.5f;
+    } else {
+        no_default;
+    }
+}
+
+static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment alignment, float width) noexcept
+{
+    ssize_t start_line_upward;
+    ssize_t start_line_downward;
+    float start_y_upward = 0.0f;
+    float start_y_downward = 0.0f;
+    if (alignment == VerticalAlignment::Top || ssize(lines) == 1) {
+        start_line_upward = -1; // Don't go upward
+        start_line_downward = 0;
+
+    } else if (alignment == VerticalAlignment::Bottom) {
+        start_line_upward = ssize(lines) - 1;
+        start_line_downward = ssize(lines); // Don't go downward.
+
+    } else if (alignment == VerticalAlignment::Middle) {
+        start_line_upward = (ssize(lines) / 2) - 1;
+        start_line_downward = ssize(lines) / 2; // The middle line (odd number of lines).
+
+        if (ssize(lines) % 2 == 0) {
+            // For even number of lines, the middle is at the gap between the two middle lines.
+            let &upward_line = lines[start_line_upward];
+            let &downward_line = lines[start_line_downward];
+            let gap = std::max(upward_line.lineGap, downward_line.lineGap);
+
+            let baselineDistance = upward_line.descender + gap + downward_line.ascender;
+            start_y_upward = 0.5f * baselineDistance;
+            start_y_downward = -0.5f * baselineDistance;
+
+        } else {
+            // For odd number of lines, the first upward line starts one line higher.
+            let &upward_line = lines[start_line_upward];
+            let &downward_line = lines[start_line_downward];
+            let gap = std::max(upward_line.lineGap, downward_line.lineGap);
+            start_y_upward = downward_line.ascender + gap + upward_line.descender;
+            start_y_downward = 0.0;
+        }
+    }
+    
+    {
+        // Draw lines downwards.
+        float y = start_y_downward;
+        bool first_line = true;
+        for (ssize_t i = start_line_downward; i != ssize(lines); ++i) {
+            auto &line = lines[i];
+
+            if (!first_line) {
+                let &prev_line = lines[i-1];
+                // Add the descender under the base-line of the previous line.
+                y -= prev_line.descender;
+
+                // Add the gap between the two previous and current line.
+                y -= std::max(prev_line.lineGap, line.lineGap);
+
+                // Add the ascender above the base-line of the current line.
+                y -= line.ascender;
+            }
+            first_line = false;
+
+            float x = position_x(alignment, line.width, width);
+            line.positionGlyphs(vec(x, y));
+        }
+    }
+
+    {
+        // Draw lines upward.
+        float y = start_y_upward;
+        bool first_line = true;
+        for (ssize_t i = start_line_upward; i >= 0; --i) {
+            auto &line = lines[i];
+
+            if (!first_line) {
+                let &prev_line = lines[i+1];
+                // Add the ascender above the base-line of the previous line.
+                y += prev_line.ascender;
+
+                // Add the gap between the two previous and current line.
+                y += std::max(prev_line.lineGap, line.lineGap);
+
+                // Add the descender below the base-line of the current line.
+                y += line.descender;
+            }
+            first_line = false;
+
+            float x = position_x(alignment, line.width, width);
+            line.positionGlyphs(vec(x, y));
         }
     }
 }
+
+struct shape_text_result {
+    float capHeight;
+    float xHeight;
+    vec preferedExtent;
+    aarect boundingBox;
+    std::vector<AttributedGlyphLine> lines;
+};
 
 /** Shape the text.
 * The given text is in logical-order; the order in which humans write text.
@@ -187,10 +283,10 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalA
 * @param max_width Maximum width that the text should flow into.
 * @return prefered size of the text, size of the resulting text, shaped text.
 */
-[[nodiscard]] static std::tuple<vec,vec,std::vector<AttributedGlyphLine>> shape_text(
+[[nodiscard]] static shape_text_result shape_text(
     std::vector<AttributedGrapheme> text,
-    HorizontalAlignment alignment,
-    float maximum_width=std::numeric_limits<float>::max()) noexcept
+    Alignment alignment,
+    float width=std::numeric_limits<float>::max()) noexcept
 {
     std::vector<AttributedGlyph> attributed_glyphs;
 
@@ -207,38 +303,50 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, HorizontalA
     // Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
 
+    let [capHeight, xHeight] = get_cap_and_x_height(glyphs);
+
     // Split the text up in lines, based on line-feeds and line-wrapping.
     auto lines = make_lines(std::move(glyphs));
 
     // Calculate actual size of the box, no smaller than the minimum_size.
     let prefered_extent = calculate_text_size(lines);
 
-    wrap_lines(lines, maximum_width);
+    wrap_lines(lines, width);
 
     // Morph attributed-glyphs using the Font's morph algorithm.
     //morph_glyphs(glyphs);
 
-    // Calculate actual size of the box, no smaller than the minimum_size.
-    let extent = calculate_text_size(lines);
-
     // Align the text within the actual box size.
-    position_glyphs(lines, alignment, extent);
+    position_glyphs(lines, alignment, width);
 
-    return {prefered_extent, extent, lines};
+    let bounding_box = calculate_bounding_box(lines, width);
+
+    return {
+        capHeight,
+        xHeight,
+        prefered_extent,
+        bounding_box,
+        lines
+    };
 }
 
 
-ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, HorizontalAlignment alignment, float maximum_width) noexcept
+ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, Alignment alignment, float width) noexcept :
+    alignment(alignment)
 {
-    ttauri_assume((alignment == HorizontalAlignment::Left) || (maximum_width < std::numeric_limits<float>::max()));
-    std::tie(this->preferedExtent, this->extent, this->lines) = shape_text(text, alignment, maximum_width);
+    auto result = shape_text(text, alignment, width);
+    capHeight = result.capHeight;
+    xHeight = result.xHeight;
+    preferedExtent = result.preferedExtent;
+    boundingBox = result.boundingBox;
+    lines = std::move(result.lines);
 }
 
-ShapedText::ShapedText(gstring const &text, TextStyle const &style, HorizontalAlignment alignment, float maximum_width) noexcept :
-    ShapedText(makeAttributedGraphemeVector(text, style), alignment, maximum_width) {}
+ShapedText::ShapedText(gstring const &text, TextStyle const &style, Alignment alignment, float width) noexcept :
+    ShapedText(makeAttributedGraphemeVector(text, style), alignment, width) {}
 
-ShapedText::ShapedText(std::string const &text, TextStyle const &style, HorizontalAlignment alignment, float maximum_width) noexcept :
-    ShapedText(to_gstring(text), style, alignment, maximum_width) {}
+ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignment alignment, float width) noexcept :
+    ShapedText(to_gstring(text), style, alignment, width) {}
 
 
 [[nodiscard]] ShapedText::const_iterator ShapedText::find(ssize_t index) const noexcept

@@ -48,7 +48,7 @@ public:
     /** Update the shaped text after changed to text.
      */
     void updateShapedText() noexcept {
-        _shapedText = ShapedText(text, HorizontalAlignment::Left, extent.width());
+        _shapedText = ShapedText(text, Alignment::TopLeft, extent.width());
     }
 
     [[nodiscard]] ShapedText shapedText() const noexcept {

@@ -10,7 +10,6 @@ namespace TTauri {
 enum class VerticalAlignment {
     Top,
     Middle,
-    Base,
     Bottom
 };
 
@@ -27,9 +26,6 @@ enum class Alignment {
     MiddleLeft,
     MiddleCenter,
     MiddleRight,
-    BaseLeft,
-    BaseCenter,
-    BaseRight,
     BottomLeft,
     BottomCenter,
     BottomRight
@@ -58,13 +54,6 @@ inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexc
         case HorizontalAlignment::Right: return Alignment::MiddleRight;
         default: no_default;
         }
-    case VerticalAlignment::Base:
-        switch (rhs) {
-        case HorizontalAlignment::Left: return Alignment::BaseLeft;
-        case HorizontalAlignment::Center: return Alignment::BaseCenter;
-        case HorizontalAlignment::Right: return Alignment::BaseRight;
-        default: no_default;
-        }
     case VerticalAlignment::Bottom:
         switch (rhs) {
         case HorizontalAlignment::Left: return Alignment::BottomLeft;
@@ -88,21 +77,18 @@ inline bool operator==(Alignment lhs, HorizontalAlignment rhs) noexcept
         return
             lhs == Alignment::TopLeft ||
             lhs == Alignment::MiddleLeft ||
-            lhs == Alignment::BaseLeft ||
             lhs == Alignment::BottomLeft;
 
     case HorizontalAlignment::Center:
         return
             lhs == Alignment::TopCenter ||
             lhs == Alignment::MiddleCenter ||
-            lhs == Alignment::BaseCenter ||
             lhs == Alignment::BottomCenter;
 
     case HorizontalAlignment::Right:
         return
             lhs == Alignment::TopRight ||
             lhs == Alignment::MiddleRight ||
-            lhs == Alignment::BaseRight ||
             lhs == Alignment::BottomRight;
 
     default: no_default;
@@ -123,13 +109,6 @@ inline bool operator==(Alignment lhs, VerticalAlignment rhs) noexcept
             lhs == Alignment::MiddleLeft ||
             lhs == Alignment::MiddleCenter ||
             lhs == Alignment::MiddleRight;
-
-    case VerticalAlignment::Base:
-        return
-            lhs == Alignment::BaseLeft ||
-            lhs == Alignment::BaseCenter ||
-            lhs == Alignment::BaseRight;
-
 
     case VerticalAlignment::Bottom:
         return

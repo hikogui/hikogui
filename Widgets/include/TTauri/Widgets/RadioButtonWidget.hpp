@@ -76,9 +76,9 @@ public:
         label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
         // Prepare labels.
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, Alignment::MiddleLeft, label_width);
+        label_translate = labelShapedText.T(label_rectangle);
 
-        label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
         return changed;
     }
 

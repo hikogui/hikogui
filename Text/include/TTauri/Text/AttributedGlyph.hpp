@@ -65,6 +65,7 @@ struct AttributedGlyph {
     [[nodiscard]] bool isWord() const noexcept { return isLetter() || isDigit(); }
     [[nodiscard]] bool isWhiteSpace() const noexcept { return charClass == GeneralCharacterClass::WhiteSpace; }
     [[nodiscard]] bool isParagraphSeparator() const noexcept { return charClass == GeneralCharacterClass::ParagraphSeparator; }
+    [[nodiscard]] bool isVisible() const noexcept { return isWord() || charClass == GeneralCharacterClass::Unknown; }
 
     /** Get the bounding box for this glyph.
      * Get the scaled and positioned bounding box.

@@ -199,6 +199,14 @@ public:
         return (v.zwzw() - v).xy00();
     }
 
+    [[nodiscard]] force_inline float x() const noexcept {
+        return v.x();
+    }
+
+    [[nodiscard]] force_inline float y() const noexcept {
+        return v.y();
+    }
+
     [[nodiscard]] force_inline float width() const noexcept {
         return (v.zwzw() - v).x();
     }
@@ -258,9 +266,6 @@ public:
             y = outside.p2().y() - inside.height();
 
         } else if (alignment == VerticalAlignment::Middle) {
-            y = (outside.p1().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
-
-        } else if (alignment == VerticalAlignment::Base) {
             y = (outside.p1().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
 
         } else {

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Text/TextStyle.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
 #include <array>
@@ -22,10 +23,6 @@ public:
     static constexpr float margin = 6.0f;
 
     static inline const vec margin2D = vec{margin, margin};
-
-    /** Baseline offset above the center.
-     */
-    static constexpr float baselineOffset = -5.0;
 
     /** The line-width of a border.
      */

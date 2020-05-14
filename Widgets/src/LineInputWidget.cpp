@@ -41,7 +41,7 @@ bool LineInputWidget::layout() noexcept
     selectionRectangles = field.selectionRectangles();
 
     if (ssize(field) == 0) {
-        shapedText = ShapedText(label, theme->placeholderLabelStyle, HorizontalAlignment::Left, textRectangle.width());
+        shapedText = ShapedText(label, theme->placeholderLabelStyle, Alignment::TopLeft, textRectangle.width());
 
     } else {
         shapedText = field.shapedText();
@@ -60,7 +60,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
 
     let textRectangle = shrink(rectangle, Theme::margin);
 
-    auto textTranslate = mat::align(textRectangle, aarect{shapedText.extent}, Alignment::MiddleLeft);
+    auto textTranslate = shapedText.T(textRectangle);
     context.transform = context.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
     for (let selectionRectangle: selectionRectangles) {

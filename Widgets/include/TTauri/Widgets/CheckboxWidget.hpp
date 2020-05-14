@@ -79,10 +79,10 @@ public:
         label_height = rectangle.height();
         label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
-        label_translate = mat::align(label_rectangle, aarect{labelShapedText.extent}, Alignment::MiddleLeft);
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, HorizontalAlignment::Left, label_width);
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, Alignment::MiddleLeft, label_width);
+        label_translate = labelShapedText.T(label_rectangle);
 
         let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
         checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});

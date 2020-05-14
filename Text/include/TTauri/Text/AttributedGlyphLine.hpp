@@ -20,32 +20,39 @@ struct AttributedGlyphLine {
     float ascender;
     float descender;
     float lineGap;
+    float y;
 
-    AttributedGlyphLine(vector_type &&line, float width, float ascender, float descender, float lineGap) noexcept :
-        line(line), width(width), ascender(ascender), descender(descender), lineGap(lineGap) {}
+    /** This constructor will move the data from first to last.
+    */
+    AttributedGlyphLine(iterator first, iterator last) noexcept :
+        line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f)
+    {
+        line.reserve(std::distance(first, last));
+        std::move(first, last, std::back_inserter(line));
+        calculateLineMetrics();
+    }
 
-    [[nodiscard]] AttributedGlyphLine wrap(float maximumWidth) noexcept {
-        ttauri_assume(width > maximumWidth);
+    [[nodiscard]] AttributedGlyphLine wrap(float maximum_width) noexcept {
+        ttauri_assume(width > maximum_width);
 
         auto word_end = line.begin();
-        auto word_line_width = 0.0f;
-
         auto line_width = 0.0f;
+        auto line_valid_width = 0.0f;
+
         auto i = line.begin();
         for (; i != line.end(); ++i) {
             line_width += i->metrics.advance.x();
+            if (i->isVisible()) {
+                line_valid_width = line_width;
+            }
 
-            if (line_width > maximumWidth) {
+            if (line_valid_width > maximum_width) {
                 // Found position where to wrap.
                 break;
 
-            } else if (
-                i->charClass == GeneralCharacterClass::WhiteSpace ||
-                i->charClass == GeneralCharacterClass::ParagraphSeparator
-            ) {
+            } else if (i->isWhiteSpace()) {
                 // Include the whitespace in the word, as it should belong at the end of the line.
                 word_end = i + 1;
-                word_line_width = line_width;
             }
         }
 
@@ -100,29 +107,35 @@ struct AttributedGlyphLine {
     [[nodiscard]] const_iterator end() const noexcept { return line.cend(); }
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
 
-private:
-    /** This constructor will move the data from first to last.
-    */
-    AttributedGlyphLine(iterator first, iterator last) noexcept :
-        line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f)
-    {
-        line.reserve(std::distance(first, last));
-        std::move(first, last, std::back_inserter(line));
-        calculateLineMetrics();
+    void positionGlyphs(vec position) noexcept {
+        y = position.y();
+        for (auto &&g: line) {
+            g.position = position;
+            position += g.metrics.advance;
+        }
     }
 
+private:
     void calculateLineMetrics() noexcept {
-        width = 0.0f;
         ascender = 0.0f;
         descender = 0.0f;
         lineGap = 0.0f;
 
+        auto totalWidth = 0.0f;
+        auto validWidth = 0.0f;
         for (let &g: line) {
-            width += g.metrics.advance.x();
+            totalWidth += g.metrics.advance.x();
             ascender = std::max(ascender, g.metrics.ascender);
             descender = std::max(descender, g.metrics.descender);
             lineGap = std::max(lineGap, g.metrics.lineGap);
+
+            if (g.isVisible()) {
+                // Don't include trailing whitespace in the width.
+                validWidth = totalWidth;
+            }
         }
+
+        width = validWidth;
     }
 
 };

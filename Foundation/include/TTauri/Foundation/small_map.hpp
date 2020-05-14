@@ -7,6 +7,7 @@
 #include <array>
 #include <utility>
 #include <optional>
+#include <type_traits>
 
 namespace TTauri {
 
@@ -84,11 +85,6 @@ public:
     decltype(auto) end() const { return _end; }
     decltype(auto) end() { return _end; }
 
-    decltype(auto) rbegin() const { return items.rend() - size(); }
-    decltype(auto) rbegin() { return items.rend() - size(); }
-    decltype(auto) rend() const { return items.rend(); }
-    decltype(auto) rend() { return items.rend(); }
-
     template<typename O, typename P>
     bool push(O &&key, P &&value) noexcept {
         if (_end != items.end()) {
@@ -111,10 +107,9 @@ public:
     }
 
     std::optional<V> get(K const &key) const noexcept {
-        for (auto i = rbegin(); i != rend(); i++) {
-            let item = *i;
-            if (item.key == key) {
-                return item.value;
+        for (auto i = begin(); i != end(); ++i) {
+            if (i->key == key) {
+                return i->value;
             }
         }
         return {};
@@ -126,6 +121,23 @@ public:
         } else {
             return default_value;
         }
+    }
+
+    V increment(K const &key) noexcept {
+        static_assert(std::is_arithmetic_v<V>, "Only increment on a artihmatic value");
+        auto i = begin();
+        for (; i != end(); ++i) {
+            if (i->key == key) {
+                return ++(i->value);
+            }
+        }
+        if (i != items.end()) {
+            _end = i + 1;
+            i->key = key;
+            return i->value = V{1};
+        }
+
+        return 0;
     }
 };
 
