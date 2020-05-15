@@ -49,38 +49,38 @@ void Window_base::initialize()
     openingWindow();
 }
 
-void Window_base::render(cpu_utc_clock::time_point displayTimePoint)
-{
-    layout();
-}
-
 void Window_base::layout()
 {
-    [[maybe_unused]] auto changed = layoutChildren(forceLayout.exchange(false));
+    auto force = forceLayout.exchange(false);
+    auto need = layoutChildren(force);
+    if (force || need >= Widgets::WidgetNeed::Redraw) {
+        forceRedraw = true;
+    }
 }
 
-bool Window_base::layoutChildren(bool force) {
+Widgets::WidgetNeed Window_base::layoutChildren(bool force) {
     constexpr int layout_retries = 10;
 
-    auto changed = false;
+    auto total_need = Widgets::WidgetNeed::None;
 
     for (auto i = 0; i != layout_retries; ++i) {
-        bool widget_changed = false;
-        if (force || widget->needsLayout()) {
-            widget_changed = widget->layout();
+        let child_need = widget->needs();
+        total_need |= child_need;
+
+        if (force || child_need >= Widgets::WidgetNeed::Layout) {
+            widget->layout();
         }
 
         // Grandchildren need to be layed out when the child has changed.
-        changed = widget->layoutChildren(force || widget_changed);
-
-        if (!changed) {
-            return i != 0;
-        }
+        total_need |= widget->layoutChildren(force);
 
         // Layout may have changed the constraints, in that case recalculate them.
         if (constraintsUpdated) {
             constraintsUpdated = false;
             calculateMinimumAndMaximumWindowExtent();
+
+        } else {
+            return total_need;
         }
     }
     LOG_FATAL("Unable to layout child widgets");

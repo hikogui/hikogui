@@ -14,7 +14,7 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value, std::string const label) noexcept :
-    Widget(window, parent), value(150ms, value, [this](bool){ ++this->renderTrigger; }), label(std::move(label))
+    Widget(window, parent), value(150ms, value, [this](bool){ forceRedraw = true; }), label(std::move(label))
 {
     if (ssize(label) != 0) {
         window.addConstraint(box.width >= Theme::width);
@@ -24,12 +24,9 @@ ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value
     window.addConstraint(box.height >= Theme::smallHeight);
 }
 
-bool ToggleWidget::needsLayout() const noexcept {
-    return Widget::needsLayout();
-}
-
-bool ToggleWidget::layout() noexcept {
-    auto changed = Widget::layout();
+void ToggleWidget::layout() noexcept
+{
+    Widget::layout();
 
     toggle_height = Theme::smallHeight;
     toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
@@ -49,7 +46,6 @@ bool ToggleWidget::layout() noexcept {
 
     labelShapedText = ShapedText(label, theme->labelStyle, Alignment::MiddleLeft, label_width);
     label_translate = labelShapedText.T(label_rectangle);
-    return changed;
 }
 
 void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
@@ -57,7 +53,7 @@ void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_poin
     // Prepare animation values.
     let [animation_progress, curr_value] = value.animation_tick(displayTimePoint);
     if (animation_progress < 1.0) {
-        ++renderTrigger;
+        forceRedraw = true;
     }
 
     // Outside oval.
@@ -99,7 +95,7 @@ void ToggleWidget::handleCommand(string_ltag command) noexcept {
 
     if (command == "gui.activate"_ltag) {
         if (assign_and_compare(value, !value)) {
-            ++renderTrigger;
+            forceRedraw = true;
         }
     }
     Widget::handleCommand(command);

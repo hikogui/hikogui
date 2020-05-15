@@ -340,7 +340,7 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
         rect.right - rect.left,
         rect.bottom - rect.top
     };
-    forceLayout.store(true);
+    forceLayout = true;
 }
 
 void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
@@ -430,7 +430,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_PAINT:
-        forceLayout.store(true);
+        forceLayout = true;
         break;
 
     case WM_SIZE:
@@ -479,7 +479,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     
     case WM_ACTIVATEAPP:
         active = (wParam == TRUE);
-        forceLayout.store(true);
+        forceLayout = true;
         break;
 
     case WM_GETMINMAXINFO: {
@@ -683,13 +683,13 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     case WM_WININICHANGE:
         themeBook->setThemeMode(readOSThemeMode());
-        forceLayout.store(true);
+        forceLayout = true;
         break;
 
     case WM_DPICHANGED:
         // x-axis dpi value.
         dpi = numeric_cast<float>(LOWORD(wParam));
-        forceLayout.store(true);
+        forceLayout = true;
         break;
 
     default:

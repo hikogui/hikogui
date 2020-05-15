@@ -20,14 +20,9 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 ButtonWidget::~ButtonWidget() {
 }
 
-bool ButtonWidget::needsLayout() const noexcept
+void ButtonWidget::layout() noexcept 
 {
-    return ControlWidget::needsLayout();
-}
-
-bool ButtonWidget::layout() noexcept 
-{
-    auto changed = ControlWidget::layout();
+    ControlWidget::layout();
 
     let label_x = Theme::margin;
     let label_y = 0.0;
@@ -38,11 +33,10 @@ bool ButtonWidget::layout() noexcept
     labelShapedText = ShapedText(label, theme->warningLabelStyle, Alignment::MiddleCenter, label_width + 1.0f);
     textTranslate = labelShapedText.T(label_rectangle);
 
-    changed |= setMinimumExtent(vec{Theme::width, labelShapedText.boundingBox.height() + Theme::margin * 2.0f});
+    setMinimumExtent(vec{Theme::width, labelShapedText.boundingBox.height() + Theme::margin * 2.0f});
 
     let preferedExtent = labelShapedText.preferedExtent + Theme::margin2D * 2.0f;
-    changed |= setPreferedExtent(preferedExtent);
-    return changed;
+    setPreferedExtent(preferedExtent);
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
@@ -71,7 +65,7 @@ void ButtonWidget::handleCommand(string_ltag command) noexcept {
 
     if (command == "gui.activate"_ltag) {
         if (assign_and_compare(value, !value)) {
-            ++renderTrigger;
+            forceRedraw = true;
         }
     }
     Widget::handleCommand(command);
@@ -82,7 +76,7 @@ void ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
     if (enabled) {
         if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
-            ++renderTrigger;
+            forceRedraw = true;
         }
 
         if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {

@@ -39,7 +39,7 @@ public:
 
     RadioButtonWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
         ControlWidget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
-        value(value, [this](ValueType){ ++this->renderTrigger; }),
+        value(value, [this](ValueType){ forceRedraw = true; }),
         label(std::move(label))
     {
     }
@@ -51,12 +51,8 @@ public:
     RadioButtonWidget(RadioButtonWidget&&) = delete;
     RadioButtonWidget &operator=(RadioButtonWidget &&) = delete;
 
-    bool needsLayout() const noexcept override {
-        return Widget::needsLayout();
-    }
-
-    bool layout() noexcept override {
-        auto changed = Widget::layout();
+    void layout() noexcept override {
+        Widget::layout();
 
         // Prepare coordinates.
         button_height = Theme::smallHeight;
@@ -78,8 +74,6 @@ public:
         // Prepare labels.
         labelShapedText = Text::ShapedText(label, theme->labelStyle, Alignment::MiddleLeft, label_width);
         label_translate = labelShapedText.T(label_rectangle);
-
-        return changed;
     }
 
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override{
@@ -126,7 +120,7 @@ public:
 
         if (command == "gui.activate"_ltag) {
             if (assign_and_compare(value, ActiveValue)) {
-                ++renderTrigger;
+                forceRedraw = true;
             }
         }
         Widget::handleCommand(command);

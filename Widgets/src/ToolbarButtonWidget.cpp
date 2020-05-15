@@ -83,7 +83,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
             state()
         );
         if (drawingBackingImage) {
-            ++renderTrigger;
+            forceRedraw = true;
         }
 
         if (backingImage.image) {
@@ -94,10 +94,10 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::ti
             context.drawImage(*(backingImage.image));
 
             if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {
-                ++renderTrigger;
+                forceRedraw = true;
             }
         } else {
-            ++renderTrigger;
+            forceRedraw = true;
         }
 
     } else if (auto icon_glyph = std::get_if<Text::FontGlyphIDs>(&icon)) {
@@ -123,7 +123,7 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
     if (enabled) {
         if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
-            ++renderTrigger;
+            forceRedraw = true;
         }
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {

@@ -43,7 +43,7 @@ protected:
 public:
 
     CheckboxWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
-        Widget(window, parent), value(value, [this](ValueType){ ++this->renderTrigger; }), label(std::move(label))
+        Widget(window, parent), value(value, [this](ValueType){ forceRedraw = true; }), label(std::move(label))
     {
         if (ssize(label) != 0) {
             window.addConstraint(box.width >= Theme::width);
@@ -60,12 +60,8 @@ public:
     CheckboxWidget(CheckboxWidget&&) = delete;
     CheckboxWidget &operator=(CheckboxWidget &&) = delete;
 
-    bool needsLayout() const noexcept override {
-        return Widget::needsLayout();
-    }
-
-    bool layout() noexcept override {
-        auto changed = Widget::layout();
+    void layout() noexcept override {
+        Widget::layout();
 
         button_height = Theme::smallHeight;
         button_width = Theme::smallHeight;
@@ -87,8 +83,6 @@ public:
         let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
         checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});
         checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.3f);
-
-        return changed;
     }
 
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override {
@@ -146,7 +140,7 @@ public:
 
         if (command == "gui.activate"_ltag) {
             if (assign_and_compare(value, value == FalseValue ? TrueValue : FalseValue)) {
-                ++renderTrigger;
+                forceRedraw = true;
             }
         }
         Widget::handleCommand(command);

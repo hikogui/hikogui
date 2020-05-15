@@ -32,8 +32,7 @@ public:
     ButtonWidget(ButtonWidget&&) = delete;
     ButtonWidget &operator=(ButtonWidget &&) = delete;
 
-    [[nodiscard]] bool needsLayout() const noexcept override;
-    [[nodiscard]] bool layout() noexcept override;
+    [[nodiscard]] void layout() noexcept override;
 
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 

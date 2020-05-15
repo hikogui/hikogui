@@ -26,6 +26,8 @@ protected:
     aarect partialGraphemeCaret = {};
     std::vector<aarect> selectionRectangles = {};
 
+    static constexpr cpu_utc_clock::duration blinkInterval = 500ms;
+    cpu_utc_clock::time_point lastRedrawTimePoint;
     cpu_utc_clock::time_point lastUpdateTimePoint;
 public:
 
@@ -41,8 +43,8 @@ public:
     LineInputWidget(LineInputWidget&&) = delete;
     LineInputWidget &operator=(LineInputWidget &&) = delete;
 
-    [[nodiscard]] bool needsLayout() const noexcept override;
-    [[nodiscard]] bool layout() noexcept override;
+    [[nodiscard]] WidgetNeed needs() const noexcept override;
+    [[nodiscard]] void layout() noexcept override;
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleCommand(string_ltag command) noexcept;

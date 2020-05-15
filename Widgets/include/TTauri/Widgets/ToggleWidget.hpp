@@ -48,8 +48,7 @@ public:
     ToggleWidget(ToggleWidget&&) = delete;
     ToggleWidget &operator=(ToggleWidget &&) = delete;
 
-    [[nodiscard]] bool needsLayout() const noexcept override;
-    [[nodiscard]] bool layout() noexcept override;
+    [[nodiscard]] void layout() noexcept override;
     void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;

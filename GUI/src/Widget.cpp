@@ -7,7 +7,7 @@
 namespace TTauri::GUI::Widgets {
 
 Widget::Widget(Window &window, Widget *parent) noexcept :
-    window(window), parent(parent), renderTrigger(&window.renderTrigger), elevation(parent ? parent->elevation + 1.0f : 0.0f) {}
+    window(window), parent(parent), elevation(parent ? parent->elevation + 1.0f : 0.0f) {}
 
 Device *Widget::device() const noexcept
 {
@@ -64,41 +64,44 @@ void Widget::shareRightEdgeWith(Widget const &parent, float margin, bool useCont
     }
 }
 
-bool Widget::needsLayout() const noexcept
+WidgetNeed Widget::needs() const noexcept
 {
-    return
-        (forceLayout.exchange(false)) ||
-        (rectangle != aarect{box.extent()});
+    auto need = WidgetNeed::None;
+
+    if (forceRedraw.exchange(false)) {
+        need |= WidgetNeed::Redraw;
+    }
+    if (forceLayout.exchange(false)) {
+        need |= WidgetNeed::Layout;
+    }
+    if (rectangle != aarect{box.extent()}) {
+        need |= WidgetNeed::Layout;
+    }
+    return need;
 }
 
-bool Widget::layout() noexcept
+void Widget::layout() noexcept
 {
-    auto changed = rectangle != box.extent();
     rectangle = box.extent();
-    return changed;
 }
 
-bool Widget::layoutChildren(bool force) noexcept
+WidgetNeed Widget::layoutChildren(bool force) noexcept
 {
-    auto changed = false;
+    auto total_need = WidgetNeed::None;
+
     for (auto &&child: children) {
-        bool child_changed = false;
-        if (force || child->needsLayout()) {
-            child_changed = child->layout();
-            changed |= child_changed;
+        let child_need = child->needs();
+        total_need |= child_need;
+
+        if (force || child_need >= WidgetNeed::Layout) {
+            child->layout();
         }
 
-        // Grandchildren need to be layed out when the child has changed.
-        changed |= child->layoutChildren(force || child_changed);
+        total_need |= child->layoutChildren(force);
     }
-    return changed;
-}
 
-bool Widget::needsRedraw() const noexcept
-{
-    return true;
+    return total_need;
 }
-
 
 void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {

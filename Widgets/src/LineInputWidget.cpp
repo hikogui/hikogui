@@ -22,14 +22,20 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     window.addConstraint(box.height >= Theme::height);
 }
 
-bool LineInputWidget::needsLayout() const noexcept
+WidgetNeed LineInputWidget::needs() const noexcept
 {
-    return Widget::needsLayout();
+    auto need = Widget::needs();
+
+    if (focus && cpu_utc_clock::now() > lastRedrawTimePoint + blinkInterval) {
+        need |= WidgetNeed::Redraw;
+    }
+
+    return need;
 }
 
-bool LineInputWidget::layout() noexcept 
+void LineInputWidget::layout() noexcept 
 {
-    auto changed = Widget::layout();
+    Widget::layout();
 
     textRectangle = shrink(rectangle, Theme::margin);
 
@@ -49,11 +55,12 @@ bool LineInputWidget::layout() noexcept
 
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = cpu_utc_clock::now();
-    return changed;
 }
 
 void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
 {
+    lastRedrawTimePoint = displayTimePoint;
+
     auto context = drawContext;
 
     context.drawBox(rectangle);
@@ -75,10 +82,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_p
 
     // Display the caret and handle blinking.
     auto durationSinceLastUpdate = displayTimePoint - lastUpdateTimePoint;
-    auto nrHalfBlinks = static_cast<int64_t>(durationSinceLastUpdate / 500ms);
-
-    auto nextHalfBlinkTime = lastUpdateTimePoint + ((nrHalfBlinks + 1) * 500ms);
-    renderTrigger += nextHalfBlinkTime;
+    auto nrHalfBlinks = static_cast<int64_t>(durationSinceLastUpdate / blinkInterval);
 
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
     if (leftToRightCaret && blinkIsOn && focus && window.active) {
@@ -113,7 +117,7 @@ void LineInputWidget::handleCommand(string_ltag command) noexcept
         field.handleCommand(command);
     }
 
-    forceLayout.store(true);
+    forceLayout = true;
 
     // Make sure changing keyboard focus is handled.
     Widget::handleCommand(command);
@@ -142,7 +146,7 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     default:;
     }
 
-    forceLayout.store(true);
+    forceLayout = true;
 }
 
 void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
@@ -167,7 +171,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
                 }
             }
         }
-        forceLayout.store(true);
+        forceLayout = true;
 
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
         auto textRectangle = expand(box.rectangle(), -5.0f);
@@ -180,7 +184,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
                 field.dragWordAtCoordinate(textPosition);
             }
         }
-        forceLayout.store(true);
+        forceLayout = true;
     }
 }
 

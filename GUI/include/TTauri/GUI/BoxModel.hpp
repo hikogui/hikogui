@@ -22,32 +22,16 @@ public:
     const rhea::linear_expression top = bottom + height;
     const rhea::linear_expression middle = bottom + height * 0.5;
 
-    float leftValue() const noexcept {
-        return std::round(numeric_cast<float>(left.value()));
-    }
-
-    float bottomValue() const noexcept {
-        return std::round(numeric_cast<float>(bottom.value()));
-    }
-
-    float widthValue() const noexcept {
-        return std::round(numeric_cast<float>(width.value()));
-    }
-
-    float heightValue() const noexcept {
-        return std::round(numeric_cast<float>(height.value()));
-    }
-
     vec offset() const noexcept {
-        return { leftValue(), bottomValue() };
+        return { left.value(), bottom.value() };
     }
 
     vec extent() const noexcept {
-        return { widthValue(), heightValue() };
+        return { width.value(), height.value() };
     }
 
     aarect rectangle() const noexcept {
-        return { leftValue(), bottomValue(), widthValue(), heightValue() };
+        return { left.value(), bottom.value(), width.value(), height.value() };
     }
 
     bool contains(vec position) const noexcept {

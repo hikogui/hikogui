@@ -41,7 +41,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, cpu_utc_clo
     );
 
     if (drawingBackingImage) {
-        ++renderTrigger;
+        forceRedraw = true;
     }
 
     if (backingImage.image) {
@@ -271,7 +271,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
         stateHasChanged |= assign_and_compare(pressedYellow, event.down.leftButton && yellowButtonRect.contains(event.position));
         stateHasChanged |= assign_and_compare(pressedGreen, event.down.leftButton && greenButtonRect.contains(event.position));
         if (stateHasChanged) {
-            ++renderTrigger;
+            forceRedraw = true;
         }
 
     } else {

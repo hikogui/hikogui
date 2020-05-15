@@ -264,31 +264,26 @@ void Window_vulkan::teardown()
 
 void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
 {
-    // If the state is nominal (ReadyToRender) we can reduce CPU/GPU
-    // usage by checking if the window was modified.
-    // If the state is not-nominal then we want to get into nominal state
-    // as quick as possible.
-    if (state == State::ReadyToRender && renderTrigger.check(displayTimePoint) == 0) {
-        return;
-    }
-
-    // While resizing lower the frame rate to reduce CPU/GPU usage.
-    frameCount++;
-    if (resizing && (frameCount % resizeFrameRateDivider) != 0) {
-        return;
-    }
-
-    auto tr = trace<"win_render"_tag, "state"_tag, "frame_buffer"_tag>();
     auto lock = std::scoped_lock(guiMutex);
 
     // Tear down then buildup from the Vulkan objects that where invalid.
     teardown();
     build();
 
-    tr.set<"state"_tag>(static_cast<int>(state));
+    // Bail out when the window is not yet ready to be rendered.
     if (state != State::ReadyToRender) {
         return;
     }
+
+    // Make sure the widget's layout is updated before draw, but after window resize.
+    Window_base::layout();
+
+    // If the widgets haven't requested a redraw, bail out.
+    if (!forceRedraw.exchange(false)) {
+        return;
+    }
+
+    auto tr = trace<"win_render"_tag, "frame_buffer"_tag>();
 
     let optionalFrameBufferIndex = acquireNextImageFromSwapchain();
     if (!optionalFrameBufferIndex) {
@@ -307,9 +302,6 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
 
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
     device->resetFences({ renderFinishedFence });
-
-    // Make sure the widget's layout is updated before draw, but after window resize.
-    Window_base::render(displayTimePoint);
 
     // Update the widgets before the pipelines need their vertices.
     // We unset modified before, so that modification requests are captured.

@@ -50,7 +50,7 @@ public:
     ControlWidget(ControlWidget &&) = delete;
     ControlWidget &operator=(ControlWidget &&) = delete;
 
-    bool setMinimumExtent(vec newMinimumExtent) noexcept {
+    void setMinimumExtent(vec newMinimumExtent) noexcept {
         if (newMinimumExtent != minimumExtent) {
             minimumExtent = newMinimumExtent;
 
@@ -63,13 +63,10 @@ public:
                 minimumHeightConstraint,
                 box.height >= minimumExtent.height()
             );
-            return true;
-        } else {
-            return false;
         }
     }
 
-    bool setPreferedExtent(vec newPreferedExtent) noexcept {
+    void setPreferedExtent(vec newPreferedExtent) noexcept {
         if (newPreferedExtent != preferedExtent) {
             preferedExtent = newPreferedExtent;
 
@@ -84,9 +81,6 @@ public:
                 box.height >= preferedExtent.height(),
                 rhea::strength::weak()
             );
-            return true;
-        } else {
-            return false;
         }
     }
 

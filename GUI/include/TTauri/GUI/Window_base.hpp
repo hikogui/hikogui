@@ -53,8 +53,6 @@ public:
         Maximized
     };
 
-    static constexpr long long resizeFrameRateDivider = 1;
-
     State state = State::NoDevice;
 
     /** The current cursor.
@@ -66,13 +64,13 @@ public:
      */
     Cursor currentCursor = Cursor::None;
 
-    /*! The current frame number that is being rendered.
-     */
-    long long frameCount = 0;
-
     /** When set to true the widgets will be layed out.
      */
     std::atomic<bool> forceLayout = true;
+
+    /** When set to true the widgets will be redrawn.
+    */
+    std::atomic<bool> forceRedraw = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -146,10 +144,6 @@ public:
      */
     Widgets::Widget *lastKeyboardWidget = nullptr;
 
-    /** Trigger to check when to render the window.
-     */
-    Trigger<cpu_utc_clock> renderTrigger;
-
     Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     virtual ~Window_base();
 
@@ -173,12 +167,12 @@ public:
 
     /** Layout the widgets in the window.
      */
-    bool layoutChildren(bool force);
+    Widgets::WidgetNeed layoutChildren(bool force);
 
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render(cpu_utc_clock::time_point displayTimePoint);
+    virtual void render(cpu_utc_clock::time_point displayTimePoint) = 0;
 
     bool isClosed() {
         auto lock = std::scoped_lock(guiMutex);
@@ -303,7 +297,7 @@ protected:
     virtual void windowChangedSize(ivec extent) {
         currentWindowExtent = extent;
         setWidgetToCurrentExtent();
-        forceLayout.store(true);
+        forceLayout = true;
     }
 
     /*! call openingWindow() on the delegate. 
