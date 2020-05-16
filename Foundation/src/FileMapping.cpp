@@ -22,7 +22,7 @@ std::shared_ptr<File> FileMapping::findOrOpenFile(URL const& location, AccessMod
 
     // We want files to be freshly created if it did not exist before.
     auto& files = mappedFiles[location];
-    for (let weak_file : files) {
+    for (let &weak_file : files) {
         if (auto file = weak_file.lock()) {
             if (file->accessMode >= accessMode) {
                 return file;

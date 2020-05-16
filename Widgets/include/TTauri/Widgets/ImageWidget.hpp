@@ -26,7 +26,7 @@ public:
 
     void drawBackingImage() noexcept;
 
-    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
 private:
     std::string key;

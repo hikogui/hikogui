@@ -163,16 +163,16 @@ public:
      */
     void unsetDevice() { setDevice({}); }
 
-    void layout();
+    void layout(hires_utc_clock::time_point displayTimePoint);
 
     /** Layout the widgets in the window.
      */
-    Widgets::WidgetNeed layoutChildren(bool force);
+    Widgets::WidgetNeed layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force);
 
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
-    virtual void render(cpu_utc_clock::time_point displayTimePoint) = 0;
+    virtual void render(hires_utc_clock::time_point displayTimePoint) = 0;
 
     bool isClosed() {
         auto lock = std::scoped_lock(guiMutex);

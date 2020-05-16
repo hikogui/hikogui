@@ -231,7 +231,7 @@ void Window_vulkan_win32::openingWindow()
 
     UINT format = 0;
 
-    while (format = EnumClipboardFormats(format)) {
+    while ((format = EnumClipboardFormats(format))) {
         switch (format) {
         case CF_TEXT:
         case CF_OEMTEXT:

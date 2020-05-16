@@ -177,7 +177,7 @@ template<typename UnaryOperation>
     }
 }
 
-[[nodiscard]] no_inline inline char32_t utf8_to_utf32_fallback(char c) noexcept
+[[nodiscard]] no_inline char32_t utf8_to_utf32_fallback(char c) noexcept
 {
     return CP1252_to_UTF32(c);
 }

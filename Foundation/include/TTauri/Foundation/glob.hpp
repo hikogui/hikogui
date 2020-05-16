@@ -345,7 +345,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         return result;
 
     case glob_token_type_t::StringList:
-        for (let value: index->values) {
+        for (let &value: index->values) {
             if (starts_with(str, value)) {
                 MATCH_GLOB_RECURSE(result, next_index, end, str.substr(value.size()));
             }

@@ -70,7 +70,7 @@ public:
      */
     ssize_t getNumberOfWindows();
 
-    void render(cpu_utc_clock::time_point displayTimePoint) {
+    void render(hires_utc_clock::time_point displayTimePoint) {
         for (auto &device: devices) {
             device->render(displayTimePoint);
         }
@@ -81,13 +81,13 @@ public:
         previousNumberOfWindows = currentNumberOfWindows;
     }
 
-    void handleVerticalSync(cpu_utc_clock::time_point displayTimePoint)
+    void handleVerticalSync(hires_utc_clock::time_point displayTimePoint)
     {
         render(displayTimePoint);
     }
 
 
-    static void _handleVerticalSync(void *data, cpu_utc_clock::time_point displayTimePoint);
+    static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
     Device *findBestDeviceForWindow(Window const &window);

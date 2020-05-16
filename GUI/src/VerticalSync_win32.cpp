@@ -44,7 +44,7 @@ namespace TTauri::GUI {
 using namespace std;
 using namespace gsl;
 
-VerticalSync_win32::VerticalSync_win32(std::function<void(void*,cpu_utc_clock::time_point)> callback, void* callbackData) noexcept :
+VerticalSync_win32::VerticalSync_win32(std::function<void(void*,hires_utc_clock::time_point)> callback, void* callbackData) noexcept :
     callback(callback), callbackData(callbackData)
 {
     state = State::ADAPTER_CLOSED;
@@ -142,7 +142,7 @@ void VerticalSync_win32::closeAdapter() noexcept
     }
 }
 
-cpu_utc_clock::duration VerticalSync_win32::averageFrameDuration(cpu_utc_clock::time_point frameTimestamp) noexcept 
+hires_utc_clock::duration VerticalSync_win32::averageFrameDuration(hires_utc_clock::time_point frameTimestamp) noexcept 
 {
     let currentDuration = frameDurationDataCounter == 0 ? 16ms : frameTimestamp - previousFrameTimestamp;
     previousFrameTimestamp = frameTimestamp;
@@ -155,7 +155,7 @@ cpu_utc_clock::duration VerticalSync_win32::averageFrameDuration(cpu_utc_clock::
     return sum / number_of_elements;
 }
 
-cpu_utc_clock::time_point VerticalSync_win32::wait() noexcept
+hires_utc_clock::time_point VerticalSync_win32::wait() noexcept
 {
     if (state == State::ADAPTER_CLOSED) {
         openAdapter();

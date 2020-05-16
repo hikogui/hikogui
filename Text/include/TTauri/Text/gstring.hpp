@@ -54,7 +54,7 @@ struct gstring {
     [[nodiscard]] friend std::u32string to_u32string(gstring const &rhs) noexcept {
         std::u32string r;
         r.reserve(ssize(rhs));
-        for (let c : rhs) {
+        for (let &c : rhs) {
             r += c.NFC();
         }
         return r;

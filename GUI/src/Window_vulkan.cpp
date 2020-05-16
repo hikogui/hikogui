@@ -262,7 +262,7 @@ void Window_vulkan::teardown()
     state = nextState;
 }
 
-void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
+void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 {
     auto lock = std::scoped_lock(guiMutex);
 
@@ -276,7 +276,7 @@ void Window_vulkan::render(cpu_utc_clock::time_point displayTimePoint)
     }
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    Window_base::layout();
+    Window_base::layout(displayTimePoint);
 
     // If the widgets haven't requested a redraw, bail out.
     if (!forceRedraw.exchange(false)) {

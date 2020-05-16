@@ -113,7 +113,7 @@ VkBool32 Instance_vulkan::debugUtilsMessageCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData)
 {
-    auto self = reinterpret_cast<Instance *>(pUserData);
+    //auto self = reinterpret_cast<Instance *>(pUserData);
 
     switch (messageSeverity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:

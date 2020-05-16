@@ -643,7 +643,7 @@ void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> bytes)
     let serif_value = table->panose.bSerifStyle;
     if ((serif_value >= 2 && serif_value <= 10) || (serif_value >= 14 && serif_value <= 15)) {
         description.serif = true;
-    } else if (serif_value >= 11 || serif_value <= 13) {
+    } else if (serif_value >= 11 && serif_value <= 13) {
         description.serif = false;
     }
 

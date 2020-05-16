@@ -64,43 +64,44 @@ void Widget::shareRightEdgeWith(Widget const &parent, float margin, bool useCont
     }
 }
 
-WidgetNeed Widget::needs() const noexcept
+WidgetNeed Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {
-    if (forceLayout.exchange(false, std::memory_order::memory_order_relaxed) || box.hasResized()) {
-        return WidgetNeed::Layout;
+    auto layout = forceLayout.exchange(false, std::memory_order::memory_order_relaxed);
+    layout |= box.hasResized();
+    auto redraw = layout;
+    redraw |= forceRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
-    } else if (forceRedraw.exchange(false, std::memory_order::memory_order_relaxed)) {
-        return WidgetNeed::Redraw;
+    auto need =
+        (static_cast<int>(layout) << 1) |
+        static_cast<int>(redraw);
 
-    } else {
-        return WidgetNeed::None;
-    }
+    return static_cast<WidgetNeed>(need);
 }
 
-void Widget::layout() noexcept
+void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     rectangle = box.extent();
 }
 
-WidgetNeed Widget::layoutChildren(bool force) noexcept
+WidgetNeed Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept
 {
     auto total_need = WidgetNeed::None;
 
     for (auto &&child: children) {
-        let child_need = child->needs();
+        let child_need = child->needs(displayTimePoint);
         total_need |= child_need;
 
         if (force || child_need >= WidgetNeed::Layout) {
-            child->layout();
+            child->layout(displayTimePoint);
         }
 
-        total_need |= child->layoutChildren(force);
+        total_need |= child->layoutChildren(displayTimePoint, force);
     }
 
     return total_need;
 }
 
-void Widget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     constexpr float elevationToDepth = 0.01f;
 

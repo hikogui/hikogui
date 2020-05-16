@@ -29,7 +29,7 @@ int WindowTrafficLightsWidget::state() const noexcept {
     return r;
 }
 
-void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,

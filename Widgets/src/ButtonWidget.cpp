@@ -20,9 +20,9 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 ButtonWidget::~ButtonWidget() {
 }
 
-void ButtonWidget::layout() noexcept 
+void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept 
 {
-    ControlWidget::layout();
+    ControlWidget::layout(displayTimePoint);
 
     let label_x = Theme::margin;
     let label_y = 0.0;
@@ -39,7 +39,7 @@ void ButtonWidget::layout() noexcept
     setPreferedExtent(preferedExtent);
 }
 
-void ButtonWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
 

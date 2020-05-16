@@ -86,6 +86,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
             isolateLevel = 0;
             parBidiClass = BidiClass::Unknown;
             break;
+        default: no_default;
         }
     }
 
@@ -679,25 +680,25 @@ static void BidiL1(BidiContext &context) noexcept
     }
 }
 
-static std::vector<std::pair<ssize_t,ssize_t>> BidiL2(BidiContext &context) noexcept
-{
-}
+//static std::vector<std::pair<ssize_t,ssize_t>> BidiL2(BidiContext &context) noexcept
+//{
+//}
 
-static std::vector<std::pair<ssize_t,ssize_t>> BidiL(BidiContext &context) noexcept
-{
-    BidiL1(context);
-    return BidiL2(context);
-}
+//static std::vector<std::pair<ssize_t,ssize_t>> BidiL(BidiContext &context) noexcept
+//{
+//    BidiL1(context);
+//    return BidiL2(context);
+//}
 
-static std::vector<std::pair<ssize_t,ssize_t>> BidiAlgorithm(BidiContext &context) noexcept
-{
-    BidiP1_P3(context);
-    BidiX1_X8(context);
-    BidiX10(context);
-    BidiW(context);
-    BidiN(context);
-    BidiI1_I2(context);
-    return BidiL(context);
-}
+//static std::vector<std::pair<ssize_t,ssize_t>> BidiAlgorithm(BidiContext &context) noexcept
+//{
+//    BidiP1_P3(context);
+//    BidiX1_X8(context);
+//    BidiX10(context);
+//    BidiW(context);
+//    BidiN(context);
+//    BidiI1_I2(context);
+//    return BidiL(context);
+//}
 
 }

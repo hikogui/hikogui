@@ -21,7 +21,7 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
     // producing a correct cursor at an empty line at the end of a paragraph.
     let g = (attr_grapheme.grapheme == '\n') ? Grapheme{0} : attr_grapheme.grapheme;
 
-    glyphs = std::move(fontBook->find_glyph(style_font_id, g));
+    glyphs = fontBook->find_glyph(style_font_id, g);
 
     // Get the font_id that contained the glyph, this may be different if the glyph was not in the
     // style_font and was found in a fallback font. This may happend for text in a different language

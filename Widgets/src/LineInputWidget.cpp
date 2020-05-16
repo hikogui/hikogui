@@ -22,20 +22,21 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     window.addConstraint(box.height >= Theme::height);
 }
 
-WidgetNeed LineInputWidget::needs() const noexcept
+WidgetNeed LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {
-    auto need = Widget::needs();
+    auto need = Widget::needs(displayTimePoint);
 
-    if (focus && cpu_utc_clock::now() > lastRedrawTimePoint + blinkInterval) {
-        need |= WidgetNeed::Redraw;
-    }
+    auto redraw = focus;
+    redraw &= displayTimePoint > nextRedrawTimePoint;
+
+    need |= static_cast<WidgetNeed>(redraw);
 
     return need;
 }
 
-void LineInputWidget::layout() noexcept 
+void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept 
 {
-    Widget::layout();
+    Widget::layout(displayTimePoint);
 
     textRectangle = shrink(rectangle, Theme::margin);
 
@@ -54,12 +55,12 @@ void LineInputWidget::layout() noexcept
     }
 
     // Record the last time the text is modified, so that the carret remains lit.
-    lastUpdateTimePoint = cpu_utc_clock::now();
+    lastUpdateTimePoint = displayTimePoint;
 }
 
-void LineInputWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    lastRedrawTimePoint = displayTimePoint;
+    nextRedrawTimePoint = displayTimePoint + blinkInterval;
 
     auto context = drawContext;
 

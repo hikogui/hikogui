@@ -67,7 +67,7 @@ public:
 
     void remove(Window &window) noexcept;
 
-    void render(cpu_utc_clock::time_point displayTimePoint) noexcept {
+    void render(hires_utc_clock::time_point displayTimePoint) noexcept {
         for (auto &window: windows) {
             window->render(displayTimePoint);
         }

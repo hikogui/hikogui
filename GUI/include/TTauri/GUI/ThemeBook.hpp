@@ -21,7 +21,7 @@ class ThemeBook {
     std::string _themeName;
     ThemeMode _themeMode;
 
-    static constexpr char *defaultThemeName = "TTauri";
+    static inline char const *defaultThemeName = "TTauri";
 
 public:
     ThemeBook(std::vector<URL> const &theme_directories) noexcept;

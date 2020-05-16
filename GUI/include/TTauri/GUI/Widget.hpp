@@ -47,11 +47,13 @@ struct Vertex;
 namespace TTauri::GUI::Widgets {
 
 enum class WidgetNeed {
-    None, Redraw, Layout
+    None = 0,
+    Redraw = 1,
+    Layout = 3 // When Layout, Redraw is implied.
 };
 
 inline WidgetNeed operator|(WidgetNeed lhs, WidgetNeed rhs) noexcept {
-    return static_cast<WidgetNeed>(std::max(static_cast<int>(lhs), static_cast<int>(rhs)));
+    return static_cast<WidgetNeed>(static_cast<int>(lhs) | static_cast<int>(rhs));
 }
 inline WidgetNeed &operator|=(WidgetNeed &lhs, WidgetNeed rhs) noexcept {
     lhs = lhs | rhs;
@@ -196,18 +198,18 @@ public:
      *
      * @return If the widgets needs to be redrawn or layed out on this frame.
      */
-    [[nodiscard]] virtual WidgetNeed needs() const noexcept;
+    [[nodiscard]] virtual WidgetNeed needs(hires_utc_clock::time_point displayTimePoint) const noexcept;
 
     /** Layout the widget.
      * super::layout() should be called at start of the overriden function.
      */
-    [[nodiscard]] virtual void layout() noexcept;
+    virtual void layout(hires_utc_clock::time_point displayTimePoint) noexcept;
 
     /** Layout children of this widget.
     *
     * @param force Force the layout of the widget.
     */
-    [[nodiscard]] WidgetNeed layoutChildren(bool force) noexcept;
+    [[nodiscard]] WidgetNeed layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept;
 
     /** Draw widget.
     *
@@ -217,7 +219,7 @@ public:
     * for alpha-compositing. However the pipelines are always drawn in the same
     * order.
     */
-    virtual void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept;
+    virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
 
     /** Handle command.
      */

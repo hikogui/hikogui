@@ -426,7 +426,7 @@ void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcep
             break;
         }
     
-        for (let [x, y]: bad_pixel_list) {
+        for (let &[x, y]: bad_pixel_list) {
             image[y][x].repair();
         }
     }

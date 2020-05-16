@@ -16,25 +16,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
 include(AddIcon)
 include(AddStaticResource)
 
-if (MSVC)
-    add_compile_options(/wd4068 /nologo)
-    add_link_options(/nologo)
-	add_definitions(-DWIN32 -D_WINDOWS -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 
-    # std::result_of used by fmt.
-    add_definitions(-D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
-
-    if (NOT (${CMAKE_CXX_COMPILER_ID} MATCHES Clang))
-        if (NOT (${CMAKE_BUILD_TYPE} MATCHES Debug))
-            # Whole program optimization.
-            add_compile_options(-GL)
-            add_link_options(-LTCG)
-        endif()
-    else()
-        # Clang will complain about __builtin_assume even on constexpr functions and operators, this warning is absolutely useless.
-        add_definitions(-Wno-assume)
-    endif()
-endif ()
 
 add_subdirectory(ThirdPartyLibraries)
 add_subdirectory(Utilities)

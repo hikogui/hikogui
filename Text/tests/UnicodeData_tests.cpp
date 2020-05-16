@@ -185,128 +185,128 @@ protected:
 //      X == toNFC(X) == toNFD(X) == toNFKC(X) == toNFKD(X)
 
 TEST_F(UnicodeDataTests, toNFC_c1) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c1), test.c2) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFC_c2) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c2), test.c2) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFC_c3) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c3), test.c2) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFC_c4) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c4), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFC_c5) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c5), test.c4) << test.comment;
     }
 }
 #endif
 
 TEST_F(UnicodeDataTests, toNFKC_c1) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c1), test.c4) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFKC_c2) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c2), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKC_c3) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c3), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKC_c4) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c4), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKC_c5) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c5), test.c4) << test.comment;
     }
 }
 #endif
 
 TEST_F(UnicodeDataTests, toNFD_c1) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c1), test.c3) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFD_c2) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c2), test.c3) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFD_c3) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c3), test.c3) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFD_c4) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c4), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFD_c5) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c5), test.c5) << test.comment;
     }
 }
 #endif
 
 TEST_F(UnicodeDataTests, toNFKD_c1) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c1), test.c5) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFKD_c2) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c2), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKD_c3) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c3), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKD_c4) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c4), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKD_c5) {
-    for (let test: normalizationTests) {
+    for (let &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c5), test.c5) << test.comment;
     }
 }
@@ -315,20 +315,20 @@ TEST_F(UnicodeDataTests, toNFKD_c5) {
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, Invariant) {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
-    for (let test: normalizationTests) {
-        for (let c: test.c1) {
+    for (let &test: normalizationTests) {
+        for (let &c: test.c1) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let c: test.c2) {
+        for (let &c: test.c2) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let c: test.c3) {
+        for (let &c: test.c3) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let c: test.c4) {
+        for (let &c: test.c4) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let c: test.c5) {
+        for (let &c: test.c5) {
             previouslyTestedCodePoints[c] = true;
         }
     }

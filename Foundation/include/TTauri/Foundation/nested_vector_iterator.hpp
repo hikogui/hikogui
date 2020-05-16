@@ -16,9 +16,9 @@ template<
     typename ParentCIt,
     typename ParentIt,
     typename ChildIt=std::conditional_t<
-        std::is_const_v<std::remove_reference_t<std::iterator_traits<ParentIt>::reference>>,
-        ParentIt::value_type::const_iterator,
-        ParentIt::value_type::iterator
+        std::is_const_v<std::remove_reference_t<typename std::iterator_traits<ParentIt>::reference>>,
+        typename ParentIt::value_type::const_iterator,
+        typename ParentIt::value_type::iterator
     >
 >
 class nested_vector_iterator {

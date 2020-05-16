@@ -104,6 +104,18 @@ target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 
+
+if (MSVC)
+    # Ignore unknown pragmas.
+    target_compile_options(TTauri_Foundation PUBLIC -wd4068)
+
+    # Set defines to compile a win32 application.
+	target_compile_options(TTauri_Foundation PUBLIC -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
+
+    # std::result_of used by fmt.
+    target_compile_options(TTauri_Foundation PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
+endif()
+
 # 
 # We will support the following CPUs:
 #   * Intel Ivy Bridge from 2012, still used by Mac Pro sold in 2019.
@@ -111,29 +123,40 @@ set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 #
 #
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+    # Clang will complain about __builtin_assume even on constexpr functions and operators, this warning is absolutely useless.
+    target_compile_options(TTauri_Foundation PUBLIC -Wno-assume)
+
+    # Clang will complain about calling hidden-friend-template-functions.
+    target_compile_options(TTauri_Foundation PUBLIC -Wno-c++20-extensions)
+
+    # vk_mem_alloc.h seems to turn on nullability completeness checks on clang.
+    # It seems this check should only be used for interopability with swift
+    target_compile_options(TTauri_Foundation PUBLIC -Wno-nullability-completeness)
+
     # IvyBridge:                     F16C             FSGSBASE, AVX,           AES, PCLMUL        MMX, SSE, SSE2, SSE3,        SSSE3, SSE4.1, SSE4.2,     POPCNT, RDRND
     # Steamroller 0x15-v3: BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM 
     # POPCNT is supported by Steamroller through he SSE4A instruction set.
     target_compile_options(TTauri_Foundation PUBLIC -mf16c -mfsgsbase -mavx -maes -mpclmul -mmmx -msse -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -mpopcnt)
 
-    # Tune according to a more modern CPU.
-    if (NOT MSVC)
-        target_compile_options(TTauri_Foundation PUBLIC -mtune=skylake)
-    endif()
-elseif (MSVC)
-    target_compile_options(TTauri_Foundation PUBLIC -arch:AVX)
-endif()
-
-if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     # clang bug does not recognize functions without side-effects in __builtin_assume()
     target_compile_options(TTauri_Foundation PUBLIC -Wno-assume)
+
+    # The Microsoft version of clang does not implement all clang command line arguments.
     if (NOT MSVC)
-        # Some of our constexpr take a while to calculate.
+        # The TTauri generic tokenizer uses large constexpr tables.
         target_compile_options(TTauri_Foundation PUBLIC -fconstexpr-steps=100000000)
+
+        # Tune according to a more modern CPU.
+        target_compile_options(TTauri_Foundation PUBLIC -mtune=skylake)
     endif()
+
 elseif (MSVC)
+    target_compile_options(TTauri_Foundation PUBLIC -arch:AVX)
+
+    # The TTauri generic tokenizer uses large constexpr tables.
     target_compile_options(TTauri_Foundation PUBLIC -constexpr:steps 100000000)
 endif()
+
 
 if (APPLE)
     target_link_libraries(TTauri_Foundation PUBLIC "-framework Foundation -framework AppKit")

@@ -85,26 +85,7 @@ public:
     decltype(auto) end() const { return _end; }
     decltype(auto) end() { return _end; }
 
-    template<typename O, typename P>
-    bool push(O &&key, P &&value) noexcept {
-        if (_end != items.end()) {
-            auto &item = *(_end++);
-            item.key = std::forward<O>(key);
-            item.value = std::forward<P>(value);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    std::optional<item_type> pop() noexcept {
-        if (_end != items.begin()) {
-            auto &item = *(--_end);
-            return std::move(item);
-        } else {
-            return {};
-        }
-    }
+    
 
     std::optional<V> get(K const &key) const noexcept {
         for (auto i = begin(); i != end(); ++i) {
@@ -121,6 +102,25 @@ public:
         } else {
             return default_value;
         }
+    }
+
+    template<typename KK, typename VV>
+    bool set(KK &&key, VV &&value) noexcept {
+        auto i = begin();
+        for (; i != end(); ++i) {
+            if (i->key == key) {
+                i->value = std::forward<VV>(value);
+                return true;
+            }
+        }
+        if (i != items.end()) {
+            _end = i + 1;
+            i->key = std::forward<KK>(key);
+            i->value = std::forward<VV>(value);
+            return true;
+        }
+
+        return false;
     }
 
     V increment(K const &key) noexcept {

@@ -478,7 +478,7 @@ Path &Path::operator+=(Path const &rhs) noexcept
     let contourOffset = ssize(contourEndPoints);
 
     layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
-    for (let [x, fillColor]: rhs.layerEndContours) {
+    for (let &[x, fillColor]: rhs.layerEndContours) {
         layerEndContours.emplace_back(contourOffset + x, fillColor);
     }
 

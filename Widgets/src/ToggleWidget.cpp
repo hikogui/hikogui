@@ -24,9 +24,9 @@ ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value
     window.addConstraint(box.height >= Theme::smallHeight);
 }
 
-void ToggleWidget::layout() noexcept
+void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    Widget::layout();
+    Widget::layout(displayTimePoint);
 
     toggle_height = Theme::smallHeight;
     toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
@@ -48,7 +48,7 @@ void ToggleWidget::layout() noexcept
     label_translate = labelShapedText.T(label_rectangle);
 }
 
-void ToggleWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     // Prepare animation values.
     let [animation_progress, curr_value] = value.animation_tick(displayTimePoint);

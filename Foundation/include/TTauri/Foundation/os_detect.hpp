@@ -133,7 +133,7 @@ constexpr auto processor = Processor::ARM;
 #define ttauri_unreachable() __assume(0)
 #define ttauri_assume(condition) __assume(condition)
 #define force_inline __forceinline
-#define no_inline __declspec(noinline)
+#define no_inline inline __declspec(noinline)
 #define clang_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]

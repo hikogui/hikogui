@@ -51,8 +51,8 @@ public:
     RadioButtonWidget(RadioButtonWidget&&) = delete;
     RadioButtonWidget &operator=(RadioButtonWidget &&) = delete;
 
-    void layout() noexcept override {
-        Widget::layout();
+    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
+        Widget::layout(displayTimePoint);
 
         // Prepare coordinates.
         button_height = Theme::smallHeight;
@@ -76,7 +76,7 @@ public:
         label_translate = labelShapedText.T(label_rectangle);
     }
 
-    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override{
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override{
         
 
         // button.
@@ -126,7 +126,7 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept{
+    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override {
         if (box.contains(position)) {
             return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {

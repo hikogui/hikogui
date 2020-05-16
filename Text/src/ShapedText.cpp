@@ -44,11 +44,6 @@ namespace TTauri::Text {
     return glyphs;
 }
 
-static void morph_glyphs(std::vector<AttributedGlyph> &glyphs) noexcept
-{
-
-}
-
 [[nodiscard]] std::pair<float,float> get_cap_and_x_height(std::vector<AttributedGlyph> const &glyphs) noexcept
 {
     auto capHeightCounts = small_map<float,int,8>{};
@@ -129,8 +124,6 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &glyphs, float width) no
     };
 
     auto nr_lines = ssize(lines);
-    auto half_nr_lines = nr_lines / 2;
-    auto odd_nr_lines = nr_lines % 2 == 1;
     for (ssize_t i = 1; i != nr_lines; ++i) {
         size = vec{
             std::max(size.width(), lines[i].width),
@@ -204,6 +197,8 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
             start_y_upward = downward_line.ascender + gap + upward_line.descender;
             start_y_downward = 0.0;
         }
+    } else {
+        no_default;
     }
     
     {

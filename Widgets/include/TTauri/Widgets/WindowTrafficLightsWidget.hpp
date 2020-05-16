@@ -41,7 +41,7 @@ public:
 
     int state() const noexcept;
 
-    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override;
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;

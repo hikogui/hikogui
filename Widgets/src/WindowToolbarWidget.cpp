@@ -22,8 +22,6 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
     window.addConstraint(trafficLightButtons->box.bottom == box.bottom);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
-        let scale = mat::S(0.33f, 0.33f);
-
         closeWindowButton = &addWidget<ToolbarButtonWidget>(
             Text::TTauriIcon::CloseWindow,
             [&]() { window.closeWindow(); }
@@ -63,7 +61,7 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
     }
 }
 
-void WindowToolbarWidget::draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept
+void WindowToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
 

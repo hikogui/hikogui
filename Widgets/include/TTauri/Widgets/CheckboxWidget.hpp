@@ -60,8 +60,8 @@ public:
     CheckboxWidget(CheckboxWidget&&) = delete;
     CheckboxWidget &operator=(CheckboxWidget &&) = delete;
 
-    void layout() noexcept override {
-        Widget::layout();
+    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
+        Widget::layout(displayTimePoint);
 
         button_height = Theme::smallHeight;
         button_width = Theme::smallHeight;
@@ -85,7 +85,7 @@ public:
         checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.3f);
     }
 
-    void draw(DrawContext const &drawContext, cpu_utc_clock::time_point displayTimePoint) noexcept override {
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
         // button.
         auto context = drawContext;
         context.drawBox(button_rectangle);
@@ -146,7 +146,7 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept{
+    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override {
         if (box.contains(position)) {
             return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {

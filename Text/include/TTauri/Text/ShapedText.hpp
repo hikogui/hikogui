@@ -41,7 +41,7 @@ private:
 
 public:
     ShapedText() noexcept :
-        lines(), boundingBox(), preferedExtent() {}
+        alignment(Alignment::MiddleCenter), capHeight(0.0), xHeight(0.0), boundingBox(), preferedExtent(), lines() {}
     ShapedText(ShapedText const &other) = default;
     ShapedText(ShapedText &&other) noexcept = default;
     ShapedText &operator=(ShapedText const &other) = default;

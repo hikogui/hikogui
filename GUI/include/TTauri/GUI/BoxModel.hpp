@@ -12,8 +12,7 @@ namespace TTauri::GUI {
 
 class BoxModel {
 private:
-    float previousWidth;
-    float previousHeight;
+    mutable __m128d previousExtent;
 public:
     rhea::variable left;
     rhea::variable bottom;
@@ -26,12 +25,12 @@ public:
     const rhea::linear_expression middle = bottom + height * 0.5;
 
     [[nodiscard]] bool hasResized() const noexcept {
-        let currentWidth = width.value();
-        let currentHeight = height.value();
-        let resized = (previousWidth != currentWidth) || (previousHeight != currentHeight);
-        previousWidth = currentWidth;
-        previousHeight = currentHeight;
-        return resized;
+        let currentExtent = _mm_set_pd(width.value(), height.value());
+        let resized = _mm_cmpneq_pd(currentExtent, previousExtent);
+        let resized_mask = _mm_movemask_pd(resized);
+        previousExtent = currentExtent;
+        
+        return resized_mask != 0;
     }
 
     [[nodiscard]] vec offset() const noexcept {
