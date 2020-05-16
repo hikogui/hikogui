@@ -191,7 +191,10 @@ public:
     }
 
     /** Request the needs of the widget.
-     * super::needs() should be called and binary-or with the return value.
+     * This function will be called for each widget on each frame.
+     * Therefor it is important to optimize this function.
+     *
+     * @return If the widgets needs to be redrawn or layed out on this frame.
      */
     [[nodiscard]] virtual WidgetNeed needs() const noexcept;
 

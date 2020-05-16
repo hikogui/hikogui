@@ -64,7 +64,7 @@ constexpr char32_t UnicodeReverseBOM = UnicodeNonCharacterFFFE;
 }
 
 template<typename UnaryOperation>
-[[nodiscard]] inline std::u16string u16string_transform(std::u16string_view str, UnaryOperation &unary_op) noexcept
+[[nodiscard]] inline std::u16string u16string_transform(std::u16string_view str, UnaryOperation unary_op) noexcept
 {
     auto r = std::u16string{};
     r.reserve(ssize(str));

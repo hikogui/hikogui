@@ -11,6 +11,9 @@
 namespace TTauri::GUI {
 
 class BoxModel {
+private:
+    float previousWidth;
+    float previousHeight;
 public:
     rhea::variable left;
     rhea::variable bottom;
@@ -22,19 +25,28 @@ public:
     const rhea::linear_expression top = bottom + height;
     const rhea::linear_expression middle = bottom + height * 0.5;
 
-    vec offset() const noexcept {
+    [[nodiscard]] bool hasResized() const noexcept {
+        let currentWidth = width.value();
+        let currentHeight = height.value();
+        let resized = (previousWidth != currentWidth) || (previousHeight != currentHeight);
+        previousWidth = currentWidth;
+        previousHeight = currentHeight;
+        return resized;
+    }
+
+    [[nodiscard]] vec offset() const noexcept {
         return { left.value(), bottom.value() };
     }
 
-    vec extent() const noexcept {
+    [[nodiscard]] vec extent() const noexcept {
         return { width.value(), height.value() };
     }
 
-    aarect rectangle() const noexcept {
+    [[nodiscard]] aarect rectangle() const noexcept {
         return { left.value(), bottom.value(), width.value(), height.value() };
     }
 
-    bool contains(vec position) const noexcept {
+    [[nodiscard]] bool contains(vec position) const noexcept {
         return rectangle().contains(position);
     }
 };

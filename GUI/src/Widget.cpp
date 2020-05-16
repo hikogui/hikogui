@@ -66,18 +66,15 @@ void Widget::shareRightEdgeWith(Widget const &parent, float margin, bool useCont
 
 WidgetNeed Widget::needs() const noexcept
 {
-    auto need = WidgetNeed::None;
+    if (forceLayout.exchange(false, std::memory_order::memory_order_relaxed) || box.hasResized()) {
+        return WidgetNeed::Layout;
 
-    if (forceRedraw.exchange(false)) {
-        need |= WidgetNeed::Redraw;
+    } else if (forceRedraw.exchange(false, std::memory_order::memory_order_relaxed)) {
+        return WidgetNeed::Redraw;
+
+    } else {
+        return WidgetNeed::None;
     }
-    if (forceLayout.exchange(false)) {
-        need |= WidgetNeed::Layout;
-    }
-    if (rectangle != aarect{box.extent()}) {
-        need |= WidgetNeed::Layout;
-    }
-    return need;
 }
 
 void Widget::layout() noexcept
