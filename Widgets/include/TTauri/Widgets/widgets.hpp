@@ -7,4 +7,4 @@
 #include "TTauri/Widgets/ImageWidget.hpp"
 #include "TTauri/Widgets/LineInputWidget.hpp"
 #include "TTauri/Widgets/ToggleWidget.hpp"
-#include "TTauri/Widgets/WindowToolbarWidget.hpp"
+#include "TTauri/Widgets/ToolbarWidget.hpp"

@@ -11,20 +11,20 @@ namespace TTauri::GUI::Widgets {
 class ToolbarButtonWidget;
 class WindowTrafficLightsWidget;
 
-class WindowToolbarWidget : public Widget {
+class ToolbarWidget : public Widget {
 public:
     WindowTrafficLightsWidget *trafficLightButtons = nullptr;
     ToolbarButtonWidget *closeWindowButton = nullptr;
     ToolbarButtonWidget *maximizeWindowButton = nullptr;
     ToolbarButtonWidget *minimizeWindowButton = nullptr;
 
-    WindowToolbarWidget(Window &window, Widget *parent) noexcept;
-    ~WindowToolbarWidget() {}
+    ToolbarWidget(Window &window, Widget *parent) noexcept;
+    ~ToolbarWidget() {}
 
-    WindowToolbarWidget(const WindowToolbarWidget &) = delete;
-    WindowToolbarWidget &operator=(const WindowToolbarWidget &) = delete;
-    WindowToolbarWidget(WindowToolbarWidget &&) = delete;
-    WindowToolbarWidget &operator=(WindowToolbarWidget &&) = delete;
+    ToolbarWidget(const ToolbarWidget &) = delete;
+    ToolbarWidget &operator=(const ToolbarWidget &) = delete;
+    ToolbarWidget(ToolbarWidget &&) = delete;
+    ToolbarWidget &operator=(ToolbarWidget &&) = delete;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

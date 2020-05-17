@@ -3,7 +3,7 @@
 
 #include "TTauri/Widgets/WindowWidget.hpp"
 #include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
-#include "TTauri/Widgets/WindowToolbarWidget.hpp"
+#include "TTauri/Widgets/ToolbarWidget.hpp"
 #include "TTauri/Widgets/ContainerWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
@@ -14,7 +14,7 @@ using namespace std;
 WindowWidget::WindowWidget(Window &window) noexcept :
     Widget(window, nullptr, vec{0.0, 0.0})
 {
-    toolbar = &addWidgetDirectly<WindowToolbarWidget>();
+    toolbar = &addWidgetDirectly<ToolbarWidget>();
     window.addConstraint(toolbar->box.left == box.left);
     window.addConstraint(toolbar->box.right == box.right);
     window.addConstraint(toolbar->box.top == box.top);

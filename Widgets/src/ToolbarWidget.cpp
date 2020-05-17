@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/WindowToolbarWidget.hpp"
+#include "TTauri/Widgets/ToolbarWidget.hpp"
 #include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
 #include "TTauri/Widgets/ToolbarButtonWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
@@ -11,7 +11,7 @@ namespace TTauri::GUI::Widgets {
 
 using namespace std;
 
-WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcept :
+ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
     Widget(window, parent, vec{Theme::width, Theme::smallHeight})
 {
     window.addConstraint(box.height <= Theme::smallHeight, rhea::strength::strong());
@@ -63,7 +63,7 @@ WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcep
     }
 }
 
-void WindowToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto context = drawContext;
 
@@ -74,7 +74,7 @@ void WindowToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::
     Widget::draw(drawContext, displayTimePoint);
 }
 
-HitBox WindowToolbarWidget::hitBoxTest(vec position) noexcept
+HitBox ToolbarWidget::hitBoxTest(vec position) noexcept
 {
     auto r = box.contains(position) ?
         HitBox{this, elevation, HitBox::Type::MoveArea} :

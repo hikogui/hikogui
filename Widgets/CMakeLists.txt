@@ -4,7 +4,7 @@ project(TTauri_Widgets LANGUAGES)
 set(TTauri_Widgets_srcs
     src/globals.cpp
     src/WindowWidget.cpp
-    src/WindowToolbarWidget.cpp
+    src/ToolbarWidget.cpp
     src/ToolbarButtonWidget.cpp
     src/WindowTrafficLightsWidget.cpp
     src/ButtonWidget.cpp

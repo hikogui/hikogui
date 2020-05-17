@@ -7,11 +7,11 @@
 
 namespace TTauri::GUI::Widgets {
 
-class WindowToolbarWidget;
+class ToolbarWidget;
 
 class WindowWidget : public Widget {
 public:
-    WindowToolbarWidget *toolbar = nullptr;
+    ToolbarWidget *toolbar = nullptr;
 
     WindowWidget(Window &window) noexcept;
 
