@@ -14,14 +14,10 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value, std::string const label) noexcept :
-    Widget(window, parent), value(150ms, value, [this](bool){ forceRedraw = true; }), label(std::move(label))
+    Widget(window, parent, vec{ssize(label) != 0 ? Theme::width : Theme::smallWidth, Theme::smallHeight}),
+    value(150ms, value, [this](bool){ forceRedraw = true; }),
+    label(std::move(label))
 {
-    if (ssize(label) != 0) {
-        window.addConstraint(box.width >= Theme::width);
-    } else {
-        window.addConstraint(box.width >= Theme::smallWidth);
-    }
-    window.addConstraint(box.height >= Theme::smallHeight);
 }
 
 void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept

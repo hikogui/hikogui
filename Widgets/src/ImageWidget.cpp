@@ -12,7 +12,8 @@ using namespace std::literals;
 
 
 ImageWidget::ImageWidget(Window &window, Widget *parent, URL path) noexcept :
-    Widget(window, parent), path(std::move(path))
+    Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
+    path(std::move(path))
 {
 }
 

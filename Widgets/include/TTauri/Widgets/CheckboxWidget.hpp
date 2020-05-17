@@ -43,15 +43,10 @@ protected:
 public:
 
     CheckboxWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
-        Widget(window, parent), value(value, [this](ValueType){ forceRedraw = true; }), label(std::move(label))
-    {
-        if (ssize(label) != 0) {
-            window.addConstraint(box.width >= Theme::width);
-        } else {
-            window.addConstraint(box.width >= Theme::smallWidth);
-        }
-        window.addConstraint(box.height >= Theme::smallHeight);
-    }
+        Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
+        value(value, [this](ValueType){ forceRedraw = true; }),
+        label(std::move(label))
+    {}
 
     ~CheckboxWidget() {}
 

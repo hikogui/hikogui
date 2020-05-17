@@ -12,8 +12,10 @@ namespace TTauri::GUI::Widgets {
 using namespace std;
 
 WindowToolbarWidget::WindowToolbarWidget(Window &window, Widget *parent) noexcept :
-    Widget(window, parent)
+    Widget(window, parent, vec{Theme::width, Theme::smallHeight})
 {
+    window.addConstraint(box.height <= Theme::smallHeight, rhea::strength::strong());
+
     trafficLightButtons = &addWidget<WindowTrafficLightsWidget>(
         getResource<Path>(URL("resource:Themes/Icons/Application Icon.tticon"))
     );

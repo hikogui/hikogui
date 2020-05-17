@@ -12,10 +12,10 @@ namespace TTauri::GUI::Widgets {
 using namespace std::literals;
 
 ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept :
-    Widget(window, parent), icon(std::move(icon)), delegate(delegate)
+    Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
+    icon(std::move(icon)),
+    delegate(delegate)
 {
-    window.addConstraint(box.height == box.width);
-
     if (auto path = std::get_if<Path>(&this->icon)) {
         path->tryRemoveLayers();
     }

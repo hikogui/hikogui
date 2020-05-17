@@ -12,7 +12,7 @@ namespace TTauri::GUI::Widgets {
 using namespace std;
 
 WindowWidget::WindowWidget(Window &window) noexcept :
-    Widget(window)
+    Widget(window, nullptr, vec{0.0, 0.0})
 {
     toolbar = &addWidgetDirectly<WindowToolbarWidget>();
     window.addConstraint(toolbar->box.left == box.left);

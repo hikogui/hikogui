@@ -13,14 +13,11 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent),
+    Widget(window, parent, vec{Theme::width, Theme::height}),
     label(std::move(label)),
     field(theme->labelStyle),
     shapedText()
-{
-    window.addConstraint(box.width >= Theme::width);
-    window.addConstraint(box.height >= Theme::height);
-}
+{}
 
 WidgetNeed LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {

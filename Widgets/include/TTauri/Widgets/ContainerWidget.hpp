@@ -10,7 +10,7 @@ namespace TTauri::GUI::Widgets {
 class ContainerWidget : public Widget {
 public:
     ContainerWidget(Window &window, Widget *parent) noexcept:
-        Widget(window, parent) {}
+        Widget(window, parent, vec{0.0, 0.0}) {}
 
     ~ContainerWidget() {}
 

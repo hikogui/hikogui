@@ -225,12 +225,7 @@ struct PixelMap {
 
         let offset = rect.y1() * stride + rect.x1();
 
-        if (rect.width() == 0 || rect.height() == 0) {
-            // Image of zero width or height needs zero pixels returned.
-            return { };
-        } else {
-            return { pixels + offset, rect.width(), rect.height(), stride };
-        }
+        return { pixels + offset, rect.width(), rect.height(), stride };
     }
     
     /** Get a (smaller) view of the map.

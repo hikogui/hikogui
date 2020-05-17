@@ -38,7 +38,7 @@ protected:
 public:
 
     RadioButtonWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
-        ControlWidget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
+        Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
         value(value, [this](ValueType){ forceRedraw = true; }),
         label(std::move(label))
     {

@@ -27,13 +27,22 @@ struct AttributedGlyphLine {
     AttributedGlyphLine(iterator first, iterator last) noexcept :
         line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f)
     {
+        ttauri_assume(std::distance(first, last) > 0);
+
         line.reserve(std::distance(first, last));
         std::move(first, last, std::back_inserter(line));
         calculateLineMetrics();
     }
 
+    [[nodiscard]] bool shouldWrap(float maximum_width) noexcept {
+        ttauri_assume(ssize(line) >= 1);
+        return
+            width > maximum_width &&
+            ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
+    }
+
     [[nodiscard]] AttributedGlyphLine wrap(float maximum_width) noexcept {
-        ttauri_assume(width > maximum_width);
+        ttauri_assume(shouldWrap(maximum_width));
 
         auto word_end = line.begin();
         auto line_width = 0.0f;

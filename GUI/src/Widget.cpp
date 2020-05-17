@@ -9,8 +9,11 @@ namespace TTauri::GUI::Widgets {
 Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
     window(window), parent(parent), elevation(parent ? parent->elevation + 1.0f : 0.0f)
 {
+    minimumExtent = defaultExtent;
     minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());
     minimumHeightConstraint = window.addConstraint(box.height >= minimumExtent.height());
+
+    preferedExtent = defaultExtent;
     preferedWidthConstraint = window.addConstraint(box.width >= preferedExtent.width(), rhea::strength::strong());
     preferedHeightConstraint = window.addConstraint(box.height >= preferedExtent.height(), rhea::strength::strong());
 }

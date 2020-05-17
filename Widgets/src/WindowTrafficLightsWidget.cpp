@@ -10,10 +10,9 @@
 namespace TTauri::GUI::Widgets {
 
 WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent, Path applicationIcon) noexcept :
-    Widget(window, parent), applicationIcon(std::move(applicationIcon))
+    Widget(window, parent, vec{WIDTH, HEIGHT}),
+    applicationIcon(std::move(applicationIcon))
 {
-    window.addConstraint(box.height == HEIGHT);
-    window.addConstraint(box.width == WIDTH);
 }
 
 int WindowTrafficLightsWidget::state() const noexcept {

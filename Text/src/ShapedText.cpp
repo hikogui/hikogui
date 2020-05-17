@@ -95,13 +95,13 @@ namespace TTauri::Text {
     return lines;
 }
 
-static void wrap_lines(std::vector<AttributedGlyphLine> &glyphs, float width) noexcept
+static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noexcept
 {
-    for (auto i = glyphs.begin(); i != glyphs.end(); ++i) {
-        while (i->width > width) {
+    for (auto i = lines.begin(); i != lines.end(); ++i) {
+        while (i->shouldWrap(width)) {
             // Wrap will modify the current line to the maximum width and return
             // the rest of that line, which we insert here after it.
-            i = glyphs.insert(i+1, i->wrap(width)); 
+            i = lines.insert(i+1, i->wrap(width)); 
         }
     }
 }

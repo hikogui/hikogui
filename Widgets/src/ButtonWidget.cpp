@@ -13,7 +13,8 @@ using namespace TTauri::Text;
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    ControlWidget(window, parent, vec{Theme::width, Theme::height}), label(std::move(label))
+    Widget(window, parent, vec{Theme::width, Theme::height}),
+    label(std::move(label))
 {
 }
 
@@ -22,7 +23,7 @@ ButtonWidget::~ButtonWidget() {
 
 void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept 
 {
-    ControlWidget::layout(displayTimePoint);
+    Widget::layout(displayTimePoint);
 
     let label_x = Theme::margin;
     let label_y = 0.0;
