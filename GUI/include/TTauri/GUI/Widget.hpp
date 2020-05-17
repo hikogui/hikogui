@@ -116,6 +116,22 @@ public:
      */
     aarect rectangle;
 
+    /** The minimum size the widget should be.
+    * This value could change based on the content of the widget.
+    */
+    vec minimumExtent;
+
+    rhea::constraint minimumWidthConstraint;
+    rhea::constraint minimumHeightConstraint;
+
+    /** The minimum size the widget should be.
+    * This value could change based on the content of the widget.
+    */
+    vec preferedExtent;
+
+    rhea::constraint preferedWidthConstraint;
+    rhea::constraint preferedHeightConstraint;
+
     float elevation = 0.0;
 
     /** The widget is enabled.
@@ -132,8 +148,8 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    Widget(Window &window, Widget *parent=nullptr) noexcept;
-    virtual ~Widget() {}
+    Widget(Window &window, Widget *parent, vec defaultExtent) noexcept;
+    virtual ~Widget();
 
     Widget(const Widget &) = delete;
     Widget &operator=(const Widget &) = delete;
@@ -159,6 +175,10 @@ public:
             return addWidgetDirectly<T>(std::forward<Args>(args)...);
         }
     }
+
+    void setMinimumExtent(vec newMinimumExtent) noexcept;
+    void setPreferedExtent(vec newPreferedExtent) noexcept;
+    void setMinimumExtent(float width, float height) noexcept;
 
     void placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
     void placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;

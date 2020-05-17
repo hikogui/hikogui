@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Widgets/ControlWidget.hpp"
+#include "TTauri/GUI/WIdget.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>
@@ -15,7 +15,7 @@
 namespace TTauri::GUI::Widgets {
 
 template<typename ValueType, ValueType ActiveValue>
-class RadioButtonWidget : public ControlWidget {
+class RadioButtonWidget : public Widget {
 protected:
     observer<ValueType> value;
 

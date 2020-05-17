@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Widgets/ControlWidget.hpp"
+#include "TTauri/GUI/Widget.hpp"
 #include <rhea/constraint.hpp>
 #include <memory>
 #include <string>
@@ -13,7 +13,7 @@
 
 namespace TTauri::GUI::Widgets {
 
-class ButtonWidget : public ControlWidget {
+class ButtonWidget : public Widget {
 protected:
     bool value = false;
     bool pressed = false;

@@ -6,14 +6,69 @@
 
 namespace TTauri::GUI::Widgets {
 
-Widget::Widget(Window &window, Widget *parent) noexcept :
-    window(window), parent(parent), elevation(parent ? parent->elevation + 1.0f : 0.0f) {}
+Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
+    window(window), parent(parent), elevation(parent ? parent->elevation + 1.0f : 0.0f)
+{
+    minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());
+    minimumHeightConstraint = window.addConstraint(box.height >= minimumExtent.height());
+    preferedWidthConstraint = window.addConstraint(box.width >= preferedExtent.width(), rhea::strength::strong());
+    preferedHeightConstraint = window.addConstraint(box.height >= preferedExtent.height(), rhea::strength::strong());
+}
+
+Widget::~Widget()
+{
+    window.removeConstraint(minimumWidthConstraint);
+    window.removeConstraint(minimumHeightConstraint);
+    window.removeConstraint(preferedWidthConstraint);
+    window.removeConstraint(preferedHeightConstraint);
+}
 
 Device *Widget::device() const noexcept
 {
     auto device = window.device;
     ttauri_assert(device);
     return device;
+}
+
+void Widget::setMinimumExtent(vec newMinimumExtent) noexcept
+{
+    if (newMinimumExtent != minimumExtent) {
+        minimumExtent = newMinimumExtent;
+
+        minimumWidthConstraint = window.replaceConstraint(
+            minimumWidthConstraint,
+            box.width >= minimumExtent.width()
+        );
+
+        minimumHeightConstraint = window.replaceConstraint(
+            minimumHeightConstraint,
+            box.height >= minimumExtent.height()
+        );
+    }
+}
+
+void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
+{
+    if (newPreferedExtent != preferedExtent) {
+        preferedExtent = newPreferedExtent;
+
+        preferedWidthConstraint = window.replaceConstraint(
+            preferedWidthConstraint,
+            box.width >= preferedExtent.width(),
+            rhea::strength::weak()
+        );
+
+        preferedHeightConstraint = window.replaceConstraint(
+            preferedHeightConstraint,
+            box.height >= preferedExtent.height(),
+            rhea::strength::weak()
+        );
+    }
+}
+
+void Widget::setMinimumExtent(float width, float height) noexcept
+{
+    setMinimumExtent(vec{width, height});
 }
 
 void Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
