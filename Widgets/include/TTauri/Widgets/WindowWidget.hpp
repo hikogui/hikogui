@@ -20,7 +20,7 @@ public:
     WindowWidget(WindowWidget&&) = delete;
     WindowWidget &operator=(WindowWidget&&) = delete;
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 };
 
 }

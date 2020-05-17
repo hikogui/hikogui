@@ -74,14 +74,14 @@ void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_p
     Widget::draw(drawContext, displayTimePoint);
 }
 
-HitBox ToolbarWidget::hitBoxTest(vec position) noexcept
+HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
 {
-    auto r = box.contains(position) ?
+    auto r = rectangle.contains(position) ?
         HitBox{this, elevation, HitBox::Type::MoveArea} :
         HitBox{};
 
-    for (auto& widget : children) {
-        r = std::max(r, widget->hitBoxTest(position));
+    for (let &child : children) {
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
     }
     return r;
 }

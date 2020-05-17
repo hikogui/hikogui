@@ -39,8 +39,8 @@ public:
     void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
     void handleCommand(string_ltag command) noexcept override;
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
-    [[nodiscard]] bool acceptsFocus() noexcept override {
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+    [[nodiscard]] bool acceptsFocus() const noexcept override {
         return enabled;
     }
 

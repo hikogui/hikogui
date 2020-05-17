@@ -86,9 +86,9 @@ void ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     }
 }
 
-HitBox ButtonWidget::hitBoxTest(vec position) noexcept
+HitBox ButtonWidget::hitBoxTest(vec position) const noexcept
 {
-    if (box.contains(position)) {
+    if (rectangle.contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};

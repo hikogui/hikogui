@@ -29,11 +29,11 @@ struct HitBox {
         ApplicationIcon
     };
 
-    Widgets::Widget *widget;
+    Widgets::Widget const *widget;
     float elevation;
     Type type;
 
-    HitBox(Widgets::Widget *widget=nullptr, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
+    HitBox(Widgets::Widget const *widget=nullptr, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
         widget(widget), elevation(elevation), type(type) {}
 
 

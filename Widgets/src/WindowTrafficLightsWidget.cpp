@@ -212,22 +212,22 @@ std::tuple<aarect, aarect, aarect, aarect> WindowTrafficLightsWidget::getButtonR
     let height = box.height.value();
 
     let sysmenuButtonBox = aarect{
-        vec::point(left, bottom),
+        vec::point(0.0, 0.0),
         {height, height}
     };
 
     let redButtonBox = aarect{
-        vec::point(left + MARGIN, bottom + MARGIN),
+        vec::point(MARGIN, MARGIN),
         {DIAMETER, DIAMETER}
     };
 
     let yellowButtonBox = aarect{
-        vec::point(left + MARGIN + DIAMETER + SPACING, bottom + MARGIN),
+        vec::point(MARGIN + DIAMETER + SPACING, MARGIN),
         {DIAMETER, DIAMETER}
     };
 
     let greenButtonBox = aarect{
-        vec::point(left + MARGIN + DIAMETER * 2.0 + SPACING * 2.0, bottom + MARGIN),
+        vec::point(MARGIN + DIAMETER * 2.0 + SPACING * 2.0, MARGIN),
         {DIAMETER, DIAMETER}
     };
 
@@ -278,7 +278,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
     }
 }
 
-HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) noexcept
+HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
     let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 

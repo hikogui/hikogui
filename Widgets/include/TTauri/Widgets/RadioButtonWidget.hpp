@@ -126,15 +126,15 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override {
-        if (box.contains(position)) {
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
+        if (rectangle.contains(position)) {
             return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override {
         return enabled;
     }
 };

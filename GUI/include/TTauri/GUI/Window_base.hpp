@@ -316,19 +316,19 @@ protected:
      */
     virtual void build() = 0;
 
-    void updateMouseTarget(Widgets::Widget *newTargetWidget) noexcept {
+    void updateMouseTarget(Widgets::Widget const *newTargetWidget) noexcept {
         if (newTargetWidget != mouseTargetWidget) {
             if (mouseTargetWidget != nullptr) {
                 mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
             }
-            mouseTargetWidget = newTargetWidget;
+            mouseTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
             if (mouseTargetWidget != nullptr) {
                 mouseTargetWidget->handleMouseEvent(MouseEvent::entered());
             }
         }
     }
 
-    void updateKeyboardTarget(Widgets::Widget *newTargetWidget) noexcept {
+    void updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept {
         if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
             newTargetWidget = nullptr;
         }
@@ -337,7 +337,7 @@ protected:
             if (keyboardTargetWidget != nullptr) {
                 keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
             }
-            keyboardTargetWidget = newTargetWidget;
+            keyboardTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
             if (keyboardTargetWidget != nullptr) {
                 keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
             }
@@ -399,7 +399,7 @@ protected:
 
     /*! Test where the certain features of a window are located.
      */
-    HitBox hitBoxTest(vec position) noexcept {
+    HitBox hitBoxTest(vec position) const noexcept {
         return widget->hitBoxTest(position);
     }
 

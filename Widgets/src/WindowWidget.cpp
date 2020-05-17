@@ -35,34 +35,34 @@ WindowWidget::WindowWidget(Window &window) noexcept :
 
 }
 
-HitBox WindowWidget::hitBoxTest(vec position) noexcept
+HitBox WindowWidget::hitBoxTest(vec position) const noexcept
 {
     constexpr float BORDER_WIDTH = 5.0;
 
     auto r = HitBox{this, elevation};
 
-    if (position.x() <= (box.left.value() + BORDER_WIDTH)) {
-        if (position.y() <= (box.bottom.value() + BORDER_WIDTH)) {
+    if (position.x() <= BORDER_WIDTH) {
+        if (position.y() <= BORDER_WIDTH) {
             r.type = HitBox::Type::BottomLeftResizeCorner;
-        } else if (position.y() >= (box.top.evaluate() - BORDER_WIDTH)) {
+        } else if (position.y() >= (rectangle.height() - BORDER_WIDTH)) {
             r.type = HitBox::Type::TopLeftResizeCorner;
         } else {
             r.type = HitBox::Type::LeftResizeBorder;
         }
 
-    } else if (position.x() >= (box.right.evaluate() - BORDER_WIDTH)) {
-        if (position.y() <= (box.bottom.value() + BORDER_WIDTH)) {
+    } else if (position.x() >= (rectangle.width() - BORDER_WIDTH)) {
+        if (position.y() <= BORDER_WIDTH) {
             r.type = HitBox::Type::BottomRightResizeCorner;
-        } else if (position.y() >= (box.top.evaluate() - BORDER_WIDTH)) {
+        } else if (position.y() >= (rectangle.height() - BORDER_WIDTH)) {
             r.type = HitBox::Type::TopRightResizeCorner;
         } else {
             r.type = HitBox::Type::RightResizeBorder;
         }
 
-    } else if (position.y() <= (box.bottom.value() + BORDER_WIDTH)) {
+    } else if (position.y() <= BORDER_WIDTH) {
         r.type = HitBox::Type::BottomResizeBorder;
 
-    } else if (position.y() >= (box.top.evaluate() - BORDER_WIDTH)) {
+    } else if (position.y() >= (rectangle.height() - BORDER_WIDTH)) {
         r.type = HitBox::Type::TopResizeBorder;
     }
 
@@ -72,9 +72,9 @@ HitBox WindowWidget::hitBoxTest(vec position) noexcept
         return r;
     }
 
-    r = std::max(r, toolbar->hitBoxTest(position));
-    for (auto& widget : children) {
-        r = std::max(r, widget->hitBoxTest(position));
+    r = std::max(r, toolbar->hitBoxTest(position - toolbar->offsetFromParent));
+    for (let &child : children) {
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
     }
 
     return r;

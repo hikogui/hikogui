@@ -186,9 +186,9 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     }
 }
 
-HitBox LineInputWidget::hitBoxTest(vec position) noexcept
+HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
 {
-    if (box.contains(position)) {
+    if (rectangle.contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};

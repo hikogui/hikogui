@@ -111,11 +111,32 @@ public:
     //! Location of the frame compared to the window.
     BoxModel box;
 
+    /** The rectangle of the widget within the window.
+     */
+    aarect windowRectangle;
+
+    /** The rectangle to clip drawing for this widget.
+     * This is the same as the windowRectangle expanded with margins.
+     */
+    aarect clippingRectangle;
+    
     /** The rectangle of the widget.
      * The rectangle's left bottom corner is at (0, 0)
      * in the current DrawContext's coordinate system.
      */
     aarect rectangle;
+
+    /** Offset of this widget compared to its parent.
+     */
+    vec offsetFromParent;
+
+    /** Transformation matrix from window coords to local coords.
+     */
+    mat fromWindowTransform;
+
+    /** Transformation matrix from local coords to window coords.
+    */
+    mat toWindowTransform;
 
     /** The minimum size the widget should be.
     * This value could change based on the content of the widget.
@@ -201,16 +222,20 @@ public:
 
     /** Find the widget that is under the mouse cursor.
      */
-    [[nodiscard]] virtual HitBox hitBoxTest(vec position) noexcept;
+    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
      */
-    [[nodiscard]] virtual bool acceptsFocus() noexcept {
+    [[nodiscard]] virtual bool acceptsFocus() const noexcept {
         return false;
     }
 
     [[nodiscard]] ssize_t nestingLevel() noexcept {
         return numeric_cast<ssize_t>(elevation);
+    }
+
+    [[nodiscard]] float z() noexcept {
+        return elevation * 0.01f;
     }
 
     /** Request the needs of the widget.

@@ -44,7 +44,7 @@ public:
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;
-    [[nodiscard]] HitBox hitBoxTest(vec position) noexcept override;
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
 private:
     std::tuple<aarect, aarect, aarect, aarect> getButtonRectangles() const noexcept;

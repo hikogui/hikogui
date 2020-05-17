@@ -132,9 +132,9 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     }
 }
 
-HitBox ToolbarButtonWidget::hitBoxTest(vec position) noexcept
+HitBox ToolbarButtonWidget::hitBoxTest(vec position) const noexcept
 {
-    if (box.contains(position)) {
+    if (rectangle.contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};

@@ -138,7 +138,16 @@ WidgetNeed Widget::needs(hires_utc_clock::time_point displayTimePoint) const noe
 
 void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    rectangle = box.extent();
+    windowRectangle = box.rectangle();
+    clippingRectangle = expand(windowRectangle, Theme::margin);
+    rectangle = windowRectangle.extent();
+
+    offsetFromParent = parent ?
+        windowRectangle.offset() - parent->windowRectangle.offset():
+        windowRectangle.offset();
+        
+    fromWindowTransform = mat::T(-windowRectangle.x(), -windowRectangle.y(), -z());
+    toWindowTransform = mat::T(windowRectangle.x(), windowRectangle.y(), z());
 }
 
 WidgetNeed Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept
@@ -161,25 +170,15 @@ WidgetNeed Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, 
 
 void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    constexpr float elevationToDepth = 0.01f;
-
-    let depth = elevation * elevationToDepth;
-    let offset = box.offset() + vec{0.0, 0.0, depth};
-
     auto childContext = drawContext;
     for (auto &child : children) {
         let childRectangle = child->box.rectangle();
-        let childNestingLevel = child->nestingLevel();
-        let childDepth = child->elevation * elevationToDepth;
-        let childOffset = mat::T{0.0, 0.0, childDepth} * childRectangle.offset();
 
-        let relativeOffset = childOffset - offset;
-        let translation = mat::T(relativeOffset);
-
-        childContext.clippingRectangle = expand(childRectangle, theme->margin);
-        childContext.transform = translation * drawContext.transform;
+        childContext.clippingRectangle = child->clippingRectangle;
+        childContext.transform = child->toWindowTransform;
 
         // The default fill and border colors.
+        let childNestingLevel = child->nestingLevel();
         childContext.color = theme->borderColor(childNestingLevel);
         childContext.fillColor = theme->fillColor(childNestingLevel);
 
@@ -212,14 +211,14 @@ void Widget::handleCommand(string_ltag command) noexcept {
     }
 }
 
-HitBox Widget::hitBoxTest(vec position) noexcept
+HitBox Widget::hitBoxTest(vec position) const noexcept
 {
-    auto r = box.contains(position) ?
+    auto r = rectangle.contains(position) ?
         HitBox{this, elevation} :
         HitBox{};
 
-    for (auto& widget : children) {
-        r = std::max(r, widget->hitBoxTest(position));
+    for (let &child : children) {
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
     }
     return r;
 }
