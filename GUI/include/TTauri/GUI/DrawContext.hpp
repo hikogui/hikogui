@@ -141,9 +141,25 @@ public:
     void drawBox(aarect box) const noexcept {
         ttauri_assume(boxVertices != nullptr);
 
+        auto transformedBox = transform * box;
+
+        if (transform.is_z_rot90()) {
+            auto odd = (numeric_cast<int>(std::ceil(lineWidth)) % 2) == 1;
+        
+            if (odd) {
+                // A line-width of odd number of pixels need to be rounded to the center of the pixel.
+                transformedBox = round2D<false>(transformedBox);
+        
+            } else {
+                // A line-width of an even number of pixels need to be rounded to the corner of the pixel.
+                transformedBox = round2D<true>(transformedBox);
+            }    
+        }
+
+
         PipelineBox::DeviceShared::placeVertices(
             *boxVertices,
-            transform * box,
+            transformedBox,
             fillColor,
             lineWidth,
             color,
@@ -180,6 +196,26 @@ public:
             text,
             transform,
             clippingRectangle
+        );
+    }
+
+    /** Draw shaped text.
+    * This function will draw the shaped text.
+    * The SDF-image-atlas needs to be prepared ahead of time.
+    * This will use the current:
+    *  - transform, to transform the shaped-text's bounding box
+    *  - clippingRectangle
+    */
+    void drawTextSingleColor(Text::ShapedText const &text) const noexcept {
+        ttauri_assume(window != nullptr);
+        ttauri_assume(sdfVertices != nullptr);
+
+        window->device->SDFPipeline->placeVertices(
+            *sdfVertices,
+            text,
+            transform,
+            clippingRectangle,
+            color
         );
     }
 

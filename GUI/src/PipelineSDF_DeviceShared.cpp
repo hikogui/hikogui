@@ -201,7 +201,7 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs co
     return glyph_was_added;
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, vec color) noexcept
 {
     if (attr_glyph.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
         return false;
@@ -210,7 +210,12 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph
     // Adjust bounding box by adding a border based on 1EM.
     let bounding_box = transform * attr_glyph.boundingBox(scaledDrawBorder);
 
-    return _placeVertices(vertices, attr_glyph.glyphs, bounding_box, attr_glyph.style.color, clippingRectangle);
+    return _placeVertices(vertices, attr_glyph.glyphs, bounding_box, color, clippingRectangle);
+}
+
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept
+{
+    return _placeVertices(vertices, attr_glyph, transform, clippingRectangle, attr_glyph.style.color);
 }
 
 void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
@@ -234,6 +239,19 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
     }
 }
 
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle, vec color) noexcept
+{
+    auto atlas_was_updated = false;
+
+    for (let &attr_glyph: text) {
+        let glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle, color);
+        atlas_was_updated = atlas_was_updated || glyph_added;
+    }
+
+    if (atlas_was_updated) {
+        prepareAtlasForRendering();
+    }
+}
 
 void DeviceShared::drawInCommandBuffer(vk::CommandBuffer &commandBuffer)
 {

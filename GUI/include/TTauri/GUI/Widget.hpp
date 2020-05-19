@@ -21,6 +21,7 @@
 #include <TTauri/Foundation/utils.hpp>
 #include <TTauri/Foundation/Trigger.hpp>
 #include <TTauri/Foundation/cpu_utc_clock.hpp>
+#include <TTauri/Foundation/observer.hpp>
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -75,10 +76,13 @@ inline bool operator>=(WidgetNeed lhs, WidgetNeed rhs) noexcept { return !(lhs <
  */
 class Widget {
 public:
-
-    //! Convenient reference to the Window.
+    /** Convenient reference to the Window.
+     */
     Window &window;
 
+    /** Pointer to the parent widget.
+     * May be a nullptr only when this is the top level widget.
+     */
     Widget *parent;
 
     mutable std::atomic<bool> forceLayout = true;
@@ -158,7 +162,7 @@ public:
 
     /** The widget is enabled.
      */
-    bool enabled = true;
+    observer<bool> enabled = true;
 
     /** Mouse cursor is hovering over the widget.
      */

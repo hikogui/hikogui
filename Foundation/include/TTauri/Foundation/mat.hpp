@@ -260,6 +260,15 @@ public:
         }
     }
 
+    /** Rotation around z axis is a multiple of 90 degree.
+    */
+    [[nodiscard]] bool is_z_rot90() const noexcept {
+        let xyxy = _mm_shuffle_ps(col0, col1, _MM_SHUFFLE(1,0,1,0));
+        let result = _mm_cmpeq_ps(xyxy, _mm_setzero_ps());
+        let result_ = _mm_movemask_ps(result);
+        return (result_ == 0b1001) || (result_ == 0b0110);
+    }
+
     /** Transpose this matrix.
      */
     mat &transpose() noexcept {

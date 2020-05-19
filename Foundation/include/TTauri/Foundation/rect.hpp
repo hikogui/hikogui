@@ -98,6 +98,32 @@ public:
         };
     }
 
+    /** Round the rectangle to have its corners in the center of a pixel.
+     * The extent of the rectangle should be maintained as closely as possible.
+     *
+     * The center of a pixel is at integer value.
+     */
+    template<bool ToCorner=false>
+    [[nodiscard]] friend rect round2D(rect const &rhs) noexcept {
+        let corner0 = rhs.corner<0>();
+        let h_vec = rhs.corner<1>() - corner0;
+        let v_vec = rhs.corner<2>() - corner0;
+
+        let rounded_corner0 = round2D<ToCorner>(corner0);
+        
+        let corner1 = rounded_corner0 + h_vec;
+        let corner2 = rounded_corner0 + v_vec;
+        let corner3 = corner1 + v_vec;
+
+        rect r;
+        get<0>(r.corners) = rounded_corner0;
+        get<1>(r.corners) = round2D<ToCorner>(corner1);
+        get<2>(r.corners) = round2D<ToCorner>(corner2);
+        get<3>(r.corners) = round2D<ToCorner>(corner3);
+        return r;
+    }
+
+
 };
 
 }

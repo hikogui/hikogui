@@ -53,8 +53,11 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     context.transform = drawContext.transform;
     context.drawBox(rectangle);
 
+    if (enabled) {
+        context.color = theme->foregroundColor;
+    }
     context.transform = drawContext.transform * (mat::T{0.0f, 0.0f, 0.001f} * textTranslate);
-    context.drawText(labelShapedText);
+    context.drawTextSingleColor(labelShapedText);
 
     Widget::draw(drawContext, displayTimePoint);
 }

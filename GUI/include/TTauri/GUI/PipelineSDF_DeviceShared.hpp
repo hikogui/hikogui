@@ -131,6 +131,15 @@ struct DeviceShared final {
      */
     void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle) noexcept;
 
+    /** Draw the text on the screen.
+    * @param text The box of text to draw
+    * @param transform The 2D transformation to move and rotate the box to the correct position on screen.
+    * @param clippingRectangle The clipping rectangle in screen space where glyphs should be cut off.
+    * @param vertices The vertices to draw the glyphs to.
+    * @param color Override the color of the text to draw.
+    */
+    void placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle, vec color) noexcept;
+
 private:
     void buildShaders();
     void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
@@ -161,6 +170,17 @@ private:
     */
     [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept;
 
+    /** Place an single attributed glyph.
+    * This function will not execute prepareAtlasForRendering().
+    *
+    * @param vertices The list of vertices to add to.
+    * @param attr_glyph The attributed glyph; scaled and positioned.
+    * @param transform Extra transformation on the glyph.
+    * @param clippingRectangle The rectangle to clip the glyph.
+    * @param color Override the color from the glyph style.
+    * @return True if the glyph was added to the atlas.
+    */
+    [[nodiscard]] bool _placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, vec color) noexcept;
 
     AtlasRect addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept;
 

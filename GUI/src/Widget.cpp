@@ -7,7 +7,10 @@
 namespace TTauri::GUI::Widgets {
 
 Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
-    window(window), parent(parent), elevation(parent ? parent->elevation + 1.0f : 0.0f)
+    window(window),
+    parent(parent),
+    elevation(parent ? parent->elevation + 1.0f : 0.0f),
+    enabled(true, [this](auto){ forceRedraw = true; })
 {
     minimumExtent = defaultExtent;
     minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());

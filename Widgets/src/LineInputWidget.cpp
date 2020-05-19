@@ -23,7 +23,7 @@ WidgetNeed LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) 
 {
     auto need = Widget::needs(displayTimePoint);
 
-    auto redraw = focus;
+    bool redraw = focus;
     redraw &= displayTimePoint > nextRedrawTimePoint;
 
     need |= static_cast<WidgetNeed>(redraw);

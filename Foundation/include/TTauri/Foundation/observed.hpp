@@ -10,20 +10,20 @@
 
 namespace TTauri {
 
+template<typename T>
+class observer;
 
 template<typename T>
 class observed {
 public:
     using value_type = T;
-    using callback_type = std::function<void(T)>;
-    using handle_type = uint64_t;
 
 private:
     mutable std::mutex mutex;
 
-    std::atomic<value_type> intrinsic = value_type{};
-    handle_type handle_counter = 0;
-    std::vector<std::pair<handle_type,callback_type>> callbacks;
+    std::atomic<value_type> value;
+
+    std::vector<observer<T> *> observers;
 
 public:
     observed() noexcept {}
@@ -32,51 +32,45 @@ public:
     observed &operator=(observed const &) = delete;
     observed &operator=(observed &&) = delete;
 
-    observed(value_type rhs) noexcept : intrinsic(std::move(rhs)) {}
+    observed(value_type rhs) noexcept : value(std::move(rhs)) {}
+
+    operator value_type() const noexcept {
+        return value.load(std::memory_order::memory_order_relaxed);
+    }
 
     observed &operator=(value_type const &rhs) noexcept {
-        intrinsic = rhs;
-        notify_observers(intrinsic);
+        value.store(rhs, std::memory_order::memory_order_relaxed);
+        notify_observers(rhs);
         return *this;
     }
 
-    observed &operator=(value_type &&rhs) noexcept {
-        intrinsic = std::move(rhs);
-        notify_observers(intrinsic);
+    observed &operator++() noexcept {
+        auto new_value = value.fetch_add(1, std::memory_order::memory_order_relaxed);
+        notify_observers(new_value + 1);
         return *this;
     }
 
-    operator T() const noexcept {
-        return intrinsic;
+    void register_observer(observer<T> *observer) noexcept {
+        auto lock = std::scoped_lock(mutex);
+        observers.push_back(observer);
+        notify_observer(observer, value);
     }
 
-    [[nodiscard]] handle_type register_callback(callback_type callback) noexcept {
-        ttauri_assume(static_cast<bool>(callback));
-
+    void unregister_observer(observer<T> *observer) noexcept {
         auto lock = std::scoped_lock(mutex);
-        auto handle = ++handle_counter;
-        callbacks.emplace_back(handle, std::move(callback));
-        return handle;
-    }
-
-    void unregister_callback(handle_type handle) noexcept {
-        auto lock = std::scoped_lock(mutex);
-        auto new_end = std::remove_if(callbacks.begin(), callbacks.end(), [=](let &x) {
-            return x.first == handle;
-        });
-        ttauri_assume(new_end != callbacks.cend());
-        callbacks.erase(new_end, callbacks.cend());
+        auto new_end = std::remove(observers.begin(), observers.end(), observer);
+        observers.erase(new_end, observers.end());
     }
 
 private:
+    static void notify_observer(observer<T> *observer, value_type const &rhs) noexcept;
+
     void notify_observers(value_type const &rhs) const noexcept {
         auto lock = std::scoped_lock(mutex);
-
-        for (let [handle, callback] : callbacks) {
-            callback(rhs);
+        for (let observer: observers) {
+            notify_observer(observer, rhs);
         }
     }
-
 };
 
 }

@@ -39,50 +39,16 @@ This is true for:
 
 ### Window and Widget-surface coordinates
 The local coordinates in a window and widgets are in points.
-With the origin in the center of the left bottom most point.
+With the origin in the corner of the left bottom most point.
 
-The mapping of the point-origin to pixel-based-media is shown
-in the exampled below. These example shows that when you draw a 1-point border/line
-it will draw this line sharply on the pixel boundaries when anti-aliasing.
+The local x,y-coordinates are multiplied by the DPI-scale of the
+window. The DPI-scale is always an integer, which allows much easier
+alignment of lines to actual pixels.
 
-Origin on a 1:1 pixel:point scaled window
-```
- +-+-+-+-+-+-+-+-+
- |       |       |
- |       |       |
- |       |       |
- +-+-+-+-+-+-+-+-+
- |       |       |
- |   O   |       |
- |       |       |
- +-+-+-+-+-+-+-+-+
-```
-
-Origin on a 2:1 pixel:point scaled window
-```
- +-+-+-+-+-+-+-+-+
- |       |       |
- |       |       |
- |       |       |
- +-+-+-+-O-+-+-+-+
- |       |       |
- |       |       |
- |       |       |
- +-+-+-+-+-+-+-+-+
-```
-
-Origin on a 3:1 pixel:point scaled window
-```
- +-+-+-+-+-+-+-+-+
- |       |       |
- |       |   O   |
- |       |       |
- +-+-+-+-+-+-+-+-+
- |       |       |
- |       |       |
- |       |       |
- +-+-+-+-+-+-+-+-+
-```
+What is the default DPI? Windows says 96dpi, macOS says 72dpi. Mean is 84dpi.
+Should fonts be scaled properly, while line drawing are integer scaled? This
+maybe possible since we need to size the widgets based on shaped-text from different
+languages anyway.
 
 ### Window depth
 Z-coordinate for a window is between 0.0 (far) to 1.0 (near).
@@ -147,9 +113,3 @@ v    \ |
 0 ---> 1
 ```
 
-## Margins and padding
-When margins and paddings are passed as 4D vectors:
- - x = left
- - y = bottom
- - z = right
- - w = top

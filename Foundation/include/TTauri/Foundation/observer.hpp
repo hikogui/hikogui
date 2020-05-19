@@ -15,20 +15,45 @@ namespace TTauri {
 template<typename T>
 class observer {
 public:
+    using value_type = T;
     using observed_type = observed<T>;
-    using value_type = typename observed_type::value_type;
-    using callback_type = typename observed_type::callback_type;
-    using handle_type = typename observed_type::handle_type;
+    using callback_type = std::function<void(T const &)>;
 
+    friend observed_type;
 private:
-    /** A reference to the object to be observed.
+    /** The internal copy of the observed value.
+     * This will also allow to use the observer stand-alone.
+     * The value may be updated by multiple threads at the same time.
      */
-    observed_type &observed_object;
+    std::atomic<value_type> value;
 
-    /** A handle to the callback registred with observed_object.
-     * This handle is used in the destructor to unregister the callback.
+    /** A pointer to the object to be observed.
+     * If the pointer is nullptr, then the observer is used stand-alone.
      */
-    handle_type observed_handle;
+    observed_type *observed_object;
+
+    /** The callback to call when the observed object is updated.
+     */
+    callback_type callback;
+
+    /** Update value and call callbacks.
+     * This function is used by the observed when its value is updated.
+     */
+    template<typename Value>
+    void update(Value &rhs) noexcept {
+        value = std::forward<Value>(rhs);
+        if (callback) {
+            callback(value);
+        }
+    }
+
+    /** Call the callback with the current value.
+    */
+    void do_callback(value_type const &value) const noexcept {
+        if (callback) {
+            callback(value);
+        }
+    }
 
 public:
     observer(observer const &) = delete;
@@ -37,25 +62,104 @@ public:
     observer &operator=(observer &&) = delete;
 
     ~observer() {
-        observed_object.unregister_callback(observed_handle);
+        if (observed_object) {
+            observed_object->unregister_observer(this);
+        }
     }
 
-    observer(observed_type &value, callback_type callback) noexcept :
-        observed_object(value), observed_handle(observed_object.register_callback(callback)) {}
+    observer(observed_type &value, callback_type callback={}) noexcept :
+        observed_object(&value), callback(std::move(callback))
+    {
+        observed_object->register_observer(this);
+    }
 
+    template<typename Value>
+    observer(Value &&value, callback_type callback={}) noexcept :
+        observed_object(nullptr), callback(std::move(callback))
+    {
+        (*this) = std::forward<Value>(value);
+    }
+
+    observer(callback_type callback={}) noexcept :
+        observed_object(nullptr), callback(std::move(callback))
+    {
+        (*this) = value_type{};
+    }
+
+    /** Return the cached or internal value.
+     */
     operator value_type () const noexcept {
-        return static_cast<value_type>(observed_object);
+        return value.load(std::memory_order::memory_order_relaxed);
     }
 
+    /** Register an observed object.
+    * This function should be called shortly after construction of the observer,
+    * as observer updates are non atomic.
+    *
+    * This will call the callback function immediatly to the value
+    * of the observed value.
+    */
+    void register_observed(observed_type &observed) noexcept {
+        observed_object = &observed;
+        observed_object->register_observer(this);
+    }
+
+    void unregister_observed() noexcept {
+        if (observed_object) {
+            observed_object->unregister_observer(this);
+        }
+        observed_object = nullptr;
+    }
+
+    /** Register a callback function for when the value is updated.
+     * This function should be called shortly after construction of the observer,
+     * as callback updates are non atomic.
+     *
+     * This will call the callback function immediatly as from the
+     * point of view of the callback function the value was updated
+     * for the first time.
+     */
+    template<typename Callback>
+    void register_callback(Callback &&callback) noexcept {
+        callback = std::forward<Callback>(callback);
+        if (callback) {
+            callback(value);
+        }
+    }
+
+    void unregister_callback() noexcept {
+        callback = nullptr;
+    }
+
+    /** Update value.
+     */
     observer &operator=(value_type const &rhs) noexcept {
-        observed_object = rhs;
+        if (observed_object) {
+            (*observed_object) = rhs;
+        } else {
+            value.store(rhs, std::memory_order::memory_order_relaxed);
+            do_callback(rhs);
+        }
         return *this;
     }
 
-    observer &operator=(value_type &&rhs) noexcept {
-        observed_object = std::move(rhs);
+    observer &operator++() noexcept {
+        if (observed_object) {
+            ++(*observed_object);
+        } else {
+            auto new_value = value.fetch_add(1, std::memory_order::memory_order_relaxed);
+            do_callback(new_value + 1);
+        }
         return *this;
     }
 };
+
+template<typename T>
+void observed<T>::notify_observer(observer<T> *observer, T const &rhs) noexcept
+{
+    ttauri_assume(observer != nullptr);
+    observer->update(rhs);
+}
+
 
 }

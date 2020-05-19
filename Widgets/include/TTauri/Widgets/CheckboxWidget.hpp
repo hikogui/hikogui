@@ -44,7 +44,7 @@ public:
 
     CheckboxWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
         Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
-        value(value, [this](ValueType){ forceRedraw = true; }),
+        value(value, [this](auto){ forceRedraw = true; }),
         label(std::move(label))
     {}
 
