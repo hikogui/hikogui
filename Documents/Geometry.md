@@ -45,10 +45,18 @@ The local x,y-coordinates are multiplied by the DPI-scale of the
 window. The DPI-scale is always an integer, which allows much easier
 alignment of lines to actual pixels.
 
-What is the default DPI? Windows says 96dpi, macOS says 72dpi. Mean is 84dpi.
-Should fonts be scaled properly, while line drawing are integer scaled? This
-maybe possible since we need to size the widgets based on shaped-text from different
-languages anyway.
+The alignment of borders to pixels is the responsibility of the
+widget that draws itself. The widget has access to
+the DrawContext::drawBoxIncludingBorder() function to position the border's
+edge to the edge of the given rectangle, if the rectangle is rounded to
+integer coordinates; the rectangle, border and pixel will share the same edge.
+
+At DPI-scale of 1, it is assumed that the display has a 84 DPI.
+This is the middle ground between Window's default 96 DPI and macOS's
+default 72 DPI. The ShapedText class will scale to 84 DPI automatically,
+further DPI scaling will be handled by the DrawContext.
+
+
 
 ### Window depth
 Z-coordinate for a window is between 0.0 (far) to 1.0 (near).
