@@ -12,6 +12,18 @@
 namespace TTauri {
 
 
+/** Observer of a value.
+ * This class is used to observe a value.
+ * It can be used in stand-alone and linked mode.
+ *
+ * In stand-alone mode, the internal value is used to read and update.
+ * And updates to the interal value will cause the callback to be called.
+ *
+ * In linked mode, the internal value is kept in sync with an @ref observed value.
+ * Any operations on the observer is forwarded to the @ref observed, then the observed will
+ * change the value of every @ref observer that is linked. Each @ref observer will in
+ * turn call its callback.
+ */
 template<typename T>
 class observer {
 public:
