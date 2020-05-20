@@ -29,7 +29,7 @@ Internally this is a `vec` where:
 
 ## Coordinates
 All origins (0, 0, 0) are at the bottom-left-far corner. With the x-axis pointing
-right, y-axis pointing up, z-axis pointing away.
+right, y-axis pointing up, z-axis pointing near.
 
 This is true for:
  - Window

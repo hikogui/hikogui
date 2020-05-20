@@ -29,10 +29,13 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     toggle_x = -0.5f;  // Expand horizontally due to rounded shape
     toggle_y = (rectangle.height() - toggle_height) * 0.5f;
     toggle_rectangle = aarect{toggle_x, toggle_y, toggle_width, toggle_height};
-
-    slider_move = toggle_width - toggle_height;
-    slider_width = toggle_height - 2.0f * Theme::borderWidth;
-    slider_height = toggle_height - 2.0f * Theme::borderWidth;
+    
+    slider_x = 1.5f;
+    slider_y = 1.5f;
+    slider_width = toggle_height - 3.0f;
+    slider_height = toggle_height - 3.0f;
+    let slider_move_width = Theme::smallWidth - (slider_x * 2.0f);
+    slider_move = slider_move_width - slider_width;
 
     label_x = Theme::smallWidth + theme->margin;
     label_y = 0.0f;
@@ -55,12 +58,13 @@ void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     // Outside oval.
     auto context = drawContext;
     context.cornerShapes = vec{toggle_rectangle.height() * 0.5f};
-    context.drawBox(toggle_rectangle);
+    context.drawBoxIncludeBorder(toggle_rectangle);
 
     // Inside circle
-    let slider_x = toggle_x + Theme::borderWidth + slider_move * curr_value;
-    let slider_y = toggle_y + Theme::borderWidth;
-    let slider_rectangle = aarect{slider_x, slider_y, slider_width, slider_height};
+    let slider_rectangle = aarect{
+        slider_x + slider_move * curr_value, slider_y,
+        slider_width, slider_height
+    };
 
     if (enabled) {
         if (value) {
@@ -75,7 +79,7 @@ void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     }
     context.color = vec::color(0.0, 0.0, 0.0, 0.0);
     context.cornerShapes = vec{slider_rectangle.height() * 0.5f};
-    context.drawBox(slider_rectangle);
+    context.drawBoxIncludeBorder(slider_rectangle);
 
     // user defined label.
     context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};

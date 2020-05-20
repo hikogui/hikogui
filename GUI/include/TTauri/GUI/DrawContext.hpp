@@ -123,7 +123,6 @@ public:
     *  - fillColor
     */
     void drawFilledQuad(aarect r) const noexcept {
-        r = expand(r, 0.5f);
         drawFilledQuad(r.corner<0>(), r.corner<1>(), r.corner<2>(), r.corner<3>());
     }
 
@@ -141,29 +140,55 @@ public:
     void drawBox(aarect box) const noexcept {
         ttauri_assume(boxVertices != nullptr);
 
-        auto transformedBox = transform * box;
-
-        if (transform.is_z_rot90()) {
-            auto odd = (numeric_cast<int>(std::ceil(lineWidth)) % 2) == 1;
-        
-            if (odd) {
-                // A line-width of odd number of pixels need to be rounded to the center of the pixel.
-                transformedBox = round2D<false>(transformedBox);
-        
-            } else {
-                // A line-width of an even number of pixels need to be rounded to the corner of the pixel.
-                transformedBox = round2D<true>(transformedBox);
-            }    
-        }
-
-
         PipelineBox::DeviceShared::placeVertices(
             *boxVertices,
-            transformedBox,
+            transform * box,
             fillColor,
             lineWidth,
             color,
             cornerShapes,
+            clippingRectangle
+        );
+    }
+
+    /** Draw an axis aligned box
+    * This function will shrink to include the size of the border within
+    * the given rectangle. This will make the border be drawn sharply.
+    *
+    * This will also adjust rounded corners to the shrunk box.
+    * 
+    * This function will draw the given box.
+    * This will use the current:
+    *  - transform, to transform the opposite corner (rotation is not recommended).
+    *  - clippingRectangle
+    *  - fillColor
+    *  - borderSize
+    *  - borderColor
+    *  - shadowSize
+    *  - cornerShapes
+    */
+    void drawBoxIncludeBorder(aarect box) const noexcept {
+
+        ttauri_assume(boxVertices != nullptr);
+
+        let shrink_value = lineWidth * 0.5f;
+
+        let newBox = shrink(box, shrink_value);
+
+        let newCornerShapes = vec{
+            std::max(0.0f, cornerShapes.x() - shrink_value),
+            std::max(0.0f, cornerShapes.y() - shrink_value),
+            std::max(0.0f, cornerShapes.z() - shrink_value),
+            std::max(0.0f, cornerShapes.w() - shrink_value)
+        };
+
+        PipelineBox::DeviceShared::placeVertices(
+            *boxVertices,
+            transform * newBox,
+            fillColor,
+            lineWidth,
+            color,
+            newCornerShapes,
             clippingRectangle
         );
     }
@@ -177,7 +202,7 @@ public:
     void drawImage(PipelineImage::Image &image) const noexcept {
         ttauri_assume(imageVertices != nullptr);
 
-        image.placeVertices(*imageVertices, mat::T{-0.5, -0.5} * transform, clippingRectangle);
+        image.placeVertices(*imageVertices, transform, clippingRectangle);
     }
 
     /** Draw shaped text.

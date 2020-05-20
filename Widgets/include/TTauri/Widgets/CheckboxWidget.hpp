@@ -77,13 +77,13 @@ public:
 
         let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
         checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});
-        checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.3f);
+        checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.2f);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
         // button.
         auto context = drawContext;
-        context.drawBox(button_rectangle);
+        context.drawBoxIncludeBorder(button_rectangle);
 
         // Checkmark or tristate.
         if (enabled) {
@@ -96,7 +96,7 @@ public:
                 ;
             } else {
                 context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.drawFilledQuad(shrink(button_rectangle, 4.0f));
+                context.drawFilledQuad(shrink(button_rectangle, 3.0f));
             }
         } else {
             context.fillColor = theme->borderColor(nestingLevel() - 1);
@@ -108,7 +108,7 @@ public:
                 ;
             } else {
                 context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.drawFilledQuad(shrink(button_rectangle, 4.0f));
+                context.drawFilledQuad(shrink(button_rectangle, 3.0f));
             }
         }
         // user defined label.

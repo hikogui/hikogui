@@ -55,15 +55,18 @@ public:
         Widget::layout(displayTimePoint);
 
         // Prepare coordinates.
-        button_height = Theme::smallHeight;
-        button_width = Theme::smallHeight;
-        button_x = Theme::smallWidth - button_width;
-        button_y = (rectangle.height() - button_height) * 0.5f;
-        
-        // Radio button should be slightly larger due to its round shape.
-        button_rectangle = expand(aarect{button_x, button_y, button_width, button_height}, 0.5f);
+        // The button is expanded by half a pixel on each side because it is round.
+        button_height = Theme::smallHeight + 1.0f;
+        button_width = Theme::smallHeight + 1.0f;
+        button_x = (Theme::smallWidth - Theme::smallHeight) - 0.5f;
+        button_y = (rectangle.height() - Theme::smallHeight) * 0.5f - 0.5f;
+        button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
-        pip_rectangle = shrink(button_rectangle, Theme::borderWidth + 1.0f);
+        let pip_x = (Theme::smallWidth - Theme::smallHeight) + 1.5f;
+        let pip_y = (rectangle.height() - Theme::smallHeight) * 0.5f + 1.5f;
+        let pip_width = Theme::smallHeight - 3.0f;
+        let pip_height = Theme::smallHeight - 3.0f;
+        pip_rectangle = aarect{pip_x, pip_y, pip_width, pip_height};
 
         label_x = Theme::smallWidth + theme->margin;
         label_y = 0.0f;
@@ -81,8 +84,8 @@ public:
 
         // button.
         auto context = drawContext;
-        context.cornerShapes = vec{button_rectangle.height() / 2.0f};
-        context.drawBox(button_rectangle);
+        context.cornerShapes = vec{button_rectangle.height() * 0.5f};
+        context.drawBoxIncludeBorder(button_rectangle);
 
         // draw pip
         context.color = context.fillColor;
@@ -93,8 +96,8 @@ public:
                 context.fillColor = context.color;
             }
         }
-        context.cornerShapes = vec{pip_rectangle.height() / 2.0f};
-        context.drawBox(pip_rectangle);
+        context.cornerShapes = vec{pip_rectangle.height() * 0.5f};
+        context.drawBoxIncludeBorder(pip_rectangle);
 
         // user defined label.
         context.transform = drawContext.transform * (mat::T{0.0, 0.0, 0.001f} * label_translate);

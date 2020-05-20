@@ -361,7 +361,9 @@ public:
         return expand(lhs, -rhs);
     }
 
-    
+    [[nodiscard]] friend aarect round(aarect const &rhs) noexcept {
+        return aarect::m128(round(rhs.v));
+    }
 };
 
 }

@@ -28,6 +28,8 @@ protected:
     float toggle_y;
     aarect toggle_rectangle;
 
+    float slider_x;
+    float slider_y;
     float slider_move;
     float slider_width;
     float slider_height;

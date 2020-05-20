@@ -499,29 +499,6 @@ public:
         return _mm_round_ps(rhs, _MM_FROUND_CUR_DIRECTION);
     }
 
-    /** Round vector to 2D pixel coordinates.
-     * The center of a pixel lays on the integer coordinates.
-     *
-     * @param ToCorner true: round to corner of pixel, false: center of pixel
-     */
-    template<bool ToCorner>
-    [[nodiscard]] friend vec round2D(vec const &rhs) noexcept {
-        let half = _mm_set_ps1(0.5f);
-
-        auto tmp = rhs;
-        if constexpr (ToCorner) {
-            tmp = _mm_sub_ps(tmp, half);
-        }
-
-        let rounded_tmp = _mm_round_ps(tmp, _MM_FROUND_CUR_DIRECTION);
-        tmp = _mm_shuffle_ps(rounded_tmp, tmp, _MM_SHUFFLE(3,2,1,0));
-
-        if constexpr (ToCorner) {
-            tmp = _mm_add_ps(tmp, half);
-        }
-        return tmp;
-    }
-
     /** Find a point at the midpoint between two points.
      */
     [[nodiscard]] friend vec midpoint(vec const &p1, vec const &p2) noexcept {

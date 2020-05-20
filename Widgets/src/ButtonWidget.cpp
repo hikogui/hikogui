@@ -51,7 +51,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
 
     // Move the border of the button in the middle of a pixel.
     context.transform = drawContext.transform;
-    context.drawBox(rectangle);
+    context.drawBoxIncludeBorder(rectangle);
 
     if (enabled) {
         context.color = theme->foregroundColor;

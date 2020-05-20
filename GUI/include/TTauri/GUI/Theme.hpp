@@ -30,7 +30,7 @@ public:
 
     /** The rounding radius of boxes with rounded corners.
      */
-    static constexpr float roundingRadius = 3.0f;
+    static constexpr float roundingRadius = 5.0f;
 
     /** The height of smaller widget like labels, toggles, checkboxes and radio buttons.
      */

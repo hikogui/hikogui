@@ -141,7 +141,8 @@ WidgetNeed Widget::needs(hires_utc_clock::time_point displayTimePoint) const noe
 
 void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    windowRectangle = box.rectangle();
+    windowRectangle = round(box.rectangle());
+
     clippingRectangle = expand(windowRectangle, Theme::margin);
     rectangle = windowRectangle.extent();
 
@@ -175,7 +176,7 @@ void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point di
 {
     auto childContext = drawContext;
     for (auto &child : children) {
-        let childRectangle = child->box.rectangle();
+        let childRectangle = child->rectangle;
 
         childContext.clippingRectangle = child->clippingRectangle;
         childContext.transform = child->toWindowTransform;
