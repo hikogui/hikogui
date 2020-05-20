@@ -194,8 +194,6 @@ public:
         return vec{r, g, b, a};
     }
 
-    
-
     template<typename R, typename G, typename B, typename A=float,
         std::enable_if_t<std::is_floating_point_v<R> && std::is_floating_point_v<G> && std::is_floating_point_v<B> && std::is_floating_point_v<A>,int> = 0>
     [[nodiscard]] force_inline static vec colorFromSRGB(R r, G g, B b, A a=1.0f) noexcept {

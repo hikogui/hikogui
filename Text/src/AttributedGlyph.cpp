@@ -53,12 +53,12 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
     }
 
     // Scale the metrics according to font-size of this glyph.
-    metrics.scale(style.size);
+    metrics.scale(style.scaled_size());
 }
 
 [[nodiscard]] Path AttributedGlyph::get_path() const noexcept
 {
-    let M = mat::T(position) * mat::S(style.size, style.size);
+    let M = mat::T(position) * mat::S(style.scaled_size(), style.scaled_size());
 
     auto [glyph_path, glyph_bounding_box] = glyphs.getPathAndBoundingBox();
     auto transformed_glyph_path = M * glyph_path;
