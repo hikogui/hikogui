@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/WIdget.hpp"
+#include "TTauri/GUI/Widget.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>
@@ -37,9 +37,10 @@ protected:
     mat::T label_translate;
 public:
 
-    RadioButtonWidget(Window &window, Widget *parent, observed<ValueType> &value, std::string const label) noexcept :
+    template<typename Value>
+    RadioButtonWidget(Window &window, Widget *parent, Value &&value, std::string const label) noexcept :
         Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
-        value(value, [this](ValueType){ forceRedraw = true; }),
+        value(std::forward<Value>(value), [this](auto...){ forceRedraw = true; }),
         label(std::move(label))
     {
     }

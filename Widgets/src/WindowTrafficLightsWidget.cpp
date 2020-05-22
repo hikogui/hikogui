@@ -207,9 +207,7 @@ PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::
 
 std::tuple<aarect, aarect, aarect, aarect> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
 {
-    let left = box.left.value();
-    let bottom = box.bottom.value();
-    let height = box.height.value();
+    let height = rectangle.height();
 
     let sysmenuButtonBox = aarect{
         vec::point(0.0, 0.0),

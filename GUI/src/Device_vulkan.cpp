@@ -666,6 +666,23 @@ void Device_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, vk:
     endSingleTimeCommands(commandBuffer);
 }
 
+void Device_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, vk::ClearColorValue const &color, vk::ArrayProxy<const vk::ImageSubresourceRange> ranges) const
+{
+    auto lock = std::scoped_lock(guiMutex);
+
+    let commandBuffer = beginSingleTimeCommands();
+
+    commandBuffer.clearColorImage(
+        image,
+        layout,
+        color,
+        ranges
+    );
+
+    endSingleTimeCommands(commandBuffer);
+}
+
+
 vk::ShaderModule Device_vulkan::loadShader(uint32_t const *data, size_t size) const
 {
     auto lock = std::scoped_lock(guiMutex);

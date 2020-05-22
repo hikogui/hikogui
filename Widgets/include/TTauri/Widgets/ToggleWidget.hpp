@@ -42,7 +42,13 @@ protected:
     mat::T label_translate;
 public:
 
-    ToggleWidget(Window &window, Widget *parent, observed<bool> &value, std::string const label) noexcept;
+    template<typename Value>
+    ToggleWidget(Window &window, Widget *parent, Value &&value, std::string const label) noexcept :
+        Widget(window, parent, vec{ssize(label) != 0 ? Theme::width : Theme::smallWidth, Theme::smallHeight}),
+        value(150ms, std::forward<Value>(value), [this](auto...){ forceRedraw = true; }),
+        label(std::move(label))
+    {
+    }
     ~ToggleWidget() {}
 
     ToggleWidget(const ToggleWidget &) = delete;

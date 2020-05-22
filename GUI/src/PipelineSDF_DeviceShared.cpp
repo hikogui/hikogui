@@ -306,6 +306,18 @@ void DeviceShared::addAtlasImage()
 
     let [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
 
+    let clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
+    let clearRange = std::array{
+        vk::ImageSubresourceRange{
+            vk::ImageAspectFlagBits::eColor,
+            0,
+            1,
+            0,
+            1
+        }
+    };
+    device.clearColorImage(atlasImage, vk::ImageLayout::eTransferDstOptimal, clearValue, clearRange);
+
     let atlasImageView = device.createImageView({
         vk::ImageViewCreateFlags(),
         atlasImage,
@@ -333,6 +345,7 @@ void DeviceShared::addAtlasImage()
             vk::ImageLayout::eShaderReadOnlyOptimal
         };
     }
+
 }
 
 void DeviceShared::buildAtlas()

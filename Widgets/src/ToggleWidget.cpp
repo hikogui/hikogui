@@ -13,12 +13,6 @@ namespace TTauri::GUI::Widgets {
 using namespace TTauri::Text;
 using namespace std::literals;
 
-ToggleWidget::ToggleWidget(Window &window, Widget *parent, observed<bool> &value, std::string const label) noexcept :
-    Widget(window, parent, vec{ssize(label) != 0 ? Theme::width : Theme::smallWidth, Theme::smallHeight}),
-    value(150ms, value, [this](bool){ forceRedraw = true; }),
-    label(std::move(label))
-{
-}
 
 void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
