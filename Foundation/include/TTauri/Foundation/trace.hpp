@@ -157,7 +157,7 @@ public:
     bool write(cpu_counter_clock::duration const &d) {
         // In the logging thread we can check if count and version are equal
         // to read the statistics.
-        let prev_count = count.fetch_add(1, std::memory_order_acquire);
+        let current_count = count.fetch_add(1, std::memory_order_acquire);
 
         duration.fetch_add(d.count(), std::memory_order_relaxed);
 
@@ -167,9 +167,9 @@ public:
             new_peak = d.count() > prev_peak ? d.count() : prev_peak;
         } while (!peak_duration.compare_exchange_weak(prev_peak, new_peak, std::memory_order_relaxed));
 
-        version.store(prev_count + 1, std::memory_order_release);
+        version.store(current_count + 1, std::memory_order_release);
         
-        return prev_count == 0;
+        return current_count == 0;
     }
 
     struct read_result {

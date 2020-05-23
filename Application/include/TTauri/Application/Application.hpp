@@ -12,9 +12,9 @@ namespace TTauri {
 using Application = Application_win32;
 }
 
-#define MAIN_ARGUMENTS hInstance, nCmdShow
+#define MAIN_ARGUMENTS main_hInstance, main_nCmdShow
 #define MAIN_DEFINITION\
-    int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
+    int WINAPI wWinMain(_In_ HINSTANCE main_hInstance, _In_opt_ HINSTANCE main_hPrevInstance, _In_ PWSTR main_pCmdLine, _In_ int main_nCmdShow)
 
 
 #elif OPERATING_SYSTEM == OS_MACOS

@@ -93,36 +93,20 @@ void Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
     window.addConstraint(this->box.left == rhs.box.right + margin);
 }
 
-void Widget::shareTopEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
-    if (parent.content != nullptr && useContentArea) {
-        shareTopEdgeWith(*parent.content, margin);
-    } else {
-        window.addConstraint(this->box.top + margin == parent.box.top);
-    }
+void Widget::placeAtTop(float margin) const noexcept {
+    window.addConstraint(this->box.top + margin == parent->box.top);
 }
 
-void Widget::shareBottomEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
-    if (parent.content != nullptr && useContentArea) {
-        shareBottomEdgeWith(*parent.content, margin);
-    } else {
-        window.addConstraint(this->box.bottom - margin == parent.box.bottom);
-    }
+void Widget::placeAtBottom(float margin) const noexcept {
+    window.addConstraint(this->box.bottom - margin == parent->box.bottom);
 }
 
-void Widget::shareLeftEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
-    if (parent.content != nullptr && useContentArea) {
-        shareLeftEdgeWith(*parent.content, margin);
-    } else {
-        window.addConstraint(this->box.left - margin == parent.box.left);
-    }
+void Widget::placeLeft(float margin) const noexcept {
+    window.addConstraint(this->box.left - margin == parent->box.left);
 }
 
-void Widget::shareRightEdgeWith(Widget const &parent, float margin, bool useContentArea) const noexcept {
-    if (parent.content != nullptr && useContentArea) {
-        shareRightEdgeWith(*parent.content, margin);
-    } else {
-        window.addConstraint(this->box.right + margin == parent.box.right);
-    }
+void Widget::placeRight(float margin) const noexcept {
+    window.addConstraint(this->box.right + margin == parent->box.right);
 }
 
 WidgetNeed Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept

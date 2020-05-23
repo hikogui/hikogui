@@ -165,18 +165,18 @@ struct template_if_node final: template_node {
         children_groups.emplace_back();
     }
 
-    bool found_elif(parse_location location, std::unique_ptr<expression_node> expression) noexcept override {
+    bool found_elif(parse_location _location, std::unique_ptr<expression_node> expression) noexcept override {
         if (children_groups.size() != expressions.size()) {
             return false;
         }
 
         expressions.push_back(std::move(expression));
-        expression_locations.push_back(std::move(location));
+        expression_locations.push_back(std::move(_location));
         children_groups.emplace_back();
         return true;
     }
 
-    bool found_else(parse_location location) noexcept override {
+    bool found_else(parse_location _location) noexcept override {
         if (children_groups.size() != expressions.size()) {
             return false;
         }
@@ -307,12 +307,12 @@ struct template_do_node final: template_node {
         template_node(std::move(location)) {}
 
 
-    bool found_while(parse_location location, std::unique_ptr<expression_node> x) noexcept override {
+    bool found_while(parse_location _location, std::unique_ptr<expression_node> x) noexcept override {
         if (expression) {
             return false;
         } else {
             expression = std::move(x);
-            expression_location = std::move(location);
+            expression_location = std::move(_location);
             return true;
         }
     }
@@ -393,7 +393,7 @@ struct template_for_node final: template_node {
         return true;
     }
 
-    bool found_else(parse_location location) noexcept override {
+    bool found_else(parse_location _location) noexcept override {
         if (has_else) {
             return false;
         } else {
@@ -609,7 +609,7 @@ struct template_block_node final: template_node {
             children.back()->left_align();
         }
 
-        auto function = context.get_function(name);
+        function = context.get_function(name);
         ttauri_assert(function);
 
         context.push_super(super_function);
@@ -792,50 +792,50 @@ void template_parse_context::end_of_text_segment()
     }
 }
 
-[[nodiscard]] bool template_parse_context::found_elif(parse_location location, std::unique_ptr<expression_node> expression) noexcept {
+[[nodiscard]] bool template_parse_context::found_elif(parse_location _location, std::unique_ptr<expression_node> expression) noexcept {
     if (statement_stack.size() > 0) {
-        return statement_stack.back()->found_elif(std::move(location), std::move(expression));
+        return statement_stack.back()->found_elif(std::move(_location), std::move(expression));
     } else {
         return false;
     }
 }
 
-[[nodiscard]] bool template_parse_context::found_else(parse_location location) noexcept {
+[[nodiscard]] bool template_parse_context::found_else(parse_location _location) noexcept {
     if (statement_stack.size() > 0) {
-        return statement_stack.back()->found_else(std::move(location));
+        return statement_stack.back()->found_else(std::move(_location));
     } else {
         return false;
     }
 }
 
-[[nodiscard]] bool template_parse_context::found_while(parse_location location, std::unique_ptr<expression_node> expression) noexcept {
+[[nodiscard]] bool template_parse_context::found_while(parse_location _location, std::unique_ptr<expression_node> expression) noexcept {
     if (statement_stack.size() > 0) {
-        return statement_stack.back()->found_while(std::move(location), std::move(expression));
+        return statement_stack.back()->found_while(std::move(_location), std::move(expression));
     } else {
         return false;
     }
 }
 
-void template_parse_context::include(parse_location location, std::unique_ptr<expression_node> expression)
+void template_parse_context::include(parse_location _location, std::unique_ptr<expression_node> expression)
 {
-    auto post_process_context = expression_post_process_context();
-    expression->post_process(post_process_context);
+    auto tmp_post_process_context = expression_post_process_context();
+    expression->post_process(tmp_post_process_context);
 
     auto evaluation_context = expression_evaluation_context();
     let argument = expression->evaluate(evaluation_context);
 
-    let current_template_directory = location.has_file() ?
-        location.file().urlByRemovingFilename() :
+    let current_template_directory = _location.has_file() ?
+        _location.file().urlByRemovingFilename() :
         URL::urlFromCurrentWorkingDirectory();
 
     let new_template_path = current_template_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
     if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_template(new_template_path))) {
-            TTAURI_THROW(parse_error("Unexpected #include statement").set_location(location));
+            TTAURI_THROW(parse_error("Unexpected #include statement").set_location(_location));
         }
     } else {
-        TTAURI_THROW(parse_error("Unexpected #include statement, missing top-level").set_location(location));
+        TTAURI_THROW(parse_error("Unexpected #include statement, missing top-level").set_location(_location));
     }
 }
 

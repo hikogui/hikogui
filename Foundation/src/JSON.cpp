@@ -144,10 +144,10 @@ struct parse_context_t {
         }
         } break;
     default:
-        if (auto result = parseObject(context, token)) {
-            return result;
-        } else if (auto result = parseArray(context, token)) {
-            return result;
+        if (auto result1 = parseObject(context, token)) {
+            return result1;
+        } else if (auto result2 = parseArray(context, token)) {
+            return result2;
         } else {
             TTAURI_THROW(parse_error("Unexpected token '{}'", token->name).set_location(token->location));
         }
@@ -225,7 +225,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         break;
 
     case datum_type_t::Vector:
-        result.append(' ', indent);
+        result.append(indent, ' ');
         result += '[';
 
         for (auto i = value.vector_begin(); i != value.vector_end(); i++, first_item = true) {
@@ -233,18 +233,18 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
                 result += ',';
                 result += '\n';
             }
-            result.append(' ', indent + 1);
+            result.append(indent + 1, ' ');
 
             dumpJSON_impl(*i, result, indent + 1);
         }
 
         result += '\n';
-        result.append(' ', indent);
+        result.append(indent, ' ');
         result += ']';
         break;
 
     case datum_type_t::Map:
-        result.append(' ', indent);
+        result.append(indent, ' ');
         result += '{';
 
         for (auto i = value.map_begin(); i != value.map_end(); i++, first_item = true) {
@@ -252,7 +252,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
                 result += ',';
                 result += '\n';
             }
-            result.append(' ', indent + 1);
+            result.append(indent + 1, ' ');
 
             dumpJSON_impl(i->first, result, indent + 1);
             result += ':';
@@ -261,7 +261,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         }
 
         result += '\n';
-        result.append(' ', indent);
+        result.append(indent, ' ');
         result += '}';
         break;
 

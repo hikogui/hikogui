@@ -51,15 +51,20 @@ PixelMap<R16G16B16A16SFloat> loadPNG(PixelMap<R16G16B16A16SFloat> &pixelMap, con
         );
     }
 
-    if (!(png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr))) {
+    if ((png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr)) != nullptr) {
         LOG_FATAL("Call to png_create_read_struct() failed.");
     }
 
-    if (!(info_ptr = png_create_info_struct(png_ptr))) {
+    if ((info_ptr = png_create_info_struct(png_ptr)) != nullptr) {
         LOG_FATAL("Call to png_create_info_struct() failed.");
     }
 
-    if (setjmp(png_jmpbuf(png_ptr))) {
+    auto jmpbuf = png_jmpbuf(png_ptr);
+
+    // setjmp and C++ don't mix.
+    msvc_suppress(4611)
+    auto failure = setjmp(jmpbuf);
+    if (failure) {
         PNG_THROW_EXCEPTION(parse_error("Could not parse .png header")
             .set<"url"_tag>(path)
         );

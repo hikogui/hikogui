@@ -55,7 +55,8 @@ VerticalSync_win32::VerticalSync_win32(std::function<void(void*,hires_utc_clock:
      * Grab the necessary function pointers needed to assist us in detecting vertical blank interrupts.
      */
 
-    if (!(gdi = LoadLibraryW(L"Gdi32.dll"))) {
+    gdi = LoadLibraryW(L"Gdi32.dll");
+    if (!gdi) {
         LOG_FATAL("Error opening Gdi32.dll {}", getLastErrorMessage());
     }
 

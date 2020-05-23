@@ -41,10 +41,10 @@ static void maintenanceThreadProcedure() noexcept
     while (!_stopMaintenanceThread) {
         std::this_thread::sleep_for(100ms);
 
-        let t = trace<"maintenance"_tag>{};
+        let t1 = trace<"maintenance"_tag>{};
 
         {
-            let t = trace<"calibrate"_tag>{};
+            let t2 = trace<"calibrate"_tag>{};
             sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
             sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
         }

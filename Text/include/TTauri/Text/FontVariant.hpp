@@ -41,7 +41,7 @@ public:
     }
 
     constexpr FontVariant &set_italic(bool rhs) noexcept {
-        value = static_cast<int>(weight()) + (rhs ? half() : 0);
+        value = static_cast<uint8_t>(static_cast<int>(weight()) + (rhs ? half() : 0));
         ttauri_assume(value < max());
         return *this;
     }

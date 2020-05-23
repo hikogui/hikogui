@@ -98,49 +98,49 @@ enum class graphic_character_t {
  */
 [[nodiscard]] std::pair<uint8_t,bool> binary_operator_precedence(char const *str) noexcept {
     switch (operator_to_int(str)) {
-    case operator_to_int("::"): return {1, true};
-    case operator_to_int("("): return {2, true};
-    case operator_to_int("["): return {2, true};
-    case operator_to_int("."): return {2, true};
-    case operator_to_int("->"): return {2, true};
-    case operator_to_int(".*"): return {4, true};
-    case operator_to_int("->*"): return {4, true};
-    case operator_to_int("**"): return {4, true};
-    case operator_to_int("*"): return {5, true};
-    case operator_to_int("/"): return {5, true};
-    case operator_to_int("%"): return {5, true};
-    case operator_to_int("+"): return {6, true};
-    case operator_to_int("-"): return {6, true};
-    case operator_to_int("<<"): return {7, true};
-    case operator_to_int(">>"): return {7, true};
-    case operator_to_int("<=>"): return {8, true};
-    case operator_to_int("<"): return {9, true};
-    case operator_to_int(">"): return {9, true};
-    case operator_to_int("<="): return {9, true};
-    case operator_to_int(">="): return {9, true};
-    case operator_to_int("=="): return {10, true};
-    case operator_to_int("!="): return {10, true};
-    case operator_to_int("&"): return {11, true};
-    case operator_to_int("^"): return {12, true};
-    case operator_to_int("|"): return {13, true};
-    case operator_to_int("&&"): return {14, true};
-    case operator_to_int("||"): return {15, true};
-    case operator_to_int("?"): return {16, false};
-    case operator_to_int("="): return {16, false};
-    case operator_to_int("+="): return {16, false};
-    case operator_to_int("-="): return {16, false};
-    case operator_to_int("*="): return {16, false};
-    case operator_to_int("/="): return {16, false};
-    case operator_to_int("%="): return {16, false};
-    case operator_to_int("<<="): return {16, false};
-    case operator_to_int(">>="): return {16, false};
-    case operator_to_int("&="): return {16, false};
-    case operator_to_int("^="): return {16, false};
-    case operator_to_int("|="): return {16, false};
-    case operator_to_int(","): return {17, true};
-    case operator_to_int("]"): return {17, true};
-    case operator_to_int(")"): return {17, true};
-    case operator_to_int("!"): return {18, true};
+    case operator_to_int("::"):  return {uint8_t{1}, true};
+    case operator_to_int("("):   return {uint8_t{2}, true};
+    case operator_to_int("["):   return {uint8_t{2}, true};
+    case operator_to_int("."):   return {uint8_t{2}, true};
+    case operator_to_int("->"):  return {uint8_t{2}, true};
+    case operator_to_int(".*"):  return {uint8_t{4}, true};
+    case operator_to_int("->*"): return {uint8_t{4}, true};
+    case operator_to_int("**"):  return {uint8_t{4}, true};
+    case operator_to_int("*"):   return {uint8_t{5}, true};
+    case operator_to_int("/"):   return {uint8_t{5}, true};
+    case operator_to_int("%"):   return {uint8_t{5}, true};
+    case operator_to_int("+"):   return {uint8_t{6}, true};
+    case operator_to_int("-"):   return {uint8_t{6}, true};
+    case operator_to_int("<<"):  return {uint8_t{7}, true};
+    case operator_to_int(">>"):  return {uint8_t{7}, true};
+    case operator_to_int("<=>"): return {uint8_t{8}, true};
+    case operator_to_int("<"):   return {uint8_t{9}, true};
+    case operator_to_int(">"):   return {uint8_t{9}, true};
+    case operator_to_int("<="):  return {uint8_t{9}, true};
+    case operator_to_int(">="):  return {uint8_t{9}, true};
+    case operator_to_int("=="):  return {uint8_t{10}, true};
+    case operator_to_int("!="):  return {uint8_t{10}, true};
+    case operator_to_int("&"):   return {uint8_t{11}, true};
+    case operator_to_int("^"):   return {uint8_t{12}, true};
+    case operator_to_int("|"):   return {uint8_t{13}, true};
+    case operator_to_int("&&"):  return {uint8_t{14}, true};
+    case operator_to_int("||"):  return {uint8_t{15}, true};
+    case operator_to_int("?"):   return {uint8_t{16}, false};
+    case operator_to_int("="):   return {uint8_t{16}, false};
+    case operator_to_int("+="):  return {uint8_t{16}, false};
+    case operator_to_int("-="):  return {uint8_t{16}, false};
+    case operator_to_int("*="):  return {uint8_t{16}, false};
+    case operator_to_int("/="):  return {uint8_t{16}, false};
+    case operator_to_int("%="):  return {uint8_t{16}, false};
+    case operator_to_int("<<="): return {uint8_t{16}, false};
+    case operator_to_int(">>="): return {uint8_t{16}, false};
+    case operator_to_int("&="):  return {uint8_t{16}, false};
+    case operator_to_int("^="):  return {uint8_t{16}, false};
+    case operator_to_int("|="):  return {uint8_t{16}, false};
+    case operator_to_int(","):   return {uint8_t{17}, true};
+    case operator_to_int("]"):   return {uint8_t{17}, true};
+    case operator_to_int(")"):   return {uint8_t{17}, true};
+    case operator_to_int("!"):   return {uint8_t{18}, true};
     default: return {std::numeric_limits<uint8_t>::max(), true};
     }
 }
@@ -149,7 +149,7 @@ enum class graphic_character_t {
  * @return Precedence, left-to-right-associativity
  */
 [[nodiscard]] std::pair<uint8_t,bool> operator_precedence(char const *str, bool binary) noexcept {
-    return binary ? binary_operator_precedence(str) : std::pair<uint8_t,bool>{3, false};
+    return binary ? binary_operator_precedence(str) : std::pair<uint8_t,bool>{uint8_t{3}, false};
 }
 
 }

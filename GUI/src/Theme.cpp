@@ -20,42 +20,42 @@ Theme::Theme(URL const &url)
     }
 }
 
-[[nodiscard]] std::string Theme::parseString(datum const &data, char const *name)
+[[nodiscard]] std::string Theme::parseString(datum const &data, char const *object_name)
 {
     // Extract name
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
-    let object = data[name];
+    let object = data[object_name];
     if (!object.is_string()) {
-        TTAURI_THROW(parse_error("'{}' attribute must be a string, got {}.", name, object.type_name()));
+        TTAURI_THROW(parse_error("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
     }
     return static_cast<std::string>(object);
 }
 
-[[nodiscard]] float Theme::parseFloat(datum const &data, char const *name)
+[[nodiscard]] float Theme::parseFloat(datum const &data, char const *object_name)
 {
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
 
-    let object = data[name];
+    let object = data[object_name];
     if (!object.is_numeric()) {
-        TTAURI_THROW(parse_error("'{}' attribute must be a number, got {}.", name, object.type_name()));
+        TTAURI_THROW(parse_error("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
     }
 
     return static_cast<float>(object);
 }
 
-[[nodiscard]] bool Theme::parseBool(datum const &data, char const *name)
+[[nodiscard]] bool Theme::parseBool(datum const &data, char const *object_name)
 {
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
 
-    let object = data[name];
+    let object = data[object_name];
     if (!object.is_bool()) {
-        TTAURI_THROW(parse_error("'{}' attribute must be a boolean, got {}.", name, object.type_name()));
+        TTAURI_THROW(parse_error("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
     }
 
     return static_cast<bool>(object);
@@ -117,31 +117,31 @@ Theme::Theme(URL const &url)
     }
 }
 
-[[nodiscard]] vec Theme::parseColor(datum const &data, char const *name)
+[[nodiscard]] vec Theme::parseColor(datum const &data, char const *object_name)
 {
     // Extract name
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing color '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing color '{}'", object_name));
     }
 
-    let colorObject = data[name];
+    let colorObject = data[object_name];
     try {
         return parseColorValue(colorObject);
     } catch (parse_error &e) {
-        TTAURI_THROW(parse_error("Could not parse color '{}'", name).caused_by(e));
+        TTAURI_THROW(parse_error("Could not parse color '{}'", object_name).caused_by(e));
     }
 }
 
-[[nodiscard]] std::vector<vec> Theme::parseColorList(datum const &data, char const *name)
+[[nodiscard]] std::vector<vec> Theme::parseColorList(datum const &data, char const *object_name)
 {
     // Extract name
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing color list '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing color list '{}'", object_name));
     }
 
-    let colorListObject = data[name];
+    let colorListObject = data[object_name];
     if (!colorListObject.is_vector()) {
-        TTAURI_THROW(parse_error("Expecting color list '{}' to be a list of colors, got {}", name, colorListObject.type_name()));
+        TTAURI_THROW(parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name()));
     }
 
     auto r = std::vector<vec>{};
@@ -156,13 +156,13 @@ Theme::Theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] Text::FontWeight Theme::parseFontWeight(datum const &data, char const *name)
+[[nodiscard]] Text::FontWeight Theme::parseFontWeight(datum const &data, char const *object_name)
 {
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
 
-    let object = data[name];
+    let object = data[object_name];
     if (object.is_numeric()) {
         return Text::FontWeight_from_int(static_cast<int>(object));
     } else if (object.is_string()) {
@@ -199,18 +199,18 @@ Theme::Theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] Text::TextStyle Theme::parseTextStyle(datum const &data, char const *name)
+[[nodiscard]] Text::TextStyle Theme::parseTextStyle(datum const &data, char const *object_name)
 {
     // Extract name
-    if (!data.contains(name)) {
-        TTAURI_THROW(parse_error("Missing text-style '{}'", name));
+    if (!data.contains(object_name)) {
+        TTAURI_THROW(parse_error("Missing text-style '{}'", object_name));
     }
 
-    let textStyleObject = data[name];
+    let textStyleObject = data[object_name];
     try {
         return parseTextStyleValue(textStyleObject);
     } catch (parse_error &e) {
-        TTAURI_THROW(parse_error("Could not parse text-style '{}'", name).caused_by(e));
+        TTAURI_THROW(parse_error("Could not parse text-style '{}'", object_name).caused_by(e));
     }
 }
 
@@ -220,13 +220,13 @@ void Theme::parse(datum const &data)
 
     this->name = parseString(data, "name");
 
-    let mode = to_lower(parseString(data, "mode"));
-    if (mode == "light") {
+    let mode_name = to_lower(parseString(data, "mode"));
+    if (mode_name == "light") {
         this->mode = ThemeMode::Light;
-    } else if (mode == "dark") {
+    } else if (mode_name == "dark") {
         this->mode = ThemeMode::Dark;
     } else {
-        TTAURI_THROW(parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode));
+        TTAURI_THROW(parse_error("Attribute 'mode' must be \"light\" or \"dark\", got \"{}\".", mode_name));
     }
 
     this->blue = parseColor(data, "blue");

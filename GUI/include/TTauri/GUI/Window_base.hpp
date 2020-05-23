@@ -385,8 +385,8 @@ protected:
         }
     }
 
-    void handleKeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
-        return handleKeyboardEvent(KeyboardEvent(state, modifiers, key));
+    void handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
+        return handleKeyboardEvent(KeyboardEvent(_state, modifiers, key));
     }
 
     void handleKeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept {

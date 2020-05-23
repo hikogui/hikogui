@@ -13,10 +13,10 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
     try {
         parse_assert2(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
-        let bindings = data["bindings"];
-        parse_assert2(bindings.is_vector(), "Expecting array value for key 'bindings' at top level.");
+        let binding_list = data["bindings"];
+        parse_assert2(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
 
-        for (auto i = bindings.vector_begin(); i != bindings.vector_end(); ++i) {
+        for (auto i = binding_list.vector_begin(); i != binding_list.vector_end(); ++i) {
             let binding = *i;
             parse_assert2(binding.is_map(), "Expecting object for a binding, got {}", binding);
 

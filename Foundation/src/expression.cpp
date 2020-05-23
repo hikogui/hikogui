@@ -1450,10 +1450,10 @@ struct expression_inplace_xor_node final : expression_binary_operator_node {
 
 [[nodiscard]] std::pair<uint8_t,bool> operator_precedence(token_t const &token, bool binary) noexcept {
     if (token != tokenizer_name_t::Operator) {
-        return {0, false};
+        return {uint8_t{0}, false};
     } else {
         auto [precedence, left_to_right] = operator_precedence(token.value.data(), binary);
-        return {std::numeric_limits<uint8_t>::max() - precedence, left_to_right};
+        return {static_cast<uint8_t>(std::numeric_limits<uint8_t>::max() - precedence), left_to_right};
     }
 }
 

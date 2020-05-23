@@ -1,5 +1,5 @@
 
-project(TTauri_Foundation LANGUAGES)
+project(TTauri_Foundation)
 
 set(BUILD_TTAURI_GUI ON CACHE BOOL "Enable GUI")
 set(BUILD_TTAURI_AUDIO ON CACHE BOOL "Enable Audio")
@@ -105,16 +105,7 @@ target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/
 set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 
 
-if (MSVC)
-    # Ignore unknown pragmas.
-    target_compile_options(TTauri_Foundation PUBLIC -wd4068)
 
-    # Set defines to compile a win32 application.
-	target_compile_options(TTauri_Foundation PUBLIC -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
-
-    # std::result_of used by fmt.
-    target_compile_options(TTauri_Foundation PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
-endif()
 
 # 
 # We will support the following CPUs:
@@ -123,7 +114,8 @@ endif()
 #
 #
 if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
-    # Clang will complain about __builtin_assume even on constexpr functions and operators, this warning is absolutely useless.
+    # Clang will complain about __builtin_assume even on constexpr functions and operators,
+    # this warning is absolutely useless.
     target_compile_options(TTauri_Foundation PUBLIC -Wno-assume)
 
     # Clang will complain about calling hidden-friend-template-functions.
@@ -151,14 +143,37 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     endif()
 
 elseif (MSVC)
+    # Ignore unknown pragmas.
+    target_compile_options(TTauri_Foundation PUBLIC -wd4068)
+
+    # Support Intel's IvyBridge and AMD's Steamroller
     target_compile_options(TTauri_Foundation PUBLIC -arch:AVX)
 
     # The TTauri generic tokenizer uses large constexpr tables.
     target_compile_options(TTauri_Foundation PUBLIC -constexpr:steps 100000000)
+
+    target_compile_options(TTauri_Foundation PUBLIC -W4)
+    #target_compile_options(TTauri_Foundation PUBLIC -permissive-)
+
+    # C4324 structure was padded due to alignment specifier.
+    # Ofcourse it is, that is what the alignment specifier is used for??????
+    target_compile_options(TTauri_Foundation PUBLIC -wd4324)
+
+    # C4100 unreferenced formal parameter.
+    # This warning is in the way when you want to document a parameter of a virtual function
+    # with an implementation that does not use the parameter.
+    target_compile_options(TTauri_Foundation PUBLIC -wd4100)
+
 endif()
 
+if (WIN32)
+    # Set defines to compile a win32 application.
+	target_compile_options(TTauri_Foundation PUBLIC -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
 
-if (APPLE)
+    # std::result_of used by fmt.
+    target_compile_options(TTauri_Foundation PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
+
+elseif (APPLE)
     target_link_libraries(TTauri_Foundation PUBLIC "-framework Foundation -framework AppKit")
 endif()
 

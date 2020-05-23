@@ -135,6 +135,7 @@ constexpr auto processor = Processor::ARM;
 #define force_inline __forceinline
 #define no_inline inline __declspec(noinline)
 #define clang_suppress(a)
+#define msvc_suppress(a) _Pragma(STRINGIFY(warning(disable:a)))
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]
@@ -149,6 +150,7 @@ constexpr auto processor = Processor::ARM;
 #define force_inline inline __attribute__((always_inline))
 #define no_inline inline __attribute__((noinline))
 #define clang_suppress(a) _Pragma(STRINGIFY(clang diagnostic ignored a))
+#define msvc_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
@@ -163,6 +165,7 @@ constexpr auto processor = Processor::ARM;
 #define force_inline inline __attribute__((always_inline))
 #define no_inline inline __attribute__((noinline))
 #define clang_suppress(a)
+#define msvc_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
@@ -177,6 +180,7 @@ constexpr auto processor = Processor::ARM;
 #define force_inline inline
 #define no_inline
 #define clang_suppress(a)
+#define msvc_suppress(a)
 #define gsl_suppress(a)
 #define gsl_suppress2(a,b)
 #define gsl_suppress3(a,b,c)

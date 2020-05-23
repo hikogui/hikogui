@@ -51,11 +51,11 @@ public:
         operator mat () const noexcept {
             ttauri_assume(s.is_point());
             let tmp = _mm_setzero_ps();
-            let col0 = _mm_insert_ps(tmp, s, 0b00'00'1110);
-            let col1 = _mm_insert_ps(tmp, s, 0b01'01'1101);
-            let col2 = _mm_insert_ps(tmp, s, 0b10'10'1011);
-            let col3 = _mm_insert_ps(tmp, s, 0b11'11'0111);
-            return {col0, col1, col2, col3};
+            let c0 = _mm_insert_ps(tmp, s, 0b00'00'1110);
+            let c1 = _mm_insert_ps(tmp, s, 0b01'01'1101);
+            let c2 = _mm_insert_ps(tmp, s, 0b10'10'1011);
+            let c3 = _mm_insert_ps(tmp, s, 0b11'11'0111);
+            return {c0, c1, c2, c3};
         }
 
         [[nodiscard]] friend S operator*(S const &lhs, S const &rhs) noexcept {
@@ -102,11 +102,11 @@ public:
 
         operator mat () const noexcept {
             ttauri_assume(t.is_vector());
-            let col0 = _mm_set_ss(1.0f);
-            let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
-            let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
-            let col3 = _mm_insert_ps(t, col0, 0b00'11'0000);
-            return {col0, col1, col2, col3};
+            let c0 = _mm_set_ss(1.0f);
+            let c1 = _mm_permute_ps(c0, _MM_SHUFFLE(1,1,0,1));
+            let c2 = _mm_permute_ps(c0, _MM_SHUFFLE(1,0,1,1));
+            let c3 = _mm_insert_ps(t, c0, 0b00'11'0000);
+            return {c0, c1, c2, c3};
         }
 
         [[nodiscard]] friend T operator*(T const &lhs, T const &rhs) noexcept {
@@ -175,11 +175,11 @@ public:
 
         operator mat () const noexcept {
             ttauri_assume(t.is_vector());
-            let col0 = _mm_set_ss(1.0f);
-            let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(1,1,0,1));
-            let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(1,0,1,1));
-            let col3 = _mm_insert_ps(t, col0, 0b00'11'0000);
-            return {col0, col1, col2, col3};
+            let c0 = _mm_set_ss(1.0f);
+            let c1 = _mm_permute_ps(c0, _MM_SHUFFLE(1,1,0,1));
+            let c2 = _mm_permute_ps(c0, _MM_SHUFFLE(1,0,1,1));
+            let c3 = _mm_insert_ps(t, c0, 0b00'11'0000);
+            return {c0, c1, c2, c3};
         }
 
         [[nodiscard]] friend T2 operator*(T2 const &lhs, T2 const &rhs) noexcept {

@@ -203,9 +203,9 @@ void FontBook::post_process() noexcept
         return i->second;
 
     } else {
-        auto i = family_name_fallback_chain.find("fallback");
-        ttauri_assert(i != family_name_fallback_chain.end());
-        return i->second;
+        auto j = family_name_fallback_chain.find("fallback");
+        ttauri_assert(j != family_name_fallback_chain.end());
+        return j->second;
     }
 }
 
@@ -222,10 +222,10 @@ void FontBook::post_process() noexcept
     while (true) {
         name = &(find_fallback_family_name(*name));
 
-        let i = family_names.find(*name);
-        if (i != family_names.end()) {
-            family_name_cache[original_name] = i->second;
-            return i->second;
+        let j = family_names.find(*name);
+        if (j != family_names.end()) {
+            family_name_cache[original_name] = j->second;
+            return j->second;
         }
     }
 }

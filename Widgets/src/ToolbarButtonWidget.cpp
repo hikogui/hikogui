@@ -108,9 +108,9 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
 
         let glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
 
-        let box = align(buttonBox, scale(glyphBoundingBox, Theme::iconSize), Alignment::MiddleCenter);
+        let glyphRectangle = align(buttonBox, scale(glyphBoundingBox, Theme::iconSize), Alignment::MiddleCenter);
 
-        context.drawGlyph(*icon_glyph, box);
+        context.drawGlyph(*icon_glyph, glyphRectangle);
     } else {
         no_default;
     }

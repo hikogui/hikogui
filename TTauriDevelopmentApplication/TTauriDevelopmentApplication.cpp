@@ -27,15 +27,15 @@ public:
     void openingWindow(Window &window) override
     {
         auto &button1 = window.addWidget<GUI::Widgets::ButtonWidget>(u8"Hello \u4e16\u754c");
-        button1.shareLeftEdgeWith(*window.widget);
-        button1.shareTopEdgeWith(*window.widget);
-        button1.shareBottomEdgeWith(*window.widget);
+        button1.placeLeft();
+        button1.placeAtTop();
+        button1.placeAtBottom();
 
         auto &button2 = window.addWidget<GUI::Widgets::ButtonWidget>(u8"Hello world");
-        button2.shareRightEdgeWith(*window.widget);
-        button2.shareTopEdgeWith(*window.widget);
+        button2.placeRight();
+        button2.placeAtTop();
         button2.placeRightOf(button1);
-        button2.shareBottomEdgeWith(*window.widget);
+        button2.placeAtBottom();
     }
 
     void closingWindow(const Window &window) override

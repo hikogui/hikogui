@@ -350,6 +350,7 @@ TYPED_TEST(UnsignedIntOverflow, Multiply) {
     TypeParam zero = 0;
     TypeParam one = 1;
     TypeParam two = 2;
+    TypeParam four = 4;
     TypeParam maximum = numeric_limits<TypeParam>::max();
     TypeParam half = maximum / 2;
 
@@ -359,15 +360,15 @@ TYPED_TEST(UnsignedIntOverflow, Multiply) {
     ASSERT_FALSE(mul_overflow(zero, half, &r)); ASSERT_EQ(r, zero);
     ASSERT_FALSE(mul_overflow(zero, maximum, &r)); ASSERT_EQ(r, zero);
 
-    ASSERT_FALSE(mul_overflow(one, zero, &r)); ASSERT_EQ(r, 0);
-    ASSERT_FALSE(mul_overflow(one, one, &r)); ASSERT_EQ(r, 1);
-    ASSERT_FALSE(mul_overflow(one, two, &r)); ASSERT_EQ(r, 2);
+    ASSERT_FALSE(mul_overflow(one, zero, &r)); ASSERT_EQ(r, zero);
+    ASSERT_FALSE(mul_overflow(one, one, &r)); ASSERT_EQ(r, one);
+    ASSERT_FALSE(mul_overflow(one, two, &r)); ASSERT_EQ(r, two);
     ASSERT_FALSE(mul_overflow(one, half, &r)); ASSERT_EQ(r, half);
     ASSERT_FALSE(mul_overflow(one, maximum, &r)); ASSERT_EQ(r, maximum);
 
-    ASSERT_FALSE(mul_overflow(two, zero, &r)); ASSERT_EQ(r, 0);
-    ASSERT_FALSE(mul_overflow(two, one, &r)); ASSERT_EQ(r, 2);
-    ASSERT_FALSE(mul_overflow(two, two, &r)); ASSERT_EQ(r, 4);
+    ASSERT_FALSE(mul_overflow(two, zero, &r)); ASSERT_EQ(r, zero);
+    ASSERT_FALSE(mul_overflow(two, one, &r)); ASSERT_EQ(r, two);
+    ASSERT_FALSE(mul_overflow(two, two, &r)); ASSERT_EQ(r, four);
     ASSERT_FALSE(mul_overflow(two, half, &r)); ASSERT_EQ(r, maximum-1);
     ASSERT_TRUE(mul_overflow(two, maximum, &r));
 
@@ -377,7 +378,7 @@ TYPED_TEST(UnsignedIntOverflow, Multiply) {
     ASSERT_TRUE(mul_overflow(half, half, &r));
     ASSERT_TRUE(mul_overflow(half, maximum, &r));
 
-    ASSERT_FALSE(mul_overflow(maximum, zero, &r)); ASSERT_EQ(r, 0);
+    ASSERT_FALSE(mul_overflow(maximum, zero, &r)); ASSERT_EQ(r, zero);
     ASSERT_FALSE(mul_overflow(maximum, one, &r)); ASSERT_EQ(r, maximum);
     ASSERT_TRUE(mul_overflow(maximum, two, &r));
     ASSERT_TRUE(mul_overflow(maximum, half, &r));

@@ -154,9 +154,9 @@ struct template_node {
      */
     virtual void left_align() noexcept {}
 
-    [[nodiscard]] virtual bool found_elif(parse_location location, std::unique_ptr<expression_node> expression) noexcept { return false; }
-    [[nodiscard]] virtual bool found_else(parse_location location) noexcept { return false;}
-    [[nodiscard]] virtual bool found_while(parse_location location, std::unique_ptr<expression_node> expression) noexcept { return false; }
+    [[nodiscard]] virtual bool found_elif(parse_location _location, std::unique_ptr<expression_node> expression) noexcept { return false; }
+    [[nodiscard]] virtual bool found_else(parse_location _location) noexcept { return false;}
+    [[nodiscard]] virtual bool found_while(parse_location _location, std::unique_ptr<expression_node> expression) noexcept { return false; }
 
     virtual void post_process(expression_post_process_context &context) {}
 

@@ -55,8 +55,8 @@ public:
         return _shapedText;
     }
 
-    void setExtent(vec extent) noexcept {
-        this->extent = extent;
+    void setExtent(vec _extent) noexcept {
+        extent = _extent;
         updateShapedText();
     }
 

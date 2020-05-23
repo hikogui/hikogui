@@ -30,7 +30,7 @@ void _debugger_log(char const *text) noexcept;
 template<typename... Args>
 void debugger_log(char const *fmt, Args... args) noexcept
 {
-    if (sizeof...(Args) > 0) {
+    if constexpr (sizeof...(Args) > 0) {
         _debugger_log(fmt::format(fmt, std::forward<Args>(args)...).data());
     } else {
         _debugger_log(fmt);
@@ -42,7 +42,7 @@ void debugger_log(char const *fmt, Args... args) noexcept
 template<typename... Args>
 void debugger_log(std::string fmt, Args... args) noexcept
 {
-    if (sizeof...(Args) > 0) {
+    if constexpr (sizeof...(Args) > 0) {
         _debugger_log(fmt::format(fmt, std::forward<Args>(args)...).data());
     } else {
         _debugger_log(fmt.data());
@@ -58,7 +58,7 @@ void _debugger_dialogue(char const *caption, char const *message);
 template<typename... Args>
 void debugger_dialogue(char const *caption, char const *fmt, Args... args) noexcept
 {
-    if (sizeof...(Args) > 0) {
+    if constexpr (sizeof...(Args) > 0) {
         _debugger_dialogue(caption, fmt::format(fmt, std::forward<Args>(args)...).data());
     } else {
         _debugger_dialogue(caption, fmt);
@@ -90,7 +90,7 @@ template<typename... Args>
 {
     std::string message;
 
-    if (sizeof...(Args) == 0) {
+    if constexpr (sizeof...(Args) == 0) {
         message = fmt;    
     } else {
         message = fmt::format(fmt, std::forward<Args>(args)...);

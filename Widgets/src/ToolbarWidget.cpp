@@ -67,8 +67,6 @@ void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_p
 {
     auto context = drawContext;
 
-    let rectangle = aarect{box.extent()};
-
     context.drawFilledQuad(rectangle);
 
     Widget::draw(drawContext, displayTimePoint);

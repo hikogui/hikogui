@@ -91,13 +91,13 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     }
 }
 
-void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore renderFinishedSemaphore)
+void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
     ttauri_assert(device);
 
     auto lock = std::scoped_lock(guiMutex);
 
-    std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { renderFinishedSemaphore };
+    std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { semaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
     std::array<uint32_t, 1> const presentImageIndices = { frameBufferIndex };
     ttauri_assume(presentSwapchains.size() == presentImageIndices.size());
@@ -135,9 +135,6 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
         state = State::SurfaceLost;
         return;
     }
-
-    // Make sure that resources are released by Vulkan by calling waitIdle.
-    device->waitIdle();
 }
 
 void Window_vulkan::build()
@@ -487,7 +484,7 @@ bool Window_vulkan::checkSurfaceExtent()
 {
     try {
         let [nrImages, extent] = getImageCountAndExtent();
-        return (nrImages == nrSwapchainImages) && (extent == swapchainImageExtent);
+        return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent == swapchainImageExtent);
 
     } catch (const vk::SurfaceLostKHRError&) {
         state = State::SurfaceLost;

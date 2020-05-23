@@ -80,11 +80,11 @@ static void createWindowClass()
     win32WindowClassIsRegistered = true;
 }
 
-void Window_vulkan_win32::createWindow(const std::string &title, vec extent)
+void Window_vulkan_win32::createWindow(const std::string &_title, vec extent)
 {
     createWindowClass();
 
-    auto u16title = to_wstring(title);
+    auto u16title = to_wstring(_title);
 
     // We are opening a popup window with a caption bar to cause drop-shadow to appear around
     // the window.
@@ -147,7 +147,6 @@ Window_vulkan_win32::~Window_vulkan_win32()
         gsl_suppress(f.6) {
             if (win32Window != nullptr) {
                 LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title);
-                abort();
             }
         }
     } catch (...) {
@@ -231,7 +230,7 @@ void Window_vulkan_win32::openingWindow()
 
     UINT format = 0;
 
-    while ((format = EnumClipboardFormats(format))) {
+    while ((format = EnumClipboardFormats(format)) != 0) {
         switch (format) {
         case CF_TEXT:
         case CF_OEMTEXT:
@@ -411,7 +410,6 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     auto lock = std::scoped_lock(guiMutex);
 
     MouseEvent mouseEvent;
-    KeyboardEvent keyboardEvent;
 
     switch (uMsg) {    
     case WM_DESTROY:
@@ -532,11 +530,11 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
         LOG_ERROR("Key 0x{:x} extended={}", key_code, extended);
 
-        let state = getKeyboardState();
-        let modifiers = getKeyboardModifiers();
-        let virtual_key = to_KeyboardVirtualKey(key_code, extended, modifiers);
+        let key_state = getKeyboardState();
+        let key_modifiers = getKeyboardModifiers();
+        let virtual_key = to_KeyboardVirtualKey(key_code, extended, key_modifiers);
         if (virtual_key != KeyboardVirtualKey::Nul) {
-            handleKeyboardEvent(state, modifiers, virtual_key);
+            handleKeyboardEvent(key_state, key_modifiers, virtual_key);
         }
         } break;
 

@@ -235,8 +235,8 @@ struct PixelMap {
      * @param height height of the returned image.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
-    PixelMap<T> submap(ssize_t x, ssize_t y, ssize_t width, ssize_t height) const noexcept {
-        return submap(iaarect{x, y, width, height});
+    PixelMap<T> submap(ssize_t x, ssize_t y, ssize_t _width, ssize_t _height) const noexcept {
+        return submap(iaarect{x, y, _width, _height});
     }
 
     PixelRow<T> const operator[](ssize_t rowNr) const noexcept {

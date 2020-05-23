@@ -89,7 +89,7 @@ inline auto const FontWeight_from_string_table = std::unordered_map<std::string,
 [[nodiscard]] inline char to_char(FontWeight const &x) noexcept {
     let x_ = static_cast<int>(x);
     ttauri_assume(x_ >= 0 && x_ <= 9);
-    return '0' + x_;
+    return static_cast<char>('0' + x_);
 }
 
 [[nodiscard]] constexpr int to_int(FontWeight const &x) noexcept {

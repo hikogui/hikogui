@@ -128,10 +128,10 @@ std::vector<vk::PipelineColorBlendAttachmentState> Pipeline_vulkan::getPipelineC
     } };
 }
 
-void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent)
+void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
-    LOG_INFO("buildPipeline previous size ({}, {})", this->extent.width, this->extent.height);
-    this->extent = extent;
+    LOG_INFO("buildPipeline previous size ({}, {})", extent.width, extent.height);
+    extent = _extent;
 
     const auto pushConstantRanges = createPushConstantRanges();
     const auto vertexInputBindingDescription = createVertexInputBindingDescription();
@@ -258,7 +258,7 @@ void Pipeline_vulkan::buildForNewSurface()
 {
 }
 
-void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D extent)
+void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t renderSubpass, vk::Extent2D _extent)
 {
     if (!buffersInitialized) {
         buildVertexBuffers();
@@ -267,7 +267,7 @@ void Pipeline_vulkan::buildForNewSwapchain(vk::RenderPass renderPass, uint32_t r
     // Input attachments described by the descriptor set will change when a
     // new swap chain is created.
     buildDescriptorSets();
-    buildPipeline(renderPass, renderSubpass, extent);
+    buildPipeline(renderPass, renderSubpass, _extent);
 }
 
 void Pipeline_vulkan::teardownForSwapchainLost()

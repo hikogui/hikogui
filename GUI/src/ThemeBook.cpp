@@ -32,8 +32,8 @@ ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
 [[nodiscard]] std::vector<std::string> ThemeBook::themeNames() const noexcept {
     std::vector<std::string> names;
 
-    for (let &theme: themes) {
-        names.push_back(theme->name);
+    for (let &t: themes) {
+        names.push_back(t->name);
     }
 
     std::sort(names.begin(), names.end());
@@ -66,15 +66,15 @@ void ThemeBook::updateTheme() noexcept {
     Theme *matchingTheme = nullptr;
     Theme *matchingAndModeTheme = nullptr;
 
-    for (auto &theme: themes) {
-        if (theme->name == _themeName && theme->mode == _themeMode) {
-            matchingAndModeTheme = theme.get();
-        } else if (theme->name == _themeName) {
-            matchingTheme = theme.get();
-        } else if (theme->name == defaultThemeName && theme->mode == _themeMode) {
-            defaultAndModeTheme = theme.get();
-        } else if (theme->name == defaultThemeName) {
-            defaultTheme = theme.get();
+    for (auto &t: themes) {
+        if (t->name == _themeName && t->mode == _themeMode) {
+            matchingAndModeTheme = t.get();
+        } else if (t->name == _themeName) {
+            matchingTheme = t.get();
+        } else if (t->name == defaultThemeName && t->mode == _themeMode) {
+            defaultAndModeTheme = t.get();
+        } else if (t->name == defaultThemeName) {
+            defaultTheme = t.get();
         }
     }
 

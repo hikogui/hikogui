@@ -110,9 +110,9 @@ inline glob_token_list_t parseGlob(std::string_view glob)
     glob_token_list_t r;
     std::string tmpString;
     std::vector<std::string> tmpStringList;
-    bool isInverse;
-    bool isFirstCharacter;
-    bool isRange;
+    bool isInverse = false;
+    bool isFirstCharacter = false;
+    bool isRange = false;
 
     auto i = glob.begin();
     while (true) {
@@ -252,9 +252,9 @@ inline glob_token_list_t parseGlob(std::string_view glob)
 
             default:
                 if (isRange) {
-                    let isFirstCharacter = static_cast<uint8_t>(tmpString.back());
+                    let firstCharacter = static_cast<uint8_t>(tmpString.back());
                     let lastCharacter = static_cast<uint8_t>(c);
-                    for (uint8_t character = isFirstCharacter + 1; character <= lastCharacter; character++) {
+                    for (uint8_t character = firstCharacter + 1; character <= lastCharacter; character++) {
                         tmpString += static_cast<char>(character);
                     }
                 } else {

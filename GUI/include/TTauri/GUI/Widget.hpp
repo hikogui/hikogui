@@ -213,13 +213,13 @@ public:
 
     void placeRightOf(Widget const &rhs, float margin=theme->margin) const noexcept;
 
-    void shareTopEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
+    void placeAtTop(float margin=theme->margin) const noexcept;
 
-    void shareBottomEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
+    void placeAtBottom(float margin=theme->margin) const noexcept;
 
-    void shareLeftEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
+    void placeLeft(float margin=theme->margin) const noexcept;
 
-    void shareRightEdgeWith(Widget const &parent, float margin=theme->margin, bool useContentArea=true) const noexcept;
+    void placeRight(float margin=theme->margin) const noexcept;
 
 
     [[nodiscard]] Device *device() const noexcept;

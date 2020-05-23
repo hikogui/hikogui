@@ -113,7 +113,7 @@ constexpr auto tt5_code_table_generator() noexcept
 {
     std::array<uint16_t,256> r{};
 
-    for (ssize_t i = 0; i != r.size(); ++i) {
+    for (ssize_t i = 0; i != ssize(r); ++i) {
         r[i] = tt5_code_table_generate_entry(static_cast<uint8_t>(i));
     }
 

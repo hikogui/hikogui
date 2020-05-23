@@ -81,7 +81,7 @@ static void BidiP1_P3(BidiContext &context) noexcept
         case BidiClass::B:
             // P3. AL or R means par level = 1, others level = 0.
             context.paragraphs.emplace_back(
-                static_cast<int>(parBidiClass == BidiClass::AL || parBidiClass == BidiClass::R)
+                static_cast<int8_t>(parBidiClass == BidiClass::AL || parBidiClass == BidiClass::R)
             );
             isolateLevel = 0;
             parBidiClass = BidiClass::Unknown;
@@ -281,31 +281,33 @@ static bool BidiX9_valid(BidiCharacter const &x) noexcept
 static void BidiX10(BidiContext &context) noexcept
 {
     // X10. Find all sequences matching the same embedded level
-    auto i = context.characters.begin();
-    for (let &paragraph : context.paragraphs) {
-        context.isolateSequences.emplace_back(i);
-        auto &firstSequenceOfParagraph = context.isolateSequences.back();
+    {
+        auto i = context.characters.begin();
+        for (let &paragraph : context.paragraphs) {
+            context.isolateSequences.emplace_back(i);
+            auto &firstSequenceOfParagraph = context.isolateSequences.back();
 
-        for (; i->bidiClass != BidiClass::B; ++i) {
-            if (BidiX9_valid(*i)) {
-                if (context.isolateSequences.back().embeddingLevel == -1) {
-                    context.isolateSequences.back().embeddingLevel = i->embeddingLevel;
+            for (; i->bidiClass != BidiClass::B; ++i) {
+                if (BidiX9_valid(*i)) {
+                    if (context.isolateSequences.back().embeddingLevel == -1) {
+                        context.isolateSequences.back().embeddingLevel = i->embeddingLevel;
 
-                } else if (context.isolateSequences.back().embeddingLevel != i->embeddingLevel) {
-                    context.isolateSequences.back().last = i;
-                    context.isolateSequences.emplace_back(i, context.isolateSequences.back().embeddingLevel);
+                    } else if (context.isolateSequences.back().embeddingLevel != i->embeddingLevel) {
+                        context.isolateSequences.back().last = i;
+                        context.isolateSequences.emplace_back(i, context.isolateSequences.back().embeddingLevel);
+                    }
                 }
             }
-        }
-        // Complete the last isolate sequence of a paragraph and include the paragraph separator.
-        context.isolateSequences.back().last = ++i;
-        context.isolateSequences.back().endOfParagraph = true;
+            // Complete the last isolate sequence of a paragraph and include the paragraph separator.
+            context.isolateSequences.back().last = ++i;
+            context.isolateSequences.back().endOfParagraph = true;
 
-        // All sequences after the first already know which embedding level they belong to (the reason for the
-        // creation of the sequence is a different embedding level). But if the first sequence is not set, then
-        // use the paragraph's embedding level.
-        if (firstSequenceOfParagraph.embeddingLevel == -1) {
-            firstSequenceOfParagraph.embeddingLevel = paragraph.embeddingLevel;
+            // All sequences after the first already know which embedding level they belong to (the reason for the
+            // creation of the sequence is a different embedding level). But if the first sequence is not set, then
+            // use the paragraph's embedding level.
+            if (firstSequenceOfParagraph.embeddingLevel == -1) {
+                firstSequenceOfParagraph.embeddingLevel = paragraph.embeddingLevel;
+            }
         }
     }
 

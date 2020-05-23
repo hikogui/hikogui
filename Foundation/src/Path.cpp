@@ -189,7 +189,7 @@ bool Path::isLayerOpen() const noexcept
     } else if (layerEndContours.size() == 0) {
         return true;
     } else {
-        return layerEndContours.back().first != (contourEndPoints.size() - 1);
+        return layerEndContours.back().first != (ssize(contourEndPoints) - 1);
     }
 }
 

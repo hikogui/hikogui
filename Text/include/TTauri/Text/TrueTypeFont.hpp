@@ -14,7 +14,7 @@ class TrueTypeFont final: public Font {
 private:
     std::unique_ptr<ResourceView> view;
 
-    gsl::span<std::byte const> bytes;
+    gsl::span<std::byte const> file_bytes;
 
     uint16_t OS2_xHeight = 0;
     uint16_t OS2_HHeight = 0;
@@ -71,13 +71,13 @@ public:
      * remain available.
      */
     TrueTypeFont(gsl::span<std::byte const> bytes) :
-        bytes(bytes) {
+        file_bytes(bytes) {
         parseFontDirectory();
     }
 
     TrueTypeFont(std::unique_ptr<ResourceView> view) :
         view(std::move(view)) {
-        bytes = this->view->bytes();
+        file_bytes = this->view->bytes();
         parseFontDirectory();
     }
 

@@ -157,7 +157,7 @@ if (FMT_PEDANTIC)
   target_compile_options(fmt PRIVATE ${PEDANTIC_COMPILE_FLAGS})
 endif ()
 
-target_include_directories(fmt PUBLIC
+target_include_directories(fmt SYSTEM PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
@@ -179,7 +179,7 @@ add_library(fmt::fmt-header-only ALIAS fmt-header-only)
 
 target_compile_definitions(fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
 
-target_include_directories(fmt-header-only INTERFACE
+target_include_directories(fmt-header-only SYSTEM INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 

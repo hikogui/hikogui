@@ -307,8 +307,7 @@ void UnicodeData::decomposeCodePoint(std::u32string &result, char32_t codePoint,
 
     } else if (mustDecompose) {
         if (decompositionLength == 1) {
-            let codePoint = description->decompositionCodePoint();
-            decomposeCodePoint(result, codePoint, decomposeCompatible, decomposeLigatures);
+            decomposeCodePoint(result, description->decompositionCodePoint(), decomposeCompatible, decomposeLigatures);
 
         } else {
             let offset = description->decompositionOffset();

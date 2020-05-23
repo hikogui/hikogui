@@ -40,7 +40,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
 
     auto s = std::string{};
 
-    uint8_t value;
+    uint8_t value = 0;
     int8_t nibble_result;
     for (let c: input) {
         switch (state) {

@@ -101,12 +101,12 @@ public:
      * @return The result as a map-datum, with option names as the keys.
      */
     datum parse(std::vector<std::string> const &arguments) noexcept {
-        auto configuration = datum{datum::map{}};
+        auto r = datum{datum::map{}};
 
         int argumentCount = 0;
         for (let &argument: arguments) {
             if (argumentCount++ == 0) {
-                configuration["executable-path"] = arguments[0];
+                r["executable-path"] = arguments[0];
 
             } else if (starts_with(argument, "--"s)) {
                 let i = argument.find('=');
@@ -124,7 +124,7 @@ public:
                         error_messages.push_back(fmt::format("Option '{}' requires an argument", option_name));
 
                     } else {
-                        configuration[option_name] = true;
+                        r[option_name] = true;
                     }
 
                 } else {
@@ -142,9 +142,9 @@ public:
                         switch (option->type) {
                         case datum_type_t::Boolean:
                             if (option_value_string == "true") {
-                                configuration[option_name] = true;
+                                r[option_name] = true;
                             } else if (option_value_string == "false") {
-                                configuration[option_name] = false;
+                                r[option_name] = false;
                             } else {
                                 error_messages.push_back(
                                     fmt::format("Expected a boolean value ('true' or 'false') for option '{}' got '{}'", option_name, option_value_string)
@@ -156,7 +156,7 @@ public:
                             if (option->enum_conversion) {
                                 let option_value_int = option->enum_conversion(option_value_string);
                                 if (option_value_int >= 0) {
-                                    configuration[option_name] = option_value_int;
+                                    r[option_name] = option_value_int;
                                 } else {
                                     error_messages.push_back(
                                         fmt::format("Unknown value '{}' for option '{}'", option_value_string, option_name)
@@ -166,7 +166,7 @@ public:
                             } else {
                                 try {
                                     let option_value_int = std::stoll(option_value_string);
-                                    configuration[option_name] = option_value_int;
+                                    r[option_name] = option_value_int;
                                 } catch (...) {
                                     error_messages.push_back(
                                         fmt::format("Expected a integer value for option '{}' got '{}'", option_name, option_value_string)
@@ -176,15 +176,15 @@ public:
                             break;
 
                         case datum_type_t::String:
-                            configuration[option_name] = option_value_string;
+                            r[option_name] = option_value_string;
                             break;
 
                         case datum_type_t::Vector:
-                            configuration[option_name].push_back(datum{option_value_string});
+                            r[option_name].push_back(datum{option_value_string});
                             break;
 
                         case datum_type_t::URL:
-                            configuration[option_name] = URL::urlFromCurrentWorkingDirectory().urlByAppendingPath(option_value_string);
+                            r[option_name] = URL::urlFromCurrentWorkingDirectory().urlByAppendingPath(option_value_string);
                             break; 
 
                         default:
@@ -194,10 +194,10 @@ public:
                 }
 
             } else {
-                configuration["arguments"].push_back(argument);
+                r["arguments"].push_back(argument);
             }
         }
-        return configuration;
+        return r;
     }
 };
 

@@ -364,7 +364,10 @@ std::vector<std::pair<uint32_t, uint8_t>> Device_vulkan::findBestQueueFamilyIndi
     uint8_t totalCapabilities = 0;
     for (let &[index, capabilities, score] : queueFamilieScores) {
         if ((totalCapabilities & capabilities) != capabilities) {
-            queueFamilyIndicesAndQueueCapabilitiess.push_back({ index, capabilities & ~totalCapabilities });
+            queueFamilyIndicesAndQueueCapabilitiess.emplace_back(
+                index,
+                static_cast<uint8_t>(capabilities & ~totalCapabilities)
+            );
             totalCapabilities |= capabilities;
         }
     }

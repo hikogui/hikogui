@@ -63,8 +63,6 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
     context.drawBoxIncludeBorder(rectangle);
 
-    let textRectangle = shrink(rectangle, Theme::margin);
-
     auto textTranslate = shapedText.T(textRectangle);
     context.transform = context.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
@@ -155,7 +153,6 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     }
 
     if (event.type == GUI::MouseEvent::Type::ButtonDown && event.cause.leftButton) {
-        auto textRectangle = expand(rectangle, -5.0f);
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 
@@ -172,7 +169,6 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         forceLayout = true;
 
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
-        auto textRectangle = expand(rectangle, -5.0f);
         if (textRectangle.contains(event.position)) {
             let textPosition = event.position - textRectangle.offset();
 

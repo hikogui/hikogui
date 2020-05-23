@@ -365,9 +365,9 @@ struct HHEATable {
     big_uint16_buf_t numberOfHMetrics;
 };
 
-void TrueTypeFont::parseHheaTable(gsl::span<std::byte const> bytes)
+void TrueTypeFont::parseHheaTable(gsl::span<std::byte const> table_bytes)
 {
-    let table = make_placement_ptr<HHEATable>(bytes);
+    let table = make_placement_ptr<HHEATable>(table_bytes);
 
     parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0);
     ascender = table->ascender.value(unitsPerEm);
@@ -397,9 +397,9 @@ struct HEADTable {
     big_int16_buf_t glyphDataFormat;
 };
 
-void TrueTypeFont::parseHeadTable(gsl::span<std::byte const> bytes)
+void TrueTypeFont::parseHeadTable(gsl::span<std::byte const> table_bytes)
 {
-    let table = make_placement_ptr<HEADTable>(bytes);
+    let table = make_placement_ptr<HEADTable>(table_bytes);
 
     parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0);
     parse_assert(table->magicNumber.value() == 0x5f0f3cf5);
@@ -473,16 +473,16 @@ static std::optional<std::string> getStringFromNameTable(gsl::span<std::byte con
     return {};
 }
 
-void TrueTypeFont::parseNameTable(gsl::span<std::byte const> bytes)
+void TrueTypeFont::parseNameTable(gsl::span<std::byte const> table_bytes)
 {
     size_t offset = 0;
 
-    let table = make_placement_ptr<NAMETable>(bytes, offset);
+    let table = make_placement_ptr<NAMETable>(table_bytes, offset);
     parse_assert(table->format.value() == 0 || table->format.value() == 1);
     size_t storageAreaOffset = table->stringOffset.value();
 
     uint16_t numRecords = table->count.value();
-    let records = make_placement_array<NAMERecord>(bytes, offset, numRecords);
+    let records = make_placement_array<NAMERecord>(table_bytes, offset, numRecords);
 
     bool familyIsTypographic = false;
     bool subFamilyIsTypographic = false;
@@ -497,7 +497,7 @@ void TrueTypeFont::parseNameTable(gsl::span<std::byte const> bytes)
         switch (record.nameID.value()) {
         case 1: { // Font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
             if (!familyIsTypographic) {
-                auto s = getStringFromNameTable(bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+                auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
                     description.family_name = std::move(*s);
                 }
@@ -506,7 +506,7 @@ void TrueTypeFont::parseNameTable(gsl::span<std::byte const> bytes)
 
         case 2: { // Font sub-family. (Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
             if (!subFamilyIsTypographic) {
-                auto s = getStringFromNameTable(bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+                auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
                 if (s) {
                     description.sub_family_name = std::move(*s);
                 }
@@ -514,7 +514,7 @@ void TrueTypeFont::parseNameTable(gsl::span<std::byte const> bytes)
             } break;
 
         case 16: { // Typographic family.
-            auto s = getStringFromNameTable(bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+            auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
                 description.family_name = std::move(*s);
                 familyIsTypographic = true;
@@ -522,7 +522,7 @@ void TrueTypeFont::parseNameTable(gsl::span<std::byte const> bytes)
             } break;
 
         case 17: { // Typographic sub-family.
-            auto s = getStringFromNameTable(bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
+            auto s = getStringFromNameTable(table_bytes, nameOffset, nameLengthInBytes, platformID, platformSpecificID, languageID);
             if (s) {
                 description.sub_family_name = std::move(*s);
                 subFamilyIsTypographic = true;
@@ -622,9 +622,9 @@ struct OS2Table0 {
     //big_uint16_buf_t usWinDescent;
 };
 
-void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> bytes)
+void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> table_bytes)
 {
-    let table = make_placement_ptr<OS2Table0>(bytes);
+    let table = make_placement_ptr<OS2Table0>(table_bytes);
     let version = table->version.value();
     parse_assert(version <= 5);
 
@@ -688,10 +688,10 @@ void TrueTypeFont::parseOS2Table(gsl::span<std::byte const> bytes)
     description.unicode_ranges.value[3] = table->ulUnicodeRange4.value();
 
     if (version >= 2) {
-        let table = make_placement_ptr<OS2Table2>(bytes);
+        let table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
 
-        OS2_xHeight = table->sxHeight.value();
-        OS2_HHeight = table->sCapHeight.value();
+        OS2_xHeight = table_v2->sxHeight.value();
+        OS2_HHeight = table_v2->sCapHeight.value();
     }
 }
 
@@ -718,10 +718,10 @@ struct MAXPTable10 {
     big_uint16_buf_t maxComponentDepth;
 };
 
-void TrueTypeFont::parseMaxpTable(gsl::span<std::byte const> bytes)
+void TrueTypeFont::parseMaxpTable(gsl::span<std::byte const> table_bytes)
 {
-    parse_assert(sizeof(MAXPTable05) <= bytes.size());
-    let table = make_placement_ptr<MAXPTable05>(bytes);
+    parse_assert(sizeof(MAXPTable05) <= table_bytes.size());
+    let table = make_placement_ptr<MAXPTable05>(table_bytes);
 
     let version = table->version.value();
     parse_assert(version == 0x00010000 || version == 0x00005000);
@@ -729,7 +729,7 @@ void TrueTypeFont::parseMaxpTable(gsl::span<std::byte const> bytes)
     numGlyphs = table->numGlyphs.value();
 }
 
-bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, gsl::span<std::byte const> &bytes) const noexcept
+bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, gsl::span<std::byte const> &glyph_bytes) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
@@ -754,7 +754,7 @@ bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, gsl::span<std::byte const> &b
     let size = endOffset - startOffset;
 
     assert_or_return(endOffset <= static_cast<size_t>(glyfTableBytes.size()), false);
-    bytes = glyfTableBytes.subspan(startOffset, size);
+    glyph_bytes = glyfTableBytes.subspan(startOffset, size);
     return true;
 }
 
@@ -948,18 +948,18 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph) const noexcept
+bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> glyph_bytes, Path &glyph) const noexcept
 {
     size_t offset = 0;
 
-    assert_or_return(check_placement_ptr<GLYFEntry>(bytes, offset), false);
-    let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes, offset);
+    assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes, offset), false);
+    let entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
 
     let numberOfContours = static_cast<size_t>(entry->numberOfContours.value());
 
     // Check includes instructionLength.
-    assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, numberOfContours), false);
-    let endPoints = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, numberOfContours);
+    assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours), false);
+    let endPoints = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
 
     for (let endPoint: endPoints) {
         glyph.contourEndPoints.push_back(endPoint.value());
@@ -968,21 +968,21 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     let numberOfPoints = endPoints[numberOfContours - 1].value() + 1;
 
     // Skip over the instructions.
-    assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
-    let instructionLength = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
+    assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
+    let instructionLength = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
     offset += instructionLength * sizeof(uint8_t);
 
     // Extract all the flags.
     std::vector<uint8_t> flags;
     flags.reserve(numberOfPoints);
     while (flags.size() < numberOfPoints) {
-        assert_or_return(check_placement_ptr<uint8_t>(bytes, offset), false);
-        let flag = *unsafe_make_placement_ptr<uint8_t>(bytes, offset);
+        assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
+        let flag = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
         flags.push_back(flag);
         if (flag & FLAG_REPEAT) {
-            assert_or_return(check_placement_ptr<uint8_t>(bytes, offset), false);
-            let repeat = *unsafe_make_placement_ptr<uint8_t>(bytes, offset);
+            assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
+            let repeat = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
             for (size_t i = 0; i < repeat; i++) {
                 flags.push_back(flag);
@@ -996,7 +996,7 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
             ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
             ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
     });
-    assert_or_return(offset + point_table_size <= static_cast<size_t>(bytes.size()), false);
+    assert_or_return(offset + point_table_size <= static_cast<size_t>(glyph_bytes.size()), false);
 
     // Get xCoordinates
     std::vector<int16_t> xCoordinates;
@@ -1004,17 +1004,17 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     for (let flag: flags) {
         if ((flag & FLAG_X_SHORT) > 0) {
             if ((flag & FLAG_X_SAME) > 0) {
-                xCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(bytes, offset)));
+                xCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
             } else {
                 // Negative short.
-                xCoordinates.push_back(-static_cast<int16_t>(*make_placement_ptr<uint8_t>(bytes, offset)));
+                xCoordinates.push_back(-static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
             }
         } else {
             if ((flag & FLAG_X_SAME) > 0) {
                 xCoordinates.push_back(0);
             } else {
                 // Long
-                xCoordinates.push_back(make_placement_ptr<big_int16_buf_t>(bytes, offset)->value());
+                xCoordinates.push_back(make_placement_ptr<big_int16_buf_t>(glyph_bytes, offset)->value());
             }
         }
     }
@@ -1025,17 +1025,17 @@ bool TrueTypeFont::loadSimpleGlyph(gsl::span<std::byte const> bytes, Path &glyph
     for (let flag: flags) {
         if ((flag & FLAG_Y_SHORT) > 0) {
             if ((flag & FLAG_Y_SAME) > 0) {
-                yCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(bytes, offset)));
+                yCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
             } else {
                 // Negative short.
-                yCoordinates.push_back(-static_cast<int16_t>(*make_placement_ptr<uint8_t>(bytes, offset)));
+                yCoordinates.push_back(-static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
             }
         } else {
             if ((flag & FLAG_Y_SAME) > 0) {
                 yCoordinates.push_back(0);
             } else {
                 // Long
-                yCoordinates.push_back(make_placement_ptr<big_int16_buf_t>(bytes, offset)->value());
+                yCoordinates.push_back(make_placement_ptr<big_int16_buf_t>(glyph_bytes, offset)->value());
             }
         }
     }
@@ -1077,17 +1077,17 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept
+bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> glyph_bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept
 {
     size_t offset = sizeof(GLYFEntry);
 
     uint16_t flags;
     do {
-        assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
-        flags = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
+        assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
+        flags = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
-        assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
-        let subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
+        assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
+        let subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
         Path subGlyph;
         assert_or_return(loadGlyph(GlyphID{subGlyphIndex}, subGlyph), false);
@@ -1095,25 +1095,25 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         auto subGlyphOffset = vec{0.0, 0.0};
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                assert_or_return(check_placement_array<FWord_buf_t>(bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<FWord_buf_t>(bytes, offset, 2);
+                assert_or_return(check_placement_array<FWord_buf_t>(glyph_bytes, offset, 2), false);
+                let tmp = unsafe_make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             } else {
-                assert_or_return(check_placement_array<FByte_buf_t>(bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<FByte_buf_t>(bytes, offset, 2);
+                assert_or_return(check_placement_array<FByte_buf_t>(glyph_bytes, offset, 2), false);
+                let tmp = unsafe_make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
             size_t pointNr1;
             size_t pointNr2;
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
-                assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, 2);
+                assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2), false);
+                let tmp = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
                 pointNr1 = tmp[0].value();
                 pointNr2 = tmp[1].value();
             } else {
-                assert_or_return(check_placement_array<uint8_t>(bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<uint8_t>(bytes, offset, 2);
+                assert_or_return(check_placement_array<uint8_t>(glyph_bytes, offset, 2), false);
+                let tmp = unsafe_make_placement_array<uint8_t>(glyph_bytes, offset, 2);
                 pointNr1 = tmp[0];
                 pointNr2 = tmp[1];
             }
@@ -1125,23 +1125,23 @@ bool TrueTypeFont::loadCompoundGlyph(gsl::span<std::byte const> bytes, Path &gly
         // Start with an identity matrix.
         auto subGlyphScale = mat::I();
         if (flags & FLAG_WE_HAVE_A_SCALE) {
-            assert_or_return(check_placement_ptr<shortFrac_buf_t>(bytes, offset), false);
+            assert_or_return(check_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset), false);
             subGlyphScale = mat::S(
-                unsafe_make_placement_ptr<shortFrac_buf_t>(bytes, offset)->value(),
-                unsafe_make_placement_ptr<shortFrac_buf_t>(bytes, offset)->value()
+                unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value(),
+                unsafe_make_placement_ptr<shortFrac_buf_t>(glyph_bytes, offset)->value()
             );
 
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
-            assert_or_return(check_placement_array<shortFrac_buf_t>(bytes, offset, 2), false);
-            let tmp = unsafe_make_placement_array<shortFrac_buf_t>(bytes, offset, 2);
+            assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2), false);
+            let tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
             subGlyphScale = mat::S(
                 tmp[0].value(),
                 tmp[1].value()
             );
 
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
-            assert_or_return(check_placement_array<shortFrac_buf_t>(bytes, offset, 4), false);
-            let tmp = unsafe_make_placement_array<shortFrac_buf_t>(bytes, offset, 4);
+            assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4), false);
+            let tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
             not_implemented;
             //subGlyphScale = mat::S(
             //    tmp[0].value(),
@@ -1172,20 +1172,20 @@ std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) co
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 
-    gsl::span<std::byte const> bytes;
-    assert_or_return(getGlyphBytes(glyph_id, bytes), {});
+    gsl::span<std::byte const> glyph_bytes;
+    assert_or_return(getGlyphBytes(glyph_id, glyph_bytes), {});
 
     auto metrics_glyph_id = glyph_id;
 
-    if (bytes.size() > 0) {
-        assert_or_return(check_placement_ptr<GLYFEntry>(bytes), {});
-        let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
+    if (glyph_bytes.size() > 0) {
+        assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), {});
+        let entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
         let numberOfContours = entry->numberOfContours.value();
 
         if (numberOfContours > 0) {
-            assert_or_return(loadSimpleGlyph(bytes, glyph), {});
+            assert_or_return(loadSimpleGlyph(glyph_bytes, glyph), {});
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundGlyph(bytes, glyph, metrics_glyph_id), {});
+            assert_or_return(loadCompoundGlyph(glyph_bytes, glyph, metrics_glyph_id), {});
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1245,14 +1245,14 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
-    gsl::span<std::byte const> bytes;
-    assert_or_return(getGlyphBytes(glyph_id, bytes), false);
+    gsl::span<std::byte const> glyph_bytes;
+    assert_or_return(getGlyphBytes(glyph_id, glyph_bytes), false);
 
     auto metricsGlyphIndex = glyph_id;
 
-    if (bytes.size() > 0) {
-        assert_or_return(check_placement_ptr<GLYFEntry>(bytes), false);
-        let entry = unsafe_make_placement_ptr<GLYFEntry>(bytes);
+    if (glyph_bytes.size() > 0) {
+        assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), false);
+        let entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
         let numberOfContours = entry->numberOfContours.value();
 
         let xyMin = vec::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
@@ -1262,7 +1262,7 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.
         } else if (numberOfContours < 0) {
-            assert_or_return(loadCompoundGlyphMetrics(bytes, metricsGlyphIndex), false);
+            assert_or_return(loadCompoundGlyphMetrics(glyph_bytes, metricsGlyphIndex), false);
         } else {
             // Empty glyph, such as white-space ' '.
         }
@@ -1292,22 +1292,19 @@ struct SFNTEntry {
 void TrueTypeFont::parseFontDirectory()
 {
     size_t offset = 0;
-    let header = make_placement_ptr<SFNTHeader>(bytes, offset);
+    let header = make_placement_ptr<SFNTHeader>(file_bytes, offset);
 
     if (!(header->scalerType.value() == fourcc("true") || header->scalerType.value() == 0x00010000)) {
         TTAURI_THROW(parse_error("sfnt.scalerType is not 'true' or 0x00010000"));
     }
 
-    let entries = make_placement_array<SFNTEntry>(bytes, offset, header->numTables.value());
+    let entries = make_placement_array<SFNTEntry>(file_bytes, offset, header->numTables.value());
     for (let &entry: entries) {
-        int64_t offset = entry.offset.value();
-        int64_t length = entry.length.value();
-
-        if (offset + length > ssize(bytes)) {
+        if ((entry.offset.value() + entry.length.value()) > ssize(file_bytes)) {
             TTAURI_THROW(parse_error("sfnt table-entry is out of range"));
         }
 
-        let tableBytes = bytes.subspan(entry.offset.value(), entry.length.value());
+        let tableBytes = file_bytes.subspan(entry.offset.value(), entry.length.value());
         switch (entry.tag.value()) {
         case fourcc("cmap"):
             cmapTableBytes = tableBytes;

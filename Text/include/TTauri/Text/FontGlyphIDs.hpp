@@ -243,17 +243,8 @@ public:
                 return lhs.value == rhs.value;
             }
         } else {
+            ttauri_assume(lhs.size() != rhs.size());
             return false;
-        }
-
-        if (lhs.has_pointer() || rhs.has_pointer()) {
-            if (lhs.size() != rhs.size()) {
-                return false;
-            } else {
-                // At this point, both are pointers
-            }
-        } else {
-            return lhs.value == rhs.value;
         }
     }
 };
