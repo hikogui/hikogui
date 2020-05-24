@@ -31,7 +31,7 @@ void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     let label_height = rectangle.height();
     let label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
-    labelShapedText = ShapedText(label, theme->warningLabelStyle, Alignment::MiddleCenter, label_width + 1.0f);
+    labelShapedText = ShapedText(label, theme->warningLabelStyle, label_width + 1.0f, Alignment::MiddleCenter);
     textTranslate = labelShapedText.T(label_rectangle);
 
     setMinimumExtent(vec{Theme::width, labelShapedText.boundingBox.height() + Theme::margin * 2.0f});

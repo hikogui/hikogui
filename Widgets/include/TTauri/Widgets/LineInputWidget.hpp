@@ -19,11 +19,16 @@ protected:
 
     Text::EditableText field;
     Text::ShapedText shapedText;
-
     aarect textRectangle = {};
+    aarect textClippingRectangle = {};
     aarect leftToRightCaret = {};
     aarect partialGraphemeCaret = {};
     std::vector<aarect> selectionRectangles = {};
+
+    float textScrollX = 0.0f;
+
+    mat::T2 textTranslate;
+    mat::T2 textInvTranslate;
 
     static constexpr hires_utc_clock::duration blinkInterval = 500ms;
     hires_utc_clock::time_point nextRedrawTimePoint;

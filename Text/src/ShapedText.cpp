@@ -137,7 +137,7 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
     return size;
 }
 
-static aarect calculate_bounding_box(std::vector<AttributedGlyphLine> &lines, float width) noexcept
+[[nodiscard]] static aarect calculate_bounding_box(std::vector<AttributedGlyphLine> const &lines, float width) noexcept
 {
     let min_y = lines.back().y - lines.back().descender;
     let max_y = lines.front().y + lines.front().ascender;
@@ -148,7 +148,7 @@ static aarect calculate_bounding_box(std::vector<AttributedGlyphLine> &lines, fl
     };
 }
 
-static float position_x(Alignment alignment, float line_width, float width) noexcept
+[[nodiscard]] static float position_x(Alignment alignment, float line_width, float width) noexcept
 {
     if (alignment == HorizontalAlignment::Left) {
         return 0.0f;
@@ -280,8 +280,9 @@ struct shape_text_result {
 */
 [[nodiscard]] static shape_text_result shape_text(
     std::vector<AttributedGrapheme> text,
+    float width,
     Alignment alignment,
-    float width=std::numeric_limits<float>::max()) noexcept
+    float wrap) noexcept
 {
     std::vector<AttributedGlyph> attributed_glyphs;
 
@@ -306,7 +307,9 @@ struct shape_text_result {
     // Calculate actual size of the box, no smaller than the minimum_size.
     let prefered_extent = calculate_text_size(lines);
 
-    wrap_lines(lines, width);
+    if (wrap) {
+        wrap_lines(lines, width);
+    }
 
     // Morph attributed-glyphs using the Font's morph algorithm.
     //morph_glyphs(glyphs);
@@ -315,6 +318,7 @@ struct shape_text_result {
     position_glyphs(lines, alignment, width);
 
     let bounding_box = calculate_bounding_box(lines, width);
+
 
     return {
         capHeight,
@@ -326,10 +330,15 @@ struct shape_text_result {
 }
 
 
-ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, Alignment alignment, float width) noexcept :
+ShapedText::ShapedText(
+    std::vector<AttributedGrapheme> const &text,
+    float width,
+    Alignment alignment,
+    bool wrap
+) noexcept :
     alignment(alignment)
 {
-    auto result = shape_text(text, alignment, width);
+    auto result = shape_text(text, width, alignment, wrap);
     capHeight = result.capHeight;
     xHeight = result.xHeight;
     preferedExtent = result.preferedExtent;
@@ -337,11 +346,23 @@ ShapedText::ShapedText(std::vector<AttributedGrapheme> const &text, Alignment al
     lines = std::move(result.lines);
 }
 
-ShapedText::ShapedText(gstring const &text, TextStyle const &style, Alignment alignment, float width) noexcept :
-    ShapedText(makeAttributedGraphemeVector(text, style), alignment, width) {}
+ShapedText::ShapedText(
+    gstring const &text,
+    TextStyle const &style,
+    float width,
+    Alignment alignment,
+    bool wrap)
+noexcept :
+    ShapedText(makeAttributedGraphemeVector(text, style), width, alignment, wrap) {}
 
-ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignment alignment, float width) noexcept :
-    ShapedText(to_gstring(text), style, alignment, width) {}
+ShapedText::ShapedText(
+    std::string const &text,
+    TextStyle const &style,
+    float width,
+    Alignment alignment,
+    bool wrap
+) noexcept :
+    ShapedText(to_gstring(text), style, width, alignment, wrap) {}
 
 
 [[nodiscard]] ShapedText::const_iterator ShapedText::find(ssize_t index) const noexcept
@@ -461,6 +482,38 @@ ShapedText::ShapedText(std::string const &text, TextStyle const &style, Alignmen
         ++i;
         return i->logicalIndex;
     }
+}
+
+/** Return the index at the left side of a word
+*/
+[[nodiscard]] std::pair<ssize_t,ssize_t> ShapedText::indicesOfParagraph(ssize_t logicalIndex) const noexcept
+{
+    auto i = find(logicalIndex);
+
+    auto beginOfParagraph = i;
+    while (true) {
+        if (beginOfParagraph == cbegin()) {
+            break;
+        }
+
+        if ((beginOfParagraph - 1)->isParagraphSeparator()) {
+            break;
+        }
+        --beginOfParagraph;
+    }
+
+    auto endOfParagraph = i;
+    while (true) {
+        if (endOfParagraph->isParagraphSeparator()) {
+            break;
+        }
+        ++endOfParagraph;
+        ttauri_assume(endOfParagraph != cend());
+    }
+
+    ttauri_assume(beginOfParagraph != endOfParagraph);
+    auto lastCharacter = endOfParagraph - 1;
+    return {beginOfParagraph->logicalIndex, lastCharacter->logicalIndex + lastCharacter->graphemeCount};
 }
 
 /** Return the index at the left side of a word

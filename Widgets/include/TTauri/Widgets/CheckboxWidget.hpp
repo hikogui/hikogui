@@ -72,7 +72,7 @@ public:
 
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, Alignment::MiddleLeft, label_width);
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_width, Alignment::MiddleLeft);
         label_translate = labelShapedText.T(label_rectangle);
 
         let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);

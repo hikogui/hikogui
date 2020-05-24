@@ -34,7 +34,7 @@ void ImageWidget::drawBackingImage() noexcept
     loadPNG(linearMap, path);
 
     let text_style = TextStyle("Arial", FontVariant{}, 8, vec{ 0.5f, 1.0f, 0.5f, 1.0f }, TextDecoration{});
-    let shaped_text = ShapedText("g", text_style);
+    let shaped_text = ShapedText("g", text_style, 20.0f);
     let glyph = shaped_text.get_path();
 
     // Draw something.

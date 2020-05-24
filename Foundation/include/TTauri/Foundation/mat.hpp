@@ -81,6 +81,12 @@ public:
                 lhs.s * rhs.corner<3>()
             };
         }
+
+        /** Invert matrix.
+        */
+        [[nodiscard]] friend S operator~(S const &rhs) noexcept {
+            return S{vec{_mm_rcp_ps(rhs.s)}};
+        }
     };
 
     /** Optimized translate matrix.
@@ -154,12 +160,20 @@ public:
                 lhs.t + rhs.corner<3>()
             };
         }
+
+        /** Invert matrix.
+        */
+        [[nodiscard]] friend T operator~(T const &rhs) noexcept {
+            return T{-rhs.t};
+        }
     };
 
     /** Optimized 2D translate matrix.
     */
     struct T2 {
         vec t;
+
+        T2() noexcept : t() {}
 
         explicit T2(vec rhs) noexcept : t(rhs) {
             ttauri_assume(rhs.is_vector());
@@ -227,6 +241,12 @@ public:
                 lhs.t + rhs.corner<2>(),
                 lhs.t + rhs.corner<3>()
             };
+        }
+
+        /** Invert matrix.
+        */
+        [[nodiscard]] friend T2 operator~(T2 const &rhs) noexcept {
+            return T2{-rhs.t};
         }
     };
 
@@ -323,6 +343,12 @@ public:
     */
     [[nodiscard]] friend mat operator*(T const &lhs, mat const &rhs) noexcept {
         return {rhs.col0, rhs.col1, rhs.col2, lhs.t + rhs.col3};
+    }
+
+    /** Invert matrix.
+     */
+    [[nodiscard]] friend mat operator~(mat const &rhs) noexcept {
+        not_implemented;
     }
 
     [[nodiscard]] friend bool operator==(mat const &lhs, mat const &rhs) noexcept {

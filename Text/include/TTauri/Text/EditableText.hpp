@@ -15,7 +15,10 @@ class EditableText {
     std::vector<AttributedGrapheme> text;
     ShapedText _shapedText;
 
-    vec extent;
+    /** The maximum width when wrapping text.
+     * For single line text editing, we should never wrap.
+     */
+    float width = 0.0f;
 
     /** Insert-mode vs overwrite-mode.
      */
@@ -38,25 +41,32 @@ class EditableText {
 
 public:
     EditableText(TextStyle style) :
-        text(), _shapedText(), extent(0.0, 0.0), cursorIndex(0), selectionIndex(0), currentStyle(style)
+        text(), _shapedText(), currentStyle(style)
     {
-        // Make sure there is an end-paragraph marker in the text.
-        // This allows the shapedText to figure out the style of the text of an empty paragraph.
-        text.emplace_back(Grapheme('\n'), style, 0);
     }
 
     /** Update the shaped text after changed to text.
      */
     void updateShapedText() noexcept {
-        _shapedText = ShapedText(text, Alignment::TopLeft, extent.width());
+        auto text_ = text;
+
+        // Make sure there is an end-paragraph marker in the text.
+        // This allows the shapedText to figure out the style of the text of an empty paragraph.
+        if (ssize(text) == 0) {
+            text_.emplace_back(Grapheme('\n'), currentStyle, 0);
+        } else {
+            text_.emplace_back(Grapheme('\n'), text_.back().style, 0);
+        }
+
+        _shapedText = ShapedText(text_, width, Alignment::TopLeft, false);
     }
 
     [[nodiscard]] ShapedText shapedText() const noexcept {
         return _shapedText;
     }
 
-    void setExtent(vec _extent) noexcept {
-        extent = _extent;
+    void setWidth(float _width) noexcept {
+        width = _width;
         updateShapedText();
     }
 
@@ -92,8 +102,8 @@ public:
     */
     decltype(auto) cit(ssize_t index) const noexcept {
         ttauri_assume(index >= 0);
-        // Index should never be at text.cend();
-        ttauri_assume(index < ssize(text));
+        // Index should never be beyond text.cend();
+        ttauri_assume(index <= ssize(text));
 
         return text.cbegin() + index;
     }
@@ -154,19 +164,36 @@ public:
     void setCursorAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             selectionIndex = cursorIndex = *newCursorPosition;
+            ttauri_assume(selectionIndex >= 0);
+            ttauri_assume(selectionIndex <= ssize(text));
         }
     }
 
     void selectWordAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
+            ttauri_assume(selectionIndex >= 0);
+            ttauri_assume(selectionIndex <= ssize(text));
+            ttauri_assume(cursorIndex >= 0);
+            ttauri_assume(cursorIndex <= ssize(text));
         }
     }
 
+    void selectParagraphAtCoordinate(vec coordinate) noexcept {
+        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newCursorPosition);
+            ttauri_assume(selectionIndex >= 0);
+            ttauri_assume(selectionIndex <= ssize(text));
+            ttauri_assume(cursorIndex >= 0);
+            ttauri_assume(cursorIndex <= ssize(text));
+        }
+    }
 
     void dragCursorAtCoordinate(vec coordinate) noexcept {
         if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newCursorPosition;
+            ttauri_assume(cursorIndex >= 0);
+            ttauri_assume(cursorIndex <= ssize(text));
         }
     }
 
@@ -191,6 +218,40 @@ public:
                     cursorIndex = a;
                 }
             }
+
+            ttauri_assume(selectionIndex >= 0);
+            ttauri_assume(selectionIndex <= ssize(text));
+            ttauri_assume(cursorIndex >= 0);
+            ttauri_assume(cursorIndex <= ssize(text));
+        }
+    }
+
+    void dragParagraphAtCoordinate(vec coordinate) noexcept {
+        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            let [a, b] = _shapedText.indicesOfParagraph(*newCursorPosition);
+
+            if (selectionIndex <= cursorIndex) {
+                if (a < selectionIndex) {
+                    // Reverse selection
+                    selectionIndex = cursorIndex;
+                    cursorIndex = a;
+                } else {
+                    cursorIndex = b;
+                }
+            } else {
+                if (b > selectionIndex) {
+                    // Reverse selection
+                    selectionIndex = cursorIndex;
+                    cursorIndex = b;
+                } else {
+                    cursorIndex = a;
+                }
+            }
+
+            ttauri_assume(selectionIndex >= 0);
+            ttauri_assume(selectionIndex <= ssize(text));
+            ttauri_assume(cursorIndex >= 0);
+            ttauri_assume(cursorIndex <= ssize(text));
         }
     }
 
@@ -199,8 +260,14 @@ public:
             ttauri_assume(cursorIndex >= 1);
 
             selectionIndex = --cursorIndex;
+            ttauri_assume(selectionIndex >= 0);
+            ttauri_assume(selectionIndex <= ssize(text));
+            ttauri_assume(cursorIndex >= 0);
+            ttauri_assume(cursorIndex <= ssize(text));
+
             text.erase(cit(cursorIndex));
             hasPartialGrapheme = false;
+
             updateShapedText();
         }
     }
@@ -216,6 +283,11 @@ public:
 
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
+        ttauri_assume(selectionIndex >= 0);
+        ttauri_assume(selectionIndex <= ssize(text));
+        ttauri_assume(cursorIndex >= 0);
+        ttauri_assume(cursorIndex <= ssize(text));
+
         hasPartialGrapheme = true;
         updateShapedText();
     }
@@ -232,6 +304,11 @@ public:
         }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
+        ttauri_assume(selectionIndex >= 0);
+        ttauri_assume(selectionIndex <= ssize(text));
+        ttauri_assume(cursorIndex >= 0);
+        ttauri_assume(cursorIndex <= ssize(text));
+
         updateShapedText();
     }
 
@@ -249,6 +326,11 @@ public:
 
         text.insert(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
         selectionIndex = cursorIndex += ssize(str_attr);
+        ttauri_assume(selectionIndex >= 0);
+        ttauri_assume(selectionIndex <= ssize(text));
+        ttauri_assume(cursorIndex >= 0);
+        ttauri_assume(cursorIndex <= ssize(text));
+
         updateShapedText();
     }
 
@@ -351,6 +433,11 @@ public:
                 updateShapedText();
             }
         }
+
+        ttauri_assume(selectionIndex >= 0);
+        ttauri_assume(selectionIndex <= ssize(text));
+        ttauri_assume(cursorIndex >= 0);
+        ttauri_assume(cursorIndex <= ssize(text));
     }
 };
 

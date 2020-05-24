@@ -54,8 +54,10 @@ private:
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
-    int clickCount = 0;
     char32_t high_surrogate = 0;
+    int clickCount = 0;
+    hires_utc_clock::time_point doubleClickTimePoint;
+    hires_utc_clock::duration doubleClickMaximumDuration;
 
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] KeyboardModifiers getKeyboardModifiers() noexcept;

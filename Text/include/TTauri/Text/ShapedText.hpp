@@ -65,14 +65,15 @@ public:
      *  * Center -> middle of the visible text at x=maximum_width/2
      *
      * @param text The text to draw.
-     * @param extent The size of the box to draw in.
      * @param alignment The alignment of the text within the extent.
-     * @param wrap When fitting the text in the extent wrap lines when needed.
+     * @param width The width into which the text is horizontally aligned.
+     * @param wrap True when text should be wrapped to fit inside the given width.
      */
     ShapedText(
         std::vector<AttributedGrapheme> const &text,
+        float width,
         Alignment const alignment=Alignment::MiddleCenter,
-        float width=std::numeric_limits<float>::max()
+        bool wrap=true
     ) noexcept;
 
     /** Create shaped text from a string.
@@ -87,8 +88,9 @@ public:
     ShapedText(
         gstring const &text,
         TextStyle const &style,
+        float width,
         Alignment const alignment=Alignment::MiddleCenter,
-        float width=std::numeric_limits<float>::max()
+        bool wrap=true
     ) noexcept;
 
     /** Create shaped text from a string.
@@ -103,8 +105,9 @@ public:
     ShapedText(
         std::string const &text,
         TextStyle const &style,
+        float width,
         Alignment const alignment=Alignment::MiddleCenter,
-        float width=std::numeric_limits<float>::max()
+        bool wrap=true
     ) noexcept;
 
     [[nodiscard]] size_t size() const noexcept {
@@ -140,12 +143,13 @@ public:
     *                  The width is ignored and assumed to be the same as the width
     *                  passed during text shaping.
     */
-    mat::T T(aarect rectangle) noexcept {
+    mat::T2 T(aarect rectangle) noexcept {
         return {
             rectangle.x(),
             rectangle.y() + baselineOffset(rectangle.height())
         };
     }
+
 
     /** Find a glyph that corresponds to position.
      */
@@ -197,9 +201,13 @@ public:
     */
     [[nodiscard]] std::optional<ssize_t> indexOfCharOnTheRight(ssize_t logicalIndex) const noexcept;
 
-    /** Return the index at the left side of a word
+    /** Return the index at the left side and right side of a word
      */
     [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfWord(ssize_t logicalIndex) const noexcept;
+
+    /** Return the index at the left side and right side of a paragraph
+    */
+    [[nodiscard]] std::pair<ssize_t,ssize_t> indicesOfParagraph(ssize_t logicalIndex) const noexcept;
 
     /** Return the index at the left side of a word
     */

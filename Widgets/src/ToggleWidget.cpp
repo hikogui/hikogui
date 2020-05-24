@@ -37,7 +37,7 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     label_height = rectangle.height();
     label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
-    labelShapedText = ShapedText(label, theme->labelStyle, Alignment::MiddleLeft, label_width);
+    labelShapedText = ShapedText(label, theme->labelStyle, label_width, Alignment::MiddleLeft);
     label_translate = labelShapedText.T(label_rectangle);
 }
 

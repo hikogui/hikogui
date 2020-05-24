@@ -139,6 +139,8 @@ Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> d
     Window_vulkan(move(delegate), title),
     trackMouseLeaveEventParameters()
 {
+    doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
+    LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 }
 
 Window_vulkan_win32::~Window_vulkan_win32()
@@ -539,64 +541,79 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_LBUTTONDOWN:
-        clickCount = 1;
+        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.leftButton = true;
         goto parseMouseEvent;
+
     case WM_LBUTTONUP:
         clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.leftButton = true;
         goto parseMouseEvent;
+
     case WM_LBUTTONDBLCLK:
         clickCount = 2;
+        doubleClickTimePoint = cpu_utc_clock::now();
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.leftButton = true;
         goto parseMouseEvent;
+
     case WM_MBUTTONDOWN:
-        clickCount = 1;
+        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.middleButton = true;
         goto parseMouseEvent;
+
     case WM_MBUTTONUP:
         clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.middleButton = true;
         goto parseMouseEvent;
+
     case WM_MBUTTONDBLCLK:
         clickCount = 2;
+        doubleClickTimePoint = cpu_utc_clock::now();
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.middleButton = true;
         goto parseMouseEvent;
+
     case WM_RBUTTONDOWN:
-        clickCount = 1;
+        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.rightButton = true;
         goto parseMouseEvent;
+
     case WM_RBUTTONUP:
         clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.rightButton = true;
         goto parseMouseEvent;
+
     case WM_RBUTTONDBLCLK:
         clickCount = 2;
+        doubleClickTimePoint = cpu_utc_clock::now();
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.rightButton = true;
         goto parseMouseEvent;
+
     case WM_XBUTTONDOWN:
-        clickCount = 1;
+        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         goto parseMouseEvent;
+
     case WM_XBUTTONUP:
         clickCount = 0;
         mouseEvent.type = MouseEvent::Type::ButtonUp;
         mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
         goto parseMouseEvent;
+
     case WM_XBUTTONDBLCLK:
         clickCount = 2;
+        doubleClickTimePoint = cpu_utc_clock::now();
         mouseEvent.type = MouseEvent::Type::ButtonDown;
         mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
         mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
@@ -613,9 +630,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         goto parseMouseEvent;
 
     parseMouseEvent:
+            
+
         // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
         // of the vertical bar. But most applications do not fix this problem.
-
         mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
         mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
         mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
@@ -679,7 +697,10 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         }
         } break;
 
-    case WM_WININICHANGE:
+    case WM_SETTINGCHANGE:
+        doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
+        LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
+
         themeBook->setThemeMode(readOSThemeMode());
         forceLayout = true;
         break;

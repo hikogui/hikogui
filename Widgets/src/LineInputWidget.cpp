@@ -37,19 +37,42 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 
     textRectangle = shrink(rectangle, Theme::margin);
 
+    // Set the clipping rectangle to within the border of the input field.
+    // Add another border width, so glyphs do not touch the border.
+    textClippingRectangle = shrink(windowRectangle, Theme::borderWidth * 2.0f);
+
     field.setStyleOfAll(theme->labelStyle);
 
-    field.setExtent(textRectangle.extent());
     leftToRightCaret = field.leftToRightCaret();
     partialGraphemeCaret = field.partialGraphemeCaret();
     selectionRectangles = field.selectionRectangles();
 
     if (ssize(field) == 0) {
-        shapedText = ShapedText(label, theme->placeholderLabelStyle, Alignment::TopLeft, textRectangle.width());
-
+        shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::TopLeft);
     } else {
+        field.setWidth(textRectangle.width());
         shapedText = field.shapedText();
     }
+
+    let originalTextTranslate = shapedText.T(textRectangle);
+
+    // Scroll the text a quarter width to the left until the cursor is within the width
+    // of the text field
+    while (leftToRightCaret.x() - textScrollX > textRectangle.width()) {
+        textScrollX += textRectangle.width() * 0.25f;
+    }
+
+    // Scroll the text a quarter width to the right until the cursor is within the width
+    // of the text field
+    while (leftToRightCaret.x() - textScrollX < 0.0f) {
+        textScrollX -= textRectangle.width() * 0.25f;
+    }
+    // cap how far we scroll.
+    let maxScrollWidth = std::max(0.0f, shapedText.preferedExtent.width() - textRectangle.width());
+    textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
+
+    textTranslate = mat::T2(-textScrollX, 0.0f) * originalTextTranslate;
+    textInvTranslate = ~textTranslate;
 
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
@@ -63,7 +86,10 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
     context.drawBoxIncludeBorder(rectangle);
 
-    auto textTranslate = shapedText.T(textRectangle);
+    // After drawing the border around the input field make sure any other
+    // drawing remains inside this border.
+    context.clippingRectangle = textClippingRectangle;
+
     context.transform = context.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
     for (let selectionRectangle: selectionRectangles) {
@@ -154,15 +180,17 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
     if (event.type == GUI::MouseEvent::Type::ButtonDown && event.cause.leftButton) {
         if (textRectangle.contains(event.position)) {
-            let textPosition = event.position - textRectangle.offset();
+            let mouseInTextPosition = textInvTranslate * event.position;
 
             if (event.down.shiftKey) {
-                field.dragCursorAtCoordinate(textPosition);
+                field.dragCursorAtCoordinate(mouseInTextPosition);
             } else {
                 if (event.clickCount == 1) {
-                    field.setCursorAtCoordinate(textPosition);
+                    field.setCursorAtCoordinate(mouseInTextPosition);
                 } else if (event.clickCount == 2) {
-                    field.selectWordAtCoordinate(textPosition);
+                    field.selectWordAtCoordinate(mouseInTextPosition);
+                } else if (event.clickCount == 3) {
+                    field.selectParagraphAtCoordinate(mouseInTextPosition);
                 }
             }
         }
@@ -170,12 +198,14 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
     } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
         if (textRectangle.contains(event.position)) {
-            let textPosition = event.position - textRectangle.offset();
+            let mouseInTextPosition = textInvTranslate * event.position;
 
             if (event.clickCount == 1) {
-                field.dragCursorAtCoordinate(textPosition);
+                field.dragCursorAtCoordinate(mouseInTextPosition);
             } else if (event.clickCount == 2) {
-                field.dragWordAtCoordinate(textPosition);
+                field.dragWordAtCoordinate(mouseInTextPosition);
+            } else if (event.clickCount == 3) {
+                field.dragParagraphAtCoordinate(mouseInTextPosition);
             }
         }
         forceLayout = true;

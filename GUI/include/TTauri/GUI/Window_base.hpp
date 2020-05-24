@@ -349,7 +349,7 @@ protected:
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    void handleMouseEvent(MouseEvent const &event) noexcept {
+    void handleMouseEvent(MouseEvent event) noexcept {
         let hitbox = hitBoxTest(event.position);
 
         updateMouseTarget(hitbox.widget);
@@ -361,6 +361,7 @@ protected:
 
         // Send event to target-widget.
         if (mouseTargetWidget != nullptr) {
+            event.position -= mouseTargetWidget->windowRectangle.offset();
             mouseTargetWidget->handleMouseEvent(event);
         }
     }
