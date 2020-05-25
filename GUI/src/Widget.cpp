@@ -53,6 +53,11 @@ void Widget::setMinimumExtent(vec newMinimumExtent) noexcept
     }
 }
 
+void Widget::setMinimumExtent(float width, float height) noexcept
+{
+    setMinimumExtent(vec{width, height});
+}
+
 void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
 {
     if (newPreferedExtent != preferedExtent) {
@@ -72,10 +77,39 @@ void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
     }
 }
 
-void Widget::setMinimumExtent(float width, float height) noexcept
+void Widget::setFixedExtent(vec newFixedExtent) noexcept
 {
-    setMinimumExtent(vec{width, height});
+    ttauri_assert(newFixedExtent.width() == 0.0f || newFixedExtent.width() >= minimumExtent.width());
+    ttauri_assert(newFixedExtent.height() == 0.0f || newFixedExtent.height() >= minimumExtent.height());
+
+    if (newFixedExtent != fixedExtent) {
+        if (fixedExtent.width() != 0.0f) {
+            window.removeConstraint(fixedWidthConstraint);
+        }
+        if (fixedExtent.height() != 0.0f) {
+            window.removeConstraint(fixedHeightConstraint);
+        }
+        fixedExtent = newFixedExtent;
+        if (fixedExtent.width() != 0.0f) {
+            fixedWidthConstraint = window.addConstraint(box.width == fixedExtent.width());
+        }
+        if (fixedExtent.height() != 0.0f) {
+            fixedHeightConstraint = window.addConstraint(box.height == fixedExtent.height());
+        }
+    }
 }
+
+void Widget::setFixedHeight(float height) noexcept
+{
+    setFixedExtent(vec{0.0f, height});
+}
+
+void Widget::setFixedWidth(float width) noexcept
+{
+    setFixedExtent(vec{width, 0.0f});
+}
+
+
 
 void Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
     window.addConstraint(this->box.top + margin == rhs.box.bottom);

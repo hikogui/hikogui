@@ -97,8 +97,18 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] const_iterator find(vec coordinate) const noexcept {
-        if (!contains(coordinate)) {
+        auto bbox = boundingBox();
+
+        if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p2().y()) {
             return cend();
+        }
+
+        if (coordinate.x() < bbox.x()) {
+            return cbegin();
+        }
+
+        if (coordinate.x() > bbox.p2().x()) {
+            return cend() - 1;
         }
 
         return std::lower_bound(cbegin(), cend(), coordinate.x(), [](let &a, let &b) {

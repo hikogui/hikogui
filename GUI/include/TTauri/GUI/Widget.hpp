@@ -158,6 +158,14 @@ public:
     rhea::constraint preferedWidthConstraint;
     rhea::constraint preferedHeightConstraint;
 
+    /** The fixed size the widget should be.
+     * 0.0f in either x or y means that direction is not fixed.
+     */
+    vec fixedExtent;
+
+    rhea::constraint fixedWidthConstraint;
+    rhea::constraint fixedHeightConstraint;
+
     float elevation = 0.0;
 
     /** The widget is enabled.
@@ -203,8 +211,13 @@ public:
     }
 
     void setMinimumExtent(vec newMinimumExtent) noexcept;
-    void setPreferedExtent(vec newPreferedExtent) noexcept;
     void setMinimumExtent(float width, float height) noexcept;
+
+    void setPreferedExtent(vec newPreferedExtent) noexcept;
+
+    void setFixedExtent(vec newFixedExtent) noexcept;
+    void setFixedHeight(float height) noexcept;
+    void setFixedWidth(float width) noexcept;
 
     void placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
     void placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;

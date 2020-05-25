@@ -18,27 +18,30 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     Widget::layout(displayTimePoint);
 
+    // The label is located to the right of the toggle.
+    let label_x = Theme::smallWidth + Theme::margin;
+    label_rectangle = aarect{
+        label_x, 0.0f,
+        rectangle.width() - label_x, rectangle.height()
+    };
+
+    labelShapedText = ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
+    label_translate = labelShapedText.T(label_rectangle);
+    setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
+
     toggle_height = Theme::smallHeight;
     toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
     toggle_x = -0.5f;  // Expand horizontally due to rounded shape
-    toggle_y = (rectangle.height() - toggle_height) * 0.5f;
+    toggle_y = rectangle.height() - toggle_height;
     toggle_rectangle = aarect{toggle_x, toggle_y, toggle_width, toggle_height};
     
     slider_x = 1.5f;
-    slider_y = 1.5f;
+    slider_y = toggle_y + 1.5f;
     slider_width = toggle_height - 3.0f;
     slider_height = toggle_height - 3.0f;
     let slider_move_width = Theme::smallWidth - (slider_x * 2.0f);
     slider_move = slider_move_width - slider_width;
 
-    label_x = Theme::smallWidth + theme->margin;
-    label_y = 0.0f;
-    label_width = rectangle.width() - label_x;
-    label_height = rectangle.height();
-    label_rectangle = aarect{label_x, label_y, label_width, label_height};
-
-    labelShapedText = ShapedText(label, theme->labelStyle, label_width, Alignment::MiddleLeft);
-    label_translate = labelShapedText.T(label_rectangle);
 }
 
 void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

@@ -34,10 +34,6 @@ protected:
     float slider_width;
     float slider_height;
 
-    float label_x;
-    float label_y;
-    float label_width;
-    float label_height;
     aarect label_rectangle;
     mat::T label_translate;
 public:

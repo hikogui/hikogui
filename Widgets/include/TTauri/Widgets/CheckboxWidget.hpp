@@ -32,10 +32,6 @@ protected:
     float button_y;
     aarect button_rectangle;
 
-    float label_x;
-    float label_y;
-    float label_width;
-    float label_height;
     aarect label_rectangle;
 
     mat::T label_translate;
@@ -58,22 +54,24 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 
+        // The label is located to the right of the toggle.
+        let label_x = Theme::smallWidth + Theme::margin;
+        label_rectangle = aarect{
+            label_x, 0.0f,
+            rectangle.width() - label_x, rectangle.height()
+        };
+
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
+        label_translate = labelShapedText.T(label_rectangle);
+        setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
+
         button_height = Theme::smallHeight;
         button_width = Theme::smallHeight;
         button_x = Theme::smallWidth - button_width;
-        button_y = (rectangle.height() - button_height) * 0.5f;
+        button_y = rectangle.height() - button_height;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
-        label_x = Theme::smallWidth + theme->margin;
-        label_y = 0.0f;
-        label_width = rectangle.width() - label_x;
-        label_height = rectangle.height();
-        label_rectangle = aarect{label_x, label_y, label_width, label_height};
-
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
-
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_width, Alignment::MiddleLeft);
-        label_translate = labelShapedText.T(label_rectangle);
 
         let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
         checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});

@@ -17,7 +17,12 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     label(std::move(label)),
     field(theme->labelStyle),
     shapedText()
-{}
+{
+}
+
+LineInputWidget::~LineInputWidget()
+{
+}
 
 WidgetNeed LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {
@@ -50,6 +55,8 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
         shapedText = field.shapedText();
     }
 
+    setFixedHeight(shapedText.boundingBox.height() + Theme::margin * 2.0f);
+
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
 }
@@ -77,7 +84,6 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     // After drawing the border around the input field make sure any other
     // drawing remains inside this border.
     context.clippingRectangle = textClippingRectangle;
-
 
     if (dragScrollSpeedX != 0.0f) {
         textScrollX += dragScrollSpeedX * (1.0/60);
@@ -221,6 +227,10 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
                 }
             }
         }
+
+        // Record the last time the cursor is moved, so that the carret remains lit.
+        lastUpdateTimePoint = event.timePoint;
+
         forceRedraw = true;
 
     } else if (event.type == GUI::MouseEvent::Type::Drag && event.cause.leftButton) {

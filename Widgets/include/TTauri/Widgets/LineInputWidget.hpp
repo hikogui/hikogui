@@ -53,7 +53,7 @@ public:
         std::string const label
     ) noexcept;
 
-    ~LineInputWidget() {}
+    ~LineInputWidget();
 
     LineInputWidget(const LineInputWidget &) = delete;
     LineInputWidget &operator=(const LineInputWidget &) = delete;

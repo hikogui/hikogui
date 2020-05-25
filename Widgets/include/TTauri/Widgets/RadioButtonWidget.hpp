@@ -29,10 +29,6 @@ protected:
     float button_y;
     aarect button_rectangle;
     aarect pip_rectangle;
-    float label_x;
-    float label_y;
-    float label_width;
-    float label_height;
     aarect label_rectangle;
     mat::T label_translate;
 public:
@@ -55,34 +51,33 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 
+        // The label is located to the right of the toggle.
+        let label_x = Theme::smallWidth + Theme::margin;
+        label_rectangle = aarect{
+            label_x, 0.0f,
+            rectangle.width() - label_x, rectangle.height()
+        };
+
+        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
+        label_translate = labelShapedText.T(label_rectangle);
+        setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
+
         // Prepare coordinates.
         // The button is expanded by half a pixel on each side because it is round.
         button_height = Theme::smallHeight + 1.0f;
         button_width = Theme::smallHeight + 1.0f;
         button_x = (Theme::smallWidth - Theme::smallHeight) - 0.5f;
-        button_y = (rectangle.height() - Theme::smallHeight) * 0.5f - 0.5f;
+        button_y = (rectangle.height() - Theme::smallHeight) - 0.5f;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
         let pip_x = (Theme::smallWidth - Theme::smallHeight) + 1.5f;
-        let pip_y = (rectangle.height() - Theme::smallHeight) * 0.5f + 1.5f;
+        let pip_y = (rectangle.height() - Theme::smallHeight) + 1.5f;
         let pip_width = Theme::smallHeight - 3.0f;
         let pip_height = Theme::smallHeight - 3.0f;
         pip_rectangle = aarect{pip_x, pip_y, pip_width, pip_height};
-
-        label_x = Theme::smallWidth + theme->margin;
-        label_y = 0.0f;
-        label_width = rectangle.width() - label_x;
-        label_height = rectangle.height();
-        label_rectangle = aarect{label_x, label_y, label_width, label_height};
-
-        // Prepare labels.
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_width, Alignment::MiddleLeft);
-        label_translate = labelShapedText.T(label_rectangle);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override{
-        
-
         // button.
         auto context = drawContext;
         context.cornerShapes = vec{button_rectangle.height() * 0.5f};
