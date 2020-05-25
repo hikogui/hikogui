@@ -546,7 +546,7 @@ ShapedText::ShapedText(
 
     // Expand the word to left and right.
     auto [s, e] = bifind_cluster(cbegin(), cend(), i, [](let &x) {
-        return x.isWord() ? 0 : x.isWhiteSpace() ? 1 : 2;
+        return x.selectionWordClusterID();
     });
 
     ttauri_assume(e != i);

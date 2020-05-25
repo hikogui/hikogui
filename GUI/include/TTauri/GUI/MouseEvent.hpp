@@ -4,15 +4,23 @@
 #pragma once
 
 #include "TTauri/Foundation/vec.hpp"
+#include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/GUI/MouseButtons.hpp"
 
 namespace TTauri::GUI {
 
 struct MouseEvent {
-    enum class Type { None, Entered, Exited, Move, ButtonDown, ButtonUp };
+    enum class Type { None, Entered, Exited, Move, Drag, ButtonDown, ButtonUp };
 
     Type type;
+
+    hires_utc_clock::time_point timePoint;
+
+    //! The current position of the mouse pointer.
     vec position;
+
+    //! The position the last time a button was pressed.
+    vec downPosition;
 
     //! Buttons which has caused this event.
     MouseButtons cause;

@@ -25,6 +25,19 @@ protected:
     aarect partialGraphemeCaret = {};
     std::vector<aarect> selectionRectangles = {};
 
+    /** Scroll speed in points per second.
+     * This is used when dragging outside of the widget.
+     */
+    float dragScrollSpeedX = 0.0f;
+
+    /** Number of mouse clicks that caused the drag.
+     */
+    int dragClickCount = 0;
+
+    vec dragSelectPosition = {};
+
+    /** How much the text has scrolled in points.
+     */
     float textScrollX = 0.0f;
 
     mat::T2 textTranslate;
@@ -61,6 +74,8 @@ public:
         return enabled;
     }
 
+private:
+    void dragSelect() noexcept;
 };
 
 }

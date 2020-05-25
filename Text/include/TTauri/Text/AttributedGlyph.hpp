@@ -66,6 +66,24 @@ struct AttributedGlyph {
     [[nodiscard]] bool isWhiteSpace() const noexcept { return charClass == GeneralCharacterClass::WhiteSpace; }
     [[nodiscard]] bool isParagraphSeparator() const noexcept { return charClass == GeneralCharacterClass::ParagraphSeparator; }
     [[nodiscard]] bool isVisible() const noexcept { return isWord() || charClass == GeneralCharacterClass::Unknown; }
+    
+    /** return a cluster id for word selection.
+     * This makes clusters of:
+     *  - words (letter and digits),
+     *  - visibiles (other visible letters)
+     *  - whitespace
+     *  - paragraph separator.
+     */
+    [[nodiscard]] int selectionWordClusterID() const noexcept {
+        switch (charClass) {
+        case GeneralCharacterClass::ParagraphSeparator: return 0;
+        case GeneralCharacterClass::Digit:
+        case GeneralCharacterClass::Letter: return 1;
+        case GeneralCharacterClass::Unknown: return 2;
+        case GeneralCharacterClass::WhiteSpace: return 3;
+        default: no_default;
+        }
+    }
 
     /** Get the bounding box for this glyph.
      * Get the scaled and positioned bounding box.

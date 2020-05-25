@@ -99,7 +99,11 @@ void ToggleWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
     if (enabled) {
-        if (event.type == GUI::MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+        if (
+            event.type == GUI::MouseEvent::Type::ButtonUp &&
+            event.cause.leftButton &&
+            rectangle.contains(event.position)
+        ) {
             handleCommand("gui.activate"_ltag);
         }
     }

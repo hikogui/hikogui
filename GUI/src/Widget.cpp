@@ -136,6 +136,8 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
         
     fromWindowTransform = mat::T(-windowRectangle.x(), -windowRectangle.y(), -z());
     toWindowTransform = mat::T(windowRectangle.x(), windowRectangle.y(), z());
+
+    forceRedraw = true;
 }
 
 WidgetNeed Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept

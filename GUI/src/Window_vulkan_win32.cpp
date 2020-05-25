@@ -507,14 +507,14 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_DEADCHAR: {
-        auto c = handle_suragates(numeric_cast<char32_t>(wParam));
+        auto c = handleSuragates(numeric_cast<char32_t>(wParam));
         if (c != 0) {
             handleKeyboardEvent(c, false);
         }
         } break;
 
     case WM_CHAR: {
-        auto c = handle_suragates(numeric_cast<char32_t>(wParam));
+        auto c = handleSuragates(numeric_cast<char32_t>(wParam));
         if (c >= 0x20) {
             handleKeyboardEvent(c);
         }
@@ -541,111 +541,21 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_LBUTTONDOWN:
-        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.leftButton = true;
-        goto parseMouseEvent;
-
-    case WM_LBUTTONUP:
-        clickCount = 0;
-        mouseEvent.type = MouseEvent::Type::ButtonUp;
-        mouseEvent.cause.leftButton = true;
-        goto parseMouseEvent;
-
-    case WM_LBUTTONDBLCLK:
-        clickCount = 2;
-        doubleClickTimePoint = cpu_utc_clock::now();
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.leftButton = true;
-        goto parseMouseEvent;
-
     case WM_MBUTTONDOWN:
-        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.middleButton = true;
-        goto parseMouseEvent;
-
-    case WM_MBUTTONUP:
-        clickCount = 0;
-        mouseEvent.type = MouseEvent::Type::ButtonUp;
-        mouseEvent.cause.middleButton = true;
-        goto parseMouseEvent;
-
-    case WM_MBUTTONDBLCLK:
-        clickCount = 2;
-        doubleClickTimePoint = cpu_utc_clock::now();
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.middleButton = true;
-        goto parseMouseEvent;
-
     case WM_RBUTTONDOWN:
-        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.rightButton = true;
-        goto parseMouseEvent;
-
-    case WM_RBUTTONUP:
-        clickCount = 0;
-        mouseEvent.type = MouseEvent::Type::ButtonUp;
-        mouseEvent.cause.rightButton = true;
-        goto parseMouseEvent;
-
-    case WM_RBUTTONDBLCLK:
-        clickCount = 2;
-        doubleClickTimePoint = cpu_utc_clock::now();
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.rightButton = true;
-        goto parseMouseEvent;
-
     case WM_XBUTTONDOWN:
-        clickCount = (cpu_utc_clock::now() < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
-        mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
-        goto parseMouseEvent;
-
+    case WM_LBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_RBUTTONUP:
     case WM_XBUTTONUP:
-        clickCount = 0;
-        mouseEvent.type = MouseEvent::Type::ButtonUp;
-        mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
-        mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
-        goto parseMouseEvent;
-
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
     case WM_XBUTTONDBLCLK:
-        clickCount = 2;
-        doubleClickTimePoint = cpu_utc_clock::now();
-        mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
-        mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
-        goto parseMouseEvent;
-
     case WM_MOUSEMOVE:
-        if (!trackingMouseLeaveEvent) {
-            if (!TrackMouseEvent(&trackMouseLeaveEventParameters)) {
-                LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
-            }
-            trackingMouseLeaveEvent = true;
-        }
-        mouseEvent.type = MouseEvent::Type::Move;
-        goto parseMouseEvent;
-
-    parseMouseEvent:
-            
-
-        // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
-        // of the vertical bar. But most applications do not fix this problem.
-        mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
-        mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
-        mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
-        mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
-        mouseEvent.down.rightButton = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
-        mouseEvent.down.shiftKey = (GET_KEYSTATE_WPARAM(wParam) & MK_SHIFT) > 0;
-        mouseEvent.down.x1Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
-        mouseEvent.down.x2Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
-        mouseEvent.clickCount = clickCount;
-        handleMouseEvent(mouseEvent);
+        handleMouseEvent(createMouseEvent(uMsg, wParam, lParam));
         break;
-
+        
     case WM_MOUSELEAVE:
         // After this event we need to ask win32 to track the mouse again.
         trackingMouseLeaveEvent = false;
@@ -719,5 +629,126 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     return -1;
 }
 
+[[nodiscard]] char32_t Window_vulkan_win32::handleSuragates(char32_t c) noexcept {
+    if (c >= 0xd800 && c <= 0xdbff) {
+        highSurrogate = ((c - 0xd800) << 10) + 0x10000;
+        return 0;
+
+    } else if (c >= 0xdc00 && c <= 0xdfff) {
+        c = highSurrogate ? highSurrogate | (c - 0xdc00) : 0xfffd;
+    }
+    highSurrogate = 0;
+    return c;
+}
+
+[[nodiscard]] MouseEvent Window_vulkan_win32::createMouseEvent(
+    unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
+{
+    auto mouseEvent = MouseEvent{};
+
+    mouseEvent.timePoint = cpu_utc_clock::now();
+
+    // On Window 7 up to and including Window10, the I-beam cursor hot-spot is 2 pixels to the left
+    // of the vertical bar. But most applications do not fix this problem.
+    mouseEvent.position = vec::point(GET_X_LPARAM(lParam), currentWindowExtent.y() - GET_Y_LPARAM(lParam));
+
+    // Track which buttons are down, in case the application wants to track multiple buttons being pressed down.
+    mouseEvent.down.controlKey = (GET_KEYSTATE_WPARAM(wParam) & MK_CONTROL) > 0;
+    mouseEvent.down.leftButton = (GET_KEYSTATE_WPARAM(wParam) & MK_LBUTTON) > 0;
+    mouseEvent.down.middleButton = (GET_KEYSTATE_WPARAM(wParam) & MK_MBUTTON) > 0;
+    mouseEvent.down.rightButton = (GET_KEYSTATE_WPARAM(wParam) & MK_RBUTTON) > 0;
+    mouseEvent.down.shiftKey = (GET_KEYSTATE_WPARAM(wParam) & MK_SHIFT) > 0;
+    mouseEvent.down.x1Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON1) > 0;
+    mouseEvent.down.x2Button = (GET_KEYSTATE_WPARAM(wParam) & MK_XBUTTON2) > 0;
+
+    // Check which buttons caused the mouse event.
+    switch (uMsg) {
+    case WM_LBUTTONUP:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
+        mouseEvent.cause.leftButton = true;
+        break;
+    case WM_RBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONDBLCLK:
+        mouseEvent.cause.rightButton = true;
+        break;
+    case WM_MBUTTONUP:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONDBLCLK:
+        mouseEvent.cause.middleButton = true;
+        break;
+    case WM_XBUTTONUP:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONDBLCLK:
+        mouseEvent.cause.x1Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON1) > 0;
+        mouseEvent.cause.x2Button = (GET_XBUTTON_WPARAM(wParam) & XBUTTON2) > 0;
+        break;
+    case WM_MOUSEMOVE:
+        if (mouseButtonEvent.type == MouseEvent::Type::ButtonDown) {
+            mouseEvent.cause = mouseButtonEvent.cause;
+        }
+        break;
+    default:
+        no_default;
+    }
+
+    switch (uMsg) {
+    case WM_LBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_XBUTTONUP:
+        mouseEvent.type = MouseEvent::Type::ButtonUp;
+        mouseEvent.downPosition = mouseButtonEvent.downPosition;
+        mouseEvent.clickCount = 0;
+        break;
+
+    case WM_LBUTTONDOWN:
+    case WM_MBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_XBUTTONDOWN:
+        mouseEvent.type = MouseEvent::Type::ButtonDown;
+        mouseEvent.downPosition = mouseButtonEvent.position;
+        mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
+        break;
+
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
+    case WM_XBUTTONDBLCLK:
+        mouseEvent.type = MouseEvent::Type::ButtonDown;
+        mouseEvent.downPosition = mouseButtonEvent.downPosition;
+        mouseEvent.clickCount = 2;
+        doubleClickTimePoint = cpu_utc_clock::now();
+        break;
+
+    case WM_MOUSEMOVE:
+        mouseEvent.type =
+            (mouseButtonEvent.type == MouseEvent::Type::ButtonDown) ?
+            MouseEvent::Type::Drag :
+            MouseEvent::Type::Move;
+        mouseEvent.downPosition = mouseButtonEvent.downPosition;
+        mouseEvent.clickCount = mouseButtonEvent.clickCount;
+        break;
+    default:
+        no_default;
+    }
+
+    // Make sure we start tracking mouse events in case the mouse will leave the window;
+    // so that we receive a WM_MOUSELEAVE event.
+    if (!trackingMouseLeaveEvent) {
+        if (!TrackMouseEvent(&trackMouseLeaveEventParameters)) {
+            LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
+        }
+        trackingMouseLeaveEvent = true;
+    }
+
+    // Remember the last time a button was pressed or released, so that we can convert
+    // a move into a drag event.
+    if (mouseEvent.type == MouseEvent::Type::ButtonDown || mouseEvent.type == MouseEvent::Type::ButtonUp) {
+        mouseButtonEvent = mouseEvent;
+    }
+    return mouseEvent;
+}
 
 }

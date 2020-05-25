@@ -43,10 +43,6 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 
     field.setStyleOfAll(theme->labelStyle);
 
-    leftToRightCaret = field.leftToRightCaret();
-    partialGraphemeCaret = field.partialGraphemeCaret();
-    selectionRectangles = field.selectionRectangles();
-
     if (ssize(field) == 0) {
         shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::TopLeft);
     } else {
@@ -54,28 +50,20 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
         shapedText = field.shapedText();
     }
 
-    let originalTextTranslate = shapedText.T(textRectangle);
-
-    // Scroll the text a quarter width to the left until the cursor is within the width
-    // of the text field
-    while (leftToRightCaret.x() - textScrollX > textRectangle.width()) {
-        textScrollX += textRectangle.width() * 0.25f;
-    }
-
-    // Scroll the text a quarter width to the right until the cursor is within the width
-    // of the text field
-    while (leftToRightCaret.x() - textScrollX < 0.0f) {
-        textScrollX -= textRectangle.width() * 0.25f;
-    }
-    // cap how far we scroll.
-    let maxScrollWidth = std::max(0.0f, shapedText.preferedExtent.width() - textRectangle.width());
-    textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
-
-    textTranslate = mat::T2(-textScrollX, 0.0f) * originalTextTranslate;
-    textInvTranslate = ~textTranslate;
-
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
+}
+
+void LineInputWidget::dragSelect() noexcept
+{
+    let mouseInTextPosition = textInvTranslate * dragSelectPosition;
+    if (dragClickCount == 1) {
+        field.dragCursorAtCoordinate(mouseInTextPosition);
+    } else if (dragClickCount == 2) {
+        field.dragWordAtCoordinate(mouseInTextPosition);
+    } else if (dragClickCount == 3) {
+        field.dragParagraphAtCoordinate(mouseInTextPosition);
+    }
 }
 
 void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -90,13 +78,46 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     // drawing remains inside this border.
     context.clippingRectangle = textClippingRectangle;
 
-    context.transform = context.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
+    if (dragScrollSpeedX != 0.0f) {
+        textScrollX += dragScrollSpeedX * (1.0/60);
+        dragSelect();
+
+        // Once we are scrolling, don't stop.
+        forceRedraw = true;
+
+    } else if (dragClickCount == 0) {
+        // The following is for scrolling based on keyboard input, ignore mouse drags.
+
+        // Scroll the text a quarter width to the left until the cursor is within the width
+        // of the text field
+        if (leftToRightCaret.x() - textScrollX > textRectangle.width()) {
+            textScrollX = leftToRightCaret.x() - textRectangle.width() * 0.75f;
+        }
+
+        // Scroll the text a quarter width to the right until the cursor is within the width
+        // of the text field
+        while (leftToRightCaret.x() - textScrollX < 0.0f) {
+            textScrollX = leftToRightCaret.x() - textRectangle.width() * 0.25f;
+        }
+    }
+
+    // cap how far we scroll.
+    let maxScrollWidth = std::max(0.0f, shapedText.preferedExtent.width() - textRectangle.width());
+    textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
+
+    textTranslate = mat::T2(-textScrollX, 0.0f) * shapedText.T(textRectangle);
+    textInvTranslate = ~textTranslate;
+
+    context.transform = drawContext.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
+
+    selectionRectangles = field.selectionRectangles();
     for (let selectionRectangle: selectionRectangles) {
         context.fillColor = theme->textSelectColor;
         context.drawFilledQuad(selectionRectangle);
     }
 
+    partialGraphemeCaret = field.partialGraphemeCaret();
     if (partialGraphemeCaret) {
         context.fillColor = theme->incompleteGlyphColor;
         context.drawFilledQuad(partialGraphemeCaret);
@@ -107,6 +128,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     auto nrHalfBlinks = static_cast<int64_t>(durationSinceLastUpdate / blinkInterval);
 
     auto blinkIsOn = nrHalfBlinks % 2 == 0;
+    leftToRightCaret = field.leftToRightCaret();
     if (leftToRightCaret && blinkIsOn && focus && window.active) {
         context.fillColor = theme->cursorColor;
         context.drawFilledQuad(leftToRightCaret);
@@ -174,6 +196,11 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
 void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
+    // Make sure we only scroll when dragging outside the widget.
+    dragScrollSpeedX = 0.0f;
+    dragClickCount = event.clickCount;
+    dragSelectPosition = event.position;
+
     if (!enabled) {
         return;
     }
@@ -194,21 +221,29 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
                 }
             }
         }
-        forceLayout = true;
+        forceRedraw = true;
 
-    } else if (event.type == GUI::MouseEvent::Type::Move && event.down.leftButton) {
-        if (textRectangle.contains(event.position)) {
-            let mouseInTextPosition = textInvTranslate * event.position;
+    } else if (event.type == GUI::MouseEvent::Type::Drag && event.cause.leftButton) {
+        // When the mouse is dragged beyond the line input,
+        // start scrolling the text and select on the edge of the textRectangle.
+        if (event.position.x() > textRectangle.p2().x()) {
+            // The mouse is on the right of the text.
+            dragSelectPosition.x(textRectangle.p2().x());
 
-            if (event.clickCount == 1) {
-                field.dragCursorAtCoordinate(mouseInTextPosition);
-            } else if (event.clickCount == 2) {
-                field.dragWordAtCoordinate(mouseInTextPosition);
-            } else if (event.clickCount == 3) {
-                field.dragParagraphAtCoordinate(mouseInTextPosition);
-            }
+            // Scroll text to the left in points per second.
+            dragScrollSpeedX = 50.0f;
+
+        } else if (event.position.x() < textRectangle.x()) {
+            // The mouse is on the left of the text.
+            dragSelectPosition.x(textRectangle.x());
+
+            // Scroll text to the right in points per second.
+            dragScrollSpeedX = -50.0f;
         }
-        forceLayout = true;
+
+        dragSelect();
+
+        forceRedraw = true;
     }
 }
 

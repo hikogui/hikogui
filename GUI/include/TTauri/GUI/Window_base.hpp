@@ -174,10 +174,7 @@ public:
      */
     virtual void render(hires_utc_clock::time_point displayTimePoint) = 0;
 
-    bool isClosed() {
-        auto lock = std::scoped_lock(guiMutex);
-        return state == State::NoWindow;
-    }
+    bool isClosed();
 
     template<typename T, typename... Args>
     T &addWidget(Args &&... args) {
@@ -185,60 +182,40 @@ public:
         return widget->addWidget<T>(std::forward<Args>(args)...);
     }
 
-    rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept {
-        widgetSolver.add_constraint(constraint);
-        constraintsUpdated = true;
-        return constraint;
-    }
+    rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept;
 
     rhea::constraint addConstraint(
         rhea::linear_equation const& equation,
         rhea::strength const &strength = rhea::strength::required(),
         double weight = 1.0
-    ) noexcept {
-        return addConstraint(rhea::constraint(equation, strength, weight));
-    }
+    ) noexcept;
 
     rhea::constraint addConstraint(
         rhea::linear_inequality const& equation,
         rhea::strength const &strength = rhea::strength::required(),
         double weight = 1.0
-    ) noexcept {
-        return addConstraint(rhea::constraint(equation, strength, weight));
-    }
+    ) noexcept;
 
-    void removeConstraint(rhea::constraint const& constraint) noexcept {
-        widgetSolver.remove_constraint(constraint);
-        constraintsUpdated = true;
-    }
+    void removeConstraint(rhea::constraint const& constraint) noexcept;
 
     rhea::constraint replaceConstraint(
         rhea::constraint const &oldConstraint,
         rhea::constraint const &newConstraint
-    ) noexcept {
-        widgetSolver.remove_constraint(oldConstraint);
-        widgetSolver.add_constraint(newConstraint);
-        constraintsUpdated = true;
-        return newConstraint;
-    }
+    ) noexcept;
 
     rhea::constraint replaceConstraint(
         rhea::constraint const &oldConstraint,
         rhea::linear_equation const &newEquation,
         rhea::strength const &strength = rhea::strength::required(),
         double weight = 1.0
-    ) noexcept {
-        return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
-    }
+    ) noexcept;
 
     rhea::constraint replaceConstraint(
         rhea::constraint const &oldConstraint,
         rhea::linear_inequality const &newEquation,
         rhea::strength const &strength = rhea::strength::required(),
         double weight = 1.0
-    ) noexcept {
-        return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
-    }
+    ) noexcept;
 
     virtual void setCursor(Cursor cursor) = 0;
 
@@ -252,27 +229,9 @@ public:
     [[nodiscard]] virtual std::string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::string str) noexcept = 0;
 
-    void updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
-        Widgets::Widget *newTargetWidget =
-            currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
+    void updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept;
 
-        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
-            newTargetWidget = newTargetWidget->nextKeyboardWidget;
-        }
-
-        updateKeyboardTarget(newTargetWidget);
-    }
-
-    void updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
-        Widgets::Widget *newTargetWidget =
-            currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
-
-        while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
-            newTargetWidget = newTargetWidget->prevKeyboardWidget;
-        }
-
-        updateKeyboardTarget(newTargetWidget);
-    }
+    void updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept;
 
 protected:
 
@@ -288,17 +247,11 @@ protected:
     * The widget should not care much about this value, since the
     * transformation matrix will match the window scaling.
     */
-    [[nodiscard]] float windowScale() const noexcept {
-        return std::ceil(dpi / 100.0f);
-    }
+    [[nodiscard]] float windowScale() const noexcept;
 
     /*! Called when the GPU library has changed the window size.
      */
-    virtual void windowChangedSize(ivec extent) {
-        currentWindowExtent = extent;
-        setWidgetToCurrentExtent();
-        forceLayout = true;
-    }
+    virtual void windowChangedSize(ivec extent);
 
     /*! call openingWindow() on the delegate. 
      */
@@ -316,93 +269,32 @@ protected:
      */
     virtual void build() = 0;
 
-    void updateMouseTarget(Widgets::Widget const *newTargetWidget) noexcept {
-        if (newTargetWidget != mouseTargetWidget) {
-            if (mouseTargetWidget != nullptr) {
-                mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
-            }
-            mouseTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
-            if (mouseTargetWidget != nullptr) {
-                mouseTargetWidget->handleMouseEvent(MouseEvent::entered());
-            }
-        }
-    }
+    void updateMouseTarget(Widgets::Widget const *newTargetWidget) noexcept;
 
-    void updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept {
-        if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
-            newTargetWidget = nullptr;
-        }
-
-        if (newTargetWidget != keyboardTargetWidget) {
-            if (keyboardTargetWidget != nullptr) {
-                keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
-            }
-            keyboardTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
-            if (keyboardTargetWidget != nullptr) {
-                keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
-            }
-        }
-    }
+    void updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.
      * This is called very often so it must be made efficient.
      * Most often this function is used to determine the mouse cursor.
      */
-    void handleMouseEvent(MouseEvent event) noexcept {
-        let hitbox = hitBoxTest(event.position);
-
-        updateMouseTarget(hitbox.widget);
-
-        // On click change keyboard-focus to the widget if it accepts it.
-        if (event.down.leftButton) {
-            updateKeyboardTarget(hitbox.widget);
-        }
-
-        // Send event to target-widget.
-        if (mouseTargetWidget != nullptr) {
-            event.position -= mouseTargetWidget->windowRectangle.offset();
-            mouseTargetWidget->handleMouseEvent(event);
-        }
-    }
+    void handleMouseEvent(MouseEvent event) noexcept;
 
     /*! Handle keyboard event.
     * Called by the operating system to show the character that was entered
     * or special key that was used.
     */
-    void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        if (keyboardTargetWidget != nullptr) {
-            keyboardTargetWidget->handleKeyboardEvent(event);
+    void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
-        } else if (event.type == KeyboardEvent::Type::Key) {
-            // If no widgets have been selected handle the keyboard-focus changes.
-            for (let command : event.getCommands()) {
-                if (command == "gui.widget.next"_ltag) {
-                    updateToNextKeyboardTarget(nullptr);
-                } else if (command == "gui.widget.prev"_ltag) {
-                    updateToPrevKeyboardTarget(nullptr);
-                }
-            }
-        }
-    }
+    void handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
 
-    void handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
-        return handleKeyboardEvent(KeyboardEvent(_state, modifiers, key));
-    }
+    void handleKeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept;
 
-    void handleKeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept {
-        return handleKeyboardEvent(KeyboardEvent(grapheme, full));
-    }
-
-    void handleKeyboardEvent(char32_t c, bool full=true) noexcept {
-        return handleKeyboardEvent(Text::Grapheme(c), full);
-    }
+    void handleKeyboardEvent(char32_t c, bool full=true) noexcept;
 
     /*! Test where the certain features of a window are located.
      */
-    HitBox hitBoxTest(vec position) const noexcept {
-        return widget->hitBoxTest(position);
-    }
+    HitBox hitBoxTest(vec position) const noexcept;
 
 private:
     //! This solver determines size and position of all widgets in this window.
@@ -418,49 +310,9 @@ private:
     //! Stay constraint for the currentWindowExtent height.
     rhea::constraint currentWindowExtentHeightConstraint;
 
-    void setWidgetToCurrentExtent() {
-        widgetSolver.suggest(widget->box.width, currentWindowExtent.width());
-        widgetSolver.suggest(widget->box.height, currentWindowExtent.height());
-    }
+    void setWidgetToCurrentExtent();
 
-    void calculateMinimumAndMaximumWindowExtent() {
-        ttauri_assume(widget);
-
-        // Test for minimum extent.
-        widgetSolver.suggest(widget->box.width, 0);
-        widgetSolver.suggest(widget->box.height, 0);
-        minimumWindowExtent = widget->box.extent();
-
-        // Test for maximum extent.
-        widgetSolver.suggest(widget->box.width, std::numeric_limits<uint32_t>::max());
-        widgetSolver.suggest(widget->box.height, std::numeric_limits<uint32_t>::max());
-        maximumWindowExtent = widget->box.extent();
-
-        if (
-            (currentWindowExtent.x() < minimumWindowExtent.x()) ||
-            (currentWindowExtent.y() < minimumWindowExtent.y())
-        ) {
-            setWindowSize(minimumWindowExtent);
-        }
-
-        if (
-            (currentWindowExtent.x() > maximumWindowExtent.x()) ||
-            (currentWindowExtent.y() > maximumWindowExtent.y())
-            ) {
-            setWindowSize(maximumWindowExtent);
-        }
-
-        // Set to actual window size.
-        setWidgetToCurrentExtent();
-
-        LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
-            title,
-            minimumWindowExtent,
-            maximumWindowExtent,
-            currentWindowExtent
-        );
-
-    }
+    void calculateMinimumAndMaximumWindowExtent();
 
 
 };

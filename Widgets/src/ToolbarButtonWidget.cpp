@@ -126,7 +126,11 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
             forceRedraw = true;
         }
 
-        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+        if (
+            event.type == MouseEvent::Type::ButtonUp &&
+            event.cause.leftButton &&
+            rectangle.contains(event.position)
+        ) {
             delegate();
         }
     }

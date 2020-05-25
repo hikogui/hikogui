@@ -54,25 +54,18 @@ private:
 
     TRACKMOUSEEVENT trackMouseLeaveEventParameters;
     bool trackingMouseLeaveEvent = false;
-    char32_t high_surrogate = 0;
-    int clickCount = 0;
+    char32_t highSurrogate = 0;
+    MouseEvent mouseButtonEvent;
     hires_utc_clock::time_point doubleClickTimePoint;
     hires_utc_clock::duration doubleClickMaximumDuration;
 
     [[nodiscard]] KeyboardState getKeyboardState() noexcept;
     [[nodiscard]] KeyboardModifiers getKeyboardModifiers() noexcept;
 
-    [[nodiscard]] char32_t handle_suragates(char32_t c) noexcept {
-        if (c >= 0xd800 && c <= 0xdbff) {
-            high_surrogate = ((c - 0xd800) << 10) + 0x10000;
-            return 0;
+    [[nodiscard]] char32_t handleSuragates(char32_t c) noexcept;
+    [[nodiscard]] MouseEvent createMouseEvent(unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept;
 
-        } else if (c >= 0xdc00 && c <= 0xdfff) {
-            c = high_surrogate ? high_surrogate | (c - 0xdc00) : 0xfffd;
-        }
-        high_surrogate = 0;
-        return c;
-    }
+
 };
 
 }

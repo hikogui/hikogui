@@ -49,6 +49,66 @@ void Window_base::initialize()
     openingWindow();
 }
 
+bool Window_base::isClosed() {
+    auto lock = std::scoped_lock(guiMutex);
+    return state == State::NoWindow;
+}
+
+rhea::constraint Window_base::addConstraint(rhea::constraint const& constraint) noexcept {
+    widgetSolver.add_constraint(constraint);
+    constraintsUpdated = true;
+    return constraint;
+}
+
+rhea::constraint Window_base::addConstraint(
+    rhea::linear_equation const& equation,
+    rhea::strength const &strength,
+    double weight
+) noexcept {
+    return addConstraint(rhea::constraint(equation, strength, weight));
+}
+
+rhea::constraint Window_base::addConstraint(
+    rhea::linear_inequality const& equation,
+    rhea::strength const &strength,
+    double weight
+) noexcept {
+    return addConstraint(rhea::constraint(equation, strength, weight));
+}
+
+void Window_base::removeConstraint(rhea::constraint const& constraint) noexcept {
+    widgetSolver.remove_constraint(constraint);
+    constraintsUpdated = true;
+}
+
+rhea::constraint Window_base::replaceConstraint(
+    rhea::constraint const &oldConstraint,
+    rhea::constraint const &newConstraint
+) noexcept {
+    widgetSolver.remove_constraint(oldConstraint);
+    widgetSolver.add_constraint(newConstraint);
+    constraintsUpdated = true;
+    return newConstraint;
+}
+
+rhea::constraint Window_base::replaceConstraint(
+    rhea::constraint const &oldConstraint,
+    rhea::linear_equation const &newEquation,
+    rhea::strength const &strength,
+    double weight
+) noexcept {
+    return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
+}
+
+rhea::constraint Window_base::replaceConstraint(
+    rhea::constraint const &oldConstraint,
+    rhea::linear_inequality const &newEquation,
+    rhea::strength const &strength,
+    double weight
+) noexcept {
+    return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
+}
+
 void Window_base::layout(hires_utc_clock::time_point displayTimePoint)
 {
     auto force = forceLayout.exchange(false);
@@ -120,6 +180,166 @@ void Window_base::setDevice(Device *newDevice)
     device = newDevice;
 }
 
+void Window_base::updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
+    Widgets::Widget *newTargetWidget =
+        currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
 
+    while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+        newTargetWidget = newTargetWidget->nextKeyboardWidget;
+    }
+
+    updateKeyboardTarget(newTargetWidget);
+}
+
+void Window_base::updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
+    Widgets::Widget *newTargetWidget =
+        currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
+
+    while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+        newTargetWidget = newTargetWidget->prevKeyboardWidget;
+    }
+
+    updateKeyboardTarget(newTargetWidget);
+}
+
+[[nodiscard]] float Window_base::windowScale() const noexcept {
+    return std::ceil(dpi / 100.0f);
+}
+
+void Window_base::windowChangedSize(ivec extent) {
+    currentWindowExtent = extent;
+    setWidgetToCurrentExtent();
+    forceLayout = true;
+}
+
+void Window_base::updateMouseTarget(Widgets::Widget const *newTargetWidget) noexcept {
+    if (newTargetWidget != mouseTargetWidget) {
+        if (mouseTargetWidget != nullptr) {
+            mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
+        }
+        mouseTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
+        if (mouseTargetWidget != nullptr) {
+            mouseTargetWidget->handleMouseEvent(MouseEvent::entered());
+        }
+    }
+}
+
+void Window_base::updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept {
+    if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
+        newTargetWidget = nullptr;
+    }
+
+    if (newTargetWidget != keyboardTargetWidget) {
+        if (keyboardTargetWidget != nullptr) {
+            keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
+        }
+        keyboardTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
+        if (keyboardTargetWidget != nullptr) {
+            keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
+        }
+    }
+}
+
+void Window_base::handleMouseEvent(MouseEvent event) noexcept {
+    switch (event.type) {
+    case MouseEvent::Type::Exited: // Mouse left window.
+        updateMouseTarget(nullptr);
+        break;
+
+    case MouseEvent::Type::ButtonDown:
+    case MouseEvent::Type::Move: {
+        let hitbox = hitBoxTest(event.position);
+        updateMouseTarget(hitbox.widget);
+
+        if (event.type == MouseEvent::Type::ButtonDown) {
+            updateKeyboardTarget(hitbox.widget);
+        }
+        } break;
+    default:;
+    }
+
+    // Send event to target-widget.
+    if (mouseTargetWidget != nullptr) {
+        event.position -= mouseTargetWidget->windowRectangle.offset();
+        event.downPosition -= mouseTargetWidget->windowRectangle.offset();
+        mouseTargetWidget->handleMouseEvent(event);
+    }
+}
+
+void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+    if (keyboardTargetWidget != nullptr) {
+        keyboardTargetWidget->handleKeyboardEvent(event);
+
+    } else if (event.type == KeyboardEvent::Type::Key) {
+        // If no widgets have been selected handle the keyboard-focus changes.
+        for (let command : event.getCommands()) {
+            if (command == "gui.widget.next"_ltag) {
+                updateToNextKeyboardTarget(nullptr);
+            } else if (command == "gui.widget.prev"_ltag) {
+                updateToPrevKeyboardTarget(nullptr);
+            }
+        }
+    }
+}
+
+void Window_base::handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept {
+    return handleKeyboardEvent(KeyboardEvent(_state, modifiers, key));
+}
+
+void Window_base::handleKeyboardEvent(Text::Grapheme grapheme, bool full) noexcept {
+    return handleKeyboardEvent(KeyboardEvent(grapheme, full));
+}
+
+void Window_base::handleKeyboardEvent(char32_t c, bool full) noexcept {
+    return handleKeyboardEvent(Text::Grapheme(c), full);
+}
+
+HitBox Window_base::hitBoxTest(vec position) const noexcept {
+    return widget->hitBoxTest(position);
+}
+
+void Window_base::setWidgetToCurrentExtent() {
+    widgetSolver.suggest(widget->box.width, currentWindowExtent.width());
+    widgetSolver.suggest(widget->box.height, currentWindowExtent.height());
+}
+
+void Window_base::calculateMinimumAndMaximumWindowExtent() {
+    ttauri_assume(widget);
+
+    // Test for minimum extent.
+    widgetSolver.suggest(widget->box.width, 0);
+    widgetSolver.suggest(widget->box.height, 0);
+    minimumWindowExtent = widget->box.extent();
+
+    // Test for maximum extent.
+    widgetSolver.suggest(widget->box.width, std::numeric_limits<uint32_t>::max());
+    widgetSolver.suggest(widget->box.height, std::numeric_limits<uint32_t>::max());
+    maximumWindowExtent = widget->box.extent();
+
+    if (
+        (currentWindowExtent.x() < minimumWindowExtent.x()) ||
+        (currentWindowExtent.y() < minimumWindowExtent.y())
+        ) {
+        setWindowSize(minimumWindowExtent);
+    }
+
+    if (
+        (currentWindowExtent.x() > maximumWindowExtent.x()) ||
+        (currentWindowExtent.y() > maximumWindowExtent.y())
+        ) {
+        setWindowSize(maximumWindowExtent);
+    }
+
+    // Set to actual window size.
+    setWidgetToCurrentExtent();
+
+    LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
+        title,
+        minimumWindowExtent,
+        maximumWindowExtent,
+        currentWindowExtent
+    );
+
+}
 
 }
