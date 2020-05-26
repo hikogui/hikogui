@@ -10,6 +10,7 @@
 #include "TTauri/Foundation/vspan.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/Window.hpp"
+#include "TTauri/GUI/Theme.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineBox_DeviceShared.hpp"

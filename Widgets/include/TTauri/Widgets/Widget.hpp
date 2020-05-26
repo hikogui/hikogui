@@ -48,94 +48,45 @@ struct Vertex;
 
 namespace TTauri::GUI::Widgets {
 
-enum class WidgetNeed {
-    None = 0,
-    Redraw = 1,
-    Layout = 3 // When Layout, Redraw is implied.
-};
-
-inline WidgetNeed operator|(WidgetNeed lhs, WidgetNeed rhs) noexcept {
-    return static_cast<WidgetNeed>(static_cast<int>(lhs) | static_cast<int>(rhs));
-}
-inline WidgetNeed &operator|=(WidgetNeed &lhs, WidgetNeed rhs) noexcept {
-    lhs = lhs | rhs;
-    return lhs;
-}
-
-inline bool operator<(WidgetNeed lhs, WidgetNeed rhs) noexcept {
-    return static_cast<int>(lhs) < static_cast<int>(rhs);
-}
-inline bool operator>(WidgetNeed lhs, WidgetNeed rhs) noexcept { return rhs < lhs; }
-inline bool operator<=(WidgetNeed lhs, WidgetNeed rhs) noexcept { return !(lhs > rhs); }
-inline bool operator>=(WidgetNeed lhs, WidgetNeed rhs) noexcept { return !(lhs < rhs); }
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
+ *
+ * Thread-safety:
+ *     All method of the widget should lock the mutex, exceptions are:
+ *         hitBoxTest(), needs()
+ *     All public members should be thread-safe, for example:
+ *         std::atomic and TTauri::observer
+ *     The following methods should only be called from the render thread:
+ *         needs(), layout(), layoutChildren(), draw(), 
  */
 class Widget {
-public:
+private:
+
+protected:
+    mutable std::recursive_mutex mutex;
+
     /** Convenient reference to the Window.
-     */
+    */
     Window &window;
 
     /** Pointer to the parent widget.
-     * May be a nullptr only when this is the top level widget.
-     */
+    * May be a nullptr only when this is the top level widget.
+    */
     Widget *parent;
-
-    mutable std::atomic<bool> forceLayout = true;
-    mutable std::atomic<bool> forceRedraw = true;
 
     std::vector<std::unique_ptr<Widget>> children;
 
     /** The content area of this widget.
-     * This is a widget that contains the widgets that are added
-     * by the user, as opposed to the child widgets that controls this widget.
-     */
+    * This is a widget that contains the widgets that are added
+    * by the user, as opposed to the child widgets that controls this widget.
+    */
     Widgets::Widget *content = nullptr;
 
-    /** The next widget to select when pressing tab.
-    */
-    Widgets::Widget *nextKeyboardWidget = nullptr;
-
-    /** The previous widget to select when pressing shift-tab.
-     */
-    Widgets::Widget *prevKeyboardWidget = nullptr;
-
-    /** A key for checking if the state of the widget has changed.
-     */
-    std::string current_state_key;
-
-    /** Temporary for calculation of the current_state_key.
-    */
-    mutable std::string next_state_key;
-
-    //! Location of the frame compared to the window.
-    BoxModel box;
-
-    /** The rectangle of the widget within the window.
-     */
-    aarect windowRectangle;
-
-    /** The rectangle to clip drawing for this widget.
-     * This is the same as the windowRectangle expanded with margins.
-     */
-    aarect clippingRectangle;
-    
-    /** The rectangle of the widget.
-     * The rectangle's left bottom corner is at (0, 0)
-     * in the current DrawContext's coordinate system.
-     */
-    aarect rectangle;
-
-    /** Offset of this widget compared to its parent.
-     */
-    vec offsetFromParent;
-
     /** Transformation matrix from window coords to local coords.
-     */
+    */
     mat fromWindowTransform;
 
     /** Transformation matrix from local coords to window coords.
@@ -159,26 +110,49 @@ public:
     rhea::constraint preferedHeightConstraint;
 
     /** The fixed size the widget should be.
-     * 0.0f in either x or y means that direction is not fixed.
-     */
+    * 0.0f in either x or y means that direction is not fixed.
+    */
     vec fixedExtent;
 
     rhea::constraint fixedWidthConstraint;
     rhea::constraint fixedHeightConstraint;
 
-    float elevation = 0.0;
+    /** Mouse cursor is hovering over the widget.
+    */
+    bool hover = false;
+
+    /** The widget has keyboard focus.
+    */
+    bool focus = false;
+
+public:
+    /** Location of the frame compared to the window.
+     * Thread-safety: the box is not modified by the class.
+     */
+    BoxModel const box;
+
+    std::atomic<float> elevation;
+
+    std::atomic<int32x2_t> extent;
+    std::atomic<int32x2_t> offsetFromParent;
+    std::atomic<int32x2_t> offsetFromWindow;
+
+    mutable std::atomic<bool> forceLayout = true;
+    mutable std::atomic<bool> forceRedraw = true;
+
+    /** The next widget to select when pressing tab.
+    */
+    Widgets::Widget *nextKeyboardWidget = nullptr;
+
+    /** The previous widget to select when pressing shift-tab.
+     */
+    Widgets::Widget *prevKeyboardWidget = nullptr;
 
     /** The widget is enabled.
      */
     observer<bool> enabled = true;
 
-    /** Mouse cursor is hovering over the widget.
-     */
-    bool hover = false;
-
-    /** The widget has keyboard focus.
-     */
-    bool focus = false;
+    
 
     /*! Constructor for creating sub views.
      */
@@ -190,16 +164,27 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
+    /** Add a widget directly to this widget.
+     *
+     * Thread safety: locks
+     */
     template<typename T, typename... Args>
     T &addWidgetDirectly(Args &&... args) {
+        auto lock = std::scoped_lock(mutex);
+
         window.forceLayout = true;
         auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
         let widget_ptr = widget.get();
-        children.push_back(move(widget));
         ttauri_assume(widget_ptr);
+
+        children.push_back(move(widget));
         return *widget_ptr;
     }
 
+    /** Add a widget directly to this widget.
+    *
+    * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
+    */
     template<typename T, typename... Args>
     T &addWidget(Args &&... args) {
         window.forceLayout = true;
@@ -234,45 +219,89 @@ public:
 
     void placeRight(float margin=theme->margin) const noexcept;
 
+    /** Get the rectangle in local coordinates.
+     *
+     * Thread safety: reads atomics.
+     */
+    [[nodiscard]] aarect rectangle() const noexcept {
+        return aarect{extent.load(std::memory_order::memory_order_relaxed)};      
+    }
+
+    /** Get the rectangle in window coordinates.
+    *
+    * Thread safety: reads atomics.
+    */
+    [[nodiscard]] aarect windowRectangle() const noexcept {
+        return {
+            vec::origin() + offsetFromWindow.load(std::memory_order::memory_order_relaxed),
+            extent.load(std::memory_order::memory_order_relaxed)
+        };
+    }
+
+    /** Get the clipping-rectangle in window coordinates.
+    *
+    * Thread safety: calls windowRectangle()
+    */
+    [[nodiscard]] aarect clippingRectangle() const noexcept {
+        return expand(windowRectangle(), Theme::margin);
+    }
 
     [[nodiscard]] Device *device() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
+     *
+     * Thread safety: locks.
      */
     [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept;
 
     /** Check if the widget will accept keyboard focus.
+     *
+     * Thread safety: reads atomics.
      */
     [[nodiscard]] virtual bool acceptsFocus() const noexcept {
         return false;
     }
 
+    /** Get nesting level used for selecting colors for the widget.
+    *
+    * Thread safety: reads atomics.
+    */
     [[nodiscard]] ssize_t nestingLevel() noexcept {
-        return numeric_cast<ssize_t>(elevation);
+        return numeric_cast<ssize_t>(elevation.load(std::memory_order::memory_order_relaxed));
     }
 
+    /** Get z value for compositing order.
+    *
+    * Thread safety: reads atomics.
+    */
     [[nodiscard]] float z() noexcept {
-        return elevation * 0.01f;
+        return elevation.load(std::memory_order::memory_order_relaxed) * 0.01f;
     }
 
     /** Request the needs of the widget.
      * This function will be called for each widget on each frame.
      * Therefor it is important to optimize this function.
      *
+     * Thread safety: reads atomics, must be called from render-thread.
+     *
      * @return If the widgets needs to be redrawn or layed out on this frame.
      */
-    [[nodiscard]] virtual WidgetNeed needs(hires_utc_clock::time_point displayTimePoint) const noexcept;
+    [[nodiscard]] virtual int needs(hires_utc_clock::time_point displayTimePoint) const noexcept;
 
     /** Layout the widget.
      * super::layout() should be called at start of the overriden function.
+     *
+     * Thread safety: locks, must be called from render-thread
      */
     virtual void layout(hires_utc_clock::time_point displayTimePoint) noexcept;
 
     /** Layout children of this widget.
     *
+    * Thread safety: locks, must be called from render-thread
+    *
     * @param force Force the layout of the widget.
     */
-    [[nodiscard]] WidgetNeed layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept;
+    [[nodiscard]] int layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept;
 
     /** Draw widget.
     *
@@ -281,10 +310,14 @@ public:
     * each buffer. This is important when needing to do the painters algorithm
     * for alpha-compositing. However the pipelines are always drawn in the same
     * order.
+    *
+    * Thread safety: locks, must be called from render-thread
     */
     virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
 
     /** Handle command.
+     *
+     * Thread safety: locks
      */
     virtual void handleCommand(string_ltag command) noexcept;
 
@@ -293,8 +326,11 @@ public:
     * This is called very often so it must be made efficient.
     * This function is also used to determine the mouse cursor.
     *
+    * Thread safety: locks
     */
     virtual void handleMouseEvent(MouseEvent const &event) noexcept {
+        auto lock = std::scoped_lock(mutex);
+
         if (event.type == MouseEvent::Type::Entered) {
             hover = true;
             forceRedraw = true;
@@ -307,8 +343,11 @@ public:
     /*! Handle keyboard event.
     * Called by the operating system when editing text, or entering special keys
     *
+    * Thread safety: locks
     */
     virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+        auto lock = std::scoped_lock(mutex);
+
         switch (event.type) {
         case KeyboardEvent::Type::Entered:
             focus = true;
@@ -329,8 +368,6 @@ public:
         default:;
         }
     }
-
-    static inline std::function<std::unique_ptr<Widget>(Window &)> make_unique_WindowWidget;
 };
 
 

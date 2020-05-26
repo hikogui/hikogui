@@ -24,14 +24,14 @@ LineInputWidget::~LineInputWidget()
 {
 }
 
-WidgetNeed LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
+int LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {
     auto need = Widget::needs(displayTimePoint);
 
     bool redraw = focus;
     redraw &= displayTimePoint > nextRedrawTimePoint;
 
-    need |= static_cast<WidgetNeed>(redraw);
+    need |= static_cast<int>(redraw);
 
     return need;
 }
@@ -40,11 +40,11 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 {
     Widget::layout(displayTimePoint);
 
-    textRectangle = shrink(rectangle, Theme::margin);
+    textRectangle = shrink(rectangle(), Theme::margin);
 
     // Set the clipping rectangle to within the border of the input field.
     // Add another border width, so glyphs do not touch the border.
-    textClippingRectangle = shrink(windowRectangle, Theme::borderWidth * 2.0f);
+    textClippingRectangle = shrink(windowRectangle(), Theme::borderWidth * 2.0f);
 
     field.setStyleOfAll(theme->labelStyle);
 
@@ -64,12 +64,17 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 void LineInputWidget::dragSelect() noexcept
 {
     let mouseInTextPosition = textInvTranslate * dragSelectPosition;
-    if (dragClickCount == 1) {
+    switch (dragClickCount) {
+    case 1:
         field.dragCursorAtCoordinate(mouseInTextPosition);
-    } else if (dragClickCount == 2) {
+        break;
+    case 2:
         field.dragWordAtCoordinate(mouseInTextPosition);
-    } else if (dragClickCount == 3) {
+        break;
+    case 3:
         field.dragParagraphAtCoordinate(mouseInTextPosition);
+        break;
+    default:;
     }
 }
 
@@ -79,14 +84,14 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
     auto context = drawContext;
 
-    context.drawBoxIncludeBorder(rectangle);
+    context.drawBoxIncludeBorder(rectangle());
 
     // After drawing the border around the input field make sure any other
     // drawing remains inside this border.
     context.clippingRectangle = textClippingRectangle;
 
     if (dragScrollSpeedX != 0.0f) {
-        textScrollX += dragScrollSpeedX * (1.0/60);
+        textScrollX += dragScrollSpeedX * (1.0f/60.0f);
         dragSelect();
 
         // Once we are scrolling, don't stop.
@@ -215,16 +220,21 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         if (textRectangle.contains(event.position)) {
             let mouseInTextPosition = textInvTranslate * event.position;
 
-            if (event.down.shiftKey) {
-                field.dragCursorAtCoordinate(mouseInTextPosition);
-            } else {
-                if (event.clickCount == 1) {
+            switch (event.clickCount) {
+            case 1:
+                if (event.down.shiftKey) {
+                    field.dragCursorAtCoordinate(mouseInTextPosition);
+                } else {
                     field.setCursorAtCoordinate(mouseInTextPosition);
-                } else if (event.clickCount == 2) {
-                    field.selectWordAtCoordinate(mouseInTextPosition);
-                } else if (event.clickCount == 3) {
-                    field.selectParagraphAtCoordinate(mouseInTextPosition);
                 }
+                break;
+            case 2:
+                field.selectWordAtCoordinate(mouseInTextPosition);
+                break;
+            case 3:
+                field.selectParagraphAtCoordinate(mouseInTextPosition);
+                break;
+            default:;
             }
         }
 
@@ -259,7 +269,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
 HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
 {
-    if (rectangle.contains(position)) {
+    if (rectangle().contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};

@@ -3,6 +3,7 @@ project(TTauri_Widgets LANGUAGES)
 
 set(TTauri_Widgets_srcs
     src/globals.cpp
+    src/Widget.cpp
     src/WindowWidget.cpp
     src/ToolbarWidget.cpp
     src/ToolbarButtonWidget.cpp

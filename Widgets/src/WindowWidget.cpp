@@ -44,16 +44,16 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
     if (position.x() <= BORDER_WIDTH) {
         if (position.y() <= BORDER_WIDTH) {
             r.type = HitBox::Type::BottomLeftResizeCorner;
-        } else if (position.y() >= (rectangle.height() - BORDER_WIDTH)) {
+        } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
             r.type = HitBox::Type::TopLeftResizeCorner;
         } else {
             r.type = HitBox::Type::LeftResizeBorder;
         }
 
-    } else if (position.x() >= (rectangle.width() - BORDER_WIDTH)) {
+    } else if (position.x() >= (rectangle().width() - BORDER_WIDTH)) {
         if (position.y() <= BORDER_WIDTH) {
             r.type = HitBox::Type::BottomRightResizeCorner;
-        } else if (position.y() >= (rectangle.height() - BORDER_WIDTH)) {
+        } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
             r.type = HitBox::Type::TopRightResizeCorner;
         } else {
             r.type = HitBox::Type::RightResizeBorder;
@@ -62,7 +62,7 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
     } else if (position.y() <= BORDER_WIDTH) {
         r.type = HitBox::Type::BottomResizeBorder;
 
-    } else if (position.y() >= (rectangle.height() - BORDER_WIDTH)) {
+    } else if (position.y() >= (rectangle().height() - BORDER_WIDTH)) {
         r.type = HitBox::Type::TopResizeBorder;
     }
 
@@ -72,9 +72,9 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
         return r;
     }
 
-    r = std::max(r, toolbar->hitBoxTest(position - toolbar->offsetFromParent));
     for (let &child : children) {
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
+        let offset = child->offsetFromParent.load(std::memory_order::memory_order_relaxed);
+        r = std::max(r, child->hitBoxTest(position - offset));
     }
 
     return r;

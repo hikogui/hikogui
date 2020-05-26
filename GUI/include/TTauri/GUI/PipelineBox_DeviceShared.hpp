@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
+#include "TTauri/Foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>
