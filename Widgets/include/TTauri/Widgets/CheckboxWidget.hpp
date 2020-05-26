@@ -58,7 +58,7 @@ public:
         let label_x = Theme::smallWidth + Theme::margin;
         label_rectangle = aarect{
             label_x, 0.0f,
-            rectangle.width() - label_x, rectangle.height()
+            rectangle().width() - label_x, rectangle().height()
         };
 
         labelShapedText = Text::ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
@@ -68,7 +68,7 @@ public:
         button_height = Theme::smallHeight;
         button_width = Theme::smallHeight;
         button_x = Theme::smallWidth - button_width;
-        button_y = rectangle.height() - button_height;
+        button_y = rectangle().height() - button_height;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
@@ -123,7 +123,7 @@ public:
             if (
                 event.type == GUI::MouseEvent::Type::ButtonUp &&
                 event.cause.leftButton &&
-                rectangle.contains(event.position)
+                rectangle().contains(event.position)
             ) {
                 handleCommand("gui.activate"_ltag);
             }
@@ -144,7 +144,7 @@ public:
     }
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
-        if (rectangle.contains(position)) {
+        if (rectangle().contains(position)) {
             return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};

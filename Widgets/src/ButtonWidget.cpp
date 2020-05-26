@@ -27,8 +27,8 @@ void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 
     let label_x = Theme::margin;
     let label_y = 0.0;
-    let label_width = rectangle.width() - Theme::margin * 2.0f;
-    let label_height = rectangle.height();
+    let label_width = rectangle().width() - Theme::margin * 2.0f;
+    let label_height = rectangle().height();
     let label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
     labelShapedText = ShapedText(label, theme->warningLabelStyle, label_width + 1.0f, Alignment::MiddleCenter);
@@ -50,7 +50,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
 
     // Move the border of the button in the middle of a pixel.
     context.transform = drawContext.transform;
-    context.drawBoxIncludeBorder(rectangle);
+    context.drawBoxIncludeBorder(rectangle());
 
     if (enabled) {
         context.color = theme->foregroundColor;
@@ -85,7 +85,7 @@ void ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         if (
             event.type == GUI::MouseEvent::Type::ButtonUp &&
             event.cause.leftButton &&
-            rectangle.contains(event.position)
+            rectangle().contains(event.position)
         ) {
             handleCommand("gui.activate"_ltag);
         }
@@ -94,7 +94,7 @@ void ButtonWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
 HitBox ButtonWidget::hitBoxTest(vec position) const noexcept
 {
-    if (rectangle.contains(position)) {
+    if (rectangle().contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};

@@ -40,11 +40,11 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 {
     Widget::layout(displayTimePoint);
 
-    textRectangle = shrink(rectangle, Theme::margin);
+    textRectangle = shrink(rectangle(), Theme::margin);
 
     // Set the clipping rectangle to within the border of the input field.
     // Add another border width, so glyphs do not touch the border.
-    textClippingRectangle = shrink(windowRectangle, Theme::borderWidth * 2.0f);
+    textClippingRectangle = shrink(windowRectangle(), Theme::borderWidth * 2.0f);
 
     field.setStyleOfAll(theme->labelStyle);
 
@@ -84,7 +84,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
     auto context = drawContext;
 
-    context.drawBoxIncludeBorder(rectangle);
+    context.drawBoxIncludeBorder(rectangle());
 
     // After drawing the border around the input field make sure any other
     // drawing remains inside this border.
@@ -269,7 +269,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
 HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
 {
-    if (rectangle.contains(position)) {
+    if (rectangle().contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};

@@ -38,6 +38,8 @@ Device *Widget::device() const noexcept
 
 void Widget::setMinimumExtent(vec newMinimumExtent) noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     if (newMinimumExtent != minimumExtent) {
         minimumExtent = newMinimumExtent;
 
@@ -60,6 +62,8 @@ void Widget::setMinimumExtent(float width, float height) noexcept
 
 void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     if (newPreferedExtent != preferedExtent) {
         preferedExtent = newPreferedExtent;
 
@@ -79,6 +83,8 @@ void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
 
 void Widget::setFixedExtent(vec newFixedExtent) noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     ttauri_assert(newFixedExtent.width() == 0.0f || newFixedExtent.width() >= minimumExtent.width());
     ttauri_assert(newFixedExtent.height() == 0.0f || newFixedExtent.height() >= minimumExtent.height());
 
@@ -159,23 +165,26 @@ int Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 
 void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    windowRectangle = round(box.rectangle());
+    auto lock = std::scoped_lock(mutex);
 
-    clippingRectangle = expand(windowRectangle, Theme::margin);
-    rectangle = windowRectangle.extent();
+    let _windowRectangle = round(box.rectangle());
+    extent = _windowRectangle.extent();
+    offsetFromWindow.store(_windowRectangle.offset(), std::memory_order::memory_order_relaxed);
 
     offsetFromParent = parent ?
-        windowRectangle.offset() - parent->windowRectangle.offset():
-        windowRectangle.offset();
+        _windowRectangle.offset() - parent->offsetFromWindow.load(std::memory_order::memory_order_relaxed):
+        _windowRectangle.offset();
         
-    fromWindowTransform = mat::T(-windowRectangle.x(), -windowRectangle.y(), -z());
-    toWindowTransform = mat::T(windowRectangle.x(), windowRectangle.y(), z());
+    fromWindowTransform = mat::T(-_windowRectangle.x(), -_windowRectangle.y(), -z());
+    toWindowTransform = mat::T(_windowRectangle.x(), _windowRectangle.y(), z());
 
     forceRedraw = true;
 }
 
 int Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     auto total_need = 0;
 
     for (auto &&child: children) {
@@ -194,9 +203,11 @@ int Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool fo
 
 void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     auto childContext = drawContext;
     for (auto &child : children) {
-        childContext.clippingRectangle = child->clippingRectangle;
+        childContext.clippingRectangle = child->clippingRectangle();
         childContext.transform = child->toWindowTransform;
 
         // The default fill and border colors.
@@ -226,6 +237,8 @@ void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point di
 }
 
 void Widget::handleCommand(string_ltag command) noexcept {
+    auto lock = std::scoped_lock(mutex);
+
     if (command == "gui.widget.next"_ltag) {
         window.updateToNextKeyboardTarget(this);
     } else if (command == "gui.widget.prev"_ltag) {
@@ -235,12 +248,15 @@ void Widget::handleCommand(string_ltag command) noexcept {
 
 HitBox Widget::hitBoxTest(vec position) const noexcept
 {
-    auto r = rectangle.contains(position) ?
+    auto lock = std::scoped_lock(mutex);
+
+    auto r = rectangle().contains(position) ?
         HitBox{this, elevation} :
         HitBox{};
 
     for (let &child : children) {
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
+        let offset = child->offsetFromParent.load(std::memory_order::memory_order_relaxed);
+        r = std::max(r, child->hitBoxTest(position - offset));
     }
     return r;
 }

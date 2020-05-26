@@ -22,7 +22,7 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     let label_x = Theme::smallWidth + Theme::margin;
     label_rectangle = aarect{
         label_x, 0.0f,
-        rectangle.width() - label_x, rectangle.height()
+        rectangle().width() - label_x, rectangle().height()
     };
 
     labelShapedText = ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
@@ -32,7 +32,7 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     toggle_height = Theme::smallHeight;
     toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
     toggle_x = -0.5f;  // Expand horizontally due to rounded shape
-    toggle_y = rectangle.height() - toggle_height;
+    toggle_y = rectangle().height() - toggle_height;
     toggle_rectangle = aarect{toggle_x, toggle_y, toggle_width, toggle_height};
     
     slider_x = 1.5f;
@@ -105,7 +105,7 @@ void ToggleWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         if (
             event.type == GUI::MouseEvent::Type::ButtonUp &&
             event.cause.leftButton &&
-            rectangle.contains(event.position)
+            rectangle().contains(event.position)
         ) {
             handleCommand("gui.activate"_ltag);
         }
@@ -114,7 +114,7 @@ void ToggleWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
 HitBox ToggleWidget::hitBoxTest(vec position) const noexcept
 {
-    if (rectangle.contains(position)) {
+    if (rectangle().contains(position)) {
         return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};

@@ -67,19 +67,20 @@ void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_p
 {
     auto context = drawContext;
 
-    context.drawFilledQuad(rectangle);
+    context.drawFilledQuad(rectangle());
 
     Widget::draw(drawContext, displayTimePoint);
 }
 
 HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
 {
-    auto r = rectangle.contains(position) ?
+    auto r = rectangle().contains(position) ?
         HitBox{this, elevation, HitBox::Type::MoveArea} :
         HitBox{};
 
     for (let &child : children) {
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
+        let offset = child->offsetFromParent.load(std::memory_order::memory_order_relaxed);
+        r = std::max(r, child->hitBoxTest(position - offset));
     }
     return r;
 }

@@ -68,7 +68,7 @@ void startup()
     };
 
     Widget_getWindowOffset = [](let &self) {
-        return self.windowRectangle.offset();
+        return self.offsetFromWindow.load(std::memory_order::memory_order_relaxed);
     };
 
     Widget_hitBoxTest = [](let &self, auto position) {

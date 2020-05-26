@@ -164,6 +164,10 @@ elseif (MSVC)
     # with an implementation that does not use the parameter.
     target_compile_options(TTauri_Foundation PUBLIC -wd4100)
 
+    if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
+        # Enable Security Development Lifecycle checks.
+        target_compile_options(TTauri_Foundation PUBLIC -sdl)
+    endif()
 endif()
 
 if (WIN32)
