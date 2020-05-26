@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/Foundation/Path.hpp"
 #include <memory>
 #include <string>

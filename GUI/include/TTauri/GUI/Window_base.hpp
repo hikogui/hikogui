@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/WindowDelegate.hpp"
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/GUI/Widget_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/Cursor.hpp"
 #include "TTauri/GUI/HitBox.hpp"
@@ -120,7 +120,7 @@ public:
     }
 
     //! The widget covering the complete window.
-    std::unique_ptr<Widgets::Widget> widget;
+    std::unique_ptr<Widgets::Widget,WidgetDeleter> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
@@ -166,8 +166,9 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint);
 
     /** Layout the widgets in the window.
+     * @return bit 0: Request redraw, bit 1: Request layout.
      */
-    Widgets::WidgetNeed layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force);
+    int layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force);
 
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.

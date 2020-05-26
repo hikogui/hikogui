@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>

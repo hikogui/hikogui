@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/Text/EditableText.hpp"
 #include <memory>
 #include <string>
@@ -60,7 +60,7 @@ public:
     LineInputWidget(LineInputWidget&&) = delete;
     LineInputWidget &operator=(LineInputWidget &&) = delete;
 
-    [[nodiscard]] WidgetNeed needs(hires_utc_clock::time_point displayTimePoint) const noexcept override;
+    [[nodiscard]] int needs(hires_utc_clock::time_point displayTimePoint) const noexcept override;
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

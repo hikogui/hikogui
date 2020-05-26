@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/Widget.hpp"
+#include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
 namespace TTauri::GUI::Widgets {
@@ -143,7 +143,7 @@ void Widget::placeRight(float margin) const noexcept {
     window.addConstraint(this->box.right + margin == parent->box.right);
 }
 
-WidgetNeed Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
+int Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {
     auto layout = forceLayout.exchange(false, std::memory_order::memory_order_relaxed);
     layout |= box.hasResized();
@@ -154,7 +154,7 @@ WidgetNeed Widget::needs(hires_utc_clock::time_point displayTimePoint) const noe
         (static_cast<int>(layout) << 1) |
         static_cast<int>(redraw);
 
-    return static_cast<WidgetNeed>(need);
+    return need;
 }
 
 void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
@@ -174,15 +174,15 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     forceRedraw = true;
 }
 
-WidgetNeed Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept
+int Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept
 {
-    auto total_need = WidgetNeed::None;
+    auto total_need = 0;
 
     for (auto &&child: children) {
         let child_need = child->needs(displayTimePoint);
         total_need |= child_need;
 
-        if (force || child_need >= WidgetNeed::Layout) {
+        if (force || child_need >= 2) {
             child->layout(displayTimePoint);
         }
 

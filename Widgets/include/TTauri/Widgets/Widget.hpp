@@ -261,7 +261,7 @@ public:
      *
      * @return If the widgets needs to be redrawn or layed out on this frame.
      */
-    [[nodiscard]] virtual WidgetNeed needs(hires_utc_clock::time_point displayTimePoint) const noexcept;
+    [[nodiscard]] virtual int needs(hires_utc_clock::time_point displayTimePoint) const noexcept;
 
     /** Layout the widget.
      * super::layout() should be called at start of the overriden function.
@@ -272,7 +272,7 @@ public:
     *
     * @param force Force the layout of the widget.
     */
-    [[nodiscard]] WidgetNeed layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept;
+    [[nodiscard]] int layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept;
 
     /** Draw widget.
     *
@@ -329,8 +329,6 @@ public:
         default:;
         }
     }
-
-    static inline std::function<std::unique_ptr<Widget>(Window &)> make_unique_WindowWidget;
 };
 
 
