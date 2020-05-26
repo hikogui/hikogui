@@ -293,6 +293,19 @@ struct utf8_to_utf32_state {
 
     return r;
 }
+#else
+/** Convert a MS-Windows wide string to a UTF-16 string.
+ */
+[[nodiscard]] inline std::wstring to_wstring(std::u32string_view rhs) noexcept {
+    auto r = std::wstring{};
+    r.reserve(ssize(rhs));
+
+    for (auto c: rhs) {
+        r += static_cast<wchar_t>(c);
+    }
+
+    return r;
+}
 #endif
 
 /** Convert a UTF-8 string to a UTF-32 string.
@@ -350,6 +363,19 @@ struct utf8_to_utf32_state {
 
     return r;
 }
+#else
+/** Convert a MS-Windows wide string to a UTF-32 string.
+ */
+[[nodiscard]] inline std::u32string to_u32string(std::wstring_view rhs) noexcept {
+    auto r = std::u32string{};
+    r.reserve(ssize(rhs));
+
+    for (let c: rhs) {
+        r += static_cast<wchar_t>(c);
+    }
+
+    return r;
+}
 #endif
 
 /** Convert a UTF-16 string to a UTF-8 string.
@@ -358,13 +384,11 @@ struct utf8_to_utf32_state {
     return to_string(to_u32string(rhs));
 }
 
-#if WCHAR_MAX < 65536
 /** Convert a MS-Windows wide string to a UTF-8 string.
  */
 [[nodiscard]] inline std::string to_string(std::wstring_view rhs) noexcept {
     return to_string(to_u32string(rhs));
 }
-#endif
 
 /** Convert a UTF-8 string to a UTF-16 string.
  */
@@ -372,13 +396,11 @@ struct utf8_to_utf32_state {
     return to_u16string(to_u32string(rhs));
 }
 
-#if WCHAR_MAX < 65536
 /** Convert a MS-Windows wide string to a UTF-16 string.
  */
 [[nodiscard]] inline std::wstring to_wstring(std::string_view rhs) noexcept {
     return to_wstring(to_u32string(rhs));
 }
-#endif
 
 }
 

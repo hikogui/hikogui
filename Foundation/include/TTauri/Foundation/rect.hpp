@@ -83,7 +83,7 @@ public:
     template<size_t I>
     [[nodiscard]] force_inline vec corner() const noexcept {
         static_assert(I <= 3);
-        return get<I>(corners);
+        return std::get<I>(corners);
     }
 
     [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {

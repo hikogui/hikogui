@@ -119,7 +119,7 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
     target_compile_options(TTauri_Foundation PUBLIC -Wno-assume)
 
     # Clang will complain about calling hidden-friend-template-functions.
-    target_compile_options(TTauri_Foundation PUBLIC -Wno-c++20-extensions)
+    target_compile_options(TTauri_Foundation PUBLIC -Wno-unknown-warning-option -Wno-c++20-extensions -Wno-c++2a-extensions)
 
     # vk_mem_alloc.h seems to turn on nullability completeness checks on clang.
     # It seems this check should only be used for interopability with swift
