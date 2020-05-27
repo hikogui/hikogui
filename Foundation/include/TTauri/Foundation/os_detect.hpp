@@ -110,6 +110,8 @@ constexpr auto compiler = Compiler::clang;
 #define PROCESSOR CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)
 #define PROCESSOR CPU_ARM
+#else
+#error "Could not detect processor."
 #endif
 
 enum class Processor {

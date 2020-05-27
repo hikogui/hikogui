@@ -79,8 +79,7 @@ HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
         HitBox{};
 
     for (let &child : children) {
-        let offset = child->offsetFromParent.load(std::memory_order::memory_order_relaxed);
-        r = std::max(r, child->hitBoxTest(position - offset));
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
     }
     return r;
 }

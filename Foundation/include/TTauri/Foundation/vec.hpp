@@ -772,34 +772,6 @@ public:
     SWIZZLE2_GEN1(a, 'w')
 };
 
-
-struct int32x2_t {
-    alignas(8)
-        int32_t x;
-    int32_t y;
-
-    int32x2_t() noexcept : x(0), y(0) {}
-    int32x2_t(int32x2_t const &) noexcept = default;
-    int32x2_t(int32x2_t &&) noexcept = default;
-    int32x2_t &operator=(int32x2_t const &) noexcept = default;
-    int32x2_t &operator=(int32x2_t &&) noexcept = default;
-
-    int32x2_t(vec v) noexcept :
-        x(numeric_cast<int32_t>(v.x())),
-        y(numeric_cast<int32_t>(v.y())) {
-        ttauri_assume(v.z() == 0.0f);
-        ttauri_assume(v.w() == 0.0f);
-    }
-
-    operator vec () const noexcept {
-        return vec{
-            numeric_cast<float>(x),
-            numeric_cast<float>(y),
-            0.0f
-        };
-    }
-};
-
 }
 
 #undef SWIZZLE4

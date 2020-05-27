@@ -22,6 +22,7 @@
 #include <TTauri/Foundation/Trigger.hpp>
 #include <TTauri/Foundation/cpu_utc_clock.hpp>
 #include <TTauri/Foundation/observer.hpp>
+#include <TTauri/Foundation/simd.hpp>
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -133,9 +134,9 @@ public:
 
     std::atomic<float> elevation;
 
-    std::atomic<int32x2_t> extent;
-    std::atomic<int32x2_t> offsetFromParent;
-    std::atomic<int32x2_t> offsetFromWindow;
+    std::atomic<i32x2_t> _extent;
+    std::atomic<i32x2_t> _offsetFromParent;
+    std::atomic<i32x2_t> _offsetFromWindow;
 
     mutable std::atomic<bool> forceLayout = true;
     mutable std::atomic<bool> forceRedraw = true;
@@ -219,12 +220,36 @@ public:
 
     void placeRight(float margin=theme->margin) const noexcept;
 
+    [[nodiscard]] vec extent() const noexcept {
+        return vec{_extent.load(std::memory_order::memory_order_relaxed)};
+    }
+
+    void setExtent(vec rhs) noexcept {
+        _extent.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
+    }
+
+    [[nodiscard]] vec offsetFromParent() const noexcept {
+        return vec{_offsetFromParent.load(std::memory_order::memory_order_relaxed)};
+    }
+
+    void setOffsetFromParent(vec rhs) noexcept {
+        _offsetFromParent.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
+    }
+
+    [[nodiscard]] vec offsetFromWindow() const noexcept {
+        return vec{_offsetFromWindow.load(std::memory_order::memory_order_relaxed)};
+    }
+
+    void setOffsetFromWindow(vec rhs) noexcept {
+        _offsetFromWindow.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
+    }
+
     /** Get the rectangle in local coordinates.
      *
      * Thread safety: reads atomics.
      */
     [[nodiscard]] aarect rectangle() const noexcept {
-        return aarect{extent.load(std::memory_order::memory_order_relaxed)};      
+        return aarect{extent()};      
     }
 
     /** Get the rectangle in window coordinates.
@@ -233,8 +258,8 @@ public:
     */
     [[nodiscard]] aarect windowRectangle() const noexcept {
         return {
-            vec::origin() + offsetFromWindow.load(std::memory_order::memory_order_relaxed),
-            extent.load(std::memory_order::memory_order_relaxed)
+            vec::origin() + offsetFromWindow(),
+            vec{extent()}
         };
     }
 

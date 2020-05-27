@@ -1,6 +1,6 @@
 
 
-project(TTauriDevelopmentApplication CXX)
+project(TTauriDevelopmentApplication)
 
 if(WIN32)
   set(GUI_TYPE WIN32)

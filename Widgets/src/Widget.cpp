@@ -168,12 +168,14 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     auto lock = std::scoped_lock(mutex);
 
     let _windowRectangle = round(box.rectangle());
-    extent = _windowRectangle.extent();
-    offsetFromWindow.store(_windowRectangle.offset(), std::memory_order::memory_order_relaxed);
+    setExtent(_windowRectangle.extent());
+    setOffsetFromWindow(_windowRectangle.offset());
 
-    offsetFromParent = parent ?
-        _windowRectangle.offset() - parent->offsetFromWindow.load(std::memory_order::memory_order_relaxed):
-        _windowRectangle.offset();
+    setOffsetFromParent(
+        parent ?
+            _windowRectangle.offset() - parent->offsetFromWindow():
+            _windowRectangle.offset()
+    );
         
     fromWindowTransform = mat::T(-_windowRectangle.x(), -_windowRectangle.y(), -z());
     toWindowTransform = mat::T(_windowRectangle.x(), _windowRectangle.y(), z());
@@ -255,8 +257,7 @@ HitBox Widget::hitBoxTest(vec position) const noexcept
         HitBox{};
 
     for (let &child : children) {
-        let offset = child->offsetFromParent.load(std::memory_order::memory_order_relaxed);
-        r = std::max(r, child->hitBoxTest(position - offset));
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
     }
     return r;
 }
