@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <emmintrin.h>
+#include <immintrin.h>
 #include <type_traits>
 
 namespace TTauri {

@@ -10,6 +10,7 @@
 #include "TTauri/Foundation/type_traits.hpp"
 #include "TTauri/Foundation/throw_exception.hpp"
 #include "TTauri/Foundation/math.hpp"
+#include "TTauri/Foundation/algorithm.hpp"
 #include <date/date.h>
 #include <vector>
 #include <unordered_map>

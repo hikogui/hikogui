@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/url_parser.hpp"
 #include "TTauri/Foundation/glob.hpp"
+#include "TTauri/Foundation/Unicode.hpp"
 #include <regex>
 
 namespace TTauri {
