@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/GUI/BoxModel.hpp"
 #include "TTauri/GUI/PipelineImage_Backing.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
@@ -130,7 +129,17 @@ public:
     /** Location of the frame compared to the window.
      * Thread-safety: the box is not modified by the class.
      */
-    BoxModel const box;
+    rhea::variable const left;
+    rhea::variable const bottom;
+    rhea::variable const width;
+    rhea::variable const height;
+    mutable double widthChangePreviousValue;
+    mutable double heightChangePreviousValue;
+
+    rhea::linear_expression const right = left + width;
+    rhea::linear_expression const centre = left + width * 0.5;
+    rhea::linear_expression const top = bottom + height;
+    rhea::linear_expression const middle = bottom + height * 0.5;
 
     std::atomic<float> elevation;
 
@@ -195,6 +204,15 @@ public:
             return addWidgetDirectly<T>(std::forward<Args>(args)...);
         }
     }
+
+    /** Check if the width and height value has changed.
+     */
+    bool widthOrHeightValueHasChanged() const noexcept;
+
+    /** Create a window rectangle from left, bottom, width and height
+     * Thread-safety: locks window.widgetSolverMutex
+     */
+    aarect makeWindowRectangle() const noexcept;
 
     void setMinimumExtent(vec newMinimumExtent) noexcept;
     void setMinimumExtent(float width, float height) noexcept;

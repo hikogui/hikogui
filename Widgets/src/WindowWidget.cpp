@@ -15,23 +15,23 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     Widget(window, nullptr, vec{0.0, 0.0})
 {
     toolbar = &addWidgetDirectly<ToolbarWidget>();
-    window.addConstraint(toolbar->box.left == box.left);
-    window.addConstraint(toolbar->box.right == box.right);
-    window.addConstraint(toolbar->box.top == box.top);
+    window.addConstraint(toolbar->left == left);
+    window.addConstraint(toolbar->right == right);
+    window.addConstraint(toolbar->top == top);
 
     content = &addWidgetDirectly<ContainerWidget>();
-    window.addConstraint(content->box.left == box.left);
-    window.addConstraint(content->box.right == box.right);
-    window.addConstraint(content->box.top == toolbar->box.bottom);
-    window.addConstraint(content->box.bottom == box.bottom);
+    window.addConstraint(content->left == left);
+    window.addConstraint(content->right == right);
+    window.addConstraint(content->top == toolbar->bottom);
+    window.addConstraint(content->bottom == bottom);
 
     // Add constraints for the window widget itself.
-    window.addConstraint(box.left == 0);
-    window.addConstraint(box.bottom == 0);
+    window.addConstraint(left == 0);
+    window.addConstraint(bottom == 0);
     // A upper bound constraint is needed to allow the suggest(width, limit::max()) and suggest(height, limit::max()) to
     // fallback on a upper bound, otherwise it will select the lower bounds instead.
-    window.addConstraint(box.width <= std::numeric_limits<uint16_t>::max());
-    window.addConstraint(box.height <= std::numeric_limits<uint16_t>::max());
+    window.addConstraint(width <= std::numeric_limits<uint16_t>::max());
+    window.addConstraint(height <= std::numeric_limits<uint16_t>::max());
 
 }
 

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Window_forward.hpp"
+#include "TTauri/Foundation/vec.hpp"
 #include <future>
 #include <map>
 #include <optional>

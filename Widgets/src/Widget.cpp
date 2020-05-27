@@ -13,12 +13,12 @@ Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
     enabled(true, [this](auto...){ forceRedraw = true; })
 {
     minimumExtent = defaultExtent;
-    minimumWidthConstraint = window.addConstraint(box.width >= minimumExtent.width());
-    minimumHeightConstraint = window.addConstraint(box.height >= minimumExtent.height());
+    minimumWidthConstraint = window.addConstraint(width >= minimumExtent.width());
+    minimumHeightConstraint = window.addConstraint(height >= minimumExtent.height());
 
     preferedExtent = defaultExtent;
-    preferedWidthConstraint = window.addConstraint(box.width >= preferedExtent.width(), rhea::strength::strong());
-    preferedHeightConstraint = window.addConstraint(box.height >= preferedExtent.height(), rhea::strength::strong());
+    preferedWidthConstraint = window.addConstraint(width >= preferedExtent.width(), rhea::strength::strong());
+    preferedHeightConstraint = window.addConstraint(height >= preferedExtent.height(), rhea::strength::strong());
 }
 
 Widget::~Widget()
@@ -45,12 +45,12 @@ void Widget::setMinimumExtent(vec newMinimumExtent) noexcept
 
         minimumWidthConstraint = window.replaceConstraint(
             minimumWidthConstraint,
-            box.width >= minimumExtent.width()
+            width >= minimumExtent.width()
         );
 
         minimumHeightConstraint = window.replaceConstraint(
             minimumHeightConstraint,
-            box.height >= minimumExtent.height()
+            height >= minimumExtent.height()
         );
     }
 }
@@ -69,13 +69,13 @@ void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
 
         preferedWidthConstraint = window.replaceConstraint(
             preferedWidthConstraint,
-            box.width >= preferedExtent.width(),
+            width >= preferedExtent.width(),
             rhea::strength::weak()
         );
 
         preferedHeightConstraint = window.replaceConstraint(
             preferedHeightConstraint,
-            box.height >= preferedExtent.height(),
+            height >= preferedExtent.height(),
             rhea::strength::weak()
         );
     }
@@ -97,10 +97,10 @@ void Widget::setFixedExtent(vec newFixedExtent) noexcept
         }
         fixedExtent = newFixedExtent;
         if (fixedExtent.width() != 0.0f) {
-            fixedWidthConstraint = window.addConstraint(box.width == fixedExtent.width());
+            fixedWidthConstraint = window.addConstraint(width == fixedExtent.width());
         }
         if (fixedExtent.height() != 0.0f) {
-            fixedHeightConstraint = window.addConstraint(box.height == fixedExtent.height());
+            fixedHeightConstraint = window.addConstraint(height == fixedExtent.height());
         }
     }
 }
@@ -118,41 +118,58 @@ void Widget::setFixedWidth(float width) noexcept
 
 
 void Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.top + margin == rhs.box.bottom);
+    window.addConstraint(this->top + margin == rhs.bottom);
 }
 
 void Widget::placeAbove(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.bottom == rhs.box.top + margin);
+    window.addConstraint(this->bottom == rhs.top + margin);
 }
 
 void Widget::placeLeftOf(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.right + margin == rhs.box.left);
+    window.addConstraint(this->right + margin == rhs.left);
 }
 
 void Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->box.left == rhs.box.right + margin);
+    window.addConstraint(this->left == rhs.right + margin);
 }
 
 void Widget::placeAtTop(float margin) const noexcept {
-    window.addConstraint(this->box.top + margin == parent->box.top);
+    window.addConstraint(this->top + margin == parent->top);
 }
 
 void Widget::placeAtBottom(float margin) const noexcept {
-    window.addConstraint(this->box.bottom - margin == parent->box.bottom);
+    window.addConstraint(this->bottom - margin == parent->bottom);
 }
 
 void Widget::placeLeft(float margin) const noexcept {
-    window.addConstraint(this->box.left - margin == parent->box.left);
+    window.addConstraint(this->left - margin == parent->left);
 }
 
 void Widget::placeRight(float margin) const noexcept {
-    window.addConstraint(this->box.right + margin == parent->box.right);
+    window.addConstraint(this->right + margin == parent->right);
+}
+
+bool Widget::widthOrHeightValueHasChanged() const noexcept
+{
+    auto lock = std::scoped_lock(window.widgetSolverMutex);
+
+    let widthValue = width.value();
+    let heightValue = height.value();
+
+    auto changed = false;
+    changed |= widthValue != widthChangePreviousValue;
+    changed |= heightValue != heightChangePreviousValue;
+
+    widthChangePreviousValue = widthValue;
+    heightChangePreviousValue = heightValue;
+
+    return changed;
 }
 
 int Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
 {
     auto layout = forceLayout.exchange(false, std::memory_order::memory_order_relaxed);
-    layout |= box.hasResized();
+    layout |= widthOrHeightValueHasChanged();
     auto redraw = layout;
     redraw |= forceRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
@@ -163,11 +180,23 @@ int Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
     return need;
 }
 
+aarect Widget::makeWindowRectangle() const noexcept
+{
+    auto lock = std::scoped_lock(window.widgetSolverMutex);
+
+    return round(aarect{
+        numeric_cast<float>(left.value()),
+        numeric_cast<float>(bottom.value()),
+        numeric_cast<float>(width.value()),
+        numeric_cast<float>(height.value())
+    });
+}
+
 void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto lock = std::scoped_lock(mutex);
 
-    let _windowRectangle = round(box.rectangle());
+    let _windowRectangle = makeWindowRectangle();
     setExtent(_windowRectangle.extent());
     setOffsetFromWindow(_windowRectangle.offset());
 

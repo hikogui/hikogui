@@ -32,7 +32,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_c
 {
     auto drawingBackingImage = backingImage.loadOrDraw(
         window,
-        box.extent(),
+        extent(),
         [&](auto image) {
             return drawImage(image);
         },
@@ -44,7 +44,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_c
     }
 
     if (backingImage.image) {
-        let currentScale = (box.extent() / vec{backingImage.image->extent}).xy11();
+        let currentScale = (extent() / vec{backingImage.image->extent}).xy11();
 
         auto context = drawContext;
         context.transform = context.transform * mat::S(currentScale);
@@ -129,7 +129,7 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawApplicationIconImage
 
 PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
 {
-    let height = box.height.value();
+    let height = extent().height();
 
     let redCenter = vec{
         MARGIN + RADIUS,
@@ -207,7 +207,7 @@ PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::
 
 std::tuple<aarect, aarect, aarect, aarect> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
 {
-    let height = rectangle().height();
+    let height = extent().height();
 
     let sysmenuButtonBox = aarect{
         vec::point(0.0, 0.0),

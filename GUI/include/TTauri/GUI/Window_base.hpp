@@ -87,6 +87,11 @@ public:
      */
     Size size = Size::Normal;
 
+    /** Mutex for access to rhea objects registered with the widgetSolver.
+    * Widgets will need to lock this mutex when reading variables or equations.
+    */
+    std::mutex widgetSolverMutex;
+
     //! The minimum window extent as calculated by laying out all the widgets.
     ivec minimumWindowExtent;
 
@@ -301,6 +306,7 @@ private:
     //! This solver determines size and position of all widgets in this window.
     rhea::simplex_solver widgetSolver;
 
+
     /** Constraints have been updated.
     */
     bool constraintsUpdated = false;
@@ -311,9 +317,23 @@ private:
     //! Stay constraint for the currentWindowExtent height.
     rhea::constraint currentWindowExtentHeightConstraint;
 
-    void setWidgetToCurrentExtent();
+    /** Suggest an extent for the window-widget.
+     * The suggested extent is tried, but constraints may limit the
+     * actual extent.
+     *
+     * @param extent The extent to set the window-widget to
+     * @return The extent the widget has used after the suggestion.
+     */
+    vec suggestWidgetExtent(vec extent) noexcept;
 
-    void calculateMinimumAndMaximumWindowExtent();
+    /** Experiment with window-widget extent and get the minimum and maximum
+     * @return minimum-extent, maximum-extent
+     */
+    [[nodiscard]] std::pair<vec,vec> getMinimumAndMaximumWidgetExtent() noexcept;
+
+    /** layout and constrain the window based on the window-widget's extent.
+     */
+    void layoutWindow() noexcept;
 
 
 };

@@ -10,7 +10,6 @@ set(TTauri_Widgets_srcs
     src/WindowTrafficLightsWidget.cpp
     src/ButtonWidget.cpp
     src/ToggleWidget.cpp
-    src/ImageWidget.cpp
     src/LineInputWidget.cpp
 )
 

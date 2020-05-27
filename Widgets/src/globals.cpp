@@ -75,8 +75,28 @@ void startup()
         return self.hitBoxTest(position);
     };
 
-    Widget_getBox = [](let &self) -> BoxModel const& {
-        return self.box;
+    Widget_getLeft = [](let &self) -> rhea::variable const & {
+        return self.left;
+    };
+
+    Widget_getBottom = [](let &self) -> rhea::variable const & {
+        return self.bottom;
+    };
+
+    Widget_getWidth = [](let &self) -> rhea::variable const & {
+        return self.width;
+    };
+
+    Widget_getHeight = [](let &self) -> rhea::variable const & {
+        return self.height;
+    };
+
+    Widget_getRight = [](let &self) -> rhea::linear_expression const & {
+        return self.right;
+    };
+
+    Widget_getTop = [](let &self) -> rhea::linear_expression const & {
+        return self.right;
     };
 }
 

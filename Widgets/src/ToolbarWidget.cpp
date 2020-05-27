@@ -14,14 +14,14 @@ using namespace std;
 ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
     Widget(window, parent, vec{Theme::width, Theme::smallHeight})
 {
-    window.addConstraint(box.height <= Theme::smallHeight, rhea::strength::strong());
+    window.addConstraint(height <= Theme::smallHeight, rhea::strength::strong());
 
     trafficLightButtons = &addWidget<WindowTrafficLightsWidget>(
         getResource<Path>(URL("resource:Themes/Icons/Application Icon.tticon"))
     );
-    window.addConstraint(trafficLightButtons->box.top == box.top);
-    window.addConstraint(trafficLightButtons->box.left == box.left);
-    window.addConstraint(trafficLightButtons->box.bottom == box.bottom);
+    window.addConstraint(trafficLightButtons->top == top);
+    window.addConstraint(trafficLightButtons->left == left);
+    window.addConstraint(trafficLightButtons->bottom == bottom);
 
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         closeWindowButton = &addWidget<ToolbarButtonWidget>(
@@ -29,9 +29,9 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
             [&]() { window.closeWindow(); }
         );
         closeWindowButton->closeButton = true;
-        window.addConstraint(closeWindowButton->box.top == box.top);
-        window.addConstraint(closeWindowButton->box.right == box.right);
-        window.addConstraint(closeWindowButton->box.bottom == box.bottom);
+        window.addConstraint(closeWindowButton->top == top);
+        window.addConstraint(closeWindowButton->right == right);
+        window.addConstraint(closeWindowButton->bottom == bottom);
 
         maximizeWindowButton = &addWidget<ToolbarButtonWidget>(
             Text::TTauriIcon::MaximizeWindow,
@@ -48,18 +48,18 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
             }
         }
         );
-        window.addConstraint(maximizeWindowButton->box.top == box.top);
-        window.addConstraint(maximizeWindowButton->box.right == closeWindowButton->box.left);
-        window.addConstraint(maximizeWindowButton->box.bottom == box.bottom);
+        window.addConstraint(maximizeWindowButton->top == top);
+        window.addConstraint(maximizeWindowButton->right == closeWindowButton->left);
+        window.addConstraint(maximizeWindowButton->bottom == bottom);
 
         minimizeWindowButton = &addWidget<ToolbarButtonWidget>(
             Text::TTauriIcon::MinimizeWindow,
             //getResource<Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
             [&]() { window.minimizeWindow(); }
         );
-        window.addConstraint(minimizeWindowButton->box.top == box.top);
-        window.addConstraint(minimizeWindowButton->box.right == maximizeWindowButton->box.left);
-        window.addConstraint(minimizeWindowButton->box.bottom == box.bottom);
+        window.addConstraint(minimizeWindowButton->top == top);
+        window.addConstraint(minimizeWindowButton->right == maximizeWindowButton->left);
+        window.addConstraint(minimizeWindowButton->bottom == bottom);
     }
 }
 

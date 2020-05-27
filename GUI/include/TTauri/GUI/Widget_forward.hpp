@@ -6,8 +6,10 @@
 #include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/GUI/HitBox.hpp"
-#include "TTauri/GUI/BoxModel.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
+#include <rhea/variable.hpp>
+#include <rhea/linear_expression.hpp>
+#include <functional>
 
 namespace TTauri::GUI::Widgets {
 class Widget;
@@ -43,7 +45,13 @@ inline std::function<void(Widgets::Widget &, MouseEvent const &)> Widget_handleM
 inline std::function<void(Widgets::Widget &, KeyboardEvent const &)> Widget_handleKeyboardEvent;
 inline std::function<vec(Widgets::Widget const &)> Widget_getWindowOffset;
 inline std::function<HitBox(Widgets::Widget const &, vec)> Widget_hitBoxTest;
-inline std::function<BoxModel const &(Widgets::Widget const &)> Widget_getBox;
+
+inline std::function<rhea::variable const &(Widgets::Widget const &)> Widget_getLeft;
+inline std::function<rhea::variable const &(Widgets::Widget const &)> Widget_getBottom;
+inline std::function<rhea::variable const &(Widgets::Widget const &)> Widget_getWidth;
+inline std::function<rhea::variable const &(Widgets::Widget const &)> Widget_getHeight;
+inline std::function<rhea::linear_expression const &(Widgets::Widget const &)> Widget_getRight;
+inline std::function<rhea::linear_expression const &(Widgets::Widget const &)> Widget_getTop;
 
 
 }

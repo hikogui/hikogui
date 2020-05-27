@@ -42,9 +42,8 @@ void Window_base::initialize()
 
     // The width and height of the window will be modified by the user and also for
     // testing the minimum and maximum size of the window.
-    auto &box = Widget_getBox(*widget);
-    widgetSolver.add_stay(box.width, rhea::strength::medium());
-    widgetSolver.add_stay(box.height, rhea::strength::medium());
+    widgetSolver.add_stay(Widget_getWidth(*widget), rhea::strength::medium());
+    widgetSolver.add_stay(Widget_getHeight(*widget), rhea::strength::medium());
 
     openingWindow();
 }
@@ -55,6 +54,8 @@ bool Window_base::isClosed() {
 }
 
 rhea::constraint Window_base::addConstraint(rhea::constraint const& constraint) noexcept {
+    auto lock = std::scoped_lock(widgetSolverMutex);
+
     widgetSolver.add_constraint(constraint);
     constraintsUpdated = true;
     return constraint;
@@ -65,6 +66,9 @@ rhea::constraint Window_base::addConstraint(
     rhea::strength const &strength,
     double weight
 ) noexcept {
+    // Since equation has not been assigned to the solver, we do not need to lock
+    // the widgetSolverMutex.
+
     return addConstraint(rhea::constraint(equation, strength, weight));
 }
 
@@ -73,10 +77,15 @@ rhea::constraint Window_base::addConstraint(
     rhea::strength const &strength,
     double weight
 ) noexcept {
+    // Since equation has not been assigned to the solver, we do not need to lock
+    // the widgetSolverMutex.
+
     return addConstraint(rhea::constraint(equation, strength, weight));
 }
 
 void Window_base::removeConstraint(rhea::constraint const& constraint) noexcept {
+    auto lock = std::scoped_lock(widgetSolverMutex);
+
     widgetSolver.remove_constraint(constraint);
     constraintsUpdated = true;
 }
@@ -85,6 +94,8 @@ rhea::constraint Window_base::replaceConstraint(
     rhea::constraint const &oldConstraint,
     rhea::constraint const &newConstraint
 ) noexcept {
+    auto lock = std::scoped_lock(widgetSolverMutex);
+
     widgetSolver.remove_constraint(oldConstraint);
     widgetSolver.add_constraint(newConstraint);
     constraintsUpdated = true;
@@ -97,6 +108,9 @@ rhea::constraint Window_base::replaceConstraint(
     rhea::strength const &strength,
     double weight
 ) noexcept {
+    // Since equation has not been assigned to the solver, we do not need to lock
+    // the widgetSolverMutex.
+
     return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
 }
 
@@ -106,6 +120,9 @@ rhea::constraint Window_base::replaceConstraint(
     rhea::strength const &strength,
     double weight
 ) noexcept {
+    // Since equation has not been assigned to the solver, we do not need to lock
+    // the widgetSolverMutex.
+
     return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
 }
 
@@ -137,7 +154,7 @@ int Window_base::layoutChildren(hires_utc_clock::time_point displayTimePoint, bo
         // Layout may have changed the constraints, in that case recalculate them.
         if (constraintsUpdated) {
             constraintsUpdated = false;
-            calculateMinimumAndMaximumWindowExtent();
+            layoutWindow();
 
         } else {
             return total_need;
@@ -208,7 +225,7 @@ void Window_base::updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidge
 
 void Window_base::windowChangedSize(ivec extent) {
     currentWindowExtent = extent;
-    setWidgetToCurrentExtent();
+    suggestWidgetExtent(currentWindowExtent);
     forceLayout = true;
 }
 
@@ -299,43 +316,49 @@ HitBox Window_base::hitBoxTest(vec position) const noexcept {
     return Widget_hitBoxTest(*widget, position);
 }
 
-void Window_base::setWidgetToCurrentExtent() {
-    auto &box = Widget_getBox(*widget);
-    widgetSolver.suggest(box.width, currentWindowExtent.width());
-    widgetSolver.suggest(box.height, currentWindowExtent.height());
+vec Window_base::suggestWidgetExtent(vec extent) noexcept {
+    auto lock = std::scoped_lock(widgetSolverMutex);
+
+    let &width = Widget_getWidth(*widget);
+    let &height = Widget_getHeight(*widget);
+
+    widgetSolver.suggest(width, extent.width());
+    widgetSolver.suggest(height, extent.height());
+
+    return vec{width.value(), height.value()};
 }
 
-void Window_base::calculateMinimumAndMaximumWindowExtent() {
+[[nodiscard]] std::pair<vec,vec> Window_base::getMinimumAndMaximumWidgetExtent() noexcept {
+    auto minimumWidgetExtent = suggestWidgetExtent(vec{0.0f, 0.0f});
+    auto maximumWidgetExtent = suggestWidgetExtent(vec{
+        std::numeric_limits<uint32_t>::max(),
+        std::numeric_limits<uint32_t>::max()
+    });
+    
+    return {minimumWidgetExtent, maximumWidgetExtent};
+}
+
+void Window_base::layoutWindow() noexcept {
     ttauri_assume(widget);
 
-    // Test for minimum extent.
-    auto &box = Widget_getBox(*widget);
-
-    widgetSolver.suggest(box.width, 0);
-    widgetSolver.suggest(box.height, 0);
-    minimumWindowExtent = box.extent();
-
-    // Test for maximum extent.
-    widgetSolver.suggest(box.width, std::numeric_limits<uint32_t>::max());
-    widgetSolver.suggest(box.height, std::numeric_limits<uint32_t>::max());
-    maximumWindowExtent = box.extent();
+    std::tie(minimumWindowExtent, maximumWindowExtent) = getMinimumAndMaximumWidgetExtent();
 
     if (
         (currentWindowExtent.x() < minimumWindowExtent.x()) ||
         (currentWindowExtent.y() < minimumWindowExtent.y())
-        ) {
+    ) {
         setWindowSize(minimumWindowExtent);
     }
 
     if (
         (currentWindowExtent.x() > maximumWindowExtent.x()) ||
         (currentWindowExtent.y() > maximumWindowExtent.y())
-        ) {
+    ) {
         setWindowSize(maximumWindowExtent);
     }
 
     // Set to actual window size.
-    setWidgetToCurrentExtent();
+    suggestWidgetExtent(currentWindowExtent);
 
     LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
         title,
