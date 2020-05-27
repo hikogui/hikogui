@@ -20,6 +20,7 @@
 #include "TTauri/Foundation/iaarect.hpp"
 #include "TTauri/Foundation/Trigger.hpp"
 #include "TTauri/Foundation/cpu_utc_clock.hpp"
+#include "TTauri/Foundation/fast_mutex.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>
@@ -90,7 +91,7 @@ public:
     /** Mutex for access to rhea objects registered with the widgetSolver.
     * Widgets will need to lock this mutex when reading variables or equations.
     */
-    std::mutex widgetSolverMutex;
+    fast_mutex widgetSolverMutex;
 
     //! The minimum window extent as calculated by laying out all the widgets.
     ivec minimumWindowExtent;

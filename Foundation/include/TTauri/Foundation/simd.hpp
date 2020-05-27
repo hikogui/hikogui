@@ -23,6 +23,16 @@ struct simd {
 
     constexpr simd() = default;
 
+    template<typename A, typename B,
+        std::enable_if_t<std::is_arithmetic_v<A> && std::is_arithmetic_v<B>, int> = 0>
+    simd(A const &a, B const &b) noexcept {
+        get<0>(v) = numeric_cast<T>(a);
+        get<1>(v) = numeric_cast<T>(b);
+        for (int i = 2; i < N; ++i) {
+            v[i] = T{};
+        }
+    }
+
 #if PROCESSOR == CPU_X64
     simd(__m128 other) noexcept {
         std::array<float,4> tmp;
@@ -61,12 +71,12 @@ struct simd {
 
     template<int I>
     [[nodiscard]] friend constexpr T const &get(simd const &rhs) noexcept {
-        return get<I>(v);
+        return get<I>(rhs.v);
     }
 
     template<int I>
     [[nodiscard]] friend constexpr T &get(simd &rhs) noexcept {
-        return get<I>(v);
+        return get<I>(rhs.v);
     }
 
 #define BINARY_OP(op)\
@@ -105,9 +115,21 @@ struct simd {
             r[i] = 
                 (lhs[i] < minimum[i]) ? minimum[i] :
                 (lhs[i] > maximum[i]) ? maximum[i] :
-                rhs[i];
+                lhs[i];
         }
         return r;
+    }
+
+    [[nodiscard]] friend bool operator==(simd const &lhs, simd const &rhs) {
+        bool result = true;
+        for (int i = 0; i != N; ++i) {
+            result &= static_cast<int>(lhs[i] == rhs[i]);
+        }
+        return result;
+    }
+
+    [[nodiscard]] friend bool operator!=(simd const &lhs, simd const &rhs) {
+        return !(lhs == rhs);
     }
 };
 

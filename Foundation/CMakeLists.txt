@@ -49,6 +49,7 @@ if(WIN32)
         src/FileMapping_win32.cpp
         src/FileView_win32.cpp
         src/debugger_win32.cpp
+        src/fast_mutex_win32.cpp
     )
 elseif(APPLE)
     set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
@@ -99,6 +100,9 @@ set(TTauri_Foundation_tests
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
 target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL zlib png)
+if (WIN32)
+    target_link_libraries(TTauri_Foundation PUBLIC synchronization)
+endif()
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

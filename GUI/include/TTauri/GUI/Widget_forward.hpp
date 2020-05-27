@@ -30,7 +30,7 @@ struct WidgetDeleter {
 
 inline std::function<std::unique_ptr<Widgets::Widget,WidgetDeleter>(Window &)> WindowWidget_makeUnique;
 
-inline std::function<int(Widgets::Widget const &, hires_utc_clock::time_point)> Widget_needs;
+inline std::function<int(Widgets::Widget &, hires_utc_clock::time_point)> Widget_needs;
 
 inline std::function<void(Widgets::Widget &, hires_utc_clock::time_point)> Widget_layout;
 inline std::function<void(Widgets::Widget &, DrawContext const &, hires_utc_clock::time_point)> Widget_draw;

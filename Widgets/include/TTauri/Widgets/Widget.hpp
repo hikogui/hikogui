@@ -133,8 +133,6 @@ public:
     rhea::variable const bottom;
     rhea::variable const width;
     rhea::variable const height;
-    mutable double widthChangePreviousValue;
-    mutable double heightChangePreviousValue;
 
     rhea::linear_expression const right = left + width;
     rhea::linear_expression const centre = left + width * 0.5;
@@ -205,10 +203,6 @@ public:
         }
     }
 
-    /** Check if the width and height value has changed.
-     */
-    bool widthOrHeightValueHasChanged() const noexcept;
-
     /** Create a window rectangle from left, bottom, width and height
      * Thread-safety: locks window.widgetSolverMutex
      */
@@ -238,12 +232,20 @@ public:
 
     void placeRight(float margin=theme->margin) const noexcept;
 
+    [[nodiscard]] i32x2_t i32_extent() const noexcept {
+        return _extent.load(std::memory_order::memory_order_relaxed);
+    }
+
     [[nodiscard]] vec extent() const noexcept {
-        return vec{_extent.load(std::memory_order::memory_order_relaxed)};
+        return vec{i32_extent()};
+    }
+
+    void setExtent(i32x2_t rhs) noexcept {
+        _extent.store(rhs, std::memory_order::memory_order_relaxed);
     }
 
     void setExtent(vec rhs) noexcept {
-        _extent.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
+        setExtent(i32x2_t{static_cast<__m128>(rhs)});
     }
 
     [[nodiscard]] vec offsetFromParent() const noexcept {
@@ -254,12 +256,20 @@ public:
         _offsetFromParent.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
     }
 
+    [[nodiscard]] i32x2_t i32_offsetFromWindow() const noexcept {
+        return _offsetFromWindow.load(std::memory_order::memory_order_relaxed);
+    }
+
     [[nodiscard]] vec offsetFromWindow() const noexcept {
-        return vec{_offsetFromWindow.load(std::memory_order::memory_order_relaxed)};
+        return vec{i32_offsetFromWindow()};
+    }
+
+    void setOffsetFromWindow(i32x2_t rhs) noexcept {
+        _offsetFromWindow.store(rhs, std::memory_order::memory_order_relaxed);
     }
 
     void setOffsetFromWindow(vec rhs) noexcept {
-        _offsetFromWindow.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
+        setOffsetFromWindow(i32x2_t{static_cast<__m128>(rhs)});
     }
 
     /** Get the rectangle in local coordinates.
@@ -329,7 +339,7 @@ public:
      *
      * @return If the widgets needs to be redrawn or layed out on this frame.
      */
-    [[nodiscard]] virtual int needs(hires_utc_clock::time_point displayTimePoint) const noexcept;
+    [[nodiscard]] virtual int needs(hires_utc_clock::time_point displayTimePoint) noexcept;
 
     /** Layout the widget.
      * super::layout() should be called at start of the overriden function.

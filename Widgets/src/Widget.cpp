@@ -149,35 +149,28 @@ void Widget::placeRight(float margin) const noexcept {
     window.addConstraint(this->right + margin == parent->right);
 }
 
-bool Widget::widthOrHeightValueHasChanged() const noexcept
+int Widget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto lock = std::scoped_lock(window.widgetSolverMutex);
 
-    let widthValue = width.value();
-    let heightValue = height.value();
+    let newExtent = i32x2_t{width.value(), height.value()};
+    let newOffsetFromWindow = i32x2_t{left.value(), bottom.value()};
 
-    auto changed = false;
-    changed |= widthValue != widthChangePreviousValue;
-    changed |= heightValue != heightChangePreviousValue;
+    int needs = 0;
+    needs |= newExtent != i32_extent();
+    needs |= newOffsetFromWindow != i32_offsetFromWindow();
 
-    widthChangePreviousValue = widthValue;
-    heightChangePreviousValue = heightValue;
+    if (needs) {
+        setExtent(newExtent);
+        setOffsetFromWindow(newOffsetFromWindow);
+    }
 
-    return changed;
-}
+    needs |= forceLayout.exchange(false, std::memory_order::memory_order_relaxed);
 
-int Widget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
-{
-    auto layout = forceLayout.exchange(false, std::memory_order::memory_order_relaxed);
-    layout |= widthOrHeightValueHasChanged();
-    auto redraw = layout;
-    redraw |= forceRedraw.exchange(false, std::memory_order::memory_order_relaxed);
+    needs = (needs << 1) | needs;    
+    needs |= forceRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
-    auto need =
-        (static_cast<int>(layout) << 1) |
-        static_cast<int>(redraw);
-
-    return need;
+    return needs;
 }
 
 aarect Widget::makeWindowRectangle() const noexcept
@@ -196,18 +189,14 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto lock = std::scoped_lock(mutex);
 
-    let _windowRectangle = makeWindowRectangle();
-    setExtent(_windowRectangle.extent());
-    setOffsetFromWindow(_windowRectangle.offset());
-
     setOffsetFromParent(
         parent ?
-            _windowRectangle.offset() - parent->offsetFromWindow():
-            _windowRectangle.offset()
+            offsetFromWindow() - parent->offsetFromWindow():
+            offsetFromWindow()
     );
         
-    fromWindowTransform = mat::T(-_windowRectangle.x(), -_windowRectangle.y(), -z());
-    toWindowTransform = mat::T(_windowRectangle.x(), _windowRectangle.y(), z());
+    fromWindowTransform = mat::T(-offsetFromWindow().x(), -offsetFromWindow().y(), -z());
+    toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
 
     forceRedraw = true;
 }

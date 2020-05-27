@@ -31,7 +31,7 @@ void startup()
         return std::unique_ptr<Widgets::WindowWidget,WidgetDeleter>{ new Widgets::WindowWidget(window) };
     };
 
-    Widget_needs = [](let &self, auto displayTimePoint) {
+    Widget_needs = [](auto &self, auto displayTimePoint) {
         return self.needs(displayTimePoint);
     };
 

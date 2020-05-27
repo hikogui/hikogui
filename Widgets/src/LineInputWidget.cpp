@@ -24,7 +24,7 @@ LineInputWidget::~LineInputWidget()
 {
 }
 
-int LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) const noexcept
+int LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto need = Widget::needs(displayTimePoint);
 
