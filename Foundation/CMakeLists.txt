@@ -1,5 +1,5 @@
 
-project(TTauri_Foundation)
+project(TTauri_Foundation LANGUAGES CXX)
 
 set(BUILD_TTAURI_GUI ON CACHE BOOL "Enable GUI")
 set(BUILD_TTAURI_AUDIO ON CACHE BOOL "Enable Audio")
@@ -166,6 +166,8 @@ elseif (MSVC)
 
     if (NOT ${CMAKE_BUILD_TYPE} MATCHES "Release")
         # Enable Security Development Lifecycle checks.
+        # This includes run-time checks, don't include this in the Release type
+        # Do include it with ReleaseWithDebug.
         target_compile_options(TTauri_Foundation PUBLIC -sdl)
     endif()
 endif()

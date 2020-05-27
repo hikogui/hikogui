@@ -4,7 +4,7 @@ cmake_policy(SET CMP0074 NEW)
 cmake_policy(SET CMP0054 NEW)
 enable_testing()
 
-project(TTauri)
+project(TTauri LANGUAGES CXX)
 
 #find_package(Doxygen)
 
