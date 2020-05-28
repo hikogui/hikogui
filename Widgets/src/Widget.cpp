@@ -55,9 +55,9 @@ void Widget::setMinimumExtent(vec newMinimumExtent) noexcept
     }
 }
 
-void Widget::setMinimumExtent(float width, float height) noexcept
+void Widget::setMinimumExtent(float _width, float _height) noexcept
 {
-    setMinimumExtent(vec{width, height});
+    setMinimumExtent(vec{_width, _height});
 }
 
 void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
@@ -105,14 +105,14 @@ void Widget::setFixedExtent(vec newFixedExtent) noexcept
     }
 }
 
-void Widget::setFixedHeight(float height) noexcept
+void Widget::setFixedHeight(float _height) noexcept
 {
-    setFixedExtent(vec{0.0f, height});
+    setFixedExtent(vec{0.0f, _height});
 }
 
-void Widget::setFixedWidth(float width) noexcept
+void Widget::setFixedWidth(float _width) noexcept
 {
-    setFixedExtent(vec{width, 0.0f});
+    setFixedExtent(vec{_width, 0.0f});
 }
 
 
@@ -152,37 +152,26 @@ void Widget::placeRight(float margin) const noexcept {
 int Widget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     auto lock = std::scoped_lock(window.widgetSolverMutex);
-
-    let newExtent = i32x2_t{width.value(), height.value()};
-    let newOffsetFromWindow = i32x2_t{left.value(), bottom.value()};
-
     int needs = 0;
-    needs |= newExtent != i32_extent();
-    needs |= newOffsetFromWindow != i32_offsetFromWindow();
 
-    if (needs) {
-        setExtent(newExtent);
-        setOffsetFromWindow(newOffsetFromWindow);
-    }
+    auto newExtent = i32x2_t{width.value(), height.value()};
+    needs |= static_cast<int>(newExtent != i32_extent());
+    setExtent(newExtent);
 
-    needs |= forceLayout.exchange(false, std::memory_order::memory_order_relaxed);
+    auto newOffsetFromWindow = i32x2_t{left.value(), bottom.value()};
+    needs |= static_cast<int>(newOffsetFromWindow != i32_offsetFromWindow());
+    setOffsetFromWindow(newOffsetFromWindow);
+
+    needs |= static_cast<int>(
+        forceLayout.exchange(false, std::memory_order::memory_order_relaxed)
+    );
 
     needs = (needs << 1) | needs;    
-    needs |= forceRedraw.exchange(false, std::memory_order::memory_order_relaxed);
+    needs |= static_cast<int>(
+        forceRedraw.exchange(false, std::memory_order::memory_order_relaxed)
+    );
 
     return needs;
-}
-
-aarect Widget::makeWindowRectangle() const noexcept
-{
-    auto lock = std::scoped_lock(window.widgetSolverMutex);
-
-    return round(aarect{
-        numeric_cast<float>(left.value()),
-        numeric_cast<float>(bottom.value()),
-        numeric_cast<float>(width.value()),
-        numeric_cast<float>(height.value())
-    });
 }
 
 void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept

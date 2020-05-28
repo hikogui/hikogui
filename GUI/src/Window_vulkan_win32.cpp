@@ -186,6 +186,8 @@ void Window_vulkan_win32::normalizeWindow()
 
 void Window_vulkan_win32::setWindowSize(ivec extent)
 {
+    ttauri_assert(win32Window);
+
     run_on_main_thread([=]() {
 
         SetWindowPos(
