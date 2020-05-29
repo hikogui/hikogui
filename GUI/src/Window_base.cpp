@@ -46,6 +46,9 @@ void Window_base::initialize()
     widgetSolver.add_stay(Widget_getHeight(*widget), rhea::strength::medium());
 
     openingWindow();
+
+    // Finished initializing the window.
+    state = State::NoDevice;
 }
 
 bool Window_base::isClosed() {
@@ -168,12 +171,10 @@ void Window_base::openingWindow() {
     assert(thisWindow);
     delegate->openingWindow(*thisWindow);
 
-    auto lock = std::scoped_lock(guiMutex);
-    state = State::NoDevice;
-    updateToNextKeyboardTarget(nullptr);
-
     // Execute a layout to determine initial window size.
     layout(cpu_utc_clock::now());
+
+    updateToNextKeyboardTarget(nullptr);
 }
 
 void Window_base::closingWindow() {
@@ -343,18 +344,20 @@ void Window_base::layoutWindow() noexcept {
 
     std::tie(minimumWindowExtent, maximumWindowExtent) = getMinimumAndMaximumWidgetExtent();
 
-    if (
-        (currentWindowExtent.x() < minimumWindowExtent.x()) ||
-        (currentWindowExtent.y() < minimumWindowExtent.y())
-    ) {
-        setWindowSize(minimumWindowExtent);
-    }
+    if (state != Window_base::State::Initializing) {
+        if (
+            (currentWindowExtent.x() < minimumWindowExtent.x()) ||
+            (currentWindowExtent.y() < minimumWindowExtent.y())
+        ) {
+            setWindowSize(minimumWindowExtent);
+        }
 
-    if (
-        (currentWindowExtent.x() > maximumWindowExtent.x()) ||
-        (currentWindowExtent.y() > maximumWindowExtent.y())
-    ) {
-        setWindowSize(maximumWindowExtent);
+        if (
+            (currentWindowExtent.x() > maximumWindowExtent.x()) ||
+            (currentWindowExtent.y() > maximumWindowExtent.y())
+        ) {
+            setWindowSize(maximumWindowExtent);
+        }
     }
 
     // Set to actual window size.

@@ -9,6 +9,7 @@
 
 #if PROCESSOR == CPU_X64
 #include <xmmintrin.h>
+#include <emmintrin.h>
 #include <immintrin.h>
 #include <smmintrin.h>
 #endif
@@ -34,14 +35,32 @@ struct simd {
     }
 
 #if PROCESSOR == CPU_X64
-    simd(__m128 other) noexcept {
-        std::array<float,4> tmp;
-        _mm_storeu_ps(tmp.data(), other);
-        for (int i = 0; i != N; ++i) {
-            if (i < 4) {
-                v[i] = numeric_cast<T>(tmp[i]);
-            } else {
-                v[i] = T{};
+    simd(__m128 other) noexcept :
+        v()
+    {
+        if constexpr (std::is_integral_v<T> && sizeof(T) == 2 && N <= 2) {
+            std::array<T,16 / sizeof(T)> buffer;
+
+            auto store_i = _mm_cvtps_epi32(other);
+            store_i = _mm_unpacklo_epi16(store_i);
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(buffer.data()), store_i);
+
+            std::memcpy(v.data(), buffer.data(), N * sizeof (T));
+
+        } else if constexpr (std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) == 4) {
+            std::array<T,16 / sizeof(T)> buffer;
+
+            auto store_i = _mm_cvtps_epi32(other);
+            _mm_storeu_si128(reinterpret_cast<__m128i *>(buffer.data()), store_i);
+
+            std::memcpy(v.data(), buffer.data(), N * sizeof (T));
+
+        } else {
+            std::array<float,4> buffer = {};
+            _mm_storeu_ps(buffer.data(), other);
+
+            for (int i = 0; i != (N < 4 ? N : 4); ++i) {
+                v[i] = static_cast<T>(buffer.data()[i]);
             }
         }
     }
@@ -49,15 +68,39 @@ struct simd {
 
 #if PROCESSOR == CPU_X64
     operator __m128 () const noexcept {
-        std::array<float,4> tmp;
-        for (int i = 0; i != 4; ++i) {
-            if (i < N) {
-                tmp[i] = numeric_cast<float>(v[i]);
-            } else {
-                tmp[i] = 0.0f;
+        constexpr int BUFFER_NR_ITEMS = 16 / sizeof(T);
+        constexpr size_t COPY_SIZE = std::min(BUFFER_NR_ITEMS, N) * sizeof(T);
+
+        if constexpr (std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) == 2) {
+            std::array<T,BUFFER_NR_ITEMS> buffer = {};
+            std::memcpy(buffer.data(), v.data(), COPY_SIZE);
+
+            auto loaded_i = _mm_loadu_si128(reinterpret_cast<__m128i const *>(buffer.data()));
+            loaded_i = _mm_cvtepi16_epi32(loaded_i);
+            return _mm_cvtepi32_ps(loaded_i);
+
+        } else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T> && sizeof(T) == 2) {
+            std::array<T,BUFFER_NR_ITEMS> buffer = {};
+            std::memcpy(buffer.data(), v.data(), COPY_SIZE);
+
+            auto loaded_i = _mm_loadu_si128(reinterpret_cast<__m128i const *>(buffer.data()));
+            loaded_i = _mm_cvtepu16_epi32(loaded_i);
+            return _mm_cvtepi32_ps(loaded_i);
+
+        } else if constexpr (std::is_integral_v<T> && std::is_signed_v<T> && sizeof(T) == 4) {
+            std::array<T,BUFFER_NR_ITEMS> buffer = {};
+            std::memcpy(buffer.data(), v.data(), COPY_SIZE);
+
+            auto loaded_i = _mm_loadu_si128(reinterpret_cast<__m128i const *>(buffer.data()));
+            return _mm_cvtepi32_ps(loaded_i);
+
+        } else {
+            std::array<float,4> buffer = {};
+            for (int i = 0; i != (N < 4 ? N : 4); ++i) {
+                buffer[i] = static_cast<float>(v[i]);
             }
+            return _mm_loadu_ps(buffer.data());
         }
-        return _mm_loadu_ps(tmp.data());
     }
 #endif
   
@@ -121,11 +164,7 @@ struct simd {
     }
 
     [[nodiscard]] friend bool operator==(simd const &lhs, simd const &rhs) {
-        bool result = true;
-        for (int i = 0; i != N; ++i) {
-            result &= static_cast<int>(lhs[i] == rhs[i]);
-        }
-        return result;
+        return lhs.v == rhs.v;
     }
 
     [[nodiscard]] friend bool operator!=(simd const &lhs, simd const &rhs) {
