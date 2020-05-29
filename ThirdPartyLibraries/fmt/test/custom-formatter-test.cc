@@ -5,6 +5,10 @@
 //
 // For the license information refer to format.h.
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "fmt/format.h"
 #include "gtest-extra.h"
 
@@ -13,22 +17,22 @@
 
 // A custom argument formatter that doesn't print `-` for floating-point values
 // rounded to 0.
-class custom_arg_formatter :
-    public fmt::arg_formatter<fmt::back_insert_range<fmt::internal::buffer>> {
+class custom_arg_formatter
+    : public fmt::arg_formatter<fmt::buffer_range<char>> {
  public:
-  typedef fmt::back_insert_range<fmt::internal::buffer> range;
+  using range = fmt::buffer_range<char>;
   typedef fmt::arg_formatter<range> base;
 
-  custom_arg_formatter(
-      fmt::format_context &ctx, fmt::format_specs *s = FMT_NULL)
-  : base(ctx, s) {}
+  custom_arg_formatter(fmt::format_context& ctx,
+                       fmt::format_parse_context* parse_ctx,
+                       fmt::format_specs* s = nullptr)
+      : base(ctx, parse_ctx, s) {}
 
   using base::operator();
 
   iterator operator()(double value) {
     // Comparing a float to 0.0 is safe.
-    if (round(value * pow(10, spec()->precision)) == 0.0)
-      value = 0;
+    if (round(value * pow(10, specs()->precision)) == 0.0) value = 0;
     return base::operator()(value);
   }
 };
@@ -41,7 +45,7 @@ std::string custom_vformat(fmt::string_view format_str, fmt::format_args args) {
 }
 
 template <typename... Args>
-std::string custom_format(const char *format_str, const Args & ... args) {
+std::string custom_format(const char* format_str, const Args&... args) {
   auto va = fmt::make_format_args(args...);
   return custom_vformat(format_str, va);
 }

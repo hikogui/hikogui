@@ -9,12 +9,18 @@
 #define FMT_TEST_ASSERT_H_
 
 #include <stdexcept>
+
 #include "gtest.h"
 
 class assertion_failure : public std::logic_error {
  public:
-  explicit assertion_failure(const char *message) : std::logic_error(message) {}
+  explicit assertion_failure(const char* message) : std::logic_error(message) {}
+
+ private:
+  virtual void avoid_weak_vtable();
 };
+
+void assertion_failure::avoid_weak_vtable() {}
 
 #define FMT_ASSERT(condition, message) \
   if (!(condition)) throw assertion_failure(message);

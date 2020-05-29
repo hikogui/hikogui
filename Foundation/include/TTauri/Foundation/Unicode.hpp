@@ -5,6 +5,7 @@
 #include "TTauri/Foundation/endian.hpp"
 #include "TTauri/Foundation/CP1252.hpp"
 #include "TTauri/Foundation/math.hpp"
+#include <string_view>
 #include <cstdint>
 
 #pragma once

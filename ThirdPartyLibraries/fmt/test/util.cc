@@ -6,9 +6,10 @@
 // For the license information refer to format.h.
 
 #include "util.h"
+
 #include <cstring>
 
-void increment(char *s) {
+void increment(char* s) {
   for (int i = static_cast<int>(std::strlen(s)) - 1; i >= 0; --i) {
     if (s[i] != '9') {
       ++s[i];
@@ -30,15 +31,20 @@ std::string get_system_error(int error_code) {
 #endif
 }
 
-const char *const FILE_CONTENT = "Don't panic!";
+const char* const FILE_CONTENT = "Don't panic!";
 
-fmt::buffered_file open_buffered_file(FILE **fp) {
+fmt::buffered_file open_buffered_file(FILE** fp) {
+#if FMT_USE_FCNTL
   fmt::file read_end, write_end;
   fmt::file::pipe(read_end, write_end);
   write_end.write(FILE_CONTENT, std::strlen(FILE_CONTENT));
   write_end.close();
   fmt::buffered_file f = read_end.fdopen("r");
-  if (fp)
-    *fp = f.get();
+  if (fp) *fp = f.get();
+#else
+  fmt::buffered_file f("test-file", "w");
+  fputs(FILE_CONTENT, f.get());
+  if (fp) *fp = f.get();
+#endif
   return f;
 }

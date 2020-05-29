@@ -2,21 +2,15 @@
 Usage
 *****
 
-To use the fmt library, add :file:`format.h` and :file:`format.cc` from
-a `release archive <https://github.com/fmtlib/fmt/releases/latest>`_
-or the `Git repository <https://github.com/fmtlib/fmt>`_ to your project.
+To use the {fmt} library, add :file:`fmt/core.h`, :file:`fmt/format.h`,
+:file:`fmt/format-inl.h`, :file:`src/format.cc` and optionally other headers
+from a `release archive <https://github.com/fmtlib/fmt/releases/latest>`_ or
+the `Git repository <https://github.com/fmtlib/fmt>`_ to your project.
 Alternatively, you can :ref:`build the library with CMake <building>`.
-
-If you are using Visual C++ with precompiled headers, you might need to add
-the line ::
-
-   #include "stdafx.h"
-
-before other includes in :file:`format.cc`.
 
 .. _building:
 
-Building the library
+Building the Library
 ====================
 
 The included `CMake build script`__ can be used to build the fmt
@@ -31,7 +25,7 @@ workflow starts with::
 
   mkdir build          # Create a directory to hold the build output.
   cd build
-  cmake <path/to/fmt>  # Generate native build scripts.
+  cmake ..  # Generate native build scripts.
 
 where :file:`{<path/to/fmt>}` is a path to the ``fmt`` repository.
 
@@ -58,8 +52,14 @@ To build a `shared library`__ set the ``BUILD_SHARED_LIBS`` CMake variable to
 
 __ http://en.wikipedia.org/wiki/Library_%28computing%29#Shared_libraries
 
-Header-only usage with CMake
-============================
+Installing the Library
+======================
+
+After building the library you can install it on a Unix-like system by running
+:command:`sudo make install`.
+
+Usage with CMake
+================
 
 You can add the ``fmt`` library directory into your project and include it in
 your ``CMakeLists.txt`` file::
@@ -79,11 +79,11 @@ You can detect and use an installed version of {fmt} as follows::
    find_package(fmt)
    target_link_libraries(<your-target> fmt::fmt)
 
-Setting up your target to use a header-only version of ``fmt`` is equaly easy::
+Setting up your target to use a header-only version of ``fmt`` is equally easy::
 
-   target_link_libraries(<your-target> PRIVATE fmt-header-only)
+   target_link_libraries(<your-target> PRIVATE fmt::fmt-header-only)
 
-Building the documentation
+Building the Documentation
 ==========================
 
 To build the documentation you need the following software installed on your
@@ -103,7 +103,33 @@ the previous section. Then compile the ``doc`` target/project, for example::
   make doc
 
 This will generate the HTML documentation in ``doc/html``.
-  
+
+Conda
+=====
+
+fmt can be installed on Linux, macOS and Windows with
+`Conda <https://docs.conda.io/en/latest/>`__, using its
+`conda-forge <https://conda-forge.org>`__
+`package <https://github.com/conda-forge/fmt-feedstock>`__, as follows::
+
+  conda install -c conda-forge fmt
+
+Vcpkg
+=====
+
+You can download and install fmt using the `vcpkg
+<https://github.com/Microsoft/vcpkg>`__ dependency manager::
+
+  git clone https://github.com/Microsoft/vcpkg.git
+  cd vcpkg
+  ./bootstrap-vcpkg.sh
+  ./vcpkg integrate install
+  ./vcpkg install fmt
+
+The fmt port in vcpkg is kept up to date by Microsoft team members and community
+contributors. If the version is out of date, please `create an issue or pull
+request <https://github.com/Microsoft/vcpkg>`__ on the vcpkg repository.
+
 Android NDK
 ===========
 
