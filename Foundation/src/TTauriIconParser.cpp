@@ -95,7 +95,7 @@ struct Layer {
     LineJoinStyle lineJoinStyle;
 };
 
-static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, size_t &offset)
+static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, ssize_t &offset)
 {
     let header = make_placement_ptr<contour_buf_t>(bytes, offset);
 
@@ -113,7 +113,7 @@ static std::vector<BezierPoint> parseContour(gsl::span<std::byte const> bytes, s
     return contour;
 }
 
-static Layer parsePath(gsl::span<std::byte const> bytes, size_t &offset)
+static Layer parsePath(gsl::span<std::byte const> bytes, ssize_t &offset)
 {
     let header = make_placement_ptr<path_buf_t>(bytes, offset);
 
@@ -133,7 +133,7 @@ static Layer parsePath(gsl::span<std::byte const> bytes, size_t &offset)
 
 Path parseTTauriIcon(gsl::span<std::byte const> bytes)
 {
-    size_t offset = 0;
+    ssize_t offset = 0;
 
     let header = make_placement_ptr<header_buf_t>(bytes, offset);
 

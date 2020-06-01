@@ -162,7 +162,7 @@ UnicodeData::UnicodeData(std::unique_ptr<ResourceView> view) :
 
 void UnicodeData::initialize()
 {
-    size_t offset = 0;
+    ssize_t offset = 0;
     let header = make_placement_ptr<UnicodeData_Header>(bytes, offset);
     parse_assert(header->magic.value() == fourcc("bucd"));
     parse_assert(header->version.value() == 1);

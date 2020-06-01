@@ -1,5 +1,8 @@
 
-
+#include "TTauri/Foundation/required.hpp"
+#include "TTauri/Foundation/bits.hpp"
+#include <gsl/gsl>
+#include <vector>
 
 namespace TTauri {
 
@@ -29,7 +32,7 @@ public:
     void add(int symbol, int code, int code_length) noexcept {
         ttauri_assume(code_length >= 1);
 
-        offset = 0;
+        int offset = 0;
         while (--code_length > 0) {
             int select = (code >> code_length) & 1;
             offset += select;
@@ -37,18 +40,17 @@ public:
             auto &value = tree[offset];
 
             // value may not be a leaf.
-            ttauri_assume(value < 0); 
+            ttauri_assume(value <= 0); 
 
             if (value == 0) {
                 // Unused node entry. Point to the first of two new entries.
-                value = -(ssize(tree) - offset);
+                value = -(static_cast<int>(ssize(tree)) - offset);
                 tree.push_back(0);
                 tree.push_back(0);
-                
-            } else {
-                // Entry is in the table, jump to the new entry.
-                offset += -value;
             }
+
+            // Go to the next entry.
+            offset -= tree[offset];
         }
 
         // place the symbol as a leaf.
@@ -83,10 +85,68 @@ public:
             TTAURI_THROW(parse_error("Code not in huffman tree."));
         }
 
-        state -= static_cast<ptrdiff_t>(*state);
-        return *state - 1;
+        auto value = *state;
+        state -= static_cast<ptrdiff_t>(value);
+        return value - 1;
+    }
+
+    [[nodiscard]] int get_symbol(gsl::span<std::byte const> bytes, ssize_t &bit_offset) const {
+        auto state = start();
+        while (true) {
+            int symbol;
+            if ((symbol = get(get_bit_and_advance(bytes, bit_offset), state)) >= 0) {
+                return symbol;
+            }
+        }
     }
     
+    /** Build a canonical-huffman table from a set of lengths.
+     */
+    [[nodiscard]] static huffman_tree from_lengths(int const *lengths, ssize_t nr_symbols) {
+        struct symbol_length_t {
+            int symbol;
+            int length;
+
+            symbol_length_t(int symbol, int length) : symbol(symbol), length(length) {}
+        };
+
+        std::vector<symbol_length_t> symbol_lengths;
+        symbol_lengths.reserve(nr_symbols);
+
+        for (int symbol = 0; symbol != nr_symbols; ++symbol) {
+            symbol_lengths.emplace_back(symbol, lengths[symbol]);
+        }
+
+        // Sort the table based on the length of the code, followed by symbol
+        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](let &a, let &b) {
+            if (a.length == b.length) {
+                return a.symbol < b.symbol;
+            } else {
+                return a.length < b.length;
+            }
+        });
+
+        auto r = huffman_tree{};
+
+        int code = 0;
+        int prev_length = 0;
+        for (auto &&entry: symbol_lengths) {
+            if (entry.length != 0) {
+                code <<= (entry.length - prev_length);
+
+                r.add(entry.symbol, code, entry.length);
+                ++code;
+            }
+
+            prev_length = entry.length;
+        }
+
+        return r;
+    }
+
+    [[nodiscard]] static huffman_tree from_lengths(std::vector<int> const &lengths) {
+        return from_lengths(lengths.data(), ssize(lengths));
+    }
 };
 
 

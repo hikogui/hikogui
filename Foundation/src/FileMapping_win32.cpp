@@ -30,11 +30,15 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     DWORD maximumSizeHigh = this->size >> 32;
     DWORD maximumSizeLow = this->size & 0xffffffff;
 
-    if ((mapHandle = CreateFileMappingA(file->fileHandle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
-        TTAURI_THROW(io_error("Could not create file mapping")
-            .set<"error_msg"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location())
-        );
+    if (this->size == 0) {
+        mapHandle = nullptr;
+    } else {
+        if ((mapHandle = CreateFileMappingA(file->fileHandle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
+            TTAURI_THROW(io_error("Could not create file mapping")
+                .set<"error_msg"_tag>(getLastErrorMessage())
+                .set<"url"_tag>(location())
+            );
+        }
     }
 }
 

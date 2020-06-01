@@ -33,9 +33,9 @@ class placement_ptr {
     value_type *ptr;
     
 public:
-    force_inline placement_ptr(gsl::span<Byte> bytes, size_t &offset) {
+    force_inline placement_ptr(gsl::span<Byte> bytes, ssize_t &offset) {
         Byte *_ptr = bytes.data() + offset;
-        offset += sizeof(T);
+        offset += ssizeof(T);
         ptr = new(const_cast<std::remove_cv_t<Byte> *>(_ptr)) T;
     }
 
@@ -53,35 +53,35 @@ public:
 };
 
 template<typename T,typename Byte>
-force_inline placement_ptr<T,Byte> unsafe_make_placement_ptr(gsl::span<Byte> bytes, size_t &offset)
+force_inline placement_ptr<T,Byte> unsafe_make_placement_ptr(gsl::span<Byte> bytes, ssize_t &offset)
 {
     return placement_ptr<T,Byte>(bytes, offset);
 }
 
 template<typename T,typename Byte>
-force_inline placement_ptr<T,Byte> unsafe_make_placement_ptr(gsl::span<Byte> bytes, size_t &&offset = 0)
+force_inline placement_ptr<T,Byte> unsafe_make_placement_ptr(gsl::span<Byte> bytes, ssize_t &&offset = 0)
 {
-    size_t _offset = offset;
+    ssize_t _offset = offset;
     return unsafe_make_placement_ptr<T>(bytes, _offset);
 }
 
 template<typename T,typename Byte>
-force_inline bool check_placement_ptr(gsl::span<Byte> bytes, size_t offset = 0)
+force_inline bool check_placement_ptr(gsl::span<Byte> bytes, ssize_t offset = 0)
 {
     return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= usize(bytes));
 }
 
 template<typename T,typename Byte>
-force_inline placement_ptr<T,Byte> make_placement_ptr(gsl::span<Byte> bytes, size_t &offset)
+force_inline placement_ptr<T,Byte> make_placement_ptr(gsl::span<Byte> bytes, ssize_t &offset)
 {
     parse_assert(check_placement_ptr<T>(bytes, offset));
     return placement_ptr<T,Byte>(bytes, offset);
 }
 
 template<typename T,typename Byte>
-force_inline placement_ptr<T,Byte> make_placement_ptr(gsl::span<Byte> bytes, size_t &&offset = 0)
+force_inline placement_ptr<T,Byte> make_placement_ptr(gsl::span<Byte> bytes, ssize_t &&offset = 0)
 {
-    size_t _offset = offset;
+    ssize_t _offset = offset;
     return make_placement_ptr<T>(bytes, _offset);
 }
 
@@ -103,15 +103,15 @@ class placement_array {
     Byte *_end;
 
 public:
-    force_inline placement_array(gsl::span<Byte> bytes, size_t &offset, size_t n) {
+    force_inline placement_array(gsl::span<Byte> bytes, ssize_t &offset, ssize_t n) {
         let bytes_ = bytes.data();
 
         _begin = bytes_ + offset,
-        offset += sizeof(T) * n;
+        offset += ssizeof(T) * n;
         _end = bytes_ + offset;
 
-        for (size_t i = 0; i < n; i++) {
-            [[maybe_unused]] auto *ptr = new(const_cast<std::remove_cv_t<Byte> *>(_begin + i * sizeof(T))) T;
+        for (ssize_t i = 0; i < n; i++) {
+            [[maybe_unused]] auto *ptr = new(const_cast<std::remove_cv_t<Byte> *>(_begin + i * ssizeof(T))) T;
         }
     }
 
@@ -128,8 +128,8 @@ public:
         return static_cast<size_t>(end() - begin());
     }
 
-    force_inline bool contains(size_t index) const noexcept {
-        return index < size();
+    force_inline bool contains(ssize_t index) const noexcept {
+        return index < ssize(*this);
     }
 
     force_inline value_type *begin() const noexcept {
@@ -140,75 +140,75 @@ public:
         return std::launder(reinterpret_cast<value_type *>(_end));
     }
 
-    force_inline value_type &operator[](size_t offset) const noexcept {
+    force_inline value_type &operator[](ssize_t offset) const noexcept {
         return *(begin() + offset);
     }
 };
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, size_t &offset, size_t n)
+force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, ssize_t &offset, ssize_t n)
 {
     return placement_array<T,Byte>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, size_t &&offset, size_t n)
+force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, ssize_t &&offset, ssize_t n)
 {
-    size_t _offset = offset;
+    ssize_t _offset = offset;
     return unsafe_make_placement_array<T>(bytes, _offset, n);
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, size_t &offset)
+force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, ssize_t &offset)
 {
     let n = usize(bytes) / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, size_t &&offset = 0)
+force_inline placement_array<T,Byte> unsafe_make_placement_array(gsl::span<Byte> bytes, ssize_t &&offset = 0)
 {
     size_t _offset = offset;
     return unsafe_make_placement_array<T>(bytes, _offset);
 }
 
 template<typename T,typename Byte>
-force_inline bool check_placement_array(gsl::span<Byte> bytes, size_t offset, size_t n)
+force_inline bool check_placement_array(gsl::span<Byte> bytes, ssize_t offset, ssize_t n)
 {
-    return check_alignment<T>(bytes.data()) && (offset + (n * sizeof(T)) <= usize(bytes));
+    return check_alignment<T>(bytes.data()) && (offset + (n * ssizeof(T)) <= ssize(bytes));
 }
 
 template<typename T,typename Byte>
-force_inline bool check_placement_array(gsl::span<Byte> bytes, size_t offset)
+force_inline bool check_placement_array(gsl::span<Byte> bytes, ssize_t offset)
 {
     return check_alignment<T>(bytes.data());
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, size_t &offset, size_t n)
+force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, ssize_t &offset, ssize_t n)
 {
     parse_assert(check_placement_array<T>(bytes, offset, n));
     return placement_array<T,Byte>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, size_t &&offset, size_t n)
+force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, ssize_t &&offset, ssize_t n)
 {
-    size_t _offset = offset;
+    ssize_t _offset = offset;
     return make_placement_array<T>(bytes, _offset, n);
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, size_t &offset)
+force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, ssize_t &offset)
 {
-    let n = static_cast<size_t>(usize(bytes) / sizeof(T));
+    let n = ssize(bytes) / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, size_t &&offset = 0)
+force_inline placement_array<T,Byte> make_placement_array(gsl::span<Byte> bytes, ssize_t &&offset = 0)
 {
-    size_t _offset = offset;
+    ssize_t _offset = offset;
     return make_placement_array<T>(bytes, _offset);
 }
 

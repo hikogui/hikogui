@@ -14,18 +14,20 @@ namespace TTauri {
  *
  * @param index The index of the bit in the byte span.
  */
-[[nodiscard]] inline int get_bit(std::byte const *buffer, size_t buffer_size, size_t index) noexcept
+[[nodiscard]] inline bool get_bit(gsl::span<std::byte const> buffer, ssize_t index)
 {
     auto byte_index = index >> 3;
     auto bit_index = static_cast<uint8_t>(index & 7);
 
-    parse_assert(byte_index < buffer_size);
-    return (buffer[byte_index] >> bit_index) & 1;
+    parse_assert(byte_index < ssize(buffer));
+    return static_cast<bool>(
+        static_cast<int>(buffer[byte_index] >> bit_index) & 1
+    );
 } 
 
-[[nodiscard]] inline int get_bit(gsl::span<std::byte const> buffer, size_t index) noexcept
+[[nodiscard]] inline bool get_bit_and_advance(gsl::span<std::byte const> buffer, ssize_t &index)
 {
-    return get_bit(buffer.data(), size(buffer), index)
+    return get_bit(buffer, index++);
 }
 
 /** Read a single bit of span of bytes
@@ -45,7 +47,7 @@ namespace TTauri {
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */
-[[nodiscard]] inline int get_bits(std::byte const *buffer, size_t buffer_size, size_t index, int length) noexcept
+[[nodiscard]] inline int get_bits(gsl::span<std::byte const> buffer, ssize_t index, int length)
 {
     auto value = 0;
 
@@ -54,7 +56,7 @@ namespace TTauri {
     while (todo) {
         auto byte_index = index >> 3;
         auto bit_index = static_cast<int>(index & 7);
-        parse_assert(byte_index < buffer_size);
+        parse_assert(byte_index < ssize(buffer));
 
         auto available_bits = 8 - bit_index;
         auto nr_bits = available_bits < todo ? available_bits : todo;
@@ -72,6 +74,11 @@ namespace TTauri {
     return value;
 } 
 
-[[nodiscard]] inline int get_bits(gsl::span<std::byte const> buffer, size_t index, int length) noexcept
-    return get_bits(buffer.data(), size(buffer), index, length);
+[[nodiscard]] inline int get_bits_and_advance(gsl::span<std::byte const> buffer, ssize_t &index, int length)
+{
+    int value = get_bits(buffer, index, length);
+    index += length;
+    return value;
+}
+
 }

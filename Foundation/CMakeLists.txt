@@ -36,7 +36,9 @@ set(TTauri_Foundation_srcs
     src/FileView.cpp
     src/throw_exception.cpp
     src/expression.cpp
+    src/deflate.cpp
     src/template.cpp
+    src/gzip.cpp
 )
 
 if(WIN32)
@@ -96,6 +98,7 @@ set(TTauri_Foundation_tests
     tests/vec_tests.cpp
     tests/mat_tests.cpp
     tests/Unicode_tests.cpp
+    tests/gzip_tests.cpp
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
@@ -191,6 +194,12 @@ set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/file_view.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/includer.ttt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/includee.tti
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test.txt.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test1.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test1.txt.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.txt
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.txt.gz
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})

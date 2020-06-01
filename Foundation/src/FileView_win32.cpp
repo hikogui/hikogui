@@ -38,11 +38,15 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     DWORD fileOffsetLow = _offset & 0xffffffff;
 
     void *data;
-    if ((data = MapViewOfFile(fileMappingObject->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
-        TTAURI_THROW(io_error("Could not map view of file.")
-            .set<"error_msg"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location())
-        );
+    if (size == 0) {
+        data = nullptr;
+    } else {
+        if ((data = MapViewOfFile(fileMappingObject->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
+            TTAURI_THROW(io_error("Could not map view of file.")
+                .set<"error_msg"_tag>(getLastErrorMessage())
+                .set<"url"_tag>(location())
+            );
+        }
     }
 
     auto *bytes_ptr = new gsl::span<std::byte>(static_cast<std::byte *>(data), size);
