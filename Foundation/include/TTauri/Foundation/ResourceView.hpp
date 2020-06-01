@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <variant>
 #include <functional>
+#include <cstddef>
 
 namespace TTauri {
 class URL;
@@ -28,7 +29,7 @@ public:
 
     /** Get a spam to the memory mapping.
      */
-    [[nodiscard]] virtual gsl::span<std::byte const> bytes() const noexcept = 0;
+    [[nodiscard]] virtual nonstd::span<std::byte const> bytes() const noexcept = 0;
 
     /** Get a spam to the memory mapping.
     */
@@ -40,7 +41,7 @@ public:
 
     /** Pointer to the memory mapping.
      */
-    [[nodiscard]] virtual void const *data() const noexcept = 0;
+    [[nodiscard]] virtual std::byte const *data() const noexcept = 0;
 
     /** Load a resource.
      * @param location A `resource:` URL which will be loaded from the executable or from a file.

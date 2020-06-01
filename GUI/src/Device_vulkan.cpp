@@ -7,7 +7,7 @@
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri::GUI {
 
@@ -126,15 +126,15 @@ Device_vulkan::~Device_vulkan()
 {
     try {
         gsl_suppress(f.6) {
-            toneMapperPipeline->destroy(gsl::make_not_null(this));
+            toneMapperPipeline->destroy(this);
             toneMapperPipeline = nullptr;
-            SDFPipeline->destroy(gsl::make_not_null(this));
+            SDFPipeline->destroy(this);
             SDFPipeline = nullptr;
-            imagePipeline->destroy(gsl::make_not_null(this));
+            imagePipeline->destroy(this);
             imagePipeline = nullptr;
-            boxPipeline->destroy(gsl::make_not_null(this));
+            boxPipeline->destroy(this);
             boxPipeline = nullptr;
-            flatPipeline->destroy(gsl::make_not_null(this));
+            flatPipeline->destroy(this);
             flatPipeline = nullptr;
 
             destroyQuadIndexBuffer();
@@ -283,12 +283,12 @@ void Device_vulkan::initializeQuadIndexBuffer()
             let rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
-            case 0: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 0); break;
-            case 1: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 2: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 3: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
-            case 4: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
-            case 5: gsl::at(stagingVertexIndexBufferData, i) = numeric_cast<vertex_index_type>(rectangleBase + 3); break;
+            case 0: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 0); break;
+            case 1: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 2: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 3: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
+            case 4: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
+            case 5: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 3); break;
             default: no_default;
             }
         }
@@ -698,7 +698,7 @@ vk::ShaderModule Device_vulkan::loadShader(uint32_t const *data, size_t size) co
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }
 
-vk::ShaderModule Device_vulkan::loadShader(gsl::span<std::byte const> shaderObjectBytes) const
+vk::ShaderModule Device_vulkan::loadShader(nonstd::span<std::byte const> shaderObjectBytes) const
 {
     // Make sure the address is aligned to uint32_t;
     let address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());

@@ -8,7 +8,7 @@
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri::GUI::PipelineToneMapper {
 

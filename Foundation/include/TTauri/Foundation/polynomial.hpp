@@ -96,7 +96,7 @@ template<typename T, int N>
 inline std::ostream& operator<<(std::ostream& os, results<T,N> const &r)
 {
     os << "[";
-    assert(r.count <= r.maxCount);
+    ttauri_assert(r.count <= r.maxCount);
     for (int i = 0; i < r.count; i++) {
         if (i > 0) {
             os << ", ";

@@ -18,7 +18,7 @@
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <memory>
 #include <string>
 #include <any>

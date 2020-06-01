@@ -10,7 +10,6 @@ namespace TTauri::GUI::PipelineToneMapper {
 
 using namespace TTauri;
 using namespace std;
-using namespace gsl;
 
 PipelineToneMapper::PipelineToneMapper(Window const &window) :
     Pipeline_vulkan(window)

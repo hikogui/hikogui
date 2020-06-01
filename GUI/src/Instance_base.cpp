@@ -8,7 +8,6 @@
 namespace TTauri::GUI {
 
 using namespace std;
-using namespace gsl;
 
 Device *Instance_base::findBestDeviceForWindow(Window const &window)
 {

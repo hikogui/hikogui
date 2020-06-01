@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/FileMapping.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri {
 
@@ -21,7 +21,7 @@ private:
      * The shared_ptr to _bytes allows the FileView to be copied while pointing
      * to the same memory map. This shared_ptr will use the private unmap().
      */
-    std::shared_ptr<gsl::span<std::byte>> _bytes;
+    std::shared_ptr<nonstd::span<std::byte>> _bytes;
 
     /*! The offset into the file which is mapped to memory.
      */
@@ -56,19 +56,19 @@ public:
 
     /*! Pointer to the mapping into memory.
      */
-    [[nodiscard]] void *data() noexcept { return _bytes->data(); }
+    [[nodiscard]] std::byte *data() noexcept { return _bytes->data(); }
 
     /*! Pointer to the mapping into memory.
      */
-    [[nodiscard]] void const *data() const noexcept override { return _bytes->data(); }
+    [[nodiscard]] std::byte const *data() const noexcept override { return _bytes->data(); }
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] gsl::span<std::byte> bytes() noexcept { return *_bytes; }
+    [[nodiscard]] nonstd::span<std::byte> bytes() noexcept { return *_bytes; }
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] gsl::span<std::byte const> bytes() const noexcept override { return *_bytes; }
+    [[nodiscard]] nonstd::span<std::byte const> bytes() const noexcept override { return *_bytes; }
 
     /*! String view to the mapping into memory.
      */
@@ -102,7 +102,7 @@ private:
      *
      * \param bytes The bytes to unmap.
      */
-    static void unmap(gsl::span<std::byte> *bytes) noexcept;
+    static void unmap(nonstd::span<std::byte> *bytes) noexcept;
 
     /*! Open a file mapping object.
      * File mapping objects are cached and will be shared by FileViews.

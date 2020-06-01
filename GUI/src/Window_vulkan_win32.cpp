@@ -18,12 +18,12 @@ using namespace std;
 using namespace TTauri;
 
 template<typename T>
-inline gsl::not_null<T *>to_ptr(LPARAM lParam) noexcept
+inline T *to_ptr(LPARAM lParam) noexcept
 {
     T *ptr;
     memcpy(&ptr, &lParam, sizeof(T *));
 
-    return gsl::not_null<T *>(ptr);
+    return ptr;
 }
 
 static const wchar_t *win32WindowClassName = nullptr;

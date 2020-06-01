@@ -38,13 +38,13 @@ struct DeviceShared final {
     /*! Deallocate vulkan resources.
     * This is called in the destructor of Device_vulkan, therefor we can not use our `std::weak_ptr<Device_vulkan> device`.
     */
-    void destroy(gsl::not_null<Device *> vulkanDevice);
+    void destroy(Device *vulkanDevice);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
 private:
     void buildShaders();
-    void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
+    void teardownShaders(Device_vulkan *vulkanDevice);
 };
 
 }

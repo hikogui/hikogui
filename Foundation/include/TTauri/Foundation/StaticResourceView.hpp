@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <cstddef>
 #include <unordered_map>
 
@@ -16,7 +16,7 @@ namespace TTauri {
 class StaticResourceView : public ResourceView {
 private:
     // Borrowed reference from a byte array inside StaticResources.
-    gsl::span<std::byte const> _bytes;
+    nonstd::span<std::byte const> _bytes;
 
 public:
     StaticResourceView(std::string const &filename);
@@ -32,9 +32,9 @@ public:
 
     [[nodiscard]] size_t size() const noexcept override { return _bytes.size(); }
 
-    [[nodiscard]] void const *data() const noexcept override { return _bytes.data(); }
+    [[nodiscard]] std::byte const *data() const noexcept override { return _bytes.data(); }
 
-    [[nodiscard]] gsl::span<std::byte const> bytes() const noexcept override { return _bytes; }
+    [[nodiscard]] nonstd::span<std::byte const> bytes() const noexcept override { return _bytes; }
 
     [[nodiscard]] std::string_view string_view() const noexcept override { return {reinterpret_cast<char const*>(data()), size()}; }
 

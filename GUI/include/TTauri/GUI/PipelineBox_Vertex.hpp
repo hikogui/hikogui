@@ -10,7 +10,7 @@
 #include "TTauri/Foundation/R32G32B32A32SFloat.hpp"
 #include "TTauri/Foundation/R32G32B32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri::GUI::PipelineBox {
 

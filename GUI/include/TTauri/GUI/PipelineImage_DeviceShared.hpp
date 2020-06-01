@@ -58,7 +58,7 @@ struct DeviceShared final {
     /*! Deallocate vulkan resources.
     * This is called in the destructor of Device_vulkan, therefor we can not use our `std::weak_ptr<Device_vulkan> device`.
     */
-    void destroy(gsl::not_null<Device *> vulkanDevice);
+    void destroy(Device *vulkanDevice);
 
     /*! Get the coordinate in the atlas from a page index.
      * \param page number in the atlas
@@ -103,10 +103,10 @@ private:
     void updateAtlasWithStagingPixelMap(Image const &image);
 
     void buildShaders();
-    void teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice);
+    void teardownShaders(Device_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice);
+    void teardownAtlas(Device_vulkan *vulkanDevice);
 };
 
 }

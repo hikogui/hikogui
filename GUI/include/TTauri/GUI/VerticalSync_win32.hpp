@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/hires_utc_clock.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <thread>
 
 namespace TTauri::GUI {

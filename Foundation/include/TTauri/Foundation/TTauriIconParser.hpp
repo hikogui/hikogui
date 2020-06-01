@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri {
 class URL;
@@ -13,6 +13,6 @@ namespace TTauri {
 
 struct Path;
 
-Path parseTTauriIcon(gsl::span<std::byte const> bytes);
+Path parseTTauriIcon(nonstd::span<std::byte const> bytes);
 
 }

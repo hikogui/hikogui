@@ -12,7 +12,7 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <vector>
 #include <map>
 

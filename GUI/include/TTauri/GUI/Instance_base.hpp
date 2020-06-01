@@ -8,7 +8,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/VerticalSync.hpp"
 #include "TTauri/GUI/InstanceDelegate.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <memory>
 #include <mutex>
 #include <thread>

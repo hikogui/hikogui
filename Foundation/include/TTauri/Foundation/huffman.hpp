@@ -2,7 +2,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/bits.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <vector>
 
 namespace TTauri {
@@ -95,7 +95,7 @@ public:
         return value - 1;
     }
 
-    [[nodiscard]] int get_symbol(gsl::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept {
+    [[nodiscard]] int get_symbol(nonstd::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept {
         auto state = start();
         while (true) {
             int symbol;

@@ -9,7 +9,7 @@
 #include <complex>
 #include <cmath>
 #include <limits>
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <tuple>
 #include <numeric>
 #include <iterator>

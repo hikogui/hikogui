@@ -10,7 +10,6 @@ namespace TTauri::GUI::PipelineBox {
 
 using namespace TTauri;
 using namespace std;
-using namespace gsl;
 
 PipelineBox::PipelineBox(Window const &window) :
     Pipeline_vulkan(window)

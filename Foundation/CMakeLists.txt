@@ -101,7 +101,7 @@ set(TTauri_Foundation_tests
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL)
+target_link_libraries(TTauri_Foundation PUBLIC fmt tz span)
 if (WIN32)
     target_link_libraries(TTauri_Foundation PUBLIC synchronization)
 endif()

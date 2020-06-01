@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/mat.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <atomic>
 #include <string>
 

@@ -41,7 +41,7 @@ public:
     /** Get a new packet to write a message into.
      * @return a pointer to an byte array with at least nrBytes of data available.
      */
-    gsl::span<std::byte> getNewPacket(ssize_t nrBytes) noexcept {
+    nonstd::span<std::byte> getNewPacket(ssize_t nrBytes) noexcept {
         ttauri_assert(!closed());
         packets.emplace_back(nrBytes);
         return {packets.back().end(), nrBytes};
@@ -50,7 +50,7 @@ public:
     /** Get a packet to write a stream of bytes into.
      * @return a pointer to an byte array with at least nrBytes of data available.
      */
-    gsl::span<std::byte> getPacket(ssize_t nrBytes) noexcept {
+    nonstd::span<std::byte> getPacket(ssize_t nrBytes) noexcept {
         ttauri_assert(!closed());
         if (packets.empty() || (packets.back().writeSize() < nrBytes)) {
             packets.emplace_back(nrBytes);
@@ -80,7 +80,7 @@ public:
      *         The returned size may be larger than requested and
      *         this data may be consumed using `read()`.
      */
-    gsl::span<std::byte const> peek(ssize_t nrBytes) {
+    nonstd::span<std::byte const> peek(ssize_t nrBytes) {
         if (packets.empty() || size() < nrBytes) {
             return {};
         }

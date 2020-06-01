@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 
     fprintf(output_file, "#pragma once\n\n");
 
-    fprintf(output_file, "#include <gsl/gsl>\n");
+    fprintf(output_file, "#include <nonstd/span>\n");
     fprintf(output_file, "#include <cstdint>\n\n");
 
     fprintf(output_file, "alignas(8) static const uint8_t %s_data[%llu] = {\n", name, (long long unsigned)input_file_length);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
     fprintf(output_file, "};\n\n");
 
-    fprintf(output_file, "static const gsl::span<std::byte const> %s_bytes = {reinterpret_cast<std::byte const *>(%s_data), sizeof(%s_data)};\n",
+    fprintf(output_file, "static const nonstd::span<std::byte const> %s_bytes = {reinterpret_cast<std::byte const *>(%s_data), sizeof(%s_data)};\n",
         name, name, name);
     fprintf(output_file, "static const char *%s_filename = \"%s\";\n", name, input_filename);
 

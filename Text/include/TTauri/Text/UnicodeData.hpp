@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/math.hpp"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri::Text {
 struct UnicodeData_Description;
@@ -126,7 +126,7 @@ enum GeneralCharacterClass {
  */
 class UnicodeData {
 private:
-    gsl::span<std::byte const> bytes;
+    nonstd::span<std::byte const> bytes;
 
     /** A view to the binary UnicodeData.
      */
@@ -141,7 +141,7 @@ public:
     /** Load binary unicode data.
      * The bytes passed into this constructor will need to remain available.
      */
-    UnicodeData(gsl::span<std::byte const> bytes);
+    UnicodeData(nonstd::span<std::byte const> bytes);
 
     /** Load binary unicode data from a resource.
      */

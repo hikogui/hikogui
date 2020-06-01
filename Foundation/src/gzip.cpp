@@ -18,7 +18,7 @@ struct GZIPMemberHeader {
     uint8_t OS;
 };
 
-static bstring gzip_decompress_member(gsl::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
+static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
 {
     let header = make_placement_ptr<GZIPMemberHeader>(bytes, offset);
 
@@ -27,7 +27,7 @@ static bstring gzip_decompress_member(gsl::span<std::byte const> bytes, ssize_t 
     parse_assert(header->CM == 8);
     parse_assert((header->FLG & 0xe0) == 0); // reserved bits must be zero.
     parse_assert(header->XFL == 2 || header->XFL == 4);
-    let FTEXT = static_cast<bool>(header->FLG & 1);
+    [[maybe_unused]] let FTEXT = static_cast<bool>(header->FLG & 1);
     let FHCRC = static_cast<bool>(header->FLG & 2);
     let FEXTRA = static_cast<bool>(header->FLG & 4);
     let FNAME = static_cast<bool>(header->FLG & 8);
@@ -67,7 +67,7 @@ static bstring gzip_decompress_member(gsl::span<std::byte const> bytes, ssize_t 
     return r;
 }
 
-bstring gzip_decompress(gsl::span<std::byte const> bytes, ssize_t max_size)
+bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
 {
     auto r = bstring{};
 

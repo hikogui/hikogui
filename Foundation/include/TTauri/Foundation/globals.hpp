@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/exceptions.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <string>
 #include <unordered_map>
 #include <cstddef>
@@ -39,11 +39,11 @@ inline std::atomic<uint64_t> startupCount = 0;
 
 /** Add a static resource.
 */
-void addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept;
+void addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept;
 
 /** Request a static resource.
 */
-gsl::span<std::byte const> getStaticResource(std::string const &key);
+nonstd::span<std::byte const> getStaticResource(std::string const &key);
 
 /** Stop the maintenance thread.
  */

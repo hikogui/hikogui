@@ -11,7 +11,7 @@
 
 namespace TTauri {
 
-std::unordered_map<std::string,gsl::span<std::byte const>> staticResources;
+std::unordered_map<std::string,nonstd::span<std::byte const>> staticResources;
 
 /** The maintenance thread.
 */
@@ -60,12 +60,12 @@ static void maintenanceThreadProcedure() noexcept
     logger.logger_tick();
 }
 
-void addStaticResource(std::string const &key, gsl::span<std::byte const> value) noexcept
+void addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept
 {
     staticResources.try_emplace(key, value);
 }
 
-gsl::span<std::byte const> getStaticResource(std::string const &key)
+nonstd::span<std::byte const> getStaticResource(std::string const &key)
 {
     let i = staticResources.find(key);
     if (i == staticResources.end()) {

@@ -26,8 +26,9 @@ DeviceShared::~DeviceShared()
 {
 }
 
-void DeviceShared::destroy(gsl::not_null<Device *> vulkanDevice)
+void DeviceShared::destroy(Device *vulkanDevice)
 {
+    ttauri_assume(vulkanDevice);
     teardownShaders(vulkanDevice);
     teardownAtlas(vulkanDevice);
 }
@@ -191,8 +192,9 @@ void DeviceShared::buildShaders()
     };
 }
 
-void DeviceShared::teardownShaders(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::teardownShaders(Device_vulkan *vulkanDevice)
 {
+    ttauri_assume(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);
     vulkanDevice->destroy(fragmentShaderModule);
 }
@@ -316,8 +318,9 @@ void DeviceShared::buildAtlas()
     addAtlasImage();
 }
 
-void DeviceShared::teardownAtlas(gsl::not_null<Device_vulkan *> vulkanDevice)
+void DeviceShared::teardownAtlas(Device_vulkan *vulkanDevice)
 {
+    ttauri_assume(vulkanDevice);
     vulkanDevice->destroy(atlasSampler);
 
     for (const auto &atlasImage: atlasTextures) {

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Instance_vulkan.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri::GUI {
 

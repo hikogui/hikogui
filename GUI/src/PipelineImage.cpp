@@ -10,7 +10,6 @@ namespace TTauri::GUI::PipelineImage {
 
 using namespace TTauri;
 using namespace std;
-using namespace gsl;
 
 PipelineImage::PipelineImage(Window const &window) :
     Pipeline_vulkan(window)

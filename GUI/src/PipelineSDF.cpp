@@ -10,7 +10,6 @@ namespace TTauri::GUI::PipelineSDF {
 
 using namespace TTauri;
 using namespace std;
-using namespace gsl;
 
 PipelineSDF::PipelineSDF(Window const &window) :
     Pipeline_vulkan(window)

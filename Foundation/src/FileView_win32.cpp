@@ -49,8 +49,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
         }
     }
 
-    auto *bytes_ptr = new gsl::span<std::byte>(static_cast<std::byte *>(data), size);
-    _bytes = std::shared_ptr<gsl::span<std::byte>>(bytes_ptr, FileView::unmap);
+    auto *bytes_ptr = new nonstd::span<std::byte>(static_cast<std::byte *>(data), size);
+    _bytes = std::shared_ptr<nonstd::span<std::byte>>(bytes_ptr, FileView::unmap);
 }
 
 FileView::FileView(URL const &location, AccessMode accessMode, size_t offset, size_t size) :
@@ -86,7 +86,7 @@ FileView &FileView::operator=(FileView &&other) noexcept
     return *this;
 }
 
-void FileView::unmap(gsl::span<std::byte> *bytes) noexcept
+void FileView::unmap(nonstd::span<std::byte> *bytes) noexcept
 {
     if (bytes != nullptr) {
         if (bytes->size() > 0) {

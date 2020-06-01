@@ -10,7 +10,6 @@ namespace TTauri::GUI::PipelineFlat {
 
 using namespace TTauri;
 using namespace std;
-using namespace gsl;
 
 PipelineFlat::PipelineFlat(Window const &window) :
     Pipeline_vulkan(window)

@@ -8,7 +8,7 @@
 
 namespace TTauri {
 
-[[nodiscard]] static void inflate_copy_block(gsl::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
+static void inflate_copy_block(nonstd::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {
     auto offset = (bit_offset + 7) / 8;
 
@@ -22,7 +22,7 @@ namespace TTauri {
 }
 
 [[nodiscard]] static int inflate_decode_length(
-    gsl::span<std::byte const> bytes,
+    nonstd::span<std::byte const> bytes,
     ssize_t &bit_offset,
     int symbol)
 {
@@ -62,7 +62,7 @@ namespace TTauri {
 }
 
 [[nodiscard]] static int inflate_decode_distance(
-    gsl::span<std::byte const> bytes,
+    nonstd::span<std::byte const> bytes,
     ssize_t &bit_offset,
     int symbol)
 {
@@ -103,7 +103,7 @@ namespace TTauri {
 }
 
 static void inflate_block(
-    gsl::span<std::byte const> bytes,
+    nonstd::span<std::byte const> bytes,
     ssize_t &bit_offset,
     ssize_t max_size,
     huffman_tree<int16_t> const &literal_tree,
@@ -180,12 +180,12 @@ huffman_tree<int16_t> deflate_fixed_distance_tree = []() {
 
 
 
-static void inflate_fixed_block(gsl::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
+static void inflate_fixed_block(nonstd::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {
     inflate_block(bytes, bit_offset, max_size, deflate_fixed_literal_tree, deflate_fixed_distance_tree, r);
 }
 
-[[nodiscard]] static huffman_tree<int16_t> inflate_code_lengths(gsl::span<std::byte const> bytes, ssize_t &bit_offset, int nr_symbols)
+[[nodiscard]] static huffman_tree<int16_t> inflate_code_lengths(nonstd::span<std::byte const> bytes, ssize_t &bit_offset, int nr_symbols)
 {
     // The symbols are in different order in the table.
     constexpr auto symbols = std::array{
@@ -203,7 +203,7 @@ static void inflate_fixed_block(gsl::span<std::byte const> bytes, ssize_t &bit_o
 }
 
 std::vector<int> inflate_lengths(
-    gsl::span<std::byte const> bytes,
+    nonstd::span<std::byte const> bytes,
     ssize_t &bit_offset,
     int nr_symbols,
     huffman_tree<int16_t> const &code_length_tree)
@@ -248,7 +248,7 @@ std::vector<int> inflate_lengths(
     return r;
 }
 
-void inflate_dynamic_block(gsl::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
+void inflate_dynamic_block(nonstd::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {
     // Test all lengths, the trailer is at least 64 bits (CRC+LEN)
     // - 14 bits lengths
@@ -271,7 +271,7 @@ void inflate_dynamic_block(gsl::span<std::byte const> bytes, ssize_t &bit_offset
     inflate_block(bytes, bit_offset, max_size, literal_tree, distance_tree, r);
 }
 
-bstring inflate(gsl::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
+bstring inflate(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
 {
     ssize_t bit_offset = offset * 8;
 

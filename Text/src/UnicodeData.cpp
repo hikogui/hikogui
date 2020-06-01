@@ -147,7 +147,7 @@ struct UnicodeData_Header {
      */
 };
 
-UnicodeData::UnicodeData(gsl::span<std::byte const> bytes) :
+UnicodeData::UnicodeData(nonstd::span<std::byte const> bytes) :
     bytes(bytes), view()
 {
     initialize();

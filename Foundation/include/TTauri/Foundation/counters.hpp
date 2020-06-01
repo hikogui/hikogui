@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/string_tag.hpp"
 #include "TTauri/Foundation/wfree_unordered_map.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 
 namespace TTauri {
 

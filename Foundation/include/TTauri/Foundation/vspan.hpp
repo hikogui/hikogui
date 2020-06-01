@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/assert.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <iterator>
 #include <memory>
 #include <new>
@@ -90,7 +90,7 @@ public:
         ttauri_assume(nr_elements >= 0);
     }
 
-    vspan(gsl::span<value_type> span) noexcept :
+    vspan(nonstd::span<value_type> span) noexcept :
         _begin(span.data()), _end(span.data()), _max(span.data() + span.size()) {}
 
     vspan(vspan const &other) = default;

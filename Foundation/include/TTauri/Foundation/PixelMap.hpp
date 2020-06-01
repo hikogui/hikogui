@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/iaarect.hpp"
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <string>
 #include <algorithm>
 #include <vector>

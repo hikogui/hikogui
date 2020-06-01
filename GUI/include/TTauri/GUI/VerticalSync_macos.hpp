@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <gsl/gsl>
+#include <nonstd/span>
 #include <thread>
 
 namespace TTauri::GUI {
