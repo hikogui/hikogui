@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/Foundation/gzip.hpp"
-#include "TTauri/Foundation/deflate.hpp"
+#include "TTauri/Foundation/inflate.hpp"
 #include "TTauri/Foundation/endian.hpp"
 #include "TTauri/Foundation/placement.hpp"
 
@@ -58,7 +58,7 @@ static bstring gzip_decompress_member(gsl::span<std::byte const> bytes, ssize_t 
         [[maybe_unused]] let CRC16 = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
     }
 
-    auto r = deflate_decompress(bytes, offset, max_size);
+    auto r = inflate(bytes, offset, max_size);
 
     [[maybe_unused]] auto CRC32 = make_placement_ptr<little_uint32_buf_t>(bytes, offset);
     [[maybe_unused]] auto ISIZE = make_placement_ptr<little_uint32_buf_t>(bytes, offset);

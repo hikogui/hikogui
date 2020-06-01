@@ -14,21 +14,17 @@ namespace TTauri {
  *
  * @param index The index of the bit in the byte span.
  */
-[[nodiscard]] inline bool get_bit(gsl::span<std::byte const> buffer, ssize_t index)
+[[nodiscard]] inline bool get_bit(gsl::span<std::byte const> buffer, ssize_t &index) noexcept
 {
     auto byte_index = index >> 3;
     auto bit_index = static_cast<uint8_t>(index & 7);
+    ++index;
 
-    parse_assert(byte_index < ssize(buffer));
+    ttauri_assume(byte_index < ssize(buffer));
     return static_cast<bool>(
         static_cast<int>(buffer[byte_index] >> bit_index) & 1
     );
 } 
-
-[[nodiscard]] inline bool get_bit_and_advance(gsl::span<std::byte const> buffer, ssize_t &index)
-{
-    return get_bit(buffer, index++);
-}
 
 /** Read a single bit of span of bytes
  * Bits are ordered LSB first.
@@ -47,7 +43,7 @@ namespace TTauri {
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */
-[[nodiscard]] inline int get_bits(gsl::span<std::byte const> buffer, ssize_t index, int length)
+[[nodiscard]] inline int get_bits(gsl::span<std::byte const> buffer, ssize_t &index, int length) noexcept
 {
     auto value = 0;
 
@@ -56,10 +52,10 @@ namespace TTauri {
     while (todo) {
         auto byte_index = index >> 3;
         auto bit_index = static_cast<int>(index & 7);
-        parse_assert(byte_index < ssize(buffer));
+        ttauri_assume(byte_index < ssize(buffer));
 
         auto available_bits = 8 - bit_index;
-        auto nr_bits = available_bits < todo ? available_bits : todo;
+        auto nr_bits = std::min(available_bits, todo);
 
         auto mask = (1 << nr_bits) - 1;
 
@@ -73,12 +69,5 @@ namespace TTauri {
 
     return value;
 } 
-
-[[nodiscard]] inline int get_bits_and_advance(gsl::span<std::byte const> buffer, ssize_t &index, int length)
-{
-    int value = get_bits(buffer, index, length);
-    index += length;
-    return value;
-}
 
 }

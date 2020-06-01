@@ -129,19 +129,17 @@ PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawApplicationIconImage
 
 PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
 {
-    let height = extent().height();
-
     let redCenter = vec{
         MARGIN + RADIUS,
-        height / 2.0
+        extent().height() / 2.0
     };
     let yellowCenter = vec{
         MARGIN + DIAMETER + SPACING + RADIUS,
-        height / 2.0
+        extent().height() / 2.0
     };
     let greenCenter = vec{
         MARGIN + DIAMETER + SPACING + DIAMETER + SPACING + RADIUS,
-        height / 2.0
+        extent().height() / 2.0
     };
 
     auto drawing = Path();
@@ -207,11 +205,9 @@ PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::
 
 std::tuple<aarect, aarect, aarect, aarect> WindowTrafficLightsWidget::getButtonRectangles() const noexcept
 {
-    let height = extent().height();
-
     let sysmenuButtonBox = aarect{
         vec::point(0.0, 0.0),
-        {height, height}
+        {extent().height(), extent().height()}
     };
 
     let redButtonBox = aarect{

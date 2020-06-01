@@ -30,13 +30,12 @@ set(TTauri_Foundation_srcs
     src/BezierCurve.cpp
     src/Path.cpp
     src/PixelMap.cpp
-    src/PNG.cpp
     src/TTauriIconParser.cpp
     src/FileMapping.cpp
     src/FileView.cpp
     src/throw_exception.cpp
     src/expression.cpp
-    src/deflate.cpp
+    src/inflate.cpp
     src/template.cpp
     src/gzip.cpp
 )
@@ -102,7 +101,7 @@ set(TTauri_Foundation_tests
 )
 
 add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
-target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL zlib png)
+target_link_libraries(TTauri_Foundation PUBLIC fmt tz GSL)
 if (WIN32)
     target_link_libraries(TTauri_Foundation PUBLIC synchronization)
 endif()
@@ -200,6 +199,16 @@ set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.bin.gz
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test3.bin
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test3.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test4.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test4.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test5.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test5.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test6.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test6.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test7.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test7.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test8.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test8.bin.gz
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})

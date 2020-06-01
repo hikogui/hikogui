@@ -15,8 +15,6 @@ endif()
 
 add_subdirectory(googletest)
 add_subdirectory(GSL)
-add_subdirectory(zlib)
-add_subdirectory(libpng)
 add_subdirectory(VulkanMemoryAllocator)
 add_subdirectory(rhea)
 add_subdirectory(fmt)
