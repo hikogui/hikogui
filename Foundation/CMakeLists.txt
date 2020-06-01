@@ -194,12 +194,12 @@ set(TTauri_Foundation_test_files
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/file_view.txt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/includer.ttt
     ${CMAKE_CURRENT_SOURCE_DIR}/tests/includee.tti
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test.txt.gz
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test1.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test1.txt.gz
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.txt
-    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.txt.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test1.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test1.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test2.bin.gz
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test3.bin
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/gzip_test3.bin.gz
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})
