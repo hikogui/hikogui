@@ -54,6 +54,7 @@ set(TTauri_GUI_srcs
     src/ThemeBook.cpp
     src/KeyboardBindings.cpp
     src/KeyboardEvent.cpp
+    src/KeyboardVirtualKey_win32.cpp
 )
 
 add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs})

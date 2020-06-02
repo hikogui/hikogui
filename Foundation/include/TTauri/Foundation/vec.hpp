@@ -455,6 +455,40 @@ public:
         return _mm_cvtss_f32(tmp3);
     }
 
+    [[nodiscard]] force_inline friend vec reciprocal(vec const &rhs) noexcept {
+        return _mm_rcp_ps(rhs);
+    }
+
+    template<bool nx, bool ny, bool nz, bool nw>
+    [[nodiscard]] force_inline friend vec neg(vec const &rhs) noexcept {
+        let n_rhs = -rhs;
+
+        __m128 tmp = rhs;
+
+        if constexpr (nx) {
+            tmp = _mm_insert_ps(tmp, n_rhs, 0b00'00'0000);
+        }
+        if constexpr (ny) {
+            tmp = _mm_insert_ps(tmp, n_rhs, 0b01'01'0000);
+        }
+        if constexpr (nz) {
+            tmp = _mm_insert_ps(tmp, n_rhs, 0b10'10'0000);
+        }
+        if constexpr (nw) {
+            tmp = _mm_insert_ps(tmp, n_rhs, 0b11'11'0000);
+        }
+
+        return tmp;
+    }
+
+    [[nodiscard]] force_inline friend vec hadd(vec const &lhs, vec const &rhs) noexcept {
+        return _mm_hadd_ps(lhs, rhs);
+    }
+
+    [[nodiscard]] force_inline friend vec hsub(vec const &lhs, vec const &rhs) noexcept {
+        return _mm_hsub_ps(lhs, rhs);
+    }
+
     [[nodiscard]] force_inline friend float viktor_cross(vec const &lhs, vec const &rhs) noexcept {
         // a.x * b.y - a.y * b.x
         let tmp1 = _mm_permute_ps(rhs, _MM_SHUFFLE(2,3,0,1));

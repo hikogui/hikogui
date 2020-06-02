@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/strings.hpp"
+#include "TTauri/GUI/KeyboardModifiers.hpp"
 #include <unordered_map>
 
 namespace TTauri::GUI {
@@ -177,6 +178,9 @@ inline KeyboardVirtualKey to_KeyboardVirtualKey(std::string_view s)
     }
     TTAURI_THROW(parse_error("Could not find virtual key '{}'", s));
 }
+
+KeyboardVirtualKey to_KeyboardVirtualKey(int key_code, bool extended, KeyboardModifiers modifiers);
+
 
 constexpr char const *to_const_string(KeyboardVirtualKey key) noexcept
 {

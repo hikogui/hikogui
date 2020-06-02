@@ -11,9 +11,9 @@ namespace TTauri {
     throw invalid_operation_error("{}", message).log(source_file, source_line);
 }
 
-[[noreturn]] void _throw_overflow_error(char const *source_file, int source_line, std::string message)
+[[noreturn]] void _throw_math_error(char const *source_file, int source_line, std::string message)
 {
-    throw overflow_error("{}", message).log(source_file, source_line);
+    throw math_error("{}", message).log(source_file, source_line);
 }
 
 [[noreturn]] void _throw_parse_error(char const* source_file, int source_line, std::string message)

@@ -84,3 +84,31 @@ TEST(Mat, Rotate) {
     let M4 = mat::R(pi * 1.5f);
     ASSERT_NEAR_VEC(M4 * tmp, vec(3.0, -2.0, 4.0, 1.0), 0.001);
 }
+
+TEST(Mat, Invert) {
+    auto XYZ_to_sRGB = mat{
+         3.24096994f, -1.53738318f, -0.49861076f, 0.0f,
+        -0.96924364f,  1.87596750f,  0.04155506f, 0.0f,
+         0.05563008f, -0.20397696f,  1.05697151f, 0.0f,
+         0.0f       ,  0.0f       ,  0.0f       , 1.0f
+    };
+
+    auto sRGB_to_XYZ = ~XYZ_to_sRGB;
+
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<0>(), vec(0.41239080, 0.21263901, 0.01933082), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<1>(), vec(0.35758434, 0.71516868, 0.11919478), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<2>(), vec(0.18048079, 0.07219232, 0.95053215), 0.001);
+    ASSERT_NEAR_VEC(sRGB_to_XYZ.get<3>(), vec(0.0, 0.0, 0.0, 1.0), 0.001);
+
+}
+
+TEST(Mat, Color) {
+    auto BT709_to_XYZ = mat::RGBtoXYZ(0.3127f, 0.3290f, 0.64f, 0.33f, 0.30f, 0.60f, 0.15f, 0.06f);
+
+    ASSERT_NEAR_VEC(BT709_to_XYZ.get<0>(), vec(0.4124f, 0.2126f, 0.0193f), 0.001);
+    ASSERT_NEAR_VEC(BT709_to_XYZ.get<1>(), vec(0.3576f, 0.7152f, 0.1192f), 0.001);
+    ASSERT_NEAR_VEC(BT709_to_XYZ.get<2>(), vec(0.1805f, 0.0722f, 0.9505f), 0.001);
+    ASSERT_NEAR_VEC(BT709_to_XYZ.get<3>(), vec(0.0, 0.0, 0.0, 1.0), 0.001);
+
+
+}

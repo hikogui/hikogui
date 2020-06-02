@@ -48,7 +48,7 @@ force_inline T safe_handle_overflow(T value, bool overflow, bool is_positive) no
 {
     if constexpr (OnOverflow == on_overflow_t::Throw) {
         if (overflow) {
-            TTAURI_THROW(overflow_error("safe_int"));
+            TTAURI_THROW(math_error("safe_int"));
         }
     } else if constexpr (OnOverflow == on_overflow_t::Assert) {
         ttauri_assert(!overflow);

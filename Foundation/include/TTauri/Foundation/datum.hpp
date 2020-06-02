@@ -456,7 +456,7 @@ public:
                 auto* const p = new decimal(value);
                 u64 = make_pointer(decimal_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing decimal {} to datum", value);
+                TTAURI_THROW_MATH_ERROR("Constructing decimal {} to datum", value);
             }
         } else {
             int e = value.exponent();
@@ -483,7 +483,7 @@ public:
                 auto * const p = new uint64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing datum from integer {}, larger than {}", value, maximum_int);
+                TTAURI_THROW_MATH_ERROR("Constructing datum from integer {}, larger than {}", value, maximum_int);
             }
         }
     }
@@ -500,7 +500,7 @@ public:
                 auto * const p = new int64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int);
+                TTAURI_THROW_MATH_ERROR("Constructing integer {} to datum, outside {} and {}", value, minimum_int, maximum_int);
             }
         }
     }
@@ -518,7 +518,7 @@ public:
                 auto * const p = new std::string(value);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing string {} to datum, larger than 6 characters", value);
+                TTAURI_THROW_MATH_ERROR("Constructing string {} to datum, larger than 6 characters", value);
             }
         }
     }
@@ -620,7 +620,7 @@ public:
                 auto* const p = new decimal(rhs);
                 u64 = make_pointer(decimal_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Constructing decimal {} to datum", rhs);
+                TTAURI_THROW_MATH_ERROR("Constructing decimal {} to datum", rhs);
             }
         } else {
             int e = rhs.exponent();
@@ -657,7 +657,7 @@ public:
                 auto * const p = new uint64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Assigning integer {} to datum, larger than {}", rhs, maximum_int);
+                TTAURI_THROW_MATH_ERROR("Assigning integer {} to datum, larger than {}", rhs, maximum_int);
             }
         }
         return *this;
@@ -678,7 +678,7 @@ public:
                 auto * const p = new int64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int);
+                TTAURI_THROW_MATH_ERROR("Assigning integer {} to datum, outside {} and {}", rhs, minimum_int, maximum_int);
             }
         }
 
@@ -716,7 +716,7 @@ public:
                 auto * const p = new std::string(rhs);
                 u64 = make_pointer(string_ptr_mask, p);
             } else {
-                TTAURI_THROW_OVERFLOW_ERROR("Assigning string {} to datum, larger than 6 characters", rhs);
+                TTAURI_THROW_MATH_ERROR("Assigning string {} to datum, larger than 6 characters", rhs);
             }
         }
         return *this;
