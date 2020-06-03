@@ -8,7 +8,7 @@
     // - string name of an color in the theme.
 
     // Bright colors, fitting theme.
-    "blue"       : [  0, 122, 355],
+    "blue"       : [  0, 122, 255],
     "green"      : [ 52, 199,  89],
     "indigo"     : [ 88,  86, 214],
     "orange"     : [255, 149,   0],
@@ -56,8 +56,8 @@
     "foreground-color":       [0, 0, 1],
 
     // Accent color used by widgets, to show icons, hover and keyboard focus
-    "accent-color":           [  0, 122, 355],
-    "text-select-color":      [  0, 122, 355],
+    "accent-color":           [  0, 122, 255],
+    "text-select-color":      [  0, 122, 255],
     "cursor-color":           [  0,   0,   1],
     "incomplete-glyph-color": [255, 241, 154],
 
@@ -102,6 +102,6 @@
         "family": "Arial",
         "weight": "Regular",
         "size": 10.0,
-        "color": [0, 122, 355]
+        "color": [0, 122, 255]
     }
 }
