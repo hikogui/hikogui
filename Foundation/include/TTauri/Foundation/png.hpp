@@ -8,14 +8,14 @@
 
 namespace TTauri {
 
-void png_decode(nonstd::span<std::byte> bytes, PixelMap<R16G16B16A16SFloat> &image);
+class png {
 
+public:
+    png(nonstd::span<std::byte const> bytes);
 
-void png_decode(URL const &url, PixelMap<R16G16B16A16SFloat> &image);
+    png(URL const &url);
 
-PixelMap<R16G16B16A16SFloat> png_decode(nonstd::span<std::byte> bytes);
-
-PixelMap<R16G16B16A16SFloat> png_decode(URL const &url);
+};
 
 };
 

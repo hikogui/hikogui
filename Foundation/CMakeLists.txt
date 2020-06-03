@@ -38,6 +38,7 @@ set(TTauri_Foundation_srcs
     src/inflate.cpp
     src/template.cpp
     src/gzip.cpp
+    src/png.cpp
 )
 
 if(WIN32)
