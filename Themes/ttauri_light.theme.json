@@ -4,7 +4,7 @@
 
     // The colors values are either:
     // - integers are in sRGB
-    // - floats are in linear scRGB
+    // - floats are in linear-extended-sRGB
     // - string name of an color in the theme.
 
     // Bright colors, fitting theme.

@@ -74,10 +74,10 @@ Theme::Theme(URL const &url)
 
         if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
             return vec::colorFromSRGB(
-                static_cast<int>(r),
-                static_cast<int>(g),
-                static_cast<int>(b),
-                static_cast<int>(a)
+                static_cast<uint8_t>(r),
+                static_cast<uint8_t>(g),
+                static_cast<uint8_t>(b),
+                static_cast<uint8_t>(a)
             );
         } else if (r.is_float() && g.is_float() && b.is_float() && a.is_float()) {
             return vec::color(

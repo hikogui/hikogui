@@ -160,6 +160,16 @@ gsl_suppress3(f.23,bounds.1,bounds.3)
         );
 }
 
+[[nodiscard]] constexpr uint32_t fourcc(uint8_t const *txt) noexcept
+{
+    return (
+        (static_cast<uint32_t>(txt[0]) << 24) |
+        (static_cast<uint32_t>(txt[1]) << 16) |
+        (static_cast<uint32_t>(txt[2]) <<  8) |
+        static_cast<uint32_t>(txt[3])
+        );
+}
+
 gsl_suppress(bounds.3)
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
