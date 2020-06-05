@@ -385,10 +385,10 @@ void Path::addCircle(vec position, float radius) noexcept
     ttauri_assume(position.is_point());
 
     moveTo(vec::point(position.x(), position.y() - radius));
-    arcTo(radius, vec(position.x() + radius, position.y()));
-    arcTo(radius, vec(position.x(), position.y() + radius));
-    arcTo(radius, vec(position.x() - radius, position.y()));
-    arcTo(radius, vec(position.x(), position.y() - radius));
+    arcTo(radius, vec::point(position.x() + radius, position.y()));
+    arcTo(radius, vec::point(position.x(), position.y() + radius));
+    arcTo(radius, vec::point(position.x() - radius, position.y()));
+    arcTo(radius, vec::point(position.x(), position.y() - radius));
     closeContour();
 }
 

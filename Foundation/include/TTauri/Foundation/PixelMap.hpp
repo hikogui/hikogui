@@ -256,23 +256,21 @@ struct PixelMap {
         ttauri_assert(rowNr < height);
         return (*this)[rowNr];
     }
-
-    /** Return a vector of pointers to rows.
-     * The PNG API requires an array of pointers to write a png image to the pixel-map.
-     */
-    std::vector<void *> rowPointers() noexcept {
-        std::vector<void *> r;
-        r.reserve(height);
-
-        for (auto row = 0; row < height; row++) {
-            void *ptr = at(row).data();
-            r.push_back(ptr);
-        }
-
-        return r;
-    }
-
 };
+
+template<typename T>
+void copy(PixelMap<T> const &src, PixelMap<T> &dst) noexcept {
+    ssize_t width = std::min(src.width, dst.width);
+    ssize_t height = std::min(src.height, dst.height);
+
+    for (ssize_t y = 0; y != height; ++y) {
+        let src_row = src[y];
+        auto dst_row = dst[y];
+        for (ssize_t x = 0; x != widht; ++x) {
+            dst_row[x] = src_row[x];
+        }
+    }
+}
 
 template<int KERNEL_SIZE, typename KERNEL>
 void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept;

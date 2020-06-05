@@ -13,9 +13,11 @@ inline FontID TTauriIcons_font_id = FontID{};
 
 enum class TTauriIcon : char32_t {
     MinimizeWindow = 0xf301,
-    MaximizeWindow = 0xf302,
-    RestoreWindow = 0xf303,
+    MaximizeWindowMS = 0xf302,
+    RestoreWindowMS = 0xf303,
     CloseWindow = 0xf304,
+    RestoreWindowMacOS = 0xf305,
+    MaximizeWindowMacOS = 0xf306,
 };
 
 inline FontGlyphIDs to_FontGlyphIDs(TTauriIcon rhs) noexcept {

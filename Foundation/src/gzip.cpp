@@ -81,14 +81,4 @@ bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
     return r;
 }
 
-bstring gzip_decompress(FileView const &view, ssize_t max_size)
-{
-    return gzip_decompress(view.bytes(), max_size);
-}
-
-bstring gzip_decompress(URL const &url, ssize_t max_size)
-{
-    return gzip_decompress(FileView(url), max_size);
-}
-
 }

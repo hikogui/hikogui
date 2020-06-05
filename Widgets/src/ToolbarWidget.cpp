@@ -23,7 +23,7 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
     window.addConstraint(trafficLightButtons->left == left);
     window.addConstraint(trafficLightButtons->bottom == bottom);
 
-    if constexpr (operatingSystem == OperatingSystem::Windows) {
+    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
         closeWindowButton = &addWidget<ToolbarButtonWidget>(
             Text::TTauriIcon::CloseWindow,
             [&]() { window.closeWindow(); }
@@ -34,7 +34,7 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
         window.addConstraint(closeWindowButton->bottom == bottom);
 
         maximizeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::TTauriIcon::MaximizeWindow,
+            Text::TTauriIcon::MaximizeWindowMS,
             [&]() { 
             switch (window.size) {
             case Window::Size::Normal:

@@ -21,7 +21,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1589190071
-ModificationTime: 1589198779
+ModificationTime: 1591363851
 PfmFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -61,9 +61,9 @@ Grid
  2442 513 l 1024
 EndSplineSet
 TeXData: 1 0 0 346030 173015 115343 0 1048576 115343 783286 444596 497025 792723 393216 433062 380633 303038 157286 324010 404750 52429 2506097 1059062 262144
-BeginChars: 65536 4
+BeginChars: 65536 6
 
-StartChar: uniF301
+StartChar: minimizeWindow
 Encoding: 62209 62209 0
 Width: 1024
 VWidth: 1229
@@ -78,10 +78,9 @@ SplineSet
  0 561 l 1,0,-1
 EndSplineSet
 Validated: 1
-Comment: "Minimize Window"
 EndChar
 
-StartChar: uniF302
+StartChar: maximizeWindowMS
 Encoding: 62210 62210 1
 Width: 1024
 VWidth: 1229
@@ -101,10 +100,9 @@ SplineSet
  0 1023 l 1,4,-1
 EndSplineSet
 Validated: 1
-Comment: "Maximize Window"
 EndChar
 
-StartChar: uniF304
+StartChar: closeWindow
 Encoding: 62212 62212 2
 Width: 1024
 VWidth: 1229
@@ -126,10 +124,10 @@ SplineSet
  59 1036 l 5,11,-1
  512 583 l 5,0,-1
 EndSplineSet
-Comment: "Close Window"
+Validated: 1
 EndChar
 
-StartChar: uniF303
+StartChar: normalizeWindowMS
 Encoding: 62211 62211 3
 Width: 1024
 VWidth: 1229
@@ -160,7 +158,40 @@ SplineSet
  298 824 l 1,12,-1
 EndSplineSet
 Validated: 1
-Comment: "Restore Window"
+EndChar
+
+StartChar: normalizeWindowMacOS
+Encoding: 62213 62213 4
+Width: 1024
+LayerCount: 2
+Fore
+SplineSet
+1075 516 m 5,0,-1
+ 513 514 l 5,1,-1
+ 513 1075 l 5,2,-1
+ 1075 516 l 5,0,-1
+511 -51 m 5,3,-1
+ -51 512 l 5,4,-1
+ 511 512 l 5,5,-1
+ 511 -51 l 5,3,-1
+EndSplineSet
+EndChar
+
+StartChar: maximizeWindowMacOS
+Encoding: 62214 62214 5
+Width: 1024
+LayerCount: 2
+Fore
+SplineSet
+256 1024 m 1,0,-1
+ 1024 1024 l 1,1,-1
+ 1024 256 l 1,2,-1
+ 256 1024 l 1,0,-1
+0 768 m 5,3,-1
+ 768 0 l 1,4,-1
+ 0 0 l 1,5,-1
+ 0 768 l 5,3,-1
+EndSplineSet
 EndChar
 EndChars
 EndSplineFont

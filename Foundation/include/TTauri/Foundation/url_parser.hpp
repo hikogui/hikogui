@@ -11,7 +11,7 @@
 
 namespace TTauri {
 
-constexpr char native_path_seperator = (operatingSystem == OperatingSystem::Windows) ? '\\' : '/';
+constexpr char native_path_seperator = (OperatingSystem::current == OperatingSystem::Windows) ? '\\' : '/';
 
 constexpr bool is_urlchar_alpha(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');

@@ -4,6 +4,7 @@
 #include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/sRGB.hpp"
 #include "TTauri/Foundation/Rec2100.hpp"
+#include "TTauri/Foundation/zlib.hpp"
 
 namespace TTauri {
 
@@ -112,10 +113,28 @@ void png::read_IHDR(nonstd::span<std::byte const> &bytes)
     parse_assert2(width <= 16384, "PNG width too large.");
     parse_assert2(height <= 16384, "PNG height too large.");
     parse_assert2(bit_depth == 8 || bit_depth == 16, "PNG only bit depth of 8 or 16 is implemented.");
-    parse_assert2(color_type == 2 || color_type == 6, "PNG only RGB or RGBA is implemented.");
     parse_assert2(compression_method == 0, "Only deflate/inflate compression is allowed.");
     parse_assert2(filter_method == 0, "Only adaptive filtering is allowed.");
     parse_assert2(interlace_method == 0, "Only non interlaced PNG are implemented.");
+
+    is_palletted = (color_type & 1) != 0;
+    is_color = (color_type & 2) != 0;
+    has_alpha = (color_type & 4) != 0;
+    parse_assert2((color_type & 0xf8) == 0, "Invalid color type");
+    parse_assert2(is_palletted, "Paletted images are not supported");
+
+    if (is_palletted) {
+        samples_per_pixel = 1;
+    } else {
+        samples_per_pixel = static_cast<int>(has_alpha);
+        samples_per_pixel += is_color ? 3 : 1;
+    }
+
+
+    bits_per_pixel = samples_per_pixel * bit_depth;
+    bytes_per_line = (bits_per_pixel * width + 7) / 8;
+    stride = bytes_per_line + 1;
+    bpp = std::max(1, bits_per_pixel / 8);
 
     generate_sRGB_transfer_function();
 }
@@ -203,7 +222,7 @@ void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"):
-            compressed_data.push_back(bytes.subspan(offset, length));
+            idat_chunk_data.push_back(bytes.subspan(offset, length));
             break;
 
         case fourcc("IHDR"):
@@ -264,6 +283,196 @@ png::png(nonstd::span<std::byte const> bytes)
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
+
+bstring png::decompress_IDATs(ssize_t image_data_size) const {
+    if (ssize(idat_chunk_data) == 1) {
+        return zlib_decompress(idat_chunk_data[0], image_data_size);
+    } else {
+        // Merge all idat chunks together.
+        let compressed_data_size = std::accumulate(
+            idat_chunk_data.cbegin(), idat_chunk_data.cend(), ssize_t{0},
+            [](let &a, let &b) {
+            return a + ssize(b);
+        }
+        );
+
+        bstring compressed_data;
+        compressed_data.reserve(compressed_data_size);
+        for (let &chunk_data : idat_chunk_data) {
+            std::copy(chunk_data.cbegin(), chunk_data.cend(), std::back_inserter(compressed_data));
+        }
+
+        return zlib_decompress(compressed_data, image_data_size);
+    }
+}
+
+
+
+void png::unfilter_line_sub(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+{
+    for (int i = 0; i != bytes_per_line; ++i) {
+        int j = i - bpp;
+
+        uint8_t prev_raw = j >= 0 ? line[j] : 0;
+        line[i] += prev_raw;
+    }
+}
+
+void png::unfilter_line_up(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+{
+    for (int i = 0; i != bytes_per_line; ++i) {
+        line[i] += prev_line[i];
+    }
+}
+
+void png::unfilter_line_average(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+{
+    for (int i = 0; i != bytes_per_line; ++i) {
+        int j = i - bpp;
+
+        uint8_t prev_raw = j >= 0 ? line[j] : 0;
+        line[i] += (prev_raw + prev_line[i]) / 2;
+    }
+}
+
+static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept {
+    auto a = static_cast<int>(_a);
+    auto b = static_cast<int>(_b);
+    auto c = static_cast<int>(_c);
+
+    auto p = a + b - c;
+    auto pa = std::abs(p - a);
+    auto pb = std::abs(p - b);
+    auto pc = std::abs(p - c);
+
+    if (pa <= pb && pa <= pc) {
+        return static_cast<uint8_t>(a);
+    } else if (pb <= pc) {
+        return static_cast<uint8_t>(b);
+    } else {
+        return static_cast<uint8_t>(c);
+    }
+}
+
+void png::unfilter_line_paeth(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+{
+    for (int i = 0; i != bytes_per_line; ++i) {
+        int j = i - bpp;
+
+        uint8_t prev_raw = j >= 0 ? line[j] : 0;
+        uint8_t prev_up = j >= 0 ? prev_line[i] : 0;
+        line[i] += paeth_predictor(prev_raw, prev_line[i], prev_up);
+    }
+}
+
+void png::unfilter_line(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const
+{
+    switch (line[0]) {
+    case 0: return;
+    case 1: return unfilter_line_sub(line.subspan(1, bytes_per_line), prev_line);
+    case 2: return unfilter_line_up(line.subspan(1, bytes_per_line), prev_line);
+    case 3: return unfilter_line_average(line.subspan(1, bytes_per_line), prev_line);
+    case 4: return unfilter_line_paeth(line.subspan(1, bytes_per_line), prev_line);
+    default:
+        TTAURI_THROW(parse_error("Unknown line-filter type"));
+    }
+}
+
+void png::unfilter_lines(bstring &image_data) const
+{
+    auto image_bytes = nonstd::span(reinterpret_cast<uint8_t *>(image_data.data()), ssize(image_data));
+    auto zero_line = bstring(bytes_per_line, std::byte{0});
+
+    auto prev_line = nonstd::span(reinterpret_cast<uint8_t *>(zero_line.data()), ssize(zero_line));
+    for (int y = 0; y != height; ++y) {
+        auto line = image_bytes.subspan(y * stride, stride);
+        unfilter_line(line, prev_line);
+        prev_line = line.subspan(1, bytes_per_line);
+    }
+}
+
+static int get_sample(nonstd::span<std::byte const> bytes, ssize_t &offset, bool two_bytes)
+{
+    int value = static_cast<uint8_t>(bytes[offset++]);
+    if (two_bytes) {
+        value = (value << 8) | static_cast<uint8_t>(bytes[offset++]);
+    }
+    return value;
+}
+
+ivec png::extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) const noexcept
+{
+    ttauri_assume(bit_depth == 8 || bit_depth == 16);
+    ttauri_assume(!is_palletted);
+
+    int r = 0;
+    int g = 0;
+    int b = 0;
+    int a = 0;
+
+    ssize_t offset = x * bpp;
+    if (is_color) {
+        r = get_sample(bytes, offset, bit_depth == 16);
+        g = get_sample(bytes, offset, bit_depth == 16);
+        b = get_sample(bytes, offset, bit_depth == 16);
+    } else {
+        r = g = b = get_sample(bytes, offset, bit_depth == 16);
+    }
+    if (has_alpha) {
+        a = get_sample(bytes, offset, bit_depth == 16);
+    } else {
+        a = (bit_depth == 16) ? 65535 : 255;
+    }
+
+    return {r, g, b, a};
+}
+
+void png::data_to_image_line(nonstd::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &line) const noexcept
+{
+    let alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
+    for (int x = 0; x != width; ++x) {
+        let value = extract_pixel_from_line(bytes, x);
+
+        let linear_color = vec::color(
+            transfer_function[value.x()],
+            transfer_function[value.y()],
+            transfer_function[value.z()]
+        );
+
+        auto lesRGB_color = color_to_sRGB * linear_color;
+        lesRGB_color.a(static_cast<float>(value.w()) * alpha_mul);
+
+        line[x] = lesRGB_color;
+    }
+}
+
+void png::data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) const noexcept
+{
+    auto bytes_span = nonstd::span(bytes);
+
+    for (int y = 0; y != height; ++y) {
+        int inv_y = height - y - 1;
+
+        auto bytes_line = bytes_span.subspan(inv_y * stride + 1, bytes_per_line);
+        auto pixel_line = image[y];
+        data_to_image_line(bytes_line, pixel_line);
+    }
+}
+
+void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
+{
+    // There is a filter selection byte in front of every line.
+    let image_data_size = stride * height;
+
+    auto image_data = decompress_IDATs(image_data_size);
+    parse_assert2(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
+
+    unfilter_lines(image_data);
+
+    data_to_image(image_data, image);
+
+}
+
 
 
 }

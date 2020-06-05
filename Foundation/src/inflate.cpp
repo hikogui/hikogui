@@ -15,7 +15,8 @@ static void inflate_copy_block(nonstd::span<std::byte const> bytes, ssize_t &bit
     auto LEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
     [[maybe_unused]] auto NLEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
 
-    parse_assert((offset + LEN->value()) <= ssize(bytes));
+    parse_assert2((offset + LEN->value()) <= ssize(bytes), "input buffer overrun");
+    parse_assert2((ssize(r) + LEN->value()) <= max_size, "output buffer overrun");
     r.append(&bytes[offset], LEN->value());
 
     bit_offset = offset * 8;
@@ -111,16 +112,16 @@ static void inflate_block(
     bstring &r)
 {
     while (true) {
-        // Test only every get_symbol, the trailer is at least 64 bits (CRC+LEN)
+        // Test only every get_symbol, the trailer is at least 32 bits (Checksum)
         // - 15 bits maximum huffman code.
         // -  5 bits extra length.
         // -  7 bits rounding up to byte.
-        parse_assert(((bit_offset + 27) >> 3) <= ssize(bytes));
+        parse_assert2(((bit_offset + 27) >> 3) <= ssize(bytes), "Input buffer overrun");
 
         auto literal_symbol = literal_tree.get_symbol(bytes, bit_offset);
 
         if (literal_symbol <= 255) {
-            parse_assert(ssize(r) < max_size);
+            parse_assert2(ssize(r) < max_size, "Output buffer overrun");
             r.push_back(static_cast<std::byte>(literal_symbol));
 
         } else if (literal_symbol == 256) {
@@ -129,18 +130,21 @@ static void inflate_block(
 
         } else {
             auto length = inflate_decode_length(bytes, bit_offset, literal_symbol); 
-            parse_assert(ssize(r) + length <= max_size);
+            parse_assert2(ssize(r) + length <= max_size, "Output buffer overrun");
 
-            // Test only every get_symbol, the trailer is at least 64 bits (CRC+LEN)
+            // Test only every get_symbol, the trailer is at least 32 bits (Checksum)
             // - 15 bits maximum huffman code.
+            // -  7 bits rounding up to byte.
+            parse_assert2(((bit_offset + 22) >> 3) <= ssize(bytes), "Input buffer overrun");
+            auto distance_symbol = distance_tree.get_symbol(bytes, bit_offset);
+
+            // Test only every inflate_decode_distance, the trailer is at least 32 bits (Checksum)
             // - 13 bits extra length.
             // -  7 bits rounding up to byte.
-            parse_assert(((bit_offset + 35) >> 3) <= ssize(bytes));
-
-            auto distance_symbol = distance_tree.get_symbol(bytes, bit_offset);
+            parse_assert2(((bit_offset + 20) >> 3) <= ssize(bytes), "Input buffer overrun");
             auto distance = inflate_decode_distance(bytes, bit_offset, distance_symbol);
 
-            parse_assert(distance <= ssize(r));
+            parse_assert2(distance <= ssize(r), "Distance beyond start of decompressed data");
             auto src_i = ssize(r) - distance;
             for (auto i = 0; i != length; ++i) {
                 r.push_back(r[src_i++]);
@@ -192,7 +196,7 @@ static void inflate_fixed_block(nonstd::span<std::byte const> bytes, ssize_t &bi
         16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
     };
 
-    parse_assert(((bit_offset + (3 * static_cast<ssize_t>(nr_symbols)) + 7) >> 3) <= ssize(bytes));
+    parse_assert2(((bit_offset + (3 * static_cast<ssize_t>(nr_symbols)) + 7) >> 3) <= ssize(bytes), "Input buffer overrun");
 
     auto lengths = std::vector<int>(ssize(symbols), 0);
     for (int i = 0; i != nr_symbols; ++i) {
@@ -213,12 +217,11 @@ std::vector<int> inflate_lengths(
 
     auto prev_length = 0;
     while (ssize(r) < nr_symbols) {
-        // Test only every get_symbol, the trailer is at least 64 bits (CRC+LEN)
+        // Test only every get_symbol, the trailer is at least 32 bits (Checksum)
         // -  7 bits maximum huffman code.
         // -  7 bits extra length.
         // -  7 bits rounding up to byte.
-        parse_assert(((bit_offset + 21) >> 3) <= ssize(bytes));
-
+        parse_assert2(((bit_offset + 21) >> 3) <= ssize(bytes), "Input buffer overrun");
         auto symbol = code_length_tree.get_symbol(bytes, bit_offset);
 
         switch (symbol) {
@@ -250,11 +253,10 @@ std::vector<int> inflate_lengths(
 
 void inflate_dynamic_block(nonstd::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {
-    // Test all lengths, the trailer is at least 64 bits (CRC+LEN)
+    // Test all lengths, the trailer is at least 32 bits (Checksum)
     // - 14 bits lengths
     // -  7 bits rounding up to byte.
-    parse_assert(((bit_offset + 21) >> 3) <= ssize(bytes));
-
+    parse_assert2(((bit_offset + 21) >> 3) <= ssize(bytes), "Input buffer overrun");
     let HLIT = get_bits(bytes, bit_offset, 5);
     let HDIST = get_bits(bytes, bit_offset, 5);
     let HCLEN = get_bits(bytes, bit_offset, 4);
@@ -279,10 +281,10 @@ bstring inflate(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t ma
 
     bool BFINAL;
     do {
-        // Test all lengths, the trailer is at least 64 bits (CRC+LEN)
+        // Test all lengths, the trailer is at least 32 bits (Checksum)
         // - 3 bits header
         // - 7 bits rounding up to byte.
-        parse_assert(((bit_offset + 10) >> 3) <= ssize(bytes));
+        parse_assert2(((bit_offset + 10) >> 3) <= ssize(bytes), "Input buffer overrun");
 
         BFINAL = get_bits(bytes, bit_offset, 1);
         let BTYPE = get_bits(bytes, bit_offset, 2);

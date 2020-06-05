@@ -18,6 +18,8 @@ private:
     std::vector<vec> grayShades;
 
 public:
+    static constexpr OperatingSystem operatingSystem = OperatingSystem::MacOS;
+
     /** Distance between widgets and between widgets and the border of the container.
      */
     static constexpr float margin = 6.0f;

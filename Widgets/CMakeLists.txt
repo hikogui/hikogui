@@ -11,6 +11,7 @@ set(TTauri_Widgets_srcs
     src/ButtonWidget.cpp
     src/ToggleWidget.cpp
     src/LineInputWidget.cpp
+    #src/ImageWidget.cpp
 )
 
 add_library(TTauri_Widgets STATIC ${TTauri_Widgets_srcs})

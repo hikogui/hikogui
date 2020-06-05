@@ -10,18 +10,16 @@
 namespace TTauri {
 
 /** Inflate compressed data using the deflate algorithm
- * `bytes` should include at least 64 bit of trailer, for the overflow check which
+ * `bytes` should include at least 32 bit of trailer, for the overflow check which
  * will slightly overrun the actual compressed data for performance reasons.
  *
  * - gzip has a CRC32+ISIZE trailer.
- *   This is not a problem because gzip does not have a segment-length indicator,
- *   so we must inlude the whole file in bytes.
- * - png has a CRC32 trailer.
- *   This is not enough, but there will always be another chunk after the IDAT chuck
- *   of which 32 bits may be borrowed.
- * - zlib only CRC32 trailer is included.
- *   This is not enough, the library that handles zlib data should append 32 bits of data
- *   to handle the overrun.
+ *   Since gzip has no end-of-segment indicator, we need to include the trailer
+ *   in the byte array passed to inflate anyway.
+ * - zlib has a 32 bit check value.
+ *   Since zlib has no end-of-segment indicator, we need to include the trailer
+ *   in the byte array passed to inflate anyway.
+ * - png IDAT chunks include the full zlib-format, including the 32 bit check value.
  */
 bstring inflate(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size=0x0100'0000);
 

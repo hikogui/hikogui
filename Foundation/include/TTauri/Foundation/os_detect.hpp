@@ -46,30 +46,26 @@ enum class OperatingSystem {
     Linux,
     Android,
     UNIX,
-    Posix
-};
+    Posix,
 
-/*! Used for describing the look and feel of the application.
- * Use operating supplied macros for detecting APIs
- */
 #if OPERATING_SYSTEM == OS_WINDOWS
-constexpr auto operatingSystem = OperatingSystem::Windows;
+    current = Windows
 #elif OPERATING_SYSTEM == OS_MACOS
-constexpr auto operatingSystem = OperatingSystem::MacOS;
+    current = MacOS
 #elif OPERATING_SYSTEM == OS_IOS
-constexpr auto operatingSystem = OperatingSystem::iOS;
+    current = iOS
 #elif OPERATING_SYSTEM == OS_ANDROID
-constexpr auto operatingSystem = OperatingSystem::ANDROID;
+    current = ANDROID
 #elif OPERATING_SYSTEM == OS_LINUX
-constexpr auto operatingSystem = OperatingSystem::Linux;
+    current = Linux
 #elif OPERATING_SYSTEM == OS_UNIX
-constexpr auto operatingSystem = OperatingSystem::UNIX;
+    current = UNIX
 #elif OPERATING_SYSTEM == OS_POSIX
-constexpr auto operatingSystem = OperatingSystem::Posix;
+    current = Posix
 #else
 #error "Could not detect the operating system."
 #endif
-
+};
 
 #define CC_MSVC 'm'
 #define CC_GCC 'g'
@@ -86,21 +82,18 @@ constexpr auto operatingSystem = OperatingSystem::Posix;
 enum class Compiler {
     MSVC,
     gcc,
-    clang
-};
+    clang,
 
-/*! Used for describing the look and feel of the application.
-* Use operating supplied macros for detecting APIs
-*/
 #if COMPILER == CC_MSVC
-constexpr auto compiler = Compiler::MSVC;
+    current = MSVC
 #elif COMPILER == CC_GCC
-constexpr auto compiler = Compiler::gcc;
+    current = gcc
 #elif COMPILER == CC_CLANG
-constexpr auto compiler = Compiler::clang;
+    current = clang
 #else
 #error "Could not detect the compiler."
 #endif
+};
 
 
 #define CPU_X64 'i'
@@ -110,22 +103,20 @@ constexpr auto compiler = Compiler::clang;
 #define PROCESSOR CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)
 #define PROCESSOR CPU_ARM
-#else
-#error "Could not detect processor."
 #endif
 
 enum class Processor {
     X64,
-    ARM
-};
+    ARM,
 
 #if PROCESSOR == CPU_X64
-constexpr auto processor = Processor::X64;
+    current = X64
 #elif PROCESSOR == CPU_ARM
-constexpr auto processor = Processor::ARM;
+    current = ARM
 #else
 #error "Could not detect processor."
 #endif
+};
 
 #define STRINGIFY(a) #a
 

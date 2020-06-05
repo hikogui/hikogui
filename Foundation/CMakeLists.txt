@@ -40,6 +40,7 @@ set(TTauri_Foundation_srcs
     src/gzip.cpp
     src/png.cpp
     src/vec.cpp
+    src/zlib.cpp
 )
 
 if(WIN32)
