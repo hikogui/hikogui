@@ -57,7 +57,10 @@ public:
         vec s;
 
         explicit S(vec rhs) noexcept :
-            s(rhs) { ttauri_assume(rhs.is_point()); }
+            s(rhs)
+        {
+            ttauri_assume(rhs.is_point());
+        }
 
         S(float x, float y, float z=1.0f) noexcept :
             s(x, y, z, 1.0f) {}
@@ -66,12 +69,7 @@ public:
         */
         operator mat () const noexcept {
             ttauri_assume(s.is_point());
-            let tmp = _mm_setzero_ps();
-            let c0 = _mm_insert_ps(tmp, s, 0b00'00'1110);
-            let c1 = _mm_insert_ps(tmp, s, 0b01'01'1101);
-            let c2 = _mm_insert_ps(tmp, s, 0b10'10'1011);
-            let c3 = _mm_insert_ps(tmp, s, 0b11'11'0111);
-            return {c0, c1, c2, c3};
+            return { s.x000(), s._0y00(), s._00z0(), s._000w() };
         }
 
         [[nodiscard]] friend S operator*(S const &lhs, S const &rhs) noexcept {
@@ -101,7 +99,7 @@ public:
         /** Invert matrix.
         */
         [[nodiscard]] friend S operator~(S const &rhs) noexcept {
-            return S{vec{_mm_rcp_ps(rhs.s)}};
+            return S{reciprocal(rhs.s)};
         }
     };
 
@@ -124,11 +122,7 @@ public:
 
         operator mat () const noexcept {
             ttauri_assume(t.is_vector());
-            let c0 = _mm_set_ss(1.0f);
-            let c1 = _mm_permute_ps(c0, _MM_SHUFFLE(1,1,0,1));
-            let c2 = _mm_permute_ps(c0, _MM_SHUFFLE(1,0,1,1));
-            let c3 = _mm_insert_ps(t, c0, 0b00'11'0000);
-            return {c0, c1, c2, c3};
+            return { t._1000(), t._0100(), t._0010(), t.xyz1() };
         }
 
         [[nodiscard]] friend T operator*(T const &lhs, T const &rhs) noexcept {
@@ -136,21 +130,11 @@ public:
         }
 
         [[nodiscard]] friend mat operator*(T const &lhs, mat::S const &rhs) noexcept {
-            let tmp = _mm_setzero_ps();
-            let col0 = _mm_insert_ps(tmp, rhs.s, 0b00'00'1110);
-            let col1 = _mm_insert_ps(tmp, rhs.s, 0b01'01'1101);
-            let col2 = _mm_insert_ps(tmp, rhs.s, 0b10'10'1011);
-            let col3 = _mm_insert_ps(lhs.t, rhs.s, 0b11'11'0000);
-            return {col0, col1, col2, col3};
+            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), lhs.xyz1() };
         }
 
         [[nodiscard]] friend mat operator*(mat::S const &lhs, T const &rhs) noexcept {
-            let tmp = _mm_setzero_ps();
-            let col0 = _mm_insert_ps(tmp, lhs.s, 0b00'00'1110);
-            let col1 = _mm_insert_ps(tmp, lhs.s, 0b01'01'1101);
-            let col2 = _mm_insert_ps(tmp, lhs.s, 0b10'10'1011);
-            let col3 = _mm_insert_ps(lhs.s * rhs.t, lhs.s, 0b11'11'0000);
-            return {col0, col1, col2, col3};
+            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), rhs.s * lhs.xyz1() };
         }
 
         [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept {
@@ -205,11 +189,7 @@ public:
 
         operator mat () const noexcept {
             ttauri_assume(t.is_vector());
-            let c0 = _mm_set_ss(1.0f);
-            let c1 = _mm_permute_ps(c0, _MM_SHUFFLE(1,1,0,1));
-            let c2 = _mm_permute_ps(c0, _MM_SHUFFLE(1,0,1,1));
-            let c3 = _mm_insert_ps(t, c0, 0b00'11'0000);
-            return {c0, c1, c2, c3};
+            return { t._1000(), t._0100(), t._0010(), t.xyz1() };
         }
 
         [[nodiscard]] friend T2 operator*(T2 const &lhs, T2 const &rhs) noexcept {
@@ -225,21 +205,11 @@ public:
         }
 
         [[nodiscard]] friend mat operator*(T2 const &lhs, mat::S const &rhs) noexcept {
-            let tmp = _mm_setzero_ps();
-            let col0 = _mm_insert_ps(tmp, rhs.s, 0b00'00'1110);
-            let col1 = _mm_insert_ps(tmp, rhs.s, 0b01'01'1101);
-            let col2 = _mm_insert_ps(tmp, rhs.s, 0b10'10'1011);
-            let col3 = _mm_insert_ps(lhs.t, rhs.s, 0b11'11'0000);
-            return {col0, col1, col2, col3};
+            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), lhs.xyz1() };
         }
 
         [[nodiscard]] friend mat operator*(mat::S const &lhs, T2 const &rhs) noexcept {
-            let tmp = _mm_setzero_ps();
-            let col0 = _mm_insert_ps(tmp, lhs.s, 0b00'00'1110);
-            let col1 = _mm_insert_ps(tmp, lhs.s, 0b01'01'1101);
-            let col2 = _mm_insert_ps(tmp, lhs.s, 0b10'10'1011);
-            let col3 = _mm_insert_ps(lhs.s * rhs.t, lhs.s, 0b11'11'0000);
-            return {col0, col1, col2, col3};
+            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), rhs.s * lhs.xyz1() };
         }
 
         [[nodiscard]] friend vec operator*(T2 const &lhs, vec const &rhs) noexcept {
@@ -301,10 +271,9 @@ public:
     /** Rotation around z axis is a multiple of 90 degree.
     */
     [[nodiscard]] bool is_z_rot90() const noexcept {
-        let xyxy = _mm_shuffle_ps(col0, col1, _MM_SHUFFLE(1,0,1,0));
-        let result = _mm_cmpeq_ps(xyxy, _mm_setzero_ps());
-        let result_ = _mm_movemask_ps(result);
-        return (result_ == 0b1001) || (result_ == 0b0110);
+        let xyxy = col0.xy00() + col1._00xy();
+        let result = eq(xyxy, vec{});
+        return (result == 0b1001) || (result == 0b0110);
     }
 
     /** Transpose this matrix.
@@ -503,16 +472,11 @@ public:
         return !(lhs == rhs);
     }
 
-    
-
     /** Create an identity matrix.
     */
     [[nodiscard]] static mat I() noexcept {
-        let col0 = _mm_set_ss(1.0);
-        let col1 = _mm_permute_ps(col0, _MM_SHUFFLE(3,3,0,3));
-        let col2 = _mm_permute_ps(col0, _MM_SHUFFLE(3,0,3,3));
-        let col3 = _mm_permute_ps(col0, _MM_SHUFFLE(0,3,3,3));
-        return {col0, col1, col2, col3};
+        vec tmp;
+        return { tmp._1000(), tmp._0100(), tmp._0010(), tmp._0001() };
     }
 
     [[nodiscard]] static mat RGBtoXYZ(
@@ -543,8 +507,17 @@ public:
     }
 
     /** Create a 2D shearing matrix.
+     *
+     * @param _00 row 0, col 0
+     * @param _01 row 0, col 1
+     * @param _10 row 1, col 0
+     * @param _11 row 1, col 1
     */
-    //[[nodiscard]] static mat S(float _00, float _01, float _10, float _11) noexcept {
+    [[nodiscard]] static mat shear(float _00, float _01, float _10, float _11) noexcept {
+        let c0 = vec{_00, _10};
+        let c1 = vec{_01, _11};
+        return { c0, c1, c0._0010(), c0._0001() };
+    }
 
     /** Create a rotation matrix.
      * @param N 0 = rotate around x-axis, 1=rotate around y-axis, 2=rotate around z-axis
@@ -554,27 +527,14 @@ public:
     [[nodiscard]] static mat R(T rhs) noexcept {
         let s = sin(numeric_cast<float>(rhs));
         let c = cos(numeric_cast<float>(rhs));
-        let tmp1 = _mm_set_ps(c, s, 1.0f, 0.0f);
-        let tmp2 = _mm_insert_ps(tmp1, _mm_set_ss(-s), 0b00'10'0000);
+        let tmp = vec{c, s, -s};
 
         if constexpr (N == 0) {
-            let col0 = _mm_permute_ps(tmp1, _MM_SHUFFLE(0,0,0,1));
-            let col1 = _mm_permute_ps(tmp1, _MM_SHUFFLE(0,2,3,0));
-            let col2 = _mm_permute_ps(tmp2, _MM_SHUFFLE(0,3,2,0)); // -sin
-            let col3 = _mm_permute_ps(tmp1, _MM_SHUFFLE(1,0,0,0));
-            return {col0, col1, col2, col3};
+            return { tmp._1000(), tmp._0xy0(), tmp._0zx0(), tmp._0001() };
         } else if constexpr (N == 1) {
-            let col0 = _mm_permute_ps(tmp2, _MM_SHUFFLE(0,2,0,3)); // -sin
-            let col1 = _mm_permute_ps(tmp1, _MM_SHUFFLE(0,0,1,0));
-            let col2 = _mm_permute_ps(tmp1, _MM_SHUFFLE(0,3,0,2));
-            let col3 = _mm_permute_ps(tmp1, _MM_SHUFFLE(1,0,0,0));
-            return {col0, col1, col2, col3};
+            return { tmp.x0z0(), tmp._0100(), tmp.x0y0(), tmp._0001() };
         } else {
-            let col0 = _mm_permute_ps(tmp1, _MM_SHUFFLE(0,0,2,3));
-            let col1 = _mm_permute_ps(tmp2, _MM_SHUFFLE(0,0,3,2)); // -sin
-            let col2 = _mm_permute_ps(tmp1, _MM_SHUFFLE(0,1,0,0));
-            let col3 = _mm_permute_ps(tmp1, _MM_SHUFFLE(1,0,0,0));
-            return {col0, col1, col2, col3};
+            return { tmp.xy00(), tmp.zx00(), tmp._0010(), tmp._0001() };
         }
     }
 
