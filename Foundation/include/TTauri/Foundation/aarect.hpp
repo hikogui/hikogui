@@ -21,20 +21,6 @@ private:
      */
     vec v;
 
-    /** Create an aarect directly from a __m128 register.
-    */
-    [[nodiscard]] static force_inline aarect m128(__m128 v) noexcept {
-        aarect r;
-        r.v = v;
-        return r;
-    }
-
-    /** Return a m128 directly from the aarect.
-    */
-    [[nodiscard]] force_inline __m128 m128() const noexcept {
-        return v;
-    }
-
 public:
     force_inline aarect() noexcept : v() {}
     force_inline aarect(aarect const &rhs) noexcept = default;
@@ -83,8 +69,16 @@ public:
         ttauri_assume(extent.z() == 0.0);
     }
 
+    [[nodiscard]] force_inline static aarect p1p2(vec const &v) noexcept {
+        aarect r;
+        r.v = v;
+        return r;
+    }
+
     [[nodiscard]] force_inline static aarect p1p2(vec const &p1, vec const &p2) noexcept {
-        return aarect::m128(_mm_shuffle_ps(p1, p2, _MM_SHUFFLE(1,0,1,0)));
+        ttauri_assume(p1.is_point());
+        ttauri_assume(p2.is_point());
+        return aarect::p1p2(p1.xy00() + p2._00xy());
     }
 
     operator bool () const noexcept {
@@ -180,16 +174,6 @@ public:
     [[nodiscard]] force_inline vec offset() const noexcept {
         return v.xy00();
     }
-
-    /** Get vector from origin to the bottom-left corner
-    *
-    * @param z The z coordinate to insert in the resulting coordinate.
-    * @return The homogeneous coordinate of the bottom-left corner.
-    */
-    //[[nodiscard]] force_inline vec offset(float z) const noexcept {
-    //    let _000z = _mm_set_ss(z); 
-    //    return _mm_insert_ps(v, _000z, 0b00'10'1000);
-    //}
 
     /** Get size of the rectangle
     *
@@ -301,24 +285,24 @@ public:
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, aarect const &rhs) noexcept {
-        return aarect::m128(_mm_blend_ps(min(lhs.v, rhs.v), max(lhs.v, rhs.v), 0b1100));
+        return aarect::p1p2(min(lhs.p1(), rhs.p1()), max(lhs.p2(), rhs.p2()));
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, vec const &rhs) noexcept {
-        ttauri_assume(rhs.w() == 1.0f);
-        return aarect::m128(_mm_blend_ps(min(lhs.v, rhs), max(lhs.v, rhs.xyxy()), 0b1100));
+        ttauri_assume(rhs.is_point());
+        return aarect::p1p2(min(lhs.p1(), rhs), max(lhs.p2(), rhs));
     }
 
     [[nodiscard]] friend aarect operator+(aarect const &lhs, vec const &rhs) noexcept {
-        return aarect::m128(lhs.v + rhs.xyxy());
+        return aarect::p1p2(lhs.v + rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator-(aarect const &lhs, vec const &rhs) noexcept {
-        return aarect::m128(lhs.v - rhs.xyxy());
+        return aarect::p1p2(lhs.v - rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator*(aarect const &lhs, float rhs) noexcept {
-        return aarect::m128(lhs.v * vec{rhs});
+        return aarect::p1p2(lhs.v * vec{rhs});
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -345,10 +329,7 @@ public:
      * @return A new rectangle expanded on each side.
      */
     [[nodiscard]] friend aarect expand(aarect const &lhs, float rhs) noexcept {
-        let _000r = _mm_set_ss(rhs);
-        let _00rr = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(1,1,0,0))};
-        let _rr00 = vec{_mm_permute_ps(_000r, _MM_SHUFFLE(0,0,1,1))};
-        return aarect::m128((lhs.v - _00rr) + _rr00);
+        return aarect::p1p2(lhs.v + neg<1,1,0,0>(vec{rhs}));
     }
 
     /** Shrink the rectangle for the same amount in all directions.
@@ -362,7 +343,7 @@ public:
     }
 
     [[nodiscard]] friend aarect round(aarect const &rhs) noexcept {
-        return aarect::m128(round(rhs.v));
+        return aarect::p1p2(round(rhs.v));
     }
 };
 
