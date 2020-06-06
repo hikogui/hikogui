@@ -494,6 +494,11 @@ public:
         return _mm_round_ps(rhs, _MM_FROUND_CUR_DIRECTION);
     }
 
+    [[nodiscard]] friend std::array<vec,4> transpose(vec col0, vec col1, vec col2, vec col3) noexcept {
+        _MM_TRANSPOSE4_PS(col0, col1, col2, col3);
+        return { col0, col1, col2, col3 };
+    }
+
     /** Find a point at the midpoint between two points.
      */
     [[nodiscard]] friend vec midpoint(vec const &p1, vec const &p2) noexcept {

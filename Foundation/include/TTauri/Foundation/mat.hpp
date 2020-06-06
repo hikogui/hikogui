@@ -276,13 +276,6 @@ public:
         return (result == 0b1001) || (result == 0b0110);
     }
 
-    /** Transpose this matrix.
-     */
-    mat &transpose_() noexcept {
-        _MM_TRANSPOSE4_PS(col0, col1, col2, col3);
-        return *this;
-    }
-
     /** Matrix/Vector multiplication.
      * Used for transforming vectors.
      */
@@ -335,7 +328,8 @@ public:
     /** Matrix transpose.
     */
     [[nodiscard]] friend mat transpose(mat rhs) noexcept {
-        return rhs.transpose_();
+        auto tmp = transpose(rhs.col0, rhs.col1, rhs.col2, rhs.col3);
+        return {get<0>(tmp), get<1>(tmp), get<2>(tmp), get<3>(tmp)};
     }
 
     /** Invert matrix.
