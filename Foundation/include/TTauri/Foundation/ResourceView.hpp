@@ -7,6 +7,7 @@
 #include <variant>
 #include <functional>
 #include <cstddef>
+#include <string_view>
 
 namespace TTauri {
 class URL;

@@ -266,7 +266,7 @@ void copy(PixelMap<T> const &src, PixelMap<T> &dst) noexcept {
     for (ssize_t y = 0; y != height; ++y) {
         let src_row = src[y];
         auto dst_row = dst[y];
-        for (ssize_t x = 0; x != widht; ++x) {
+        for (ssize_t x = 0; x != width; ++x) {
             dst_row[x] = src_row[x];
         }
     }
