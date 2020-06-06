@@ -212,7 +212,11 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        return HitBox{this, elevation, HitBox::Type::ApplicationIcon};
+        if (rectangle().contains(position)) {
+            return HitBox{this, elevation, HitBox::Type::ApplicationIcon};
+        } else {
+            return {};
+        }
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         if (redRectangle.contains(position) ||

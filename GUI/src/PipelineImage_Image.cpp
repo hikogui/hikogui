@@ -24,15 +24,15 @@ iaarect Image::indexToRect(int const pageIndex) const noexcept
 {
     let pageWH = ivec{Page::width, Page::height};
 
-    let p1 = ivec::point(
+    let p0 = ivec::point(
         pageIndex % pageExtent.x(),
         pageIndex / pageExtent.x()
     ) * pageWH;
 
     // Limit the rectangle to the size of the image.
-    let p2 = min(p1 + pageWH, extent);
+    let p3 = min(p0 + pageWH, extent);
 
-    return iaarect::p1p2(p1, p2);
+    return iaarect::p0p3(p0, p3);
 }
 
 static std::tuple<vec, vec, bool>calculatePosition(int x, int y, int width, int height, mat transform, aarect clippingRectangle)

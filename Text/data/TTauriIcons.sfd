@@ -21,7 +21,7 @@ OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1589190071
-ModificationTime: 1591363851
+ModificationTime: 1591363863
 PfmFamily: 17
 TTFWeight: 400
 TTFWidth: 5
@@ -175,6 +175,7 @@ SplineSet
  511 512 l 5,5,-1
  511 -51 l 5,3,-1
 EndSplineSet
+Validated: 1
 EndChar
 
 StartChar: maximizeWindowMacOS
@@ -192,6 +193,7 @@ SplineSet
  0 0 l 1,5,-1
  0 768 l 5,3,-1
 EndSplineSet
+Validated: 1
 EndChar
 EndChars
 EndSplineFont

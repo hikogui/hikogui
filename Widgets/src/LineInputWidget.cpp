@@ -246,9 +246,9 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
     } else if (event.type == GUI::MouseEvent::Type::Drag && event.cause.leftButton) {
         // When the mouse is dragged beyond the line input,
         // start scrolling the text and select on the edge of the textRectangle.
-        if (event.position.x() > textRectangle.p2().x()) {
+        if (event.position.x() > textRectangle.p3().x()) {
             // The mouse is on the right of the text.
-            dragSelectPosition.x(textRectangle.p2().x());
+            dragSelectPosition.x(textRectangle.p3().x());
 
             // Scroll text to the left in points per second.
             dragScrollSpeedX = 50.0f;

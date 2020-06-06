@@ -1257,7 +1257,7 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
 
         let xyMin = vec::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
         let xyMax = vec::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
-        metrics.boundingBox = aarect::p1p2(xyMin, xyMax);
+        metrics.boundingBox = aarect::p0p3(xyMin, xyMax);
 
         if (numberOfContours > 0) {
             // A simple glyph does not include metrics information in the data.

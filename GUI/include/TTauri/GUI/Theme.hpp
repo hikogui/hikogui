@@ -18,7 +18,7 @@ private:
     std::vector<vec> grayShades;
 
 public:
-    static constexpr OperatingSystem operatingSystem = OperatingSystem::MacOS;
+    static constexpr OperatingSystem operatingSystem = OperatingSystem::Windows;
 
     /** Distance between widgets and between widgets and the border of the container.
      */

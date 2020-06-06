@@ -69,16 +69,16 @@ public:
         ttauri_assume(extent.z() == 0.0);
     }
 
-    [[nodiscard]] force_inline static aarect p1p2(vec const &v) noexcept {
+    [[nodiscard]] force_inline static aarect p0p3(vec const &v) noexcept {
         aarect r;
         r.v = v;
         return r;
     }
 
-    [[nodiscard]] force_inline static aarect p1p2(vec const &p1, vec const &p2) noexcept {
-        ttauri_assume(p1.is_point());
-        ttauri_assume(p2.is_point());
-        return aarect::p1p2(p1.xy00() + p2._00xy());
+    [[nodiscard]] force_inline static aarect p0p3(vec const &p0, vec const &p3) noexcept {
+        ttauri_assume(p0.is_point());
+        ttauri_assume(p3.is_point());
+        return aarect::p0p3(p0.xy00() + p3._00xy());
     }
 
     operator bool () const noexcept {
@@ -158,11 +158,11 @@ public:
     //    return corner<I>().z(numeric_cast<float>(z));
     //}
 
-    [[nodiscard]] force_inline vec p1() const noexcept {
+    [[nodiscard]] force_inline vec p0() const noexcept {
         return corner<0>();
     }
 
-    [[nodiscard]] force_inline vec p2() const noexcept {
+    [[nodiscard]] force_inline vec p3() const noexcept {
         return corner<3>();
     }
 
@@ -216,9 +216,7 @@ public:
      * @param rhs The coordinate of the point to test.
      */
     [[nodiscard]] bool contains(vec const &rhs) const noexcept {
-        return
-            (((rhs >= v) & 0b0011) == 0b0011) &&
-            (((rhs.xyxy() <= v) & 0b1100) == 0b1100);
+        return (rhs.xyxy() >= v) == 0b0011;
     }
 
     /** Align a rectangle within another rectangle.
@@ -230,13 +228,13 @@ public:
     [[nodiscard]] friend aarect align(aarect outside, aarect inside, Alignment alignment) noexcept {
         float x;
         if (alignment == HorizontalAlignment::Left) {
-            x = outside.p1().x();
+            x = outside.p0().x();
 
         } else if (alignment == HorizontalAlignment::Right) {
-            x = outside.p2().x() - inside.width();
+            x = outside.p3().x() - inside.width();
 
         } else if (alignment == HorizontalAlignment::Center) {
-            x = (outside.p1().x() + (outside.width() * 0.5f)) - (inside.width() * 0.5f);
+            x = (outside.p0().x() + (outside.width() * 0.5f)) - (inside.width() * 0.5f);
 
         } else {
             no_default;
@@ -244,13 +242,13 @@ public:
 
         float y;
         if (alignment == VerticalAlignment::Bottom) {
-            y = outside.p1().y();
+            y = outside.p0().y();
 
         } else if (alignment == VerticalAlignment::Top) {
-            y = outside.p2().y() - inside.height();
+            y = outside.p3().y() - inside.height();
 
         } else if (alignment == VerticalAlignment::Middle) {
-            y = (outside.p1().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
+            y = (outside.p0().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
 
         } else {
             no_default;
@@ -285,24 +283,24 @@ public:
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, aarect const &rhs) noexcept {
-        return aarect::p1p2(min(lhs.p1(), rhs.p1()), max(lhs.p2(), rhs.p2()));
+        return aarect::p0p3(min(lhs.p0(), rhs.p0()), max(lhs.p3(), rhs.p3()));
     }
 
     [[nodiscard]] friend aarect operator|(aarect const &lhs, vec const &rhs) noexcept {
         ttauri_assume(rhs.is_point());
-        return aarect::p1p2(min(lhs.p1(), rhs), max(lhs.p2(), rhs));
+        return aarect::p0p3(min(lhs.p0(), rhs), max(lhs.p3(), rhs));
     }
 
     [[nodiscard]] friend aarect operator+(aarect const &lhs, vec const &rhs) noexcept {
-        return aarect::p1p2(lhs.v + rhs.xyxy());
+        return aarect::p0p3(lhs.v + rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator-(aarect const &lhs, vec const &rhs) noexcept {
-        return aarect::p1p2(lhs.v - rhs.xyxy());
+        return aarect::p0p3(lhs.v - rhs.xyxy());
     }
 
     [[nodiscard]] friend aarect operator*(aarect const &lhs, float rhs) noexcept {
-        return aarect::p1p2(lhs.v * vec{rhs});
+        return aarect::p0p3(lhs.v * vec{rhs});
     }
 
     /** Expand the rectangle for the same amount in all directions.
@@ -316,9 +314,9 @@ public:
         let diff_extent = scaled_extent - extent;
         let half_diff_extent = diff_extent * 0.5f;
 
-        let p1 = lhs.p1() - half_diff_extent;
-        let p2 = lhs.p2() + half_diff_extent;
-        return aarect::p1p2(p1, p2);
+        let p1 = lhs.p0() - half_diff_extent;
+        let p2 = lhs.p3() + half_diff_extent;
+        return aarect::p0p3(p1, p2);
     }
 
 
@@ -329,7 +327,7 @@ public:
      * @return A new rectangle expanded on each side.
      */
     [[nodiscard]] friend aarect expand(aarect const &lhs, float rhs) noexcept {
-        return aarect::p1p2(lhs.v + neg<1,1,0,0>(vec{rhs}));
+        return aarect::p0p3(lhs.v + neg<1,1,0,0>(vec{rhs}));
     }
 
     /** Shrink the rectangle for the same amount in all directions.
@@ -343,7 +341,7 @@ public:
     }
 
     [[nodiscard]] friend aarect round(aarect const &rhs) noexcept {
-        return aarect::p1p2(round(rhs.v));
+        return aarect::p0p3(round(rhs.v));
     }
 };
 

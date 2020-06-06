@@ -79,17 +79,17 @@ struct AttributedGlyphLine {
     [[nodiscard]] aarect boundingBox() const noexcept {
         ttauri_assume(ssize(line) >= 1);
 
-        let p1 = vec::point(
+        let p0 = vec::point(
             line.front().position.x(),
             line.front().position.y() - descender
         );
 
-        let p2 = vec::point(
+        let p3 = vec::point(
             line.back().position.x() + line.back().metrics.advance.x(),
             line.back().position.y() + ascender
         );
 
-        return aarect::p1p2(p1, p2);
+        return aarect::p0p3(p0, p3);
     }
 
     [[nodiscard]] bool contains(vec coordinate) const noexcept {
@@ -99,7 +99,7 @@ struct AttributedGlyphLine {
     [[nodiscard]] const_iterator find(vec coordinate) const noexcept {
         auto bbox = boundingBox();
 
-        if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p2().y()) {
+        if (coordinate.y() < bbox.y() || coordinate.y() > bbox.p3().y()) {
             return cend();
         }
 
@@ -107,7 +107,7 @@ struct AttributedGlyphLine {
             return cbegin();
         }
 
-        if (coordinate.x() > bbox.p2().x()) {
+        if (coordinate.x() > bbox.p3().x()) {
             return cend() - 1;
         }
 
@@ -127,6 +127,7 @@ struct AttributedGlyphLine {
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
 
     void positionGlyphs(vec position) noexcept {
+        ttauri_assume(position.is_point());
         y = position.y();
         for (auto &&g: line) {
             g.position = position;

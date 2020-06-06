@@ -55,7 +55,7 @@ public:
     force_inline iaarect(ivec const &offset, ivec const &extent) noexcept :
         iaarect(offset.xyxy() + extent.zwxy()) {}
 
-    [[nodiscard]] force_inline static iaarect p1p2(ivec const &p1, ivec const &p2) noexcept {
+    [[nodiscard]] force_inline static iaarect p0p3(ivec const &p1, ivec const &p2) noexcept {
         return _mm_blend_epi16(p1, p2.xyxy(), 0b11'11'00'00);
     }
 

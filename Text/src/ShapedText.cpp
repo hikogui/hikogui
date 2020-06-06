@@ -222,7 +222,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
             first_line = false;
 
             float x = position_x(alignment, line.width, width);
-            line.positionGlyphs(vec(x, y));
+            line.positionGlyphs(vec::point(x, y));
         }
     }
 
@@ -247,7 +247,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
             first_line = false;
 
             float x = position_x(alignment, line.width, width);
-            line.positionGlyphs(vec(x, y));
+            line.positionGlyphs(vec::point(x, y));
         }
     }
 }
@@ -395,9 +395,9 @@ ShapedText::ShapedText(
     let ligature_position_left = i->position + ligature_advance_left;
     let ligature_position_right = i->position + ligature_advance_right;
 
-    let p1 = ligature_position_left - vec(0.0, line_i->descender);
-    let p2 = ligature_position_right + vec(0.0, line_i->ascender);
-    return aarect::p1p2(p1, p2);
+    let p0 = ligature_position_left - vec(0.0, line_i->descender);
+    let p3 = ligature_position_right + vec(0.0, line_i->ascender);
+    return aarect::p0p3(p0, p3);
 }
 
 [[nodiscard]] aarect ShapedText::leftToRightCaret(ssize_t index, bool insertMode) const noexcept

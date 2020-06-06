@@ -46,7 +46,7 @@ bool Path::allLayersHaveSameColor() const noexcept
         return aarect{0.0, 0.0, 0.0, 0.0};
     }
 
-    auto r = aarect::p1p2(points.front().p, points.front().p);
+    auto r = aarect::p0p3(points.front().p, points.front().p);
 
     for (let &point: points) {
         r |= point.p;

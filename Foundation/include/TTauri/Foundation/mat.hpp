@@ -84,7 +84,7 @@ public:
         * Used for transforming vectors.
         */
         [[nodiscard]] force_inline friend aarect operator*(S const &lhs, aarect const &rhs) noexcept {
-            return aarect::p1p2(lhs.s * rhs.p1(), lhs.s * rhs.p2());
+            return aarect::p0p3(lhs.s * rhs.p0(), lhs.s * rhs.p3());
         }
 
         [[nodiscard]] friend rect operator*(S const &lhs, rect const &rhs) noexcept {
@@ -130,11 +130,11 @@ public:
         }
 
         [[nodiscard]] friend mat operator*(T const &lhs, mat::S const &rhs) noexcept {
-            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), lhs.xyz1() };
+            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), lhs.t.xyz1() };
         }
 
         [[nodiscard]] friend mat operator*(mat::S const &lhs, T const &rhs) noexcept {
-            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), rhs.s * lhs.xyz1() };
+            return { lhs.s.x000(), lhs.s._0y00(), lhs.s._00z0(), lhs.s * rhs.t.xyz1() };
         }
 
         [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept {
@@ -205,11 +205,11 @@ public:
         }
 
         [[nodiscard]] friend mat operator*(T2 const &lhs, mat::S const &rhs) noexcept {
-            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), lhs.xyz1() };
+            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), lhs.t.xyz1() };
         }
 
         [[nodiscard]] friend mat operator*(mat::S const &lhs, T2 const &rhs) noexcept {
-            return { rhs.s.x000(), rhs.s._0y00(), rhs.s._00z0(), rhs.s * lhs.xyz1() };
+            return { lhs.s.x000(), lhs.s._0y00(), lhs.s._00z0(), lhs.s * rhs.t.xyz1() };
         }
 
         [[nodiscard]] friend vec operator*(T2 const &lhs, vec const &rhs) noexcept {
@@ -217,7 +217,7 @@ public:
         }
 
         [[nodiscard]] friend aarect operator*(T2 const &lhs, aarect const &rhs) noexcept {
-            return aarect::p1p2(lhs.t + rhs.p1(), lhs.t + rhs.p2());
+            return aarect::p0p3(lhs.t + rhs.p0(), lhs.t + rhs.p3());
         }
 
         [[nodiscard]] friend rect operator*(T2 const &lhs, rect const &rhs) noexcept {
@@ -329,7 +329,7 @@ public:
     */
     [[nodiscard]] friend mat transpose(mat rhs) noexcept {
         auto tmp = transpose(rhs.col0, rhs.col1, rhs.col2, rhs.col3);
-        return {get<0>(tmp), get<1>(tmp), get<2>(tmp), get<3>(tmp)};
+        return {std::get<0>(tmp), std::get<1>(tmp), std::get<2>(tmp), std::get<3>(tmp)};
     }
 
     /** Invert matrix.
