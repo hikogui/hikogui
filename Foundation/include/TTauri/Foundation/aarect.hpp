@@ -69,6 +69,9 @@ public:
         ttauri_assume(extent.z() == 0.0);
     }
 
+    /** Create aarect from packet p0p3 coordinates.
+     * @param v p0 = (x, y), p3 = (z, w)
+     */
     [[nodiscard]] force_inline static aarect p0p3(vec const &v) noexcept {
         aarect r;
         r.v = v;
