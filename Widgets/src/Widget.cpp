@@ -225,7 +225,7 @@ void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point di
         childContext.fillColor = theme->fillColor(childNestingLevel);
 
         if (child->enabled) {
-            if (child->focus) {
+            if (child->focus && window.active) {
                 childContext.color = theme->accentColor;
             } else if (child->hover) {
                 childContext.color = theme->borderColor(childNestingLevel + 1);

@@ -16,51 +16,18 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
 {
     window.addConstraint(height <= Theme::smallHeight, rhea::strength::strong());
 
-    trafficLightButtons = &addWidget<WindowTrafficLightsWidget>(
-        getResource<Path>(URL("resource:Themes/Icons/Application Icon.tticon"))
-    );
-    window.addConstraint(trafficLightButtons->top == top);
-    window.addConstraint(trafficLightButtons->left == left);
-    window.addConstraint(trafficLightButtons->bottom == bottom);
-
+    trafficLightButtons = &addWidget<WindowTrafficLightsWidget>();
+    trafficLightButtons->placeAtTop(0.0f);
+    trafficLightButtons->placeAtBottom(0.0f);
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        closeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::TTauriIcon::CloseWindow,
-            [&]() { window.closeWindow(); }
-        );
-        closeWindowButton->closeButton = true;
-        window.addConstraint(closeWindowButton->top == top);
-        window.addConstraint(closeWindowButton->right == right);
-        window.addConstraint(closeWindowButton->bottom == bottom);
-
-        maximizeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::TTauriIcon::MaximizeWindowMS,
-            [&]() { 
-            switch (window.size) {
-            case Window::Size::Normal:
-                window.maximizeWindow();
-                break;
-            case Window::Size::Maximized:
-                window.normalizeWindow();
-                break;
-            default:
-                no_default;
-            }
-        }
-        );
-        window.addConstraint(maximizeWindowButton->top == top);
-        window.addConstraint(maximizeWindowButton->right == closeWindowButton->left);
-        window.addConstraint(maximizeWindowButton->bottom == bottom);
-
-        minimizeWindowButton = &addWidget<ToolbarButtonWidget>(
-            Text::TTauriIcon::MinimizeWindow,
-            //getResource<Path>(URL("resource:Themes/Icons/MultiColor.tticon")),
-            [&]() { window.minimizeWindow(); }
-        );
-        window.addConstraint(minimizeWindowButton->top == top);
-        window.addConstraint(minimizeWindowButton->right == maximizeWindowButton->left);
-        window.addConstraint(minimizeWindowButton->bottom == bottom);
+        trafficLightButtons->placeRight(0.0f);
+    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+        trafficLightButtons->placeLeft(0.0f);
+    } else {
+        no_default;
     }
+
+    
 }
 
 void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

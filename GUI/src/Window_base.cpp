@@ -230,14 +230,14 @@ void Window_base::windowChangedSize(ivec extent) {
     forceLayout = true;
 }
 
-void Window_base::updateMouseTarget(Widgets::Widget const *newTargetWidget) noexcept {
+void Window_base::updateMouseTarget(Widgets::Widget const *newTargetWidget, vec position) noexcept {
     if (newTargetWidget != mouseTargetWidget) {
         if (mouseTargetWidget != nullptr) {
             Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::exited());
         }
         mouseTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
-        if (mouseTargetWidget != nullptr) {
-            Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::entered());
+        if (mouseTargetWidget != nullptr) { 
+            Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::entered(position));
         }
     }
 }
@@ -267,7 +267,7 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
     case MouseEvent::Type::ButtonDown:
     case MouseEvent::Type::Move: {
         let hitbox = hitBoxTest(event.position);
-        updateMouseTarget(hitbox.widget);
+        updateMouseTarget(hitbox.widget, event.position);
 
         if (event.type == MouseEvent::Type::ButtonDown) {
             updateKeyboardTarget(hitbox.widget);

@@ -63,18 +63,18 @@ void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
         slider_width, slider_height
     };
 
-    if (enabled) {
-        if (value) {
-            context.fillColor = theme->accentColor;
-        } else if (hover) {
-            context.fillColor = theme->borderColor(nestingLevel() + 1);
-        } else {
-            context.fillColor = theme->borderColor(nestingLevel());
+    if (value) {
+        if (enabled && window.active) {
+            context.color = theme->accentColor;
         }
     } else {
-        context.fillColor = theme->borderColor(nestingLevel() - 1);
+        if (enabled && window.active) {
+            context.color = hover ?
+                theme->borderColor(nestingLevel() + 1) :
+                theme->borderColor(nestingLevel());
+        }
     }
-    context.color = vec::color(0.0, 0.0, 0.0, 0.0);
+    std::swap(context.color, context.fillColor);
     context.cornerShapes = vec{slider_rectangle.height() * 0.5f};
     context.drawBoxIncludeBorder(slider_rectangle);
 

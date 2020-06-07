@@ -276,7 +276,7 @@ protected:
      */
     virtual void build() = 0;
 
-    void updateMouseTarget(Widgets::Widget const *newTargetWidget) noexcept;
+    void updateMouseTarget(Widgets::Widget const *newTargetWidget, vec position=vec{0.0f, 0.0f}) noexcept;
 
     void updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept;
 

@@ -15,15 +15,16 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     Widget(window, nullptr, vec{0.0, 0.0})
 {
     toolbar = &addWidgetDirectly<ToolbarWidget>();
-    window.addConstraint(toolbar->left == left);
-    window.addConstraint(toolbar->right == right);
-    window.addConstraint(toolbar->top == top);
+    toolbar->placeLeft(0.0f);
+    toolbar->placeRight(0.0f);
+    toolbar->placeAtTop(0.0f);
 
     content = &addWidgetDirectly<ContainerWidget>();
-    window.addConstraint(content->left == left);
-    window.addConstraint(content->right == right);
-    window.addConstraint(content->top == toolbar->bottom);
-    window.addConstraint(content->bottom == bottom);
+    content->elevation = elevation;
+    content->placeLeft(0.0f);
+    content->placeRight(0.0f);
+    content->placeAtBottom(0.0f);
+    content->placeBelow(*toolbar, 0.0f);
 
     // Add constraints for the window widget itself.
     window.addConstraint(left == 0);
@@ -32,7 +33,6 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     // fallback on a upper bound, otherwise it will select the lower bounds instead.
     window.addConstraint(width <= std::numeric_limits<uint16_t>::max());
     window.addConstraint(height <= std::numeric_limits<uint16_t>::max());
-
 }
 
 HitBox WindowWidget::hitBoxTest(vec position) const noexcept

@@ -84,16 +84,14 @@ public:
         context.drawBoxIncludeBorder(button_rectangle);
 
         // draw pip
-        context.color = context.fillColor;
         if (value == ActiveValue) {
-            if (enabled) {
-                context.fillColor = theme->accentColor;
-            } else {
-                context.fillColor = context.color;
+            if (enabled && window.active) {
+                context.color = theme->accentColor;
             }
+            std::swap(context.color, context.fillColor);
+            context.cornerShapes = vec{pip_rectangle.height() * 0.5f};
+            context.drawBoxIncludeBorder(pip_rectangle);
         }
-        context.cornerShapes = vec{pip_rectangle.height() * 0.5f};
-        context.drawBoxIncludeBorder(pip_rectangle);
 
         // user defined label.
         context.transform = drawContext.transform * (mat::T{0.0, 0.0, 0.001f} * label_translate);

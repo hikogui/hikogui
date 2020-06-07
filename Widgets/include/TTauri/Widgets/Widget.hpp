@@ -139,7 +139,7 @@ public:
     rhea::linear_expression const top = bottom + height;
     rhea::linear_expression const middle = bottom + height * 0.5;
 
-    std::atomic<float> elevation;
+    float elevation;
 
     std::atomic<i32x2_t> _extent;
     std::atomic<i32x2_t> _offsetFromParent;
@@ -316,19 +316,15 @@ public:
     }
 
     /** Get nesting level used for selecting colors for the widget.
-    *
-    * Thread safety: reads atomics.
     */
     [[nodiscard]] ssize_t nestingLevel() noexcept {
-        return numeric_cast<ssize_t>(elevation.load(std::memory_order::memory_order_relaxed));
+        return numeric_cast<ssize_t>(elevation);
     }
 
     /** Get z value for compositing order.
-    *
-    * Thread safety: reads atomics.
     */
     [[nodiscard]] float z() noexcept {
-        return elevation.load(std::memory_order::memory_order_relaxed) * 0.01f;
+        return elevation * 0.01f;
     }
 
     /** Request the needs of the widget.

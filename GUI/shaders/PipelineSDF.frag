@@ -26,16 +26,6 @@ bool isClipped()
     return greaterThanEqual(gl_FragCoord.xyxy, inClippingRectangle) != bvec4(true, true, false, false);
 }
 
-// Use a perceptional curve of gamma 2.0.
-vec3 coverage_to_alpha(vec3 x, bool light_to_dark)
-{
-    if (light_to_dark) {
-        return x * x;
-    } else {
-        x = 1.0 - x;
-        return 1.0 - (x * x);
-    }
-}
 
 // Use a perceptional curve of gamma 2.0.
 float coverage_to_alpha(float x, bool light_to_dark)
@@ -46,6 +36,16 @@ float coverage_to_alpha(float x, bool light_to_dark)
         x = 1.0 - x;
         return 1.0 - (x * x);
     }
+}
+
+// Use a perceptional curve of gamma 2.0.
+vec3 coverage_to_alpha(vec3 coverage, bvec3 light_to_dark)
+{
+    return vec3(
+        coverage_to_alpha(coverage.r, light_to_dark.r),
+        coverage_to_alpha(coverage.g, light_to_dark.g),
+        coverage_to_alpha(coverage.b, light_to_dark.b)
+    );
 }
 
 void main()
@@ -112,7 +112,7 @@ void main()
         float blueRadius  = texture(sampler2D(textures[int(inTextureCoord.z)], biLinearSampler), blueCoordinate).r * distanceMultiplier;
 
         vec3 RGBCoverage = clamp(vec3(redRadius, greenRadius, blueRadius) + 0.5, 0.0, 1.0);
-        vec3 RGBAlpha = coverage_to_alpha(RGBCoverage, inColor.g > 0.7) * inColor.a;
+        vec3 RGBAlpha = coverage_to_alpha(RGBCoverage, lessThan(RGBCoverage, inColor.rgb)) * inColor.a;
 
         // Output alpha is always 1.0
         outColor = vec4(

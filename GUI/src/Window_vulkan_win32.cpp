@@ -555,18 +555,8 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_RBUTTONDBLCLK:
     case WM_XBUTTONDBLCLK:
     case WM_MOUSEMOVE:
-        handleMouseEvent(createMouseEvent(uMsg, wParam, lParam));
-        break;
-        
     case WM_MOUSELEAVE:
-        // After this event we need to ask win32 to track the mouse again.
-        trackingMouseLeaveEvent = false;
-
-        // Force currentCursor to None so that the Window is in a fresh
-        // state when the mouse reenters it.
-        currentCursor = Cursor::None;
-
-        handleMouseEvent(MouseEvent::exited());
+        handleMouseEvent(createMouseEvent(uMsg, wParam, lParam));
         break;
 
     case WM_NCCALCSIZE:
@@ -646,6 +636,8 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 [[nodiscard]] MouseEvent Window_vulkan_win32::createMouseEvent(
     unsigned int uMsg, uint64_t wParam, int64_t lParam) noexcept
 {
+    // wParam and lParam at set to zero on WM_MOUSELEAVE.
+
     auto mouseEvent = MouseEvent{};
 
     mouseEvent.timePoint = cpu_utc_clock::now();
@@ -691,6 +683,8 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
             mouseEvent.cause = mouseButtonEvent.cause;
         }
         break;
+    case WM_MOUSELEAVE:
+        break;
     default:
         no_default;
     }
@@ -710,7 +704,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN:
         mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.downPosition = mouseButtonEvent.position;
+        mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = (mouseEvent.timePoint < doubleClickTimePoint + doubleClickMaximumDuration) ? 3 : 1;
         break;
 
@@ -719,26 +713,44 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_RBUTTONDBLCLK:
     case WM_XBUTTONDBLCLK:
         mouseEvent.type = MouseEvent::Type::ButtonDown;
-        mouseEvent.downPosition = mouseButtonEvent.downPosition;
+        mouseEvent.downPosition = mouseEvent.position;
         mouseEvent.clickCount = 2;
         doubleClickTimePoint = cpu_utc_clock::now();
         break;
 
-    case WM_MOUSEMOVE:
-        mouseEvent.type =
-            (mouseButtonEvent.type == MouseEvent::Type::ButtonDown) ?
-            MouseEvent::Type::Drag :
-            MouseEvent::Type::Move;
+    case WM_MOUSEMOVE: {
+        let dragging = 
+            mouseEvent.down.leftButton ||
+            mouseEvent.down.middleButton ||
+            mouseEvent.down.rightButton ||
+            mouseEvent.down.x1Button ||
+            mouseEvent.down.x2Button;
+
+        mouseEvent.type = dragging ? MouseEvent::Type::Drag : MouseEvent::Type::Move;
         mouseEvent.downPosition = mouseButtonEvent.downPosition;
         mouseEvent.clickCount = mouseButtonEvent.clickCount;
+        } break;
+
+    case WM_MOUSELEAVE:
+        mouseEvent.type = MouseEvent::Type::Exited;
+        mouseEvent.downPosition = mouseButtonEvent.downPosition;
+        mouseEvent.clickCount = 0;
+
+        // After this event we need to ask win32 to track the mouse again.
+        trackingMouseLeaveEvent = false;
+
+        // Force currentCursor to None so that the Window is in a fresh
+        // state when the mouse reenters it.
+        currentCursor = Cursor::None;
         break;
+
     default:
         no_default;
     }
 
-    // Make sure we start tracking mouse events in case the mouse will leave the window;
-    // so that we receive a WM_MOUSELEAVE event.
-    if (!trackingMouseLeaveEvent) {
+    // Make sure we start tracking mouse events when the mouse has entered the window again.
+    // So that once the mouse leaves the window we receive a WM_MOUSELEAVE event.
+    if (!trackingMouseLeaveEvent && uMsg != WM_MOUSELEAVE) {
         if (!TrackMouseEvent(&trackMouseLeaveEventParameters)) {
             LOG_ERROR("Could not track leave event '{}'", getLastErrorMessage());
         }
@@ -747,7 +759,11 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
     // Remember the last time a button was pressed or released, so that we can convert
     // a move into a drag event.
-    if (mouseEvent.type == MouseEvent::Type::ButtonDown || mouseEvent.type == MouseEvent::Type::ButtonUp) {
+    if (
+        mouseEvent.type == MouseEvent::Type::ButtonDown ||
+        mouseEvent.type == MouseEvent::Type::ButtonUp ||
+        mouseEvent.type == MouseEvent::Type::Exited
+    ) {
         mouseButtonEvent = mouseEvent;
     }
     return mouseEvent;

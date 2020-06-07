@@ -83,32 +83,22 @@ public:
         auto context = drawContext;
         context.drawBoxIncludeBorder(button_rectangle);
 
-        // Checkmark or tristate.
-        if (enabled) {
-            context.fillColor = theme->accentColor;
+        if (enabled && window.active) {
             context.color = theme->accentColor;
-            if (value == TrueValue) {
-                context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.drawGlyph(checkGlyph, check_rectangle);
-            } else if (value == FalseValue) {
-                ;
-            } else {
-                context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.drawFilledQuad(shrink(button_rectangle, 3.0f));
-            }
-        } else {
-            context.fillColor = theme->borderColor(nestingLevel() - 1);
-            context.color = theme->borderColor(nestingLevel() - 1);
-            if (value == TrueValue) {
-                context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.drawGlyph(checkGlyph, check_rectangle);
-            } else if (value == FalseValue) {
-                ;
-            } else {
-                context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-                context.drawFilledQuad(shrink(button_rectangle, 3.0f));
-            }
         }
+
+        // Checkmark or tristate.
+        if (value == TrueValue) {
+            context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+            context.drawGlyph(checkGlyph, check_rectangle);
+        } else if (value == FalseValue) {
+            ;
+        } else {
+            std::swap(context.color, context.fillColor);
+            context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
+            context.drawFilledQuad(shrink(button_rectangle, 3.0f));
+        }
+        
         // user defined label.
         context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};
         context.drawText(labelShapedText);

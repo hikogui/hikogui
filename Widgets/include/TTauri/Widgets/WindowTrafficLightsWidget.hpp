@@ -26,9 +26,9 @@ public:
     static constexpr float WIDTH = DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING;
     static constexpr float HEIGHT = DIAMETER + 2.0 * MARGIN;
 
-    aarect redRectangle;
-    aarect yellowRectangle;
-    aarect greenRectangle;
+    aarect closeRectangle;
+    aarect minimizeRectangle;
+    aarect maximizeRectangle;
 
     Text::FontGlyphIDs closeWindowGlyph;
     Text::FontGlyphIDs minimizeWindowGlyph;
@@ -40,21 +40,21 @@ public:
     aarect maximizeWindowGlyphRectangle;
     aarect restoreWindowGlyphRectangle;
 
-    bool pressedRed = false;
-    bool pressedYellow = false;
-    bool pressedGreen = false;
+    bool hoverClose = false;
+    bool hoverMinimize = false;
+    bool hoverMaximize = false;
 
-    Path applicationIcon;
+    bool pressedClose = false;
+    bool pressedMinimize = false;
+    bool pressedMaximize = false;
 
-    WindowTrafficLightsWidget(Window &window, Widget *parent, Path applicationIcon) noexcept;
+    WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
     WindowTrafficLightsWidget(const WindowTrafficLightsWidget &) = delete;
     WindowTrafficLightsWidget &operator=(const WindowTrafficLightsWidget &) = delete;
     WindowTrafficLightsWidget(WindowTrafficLightsWidget &&) = delete;
     WindowTrafficLightsWidget &operator=(WindowTrafficLightsWidget &&) = delete;
-
-    int state() const noexcept;
 
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
@@ -63,13 +63,8 @@ public:
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
 private:
-    PixelMap<R16G16B16A16SFloat> drawApplicationIconImage(PipelineImage::Image &image) noexcept;
-
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
-
-    PipelineImage::Backing backingImage;
-
     void drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
+    void drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
 
 };
 

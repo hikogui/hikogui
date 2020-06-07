@@ -14,9 +14,6 @@ class WindowTrafficLightsWidget;
 class ToolbarWidget : public Widget {
 public:
     WindowTrafficLightsWidget *trafficLightButtons = nullptr;
-    ToolbarButtonWidget *closeWindowButton = nullptr;
-    ToolbarButtonWidget *maximizeWindowButton = nullptr;
-    ToolbarButtonWidget *minimizeWindowButton = nullptr;
 
     ToolbarWidget(Window &window, Widget *parent) noexcept;
     ~ToolbarWidget() {}

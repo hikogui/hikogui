@@ -10,58 +10,76 @@
 
 namespace TTauri::GUI::Widgets {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent, Path applicationIcon) noexcept :
-    Widget(window, parent, vec{WIDTH, HEIGHT}),
-    applicationIcon(std::move(applicationIcon))
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
+    Widget(window, parent, vec{WIDTH, HEIGHT})
 {
 }
 
-int WindowTrafficLightsWidget::state() const noexcept {
-    int r = 0;
-    r |= window.active ? 1 : 0;
-    if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        r |= hover ? 2 : 0;
-        r |= pressedRed ? 4 : 0;
-        r |= pressedYellow ? 8 : 0;
-        r |= pressedGreen ? 16 : 0;
-        r |= (window.size == Window::Size::Maximized) ? 32 : 0;
-    }
-    return r;
-}
 
 void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     Widget::layout(displayTimePoint);
 
-    redRectangle = aarect{
-        vec::point(MARGIN, extent().height() / 2.0 - RADIUS),
-        {DIAMETER, DIAMETER}
-    };
+    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+        closeRectangle = aarect{
+            vec::point(extent().width() * 2.0f/3.0f, 0.0f),
+            vec{extent().width() * 1.0f/3.0f, extent().height()}
+        };
 
-    yellowRectangle = aarect{
-        vec::point(MARGIN + DIAMETER + SPACING, extent().height() / 2.0 - RADIUS),
-        {DIAMETER, DIAMETER}
-    };
+        maximizeRectangle = aarect{
+            vec::point(extent().width() * 1.0f/3.0f, 0.0f),
+            vec{extent().width() * 1.0f/3.0f, extent().height()}
+        };
 
-    greenRectangle = aarect{
-        vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent().height() / 2.0 - RADIUS),
-        {DIAMETER, DIAMETER}
-    };
+        minimizeRectangle = aarect{
+            vec::point(0.0f, 0.0f),
+            vec{extent().width() * 1.0f/3.0f, extent().height()}
+        };
+
+    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+        closeRectangle = aarect{
+            vec::point(MARGIN, extent().height() / 2.0 - RADIUS),
+            {DIAMETER, DIAMETER}
+        };
+
+        minimizeRectangle = aarect{
+            vec::point(MARGIN + DIAMETER + SPACING, extent().height() / 2.0 - RADIUS),
+            {DIAMETER, DIAMETER}
+        };
+
+        maximizeRectangle = aarect{
+            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent().height() / 2.0 - RADIUS),
+            {DIAMETER, DIAMETER}
+        };
+    } else {
+        no_default;
+    }
 
     closeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::CloseWindow);
     minimizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MinimizeWindow);
-    maximizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MaximizeWindowMacOS);
-    restoreWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::RestoreWindowMacOS);
+
+    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+        maximizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MaximizeWindowMS);
+        restoreWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::RestoreWindowMS);
+
+    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+        maximizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MaximizeWindowMacOS);
+        restoreWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::RestoreWindowMacOS);
+    } else {
+        no_default;
+    }
 
     let closeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(closeWindowGlyph);
     let minimizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minimizeWindowGlyph);
     let maximizeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(maximizeWindowGlyph);
     let restoreWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(restoreWindowGlyph);
 
-    closeWindowGlyphRectangle = align(redRectangle, scale(closeWindowGlyphBB, GLYPH_SIZE), Alignment::MiddleCenter);
-    minimizeWindowGlyphRectangle = align(yellowRectangle, scale(minimizeWindowGlyphBB, GLYPH_SIZE), Alignment::MiddleCenter);
-    maximizeWindowGlyphRectangle = align(greenRectangle, scale(maximizeWindowGlyphBB, GLYPH_SIZE), Alignment::MiddleCenter);
-    restoreWindowGlyphRectangle = align(greenRectangle, scale(restoreWindowGlyphBB, GLYPH_SIZE), Alignment::MiddleCenter);
+    let glyph_size = Theme::operatingSystem == OperatingSystem::MacOS ? 5.0f : Theme::iconSize;
+
+    closeWindowGlyphRectangle = align(closeRectangle, scale(closeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+    minimizeWindowGlyphRectangle = align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+    maximizeWindowGlyphRectangle = align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+    restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
 }
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -71,33 +89,33 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
 
     if (!window.active && !hover) {
         context.fillColor = vec::color(0.246, 0.246, 0.246);
-    } else if (pressedRed) {
+    } else if (pressedClose) {
         context.fillColor = vec::color(1.0, 0.242, 0.212);
     } else {
         context.fillColor = vec::color(1.0, 0.1, 0.082);
     }
     context.color = context.fillColor;
-    context.drawBoxIncludeBorder(redRectangle);
+    context.drawBoxIncludeBorder(closeRectangle);
 
     if (!window.active && !hover) {
         context.fillColor = vec::color(0.246, 0.246, 0.246);
-    } else if (pressedYellow) {
+    } else if (pressedMinimize) {
         context.fillColor = vec::color(1.0, 0.847, 0.093);
     } else {
         context.fillColor = vec::color(0.784, 0.521, 0.021);
     }
     context.color = context.fillColor;
-    context.drawBoxIncludeBorder(yellowRectangle);
+    context.drawBoxIncludeBorder(minimizeRectangle);
 
     if (!window.active && !hover) {
         context.fillColor = vec::color(0.246, 0.246, 0.246);
-    } else if (pressedGreen) {
+    } else if (pressedMaximize) {
         context.fillColor = vec::color(0.223, 0.863, 0.1);
     } else {
         context.fillColor = vec::color(0.082, 0.533, 0.024);
     }
     context.color = context.fillColor;
-    context.drawBoxIncludeBorder(greenRectangle);
+    context.drawBoxIncludeBorder(maximizeRectangle);
 
     if (hover) {
         context.color = vec::color(0.319, 0.0, 0.0);
@@ -115,121 +133,120 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
     }
 }
 
+void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+{
+    auto context = drawContext;
+
+    if (pressedClose) {
+        context.fillColor = vec::color(1.0f, 0.0f, 0.0f);
+    } else if (hoverClose) {
+        context.fillColor = vec::color(0.5f, 0.0f, 0.0f);
+    } else {
+        context.fillColor = theme->fillColor(nestingLevel() - 1);
+    }
+    context.drawFilledQuad(closeRectangle);
+
+    if (pressedMinimize) {
+        context.fillColor = theme->fillColor(nestingLevel() + 1);
+    } else if (hoverMinimize) {
+        context.fillColor = theme->fillColor(nestingLevel());
+    } else {
+        context.fillColor = theme->fillColor(nestingLevel() - 1);
+    }
+    context.drawFilledQuad(minimizeRectangle);
+
+    if (pressedMaximize) {
+        context.fillColor = theme->fillColor(nestingLevel() + 1);
+    } else if (hoverMaximize) {
+        context.fillColor = theme->fillColor(nestingLevel());
+    } else {
+        context.fillColor = theme->fillColor(nestingLevel() - 1);
+    }
+    context.drawFilledQuad(maximizeRectangle);
+
+    if (window.active) {
+        context.color = theme->foregroundColor;
+    } else {
+        context.color = theme->borderColor(nestingLevel());
+    }
+    context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
+    context.drawGlyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
+    if (window.size == Window::Size::Maximized) {
+        context.drawGlyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
+    } else {
+        context.drawGlyph(maximizeWindowGlyph, maximizeWindowGlyphRectangle);
+    }
+}
+
 void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         drawMacOS(drawContext, displayTimePoint);
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+        drawWindows(drawContext, displayTimePoint);
 
-        auto drawingBackingImage = backingImage.loadOrDraw(
-            window,
-            extent(),
-            [&](auto image) {
-                return drawImage(image);
-            },
-            "WindowTrafficLightsWidget", state()
-        );
-
-        if (drawingBackingImage) {
-            forceRedraw = true;
-        }
-
-        if (backingImage.image) {
-            let currentScale = (extent() / vec{backingImage.image->extent}).xy11();
-
-            auto context = drawContext;
-            context.transform = context.transform * mat::S(currentScale);
-            context.drawImage(*(backingImage.image));
-        }
+    } else {
+        no_default;
     }
 
     Widget::draw(drawContext, displayTimePoint);
-}
-
-PixelMap<R16G16B16A16SFloat> WindowTrafficLightsWidget::drawApplicationIconImage(PipelineImage::Image &image) noexcept
-{
-    auto linearMap = PixelMap<R16G16B16A16SFloat>{image.extent};
-    fill(linearMap);
-
-    let iconPath = applicationIcon.centerScale(vec{image.extent}, 3.0);
-    composit(linearMap, iconPath);
-
-    if (!window.active) {
-        desaturate(linearMap, 0.5f);
-    }
-    return linearMap;
-}
-
-PipelineImage::Backing::ImagePixelMap WindowTrafficLightsWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
-{
-    return { std::move(image), drawApplicationIconImage(*image) };
 }
 
 void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
     Widget::handleMouseEvent(event);
 
-    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        // The system menu is opened by Windows 10, due to HitBox returning "system menu".
-        return;
 
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
-            if (pressedRed) {
-                window.closeWindow();
-            } else if (pressedYellow) {
-                window.minimizeWindow();
-            } else if (pressedGreen) {
-                switch (window.size) {
-                case Window::Size::Normal:
-                    window.maximizeWindow();
-                    break;
-                case Window::Size::Maximized:
-                    window.normalizeWindow();
-                    break;
-                default:
-                    no_default;
-                }
+
+    if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
+        if (pressedClose) {
+            window.closeWindow();
+        } else if (pressedMinimize) {
+            window.minimizeWindow();
+        } else if (pressedMaximize) {
+            switch (window.size) {
+            case Window::Size::Normal:
+                window.maximizeWindow();
+                break;
+            case Window::Size::Maximized:
+                window.normalizeWindow();
+                break;
+            default:
+                no_default;
             }
         }
-
-        // Only change the pressed state after checking for Button Up, the
-        // button up will check which button was pressed from button down.
-        auto stateHasChanged = false;
-        stateHasChanged |= assign_and_compare(pressedRed, event.down.leftButton && redRectangle.contains(event.position));
-        stateHasChanged |= assign_and_compare(pressedYellow, event.down.leftButton && yellowRectangle.contains(event.position));
-        stateHasChanged |= assign_and_compare(pressedGreen, event.down.leftButton && greenRectangle.contains(event.position));
-        if (stateHasChanged) {
-            forceRedraw = true;
-        }
-
-    } else {
-        no_default;
     }
+
+    auto stateHasChanged = false;
+
+    // Check the hover states of each button.
+    stateHasChanged |= assign_and_compare(hoverClose, closeRectangle.contains(event.position));
+    stateHasChanged |= assign_and_compare(hoverMinimize, minimizeRectangle.contains(event.position));
+    stateHasChanged |= assign_and_compare(hoverMaximize, maximizeRectangle.contains(event.position));
+
+    // Only change the pressed state after checking for Button Up, the
+    // button up will check which button was pressed from button down.
+    stateHasChanged |= assign_and_compare(pressedClose, event.down.leftButton && hoverClose);
+    stateHasChanged |= assign_and_compare(pressedMinimize, event.down.leftButton && hoverMinimize);
+    stateHasChanged |= assign_and_compare(pressedMaximize, event.down.leftButton && hoverMaximize);
+
+
+    if (stateHasChanged) {
+        forceRedraw = true;
+    }
+
 }
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
-    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        if (rectangle().contains(position)) {
-            return HitBox{this, elevation, HitBox::Type::ApplicationIcon};
-        } else {
-            return {};
-        }
-
-    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        if (redRectangle.contains(position) ||
-            yellowRectangle.contains(position) ||
-            greenRectangle.contains(position)
-        ) {
-            return HitBox{this, elevation, HitBox::Type::Button};
-        } else {
-            return {};
-        }
-
+    if (closeRectangle.contains(position) ||
+        minimizeRectangle.contains(position) ||
+        maximizeRectangle.contains(position)
+    ) {
+        return HitBox{this, elevation, HitBox::Type::Button};
     } else {
-        no_default;
+        return {};
     }
 }
 
