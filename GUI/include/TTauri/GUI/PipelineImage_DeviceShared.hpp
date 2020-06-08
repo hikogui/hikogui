@@ -7,7 +7,6 @@
 #include "TTauri/GUI/PipelineImage_Page.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/A8B8G8R8SrgbPack32.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
@@ -45,7 +44,6 @@ struct DeviceShared final {
     vk::DescriptorImageInfo atlasSamplerDescriptorImageInfo;
 
     std::vector<Page> atlasFreePages;
-    std::unordered_map<std::string, std::weak_ptr<Image>> imageCache;
 
     DeviceShared(Device const &device);
     ~DeviceShared();
@@ -77,26 +75,27 @@ struct DeviceShared final {
         return ivec{x, y, imageIndex, 1};
     }
 
-    std::vector<Page> getFreePages(int const nrPages);
+    /** Allocate pages from the atlas.
+     */
+    std::vector<Page> allocatePages(int const nrPages) noexcept;
 
-    void returnPages(std::vector<Page> const &pages);
+    /** Deallocate pages back to the atlas.
+     */
+    void freePages(std::vector<Page> const &pages) noexcept;
 
-    /*! Get an image, possibly from the cache.
-     * \param key of the image.
+    /** Allocate an image in the atlas.
      * \param extent of the image.
      */
-    std::shared_ptr<Image> getImage(std::string const &key, ivec extent);
+    Image makeImage(ivec extent) noexcept;
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    TTauri::PixelMap<A8B8G8R8SrgbPack32> getStagingPixelMap();
-
-    void uploadPixmapToAtlas(Image const &image, PixelMap<R16G16B16A16SFloat> const &pixelMap);
+    TTauri::PixelMap<R16G16B16A16SFloat> getStagingPixelMap();
 
     void prepareAtlasForRendering();
 
 private:
-    TTauri::PixelMap<A8B8G8R8SrgbPack32> getStagingPixelMap(ivec extent) {
+    TTauri::PixelMap<R16G16B16A16SFloat> getStagingPixelMap(ivec extent) {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 
@@ -107,6 +106,8 @@ private:
     void addAtlasImage();
     void buildAtlas();
     void teardownAtlas(Device_vulkan *vulkanDevice);
+
+    friend Image;
 };
 
 }

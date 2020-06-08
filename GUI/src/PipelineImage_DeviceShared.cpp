@@ -6,6 +6,7 @@
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
+#include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/memory.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
@@ -33,7 +34,7 @@ void DeviceShared::destroy(Device *vulkanDevice)
     teardownAtlas(vulkanDevice);
 }
 
-std::vector<Page> DeviceShared::getFreePages(int const nrPages)
+std::vector<Page> DeviceShared::allocatePages(int const nrPages) noexcept
 {
     while (nrPages > atlasFreePages.size()) {
         addAtlasImage();
@@ -48,41 +49,24 @@ std::vector<Page> DeviceShared::getFreePages(int const nrPages)
     return pages;
 }
 
-void DeviceShared::returnPages(std::vector<Page> const &pages)
+void DeviceShared::freePages(std::vector<Page> const &pages) noexcept
 {
-
     atlasFreePages.insert(atlasFreePages.end(), pages.begin(), pages.end());
 }
 
-std::shared_ptr<Image> DeviceShared::getImage(std::string const &key, const ivec extent)
+Image DeviceShared::makeImage(const ivec extent) noexcept
 {
-
-    let i = imageCache.find(key);
-    if (i != imageCache.end()) {
-        if (let image = i->second.lock()) {
-            return image;
-        }
-    }
-
-    // Cleanup only after the happy flow failed.
-    cleanupWeakPointers(imageCache);
-
     let pageExtent = ivec{
         (extent.x() + (Page::width - 1)) / Page::width,
         (extent.y() + (Page::height - 1)) / Page::height
     };
 
-    let pages = getFreePages(pageExtent.x() * pageExtent.y());
-    let image = std::make_shared<Image>(this, key, extent, pageExtent, pages);
-
-    imageCache.try_emplace(key, image);
-    return image;
+    return Image{this, extent, pageExtent, allocatePages(pageExtent.x() * pageExtent.y())};
 }
 
-TTauri::PixelMap<A8B8G8R8SrgbPack32> DeviceShared::getStagingPixelMap()
+TTauri::PixelMap<R16G16B16A16SFloat> DeviceShared::getStagingPixelMap()
 {
-
-    stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eGeneral);
+    stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
     return stagingTexture.pixelMap.submap(
         Page::border, Page::border,
@@ -98,12 +82,12 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         image.extent
     };
     // Add one pixel of border around the actual image and keep extending
-    // until the full border with is finished.
+    // until the full border width is finished.
     for (int b = 0; b < Page::border; b++) {
         rectangle = expand(rectangle, 1);
 
         auto pixelMap = stagingTexture.pixelMap.submap(rectangle);
-        addTransparentBorder(pixelMap);
+        makeTransparentBorder(pixelMap);
     }
 
     // Flush the given image, included the border.
@@ -113,7 +97,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         ((image.extent.x() + 2 * Page::border) * stagingTexture.pixelMap.stride) * sizeof (uint32_t)
     );
     
-    stagingTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferSrcOptimal);
+    stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
     for (int index = 0; index < ssize(image.pages); index++) {
@@ -152,19 +136,9 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         }
 
         auto &atlasTexture = atlasTextures.at(atlasTextureIndex);
-        atlasTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eTransferDstOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferDstOptimal);
 
         device.copyImage(stagingTexture.image, vk::ImageLayout::eTransferSrcOptimal, atlasTexture.image, vk::ImageLayout::eTransferDstOptimal, regionsToCopy);
-    }
-}
-
-void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<R16G16B16A16SFloat> const &pixelMap)
-{
-    if (image.state == GUI::PipelineImage::Image::State::Drawing && pixelMap) {
-        auto stagingMap = getStagingPixelMap(image.extent);
-        fill(stagingMap, pixelMap);
-        updateAtlasWithStagingPixelMap(image);
-        image.state = GUI::PipelineImage::Image::State::Uploaded;
     }
 }
 
@@ -172,7 +146,7 @@ void DeviceShared::uploadPixmapToAtlas(Image const &image, PixelMap<R16G16B16A16
 void DeviceShared::prepareAtlasForRendering()
 {
     for (auto &atlasTexture: atlasTextures) {
-        atlasTexture.transitionLayout(device, vk::Format::eR8G8B8A8Srgb, vk::ImageLayout::eShaderReadOnlyOptimal);
+        atlasTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eShaderReadOnlyOptimal);
     }
 }
 
@@ -207,7 +181,7 @@ void DeviceShared::addAtlasImage()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eR8G8B8A8Srgb,
+        vk::Format::eR16G16B16A16Sfloat,
         vk::Extent3D(atlasImageWidth, atlasImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -264,7 +238,7 @@ void DeviceShared::buildAtlas()
     vk::ImageCreateInfo const imageCreateInfo = {
         vk::ImageCreateFlags(),
         vk::ImageType::e2D,
-        vk::Format::eR8G8B8A8Srgb,
+        vk::Format::eR16G16B16A16Sfloat,
         vk::Extent3D(stagingImageWidth, stagingImageHeight, 1),
         1, // mipLevels
         1, // arrayLayers
@@ -278,13 +252,13 @@ void DeviceShared::buildAtlas()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    let data = device.mapMemory<A8B8G8R8SrgbPack32>(allocation);
+    let data = device.mapMemory<R16G16B16A16SFloat>(allocation);
 
     stagingTexture = {
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<A8B8G8R8SrgbPack32>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
+        TTauri::PixelMap<R16G16B16A16SFloat>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

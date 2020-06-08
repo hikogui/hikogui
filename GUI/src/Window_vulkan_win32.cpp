@@ -141,6 +141,10 @@ Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> d
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
+
+    let singleLineToolbarHeight = GetSystemMetrics(SM_CYMENU);
+    systemMenuButtonExtent = vec{singleLineToolbarHeight, singleLineToolbarHeight};
+    LOG_INFO("System menu button size {}", systemMenuButtonExtent);
 }
 
 Window_vulkan_win32::~Window_vulkan_win32()

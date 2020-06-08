@@ -74,30 +74,7 @@ public:
     }
 };
 
-inline void addTransparentBorder(PixelMap<A8B8G8R8SrgbPack32>& pixelMap) noexcept
-{
-    auto topBorder = pixelMap.at(0);
-    let topRow = pixelMap.at(1);
-    let bottomRow = pixelMap.at(pixelMap.height - 2);
-    auto bottomBorder = pixelMap.at(pixelMap.height - 1);
-    for (auto x = 1; x < pixelMap.width - 1; x++) {
-        topBorder[x] = makeTransparent(topRow[x]);
-        bottomBorder[x] = makeTransparent(bottomRow[x]);
-    }
 
-    let rightBorderY = pixelMap.width - 1;
-    let rightY = pixelMap.width - 2;
-    for (auto y = 1; y < pixelMap.height - 1; y++) {
-        auto row = pixelMap[y];
-        row[0] = makeTransparent(row[1]);
-        row[rightBorderY] = makeTransparent(row[rightY]);
-    }
-
-    pixelMap[0][0] = makeTransparent(pixelMap[1][1]);
-    pixelMap[0][pixelMap.width - 1] = makeTransparent(pixelMap[1][pixelMap.width - 2]);
-    pixelMap[pixelMap.height - 1][0] = makeTransparent(pixelMap[pixelMap.height - 2][1]);
-    pixelMap[pixelMap.height - 1][pixelMap.width - 1] = makeTransparent(pixelMap[pixelMap.height - 2][pixelMap.width - 2]);
-}
 
 inline void fill(PixelMap<A8B8G8R8SrgbPack32>& dst, PixelMap<R16G16B16A16SFloat> const& src) noexcept
 {

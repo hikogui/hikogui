@@ -14,10 +14,47 @@
 
 namespace TTauri::GUI::PipelineImage {
 
+Image::Image(Image &&other) noexcept :
+    parent(other.parent),
+    extent(other.extent),
+    pageExtent(other.pageExtent),
+    pages(std::move(pages))
+{
+    other.parent = nullptr;
+}
+
+Image &Image::operator=(Image &&other) noexcept
+{
+    if (parent) {
+        parent->freePages(pages);
+    }
+
+    parent = other.parent;
+    extent = other.extent;
+    pageExtent = other.pageExtent;
+    pages = std::move(other.pages);
+    other.parent = nullptr;
+    return *this;
+}
 
 Image::~Image()
 {
-    parent->returnPages(pages);
+    if (parent) {
+        parent->freePages(pages);
+    }
+}
+
+void Image::upload(PixelMap<R16G16B16A16SFloat> const &image) noexcept
+{
+    ttauri_assume(parent);
+
+    state = State::Drawing;
+
+    auto stagingImage = parent->getStagingPixelMap(extent);
+    copy(image, stagingImage);
+    parent->updateAtlasWithStagingPixelMap(*this);
+
+    state = State::Uploaded;
 }
 
 iaarect Image::indexToRect(int const pageIndex) const noexcept

@@ -14,6 +14,12 @@ set(TTauri_Widgets_srcs
     #src/ImageWidget.cpp
 )
 
+if(WIN32)
+    set(TTauri_Widgets_srcs ${TTauri_Widgets_srcs}
+        src/SystemMenuWidget.cpp
+    )
+endif()
+
 add_library(TTauri_Widgets STATIC ${TTauri_Widgets_srcs})
 target_link_libraries(TTauri_Widgets TTauri_GUI)
 target_include_directories(TTauri_Widgets PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

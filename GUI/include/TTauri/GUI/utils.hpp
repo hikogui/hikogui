@@ -7,7 +7,6 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
-#include "TTauri/GUI/PipelineImage_Backing.inl"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/GUI/Theme.hpp"
 #include "TTauri/Text/ShapedText.hpp"

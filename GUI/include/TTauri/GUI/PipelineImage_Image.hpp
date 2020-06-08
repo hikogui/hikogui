@@ -13,6 +13,12 @@
 #include <atomic>
 #include <string>
 
+namespace TTauri {
+
+template<typename T> struct PixelMap;
+class R16G16B16A16SFloat;
+};
+
 namespace TTauri::GUI::PipelineImage {
 
 struct Page;
@@ -29,8 +35,6 @@ struct Image {
 
     DeviceShared *parent;
 
-    std::string key;
-
     /** The size of the image in pixels.
      */
     ivec extent;
@@ -42,20 +46,21 @@ struct Image {
 
     std::vector<Page> pages;
 
-    Image(DeviceShared *parent, std::string key, ivec extent, ivec pageExtent, std::vector<Page> pages) noexcept :
+    Image() noexcept :
+        parent(nullptr), extent(), pageExtent(), pages() {}
+
+    Image(DeviceShared *parent, ivec extent, ivec pageExtent, std::vector<Page> &&pages) noexcept :
         parent(parent),
-        key(std::move(key)),
-        extent(std::move(extent)),
-        pageExtent(std::move(pageExtent)),
+        extent(extent),
+        pageExtent(pageExtent),
         pages(std::move(pages)) {}
 
+    Image(Image &&other) noexcept;
+    Image &operator=(Image &&other) noexcept;
     ~Image();
 
-    Image() = delete;
     Image(Image const &other) = delete;
-    Image(Image &&other) = delete;
     Image &operator=(Image const &other) = delete;
-    Image &operator=(Image &&other) = delete;
 
     /** Find the image coordinates of a page in the image.
      * @param pageIndex Index in the pages-vector.
@@ -69,6 +74,10 @@ struct Image {
      * A page with the value std::numeric_limits<uint16_t>::max() is not rendered.
      *     */
     void placeVertices(vspan<Vertex> &vertices, mat transform, aarect clippingRectangle);
+
+    /** Upload image to atlas.
+     */
+    void upload(PixelMap<R16G16B16A16SFloat> const &image) noexcept;
 
 private:
     //! Temporary memory used for pre calculating vertices.

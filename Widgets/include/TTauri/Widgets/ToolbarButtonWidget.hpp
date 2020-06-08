@@ -23,7 +23,7 @@ public:
      */
     bool closeButton = false;
 
-    using icon_type = std::variant<Path,Text::FontGlyphIDs>;
+    using icon_type = std::variant<Text::FontGlyphIDs>;
     icon_type icon;
     std::function<void()> delegate;
 
@@ -49,10 +49,6 @@ public:
 
 private:
     int state() const noexcept;
-
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
-
-    PipelineImage::Backing backingImage; 
 };
 
 }

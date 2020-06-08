@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "TTauri/GUI/PipelineImage_Backing.hpp"
 #include "TTauri/GUI/Window_forward.hpp"
 #include "TTauri/GUI/Device_forward.hpp"
 #include "TTauri/GUI/MouseEvent.hpp"

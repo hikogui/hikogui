@@ -302,4 +302,12 @@ void rotate270(PixelMap<T> &dst, PixelMap<T> const &src) noexcept;
  */
 void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept;
 
+/** Make a 1 pixel border on the edge of the pixelMap transparent
+ * By copying the pixel value from just beyond the edge and setting
+ * the alpha channel to zero. This allows bi-linear interpolation to
+ * interpolate color correctly while anti-aliasing the edge.
+ */
+template<typename T>
+inline void makeTransparentBorder(PixelMap<T> & pixelMap) noexcept;
+
 }

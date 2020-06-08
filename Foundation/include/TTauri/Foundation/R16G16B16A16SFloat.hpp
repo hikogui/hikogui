@@ -57,7 +57,12 @@ public:
         return !(lhs == rhs);
     }
 
-    
+    [[nodiscard]] force_inline friend R16G16B16A16SFloat makeTransparent(R16G16B16A16SFloat const &rhs) noexcept {
+        R16G16B16A16SFloat r;
+        r.v = rhs.v;
+        std::get<3>(r.v) = 0x0000; // 0.0f
+        return r;
+    }
 };
 
 inline void fill(PixelMap<R16G16B16A16SFloat> &image, vec color) noexcept {

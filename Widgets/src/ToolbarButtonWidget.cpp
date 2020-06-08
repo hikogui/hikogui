@@ -16,44 +16,8 @@ ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_ty
     icon(std::move(icon)),
     delegate(delegate)
 {
-    if (auto path = std::get_if<Path>(&this->icon)) {
-        path->tryRemoveLayers();
-    }
 }
 
-
-int ToolbarButtonWidget::state() const noexcept {
-    int r = 0;
-    r |= window.active ? 1 : 0;
-    r |= hover ? 2 : 0;
-    r |= pressed ? 4 : 0;
-    r |= enabled ? 8 : 0;
-    return r;
-}
-
-PipelineImage::Backing::ImagePixelMap ToolbarButtonWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
-{
-    auto iconImage = PixelMap<R16G16B16A16SFloat>{image->extent};
-    if (std::holds_alternative<Path>(icon)) {
-        auto p = std::get<Path>(icon).centerScale(vec{image->extent}, 10.0);
-        p.closeLayer(vec::color(1.0, 1.0, 1.0));
-
-        fill(iconImage);
-        composit(iconImage, p);
-    } else {
-        no_default;
-    }
-
-    if (!(hover || window.active)) {
-        desaturate(iconImage, 0.5f);
-    }
-
-    auto linearMap = PixelMap<R16G16B16A16SFloat>{image->extent};
-    fill(linearMap);
-
-    composit(linearMap, iconImage);
-    return { std::move(image), std::move(linearMap) };
-}
 
 void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
@@ -71,36 +35,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
         context.drawFilledQuad(rectangle());
     }
 
-    if (std::holds_alternative<Path>(icon)) {
-        auto drawingBackingImage = backingImage.loadOrDraw(
-            window,
-            extent(),
-            [&](auto image) {
-                return drawImage(image);
-            },
-            "ToolbarButtonWidget",
-            this,
-            state()
-        );
-        if (drawingBackingImage) {
-            forceRedraw = true;
-        }
-
-        if (backingImage.image) {
-            let currentScale = (extent() / vec{backingImage.image->extent}).xy11();
-
-            auto context = drawContext;
-            context.transform = context.transform * mat::S(currentScale);
-            context.drawImage(*(backingImage.image));
-
-            if (backingImage.image->state != PipelineImage::Image::State::Uploaded) {
-                forceRedraw = true;
-            }
-        } else {
-            forceRedraw = true;
-        }
-
-    } else if (auto icon_glyph = std::get_if<Text::FontGlyphIDs>(&icon)) {
+    if (auto icon_glyph = std::get_if<Text::FontGlyphIDs>(&icon)) {
         auto context = drawContext;
         context.color = theme->foregroundColor;
 

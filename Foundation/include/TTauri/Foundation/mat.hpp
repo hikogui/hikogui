@@ -65,6 +65,17 @@ public:
         S(float x, float y, float z=1.0f) noexcept :
             s(x, y, z, 1.0f) {}
 
+        /** Get a scaling matrix to uniformly scale a needle to fit in the haystack.
+         */
+        static S uniform2D(vec haystack, vec needle) noexcept {
+            ttauri_assume(haystack.x() != 0.0f && haystack.y() != 0.0f);
+            ttauri_assume(needle.x() != 0.0f && needle.y() != 0.0f);
+
+            let non_uniform_scale = haystack.xyxy() / needle.xyxy();
+            let uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
+            return S{vec{uniform_scale, uniform_scale, 1.0f, 1.0f}};
+        }
+
         /** Create a scaling matrix.
         */
         operator mat () const noexcept {
