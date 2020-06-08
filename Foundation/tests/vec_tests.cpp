@@ -149,10 +149,6 @@ TEST(Vec, Swizzle2) {
     ASSERT_EQ(tmp._1w(), vec(1.0f, 5.0f, 0.0f, 5.0f));
     ASSERT_EQ(tmp._10(), vec(1.0f, 0.0f, 0.0f, 5.0f));
     ASSERT_EQ(tmp._11(), vec(1.0f, 1.0f, 0.0f, 5.0f));
-
-    // Also with colour we want the alpha channel to be copied.
-    ASSERT_EQ(tmp.rg(), vec(2.0f, 3.0f, 0.0f, 5.0f));
-    ASSERT_EQ(tmp.ba(), vec(4.0f, 5.0f, 0.0f, 5.0f));
 }
 
 TEST(Vec, Swizzle3) {
@@ -380,10 +376,6 @@ TEST(Vec, Swizzle3) {
     ASSERT_EQ(tmp._11w(), vec(1.0f, 1.0f, 5.0f, 5.0f));
     ASSERT_EQ(tmp._110(), vec(1.0f, 1.0f, 0.0f, 5.0f));
     ASSERT_EQ(tmp._111(), vec(1.0f, 1.0f, 1.0f, 5.0f));
-
-    // Also with colour we want the alpha channel to be copied.
-    ASSERT_EQ(tmp.rgb(), vec(2.0f, 3.0f, 4.0f, 5.0f));
-    ASSERT_EQ(tmp.gba(), vec(3.0f, 4.0f, 5.0f, 5.0f));
 }
 
 TEST(Vec, Swizzle4) {
@@ -1907,7 +1899,4 @@ TEST(Vec, Swizzle4) {
     ASSERT_EQ(tmp.wwwy(), vec(5.0f, 5.0f, 5.0f, 3.0f));
     ASSERT_EQ(tmp.wwwz(), vec(5.0f, 5.0f, 5.0f, 4.0f));
     ASSERT_EQ(tmp.wwww(), vec(5.0f, 5.0f, 5.0f, 5.0f));
-
-    ASSERT_EQ(tmp.abgr(), vec(5.0f, 4.0f, 3.0f, 2.0f));
-    ASSERT_EQ(tmp.grab(), vec(3.0f, 2.0f, 5.0f, 4.0f));
 }

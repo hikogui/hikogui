@@ -524,17 +524,17 @@ public:
             return over;
         }
 
-        let over_alpha = over.aaaa();
-        let under_alpha = under.aaaa();
+        let over_alpha = over.wwww();
+        let under_alpha = under.wwww();
 
-        let over_color = over.rgb1();
-        let under_color = under.rgb1();
+        let over_color = over.xyz1();
+        let under_color = under.xyz1();
 
         let output_color =
             over_color * over_alpha +
             under_color * under_alpha * (vec{1.0} - over_alpha);
 
-        return output_color / output_color.aaa1();
+        return output_color / output_color.www1();
     }
 
     /** Find the point on the other side and at the same distance of an anchor-point.
@@ -664,11 +664,7 @@ public:
     SWIZZLE4(name ## x, A, B, C, 'x')\
     SWIZZLE4(name ## y, A, B, C, 'y')\
     SWIZZLE4(name ## z, A, B, C, 'z')\
-    SWIZZLE4(name ## w, A, B, C, 'w')\
-    SWIZZLE4(name ## r, A, B, C, 'x')\
-    SWIZZLE4(name ## g, A, B, C, 'y')\
-    SWIZZLE4(name ## b, A, B, C, 'z')\
-    SWIZZLE4(name ## a, A, B, C, 'w')
+    SWIZZLE4(name ## w, A, B, C, 'w')
 
 #define SWIZZLE4_GEN2(name, A, B)\
     SWIZZLE4_GEN3(name ## 0, A, B, '0')\
@@ -676,11 +672,7 @@ public:
     SWIZZLE4_GEN3(name ## x, A, B, 'x')\
     SWIZZLE4_GEN3(name ## y, A, B, 'y')\
     SWIZZLE4_GEN3(name ## z, A, B, 'z')\
-    SWIZZLE4_GEN3(name ## w, A, B, 'w')\
-    SWIZZLE4_GEN3(name ## r, A, B, 'x')\
-    SWIZZLE4_GEN3(name ## g, A, B, 'y')\
-    SWIZZLE4_GEN3(name ## b, A, B, 'z')\
-    SWIZZLE4_GEN3(name ## a, A, B, 'w')
+    SWIZZLE4_GEN3(name ## w, A, B, 'w')
 
 #define SWIZZLE4_GEN1(name, A)\
     SWIZZLE4_GEN2(name ## 0, A, '0')\
@@ -688,11 +680,7 @@ public:
     SWIZZLE4_GEN2(name ## x, A, 'x')\
     SWIZZLE4_GEN2(name ## y, A, 'y')\
     SWIZZLE4_GEN2(name ## z, A, 'z')\
-    SWIZZLE4_GEN2(name ## w, A, 'w')\
-    SWIZZLE4_GEN2(name ## r, A, 'x')\
-    SWIZZLE4_GEN2(name ## g, A, 'y')\
-    SWIZZLE4_GEN2(name ## b, A, 'z')\
-    SWIZZLE4_GEN2(name ## a, A, 'w')
+    SWIZZLE4_GEN2(name ## w, A, 'w')
 
     SWIZZLE4_GEN1(_0, '0')
     SWIZZLE4_GEN1(_1, '1')
@@ -700,10 +688,6 @@ public:
     SWIZZLE4_GEN1(y, 'y')
     SWIZZLE4_GEN1(z, 'z')
     SWIZZLE4_GEN1(w, 'w')
-    SWIZZLE4_GEN1(r, 'x')
-    SWIZZLE4_GEN1(g, 'y')
-    SWIZZLE4_GEN1(b, 'z')
-    SWIZZLE4_GEN1(a, 'w')
 
 #define SWIZZLE3(name, A, B, C)\
     [[nodiscard]] vec name() const noexcept {\
@@ -716,11 +700,7 @@ public:
     SWIZZLE3(name ## x, A, B, 'x')\
     SWIZZLE3(name ## y, A, B, 'y')\
     SWIZZLE3(name ## z, A, B, 'z')\
-    SWIZZLE3(name ## w, A, B, 'w')\
-    SWIZZLE3(name ## r, A, B, 'x')\
-    SWIZZLE3(name ## g, A, B, 'y')\
-    SWIZZLE3(name ## b, A, B, 'z')\
-    SWIZZLE3(name ## a, A, B, 'w')
+    SWIZZLE3(name ## w, A, B, 'w')
 
 #define SWIZZLE3_GEN1(name, A)\
     SWIZZLE3_GEN2(name ## 0, A, '0')\
@@ -728,11 +708,7 @@ public:
     SWIZZLE3_GEN2(name ## x, A, 'x')\
     SWIZZLE3_GEN2(name ## y, A, 'y')\
     SWIZZLE3_GEN2(name ## z, A, 'z')\
-    SWIZZLE3_GEN2(name ## w, A, 'w')\
-    SWIZZLE3_GEN2(name ## r, A, 'x')\
-    SWIZZLE3_GEN2(name ## g, A, 'y')\
-    SWIZZLE3_GEN2(name ## b, A, 'z')\
-    SWIZZLE3_GEN2(name ## a, A, 'w')
+    SWIZZLE3_GEN2(name ## w, A, 'w')
 
     SWIZZLE3_GEN1(_0, '0')
     SWIZZLE3_GEN1(_1, '1')
@@ -740,10 +716,6 @@ public:
     SWIZZLE3_GEN1(y, 'y')
     SWIZZLE3_GEN1(z, 'z')
     SWIZZLE3_GEN1(w, 'w')
-    SWIZZLE3_GEN1(r, 'x')
-    SWIZZLE3_GEN1(g, 'y')
-    SWIZZLE3_GEN1(b, 'z')
-    SWIZZLE3_GEN1(a, 'w')
 
 #define SWIZZLE2(name, A, B)\
     [[nodiscard]] vec name() const noexcept {\
@@ -756,11 +728,7 @@ public:
     SWIZZLE2(name ## x, A, 'x')\
     SWIZZLE2(name ## y, A, 'y')\
     SWIZZLE2(name ## z, A, 'z')\
-    SWIZZLE2(name ## w, A, 'w')\
-    SWIZZLE2(name ## r, A, 'x')\
-    SWIZZLE2(name ## g, A, 'y')\
-    SWIZZLE2(name ## b, A, 'z')\
-    SWIZZLE2(name ## a, A, 'w')
+    SWIZZLE2(name ## w, A, 'w')
 
     SWIZZLE2_GEN1(_0, '0')
     SWIZZLE2_GEN1(_1, '1')
@@ -768,10 +736,6 @@ public:
     SWIZZLE2_GEN1(y, 'y')
     SWIZZLE2_GEN1(z, 'z')
     SWIZZLE2_GEN1(w, 'w')
-    SWIZZLE2_GEN1(r, 'x')
-    SWIZZLE2_GEN1(g, 'y')
-    SWIZZLE2_GEN1(b, 'z')
-    SWIZZLE2_GEN1(a, 'w')
 };
 
 }
