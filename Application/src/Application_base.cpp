@@ -21,8 +21,8 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
     TTauri::foundation_startup();
 
 #if defined(BUILD_TTAURI_AUDIO)
-    TTauri::Audio::audioDelegate = this;
-    TTauri::Audio::audio_startup();
+    TTauri::audioDelegate = this;
+    TTauri::audio_startup();
 #endif
 
 #if defined(BUILD_TTAURI_GUI)
@@ -46,7 +46,7 @@ Application_base::~Application_base()
     TTauri::text_shutdown();
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
-    TTauri::Audio::audio_shutdown();
+    TTauri::audio_shutdown();
 #endif
     TTauri::foundation_shutdown();
     LOG_INFO("Stopping application.");

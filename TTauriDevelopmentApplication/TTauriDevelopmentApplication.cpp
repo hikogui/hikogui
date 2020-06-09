@@ -17,10 +17,6 @@
 
 using namespace std;
 using namespace TTauri;
-using namespace TTauri::Audio;
-using namespace TTauri;
-using namespace TTauri;
-using namespace TTauri;
 
 class MyWindowDelegate : public WindowDelegate {
 public:

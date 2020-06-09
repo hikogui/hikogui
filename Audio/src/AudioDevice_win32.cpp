@@ -10,7 +10,7 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <mmdeviceapi.h>
 
-namespace TTauri::Audio {
+namespace TTauri {
 
 static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
 {

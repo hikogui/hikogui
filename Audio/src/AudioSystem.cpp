@@ -3,7 +3,7 @@
 
 #include "TTauri/Audio/AudioSystem.hpp"
 
-namespace TTauri::Audio {
+namespace TTauri {
 
 AudioSystem::AudioSystem(AudioSystemDelegate *delegate) :
     delegate(delegate)

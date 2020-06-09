@@ -9,7 +9,7 @@
 #include <mutex>
 #include <atomic>
 
-namespace TTauri::Audio {
+namespace TTauri {
 
 class AudioSystemDelegate;
 class AudioSystem;

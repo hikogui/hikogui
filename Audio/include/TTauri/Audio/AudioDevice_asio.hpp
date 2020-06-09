@@ -5,7 +5,7 @@
 
 #include "TTauri/Audio/AudioDevice.hpp"
 
-namespace TTauri::Audio {
+namespace TTauri {
 
 /*! A class representing an audio device on the system.
 */

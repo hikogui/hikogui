@@ -41,7 +41,7 @@ class Application_base : public Application_base_dummy
     , InstanceDelegate
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
-    , Audio::AudioSystemDelegate
+    , AudioSystemDelegate
 #endif
 {
 public:

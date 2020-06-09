@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <mmdeviceapi.h>
 
-namespace TTauri::Audio {
+namespace TTauri {
 
 const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
 const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);

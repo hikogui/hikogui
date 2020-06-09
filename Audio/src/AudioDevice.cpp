@@ -3,7 +3,7 @@
 
 #include "TTauri/Audio/AudioDevice.hpp"
 
-namespace TTauri::Audio {
+namespace TTauri {
 
 
 }
