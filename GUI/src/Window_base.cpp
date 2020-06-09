@@ -3,7 +3,7 @@
 
 #include "TTauri/GUI/Window_base.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 
 namespace TTauri {
 
@@ -186,7 +186,7 @@ void Window_base::closingWindow() {
     state = State::NoWindow;
 }
 
-void Window_base::setDevice(Device *newDevice)
+void Window_base::setDevice(GUIDevice *newDevice)
 {
     auto lock = std::scoped_lock(guiMutex);
 

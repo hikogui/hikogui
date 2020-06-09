@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/Pipeline_base.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/Window.hpp"
 
 namespace TTauri {

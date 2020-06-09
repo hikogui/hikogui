@@ -2,7 +2,7 @@
 #include "TTauri/Widgets/widgets.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/WindowDelegate.hpp"
-#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystem.hpp"
 #include "TTauri/Application/Application.hpp"

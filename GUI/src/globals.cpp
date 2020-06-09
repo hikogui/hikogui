@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/GUI/ThemeBook.hpp"
 #include "TTauri/GUI/RenderDoc.hpp"
@@ -66,7 +66,7 @@ void gui_startup()
         LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
     }
 
-    guiSystem = new Instance(guiDelegate);
+    guiSystem = new GUISystem(guiDelegate);
 }
 
 void gui_shutdown()

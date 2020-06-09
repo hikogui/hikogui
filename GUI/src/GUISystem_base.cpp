@@ -9,16 +9,16 @@ namespace TTauri {
 
 using namespace std;
 
-Device *GUISystem_base::findBestDeviceForWindow(Window const &window)
+GUIDevice *GUISystem_base::findBestDeviceForWindow(Window const &window)
 {
     auto lock = std::scoped_lock(guiMutex);
 
     int bestScore = -1;
-    Device *bestDevice = nullptr;
+    GUIDevice *bestDevice = nullptr;
 
     for (let &device : devices) {
         let score = device->score(window);
-        LOG_INFO("Device has score={}.", score);
+        LOG_INFO("GUIDevice has score={}.", score);
 
         if (score >= bestScore) {
             bestScore = score;

@@ -3,8 +3,8 @@
 
 #include "TTauri/GUI/Window_vulkan.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/Instance.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUISystem.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/PipelineFlat.hpp"
 #include "TTauri/GUI/PipelineBox.hpp"
 #include "TTauri/GUI/PipelineImage.hpp"

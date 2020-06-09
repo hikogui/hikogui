@@ -3,7 +3,7 @@
 
 #include "TTauri/GUI/Window_vulkan_win32.hpp"
 #include "TTauri/GUI/KeyboardVirtualKey.hpp"
-#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/ThemeBook.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"

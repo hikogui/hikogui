@@ -6,7 +6,7 @@
 #include "TTauri/GUI/PipelineSDF_TextureMap.hpp"
 #include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
 #include "TTauri/GUI/PipelineSDF_SpecializationConstants.hpp"
-#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/logger.hpp"
@@ -50,7 +50,7 @@ struct DeviceShared final {
     static constexpr float drawBorder = SDF8::max_distance;
     static constexpr float scaledDrawBorder = drawBorder / drawFontSize;
 
-    Device const &device;
+    GUIDevice const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -73,7 +73,7 @@ struct DeviceShared final {
     int atlasAllocationMaxHeight = 0;
 
 
-    DeviceShared(Device const &device);
+    DeviceShared(GUIDevice const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -82,9 +82,9 @@ struct DeviceShared final {
     DeviceShared &operator=(DeviceShared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of Device_vulkan, therefor we can not use our `std::weak_ptr<Device_vulkan> device`.
+    * This is called in the destructor of GUIDevice_vulkan, therefor we can not use our `std::weak_ptr<GUIDevice_vulkan> device`.
     */
-    void destroy(Device *vulkanDevice);
+    void destroy(GUIDevice *vulkanDevice);
 
     /** Allocate an glyph in the atlas.
      * This may allocate an atlas texture, up to atlasMaximumNrImages.
@@ -142,10 +142,10 @@ struct DeviceShared final {
 
 private:
     void buildShaders();
-    void teardownShaders(Device_vulkan *vulkanDevice);
+    void teardownShaders(GUIDevice_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(Device_vulkan *vulkanDevice);
+    void teardownAtlas(GUIDevice_vulkan *vulkanDevice);
 
     /** Place vertices for a single glyph.
      * This function will not execute prepareAtlasForRendering().

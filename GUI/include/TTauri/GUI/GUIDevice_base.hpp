@@ -14,9 +14,9 @@
 
 namespace TTauri {
 
-/*! A Device that handles a set of windows.
+/*! A GUIDevice that handles a set of windows.
  */
-class Device_base {
+class GUIDevice_base {
 public:
     enum class State {
         NO_DEVICE,
@@ -36,13 +36,13 @@ public:
 
     std::string string() const noexcept;
 
-    Device_base() noexcept;
-    virtual ~Device_base();
+    GUIDevice_base() noexcept;
+    virtual ~GUIDevice_base();
 
-    Device_base(const Device_base &) = delete;
-    Device_base &operator=(const Device_base &) = delete;
-    Device_base(Device_base &&) = delete;
-    Device_base &operator=(Device_base &&) = delete;
+    GUIDevice_base(const GUIDevice_base &) = delete;
+    GUIDevice_base &operator=(const GUIDevice_base &) = delete;
+    GUIDevice_base(GUIDevice_base &&) = delete;
+    GUIDevice_base &operator=(GUIDevice_base &&) = delete;
 
     /*! Check if this device is a good match for this window.
      *

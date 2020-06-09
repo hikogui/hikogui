@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/rect.hpp"
@@ -22,13 +22,13 @@ struct Image;
 struct Vertex;
 
 struct DeviceShared final {
-    Device const &device;
+    GUIDevice const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
     std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 
-    DeviceShared(Device const &device);
+    DeviceShared(GUIDevice const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -37,9 +37,9 @@ struct DeviceShared final {
     DeviceShared &operator=(DeviceShared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of Device_vulkan, therefor we can not use our `std::weak_ptr<Device_vulkan> device`.
+    * This is called in the destructor of GUIDevice_vulkan, therefor we can not use our `std::weak_ptr<GUIDevice_vulkan> device`.
     */
-    void destroy(Device *vulkanDevice);
+    void destroy(GUIDevice *vulkanDevice);
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
@@ -55,7 +55,7 @@ struct DeviceShared final {
 
 private:
     void buildShaders();
-    void teardownShaders(Device_vulkan *vulkanDevice);
+    void teardownShaders(GUIDevice_vulkan *vulkanDevice);
 };
 
 }

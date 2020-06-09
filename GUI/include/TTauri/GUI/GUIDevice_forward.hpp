@@ -4,10 +4,6 @@
 #pragma once
 
 namespace TTauri {
-
-class InstanceDelegate {
-public:
-    virtual void lastWindowClosed() = 0;
-};
-
+    class GUIDevice_vulkan;
+    using GUIDevice = GUIDevice_vulkan;
 }

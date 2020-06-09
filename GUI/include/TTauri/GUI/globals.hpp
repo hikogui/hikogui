@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/GUI/Instance_forward.hpp"
-#include "TTauri/GUI/InstanceDelegate.hpp"
+#include "TTauri/GUI/GUISystem_forward.hpp"
+#include "TTauri/GUI/GUISystemDelegate.hpp"
 #include "TTauri/GUI/KeyboardBindings.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/Foundation/required.hpp"
@@ -16,11 +16,11 @@ namespace TTauri {
 
 /** Delegate for GUI related events.
  */
-inline InstanceDelegate *guiDelegate = nullptr;
+inline GUISystemDelegate *guiDelegate = nullptr;
 
 /** The GUI system.
  */
-inline Instance *guiSystem = nullptr;
+inline GUISystem *guiSystem = nullptr;
 
 /** Windows GUI-application instance handle.
  */

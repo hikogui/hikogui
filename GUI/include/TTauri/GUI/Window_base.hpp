@@ -6,7 +6,7 @@
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/WindowDelegate.hpp"
 #include "TTauri/GUI/Widget_forward.hpp"
-#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "TTauri/GUI/Cursor.hpp"
 #include "TTauri/GUI/HitBox.hpp"
 #include "TTauri/GUI/MouseEvent.hpp"
@@ -106,7 +106,7 @@ public:
 
     std::string title;
 
-    Device *device = nullptr;
+    GUIDevice *device = nullptr;
 
     /*! Orientation of the RGB subpixels.
      */
@@ -163,7 +163,7 @@ public:
     /*! Set GPU device to manage this window.
      * Change of the device may be done at runtime.
      */
-    void setDevice(Device *device);
+    void setDevice(GUIDevice *device);
 
     /*! Remove the GPU device from the window, making it an orphan.
      */

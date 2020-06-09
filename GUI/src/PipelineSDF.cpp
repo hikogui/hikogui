@@ -4,7 +4,7 @@
 #include "TTauri/GUI/PipelineSDF.hpp"
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 
 namespace TTauri::PipelineSDF {
 

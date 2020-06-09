@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/GUI/DrawContext.hpp"

@@ -4,7 +4,7 @@
 #include "TTauri/GUI/PipelineBox.hpp"
 #include "TTauri/GUI/PipelineBox_DeviceShared.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 
 namespace TTauri::PipelineBox {
 

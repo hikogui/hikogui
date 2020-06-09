@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/PipelineImage_TextureMap.hpp"
 #include "TTauri/GUI/PipelineImage_Page.hpp"
-#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
@@ -30,7 +30,7 @@ struct DeviceShared final {
     static constexpr int stagingImageWidth = 2048;
     static constexpr int stagingImageHeight = 1024;
 
-    Device const &device;
+    GUIDevice const &device;
 
     vk::ShaderModule vertexShaderModule;
     vk::ShaderModule fragmentShaderModule;
@@ -45,7 +45,7 @@ struct DeviceShared final {
 
     std::vector<Page> atlasFreePages;
 
-    DeviceShared(Device const &device);
+    DeviceShared(GUIDevice const &device);
     ~DeviceShared();
 
     DeviceShared(DeviceShared const &) = delete;
@@ -54,9 +54,9 @@ struct DeviceShared final {
     DeviceShared &operator=(DeviceShared &&) = delete;
 
     /*! Deallocate vulkan resources.
-    * This is called in the destructor of Device_vulkan, therefor we can not use our `std::weak_ptr<Device_vulkan> device`.
+    * This is called in the destructor of GUIDevice_vulkan, therefor we can not use our `std::weak_ptr<GUIDevice_vulkan> device`.
     */
-    void destroy(Device *vulkanDevice);
+    void destroy(GUIDevice *vulkanDevice);
 
     /*! Get the coordinate in the atlas from a page index.
      * \param page number in the atlas
@@ -102,10 +102,10 @@ private:
     void updateAtlasWithStagingPixelMap(Image const &image);
 
     void buildShaders();
-    void teardownShaders(Device_vulkan *vulkanDevice);
+    void teardownShaders(GUIDevice_vulkan *vulkanDevice);
     void addAtlasImage();
     void buildAtlas();
-    void teardownAtlas(Device_vulkan *vulkanDevice);
+    void teardownAtlas(GUIDevice_vulkan *vulkanDevice);
 
     friend Image;
 };

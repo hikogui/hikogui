@@ -24,7 +24,7 @@ public:
 
     virtual void drawInCommandBuffer(vk::CommandBuffer commandBuffer);
 
-    void buildForNewDevice(Device *device);
+    void buildForNewDevice(GUIDevice *device);
     void teardownForDeviceLost();
     void buildForNewSurface();
     void teardownForSurfaceLost();

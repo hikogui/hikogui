@@ -23,11 +23,11 @@ add_shader(TTauri_GUI_Shader_objs
 set(TTauri_GUI_srcs
     src/globals.cpp
     src/RenderDoc.cpp
-    src/Device_base.cpp
-    src/Device_vulkan.cpp
-    src/Instance_base.cpp
-    src/Instance_vulkan.cpp
-    src/Instance_vulkan_win32.cpp
+    src/GUIDevice_base.cpp
+    src/GUIDevice_vulkan.cpp
+    src/GUISystem_base.cpp
+    src/GUISystem_vulkan.cpp
+    src/GUISystem_vulkan_win32.cpp
     src/Pipeline_base.cpp
     src/Pipeline_vulkan.cpp
     src/PipelineFlat.cpp

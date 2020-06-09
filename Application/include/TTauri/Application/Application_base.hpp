@@ -13,7 +13,7 @@
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/InstanceDelegate.hpp"
+#include "TTauri/GUI/GUISystemDelegate.hpp"
 #endif
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/required.hpp"
@@ -38,7 +38,7 @@ class Application_base_dummy {};
  */
 class Application_base : public Application_base_dummy
 #if defined(BUILD_TTAURI_GUI)
-    , InstanceDelegate
+    , GUISystemDelegate
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
     , AudioSystemDelegate

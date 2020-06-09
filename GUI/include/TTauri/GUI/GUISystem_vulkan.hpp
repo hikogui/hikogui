@@ -8,7 +8,7 @@
 
 namespace TTauri {
 
-/** Vulkan Device controller.
+/** Vulkan GUIDevice controller.
  * Manages Vulkan device and a set of Windows.
  */
 class GUISystem_vulkan : public GUISystem_base {
@@ -38,7 +38,7 @@ public:
     //! Application info passed when the instance was created.
     vk::ApplicationInfo applicationInfo;
 
-    /*! Create an instance of a Device.
+    /*! Create an instance of a GUIDevice.
      * After the constructor is completed it may be used to get a
      * Vulkan surface and passed to `Window` constructors.
      *

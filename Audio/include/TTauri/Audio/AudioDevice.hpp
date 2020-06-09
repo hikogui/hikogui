@@ -31,7 +31,7 @@ inline std::ostream &operator<<(std::ostream &lhs, AudioDevice_state const &rhs)
 }
 
 /*! A set of audio channels which can be rendered and/or captures at the same time.
- * On win32 this would be Audio Endpoint Device, which can either render or capture
+ * On win32 this would be Audio Endpoint GUIDevice, which can either render or capture
  * but not at the same time.
  *
  * On MacOS this would contain all the inputs and outputs of either a physical or

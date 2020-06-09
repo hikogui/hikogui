@@ -3,7 +3,7 @@
 
 #include "TTauri/Application/Application_win32.hpp"
 #if defined(BUILD_TTAURI_GUI)
-#include "TTauri/GUI/Instance.hpp"
+#include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/Window.hpp"
 #endif
 #include "TTauri/Foundation/strings.hpp"

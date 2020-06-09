@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/VerticalSync.hpp"
 #include "TTauri/GUI/GUISystemDelegate.hpp"
@@ -17,7 +17,7 @@
 namespace TTauri {
 
 
-/** Vulkan Device controller.
+/** Vulkan GUIDevice controller.
  * Manages Vulkan device and a set of Windows.
  */
 class GUISystem_base {
@@ -27,7 +27,7 @@ public:
     std::unique_ptr<VerticalSync> verticalSync;
 
     //! List of all devices.
-    std::vector<std::unique_ptr<Device>> devices;
+    std::vector<std::unique_ptr<GUIDevice>> devices;
 
     /*! Keep track of the numberOfWindows in the previous render cycle.
      * This way we can call closedLastWindow on the application once.
@@ -90,7 +90,7 @@ public:
     static void _handleVerticalSync(void *data, hires_utc_clock::time_point displayTimePoint);
 
 protected:
-    Device *findBestDeviceForWindow(Window const &window);
+    GUIDevice *findBestDeviceForWindow(Window const &window);
 };
 
 }

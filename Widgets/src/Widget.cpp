@@ -29,7 +29,7 @@ Widget::~Widget()
     window.removeConstraint(preferedHeightConstraint);
 }
 
-Device *Widget::device() const noexcept
+GUIDevice *Widget::device() const noexcept
 {
     auto device = window.device;
     ttauri_assert(device);

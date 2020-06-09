@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Window_forward.hpp"
-#include "TTauri/GUI/Device_forward.hpp"
+#include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "TTauri/GUI/MouseEvent.hpp"
 #include "TTauri/GUI/HitBox.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
@@ -298,7 +298,7 @@ public:
         return expand(windowRectangle(), Theme::margin);
     }
 
-    [[nodiscard]] Device *device() const noexcept;
+    [[nodiscard]] GUIDevice *device() const noexcept;
 
     /** Find the widget that is under the mouse cursor.
      *

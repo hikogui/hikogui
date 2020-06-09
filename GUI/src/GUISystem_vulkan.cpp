@@ -3,7 +3,7 @@
 
 #include "TTauri/GUI/GUISystem_vulkan.hpp"
 #include "TTauri/GUI/GUISystem.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include <chrono>
 
 namespace TTauri {
@@ -103,7 +103,7 @@ void GUISystem_vulkan::initialize() noexcept(false)
 #endif
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
-        devices.push_back(std::make_unique<Device>(_physicalDevice));
+        devices.push_back(std::make_unique<GUIDevice>(_physicalDevice));
     }
 }
 

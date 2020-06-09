@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Device_base.hpp"
+#include "TTauri/GUI/GUIDevice_base.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineBox_DeviceShared.hpp"
@@ -19,7 +19,7 @@ class URL;
 
 namespace TTauri {
 
-class Device_vulkan final : public Device_base {
+class GUIDevice_vulkan final : public GUIDevice_base {
 protected:
     vk::PhysicalDevice physicalIntrinsic;
     vk::Device intrinsic;
@@ -88,13 +88,13 @@ public:
      */
     mutable vk::PresentModeKHR bestSurfacePresentMode = vk::PresentModeKHR::eFifo;
 
-    Device_vulkan(vk::PhysicalDevice physicalDevice);
-    ~Device_vulkan();
+    GUIDevice_vulkan(vk::PhysicalDevice physicalDevice);
+    ~GUIDevice_vulkan();
 
-    Device_vulkan(const Device_vulkan &) = delete;
-    Device_vulkan &operator=(const Device_vulkan &) = delete;
-    Device_vulkan(Device_vulkan &&) = delete;
-    Device_vulkan &operator=(Device_vulkan &&) = delete;
+    GUIDevice_vulkan(const GUIDevice_vulkan &) = delete;
+    GUIDevice_vulkan &operator=(const GUIDevice_vulkan &) = delete;
+    GUIDevice_vulkan(GUIDevice_vulkan &&) = delete;
+    GUIDevice_vulkan &operator=(GUIDevice_vulkan &&) = delete;
 
     void initializeDevice(Window const &window) override;
 
@@ -139,7 +139,7 @@ public:
         T *mappingT = reinterpret_cast<T *>(mapping);
         let mappingSpan = nonstd::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
-        return vk::createResultValue(result, mappingSpan, "TTauri::Device_vulkan::mapMemory");
+        return vk::createResultValue(result, mappingSpan, "TTauri::GUIDevice_vulkan::mapMemory");
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;

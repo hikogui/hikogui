@@ -4,7 +4,7 @@
 #include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/PixelMap.inl"
 #include "TTauri/Foundation/URL.hpp"
@@ -16,7 +16,7 @@ namespace TTauri::PipelineImage {
 
 using namespace std;
 
-DeviceShared::DeviceShared(Device const &device) :
+DeviceShared::DeviceShared(GUIDevice const &device) :
     device(device)
 {
     buildShaders();
@@ -27,7 +27,7 @@ DeviceShared::~DeviceShared()
 {
 }
 
-void DeviceShared::destroy(Device *vulkanDevice)
+void DeviceShared::destroy(GUIDevice *vulkanDevice)
 {
     ttauri_assume(vulkanDevice);
     teardownShaders(vulkanDevice);
@@ -166,7 +166,7 @@ void DeviceShared::buildShaders()
     };
 }
 
-void DeviceShared::teardownShaders(Device_vulkan *vulkanDevice)
+void DeviceShared::teardownShaders(GUIDevice_vulkan *vulkanDevice)
 {
     ttauri_assume(vulkanDevice);
     vulkanDevice->destroy(vertexShaderModule);
@@ -292,7 +292,7 @@ void DeviceShared::buildAtlas()
     addAtlasImage();
 }
 
-void DeviceShared::teardownAtlas(Device_vulkan *vulkanDevice)
+void DeviceShared::teardownAtlas(GUIDevice_vulkan *vulkanDevice)
 {
     ttauri_assume(vulkanDevice);
     vulkanDevice->destroy(atlasSampler);

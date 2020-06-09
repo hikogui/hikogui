@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/vspan.hpp"
-#include "TTauri/GUI/Device.hpp"
+#include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Theme.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
