@@ -6,7 +6,7 @@
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/Path.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, AttributedGlyph const *next_attr_glyph) noexcept :
     logicalIndex(attr_grapheme.logicalIndex),

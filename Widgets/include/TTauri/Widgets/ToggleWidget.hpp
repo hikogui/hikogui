@@ -20,7 +20,7 @@ protected:
 
     std::string label = "<unknown>";
 
-    Text::ShapedText labelShapedText;
+    ShapedText labelShapedText;
 
     float toggle_height;
     float toggle_width;

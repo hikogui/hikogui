@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/hash.hpp"
 #include <array>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -253,8 +253,8 @@ private:
 namespace std {
 
 template<>
-struct hash<TTauri::Text::Grapheme> {
-    [[nodiscard]] size_t operator() (TTauri::Text::Grapheme const &rhs) const noexcept {
+struct hash<TTauri::Grapheme> {
+    [[nodiscard]] size_t operator() (TTauri::Grapheme const &rhs) const noexcept {
         return rhs.hash();
     }
 };

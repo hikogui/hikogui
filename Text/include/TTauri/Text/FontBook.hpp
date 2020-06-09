@@ -17,7 +17,7 @@
 #include <new>
 
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /** FontBook keeps track of multiple fonts.
  * The FontBook is instantiated during Application startup

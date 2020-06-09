@@ -7,7 +7,7 @@
 #include "TTauri/Text/TextStyle.hpp"
 #include "TTauri/Text/UnicodeData.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 struct AttributedGrapheme {
     Grapheme grapheme;

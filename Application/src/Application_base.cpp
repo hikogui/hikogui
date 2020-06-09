@@ -26,7 +26,7 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 #endif
 
 #if defined(BUILD_TTAURI_GUI)
-    TTauri::Text::text_startup();
+    TTauri::text_startup();
 #if OPERATING_SYSTEM == OS_WINDOWS
     TTauri::hInstance = hInstance;
     TTauri::nCmdShow = nCmdShow;
@@ -43,7 +43,7 @@ Application_base::~Application_base()
 #if defined(BUILD_TTAURI_GUI)
     TTauri::widgets_shutdown();
     TTauri::gui_shutdown();
-    TTauri::Text::text_shutdown();
+    TTauri::text_shutdown();
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
     TTauri::Audio::audio_shutdown();

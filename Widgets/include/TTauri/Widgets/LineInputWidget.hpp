@@ -17,8 +17,8 @@ class LineInputWidget : public Widget {
 protected:
     std::string label = "<unknown>";
 
-    Text::EditableText field;
-    Text::ShapedText shapedText;
+    EditableText field;
+    ShapedText shapedText;
     aarect textRectangle = {};
     aarect textClippingRectangle = {};
     aarect leftToRightCaret = {};

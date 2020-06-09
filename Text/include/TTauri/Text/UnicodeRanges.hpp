@@ -6,7 +6,7 @@
 #include "TTauri/Text/Grapheme.hpp"
 #include <cstdint>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /** Unicode Ranges based on the OS/2 table in TrueType fonts.
 */

@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include <vector>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 struct gstring {
     std::vector<Grapheme> graphemes;

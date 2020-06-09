@@ -7,7 +7,7 @@
 #include <vector>
 #include <optional>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 struct AttributedGlyphLine {
     using vector_type = std::vector<AttributedGlyph>;

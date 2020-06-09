@@ -305,12 +305,12 @@ void Window_base::handleKeyboardEvent(KeyboardState _state, KeyboardModifiers mo
     return handleKeyboardEvent(KeyboardEvent(_state, modifiers, key));
 }
 
-void Window_base::handleKeyboardEvent(Text::Grapheme grapheme, bool full) noexcept {
+void Window_base::handleKeyboardEvent(Grapheme grapheme, bool full) noexcept {
     return handleKeyboardEvent(KeyboardEvent(grapheme, full));
 }
 
 void Window_base::handleKeyboardEvent(char32_t c, bool full) noexcept {
-    return handleKeyboardEvent(Text::Grapheme(c), full);
+    return handleKeyboardEvent(Grapheme(c), full);
 }
 
 HitBox Window_base::hitBoxTest(vec position) const noexcept {

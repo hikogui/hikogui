@@ -295,7 +295,7 @@ protected:
 
     void handleKeyboardEvent(KeyboardState _state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept;
 
-    void handleKeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept;
+    void handleKeyboardEvent(Grapheme grapheme, bool full=true) noexcept;
 
     void handleKeyboardEvent(char32_t c, bool full=true) noexcept;
 

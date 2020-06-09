@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/aarect.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /*! Metrics of a glyph.
  * This information is used to position glyphs next to each other

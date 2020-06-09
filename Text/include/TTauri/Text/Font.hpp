@@ -16,7 +16,7 @@
 #include <vector>
 #include <map>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /*! A font.
  * This class has information on how to shape text and
@@ -69,6 +69,6 @@ public:
 namespace TTauri {
 
 template<>
-std::unique_ptr<TTauri::Text::Font> parseResource(URL const &location);
+std::unique_ptr<TTauri::Font> parseResource(URL const &location);
 
 }

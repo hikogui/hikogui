@@ -13,7 +13,7 @@
 
 using namespace std;
 using namespace TTauri;
-using namespace TTauri::Text;
+using namespace TTauri;
 
 /*! A test defined in NormalizationTests.txt.
  *

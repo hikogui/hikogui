@@ -156,7 +156,7 @@ Theme::Theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] Text::FontWeight Theme::parseFontWeight(datum const &data, char const *object_name)
+[[nodiscard]] FontWeight Theme::parseFontWeight(datum const &data, char const *object_name)
 {
     if (!data.contains(object_name)) {
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
@@ -164,29 +164,29 @@ Theme::Theme(URL const &url)
 
     let object = data[object_name];
     if (object.is_numeric()) {
-        return Text::FontWeight_from_int(static_cast<int>(object));
+        return FontWeight_from_int(static_cast<int>(object));
     } else if (object.is_string()) {
-        return Text::FontWeight_from_string(static_cast<std::string>(object));
+        return FontWeight_from_string(static_cast<std::string>(object));
     } else {
         TTAURI_THROW(parse_error("Unable to parse font weight, got {}.", object.type_name()));
     }
 }
 
-[[nodiscard]] Text::TextStyle Theme::parseTextStyleValue(datum const &data)
+[[nodiscard]] TextStyle Theme::parseTextStyleValue(datum const &data)
 {
     if (!data.is_map()) {
         TTAURI_THROW(parse_error("Expect a text-style to be an object, got '{}'", data));
     }
 
-    Text::TextStyle r;
+    TextStyle r;
 
-    r.family_id = Text::fontBook->find_family(parseString(data, "family"));
+    r.family_id = fontBook->find_family(parseString(data, "family"));
     r.size = parseFloat(data, "size");
 
     if (data.contains("weight")) {
         r.variant.set_weight(parseFontWeight(data, "weight"));
     } else {
-        r.variant.set_weight(Text::FontWeight::Regular);
+        r.variant.set_weight(FontWeight::Regular);
     }
 
     if (data.contains("italic")) {
@@ -199,7 +199,7 @@ Theme::Theme(URL const &url)
     return r;
 }
 
-[[nodiscard]] Text::TextStyle Theme::parseTextStyle(datum const &data, char const *object_name)
+[[nodiscard]] TextStyle Theme::parseTextStyle(datum const &data, char const *object_name)
 {
     // Extract name
     if (!data.contains(object_name)) {

@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri::Text {
+namespace TTauri {
 
 
 

@@ -22,8 +22,8 @@ protected:
     std::string label = "<unknown>";
     char32_t check = 0x2713;
 
-    Text::ShapedText labelShapedText;
-    Text::FontGlyphIDs checkGlyph;
+    ShapedText labelShapedText;
+    FontGlyphIDs checkGlyph;
     aarect checkBoundingBox;
 
     float button_height;
@@ -61,7 +61,7 @@ public:
             rectangle().width() - label_x, rectangle().height()
         };
 
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
+        labelShapedText = ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
         label_translate = labelShapedText.T(label_rectangle);
         setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
 
@@ -73,8 +73,8 @@ public:
 
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
-        let checkFontId = Text::fontBook->find_font("Arial", Text::FontWeight::Regular, false);
-        checkGlyph = Text::fontBook->find_glyph(checkFontId, Text::Grapheme{check});
+        let checkFontId = fontBook->find_font("Arial", FontWeight::Regular, false);
+        checkGlyph = fontBook->find_glyph(checkFontId, Grapheme{check});
         checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.2f);
     }
 

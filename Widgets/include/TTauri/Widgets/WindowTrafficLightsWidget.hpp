@@ -30,10 +30,10 @@ public:
     aarect minimizeRectangle;
     aarect maximizeRectangle;
 
-    Text::FontGlyphIDs closeWindowGlyph;
-    Text::FontGlyphIDs minimizeWindowGlyph;
-    Text::FontGlyphIDs maximizeWindowGlyph;
-    Text::FontGlyphIDs restoreWindowGlyph;
+    FontGlyphIDs closeWindowGlyph;
+    FontGlyphIDs minimizeWindowGlyph;
+    FontGlyphIDs maximizeWindowGlyph;
+    FontGlyphIDs restoreWindowGlyph;
 
     aarect closeWindowGlyphRectangle;
     aarect minimizeWindowGlyphRectangle;

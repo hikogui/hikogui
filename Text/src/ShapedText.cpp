@@ -5,7 +5,7 @@
 #include "TTauri/Text/ShapedText.hpp"
 #include "TTauri/Text/globals.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 [[nodiscard]] static std::vector<AttributedGrapheme> makeAttributedGraphemeVector(gstring const &text, TextStyle const &style) noexcept
 {

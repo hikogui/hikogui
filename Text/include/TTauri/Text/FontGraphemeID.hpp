@@ -7,7 +7,7 @@
 #include "TTauri/Text/FontID.hpp"
 #include "TTauri/Text/Grapheme.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /** Combined FontID + Grapheme for use as a key in a std::unordered_map.
  */
@@ -29,8 +29,8 @@ struct FontGraphemeID {
 namespace std {
 
 template<>
-struct hash<TTauri::Text::FontGraphemeID> {
-    [[nodiscard]] size_t operator() (TTauri::Text::FontGraphemeID const &rhs) const noexcept {
+struct hash<TTauri::FontGraphemeID> {
+    [[nodiscard]] size_t operator() (TTauri::FontGraphemeID const &rhs) const noexcept {
         return rhs.hash();
     }
 };

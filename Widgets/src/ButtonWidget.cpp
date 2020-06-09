@@ -9,7 +9,6 @@
 
 namespace TTauri {
 
-using namespace TTauri::Text;
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :

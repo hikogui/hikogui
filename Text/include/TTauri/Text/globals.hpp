@@ -11,7 +11,7 @@
 #include <string>
 #include <mutex>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 inline std::unique_ptr<UnicodeData> unicodeData;
 

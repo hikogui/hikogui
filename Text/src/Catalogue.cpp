@@ -1,5 +1,5 @@
 
-namespace TTauri::Text {
+namespace TTauri {
 
 [[nodiscard]] static parse_result_t<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
 {

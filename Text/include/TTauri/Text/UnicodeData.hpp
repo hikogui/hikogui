@@ -11,7 +11,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <nonstd/span>
 
-namespace TTauri::Text {
+namespace TTauri {
 struct UnicodeData_Description;
 
 enum class GraphemeUnitType : uint8_t {
@@ -257,7 +257,7 @@ private:
 namespace TTauri {
 
 template<>
-std::unique_ptr<TTauri::Text::UnicodeData> parseResource(URL const &location);
+std::unique_ptr<TTauri::UnicodeData> parseResource(URL const &location);
 
 }
 

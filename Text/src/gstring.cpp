@@ -5,20 +5,20 @@
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/strings.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept
 {
     let normalizedString = unicodeData->toNFC(rhs, true, true);
 
-    auto r = TTauri::Text::gstring{};
-    auto breakState = TTauri::Text::GraphemeBreakState{};
+    auto r = TTauri::gstring{};
+    auto breakState = TTauri::GraphemeBreakState{};
     auto cluster = std::u32string{};
 
     for (let codePoint : normalizedString) {
         if (unicodeData->checkGraphemeBreak(codePoint, breakState)) {
             if (cluster.size() > 0) {
-                r += TTauri::Text::Grapheme{cluster};
+                r += TTauri::Grapheme{cluster};
             }
             cluster.clear();
         }
@@ -26,7 +26,7 @@ namespace TTauri::Text {
         cluster += codePoint;
     }
     if (ssize(cluster) != 0) {
-        r += TTauri::Text::Grapheme{cluster};
+        r += TTauri::Grapheme{cluster};
     }
     return r;
 }

@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include <memory>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 class TrueTypeFont final: public Font {
 private:

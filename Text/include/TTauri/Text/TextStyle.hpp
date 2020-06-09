@@ -10,7 +10,7 @@
 #include <fmt/format.h>
 #include <ostream>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 struct TextStyle {
     static constexpr float default_dpi = 84.0f;
@@ -25,10 +25,10 @@ struct TextStyle {
     TextStyle() :
         family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
 
-    TextStyle(TTauri::Text::FontFamilyID family_id, TTauri::Text::FontVariant variant, float size, vec color, TextDecoration decoration) :
+    TextStyle(TTauri::FontFamilyID family_id, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration) :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
 
-    TextStyle(std::string_view family_name, TTauri::Text::FontVariant variant, float size, vec color, TextDecoration decoration);
+    TextStyle(std::string_view family_name, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration);
 
     float scaled_size() const noexcept {
         return size * dpi_scale;

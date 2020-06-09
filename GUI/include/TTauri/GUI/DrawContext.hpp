@@ -213,7 +213,7 @@ public:
      *  - transform, to transform the shaped-text's bounding box
      *  - clippingRectangle
      */
-    void drawText(Text::ShapedText const &text) const noexcept {
+    void drawText(ShapedText const &text) const noexcept {
         ttauri_assume(window != nullptr);
         ttauri_assume(sdfVertices != nullptr);
 
@@ -232,7 +232,7 @@ public:
     *  - transform, to transform the shaped-text's bounding box
     *  - clippingRectangle
     */
-    void drawTextSingleColor(Text::ShapedText const &text) const noexcept {
+    void drawTextSingleColor(ShapedText const &text) const noexcept {
         ttauri_assume(window != nullptr);
         ttauri_assume(sdfVertices != nullptr);
 
@@ -245,7 +245,7 @@ public:
         );
     }
 
-    void drawGlyph(Text::FontGlyphIDs const &glyph, aarect box) const noexcept {
+    void drawGlyph(FontGlyphIDs const &glyph, aarect box) const noexcept {
         ttauri_assume(window != nullptr);
         ttauri_assume(sdfVertices != nullptr);
 

@@ -81,13 +81,13 @@ public:
     vec cursorColor;
     vec incompleteGlyphColor;
 
-    Text::TextStyle labelStyle;
-    Text::TextStyle smallLabelStyle;
-    Text::TextStyle warningLabelStyle;
-    Text::TextStyle errorLabelStyle;
-    Text::TextStyle helpLabelStyle;
-    Text::TextStyle placeholderLabelStyle;
-    Text::TextStyle linkLabelStyle;
+    TextStyle labelStyle;
+    TextStyle smallLabelStyle;
+    TextStyle warningLabelStyle;
+    TextStyle errorLabelStyle;
+    TextStyle helpLabelStyle;
+    TextStyle placeholderLabelStyle;
+    TextStyle linkLabelStyle;
 
     Theme() noexcept = delete;
     Theme(Theme const &) noexcept = delete;
@@ -139,9 +139,9 @@ private:
     [[nodiscard]] vec parseColorValue(datum const &data);
     [[nodiscard]] std::vector<vec> parseColorList(datum const &data, char const *name);
     [[nodiscard]] vec parseColor(datum const &data, char const *name);
-    [[nodiscard]] Text::TextStyle parseTextStyleValue(datum const &data);
-    [[nodiscard]] Text::FontWeight parseFontWeight(datum const &data, char const *name);
-    [[nodiscard]] Text::TextStyle parseTextStyle(datum const &data, char const *name);
+    [[nodiscard]] TextStyle parseTextStyleValue(datum const &data);
+    [[nodiscard]] FontWeight parseFontWeight(datum const &data, char const *name);
+    [[nodiscard]] TextStyle parseTextStyle(datum const &data, char const *name);
     void parse(datum const &data);
 
     [[nodiscard]] friend std::string to_string(Theme const &rhs) noexcept {

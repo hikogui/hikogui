@@ -3,7 +3,7 @@
 
 #include "TTauri/Text/UnicodeRanges.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /** Table is based on: https://docs.microsoft.com/en-us/typography/opentype/spec/os2#ur
 */

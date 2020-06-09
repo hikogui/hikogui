@@ -47,7 +47,7 @@ struct KeyboardEvent {
     Type type;
     KeyboardState state;
 
-    Text::Grapheme grapheme;
+    Grapheme grapheme;
     KeyboardKey key;
 
     KeyboardEvent(Type type=Type::Idle) noexcept :
@@ -58,7 +58,7 @@ struct KeyboardEvent {
     KeyboardEvent(KeyboardState state, KeyboardModifiers modifiers, KeyboardVirtualKey key) noexcept :
         type(Type::Key), state(state), grapheme(), key(modifiers, key) {}
 
-    KeyboardEvent(Text::Grapheme grapheme, bool full=true) noexcept :
+    KeyboardEvent(Grapheme grapheme, bool full=true) noexcept :
         type(full ? Type::Grapheme : Type::PartialGrapheme), state(), grapheme(std::move(grapheme)), key() {}
 
     [[nodiscard]] static KeyboardEvent entered() noexcept {

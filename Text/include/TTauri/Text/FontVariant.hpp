@@ -5,7 +5,7 @@
 
 #include "TTauri/Text/FontWeight.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /** A font variant is one of 16 different fonts that can be part of a family.
 * It only contains the font-weight and if it is italic/oblique.

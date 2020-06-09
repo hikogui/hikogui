@@ -10,7 +10,6 @@
 
 namespace TTauri {
 
-using namespace TTauri::Text;
 using namespace std::literals;
 
 

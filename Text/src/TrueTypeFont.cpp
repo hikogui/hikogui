@@ -10,7 +10,7 @@
 
 #define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return y; }
 
-namespace TTauri::Text {
+namespace TTauri {
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;

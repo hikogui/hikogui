@@ -21,7 +21,7 @@ protected:
 
     std::string label = "<unknown>";
 
-    Text::ShapedText labelShapedText;
+    ShapedText labelShapedText;
 
     float button_height;
     float button_width;
@@ -58,7 +58,7 @@ public:
             rectangle().width() - label_x, rectangle().height()
         };
 
-        labelShapedText = Text::ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
+        labelShapedText = ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
         label_translate = labelShapedText.T(label_rectangle);
         setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
 

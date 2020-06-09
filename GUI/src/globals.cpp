@@ -37,7 +37,7 @@ void gui_startup()
     }
 
     foundation_startup();
-    Text::text_startup();
+    text_startup();
     LOG_INFO("GUI startup");
 
     renderDoc = new RenderDoc();
@@ -80,7 +80,7 @@ void gui_shutdown()
     delete guiSystem;
     delete themeBook;
     delete renderDoc;
-    Text::text_shutdown();
+    text_shutdown();
     foundation_shutdown();
 }
 

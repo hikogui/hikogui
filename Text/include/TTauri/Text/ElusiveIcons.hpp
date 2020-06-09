@@ -7,7 +7,7 @@
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Text/FontBook.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 inline FontID ElusiveIcons_font_id = FontID{};
 

@@ -55,16 +55,16 @@ void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePo
         no_default;
     }
 
-    closeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::CloseWindow);
-    minimizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MinimizeWindow);
+    closeWindowGlyph = to_FontGlyphIDs(TTauriIcon::CloseWindow);
+    minimizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MinimizeWindow);
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        maximizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MaximizeWindowMS);
-        restoreWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::RestoreWindowMS);
+        maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMS);
+        restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMS);
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        maximizeWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::MaximizeWindowMacOS);
-        restoreWindowGlyph = Text::to_FontGlyphIDs(Text::TTauriIcon::RestoreWindowMacOS);
+        maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMacOS);
+        restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMacOS);
     } else {
         no_default;
     }

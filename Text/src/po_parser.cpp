@@ -3,7 +3,7 @@
 
 #include "TTauri/Text/po_parser.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 
 

@@ -23,16 +23,16 @@ public:
      */
     bool closeButton = false;
 
-    using icon_type = std::variant<Text::FontGlyphIDs>;
+    using icon_type = std::variant<FontGlyphIDs>;
     icon_type icon;
     std::function<void()> delegate;
 
     ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept;
 
-    ToolbarButtonWidget(Window &window, Widget *parent, Text::ElusiveIcon icon, std::function<void()> delegate) noexcept :
-        ToolbarButtonWidget(window, parent, Text::to_FontGlyphIDs(icon), std::move(delegate)) {}
-    ToolbarButtonWidget(Window &window, Widget *parent, Text::TTauriIcon icon, std::function<void()> delegate) noexcept :
-        ToolbarButtonWidget(window, parent, Text::to_FontGlyphIDs(icon), std::move(delegate)) {}
+    ToolbarButtonWidget(Window &window, Widget *parent, ElusiveIcon icon, std::function<void()> delegate) noexcept :
+        ToolbarButtonWidget(window, parent, to_FontGlyphIDs(icon), std::move(delegate)) {}
+    ToolbarButtonWidget(Window &window, Widget *parent, TTauriIcon icon, std::function<void()> delegate) noexcept :
+        ToolbarButtonWidget(window, parent, to_FontGlyphIDs(icon), std::move(delegate)) {}
 
     ~ToolbarButtonWidget() {}
 

@@ -35,7 +35,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
         context.drawFilledQuad(rectangle());
     }
 
-    if (auto icon_glyph = std::get_if<Text::FontGlyphIDs>(&icon)) {
+    if (auto icon_glyph = std::get_if<FontGlyphIDs>(&icon)) {
         auto context = drawContext;
         context.color = theme->foregroundColor;
 

@@ -7,7 +7,7 @@
 #include <string>
 #include <ostream>
 
-namespace TTauri::Text {
+namespace TTauri {
 
 /** Describes how a grapheme should be underlined when rendering the text.
 * It is carried with the grapheme and glyphs, so that the text render engine

@@ -10,7 +10,7 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include "TTauri/Foundation/required.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 struct FontDescription {
     std::string family_name;

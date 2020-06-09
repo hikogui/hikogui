@@ -129,7 +129,7 @@ void DeviceShared::prepareAtlasForRendering()
  *  |                     |
  *  O---------------------+
 */
-AtlasRect DeviceShared::addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept
+AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
 {
     let [glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
 
@@ -158,7 +158,7 @@ AtlasRect DeviceShared::addGlyphToAtlas(Text::FontGlyphIDs glyph) noexcept
     return atlas_rect;
 }
 
-std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(Text::FontGlyphIDs glyph) noexcept
+std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) noexcept
 {
     let i = glyphs_in_atlas.find(glyph);
     if (i != glyphs_in_atlas.cend()) {
@@ -171,12 +171,12 @@ std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(Text::FontGlyphIDs gly
     }
 }
 
-aarect DeviceShared::getBoundingBox(Text::FontGlyphIDs const &glyphs) noexcept {
+aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept {
     // Adjust bounding box by adding a border based on 1EM.
     return expand(glyphs.getBoundingBox(), scaledDrawBorder);
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
 {
     let [atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
 
@@ -203,9 +203,9 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs co
     return glyph_was_added;
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, vec color) noexcept
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle, vec color) noexcept
 {
-    if (attr_glyph.charClass == Text::GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == Text::GeneralCharacterClass::ParagraphSeparator) {
+    if (attr_glyph.charClass == GeneralCharacterClass::WhiteSpace || attr_glyph.charClass == GeneralCharacterClass::ParagraphSeparator) {
         return false;
     }
 
@@ -215,19 +215,19 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph
     return _placeVertices(vertices, attr_glyph.glyphs, bounding_box, color, clippingRectangle);
 }
 
-bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, Text::AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept
+bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const &attr_glyph, mat transform, aarect clippingRectangle) noexcept
 {
     return _placeVertices(vertices, attr_glyph, transform, clippingRectangle, attr_glyph.style.color);
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
 {
     if (_placeVertices(vertices, glyphs, box, color, clippingRectangle)) {
         prepareAtlasForRendering();
     }
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle) noexcept
 {
     auto atlas_was_updated = false;
 
@@ -241,7 +241,7 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const
     }
 }
 
-void DeviceShared::placeVertices(vspan<Vertex> &vertices, Text::ShapedText const &text, mat transform, aarect clippingRectangle, vec color) noexcept
+void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text, mat transform, aarect clippingRectangle, vec color) noexcept
 {
     auto atlas_was_updated = false;
 

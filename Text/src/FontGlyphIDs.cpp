@@ -5,7 +5,7 @@
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Foundation/Path.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 [[nodiscard]] std::pair<Path,aarect> FontGlyphIDs::getPathAndBoundingBox() const noexcept {
     Path path;

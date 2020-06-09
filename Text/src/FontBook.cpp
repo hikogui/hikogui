@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/trace.hpp"
 #include "TTauri/Foundation/FileView.hpp"
 
-namespace TTauri::Text {
+namespace TTauri {
 
 FontBook::FontBook(std::vector<URL> const &font_directories)
 {

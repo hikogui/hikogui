@@ -14,7 +14,7 @@ namespace TTauri {
 struct Path;
 }
 
-namespace TTauri::Text {
+namespace TTauri {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -254,8 +254,8 @@ public:
 namespace std {
 
 template<>
-struct hash<TTauri::Text::FontGlyphIDs> {
-    [[nodiscard]] size_t operator()(TTauri::Text::FontGlyphIDs const &rhs) const noexcept {
+struct hash<TTauri::FontGlyphIDs> {
+    [[nodiscard]] size_t operator()(TTauri::FontGlyphIDs const &rhs) const noexcept {
         return rhs.hash();
     }
 };
