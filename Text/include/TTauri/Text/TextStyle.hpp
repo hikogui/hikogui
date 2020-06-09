@@ -22,13 +22,18 @@ struct TextStyle {
     vec color;
     TextDecoration decoration;
 
-    TextStyle() :
+    TextStyle() noexcept :
         family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
 
-    TextStyle(TTauri::FontFamilyID family_id, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration) :
+    TextStyle(TTauri::FontFamilyID family_id, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
 
-    TextStyle(std::string_view family_name, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration);
+    TextStyle(std::string_view family_name, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept;
+
+    TextStyle(TextStyle const &) noexcept = default;
+    TextStyle(TextStyle &&) noexcept = default;
+    TextStyle &operator=(TextStyle const &) noexcept = default;
+    TextStyle &operator=(TextStyle &&) noexcept = default;
 
     float scaled_size() const noexcept {
         return size * dpi_scale;

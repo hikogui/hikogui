@@ -85,7 +85,7 @@ public:
         _begin(nullptr), _end(nullptr), _max(nullptr) {}
 
     vspan(value_type *buffer, ssize_t nr_elements) noexcept :
-        _begin(buffer), _end(buffer), _max(buffer + nr_elments)
+        _begin(buffer), _end(buffer), _max(buffer + nr_elements)
     {
         ttauri_assume(nr_elements >= 0);
     }

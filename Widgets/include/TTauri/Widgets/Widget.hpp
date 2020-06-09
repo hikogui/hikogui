@@ -418,6 +418,13 @@ public:
     }
 };
 
-
+/** Add a widget to the main widget of the window.
+ * The implementation is located here so that widget is a concrete type.
+ */
+template<typename T, typename... Args>
+T &Window::addWidget(Args &&... args) {
+    ttauri_assume(widget);
+    return widget->addWidget<T>(std::forward<Args>(args)...);
+}
 
 }
