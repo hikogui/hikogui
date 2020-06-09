@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace TTauri::Net {
+namespace TTauri {
 
 class PacketBuffer {
     std::list<Packet> packets;
