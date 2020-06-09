@@ -47,7 +47,7 @@ void Application_win32::lastWindowClosed()
         // Let the application have a chance to open new windows from the main thread.
         delegate->lastWindowClosed();
 
-        if (GUI::guiSystem->getNumberOfWindows() == 0) {
+        if (guiSystem->getNumberOfWindows() == 0) {
             LOG_INFO("Application quiting due to all windows having been closed.");
             PostQuitMessage(0);
         }

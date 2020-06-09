@@ -6,7 +6,7 @@
 #include <limits>
 #include "TTauri/Foundation/required.hpp"
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 struct Page {
     static constexpr int width = 64;

@@ -2,7 +2,6 @@
 #include "Window.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 Instance_vulkan_macos::Instance_vulkan_macos() :
     Instance_vulkan({ VK_MVK_MACOS_SURFACE_EXTENSION_NAME })
@@ -22,11 +21,11 @@ Instance_vulkan_macos::~Instance_vulkan_macos()
 }
 
 
-std::shared_ptr<GUI::Window> Instance_vulkan_win32::createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title)
+std::shared_ptr<Window> Instance_vulkan_win32::createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title)
 {
-    std::scoped_lock lock(TTauri::GUI::mutex);
+    std::scoped_lock lock(TTauri::mutex);
 
-    auto window = std::make_shared<GUI::Window_win32>(windowDelegate, title);
+    auto window = std::make_shared<Window_win32>(windowDelegate, title);
     getShared<Instance>()->add(window);
     window->initialize();
     return window;
@@ -34,7 +33,7 @@ std::shared_ptr<GUI::Window> Instance_vulkan_win32::createWindow(std::shared_ptr
 
 CVReturn Instance_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
 {
-    scoped_lock lock(TTauri::GUI::mutex);
+    scoped_lock lock(TTauri::mutex);
 
     auto self = static_cast<Instance_vulkan_win32 *>(target);
 
@@ -53,4 +52,4 @@ CVReturn Instance_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink
     return kCVReturnSuccess;
 }
 
-}}
+}

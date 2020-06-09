@@ -33,10 +33,6 @@ inline datum configuration;
  */
 inline std::string applicationName;
 
-/** Reference counter to determine the amount of startup/shutdowns.
-*/
-inline std::atomic<uint64_t> startupCount = 0;
-
 /** Add a static resource.
 */
 void addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept;
@@ -51,10 +47,10 @@ void stopMaintenanceThread() noexcept;
 
 /** Startup the Foundation library.
 */
-void startup();
+void foundation_startup();
 
 /** Shutdown the Foundation library.
 */
-void shutdown();
+void foundation_shutdown();
 
 }

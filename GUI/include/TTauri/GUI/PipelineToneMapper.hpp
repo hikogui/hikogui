@@ -10,7 +10,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <nonstd/span>
 
-namespace TTauri::GUI::PipelineToneMapper {
+namespace TTauri::PipelineToneMapper {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */

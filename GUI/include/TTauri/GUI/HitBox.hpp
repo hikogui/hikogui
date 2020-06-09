@@ -5,11 +5,9 @@
 
 #include <limits>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
-namespace Widgets {
 class Widget;
-}
 
 struct HitBox {
     enum class Type : uint8_t {
@@ -29,11 +27,11 @@ struct HitBox {
         ApplicationIcon
     };
 
-    Widgets::Widget const *widget;
+    Widget const *widget;
     float elevation;
     Type type;
 
-    HitBox(Widgets::Widget const *widget=nullptr, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
+    HitBox(Widget const *widget=nullptr, float elevation=-std::numeric_limits<float>::max(), Type type=Type::Outside) noexcept :
         widget(widget), elevation(elevation), type(type) {}
 
 

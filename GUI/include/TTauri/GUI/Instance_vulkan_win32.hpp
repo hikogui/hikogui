@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Instance_vulkan.hpp"
 #include <nonstd/span>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class Instance_vulkan_win32 final: public Instance_vulkan {
 public:

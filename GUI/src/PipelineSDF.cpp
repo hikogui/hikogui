@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Device.hpp"
 
-namespace TTauri::GUI::PipelineSDF {
+namespace TTauri::PipelineSDF {
 
 using namespace TTauri;
 using namespace std;

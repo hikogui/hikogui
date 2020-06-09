@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Device.hpp"
 
-namespace TTauri::GUI::PipelineBox {
+namespace TTauri::PipelineBox {
 
 using namespace TTauri;
 using namespace std;

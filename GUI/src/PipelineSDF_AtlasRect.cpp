@@ -5,7 +5,7 @@
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
 #include "TTauri/Foundation/mat.hpp"
 
-namespace TTauri::GUI::PipelineSDF {
+namespace TTauri::PipelineSDF {
 
 AtlasRect::AtlasRect(ivec atlasPosition, vec drawExtent) noexcept :
     atlasPosition(atlasPosition),

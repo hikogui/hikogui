@@ -18,22 +18,22 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 
     TTauri::applicationName = applicationDelegate->applicationName();
     TTauri::configuration = applicationDelegate->configuration(arguments);
-    TTauri::startup();
+    TTauri::foundation_startup();
 
 #if defined(BUILD_TTAURI_AUDIO)
     TTauri::Audio::audioDelegate = this;
-    TTauri::Audio::startup();
+    TTauri::Audio::audio_startup();
 #endif
 
 #if defined(BUILD_TTAURI_GUI)
-    TTauri::Text::startup();
+    TTauri::Text::text_startup();
 #if OPERATING_SYSTEM == OS_WINDOWS
-    TTauri::GUI::hInstance = hInstance;
-    TTauri::GUI::nCmdShow = nCmdShow;
+    TTauri::hInstance = hInstance;
+    TTauri::nCmdShow = nCmdShow;
 #endif
-    TTauri::GUI::guiDelegate = this;
-    TTauri::GUI::startup();
-    TTauri::GUI::Widgets::startup();
+    TTauri::guiDelegate = this;
+    TTauri::gui_startup();
+    TTauri::widgets_startup();
 #endif
     LOG_INFO("Starting application '{}'.", applicationName);
 }
@@ -41,14 +41,14 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 Application_base::~Application_base()
 {
 #if defined(BUILD_TTAURI_GUI)
-    TTauri::GUI::Widgets::shutdown();
-    TTauri::GUI::shutdown();
-    TTauri::Text::shutdown();
+    TTauri::widgets_shutdown();
+    TTauri::gui_shutdown();
+    TTauri::Text::text_shutdown();
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
-    TTauri::Audio::shutdown();
+    TTauri::Audio::audio_shutdown();
 #endif
-    TTauri::shutdown();
+    TTauri::foundation_shutdown();
     LOG_INFO("Stopping application.");
 }
 

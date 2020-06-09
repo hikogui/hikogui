@@ -7,7 +7,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 using namespace std::literals;
 

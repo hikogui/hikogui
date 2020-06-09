@@ -18,16 +18,13 @@ inline AudioSystemDelegate *audioDelegate = nullptr;
 
 inline AudioSystem *audioSystem = nullptr;
 
-/** Reference counter to determine the amount of startup/shutdowns.
-*/
-inline std::atomic<uint64_t> startupCount = 0;
 
 /** Startup the Text library.
 */
-void startup();
+void audio_startup();
 
 /** Shutdown the Text library.
 */
-void shutdown();
+void audio_shutdown();
 
 }

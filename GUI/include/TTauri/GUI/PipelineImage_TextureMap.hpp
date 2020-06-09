@@ -9,7 +9,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 struct TextureMap {
     vk::Image image;

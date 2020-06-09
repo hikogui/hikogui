@@ -16,7 +16,7 @@ namespace TTauri {
 template<typename T> struct PixelMap;
 }
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 struct Image;
 

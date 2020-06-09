@@ -14,7 +14,7 @@
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 using namespace std;
 

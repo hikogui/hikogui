@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class Pipeline_vulkan : public Pipeline_base {
 public:

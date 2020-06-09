@@ -4,7 +4,7 @@
 #include "TTauri/GUI/KeyboardBindings.hpp"
 #include "TTauri/Foundation/JSON.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 void KeyboardBindings::loadBindings(URL url, bool system_binding)
 {

@@ -6,7 +6,6 @@
 #include "TTauri/GUI/Instance_vulkan.hpp"
 
 namespace TTauri {
-namespace GUI {
 
 class Instance_vulkan_macos final : public Instance_vulkan {
 public:
@@ -18,9 +17,9 @@ public:
     Instance_vulkan_macos();
     virtual ~Instance_vulkan_macos();
 
-    virtual void createWindow(std::shared_ptr<GUI::Window::Delegate> windowDelegate, const std::string &title);
+    virtual void createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title);
 
     static CVReturn updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target);
 };
 
-}}
+}

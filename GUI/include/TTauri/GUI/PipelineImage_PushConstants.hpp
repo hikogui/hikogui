@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/R32G32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 struct PushConstants {
     R32G32SFloat windowExtent = vec{ 0.0, 0.0 };

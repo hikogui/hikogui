@@ -5,7 +5,7 @@
 #include "TTauri/GUI/Device.hpp"
 #include "TTauri/GUI/Window.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 using namespace std;
 

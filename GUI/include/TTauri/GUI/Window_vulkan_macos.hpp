@@ -10,7 +10,7 @@ namespace TTauri {
 class Application_macos;
 }
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class Window_vulkan_macos final : public Window_vulkan {
 public:

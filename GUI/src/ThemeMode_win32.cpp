@@ -11,7 +11,7 @@
 #include <winreg.h>
 
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 [[nodiscard]] ThemeMode readOSThemeMode() noexcept
 {

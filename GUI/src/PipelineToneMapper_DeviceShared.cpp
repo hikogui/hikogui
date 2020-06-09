@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/URL.hpp"
 #include <array>
 
-namespace TTauri::GUI::PipelineToneMapper {
+namespace TTauri::PipelineToneMapper {
 
 using namespace std;
 

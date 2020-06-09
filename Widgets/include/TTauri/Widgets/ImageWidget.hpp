@@ -13,7 +13,7 @@ namespace TTauri {
 struct Path;
 }
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class ImageWidget : public Widget {
 public:
@@ -44,7 +44,7 @@ private:
     static void drawTrianglesOutward(Path &path, vec position, float radius) noexcept;
     static void drawTrianglesInward(Path &path, vec position, float radius) noexcept;
 
-    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept;
+    PipelineImage::Backing::ImagePixelMap drawImage(std::shared_ptr<PipelineImage::Image> image) noexcept;
 
     PipelineImage::Backing backingImage; 
 };

@@ -26,7 +26,7 @@
 #include <memory>
 #include <mutex>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -126,29 +126,29 @@ public:
     }
 
     //! The widget covering the complete window.
-    std::unique_ptr<Widgets::Widget,WidgetDeleter> widget;
+    std::unique_ptr<Widget,WidgetDeleter> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
      * to check if the target has changed, to send exit events to the previous mouse target.
      */
-    Widgets::Widget *mouseTargetWidget = nullptr;
+    Widget *mouseTargetWidget = nullptr;
 
     /** Target of the keyboard
      * widget where keyboard events are sent to.
      */
-    Widgets::Widget *keyboardTargetWidget = nullptr;
+    Widget *keyboardTargetWidget = nullptr;
 
     /** The first widget in the window that needs to be selected.
      * This widget is selected when the window is opened and when
      * pressing tab when no other widget is selected.
      */
-    Widgets::Widget *firstKeyboardWidget = nullptr;
+    Widget *firstKeyboardWidget = nullptr;
 
     /** The first widget in the window that needs to be selected.
      * This widget is selected when pressing shift-tab when no other widget is selected.
      */
-    Widgets::Widget *lastKeyboardWidget = nullptr;
+    Widget *lastKeyboardWidget = nullptr;
 
     Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
     virtual ~Window_base();
@@ -236,9 +236,9 @@ public:
     [[nodiscard]] virtual std::string getTextFromClipboard() const noexcept = 0;
     virtual void setTextOnClipboard(std::string str) noexcept = 0;
 
-    void updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept;
+    void updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept;
 
-    void updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept;
+    void updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept;
 
 protected:
 
@@ -276,9 +276,9 @@ protected:
      */
     virtual void build() = 0;
 
-    void updateMouseTarget(Widgets::Widget const *newTargetWidget, vec position=vec{0.0f, 0.0f}) noexcept;
+    void updateMouseTarget(Widget const *newTargetWidget, vec position=vec{0.0f, 0.0f}) noexcept;
 
-    void updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept;
+    void updateKeyboardTarget(Widget const *newTargetWidget) noexcept;
 
     /*! Mouse moved.
      * Called by the operating system to show the position of the mouse.

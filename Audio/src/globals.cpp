@@ -8,30 +8,34 @@
 
 namespace TTauri::Audio {
 
-void startup()
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+static std::atomic<uint64_t> startupCount = 0;
+
+void audio_startup()
 {
     if (startupCount.fetch_add(1) != 0) {
         // The library has already been initialized.
         return;
     }
 
-    TTauri::startup();
-    LOG_INFO("TTauri::Audio startup");
+    TTauri::foundation_startup();
+    LOG_INFO("Audio startup");
 
     audioSystem = new AudioSystem_win32(audioDelegate);
 }
 
-void shutdown()
+void audio_shutdown()
 {
     if (startupCount.fetch_sub(1) != 1) {
         // This is not the last instantiation.
         return;
     }
-    LOG_INFO("TTauri::Audio shutdown");
+    LOG_INFO("Audio shutdown");
 
     delete audioSystem;
 
-    TTauri::shutdown();
+    TTauri::foundation_shutdown();
 }
 
 

@@ -8,7 +8,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 using namespace TTauri::Text;
 using namespace std::literals;
@@ -98,12 +98,12 @@ void ToggleWidget::handleCommand(string_ltag command) noexcept {
     Widget::handleCommand(command);
 }
 
-void ToggleWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
+void ToggleWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
     if (enabled) {
         if (
-            event.type == GUI::MouseEvent::Type::ButtonUp &&
+            event.type == MouseEvent::Type::ButtonUp &&
             event.cause.leftButton &&
             rectangle().contains(event.position)
         ) {

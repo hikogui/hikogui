@@ -13,15 +13,15 @@
 namespace std {
 
 template<>
-struct hash<std::pair<TTauri::string_tag,TTauri::GUI::KeyboardKey>> {
-    [[nodiscard]] size_t operator() (std::pair<TTauri::string_tag,TTauri::GUI::KeyboardKey> const &rhs) const noexcept {
+struct hash<std::pair<TTauri::string_tag,TTauri::KeyboardKey>> {
+    [[nodiscard]] size_t operator() (std::pair<TTauri::string_tag,TTauri::KeyboardKey> const &rhs) const noexcept {
         return TTauri::hash_mix(rhs.first, rhs.second);
     }
 };
 
 }
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class KeyboardBindings {
     struct commands_t {

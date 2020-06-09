@@ -15,7 +15,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include <array>
 
-namespace TTauri::GUI::PipelineSDF {
+namespace TTauri::PipelineSDF {
 
 using namespace std;
 

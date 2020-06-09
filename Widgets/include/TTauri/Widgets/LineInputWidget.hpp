@@ -11,7 +11,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class LineInputWidget : public Widget {
 protected:
@@ -66,8 +66,8 @@ public:
 
     void handleCommand(string_ltag command) noexcept override;
 
-    void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
-    void handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept override;
+    void handleMouseEvent(MouseEvent const &event) noexcept override;
+    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
     [[nodiscard]] bool acceptsFocus() const noexcept override {

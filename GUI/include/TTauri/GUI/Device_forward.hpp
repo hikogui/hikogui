@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri::GUI {
+namespace TTauri {
     class Device_vulkan;
     using Device = Device_vulkan;
 }

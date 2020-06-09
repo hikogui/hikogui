@@ -5,6 +5,6 @@
 
 #include "TTauri/GUI/Device_vulkan.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 using Device = Device_vulkan;
 }

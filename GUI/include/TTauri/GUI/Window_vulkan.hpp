@@ -8,7 +8,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <optional>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 namespace PipelineImage {
 class PipelineImage;

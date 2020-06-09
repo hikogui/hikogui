@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <type_traits>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 RenderDoc::RenderDoc() noexcept {
 #if !defined(NDEBUG)

@@ -4,7 +4,7 @@
 #include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
     window(window),

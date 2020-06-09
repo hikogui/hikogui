@@ -12,7 +12,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include <array>
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 using namespace std;
 

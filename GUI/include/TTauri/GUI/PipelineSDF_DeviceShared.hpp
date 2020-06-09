@@ -29,7 +29,7 @@ class ShapedText;
 struct AttributedGlyph;
 }
 
-namespace TTauri::GUI::PipelineSDF {
+namespace TTauri::PipelineSDF {
 
 struct Image;
 struct Vertex;

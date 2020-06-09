@@ -13,7 +13,7 @@ namespace TTauri {
 struct Path;
 }
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class WindowTrafficLightsWidget : public Widget {
 public:

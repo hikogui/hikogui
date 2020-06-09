@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class InstanceDelegate {
 public:

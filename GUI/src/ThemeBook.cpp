@@ -4,7 +4,7 @@
 #include "TTauri/GUI/ThemeBook.hpp"
 #include "TTauri/Foundation/trace.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
     themes(), _themeName(), _themeMode(ThemeMode::Light)

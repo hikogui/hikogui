@@ -11,15 +11,20 @@
 
 namespace TTauri::Text {
 
-void startup()
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+static std::atomic<uint64_t> startupCount = 0;
+
+
+void text_startup()
 {
     if (startupCount.fetch_add(1) != 0) {
         // The library has already been initialized.
         return;
     }
 
-    TTauri::startup();
-    LOG_INFO("TTauri::Text startup");
+    foundation_startup();
+    LOG_INFO("Text startup");
 
     addStaticResource(UnicodeData_bin_filename, UnicodeData_bin_bytes);
     addStaticResource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
@@ -34,19 +39,19 @@ void startup()
     TTauriIcons_font_id = fontBook->register_font(URL("resource:TTauriIcons.ttf"));
 }
 
-void shutdown()
+void text_shutdown()
 {
     if (startupCount.fetch_sub(1) != 1) {
         // This is not the last instantiation.
         return;
     }
-    LOG_INFO("TTauri::Text shutdown");
+    LOG_INFO("Text shutdown");
 
     ElusiveIcons_font_id = FontID{};
     delete fontBook;
     unicodeData.release();
 
-    TTauri::shutdown();
+    foundation_shutdown();
 }
 
 }

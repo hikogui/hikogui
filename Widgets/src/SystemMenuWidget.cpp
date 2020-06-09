@@ -10,7 +10,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 
 SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, PixelMap<R16G16B16A16SFloat> &&image) noexcept :

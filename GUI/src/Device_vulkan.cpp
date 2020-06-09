@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include <nonstd/span>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 #define QUEUE_CAPABILITY_GRAPHICS 1
 #define QUEUE_CAPABILITY_COMPUTE 2
@@ -525,7 +525,7 @@ std::pair<vk::Buffer, VmaAllocation> Device_vulkan::createBuffer(const vk::Buffe
 
     std::pair<vk::Buffer, VmaAllocation> const value = {buffer, allocation};
 
-    return vk::createResultValue(result, value, "TTauri::GUI::Device_vulkan::createBuffer");
+    return vk::createResultValue(result, value, "TTauri::Device_vulkan::createBuffer");
 }
 
 void Device_vulkan::destroyBuffer(const vk::Buffer &buffer, const VmaAllocation &allocation) const
@@ -547,7 +547,7 @@ std::pair<vk::Image, VmaAllocation> Device_vulkan::createImage(const vk::ImageCr
 
     std::pair<vk::Image, VmaAllocation> const value = {image, allocation};
 
-    return vk::createResultValue(result, value, "TTauri::GUI::Device_vulkan::createImage");
+    return vk::createResultValue(result, value, "TTauri::Device_vulkan::createImage");
 }
 
 void Device_vulkan::destroyImage(const vk::Image &image, const VmaAllocation &allocation) const

@@ -6,7 +6,7 @@
 #include "TTauri/Widgets/Widget.hpp"
 #include <memory>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class ToolbarButtonWidget;
 class WindowTrafficLightsWidget;

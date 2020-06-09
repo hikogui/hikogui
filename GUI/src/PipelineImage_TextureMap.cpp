@@ -4,7 +4,7 @@
 #include "TTauri/GUI/PipelineImage_TextureMap.hpp"
 #include "TTauri/GUI/Device.hpp"
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 void TextureMap::transitionLayout(const Device &device, vk::Format format, vk::ImageLayout nextLayout) {
     if (layout != nextLayout) {

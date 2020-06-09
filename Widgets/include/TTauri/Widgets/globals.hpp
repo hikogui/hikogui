@@ -5,18 +5,14 @@
 
 #include <atomic>
 
-namespace TTauri::GUI::Widgets {
-
-/** Reference counter to determine the amount of startup/shutdowns.
-*/
-inline std::atomic<uint64_t> startupCount = 0;
+namespace TTauri {
 
 /** Startup the Text library.
 */
-void startup();
+void widgets_startup();
 
 /** Shutdown the Text library.
 */
-void shutdown();
+void widgets_shutdown();
 
 }

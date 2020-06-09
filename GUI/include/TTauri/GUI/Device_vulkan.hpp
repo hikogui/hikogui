@@ -17,7 +17,7 @@ namespace TTauri {
 class URL;
 }
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class Device_vulkan final : public Device_base {
 protected:
@@ -139,7 +139,7 @@ public:
         T *mappingT = reinterpret_cast<T *>(mapping);
         let mappingSpan = nonstd::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
-        return vk::createResultValue(result, mappingSpan, "TTauri::GUI::Device_vulkan::mapMemory");
+        return vk::createResultValue(result, mappingSpan, "TTauri::Device_vulkan::mapMemory");
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;

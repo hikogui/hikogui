@@ -5,7 +5,7 @@
 
 #include "TTauri/Widgets/Widget.hpp"
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class ToolbarWidget;
 

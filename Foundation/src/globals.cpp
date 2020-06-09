@@ -11,6 +11,11 @@
 
 namespace TTauri {
 
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+static std::atomic<uint64_t> startupCount = 0;
+
+
 std::unordered_map<std::string,nonstd::span<std::byte const>> staticResources;
 
 /** The maintenance thread.
@@ -78,7 +83,7 @@ nonstd::span<std::byte const> getStaticResource(std::string const &key)
     return i->second;
 }
 
-void startup()
+void foundation_startup()
 {
     if (startupCount.fetch_add(1) != 0) {
         // The library has already been initialized.
@@ -114,7 +119,7 @@ void startup()
     maintenanceThread = std::thread(maintenanceThreadProcedure);
 }
 
-void shutdown()
+void foundation_shutdown()
 {
     if (startupCount.fetch_sub(1) != 1) {
         // This is not the last instantiation.

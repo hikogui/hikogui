@@ -21,19 +21,24 @@
 #include "shaders/PipelineToneMapper.frag.spv.inl"
 
 
-namespace TTauri::GUI {
+namespace TTauri {
+
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+static std::atomic<uint64_t> startupCount = 0;
 
 
-void startup()
+
+void gui_startup()
 {
     if (startupCount.fetch_add(1) != 0) {
         // The library has already been initialized.
         return;
     }
 
-    TTauri::startup();
-    TTauri::Text::startup();
-    LOG_INFO("TTauri::GUI startup");
+    foundation_startup();
+    Text::text_startup();
+    LOG_INFO("GUI startup");
 
     renderDoc = new RenderDoc();
 
@@ -64,19 +69,19 @@ void startup()
     guiSystem = new Instance(guiDelegate);
 }
 
-void shutdown()
+void gui_shutdown()
 {
     if (startupCount.fetch_sub(1) != 1) {
         // This is not the last instantiation.
         return;
     }
-    LOG_INFO("TTauri::GUI shutdown");
+    LOG_INFO("GUI shutdown");
 
     delete guiSystem;
     delete themeBook;
     delete renderDoc;
-    TTauri::Text::shutdown();
-    TTauri::shutdown();
+    Text::text_shutdown();
+    foundation_shutdown();
 }
 
 }

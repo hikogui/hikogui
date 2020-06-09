@@ -5,7 +5,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Device.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 using namespace std;
 
@@ -198,8 +198,8 @@ void Window_base::setDevice(Device *newDevice)
     device = newDevice;
 }
 
-void Window_base::updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
-    Widgets::Widget *newTargetWidget =
+void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept {
+    Widget *newTargetWidget =
         currentTargetWidget != nullptr ? Widget_getNextKeyboardWidget(*currentTargetWidget) : firstKeyboardWidget;
 
     while (newTargetWidget != nullptr && !Widget_acceptsFocus(*newTargetWidget)) {
@@ -209,8 +209,8 @@ void Window_base::updateToNextKeyboardTarget(Widgets::Widget *currentTargetWidge
     updateKeyboardTarget(newTargetWidget);
 }
 
-void Window_base::updateToPrevKeyboardTarget(Widgets::Widget *currentTargetWidget) noexcept {
-    Widgets::Widget *newTargetWidget =
+void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept {
+    Widget *newTargetWidget =
         currentTargetWidget != nullptr ? Widget_getPreviousKeyboardWidget(*currentTargetWidget) : lastKeyboardWidget;
 
     while (newTargetWidget != nullptr && !Widget_acceptsFocus(*newTargetWidget)) {
@@ -230,19 +230,19 @@ void Window_base::windowChangedSize(ivec extent) {
     forceLayout = true;
 }
 
-void Window_base::updateMouseTarget(Widgets::Widget const *newTargetWidget, vec position) noexcept {
+void Window_base::updateMouseTarget(Widget const *newTargetWidget, vec position) noexcept {
     if (newTargetWidget != mouseTargetWidget) {
         if (mouseTargetWidget != nullptr) {
             Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::exited());
         }
-        mouseTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
+        mouseTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (mouseTargetWidget != nullptr) { 
             Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::entered(position));
         }
     }
 }
 
-void Window_base::updateKeyboardTarget(Widgets::Widget const *newTargetWidget) noexcept {
+void Window_base::updateKeyboardTarget(Widget const *newTargetWidget) noexcept {
     if (newTargetWidget == nullptr || !Widget_acceptsFocus(*newTargetWidget)) {
         newTargetWidget = nullptr;
     }
@@ -251,7 +251,7 @@ void Window_base::updateKeyboardTarget(Widgets::Widget const *newTargetWidget) n
         if (keyboardTargetWidget != nullptr) {
             Widget_handleKeyboardEvent(*keyboardTargetWidget, KeyboardEvent::exited());
         }
-        keyboardTargetWidget = const_cast<Widgets::Widget *>(newTargetWidget);
+        keyboardTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (keyboardTargetWidget != nullptr) {
             Widget_handleKeyboardEvent(*keyboardTargetWidget, KeyboardEvent::entered());
         }

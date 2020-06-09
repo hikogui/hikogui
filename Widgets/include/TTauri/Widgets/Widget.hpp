@@ -28,24 +28,24 @@
 #include <mutex>
 #include <typeinfo>
 
-namespace TTauri::GUI {
+namespace TTauri {
 class DrawContext;
 }
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 struct Image;
 struct Vertex;
 }
-namespace TTauri::GUI::PipelineSDF {
+namespace TTauri::PipelineSDF {
 struct Vertex;
 }
-namespace TTauri::GUI::PipelineFlat {
+namespace TTauri::PipelineFlat {
 struct Vertex;
 }
-namespace TTauri::GUI::PipelineBox {
+namespace TTauri::PipelineBox {
 struct Vertex;
 }
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 
 /*! View of a widget.
@@ -82,7 +82,7 @@ protected:
     * This is a widget that contains the widgets that are added
     * by the user, as opposed to the child widgets that controls this widget.
     */
-    Widgets::Widget *content = nullptr;
+    Widget *content = nullptr;
 
     /** Transformation matrix from window coords to local coords.
     */
@@ -149,11 +149,11 @@ public:
 
     /** The next widget to select when pressing tab.
     */
-    Widgets::Widget *nextKeyboardWidget = nullptr;
+    Widget *nextKeyboardWidget = nullptr;
 
     /** The previous widget to select when pressing shift-tab.
      */
-    Widgets::Widget *prevKeyboardWidget = nullptr;
+    Widget *prevKeyboardWidget = nullptr;
 
     /** The widget is enabled.
      */

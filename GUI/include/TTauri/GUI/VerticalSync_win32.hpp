@@ -7,7 +7,7 @@
 #include <nonstd/span>
 #include <thread>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class VerticalSync_win32 {
     enum class State {

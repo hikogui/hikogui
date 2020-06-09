@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class RenderDoc {
     /** Pointer to the RenderDoc API struct.

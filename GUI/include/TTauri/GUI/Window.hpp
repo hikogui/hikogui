@@ -7,13 +7,13 @@
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 #include "TTauri/GUI/Window_vulkan_win32.hpp"
-namespace TTauri::GUI {
+namespace TTauri {
 using Window = Window_vulkan_win32;
 }
 
 #elif OPERATING_SYSTEM == OS_MACOS
 #include "TTauri/GUI/Window_vulkan_macos.hpp"
-namespace TTauri::GUI {
+namespace TTauri {
 using Window = Window_vulkan_macos;
 }
 

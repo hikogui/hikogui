@@ -10,25 +10,30 @@
 #include "TTauri/Foundation/globals.hpp"
 #include <memory>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
-void startup()
+/** Reference counter to determine the amount of startup/shutdowns.
+*/
+static std::atomic<uint64_t> startupCount = 0;
+
+
+void widgets_startup()
 {
     if (startupCount.fetch_add(1) != 0) {
         // The library has already been initialized.
         return;
     }
 
-    TTauri::startup();
-    TTauri::GUI::startup();
-    LOG_INFO("TTauri::GUI::Widgets startup");
+    foundation_startup();
+    gui_startup();
+    LOG_INFO("Widgets startup");
 
     Widget_delete = [](auto *self) {
         return delete self;
     };
 
     WindowWidget_makeUnique = [](auto &window) {
-        return std::unique_ptr<Widgets::WindowWidget,WidgetDeleter>{ new Widgets::WindowWidget(window) };
+        return std::unique_ptr<WindowWidget,WidgetDeleter>{ new WindowWidget(window) };
     };
 
     Widget_needs = [](auto &self, auto displayTimePoint) {
@@ -100,16 +105,16 @@ void startup()
     };
 }
 
-void shutdown()
+void widgets_shutdown()
 {
     if (startupCount.fetch_sub(1) != 1) {
         // This is not the last instantiation.
         return;
     }
-    LOG_INFO("TTauri::GUI::Widgets shutdown");
+    LOG_INFO("Widgets shutdown");
 
-    TTauri::GUI::shutdown();
-    TTauri::shutdown();
+    gui_shutdown();
+    foundation_shutdown();
 }
 
 }

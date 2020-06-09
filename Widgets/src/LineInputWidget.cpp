@@ -7,7 +7,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 using namespace TTauri::Text;
 using namespace std::literals;
@@ -178,7 +178,7 @@ void LineInputWidget::handleCommand(string_ltag command) noexcept
     Widget::handleCommand(command);
 }
 
-void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexcept
+void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
 {
     Widget::handleKeyboardEvent(event);
 
@@ -190,11 +190,11 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     auto lock = std::scoped_lock(guiMutex);
 
     switch (event.type) {
-    case GUI::KeyboardEvent::Type::Grapheme:
+    case KeyboardEvent::Type::Grapheme:
         field.insertGrapheme(event.grapheme);
         break;
 
-    case GUI::KeyboardEvent::Type::PartialGrapheme:
+    case KeyboardEvent::Type::PartialGrapheme:
         field.insertPartialGrapheme(event.grapheme);
         break;
 
@@ -204,7 +204,7 @@ void LineInputWidget::handleKeyboardEvent(GUI::KeyboardEvent const &event) noexc
     forceLayout = true;
 }
 
-void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
+void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
     // Make sure we only scroll when dragging outside the widget.
@@ -216,7 +216,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
         return;
     }
 
-    if (event.type == GUI::MouseEvent::Type::ButtonDown && event.cause.leftButton) {
+    if (event.type == MouseEvent::Type::ButtonDown && event.cause.leftButton) {
         if (textRectangle.contains(event.position)) {
             let mouseInTextPosition = textInvTranslate * event.position;
 
@@ -243,7 +243,7 @@ void LineInputWidget::handleMouseEvent(GUI::MouseEvent const &event) noexcept {
 
         forceRedraw = true;
 
-    } else if (event.type == GUI::MouseEvent::Type::Drag && event.cause.leftButton) {
+    } else if (event.type == MouseEvent::Type::Drag && event.cause.leftButton) {
         // When the mouse is dragged beyond the line input,
         // start scrolling the text and select on the edge of the textRectangle.
         if (event.position.x() > textRectangle.p3().x()) {

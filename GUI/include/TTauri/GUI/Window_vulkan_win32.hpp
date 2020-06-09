@@ -10,7 +10,7 @@ namespace TTauri {
 class Application_win32;
 }
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class Window_vulkan_win32 final : public Window_vulkan {
 public:

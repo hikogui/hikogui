@@ -19,7 +19,7 @@ template<typename T> struct PixelMap;
 class R16G16B16A16SFloat;
 };
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 struct Page;
 struct Vertex;

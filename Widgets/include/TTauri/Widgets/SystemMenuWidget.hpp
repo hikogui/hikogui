@@ -11,7 +11,7 @@
 #include <array>
 
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class SystemMenuWidget : public Widget {
     PixelMap<R16G16B16A16SFloat> image;

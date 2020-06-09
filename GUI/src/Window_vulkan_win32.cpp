@@ -12,10 +12,9 @@
 
 #pragma comment( lib, "dwmapi" )
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 using namespace std;
-using namespace TTauri;
 
 template<typename T>
 inline T *to_ptr(LPARAM lParam) noexcept

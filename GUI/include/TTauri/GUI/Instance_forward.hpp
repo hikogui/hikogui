@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/os_detect.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 class Instance_vulkan_win32;

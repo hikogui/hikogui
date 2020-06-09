@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <memory>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class Pipeline_base {
 public:

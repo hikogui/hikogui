@@ -7,7 +7,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 ImageWidget::ImageWidget(Window &window, Widget *parent, PixelMap<R16G16B16A16SFloat> image) noexcept :
     Widget(window, parent, vec{Theme::height, Theme::height}),
@@ -190,7 +190,7 @@ PixelMap<R16G16B16A16SFloat> ImageWidget::drawTrafficLightsImage(PipelineImage::
     return linearMap;
 }
 
-PipelineImage::Backing::ImagePixelMap ImageWidget::drawImage(std::shared_ptr<GUI::PipelineImage::Image> image) noexcept
+PipelineImage::Backing::ImagePixelMap ImageWidget::drawImage(std::shared_ptr<PipelineImage::Image> image) noexcept
 {
     if constexpr (operatingSystem == OperatingSystem::Windows) {
         return { std::move(image), drawApplicationIconImage(*image) };

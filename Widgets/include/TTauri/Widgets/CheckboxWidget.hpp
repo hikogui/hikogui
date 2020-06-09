@@ -12,7 +12,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 template<typename ValueType, ValueType TrueValue, ValueType FalseValue>
 class CheckboxWidget : public Widget {
@@ -106,12 +106,12 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 
-    void handleMouseEvent(GUI::MouseEvent const &event) noexcept override {
+    void handleMouseEvent(MouseEvent const &event) noexcept override {
         Widget::handleMouseEvent(event);
 
         if (enabled) {
             if (
-                event.type == GUI::MouseEvent::Type::ButtonUp &&
+                event.type == MouseEvent::Type::ButtonUp &&
                 event.cause.leftButton &&
                 rectangle().contains(event.position)
             ) {

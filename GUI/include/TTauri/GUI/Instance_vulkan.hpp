@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Instance_base.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 /** Vulkan Device controller.
  * Manages Vulkan device and a set of Windows.

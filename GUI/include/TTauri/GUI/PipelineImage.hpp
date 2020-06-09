@@ -11,7 +11,7 @@
 #include "TTauri/Foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 
-namespace TTauri::GUI::PipelineImage {
+namespace TTauri::PipelineImage {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlas and sharing for all views.

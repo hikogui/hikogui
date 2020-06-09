@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/GUI/MouseButtons.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 struct MouseEvent {
     enum class Type { None, Entered, Exited, Move, Drag, ButtonDown, ButtonUp };

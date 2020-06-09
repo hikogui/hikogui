@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/vec.hpp"
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 enum class SubpixelOrientation {
     Unknown = 0,

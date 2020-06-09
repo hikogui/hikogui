@@ -14,7 +14,7 @@
 #include <thread>
 #include <vector>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 
 /** Vulkan Device controller.

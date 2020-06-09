@@ -12,7 +12,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <nonstd/span>
 
-namespace TTauri::GUI::PipelineFlat {
+namespace TTauri::PipelineFlat {
 
 /*! Pipeline for rendering simple flat shaded quats.
  */

@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/R32G32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::GUI::PipelineSDF {
+namespace TTauri::PipelineSDF {
 
 struct SpecializationConstants {
     float SDF8maxDistance;

@@ -19,19 +19,19 @@ using namespace std;
 using namespace TTauri;
 using namespace TTauri::Audio;
 using namespace TTauri;
-using namespace TTauri::GUI;
-using namespace TTauri::GUI::Widgets;
+using namespace TTauri;
+using namespace TTauri;
 
 class MyWindowDelegate : public WindowDelegate {
 public:
     void openingWindow(Window &window) override
     {
-        auto &button1 = window.addWidget<GUI::Widgets::ButtonWidget>(u8"Hello \u4e16\u754c");
+        auto &button1 = window.addWidget<ButtonWidget>(u8"Hello \u4e16\u754c");
         button1.placeLeft();
         button1.placeAtTop();
         button1.placeAtBottom();
 
-        auto &button2 = window.addWidget<GUI::Widgets::ButtonWidget>(u8"Hello world");
+        auto &button2 = window.addWidget<ButtonWidget>(u8"Hello world");
         button2.placeRight();
         button2.placeAtTop();
         button2.placeRightOf(button1);

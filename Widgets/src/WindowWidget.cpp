@@ -7,7 +7,7 @@
 #include "TTauri/Widgets/ContainerWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 using namespace std;
 

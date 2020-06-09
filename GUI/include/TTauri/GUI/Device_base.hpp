@@ -12,7 +12,7 @@
 #include <mutex>
 #include <tuple>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 /*! A Device that handles a set of windows.
  */

@@ -16,16 +16,12 @@ namespace TTauri::Text {
 inline std::unique_ptr<UnicodeData> unicodeData;
 
 
-/** Reference counter to determine the amount of startup/shutdowns.
-*/
-inline std::atomic<uint64_t> startupCount = 0;
-
 /** Startup the Text library.
 */
-void startup();
+void text_startup();
 
 /** Shutdown the Text library.
 */
-void shutdown();
+void text_shutdown();
 
 }

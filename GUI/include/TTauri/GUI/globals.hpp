@@ -12,7 +12,7 @@
 #include <mutex>
 #include <memory>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 /** Delegate for GUI related events.
  */
@@ -40,17 +40,13 @@ inline KeyboardBindings keyboardBindings;
 
 inline constexpr uint32_t defaultNumberOfSwapchainImages = 2;
 
-/** Reference counter to determine the amount of startup/shutdowns.
- */
-inline std::atomic<uint64_t> startupCount = 0;
-
 /** Startup the GUI library.
  */
-void startup();
+void gui_startup();
 
 /** Shutdown the GUI library.
 */
-void shutdown();
+void gui_shutdown();
 
 }
 

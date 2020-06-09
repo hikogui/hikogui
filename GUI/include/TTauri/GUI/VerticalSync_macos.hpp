@@ -6,7 +6,7 @@
 #include <nonstd/span>
 #include <thread>
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 class VerticalSync_macos {
     enum class State {

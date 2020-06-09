@@ -11,7 +11,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri::GUI::Widgets {
+namespace TTauri {
 
 class ButtonWidget : public Widget {
 protected:
@@ -36,7 +36,7 @@ public:
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
-    void handleMouseEvent(GUI::MouseEvent const &event) noexcept override;
+    void handleMouseEvent(MouseEvent const &event) noexcept override;
     void handleCommand(string_ltag command) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;

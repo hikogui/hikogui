@@ -38,7 +38,7 @@ class Application_base_dummy {};
  */
 class Application_base : public Application_base_dummy
 #if defined(BUILD_TTAURI_GUI)
-    , GUI::InstanceDelegate
+    , InstanceDelegate
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
     , Audio::AudioSystemDelegate

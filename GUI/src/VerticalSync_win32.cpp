@@ -39,7 +39,7 @@ PFND3DKMT_WAITFORVERTICALBLANKEVENT pfnD3DKMTWaitForVerticalBlankEvent;
 PFND3DKMT_OPENADAPTERFROMHDC		pfnD3DKMTOpenAdapterFromHdc;
 PFND3DKMT_CLOSEADAPTER		        pfnD3DKMTCloseAdapter;
 
-namespace TTauri::GUI {
+namespace TTauri {
 
 using namespace std;
 
