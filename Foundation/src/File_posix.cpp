@@ -25,7 +25,7 @@ File::File(URL const &location, AccessMode accessMode) :
         openFlags = O_WRONLY;;
     } else {
         TTAURI_THROW(io_error("Invalid AccessMode; expecting Readable and/or Writeable.")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 
@@ -51,7 +51,7 @@ File::File(URL const &location, AccessMode accessMode) :
 
     } else {
         TTAURI_THROW(io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 
@@ -73,8 +73,8 @@ File::File(URL const &location, AccessMode accessMode) :
     let fileName = location.nativePath();
     if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
         TTAURI_THROW(io_error("Could not open file")
-            .set<"error_message"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location)
+            .set<error_message_tag>(getLastErrorMessage())
+            .set<url_tag>(location)
         );
     }
 }
@@ -89,8 +89,8 @@ void File::close()
     if (fileHandle != -1) {
         if (::close(fileHandle) != 0) {
             TTAURI_THROW(io_error("Could not close file")
-                .set<"error_message"_tag>(getLastErrorMessage())
-                .set<"url"_tag>(location)
+                .set<error_message_tag>(getLastErrorMessage())
+                .set<url_tag>(location)
             );
         }
         fileHandle = -1;
@@ -104,7 +104,7 @@ size_t File::fileSize(URL const &url)
     struct ::stat statbuf;
 
     if (::stat(name.data(), &statbuf) == -1) {
-        TTAURI_THROW(io_error("Could not retrieve file attributes").set<"url"_tag>(url));
+        TTAURI_THROW(io_error("Could not retrieve file attributes").set<url_tag>(url));
     }
 
     return numeric_cast<size_t>(statbuf.st_size);

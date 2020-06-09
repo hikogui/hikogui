@@ -12,7 +12,8 @@ ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
     for (let &theme_directory: theme_directories) {
         let theme_directory_glob = theme_directory / "**" / "*.theme.json";
         for (let &theme_url: theme_directory_glob.urlsByScanningWithGlobPattern()) {
-            auto t = trace<"theme_scan"_tag>{};
+            struct theme_scan_tag {};
+            auto t = trace<theme_scan_tag>{};
 
             try {
                 themes.push_back(std::make_unique<Theme>(theme_url));

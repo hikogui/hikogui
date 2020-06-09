@@ -15,7 +15,7 @@ Theme::Theme(URL const &url)
         let data = parseJSON(url);
         parse(data);
     } catch (error &e) {
-        e.set<"url"_tag>(url);
+        e.set<url_tag>(url);
         throw;
     }
 }

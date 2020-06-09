@@ -21,7 +21,7 @@ File::File(URL const &location, AccessMode accessMode) :
         desiredAccess = GENERIC_WRITE;
     } else {
         TTAURI_THROW(io_error("Invalid AccessMode; expecting Readable and/or Writeable.")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 
@@ -55,7 +55,7 @@ File::File(URL const &location, AccessMode accessMode) :
 
     } else {
         TTAURI_THROW(io_error("Invalid AccessMode; expecting CreateFile and/or OpenFile.")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 
@@ -89,8 +89,8 @@ File::File(URL const &location, AccessMode accessMode) :
     }
 
     TTAURI_THROW(io_error("Could not open file")
-        .set<"error_msg"_tag>(getLastErrorMessage())
-        .set<"url"_tag>(location)
+        .set<error_msg_tag>(getLastErrorMessage())
+        .set<url_tag>(location)
     );
 }
 
@@ -104,8 +104,8 @@ void File::close()
     if (fileHandle != INVALID_HANDLE_VALUE) {
         if (!CloseHandle(fileHandle)) {
             TTAURI_THROW(io_error("Could not close file")
-                .set<"error_msg"_tag>(getLastErrorMessage())
-                .set<"url"_tag>(location)
+                .set<error_msg_tag>(getLastErrorMessage())
+                .set<url_tag>(location)
             );
         }
         fileHandle = INVALID_HANDLE_VALUE;
@@ -126,8 +126,8 @@ ssize_t File::write(std::byte const *data, ssize_t size)
 
         if (!WriteFile(fileHandle, data, write_size, &written_size, nullptr)) {
             TTAURI_THROW(io_error("Could not write to file")
-                .set<"error_msg"_tag>(getLastErrorMessage())
-                .set<"url"_tag>(location)
+                .set<error_msg_tag>(getLastErrorMessage())
+                .set<url_tag>(location)
             );
         } else if (written_size == 0) {
             break;
@@ -148,7 +148,7 @@ size_t File::fileSize(URL const &url)
 
     WIN32_FILE_ATTRIBUTE_DATA attributes;
     if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
-        TTAURI_THROW(io_error("Could not retrieve file attributes").set<"url"_tag>(url));
+        TTAURI_THROW(io_error("Could not retrieve file attributes").set<url_tag>(url));
     }
 
     LARGE_INTEGER size;
@@ -172,7 +172,7 @@ void File::createDirectory(URL const &url, bool hierarchy)
         try {
             File::createDirectory(url.urlByRemovingFilename(), true);
         } catch (io_error &e) {
-            e.set<"url"_tag>(url);
+            e.set<url_tag>(url);
             throw;
         }
 
@@ -182,8 +182,8 @@ void File::createDirectory(URL const &url, bool hierarchy)
     }
 
     TTAURI_THROW(io_error("Could not create directory")
-        .set<"error_msg"_tag>(getLastErrorMessage())
-        .set<"url"_tag>(url)
+        .set<error_msg_tag>(getLastErrorMessage())
+        .set<url_tag>(url)
     );
 }
 

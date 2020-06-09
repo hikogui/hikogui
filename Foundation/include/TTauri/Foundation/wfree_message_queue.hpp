@@ -124,7 +124,7 @@ public:
     *
     * \return A scoped write operation which can be derefenced to access the message value.
     */
-    template<string_tag BlockCounterTag=0>
+    template<typename BlockCounterTag=void>
     scoped_write_operation write() noexcept {
         return {this, write_start<BlockCounterTag>()};
     }
@@ -146,13 +146,14 @@ public:
         return messages[index % capacity].value;
     }
 
-    /*! Start a write into the message queue.
+    /** Start a write into the message queue.
      * This function is wait-free when the queue is not full().
      * Every write_start() must be accompanied by a write_finish().
      *
-     * \return The index of the message.
+     * @param CounterTag counter to increment when write is contended
+     * @return The index of the message.
      */
-    template<string_tag BlockCounterTag=0>
+    template<typename CounterTag=void>
     index_type write_start() noexcept {
         let index = head.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
@@ -161,7 +162,7 @@ public:
         // So we have to wait until the message is empty, however when it is empty we are
         // the only one that holds the message, so we only need to mark it that we are done with
         // writing the message.
-        wait_for_transition(message.in_use, false, std::memory_order_acquire);
+        wait_for_transition<CounterTag>(message.in_use, false, std::memory_order_acquire);
         return index;
     }
 
@@ -183,12 +184,13 @@ public:
      *
      * \return The index of the message.
      */
+    template<typename CounterTag=void>
     index_type read_start() noexcept {
         let index = tail.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.
-        wait_for_transition(message.in_use, true, std::memory_order_acquire);
+        wait_for_transition<CounterTag>(message.in_use, true, std::memory_order_acquire);
         return index;
     }
 

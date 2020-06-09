@@ -22,20 +22,28 @@
 
 namespace TTauri {
 
+struct url_tag {};
+struct line_tag {};
+struct column_tag {};
+struct vk_result_tag {};
+struct errno_tag {};
+struct error_msg_tag {};
+struct key_tag {};
+
 class error {
 protected:
     std::string _message;
 
 private:
-    virtual error &set(string_tag info_tag, datum const &info_value) noexcept = 0;
+    virtual error &set(std::type_index info_tag, datum const &info_value) noexcept = 0;
 
-    virtual error &set(string_tag info_tag, datum &&info_value) noexcept = 0;
+    virtual error &set(std::type_index info_tag, datum &&info_value) noexcept = 0;
 
-    virtual datum &get(string_tag info_tag) noexcept = 0;
+    virtual datum &get(std::type_index info_tag) noexcept = 0;
 
-    virtual datum const &get(string_tag info_tag) const noexcept = 0;
+    virtual datum const &get(std::type_index info_tag) const noexcept = 0;
 
-    virtual bool has(string_tag info_tag) const noexcept = 0;
+    virtual bool has(std::type_index info_tag) const noexcept = 0;
 
 
 public:
@@ -48,12 +56,12 @@ public:
         }
     }
 
-    virtual string_tag tag() const noexcept = 0;
+    virtual std::type_index tag() const noexcept = 0;
     virtual std::string error_info_string() const noexcept = 0;
 
     /*! Return the name of the exception.
     */
-    std::string name() const noexcept { return tt5_decode(tag()); }
+    std::string name() const noexcept { return tag().name(); }
 
     std::string string() const noexcept {
         return fmt::format("{}: {}. {}",
@@ -76,17 +84,17 @@ public:
      * A non-virtual method like this will return the actual class instance
      * which means throw knows exactly which class is being thrown.
      */
-    template<string_tag InfoTag, typename InfoValueType>
+    template<typename InfoTag, typename InfoValueType>
     error &set(InfoValueType &&info_value) noexcept {
-        return set(InfoTag, datum{std::forward<InfoValueType>(info_value)});
+        return set(std::type_index(typeid(InfoTag)), datum{std::forward<InfoValueType>(info_value)});
     }
 
     error &set_location(parse_location const &location) noexcept {
         if (location.has_file()) {
-            set<"url"_tag>(location.file());
+            set<url_tag>(location.file());
         }
-        set<"line"_tag>(location.line());
-        set<"column"_tag>(location.column());
+        set<line_tag>(location.line());
+        set<column_tag>(location.column());
         return *this;
     }
 
@@ -94,42 +102,40 @@ public:
      * Used when the current exception is a expression inside a statement.
      */
     error &merge_location(parse_location statement_location) noexcept {
-        let line = static_cast<int>(get<"line"_tag>());
-        let column = static_cast<int>(get<"column"_tag>());
+        let line = static_cast<int>(get<line_tag>());
+        let column = static_cast<int>(get<column_tag>());
 
         auto expression_location = parse_location{line, column};
-        if (has<"url"_tag>()) {
-            let url = static_cast<URL>(get<"url"_tag>());
+        if (has<url_tag>()) {
+            let url = static_cast<URL>(get<url_tag>());
             expression_location.set_file(std::move(url));
         }
 
         statement_location += expression_location;
 
         if (statement_location.has_file()) {
-            set<"url"_tag>(statement_location.file());
+            set<url_tag>(statement_location.file());
         }
-        set<"line"_tag>(statement_location.line());
-        set<"column"_tag>(statement_location.column());
+        set<line_tag>(statement_location.line());
+        set<column_tag>(statement_location.column());
         return *this;
     }
 
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     datum &get() noexcept {
-        return get(InfoTag);
+        return get(std::type_index(typeid(InfoTag)));
     }
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     datum const &get() const noexcept {
-        return get(InfoTag);
+        return get(std::type_index(typeid(InfoTag)));
     }
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     bool has() const noexcept {
-        return has(InfoTag);
+        return has(std::type_index(typeid(InfoTag)));
     }
-
-    
 
     friend std::string to_string(error const &rhs) {
         return rhs.string();
@@ -142,39 +148,39 @@ public:
 };
 
 
-template<string_tag Tag, string_tag... InfoTags>
+template<typename Tag, typename... InfoTags>
 class sub_error final : public error {
     tagged_map<datum,InfoTags...> error_info = {};
 
-    error &set(string_tag info_tag, datum const &info_value) noexcept override {
+    error &set(std::type_index info_tag, datum const &info_value) noexcept override {
         if (error_info.has(info_tag) == 1) {
             error_info.get(info_tag) = info_value;
         } else {
-            LOG_WARNING("Unknown error_info '{}' on error '{}'", tt5_decode(info_tag), tt5_decode(Tag));
+            LOG_WARNING("Unknown error_info '{}' on error '{}'", info_tag.name(), std::type_index(typeid(Tag)).name());
         }
         return *this;
     }
 
-    error &set(string_tag info_tag, datum &&info_value) noexcept override {
+    error &set(std::type_index info_tag, datum &&info_value) noexcept override {
         if (error_info.has(info_tag) == 1) {
             error_info.get(info_tag) = std::move(info_value);
         } else {
-            LOG_WARNING("Unknown error_info '{}' on error '{}'", tt5_decode(info_tag), tt5_decode(Tag));
+            LOG_WARNING("Unknown error_info '{}' on error '{}'", info_tag.name(), std::type_index(typeid(Tag)).name());
         }
         return *this;
     }
 
-    datum &get(string_tag info_tag) noexcept override {
+    datum &get(std::type_index info_tag) noexcept override {
         ttauri_assert(error_info.has(info_tag) == 1);
         return error_info.get(info_tag);
     }
 
-    datum const &get(string_tag info_tag) const noexcept override {
+    datum const &get(std::type_index info_tag) const noexcept override {
         ttauri_assert(error_info.has(info_tag) == 1);
         return error_info.get(info_tag);
     }
 
-    bool has(string_tag info_tag) const noexcept override {
+    bool has(std::type_index info_tag) const noexcept override {
         if (error_info.has(info_tag) == 0) {
             return false;
         } else {
@@ -184,9 +190,9 @@ class sub_error final : public error {
 
 
 public:
-    static constexpr string_tag TAG = Tag;
+    using TAG = Tag;
 
-    string_tag tag() const noexcept override { return Tag; }
+    std::type_index tag() const noexcept override { return std::type_index(typeid(Tag)); }
 
     template<typename Fmt, typename... Args>
     sub_error(Fmt const &fmt, Args &&... args) noexcept :
@@ -201,37 +207,37 @@ public:
      * A non-virtual method like this will return the actual class instance
      * which means throw knows exactly which class is being thrown.
      */
-    template<string_tag InfoTag, typename InfoValueType>
+    template<typename InfoTag, typename InfoValueType>
     sub_error &set(InfoValueType &&info_value) noexcept {
-        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        static_assert(has_tag<InfoTag,InfoTags...>(), "Unknown tag of error info value.");
         error_info.template get<InfoTag>() = std::forward<InfoValueType>(info_value);
         return *this;
     }
 
     sub_error &set_location(parse_location const &location) noexcept {
         if (location.has_file()) {
-            set<"url"_tag>(location.file());
+            set<url_tag>(location.file());
         }
-        set<"line"_tag>(location.line());
-        set<"column"_tag>(location.column());
+        set<line_tag>(location.line());
+        set<column_tag>(location.column());
         return *this;
     }
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     datum &get() noexcept {
-        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        static_assert(has_tag<InfoTag,InfoTags...>(), "Unknown tag of error info value.");
         return error_info.template get<InfoTag>();
     }
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     datum const &get() const noexcept {
-        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        static_assert(has_tag<InfoTag,InfoTags...>(), "Unknown tag of error info value.");
         return error_info.template get<InfoTag>();
     }
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     bool has() const noexcept {
-        static_assert(count_tag_if<InfoTags...>(InfoTag) == 1, "Unknown tag of error info value.");
+        static_assert(has_tag<InfoTag,InfoTags...>(), "Unknown tag of error info value.");
         return !((error_info.template get<InfoTag>()).is_undefined());
     }
 
@@ -250,13 +256,14 @@ public:
             };
 
             r += fmt::format("{}={}",
-                tt5_decode(error_info.get_tag(i)),
+                error_info.get_tag(i).name(),
                 error_info[i].repr()
             );
         }
         return r;
     }
 };
+
 
 /*! Error to throw when parsing some kind of document.
  * This should be the primary exception to throw when there is an error in the document.
@@ -267,19 +274,27 @@ public:
  *
  * For this reasons ParserErrors should not be ignored by the callees of a parser.
  */
-using parse_error = sub_error<"parse_error"_tag, "url"_tag, "line"_tag, "column"_tag>;
+struct parse_error_tag {};
+using parse_error = sub_error<parse_error_tag, url_tag, line_tag, column_tag>;
 
 /** Error to throw when an operation can not be executed due to the type of its operants.
 ** This is for example used in universal_type.
 **/
-using invalid_operation_error = sub_error<"invalid_op"_tag, "url"_tag, "line"_tag, "column"_tag>;
+struct invalid_operation_tag {};
+using invalid_operation_error = sub_error<invalid_operation_tag, url_tag, line_tag, column_tag>;
 
-using url_error = sub_error<"url_error"_tag, "url"_tag>;
-using io_error = sub_error<"io_error"_tag, "url"_tag, "errno"_tag, "error_msg"_tag>;
-using key_error = sub_error<"key_error"_tag, "key"_tag>;
-using gui_error = sub_error<"gui_error"_tag, "vk_result"_tag>;
-using bounds_error = sub_error<"bounds_error"_tag>;
-using math_error = sub_error<"math_error"_tag>;
+struct url_error_tag {};
+using url_error = sub_error<url_error_tag, url_tag>;
+struct io_error_tag {};
+using io_error = sub_error<io_error_tag, url_tag, errno_tag, error_msg_tag>;
+struct key_error_tag {};
+using key_error = sub_error<key_error_tag, key_tag>;
+struct gui_error_tag {};
+using gui_error = sub_error<gui_error_tag, vk_result_tag>;
+struct bounds_error_tag {};
+using bounds_error = sub_error<bounds_error_tag>;
+struct math_error_tag {};
+using math_error = sub_error<math_error_tag>;
 
 
 #define TTAURI_THROW(x) throw std::move((x).log(__FILE__, __LINE__));

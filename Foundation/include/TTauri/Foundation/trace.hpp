@@ -14,6 +14,8 @@
 #include <array>
 #include <utility>
 #include <ostream>
+#include <typeinfo>
+#include <typeindex>
 
 #pragma once
 
@@ -73,7 +75,7 @@ inline thread_local trace_stack_type trace_stack;
 */
 void trace_record() noexcept;
 
-template<string_tag Tag, string_tag... InfoTags>
+template<typename Tag, typename... InfoTags>
 struct trace_data {
     /*! id of the parent trace.
     * zero means inactive trace
@@ -96,18 +98,18 @@ struct trace_data {
     trace_data(trace_data &&other) = default;
     trace_data &operator=(trace_data &&other) = default;
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     sdatum &get() noexcept {
         return info.template get<InfoTag>();
     }
 
-    template<string_tag InfoTag>
+    template<typename InfoTag>
     sdatum const &get() const noexcept {
         return info.template get<InfoTag>();
     }
 };
 
-template<string_tag Tag, string_tag... InfoTags>
+template<typename Tag, typename... InfoTags>
 std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &rhs) {
     auto info_string = std::string{};
 
@@ -116,14 +118,14 @@ std::ostream &operator<<(std::ostream &lhs, trace_data<Tag, InfoTags...> const &
         if (counter++ > 0) {
             info_string += ", ";
         }
-        info_string += tt5_decode(rhs.info.get_tag(i));
+        info_string += rhs.info.get_tag(i).name();
         info_string += "=";
         info_string += static_cast<std::string>(rhs.info[i]);
     }
 
     lhs << fmt::format("parent={} tag={} start={} {}",
         rhs.parent_id,
-        Tag,
+        std::type_index(typeid(Tag)).name(),
         format_iso8601(cpu_utc_clock::convert(rhs.timestamp)),
         info_string
     );
@@ -207,13 +209,13 @@ public:
     }
 };
 
-template<string_tag Tag>
+template<typename Tag>
 inline trace_statistics_type trace_statistics;
 
-inline wfree_unordered_map<string_tag,trace_statistics_type *,MAX_NR_TRACES> trace_statistics_map;
+inline wfree_unordered_map<std::type_index,trace_statistics_type *,MAX_NR_TRACES> trace_statistics_map;
 
 
-template<string_tag Tag, string_tag... InfoTags>
+template<typename Tag, typename... InfoTags>
 class trace final {
     // If this pointer is not an volatile, clang will optimize it away and replacing it
     // with direct access to the trace_stack variable. This trace_stack variable is in local storage,
@@ -223,7 +225,7 @@ class trace final {
     trace_data<Tag, InfoTags...> data;
 
     no_inline static void add_to_map() {
-        trace_statistics_map.insert(Tag, &trace_statistics<Tag>);
+        trace_statistics_map.insert(std::type_index(typeid(Tag)), &trace_statistics<Tag>);
     }
 
 public:
@@ -260,7 +262,7 @@ public:
     trace &operator=(trace const &) = delete;
     trace &operator=(trace &&) = delete;
 
-    template<string_tag InfoTag, typename T>
+    template<typename InfoTag, typename T>
     trace &set(T &&value) {
         data.template get<InfoTag>() = std::forward<T>(value);
         return *this;

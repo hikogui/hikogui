@@ -8,6 +8,8 @@
 #include <array>
 #include <optional>
 #include <vector>
+#include <typeinfo>
+#include <typeindex>
 
 namespace TTauri {
 
@@ -16,7 +18,7 @@ struct wfree_unordered_map_item {
     /*! The value.
      * It comes first because it is of unknown size
      */
-    V value = {};
+    V value;
 
     /*! Hash for quick comparison and for state.
      * Special values:
@@ -26,10 +28,17 @@ struct wfree_unordered_map_item {
      *
      * Natural hash values 0, 1, 2 must be mapped to 3, 4, 5.
      */
-    std::atomic<size_t> hash = 0;
-    K key = {};
+    std::atomic<size_t> hash;
+    K key;
 
-    constexpr wfree_unordered_map_item() noexcept = default;
+    template<typename X=K, std::enable_if_t<std::is_same_v<X,std::type_index>, int> = 0>
+    constexpr wfree_unordered_map_item() noexcept :
+        value(), hash(0), key(std::type_index(typeid(void))) {}
+
+    template<typename X=K, std::enable_if_t<!std::is_same_v<X,std::type_index>, int> = 0>
+    constexpr wfree_unordered_map_item() noexcept :
+        value(), hash(0), key() {}
+
     constexpr wfree_unordered_map_item(wfree_unordered_map_item const &) noexcept = delete;
     constexpr wfree_unordered_map_item(wfree_unordered_map_item &&) noexcept = delete;
     ~wfree_unordered_map_item() noexcept = default;

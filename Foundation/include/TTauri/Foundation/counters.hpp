@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/string_tag.hpp"
 #include "TTauri/Foundation/wfree_unordered_map.hpp"
 #include <nonstd/span>
+#include <typeinfo>
+#include <typeindex>
 
 namespace TTauri {
 
@@ -16,19 +17,19 @@ struct counter_map_value_type {
     int64_t previous_value;
 };
 
-using counter_map_type = wfree_unordered_map<string_tag,counter_map_value_type,MAX_NR_COUNTERS>;
+using counter_map_type = wfree_unordered_map<std::type_index,counter_map_value_type,MAX_NR_COUNTERS>;
 
 // To reduce number of executed instruction this is a global varable.
 // The wfree_unordered_map does not need to be initialized.
 inline counter_map_type counter_map;
 
-template<string_tag TAG>
+template<typename Tag>
 struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.
     alignas(cache_line_size) inline static std::atomic<int64_t> counter = 0;
 
     no_inline void add_to_map() const noexcept {
-        counter_map.insert(TAG, counter_map_value_type{&counter, 0});
+        counter_map.insert(std::type_index(typeid(Tag)), counter_map_value_type{&counter, 0});
     }
 
     int64_t increment() const noexcept {
@@ -48,22 +49,22 @@ struct counter_functor {
     // Don't implement readAndSet, a set to zero would cause the counters to be reinserted.
 };
 
-template<string_tag TAG>
+template<typename Tag>
 inline int64_t increment_counter() noexcept 
 {
-    return counter_functor<TAG>{}.increment();
+    return counter_functor<Tag>{}.increment();
 }
 
-template<string_tag TAG>
+template<typename Tag>
 inline int64_t read_counter() noexcept
 {
-    return counter_functor<TAG>{}.read();
+    return counter_functor<Tag>{}.read();
 }
 
 /*!
  * \return The current count, count since last read.
  */
-inline std::pair<int64_t, int64_t> read_counter(string_tag tag) noexcept
+inline std::pair<int64_t, int64_t> read_counter(std::type_index tag) noexcept
 {
     auto &item = counter_map[tag];
 
@@ -72,11 +73,6 @@ inline std::pair<int64_t, int64_t> read_counter(string_tag tag) noexcept
     let count_since_last_read = count - item.previous_value;
     item.previous_value = count;
     return {count, count_since_last_read};
-}
-
-inline std::pair<int64_t, int64_t> read_counter(std::string const &name) noexcept
-{
-    return read_counter(tt5_encode<string_tag>(name));
 }
 
 }

@@ -30,7 +30,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     }
     else {
         TTAURI_THROW(io_error("Illegal access mode WRONLY/0 when viewing file.")
-            .set<"url"_tag>(location())
+            .set<url_tag>(location())
         );
     }
 
@@ -43,8 +43,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     } else {
         if ((data = MapViewOfFile(fileMappingObject->mapHandle, desiredAccess, fileOffsetHigh, fileOffsetLow, size)) == NULL) {
             TTAURI_THROW(io_error("Could not map view of file.")
-                .set<"error_msg"_tag>(getLastErrorMessage())
-                .set<"url"_tag>(location())
+                .set<error_msg_tag>(getLastErrorMessage())
+                .set<url_tag>(location())
             );
         }
     }
@@ -103,8 +103,8 @@ void FileView::flush(void* base, size_t size)
 {
     if (!FlushViewOfFile(base, size)) {
         TTAURI_THROW(io_error("Could not flush file")
-            .set<"error_msg"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location())
+            .set<error_msg_tag>(getLastErrorMessage())
+            .set<url_tag>(location())
         );
     }
 }

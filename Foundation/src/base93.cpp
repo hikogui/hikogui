@@ -204,14 +204,14 @@ std::optional<bstring> base93_decode(std::string_view str, size_t &offset)
                 if (!base93_crc_check(number)) {
                     let [line, column] = count_line_and_columns(str.begin(), str.begin() + offset-1);
                     TTAURI_THROW(parse_error("CRC error.")
-                        .set<"line"_tag>(line).set<"column"_tag>(column)
+                        .set<line_tag>(line).set<column_tag>(column)
                     );
                 }
                 try {
                     base93_number_to_bytes(message, number, nr_digits);
                 } catch (error &e) {
                     let [line, column] = count_line_and_columns(str.begin(), str.begin() + offset-1);
-                    e.set<"line"_tag>(line).set<"column"_tag>(column);
+                    e.set<line_tag>(line).set<column_tag>(column);
                     throw;
                 }
                 number = 0;
@@ -229,7 +229,7 @@ std::optional<bstring> base93_decode(std::string_view str, size_t &offset)
             } else if (static_cast<uint8_t>(c) >= 128) {
                 let [line, column] = count_line_and_columns(str.begin(), str.begin() + offset-1);
                 TTAURI_THROW(parse_error("Non ASCII character found.")
-                    .set<"line"_tag>(line).set<"column"_tag>(column)
+                    .set<line_tag>(line).set<column_tag>(column)
                 );
             }
             break;
@@ -239,7 +239,7 @@ std::optional<bstring> base93_decode(std::string_view str, size_t &offset)
     if (state == state_t::Decoding) {
         let [line, column] = count_line_and_columns(str.begin(), str.begin() + offset-1);
         TTAURI_THROW(parse_error("Incomplete base-93 message.")
-            .set<"line"_tag>(line).set<"column"_tag>(column)
+            .set<line_tag>(line).set<column_tag>(column)
         );
     }
     return {};

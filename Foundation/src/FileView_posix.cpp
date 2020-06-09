@@ -30,7 +30,7 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     }
     else {
         TTAURI_THROW(io_error("Illegal access mode write-only when viewing file.")
-            .set<"url"_tag>(location())
+            .set<url_tag>(location())
         );
     }
 
@@ -39,8 +39,8 @@ FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t
     void *data;
     if ((data = ::mmap(0, size, prot, flags, fileMappingObject->file->fileHandle, _offset)) == MAP_FAILED) {
         TTAURI_THROW(io_error("Could not map view of file.")
-            .set<"error_message"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location())
+            .set<error_message_tag>(getLastErrorMessage())
+            .set<url_tag>(location())
         );
     }
 
@@ -98,8 +98,8 @@ void FileView::flush(void* base, size_t size)
     int flags = MS_SYNC;
     if (!msync(base, size, flags)) {
         TTAURI_THROW(io_error("Could not flush file")
-            .set<"error_message"_tag>(getLastErrorMessage())
-            .set<"url"_tag>(location())
+            .set<error_message_tag>(getLastErrorMessage())
+            .set<url_tag>(location())
         );
     }
 }

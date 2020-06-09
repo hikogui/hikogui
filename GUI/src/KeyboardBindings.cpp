@@ -54,7 +54,7 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
         }
 
     } catch (error &e) {
-        e.set<"url"_tag>(url);
+        e.set<url_tag>(url);
         throw;
     }
 

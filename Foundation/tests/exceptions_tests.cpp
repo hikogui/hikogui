@@ -14,11 +14,11 @@ TEST(Exceptions, Default) {
     let current_count = read_counter<key_error::TAG>();
 
     try {
-        TTAURI_THROW(key_error("This is a key error").set<"key"_tag>("foo"s));
+        TTAURI_THROW(key_error("This is a key error").set<key_tag>("foo"s));
     } catch (error const &e) {
         ASSERT_EQ(e.name(), "key_error"s);
 
-        let key = e.get<"key"_tag>();
+        let key = e.get<key_tag>();
         ASSERT_EQ(key, "foo"s);
 
         ASSERT_EQ(e.error_info_string(), "key=\"foo\""s);

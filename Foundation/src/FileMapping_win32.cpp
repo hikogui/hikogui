@@ -23,7 +23,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     }
     else {
         TTAURI_THROW(io_error("Illigal access mode WRONLY/0 when mapping file.")
-            .set<"url"_tag>(location())
+            .set<url_tag>(location())
         );
     }
 
@@ -35,8 +35,8 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     } else {
         if ((mapHandle = CreateFileMappingA(file->fileHandle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
             TTAURI_THROW(io_error("Could not create file mapping")
-                .set<"error_msg"_tag>(getLastErrorMessage())
-                .set<"url"_tag>(location())
+                .set<error_msg_tag>(getLastErrorMessage())
+                .set<url_tag>(location())
             );
         }
     }

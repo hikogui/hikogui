@@ -41,10 +41,12 @@ static void maintenanceThreadProcedure() noexcept
     while (!_stopMaintenanceThread) {
         std::this_thread::sleep_for(100ms);
 
-        let t1 = trace<"maintenance"_tag>{};
+        struct maintenance_tag {};
+        let t1 = trace<maintenance_tag>{};
 
         {
-            let t2 = trace<"calibrate"_tag>{};
+            struct calibrate_tag {};
+            let t2 = trace<calibrate_tag>{};
             sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
             sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
         }
@@ -70,7 +72,7 @@ nonstd::span<std::byte const> getStaticResource(std::string const &key)
     let i = staticResources.find(key);
     if (i == staticResources.end()) {
         TTAURI_THROW(key_error("Could not find static resource")
-            .set<"key"_tag>(key)
+            .set<key_tag>(key)
         );
     }
     return i->second;

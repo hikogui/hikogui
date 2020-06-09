@@ -28,7 +28,7 @@ std::unique_ptr<ResourceView> ResourceView::loadView(URL const &location)
     } else if (location.scheme() == "file") {
         if (!location.isAbsolute()) {
             TTAURI_THROW(url_error("file-URLs must be absolute.")
-                .set<"url"_tag>(location)
+                .set<url_tag>(location)
             );
         }
 
@@ -38,7 +38,7 @@ std::unique_ptr<ResourceView> ResourceView::loadView(URL const &location)
 
     } else {
         TTAURI_THROW(url_error("Unknown scheme for loading a resource")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 }

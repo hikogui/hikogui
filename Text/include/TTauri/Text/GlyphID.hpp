@@ -10,7 +10,9 @@
 
 namespace TTauri::Text {
 
-using GlyphID = tagged_id<uint16_t, "glyph_id"_tag>;
+struct glyph_id_tag {};
+
+using GlyphID = tagged_id<uint16_t, glyph_id_tag>;
 
 };
 

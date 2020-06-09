@@ -13,7 +13,7 @@ using namespace std::chrono_literals;
 std::string format_engineering(hires_utc_clock::duration duration)
 {
     if (duration >= 1s) {
-        return fmt::format("{:.3g} s", static_cast<double>(duration / 1ns) / 1'000'000'000);
+        return fmt::format("{:.3g} s ", static_cast<double>(duration / 1ns) / 1'000'000'000);
     } else if (duration >= 1ms) {
         return fmt::format("{:.3g} ms", static_cast<double>(duration / 1ns) / 1'000'000);
     } else if (duration >= 1us) {

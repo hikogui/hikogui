@@ -81,9 +81,15 @@ void logger_type::write(std::string const &str) noexcept {
 
 void logger_type::display_counters() noexcept {
     let keys = counter_map.keys();
+    logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:>18} {:>9} {:>10} {:>10}", "total", "delta", "mean", "peak");
     for (let &tag: keys) {
         let [count, count_since_last_read] = read_counter(tag);
-        logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18} {:+9}", tt5_decode(tag), count, count_since_last_read);
+        logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:>18} {:>+9} {:10} {:10} {}",
+            count,
+            count_since_last_read,
+            "", "",
+            tag.name()
+        );
     }
 }
 
@@ -95,20 +101,23 @@ void logger_type::display_trace_statistics() noexcept {
         let stat_result = stat->read();
 
         if (stat_result.last_count <= 0) {
-            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:18n}",
-                tt5_decode(tag),
+            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:18n} {:+9n} {:10} {:10} {}",
                 stat_result.count,
-                stat_result.last_count
+                stat_result.last_count,
+                "", "",
+                tag.name()
             );
 
         } else {
             // XXX not perfect at all.
             let duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
             let duration_peak = format_engineering(stat_result.peak_duration);
-            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:13} {:18n} {:+9n} mean: {}/iter, peak: {}",
-                tt5_decode(tag),
+            logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:18n} {:+9n} {:>10} {:>10} {}",
                 stat_result.count,
-                stat_result.last_count, duration_per_iter, duration_peak
+                stat_result.last_count,
+                duration_per_iter,
+                duration_peak,
+                tag.name()
             );
         }
     }
@@ -116,7 +125,8 @@ void logger_type::display_trace_statistics() noexcept {
 
 void logger_type::gather_tick(bool last) noexcept
 {
-    let t = trace<"gather_tick"_tag>{};
+    struct gather_tick_tag {};
+    let t = trace<gather_tick_tag>{};
 
     constexpr auto gather_interval = 30s;
 
@@ -136,7 +146,8 @@ void logger_type::gather_tick(bool last) noexcept
 }
 
 void logger_type::logger_tick() noexcept {
-    let t = trace<"logger_tick"_tag>{};
+    struct logger_tick_tag {};
+    let t = trace<logger_tick_tag>{};
 
     while (!message_queue.empty()) {
         auto message = message_queue.read();

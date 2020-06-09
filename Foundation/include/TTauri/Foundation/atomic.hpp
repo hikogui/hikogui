@@ -20,10 +20,12 @@ namespace TTauri {
  * @param state variable to monitor.
  * @param to The value the state needs to be before this function returns.
  */
-template<typename T>
+template<typename CounterTag, typename T>
 no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
+
+    increment_counter<CounterTag>();
 
     auto backoff = 10ms;
     while (true) {
@@ -43,14 +45,15 @@ no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, 
  * This function is for the non-contended state. The code emitted on x86 should
  * be MOV,CMP,JNE. The JNE is taken on contended state.
  *
+ * @param CounterTag tag to increment if the transition was contended.
  * @param state variable to monitor.
  * @param to The value the state needs to be before this function returns.
  */
-template<typename T>
+template<typename CounterTag, typename T>
 force_inline void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     if (ttauri_unlikely(state.load(order) != to)) {
-        contended_wait_for_transition(state, to, order);
+        contended_wait_for_transition<CounterTag>(state, to, order);
     }
 }
 

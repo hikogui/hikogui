@@ -4,11 +4,13 @@
 #pragma once
 
 #include "TTauri/Foundation/string_tag.hpp"
+#include <typeinfo>
+#include <typeindex>
 #include <array>
 
 namespace TTauri {
 
-template<typename T, string_tag... Tags>
+template<typename T, typename... Tags>
 class tagged_map {
 private:
     std::array<T, sizeof...(Tags)> data;
@@ -18,12 +20,12 @@ public:
         return sizeof...(Tags);
     }
 
-    static constexpr string_tag get_tag(size_t i) noexcept {
+    static std::type_index get_tag(size_t i) noexcept {
         return tag_at_index<Tags...>(i);
     }
 
-    static constexpr bool has(string_tag tag) noexcept {
-        return count_tag_if<Tags...>(tag);
+    static bool has(std::type_index tag) noexcept {
+        return has_tag<Tags...>(tag);
     }
 
     constexpr auto begin() noexcept {
@@ -51,22 +53,22 @@ public:
         return data[i];
     }
 
-    constexpr T &get(string_tag tag) noexcept {
+    T &get(std::type_index tag) noexcept {
         return data[index_of_tag<Tags...>(tag)];
     }
 
-    constexpr T const &get(string_tag tag) const noexcept {
+    T const &get(std::type_index tag) const noexcept {
         return data[index_of_tag<Tags...>(tag)];
     }
 
-    template<string_tag Tag>
+    template<typename Tag>
     constexpr T &get() noexcept {
-        return data[index_of_tag<Tags...>(Tag)];
+        return data[index_of_tag<Tag,Tags...>()];
     }
 
-    template<string_tag Tag>
+    template<typename Tag>
     constexpr T const &get() const noexcept {
-        return data[index_of_tag<Tags...>(Tag)];
+        return data[index_of_tag<Tag,Tags...>()];
     }
 };
 

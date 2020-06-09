@@ -615,13 +615,13 @@ std::unique_ptr<TTauri::Text::UnicodeData> parseResource(URL const &location)
             auto unicodeData = std::make_unique<TTauri::Text::UnicodeData>(std::move(view));
             return unicodeData;
         } catch (error &e) {
-            e.set<"url"_tag>(location);
+            e.set<url_tag>(location);
             throw;
         }
 
     } else {
         TTAURI_THROW(url_error("Unknown extension")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 }

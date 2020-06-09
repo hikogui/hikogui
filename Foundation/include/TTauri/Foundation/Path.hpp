@@ -284,13 +284,13 @@ inline std::unique_ptr<Path> parseResource(URL const &location)
             let bytes = view->bytes();
             return std::make_unique<Path>(parseTTauriIcon(bytes));
         } catch (error &e) {
-            e.set<"url"_tag>(location);
+            e.set<url_tag>(location);
             throw;
         }
 
     } else {
         TTAURI_THROW(url_error("Unknown extension")
-            .set<"url"_tag>(location)
+            .set<url_tag>(location)
         );
     }
 }

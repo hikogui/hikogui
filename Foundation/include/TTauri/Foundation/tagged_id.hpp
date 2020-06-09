@@ -8,17 +8,19 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "TTauri/Foundation/math.hpp"
 #include <limits>
+#include <typeinfo>
+#include <typeindex>
 
 namespace TTauri {
 
-template<typename T, string_tag Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
+template<typename T, typename Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
 public:
     static_assert(std::is_integral_v<T>, "Expecting tagged_id to be an integral");
     static_assert(Max < std::numeric_limits<T>::max(), "Max must be at least one less than the maximum value of T");
 
     using type = T;
-    constexpr static string_tag tag = Tag;
+    using TAG = Tag;
 
     constexpr static type max = Max;
     constexpr static type invalid = max + 1;
@@ -93,7 +95,7 @@ public:
     template<typename O> [[nodiscard]] constexpr friend bool operator>=(O const &lhs, tagged_id const &rhs) noexcept { return tagged_id{lhs} >= rhs; }
 
     [[nodiscard]] friend std::string to_string(tagged_id const &rhs) noexcept {
-        return fmt::format("{}:{}", tt5_decode(rhs.tag), rhs.value);
+        return fmt::format("{}:{}", std::type_index(typeid(rhs.TAG)).name(), rhs.value);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, tagged_id const &rhs) {
@@ -105,7 +107,7 @@ public:
 
 namespace std {
 
-template<typename T, TTauri::string_tag Tag, TTauri::ssize_t Max>
+template<typename T, typename Tag, TTauri::ssize_t Max>
 struct hash<TTauri::tagged_id<T,Tag,Max>> {
     [[nodiscard]] constexpr size_t operator() (TTauri::tagged_id<T,Tag,Max> const &rhs) const noexcept {
         return rhs.hash();

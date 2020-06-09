@@ -15,7 +15,8 @@ FontBook::FontBook(std::vector<URL> const &font_directories)
     for (let &font_directory: font_directories) {
         let font_directory_glob = font_directory / "**" / "*.ttf";
         for (let &font_url: font_directory_glob.urlsByScanningWithGlobPattern()) {
-            auto t = trace<"font_scan"_tag>{};
+            struct font_scan_tag {};
+            auto t = trace<font_scan_tag>{};
 
             try {
                 register_font(font_url, false);

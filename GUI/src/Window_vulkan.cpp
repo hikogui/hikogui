@@ -86,7 +86,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
     default:
         TTAURI_THROW(gui_error("Unknown result from acquireNextImageKHR()")
-            .set<"vk_result"_tag>(to_string(result))
+            .set<vk_result_tag>(to_string(result))
         );
     }
 }
@@ -120,7 +120,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
         default:
             TTAURI_THROW(gui_error("Unknown result from presentKHR()")
-                .set<"vk_result"_tag>(to_string(result))
+                .set<vk_result_tag>(to_string(result))
             );
         }
 
@@ -280,7 +280,9 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
-    auto tr = trace<"win_render"_tag, "frame_buffer"_tag>();
+    struct window_render_tag {};
+    struct frame_buffer_index_tag {};
+    auto tr = trace<window_render_tag, frame_buffer_index_tag>();
 
     let optionalFrameBufferIndex = acquireNextImageFromSwapchain();
     if (!optionalFrameBufferIndex) {
@@ -291,7 +293,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     let frameBufferIndex = *optionalFrameBufferIndex;
     let frameBuffer = swapchainFramebuffers.at(frameBufferIndex);
 
-    tr.set<"frame_buffer"_tag>(frameBufferIndex);
+    tr.set<frame_buffer_index_tag>(frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
     ttauri_assert(device);
@@ -327,7 +329,8 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
 
 void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 {
-    auto t = trace<"cmdbuffer"_tag>{};
+    struct fill_command_buffer_tag {};
+    auto t = trace<fill_command_buffer_tag>{};
 
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
@@ -548,7 +551,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 
     default:
         TTAURI_THROW(gui_error("Unknown result from createSwapchainKHR()")
-            .set<"vk_result"_tag>(to_string(result))
+            .set<vk_result_tag>(to_string(result))
         );
     }
 

@@ -158,6 +158,7 @@ struct log_message: public log_message_base {
     }
 };
 
+struct logger_blocked_tag {};
 
 /*! A class with which to log messages to a file or console.
  */
@@ -189,7 +190,7 @@ public:
             // * Simplifies logged_fatal_message logic.
             // * Will make sure everything gets logged.
             // * Blocking is bad in a real time thread, so maybe count the number of times it is blocked.
-            auto message = message_queue.write<"logger_block"_tag>();
+            auto message = message_queue.write<logger_blocked_tag>();
             // derefence the message so that we get the polymorphic_value, so this assignment will work correctly.
             message->emplace<log_message<Level, Args...>>(timestamp, format, std::forward<Args>(args)...);
 

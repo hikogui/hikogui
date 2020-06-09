@@ -18,7 +18,7 @@ Image::Image(Image &&other) noexcept :
     parent(other.parent),
     extent(other.extent),
     pageExtent(other.pageExtent),
-    pages(std::move(pages))
+    pages(std::move(other.pages))
 {
     other.parent = nullptr;
 }
