@@ -27,7 +27,7 @@ struct line_tag {};
 struct column_tag {};
 struct vk_result_tag {};
 struct errno_tag {};
-struct error_msg_tag {};
+struct error_message_tag {};
 struct key_tag {};
 
 class error {
@@ -288,7 +288,7 @@ using invalid_operation_error = sub_error<invalid_operation_tag, url_tag, line_t
 struct url_error_tag {};
 using url_error = sub_error<url_error_tag, url_tag>;
 struct io_error_tag {};
-using io_error = sub_error<io_error_tag, url_tag, errno_tag, error_msg_tag>;
+using io_error = sub_error<io_error_tag, url_tag, errno_tag, error_message_tag>;
 struct key_error_tag {};
 using key_error = sub_error<key_error_tag, key_tag>;
 struct gui_error_tag {};
