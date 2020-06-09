@@ -61,7 +61,9 @@ public:
 
     /*! Return the name of the exception.
     */
-    std::string name() const noexcept { return tag().name(); }
+    std::string name() const noexcept {
+        return tag_name(tag());
+    }
 
     std::string string() const noexcept {
         return fmt::format("{}: {}. {}",
@@ -256,7 +258,7 @@ public:
             };
 
             r += fmt::format("{}={}",
-                error_info.get_tag(i).name(),
+                tag_name(error_info.get_tag(i)),
                 error_info[i].repr()
             );
         }

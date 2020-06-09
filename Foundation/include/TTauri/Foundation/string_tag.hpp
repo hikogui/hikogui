@@ -5,6 +5,7 @@
 
 #include "TTauri/Foundation/assert.hpp"
 #include "TTauri/Foundation/TT5.hpp"
+#include "TTauri/Foundation/strings.hpp"
 #include <string>
 #include <string_view>
 #include <exception>
@@ -31,45 +32,26 @@ constexpr string_ltag operator""_ltag(char const *str, size_t) noexcept
     return tt5_encode<string_ltag>(str);
 }
 
-
-template<typename Head, typename... Tail>
-size_t count_tag_if_impl(std::type_index tag, size_t count) {
-    if constexpr (sizeof...(Tail) > 0) {
-        return count_tag_if_impl<Tail...>(tag, tag == std::type_index(typeid(Head)) ? count + 1 : count);
+inline std::string tag_name(std::type_index tag) noexcept
+{
+    let long_name = std::string{tag.name()};
+    let split_name = split(long_name, "::"s);
+    if (ssize(split_name) != 0) {
+        let &last_name = split_name.back();
+        if (ends_with(last_name, "_tag"s)) {
+            return last_name.substr(0, ssize(last_name) - 4);
+        } else {
+            return last_name;
+        }
     } else {
-        return tag == std::type_index(typeid(Head)) ? count + 1 : count;
+        return long_name;
     }
 }
 
-/*! Return the how many times tag is in the template arguments.
-*/
-template<typename... Tags>
-size_t count_tag_if(std::type_index tag) {
-    if constexpr (sizeof...(Tags) == 0) {
-        return 0;
-    } else {
-        return count_tag_if_impl<Tags...>(tag, 0);
-    }
-}
-
-template<typename Needle, typename Head, typename... Tail>
-constexpr size_t count_tag_if_impl(size_t count) {
-    if constexpr (sizeof...(Tail) > 0) {
-        return count_tag_if_impl<Tail...>(std::is_same_v<Needle,Head> ? count + 1 : count);
-    } else {
-        return std::is_same_v<Needle,Head> ? count + 1 : count;
-    }
-}
-
-/*! Return the how many times tag is in the template arguments.
-*/
-template<typename Needle, typename... Tags>
-constexpr size_t count_tag_if() {
-    if constexpr (sizeof...(Tags) == 0) {
-        return 0;
-    } else {
-        return count_tag_if_impl<Needle,Tags...>(0);
-    }
+template<typename Tag>
+std::string tag_name()
+{
+    return tag_name(std::type_index(typeid(Tag)));
 }
 
 template<typename Head, typename... Tail>

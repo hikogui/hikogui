@@ -88,7 +88,7 @@ void logger_type::display_counters() noexcept {
             count,
             count_since_last_read,
             "", "",
-            tag.name()
+            tag_name(tag)
         );
     }
 }
@@ -105,7 +105,7 @@ void logger_type::display_trace_statistics() noexcept {
                 stat_result.count,
                 stat_result.last_count,
                 "", "",
-                tag.name()
+                tag_name(tag)
             );
 
         } else {
@@ -117,7 +117,7 @@ void logger_type::display_trace_statistics() noexcept {
                 stat_result.last_count,
                 duration_per_iter,
                 duration_peak,
-                tag.name()
+                tag_name(tag)
             );
         }
     }

@@ -220,21 +220,54 @@ gsl_suppress(bounds.3)
         std::string_view{};
 }
 
-template<typename T, typename... Args>
-[[nodiscard]] inline std::vector<T> split(T haystack, Args... needle) noexcept
+template<typename Needle>
+[[nodiscard]] size_t split_needle_size(Needle const &needle) noexcept
 {
-    std::vector<T> r;
+    return size(needle);
+}
+
+template<>
+[[nodiscard]] inline size_t split_needle_size(char const &needle) noexcept
+{
+    return 1;
+}
+
+template<int N>
+[[nodiscard]] inline size_t split_needle_size(char const (&needle)[N]) noexcept
+{
+    return N - 1;
+}
+
+
+template<typename Haystack, typename... Needles>
+[[nodiscard]] auto split_find_needle(size_t offset, Haystack const &haystack, Needles const &... needles) noexcept
+{
+    return std::min(
+        {std::pair{haystack.find(needles, offset), split_needle_size(needles)}...},
+        [](let &a, let &b) {
+            return a.first < b.first;
+        }
+    );
+}
+
+template<typename Haystack, typename... Needles>
+[[nodiscard]] auto split(Haystack const &haystack, Needles const &... needles) noexcept
+{
+    std::vector<remove_cvref_t<Haystack>> r;
 
     size_t offset = 0;
-    size_t pos = std::min({haystack.find(needle, offset)...});
-    while (pos != haystack.npos) {
-        r.push_back(haystack.substr(offset, pos - offset));
+    size_t needle_pos;
+    size_t needle_size;
 
-        offset = pos + 1;
-        pos = std::min({haystack.find(needle, offset)...});
+    std::tie(needle_pos, needle_size) = split_find_needle(offset, haystack, needles...);
+    while (needle_pos != haystack.npos) {
+        r.push_back(haystack.substr(offset, needle_pos - offset));
+
+        offset = needle_pos + needle_size;
+        std::tie(needle_pos, needle_size) = split_find_needle(offset, haystack, needles...);
     }
 
-    r.push_back(haystack.substr(offset, haystack.size() - offset));
+    r.push_back(haystack.substr(offset));
     return r;
 }
 
