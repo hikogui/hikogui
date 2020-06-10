@@ -4,22 +4,24 @@
 #pragma once
 
 #include "TTauri/GUI/GUISystem_vulkan.hpp"
+#include <nonstd/span>
 
 namespace TTauri {
 
-class GUISystem_vulkan_macos final : public GUISystem_vulkan {
+class GUISystem_vulkan_macos final: public GUISystem_vulkan {
 public:
-    uint64_t hostFrequency;
-    CVDisplayLinkRef updateAndRenderThread;
+    GUISystem_vulkan_macos(GUISystemDelegate *delegate);
+    ~GUISystem_vulkan_macos();
 
-    bool stopUpdateAndRender = false;
+    GUISystem_vulkan_macos(const GUISystem_vulkan_macos &) = delete;
+    GUISystem_vulkan_macos &operator=(const GUISystem_vulkan_macos &) = delete;
+    GUISystem_vulkan_macos(GUISystem_vulkan_macos &&) = delete;
+    GUISystem_vulkan_macos &operator=(GUISystem_vulkan_macos &&) = delete;
 
-    GUISystem_vulkan_macos();
-    virtual ~GUISystem_vulkan_macos();
-
-    virtual void createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title);
-
-    static CVReturn updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target);
+    vk::ResultValueType<vk::SurfaceKHR>::type createWin32SurfaceKHR(const vk::MetalSurfaceCreateInfoEXT& createInfo) const {
+        auto lock = std::scoped_lock(guiMutex);
+        return intrinsic.createMetalSurfaceEXT(createInfo);
+    }
 };
 
 }

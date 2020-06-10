@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "TTauri/Foundation/hires_utc_clock.hpp"
+#include "TTauri/GUI/VerticalSync_base.hpp"
 #include <nonstd/span>
 #include <thread>
 
 namespace TTauri {
 
-class VerticalSync_win32 {
+class VerticalSync_win32 final : public VerticalSync_base {
     enum class State {
         ADAPTER_OPEN,
         ADAPTER_CLOSED,

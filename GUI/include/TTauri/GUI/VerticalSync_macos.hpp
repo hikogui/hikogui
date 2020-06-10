@@ -3,33 +3,15 @@
 
 #pragma once
 
+#include "TTauri/GUI/VerticalSync_base.hpp"
 #include <nonstd/span>
 #include <thread>
 
 namespace TTauri {
 
-class VerticalSync_macos {
-    enum class State {
-        ADAPTER_OPEN,
-        ADAPTER_CLOSED,
-        FALLBACK
-    };
-
-    State state;
-
-    std::thread verticalSyncThreadID;
-    bool stop = false;
-    std::function<void(void *)> callback;
-    void *callbackData;
-
-    void openAdapter() noexcept;
-    void closeAdapter() noexcept;
-    void wait() noexcept;
-
-    static void verticalSyncThread(VerticalSync_macos *self) noexcept;
-
+class VerticalSync_macos final : public VerticalSync_base {
 public:
-    VerticalSync_macos(std::function<void(void *)> callback, void *callbackData) noexcept;
+    VerticalSync_macos(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept;
     ~VerticalSync_macos();
 };
 
