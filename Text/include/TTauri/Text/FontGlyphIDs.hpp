@@ -93,19 +93,19 @@ class FontGlyphIDs {
     uint64_t value;
 
 public:
-    force_inline FontGlyphIDs() : value(empty) {}
+    force_inline FontGlyphIDs() noexcept : value(empty) {}
 
-    FontGlyphIDs(FontGlyphIDs const &rhs) : value(rhs.value) {
+    FontGlyphIDs(FontGlyphIDs const &rhs) noexcept : value(rhs.value) {
         if (rhs.has_pointer()) {
             value = new_pointer(*(rhs.get_pointer()));
         }
     }
 
-    force_inline FontGlyphIDs(FontGlyphIDs &&rhs) : value(rhs.value) {
+    force_inline FontGlyphIDs(FontGlyphIDs &&rhs) noexcept : value(rhs.value) {
         rhs.value = empty;
     }
 
-    FontGlyphIDs &operator=(FontGlyphIDs const &rhs) {
+    FontGlyphIDs &operator=(FontGlyphIDs const &rhs) noexcept {
         if (this != &rhs) {
             delete_pointer();
             value = rhs.value;
@@ -116,7 +116,7 @@ public:
         return *this;
     }
 
-    force_inline FontGlyphIDs &operator=(FontGlyphIDs &&rhs) {
+    force_inline FontGlyphIDs &operator=(FontGlyphIDs &&rhs) noexcept {
         if (this != &rhs) {
             using std::swap;
             swap(value, rhs.value);
@@ -124,7 +124,7 @@ public:
         return *this;
     }
 
-    ~FontGlyphIDs() {
+    ~FontGlyphIDs() noexcept {
         delete_pointer();
     }
 

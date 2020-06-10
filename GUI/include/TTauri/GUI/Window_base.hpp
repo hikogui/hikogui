@@ -184,11 +184,11 @@ public:
 
     bool isClosed();
 
+    /** Add a widget to main widget of the window.
+     * The implementation is in Widget.hpp
+     */
     template<typename T, typename... Args>
-    T &makeWidget(Args &&... args) {
-        ttauri_assume(widget);
-        return widget->makeWidget<T>(std::forward<Args>(args)...);
-    }
+    T &makeWidget(Args &&... args);
 
     rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept;
 

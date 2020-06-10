@@ -423,26 +423,7 @@ public:
     }
 
     template<bool nx, bool ny, bool nz, bool nw>
-    [[nodiscard]] force_inline friend vec neg(vec const &rhs) noexcept {
-        let n_rhs = -rhs;
-
-        __m128 tmp = rhs;
-
-        if constexpr (nx) {
-            tmp = _mm_insert_ps(tmp, n_rhs, 0b00'00'0000);
-        }
-        if constexpr (ny) {
-            tmp = _mm_insert_ps(tmp, n_rhs, 0b01'01'0000);
-        }
-        if constexpr (nz) {
-            tmp = _mm_insert_ps(tmp, n_rhs, 0b10'10'0000);
-        }
-        if constexpr (nw) {
-            tmp = _mm_insert_ps(tmp, n_rhs, 0b11'11'0000);
-        }
-
-        return tmp;
-    }
+    friend vec neg(vec const &rhs) noexcept;
 
     [[nodiscard]] force_inline friend vec hadd(vec const &lhs, vec const &rhs) noexcept {
         return _mm_hadd_ps(lhs, rhs);
@@ -737,6 +718,28 @@ public:
     SWIZZLE2_GEN1(z, 'z')
     SWIZZLE2_GEN1(w, 'w')
 };
+
+template<bool nx, bool ny, bool nz, bool nw>
+[[nodiscard]] vec neg(vec const &rhs) noexcept {
+    let n_rhs = -rhs;
+
+    __m128 tmp = rhs;
+
+    if constexpr (nx) {
+        tmp = _mm_insert_ps(tmp, n_rhs, 0b00'00'0000);
+    }
+    if constexpr (ny) {
+        tmp = _mm_insert_ps(tmp, n_rhs, 0b01'01'0000);
+    }
+    if constexpr (nz) {
+        tmp = _mm_insert_ps(tmp, n_rhs, 0b10'10'0000);
+    }
+    if constexpr (nw) {
+        tmp = _mm_insert_ps(tmp, n_rhs, 0b11'11'0000);
+    }
+
+    return tmp;
+}
 
 }
 

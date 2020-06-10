@@ -62,6 +62,12 @@ struct GlyphMetrics {
     */
     int numberOfGraphemes = 1;
 
+    GlyphMetrics() noexcept = default;
+    GlyphMetrics(GlyphMetrics const &) noexcept = default;
+    GlyphMetrics(GlyphMetrics &&) noexcept = default;
+    GlyphMetrics &operator=(GlyphMetrics const &) noexcept = default;
+    GlyphMetrics &operator=(GlyphMetrics &&) noexcept = default;
+
     /*! Get the advanceWidth for the specific grapheme of
     * a potential ligature.
     */
