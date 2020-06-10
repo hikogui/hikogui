@@ -35,7 +35,7 @@ FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     } else {
         if ((mapHandle = CreateFileMappingA(file->fileHandle, NULL, protect, maximumSizeHigh, maximumSizeLow, nullptr)) == nullptr) {
             TTAURI_THROW(io_error("Could not create file mapping")
-                .set<error_msg_tag>(getLastErrorMessage())
+                .set<error_message_tag>(getLastErrorMessage())
                 .set<url_tag>(location())
             );
         }

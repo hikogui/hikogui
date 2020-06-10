@@ -9,3 +9,18 @@
 #include "TTauri/Widgets/CheckboxWidget.hpp"
 #include "TTauri/Widgets/RadioButtonWidget.hpp"
 #include "TTauri/Widgets/ToolbarWidget.hpp"
+#include "TTauri/Widgets/WindowWidget.hpp"
+#include "TTauri/GUI/Window.hpp"
+
+namespace TTauri {
+
+/** Add a widget to the main widget of the window.
+* The implementation is located here so that widget is a concrete type.
+*/
+template<typename T, typename... Args>
+T &Window_base::makeWidget(Args &&... args) {
+    ttauri_assume(widget);
+    return widget->makeWidget<T>(std::forward<Args>(args)...);
+}
+
+}

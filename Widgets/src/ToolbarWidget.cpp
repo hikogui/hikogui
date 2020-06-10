@@ -12,10 +12,10 @@ namespace TTauri {
 using namespace std;
 
 ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
-    Widget(window, parent, vec{Theme::width, Theme::smallHeight})
+    Widget(window, parent, vec{Theme::width, Theme::toolbarHeight})
 {
     // Keep the toolbar thin.
-    window.addConstraint(height <= Theme::smallHeight, rhea::strength::strong());
+    window.addConstraint(height <= Theme::toolbarHeight, rhea::strength::strong());
 }
 
 void ToolbarWidget::disjoinLeftAndRightChildren() noexcept
