@@ -115,38 +115,36 @@ void Widget::setFixedWidth(float _width) noexcept
     setFixedExtent(vec{_width, 0.0f});
 }
 
-
-
-void Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->top + margin == rhs.bottom);
+rhea::constraint Widget::placeBelow(Widget const &rhs, float margin) const noexcept {
+    return window.addConstraint(this->top + margin == rhs.bottom);
 }
 
-void Widget::placeAbove(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->bottom == rhs.top + margin);
+rhea::constraint Widget::placeAbove(Widget const &rhs, float margin) const noexcept {
+    return window.addConstraint(this->bottom == rhs.top + margin);
 }
 
-void Widget::placeLeftOf(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->right + margin == rhs.left);
+rhea::constraint Widget::placeLeftOf(Widget const &rhs, float margin) const noexcept {
+    return window.addConstraint(this->right + margin == rhs.left);
 }
 
-void Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
-    window.addConstraint(this->left == rhs.right + margin);
+rhea::constraint Widget::placeRightOf(Widget const &rhs, float margin) const noexcept {
+    return window.addConstraint(this->left == rhs.right + margin);
 }
 
-void Widget::placeAtTop(float margin) const noexcept {
-    window.addConstraint(this->top + margin == parent->top);
+rhea::constraint Widget::placeAtTop(float margin) const noexcept {
+    return window.addConstraint(this->top + margin == parent->top);
 }
 
-void Widget::placeAtBottom(float margin) const noexcept {
-    window.addConstraint(this->bottom - margin == parent->bottom);
+rhea::constraint Widget::placeAtBottom(float margin) const noexcept {
+    return window.addConstraint(this->bottom - margin == parent->bottom);
 }
 
-void Widget::placeLeft(float margin) const noexcept {
-    window.addConstraint(this->left - margin == parent->left);
+rhea::constraint Widget::placeLeft(float margin) const noexcept {
+    return window.addConstraint(this->left - margin == parent->left);
 }
 
-void Widget::placeRight(float margin) const noexcept {
-    window.addConstraint(this->right + margin == parent->right);
+rhea::constraint Widget::placeRight(float margin) const noexcept {
+    return window.addConstraint(this->right + margin == parent->right);
 }
 
 int Widget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
@@ -188,6 +186,16 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
 
     forceRedraw = true;
+}
+
+Widget &Widget::addWidget(Alignment, std::unique_ptr<Widget> childWidget) noexcept {
+    let widget_ptr = childWidget.get();
+    ttauri_assume(widget_ptr);
+
+    auto lock = std::scoped_lock(mutex);
+    children.push_back(std::move(childWidget));
+    window.forceLayout = true;
+    return *widget_ptr;
 }
 
 int Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept

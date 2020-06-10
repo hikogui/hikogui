@@ -9,10 +9,10 @@ namespace TTauri {
 
 using namespace std;
 
-Window_base::Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
+Window_base::Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label const &title) :
     state(State::Initializing),
-    delegate(move(delegate)),
-    title(move(title))
+    delegate(delegate),
+    title(title)
 {
 }
 

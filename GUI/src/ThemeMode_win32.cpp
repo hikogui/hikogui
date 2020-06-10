@@ -9,6 +9,7 @@
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
 #include <winreg.h>
+#include <Uxtheme.h>
 
 
 namespace TTauri {
@@ -48,6 +49,20 @@ namespace TTauri {
         LOG_FATAL("Could get AppsUseLightTheme registry value. {:08x}", status);
     }
 
+}
+
+float readOSToolbarHeight() noexcept
+{
+    return
+        GetThemeSysSize(nullptr, SM_CYSIZE) +
+        GetThemeSysSize(nullptr, SM_CXPADDEDBORDER) * 2.0f;
+}
+
+float readOSToolbarDecorationButtonWidth() noexcept
+{
+    return
+        GetThemeSysSize(nullptr, SM_CXSIZE) +
+        GetThemeSysSize(nullptr, SM_CXPADDEDBORDER) * 2.0f;
 }
 
 }

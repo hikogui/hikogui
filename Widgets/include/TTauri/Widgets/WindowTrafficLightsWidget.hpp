@@ -23,9 +23,6 @@ public:
     static constexpr float MARGIN = 10.0f;
     static constexpr float SPACING = 8.0f;
 
-    static constexpr float WIDTH = DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING;
-    static constexpr float HEIGHT = DIAMETER + 2.0 * MARGIN;
-
     aarect closeRectangle;
     aarect minimizeRectangle;
     aarect maximizeRectangle;
@@ -63,6 +60,8 @@ public:
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
 private:
+    static vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept;
+
     void drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
     void drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
 

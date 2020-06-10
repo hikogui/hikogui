@@ -14,10 +14,11 @@ namespace TTauri {
 
 
 SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, PixelMap<R16G16B16A16SFloat> &&image) noexcept :
-    Widget(window, parent, window.systemMenuButtonExtent),
+    Widget(window, parent, vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight}),
     image(std::move(image)),
-    systemMenuRectangle(window.systemMenuButtonExtent)
+    systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
 {
+    setFixedExtent(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight});
 }
 
 

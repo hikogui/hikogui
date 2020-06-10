@@ -65,4 +65,5 @@ target_include_directories(TTauri_GUI PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 
 if (MSVC)
     target_compile_definitions(TTauri_GUI PUBLIC -D_WIN64  -DVK_USE_PLATFORM_WIN32_KHR)
+    target_link_libraries(TTauri_GUI UxTheme.lib)
 endif()

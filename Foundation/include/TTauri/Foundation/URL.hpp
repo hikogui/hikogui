@@ -52,11 +52,10 @@ public:
     explicit URL(std::string const &url);
     explicit URL(url_parts const &parts);
 
-    URL(URL const &other) = default;
-    URL(URL &&other) = default;
-    ~URL() = default;
-    URL &operator=(URL const &other) = default;
-    URL &operator=(URL &&other) = default;
+    URL(URL const &other) noexcept : value(other.value) {}
+    URL(URL &&other) noexcept = default;
+    URL &operator=(URL const &other) noexcept { value = other.value; return *this; }
+    URL &operator=(URL &&other) noexcept = default;
 
     size_t hash() const noexcept;
     std::string string() const noexcept;

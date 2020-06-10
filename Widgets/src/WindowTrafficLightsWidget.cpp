@@ -10,9 +10,29 @@
 
 namespace TTauri {
 
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
-    Widget(window, parent, vec{WIDTH, HEIGHT})
+vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept
 {
+    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+        return {
+            Theme::toolbarDecorationButtonWidth * 3.0f,
+            Theme::toolbarHeight
+        };
+
+    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+        return {
+            DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING,
+            DIAMETER + 2.0 * MARGIN
+        };
+
+    } else {
+        no_default;
+    }
+}
+
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
+    Widget(window, parent, calculateExtent(window))
+{
+    setFixedExtent(calculateExtent(window));
 }
 
 

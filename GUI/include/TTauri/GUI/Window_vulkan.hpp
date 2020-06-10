@@ -64,7 +64,7 @@ public:
     std::unique_ptr<PipelineSDF::PipelineSDF> SDFPipeline;
     std::unique_ptr<PipelineToneMapper::PipelineToneMapper> toneMapperPipeline;
 
-    Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
+    Window_vulkan(std::shared_ptr<WindowDelegate> const &delegate, Label const &title);
     ~Window_vulkan();
 
     Window_vulkan(const Window_vulkan &) = delete;

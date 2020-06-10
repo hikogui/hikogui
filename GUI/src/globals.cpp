@@ -20,7 +20,6 @@
 #include "shaders/PipelineToneMapper.vert.spv.inl"
 #include "shaders/PipelineToneMapper.frag.spv.inl"
 
-
 namespace TTauri {
 
 /** Reference counter to determine the amount of startup/shutdowns.
@@ -47,6 +46,9 @@ void gui_startup()
     });
 
     themeBook->setThemeMode(readOSThemeMode());
+    Theme::toolbarHeight = readOSToolbarHeight();
+    Theme::toolbarDecorationButtonWidth = readOSToolbarDecorationButtonWidth();
+
 
     addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
     addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);

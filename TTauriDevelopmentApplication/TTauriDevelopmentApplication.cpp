@@ -22,12 +22,12 @@ class MyWindowDelegate : public WindowDelegate {
 public:
     void openingWindow(Window &window) override
     {
-        auto &button1 = window.addWidget<ButtonWidget>(u8"Hello \u4e16\u754c");
+        auto &button1 = window.makeWidget<ButtonWidget>(u8"Hello \u4e16\u754c");
         button1.placeLeft();
         button1.placeAtTop();
         button1.placeAtBottom();
 
-        auto &button2 = window.addWidget<ButtonWidget>(u8"Hello world");
+        auto &button2 = window.makeWidget<ButtonWidget>(u8"Hello world");
         button2.placeRight();
         button2.placeAtTop();
         button2.placeRightOf(button1);
@@ -83,7 +83,7 @@ public:
         auto myWindowDelegate = make_shared<MyWindowDelegate>();
 
         guiSystem->initialize();
-        guiSystem->addWindow<Window>(myWindowDelegate, "Hello World 1");
+        guiSystem->makeWindow<Window>(myWindowDelegate, Label{"Hello World 1"});
 
         audioSystem->initialize();
         return true;

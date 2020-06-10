@@ -16,7 +16,7 @@ class Window_vulkan_macos final : public Window_vulkan {
 public:
     //HWND win32Window = nullptr;
 
-    Window_vulkan_macos(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
+    Window_vulkan_macos(std::shared_ptr<WindowDelegate> const &delegate, Label const &title);
     ~Window_vulkan_macos();
 
     Window_vulkan_macos(const Window_vulkan_macos &) = delete;

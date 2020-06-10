@@ -172,20 +172,19 @@ public:
     Widget &operator=(Widget &&) = delete;
 
     /** Add a widget directly to this widget.
+     * Thread safety: locks.
+     */
+    virtual Widget &addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept;
+
+    /** Add a widget directly to this widget.
      *
-     * Thread safety: locks
+     * Thread safety: calls _addWidget
      */
     template<typename T, typename... Args>
-    T &addWidgetDirectly(Args &&... args) {
-        auto lock = std::scoped_lock(mutex);
-
-        window.forceLayout = true;
-        auto widget = std::make_unique<T>(window, this, std::forward<Args>(args)...);
-        let widget_ptr = widget.get();
-        ttauri_assume(widget_ptr);
-
-        children.push_back(move(widget));
-        return *widget_ptr;
+    T &makeWidgetDirectly(Args &&... args) {
+        return static_cast<T &>(
+            addWidget(Alignment::TopLeft, std::make_unique<T>(window, this, std::forward<Args>(args)...))
+        );
     }
 
     /** Add a widget directly to this widget.
@@ -193,12 +192,35 @@ public:
     * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
     */
     template<typename T, typename... Args>
-    T &addWidget(Args &&... args) {
-        window.forceLayout = true;
+    T &makeWidget(Args &&... args) {
         if (content != nullptr) {
-            return content->addWidget<T>(std::forward<Args>(args)...);
+            return content->makeWidget<T>(std::forward<Args>(args)...);
         } else {
-            return addWidgetDirectly<T>(std::forward<Args>(args)...);
+            return makeWidgetDirectly<T>(std::forward<Args>(args)...);
+        }
+    }
+
+    /** Add a widget directly to this widget.
+    *
+    * Thread safety: calls _addWidget
+    */
+    template<typename T, typename... Args>
+    T &makeAlignedWidgetDirectly(Alignment alignement, Args &&... args) {
+        return static_cast<T &>(
+            addWidget(alignement, std::make_unique<T>(window, this, std::forward<Args>(args)...))
+        );
+    }
+
+    /** Add a widget directly to this widget.
+    *
+    * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
+    */
+    template<typename T, typename... Args>
+    T &makeAlignedWidget(Alignment alignment, Args &&... args) {
+        if (content != nullptr) {
+            return content->makeAlignedWidget<T>(alignment, std::forward<Args>(args)...);
+        } else {
+            return makeAlignedWidgetDirectly<T>(alignment, std::forward<Args>(args)...);
         }
     }
 
@@ -216,20 +238,20 @@ public:
     void setFixedHeight(float height) noexcept;
     void setFixedWidth(float width) noexcept;
 
-    void placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
-    void placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;
 
-    void placeLeftOf(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeLeftOf(Widget const &rhs, float margin=theme->margin) const noexcept;
 
-    void placeRightOf(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeRightOf(Widget const &rhs, float margin=theme->margin) const noexcept;
 
-    void placeAtTop(float margin=theme->margin) const noexcept;
+    rhea::constraint placeAtTop(float margin=theme->margin) const noexcept;
 
-    void placeAtBottom(float margin=theme->margin) const noexcept;
+    rhea::constraint placeAtBottom(float margin=theme->margin) const noexcept;
 
-    void placeLeft(float margin=theme->margin) const noexcept;
+    rhea::constraint placeLeft(float margin=theme->margin) const noexcept;
 
-    void placeRight(float margin=theme->margin) const noexcept;
+    rhea::constraint placeRight(float margin=theme->margin) const noexcept;
 
     [[nodiscard]] i32x2_t i32_extent() const noexcept {
         return _extent.load(std::memory_order::memory_order_relaxed);

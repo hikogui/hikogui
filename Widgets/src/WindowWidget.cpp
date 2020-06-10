@@ -14,12 +14,21 @@ using namespace std;
 WindowWidget::WindowWidget(Window &window) noexcept :
     Widget(window, nullptr, vec{0.0, 0.0})
 {
-    toolbar = &addWidgetDirectly<ToolbarWidget>();
+    toolbar = &makeWidgetDirectly<ToolbarWidget>();
     toolbar->placeLeft(0.0f);
     toolbar->placeRight(0.0f);
     toolbar->placeAtTop(0.0f);
 
-    content = &addWidgetDirectly<ContainerWidget>();
+    if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+        toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopRight);
+    } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
+        toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopLeft);
+    } else {
+        no_default;
+    }
+
+
+    content = &makeWidgetDirectly<ContainerWidget>();
     content->elevation = elevation;
     content->placeLeft(0.0f);
     content->placeRight(0.0f);

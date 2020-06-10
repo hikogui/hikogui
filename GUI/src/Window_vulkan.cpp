@@ -18,8 +18,8 @@ namespace TTauri {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    Window_base(move(delegate), move(title)), nrSwapchainImages(0), swapchainImageFormat()
+Window_vulkan::Window_vulkan(std::shared_ptr<WindowDelegate> const &delegate, Label const &title) :
+    Window_base(delegate, title), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
 

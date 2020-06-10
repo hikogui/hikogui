@@ -134,16 +134,12 @@ void Window_vulkan_win32::createWindow(const std::string &_title, vec extent)
     dpi = numeric_cast<float>(_dpi);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(const std::shared_ptr<WindowDelegate> delegate, const std::string title) :
-    Window_vulkan(move(delegate), title),
+Window_vulkan_win32::Window_vulkan_win32(std::shared_ptr<WindowDelegate> const &delegate, Label const &title) :
+    Window_vulkan(delegate, title),
     trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
     LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
-
-    let singleLineToolbarHeight = GetSystemMetrics(SM_CYMENU);
-    systemMenuButtonExtent = vec{singleLineToolbarHeight, singleLineToolbarHeight};
-    LOG_INFO("System menu button size {}", systemMenuButtonExtent);
 }
 
 Window_vulkan_win32::~Window_vulkan_win32()
@@ -222,7 +218,7 @@ void Window_vulkan_win32::openingWindow()
 
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
-        createWindow(title, minimumWindowExtent);
+        createWindow(title.text(), minimumWindowExtent);
     });
 }
 

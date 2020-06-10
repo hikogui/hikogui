@@ -12,6 +12,7 @@
 #include "TTauri/GUI/MouseEvent.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/GUI/SubpixelOrientation.hpp"
+#include "TTauri/GUI/Label.hpp"
 #include "TTauri/Text/gstring.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vec.hpp"
@@ -104,7 +105,7 @@ public:
 
     std::shared_ptr<WindowDelegate> delegate;
 
-    std::string title;
+    Label title;
 
     GUIDevice *device = nullptr;
 
@@ -150,11 +151,11 @@ public:
      */
     Widget *lastKeyboardWidget = nullptr;
 
-    Window_base(const std::shared_ptr<WindowDelegate> delegate, const std::string title);
+    Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label const &title);
     virtual ~Window_base();
 
-    Window_base(const Window_base &) = delete;
-    Window_base &operator=(const Window_base &) = delete;
+    Window_base(Window_base const &) = delete;
+    Window_base &operator=(Window_base const &) = delete;
     Window_base(Window_base &&) = delete;
     Window_base &operator=(Window_base &&) = delete;
 
@@ -184,9 +185,9 @@ public:
     bool isClosed();
 
     template<typename T, typename... Args>
-    T &addWidget(Args &&... args) {
+    T &makeWidget(Args &&... args) {
         ttauri_assume(widget);
-        return widget->addWidget<T>(std::forward<Args>(args)...);
+        return widget->makeWidget<T>(std::forward<Args>(args)...);
     }
 
     rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept;
