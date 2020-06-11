@@ -17,6 +17,8 @@ public:
 
     void runOnMainThread(std::function<void()> function) override;
 
+    void lastWindowClosed() override {}
+
     int loop() override;
 };
 

@@ -23,10 +23,10 @@ AtlasRect::AtlasRect(ivec atlasPosition, vec drawExtent) noexcept :
 
     let atlas_tx_rect = textureCoordinateScale * atlas_px_rect;
 
-    get<0>(textureCoords) = atlas_tx_rect.corner<0>();
-    get<1>(textureCoords) = atlas_tx_rect.corner<1>();
-    get<2>(textureCoords) = atlas_tx_rect.corner<2>();
-    get<3>(textureCoords) = atlas_tx_rect.corner<3>();
+    std::get<0>(textureCoords) = atlas_tx_rect.corner<0>();
+    std::get<1>(textureCoords) = atlas_tx_rect.corner<1>();
+    std::get<2>(textureCoords) = atlas_tx_rect.corner<2>();
+    std::get<3>(textureCoords) = atlas_tx_rect.corner<3>();
 }
 
 }

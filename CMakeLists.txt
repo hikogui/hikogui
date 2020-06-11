@@ -38,22 +38,7 @@ add_subdirectory(Widgets)
 endif()
 add_subdirectory(Application)
 
-if(BUILD_TTAURI_GUI)
-add_icon(Icon_objs 
-    "Themes/Icons/Application Icon.svg"
-    "Themes/Icons/Close Window.svg"
-    "Themes/Icons/Maximize Window.svg"
-    "Themes/Icons/Minimize Window.svg"
-    "Themes/Icons/MultiColor.svg"
-)
-
-set(TTauri_resources
-    ${Icon_objs}
-)
-endif()
-
 add_library(TTauri INTERFACE)
-target_static_resource(TTauri ${TTauri_resources})
 target_link_libraries(TTauri INTERFACE TTauri_Application)
 
 if(BUILD_TTAURI_GUI AND BUILD_TTAURI_AUDIO)

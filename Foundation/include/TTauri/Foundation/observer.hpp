@@ -106,10 +106,9 @@ public:
 
 template<typename T, typename OP>
 class obexpr_unari : public obexpr_impl<T> {
-protected:
+public:
     std::shared_ptr<obexpr_impl<OP>> op;
 
-public:
     ~obexpr_unari() {
         op->remove_owner(this);
     }
@@ -143,11 +142,11 @@ public:
         obexpr_unari<bool,OP>(op) {}
 
     [[nodiscard]] bool load() const noexcept override {
-        return !(op->load());
+        return !(this->op->load());
     }
 
     void store(bool const &v) noexcept override {
-        op->store(!v);
+        this->op->store(!v);
     }
 };
 

@@ -355,7 +355,7 @@ std::vector<std::pair<uint32_t, uint8_t>> GUIDevice_vulkan::findBestQueueFamilyI
             index++;
         }
         sort(queueFamilieScores.begin(), queueFamilieScores.end(), [](const auto &a, const auto &b) {
-            return get<2>(a) > get<2>(b);
+            return std::get<2>(a) > std::get<2>(b);
         });
     }
 

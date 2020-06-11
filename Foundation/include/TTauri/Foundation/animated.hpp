@@ -62,7 +62,7 @@ public:
     }
 
     animated &operator=(value_type const &rhs) noexcept {
-        observed_object = rhs;
+        observed_value = rhs;
         return *this;
     }
 

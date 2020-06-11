@@ -27,8 +27,8 @@ struct simd {
     template<typename A, typename B,
         std::enable_if_t<std::is_arithmetic_v<A> && std::is_arithmetic_v<B>, int> = 0>
     simd(A const &a, B const &b) noexcept {
-        get<0>(v) = numeric_cast<T>(a);
-        get<1>(v) = numeric_cast<T>(b);
+        std::get<0>(v) = numeric_cast<T>(a);
+        std::get<1>(v) = numeric_cast<T>(b);
         for (int i = 2; i < N; ++i) {
             v[i] = T{};
         }
@@ -42,7 +42,7 @@ struct simd {
             std::array<T,16 / sizeof(T)> buffer;
 
             auto store_i = _mm_cvtps_epi32(other);
-            store_i = _mm_unpacklo_epi16(store_i);
+            store_i = _mm_unpacklo_epi16(store_i, store_i);
             _mm_storeu_si128(reinterpret_cast<__m128i *>(buffer.data()), store_i);
 
             std::memcpy(v.data(), buffer.data(), N * sizeof (T));
@@ -114,12 +114,12 @@ struct simd {
 
     template<int I>
     [[nodiscard]] friend constexpr T const &get(simd const &rhs) noexcept {
-        return get<I>(rhs.v);
+        return std::get<I>(rhs.v);
     }
 
     template<int I>
     [[nodiscard]] friend constexpr T &get(simd &rhs) noexcept {
-        return get<I>(rhs.v);
+        return std::get<I>(rhs.v);
     }
 
 #define BINARY_OP(op)\

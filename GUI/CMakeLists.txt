@@ -50,8 +50,7 @@ set(TTauri_GUI_srcs
     src/ThemeBook.cpp
     src/KeyboardBindings.cpp
     src/KeyboardEvent.cpp
-    src/KeyboardVirtualKey_win32.cpp
-    src/Image.cpp
+    #src/Image.cpp
 )
 
 if(WIN32)
@@ -61,11 +60,12 @@ set(TTauri_GUI_srcs
     src/ThemeMode_win32.cpp
     src/Window_vulkan_win32.cpp
     src/VerticalSync_win32.cpp
+    src/KeyboardVirtualKey_win32.cpp
 )
 elseif(APPLE)
 set(TTauri_GUI_srcs
     ${TTauri_GUI_srcs}
-    src/GUISystem_vulkan_macos.mm
+    #src/GUISystem_vulkan_macos.mm
     #src/ThemeMode_macos.cpp
     #src/Window_vulkan_macos.cpp
     #src/VerticalSync_macos.cpp

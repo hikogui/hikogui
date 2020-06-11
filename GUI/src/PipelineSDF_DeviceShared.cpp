@@ -390,14 +390,14 @@ void DeviceShared::buildAtlas()
         vk::SamplerAddressMode::eClampToEdge, // addressModeV
         vk::SamplerAddressMode::eClampToEdge, // addressModeW
         0.0, // mipLodBias
-        FALSE, // anisotropyEnable
+        VK_FALSE, // anisotropyEnable
         0.0, // maxAnisotropy
-        FALSE, // compareEnable
+        VK_FALSE, // compareEnable
         vk::CompareOp::eNever,
         0.0, // minLod
         0.0, // maxLod
         vk::BorderColor::eFloatTransparentBlack,
-        FALSE // unnormazlizedCoordinates
+        VK_FALSE // unnormazlizedCoordinates
     };
     atlasSampler = device.createSampler(samplerCreateInfo);
 

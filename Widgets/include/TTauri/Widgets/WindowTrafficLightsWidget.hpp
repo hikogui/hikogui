@@ -60,7 +60,7 @@ public:
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 
 private:
-    static vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept;
+    static vec calculateExtent(Window &window) noexcept;
 
     void drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
     void drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;

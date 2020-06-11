@@ -27,7 +27,7 @@ public:
     void closingWindow() override;
     void openingWindow() override;
 
-    void createWindow(const std::string &title, extent2 extent);
+    void createWindow(const std::string &title, ivec extent);
     //LRESULT windowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     static void createWindowClass();
@@ -49,6 +49,15 @@ public:
     void maximizeWindow() override;
 
     void normalizeWindow() override;
+
+    void setWindowSize(ivec extent) override {}
+
+    [[nodiscard]] std::string getTextFromClipboard() const noexcept override {
+        return "<clipboard>";
+    }
+
+    void setTextOnClipboard(std::string str) noexcept override { }
+
 
 private:
     //void setOSWindowRectangleFromRECT(RECT aarect) noexcept;

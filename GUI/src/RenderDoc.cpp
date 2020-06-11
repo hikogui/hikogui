@@ -5,13 +5,16 @@
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/GUI/RenderDoc.hpp"
 #include <renderdoc/renderdoc_app.h>
+#if OPERATING_SYSTEM == OS_WINDOWS
 #include <Windows.h>
+#endif
 #include <type_traits>
 
 namespace TTauri {
 
 RenderDoc::RenderDoc() noexcept {
 #if !defined(NDEBUG)
+#if OPERATING_SYSTEM == OS_WINDOWS
     let dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},
@@ -53,6 +56,7 @@ found_dll:
     //}
 
     setOverlay(false, false, false);
+#endif
 #endif
 }
 
