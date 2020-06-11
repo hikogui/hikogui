@@ -6,77 +6,50 @@ Vulkan is used as the backend for rendering windows.
 
 ```
 
-    +----------+    +----------+
-    |  Window  |    |  Window  |
-    +----------+    +----------+
+    +---------+
+    | Window  |
+    +---------+
+         |      
+    Tone Mapper
+         |      
+    +---------+--------+
+  ..| f16rgba | Depth  |
+  : +---------+--------+
+  :      |      
+  :      +---------------+---------------+---------------+
+  :      |               |               |               |
+  :..SDF Shader     Image Shader    Flat Shader   Box Shader
          |               |
-         +---------------+
-         |               |
-     LCD Shader          |
-         |               |
-    +----------+       Hi DPI
-    | HiDPI FB |       Bypass
-    +----------+         |
-         |               |
-         +---------------+---------------+---------------+
-         |               |               |               |
-     Flat Shader     Box Shader      SDF Shader     Image Shader
-                                         |               |
-                                    +----------+    +---------+
-                                    |  Atlas   |    |  Atlas  |
-                                    +----------+    +---------+
+    +---------+     +---------+
+    |  Atlas  |     |  Atlas  |
+    +---------+     +---------+
 
 ```
 
 ## Window
-Each window will have two swap-chain images assigned to it. The swap-chain
-image are RGBA; Alpha is fixed to 1 and no need for a depth or stencil buffer.
+The swap-chain of the window will consist of RGBA images with alpha set to 1.
 
-When the window is HiDPI, then the Image, 
+The window may either have the sRGB colour space, or the extended-float16-sRGB
+color space.
 
-## Shaders
+## Single pass, five sub-passes.
+The whole render architecture is using a single pass with five sub-passes.
 
-### LCD Shader
-To anti-alias and potentially with LCD-sub-pixels a pipeline + shader
-is used to super-sample a high-resolution frame buffer. This high resolution
-frame buffer is treated as a 3x3 scaled window.
+By using a single pass the shader of the sub-passes are able to efficiently
+read from the frame-buffer. This frame buffer can be emphemeral and be located
+completely in fast on-GPU-chip memory. This will make rendering on mobile
+GPUs a lot more efficient compared to multi-pass architectures.
 
-The high resolution framebuffer is a single 32 bit RGBA color attachment and a single
-16 bit depth attachment.
+This shared frame buffer is in float-16 extended-sRGB, which allows for
+HDR/WCG (High Dynamic Range / Wide Color Gamut). The frame buffer also
+includes a depth image.
 
-### Flat Shader
-This pipeline is for drawing flat polygons. Useful for drawing simple boxes of
-a single colour, such as backgrounds for widgets and windows.
-
-Also useful for drawing lines, for graphs and such. The flat pipeline will not
-self anti-alias.
-
-### Box Shader
-This pipeline is for drawing axis-aligned boxes, such as buttons. Each box has the
-following properties:
- * A rectangle. The edges of the rectangle will match the center of the border.
- * Background color
- * Border color
- * Border size/width in pixels.
- * Shadow size, the amount of pixels for the drop shadow
- * Round/Cut radius for each corner. Corner are in the following order:
-   left-bottom, right-bottom, left-top, right-top.
-
-### Image Shader
-The image shader takes a list of square-quads, with pointers inside a texture atlas to render.
-Each polygon has the same size, and a image consists of a set of square-quads.
-
-Due to the same size square-quads it is possible to manage the atlas dynamically, see the
-seperate article about this.
-
-The image-shader creates polygons that are self anti-aliased. This is due to linear interpolation
-of the texture map.
-
-### SDF pipeline
-A character shader will render individual characters in high resolution using
-signed distance fields.
-
-A texture atlas is filled with glyphs that are added as needed at run-time.
+The five sub-passes are:
+ - Flat Shader  - Render simple non-anti-aliased quads.
+ - Box Shader   - Render anti-aliased rectangles with rounded corners.
+ - Image Shader - Render anti-aliased texture mapped quads.
+ - SDF Shader   - Render text-glyphs with subpixel-anti-aliasing.
+ - Tone Mapper  - Convert HDR/WCG image to the reduced range of the display.
 
 ## Text Shaping
 
