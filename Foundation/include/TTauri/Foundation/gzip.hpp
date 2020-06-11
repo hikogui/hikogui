@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/Foundation/byte_string.hpp"
-#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 #include <cstddef>
 
 namespace TTauri {
@@ -13,7 +13,7 @@ namespace TTauri {
 bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size=0x0100'0000);
 
 inline bstring gzip_decompress(URL const &url, ssize_t max_size=0x0100'0000) {
-    return gzip_decompress(FileView(url), max_size);
+    return gzip_decompress(*ResourceView::loadView(url), max_size);
 }
 
 }

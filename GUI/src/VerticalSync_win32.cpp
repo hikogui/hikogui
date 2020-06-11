@@ -44,7 +44,7 @@ namespace TTauri {
 using namespace std;
 
 VerticalSync_win32::VerticalSync_win32(std::function<void(void*,hires_utc_clock::time_point)> callback, void* callbackData) noexcept :
-    callback(callback), callbackData(callbackData)
+    VerticalSync_base(callback, callbackData)
 {
     state = State::ADAPTER_CLOSED;
 

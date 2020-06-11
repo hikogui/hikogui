@@ -15,8 +15,8 @@ namespace TTauri {
 
 [[nodiscard]] Messages po_parser(URL const &url) noexcept
 {
-    let v = FileView(url);
-    return po_parser(v.string_view());
+    let v = ResourceView::loadView(url);
+    return po_parser(v->string_view());
 }
 
 

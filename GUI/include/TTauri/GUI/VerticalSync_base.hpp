@@ -7,9 +7,15 @@
 namespace TTauri {
 
 class VerticalSync_base {
+protected:
+    std::function<void(void *,hires_utc_clock::time_point)> callback;
+    void *callbackData;
+
 public:
-    VerticalSync_base(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept;
-    ~VerticalSync_base();
+    VerticalSync_base(std::function<void(void *,hires_utc_clock::time_point)> callback, void *callbackData) noexcept:
+        callback(callback), callbackData(callbackData) {}
+
+    ~VerticalSync_base() = default;
 
 };
 

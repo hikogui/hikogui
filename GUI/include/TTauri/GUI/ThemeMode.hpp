@@ -33,7 +33,4 @@ inline std::ostream &operator<<(std::ostream &lhs, ThemeMode rhs) {
 
 ThemeMode readOSThemeMode() noexcept;
 
-float readOSToolbarHeight() noexcept;
-float readOSToolbarDecorationButtonWidth() noexcept;
-
 }

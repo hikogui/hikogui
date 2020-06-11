@@ -51,6 +51,7 @@ set(TTauri_GUI_srcs
     src/KeyboardBindings.cpp
     src/KeyboardEvent.cpp
     src/KeyboardVirtualKey_win32.cpp
+    src/Image.cpp
 )
 
 if(WIN32)

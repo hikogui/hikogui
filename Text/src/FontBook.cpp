@@ -4,7 +4,6 @@
 #include "TTauri/Text/FontBook.hpp"
 #include "TTauri/Text/TrueTypeFont.hpp"
 #include "TTauri/Foundation/trace.hpp"
-#include "TTauri/Foundation/FileView.hpp"
 
 namespace TTauri {
 

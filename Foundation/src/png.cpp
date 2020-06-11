@@ -473,6 +473,13 @@ void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
 
 }
 
+PixelMap<R16G16B16A16SFloat> png::load(URL const &url)
+{
+    let png_data = png(url);
+    auto image = PixelMap<R16G16B16A16SFloat>{png_data.extent()};
+    png_data.decode_image(image);
+    return image;
+}
 
 
 }

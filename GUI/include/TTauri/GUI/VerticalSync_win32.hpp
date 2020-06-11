@@ -24,8 +24,6 @@ class VerticalSync_win32 final : public VerticalSync_base {
 
     std::thread verticalSyncThreadID;
     bool stop = false;
-    std::function<void(void *,hires_utc_clock::time_point)> callback;
-    void *callbackData;
 
     hires_utc_clock::time_point previousFrameTimestamp;
     std::array<hires_utc_clock::duration,15> frameDurationData;

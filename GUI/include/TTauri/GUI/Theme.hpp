@@ -20,11 +20,13 @@ private:
 public:
     static constexpr OperatingSystem operatingSystem = OperatingSystem::Windows;
 
-    static inline float toolbarHeight;
+    static inline float toolbarHeight =
+        (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
 
     /** The width of a close, minimize, maximize, system menu button.
      */
-    static inline float toolbarDecorationButtonWidth;
+    static inline float toolbarDecorationButtonWidth =
+        (operatingSystem == OperatingSystem::Windows) ? 30.0f : 20.0f;
 
     /** Distance between widgets and between widgets and the border of the container.
      */

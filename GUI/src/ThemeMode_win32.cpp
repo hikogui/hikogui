@@ -51,18 +51,4 @@ namespace TTauri {
 
 }
 
-float readOSToolbarHeight() noexcept
-{
-    return
-        GetThemeSysSize(nullptr, SM_CYSIZE) +
-        GetThemeSysSize(nullptr, SM_CXPADDEDBORDER) * 2.0f;
-}
-
-float readOSToolbarDecorationButtonWidth() noexcept
-{
-    return
-        GetThemeSysSize(nullptr, SM_CXSIZE) +
-        GetThemeSysSize(nullptr, SM_CXPADDEDBORDER) * 2.0f;
-}
-
 }

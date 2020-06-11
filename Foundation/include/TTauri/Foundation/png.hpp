@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/byte_string.hpp"
 #include <nonstd/span>
 #include <vector>
@@ -57,13 +57,15 @@ public:
     png(nonstd::span<std::byte const> bytes);
 
     png(URL const &url) :
-        png(FileView(url)) {}
+        png(*ResourceView::loadView(url)) {}
 
     ivec extent() const noexcept {
         return ivec{width, height};
     }
 
     void decode_image(PixelMap<R16G16B16A16SFloat> &image) const;
+
+    static PixelMap<R16G16B16A16SFloat> load(URL const &url);
 
 private:
     void read_header(nonstd::span<std::byte const> &bytes, ssize_t &offset);

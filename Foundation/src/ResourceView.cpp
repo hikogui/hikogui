@@ -26,12 +26,6 @@ std::unique_ptr<ResourceView> ResourceView::loadView(URL const &location)
         }
 
     } else if (location.scheme() == "file") {
-        if (!location.isAbsolute()) {
-            TTAURI_THROW(url_error("file-URLs must be absolute.")
-                .set<url_tag>(location)
-            );
-        }
-
         auto view = FileView::loadView(location);
         LOG_INFO("Loaded resource {} from filesystem.", location);
         return view;

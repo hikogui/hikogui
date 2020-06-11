@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/expression.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/algorithm.hpp"
-#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
 
 namespace TTauri {
 
@@ -265,8 +265,8 @@ inline std::unique_ptr<template_node> parse_template(URL url, std::string_view t
 }
 
 inline std::unique_ptr<template_node> parse_template(URL url) {
-    let fv = FileView(url);
-    let sv = fv.string_view();
+    let fv = ResourceView::loadView(url);
+    let sv = fv->string_view();
 
     return parse_template(std::move(url), sv.cbegin(), sv.cend());
 }

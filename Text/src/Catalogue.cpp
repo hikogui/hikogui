@@ -1,4 +1,8 @@
 
+#pragma once
+
+#include "TTauri/Foundation/ResourceView.hpp"
+
 namespace TTauri {
 
 [[nodiscard]] static parse_result_t<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
@@ -83,8 +87,8 @@ namespace TTauri {
 
 [[nodiscard]] Catalogue parseCatalogue(URL const &url)
 {
-    auto text = FileView(url);
-    return parseCatalogue(text.string_view());
+    let text = ResourceView::loadView(url);
+    return parseCatalogue(text->string_view());
 }
 
 
