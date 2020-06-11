@@ -5,6 +5,7 @@
 
 #include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
+#include "TTauri/Text/FontBook.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>
 #include <string>
