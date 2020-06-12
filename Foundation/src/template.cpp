@@ -39,7 +39,7 @@ struct template_top_node final: template_node {
     }
 
     std::string string() const noexcept override {
-        ttlet children_str = transform<std::vector<std::string>>(children, [](auto const &x) { return x->string(); });
+        ttlet children_str = transform<std::vector<std::string>>(children, [](ttlet &x) { return x->string(); });
         return fmt::format("<top {}>", join(children_str));
     }
 };
@@ -193,7 +193,7 @@ struct template_if_node final: template_node {
     }
 
     void post_process(expression_post_process_context &context) override {
-        ttauri_assert(ssize(expressions) == ssize(expression_locations));
+        tt_assert(ssize(expressions) == ssize(expression_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             post_process_expression(context, *expressions[i], expression_locations[i]);
         }
@@ -210,7 +210,7 @@ struct template_if_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        ttauri_assume(ssize(expressions) == ssize(expression_locations));
+        tt_assume(ssize(expressions) == ssize(expression_locations));
         for (ssize_t i = 0; i != ssize(expressions); ++i) {
             if (evaluate_expression_without_output(context, *expressions[i], expression_locations[i])) {
                 return evaluate_children(context, children_groups[i]);
@@ -223,7 +223,7 @@ struct template_if_node final: template_node {
     }
 
     std::string string() const noexcept override {
-        ttauri_assert(expressions.size() > 0);
+        tt_assert(expressions.size() > 0);
         std::string s = "<if ";
         s += to_string(*expressions[0]);
         s += join(transform<std::vector<std::string>>(children_groups[0], [](auto &x) { return to_string(*x); }));
@@ -363,7 +363,7 @@ struct template_do_node final: template_node {
     }
 
     std::string string() const noexcept override {
-        ttauri_assert(expression);
+        tt_assert(expression);
         std::string s = "<do ";
         s += join(transform<std::vector<std::string>>(children, [](auto &x) { return to_string(*x); }));
         s += to_string(*expression);
@@ -492,7 +492,7 @@ struct template_function_node final: template_node {
         template_node(std::move(location))
     {
         auto name_and_arguments = function_declaration_expression->get_name_and_argument_names();
-        ttauri_assert(name_and_arguments.size() >= 1);
+        tt_assert(name_and_arguments.size() >= 1);
 
         name = name_and_arguments[0];
         name_and_arguments.erase(name_and_arguments.begin());
@@ -610,7 +610,7 @@ struct template_block_node final: template_node {
         }
 
         function = context.get_function(name);
-        ttauri_assert(function);
+        tt_assert(function);
 
         context.push_super(super_function);
         for (ttlet &child: children) {
@@ -896,7 +896,7 @@ void parse_template_hash(template_parse_context &context)
                 TTAURI_THROW(parse_error("Unexpected #while statement; missing #do.").set_location(location));
             }
 
-            ttauri_assert(context.pop());
+            tt_assert(context.pop());
         } else {
             context.push<template_while_node>(location, std::move(expression));
         }

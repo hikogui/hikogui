@@ -56,15 +56,15 @@ public:
      * and allocations.
      */
     void insert(Key const &first, Key const &last, Value &&value) noexcept {
-        ttauri_assert(last > first);
+        tt_assert(last > first);
 
         // Find all (partially) overlapping items.
         auto first_ = find(first);
         auto last_ = find(last);
         ttlet delta = std::distance(first_, last_);
-        ttauri_assume(delta >= 0);
+        tt_assume(delta >= 0);
 
-        ttauri_assume(first_ != items.end());
+        tt_assume(first_ != items.end());
         if (first_->first != first) {
             // Split the first element.
             ttlet tmp_last = first_->last;
@@ -74,7 +74,7 @@ public:
             last_ = first_ + delta;
         }
 
-        ttauri_assume(last_ != items.end());
+        tt_assume(last_ != items.end());
         if (last_->last != last) {
             // Split the last element.
             ttlet tmp_first = last_->first;
@@ -84,7 +84,7 @@ public:
             first_ = last_ - delta;
         }
 
-        ttauri_assume(last_ != items.end());
+        tt_assume(last_ != items.end());
         ++last_;
         for (auto i = first_; i != last_; ++i) {
             *i += value;

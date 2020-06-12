@@ -309,7 +309,7 @@ constexpr char const *to_const_string(KeyboardVirtualKey key) noexcept
     case KeyboardVirtualKey::VolumeMute: return "volume-mute";
     case KeyboardVirtualKey::VolumeUp: return "volume-up";
     case KeyboardVirtualKey::VolumeDown: return "volume-down";
-    default: no_default;
+    default: tt_no_default;
     }
 }
 

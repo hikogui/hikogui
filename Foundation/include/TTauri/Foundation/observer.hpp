@@ -212,7 +212,7 @@ protected:
 
 public:
     ~obexpr_observable() {
-        ttauri_assume(object);
+        tt_assume(object);
         object->remove_callback(callback_id);
     }
 
@@ -225,7 +225,7 @@ public:
     obexpr_observable(observable<T> &object) :
         obexpr_impl<T>(), object(&object)
     {
-        ttauri_assume(this->object);
+        tt_assume(this->object);
 
         callback_id = this->object->add_callback([this](auto...) {
             this->notify_owners();
@@ -233,12 +233,12 @@ public:
     }
 
     [[nodiscard]] T load() const noexcept override {
-        ttauri_assume(object);
+        tt_assume(object);
         return *object;
     }
 
     void store(T const &v) noexcept override {
-        ttauri_assume(object);
+        tt_assume(object);
         (*object) = v;
     }
 };
@@ -350,7 +350,7 @@ public:
     }
 
     void handle_notification() noexcept override {
-        ttauri_assume(expr);
+        tt_assume(expr);
         auto new_value = expr->load();
         value.store(new_value);
         _notifier(new_value);

@@ -58,12 +58,12 @@ struct UnicodeRanges {
     }
 
     void set_bit(int i) noexcept {
-        ttauri_assume(i >= 0 && i < 128);
+        tt_assume(i >= 0 && i < 128);
         value[i / 32] |= static_cast<uint32_t>(1) << (i % 32);
     }
 
     bool get_bit(int i) const noexcept {
-        ttauri_assume(i >= 0 && i < 128);
+        tt_assume(i >= 0 && i < 128);
         return (value[i / 32] & static_cast<uint32_t>(1) << (i % 32)) != 0;
     }
 

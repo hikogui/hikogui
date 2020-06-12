@@ -340,7 +340,7 @@ vec Window_base::suggestWidgetExtent(vec extent) noexcept {
 }
 
 void Window_base::layoutWindow() noexcept {
-    ttauri_assume(widget);
+    tt_assume(widget);
 
     std::tie(minimumWindowExtent, maximumWindowExtent) = getMinimumAndMaximumWidgetExtent();
 

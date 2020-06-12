@@ -24,14 +24,14 @@ AudioSystem_win32::AudioSystem_win32(AudioSystemDelegate *delegate) :
         CLSCTX_ALL, IID_IMMDeviceEnumerator,
         &deviceEnumerator
     ));
-    ttauri_assert(deviceEnumerator != nullptr);
+    tt_assert(deviceEnumerator != nullptr);
 }
 
 AudioSystem_win32::~AudioSystem_win32()
 {
     auto deviceEnumerator_ = static_cast<IMMDeviceEnumerator *>(deviceEnumerator);
         
-    ttauri_assert(deviceEnumerator_ != nullptr);
+    tt_assert(deviceEnumerator_ != nullptr);
     deviceEnumerator_->Release();
 }
 
@@ -47,7 +47,7 @@ void AudioSystem_win32::updateDeviceList() noexcept
     auto deviceEnumerator_ = static_cast<IMMDeviceEnumerator *>(deviceEnumerator);
 
     IMMDeviceCollection *deviceCollection;
-    ttauri_assert(deviceEnumerator_ != nullptr);
+    tt_assert(deviceEnumerator_ != nullptr);
     hresult_assert_or_throw(deviceEnumerator_->EnumAudioEndpoints(
         eAll,
         DEVICE_STATE_ACTIVE | DEVICE_STATE_DISABLED | DEVICE_STATE_NOTPRESENT | DEVICE_STATE_UNPLUGGED,
@@ -55,7 +55,7 @@ void AudioSystem_win32::updateDeviceList() noexcept
     ));
 
     UINT numberOfDevices;
-    ttauri_assert(deviceCollection != nullptr);
+    tt_assert(deviceCollection != nullptr);
     hresult_assert_or_throw(deviceCollection->GetCount(&numberOfDevices));
 
     for (UINT i = 0; i < numberOfDevices; i++) {

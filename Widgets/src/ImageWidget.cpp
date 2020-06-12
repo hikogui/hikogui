@@ -197,7 +197,7 @@ PipelineImage::Backing::ImagePixelMap ImageWidget::drawImage(std::shared_ptr<Pip
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
         return { std::move(image), drawTrafficLightsImage(*image) };
     } else {
-        no_default;
+        tt_no_default;
     }
 }
 
@@ -250,7 +250,7 @@ void ImageWidget::handleMouseEvent(MouseEvent const &event) noexcept
                     window.normalizeWindow();
                     break;
                 default:
-                    no_default;
+                    tt_no_default;
                 }
             }
         }
@@ -266,7 +266,7 @@ void ImageWidget::handleMouseEvent(MouseEvent const &event) noexcept
         }
 
     } else {
-        no_default;
+        tt_no_default;
     }
 }
 
@@ -290,7 +290,7 @@ HitBox ImageWidget::hitBoxTest(vec position) const noexcept
         }
 
     } else {
-        no_default;
+        tt_no_default;
     }
 
     return r;

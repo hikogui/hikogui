@@ -13,8 +13,8 @@ namespace tt {
 
 void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
 {
-    ttauri_assert(src.width >= dst.width);
-    ttauri_assert(src.height >= dst.height);
+    tt_assert(src.width >= dst.width);
+    tt_assert(src.height >= dst.height);
 
     for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst[rowNr];

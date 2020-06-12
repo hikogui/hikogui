@@ -45,7 +45,7 @@ public:
         modifiers(KeyboardModifiers::None), virtualKey(KeyboardVirtualKey::Nul)
     {
         ttlet modifiers_and_vkey = split(key_combination, '+');
-        ttauri_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());
+        tt_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());
 
         ttlet end_modifiers = modifiers_and_vkey.cend() - 1;
         for (auto i = modifiers_and_vkey.cbegin(); i != end_modifiers; ++i) {

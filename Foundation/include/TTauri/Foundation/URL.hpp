@@ -154,7 +154,7 @@ std::ostream& operator<<(std::ostream& lhs, const URL& rhs);
 template <typename T>
 inline std::unique_ptr<T> parseResource(URL const &location)
 {
-    not_implemented;
+    tt_not_implemented;
 }
 
 template <typename T>

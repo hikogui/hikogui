@@ -42,9 +42,9 @@ GUISystem_vulkan::GUISystem_vulkan(GUISystemDelegate *delegate, const std::vecto
     // VK_KHR_SURFACE extension is needed to draw in a window.
     requiredExtensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
-#if defined(_WIN32) && !defined(NDEBUG)
-    requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
+    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+        requiredExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
 
     if (!hasFoundationExtensions(requiredExtensions)) {
         TTAURI_THROW(gui_error("Vulkan instance does not have the required extensions"));
@@ -54,14 +54,15 @@ GUISystem_vulkan::GUISystem_vulkan(GUISystemDelegate *delegate, const std::vecto
     instanceCreateInfo.setEnabledExtensionCount(numeric_cast<uint32_t>(requiredExtensions.size()));
     instanceCreateInfo.setPpEnabledExtensionNames(requiredExtensions.data());
 
-#if !defined(NDEBUG)
-    requiredFeatures.robustBufferAccess = VK_TRUE;
-#endif
+    if constexpr (BuildType::current == BuildType::Debug) {
+        requiredFeatures.robustBufferAccess = VK_TRUE;
+    }
 
-#if defined(_WIN32) && !defined(NDEBUG)
-    requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
-    //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
-#endif
+    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+        requiredLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+        //requiredLayers.push_back("VK_LAYER_LUNARG_api_dump");
+    }
+
     instanceCreateInfo.setEnabledLayerCount(numeric_cast<uint32_t>(requiredLayers.size()));
     instanceCreateInfo.setPpEnabledLayerNames(requiredLayers.data());
 
@@ -78,29 +79,29 @@ GUISystem_vulkan::GUISystem_vulkan(GUISystemDelegate *delegate, const std::vecto
 
 GUISystem_vulkan::~GUISystem_vulkan()
 {
-#if defined(_WIN32) && !defined(NDEBUG)
-    intrinsic.destroy(debugUtilsMessager, nullptr, loader());
-#endif
+    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+        intrinsic.destroy(debugUtilsMessager, nullptr, loader());
+    }
 }
 
 void GUISystem_vulkan::initialize() noexcept(false)
 {
     auto lock = std::scoped_lock(guiMutex);
 
-#if defined(_WIN32) && !defined(NDEBUG)
-    debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
-        vk::DebugUtilsMessengerCreateFlagsEXT(),
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-        //vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
-        debugUtilsMessageCallback,
-        this
-    }, nullptr, loader());
-#endif
+    if constexpr (OperatingSystem::current == OperatingSystem::Windows && BuildType::current == BuildType::Debug) {
+        debugUtilsMessager = intrinsic.createDebugUtilsMessengerEXT({
+            vk::DebugUtilsMessengerCreateFlagsEXT(),
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
+            //vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance,
+            debugUtilsMessageCallback,
+            this
+        }, nullptr, loader());
+    }
 
     for (auto _physicalDevice : intrinsic.enumeratePhysicalDevices()) {
         devices.push_back(std::make_unique<GUIDevice>(_physicalDevice));
@@ -129,7 +130,7 @@ VkBool32 GUISystem_vulkan::debugUtilsMessageCallback(
         LOG_ERROR("Vulkan: {}", pCallbackData->pMessage);
         std::abort();
     default:
-        no_default;
+        tt_no_default;
     }
 
     return VK_FALSE;

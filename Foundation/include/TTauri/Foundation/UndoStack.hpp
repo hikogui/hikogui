@@ -68,12 +68,12 @@ public:
     }
 
     [[nodiscard]] UndoElement const &undo() noexcept {
-        ttauri_assume(undoPosition != 0);
+        tt_assume(undoPosition != 0);
         return stack[--undoPosition];
     }
 
     [[nodiscard]] UndoElement const &redo() noexcept {
-        ttauri_assume(undoPosition < ssize(stack));
+        tt_assume(undoPosition < ssize(stack));
         return stack[undoPosition++];
     }
 

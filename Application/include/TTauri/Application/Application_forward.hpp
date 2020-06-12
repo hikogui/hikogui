@@ -7,11 +7,11 @@
 
 namespace tt {
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 class Application_win32;
 using Application = Application_win32;
 
-#elif OPERATING_SYSTEM == OS_MACOS
+#elif  TT_OPERATING_SYSTEM == TT_OS_MACOS
 class Application_macos;
 using Application = Application_macos;
 

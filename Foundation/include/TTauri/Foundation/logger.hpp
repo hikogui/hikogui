@@ -146,7 +146,7 @@ struct log_message: public log_message_base {
             }
         }
 
-        auto f = [format_str=format_str](auto const&... args) {
+        auto f = [format_str=format_str](ttlet&... args) {
             return fmt::format(format_str, args...);
         };
 
@@ -183,7 +183,7 @@ public:
     void gather_tick(bool last) noexcept;
 
     template<log_level Level, typename... Args>
-    force_inline void log(typename cpu_counter_clock::time_point timestamp, char const *format, Args &&... args) noexcept {
+    tt_force_inline void log(typename cpu_counter_clock::time_point timestamp, char const *format, Args &&... args) noexcept {
         if (Level >= minimum_log_level) {
             // Add messages in the queue, block when full.
             // * This reduces amount of instructions needed to be executed during logging.
@@ -199,7 +199,7 @@ public:
         }
 
         if constexpr (Level >= log_level::Fatal) {
-            auto const message = log_message<Level, Args...>(timestamp, format, std::forward<Args>(args)...);
+            ttlet message = log_message<Level, Args...>(timestamp, format, std::forward<Args>(args)...);
             // Make sure everything including this message and counters are logged.
             terminateOnFatalError(message.message());
 
@@ -233,6 +233,6 @@ inline logger_type logger = {};
 #define LOG_ERROR(...) TTAURI_LOG(::tt::log_level::Error, __VA_ARGS__)
 #define LOG_ASSERT(...) TTAURI_LOG(::tt::log_level::Assert, __VA_ARGS__)
 #define LOG_CRITICAL(...) TTAURI_LOG(::tt::log_level::Critical, __VA_ARGS__)
-#define LOG_FATAL(...) TTAURI_LOG(::tt::log_level::Fatal, __VA_ARGS__); ttauri_unreachable()
+#define LOG_FATAL(...) TTAURI_LOG(::tt::log_level::Fatal, __VA_ARGS__); tt_unreachable()
 
 }

@@ -74,13 +74,13 @@ constexpr It rfind_if(It const first, It const last, UnaryPredicate predicate)
 template<typename It, typename UnaryPredicate>
 constexpr It rfind_if_not(It const first, It const last, UnaryPredicate predicate)
 {
-    return rfind_if(first, last, [&](auto const &x) { return !predicate(x); });
+    return rfind_if(first, last, [&](ttlet &x) { return !predicate(x); });
 }
 
 template<typename It, typename T>
 constexpr It rfind(It const first, It const last, T const &value)
 {
-    return rfind_if(first, last, [&](auto const &x) { return x == value; });
+    return rfind_if(first, last, [&](ttlet &x) { return x == value; });
 }
 
 /** Find the start of the current cluster.
@@ -128,7 +128,7 @@ constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
         }
         --i;
     }
-    ttauri_unreachable();
+    tt_unreachable();
 }
 
 /** Find the begin and end of the current cluster.

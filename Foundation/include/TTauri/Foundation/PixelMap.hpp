@@ -59,7 +59,7 @@ struct PixelRow {
      * @return a reference to a pixel.
      */
     T const &at(ssize_t columnNr) const noexcept {
-        ttauri_assert(columnNr >= 0 && columnNr < width);
+        tt_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 
@@ -70,7 +70,7 @@ struct PixelRow {
      * @return a reference to a pixel.
      */
     T &at(ssize_t columnNr) noexcept {
-        ttauri_assert(columnNr >= 0 && columnNr < width);
+        tt_assert(columnNr >= 0 && columnNr < width);
         return pixels[columnNr];
     }
 };
@@ -114,12 +114,12 @@ struct PixelMap {
      */
     PixelMap(T *pixels, ssize_t width, ssize_t height, ssize_t stride) noexcept : pixels(pixels), width(width), height(height), stride(stride) {
         if (pixels) {
-            ttauri_assert(stride >= width);
-            ttauri_assert(width > 0);
-            ttauri_assert(height > 0);
+            tt_assert(stride >= width);
+            tt_assert(width > 0);
+            tt_assert(height > 0);
         } else {
-            ttauri_assert(width == 0);
-            ttauri_assert(height == 0);
+            tt_assert(width == 0);
+            tt_assert(height == 0);
         }
     } 
 
@@ -132,12 +132,12 @@ struct PixelMap {
     gsl_suppress(r.11)
     PixelMap(ssize_t width, ssize_t height) noexcept : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
         if (pixels) {
-            ttauri_assert(stride >= width);
-            ttauri_assert(width > 0);
-            ttauri_assert(height > 0);
+            tt_assert(stride >= width);
+            tt_assert(width > 0);
+            tt_assert(height > 0);
         } else {
-            ttauri_assert(width == 0);
-            ttauri_assert(height == 0);
+            tt_assert(width == 0);
+            tt_assert(height == 0);
         }
     }
 
@@ -180,7 +180,7 @@ struct PixelMap {
     PixelMap(PixelMap const &other) = delete;
 
     PixelMap(PixelMap &&other) noexcept : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
-        ttauri_assume(this != &other);
+        tt_assume(this != &other);
         other.selfAllocated = false;
     }
 
@@ -212,13 +212,13 @@ struct PixelMap {
      * @return A new pixel-map that point to the same memory as the current pixel-map.
      */
     PixelMap<T> submap(iaarect rect) const noexcept {
-        ttauri_assert(
+        tt_assert(
             (rect.x1() >= 0) &&
             (rect.y2() >= 0) &&
             (rect.width() >= 0) &&
             (rect.height() >= 0)
         );
-        ttauri_assert(
+        tt_assert(
             (rect.x2() <= width) &&
             (rect.y2() <= height)
         );
@@ -248,12 +248,12 @@ struct PixelMap {
     }
 
     PixelRow<T> const at(ssize_t rowNr) const noexcept {
-        ttauri_assert(rowNr < height);
+        tt_assert(rowNr < height);
         return (*this)[rowNr];
     }
 
     PixelRow<T> at(ssize_t rowNr) noexcept {
-        ttauri_assert(rowNr < height);
+        tt_assert(rowNr < height);
         return (*this)[rowNr];
     }
 };

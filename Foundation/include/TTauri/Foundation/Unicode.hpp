@@ -178,7 +178,7 @@ template<typename UnaryOperation>
     }
 }
 
-[[nodiscard]] no_inline char32_t utf8_to_utf32_fallback(char c) noexcept
+[[nodiscard]] tt_no_inline char32_t utf8_to_utf32_fallback(char c) noexcept
 {
     return CP1252_to_UTF32(c);
 }
@@ -340,7 +340,7 @@ struct utf8_to_utf32_state {
     uint32_t state = 0;
     for (ttlet u: rhs) {
         if (auto c = utf16_to_utf32(u, state)) {
-            ttauri_assume(c <= UnicodeMax);
+            tt_assume(c <= UnicodeMax);
             r += utf32_validate(c);
         }
     }

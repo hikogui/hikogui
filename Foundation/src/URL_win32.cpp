@@ -18,7 +18,7 @@ URL URL::urlFromCurrentWorkingDirectory() noexcept
     wchar_t currentDirectory[MAX_PATH];
     if (GetCurrentDirectoryW(MAX_PATH, currentDirectory) == 0) {
         // Can only cause error if there is not enough room in currentDirectory.
-        no_default;
+        tt_no_default;
     }
     return URL::urlFromWPath(currentDirectory);
 }
@@ -29,7 +29,7 @@ URL URL::urlFromExecutableFile() noexcept
         wchar_t modulePathWChar[MAX_PATH];
         if (GetModuleFileNameW(nullptr, modulePathWChar, MAX_PATH) == 0) {
             // Can only cause error if there is not enough room in modulePathWChar.
-            no_default;
+            tt_no_default;
         }
         return URL::urlFromWPath(modulePathWChar);
     }();
@@ -50,7 +50,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     // Use application name for the directory inside the application-data directory.
     if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &wchar_localAppData) != S_OK) {
         // This should really never happen.
-        no_default;
+        tt_no_default;
     }
 
     ttlet base_localAppData = URL::urlFromWPath(wchar_localAppData);
@@ -64,7 +64,7 @@ URL URL::urlFromSystemFontDirectory() noexcept
     // Use application name for the directory inside the application-data directory.
     if (SHGetKnownFolderPath(FOLDERID_Fonts, 0, nullptr, &wchar_fonts) != S_OK) {
         // This should really never happen.
-        no_default;
+        tt_no_default;
     }
 
     return URL::urlFromWPath(wchar_fonts);

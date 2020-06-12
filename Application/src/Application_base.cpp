@@ -14,7 +14,7 @@ using namespace std;
 Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance, int nCmdShow) :
     delegate(applicationDelegate)
 {
-    ttauri_assert(delegate);
+    tt_assert(delegate);
 
     tt::applicationName = applicationDelegate->applicationName();
     tt::configuration = applicationDelegate->configuration(arguments);
@@ -27,7 +27,7 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 
 #if defined(BUILD_TTAURI_GUI)
     tt::text_startup();
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     tt::hInstance = hInstance;
     tt::nCmdShow = nCmdShow;
 #endif

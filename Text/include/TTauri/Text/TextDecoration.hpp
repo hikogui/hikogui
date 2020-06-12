@@ -24,7 +24,7 @@ enum class TextDecoration {
     max = StrikeThrough
 };
 
-inline auto const TextDecoration_from_string_table = std::unordered_map<std::string,TextDecoration>{
+inline ttlet TextDecoration_from_string_table = std::unordered_map<std::string,TextDecoration>{
     {"none", TextDecoration::None},
     {"underline", TextDecoration::Underline},
     {"wavy-underline", TextDecoration::WavyUnderline},
@@ -38,7 +38,7 @@ inline auto const TextDecoration_from_string_table = std::unordered_map<std::str
     case TextDecoration::Underline: return "underline"; 
     case TextDecoration::WavyUnderline: return "wavy-underline"; 
     case TextDecoration::StrikeThrough: return "strike-through";
-    default: no_default;
+    default: tt_no_default;
     }
 }
 

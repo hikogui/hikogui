@@ -7,11 +7,11 @@
 
 namespace tt {
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 void _debugger_break();
 #define debugger_break _debugger_break()
 
-#elif COMPILER == CC_GCC || COMPILER == CC_CLANG
+#elif TT_COMPILER == TT_CC_GCC || TT_COMPILER == TT_CC_CLANG
 #define debugger_break __builtin_trap()
 
 #else
@@ -86,7 +86,7 @@ void debugger_dialogue(std::string caption, std::string fmt, Args... args) noexc
 * @param args Rest arguments to formatter
 */
 template<typename... Args>
-[[noreturn]] no_inline void _debugger_abort(char const *source_file, int source_line, char const *fmt, Args &&... args)
+[[noreturn]] tt_no_inline void _debugger_abort(char const *source_file, int source_line, char const *fmt, Args &&... args)
 {
     std::string message;
 

@@ -173,12 +173,12 @@ class sub_error final : public error {
     }
 
     datum &get(std::type_index info_tag) noexcept override {
-        ttauri_assert(error_info.has(info_tag) == 1);
+        tt_assert(error_info.has(info_tag) == 1);
         return error_info.get(info_tag);
     }
 
     datum const &get(std::type_index info_tag) const noexcept override {
-        ttauri_assert(error_info.has(info_tag) == 1);
+        tt_assert(error_info.has(info_tag) == 1);
         return error_info.get(info_tag);
     }
 
@@ -305,7 +305,7 @@ using math_error = sub_error<math_error_tag>;
 #define parse_assert2(x, ...) if (!(x)) { TTAURI_THROW(parse_error(__VA_ARGS__)); }
 
 #define hresult_assert_or_throw(x) ([](HRESULT result) {\
-        if (ttauri_unlikely(FAILED(result))) {\
+        if (tt_unlikely(FAILED(result))) {\
             TTAURI_THROW(io_error("Call to '{}' failed with {:08x}", #x, result));\
         }\
         return result;\

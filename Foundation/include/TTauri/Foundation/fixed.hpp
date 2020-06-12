@@ -28,7 +28,7 @@ struct fixed {
     template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
     explicit constexpr fixed(O other) noexcept :
         value(static_cast<T>(other * M)) {
-        ttauri_assert(
+        tt_assert(
             other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
@@ -37,7 +37,7 @@ struct fixed {
     template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
     explicit constexpr fixed(O other) noexcept :
         value(static_cast<T>(other) * M) {
-        ttauri_assert(
+        tt_assert(
             other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
@@ -49,7 +49,7 @@ struct fixed {
     template<typename O, std::enable_if_t<std::is_floating_point_v<O>, int> = 0>  
     constexpr fixed &operator=(O other) noexcept {
         value = static_cast<T>(other * M);
-        ttauri_assert(
+        tt_assert(
             other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
@@ -59,7 +59,7 @@ struct fixed {
     template<typename O, std::enable_if_t<std::is_integral_v<O>, int> = 0>
     constexpr fixed &operator=(O other) noexcept {
         value = static_cast<T>(other) * M;
-        ttauri_assert(
+        tt_assert(
             other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );
@@ -68,7 +68,7 @@ struct fixed {
 
     fixed &operator=(std::string const &other) {
         value = static_cast<T>(stod(other) * M);
-        ttauri_assert(
+        tt_assert(
             other >= (std::numeric_limits<T>::min() / M) &&
             other <= (std::numeric_limits<T>::max() / M)
         );

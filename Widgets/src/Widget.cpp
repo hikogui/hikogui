@@ -32,7 +32,7 @@ Widget::~Widget()
 GUIDevice *Widget::device() const noexcept
 {
     auto device = window.device;
-    ttauri_assert(device);
+    tt_assert(device);
     return device;
 }
 
@@ -85,8 +85,8 @@ void Widget::setFixedExtent(vec newFixedExtent) noexcept
 {
     auto lock = std::scoped_lock(mutex);
 
-    ttauri_assert(newFixedExtent.width() == 0.0f || newFixedExtent.width() >= minimumExtent.width());
-    ttauri_assert(newFixedExtent.height() == 0.0f || newFixedExtent.height() >= minimumExtent.height());
+    tt_assert(newFixedExtent.width() == 0.0f || newFixedExtent.width() >= minimumExtent.width());
+    tt_assert(newFixedExtent.height() == 0.0f || newFixedExtent.height() >= minimumExtent.height());
 
     if (newFixedExtent != fixedExtent) {
         if (fixedExtent.width() != 0.0f) {
@@ -190,7 +190,7 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 
 Widget &Widget::addWidget(Alignment, std::unique_ptr<Widget> childWidget) noexcept {
     ttlet widget_ptr = childWidget.get();
-    ttauri_assume(widget_ptr);
+    tt_assume(widget_ptr);
 
     auto lock = std::scoped_lock(mutex);
     children.push_back(std::move(childWidget));

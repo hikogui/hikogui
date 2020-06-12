@@ -16,7 +16,7 @@ namespace tt {
  */
 
 
-no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
+tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
 {
     do {
         ttlet should_wait = expected == 2;

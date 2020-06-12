@@ -402,8 +402,8 @@ static int get_sample(nonstd::span<std::byte const> bytes, ssize_t &offset, bool
 
 ivec png::extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) const noexcept
 {
-    ttauri_assume(bit_depth == 8 || bit_depth == 16);
-    ttauri_assume(!is_palletted);
+    tt_assume(bit_depth == 8 || bit_depth == 16);
+    tt_assume(!is_palletted);
 
     int r = 0;
     int g = 0;

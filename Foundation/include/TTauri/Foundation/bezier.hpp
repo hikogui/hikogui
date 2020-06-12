@@ -49,7 +49,7 @@ inline std::array<T,4> bezierToPolynomial(T P1, T C1, T C2, T P2) noexcept
 }
 
 inline vec bezierPointAt(vec P1, vec P2, float t) noexcept {
-    ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
     ttlet [a, b] = bezierToPolynomial(P1, P2);
     ttlet t_ = vec{t};
@@ -58,7 +58,7 @@ inline vec bezierPointAt(vec P1, vec P2, float t) noexcept {
 
 inline vec bezierPointAt(vec P1, vec C, vec P2, float t) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
 
     ttlet [a, b, c] = bezierToPolynomial(P1, C, P2);
 
@@ -68,7 +68,7 @@ inline vec bezierPointAt(vec P1, vec C, vec P2, float t) noexcept
 
 inline vec bezierPointAt(vec P1, vec C1, vec C2, vec P2, float t) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() && P2.w() == 1.0f);
 
     ttlet [a, b, c, d] = bezierToPolynomial(P1, C1, C2, P2);
     ttlet t_ = vec{t};
@@ -77,14 +77,14 @@ inline vec bezierPointAt(vec P1, vec C1, vec C2, vec P2, float t) noexcept
 
 inline vec bezierTangentAt(vec P1, vec P2, float t) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
     return P2 - P1;
 }
 
 inline vec bezierTangentAt(vec P1, vec C, vec P2, float t) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
 
     ttlet _2 = vec{2.0};
     ttlet _t = vec{t};
@@ -93,7 +93,7 @@ inline vec bezierTangentAt(vec P1, vec C, vec P2, float t) noexcept
 
 inline vec bezierTangentAt(vec P1, vec C1, vec C2, vec P2, float t) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() && P2.w() == 1.0f);
 
     ttlet _2 = vec{2.0};
     ttlet _3 = vec{3.0};
@@ -129,11 +129,11 @@ inline results<float,3> bezierFindT(float P1, float C1, float C2, float P2, floa
  */
 inline results<float,1> bezierFindTForNormalsIntersectingPoint(vec P1, vec P2, vec P) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f && P.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && P2.w() == 1.0f && P.w() == 1.0f);
 
     auto t_above = dot(P - P1, P2 - P1);
     auto t_below = dot(P2 - P1, P2 - P1);
-    if (ttauri_unlikely(t_below == 0.0)) {
+    if (tt_unlikely(t_below == 0.0)) {
         return {};
     } else {
         return {t_above / t_below};
@@ -146,7 +146,7 @@ inline results<float,1> bezierFindTForNormalsIntersectingPoint(vec P1, vec P2, v
 */
 inline results<float,3> bezierFindTForNormalsIntersectingPoint(vec P1, vec C, vec P2, vec P) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f && P.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f && P.w() == 1.0f);
 
     ttlet _2 = vec{2.0};
     ttlet p = P - P1;
@@ -169,7 +169,7 @@ inline results<float,3> bezierFindTForNormalsIntersectingPoint(vec P1, vec C, ve
  */
 inline results<float,1> bezierFindX(vec P1, vec P2, float y) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
     if (y < std::min({P1.y(), P2.y()}) || y > std::max({P1.y(), P2.y()})) {
         return {};
@@ -194,7 +194,7 @@ inline results<float,1> bezierFindX(vec P1, vec P2, float y) noexcept
 */
 inline results<float,2> bezierFindX(vec P1, vec C, vec P2, float y) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
 
     results<float,2> r{};
 
@@ -220,7 +220,7 @@ inline results<float,2> bezierFindX(vec P1, vec C, vec P2, float y) noexcept
 */
 inline results<float,3> bezierFindX(vec P1, vec C1, vec C2, vec P2, float y) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() == 1.0f && P2.w() == 1.0f);
 
     results<float,3> r{};
 
@@ -242,7 +242,7 @@ inline results<float,3> bezierFindX(vec P1, vec C1, vec C2, vec P2, float y) noe
 */
 inline float bezierFlatness(vec P1, vec P2) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
     return 1.0f;
 }
@@ -253,7 +253,7 @@ inline float bezierFlatness(vec P1, vec P2) noexcept
 
 inline float bezierFlatness(vec P1, vec C, vec P2) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C.w() == 1.0f && P2.w() == 1.0f);
 
     ttlet P1P2 = length(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -271,7 +271,7 @@ inline float bezierFlatness(vec P1, vec C, vec P2) noexcept
 
 inline float bezierFlatness(vec P1, vec C1, vec C2, vec P2) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && C1.w() == 1.0f && C2.w() == 1.0f && P2.w() == 1.0f);
 
     ttlet P1P2 = length(P2 - P1);
     if (P1P2 == 0.0f) {
@@ -286,7 +286,7 @@ inline float bezierFlatness(vec P1, vec C1, vec C2, vec P2) noexcept
 
 inline std::pair<vec, vec> parrallelLine(vec P1, vec P2, float distance) noexcept
 {
-    ttauri_assume(P1.w() == 1.0f && P2.w() == 1.0f);
+    tt_assume(P1.w() == 1.0f && P2.w() == 1.0f);
 
     ttlet _distance = vec{distance};
     ttlet v = P2 - P1;
@@ -301,7 +301,7 @@ inline std::pair<vec, vec> parrallelLine(vec P1, vec P2, float distance) noexcep
 */
 inline std::optional<vec> getIntersectionPoint(vec A1, vec A2, vec B1, vec B2) noexcept
 {
-    ttauri_assume(A1.w() == 1.0f && A2.w() == 1.0f && B1.w() == 1.0f && B2.w() == 1.0f);
+    tt_assume(A1.w() == 1.0f && A2.w() == 1.0f && B1.w() == 1.0f && B2.w() == 1.0f);
 
     // convert points to vectors.
     ttlet p = A1;
@@ -334,7 +334,7 @@ inline std::optional<vec> getIntersectionPoint(vec A1, vec A2, vec B1, vec B2) n
 */
 inline std::optional<vec> getExtrapolatedIntersectionPoint(vec A1, vec A2, vec B1, vec B2) noexcept
 {
-    ttauri_assume(A1.w() == 1.0f && A2.w() == 1.0f && B1.w() == 1.0f && B2.w() == 1.0f);
+    tt_assume(A1.w() == 1.0f && A2.w() == 1.0f && B1.w() == 1.0f && B2.w() == 1.0f);
 
     // convert points to vectors.
     ttlet p = A1;

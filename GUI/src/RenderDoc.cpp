@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/URL.hpp"
 #include "TTauri/GUI/RenderDoc.hpp"
 #include <renderdoc/renderdoc_app.h>
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>
 #endif
 #include <type_traits>
@@ -13,8 +13,8 @@
 namespace tt {
 
 RenderDoc::RenderDoc() noexcept {
-#if !defined(NDEBUG)
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     ttlet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},

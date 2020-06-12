@@ -12,7 +12,7 @@
 namespace tt {
 
 template<typename T, typename U>
-force_inline void memswap(T &dst, U &src) {
+tt_force_inline void memswap(T &dst, U &src) {
     static_assert(sizeof(T) == sizeof(U), "memswap requires both objects of equal size");
     std::byte tmp[sizeof(T)];
     memcpy(tmp, &src, sizeof(T));
@@ -21,7 +21,7 @@ force_inline void memswap(T &dst, U &src) {
 }
 
 template<typename T>
-force_inline bool is_aligned(T* p){
+tt_force_inline bool is_aligned(T* p){
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
 

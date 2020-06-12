@@ -43,21 +43,21 @@ struct BezierCurve {
      */
     BezierCurve(vec const P1, vec const P2, Color color=Color::White) noexcept :
         type(Type::Linear), color(color), P1(P1), C1(), C2(), P2(P2) {
-        ttauri_assume(P1.is_point() && P2.is_point());    
+        tt_assume(P1.is_point() && P2.is_point());    
     }
 
     /*! Construct a quadratic bezier-curve.
      */
     BezierCurve(vec const P1, vec const C1, vec const P2, Color color=Color::White) noexcept :
         type(Type::Quadratic), color(color), P1(P1), C1(C1), C2(), P2(P2) {
-        ttauri_assume(P1.is_point() && C1.is_point() && P2.is_point());    
+        tt_assume(P1.is_point() && C1.is_point() && P2.is_point());    
     }
 
     /*! Construct a cubic bezier-curve.
      */
     BezierCurve(vec const P1, vec const C1, vec const C2, vec const P2, Color color=Color::White) noexcept :
         type(Type::Cubic), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
-        ttauri_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
+        tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());    
     }
 
     /*! Construct a bezier-curve of any type.
@@ -66,19 +66,19 @@ struct BezierCurve {
         type(type), color(color), P1(P1), C1(C1), C2(C2), P2(P2) {
         switch (type) {
         case Type::Linear:
-            ttauri_assume(P1.is_point() && P2.is_point());
+            tt_assume(P1.is_point() && P2.is_point());
             break;
 
         case Type::Quadratic:
-            ttauri_assume(P1.is_point() && C1.is_point() && P2.is_point());
+            tt_assume(P1.is_point() && C1.is_point() && P2.is_point());
             break;
 
         case Type::Cubic:
-            ttauri_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
+            tt_assume(P1.is_point() && C1.is_point() && C2.is_point() && P2.is_point());
             break;
 
         default:
-            no_default;
+            tt_no_default;
         }
     }
 
@@ -107,7 +107,7 @@ struct BezierCurve {
         case Type::Linear: return bezierPointAt(P1, P2, t);
         case Type::Quadratic: return bezierPointAt(P1, C1, P2, t);
         case Type::Cubic: return bezierPointAt(P1, C1, C2, P2, t);
-        default: no_default;
+        default: tt_no_default;
         }
     }
 
@@ -123,7 +123,7 @@ struct BezierCurve {
         case Type::Linear: return bezierTangentAt(P1, P2, t);
         case Type::Quadratic: return bezierTangentAt(P1, C1, P2, t);
         case Type::Cubic: return bezierTangentAt(P1, C1, C2, P2, t);
-        default: no_default;
+        default: tt_no_default;
         }
     }
 
@@ -136,7 +136,7 @@ struct BezierCurve {
         case Type::Linear: return bezierFindX(P1, P2, y);
         case Type::Quadratic: return bezierFindX(P1, C1, P2, y);
         case Type::Cubic: return bezierFindX(P1, C1, C2, P2, y);
-        default: no_default;
+        default: tt_no_default;
         }
     }
 
@@ -144,8 +144,8 @@ struct BezierCurve {
         switch (type) {
         case Type::Linear: return bezierFindTForNormalsIntersectingPoint(P1, P2, P);
         case Type::Quadratic: return bezierFindTForNormalsIntersectingPoint(P1, C1, P2, P);
-        case Type::Cubic: no_default;
-        default: no_default;
+        case Type::Cubic: tt_no_default;
+        default: tt_no_default;
         }
     }
 
@@ -228,7 +228,7 @@ struct BezierCurve {
         case Type::Linear: return linearSplit(t);
         case Type::Quadratic: return quadraticSplit(t);
         case Type::Cubic: return cubicSplit(t);
-        default: no_default;
+        default: tt_no_default;
         }
     }
 
@@ -264,7 +264,7 @@ struct BezierCurve {
         case Type::Linear: return bezierFlatness(P1, P2);
         case Type::Quadratic: return bezierFlatness(P1, C1, P2);
         case Type::Cubic: return bezierFlatness(P1, C1, C2, P2);
-        default: no_default;
+        default: tt_no_default;
         }
     }
 
@@ -298,7 +298,7 @@ struct BezierCurve {
         case BezierCurve::Type::Cubic:
             return (lhs.P1 == rhs.P1) && (lhs.C1 == rhs.C1) && (lhs.C2 == rhs.C2) && (lhs.P2 == rhs.P2);
         default:
-            no_default;
+            tt_no_default;
         }
     }
 

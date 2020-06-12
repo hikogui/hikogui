@@ -34,7 +34,7 @@ public:
      * 
      */
     void add(int symbol, int code, int code_length) noexcept {
-        ttauri_assume(code_length >= 1);
+        tt_assume(code_length >= 1);
 
         int offset = 0;
         while (--code_length > 0) {
@@ -44,7 +44,7 @@ public:
             int value = tree[offset];
 
             // value may not be a leaf.
-            ttauri_assume(value <= 0); 
+            tt_assume(value <= 0); 
 
             if (value == 0) {
                 // Unused node entry. Point to the first of two new entries.
@@ -63,7 +63,7 @@ public:
         int select = code & 1;
         offset += select;
 
-        ttauri_assume(tree[offset] == 0); 
+        tt_assume(tree[offset] == 0); 
         tree[offset] = numeric_cast<T>(symbol + 1);
     }
 

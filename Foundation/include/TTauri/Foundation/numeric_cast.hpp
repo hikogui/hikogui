@@ -36,17 +36,17 @@ constexpr To numeric_cast(From x) noexcept
             // the largest fitting type.
             if constexpr (std::is_signed_v<To>) {
                 // Only signed numbers can be less than zero.
-                ttauri_assume(x >= std::numeric_limits<To>::min());
+                tt_assume(x >= std::numeric_limits<To>::min());
             }
-            ttauri_assume(x <= std::numeric_limits<To>::max());
+            tt_assume(x <= std::numeric_limits<To>::max());
 
         } else if constexpr (std::is_unsigned_v<To>) {
             // When the destination is unsigned and source is signed.
-            ttauri_assume(x >= 0);
+            tt_assume(x >= 0);
             if constexpr(sizeof(To) < sizeof(From)) {
                 // When signed may not fit inside the unsigned number check by first converting
                 // the maximum destination to the larger signed type.
-                ttauri_assume(x <= static_cast<From>(std::numeric_limits<To>::max()));
+                tt_assume(x <= static_cast<From>(std::numeric_limits<To>::max()));
             }
 
         } else {
@@ -54,7 +54,7 @@ constexpr To numeric_cast(From x) noexcept
             if constexpr(sizeof(To) <= sizeof(From)) {
                 // When unsigned may not fit inside the signed number check by first converting
                 // the maximum destination to the larger-or-equal unsigned type.
-                ttauri_assume(x <= static_cast<From>(std::numeric_limits<To>::max()));
+                tt_assume(x <= static_cast<From>(std::numeric_limits<To>::max()));
             }
         }
     }

@@ -5,11 +5,11 @@
 
 #include "TTauri/Foundation/os_detect.hpp"
 #include <chrono>
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>
-#elif COMPILER == CC_CLANG
+#elif TT_COMPILER == TT_CC_CLANG
 #include <x86intrin.h>
-#elif COMPILER == CC_GCC
+#elif TT_COMPILER == TT_CC_GCC
 #include <x86intrin.h>
 #endif
 

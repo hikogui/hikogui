@@ -15,27 +15,27 @@ class A8B8G8R8SrgbPack32 {
     uint32_t v;
 
 public:
-    force_inline A8B8G8R8SrgbPack32() = default;
-    force_inline A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
-    force_inline A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
-    force_inline A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
-    force_inline A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
+    tt_force_inline A8B8G8R8SrgbPack32() = default;
+    tt_force_inline A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
+    tt_force_inline A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
+    tt_force_inline A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
+    tt_force_inline A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
 
-    //force_inline A8B8G8R8SrgbPack32(vec const &rhs) noexcept {
+    //tt_force_inline A8B8G8R8SrgbPack32(vec const &rhs) noexcept {
     //}
 
-    //force_inline A8B8G8R8SrgbPack32 &operator=(vec const &rhs) noexcept {
+    //tt_force_inline A8B8G8R8SrgbPack32 &operator=(vec const &rhs) noexcept {
     //    return *this;
     //}
 
     //operator vec () const noexcept {
     //}
 
-    force_inline A8B8G8R8SrgbPack32(uint32_t const &rhs) noexcept : v(rhs) {}
-    force_inline A8B8G8R8SrgbPack32 &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
-    force_inline operator uint32_t () noexcept { return v; }
+    tt_force_inline A8B8G8R8SrgbPack32(uint32_t const &rhs) noexcept : v(rhs) {}
+    tt_force_inline A8B8G8R8SrgbPack32 &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
+    tt_force_inline operator uint32_t () noexcept { return v; }
 
-    force_inline A8B8G8R8SrgbPack32(R16G16B16A16SFloat const &rhs) noexcept {
+    tt_force_inline A8B8G8R8SrgbPack32(R16G16B16A16SFloat const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0].get());
@@ -48,7 +48,7 @@ public:
             static_cast<uint32_t>(r);
     }
 
-    force_inline A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
+    tt_force_inline A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0]);
@@ -62,14 +62,14 @@ public:
         return *this;
     }
 
-    [[nodiscard]] force_inline friend bool operator==(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] tt_force_inline friend bool operator==(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] force_inline friend bool operator!=(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] tt_force_inline friend bool operator!=(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] force_inline friend A8B8G8R8SrgbPack32 makeTransparent(A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] tt_force_inline friend A8B8G8R8SrgbPack32 makeTransparent(A8B8G8R8SrgbPack32 const &rhs) noexcept {
         return {rhs.v & 0x00ffffff};
     }
 };
@@ -78,8 +78,8 @@ public:
 
 inline void fill(PixelMap<A8B8G8R8SrgbPack32>& dst, PixelMap<R16G16B16A16SFloat> const& src) noexcept
 {
-    ttauri_assert(dst.width >= src.width);
-    ttauri_assert(dst.height >= src.height);
+    tt_assert(dst.width >= src.width);
+    tt_assert(dst.height >= src.height);
 
     for (auto rowNr = 0; rowNr < src.height; rowNr++) {
         ttlet srcRow = src.at(rowNr);

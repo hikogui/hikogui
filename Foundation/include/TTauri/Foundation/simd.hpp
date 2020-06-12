@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/os_detect.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
 
-#if PROCESSOR == CPU_X64
+#if TT_PROCESSOR == TT_CPU_X64
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <immintrin.h>
@@ -34,7 +34,7 @@ struct simd {
         }
     }
 
-#if PROCESSOR == CPU_X64
+#if TT_PROCESSOR == TT_CPU_X64
     simd(__m128 other) noexcept :
         v()
     {
@@ -66,7 +66,7 @@ struct simd {
     }
 #endif
 
-#if PROCESSOR == CPU_X64
+#if TT_PROCESSOR == TT_CPU_X64
     operator __m128 () const noexcept {
         constexpr int BUFFER_NR_ITEMS = 16 / sizeof(T);
         constexpr size_t COPY_SIZE = std::min(BUFFER_NR_ITEMS, N) * sizeof(T);

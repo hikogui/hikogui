@@ -33,7 +33,7 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_type_t const &rhs)
     case glob_token_type_t::AnyString: lhs << "AnyString"; break;
     case glob_token_type_t::AnyCharacter: lhs << "AnyCharacter"; break;
     case glob_token_type_t::AnyDirectory: lhs << "AnyDirectory"; break;
-    default: no_default;
+    default: tt_no_default;
     }
     return lhs;
 }
@@ -291,7 +291,7 @@ inline glob_token_list_t parseGlob(std::string_view glob)
             break;
 
         default:
-            no_default;
+            tt_no_default;
         }
 
         i++;
@@ -329,7 +329,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
     case glob_match_result_t::No: break;\
     case glob_match_result_t::Match: return tmp;\
     case glob_match_result_t::Partial: out = tmp; break;\
-    default: no_default;\
+    default: tt_no_default;\
     }
 
     // result may be assigned Partial by MATCH_GLOB_RECURSE.
@@ -402,7 +402,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         return result;
 
     default:
-        no_default;
+        tt_no_default;
     }
 #undef MATCH_GLOB_RECURSE
 }
@@ -423,7 +423,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
     }
 
     // Find the first place holder and don't include it as a token.
-    auto endOfBase = std::find_if_not(first, last, [](auto const &x) {
+    auto endOfBase = std::find_if_not(first, last, [](ttlet &x) {
         return x.type == glob_token_type_t::String || x.type == glob_token_type_t::Separator;
     });
 
@@ -431,7 +431,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
         // Backtrack until the last separator, and remove it.
         // Except when we included everything in the first loop because in that case there
         // are no placeholders at all and we want to include the filename.
-        endOfBase = rfind_if(first, endOfBase, [](auto const &x) {
+        endOfBase = rfind_if(first, endOfBase, [](ttlet &x) {
             return x.type == glob_token_type_t::Separator;
         });
     }
@@ -451,7 +451,7 @@ inline std::string basePathOfGlob(glob_token_const_iterator first, glob_token_co
             r += '/';
             break;
         default:
-            no_default;
+            tt_no_default;
         }
     }
     return r;

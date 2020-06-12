@@ -5,143 +5,135 @@
 
 #include <exception>
 #include <cstddef>
+#include <type_traits>
 
 namespace tt {
 
-#define OS_WINDOWS 'W'
-#define OS_MACOS 'M'
-#define OS_IOS 'i'
-#define OS_LINUX 'L'
-#define OS_POSIX 'P'
-#define OS_UNIX 'U'
-#define OS_ANDROID 'A'
+#define TT_BT_DEBUG 'D'
+#define TT_BT_RELEASE 'R'
+
+#if defined(NDEBUG)
+#define TT_BUILD_TYPE TT_BT_RELEASE
+#else
+#define TT_BUILD_TYPE TT_BT_DEBUG
+#endif
+
+enum class BuildType {
+    Debug = TT_BT_DEBUG,
+    Release = TT_BT_RELEASE,
+
+    current = TT_BUILD_TYPE
+};
+
+#define TT_OS_WINDOWS 'W'
+#define TT_OS_MACOS 'M'
+#define TT_OS_IOS 'i'
+#define TT_OS_LINUX 'L'
+#define TT_OS_POSIX 'P'
+#define TT_OS_UNIX 'U'
+#define TT_OS_ANDROID 'A'
 
 /* Create specific macros to detect the operating system.
  */
 #if defined(_WIN64)
-#define OPERATING_SYSTEM OS_WINDOWS
+#define  TT_OPERATING_SYSTEM TT_OS_WINDOWS
 #elif defined(_WIN32)
-#define OPERATING_SYSTEM OS_WINDOWS
+#define  TT_OPERATING_SYSTEM TT_OS_WINDOWS
 #elif defined(__APPLE__)
   #include "TargetConditionals.h"
   #if TARGET_OS_IPHONE == 1
-  #define OPERATING_SYSTEM OS_IOS
+  #define  TT_OPERATING_SYSTEM TT_OS_IOS
   #else
-  #define OPERATING_SYSTEM OS_MACOS
+  #define  TT_OPERATING_SYSTEM TT_OS_MACOS
   #endif
 #elif defined(__ANDROID__)
-#define OPERATING_SYSTEM OS_ANDROID
+#define  TT_OPERATING_SYSTEM TT_OS_ANDROID
 #elif defined(__linux)
-#define OPERATING_SYSTEM OS_LINUX
+#define  TT_OPERATING_SYSTEM TT_OS_LINUX
 #elif defined(__unix)
-#define OPERATING_SYSTEM OS_UNIX
+#define  TT_OPERATING_SYSTEM TT_OS_UNIX
 #elif defined(__posix)
-#define OPERATING_SYSTEM OS_POSIX
-#endif
-
-enum class OperatingSystem {
-    Windows,
-    MacOS,
-    iOS,
-    Linux,
-    Android,
-    UNIX,
-    Posix,
-
-#if OPERATING_SYSTEM == OS_WINDOWS
-    current = Windows
-#elif OPERATING_SYSTEM == OS_MACOS
-    current = MacOS
-#elif OPERATING_SYSTEM == OS_IOS
-    current = iOS
-#elif OPERATING_SYSTEM == OS_ANDROID
-    current = ANDROID
-#elif OPERATING_SYSTEM == OS_LINUX
-    current = Linux
-#elif OPERATING_SYSTEM == OS_UNIX
-    current = UNIX
-#elif OPERATING_SYSTEM == OS_POSIX
-    current = Posix
+#define  TT_OPERATING_SYSTEM TT_OS_POSIX
 #else
 #error "Could not detect the operating system."
 #endif
+
+enum class OperatingSystem {
+    Windows = TT_OS_WINDOWS,
+    MacOS = TT_OS_MACOS,
+    iOS = TT_OS_IOS,
+    Linux = TT_OS_LINUX,
+    Android = TT_OS_ANDROID,
+    UNIX = TT_OS_UNIX,
+    Posix = TT_OS_POSIX,
+
+    current = TT_OPERATING_SYSTEM
 };
 
-#define CC_MSVC 'm'
-#define CC_GCC 'g'
-#define CC_CLANG 'c'
+#define TT_CC_MSVC 'm'
+#define TT_CC_GCC 'g'
+#define TT_CC_CLANG 'c'
 
 #if defined(__clang__)
-#define COMPILER CC_CLANG
+#define TT_COMPILER TT_CC_CLANG
 #elif defined(_MSC_BUILD)
-#define COMPILER CC_MSVC
+#define TT_COMPILER TT_CC_MSVC
 #elif defined(__GNUC__)
-#define COMPILER CC_GCC
-#endif
-
-enum class Compiler {
-    MSVC,
-    gcc,
-    clang,
-
-#if COMPILER == CC_MSVC
-    current = MSVC
-#elif COMPILER == CC_GCC
-    current = gcc
-#elif COMPILER == CC_CLANG
-    current = clang
+#define TT_COMPILER TT_CC_GCC
 #else
 #error "Could not detect the compiler."
 #endif
+
+enum class Compiler {
+    MSVC = TT_CC_MSVC,
+    gcc = TT_CC_GCC,
+    clang = TT_CC_CLANG,
+
+    current = TT_COMPILER
 };
 
-
-#define CPU_X64 'i'
-#define CPU_ARM 'a'
+#define TT_CPU_X64 'i'
+#define TT_CPU_ARM 'a'
 
 #if defined(__amd64__) || defined(__x86_64__) || defined(_M_AMD64)
-#define PROCESSOR CPU_X64
+#define TT_PROCESSOR TT_CPU_X64
 #elif defined(__arm__) || defined(_M_ARM)
-#define PROCESSOR CPU_ARM
-#endif
-
-enum class Processor {
-    X64,
-    ARM,
-
-#if PROCESSOR == CPU_X64
-    current = X64
-#elif PROCESSOR == CPU_ARM
-    current = ARM
+#define TT_PROCESSOR TT_CPU_ARM
 #else
 #error "Could not detect processor."
 #endif
+
+enum class Processor {
+    X64 = TT_CPU_X64,
+    ARM = TT_CPU_ARM,
+
+    current = TT_PROCESSOR
 };
 
-#define STRINGIFY(a) #a
+#define tt_stringify(a) #a
 
-#if COMPILER == CC_MSVC
-#define ttauri_likely(condition) condition
-#define ttauri_unlikely(condition) condition
-#define ttauri_unreachable() __assume(0)
-#define ttauri_assume(condition) __assume(condition)
-#define force_inline __forceinline
-#define no_inline inline __declspec(noinline)
+#if TT_COMPILER == TT_CC_MSVC
+#define tt_likely(condition) condition
+#define tt_unlikely(condition) condition
+#define tt_unreachable() __assume(0)
+#define tt_assume(condition) __assume(condition)
+#define tt_force_inline __forceinline
+#define tt_no_inline inline __declspec(noinline)
 #define clang_suppress(a)
-#define msvc_suppress(a) _Pragma(STRINGIFY(warning(disable:a)))
+#define msvc_suppress(a) _Pragma(tt_stringify(warning(disable:a)))
 #define gsl_suppress(a) [[gsl::suppress(a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
 #define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]
 #define gsl_suppress4(a,b,c,d) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]] [[gsl::suppress(d)]]
 #define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]] [[gsl::suppress(d)]] [[gsl::suppress(e)]]
 
-#elif COMPILER == CC_CLANG
-#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
-#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
-#define ttauri_unreachable() __builtin_unreachable()
-#define ttauri_assume(condition) __builtin_assume(static_cast<bool>(condition))
-#define force_inline inline __attribute__((always_inline))
-#define no_inline inline __attribute__((noinline))
+#elif TT_COMPILER == TT_CC_CLANG
+#define tt_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
+#define tt_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#define tt_unreachable() __builtin_unreachable()
+#define tt_assume(condition) __builtin_assume(static_cast<bool>(condition))
+#define tt_force_inline inline __attribute__((always_inline))
+#define tt_no_inline inline __attribute__((noinline))
 #define clang_suppress(a) _Pragma(STRINGIFY(clang diagnostic ignored a))
 #define msvc_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
@@ -150,13 +142,13 @@ enum class Processor {
 #define gsl_suppress4(a,b,c,d) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]]
 #define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]] [[gsl::suppress(#e)]]
 
-#elif COMPILER == CC_GCC
-#define ttauri_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
-#define ttauri_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
-#define ttauri_unreachable() __builtin_unreachable()
-#define ttauri_assume(condition) do { if (!(condition)) ttauri_unreachable(); } while (false)
-#define force_inline inline __attribute__((always_inline))
-#define no_inline inline __attribute__((noinline))
+#elif TT_COMPILER == TT_CC_GCC
+#define tt_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
+#define tt_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
+#define tt_unreachable() __builtin_unreachable()
+#define tt_assume(condition) do { if (!(condition)) tt_unreachable(); } while (false)
+#define tt_force_inline inline __attribute__((always_inline))
+#define tt_no_inline inline __attribute__((noinline))
 #define clang_suppress(a)
 #define msvc_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
@@ -166,12 +158,12 @@ enum class Processor {
 #define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]] [[gsl::suppress(#e)]]
 
 #else
-#define ttauri_likely(condition) condition
-#define ttauri_unlikely(condition) condition
-#define ttauri_unreachable() std::terminate()
-#define ttauri_assume(condition) static_assert(sizeof(condition) == 1)
-#define force_inline inline
-#define no_inline
+#define tt_likely(condition) condition
+#define tt_unlikely(condition) condition
+#define tt_unreachable() std::terminate()
+#define tt_assume(condition) static_assert(sizeof(condition) == 1)
+#define tt_force_inline inline
+#define tt_no_inline
 #define clang_suppress(a)
 #define msvc_suppress(a)
 #define gsl_suppress(a)
@@ -182,25 +174,23 @@ enum class Processor {
 
 #endif
 
-#if !defined(NDEBUG)
-#undef ttauri_assume
-/** In debug mode, replace ttauri_assume() with an ttauri_assert().
- */
-#define ttauri_assume(expression) ttauri_assert(expression)
+#if TT_BUILT_TYPE == TT_BT_DEBUG
+#undef tt_assume
+/** In debug mode, replace tt_assume() with an tt_assert().
+*/
+#define tt_assume(expression) tt_assert(expression)
 #endif
 
-#if PROCESSOR == CPU_X64
-constexpr size_t cache_line_size = 128;
-#else
-#error "Not implemented"
-#endif
+constexpr size_t cache_line_size =
+    Processor::current == Processor::X64 ? 128 :
+    Processor::current == Processor::ARM ? 64 :
+    0;
 
 /*! File descriptor/handle
  */
-#if OPERATING_SYSTEM == OS_WINDOWS
-using FileHandle = void *;
-#else
-using FileHandle = int;
-#endif
+using FileHandle =
+    std::conditional_t<OperatingSystem::current == OperatingSystem::Windows,void *,
+    std::conditional_t<OperatingSystem::current == OperatingSystem::MacOS,int,
+    void>>;
 
 }

@@ -143,7 +143,7 @@ public:
         if constexpr (OperatingSystem::current == OperatingSystem::Windows) {
             return loadBindings(URL{"resource:Themes/win32.keybinds.json"}, true);
         } else {
-            no_default;
+            tt_no_default;
         }
     }
 

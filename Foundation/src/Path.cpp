@@ -100,7 +100,7 @@ void Path::setColorOfLayer(ssize_t layerNr, vec fillColor) noexcept
 
 std::pair<Path,vec> Path::getLayer(ssize_t layerNr) const noexcept
 {
-    ttauri_assert(hasLayers());
+    tt_assert(hasLayers());
 
     auto path = Path{};
 
@@ -151,7 +151,7 @@ std::vector<BezierCurve> Path::getBeziersOfContour(ssize_t contourNr) const noex
 
 std::vector<BezierCurve> Path::getBeziers() const noexcept
 {
-    ttauri_assert(!hasLayers());
+    tt_assert(!hasLayers());
 
     std::vector<BezierCurve> r;
 
@@ -212,15 +212,15 @@ vec Path::currentPosition() const noexcept
 
 void Path::moveTo(vec position) noexcept
 {
-    ttauri_assume(position.is_point());
+    tt_assume(position.is_point());
     closeContour();
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::moveRelativeTo(vec direction) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(direction.is_vector());
+    tt_assert(isContourOpen());
+    tt_assume(direction.is_vector());
 
     ttlet lastPosition = currentPosition();
     closeContour();
@@ -229,25 +229,25 @@ void Path::moveRelativeTo(vec direction) noexcept
 
 void Path::lineTo(vec position) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(position.is_point());
+    tt_assert(isContourOpen());
+    tt_assume(position.is_point());
 
     points.emplace_back(position, BezierPoint::Type::Anchor);
 }
 
 void Path::lineRelativeTo(vec direction) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(direction.is_vector());
+    tt_assert(isContourOpen());
+    tt_assume(direction.is_vector());
 
     points.emplace_back(currentPosition() + direction, BezierPoint::Type::Anchor);
 }
 
 void Path::quadraticCurveTo(vec controlPosition, vec position) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(controlPosition.is_point());
-    ttauri_assume(position.is_point());
+    tt_assert(isContourOpen());
+    tt_assume(controlPosition.is_point());
+    tt_assume(position.is_point());
 
     points.emplace_back(controlPosition, BezierPoint::Type::QuadraticControl);
     points.emplace_back(position, BezierPoint::Type::Anchor);
@@ -255,9 +255,9 @@ void Path::quadraticCurveTo(vec controlPosition, vec position) noexcept
 
 void Path::quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(controlDirection.is_vector());
-    ttauri_assume(direction.is_vector());
+    tt_assert(isContourOpen());
+    tt_assume(controlDirection.is_vector());
+    tt_assume(direction.is_vector());
 
     ttlet p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
@@ -266,10 +266,10 @@ void Path::quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcep
 
 void Path::cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(controlPosition1.is_point());
-    ttauri_assume(controlPosition2.is_point());
-    ttauri_assume(position.is_point());
+    tt_assert(isContourOpen());
+    tt_assume(controlPosition1.is_point());
+    tt_assume(controlPosition2.is_point());
+    tt_assume(position.is_point());
 
     points.emplace_back(controlPosition1, BezierPoint::Type::CubicControl1);
     points.emplace_back(controlPosition2, BezierPoint::Type::CubicControl2);
@@ -278,10 +278,10 @@ void Path::cubicCurveTo(vec controlPosition1, vec controlPosition2, vec position
 
 void Path::cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, vec direction) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(controlDirection1.is_vector());
-    ttauri_assume(controlDirection2.is_vector());
-    ttauri_assume(direction.is_vector());
+    tt_assert(isContourOpen());
+    tt_assume(controlDirection1.is_vector());
+    tt_assume(controlDirection2.is_vector());
+    tt_assume(direction.is_vector());
 
     ttlet p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
@@ -291,8 +291,8 @@ void Path::cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, ve
 
 void Path::arcTo(float radius, vec position) noexcept
 {
-    ttauri_assert(isContourOpen());
-    ttauri_assume(position.is_point());
+    tt_assert(isContourOpen());
+    tt_assume(position.is_point());
 
     ttlet r = std::abs(radius);
     ttlet P1 = currentPosition();
@@ -330,7 +330,7 @@ void Path::arcTo(float radius, vec position) noexcept
 
 void Path::addRectangle(aarect r, vec corners) noexcept
 {
-    ttauri_assert(!isContourOpen());
+    tt_assert(!isContourOpen());
 
     ttlet radii = abs(corners);
 
@@ -381,8 +381,8 @@ void Path::addRectangle(aarect r, vec corners) noexcept
 
 void Path::addCircle(vec position, float radius) noexcept
 {
-    ttauri_assert(!isContourOpen());
-    ttauri_assume(position.is_point());
+    tt_assert(!isContourOpen());
+    tt_assume(position.is_point());
 
     moveTo(vec::point(position.x(), position.y() - radius));
     arcTo(radius, vec::point(position.x() + radius, position.y()));
@@ -394,7 +394,7 @@ void Path::addCircle(vec position, float radius) noexcept
 
 void Path::addContour(std::vector<BezierPoint>::const_iterator const &begin, std::vector<BezierPoint>::const_iterator const &end) noexcept
 {
-    ttauri_assert(!isContourOpen());
+    tt_assert(!isContourOpen());
     points.insert(points.end(), begin, end);
     closeContour();
 }
@@ -406,7 +406,7 @@ void Path::addContour(std::vector<BezierPoint> const &contour) noexcept
 
 void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
 {
-    ttauri_assert(!isContourOpen());
+    tt_assert(!isContourOpen());
 
     for (ttlet &curve: contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
@@ -424,7 +424,7 @@ void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
             points.emplace_back(curve.P2, BezierPoint::Type::Anchor);
             break;
         default:
-            no_default;
+            tt_no_default;
         }
     }
 
@@ -445,8 +445,8 @@ void Path::addStroke(Path const &path, vec strokeColor, float strokeWidth, LineJ
 
 Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolerance) const noexcept
 {
-    ttauri_assert(!hasLayers());
-    ttauri_assert(!isContourOpen());
+    tt_assert(!hasLayers());
+    tt_assert(!isContourOpen());
 
     auto r = Path{};
 
@@ -468,11 +468,11 @@ Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolera
 
 Path &Path::operator+=(Path const &rhs) noexcept
 {
-    ttauri_assert(!isContourOpen());
-    ttauri_assert(!rhs.isContourOpen());
+    tt_assert(!isContourOpen());
+    tt_assert(!rhs.isContourOpen());
 
     // Left hand layer can only be open if the right hand side contains no layers.
-    ttauri_assert(!rhs.hasLayers() || !isLayerOpen());
+    tt_assert(!rhs.hasLayers() || !isLayerOpen());
 
     ttlet pointOffset = ssize(points);
     ttlet contourOffset = ssize(contourEndPoints);
@@ -493,7 +493,7 @@ Path &Path::operator+=(Path const &rhs) noexcept
 
 Path Path::centerScale(vec extent, float padding) const noexcept
 {
-    ttauri_assume(extent.is_vector());
+    tt_assume(extent.is_vector());
 
     auto max_size = vec{
         std::max(1.0f, extent.x() - (padding * 2.0f)),
@@ -520,8 +520,8 @@ Path Path::centerScale(vec extent, float padding) const noexcept
 
 void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &path) noexcept
 {
-    ttauri_assert(!path.hasLayers());
-    ttauri_assert(!path.isContourOpen());
+    tt_assert(!path.hasLayers());
+    tt_assert(!path.isContourOpen());
 
     auto mask = PixelMap<uint8_t>(dst.width, dst.height);
     fill(mask);
@@ -534,7 +534,7 @@ void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &path) no
 
 void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &src) noexcept
 {
-    ttauri_assert(src.hasLayers() && !src.isLayerOpen());
+    tt_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
         ttlet [layer, fillColor] = src.getLayer(layerNr);

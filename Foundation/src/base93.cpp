@@ -76,7 +76,7 @@ static ssize_t base93_nr_bytes_to_nr_digits(size_t nr_bytes) noexcept
     case 9: return 12;
     case 10: return 13;
     default:
-        no_default;
+        tt_no_default;
     }
 }
 

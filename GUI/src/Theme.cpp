@@ -216,7 +216,7 @@ Theme::Theme(URL const &url)
 
 void Theme::parse(datum const &data)
 {
-    ttauri_assert(data.is_map());
+    tt_assert(data.is_map());
 
     this->name = parseString(data, "name");
 

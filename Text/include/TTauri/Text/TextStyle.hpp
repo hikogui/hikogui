@@ -45,7 +45,7 @@ struct TextStyle {
         //return fmt::format("<TextStyle id={},v={},s={},c={},d={}>",
         //    rhs.family_id, rhs.variant, rhs.size, rhs.color, rhs.decoration
         //);
-        not_implemented;
+        tt_not_implemented;
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, TextStyle const &rhs) {

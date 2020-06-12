@@ -86,14 +86,14 @@ static void BidiP1_P3(BidiContext &context) noexcept
             isolateLevel = 0;
             parBidiClass = BidiClass::Unknown;
             break;
-        default: no_default;
+        default: tt_no_default;
         }
     }
 
     // P1. Split text in paragraphs, the paragraph delimiter comes at the end of the previous paragraph.
     // We will not physically split the paragraphs, but make sure the text does end in a paragraph.
     // We can not ourselves add the paragraph separator, because we do not know the text-style of an empty text.
-    ttauri_assume(ssize(context.characters) > 0 && context.characters.back().bidiClass == BidiClass::B);
+    tt_assume(ssize(context.characters) > 0 && context.characters.back().bidiClass == BidiClass::B);
 }
 
 
@@ -133,7 +133,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
         validIsolateCount = 0;
 
         for (; i->bidiClass != BidiClass::B; ++i) {
-            ttauri_assume(i != context.characters.cend());
+            tt_assume(i != context.characters.cend());
 
             ttlet currentEmbedingLevel = stack.back().embeddingLevel;
             ttlet currentOverrideStatus = stack.back().overrideStatus;
@@ -204,7 +204,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
             case BidiClass::FSI:
                 // X5c. Determine paragraph-level of text up to matching PDI.
                 // if 0 goto BidiClass::LRI, if 1 goto BidiClass::RLI.
-                not_implemented;
+                tt_not_implemented;
                 break;
 
             case BidiClass::PDI: // X6a. Terminating Isolates
@@ -241,7 +241,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
 
             case BidiClass::B: // X8. End of Paragraph
                                         // This should never appear in this loop.
-                no_default;
+                tt_no_default;
 
             case BidiClass::BN: // X6. Ignore
                 break;
@@ -496,7 +496,7 @@ static void BidiW(BidiContext &context) noexcept
 
 static void BidiN0(BidiIsolateSequence &sequence) noexcept
 {
-    not_implemented;
+    tt_not_implemented;
 }
 
 static void BidiN1(BidiIsolateSequence &sequence) noexcept
@@ -553,7 +553,7 @@ static void BidiN1(BidiIsolateSequence &sequence) noexcept
             break;
 
         default:
-            no_default;
+            tt_no_default;
         }
     }
 

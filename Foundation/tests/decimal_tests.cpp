@@ -124,7 +124,7 @@ TEST(Decimal, ToString) {
     ASSERT_EQ(to_string(decimal(-2, -1)), "-0.01");
 }
 
-no_inline decimal test(decimal a, decimal b) {
+tt_no_inline decimal test(decimal a, decimal b) {
     return a + b;
 }
 

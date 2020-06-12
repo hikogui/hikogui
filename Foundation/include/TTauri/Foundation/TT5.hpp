@@ -343,7 +343,7 @@ constexpr void fill_buffer_from_tt5(char *str, T const &value) noexcept
         case 1: current_page = char_from_tt5_page1(str, code, locked_page); break;
         case 2: current_page = char_from_tt5_page2(str, code, locked_page); break;
         case 3: current_page = char_from_tt5_binary(str, code, locked_page, current_page >> 4); break;
-        default: no_default;
+        default: tt_no_default;
         }
     }
     *str = '\0';

@@ -8,7 +8,7 @@
 #include <cstddef>
 
 
-#define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return y; }
+#define assert_or_return(x, y) if (tt_unlikely(!(x))) { return y; }
 
 namespace tt {
 
@@ -832,7 +832,7 @@ static void getKerningFormat0(nonstd::span<std::byte const> const &bytes, uint16
 
 static void getKerningFormat3(nonstd::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
 {
-    not_implemented;
+    tt_not_implemented;
 }
 
 [[nodiscard]] static vec getKerning(nonstd::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
@@ -1142,7 +1142,7 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4), false);
             ttlet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
-            not_implemented;
+            tt_not_implemented;
             //subGlyphScale = mat::S(
             //    tmp[0].value(),
             //    tmp[1].value(),

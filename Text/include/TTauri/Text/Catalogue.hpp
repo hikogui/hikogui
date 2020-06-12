@@ -72,7 +72,7 @@ public:
 
         if (pl >= ssize(*i)) {
             LOG_ERROR("Catalogue '{}': missing plurality {} for msgid '{}'", name, pl, msgid);
-            ttauri_assume(ssize(*i) >= 1);
+            tt_assume(ssize(*i) >= 1);
             return *i[0].data();
         }
 

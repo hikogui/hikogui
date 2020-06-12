@@ -9,11 +9,11 @@
 #include <type_traits>
 #include <cmath>
 
-#if PROCESSOR == CPU_X64
+#if TT_PROCESSOR == TT_CPU_X64
 #include <immintrin.h>
 #endif
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <intrin.h>
 #pragma intrinsic(_mul128)
 #endif
@@ -117,7 +117,7 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
         return *r != r_;
 
     } else {
-        not_implemented;
+        tt_not_implemented;
     }
 }
 

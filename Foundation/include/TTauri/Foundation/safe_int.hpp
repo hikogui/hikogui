@@ -44,18 +44,18 @@ constexpr on_overflow_t operator|(on_overflow_t lhs, on_overflow_t rhs) noexcept
  * \param is_positive true when saturation is at the positive limit. 
  */
 template<typename T, on_overflow_t OnOverflow>
-force_inline T safe_handle_overflow(T value, bool overflow, bool is_positive) noexcept(OnOverflow != on_overflow_t::Throw)
+tt_force_inline T safe_handle_overflow(T value, bool overflow, bool is_positive) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     if constexpr (OnOverflow == on_overflow_t::Throw) {
         if (overflow) {
             TTAURI_THROW(math_error("safe_int"));
         }
     } else if constexpr (OnOverflow == on_overflow_t::Assert) {
-        ttauri_assert(!overflow);
+        tt_assert(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Axiom) {
-        ttauri_assume(!overflow);
+        tt_assume(!overflow);
     } else if constexpr (OnOverflow == on_overflow_t::Saturate) {
-        if (ttauri_unlikely(overflow)) {
+        if (tt_unlikely(overflow)) {
             value = is_positive ? std::numeric_limits<T>::max() : std::numeric_limits<T>::min();
         }
     }
@@ -63,7 +63,7 @@ force_inline T safe_handle_overflow(T value, bool overflow, bool is_positive) no
 }
 
 template<typename T, on_overflow_t OnOverflow, typename U>
-force_inline T safe_convert(U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
+tt_force_inline T safe_convert(U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     T r;
     // Optimized away when is_same_v<T,U>
@@ -72,7 +72,7 @@ force_inline T safe_convert(U const &rhs) noexcept(OnOverflow != on_overflow_t::
 }
 
 template<on_overflow_t OnOverflow, typename T, typename U>
-force_inline make_promote_t<T,U> safe_add(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
+tt_force_inline make_promote_t<T,U> safe_add(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T,U> r;
     ttlet lhs_ = static_cast<make_promote_t<T,U>>(lhs);
@@ -83,7 +83,7 @@ force_inline make_promote_t<T,U> safe_add(T const &lhs, U const &rhs) noexcept(O
 }
 
 template<on_overflow_t OnOverflow, typename T, typename U>
-force_inline make_promote_t<T,U> safe_sub(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
+tt_force_inline make_promote_t<T,U> safe_sub(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T,U> r;
     ttlet lhs_ = static_cast<make_promote_t<T,U>>(lhs);
@@ -94,7 +94,7 @@ force_inline make_promote_t<T,U> safe_sub(T const &lhs, U const &rhs) noexcept(O
 }
 
 template<on_overflow_t OnOverflow, typename T, typename U>
-force_inline make_promote_t<T,U> safe_mul(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
+tt_force_inline make_promote_t<T,U> safe_mul(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T,U> r;
     ttlet lhs_ = static_cast<make_promote_t<T,U>>(lhs);
@@ -155,16 +155,16 @@ struct safe_int {
 
 #define TEMPLATE(op)\
     template<typename T, on_overflow_t TO, typename U, on_overflow_t UO>\
-    force_inline bool operator op (safe_int<T,TO> const &lhs, safe_int<U,UO> const &rhs) noexcept {\
+    tt_force_inline bool operator op (safe_int<T,TO> const &lhs, safe_int<U,UO> const &rhs) noexcept {\
         return lhs.value op rhs.value;\
     }\
     \
     template<typename T, on_overflow_t TO, typename U>\
-    force_inline bool operator op (safe_int<T,TO> const &lhs, U const &rhs) noexcept {\
+    tt_force_inline bool operator op (safe_int<T,TO> const &lhs, U const &rhs) noexcept {\
         return lhs.value op rhs;\
     }\
     template<typename T, typename U, on_overflow_t UO>\
-    force_inline bool operator op (T const &lhs, safe_int<U,UO> const &rhs) noexcept {\
+    tt_force_inline bool operator op (T const &lhs, safe_int<U,UO> const &rhs) noexcept {\
         return lhs op rhs.value;\
     }
 
@@ -178,17 +178,17 @@ TEMPLATE(>=)
 
 #define TEMPLATE(op, func)\
     template<typename T, on_overflow_t TO, typename U, on_overflow_t UO>\
-    force_inline safe_int<make_promote_t<T,U>,TO|UO> operator op(safe_int<T,TO> const &lhs, safe_int<U,UO> const &rhs) noexcept((TO|UO) != on_overflow_t::Throw) {\
+    tt_force_inline safe_int<make_promote_t<T,U>,TO|UO> operator op(safe_int<T,TO> const &lhs, safe_int<U,UO> const &rhs) noexcept((TO|UO) != on_overflow_t::Throw) {\
         return safe_int<make_promote_t<T,U>,TO|UO>{ func<TO|UO>(lhs.value, rhs.value) };\
     }\
     \
     template<typename T, on_overflow_t TO, typename U>\
-    force_inline safe_int<make_promote_t<T,U>,TO> operator op(safe_int<T,TO> const &lhs, U const &rhs) noexcept(TO != on_overflow_t::Throw) {\
+    tt_force_inline safe_int<make_promote_t<T,U>,TO> operator op(safe_int<T,TO> const &lhs, U const &rhs) noexcept(TO != on_overflow_t::Throw) {\
         return safe_int<make_promote_t<T,U>,TO>{ func<TO>(lhs.value, rhs) };\
     }\
     \
     template<typename T, typename U, on_overflow_t UO>\
-    force_inline safe_int<make_promote_t<T,U>,UO> operator op(T const &lhs, safe_int<U,UO> const &rhs) noexcept(UO != on_overflow_t::Throw) {\
+    tt_force_inline safe_int<make_promote_t<T,U>,UO> operator op(T const &lhs, safe_int<U,UO> const &rhs) noexcept(UO != on_overflow_t::Throw) {\
         return safe_int<make_promote_t<T,U>,UO>{ func<UO>(lhs, rhs.value) };\
     }
 

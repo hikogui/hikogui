@@ -11,10 +11,10 @@
 #include <nonstd/span>
 #include <tuple>
 
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>
 #endif
-#if PROCESSOR == CPU_X64
+#if TT_PROCESSOR == TT_CPU_X64
 #include <immintrin.h>
 #endif
 
@@ -75,7 +75,7 @@ constexpr std::pair<T, T> add_carry(T a, T b, T carry = 0) noexcept
         return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
 
     } else if constexpr (sizeof(T) == 8) {
-#if COMPILER == CC_CLANG || COMPILER == CC_GCC
+#if TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
         auto r = static_cast<__uint128_t>(a) + static_cast<__uint128_t>(b) + carry;
         return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
 #else
@@ -104,12 +104,12 @@ constexpr std::pair<T, T> wide_multiply(T a, T b) noexcept
         return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
 
     } else if constexpr (sizeof(T) == 8) {
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
         uint64_t hi = 0;
         uint64_t lo = _umul128(a, b, &hi);
         return { lo, hi }; 
 
-#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
+#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
         auto r = static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b);
         return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
 #else
@@ -134,7 +134,7 @@ constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 
         return { static_cast<uint32_t>(r), static_cast<uint32_t>(r >> 32) };
 
     } else if constexpr (sizeof(T) == 8) {
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
         uint64_t hi = 0;
         uint64_t lo = _umul128(a, b, &hi);
         uint64_t c = 0;
@@ -144,7 +144,7 @@ constexpr std::pair<T, T> multiply_carry(T a, T b, T carry = 0, T accumulator = 
         std::tie(hi, c) = add_carry(hi, uint64_t{0}, c);
         return { lo, hi }; 
 
-#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
+#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
         auto r = static_cast<__uint128_t>(a) * static_cast<__uint128_t>(b) + carry + accumulator;
         return { static_cast<uint64_t>(r), static_cast<uint64_t>(r >> 64) };
 #else

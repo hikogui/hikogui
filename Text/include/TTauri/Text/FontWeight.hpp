@@ -23,7 +23,7 @@ enum class FontWeight {
     ExtraBlack, ///< 950: Extra-black / Ultra-black
 };
 
-inline auto const FontWeight_from_string_table = std::unordered_map<std::string,FontWeight>{
+inline ttlet FontWeight_from_string_table = std::unordered_map<std::string,FontWeight>{
     {"thin", FontWeight::Thin},
     {"hairline", FontWeight::Thin},
     {"ultra-light", FontWeight::ExtraLight},
@@ -78,7 +78,7 @@ inline auto const FontWeight_from_string_table = std::unordered_map<std::string,
     case FontWeight::ExtraBold: return "ExtraBold";
     case FontWeight::Black: return "Black";
     case FontWeight::ExtraBlack: return "ExtraBlack";
-    default: no_default;
+    default: tt_no_default;
     }
 }
 
@@ -88,7 +88,7 @@ inline auto const FontWeight_from_string_table = std::unordered_map<std::string,
 
 [[nodiscard]] inline char to_char(FontWeight const &x) noexcept {
     ttlet x_ = static_cast<int>(x);
-    ttauri_assume(x_ >= 0 && x_ <= 9);
+    tt_assume(x_ >= 0 && x_ <= 9);
     return static_cast<char>('0' + x_);
 }
 
@@ -142,9 +142,9 @@ inline bool almost_equal(FontWeight const &lhs, FontWeight const &rhs) noexcept 
 constexpr auto FontWeight_alternative_table = FontWeight_alternative_table_generator();
 
 [[nodiscard]] constexpr FontWeight FontWeight_alterative(FontWeight weight, int i) noexcept {
-    ttauri_assume(i >= 0 && i < 10);
+    tt_assume(i >= 0 && i < 10);
     auto w = static_cast<int>(weight);
-    ttauri_assume(w >= 0 && w < 10);
+    tt_assume(w >= 0 && w < 10);
     return FontWeight_alternative_table[(w * 10) + i];
 }
 

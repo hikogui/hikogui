@@ -24,7 +24,7 @@ public:
     Pipeline_base &operator=(Pipeline_base &&) = delete;
 
     GUIDevice const &device() const {
-        ttauri_assume(_device != nullptr);
+        tt_assume(_device != nullptr);
         return *_device;
     }
 };

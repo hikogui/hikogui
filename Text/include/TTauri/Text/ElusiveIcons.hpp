@@ -319,8 +319,8 @@ enum class ElusiveIcon : char32_t {
 };
 
 inline FontGlyphIDs to_FontGlyphIDs(ElusiveIcon rhs) noexcept {
-    ttauri_assume(ElusiveIcons_font_id);
-    ttauri_assume(fontBook);
+    tt_assume(ElusiveIcons_font_id);
+    tt_assume(fontBook);
 
     return fontBook->find_glyph(ElusiveIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
 }

@@ -26,7 +26,7 @@ void PipelineImage::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     std::vector<vk::Buffer> tmpVertexBuffers = { vertexBuffer };
     std::vector<vk::DeviceSize> tmpOffsets = { 0 };
-    ttauri_assume(tmpVertexBuffers.size() == tmpOffsets.size());
+    tt_assume(tmpVertexBuffers.size() == tmpOffsets.size());
 
     device().imagePipeline->drawInCommandBuffer(commandBuffer);
 

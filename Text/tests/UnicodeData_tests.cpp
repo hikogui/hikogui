@@ -190,7 +190,7 @@ TEST_F(UnicodeDataTests, toNFC_c1) {
     }
 }
 
-#if defined(NDEBUG)
+#if TT_BUILD_TYPE == TT_BT_RELEASE
 TEST_F(UnicodeDataTests, toNFC_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c2), test.c2) << test.comment;
@@ -222,7 +222,7 @@ TEST_F(UnicodeDataTests, toNFKC_c1) {
     }
 }
 
-#if defined(NDEBUG)
+#if TT_BUILD_TYPE == TT_BT_RELEASE
 TEST_F(UnicodeDataTests, toNFKC_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c2), test.c4) << test.comment;
@@ -254,7 +254,7 @@ TEST_F(UnicodeDataTests, toNFD_c1) {
     }
 }
 
-#if defined(NDEBUG)
+#if TT_BUILD_TYPE == TT_BT_RELEASE
 TEST_F(UnicodeDataTests, toNFD_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c2), test.c3) << test.comment;
@@ -286,7 +286,7 @@ TEST_F(UnicodeDataTests, toNFKD_c1) {
     }
 }
 
-#if defined(NDEBUG)
+#if TT_BUILD_TYPE == TT_BT_RELEASE
 TEST_F(UnicodeDataTests, toNFKD_c2) {
     for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c2), test.c5) << test.comment;
@@ -312,7 +312,7 @@ TEST_F(UnicodeDataTests, toNFKD_c5) {
 }
 #endif
 
-#if defined(NDEBUG)
+#if TT_BUILD_TYPE == TT_BT_RELEASE
 TEST_F(UnicodeDataTests, Invariant) {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
     for (ttlet &test: normalizationTests) {

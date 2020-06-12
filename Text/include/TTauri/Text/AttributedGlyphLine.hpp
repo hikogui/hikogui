@@ -27,7 +27,7 @@ struct AttributedGlyphLine {
     AttributedGlyphLine(iterator first, iterator last) noexcept :
         line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f)
     {
-        ttauri_assume(std::distance(first, last) > 0);
+        tt_assume(std::distance(first, last) > 0);
 
         line.reserve(std::distance(first, last));
         std::move(first, last, std::back_inserter(line));
@@ -35,14 +35,14 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] bool shouldWrap(float maximum_width) noexcept {
-        ttauri_assume(ssize(line) >= 1);
+        tt_assume(ssize(line) >= 1);
         return
             width > maximum_width &&
             ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
     }
 
     [[nodiscard]] AttributedGlyphLine wrap(float maximum_width) noexcept {
-        ttauri_assume(shouldWrap(maximum_width));
+        tt_assume(shouldWrap(maximum_width));
 
         auto word_end = line.begin();
         auto line_width = 0.0f;
@@ -77,7 +77,7 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] aarect boundingBox() const noexcept {
-        ttauri_assume(ssize(line) >= 1);
+        tt_assume(ssize(line) >= 1);
 
         ttlet p0 = vec::point(
             line.front().position.x(),
@@ -127,7 +127,7 @@ struct AttributedGlyphLine {
     [[nodiscard]] const_iterator cend() const noexcept { return line.cend(); }
 
     void positionGlyphs(vec position) noexcept {
-        ttauri_assume(position.is_point());
+        tt_assume(position.is_point());
         y = position.y();
         for (auto &&g: line) {
             g.position = position;

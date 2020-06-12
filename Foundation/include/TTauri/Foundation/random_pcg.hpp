@@ -83,7 +83,7 @@ public:
         uint64_t new_state;
         do {
             new_state = x * multiplier + increment;
-        } while (ttauri_unlikely(!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed)));
+        } while (tt_unlikely(!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed)));
 
         ttlet count = static_cast<unsigned int>(x >> 59);
 

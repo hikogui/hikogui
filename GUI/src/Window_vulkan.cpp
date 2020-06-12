@@ -43,7 +43,7 @@ void Window_vulkan::waitIdle()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    ttauri_assert(device);
+    tt_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
     device->waitIdle();
     LOG_INFO("/waitIdle");
@@ -56,7 +56,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     // swap chain, fence & imageAvailableSemaphore must be externally synchronized.
     uint32_t frameBufferIndex = 0;
     //LOG_DEBUG("acquireNextImage '{}'", title);
-    ttauri_assert(device);
+    tt_assert(device);
     ttlet result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
     //LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
 
@@ -93,14 +93,14 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
 
 void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore semaphore)
 {
-    ttauri_assert(device);
+    tt_assert(device);
 
     auto lock = std::scoped_lock(guiMutex);
 
     std::array<vk::Semaphore, 1> const renderFinishedSemaphores = { semaphore };
     std::array<vk::SwapchainKHR, 1> const presentSwapchains = { swapchain };
     std::array<uint32_t, 1> const presentImageIndices = { frameBufferIndex };
-    ttauri_assume(presentSwapchains.size() == presentImageIndices.size());
+    tt_assume(presentSwapchains.size() == presentImageIndices.size());
 
     try {
         //LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
@@ -296,7 +296,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     tr.set<frame_buffer_index_tag>(frameBufferIndex);
 
     // Wait until previous rendering has finished, before the next rendering.
-    ttauri_assert(device);
+    tt_assert(device);
     device->waitForFences({ renderFinishedFence }, VK_TRUE, std::numeric_limits<uint64_t>::max());
 
     // Unsignal the fence so we will not modify/destroy the command buffers during rendering.
@@ -384,7 +384,7 @@ void Window_vulkan::submitCommandBuffer()
         vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}
     };
 
-    ttauri_assume(waitSemaphores.size() == waitStages.size());
+    tt_assume(waitSemaphores.size() == waitStages.size());
 
     ttlet signalSemaphores = std::array{ renderFinishedSemaphore };
     ttlet commandBuffersToSubmit = std::array{ commandBuffer };
@@ -397,7 +397,7 @@ void Window_vulkan::submitCommandBuffer()
         }
     };
 
-    ttauri_assume(device != nullptr);
+    tt_assume(device != nullptr);
     device->graphicsQueue.submit(submitInfo, vk::Fence());
 }
 
@@ -406,7 +406,7 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     auto lock = std::scoped_lock(guiMutex);
 
     vk::SurfaceCapabilitiesKHR surfaceCapabilities;
-    ttauri_assert(device);
+    tt_assert(device);
     surfaceCapabilities = device->getSurfaceCapabilitiesKHR(intrinsic);
 
     LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {}), osExtent=({})",
@@ -503,13 +503,13 @@ bool Window_vulkan::buildSurface()
 {
     intrinsic = getSurface();
 
-    ttauri_assert(device);
+    tt_assert(device);
     return device->score(intrinsic) > 0;
 }
 
 Window_base::State Window_vulkan::buildSwapchain()
 {
-    ttauri_assert(device);
+    tt_assert(device);
 
     auto lock = std::scoped_lock(guiMutex);
 
@@ -607,7 +607,7 @@ void Window_vulkan::teardownSwapchain()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    ttauri_assert(device);
+    tt_assert(device);
     device->destroy(swapchain);
     device->destroyImage(depthImage, depthImageAllocation);
     device->destroyImage(colorImage, colorImageAllocation);
@@ -641,7 +641,7 @@ void Window_vulkan::buildFramebuffers()
         vk::ImageLayout::eShaderReadOnlyOptimal
     };
 
-    ttauri_assert(device);
+    tt_assert(device);
     swapchainImages = device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
         ttlet swapchainImageView = device->createImageView({
@@ -673,15 +673,15 @@ void Window_vulkan::buildFramebuffers()
         swapchainFramebuffers.push_back(framebuffer);
     }
 
-    ttauri_assume(swapchainImageViews.size() == swapchainImages.size());
-    ttauri_assume(swapchainFramebuffers.size() == swapchainImages.size());
+    tt_assume(swapchainImageViews.size() == swapchainImages.size());
+    tt_assume(swapchainFramebuffers.size() == swapchainImages.size());
 }
 
 void Window_vulkan::teardownFramebuffers()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    ttauri_assert(device);
+    tt_assert(device);
     for (auto frameBuffer : swapchainFramebuffers) {
         device->destroy(frameBuffer);
     }
@@ -871,7 +871,7 @@ void Window_vulkan::buildRenderPasses()
         subpassDependency.data() // dependencies
     };
 
-    ttauri_assert(device);
+    tt_assert(device);
     renderPass = device->createRenderPass(renderPassCreateInfo);
 }
 
@@ -879,7 +879,7 @@ void Window_vulkan::teardownRenderPasses()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    ttauri_assert(device);
+    tt_assert(device);
     device->destroy(renderPass);
 }
 
@@ -887,7 +887,7 @@ void Window_vulkan::buildSemaphores()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    ttauri_assert(device);
+    tt_assert(device);
     imageAvailableSemaphore = device->createSemaphore({});
     renderFinishedSemaphore = device->createSemaphore({});
 
@@ -901,7 +901,7 @@ void Window_vulkan::teardownSemaphores()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    ttauri_assert(device);
+    tt_assert(device);
     device->destroy(renderFinishedSemaphore);
     device->destroy(imageAvailableSemaphore);
     device->destroy(renderFinishedFence);
@@ -909,7 +909,7 @@ void Window_vulkan::teardownSemaphores()
 
 void Window_vulkan::buildCommandBuffers()
 {
-    ttauri_assume(device != nullptr);
+    tt_assume(device != nullptr);
 
     ttlet commandBuffers = device->allocateCommandBuffers({
         device->graphicsCommandPool, 
@@ -924,7 +924,7 @@ void Window_vulkan::teardownCommandBuffers()
 {
     ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
-    ttauri_assume(device != nullptr);
+    tt_assume(device != nullptr);
     device->freeCommandBuffers(device->graphicsCommandPool, commandBuffers);
 }
 

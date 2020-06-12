@@ -45,23 +45,23 @@ inline Alignment operator|(VerticalAlignment lhs, HorizontalAlignment rhs) noexc
         case HorizontalAlignment::Left: return Alignment::TopLeft;
         case HorizontalAlignment::Center: return Alignment::TopCenter;
         case HorizontalAlignment::Right: return Alignment::TopRight;
-        default: no_default;
+        default: tt_no_default;
         }
     case VerticalAlignment::Middle:
         switch (rhs) {
         case HorizontalAlignment::Left: return Alignment::MiddleLeft;
         case HorizontalAlignment::Center: return Alignment::MiddleCenter;
         case HorizontalAlignment::Right: return Alignment::MiddleRight;
-        default: no_default;
+        default: tt_no_default;
         }
     case VerticalAlignment::Bottom:
         switch (rhs) {
         case HorizontalAlignment::Left: return Alignment::BottomLeft;
         case HorizontalAlignment::Center: return Alignment::BottomCenter;
         case HorizontalAlignment::Right: return Alignment::BottomRight;
-        default: no_default;
+        default: tt_no_default;
         }
-    default: no_default;
+    default: tt_no_default;
     }
 }
 
@@ -91,7 +91,7 @@ inline bool operator==(Alignment lhs, HorizontalAlignment rhs) noexcept
             lhs == Alignment::MiddleRight ||
             lhs == Alignment::BottomRight;
 
-    default: no_default;
+    default: tt_no_default;
     }
 }
 
@@ -116,7 +116,7 @@ inline bool operator==(Alignment lhs, VerticalAlignment rhs) noexcept
             lhs == Alignment::BottomCenter ||
             lhs == Alignment::BottomRight;
 
-    default: no_default;
+    default: tt_no_default;
     }
 }
 

@@ -47,7 +47,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
 
         context.drawGlyph(*icon_glyph, glyphRectangle);
     } else {
-        no_default;
+        tt_no_default;
     }
 
     Widget::draw(drawContext, displayTimePoint);

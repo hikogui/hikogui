@@ -21,7 +21,7 @@ namespace tt {
  * @param to The value the state needs to be before this function returns.
  */
 template<typename CounterTag, typename T>
-no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
+tt_no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
@@ -50,9 +50,9 @@ no_inline void contended_wait_for_transition(std::atomic<T> const &state, T to, 
  * @param to The value the state needs to be before this function returns.
  */
 template<typename CounterTag, typename T>
-force_inline void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
+tt_force_inline void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
-    if (ttauri_unlikely(state.load(order) != to)) {
+    if (tt_unlikely(state.load(order) != to)) {
         contended_wait_for_transition<CounterTag>(state, to, order);
     }
 }
@@ -66,7 +66,7 @@ force_inline void wait_for_transition(std::atomic<T> const &state, T to, std::me
  * @param order Memory order to use for this state variable.
  */
 template<string_tag BlockCounterTag=0,typename T>
-no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
@@ -98,10 +98,10 @@ no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::me
  * @param order Memory order to use for this state variable.
  */
 template<string_tag BlockCounterTag=0,typename T>
-force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+tt_force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     auto expect = from;
-    if (ttauri_likely(state.compare_exchange_strong(expect, to, order))) {
+    if (tt_likely(state.compare_exchange_strong(expect, to, order))) {
         return;
     } else {
         return contended_transition<BlockCounterTag>(state, from, to, order);

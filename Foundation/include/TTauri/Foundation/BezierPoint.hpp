@@ -21,7 +21,7 @@ struct BezierPoint {
     vec p;
 
     BezierPoint(vec const p, Type const type) noexcept : type(type), p(p) {
-        ttauri_assume(p.is_point());
+        tt_assume(p.is_point());
     }
 
     BezierPoint(float const x, float const y, Type const type) noexcept : BezierPoint(vec::point(x, y), type) {}
@@ -44,7 +44,7 @@ struct BezierPoint {
     ) noexcept {
         std::vector<BezierPoint> r;
 
-        ttauri_assert((end - begin) >= 2);
+        tt_assert((end - begin) >= 2);
 
         auto previousPoint = *(end - 1);
         auto previousPreviousPoint = *(end - 2);
@@ -53,7 +53,7 @@ struct BezierPoint {
 
             switch (point.type) {
             case BezierPoint::Type::Anchor:
-                ttauri_assert(previousPoint.type != BezierPoint::Type::CubicControl1);
+                tt_assert(previousPoint.type != BezierPoint::Type::CubicControl1);
                 r.push_back(point);
                 break;
 
@@ -62,7 +62,7 @@ struct BezierPoint {
                     r.emplace_back(midpoint(previousPoint.p, point.p), BezierPoint::Type::Anchor);
 
                 } else {
-                    ttauri_assert(previousPoint.type == BezierPoint::Type::Anchor);
+                    tt_assert(previousPoint.type == BezierPoint::Type::Anchor);
                 }
                 r.push_back(point);
                 break;
@@ -73,17 +73,17 @@ struct BezierPoint {
 
             case BezierPoint::Type::CubicControl2:
                 if (previousPoint.type == BezierPoint::Type::Anchor) {
-                    ttauri_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
+                    tt_assert(previousPreviousPoint.type == BezierPoint::Type::CubicControl2);
 
                     r.emplace_back(reflect_point(previousPreviousPoint.p, previousPoint.p), BezierPoint::Type::CubicControl1);
                 } else {
-                    ttauri_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
+                    tt_assert(previousPoint.type == BezierPoint::Type::CubicControl1);
                 }
                 r.push_back(point);
                 break;
 
             default:
-                no_default;
+                tt_no_default;
             }
 
             previousPreviousPoint = previousPoint;
@@ -99,7 +99,7 @@ struct BezierPoint {
         }
 
         // The result did not contain an anchor.
-        ttauri_assert(false);
+        tt_assert(false);
     }
 
     /** Transform the point.

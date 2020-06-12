@@ -83,7 +83,7 @@ inline pickle_type_t pickle_type(Iter &i, Iter const &end)
 template<typename R, typename Iter>
 inline R unpickle(Iter &&i, Iter &&end)
 {
-    not_implemented;
+    tt_not_implemented;
 }
 
 template<typename Iter>
@@ -125,7 +125,7 @@ impl:
     // Sign extent by left shifting the unsigned value to align to the
     // MSB. Then converting to an signed value and shift right (which does
     // sign extending).
-    ttauri_assert(nr_bits < 64);
+    tt_assert(nr_bits < 64);
     size_t sign_extent_shift = 64 - nr_bits;
     u64value <<= sign_extent_shift;
 

@@ -47,7 +47,7 @@ struct template_parse_context {
     }
 
     template_parse_context& operator++() noexcept {
-        ttauri_assume(!atEOF());
+        tt_assume(!atEOF());
         location += *index;
         ++index;
         return *this;
@@ -169,7 +169,7 @@ struct template_node {
      *         was encountered. Otherwise data returned from a #return statement.
      */
     [[nodiscard]] virtual datum evaluate(expression_evaluation_context &context) {
-        no_default;
+        tt_no_default;
     }
 
     [[nodiscard]] std::string evaluate_output(expression_evaluation_context &context) {

@@ -69,13 +69,13 @@ struct expression_evaluation_context {
      * Used if you need to reset the output to a previous position.
      */
     void set_output_size(ssize_t new_size) noexcept {
-        ttauri_assert(new_size > 0);
-        ttauri_assert(new_size <= output_size());
+        tt_assert(new_size > 0);
+        tt_assert(new_size <= output_size());
         output.resize(new_size);
     }
 
     void enable_output() noexcept {
-        ttauri_assert(output_disable_count > 0);
+        tt_assert(output_disable_count > 0);
         output_disable_count--;
     }
 
@@ -88,7 +88,7 @@ struct expression_evaluation_context {
     }
 
     void loop_pop() noexcept {
-        ttauri_assert(ssize(loop_stack) > 0);
+        tt_assert(ssize(loop_stack) > 0);
         loop_stack.pop_back();
     }
 
@@ -98,7 +98,7 @@ struct expression_evaluation_context {
     }
 
     void pop() {
-        ttauri_assert(local_stack.size() > 0);
+        tt_assert(local_stack.size() > 0);
         local_stack.pop_back();
         loop_pop();
     }
@@ -107,18 +107,18 @@ struct expression_evaluation_context {
         return local_stack.size() > 0;
     }
 
-    force_inline scope const& locals() const {
-        ttauri_assume(has_locals());
+    tt_force_inline scope const& locals() const {
+        tt_assume(has_locals());
         return local_stack.back();
     }
 
-    force_inline scope& locals() {
-        ttauri_assume(has_locals());
+    tt_force_inline scope& locals() {
+        tt_assume(has_locals());
         return local_stack.back();
     }
 
     [[nodiscard]] datum const &loop_get(std::string_view name) const {
-        ttauri_assume(name.size() > 0);
+        tt_assume(name.size() > 0);
         if (name.back() == '$') {
             TTAURI_THROW(invalid_operation_error("Invalid loop variable '{}'", name));
         }
@@ -155,7 +155,7 @@ struct expression_evaluation_context {
     }
 
     [[nodiscard]] datum const& get(std::string const &name) const {
-        ttauri_assert(name.size() > 0);
+        tt_assert(name.size() > 0);
 
         if (name[0] == '$') {
             return loop_get(name);
@@ -177,7 +177,7 @@ struct expression_evaluation_context {
     }
 
     [[nodiscard]] datum &get(std::string const &name) {
-        ttauri_assert(name.size() > 0);
+        tt_assert(name.size() > 0);
 
         if (has_locals()) {
             ttlet i = locals().find(name);
@@ -305,8 +305,8 @@ struct expression_parse_context {
     }
 
     expression_parse_context& operator++() noexcept {
-        ttauri_assume(token_it != tokens.end());
-        ttauri_assume(*token_it != tokenizer_name_t::End);
+        tt_assume(token_it != tokens.end());
+        tt_assume(*token_it != tokenizer_name_t::End);
         ++token_it;
         return *this;
     }

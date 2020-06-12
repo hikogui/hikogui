@@ -289,7 +289,7 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
             case 3: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 2); break;
             case 4: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 1); break;
             case 5: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 3); break;
-            default: no_default;
+            default: tt_no_default;
             }
         }
         flushAllocation(stagingVertexIndexBufferAllocation, 0, VK_WHOLE_SIZE);
@@ -614,7 +614,7 @@ static std::pair<vk::AccessFlags, vk::PipelineStageFlags> accessAndStageFromLayo
         return { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer };
 
     default:
-        no_default;
+        tt_no_default;
     }
 }
 
@@ -693,7 +693,7 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size)
     LOG_INFO("Loading shader");
 
     // Check uint32_t alignment of pointer.
-    ttauri_assume((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
+    tt_assume((reinterpret_cast<std::uintptr_t>(data) & 3) == 0);
 
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }
@@ -702,7 +702,7 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(nonstd::span<std::byte const> shad
 {
     // Make sure the address is aligned to uint32_t;
     ttlet address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
-    ttauri_assert((address & 2) == 0);
+    tt_assert((address & 2) == 0);
 
     ttlet shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());

@@ -46,7 +46,7 @@ Image::~Image()
 
 void Image::upload(PixelMap<R16G16B16A16SFloat> const &image) noexcept
 {
-    ttauri_assume(parent);
+    tt_assume(parent);
 
     state = State::Drawing;
 

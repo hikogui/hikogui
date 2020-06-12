@@ -250,7 +250,7 @@ void Pipeline_vulkan::teardownPipeline()
 
 void Pipeline_vulkan::buildForNewDevice(GUIDevice *device)
 {
-    ttauri_assert(device != nullptr);
+    tt_assert(device != nullptr);
     _device = device;
 }
 

@@ -97,7 +97,7 @@ void logger_type::display_trace_statistics() noexcept {
     ttlet keys = trace_statistics_map.keys();
     for (ttlet &tag: keys) {
         auto *stat = trace_statistics_map.get(tag, nullptr);
-        ttauri_assert(stat != nullptr);
+        tt_assert(stat != nullptr);
         ttlet stat_result = stat->read();
 
         if (stat_result.last_count <= 0) {

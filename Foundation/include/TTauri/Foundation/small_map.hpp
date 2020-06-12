@@ -33,7 +33,7 @@ public:
     }
 
     small_map(small_map const &other) {
-        ttauri_assume(this != &other);
+        tt_assume(this != &other);
         _end = items.begin();
         for (ttlet &other_item: other) {
             auto &this_item = *(_end++);
@@ -42,7 +42,7 @@ public:
     }
 
     small_map(small_map &&other) {
-        ttauri_assume(this != &other);
+        tt_assume(this != &other);
         using std::swap;
   
         _end = items.begin();

@@ -10,7 +10,7 @@ hires_utc_clock::time_point hires_utc_clock::now() noexcept {
     struct timespec ts;
 
     if (clock_gettime(CLOCK_REALTIME, &ts) != -1) {
-        no_default;
+        tt_no_default;
     }
 
     auto utc_ts = static_cast<int64_t>(ts.tv_sec) * 1000000;

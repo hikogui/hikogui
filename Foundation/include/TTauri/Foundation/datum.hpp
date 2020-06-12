@@ -77,7 +77,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
     case datum_type_t::Map: lhs << "Map"; break;
     case datum_type_t::Vector: lhs << "Vector"; break;
     case datum_type_t::YearMonthDay: lhs << "YearMonthDay"; break;
-    default: no_default;
+    default: tt_no_default;
     }
     return lhs;
 }
@@ -238,75 +238,75 @@ private:
      *
      * @return The type_id of the stored object.
      */
-    force_inline uint16_t type_id() const noexcept {
+    tt_force_inline uint16_t type_id() const noexcept {
         uint64_t data;
         std::memcpy(&data, this, sizeof(data));
         return static_cast<uint16_t>(data >> 48);
     }
 
-    force_inline bool is_phy_float() const noexcept {
+    tt_force_inline bool is_phy_float() const noexcept {
         ttlet id = type_id();
         return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
     }
 
-    force_inline bool is_phy_integer() const noexcept {
+    tt_force_inline bool is_phy_integer() const noexcept {
         return (type_id() & 0xfff8) == 0x7ff8;
     }
 
-    force_inline bool is_phy_string() const noexcept {
+    tt_force_inline bool is_phy_string() const noexcept {
         ttlet id = type_id();
         return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
     }
 
-    force_inline bool is_phy_decimal() const noexcept {
+    tt_force_inline bool is_phy_decimal() const noexcept {
         return type_id() == phy_decimal_id;
     }
 
-    force_inline bool is_phy_ymd() const noexcept {
+    tt_force_inline bool is_phy_ymd() const noexcept {
         return type_id() == phy_ymd_id;
     }
 
-    force_inline bool is_phy_small() const noexcept {
+    tt_force_inline bool is_phy_small() const noexcept {
         return type_id() == phy_small_id;
     }
 
-    force_inline bool is_phy_pointer() const noexcept {
+    tt_force_inline bool is_phy_pointer() const noexcept {
         return HasLargeObjects && (type_id() & 0xfff8) == 0xfff8;
     }
 
-    force_inline bool is_phy_string_ptr() const noexcept {
+    tt_force_inline bool is_phy_string_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_string_ptr_id;
     }
 
-    force_inline bool is_phy_url_ptr() const noexcept {
+    tt_force_inline bool is_phy_url_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_url_ptr_id;
     }
 
-    force_inline bool is_phy_integer_ptr() const noexcept {
+    tt_force_inline bool is_phy_integer_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_integer_ptr_id;
     }
 
-    force_inline bool is_phy_vector_ptr() const noexcept {
+    tt_force_inline bool is_phy_vector_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_vector_ptr_id;
     }
 
-    force_inline bool is_phy_map_ptr() const noexcept {
+    tt_force_inline bool is_phy_map_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_map_ptr_id;
     }
 
-    force_inline bool is_phy_decimal_ptr() const noexcept {
+    tt_force_inline bool is_phy_decimal_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_decimal_ptr_id;
     }
 
     /** Extract the 48 bit unsigned integer from datum's storage.
      */
-    force_inline uint64_t get_unsigned_integer() const noexcept {
+    tt_force_inline uint64_t get_unsigned_integer() const noexcept {
         return (u64 << 16) >> 16;
     }
 
     /** Extract the 48 bit signed integer from datum's storage and sign extent to 64 bit.
      */
-    force_inline int64_t get_signed_integer() const noexcept {
+    tt_force_inline int64_t get_signed_integer() const noexcept {
         return static_cast<int64_t>(u64 << 16) >> 16;
     }
 
@@ -315,7 +315,7 @@ private:
      * Since the pointer is stored as a 48 bit integer, this function will launder it.
      */
     template<typename O>
-    force_inline O *get_pointer() const {
+    tt_force_inline O *get_pointer() const {
         return std::launder(reinterpret_cast<O *>(get_signed_integer()));
     }
 
@@ -331,7 +331,7 @@ private:
             case phy_vector_ptr_id: delete get_pointer<datum_impl::vector>(); break;
             case phy_map_ptr_id: delete get_pointer<datum_impl::map>(); break;
             case phy_decimal_ptr_id: delete get_pointer<decimal>(); break;
-            default: no_default;
+            default: tt_no_default;
             }
         }
     }
@@ -375,7 +375,7 @@ private:
             } break;
 
             default:
-                no_default;
+                tt_no_default;
             }
         }
     }
@@ -392,13 +392,13 @@ public:
     datum_impl() noexcept : u64(undefined_mask) {}
 
     ~datum_impl() noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
     }
 
     datum_impl(datum_impl const &other) noexcept {
-        if (ttauri_unlikely(other.is_phy_pointer())) {
+        if (tt_unlikely(other.is_phy_pointer())) {
             copy_pointer(other);
         } else {
             // We do a memcpy, because we don't know the type in the union.
@@ -408,10 +408,10 @@ public:
 
     datum_impl &operator=(datum_impl const &other) noexcept {
         if (this != &other) {
-            if (ttauri_unlikely(is_phy_pointer())) {
+            if (tt_unlikely(is_phy_pointer())) {
                 delete_pointer();
             }
-            if (ttauri_unlikely(other.is_phy_pointer())) {
+            if (tt_unlikely(other.is_phy_pointer())) {
                 copy_pointer(other);
             } else {
                 // We do a memcpy, because we don't know the type in the union.
@@ -451,7 +451,7 @@ public:
     datum_impl(decimal value) noexcept {
         long long m = value.mantissa();
 
-        if (ttauri_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
+        if (tt_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
             if constexpr (HasLargeObjects) {
                 auto* const p = new decimal(value);
                 u64 = make_pointer(decimal_ptr_mask, p);
@@ -478,7 +478,7 @@ public:
         ) {}
 
     datum_impl(unsigned long long value) noexcept : u64(integer_mask | value) {
-        if (ttauri_unlikely(value > maximum_int)) {
+        if (tt_unlikely(value > maximum_int)) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new uint64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
@@ -495,7 +495,7 @@ public:
     datum_impl(signed long long value) noexcept :
         u64(integer_mask | (static_cast<uint64_t>(value) & 0x0007ffff'ffffffff))
     {
-        if (ttauri_unlikely(value < minimum_int || value > maximum_int)) {
+        if (tt_unlikely(value < minimum_int || value > maximum_int)) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new int64_t(value);
                 u64 = make_pointer(integer_ptr_mask, p);
@@ -563,7 +563,7 @@ public:
     }
 
     datum_impl &operator=(datum_impl::undefined rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = undefined_mask;
@@ -571,7 +571,7 @@ public:
     }
 
     datum_impl &operator=(datum_impl::null rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = null_mask;
@@ -579,7 +579,7 @@ public:
     }
 
     datum_impl &operator=(datum_impl::_break rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = break_mask;
@@ -587,7 +587,7 @@ public:
     }
 
     datum_impl &operator=(datum_impl::_continue rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = continue_mask;
@@ -595,7 +595,7 @@ public:
     }
 
     datum_impl &operator=(double rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -610,12 +610,12 @@ public:
 
 
     datum_impl& operator=(decimal rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
         long long m = rhs.mantissa();
-        if (ttauri_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
+        if (tt_unlikely(m < minimum_mantissa || m > maximum_mantissa)) {
             if constexpr (HasLargeObjects) {
                 auto* const p = new decimal(rhs);
                 u64 = make_pointer(decimal_ptr_mask, p);
@@ -634,7 +634,7 @@ public:
     }
 
     datum_impl &operator=(date::year_month_day const & ymd) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -647,12 +647,12 @@ public:
     }
 
     datum_impl &operator=(unsigned long long rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
         u64 = integer_mask | static_cast<uint64_t>(rhs);
-        if (ttauri_unlikely(rhs > maximum_int)) {
+        if (tt_unlikely(rhs > maximum_int)) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new uint64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
@@ -668,12 +668,12 @@ public:
     datum_impl& operator=(unsigned char rhs) noexcept { return *this = static_cast<unsigned long long>(rhs); }
 
     datum_impl &operator=(signed long long rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
         u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0007ffff'ffffffff);
-        if (ttauri_unlikely(rhs < minimum_int || rhs > maximum_int)) {
+        if (tt_unlikely(rhs < minimum_int || rhs > maximum_int)) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new int64_t(rhs);
                 u64 = make_pointer(integer_ptr_mask, p);
@@ -690,7 +690,7 @@ public:
     datum_impl& operator=(signed char rhs) noexcept { return *this = static_cast<signed long long>(rhs); }
 
     datum_impl &operator=(bool rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = rhs ? true_mask : false_mask;
@@ -698,7 +698,7 @@ public:
     }
     
     datum_impl &operator=(char rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
         u64 = character_mask | static_cast<uint64_t>(rhs);
@@ -706,7 +706,7 @@ public:
     }
 
     datum_impl &operator=(std::string_view rhs) {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -734,7 +734,7 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(URL const &rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -745,7 +745,7 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(URL &&rhs) noexcept {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -756,7 +756,7 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::vector const &rhs) {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -768,7 +768,7 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::vector &&rhs) {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -781,7 +781,7 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::map const &rhs) {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -793,7 +793,7 @@ public:
 
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl &operator=(datum_impl::map &&rhs) {
-        if (ttauri_unlikely(is_phy_pointer())) {
+        if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
 
@@ -970,10 +970,10 @@ public:
         case phy_map_ptr_id: return this->size() > 0;
         case phy_decimal_ptr_id: return static_cast<decimal>(*this) != 0;
         default:
-            if (ttauri_likely(is_phy_float())) {
+            if (tt_likely(is_phy_float())) {
                 return static_cast<double>(*this) != 0.0;
             } else {
-                no_default;
+                tt_no_default;
             };
         }
     }
@@ -998,7 +998,7 @@ public:
             case small_false: return "false";
             case small_break: return "break";
             case small_continue: return "continue";
-            default: no_default;
+            default: tt_no_default;
             }
 
         case phy_integer_id0:
@@ -1015,7 +1015,7 @@ public:
             if constexpr (HasLargeObjects) {
                 return fmt::format("{}", static_cast<int64_t>(*this));
             } else {
-                no_default;
+                tt_no_default;
             }
 
         case phy_string_id0:
@@ -1037,21 +1037,21 @@ public:
             if constexpr (HasLargeObjects) {
                 return *get_pointer<std::string>();
             } else {
-                no_default;
+                tt_no_default;
             }
 
         case phy_url_ptr_id:
             if constexpr (HasLargeObjects) {
                 return get_pointer<URL>()->string();
             } else {
-                no_default;
+                tt_no_default;
             }
 
         case phy_decimal_ptr_id:
             if constexpr (HasLargeObjects) {
                 return fmt::format("{}", static_cast<decimal>(*this));
             } else {
-                no_default;
+                tt_no_default;
             }
 
         case phy_vector_ptr_id:
@@ -1067,7 +1067,7 @@ public:
                 r += "]";
                 return r;
             } else {
-                no_default;
+                tt_no_default;
             }
 
         case phy_map_ptr_id:
@@ -1092,7 +1092,7 @@ public:
                 r += "}";
                 return r;
             } else {
-                no_default;
+                tt_no_default;
             }
 
         default:
@@ -1103,7 +1103,7 @@ public:
                 }
                 return str;
             } else {
-                no_default;
+                tt_no_default;
             }
         }
     }
@@ -1391,7 +1391,7 @@ public:
             case small_false: return "false";
             case small_break: return "break";
             case small_continue: return "continue";
-            default: no_default;
+            default: tt_no_default;
             }
         case phy_integer_id0:
         case phy_integer_id1:
@@ -1417,10 +1417,10 @@ public:
         case phy_vector_ptr_id: return static_cast<std::string>(*this);
         case phy_map_ptr_id: return static_cast<std::string>(*this);
         default:
-            if (ttauri_likely(is_phy_float())) {
+            if (tt_likely(is_phy_float())) {
                 return static_cast<std::string>(*this);
             } else {
-                no_default;
+                tt_no_default;
             }
         }
     }
@@ -1475,13 +1475,13 @@ public:
         }
     }
 
-    force_inline bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
-    force_inline bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
-    force_inline bool is_ymd() const noexcept { return is_phy_ymd(); }
-    force_inline bool is_float() const noexcept { return is_phy_float(); }
-    force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
+    tt_force_inline bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
+    tt_force_inline bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
+    tt_force_inline bool is_ymd() const noexcept { return is_phy_ymd(); }
+    tt_force_inline bool is_float() const noexcept { return is_phy_float(); }
+    tt_force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
 
-    force_inline bool is_bool() const noexcept {
+    tt_force_inline bool is_bool() const noexcept {
         if (is_phy_small()) {
             ttlet tmp = get_unsigned_integer();
             return tmp == small_true || tmp == small_false;
@@ -1490,25 +1490,25 @@ public:
         }
     }
 
-    force_inline bool is_null() const noexcept {
+    tt_force_inline bool is_null() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_null;
     }
 
-    force_inline bool is_undefined() const noexcept {
+    tt_force_inline bool is_undefined() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_undefined;
     }
 
-    force_inline bool is_break() const noexcept {
+    tt_force_inline bool is_break() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_break;
     }
 
-    force_inline bool is_continue() const noexcept {
+    tt_force_inline bool is_continue() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_continue;
     }    bool is_url() const noexcept { return is_phy_url_ptr(); }
 
-    force_inline bool is_vector() const noexcept { return is_phy_vector_ptr(); }
-    force_inline bool is_map() const noexcept { return is_phy_map_ptr(); }
-    force_inline bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
+    tt_force_inline bool is_vector() const noexcept { return is_phy_vector_ptr(); }
+    tt_force_inline bool is_map() const noexcept { return is_phy_map_ptr(); }
+    tt_force_inline bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
 
     datum_type_t type() const noexcept {
         switch (type_id()) {
@@ -1520,7 +1520,7 @@ public:
             case small_true: return datum_type_t::Boolean;
             case small_break: return datum_type_t::Break;
             case small_continue: return datum_type_t::Continue;
-            default: no_default;
+            default: tt_no_default;
             }
       
         case phy_integer_id0:
@@ -1547,10 +1547,10 @@ public:
         case phy_vector_ptr_id: return datum_type_t::Vector;
         case phy_map_ptr_id: return datum_type_t::Map;
         default:
-            if (ttauri_likely(is_phy_float())) {
+            if (tt_likely(is_phy_float())) {
                 return datum_type_t::Float;
             } else {
-                no_default;
+                tt_no_default;
             }
         }
     }
@@ -1565,7 +1565,7 @@ public:
             case small_true: return "Boolean";
             case small_break: return "Break";
             case small_continue: return "Continue";
-            default: no_default;
+            default: tt_no_default;
             }
 
         case phy_integer_id0:
@@ -1592,10 +1592,10 @@ public:
         case phy_vector_ptr_id: return "Vector";
         case phy_map_ptr_id: return "Map";
         default:
-            if (ttauri_likely(is_phy_float())) {
+            if (tt_likely(is_phy_float())) {
                 return "Float";
             } else {
-                no_default;
+                tt_no_default;
             }
         }
     }
@@ -1655,7 +1655,7 @@ public:
     size_t hash() const noexcept{
         if (is_phy_float()) {
             return std::hash<double>{}(f64);
-        } else if (ttauri_unlikely(is_phy_pointer())) {
+        } else if (tt_unlikely(is_phy_pointer())) {
             switch (type_id()) {
             case phy_string_ptr_id:
                 return std::hash<std::string>{}(*get_pointer<std::string>());
@@ -1671,7 +1671,7 @@ public:
                     });
             case phy_decimal_ptr_id:
                 return std::hash<decimal>{}(*get_pointer<decimal>());
-            default: no_default;
+            default: tt_no_default;
             }
         } else {
             return std::hash<uint64_t>{}(u64);
@@ -1838,7 +1838,7 @@ public:
             if (lhs.is_phy_float()) {
                 return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
             } else {
-                no_default;
+                tt_no_default;
             }
         }
     }
@@ -1927,7 +1927,7 @@ public:
                     return lhs.type_order() < rhs.type_order();
                 }
             } else {
-                no_default;
+                tt_no_default;
             }
         }
     }

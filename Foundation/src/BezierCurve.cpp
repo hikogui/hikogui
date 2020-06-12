@@ -52,7 +52,7 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
                 type = BezierCurve::Type::Linear;
                 break;
             default:
-                no_default;
+                tt_no_default;
             }
             break;
         case BezierPoint::Type::QuadraticControl:
@@ -65,10 +65,10 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
             break;
         case BezierPoint::Type::CubicControl2:
             C2 = point.p;
-            ttauri_assert(type == BezierCurve::Type::Cubic);
+            tt_assert(type == BezierCurve::Type::Cubic);
             break;
         default:
-            no_default;
+            tt_no_default;
         }
     }
 

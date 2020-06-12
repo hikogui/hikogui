@@ -50,7 +50,7 @@ constexpr char const *to_string(tokenizer_name_t name) noexcept {
     case tokenizer_name_t::FloatLiteral: return "FloatLiteral";
     case tokenizer_name_t::Operator: return "Operator";
     case tokenizer_name_t::End: return "End";
-    default: no_default;
+    default: tt_no_default;
     }
 }
 
@@ -242,23 +242,23 @@ struct token_t {
         return lhs << rhs.repr();
     }
 
-    [[nodiscard]] friend force_inline bool operator==(token_t const &lhs, token_t const &rhs) noexcept {
+    [[nodiscard]] friend tt_force_inline bool operator==(token_t const &lhs, token_t const &rhs) noexcept {
         return (lhs.name == rhs.name) && (lhs.value == rhs.value);
     }
 
-    [[nodiscard]] friend force_inline bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+    [[nodiscard]] friend tt_force_inline bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
         return lhs.name == rhs;
     }
 
-    [[nodiscard]] friend force_inline bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+    [[nodiscard]] friend tt_force_inline bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend force_inline bool operator==(token_t const &lhs, const char *rhs) noexcept {
+    [[nodiscard]] friend tt_force_inline bool operator==(token_t const &lhs, const char *rhs) noexcept {
         return lhs.value == rhs;
     }
 
-    [[nodiscard]] friend force_inline bool operator!=(token_t const &lhs, const char *rhs) noexcept {
+    [[nodiscard]] friend tt_force_inline bool operator!=(token_t const &lhs, const char *rhs) noexcept {
         return !(lhs == rhs);
     }
 

@@ -14,10 +14,10 @@
 #include <numeric>
 #include <iterator>
 
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>
 #endif
-#if PROCESSOR == CPU_X64
+#if TT_PROCESSOR == TT_CPU_X64
 #include <immintrin.h>
 #endif
 
@@ -48,14 +48,14 @@ constexpr long long pow10_table[20] {
 };
 
 constexpr long long pow10ll(int x) noexcept {
-    ttauri_assume(x >= 0 && x <= 18);
+    tt_assume(x >= 0 && x <= 18);
     return pow10_table[x];
 }
 
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr int bsr(T x) noexcept
 {
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
     if constexpr (sizeof(T) == 4) {
         unsigned long index;
         auto found = _BitScanReverse(&index, x);
@@ -67,9 +67,9 @@ constexpr int bsr(T x) noexcept
         return found ? index : -1;
 
     } else {
-        not_implemented;
+        tt_not_implemented;
     }
-#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
+#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
     if constexpr (std::is_same_v<T,unsigned int>) {
         auto tmp = __builtin_clz(x);
         return x == 0 ? -1 : ssizeof(T) * 8 - tmp - 1;
@@ -83,7 +83,7 @@ constexpr int bsr(T x) noexcept
         return x == 0 ? -1 : ssizeof(T) * 8 - tmp - 1;
 
     } else {
-        not_implemented;
+        tt_not_implemented;
     }
 #else
 #error "Not implemented"
@@ -129,7 +129,7 @@ constexpr T make_mask(T x)
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr int popcount(T x) noexcept
 {
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
     if constexpr (sizeof(T) == sizeof(unsigned __int64)) {
         return __popcnt64(x);
     } else if constexpr (sizeof(T) == sizeof(unsigned int)) {
@@ -139,7 +139,7 @@ constexpr int popcount(T x) noexcept
     } else {
         return __popcnt64(static_cast<unsigned __int64>(x));
     }
-#elif COMPILER == CC_CLANG || COMPILER == CC_GCC
+#elif TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
     if constexpr (std::is_same_v<T,unsigned int>) {
         return __builtin_popcount(x);
 
@@ -150,7 +150,7 @@ constexpr int popcount(T x) noexcept
         return __builtin_popcountll(x);
 
     } else {
-        not_implemented;
+        tt_not_implemented;
     }
 #else
 #error "Not implemented"
@@ -160,7 +160,7 @@ constexpr int popcount(T x) noexcept
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr T rotl(T x, unsigned int count) noexcept
 {
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
     if constexpr (sizeof(T) == 1) {
         return _rotl8(x, count);
     } else if constexpr (sizeof(T) == 2) {
@@ -182,7 +182,7 @@ constexpr T rotl(T x, unsigned int count) noexcept
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr T rotr(T x, unsigned int count) noexcept
 {
-#if COMPILER == CC_MSVC
+#if TT_COMPILER == TT_CC_MSVC
     if constexpr (sizeof(T) == 1) {
         return _rotr8(x, count);
     } else if constexpr (sizeof(T) == 2) {

@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 
 #include "TTauri/Application/Application_win32.hpp"
 namespace tt {
@@ -17,7 +17,7 @@ using Application = Application_win32;
     int WINAPI wWinMain(_In_ HINSTANCE main_hInstance, _In_opt_ HINSTANCE main_hPrevInstance, _In_ PWSTR main_pCmdLine, _In_ int main_nCmdShow)
 
 
-#elif OPERATING_SYSTEM == OS_MACOS
+#elif  TT_OPERATING_SYSTEM == TT_OS_MACOS
 
 #include "TTauri/Application/Application_macos.hpp"
 namespace tt {

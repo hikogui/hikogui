@@ -7,7 +7,7 @@ struct {
 
 };
 
-ttauri_cpu_id(
+tt_cpu_id(
 
 
 };

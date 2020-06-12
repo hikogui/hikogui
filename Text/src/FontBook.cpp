@@ -143,7 +143,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
             return;
         }
     }
-    ttauri_unreachable();
+    tt_unreachable();
 }
 
 void FontBook::post_process() noexcept
@@ -204,7 +204,7 @@ void FontBook::post_process() noexcept
 
     } else {
         auto j = family_name_fallback_chain.find("fallback");
-        ttauri_assert(j != family_name_fallback_chain.end());
+        tt_assert(j != family_name_fallback_chain.end());
         return j->second;
     }
 }
@@ -232,8 +232,8 @@ void FontBook::post_process() noexcept
 
 [[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
 {
-    ttauri_assert(family_id);
-    ttauri_assume(family_id >= 0 && family_id < ssize(font_variants));
+    tt_assert(family_id);
+    tt_assume(family_id >= 0 && family_id < ssize(font_variants));
     ttlet &variants = font_variants[family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font_id = variants[variant.alternative(i)]) {
@@ -241,7 +241,7 @@ void FontBook::post_process() noexcept
         }
     }
     // If a family exists, there must be at least one font variant available.
-    no_default;
+    tt_no_default;
 }
 
 [[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontWeight weight, bool italic) const noexcept
@@ -256,13 +256,13 @@ void FontBook::post_process() noexcept
 
 [[nodiscard]] Font const &FontBook::get_font(FontID font_id) const noexcept
 {
-    ttauri_assume(font_id < ssize(font_entries));
+    tt_assume(font_id < ssize(font_entries));
     ttlet &entry = font_entries[font_id];
 
     if (!entry.font) {
         // This font was parsed once before, it must not give an error now.
         entry.font = parseResource<Font>(entry.url);
-        ttauri_assert(entry.font);
+        tt_assert(entry.font);
     }
 
     return *(entry.font);

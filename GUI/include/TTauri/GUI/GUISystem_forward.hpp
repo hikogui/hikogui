@@ -7,11 +7,11 @@
 
 namespace tt {
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 class GUISystem_vulkan_win32;
 using GUISystem = GUISystem_vulkan_win32;
 
-#elif OPERATING_SYSTEM == OS_MACOS
+#elif  TT_OPERATING_SYSTEM == TT_OS_MACOS
 class GUISystem_vulkan_macos;
 using GUISystem = GUISystem_vulkan_macos;
 

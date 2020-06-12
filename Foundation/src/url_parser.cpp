@@ -88,7 +88,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
             break;
 
         default:
-            no_default;
+            tt_no_default;
         }
     }
 

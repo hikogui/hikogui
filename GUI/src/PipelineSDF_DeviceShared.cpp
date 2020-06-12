@@ -32,7 +32,7 @@ DeviceShared::~DeviceShared()
 
 void DeviceShared::destroy(GUIDevice * vulkanDevice)
 {
-    ttauri_assume(vulkanDevice);
+    tt_assume(vulkanDevice);
 
     teardownShaders(vulkanDevice);
     teardownAtlas(vulkanDevice);
@@ -280,7 +280,7 @@ void DeviceShared::buildShaders()
 
 void DeviceShared::teardownShaders(GUIDevice_vulkan * vulkanDevice)
 {
-    ttauri_assume(vulkanDevice);
+    tt_assume(vulkanDevice);
 
     vulkanDevice->destroy(vertexShaderModule);
     vulkanDevice->destroy(fragmentShaderModule);
@@ -414,7 +414,7 @@ void DeviceShared::buildAtlas()
 
 void DeviceShared::teardownAtlas(GUIDevice_vulkan *vulkanDevice)
 {
-    ttauri_assume(vulkanDevice);
+    tt_assume(vulkanDevice);
 
     vulkanDevice->destroy(atlasSampler);
 

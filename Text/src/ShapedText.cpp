@@ -27,7 +27,7 @@ namespace tt {
 [[nodiscard]] static std::vector<AttributedGlyph> graphemes_to_glyphs(std::vector<AttributedGrapheme> const &text) noexcept
 {
     // The end-of-paragraph (linefeed) must end text.
-    ttauri_assume(ssize(text) >= 1 && text.back().grapheme == '\n');
+    tt_assume(ssize(text) >= 1 && text.back().grapheme == '\n');
 
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
@@ -157,7 +157,7 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
     } else if (alignment == HorizontalAlignment::Center) {
         return width * 0.5f - line_width * 0.5f;
     } else {
-        no_default;
+        tt_no_default;
     }
 }
 
@@ -198,7 +198,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
             start_y_downward = 0.0;
         }
     } else {
-        no_default;
+        tt_no_default;
     }
     
     {
@@ -294,7 +294,7 @@ struct shape_text_result {
         c.bidiClass = unicodeData->getBidiClass(c.grapheme[0]);
         c.charClass = to_GeneralCharacterClass(c.bidiClass);
     }
-    ttauri_assume(text.back().bidiClass == BidiClass::B);
+    tt_assume(text.back().bidiClass == BidiClass::B);
 
     // Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
@@ -379,7 +379,7 @@ ShapedText::ShapedText(
     // The shaped text will always end with a paragraph separator '\n'.
     // Therefor even if the index points beyond the last character, it will still
     // be on the paragraph separator.
-    ttauri_assume(i != cend());
+    tt_assume(i != cend());
 
     // We need the line to figure out the ascender/descender height of the line so that
     // the caret does not jump up and down as we walk the text.
@@ -508,10 +508,10 @@ ShapedText::ShapedText(
             break;
         }
         ++endOfParagraph;
-        ttauri_assume(endOfParagraph != cend());
+        tt_assume(endOfParagraph != cend());
     }
 
-    ttauri_assume(beginOfParagraph != endOfParagraph);
+    tt_assume(beginOfParagraph != endOfParagraph);
     auto lastCharacter = endOfParagraph - 1;
     return {beginOfParagraph->logicalIndex, lastCharacter->logicalIndex + lastCharacter->graphemeCount};
 }
@@ -549,7 +549,7 @@ ShapedText::ShapedText(
         return x.selectionWordClusterID();
     });
 
-    ttauri_assume(e != i);
+    tt_assume(e != i);
     --e;
     return {s->logicalIndex, e->logicalIndex + e->graphemeCount};
 }

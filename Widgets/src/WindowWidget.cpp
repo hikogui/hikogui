@@ -24,7 +24,7 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopLeft);
     } else {
-        no_default;
+        tt_no_default;
     }
 
 

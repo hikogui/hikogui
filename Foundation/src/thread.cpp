@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>
 #elif __has_include(<pthread.h>)
 #include <pthread.h>
@@ -15,12 +15,12 @@ namespace tt {
 
 void set_thread_name(std::string_view name)
 {
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     ttlet wname = to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.data());
-#elif OPERATING_SYSTEM == OS_MACOS
+#elif  TT_OPERATING_SYSTEM == TT_OS_MACOS
     pthread_setname_np(name.data());
-#elif OPERATING_SYSTEM == OS_LINUX
+#elif  TT_OPERATING_SYSTEM == TT_OS_LINUX
     pthread_setname_np(pthread_self(), name.data());
 #endif
 }
@@ -40,7 +40,7 @@ void run_on_main_thread(std::function<void()> f)
 
     } else {
         // We could not run the thread on the main thread.
-        no_default;
+        tt_no_default;
     }
 }
 

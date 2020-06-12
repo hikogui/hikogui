@@ -8,7 +8,7 @@ namespace tt {
 
 std::vector<string_ltag> const &KeyboardEvent::getCommands() const noexcept
 {
-    ttauri_assume(type == Type::Key);
+    tt_assume(type == Type::Key);
     return keyboardBindings.translate(key);
 }
 

@@ -15,7 +15,7 @@ namespace tt {
 static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
 {
     auto propertyStore_ = static_cast<IPropertyStore *>(propertyStore);
-    ttauri_assert(propertyStore_ != nullptr);
+    tt_assert(propertyStore_ != nullptr);
 
     PROPVARIANT textProperty;
     PropVariantInit(&textProperty);
@@ -31,7 +31,7 @@ static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
 AudioDevice_win32::AudioDevice_win32(void *device) :
     AudioDevice(), device(device)
 {
-    ttauri_assert(device != nullptr);
+    tt_assert(device != nullptr);
 
     id = getIdFromDevice(device);
     
@@ -43,11 +43,11 @@ AudioDevice_win32::AudioDevice_win32(void *device) :
 AudioDevice_win32::~AudioDevice_win32()
 {
     auto propertyStore_ = static_cast<IPropertyStore *>(propertyStore);
-    ttauri_assert(propertyStore_ != nullptr);
+    tt_assert(propertyStore_ != nullptr);
     propertyStore_->Release();
 
     auto device_ = static_cast<IMMDevice *>(device);
-    ttauri_assert(device_ != nullptr);
+    tt_assert(device_ != nullptr);
     device_->Release();
 }
 
@@ -83,7 +83,7 @@ AudioDevice_state AudioDevice_win32::state() const noexcept
     case DEVICE_STATE_UNPLUGGED:
         return AudioDevice_state::Unplugged;
     default:
-        no_default;
+        tt_no_default;
     }
 }
 
@@ -93,7 +93,7 @@ std::string AudioDevice_win32::getIdFromDevice(void *device) noexcept
 
     // Get the cross-reboot-unique-id-string of the device.
     LPWSTR id_wcharstr;
-    ttauri_assert(device_ != nullptr);
+    tt_assert(device_ != nullptr);
     hresult_assert_or_throw(device_->GetId(&id_wcharstr));
 
     ttlet id_wstring = std::wstring_view(id_wcharstr);

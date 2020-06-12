@@ -28,14 +28,14 @@ struct counter_functor {
     // Make sure non of the counters are false sharing cache-lines.
     alignas(cache_line_size) inline static std::atomic<int64_t> counter = 0;
 
-    no_inline void add_to_map() const noexcept {
+    tt_no_inline void add_to_map() const noexcept {
         counter_map.insert(std::type_index(typeid(Tag)), counter_map_value_type{&counter, 0});
     }
 
     int64_t increment() const noexcept {
         ttlet value = counter.fetch_add(1, std::memory_order_relaxed);
 
-        if (ttauri_unlikely(value == 0)) {
+        if (tt_unlikely(value == 0)) {
             add_to_map();
         }
 

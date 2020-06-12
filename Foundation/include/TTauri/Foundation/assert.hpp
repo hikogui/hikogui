@@ -9,21 +9,21 @@
 
 namespace tt {
 
-#if defined(NDEBUG)
-#define no_default ttauri_unreachable();
+#if TT_BUILD_TYPE == TT_BT_RELEASE
+#define tt_no_default tt_unreachable();
 #else
-#define no_default debugger_abort("no_default");
+#define tt_no_default debugger_abort("tt_no_default");
 #endif
 
-#define not_implemented debugger_abort("not_implemented");
-#define ttauri_overflow debugger_abort("overflow");
+#define tt_not_implemented debugger_abort("tt_not_implemented");
+#define tt_overflow debugger_abort("overflow");
 
 /** Assert if expression is true.
- * Independent of NDEBUG macro this macro will always check and abort on fail.
+ * Independent of built type this macro will always check and abort on fail.
  */
-#define ttauri_assert(expression)\
+#define tt_assert(expression)\
     do {\
-        if (ttauri_unlikely(!(expression))) {\
+        if (tt_unlikely(!(expression))) {\
             debugger_abort(# expression);\
         }\
     } while (false)

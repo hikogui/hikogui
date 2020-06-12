@@ -18,7 +18,7 @@ enum class ThemeMode {
     switch (rhs) {
     case ThemeMode::Light: return "Light";
     case ThemeMode::Dark: return "Dark";
-    default: no_default;
+    default: tt_no_default;
     }
 }
 

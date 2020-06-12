@@ -5,13 +5,13 @@
 
 #include "TTauri/Foundation/os_detect.hpp"
 
-#if OPERATING_SYSTEM == OS_WINDOWS
+#if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "TTauri/GUI/GUISystem_vulkan_win32.hpp"
 namespace tt {
 using GUISystem = GUISystem_vulkan_win32;
 }
 
-#elif OPERATING_SYSTEM == OS_MACOS
+#elif  TT_OPERATING_SYSTEM == TT_OS_MACOS
 #include "TTauri/GUI/GUISystem_vulkan_macos.hpp"
 namespace tt {
 using GUISystem = GUISystem_vulkan_macos;

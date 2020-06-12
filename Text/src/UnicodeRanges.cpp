@@ -181,7 +181,7 @@ constexpr std::array unicodeRangeToBitPosition = {
 
 void UnicodeRanges::add(char32_t first, char32_t last) noexcept
 {
-    ttauri_assert(first < last);
+    tt_assert(first < last);
     auto first_ = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), first, [](ttlet &value, ttlet &element) { return value < element.first; });
     auto last_ = std::upper_bound(unicodeRangeToBitPosition.cbegin(), unicodeRangeToBitPosition.cend(), last, [](ttlet &value, ttlet &element) { return value < element.first; });
     for (auto i = (first_ - 1); i != last_; ++i) {

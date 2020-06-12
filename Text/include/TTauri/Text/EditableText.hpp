@@ -91,9 +91,9 @@ public:
     /** Return the text iterator at index.
      */
     decltype(auto) it(ssize_t index) noexcept {
-        ttauri_assume(index >= 0);
+        tt_assume(index >= 0);
         // Index should never be at text.cend();
-        ttauri_assume(index < ssize(text));
+        tt_assume(index < ssize(text));
 
         return text.begin() + index;
     }
@@ -101,9 +101,9 @@ public:
     /** Return the text iterator at index.
     */
     decltype(auto) cit(ssize_t index) const noexcept {
-        ttauri_assume(index >= 0);
+        tt_assume(index >= 0);
         // Index should never be beyond text.cend();
-        ttauri_assume(index <= ssize(text));
+        tt_assume(index <= ssize(text));
 
         return text.cbegin() + index;
     }
@@ -116,7 +116,7 @@ public:
     */
     aarect partialGraphemeCaret() const noexcept {
         if (hasPartialGrapheme) {
-            ttauri_assume(cursorIndex != 0);
+            tt_assume(cursorIndex != 0);
             return _shapedText.leftToRightCaret(cursorIndex - 1, false);
         } else {
             return {};
@@ -164,36 +164,36 @@ public:
     void setCursorAtCoordinate(vec coordinate) noexcept {
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             selectionIndex = cursorIndex = *newCursorPosition;
-            ttauri_assume(selectionIndex >= 0);
-            ttauri_assume(selectionIndex <= ssize(text));
+            tt_assume(selectionIndex >= 0);
+            tt_assume(selectionIndex <= ssize(text));
         }
     }
 
     void selectWordAtCoordinate(vec coordinate) noexcept {
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
-            ttauri_assume(selectionIndex >= 0);
-            ttauri_assume(selectionIndex <= ssize(text));
-            ttauri_assume(cursorIndex >= 0);
-            ttauri_assume(cursorIndex <= ssize(text));
+            tt_assume(selectionIndex >= 0);
+            tt_assume(selectionIndex <= ssize(text));
+            tt_assume(cursorIndex >= 0);
+            tt_assume(cursorIndex <= ssize(text));
         }
     }
 
     void selectParagraphAtCoordinate(vec coordinate) noexcept {
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newCursorPosition);
-            ttauri_assume(selectionIndex >= 0);
-            ttauri_assume(selectionIndex <= ssize(text));
-            ttauri_assume(cursorIndex >= 0);
-            ttauri_assume(cursorIndex <= ssize(text));
+            tt_assume(selectionIndex >= 0);
+            tt_assume(selectionIndex <= ssize(text));
+            tt_assume(cursorIndex >= 0);
+            tt_assume(cursorIndex <= ssize(text));
         }
     }
 
     void dragCursorAtCoordinate(vec coordinate) noexcept {
         if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newCursorPosition;
-            ttauri_assume(cursorIndex >= 0);
-            ttauri_assume(cursorIndex <= ssize(text));
+            tt_assume(cursorIndex >= 0);
+            tt_assume(cursorIndex <= ssize(text));
         }
     }
 
@@ -219,10 +219,10 @@ public:
                 }
             }
 
-            ttauri_assume(selectionIndex >= 0);
-            ttauri_assume(selectionIndex <= ssize(text));
-            ttauri_assume(cursorIndex >= 0);
-            ttauri_assume(cursorIndex <= ssize(text));
+            tt_assume(selectionIndex >= 0);
+            tt_assume(selectionIndex <= ssize(text));
+            tt_assume(cursorIndex >= 0);
+            tt_assume(cursorIndex <= ssize(text));
         }
     }
 
@@ -248,22 +248,22 @@ public:
                 }
             }
 
-            ttauri_assume(selectionIndex >= 0);
-            ttauri_assume(selectionIndex <= ssize(text));
-            ttauri_assume(cursorIndex >= 0);
-            ttauri_assume(cursorIndex <= ssize(text));
+            tt_assume(selectionIndex >= 0);
+            tt_assume(selectionIndex <= ssize(text));
+            tt_assume(cursorIndex >= 0);
+            tt_assume(cursorIndex <= ssize(text));
         }
     }
 
     void cancelPartialGrapheme() noexcept {
         if (hasPartialGrapheme) {
-            ttauri_assume(cursorIndex >= 1);
+            tt_assume(cursorIndex >= 1);
 
             selectionIndex = --cursorIndex;
-            ttauri_assume(selectionIndex >= 0);
-            ttauri_assume(selectionIndex <= ssize(text));
-            ttauri_assume(cursorIndex >= 0);
-            ttauri_assume(cursorIndex <= ssize(text));
+            tt_assume(selectionIndex >= 0);
+            tt_assume(selectionIndex <= ssize(text));
+            tt_assume(cursorIndex >= 0);
+            tt_assume(cursorIndex <= ssize(text));
 
             text.erase(cit(cursorIndex));
             hasPartialGrapheme = false;
@@ -283,10 +283,10 @@ public:
 
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
-        ttauri_assume(selectionIndex >= 0);
-        ttauri_assume(selectionIndex <= ssize(text));
-        ttauri_assume(cursorIndex >= 0);
-        ttauri_assume(cursorIndex <= ssize(text));
+        tt_assume(selectionIndex >= 0);
+        tt_assume(selectionIndex <= ssize(text));
+        tt_assume(cursorIndex >= 0);
+        tt_assume(cursorIndex <= ssize(text));
 
         hasPartialGrapheme = true;
         updateShapedText();
@@ -304,10 +304,10 @@ public:
         }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
-        ttauri_assume(selectionIndex >= 0);
-        ttauri_assume(selectionIndex <= ssize(text));
-        ttauri_assume(cursorIndex >= 0);
-        ttauri_assume(cursorIndex <= ssize(text));
+        tt_assume(selectionIndex >= 0);
+        tt_assume(selectionIndex <= ssize(text));
+        tt_assume(cursorIndex >= 0);
+        tt_assume(cursorIndex <= ssize(text));
 
         updateShapedText();
     }
@@ -326,10 +326,10 @@ public:
 
         text.insert(cit(cursorIndex), str_attr.cbegin(), str_attr.cend());
         selectionIndex = cursorIndex += ssize(str_attr);
-        ttauri_assume(selectionIndex >= 0);
-        ttauri_assume(selectionIndex <= ssize(text));
-        ttauri_assume(cursorIndex >= 0);
-        ttauri_assume(cursorIndex <= ssize(text));
+        tt_assume(selectionIndex >= 0);
+        tt_assume(selectionIndex <= ssize(text));
+        tt_assume(cursorIndex >= 0);
+        tt_assume(cursorIndex <= ssize(text));
 
         updateShapedText();
     }
@@ -359,7 +359,7 @@ public:
     }
 
     void handleCommand(string_ltag command) noexcept {
-        ttauri_assume(cursorIndex <= ssize(text));
+        tt_assume(cursorIndex <= ssize(text));
         cancelPartialGrapheme();
 
         if (command == "text.cursor.char.left"_ltag) {
@@ -434,10 +434,10 @@ public:
             }
         }
 
-        ttauri_assume(selectionIndex >= 0);
-        ttauri_assume(selectionIndex <= ssize(text));
-        ttauri_assume(cursorIndex >= 0);
-        ttauri_assume(cursorIndex <= ssize(text));
+        tt_assume(selectionIndex >= 0);
+        tt_assume(selectionIndex <= ssize(text));
+        tt_assume(cursorIndex >= 0);
+        tt_assume(cursorIndex <= ssize(text));
     }
 };
 

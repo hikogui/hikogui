@@ -71,7 +71,7 @@ namespace tt {
 {
     auto tokens = parseTokens(text);
 
-    ttauri_assume(tokens.back() == tokenizer_name_t::End);
+    tt_assume(tokens.back() == tokenizer_name_t::End);
 
     Catalogue r;
     auto token = tokens.begin();

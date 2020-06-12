@@ -194,7 +194,7 @@ public:
         auto rhs_m = rhs.mantissa();
 
         long long m = 0;
-        if (ttauri_likely(!mul_overflow(lhs_m, rhs_m, &m))) {
+        if (tt_likely(!mul_overflow(lhs_m, rhs_m, &m))) {
             return {lhs_e + rhs_e, m};
         }
 
@@ -218,7 +218,7 @@ public:
 
     [[nodiscard]] friend decimal operator/(decimal lhs, decimal rhs) noexcept {
         auto rhs_m = rhs.mantissa();
-        ttauri_assume(rhs_m != 0);
+        tt_assume(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -229,7 +229,7 @@ public:
 
     [[nodiscard]] friend decimal operator%(decimal lhs, decimal rhs) noexcept {
         auto rhs_m = rhs.mantissa();
-        ttauri_assume(rhs_m != 0);
+        tt_assume(rhs_m != 0);
         auto rhs_e = rhs.exponent();
         auto lhs_m = lhs.mantissa();
         auto lhs_e = lhs.exponent();
@@ -355,13 +355,13 @@ private:
      */
     [[nodiscard]] constexpr static uint64_t pack(int e, long long m) noexcept {
         // Adjust an mantissa that is too large. Precision may be lost.
-        while (ttauri_unlikely(!is_valid_mantissa(m))) {
+        while (tt_unlikely(!is_valid_mantissa(m))) {
             m /= 10;
             e++;
-            ttauri_assert(e <= exponent_max);
+            tt_assert(e <= exponent_max);
         }
 
-        while (ttauri_unlikely(e > exponent_max)) {
+        while (tt_unlikely(e > exponent_max)) {
             if ((m *= 10) == 0) {
                 e = exponent_max;
                 break;
@@ -369,10 +369,10 @@ private:
             e--;
 
             // abort on overflow. This decimal does not support infinite.
-            ttauri_assert(is_valid_mantissa(m));
+            tt_assert(is_valid_mantissa(m));
         }
 
-        while (ttauri_unlikely(e < exponent_min)) {
+        while (tt_unlikely(e < exponent_min)) {
             if ((m /= 10) == 0) {
                 e = exponent_min;
                 break;

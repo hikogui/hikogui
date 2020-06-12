@@ -18,11 +18,11 @@ class rect {
     std::array<vec,4> corners;
 
 public:
-    force_inline rect() noexcept : corners({vec{}, vec{}, vec{}, vec{}}) {}
-    force_inline rect(rect const &rhs) noexcept = default;
-    force_inline rect &operator=(rect const &rhs) noexcept = default;
-    force_inline rect(rect &&rhs) noexcept = default;
-    force_inline rect &operator=(rect &&rhs) noexcept = default;
+    tt_force_inline rect() noexcept : corners({vec{}, vec{}, vec{}, vec{}}) {}
+    tt_force_inline rect(rect const &rhs) noexcept = default;
+    tt_force_inline rect &operator=(rect const &rhs) noexcept = default;
+    tt_force_inline rect(rect &&rhs) noexcept = default;
+    tt_force_inline rect &operator=(rect &&rhs) noexcept = default;
 
     rect(vec corner0, vec corner1, vec corner2, vec corner3) noexcept :
         corners({corner0, corner1, corner2, corner3}) {}
@@ -46,9 +46,9 @@ public:
             corner0 + extent.xy00()
         })
     {
-        ttauri_assume(corner0.is_point());
-        ttauri_assume(extent.is_vector());
-        ttauri_assume(extent.z() == 0.0);
+        tt_assume(corner0.is_point());
+        tt_assume(extent.is_vector());
+        tt_assume(extent.z() == 0.0);
     }
 
     /** Get the right vector of a rectangle.
@@ -81,7 +81,7 @@ public:
     * @return The homogeneous coordinate of the corner.
     */
     template<size_t I>
-    [[nodiscard]] force_inline vec corner() const noexcept {
+    [[nodiscard]] tt_force_inline vec corner() const noexcept {
         static_assert(I <= 3);
         return std::get<I>(corners);
     }

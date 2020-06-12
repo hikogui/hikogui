@@ -109,7 +109,7 @@ public:
      *  - fillColor
      */
     void drawFilledQuad(vec p1, vec p2, vec p3, vec p4) const noexcept {
-        ttauri_assume(flatVertices != nullptr);
+        tt_assume(flatVertices != nullptr);
         flatVertices->emplace_back(transform * p1, clippingRectangle, fillColor);
         flatVertices->emplace_back(transform * p2, clippingRectangle, fillColor);
         flatVertices->emplace_back(transform * p3, clippingRectangle, fillColor);
@@ -139,7 +139,7 @@ public:
     *  - cornerShapes
     */
     void drawBox(aarect box) const noexcept {
-        ttauri_assume(boxVertices != nullptr);
+        tt_assume(boxVertices != nullptr);
 
         PipelineBox::DeviceShared::placeVertices(
             *boxVertices,
@@ -170,7 +170,7 @@ public:
     */
     void drawBoxIncludeBorder(aarect box) const noexcept {
 
-        ttauri_assume(boxVertices != nullptr);
+        tt_assume(boxVertices != nullptr);
 
         ttlet shrink_value = lineWidth * 0.5f;
 
@@ -201,7 +201,7 @@ public:
     *  - clippingRectangle
     */
     void drawImage(PipelineImage::Image &image) const noexcept {
-        ttauri_assume(imageVertices != nullptr);
+        tt_assume(imageVertices != nullptr);
 
         image.placeVertices(*imageVertices, transform, clippingRectangle);
     }
@@ -214,8 +214,8 @@ public:
      *  - clippingRectangle
      */
     void drawText(ShapedText const &text) const noexcept {
-        ttauri_assume(window != nullptr);
-        ttauri_assume(sdfVertices != nullptr);
+        tt_assume(window != nullptr);
+        tt_assume(sdfVertices != nullptr);
 
         window->device->SDFPipeline->placeVertices(
             *sdfVertices,
@@ -233,8 +233,8 @@ public:
     *  - clippingRectangle
     */
     void drawTextSingleColor(ShapedText const &text) const noexcept {
-        ttauri_assume(window != nullptr);
-        ttauri_assume(sdfVertices != nullptr);
+        tt_assume(window != nullptr);
+        tt_assume(sdfVertices != nullptr);
 
         window->device->SDFPipeline->placeVertices(
             *sdfVertices,
@@ -246,8 +246,8 @@ public:
     }
 
     void drawGlyph(FontGlyphIDs const &glyph, aarect box) const noexcept {
-        ttauri_assume(window != nullptr);
-        ttauri_assume(sdfVertices != nullptr);
+        tt_assume(window != nullptr);
+        tt_assume(sdfVertices != nullptr);
 
         window->device->SDFPipeline->placeVertices(
             *sdfVertices,

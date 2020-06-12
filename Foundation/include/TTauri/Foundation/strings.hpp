@@ -111,7 +111,7 @@ namespace tt {
 
     auto found_cr = false;
     for (ttlet c: str) {
-        if (ttauri_unlikely(found_cr)) {
+        if (tt_unlikely(found_cr)) {
             // This is Microsoft or old-Apple, we replace the previous carriage-return
             // with a line-feed and emit the current character.
             r += '\n';
@@ -119,7 +119,7 @@ namespace tt {
                 r += c;
             }
         
-        } else if (ttauri_likely(c != '\r')) {
+        } else if (tt_likely(c != '\r')) {
             // Emit any non-carriage return character.
             r += c;
         }
@@ -190,7 +190,7 @@ gsl_suppress(bounds.3)
     } else if (nibble <= 15) {
         return 'a' + nibble - 10;
     } else {
-        no_default;
+        tt_no_default;
     }
 }
 

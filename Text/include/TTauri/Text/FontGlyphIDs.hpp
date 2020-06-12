@@ -28,22 +28,22 @@ class FontGlyphIDs_long {
     FontGlyphIDs_long &operator=(FontGlyphIDs_long const &rhs) noexcept = default;
     FontGlyphIDs_long &operator=(FontGlyphIDs_long &&rhs) noexcept = default;
 
-    force_inline FontGlyphIDs_long(GlyphID g1, GlyphID g2, GlyphID g3) noexcept {
+    tt_force_inline FontGlyphIDs_long(GlyphID g1, GlyphID g2, GlyphID g3) noexcept {
         (*this) += g1;
         (*this) += g2;
         (*this) += g3;
     }
 
-    force_inline FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
-        ttauri_assume(nr_glyphs >= 0);
-        ttauri_assume(nr_glyphs < ssize(glyph_ids));
+    tt_force_inline FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
+        tt_assume(nr_glyphs >= 0);
+        tt_assume(nr_glyphs < ssize(glyph_ids));
         glyph_ids[nr_glyphs++] = rhs;
         return *this;
     }
 
     [[nodiscard]] size_t hash() const noexcept {
-        ttauri_assume(nr_glyphs > 3);
-        ttauri_assume(nr_glyphs < ssize(glyph_ids));
+        tt_assume(nr_glyphs > 3);
+        tt_assume(nr_glyphs < ssize(glyph_ids));
 
         uint64_t r = 0;
         for (int8_t i = 0; i != nr_glyphs; ++i) {
@@ -54,10 +54,10 @@ class FontGlyphIDs_long {
     }
 
     [[nodiscard]] friend bool operator==(FontGlyphIDs_long const &lhs, FontGlyphIDs_long const &rhs) noexcept {
-        ttauri_assume(lhs.nr_glyphs > 3);
-        ttauri_assume(rhs.nr_glyphs > 3);
-        ttauri_assume(lhs.nr_glyphs < ssize(lhs.glyph_ids));
-        ttauri_assume(rhs.nr_glyphs < ssize(rhs.glyph_ids));
+        tt_assume(lhs.nr_glyphs > 3);
+        tt_assume(rhs.nr_glyphs > 3);
+        tt_assume(lhs.nr_glyphs < ssize(lhs.glyph_ids));
+        tt_assume(rhs.nr_glyphs < ssize(rhs.glyph_ids));
 
         if (lhs.nr_glyphs == rhs.nr_glyphs) {
             for (int8_t i = 0; i != lhs.nr_glyphs; ++i) {
@@ -93,7 +93,7 @@ class FontGlyphIDs {
     uint64_t value;
 
 public:
-    force_inline FontGlyphIDs() noexcept : value(empty) {}
+    tt_force_inline FontGlyphIDs() noexcept : value(empty) {}
 
     FontGlyphIDs(FontGlyphIDs const &rhs) noexcept : value(rhs.value) {
         if (rhs.has_pointer()) {
@@ -101,7 +101,7 @@ public:
         }
     }
 
-    force_inline FontGlyphIDs(FontGlyphIDs &&rhs) noexcept : value(rhs.value) {
+    tt_force_inline FontGlyphIDs(FontGlyphIDs &&rhs) noexcept : value(rhs.value) {
         rhs.value = empty;
     }
 
@@ -116,7 +116,7 @@ public:
         return *this;
     }
 
-    force_inline FontGlyphIDs &operator=(FontGlyphIDs &&rhs) noexcept {
+    tt_force_inline FontGlyphIDs &operator=(FontGlyphIDs &&rhs) noexcept {
         if (this != &rhs) {
             using std::swap;
             swap(value, rhs.value);
@@ -133,15 +133,15 @@ public:
         value = empty;
     }
 
-    force_inline operator bool () const noexcept {
+    tt_force_inline operator bool () const noexcept {
         return size() > 0;
     }
 
-    [[nodiscard]] force_inline FontID font_id() const noexcept {
+    [[nodiscard]] tt_force_inline FontID font_id() const noexcept {
         return FontID{value & FontID::mask};
     }
 
-    force_inline void set_font_id(FontID font_id) noexcept {
+    tt_force_inline void set_font_id(FontID font_id) noexcept {
         value = (value & ~static_cast<uint64_t>(FontID::mask)) | static_cast<uint64_t>(font_id);
     }
 
@@ -159,7 +159,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] force_inline GlyphID front() const noexcept {
+    [[nodiscard]] tt_force_inline GlyphID front() const noexcept {
         if (size() == 0) {
             return GlyphID{};
         } else {
@@ -167,21 +167,21 @@ public:
         }
     }
 
-    [[nodiscard]] force_inline GlyphID operator[](size_t index) const noexcept {
+    [[nodiscard]] tt_force_inline GlyphID operator[](size_t index) const noexcept {
         if (has_pointer()) {
-            ttauri_assume(index < 18);
+            tt_assume(index < 18);
             return get_pointer()->glyph_ids[index];
         } else {
             switch (index) {
             case 0: return GlyphID{(value >> 16) & GlyphID::mask};
             case 1: return GlyphID{(value >> 32) & GlyphID::mask};
             case 2: return GlyphID{(value >> 48) & GlyphID::mask};
-            default: no_default;
+            default: tt_no_default;
             }
         }
     }
 
-    [[nodiscard]] force_inline size_t size() const noexcept {
+    [[nodiscard]] tt_force_inline size_t size() const noexcept {
         if (has_pointer()) {
             return get_pointer()->nr_glyphs;
         } else if (!(*this)[0]) {
@@ -207,17 +207,17 @@ public:
     [[nodiscard]] aarect getBoundingBox() const noexcept;
 
 private:
-    [[nodiscard]] force_inline bool has_pointer() const noexcept {
+    [[nodiscard]] tt_force_inline bool has_pointer() const noexcept {
         return (value & 0x8000) == 0;
     }
 
-    [[nodiscard]] force_inline FontGlyphIDs_long const *get_pointer() const noexcept {
-        ttauri_assume(has_pointer());
+    [[nodiscard]] tt_force_inline FontGlyphIDs_long const *get_pointer() const noexcept {
+        tt_assume(has_pointer());
         return std::launder(reinterpret_cast<FontGlyphIDs_long const *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
-    [[nodiscard]] force_inline FontGlyphIDs_long *get_pointer() noexcept {
-        ttauri_assume(has_pointer());
+    [[nodiscard]] tt_force_inline FontGlyphIDs_long *get_pointer() noexcept {
+        tt_assume(has_pointer());
         return std::launder(reinterpret_cast<FontGlyphIDs_long *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
@@ -243,7 +243,7 @@ public:
                 return lhs.value == rhs.value;
             }
         } else {
-            ttauri_assume(lhs.size() != rhs.size());
+            tt_assume(lhs.size() != rhs.size());
             return false;
         }
     }

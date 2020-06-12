@@ -160,7 +160,7 @@ struct parse_context_t {
 
     datum root;
 
-    ttauri_assume(tokens.back() == tokenizer_name_t::End);
+    tt_assume(tokens.back() == tokenizer_name_t::End);
     parse_context_t context;
     context.text_begin = text.begin();
 
@@ -266,7 +266,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
         break;
 
     default:
-        no_default;
+        tt_no_default;
     }
 }
 

@@ -20,11 +20,8 @@ TEST(Base93, Default) {
         counts.push_back(i);
     }
 
-#if defined(NDEBUG)
-    constexpr ssize_t nr_random_sizes = 20000;
-#else
-    constexpr ssize_t nr_random_sizes = 20;
-#endif
+    constexpr ssize_t nr_random_sizes = BuildType::current == BuildType::Release ? 20000 : 20;
+
     for (ssize_t i = 0; i < nr_random_sizes; i++) {
         counts.push_back(random_generator() % 2000);
     }

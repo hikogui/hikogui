@@ -35,7 +35,7 @@ public:
      */
     size_t add(callback_type callback) noexcept {
         auto lock = std::scoped_lock(mutex);
-        ttauri_assert(!executing_callbacks);
+        tt_assert(!executing_callbacks);
 
         auto id = ++counter;
         callbacks.emplace_back(id, std::move(callback));
@@ -64,7 +64,7 @@ public:
      */
     void remove(size_t id) noexcept {
         auto lock = std::scoped_lock(mutex);
-        ttauri_assert(!executing_callbacks);
+        tt_assert(!executing_callbacks);
 
         ttlet new_end = std::remove_if(callbacks.begin(), callbacks.end(), [id](ttlet &item) {
             return item.first == id;
@@ -77,7 +77,7 @@ public:
      */
     void operator()(Args const &... args) noexcept {
         auto lock = std::scoped_lock(mutex);
-        ttauri_assert(!executing_callbacks);
+        tt_assert(!executing_callbacks);
 
         executing_callbacks = true;
         for (ttlet &[id, callback] : callbacks) {

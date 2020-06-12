@@ -42,7 +42,7 @@ public:
      * @return a pointer to an byte array with at least nrBytes of data available.
      */
     nonstd::span<std::byte> getNewPacket(ssize_t nrBytes) noexcept {
-        ttauri_assert(!closed());
+        tt_assert(!closed());
         packets.emplace_back(nrBytes);
         return {packets.back().end(), nrBytes};
     }
@@ -51,7 +51,7 @@ public:
      * @return a pointer to an byte array with at least nrBytes of data available.
      */
     nonstd::span<std::byte> getPacket(ssize_t nrBytes) noexcept {
-        ttauri_assert(!closed());
+        tt_assert(!closed());
         if (packets.empty() || (packets.back().writeSize() < nrBytes)) {
             packets.emplace_back(nrBytes);
         }
@@ -66,7 +66,7 @@ public:
      * @param push Push the data through the socket, bypass Nagel algorithm.
      */
     void write(ssize_t nrBytes, bool push=true) noexcept {
-        ttauri_assert(!closed());
+        tt_assert(!closed());
         packets.back().write(nrBytes);
         if (push) {
             packets.back().push();
@@ -91,7 +91,7 @@ public:
             }
 
             // Check if we can merge packets.
-            ttauri_assert(packets.front().size() >= nrBytes);
+            tt_assert(packets.front().size() >= nrBytes);
 
             // Merge data from next packet.
         }
@@ -146,7 +146,7 @@ public:
                 packets.pop_front();
             } else {
                 packets.front().read(nrBytes);
-                ttauri_assume(ssize(packets.front()) > 0);
+                tt_assume(ssize(packets.front()) > 0);
             }
             nrBytes -= ssize(packets_size);
         }

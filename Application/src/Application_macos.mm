@@ -62,11 +62,11 @@ void Application_macos::runOnMainThread(std::function<void()> function)
 {
 
     ttlet functionP = new std::function<void()>(std::move(function));
-    ttauri_assert(functionP);
+    tt_assert(functionP);
 
     // XXX post a message to the main thread loop.
     //auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
-    //ttauri_assert(r != 0);
+    //tt_assert(r != 0);
 }
 
 int Application_macos::loop()

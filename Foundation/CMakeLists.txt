@@ -122,7 +122,7 @@ set_property(TARGET TTauri_Foundation PROPERTY CXX_STANDARD 17)
 #   * AMD Steamroller from 2014
 #
 #
-if (${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+if (${CMAKE_CXX_TT_COMPILER_ID} MATCHES Clang)
     # Clang will complain about __builtin_assume even on constexpr functions and operators,
     # this warning is absolutely useless.
     target_compile_options(TTauri_Foundation PUBLIC -Wno-assume)

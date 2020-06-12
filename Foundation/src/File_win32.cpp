@@ -116,8 +116,8 @@ void File::close()
 */
 ssize_t File::write(std::byte const *data, ssize_t size)
 {
-    ttauri_assume(size >= 0);
-    ttauri_assume(fileHandle != INVALID_HANDLE_VALUE);
+    tt_assume(size >= 0);
+    tt_assume(fileHandle != INVALID_HANDLE_VALUE);
 
     ssize_t total_written_size = 0;
     while (size) {

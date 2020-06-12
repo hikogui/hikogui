@@ -25,7 +25,7 @@ vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept
         };
 
     } else {
-        no_default;
+        tt_no_default;
     }
 }
 
@@ -72,7 +72,7 @@ void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePo
             {DIAMETER, DIAMETER}
         };
     } else {
-        no_default;
+        tt_no_default;
     }
 
     closeWindowGlyph = to_FontGlyphIDs(TTauriIcon::CloseWindow);
@@ -86,7 +86,7 @@ void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePo
         maximizeWindowGlyph = to_FontGlyphIDs(TTauriIcon::MaximizeWindowMacOS);
         restoreWindowGlyph = to_FontGlyphIDs(TTauriIcon::RestoreWindowMacOS);
     } else {
-        no_default;
+        tt_no_default;
     }
 
     ttlet closeWindowGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(closeWindowGlyph);
@@ -207,7 +207,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_c
         drawWindows(drawContext, displayTimePoint);
 
     } else {
-        no_default;
+        tt_no_default;
     }
 
     Widget::draw(drawContext, displayTimePoint);
@@ -233,7 +233,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
                 window.normalizeWindow();
                 break;
             default:
-                no_default;
+                tt_no_default;
             }
         }
     }

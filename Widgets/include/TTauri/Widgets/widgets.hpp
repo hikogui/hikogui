@@ -19,7 +19,7 @@ namespace tt {
 */
 template<typename T, typename... Args>
 T &Window_base::makeWidget(Args &&... args) {
-    ttauri_assume(widget);
+    tt_assume(widget);
     return widget->makeWidget<T>(std::forward<Args>(args)...);
 }
 

@@ -45,7 +45,7 @@ void GUIDevice_base::add(std::unique_ptr<Window> window)
     }
 
     auto _device = dynamic_cast<GUIDevice *>(this);
-    ttauri_assert(_device);
+    tt_assert(_device);
     window->setDevice(_device);
 
     windows.push_back(std::move(window));

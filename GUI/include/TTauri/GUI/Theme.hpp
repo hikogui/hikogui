@@ -111,8 +111,8 @@ public:
     * @param nestingLevel The nesting level.
     */
     [[nodiscard]] vec fillColor(ssize_t nestingLevel) const noexcept {
-        ttauri_assume(nestingLevel >= 0);
-        ttauri_assume(ssize(fillShades) > 0);
+        tt_assume(nestingLevel >= 0);
+        tt_assume(ssize(fillShades) > 0);
         return fillShades[nestingLevel % ssize(fillShades)];
     }
 
@@ -120,8 +120,8 @@ public:
     * @param nestingLevel The nesting level.
     */
     [[nodiscard]] vec borderColor(ssize_t nestingLevel) const noexcept {
-        ttauri_assume(nestingLevel >= 0);
-        ttauri_assume(ssize(borderShades) > 0);
+        tt_assume(nestingLevel >= 0);
+        tt_assume(ssize(borderShades) > 0);
         return borderShades[nestingLevel % ssize(borderShades)];
     }
 
