@@ -43,8 +43,8 @@ void PipelineSDF::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
         &pushConstants
     );
 
-    let numberOfRectangles = vertexBufferData.size() / 4;
-    let numberOfTriangles = numberOfRectangles * 2;
+    ttlet numberOfRectangles = vertexBufferData.size() / 4;
+    ttlet numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
         numeric_cast<uint32_t>(numberOfTriangles * 3),
         1,
@@ -97,7 +97,7 @@ std::vector<vk::DescriptorSetLayoutBinding> PipelineSDF::createDescriptorSetLayo
 
 vector<vk::WriteDescriptorSet> PipelineSDF::createWriteDescriptorSet() const
 {
-    let &sharedImagePipeline = device().SDFPipeline;
+    ttlet &sharedImagePipeline = device().SDFPipeline;
 
     return {
         {

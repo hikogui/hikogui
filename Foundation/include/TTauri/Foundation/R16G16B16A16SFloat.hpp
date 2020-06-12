@@ -27,18 +27,18 @@ public:
     force_inline R16G16B16A16SFloat &operator=(R16G16B16A16SFloat &&rhs) noexcept = default;
 
     force_inline R16G16B16A16SFloat(vec const &rhs) noexcept {
-        let rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
+        ttlet rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
     }
 
     force_inline R16G16B16A16SFloat &operator=(vec const &rhs) noexcept {
-        let rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
+        ttlet rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
         return *this;
     }
 
     force_inline operator vec () const noexcept {
-        let rhs_fp16 = _mm_loadu_si64(v.data());
+        ttlet rhs_fp16 = _mm_loadu_si64(v.data());
         return _mm_cvtph_ps(rhs_fp16);
     }
 
@@ -89,10 +89,10 @@ inline void composit(PixelMap<R16G16B16A16SFloat> &under, PixelMap<R16G16B16A16S
     ttauri_assert(over.width >= under.width);
 
     for (ssize_t rowNr = 0; rowNr != under.height; ++rowNr) {
-        let overRow = over.at(rowNr);
+        ttlet overRow = over.at(rowNr);
         auto underRow = under.at(rowNr);
         for (ssize_t columnNr = 0; columnNr != under.width; ++columnNr) {
-            let &overPixel = overRow[columnNr];
+            ttlet &overPixel = overRow[columnNr];
             auto &underPixel = underRow[columnNr];
 
             underPixel = composit(static_cast<vec>(underPixel), static_cast<vec>(overPixel));
@@ -108,10 +108,10 @@ inline void composit(PixelMap<R16G16B16A16SFloat>& under, vec over, PixelMap<uin
     auto maskPixel = vec::color(1.0f, 1.0f, 1.0f, 1.0f);
 
     for (ssize_t rowNr = 0; rowNr != under.height; ++rowNr) {
-        let maskRow = mask.at(rowNr);
+        ttlet maskRow = mask.at(rowNr);
         auto underRow = under.at(rowNr);
         for (ssize_t columnNr = 0; columnNr != under.width; ++columnNr) {
-            let maskValue = maskRow[columnNr] / 255.0f;
+            ttlet maskValue = maskRow[columnNr] / 255.0f;
             maskPixel.a(maskValue);
 
             auto& pixel = underRow[columnNr];

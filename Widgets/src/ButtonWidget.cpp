@@ -24,11 +24,11 @@ void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     Widget::layout(displayTimePoint);
 
-    let label_x = Theme::margin;
-    let label_y = 0.0;
-    let label_width = rectangle().width() - Theme::margin * 2.0f;
-    let label_height = rectangle().height();
-    let label_rectangle = aarect{label_x, label_y, label_width, label_height};
+    ttlet label_x = Theme::margin;
+    ttlet label_y = 0.0;
+    ttlet label_width = rectangle().width() - Theme::margin * 2.0f;
+    ttlet label_height = rectangle().height();
+    ttlet label_rectangle = aarect{label_x, label_y, label_width, label_height};
 
     labelShapedText = ShapedText(label, theme->warningLabelStyle, label_width + 1.0f, Alignment::MiddleCenter);
     textTranslate = labelShapedText.T(label_rectangle);

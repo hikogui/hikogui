@@ -132,7 +132,7 @@ struct parse_context_t {
         return {std::move(value), token};
         } break;
     case tokenizer_name_t::Name: {
-        let name = static_cast<std::string>(*token++);
+        ttlet name = static_cast<std::string>(*token++);
         if (name == "true") {
             return {datum{true}, token};
         } else if (name == "false") {
@@ -211,7 +211,7 @@ static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)
     case datum_type_t::String:
     case datum_type_t::URL:
         result += '"';
-        for (let c: static_cast<std::string>(value)) {
+        for (ttlet c: static_cast<std::string>(value)) {
             switch (c) {
             case '\n': result += '\\'; result += 'n'; break;
             case '\r': result += '\\'; result += 'r'; break;

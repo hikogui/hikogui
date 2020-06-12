@@ -40,7 +40,7 @@ struct gstring {
     decltype(auto) back() const noexcept { return graphemes.back(); }
 
     gstring &operator+=(gstring const &rhs) noexcept {
-        for (let &rhs_grapheme: rhs.graphemes) {
+        for (ttlet &rhs_grapheme: rhs.graphemes) {
             graphemes.push_back(rhs_grapheme);
         }
         return *this;
@@ -54,7 +54,7 @@ struct gstring {
     [[nodiscard]] friend std::u32string to_u32string(gstring const &rhs) noexcept {
         std::u32string r;
         r.reserve(ssize(rhs));
-        for (let &c : rhs) {
+        for (ttlet &c : rhs) {
             r += c.NFC();
         }
         return r;

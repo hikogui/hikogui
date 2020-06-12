@@ -96,7 +96,7 @@ std::string AudioDevice_win32::getIdFromDevice(void *device) noexcept
     ttauri_assert(device_ != nullptr);
     hresult_assert_or_throw(device_->GetId(&id_wcharstr));
 
-    let id_wstring = std::wstring_view(id_wcharstr);
+    ttlet id_wstring = std::wstring_view(id_wcharstr);
     auto id = to_string(id_wstring);
     CoTaskMemFree(id_wcharstr);
     return id;

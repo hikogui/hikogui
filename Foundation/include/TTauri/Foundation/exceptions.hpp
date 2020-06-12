@@ -104,12 +104,12 @@ public:
      * Used when the current exception is a expression inside a statement.
      */
     error &merge_location(parse_location statement_location) noexcept {
-        let line = static_cast<int>(get<line_tag>());
-        let column = static_cast<int>(get<column_tag>());
+        ttlet line = static_cast<int>(get<line_tag>());
+        ttlet column = static_cast<int>(get<column_tag>());
 
         auto expression_location = parse_location{line, column};
         if (has<url_tag>()) {
-            let url = static_cast<URL>(get<url_tag>());
+            ttlet url = static_cast<URL>(get<url_tag>());
             expression_location.set_file(std::move(url));
         }
 

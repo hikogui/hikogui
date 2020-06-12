@@ -15,14 +15,14 @@ namespace tt {
 RenderDoc::RenderDoc() noexcept {
 #if !defined(NDEBUG)
 #if OPERATING_SYSTEM == OS_WINDOWS
-    let dll_urls = std::vector{
+    ttlet dll_urls = std::vector{
         URL{"file:renderdoc.dll"},
         URL{"file:///C:/Program%20Files/RenderDoc/renderdoc.dll"},
         URL{"file:///C:/Program%20Files%20(x86)/RenderDoc/renderdoc.dll"}
     };
 
     HMODULE mod = nullptr;
-    for (let &dll_url: dll_urls) {
+    for (ttlet &dll_url: dll_urls) {
         LOG_DEBUG("Trying to load renderdoc.dll at: {}", dll_url.nativePath());
         
         if ((mod = LoadLibraryW(dll_url.nativeWPath().c_str()))) {

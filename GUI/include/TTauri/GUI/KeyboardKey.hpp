@@ -44,10 +44,10 @@ public:
     KeyboardKey(std::string_view key_combination) :
         modifiers(KeyboardModifiers::None), virtualKey(KeyboardVirtualKey::Nul)
     {
-        let modifiers_and_vkey = split(key_combination, '+');
+        ttlet modifiers_and_vkey = split(key_combination, '+');
         ttauri_assert(modifiers_and_vkey.cbegin() != modifiers_and_vkey.cend());
 
-        let end_modifiers = modifiers_and_vkey.cend() - 1;
+        ttlet end_modifiers = modifiers_and_vkey.cend() - 1;
         for (auto i = modifiers_and_vkey.cbegin(); i != end_modifiers; ++i) {
             modifiers |= to_KeyboardModifiers(*i);
         }

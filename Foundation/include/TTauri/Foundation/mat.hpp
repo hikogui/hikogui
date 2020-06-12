@@ -71,8 +71,8 @@ public:
             ttauri_assume(haystack.x() != 0.0f && haystack.y() != 0.0f);
             ttauri_assume(needle.x() != 0.0f && needle.y() != 0.0f);
 
-            let non_uniform_scale = haystack.xyxy() / needle.xyxy();
-            let uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
+            ttlet non_uniform_scale = haystack.xyxy() / needle.xyxy();
+            ttlet uniform_scale = std::min(non_uniform_scale.x(), non_uniform_scale.y());
             return S{vec{uniform_scale, uniform_scale, 1.0f, 1.0f}};
         }
 
@@ -282,8 +282,8 @@ public:
     /** Rotation around z axis is a multiple of 90 degree.
     */
     [[nodiscard]] bool is_z_rot90() const noexcept {
-        let xyxy = col0.xy00() + col1._00xy();
-        let result = eq(xyxy, vec{});
+        ttlet xyxy = col0.xy00() + col1._00xy();
+        ttlet result = eq(xyxy, vec{});
         return (result == 0b1001) || (result == 0b0110);
     }
 
@@ -351,40 +351,40 @@ public:
         //                  i10 * i01;
         //var c0 : Number = i20 * i31 -
         //                  i30 * i21;
-        let s0c0 = rhs.col0 * rhs.col1.yxwz();
+        ttlet s0c0 = rhs.col0 * rhs.col1.yxwz();
 
         //var s1 : Number = i00 * i12 -
         //                  i10 * i02;
         //var c1 : Number = i20 * i32 -
         //                  i30 * i22;
-        let s1c1 = rhs.col0 * rhs.col2.yxwz();
-        let s0c0s1c1 = hsub(s0c0, s1c1);
+        ttlet s1c1 = rhs.col0 * rhs.col2.yxwz();
+        ttlet s0c0s1c1 = hsub(s0c0, s1c1);
 
         //var s2 : Number = i00 * i13 -
         //                  i10 * i03;
         //var c2 : Number = i20 * i33 -
         //                  i30 * i23;
-        let s2c2 = rhs.col0 * rhs.col3.yxwz();
+        ttlet s2c2 = rhs.col0 * rhs.col3.yxwz();
 
         //var s3 : Number = i01 * i12 -
         //                  i11 * i02;
         //var c3 : Number = i21 * i32 -
         //                  i31 * i22;
-        let s3c3 = rhs.col1 * rhs.col2.yxwz();
-        let s2c2s3c3 = hsub(s2c2, s3c3);
+        ttlet s3c3 = rhs.col1 * rhs.col2.yxwz();
+        ttlet s2c2s3c3 = hsub(s2c2, s3c3);
 
         //var s4 : Number = i01 * i13 -
         //                  i11 * i03;
         //var c4 : Number = i21 * i33 -
         //                  i31 * i23;
-        let s4c4 = rhs.col1 * rhs.col3.yxwz();
+        ttlet s4c4 = rhs.col1 * rhs.col3.yxwz();
 
         //var s5 : Number = i02 * i13 -
         //                  i12 * i03;
         //var c5 : Number = i22 * i33 -
         //                  i32 * i23;
-        let s5c5 = rhs.col2 * rhs.col3.yxwz();
-        let s4c4s5c5 = hsub(s4c4, s5c5);
+        ttlet s5c5 = rhs.col2 * rhs.col3.yxwz();
+        ttlet s4c4s5c5 = hsub(s4c4, s5c5);
 
         // det = (s0 * c5 +
         //       -s1 * c4 +
@@ -392,26 +392,26 @@ public:
         //        s3 * c2 +
         //       -s4 * c1 +
         //        s5 * c0)
-        let s0123 = s0c0s1c1.xz00() + s2c2s3c3._00xz();
-        let s45__ = s4c4s5c5.xz00();
+        ttlet s0123 = s0c0s1c1.xz00() + s2c2s3c3._00xz();
+        ttlet s45__ = s4c4s5c5.xz00();
 
-        let c5432 = s4c4s5c5.wy00() + s2c2s3c3._00wy();
-        let c10__ = s0c0s1c1.wy00();
+        ttlet c5432 = s4c4s5c5.wy00() + s2c2s3c3._00wy();
+        ttlet c10__ = s0c0s1c1.wy00();
 
-        let det_prod_half0 = neg<0,1,0,0>(s0123 * c5432);
-        let det_prod_half1 = neg<1,0,0,0>(s45__ * c10__);
+        ttlet det_prod_half0 = neg<0,1,0,0>(s0123 * c5432);
+        ttlet det_prod_half1 = neg<1,0,0,0>(s45__ * c10__);
 
-        let det_sum0 = hadd(det_prod_half0, det_prod_half1);
-        let det_sum1 = hadd(det_sum0, det_sum0);
-        let det = hadd(det_sum1, det_sum1).xxxx();
+        ttlet det_sum0 = hadd(det_prod_half0, det_prod_half1);
+        ttlet det_sum1 = hadd(det_sum0, det_sum0);
+        ttlet det = hadd(det_sum1, det_sum1).xxxx();
 
         if (det.x() == 0.0f) {
             TTAURI_THROW(math_error("Divide by zero"));
         }
 
-        let invdet = reciprocal(det);
+        ttlet invdet = reciprocal(det);
 
-        let t = transpose(rhs);
+        ttlet t = transpose(rhs);
 
         //   rc     rc          rc          rc
         //m.i00 = (i11 *  c5 + i12 * -c4 + i13 *  c3) * invdet;
@@ -421,7 +421,7 @@ public:
         auto tmp_c5543 = neg<0,1,0,1>(c5432.xxyz());
         auto tmp_c4221 = neg<1,0,1,0>(c5432.yww0() + c10__._000x());
         auto tmp_c3100 = neg<0,1,0,1>(c5432.z000() + c10__._0xyy());
-        let inv_col0 = (
+        ttlet inv_col0 = (
             (t.col1.yxxx() * tmp_c5543) +
             (t.col1.zzyy() * tmp_c4221) +
             (t.col1.wwwz() * tmp_c3100)
@@ -434,7 +434,7 @@ public:
         tmp_c5543 = -tmp_c5543;
         tmp_c4221 = -tmp_c4221;
         tmp_c3100 = -tmp_c3100;
-        let inv_col1 = (
+        ttlet inv_col1 = (
             (t.col0.yxxx() * tmp_c5543) +
             (t.col0.zzyy() * tmp_c4221) +
             (t.col0.wwwz() * tmp_c3100)
@@ -447,7 +447,7 @@ public:
         auto tmp_s5543 = neg<0,1,0,1>(s45__.yyx0() + s0123._000w());
         auto tmp_s4221 = neg<1,0,1,0>(s45__.x000() + s0123._0zzy());
         auto tmp_s3100 = neg<0,1,0,1>(s0123.wyxx());
-        let inv_col2 = (
+        ttlet inv_col2 = (
             (t.col3.yxxx() * tmp_s5543) +
             (t.col3.zzyy() * tmp_s4221) +
             (t.col3.wwwz() * tmp_s3100)
@@ -460,7 +460,7 @@ public:
         tmp_s5543 = -tmp_s5543;
         tmp_s4221 = -tmp_s4221;
         tmp_s3100 = -tmp_s3100;
-        let inv_col3 = (
+        ttlet inv_col3 = (
             (t.col2.yxxx() * tmp_s5543) +
             (t.col2.zzyy() * tmp_s4221) +
             (t.col2.wwwz() * tmp_s3100)
@@ -490,23 +490,23 @@ public:
         float gx, float gy,
         float bx, float by) noexcept
     {
-        let w = vec{wx, wy, 1.0f - wx - wy};
-        let r = vec{rx, ry, 1.0f - rx - ry};
-        let g = vec{gx, gy, 1.0f - gx - gy};
-        let b = vec{bx, by, 1.0f - bx - by};
+        ttlet w = vec{wx, wy, 1.0f - wx - wy};
+        ttlet r = vec{rx, ry, 1.0f - rx - ry};
+        ttlet g = vec{gx, gy, 1.0f - gx - gy};
+        ttlet b = vec{bx, by, 1.0f - bx - by};
 
         // Calculate whitepoint's tristimulus values from coordinates
-        let W = vec{
+        ttlet W = vec{
             1.0f * (w.x() / w.y()),
             1.0f,
             1.0f * (w.z() / w.y())
         };
 
         // C is the chromaticity matrix.
-        let C = mat{r, g, b};
+        ttlet C = mat{r, g, b};
 
         // solve tristimulus sums.
-        let S = mat::S{vec::point(~C * W)};
+        ttlet S = mat::S{vec::point(~C * W)};
 
         return C * S;
     }
@@ -519,8 +519,8 @@ public:
      * @param _11 row 1, col 1
     */
     [[nodiscard]] static mat shear(float _00, float _01, float _10, float _11) noexcept {
-        let c0 = vec{_00, _10};
-        let c1 = vec{_01, _11};
+        ttlet c0 = vec{_00, _10};
+        ttlet c1 = vec{_01, _11};
         return { c0, c1, c0._0010(), c0._0001() };
     }
 
@@ -530,9 +530,9 @@ public:
      */
     template<int N=2, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     [[nodiscard]] static mat R(T rhs) noexcept {
-        let s = sin(numeric_cast<float>(rhs));
-        let c = cos(numeric_cast<float>(rhs));
-        let tmp = vec{c, s, -s};
+        ttlet s = sin(numeric_cast<float>(rhs));
+        ttlet c = cos(numeric_cast<float>(rhs));
+        ttlet tmp = vec{c, s, -s};
 
         if constexpr (N == 0) {
             return { tmp._1000(), tmp._0xy0(), tmp._0zx0(), tmp._0001() };

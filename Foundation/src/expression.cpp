@@ -87,7 +87,7 @@ static datum function_keys(expression_evaluation_context &context, datum::vector
         TTAURI_THROW(invalid_operation_error("Expecting 1 argument for keys() function, got {}", args.size()));
     }
 
-    let &arg = args[0];
+    ttlet &arg = args[0];
 
     datum::vector keys;
     for (auto i = arg.map_begin(); i != arg.map_end(); i++) {
@@ -102,7 +102,7 @@ static datum function_values(expression_evaluation_context &context, datum::vect
         TTAURI_THROW(invalid_operation_error("Expecting 1 argument for values() function, got {}", args.size()));
     }
 
-    let &arg = args[0];
+    ttlet &arg = args[0];
 
     if (arg.is_map()) {
         datum::vector values;
@@ -123,7 +123,7 @@ static datum function_items(expression_evaluation_context &context, datum::vecto
         TTAURI_THROW(invalid_operation_error("Expecting 1 argument for items() function, got {}", args.size()));
     }
 
-    let &arg = args[0];
+    ttlet &arg = args[0];
 
     if (arg.is_map()) {
         datum::vector values;
@@ -143,7 +143,7 @@ static datum function_sort(expression_evaluation_context &context, datum::vector
         TTAURI_THROW(invalid_operation_error("Expecting 1 argument for sort() function, got {}", args.size()));
     }
 
-    let &arg = args[0];
+    ttlet &arg = args[0];
 
     if (arg.is_vector()) {
         auto r = static_cast<datum::vector>(arg);
@@ -289,7 +289,7 @@ struct expression_arguments final : expression_node {
     std::string string() const noexcept override {
         std::string s = "<args ";
         int i = 0;
-        for (let &arg: args) {
+        for (ttlet &arg: args) {
             if (i++ > 0) {
                 s += ", ";
             }
@@ -328,7 +328,7 @@ struct expression_vector_literal_node final : expression_node {
 
     datum evaluate(expression_evaluation_context& context) const override {
         datum::vector r;
-        for (let &value: values) {
+        for (ttlet &value: values) {
             r.push_back(value->evaluate(context));
         }
         return datum{std::move(r)};
@@ -346,12 +346,12 @@ struct expression_vector_literal_node final : expression_node {
         }
 
         // Make a copy, in case of self assignment.
-        let rhs_copy = rhs;
+        ttlet rhs_copy = rhs;
 
         size_t i = 0;
         while (true) {
-            let &lhs_ = values[i];
-            let &rhs_ = rhs_copy[i];
+            ttlet &lhs_ = values[i];
+            ttlet &rhs_ = rhs_copy[i];
 
             if (++i < rhs.size()) {
                 lhs_->assign(context, rhs_);
@@ -364,7 +364,7 @@ struct expression_vector_literal_node final : expression_node {
     std::string string() const noexcept override {
         std::string r = "[";
         int i = 0;
-        for (let &value: values) {
+        for (ttlet &value: values) {
             if (i++ > 0) {
                 r += ", ";
             }
@@ -396,8 +396,8 @@ struct expression_map_literal_node final : expression_node {
 
         datum::map r;
         for (size_t i = 0; i < keys.size(); i++) {
-            let &key = keys[i];
-            let &value = values[i];
+            ttlet &key = keys[i];
+            ttlet &value = values[i];
 
             r[key->evaluate(context)] = value->evaluate(context);
         }
@@ -409,8 +409,8 @@ struct expression_map_literal_node final : expression_node {
 
         std::string r = "{";
         for (size_t i = 0; i < keys.size(); i++) {
-            let &key = keys[i];
-            let &value = values[i];
+            ttlet &key = keys[i];
+            ttlet &value = values[i];
 
             if (i > 0) {
                 r += ", ";
@@ -438,7 +438,7 @@ struct expression_name_node final : expression_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        let &const_context = context;
+        ttlet &const_context = context;
 
         try {
             return const_context.get(name);
@@ -518,7 +518,7 @@ struct expression_call_node final : expression_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        let args_ = transform<datum::vector>(args, [&](let& x) {
+        ttlet args_ = transform<datum::vector>(args, [&](ttlet& x) {
             return x->evaluate(context);
         });
 
@@ -534,7 +534,7 @@ struct expression_call_node final : expression_node {
             TTAURI_THROW(parse_error("Function definition does not have a name, got {})", lhs));
         }
 
-        for (let &arg: args) {
+        for (ttlet &arg: args) {
             try {
                 r.push_back(arg->get_name());
             } catch (parse_error &) {
@@ -548,7 +548,7 @@ struct expression_call_node final : expression_node {
     std::string string() const noexcept override {
         auto s = fmt::format("({}(", *lhs);
         int i = 0;
-        for (let &arg: args) {
+        for (ttlet &arg: args) {
             if (i++ > 0) {
                 s += ',';
                 s += ' ';
@@ -616,7 +616,7 @@ struct expression_ternary_operator_node final : expression_node {
     }
 
     datum evaluate(expression_evaluation_context& context) const override {
-        let lhs_ = lhs->evaluate(context);
+        ttlet lhs_ = lhs->evaluate(context);
         if (lhs_) {
             return rhs_true->evaluate(context);
         } else {
@@ -1099,7 +1099,7 @@ struct expression_member_node final : expression_binary_operator_node {
 
     datum evaluate(expression_evaluation_context& context) const override {
         if (lhs->has_evaluate_xvalue()) {
-            let &lhs_ = lhs->evaluate_xvalue(context);
+            ttlet &lhs_ = lhs->evaluate_xvalue(context);
 
             if (!lhs_.contains(rhs_name->name)) {
                 TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name).set_location(location));
@@ -1112,7 +1112,7 @@ struct expression_member_node final : expression_binary_operator_node {
             }
 
         } else {
-            let lhs_ = lhs->evaluate(context);
+            ttlet lhs_ = lhs->evaluate(context);
 
             if (!lhs_.contains(rhs_name->name)) {
                 TTAURI_THROW(invalid_operation_error("Unknown attribute .{}", rhs_name->name).set_location(location));
@@ -1525,7 +1525,7 @@ static std::unique_ptr<expression_node> parse_operation_expression(
     */
 static std::unique_ptr<expression_node> parse_primary_expression(expression_parse_context& context)
 {
-    let &location = context->location;
+    ttlet &location = context->location;
 
     switch (context->name) {
     case tokenizer_name_t::IntegerLiteral:
@@ -1623,9 +1623,9 @@ static std::unique_ptr<expression_node> parse_primary_expression(expression_pars
             return std::make_unique<expression_map_literal_node>(location, std::move(keys), std::move(values));
 
         } else {
-            let unary_op = *context;
+            ttlet unary_op = *context;
             ++context;
-            let [precedence, left_to_right] = operator_precedence(unary_op, false);
+            ttlet [precedence, left_to_right] = operator_precedence(unary_op, false);
             auto subexpression = parse_expression_1(context, parse_primary_expression(context), precedence);
             return parse_operation_expression(context, {}, unary_op, std::move(subexpression));
         }
@@ -1728,8 +1728,8 @@ static std::unique_ptr<expression_node> parse_expression_1(expression_parse_cont
     }
 
     while (lookahead_precedence >= min_precedence) {
-        let op = lookahead;
-        let op_precedence = lookahead_precedence;
+        ttlet op = lookahead;
+        ttlet op_precedence = lookahead_precedence;
         ++context;
 
         std::unique_ptr<expression_node> rhs;

@@ -20,21 +20,21 @@ struct GZIPMemberHeader {
 
 static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
 {
-    let header = make_placement_ptr<GZIPMemberHeader>(bytes, offset);
+    ttlet header = make_placement_ptr<GZIPMemberHeader>(bytes, offset);
 
     parse_assert(header->ID1 == 31);
     parse_assert(header->ID2 == 139);
     parse_assert(header->CM == 8);
     parse_assert((header->FLG & 0xe0) == 0); // reserved bits must be zero.
     parse_assert(header->XFL == 2 || header->XFL == 4);
-    [[maybe_unused]] let FTEXT = static_cast<bool>(header->FLG & 1);
-    let FHCRC = static_cast<bool>(header->FLG & 2);
-    let FEXTRA = static_cast<bool>(header->FLG & 4);
-    let FNAME = static_cast<bool>(header->FLG & 8);
-    let FCOMMENT = static_cast<bool>(header->FLG & 16);
+    [[maybe_unused]] ttlet FTEXT = static_cast<bool>(header->FLG & 1);
+    ttlet FHCRC = static_cast<bool>(header->FLG & 2);
+    ttlet FEXTRA = static_cast<bool>(header->FLG & 4);
+    ttlet FNAME = static_cast<bool>(header->FLG & 8);
+    ttlet FCOMMENT = static_cast<bool>(header->FLG & 16);
 
     if (FEXTRA) {
-        let XLEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+        ttlet XLEN = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
         offset += XLEN->value();
     }
 
@@ -55,7 +55,7 @@ static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize
     }
 
     if (FHCRC) {
-        [[maybe_unused]] let CRC16 = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
+        [[maybe_unused]] ttlet CRC16 = make_placement_ptr<little_uint16_buf_t>(bytes, offset);
     }
 
     auto r = inflate(bytes, offset, max_size);

@@ -132,19 +132,19 @@ public:
      * @return A normalized decimal.
      */
     [[nodiscard]] constexpr decimal normalize() const noexcept {
-        let [e, m] = exponent_mantissa();
-        let [e_, m_] = decimal::normalize(e, m);
+        ttlet [e, m] = exponent_mantissa();
+        ttlet [e_, m_] = decimal::normalize(e, m);
         return {e_, m_};
     }
 
     decimal &operator+=(decimal rhs) noexcept {
-        let [e, lhs_m, rhs_m] = decimal::align(*this, rhs);
+        ttlet [e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m + rhs_m);
         return *this;
     }
 
     decimal &operator-=(decimal rhs) noexcept {
-        let [e, lhs_m, rhs_m] = decimal::align(*this, rhs);
+        ttlet [e, lhs_m, rhs_m] = decimal::align(*this, rhs);
         value = decimal::pack(e, lhs_m - rhs_m);
         return *this;
     }
@@ -159,12 +159,12 @@ public:
 
 public:
     [[nodiscard]] friend bool operator==(decimal lhs, decimal rhs) noexcept {
-        let [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        ttlet [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return lhs_m == rhs_m;
     }
 
     [[nodiscard]] friend bool operator<(decimal lhs, decimal rhs) noexcept {
-        let [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        ttlet [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return lhs_m < rhs_m;
     }
 
@@ -178,12 +178,12 @@ public:
     }
 
     [[nodiscard]] friend decimal operator+(decimal lhs, decimal rhs) noexcept {
-        let [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        ttlet [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return {e, lhs_m + rhs_m};
     }
 
     [[nodiscard]] friend decimal operator-(decimal lhs, decimal rhs) noexcept {
-        let [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
+        ttlet [e, lhs_m, rhs_m] = decimal::align(lhs, rhs);
         return {e, lhs_m - rhs_m};
     }
 
@@ -431,7 +431,7 @@ private:
 
         int nr_digits = 0;
         int nr_digits_in_front_of_point = -1;
-        for (let c: str) {
+        for (ttlet c: str) {
             if (c >= '0' && c <= '9') {
                 mantissa_str += c;
                 nr_digits++;

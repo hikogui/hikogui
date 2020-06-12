@@ -16,7 +16,7 @@ std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& 
     static std::mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<FileMapping>>> mappedFileObjects;
 
-    let lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     cleanupWeakPointers(mappedFileObjects);
 

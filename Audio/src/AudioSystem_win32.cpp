@@ -62,7 +62,7 @@ void AudioSystem_win32::updateDeviceList() noexcept
         IMMDevice *device;
         hresult_assert_or_throw(deviceCollection->Item(i, &device));
 
-        let device_id = AudioDevice_win32::getIdFromDevice(device);
+        ttlet device_id = AudioDevice_win32::getIdFromDevice(device);
         if (hasDeviceWithId(device_id)) {
             device->Release();
         } else {

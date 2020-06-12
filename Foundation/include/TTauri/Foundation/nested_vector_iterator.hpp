@@ -99,7 +99,7 @@ public:
         }
 
         do {
-            let line_left = std::distance(child_it, parent_it->end());
+            ttlet line_left = std::distance(child_it, parent_it->end());
 
             if (line_left < rhs) {
                 ++parent_it;
@@ -124,7 +124,7 @@ public:
         }
 
         do {
-            let line_left = std::distance(parent_it->begin(), child_it) + 1;
+            ttlet line_left = std::distance(parent_it->begin(), child_it) + 1;
 
             if (line_left < rhs) {
                 --parent_it;

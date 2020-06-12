@@ -82,11 +82,11 @@ public:
             numeric_cast<double>(duration_since_start.count()) /
             numeric_cast<double>(animation_duration.count());
 
-        let prev_value_ = static_cast<mix_type>(prev_value);
-        let next_value_ = static_cast<mix_type>(next_value);
-        let mix_value = mix(animation_progress, prev_value_, next_value_);
+        ttlet prev_value_ = static_cast<mix_type>(prev_value);
+        ttlet next_value_ = static_cast<mix_type>(next_value);
+        ttlet mix_value = mix(animation_progress, prev_value_, next_value_);
 
-        let new_value = static_cast<value_type>(observed_value);
+        ttlet new_value = static_cast<value_type>(observed_value);
         if (new_value != next_value) {
             if constexpr (std::is_same_v<value_type, bool>) {
                 prev_value = next_value;

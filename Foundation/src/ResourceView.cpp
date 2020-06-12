@@ -19,7 +19,7 @@ std::unique_ptr<ResourceView> ResourceView::loadView(URL const &location)
             return view;
 
         } catch (key_error) {
-            let absoluteLocation = URL::urlFromResourceDirectory() / location;
+            ttlet absoluteLocation = URL::urlFromResourceDirectory() / location;
             auto view = FileView::loadView(absoluteLocation);
             LOG_INFO("Loaded resource {} from filesystem at {}.", location, absoluteLocation);
             return view;

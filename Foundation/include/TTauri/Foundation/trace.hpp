@@ -45,7 +45,7 @@ struct trace_stack_type {
     * \return parent_id
     */
     inline int64_t push() noexcept {
-        let parent_id = top_trace_id;
+        ttlet parent_id = top_trace_id;
         top_trace_id = trace_id.fetch_add(1, std::memory_order_relaxed) + 1;
         depth++;
         return parent_id;
@@ -63,7 +63,7 @@ struct trace_stack_type {
             record_depth = depth;
         }
 
-        let id = top_trace_id;
+        ttlet id = top_trace_id;
         top_trace_id = parent_id;
         return {id, is_recording};
     }
@@ -159,7 +159,7 @@ public:
     bool write(cpu_counter_clock::duration const &d) {
         // In the logging thread we can check if count and version are equal
         // to read the statistics.
-        let current_count = count.fetch_add(1, std::memory_order_acquire);
+        ttlet current_count = count.fetch_add(1, std::memory_order_acquire);
 
         duration.fetch_add(d.count(), std::memory_order_relaxed);
 
@@ -243,13 +243,13 @@ public:
     }
 
     force_inline ~trace() {
-        let end_timestamp = cpu_counter_clock::now();
+        ttlet end_timestamp = cpu_counter_clock::now();
 
         if(ttauri_unlikely(trace_statistics<Tag>.write(end_timestamp - data.timestamp))) {
             add_to_map();
         }
 
-        let [id, is_recording] = stack->pop(data.parent_id);
+        ttlet [id, is_recording] = stack->pop(data.parent_id);
 
         // Send the log to the log thread.
         if (ttauri_unlikely(is_recording)) {

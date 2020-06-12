@@ -130,14 +130,14 @@ public:
         auto lock = std::scoped_lock(guiMutex);
 
         void *mapping;
-        let result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
+        ttlet result = static_cast<vk::Result>(vmaMapMemory(allocator, allocation, &mapping));
 
         VmaAllocationInfo allocationInfo;
         vmaGetAllocationInfo(allocator, allocation, &allocationInfo);
 
         // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
-        let mappingSpan = nonstd::span<T>(mappingT, allocationInfo.size / sizeof (T));
+        ttlet mappingSpan = nonstd::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
         return vk::createResultValue(result, mappingSpan, "tt::GUIDevice_vulkan::mapMemory");
     }
@@ -147,11 +147,11 @@ public:
     void flushAllocation(const VmaAllocation &allocation, VkDeviceSize offset, VkDeviceSize size) const {
         auto lock = std::scoped_lock(guiMutex);
 
-        let alignment = physicalProperties.limits.nonCoherentAtomSize;
+        ttlet alignment = physicalProperties.limits.nonCoherentAtomSize;
 
-        let alignedOffset = (offset / alignment) * alignment;
-        let adjustedSize = size + (offset - alignedOffset);
-        let alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
+        ttlet alignedOffset = (offset / alignment) * alignment;
+        ttlet adjustedSize = size + (offset - alignedOffset);
+        ttlet alignedSize = ((adjustedSize + (alignment - 1)) / alignment) * alignment;
 
         vmaFlushAllocation(allocator, allocation, alignedOffset, alignedSize);
     }

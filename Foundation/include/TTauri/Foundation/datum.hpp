@@ -111,7 +111,7 @@ private:
      * @return Encoded string, or zero if `str` did not fit.
      */
     static constexpr uint64_t make_string(std::string_view str) {
-        let len = str.size();
+        ttlet len = str.size();
 
         if (len > 6) {
             return 0;
@@ -245,7 +245,7 @@ private:
     }
 
     force_inline bool is_phy_float() const noexcept {
-        let id = type_id();
+        ttlet id = type_id();
         return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
     }
 
@@ -254,7 +254,7 @@ private:
     }
 
     force_inline bool is_phy_string() const noexcept {
-        let id = type_id();
+        ttlet id = type_id();
         return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
     }
 
@@ -840,11 +840,11 @@ public:
 
     explicit operator date::year_month_day() const {
         if (is_phy_ymd()) {
-            let u = get_unsigned_integer();
-            let i = get_signed_integer();
-            let day = static_cast<unsigned>(u & 0x1f);
-            let month = static_cast<unsigned>((u >> 5) & 0xf);
-            let year = static_cast<signed>(i >> 9);
+            ttlet u = get_unsigned_integer();
+            ttlet i = get_signed_integer();
+            ttlet day = static_cast<unsigned>(u & 0x1f);
+            ttlet month = static_cast<unsigned>((u >> 5) & 0xf);
+            ttlet year = static_cast<signed>(i >> 9);
 
             if (day == 0) {
                 TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a year-month-day", this->repr(), this->type_name());
@@ -875,7 +875,7 @@ public:
     }
 
     explicit operator signed long () const {
-        let v = static_cast<signed long long>(*this);
+        ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed long>::min() || v > std::numeric_limits<signed long>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed long", this->repr(), this->type_name());
         }
@@ -883,7 +883,7 @@ public:
     }
 
     explicit operator signed int () const {
-        let v = static_cast<signed long long>(*this);
+        ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed int>::min() || v > std::numeric_limits<signed int>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed int", this->repr(), this->type_name());
         }
@@ -891,7 +891,7 @@ public:
     }
 
     explicit operator signed short () const {
-        let v = static_cast<signed long long>(*this);
+        ttlet v = static_cast<signed long long>(*this);
         if (v < std::numeric_limits<signed short>::min() || v > std::numeric_limits<signed short>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed short", this->repr(), this->type_name());
         }
@@ -899,7 +899,7 @@ public:
     }
 
     explicit operator signed char () const {
-        let v = static_cast<int64_t>(*this);
+        ttlet v = static_cast<int64_t>(*this);
         if (v < std::numeric_limits<signed char>::min() || v > std::numeric_limits<signed char>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a signed char", this->repr(), this->type_name());
         }
@@ -907,12 +907,12 @@ public:
     }
 
     explicit operator unsigned long long () const {
-        let v = static_cast<signed long long>(*this);
+        ttlet v = static_cast<signed long long>(*this);
         return static_cast<unsigned long long>(v);
     }
 
     explicit operator unsigned long () const {
-        let v = static_cast<unsigned long long>(*this);
+        ttlet v = static_cast<unsigned long long>(*this);
         if ( v > std::numeric_limits<unsigned long>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned long", this->repr(), this->type_name());
         }
@@ -920,7 +920,7 @@ public:
     }
 
     explicit operator unsigned int () const {
-        let v = static_cast<unsigned long long>(*this);
+        ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned int>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned int", this->repr(), this->type_name());
         }
@@ -928,7 +928,7 @@ public:
     }
 
     explicit operator unsigned short () const {
-        let v = static_cast<unsigned long long>(*this);
+        ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned short>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned short", this->repr(), this->type_name());
         }
@@ -936,7 +936,7 @@ public:
     }
 
     explicit operator unsigned char () const {
-        let v = static_cast<unsigned long long>(*this);
+        ttlet v = static_cast<unsigned long long>(*this);
         if (v > std::numeric_limits<unsigned char>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned char", this->repr(), this->type_name());
         }
@@ -1025,7 +1025,7 @@ public:
         case phy_string_id4:
         case phy_string_id5:
         case phy_string_id6: {
-                let length = size();
+                ttlet length = size();
                 char buffer[6];
                 for (int i = 0; i < length; i++) {
                     buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
@@ -1185,8 +1185,8 @@ public:
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     datum_impl operator[](datum_impl const &rhs) const {
         if (is_map()) {
-            let &m = *get_pointer<datum_impl::map>();
-            let i = m.find(rhs);
+            ttlet &m = *get_pointer<datum_impl::map>();
+            ttlet i = m.find(rhs);
             if (i == m.cend()) {
                 TTAURI_THROW_INVALID_OPERATION_ERROR("Could not find key {} in map of size {}", rhs.repr(), ssize(m));
             }
@@ -1194,7 +1194,7 @@ public:
 
         } else if (is_vector() && rhs.is_integer()) {
             auto index = static_cast<int64_t>(rhs);
-            let &v = *get_pointer<datum_impl::vector>();
+            ttlet &v = *get_pointer<datum_impl::vector>();
 
             if (index < 0) {
                 index = ssize(v) + index;
@@ -1221,13 +1221,13 @@ public:
     template<bool P=HasLargeObjects, std::enable_if_t<P,int> = 0>
     bool contains(datum_impl const &rhs) const noexcept {
         if (is_map()) {
-            let &m = *get_pointer<datum_impl::map>();
-            let i = m.find(rhs);
+            ttlet &m = *get_pointer<datum_impl::map>();
+            ttlet i = m.find(rhs);
             return i != m.cend();
 
         } else if (is_vector() && rhs.is_integer()) {
             auto index = static_cast<int64_t>(rhs);
-            let &v = *get_pointer<datum_impl::vector>();
+            ttlet &v = *get_pointer<datum_impl::vector>();
 
             if (index < 0) {
                 index = ssize(v) + index;
@@ -1342,7 +1342,7 @@ public:
 
     datum_impl const &front() const {
         if (is_vector()) {
-            let *v = get_pointer<datum_impl::vector>();
+            ttlet *v = get_pointer<datum_impl::vector>();
             return v->front();
 
         } else {
@@ -1362,7 +1362,7 @@ public:
 
     datum_impl const &back() const {
         if (is_vector()) {
-            let *v = get_pointer<datum_impl::vector>();
+            ttlet *v = get_pointer<datum_impl::vector>();
             return v->back();
 
         } else {
@@ -1439,15 +1439,15 @@ public:
 
     datum_impl &get_by_path(std::vector<std::string> const &key) {
         if (key.size() > 0 && is_map()) {
-            let index = key.at(0);
+            ttlet index = key.at(0);
             auto &next = (*this)[index];
-            let next_key = std::vector<std::string>{key.begin() + 1, key.end()};
+            ttlet next_key = std::vector<std::string>{key.begin() + 1, key.end()};
             return next.get_by_path(next_key);
 
         } else if (key.size() > 0 && is_vector()) {
             size_t const index = std::stoll(key.at(0));
             auto &next = (*this)[index];
-            let next_key = std::vector<std::string>{key.begin() + 1, key.end()};
+            ttlet next_key = std::vector<std::string>{key.begin() + 1, key.end()};
             return next.get_by_path(next_key);
 
         } else if (key.size() > 0) {
@@ -1459,13 +1459,13 @@ public:
 
     datum_impl get_by_path(std::vector<std::string> const &key) const {
         if (key.size() > 0 && is_map()) {
-            let index = key.at(0);
-            let next = (*this)[index];
+            ttlet index = key.at(0);
+            ttlet next = (*this)[index];
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0 && is_vector()) {
             size_t const index = std::stoll(key.at(0));
-            let next = (*this)[index];
+            ttlet next = (*this)[index];
             return next.get_by_path({key.begin() + 1, key.end()});
 
         } else if (key.size() > 0) {
@@ -1483,7 +1483,7 @@ public:
 
     force_inline bool is_bool() const noexcept {
         if (is_phy_small()) {
-            let tmp = get_unsigned_integer();
+            ttlet tmp = get_unsigned_integer();
             return tmp == small_true || tmp == small_false;
         } else {
             return false;
@@ -1950,35 +1950,35 @@ public:
 
     friend datum_impl operator+(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_float() || rhs.is_float()) {
-            let lhs_ = static_cast<double>(lhs);
-            let rhs_ = static_cast<double>(rhs);
+            ttlet lhs_ = static_cast<double>(lhs);
+            ttlet rhs_ = static_cast<double>(rhs);
             return datum_impl{ lhs_ + rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            let lhs_ = static_cast<decimal>(lhs);
-            let rhs_ = static_cast<decimal>(rhs);
+            ttlet lhs_ = static_cast<decimal>(lhs);
+            ttlet rhs_ = static_cast<decimal>(rhs);
             return datum_impl{lhs_ + rhs_};
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
-            let lhs_ = static_cast<long long int>(lhs);
-            let rhs_ = static_cast<long long int>(rhs);
+            ttlet lhs_ = static_cast<long long int>(lhs);
+            ttlet rhs_ = static_cast<long long int>(rhs);
             return datum_impl{ lhs_ + rhs_ };
 
         } else if (lhs.is_string() && rhs.is_string()) {
-            let lhs_ = static_cast<std::string>(lhs);
-            let rhs_ = static_cast<std::string>(rhs);
+            ttlet lhs_ = static_cast<std::string>(lhs);
+            ttlet rhs_ = static_cast<std::string>(rhs);
             return datum_impl{std::move(lhs_ + rhs_)};
 
         } else if (lhs.is_vector() && rhs.is_vector()) {
             auto lhs_ = static_cast<datum_impl::vector>(lhs);
-            let &rhs_ = *(rhs.get_pointer<datum_impl::vector>());
+            ttlet &rhs_ = *(rhs.get_pointer<datum_impl::vector>());
             std::copy(rhs_.begin(), rhs_.end(), std::back_inserter(lhs_));
             return datum_impl{std::move(lhs_)};
 
         } else if (lhs.is_map() && rhs.is_map()) {
-            let &lhs_ = *(lhs.get_pointer<datum_impl::map>());
+            ttlet &lhs_ = *(lhs.get_pointer<datum_impl::map>());
             auto rhs_ = static_cast<datum_impl::map>(rhs);
-            for (let &item: lhs_) {
+            for (ttlet &item: lhs_) {
                 rhs_.try_emplace(item.first, item.second);
             }
             return datum_impl{std::move(rhs_)};
@@ -1992,18 +1992,18 @@ public:
 
     friend datum_impl operator-(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_float() || rhs.is_float()) {
-            let lhs_ = static_cast<double>(lhs);
-            let rhs_ = static_cast<double>(rhs);
+            ttlet lhs_ = static_cast<double>(lhs);
+            ttlet rhs_ = static_cast<double>(rhs);
             return datum_impl{ lhs_ - rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            let lhs_ = static_cast<decimal>(lhs);
-            let rhs_ = static_cast<decimal>(rhs);
+            ttlet lhs_ = static_cast<decimal>(lhs);
+            ttlet rhs_ = static_cast<decimal>(rhs);
             return datum_impl{ lhs_ - rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
-            let lhs_ = static_cast<long long int>(lhs);
-            let rhs_ = static_cast<long long int>(rhs);
+            ttlet lhs_ = static_cast<long long int>(lhs);
+            ttlet rhs_ = static_cast<long long int>(rhs);
             return datum_impl{ lhs_ - rhs_ };
 
         } else {
@@ -2015,18 +2015,18 @@ public:
 
     friend datum_impl operator*(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_float() || rhs.is_float()) {
-            let lhs_ = static_cast<double>(lhs);
-            let rhs_ = static_cast<double>(rhs);
+            ttlet lhs_ = static_cast<double>(lhs);
+            ttlet rhs_ = static_cast<double>(rhs);
             return datum_impl{ lhs_ * rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            let lhs_ = static_cast<decimal>(lhs);
-            let rhs_ = static_cast<decimal>(rhs);
+            ttlet lhs_ = static_cast<decimal>(lhs);
+            ttlet rhs_ = static_cast<decimal>(rhs);
             return datum_impl{ lhs_ * rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
-            let lhs_ = static_cast<long long int>(lhs);
-            let rhs_ = static_cast<long long int>(rhs);
+            ttlet lhs_ = static_cast<long long int>(lhs);
+            ttlet rhs_ = static_cast<long long int>(rhs);
             return datum_impl{ lhs_ * rhs_ };
 
         } else {
@@ -2038,23 +2038,23 @@ public:
 
     friend datum_impl operator/(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_float() || rhs.is_float()) {
-            let lhs_ = static_cast<double>(lhs);
-            let rhs_ = static_cast<double>(rhs);
+            ttlet lhs_ = static_cast<double>(lhs);
+            ttlet rhs_ = static_cast<double>(rhs);
             return datum_impl{ lhs_ / rhs_ };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            let lhs_ = static_cast<decimal>(lhs);
-            let rhs_ = static_cast<decimal>(rhs);
+            ttlet lhs_ = static_cast<decimal>(lhs);
+            ttlet rhs_ = static_cast<decimal>(rhs);
             return datum_impl{ lhs_ / rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
-            let lhs_ = static_cast<long long int>(lhs);
-            let rhs_ = static_cast<long long int>(rhs);
+            ttlet lhs_ = static_cast<long long int>(lhs);
+            ttlet rhs_ = static_cast<long long int>(rhs);
             return datum_impl{ lhs_ / rhs_ };
 
         } else if (lhs.is_url() && (rhs.is_url() || rhs.is_string())) {
-            let lhs_ = static_cast<URL>(lhs);
-            let rhs_ = static_cast<URL>(rhs);
+            ttlet lhs_ = static_cast<URL>(lhs);
+            ttlet rhs_ = static_cast<URL>(rhs);
             return datum_impl{ lhs_ / rhs_ };
 
         } else {
@@ -2066,18 +2066,18 @@ public:
 
     friend datum_impl operator%(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_float() || rhs.is_float()) {
-            let lhs_ = static_cast<double>(lhs);
-            let rhs_ = static_cast<double>(rhs);
+            ttlet lhs_ = static_cast<double>(lhs);
+            ttlet rhs_ = static_cast<double>(rhs);
             return datum_impl{ fmod(lhs_, rhs_) };
 
         } else if (lhs.is_decimal() || rhs.is_decimal()) {
-            let lhs_ = static_cast<decimal>(lhs);
-            let rhs_ = static_cast<decimal>(rhs);
+            ttlet lhs_ = static_cast<decimal>(lhs);
+            ttlet rhs_ = static_cast<decimal>(rhs);
             return datum_impl{ lhs_ % rhs_ };
 
         } else if (lhs.is_integer() || rhs.is_integer()) {
-            let lhs_ = static_cast<long long int>(lhs);
-            let rhs_ = static_cast<long long int>(rhs);
+            ttlet lhs_ = static_cast<long long int>(lhs);
+            ttlet rhs_ = static_cast<long long int>(rhs);
             return datum_impl{ lhs_ % rhs_ };
 
         } else {
@@ -2089,8 +2089,8 @@ public:
 
     friend datum_impl operator<<(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<uint64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
+            ttlet lhs_ = static_cast<uint64_t>(lhs);
+            ttlet rhs_ = static_cast<int64_t>(rhs);
             if (rhs_ < -63) {
                 return datum_impl{0};
             } else if (rhs_ < 0) {
@@ -2113,8 +2113,8 @@ public:
 
     friend datum_impl operator>>(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<uint64_t>(lhs);
-            let rhs_ = static_cast<int64_t>(rhs);
+            ttlet lhs_ = static_cast<uint64_t>(lhs);
+            ttlet rhs_ = static_cast<int64_t>(rhs);
             if (rhs_ < -63) {
                 return datum_impl{0};
             } else if (rhs_ < 0) {
@@ -2136,8 +2136,8 @@ public:
 
     friend datum_impl operator&(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<uint64_t>(lhs);
-            let rhs_ = static_cast<uint64_t>(rhs);
+            ttlet lhs_ = static_cast<uint64_t>(lhs);
+            ttlet rhs_ = static_cast<uint64_t>(rhs);
             return datum_impl{lhs_ & rhs_};
 
         } else {
@@ -2149,8 +2149,8 @@ public:
 
     friend datum_impl operator|(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<uint64_t>(lhs);
-            let rhs_ = static_cast<uint64_t>(rhs);
+            ttlet lhs_ = static_cast<uint64_t>(lhs);
+            ttlet rhs_ = static_cast<uint64_t>(rhs);
             return datum_impl{lhs_ | rhs_};
 
         } else {
@@ -2162,8 +2162,8 @@ public:
 
     friend datum_impl operator^(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_integer() && rhs.is_integer()) {
-            let lhs_ = static_cast<uint64_t>(lhs);
-            let rhs_ = static_cast<uint64_t>(rhs);
+            ttlet lhs_ = static_cast<uint64_t>(lhs);
+            ttlet rhs_ = static_cast<uint64_t>(rhs);
             return datum_impl{lhs_ ^ rhs_};
 
         } else {
@@ -2187,8 +2187,8 @@ public:
 
     friend datum_impl pow(datum_impl const &lhs, datum_impl const &rhs) {
         if (lhs.is_numeric() || rhs.is_numeric()) {
-            let lhs_ = static_cast<double>(lhs);
-            let rhs_ = static_cast<double>(rhs);
+            ttlet lhs_ = static_cast<double>(lhs);
+            ttlet rhs_ = static_cast<double>(rhs);
             return datum_impl{ std::pow(lhs_, rhs_) };
 
         } else {
@@ -2272,7 +2272,7 @@ bool operator<(typename datum_impl<HasLargeObjects>::map const &lhs, typename da
     auto rhs_keys = transform<datum_impl<HasLargeObjects>::vector>(lhs, [](auto x) { return x.first; });
 
     if (lhs_keys == rhs_keys) {
-        for (let &k: lhs_keys) {
+        for (ttlet &k: lhs_keys) {
             if (lhs.at(k) == rhs.at(k)) {
                 continue;
             } else if (lhs.at(k) < rhs.at(k)) {

@@ -16,8 +16,8 @@ namespace tt {
 
 [[nodiscard]] ThemeMode readOSThemeMode() noexcept
 {
-    let subkey = tt::to_wstring("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
-    let name = tt::to_wstring("AppsUseLightTheme");
+    ttlet subkey = tt::to_wstring("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+    ttlet name = tt::to_wstring("AppsUseLightTheme");
     DWORD result;
     DWORD result_length = sizeof(result);
     auto status = RegGetValueW(

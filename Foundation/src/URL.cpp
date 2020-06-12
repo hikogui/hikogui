@@ -59,7 +59,7 @@ std::string URL::fragment() const noexcept
 
 std::string URL::filename() const noexcept
 {
-    let parts = parse_url(value);
+    ttlet parts = parse_url(value);
     if (parts.segments.size() > 0) {
         return url_decode(parts.segments.back());
     } else {
@@ -87,14 +87,14 @@ std::string URL::nativeDirectory() const noexcept
 
 std::string URL::extension() const noexcept
 {
-    let fn = filename();
-    let i = fn.rfind('.');
+    ttlet fn = filename();
+    ttlet i = fn.rfind('.');
     return fn.substr((i != fn.npos) ? (i + 1) : fn.size());
 }
 
 std::vector<std::string> URL::pathSegments() const noexcept
 {
-    let parts = parse_url(value);
+    ttlet parts = parse_url(value);
     return transform<std::vector<std::string>>(parts.segments, [](auto x) {
         return url_decode(x);
         });
@@ -133,9 +133,9 @@ bool URL::isRootDirectory() const noexcept
 
 URL URL::urlByAppendingPath(URL const &other) const noexcept
 {
-    let this_parts = parse_url(value);
-    let other_parts = parse_url(other.value);
-    let new_parts = concatenate_url_parts(this_parts, other_parts);
+    ttlet this_parts = parse_url(value);
+    ttlet other_parts = parse_url(other.value);
+    ttlet new_parts = concatenate_url_parts(this_parts, other_parts);
     return URL(new_parts);
 }
 
@@ -180,9 +180,9 @@ URL URL::urlByRemovingFilename() const noexcept
 
 static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t const &glob, std::vector<URL> &result) noexcept
 {
-    for (let &filename: URL::filenamesByScanningDirectory(base)) {
+    for (ttlet &filename: URL::filenamesByScanningDirectory(base)) {
         if (filename.back() == '/') {
-            let directory = std::string_view(filename.data(), filename.size() - 1);
+            ttlet directory = std::string_view(filename.data(), filename.size() - 1);
             auto recursePath = base + "/";
             recursePath += directory;
 
@@ -191,7 +191,7 @@ static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t c
             }
 
         } else {
-            let finalPath = base + '/' + filename;
+            ttlet finalPath = base + '/' + filename;
             if (matchGlob(glob, finalPath) == glob_match_result_t::Match) {
                 result.push_back(URL::urlFromPath(finalPath));
             }
@@ -201,8 +201,8 @@ static void urlsByRecursiveScanning(std::string const &base, glob_token_list_t c
 
 std::vector<URL> URL::urlsByScanningWithGlobPattern() const noexcept
 {
-    let glob = parseGlob(path());
-    let basePath = basePathOfGlob(glob);
+    ttlet glob = parseGlob(path());
+    ttlet basePath = basePathOfGlob(glob);
 
     std::vector<URL> urls;
     urlsByRecursiveScanning(basePath, glob, urls);
@@ -212,7 +212,7 @@ std::vector<URL> URL::urlsByScanningWithGlobPattern() const noexcept
 URL URL::urlFromPath(std::string_view const path) noexcept
 {
     std::string tmp;
-    let parts = parse_path(path, tmp);
+    ttlet parts = parse_path(path, tmp);
     return URL(parts);
 }
 

@@ -85,7 +85,7 @@ HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
         HitBox{this, elevation, HitBox::Type::MoveArea} :
         HitBox{};
 
-    for (let &child : children) {
+    for (ttlet &child : children) {
         r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
     }
     return r;

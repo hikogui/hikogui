@@ -29,8 +29,8 @@ template<typename R, typename T>
 gsl_suppress3(type.1,26487,lifetime.4)
     inline R align(T ptr, size_t alignment) noexcept
 {
-    let byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
-    let alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;
+    ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
+    ttlet alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;
 
     return reinterpret_cast<R>(alignedByteOffset);
 }
@@ -42,8 +42,8 @@ template<typename R, typename T>
 gsl_suppress5(f.23,bounds.3,type.1,26487,lifetime.4)
     inline R align_end(T ptr, size_t alignment) noexcept
 {
-    let byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
-    let alignedByteOffset = (byteOffset / alignment) * alignment;
+    ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
+    ttlet alignedByteOffset = (byteOffset / alignment) * alignment;
 
     return reinterpret_cast<R>(alignedByteOffset);
 }
@@ -102,7 +102,7 @@ template<typename Value, typename Map, typename Key, typename... Args>
 inline std::shared_ptr<Value> try_make_shared(Map &map, Key key, Args... args) {
     std::shared_ptr<Value> value;
 
-    let i = map.find(key);
+    ttlet i = map.find(key);
     if (i == map.end()) {
         value = std::make_shared<Value>(std::forward<Args>(args)...);
         map.insert_or_assign(key, value);

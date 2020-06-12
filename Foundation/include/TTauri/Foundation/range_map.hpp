@@ -41,7 +41,7 @@ class range_map {
     /** Get iterator to the first item that contains value.
      */
     auto find(Key const &key) noexcept {
-        return std::lower_bound(items.begin(), items.end(), key, [](let &a, let &b) {
+        return std::lower_bound(items.begin(), items.end(), key, [](ttlet &a, ttlet &b) {
             return a.first < b;
         });
     }
@@ -61,13 +61,13 @@ public:
         // Find all (partially) overlapping items.
         auto first_ = find(first);
         auto last_ = find(last);
-        let delta = std::distance(first_, last_);
+        ttlet delta = std::distance(first_, last_);
         ttauri_assume(delta >= 0);
 
         ttauri_assume(first_ != items.end());
         if (first_->first != first) {
             // Split the first element.
-            let tmp_last = first_->last;
+            ttlet tmp_last = first_->last;
             first_->last = first;
 
             first_ = items.emplace(first_ + 1, first, tmp_last, first_->values);
@@ -77,7 +77,7 @@ public:
         ttauri_assume(last_ != items.end());
         if (last_->last != last) {
             // Split the last element.
-            let tmp_first = last_->first;
+            ttlet tmp_first = last_->first;
             last_->first = last;
 
             last_ = items.emplace(last_, tmp_first, last, first_->values);
@@ -94,13 +94,13 @@ public:
     /** Optimize range_map for improved lookup performance and reduced memory footprint.
      */
     void optimize() noexcept {
-        std::set<std::shared_ptr<values>,[](let &lhs, let &rhs) { return *lhs < *rhs; }}> values_set;
+        std::set<std::shared_ptr<values>,[](ttlet &lhs, ttlet &rhs) { return *lhs < *rhs; }}> values_set;
 
         auto p = items.begin();
         values_set.insert(p->values);
         for (auto i = p + 1; i != items.end(); p = i++) {
             // De-duplicate value-sets.
-            let [deduplicated_values, dummy] = values_set.insert(i->values);
+            ttlet [deduplicated_values, dummy] = values_set.insert(i->values);
             i->values = *deduplicated_values;
 
             if (can_be_merged(*p, *i)) {

@@ -146,13 +146,13 @@ inline results<T,2> solvePolynomial(T const &a, T const &b, T const &c) noexcept
     if (a == 0) {
         return solvePolynomial(b, c);
     } else {
-        let D = b*b - static_cast<T>(4)*a*c;
+        ttlet D = b*b - static_cast<T>(4)*a*c;
         if (D < 0) {
             return {};
         } else if (D == 0) {
             return { -b / (static_cast<T>(2)*a) };
         } else {
-            let Dsqrt = sqrt(D);
+            ttlet Dsqrt = sqrt(D);
             return {
                 (-b - Dsqrt) / (static_cast<T>(2)*a),
                 (-b + Dsqrt) / (static_cast<T>(2)*a)
@@ -169,21 +169,21 @@ inline results<T,3> solveDepressedCubicTrig(T const &p, T const &q) noexcept {
     constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * static_cast<T>(pi);
     constexpr T pi4_3 = (static_cast<T>(4) / static_cast<T>(3)) * static_cast<T>(pi);
 
-    let U = oneThird * acos(((static_cast<T>(3)*q) / (static_cast<T>(2)*p)) * sqrt(static_cast<T>(-3)/p));
-    let V = static_cast<T>(2) * sqrt(-oneThird * p);
+    ttlet U = oneThird * acos(((static_cast<T>(3)*q) / (static_cast<T>(2)*p)) * sqrt(static_cast<T>(-3)/p));
+    ttlet V = static_cast<T>(2) * sqrt(-oneThird * p);
 
-    let t0 = V * cos(U);
-    let t1 = V * cos(U - pi2_3);
-    let t2 = V * cos(U - pi4_3);
+    ttlet t0 = V * cos(U);
+    ttlet t1 = V * cos(U - pi2_3);
+    ttlet t2 = V * cos(U - pi4_3);
     return { t0, t1, t2 };
 }
 
 template<typename T>
 inline results<T,3> solveDepressedCubicCardano(T const &p, T const &q, T const &D) noexcept {
-    let sqrtD = sqrt(D);
-    let minusHalfQ = static_cast<T>(-0.5) * q;
-    let v = cbrt(minusHalfQ + sqrtD);
-    let w = cbrt(minusHalfQ - sqrtD);
+    ttlet sqrtD = sqrt(D);
+    ttlet minusHalfQ = static_cast<T>(-0.5) * q;
+    ttlet v = cbrt(minusHalfQ + sqrtD);
+    ttlet w = cbrt(minusHalfQ - sqrtD);
     return { v + w };
 }
 
@@ -210,7 +210,7 @@ inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
         return { static_cast<T>(0) };
 
     } else {
-        let D = oneForth*q*q + oneTwentySeventh*p*p*p;
+        ttlet D = oneForth*q*q + oneTwentySeventh*p*p*p;
 
         if (D < 0 && p != 0.0) {
             // Has three real roots.
@@ -218,8 +218,8 @@ inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
 
         } else if (D == 0 && p != 0.0) {
             // Has two real roots, or maybe one root
-            let t0 = (static_cast<T>(3)*q) / p;
-            let t1 = (static_cast<T>(-3)*q) / (static_cast<T>(2)*p);
+            ttlet t0 = (static_cast<T>(3)*q) / p;
+            ttlet t1 = (static_cast<T>(-3)*q) / (static_cast<T>(2)*p);
             return {t0, t1, t1};
 
         } else {
@@ -243,12 +243,12 @@ inline results<T,3> solvePolynomial(T const &a, T const &b, T const &c, T const 
         return solvePolynomial(b, c, d);
 
     } else {
-        let p = (static_cast<T>(3)*a*c - b*b) / (static_cast<T>(3)*a*a);
-        let q = (static_cast<T>(2)*b*b*b - static_cast<T>(9)*a*b*c + static_cast<T>(27)*a*a*d) / (static_cast<T>(27)*a*a*a);
+        ttlet p = (static_cast<T>(3)*a*c - b*b) / (static_cast<T>(3)*a*a);
+        ttlet q = (static_cast<T>(2)*b*b*b - static_cast<T>(9)*a*b*c + static_cast<T>(27)*a*a*d) / (static_cast<T>(27)*a*a*a);
 
-        let r = solveDepressedCubic(p, q);
+        ttlet r = solveDepressedCubic(p, q);
 
-        let b_3a = b / (static_cast<T>(3)*a);
+        ttlet b_3a = b / (static_cast<T>(3)*a);
 
         return r - b_3a;
     }

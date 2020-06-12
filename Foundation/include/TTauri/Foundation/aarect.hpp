@@ -275,7 +275,7 @@ public:
     }
 
     [[nodiscard]] friend bool overlaps(aarect const &lhs, aarect const &rhs) noexcept {
-        let rhs_swap = rhs.v.zwxy();
+        ttlet rhs_swap = rhs.v.zwxy();
         if (((lhs.v > rhs_swap) & 0x0011) != 0) {
             return false;
         }
@@ -312,13 +312,13 @@ public:
     * @return A new rectangle expanded on each side.
     */
     [[nodiscard]] friend aarect scale(aarect const &lhs, float rhs) noexcept {
-        let extent = lhs.extent();
-        let scaled_extent = extent * rhs;
-        let diff_extent = scaled_extent - extent;
-        let half_diff_extent = diff_extent * 0.5f;
+        ttlet extent = lhs.extent();
+        ttlet scaled_extent = extent * rhs;
+        ttlet diff_extent = scaled_extent - extent;
+        ttlet half_diff_extent = diff_extent * 0.5f;
 
-        let p1 = lhs.p0() - half_diff_extent;
-        let p2 = lhs.p3() + half_diff_extent;
+        ttlet p1 = lhs.p0() - half_diff_extent;
+        ttlet p2 = lhs.p3() + half_diff_extent;
         return aarect::p0p3(p1, p2);
     }
 

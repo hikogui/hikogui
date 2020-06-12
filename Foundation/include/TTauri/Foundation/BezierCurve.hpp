@@ -156,12 +156,12 @@ struct BezierCurve {
         auto min_t = 0.0f;
         auto min_normal = vec{0.0f, 1.0f};
 
-        let ts = solveTForNormalsIntersectingPoint(P);
+        ttlet ts = solveTForNormalsIntersectingPoint(P);
         for (auto t: ts) {
             t = std::clamp(t, 0.0f, 1.0f);
 
-            let normal = P - pointAt(t);
-            let square_distance = length_squared(normal);
+            ttlet normal = P - pointAt(t);
+            ttlet square_distance = length_squared(normal);
             if (square_distance < min_square_distance) {
                 min_square_distance = square_distance;
                 min_t = t;
@@ -169,9 +169,9 @@ struct BezierCurve {
             }
         }
 
-        let tangent = tangentAt(min_t);
-        let distance = std::sqrt(min_square_distance);
-        let sdistance = viktor_cross(tangent, min_normal) < 0.0 ? distance : -distance;
+        ttlet tangent = tangentAt(min_t);
+        ttlet distance = std::sqrt(min_square_distance);
+        ttlet sdistance = viktor_cross(tangent, min_normal) < 0.0 ? distance : -distance;
         return sdistance;
     }
 
@@ -181,14 +181,14 @@ struct BezierCurve {
      * \return two cubic bezier-curves.
      */
     [[nodiscard]] std::pair<BezierCurve,BezierCurve> cubicSplit(float const t) const noexcept {
-        let outerA = BezierCurve{P1, C1};
-        let outerBridge = BezierCurve{C1, C2};
-        let outerB = BezierCurve{C2, P2};
+        ttlet outerA = BezierCurve{P1, C1};
+        ttlet outerBridge = BezierCurve{C1, C2};
+        ttlet outerB = BezierCurve{C2, P2};
 
-        let innerA = BezierCurve{outerA.pointAt(t), outerBridge.pointAt(t)};
-        let innerB = BezierCurve{outerBridge.pointAt(t), outerB.pointAt(t)};
+        ttlet innerA = BezierCurve{outerA.pointAt(t), outerBridge.pointAt(t)};
+        ttlet innerB = BezierCurve{outerBridge.pointAt(t), outerB.pointAt(t)};
 
-        let newPoint = BezierCurve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
+        ttlet newPoint = BezierCurve{innerA.pointAt(t), innerB.pointAt(t)}.pointAt(t);
 
         return {{ P1, outerA.pointAt(t), innerA.pointAt(t), newPoint }, { newPoint, innerB.pointAt(t), outerB.pointAt(t), P2 }};
     }
@@ -199,10 +199,10 @@ struct BezierCurve {
      * \return two quadratic bezier-curves.
      */
     [[nodiscard]] std::pair<BezierCurve,BezierCurve> quadraticSplit(float const t) const noexcept {
-        let outerA = BezierCurve{P1, C1};
-        let outerB = BezierCurve{C1, P2};
+        ttlet outerA = BezierCurve{P1, C1};
+        ttlet outerB = BezierCurve{C1, P2};
 
-        let newPoint = BezierCurve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
+        ttlet newPoint = BezierCurve{outerA.pointAt(t), outerB.pointAt(t)}.pointAt(t);
 
         return {{ P1, outerA.pointAt(t), newPoint }, { newPoint, outerB.pointAt(t), P2 }};
     }
@@ -213,7 +213,7 @@ struct BezierCurve {
      * \return two linear bezier-curves.
      */
     [[nodiscard]] std::pair<BezierCurve,BezierCurve> linearSplit(float const t) const noexcept {
-        let newPoint = pointAt(t);
+        ttlet newPoint = pointAt(t);
 
         return {{ P1, newPoint }, { newPoint, P2 }};
     }
@@ -240,7 +240,7 @@ struct BezierCurve {
         if (flatness() >= minimumFlatness) {
             r.push_back(*this);
         } else {
-            let [a, b] = split(0.5f);
+            ttlet [a, b] = split(0.5f);
             a.subdivideUntilFlat_impl(r, minimumFlatness);
             b.subdivideUntilFlat_impl(r, minimumFlatness);
         }

@@ -202,14 +202,14 @@ public:
     template<size_t I>
     force_inline vec &set(float rhs) noexcept {
         static_assert(I <= 3);
-        let tmp = _mm_set_ss(rhs);
+        ttlet tmp = _mm_set_ss(rhs);
         return *this = _mm_insert_ps(*this, tmp, I << 4);
     }
 
     template<size_t I>
     force_inline float get() const noexcept {
         static_assert(I <= 3);
-        let tmp = _mm_permute_ps(*this, I);
+        ttlet tmp = _mm_permute_ps(*this, I);
         return _mm_cvtss_f32(tmp);
     }
 
@@ -235,8 +235,8 @@ public:
 
     force_inline float operator[](size_t i) const noexcept {
         ttauri_assume(i <= 3);
-        let i_ = _mm_set1_epi32(static_cast<uint32_t>(i));
-        let tmp = _mm_permutevar_ps(*this, i_);
+        ttlet i_ = _mm_set1_epi32(static_cast<uint32_t>(i));
+        ttlet tmp = _mm_permutevar_ps(*this, i_);
         return _mm_cvtss_f32(tmp);
     }
 
@@ -323,7 +323,7 @@ public:
     }
 
     [[nodiscard]] force_inline friend bool operator==(vec const &lhs, vec const &rhs) noexcept {
-        let tmp2 = _mm_movemask_ps(_mm_cmpeq_ps(lhs, rhs));
+        ttlet tmp2 = _mm_movemask_ps(_mm_cmpeq_ps(lhs, rhs));
         return tmp2 == 0b1111;
     }
 
@@ -374,8 +374,8 @@ public:
     }
 
     [[nodiscard]] force_inline friend __m128 _length_squared(vec const &rhs) noexcept {
-        let tmp1 = _mm_mul_ps(rhs, rhs);
-        let tmp2 = _mm_hadd_ps(tmp1, tmp1);
+        ttlet tmp1 = _mm_mul_ps(rhs, rhs);
+        ttlet tmp2 = _mm_hadd_ps(tmp1, tmp1);
         return _mm_hadd_ps(tmp2, tmp2);
     }
 
@@ -384,7 +384,7 @@ public:
     }
 
     [[nodiscard]] force_inline friend float length(vec const &rhs) noexcept {
-        let tmp = _mm_sqrt_ps(_length_squared(rhs));
+        ttlet tmp = _mm_sqrt_ps(_length_squared(rhs));
         return _mm_cvtss_f32(tmp);
     }
 
@@ -400,8 +400,8 @@ public:
     * @return The extent resized to match rhs, while retaining aspect ratio.
     */
     [[nodiscard]] vec resize2DRetainingAspectRatio(vec const &rhs) noexcept {
-        let ratio2D = rhs / *this;
-        let ratio = std::min(ratio2D.x(), ratio2D.y());
+        ttlet ratio2D = rhs / *this;
+        ttlet ratio = std::min(ratio2D.x(), ratio2D.y());
         return *this * ratio;
     }
 
@@ -412,9 +412,9 @@ public:
     }
 
     [[nodiscard]] force_inline friend float dot(vec const &lhs, vec const &rhs) noexcept {
-        let tmp1 = _mm_mul_ps(lhs, rhs);
-        let tmp2 = _mm_hadd_ps(tmp1, tmp1);
-        let tmp3 = _mm_hadd_ps(tmp2, tmp2);
+        ttlet tmp1 = _mm_mul_ps(lhs, rhs);
+        ttlet tmp2 = _mm_hadd_ps(tmp1, tmp1);
+        ttlet tmp3 = _mm_hadd_ps(tmp2, tmp2);
         return _mm_cvtss_f32(tmp3);
     }
 
@@ -435,9 +435,9 @@ public:
 
     [[nodiscard]] force_inline friend float viktor_cross(vec const &lhs, vec const &rhs) noexcept {
         // a.x * b.y - a.y * b.x
-        let tmp1 = _mm_permute_ps(rhs, _MM_SHUFFLE(2,3,0,1));
-        let tmp2 = _mm_mul_ps(lhs, tmp1);
-        let tmp3 = _mm_hsub_ps(tmp2, tmp2);
+        ttlet tmp1 = _mm_permute_ps(rhs, _MM_SHUFFLE(2,3,0,1));
+        ttlet tmp2 = _mm_mul_ps(lhs, tmp1);
+        ttlet tmp3 = _mm_hsub_ps(tmp2, tmp2);
         return _mm_cvtss_f32(tmp3);
     }
 
@@ -446,13 +446,13 @@ public:
     // z=a.x*b.y - a.y*b.x
     // w=a.w*b.w - a.w*b.w
     [[nodiscard]] friend vec cross(vec const &lhs, vec const &rhs) noexcept {
-        let a_left = _mm_permute_ps(lhs, _MM_SHUFFLE(3,0,2,1));
-        let b_left = _mm_permute_ps(rhs, _MM_SHUFFLE(3,1,0,2));
-        let left = _mm_mul_ps(a_left, b_left);
+        ttlet a_left = _mm_permute_ps(lhs, _MM_SHUFFLE(3,0,2,1));
+        ttlet b_left = _mm_permute_ps(rhs, _MM_SHUFFLE(3,1,0,2));
+        ttlet left = _mm_mul_ps(a_left, b_left);
 
-        let a_right = _mm_permute_ps(lhs, _MM_SHUFFLE(3,1,0,2));
-        let b_right = _mm_permute_ps(rhs, _MM_SHUFFLE(3,0,2,1));
-        let right = _mm_mul_ps(a_right, b_right);
+        ttlet a_right = _mm_permute_ps(lhs, _MM_SHUFFLE(3,1,0,2));
+        ttlet b_right = _mm_permute_ps(rhs, _MM_SHUFFLE(3,0,2,1));
+        ttlet right = _mm_mul_ps(a_right, b_right);
         return _mm_sub_ps(left, right);
     }
 
@@ -489,10 +489,10 @@ public:
     [[nodiscard]] friend vec desaturate(vec const &color, float brightness) noexcept {
         // Use luminance ratios and change the brightness.
         // luminance ratios according to BT.709.
-        let _0BGR = color * vec{0.2126, 0.7152, 0.0722} * vec{brightness};
-        let __SS = _mm_hadd_ps(_0BGR, _0BGR);
-        let ___L = _mm_hadd_ps(__SS, __SS);
-        let LLLL = _mm_permute_ps(___L, _MM_SHUFFLE(0,0,0,0));
+        ttlet _0BGR = color * vec{0.2126, 0.7152, 0.0722} * vec{brightness};
+        ttlet __SS = _mm_hadd_ps(_0BGR, _0BGR);
+        ttlet ___L = _mm_hadd_ps(__SS, __SS);
+        ttlet LLLL = _mm_permute_ps(___L, _MM_SHUFFLE(0,0,0,0));
         // grayscale, with original alpha. 
         return _mm_blend_ps(LLLL, color, 0b1000);
     }
@@ -505,13 +505,13 @@ public:
             return over;
         }
 
-        let over_alpha = over.wwww();
-        let under_alpha = under.wwww();
+        ttlet over_alpha = over.wwww();
+        ttlet under_alpha = under.wwww();
 
-        let over_color = over.xyz1();
-        let under_color = under.xyz1();
+        ttlet over_color = over.xyz1();
+        ttlet under_color = under.xyz1();
 
-        let output_color =
+        ttlet output_color =
             over_color * over_alpha +
             under_color * under_alpha * (vec{1.0} - over_alpha);
 
@@ -617,7 +617,7 @@ public:
         } else if constexpr (zero_mask == 0b1110) {
             numbers = _mm_set_ss(1.0f);
         } else {
-            let _1111 = _mm_set_ps1(1.0f);
+            ttlet _1111 = _mm_set_ps1(1.0f);
             numbers = _mm_insert_ps(_1111, _1111, zero_mask);
         }
 
@@ -721,7 +721,7 @@ public:
 
 template<bool nx, bool ny, bool nz, bool nw>
 [[nodiscard]] vec neg(vec const &rhs) noexcept {
-    let n_rhs = -rhs;
+    ttlet n_rhs = -rhs;
 
     __m128 tmp = rhs;
 

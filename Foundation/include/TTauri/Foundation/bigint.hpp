@@ -160,15 +160,15 @@ struct bigint {
     }
 
     force_inline digit_type get_bit(unsigned int count) const noexcept {
-        let digit_count = count / bits_per_digit;
-        let bit_count = count % bits_per_digit;
+        ttlet digit_count = count / bits_per_digit;
+        ttlet bit_count = count % bits_per_digit;
 
         return (digits[digit_count] >> bit_count) & 1;
     }
 
     force_inline void set_bit(unsigned int count, digit_type value = 1) noexcept {
-        let digit_count = count / bits_per_digit;
-        let bit_count = count % bits_per_digit;
+        ttlet digit_count = count / bits_per_digit;
+        ttlet bit_count = count % bits_per_digit;
 
         digits[digit_count] |= (value << bit_count);
     }
@@ -282,11 +282,11 @@ struct bigint {
     force_inline friend void bigint_multiply(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
     {
         for (auto rhs_index = 0; rhs_index < N; rhs_index++) {
-            let rhs_digit = rhs.digits[rhs_index];
+            ttlet rhs_digit = rhs.digits[rhs_index];
 
             T carry = 0;
             for (auto lhs_index = 0; (lhs_index + rhs_index) < N; lhs_index++) {
-                let lhs_digit = lhs.digits[lhs_index];
+                ttlet lhs_digit = lhs.digits[lhs_index];
 
                 T result;
                 T accumulator = o.digits[rhs_index + lhs_index];
@@ -356,7 +356,7 @@ struct bigint {
     */
     [[nodiscard]] force_inline friend bigint bigint_crc(bigint const &lhs, bigint const &rhs) noexcept
     {
-        let polynomialOrder = bigint_bsr(rhs);
+        ttlet polynomialOrder = bigint_bsr(rhs);
         ttauri_assert(polynomialOrder >= 0);
 
         auto tmp = static_cast<bigint<T,2*N>>(lhs) << polynomialOrder;
@@ -364,7 +364,7 @@ struct bigint {
 
         auto tmp_highest_bit = bigint_bsr(tmp);
         while (tmp_highest_bit >= polynomialOrder) {
-            let divident = rhs_ << (tmp_highest_bit - polynomialOrder);
+            ttlet divident = rhs_ << (tmp_highest_bit - polynomialOrder);
 
             tmp ^= divident;
             tmp_highest_bit = bigint_bsr(tmp);
@@ -417,8 +417,8 @@ struct bigint {
 
     force_inline friend void bigint_shift_left(bigint &o, bigint const &lhs, int count) noexcept
     {
-        let digit_count = count / bits_per_digit;
-        let bit_count = count % bits_per_digit;
+        ttlet digit_count = count / bits_per_digit;
+        ttlet bit_count = count % bits_per_digit;
 
         if (&o != &lhs || digit_count > 0) { 
             for (int i = N - 1; i >= digit_count; --i) {
@@ -439,8 +439,8 @@ struct bigint {
 
     force_inline friend void bigint_shift_right(bigint &o, bigint const &lhs, int count) noexcept
     {
-        let digit_count = count / bits_per_digit;
-        let bit_count = count % bits_per_digit;
+        ttlet digit_count = count / bits_per_digit;
+        ttlet bit_count = count % bits_per_digit;
 
         if (&o != &lhs || digit_count > 0) { 
             auto i = 0;

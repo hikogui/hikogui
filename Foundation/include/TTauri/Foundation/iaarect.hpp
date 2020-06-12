@@ -163,10 +163,10 @@ public:
      */
     template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
     [[nodiscard]] friend iaarect expand(iaarect const &lhs, T rhs) noexcept {
-        let _0000 = _mm_setzero_si128();
-        let _000r = _mm_insert_epi32(_0000, rhs, 0);
-        let _00rr = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(1,1,0,0))};
-        let _rr00 = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(0,0,1,1))};
+        ttlet _0000 = _mm_setzero_si128();
+        ttlet _000r = _mm_insert_epi32(_0000, rhs, 0);
+        ttlet _00rr = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(1,1,0,0))};
+        ttlet _rr00 = ivec{_mm_shuffle_epi32(_000r, _MM_SHUFFLE(0,0,1,1))};
         return static_cast<__m128i>((lhs.v - _00rr) + _rr00);
     }
 };

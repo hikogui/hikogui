@@ -11,19 +11,19 @@ using namespace tt;
 
 #define ASSERT_TOKEN_EQ2(token, name)\
     do {\
-        let expected = glob_token_t{glob_token_type_t::name};\
+        ttlet expected = glob_token_t{glob_token_type_t::name};\
         ASSERT_EQ(token, expected);\
     } while (false)
 
 #define ASSERT_TOKEN_EQ3(token, name, value)\
     do {\
-        let expected = glob_token_t{glob_token_type_t::name, value};\
+        ttlet expected = glob_token_t{glob_token_type_t::name, value};\
         ASSERT_EQ(token, expected);\
     } while (false)
 
 #define ASSERT_TOKEN_EQ5(token, name, value1, value2, value3)\
     do {\
-        let expected = glob_token_t{glob_token_type_t::name, std::vector<std::string>{value1, value2, value3}};\
+        ttlet expected = glob_token_t{glob_token_type_t::name, std::vector<std::string>{value1, value2, value3}};\
         ASSERT_EQ(token, expected);\
     } while (false)
 

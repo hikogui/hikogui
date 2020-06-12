@@ -18,10 +18,10 @@ void mergeMaximum(PixelMap<uint8_t> &dst, PixelMap<uint8_t> const &src) noexcept
 
     for (auto rowNr = 0; rowNr < dst.height; rowNr++) {
         auto dstRow = dst[rowNr];
-        let srcRow = src[rowNr];
+        ttlet srcRow = src[rowNr];
         for (auto columnNr = 0; columnNr < dstRow.width; columnNr++) {
             auto &dstPixel = dstRow[columnNr];
-            let srcPixel = srcRow[columnNr];
+            ttlet srcPixel = srcRow[columnNr];
             dstPixel = std::max(dstPixel, srcPixel);
         }
     }

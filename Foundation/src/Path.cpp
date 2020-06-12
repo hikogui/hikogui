@@ -30,9 +30,9 @@ bool Path::allLayersHaveSameColor() const noexcept
         return true;
     }
 
-    let &firstColor = layerEndContours.front().second;
+    ttlet &firstColor = layerEndContours.front().second;
 
-    for (let &[endContour, color] : layerEndContours) {
+    for (ttlet &[endContour, color] : layerEndContours) {
         if (color != firstColor) {
             return false;
         }
@@ -48,7 +48,7 @@ bool Path::allLayersHaveSameColor() const noexcept
 
     auto r = aarect::p0p3(points.front().p, points.front().p);
 
-    for (let &point: points) {
+    for (ttlet &point: points) {
         r |= point.p;
     }
 
@@ -104,8 +104,8 @@ std::pair<Path,vec> Path::getLayer(ssize_t layerNr) const noexcept
 
     auto path = Path{};
 
-    let begin = beginLayer(layerNr);
-    let end = endLayer(layerNr);
+    ttlet begin = beginLayer(layerNr);
+    ttlet end = endLayer(layerNr);
     for (ssize_t contourNr = begin; contourNr != end; contourNr++) {
         path.addContour(beginContour(contourNr), endContour(contourNr));
     }
@@ -139,8 +139,8 @@ void Path::optimizeLayers() noexcept
 
 std::vector<BezierPoint> Path::getBezierPointsOfContour(ssize_t subpathNr) const noexcept
 {
-    let begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
-    let end = points.begin() + contourEndPoints.at(subpathNr) + 1;
+    ttlet begin = points.begin() + (subpathNr == 0 ? 0 : contourEndPoints.at(subpathNr - 1) + 1);
+    ttlet end = points.begin() + contourEndPoints.at(subpathNr) + 1;
     return std::vector(begin, end);
 }
 
@@ -156,7 +156,7 @@ std::vector<BezierCurve> Path::getBeziers() const noexcept
     std::vector<BezierCurve> r;
 
     for (auto contourNr = 0; contourNr < numberOfContours(); contourNr++) {
-        let beziers = getBeziersOfContour(contourNr);
+        ttlet beziers = getBeziersOfContour(contourNr);
         r.insert(r.end(), beziers.begin(), beziers.end());
     }
     return r;
@@ -222,7 +222,7 @@ void Path::moveRelativeTo(vec direction) noexcept
     ttauri_assert(isContourOpen());
     ttauri_assume(direction.is_vector());
 
-    let lastPosition = currentPosition();
+    ttlet lastPosition = currentPosition();
     closeContour();
     points.emplace_back(lastPosition + direction, BezierPoint::Type::Anchor);
 }
@@ -259,7 +259,7 @@ void Path::quadraticCurveRelativeTo(vec controlDirection, vec direction) noexcep
     ttauri_assume(controlDirection.is_vector());
     ttauri_assume(direction.is_vector());
 
-    let p = currentPosition();
+    ttlet p = currentPosition();
     points.emplace_back(p + controlDirection, BezierPoint::Type::QuadraticControl);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
 }
@@ -283,7 +283,7 @@ void Path::cubicCurveRelativeTo(vec controlDirection1, vec controlDirection2, ve
     ttauri_assume(controlDirection2.is_vector());
     ttauri_assume(direction.is_vector());
 
-    let p = currentPosition();
+    ttlet p = currentPosition();
     points.emplace_back(p + controlDirection1, BezierPoint::Type::CubicControl1);
     points.emplace_back(p + controlDirection2, BezierPoint::Type::CubicControl2);
     points.emplace_back(p + direction, BezierPoint::Type::Anchor);
@@ -294,33 +294,33 @@ void Path::arcTo(float radius, vec position) noexcept
     ttauri_assert(isContourOpen());
     ttauri_assume(position.is_point());
 
-    let r = std::abs(radius);
-    let P1 = currentPosition();
-    let P2 = position;
-    let Pm = midpoint(P1, P2);
+    ttlet r = std::abs(radius);
+    ttlet P1 = currentPosition();
+    ttlet P2 = position;
+    ttlet Pm = midpoint(P1, P2);
 
-    let Vm2 = P2 - Pm;
+    ttlet Vm2 = P2 - Pm;
 
     // Calculate the half angle between vectors P0 - C and P2 - C.
-    let alpha = std::asin(length(Vm2) / r);
+    ttlet alpha = std::asin(length(Vm2) / r);
 
     // Calculate the center point C. As the length of the normal of Vm2 at Pm.
-    let C = Pm + normal(Vm2) * vec{std::cos(alpha)} * vec{radius};
+    ttlet C = Pm + normal(Vm2) * vec{std::cos(alpha)} * vec{radius};
 
     // Calculate vectors from center to end points.
-    let VC1 = P1 - C;
-    let VC2 = P2 - C;
+    ttlet VC1 = P1 - C;
+    ttlet VC2 = P2 - C;
 
-    let q1 = length_squared(VC1);
-    let q2 = q1 + dot(VC1, VC2);
-    let k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross(VC1, VC2);
+    ttlet q1 = length_squared(VC1);
+    ttlet q2 = q1 + dot(VC1, VC2);
+    ttlet k2 = (4.0f/3.0f) * (std::sqrt(2.0f * q1 * q2) - q2) / viktor_cross(VC1, VC2);
 
     // Calculate the control points.
-    let C1 = vec::point(
+    ttlet C1 = vec::point(
         (C.x() + VC1.x()) - k2 * VC1.y(),
         (C.y() + VC1.y()) + k2 * VC1.x()
     );
-    let C2 = vec::point(
+    ttlet C2 = vec::point(
         (C.x() + VC2.x()) + k2 * VC2.y(),
         (C.y() + VC2.y()) - k2 * VC2.x()
     );
@@ -332,21 +332,21 @@ void Path::addRectangle(aarect r, vec corners) noexcept
 {
     ttauri_assert(!isContourOpen());
 
-    let radii = abs(corners);
+    ttlet radii = abs(corners);
 
-    let blc = r.corner<0>();
-    let brc = r.corner<1>();
-    let tlc = r.corner<2>();
-    let trc = r.corner<3>();
+    ttlet blc = r.corner<0>();
+    ttlet brc = r.corner<1>();
+    ttlet tlc = r.corner<2>();
+    ttlet trc = r.corner<3>();
 
-    let blc1 = blc + vec{0.0f, radii.x()};
-    let blc2 = blc + vec{radii.x(), 0.0f};
-    let brc1 = brc + vec{-radii.y(), 0.0f};
-    let brc2 = brc + vec{0.0f, radii.y()};
-    let tlc1 = tlc + vec{radii.z(), 0.0f};
-    let tlc2 = tlc + vec{0.0, -radii.z()};
-    let trc1 = trc + vec{0.0f, -radii.w()};
-    let trc2 = trc + vec{-radii.w(), 0.0f};
+    ttlet blc1 = blc + vec{0.0f, radii.x()};
+    ttlet blc2 = blc + vec{radii.x(), 0.0f};
+    ttlet brc1 = brc + vec{-radii.y(), 0.0f};
+    ttlet brc2 = brc + vec{0.0f, radii.y()};
+    ttlet tlc1 = tlc + vec{radii.z(), 0.0f};
+    ttlet tlc2 = tlc + vec{0.0, -radii.z()};
+    ttlet trc1 = trc + vec{0.0f, -radii.w()};
+    ttlet trc2 = trc + vec{-radii.w(), 0.0f};
 
     moveTo(blc1);
     if (corners.x() > 0.0) {
@@ -408,7 +408,7 @@ void Path::addContour(std::vector<BezierCurve> const &contour) noexcept
 {
     ttauri_assert(!isContourOpen());
 
-    for (let &curve: contour) {
+    for (ttlet &curve: contour) {
         // Don't emit the first point, the last point of the contour will wrap around.
         switch (curve.type) {
         case BezierCurve::Type::Linear:
@@ -454,12 +454,12 @@ Path Path::toStroke(float strokeWidth, LineJoinStyle lineJoinStyle, float tolera
     float portOffset = -starboardOffset;
 
     for (int i = 0; i < numberOfContours(); i++) {
-        let baseContour = getBeziersOfContour(i);
+        ttlet baseContour = getBeziersOfContour(i);
 
-        let starboardContour = makeParrallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
+        ttlet starboardContour = makeParrallelContour(baseContour, starboardOffset, lineJoinStyle, tolerance);
         r.addContour(starboardContour);
 
-        let portContour = makeInverseContour(makeParrallelContour(baseContour, portOffset, lineJoinStyle, tolerance));
+        ttlet portContour = makeInverseContour(makeParrallelContour(baseContour, portOffset, lineJoinStyle, tolerance));
         r.addContour(portContour);
     }
 
@@ -474,16 +474,16 @@ Path &Path::operator+=(Path const &rhs) noexcept
     // Left hand layer can only be open if the right hand side contains no layers.
     ttauri_assert(!rhs.hasLayers() || !isLayerOpen());
 
-    let pointOffset = ssize(points);
-    let contourOffset = ssize(contourEndPoints);
+    ttlet pointOffset = ssize(points);
+    ttlet contourOffset = ssize(contourEndPoints);
 
     layerEndContours.reserve(layerEndContours.size() + rhs.layerEndContours.size());
-    for (let &[x, fillColor]: rhs.layerEndContours) {
+    for (ttlet &[x, fillColor]: rhs.layerEndContours) {
         layerEndContours.emplace_back(contourOffset + x, fillColor);
     }
 
     contourEndPoints.reserve(contourEndPoints.size() + rhs.contourEndPoints.size());
-    for (let x: rhs.contourEndPoints) {
+    for (ttlet x: rhs.contourEndPoints) {
         contourEndPoints.push_back(pointOffset + x);
     }
 
@@ -505,13 +505,13 @@ Path Path::centerScale(vec extent, float padding) const noexcept
         return {};
     }
 
-    let scale = std::min(
+    ttlet scale = std::min(
         max_size.x() / bbox.width(),
         max_size.y() / bbox.height()
     );
     bbox *= scale;
     
-    let offset = -bbox.offset() + (extent - bbox.extent()) * vec{0.5f};
+    ttlet offset = -bbox.offset() + (extent - bbox.extent()) * vec{0.5f};
 
     return (mat::T(offset) * mat::S(scale, scale, 1.0f)) * *this;
 }
@@ -526,7 +526,7 @@ void composit(PixelMap<R16G16B16A16SFloat>& dst, vec color, Path const &path) no
     auto mask = PixelMap<uint8_t>(dst.width, dst.height);
     fill(mask);
 
-    let curves = path.getBeziers();
+    ttlet curves = path.getBeziers();
     fill(mask, curves);
 
     composit(dst, color, mask);
@@ -537,7 +537,7 @@ void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &src) noexcept
     ttauri_assert(src.hasLayers() && !src.isLayerOpen());
 
     for (int layerNr = 0; layerNr < src.numberOfLayers(); layerNr++) {
-        let [layer, fillColor] = src.getLayer(layerNr);
+        ttlet [layer, fillColor] = src.getLayer(layerNr);
 
         composit(dst, fillColor, layer);
     }

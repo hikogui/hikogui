@@ -57,7 +57,7 @@ std::optional<uint32_t> Window_vulkan::acquireNextImageFromSwapchain()
     uint32_t frameBufferIndex = 0;
     //LOG_DEBUG("acquireNextImage '{}'", title);
     ttauri_assert(device);
-    let result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
+    ttlet result = device->acquireNextImageKHR(swapchain, 0, imageAvailableSemaphore, vk::Fence(), &frameBufferIndex);
     //LOG_DEBUG("acquireNextImage {}", frameBufferIndex);
 
     switch (result) {
@@ -104,7 +104,7 @@ void Window_vulkan::presentImageToQueue(uint32_t frameBufferIndex, vk::Semaphore
 
     try {
         //LOG_DEBUG("presentQueue {}", presentImageIndices.at(0));
-        let result = device->presentQueue.presentKHR({
+        ttlet result = device->presentQueue.presentKHR({
             numeric_cast<uint32_t>(renderFinishedSemaphores.size()), renderFinishedSemaphores.data(),
             numeric_cast<uint32_t>(presentSwapchains.size()), presentSwapchains.data(), presentImageIndices.data()
         });
@@ -171,7 +171,7 @@ void Window_vulkan::build()
             return;
         }
 
-        let s = buildSwapchain();
+        ttlet s = buildSwapchain();
         if (s != State::ReadyToRender) {
             state = s;
             return;
@@ -284,14 +284,14 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     struct frame_buffer_index_tag {};
     auto tr = trace<window_render_tag, frame_buffer_index_tag>();
 
-    let optionalFrameBufferIndex = acquireNextImageFromSwapchain();
+    ttlet optionalFrameBufferIndex = acquireNextImageFromSwapchain();
     if (!optionalFrameBufferIndex) {
         // No image is ready to be rendered, yet, possibly because our vertical sync function
         // is not working correctly.
         return;
     }
-    let frameBufferIndex = *optionalFrameBufferIndex;
-    let frameBuffer = swapchainFramebuffers.at(frameBufferIndex);
+    ttlet frameBufferIndex = *optionalFrameBufferIndex;
+    ttlet frameBuffer = swapchainFramebuffers.at(frameBufferIndex);
 
     tr.set<frame_buffer_index_tag>(frameBufferIndex);
 
@@ -335,17 +335,17 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
     commandBuffer.reset(vk::CommandBufferResetFlagBits::eReleaseResources);
     commandBuffer.begin({vk::CommandBufferUsageFlagBits::eSimultaneousUse});
 
-    let colorClearValue = vk::ClearColorValue{
+    ttlet colorClearValue = vk::ClearColorValue{
         static_cast<std::array<float,4>>(theme->fillColor(0))
     };
-    let depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
-    let clearValues = std::array{
+    ttlet depthClearValue = vk::ClearDepthStencilValue{0.0, 0};
+    ttlet clearValues = std::array{
         vk::ClearValue{ colorClearValue },
         vk::ClearValue{ colorClearValue },
         vk::ClearValue{ depthClearValue }
     };
 
-    let renderArea = vk::Rect2D{vk::Offset2D{ 0, 0 }, swapchainImageExtent};
+    ttlet renderArea = vk::Rect2D{vk::Offset2D{ 0, 0 }, swapchainImageExtent};
 
     commandBuffer.beginRenderPass({
         renderPass, 
@@ -376,20 +376,20 @@ void Window_vulkan::fillCommandBuffer(vk::Framebuffer frameBuffer)
 
 void Window_vulkan::submitCommandBuffer()
 {
-    let waitSemaphores = std::array{
+    ttlet waitSemaphores = std::array{
         imageAvailableSemaphore
     };
 
-    let waitStages = std::array{
+    ttlet waitStages = std::array{
         vk::PipelineStageFlags{vk::PipelineStageFlagBits::eColorAttachmentOutput}
     };
 
     ttauri_assume(waitSemaphores.size() == waitStages.size());
 
-    let signalSemaphores = std::array{ renderFinishedSemaphore };
-    let commandBuffersToSubmit = std::array{ commandBuffer };
+    ttlet signalSemaphores = std::array{ renderFinishedSemaphore };
+    ttlet commandBuffersToSubmit = std::array{ commandBuffer };
 
-    let submitInfo = std::array{
+    ttlet submitInfo = std::array{
         vk::SubmitInfo{
             numeric_cast<uint32_t>(waitSemaphores.size()), waitSemaphores.data(), waitStages.data(),
             numeric_cast<uint32_t>(commandBuffersToSubmit.size()), commandBuffersToSubmit.data(),
@@ -416,7 +416,7 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
         OSWindowRectangle.extent()
     );
 
-    let currentExtentSet =
+    ttlet currentExtentSet =
         (surfaceCapabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) &&
         (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
 
@@ -486,7 +486,7 @@ bool Window_vulkan::readSurfaceExtent()
 bool Window_vulkan::checkSurfaceExtent()
 {
     try {
-        let [nrImages, extent] = getImageCountAndExtent();
+        ttlet [nrImages, extent] = getImageCountAndExtent();
         return (nrImages == static_cast<uint32_t>(nrSwapchainImages)) && (extent == swapchainImageExtent);
 
     } catch (const vk::SurfaceLostKHRError&) {
@@ -515,7 +515,7 @@ Window_base::State Window_vulkan::buildSwapchain()
 
     LOG_INFO("Building swap chain");
 
-    let sharingMode = device->graphicsQueueFamilyIndex == device->presentQueueFamilyIndex ?
+    ttlet sharingMode = device->graphicsQueueFamilyIndex == device->presentQueueFamilyIndex ?
         vk::SharingMode::eExclusive :
         vk::SharingMode::eConcurrent;
 
@@ -644,7 +644,7 @@ void Window_vulkan::buildFramebuffers()
     ttauri_assert(device);
     swapchainImages = device->getSwapchainImagesKHR(swapchain);
     for (auto image : swapchainImages) {
-        let swapchainImageView = device->createImageView({
+        ttlet swapchainImageView = device->createImageView({
             vk::ImageViewCreateFlags(),
             image,
             vk::ImageViewType::e2D,
@@ -655,13 +655,13 @@ void Window_vulkan::buildFramebuffers()
 
         swapchainImageViews.push_back(swapchainImageView);
 
-        let attachments = std::array{
+        ttlet attachments = std::array{
             swapchainImageView,
             colorImageView,
             depthImageView
         };
 
-        let framebuffer = device->createFramebuffer({
+        ttlet framebuffer = device->createFramebuffer({
             vk::FramebufferCreateFlags(),
             renderPass,
             numeric_cast<uint32_t>(attachments.size()),
@@ -700,7 +700,7 @@ void Window_vulkan::buildRenderPasses()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    let attachmentDescriptions = std::array{
+    ttlet attachmentDescriptions = std::array{
         vk::AttachmentDescription{ // Swapchain attachment.
             vk::AttachmentDescriptionFlags(),
             swapchainImageFormat.format,
@@ -736,23 +736,23 @@ void Window_vulkan::buildRenderPasses()
         }
     };
 
-    let colorAttachmentReferences = std::array{
+    ttlet colorAttachmentReferences = std::array{
         vk::AttachmentReference{ 1, vk::ImageLayout::eColorAttachmentOptimal }
     };
 
-    let colorInputAttachmentReferences = std::array{
+    ttlet colorInputAttachmentReferences = std::array{
         vk::AttachmentReference{ 1, vk::ImageLayout::eShaderReadOnlyOptimal }
     };
 
-    let swapchainAttachmentReferences = std::array{
+    ttlet swapchainAttachmentReferences = std::array{
         vk::AttachmentReference{ 0, vk::ImageLayout::eColorAttachmentOptimal }
     };
 
-    let depthAttachmentReference = vk::AttachmentReference{
+    ttlet depthAttachmentReference = vk::AttachmentReference{
         2, vk::ImageLayout::eDepthStencilAttachmentOptimal
     };
 
-    let subpassDescriptions = std::array{
+    ttlet subpassDescriptions = std::array{
         vk::SubpassDescription{ // Subpass 0
             vk::SubpassDescriptionFlags(),
             vk::PipelineBindPoint::eGraphics,
@@ -805,7 +805,7 @@ void Window_vulkan::buildRenderPasses()
         }
     };
 
-    let subpassDependency = std::array{
+    ttlet subpassDependency = std::array{
         vk::SubpassDependency{
             VK_SUBPASS_EXTERNAL, 0,
             vk::PipelineStageFlagBits::eBottomOfPipe,
@@ -911,7 +911,7 @@ void Window_vulkan::buildCommandBuffers()
 {
     ttauri_assume(device != nullptr);
 
-    let commandBuffers = device->allocateCommandBuffers({
+    ttlet commandBuffers = device->allocateCommandBuffers({
         device->graphicsCommandPool, 
         vk::CommandBufferLevel::ePrimary, 
         1
@@ -922,7 +922,7 @@ void Window_vulkan::buildCommandBuffers()
 
 void Window_vulkan::teardownCommandBuffers()
 {
-    let commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
+    ttlet commandBuffers = std::vector<vk::CommandBuffer>{commandBuffer};
 
     ttauri_assume(device != nullptr);
     device->freeCommandBuffers(device->graphicsCommandPool, commandBuffers);

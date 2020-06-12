@@ -278,10 +278,10 @@ template<>
 inline std::unique_ptr<Path> parseResource(URL const &location)
 {
     if (location.extension() == "tticon") {
-        let &view = ResourceView::loadView(location);
+        ttlet &view = ResourceView::loadView(location);
 
         try {
-            let bytes = view->bytes();
+            ttlet bytes = view->bytes();
             return std::make_unique<Path>(parseTTauriIcon(bytes));
         } catch (error &e) {
             e.set<url_tag>(location);

@@ -74,7 +74,7 @@ public:
         for (auto &device: devices) {
             device->render(displayTimePoint);
         }
-        let currentNumberOfWindows = getNumberOfWindows();
+        ttlet currentNumberOfWindows = getNumberOfWindows();
         if (currentNumberOfWindows == 0 && currentNumberOfWindows != previousNumberOfWindows) {
             delegate->lastWindowClosed();
         }

@@ -59,15 +59,15 @@ void Image::upload(PixelMap<R16G16B16A16SFloat> const &image) noexcept
 
 iaarect Image::indexToRect(int const pageIndex) const noexcept
 {
-    let pageWH = ivec{Page::width, Page::height};
+    ttlet pageWH = ivec{Page::width, Page::height};
 
-    let p0 = ivec::point(
+    ttlet p0 = ivec::point(
         pageIndex % pageExtent.x(),
         pageIndex / pageExtent.x()
     ) * pageWH;
 
     // Limit the rectangle to the size of the image.
-    let p3 = min(p0 + pageWH, extent);
+    ttlet p3 = min(p0 + pageWH, extent);
 
     return iaarect::p0p3(p0, p3);
 }
@@ -82,10 +82,10 @@ void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
 {
     tmpVertexPositions.clear();
 
-    let restWidth = extent.x() % Page::width;
-    let restHeight = extent.y() % Page::height;
-    let lastWidth = restWidth ? restWidth : Page::width;
-    let lastHeight = restHeight ? restHeight : Page::height;
+    ttlet restWidth = extent.x() % Page::width;
+    ttlet restHeight = extent.y() % Page::height;
+    ttlet lastWidth = restWidth ? restWidth : Page::width;
+    ttlet lastHeight = restHeight ? restHeight : Page::height;
 
     for (int y = 0; y < extent.y(); y += Page::height) {
         for (int x = 0; x < extent.x(); x += Page::width) {
@@ -112,32 +112,32 @@ void Image::calculateVertexPositions(mat transform, aarect clippingRectangle)
  *    0 --> 1
  */
 void Image::placePageVertices(vspan<Vertex> &vertices, int const index, aarect clippingRectangle) const {
-    let page = pages.at(index);
+    ttlet page = pages.at(index);
 
     if (page.isFullyTransparent()) {
         // Hole in the image does not need to be rendered.
         return;
     }
 
-    let vertexY = index / pageExtent.x();
-    let vertexX = index % pageExtent.x();
+    ttlet vertexY = index / pageExtent.x();
+    ttlet vertexX = index % pageExtent.x();
 
-    let vertexStride = pageExtent.x() + 1;
-    let vertexIndex = vertexY * vertexStride + vertexX;
+    ttlet vertexStride = pageExtent.x() + 1;
+    ttlet vertexIndex = vertexY * vertexStride + vertexX;
 
     // Point, Extent, Inside
-    let [p1, e1, i1] = tmpVertexPositions[vertexIndex];
-    let [p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
-    let [p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
-    let [p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
+    ttlet [p1, e1, i1] = tmpVertexPositions[vertexIndex];
+    ttlet [p2, e2, i2] = tmpVertexPositions[vertexIndex + 1];
+    ttlet [p3, e3, i3] = tmpVertexPositions[vertexIndex + vertexStride];
+    ttlet [p4, e4, i4] = tmpVertexPositions[vertexIndex + vertexStride + 1];
 
     if (!(i1 || i2 || i3 || i4)) {
         // Clipped page.
         return;
     }
 
-    let atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
-    let atlasRect = mat::T(vec{atlasPosition.xyz0()}) * aarect{e4};
+    ttlet atlasPosition = DeviceShared::getAtlasPositionFromPage(page);
+    ttlet atlasRect = mat::T(vec{atlasPosition.xyz0()}) * aarect{e4};
 
     vertices.emplace_back(p1, atlasRect.corner<0>(), clippingRectangle);
     vertices.emplace_back(p2, atlasRect.corner<1>(), clippingRectangle);

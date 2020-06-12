@@ -72,7 +72,7 @@ struct GlyphMetrics {
     * a potential ligature.
     */
     vec advanceForGrapheme(int index) const noexcept {
-        let ligatureRatio = vec{1.0f / numberOfGraphemes};
+        ttlet ligatureRatio = vec{1.0f / numberOfGraphemes};
 
         return advance * ligatureRatio * vec{index};
     }

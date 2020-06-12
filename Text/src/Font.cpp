@@ -13,7 +13,7 @@ namespace tt {
 
     // First try composed normalization
     for (ssize_t i = 0; i != ssize(g); ++i) {
-        if (let glyph_id = find_glyph(g[i])) {
+        if (ttlet glyph_id = find_glyph(g[i])) {
             r += glyph_id;
         } else {
             r.clear();
@@ -23,8 +23,8 @@ namespace tt {
 
     if (!r) {
         // First try decomposed normalization
-        for (let c: g.NFD()) {
-            if (let glyph_id = find_glyph(c)) {
+        for (ttlet c: g.NFD()) {
+            if (ttlet glyph_id = find_glyph(c)) {
                 r += glyph_id;
             } else {
                 r.clear();

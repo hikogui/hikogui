@@ -104,7 +104,7 @@ class placement_array {
 
 public:
     force_inline placement_array(nonstd::span<Byte> bytes, ssize_t &offset, ssize_t n) {
-        let bytes_ = bytes.data();
+        ttlet bytes_ = bytes.data();
 
         _begin = bytes_ + offset,
         offset += ssizeof(T) * n;
@@ -161,7 +161,7 @@ force_inline placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<By
 template<typename T,typename Byte>
 force_inline placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset)
 {
-    let n = usize(bytes) / sizeof(T);
+    ttlet n = usize(bytes) / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
@@ -201,7 +201,7 @@ force_inline placement_array<T,Byte> make_placement_array(nonstd::span<Byte> byt
 template<typename T,typename Byte>
 force_inline placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset)
 {
-    let n = ssize(bytes) / ssizeof(T);
+    ttlet n = ssize(bytes) / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 

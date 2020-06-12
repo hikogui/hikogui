@@ -39,11 +39,11 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
         auto context = drawContext;
         context.color = theme->foregroundColor;
 
-        let buttonBox = shrink(aarect{extent()}, Theme::margin);
+        ttlet buttonBox = shrink(aarect{extent()}, Theme::margin);
 
-        let glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
+        ttlet glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
 
-        let glyphRectangle = align(buttonBox, scale(glyphBoundingBox, Theme::iconSize), Alignment::MiddleCenter);
+        ttlet glyphRectangle = align(buttonBox, scale(glyphBoundingBox, Theme::iconSize), Alignment::MiddleCenter);
 
         context.drawGlyph(*icon_glyph, glyphRectangle);
     } else {

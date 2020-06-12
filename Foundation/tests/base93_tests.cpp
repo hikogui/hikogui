@@ -29,12 +29,12 @@ TEST(Base93, Default) {
         counts.push_back(random_generator() % 2000);
     }
 
-    for (let count: counts) {
-        let message = random_generator.get_bytes(count);
+    for (ttlet count: counts) {
+        ttlet message = random_generator.get_bytes(count);
 
-        let text = base93_encode(message);
+        ttlet text = base93_encode(message);
 
-        let result = base93_decode(text);
+        ttlet result = base93_decode(text);
 
         ASSERT_EQ(message, result);
     }

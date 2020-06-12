@@ -66,7 +66,7 @@ public:
         default_configuration["help"] = false;
         default_configuration["log-level"] = static_cast<uint8_t>(log_level::Warning);
 
-        let command_line_configuration = parser.parse(arguments);
+        ttlet command_line_configuration = parser.parse(arguments);
         auto configuration = deep_merge(default_configuration, command_line_configuration);
 
         if (parser.has_error() || configuration["help"]) {

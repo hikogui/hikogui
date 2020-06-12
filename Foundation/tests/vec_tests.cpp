@@ -10,7 +10,7 @@ using namespace std;
 using namespace tt;
 
 TEST(Vec, Compare) {
-    let tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
+    ttlet tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
 
     ASSERT_FALSE(tmp == vec(0.0f, 0.0f, 0.0f, 0.0f));
     ASSERT_FALSE(tmp == vec(2.0f, 3.0f, 0.0f, 5.0f));
@@ -18,8 +18,8 @@ TEST(Vec, Compare) {
 }
 
 TEST(Vec, Arithmatic) {
-    let tmp1 = vec{9.0f, 6.0f, 4.0f, 14.0f};
-    let tmp2 = vec{3.0f, -2.0f, 8.0f, 7.0f};
+    ttlet tmp1 = vec{9.0f, 6.0f, 4.0f, 14.0f};
+    ttlet tmp2 = vec{3.0f, -2.0f, 8.0f, 7.0f};
 
     ASSERT_EQ(tmp1 + tmp2, vec(12.0f, 4.0f, 12.0f, 21.0f));
     ASSERT_EQ(tmp1 - tmp2, vec(6.0f, 8.0f, -4.0f, 7.0f));
@@ -52,28 +52,28 @@ TEST(Vec, Arithmatic) {
 }
 
 TEST(Vec, Length) {
-    let tmp = vec(2.0f, 3.0f, 4.0f, 0.0f);
+    ttlet tmp = vec(2.0f, 3.0f, 4.0f, 0.0f);
 
     ASSERT_EQ(length_squared(tmp), 29.0f);
     ASSERT_NEAR(length(tmp), 5.3851f, 0.001f);
 }
 
 TEST(Vec, DotProduct) {
-    let a = vec(1.0f, 3.0f, -5.0f, 0.0f);
-    let b = vec(4.0f, -2.0f, -1.0f, 0.0f);
+    ttlet a = vec(1.0f, 3.0f, -5.0f, 0.0f);
+    ttlet b = vec(4.0f, -2.0f, -1.0f, 0.0f);
 
     ASSERT_EQ(dot(a, b), 3.0f);
 }
 
 TEST(Vec, CrossProduct) {
-    let a = vec(2.0f, 3.0f, 4.0f, 0.0f);
-    let b = vec(5.0f, 6.0f, 7.0f, 0.0f);
+    ttlet a = vec(2.0f, 3.0f, 4.0f, 0.0f);
+    ttlet b = vec(5.0f, 6.0f, 7.0f, 0.0f);
 
     ASSERT_EQ(cross(a, b), vec(-3.0f, 6.0f, -3.0f));
 }
 
 TEST(Vec, Getters) {
-    let tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
+    ttlet tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
 
     ASSERT_EQ(tmp.x(), 2.0f);
     ASSERT_EQ(tmp.y(), 3.0f);
@@ -105,7 +105,7 @@ TEST(Vec, Setters) {
 
 
 TEST(Vec, Swizzle2) {
-    let tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
+    ttlet tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
 
     // Returns a homgenious 2D vector, z==0.0, w==w.
     ASSERT_EQ(tmp.xx(), vec(2.0f, 2.0f, 0.0f, 5.0f));
@@ -152,7 +152,7 @@ TEST(Vec, Swizzle2) {
 }
 
 TEST(Vec, Swizzle3) {
-    let tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
+    ttlet tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
 
     // Returns a homgenious 2D vector, z==0.0, w==w.
     ASSERT_EQ(tmp.xxx(), vec(2.0f, 2.0f, 2.0f, 5.0f));
@@ -379,7 +379,7 @@ TEST(Vec, Swizzle3) {
 }
 
 TEST(Vec, Swizzle4) {
-    let tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
+    ttlet tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};
 
     // Returns a 4D vector.
     ASSERT_EQ(tmp._0000(), vec(0.0f, 0.0f, 0.0f, 0.0f));

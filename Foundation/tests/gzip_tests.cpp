@@ -11,8 +11,8 @@ using namespace tt;
 TEST(GZip, UnzipEmpty) {
     auto decompressed = gzip_decompress(URL("file:gzip_test1.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test1.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test1.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -24,8 +24,8 @@ TEST(GZip, UnzipEmpty) {
 TEST(GZip, UnzipSingleA) {
     auto decompressed = gzip_decompress(URL("file:gzip_test2.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test2.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test2.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -37,8 +37,8 @@ TEST(GZip, UnzipSingleA) {
 TEST(GZip, UnzipText) {
     auto decompressed = gzip_decompress(URL("file:gzip_test3.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test3.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test3.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -52,8 +52,8 @@ TEST(GZip, UnzipText) {
 TEST(GZip, UnzipCpHTML) {
     auto decompressed = gzip_decompress(URL("file:gzip_test4.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test4.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test4.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -65,8 +65,8 @@ TEST(GZip, UnzipCpHTML) {
 TEST(GZip, UnzipFieldsC) {
     auto decompressed = gzip_decompress(URL("file:gzip_test5.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test5.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test5.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -78,8 +78,8 @@ TEST(GZip, UnzipFieldsC) {
 TEST(GZip, UnzipGrammarLSP) {
     auto decompressed = gzip_decompress(URL("file:gzip_test6.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test6.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test6.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -91,8 +91,8 @@ TEST(GZip, UnzipGrammarLSP) {
 TEST(GZip, UnzipSum) {
     auto decompressed = gzip_decompress(URL("file:gzip_test7.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test7.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test7.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 
@@ -104,8 +104,8 @@ TEST(GZip, UnzipSum) {
 TEST(GZip, UnzipXargs1) {
     auto decompressed = gzip_decompress(URL("file:gzip_test8.bin.gz"));
 
-    let original = FileView(URL("file:gzip_test8.bin"));
-    let original_bytes = original.bytes();
+    ttlet original = FileView(URL("file:gzip_test8.bin"));
+    ttlet original_bytes = original.bytes();
 
     ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
 

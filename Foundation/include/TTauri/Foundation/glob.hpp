@@ -252,8 +252,8 @@ inline glob_token_list_t parseGlob(std::string_view glob)
 
             default:
                 if (isRange) {
-                    let firstCharacter = static_cast<uint8_t>(tmpString.back());
-                    let lastCharacter = static_cast<uint8_t>(c);
+                    ttlet firstCharacter = static_cast<uint8_t>(tmpString.back());
+                    ttlet lastCharacter = static_cast<uint8_t>(c);
                     for (uint8_t character = firstCharacter + 1; character <= lastCharacter; character++) {
                         tmpString += static_cast<char>(character);
                     }
@@ -325,7 +325,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
     }
 
 #define MATCH_GLOB_RECURSE(out, next, end, str)\
-    switch (let tmp = matchGlob(next, end, str)) {\
+    switch (ttlet tmp = matchGlob(next, end, str)) {\
     case glob_match_result_t::No: break;\
     case glob_match_result_t::Match: return tmp;\
     case glob_match_result_t::Partial: out = tmp; break;\
@@ -335,7 +335,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
     // result may be assigned Partial by MATCH_GLOB_RECURSE.
     auto result = glob_match_result_t::No;
     bool found_slash = false;
-    let next_index = index + 1;
+    ttlet next_index = index + 1;
 
     switch (index->type) {
     case glob_token_type_t::String:
@@ -345,7 +345,7 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
         return result;
 
     case glob_token_type_t::StringList:
-        for (let &value: index->values) {
+        for (ttlet &value: index->values) {
             if (starts_with(str, value)) {
                 MATCH_GLOB_RECURSE(result, next_index, end, str.substr(value.size()));
             }

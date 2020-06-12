@@ -19,7 +19,7 @@ std::string url_encode_part(std::string_view const input, std::function<bool(cha
     std::string s;
     s.reserve(input.size() + input.size() / 2);
 
-    for (let c: input) {
+    for (ttlet c: input) {
         if (unreserved_char_check(c)) {
             // Unreserved character.
             s += c;
@@ -42,7 +42,7 @@ std::string url_decode(std::string_view const input, bool const plus_to_space) n
 
     uint8_t value = 0;
     int8_t nibble_result;
-    for (let c: input) {
+    for (ttlet c: input) {
         switch (state) {
         case state_t::Idle:
             switch (c) {
@@ -128,13 +128,13 @@ static void parse_path_split(url_parts &parts, std::vector<std::string_view> seg
         // First strip off the slash in front of the drive letter.
         segments.erase(segments.begin());
 
-        let i = segments.at(0).find(':');
+        ttlet i = segments.at(0).find(':');
         parts.drive = segments.at(0).substr(0, i);
         segments.at(0) = segments.at(0).substr(i + 1);
 
     } else if (segments.size() >= 1 && segments.at(0).find(':') != std::string_view::npos) {
         // A drive letter as the first segment of a path.
-        let i = segments.at(0).find(':');
+        ttlet i = segments.at(0).find(':');
         parts.drive = segments.at(0).substr(0, i);
         segments.at(0) = segments.at(0).substr(i + 1);
     }
@@ -161,7 +161,7 @@ static void parse_url_split(url_parts &parts, std::string_view url)
     // Find the scheme. A scheme must be at least two character
     // to differentiate it from a directory.
     for (size_t i = 0; i < url.size(); i++) {
-        let c = url.at(i);
+        ttlet c = url.at(i);
         if (c == ':' && i >= 2) {
             parts.scheme = url.substr(0, i);
             url = url.substr(i + 1);
@@ -174,14 +174,14 @@ static void parse_url_split(url_parts &parts, std::string_view url)
     }
 
     // Find the fragment.
-    let fragment_i = url.rfind('#');
+    ttlet fragment_i = url.rfind('#');
     if (fragment_i != url.npos) {
         parts.fragment = url.substr(fragment_i + 1);
         url = url.substr(0, fragment_i);
     }
 
     // Find the query.
-    let query_i = url.rfind('?');
+    ttlet query_i = url.rfind('?');
     if (query_i != url.npos) {
         parts.query = url.substr(query_i + 1);
         url = url.substr(0, query_i);
@@ -192,9 +192,9 @@ static void parse_url_split(url_parts &parts, std::string_view url)
 
 static size_t generate_size_guess(url_parts const &parts, bool only_path) noexcept
 {
-    let path_size = parts.authority.size() + parts.drive.size() + parts.segments.size() + 10;
+    ttlet path_size = parts.authority.size() + parts.drive.size() + parts.segments.size() + 10;
 
-    let start_size = only_path ?
+    ttlet start_size = only_path ?
         path_size :
         path_size + parts.scheme.size() + parts.query.size() + parts.fragment.size();
 
@@ -281,14 +281,14 @@ url_parts parse_path(std::string_view path, std::string &encodedPath) noexcept
     parts.scheme = "file"; // string_view of char[] literal has now ownership issues.
 
     // Detect path seperator.
-    let forward_count = std::count(path.begin(), path.end(), '/');
-    let backward_count = std::count(path.begin(), path.end(), '\\');
+    ttlet forward_count = std::count(path.begin(), path.end(), '/');
+    ttlet backward_count = std::count(path.begin(), path.end(), '\\');
 
     encodedPath = (forward_count >= backward_count) ?
         url_encode_part(path, is_urlchar_pchar_forward) :
         url_encode_part(path, is_urlchar_pchar_backward);
 
-    let sep = (forward_count >= backward_count) ? '/' : '\\';
+    ttlet sep = (forward_count >= backward_count) ? '/' : '\\';
 
     // Parse the path.
     parse_path_split(parts, encodedPath, sep);
@@ -350,16 +350,16 @@ url_parts concatenate_url_parts(url_parts const &lhs, url_parts const &rhs) noex
 
 std::string concatenate_url(std::string_view const lhs, std::string_view const rhs) noexcept
 {
-    let lhs_parts = parse_url(lhs);
-    let rhs_parts = parse_url(rhs);
-    let merged_parts = concatenate_url_parts(lhs_parts, rhs_parts);
+    ttlet lhs_parts = parse_url(lhs);
+    ttlet rhs_parts = parse_url(rhs);
+    ttlet merged_parts = concatenate_url_parts(lhs_parts, rhs_parts);
     return generate_url(merged_parts);
 }
 
 std::string filename_from_path(std::string_view path) noexcept
 {
-    let i_fwd = path.rfind('/');
-    let i_bwd = path.rfind('\\');
+    ttlet i_fwd = path.rfind('/');
+    ttlet i_bwd = path.rfind('\\');
 
     if (i_fwd != path.npos && (i_bwd == path.npos || i_bwd < i_fwd)) {
         return std::string{path.substr(i_fwd + 1)};

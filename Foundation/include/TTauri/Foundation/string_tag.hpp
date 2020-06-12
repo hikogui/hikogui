@@ -34,10 +34,10 @@ constexpr string_ltag operator""_ltag(char const *str, size_t) noexcept
 
 inline std::string tag_name(std::type_index tag) noexcept
 {
-    let long_name = std::string{tag.name()};
-    let split_name = split(long_name, "::"s);
+    ttlet long_name = std::string{tag.name()};
+    ttlet split_name = split(long_name, "::"s);
     if (ssize(split_name) != 0) {
-        let &last_name = split_name.back();
+        ttlet &last_name = split_name.back();
         if (ends_with(last_name, "_tag"s)) {
             return last_name.substr(0, ssize(last_name) - 4);
         } else {

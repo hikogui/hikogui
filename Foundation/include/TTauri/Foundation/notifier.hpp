@@ -50,7 +50,7 @@ public:
     size_t add_and_call(callback_type callback, Args const &... args) noexcept {
         auto lock = std::scoped_lock(mutex);
 
-        let id = add(callback);
+        ttlet id = add(callback);
 
         executing_callbacks = true;
         callback(args...);
@@ -66,7 +66,7 @@ public:
         auto lock = std::scoped_lock(mutex);
         ttauri_assert(!executing_callbacks);
 
-        let new_end = std::remove_if(callbacks.begin(), callbacks.end(), [id](let &item) {
+        ttlet new_end = std::remove_if(callbacks.begin(), callbacks.end(), [id](ttlet &item) {
             return item.first == id;
         });
         callbacks.erase(new_end, callbacks.cend());
@@ -80,7 +80,7 @@ public:
         ttauri_assert(!executing_callbacks);
 
         executing_callbacks = true;
-        for (let &[id, callback] : callbacks) {
+        for (ttlet &[id, callback] : callbacks) {
             callback(args...);
         }
         executing_callbacks = false;

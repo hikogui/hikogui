@@ -16,13 +16,13 @@ std::shared_ptr<File> FileMapping::findOrOpenFile(URL const& location, AccessMod
     static std::mutex mutex;
     static std::unordered_map<URL, std::vector<std::weak_ptr<File>>> mappedFiles;
 
-    let lock = std::scoped_lock(mutex);
+    ttlet lock = std::scoped_lock(mutex);
 
     cleanupWeakPointers(mappedFiles);
 
     // We want files to be freshly created if it did not exist before.
     auto& files = mappedFiles[location];
-    for (let &weak_file : files) {
+    for (ttlet &weak_file : files) {
         if (auto file = weak_file.lock()) {
             if (file->accessMode >= accessMode) {
                 return file;

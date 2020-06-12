@@ -87,8 +87,8 @@ public:
     }
 
     [[nodiscard]] friend rect expand(rect const &lhs, float rhs) noexcept {
-        let rightDirection = normalize(lhs.right());
-        let upDirection = normalize(lhs.up());
+        ttlet rightDirection = normalize(lhs.right());
+        ttlet upDirection = normalize(lhs.up());
 
         return {
             lhs.corner<0>() + rhs * -rightDirection + rhs * -upDirection,

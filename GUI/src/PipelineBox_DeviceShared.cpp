@@ -43,20 +43,20 @@ void DeviceShared::placeVertices(
     aarect clippingRectangle
 )
 {
-    let extraSpace = (borderSize * 0.5f) + 1.0f;
-    let outerBox = expand(box, extraSpace);
+    ttlet extraSpace = (borderSize * 0.5f) + 1.0f;
+    ttlet outerBox = expand(box, extraSpace);
 
-    let v0 = outerBox.corner<0>();
-    let v1 = outerBox.corner<1>();
-    let v2 = outerBox.corner<2>();
-    let v3 = outerBox.corner<3>();
+    ttlet v0 = outerBox.corner<0>();
+    ttlet v1 = outerBox.corner<1>();
+    ttlet v2 = outerBox.corner<2>();
+    ttlet v3 = outerBox.corner<3>();
 
-    let outerExtent = outerBox.extent();
+    ttlet outerExtent = outerBox.extent();
 
-    let t0 = outerExtent._00xy();
-    let t1 = outerExtent.x00y();
-    let t2 = outerExtent._0yx0();
-    let t3 = outerExtent.xy00();
+    ttlet t0 = outerExtent._00xy();
+    ttlet t1 = outerExtent.x00y();
+    ttlet t2 = outerExtent._0yx0();
+    ttlet t3 = outerExtent.xy00();
 
     vertices.emplace_back(v0, t0, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);
     vertices.emplace_back(v1, t1, backgroundColor, borderSize, borderColor, cornerShapes, clippingRectangle);

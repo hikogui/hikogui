@@ -15,28 +15,28 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
     style(attr_grapheme.style)
 {
     // Get the font_id that matches the requested style.
-    let style_font_id = fontBook->find_font(attr_grapheme.style.family_id, attr_grapheme.style.variant);
+    ttlet style_font_id = fontBook->find_font(attr_grapheme.style.family_id, attr_grapheme.style.variant);
 
     // The end-of-paragraph is represented by a space glyph, which is usefull for
     // producing a correct cursor at an empty line at the end of a paragraph.
-    let g = (attr_grapheme.grapheme == '\n') ? Grapheme{0} : attr_grapheme.grapheme;
+    ttlet g = (attr_grapheme.grapheme == '\n') ? Grapheme{0} : attr_grapheme.grapheme;
 
     glyphs = fontBook->find_glyph(style_font_id, g);
 
     // Get the font_id that contained the glyph, this may be different if the glyph was not in the
     // style_font and was found in a fallback font. This may happend for text in a different language
     // then the language of the requested font.
-    let actual_font_id = glyphs.font_id();
+    ttlet actual_font_id = glyphs.font_id();
 
     // Load the metrics for this attributed glyph.
-    let font = &(fontBook->get_font(actual_font_id));
+    ttlet font = &(fontBook->get_font(actual_font_id));
     ttauri_assume(font != nullptr);
 
     // Get the metrics of the main glyph.
-    let this_glyph = glyphs.front();
+    ttlet this_glyph = glyphs.front();
 
     // If the next glyph is of the same font, then use it for kerning reasons.
-    let next_glyph = (next_attr_glyph && next_attr_glyph->glyphs.font_id() == actual_font_id) ?
+    ttlet next_glyph = (next_attr_glyph && next_attr_glyph->glyphs.font_id() == actual_font_id) ?
         next_attr_glyph->glyphs.front() :
         GlyphID{};
 
@@ -58,7 +58,7 @@ AttributedGlyph::AttributedGlyph(AttributedGrapheme const &attr_grapheme, Attrib
 
 [[nodiscard]] Path AttributedGlyph::get_path() const noexcept
 {
-    let M = mat::T(position) * mat::S(style.scaled_size(), style.scaled_size());
+    ttlet M = mat::T(position) * mat::S(style.scaled_size(), style.scaled_size());
 
     auto [glyph_path, glyph_bounding_box] = glyphs.getPathAndBoundingBox();
     auto transformed_glyph_path = M * glyph_path;

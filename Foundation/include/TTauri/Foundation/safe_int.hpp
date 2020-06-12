@@ -67,7 +67,7 @@ force_inline T safe_convert(U const &rhs) noexcept(OnOverflow != on_overflow_t::
 {
     T r;
     // Optimized away when is_same_v<T,U>
-    let overflow = convert_overflow(rhs, &r);
+    ttlet overflow = convert_overflow(rhs, &r);
     return safe_handle_overflow<T,OnOverflow>(r, overflow, rhs >= 0);
 }
 
@@ -75,10 +75,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 force_inline make_promote_t<T,U> safe_add(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T,U> r;
-    let lhs_ = static_cast<make_promote_t<T,U>>(lhs);
-    let rhs_ = static_cast<make_promote_t<T,U>>(rhs);
+    ttlet lhs_ = static_cast<make_promote_t<T,U>>(lhs);
+    ttlet rhs_ = static_cast<make_promote_t<T,U>>(rhs);
 
-    let overflow = add_overflow(lhs_, rhs_, &r);
+    ttlet overflow = add_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T,OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -86,10 +86,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 force_inline make_promote_t<T,U> safe_sub(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T,U> r;
-    let lhs_ = static_cast<make_promote_t<T,U>>(lhs);
-    let rhs_ = static_cast<make_promote_t<T,U>>(rhs);
+    ttlet lhs_ = static_cast<make_promote_t<T,U>>(lhs);
+    ttlet rhs_ = static_cast<make_promote_t<T,U>>(rhs);
 
-    let overflow = sub_overflow(lhs_, rhs_, &r);
+    ttlet overflow = sub_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T,OnOverflow>(r, overflow, rhs_ >= 0);
 }
 
@@ -97,10 +97,10 @@ template<on_overflow_t OnOverflow, typename T, typename U>
 force_inline make_promote_t<T,U> safe_mul(T const &lhs, U const &rhs) noexcept(OnOverflow != on_overflow_t::Throw)
 {
     make_promote_t<T,U> r;
-    let lhs_ = static_cast<make_promote_t<T,U>>(lhs);
-    let rhs_ = static_cast<make_promote_t<T,U>>(rhs);
+    ttlet lhs_ = static_cast<make_promote_t<T,U>>(lhs);
+    ttlet rhs_ = static_cast<make_promote_t<T,U>>(rhs);
 
-    let overflow = mul_overflow(lhs_, rhs_, &r);
+    ttlet overflow = mul_overflow(lhs_, rhs_, &r);
     return safe_handle_overflow<T,OnOverflow>(r, overflow, rhs_ >= 0);
 }
 

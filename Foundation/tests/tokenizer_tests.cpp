@@ -13,7 +13,7 @@ using namespace tt;
 
 #define ASSERT_TOKEN_EQ(nextToken, name, value)\
     do {\
-        let expectedToken = token_t{tokenizer_name_t::name, value};\
+        ttlet expectedToken = token_t{tokenizer_name_t::name, value};\
         ASSERT_EQ(nextToken, expectedToken);\
     } while (false)
 

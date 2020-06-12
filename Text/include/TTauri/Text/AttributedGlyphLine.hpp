@@ -79,12 +79,12 @@ struct AttributedGlyphLine {
     [[nodiscard]] aarect boundingBox() const noexcept {
         ttauri_assume(ssize(line) >= 1);
 
-        let p0 = vec::point(
+        ttlet p0 = vec::point(
             line.front().position.x(),
             line.front().position.y() - descender
         );
 
-        let p3 = vec::point(
+        ttlet p3 = vec::point(
             line.back().position.x() + line.back().metrics.advance.x(),
             line.back().position.y() + ascender
         );
@@ -111,7 +111,7 @@ struct AttributedGlyphLine {
             return cend() - 1;
         }
 
-        return std::lower_bound(cbegin(), cend(), coordinate.x(), [](let &a, let &b) {
+        return std::lower_bound(cbegin(), cend(), coordinate.x(), [](ttlet &a, ttlet &b) {
             return (a.position.x() + a.metrics.advance.x()) < b;
         });
     }
@@ -143,7 +143,7 @@ private:
 
         auto totalWidth = 0.0f;
         auto validWidth = 0.0f;
-        for (let &g: line) {
+        for (ttlet &g: line) {
             totalWidth += g.metrics.advance.x();
             ascender = std::max(ascender, g.metrics.ascender);
             descender = std::max(descender, g.metrics.descender);

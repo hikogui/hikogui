@@ -14,17 +14,17 @@ using namespace tt;
 TEST(SafeIntTests, Add) {
     tint64_t r;
 
-    //let zero = tint64_t{0};
-    //let one = tint64_t{1};
-    //let minTwo = tint64_t{-2};
-    //let minOne = tint64_t{-1};
-    //let two = tint64_t{2};
-    //let maximum = tint64_t{numeric_limits<int64_t>::max()};
-    //let high = tint64_t{maximum - 1};
-    //let lessHigh = tint64_t{maximum - 2};
-    let minimum = tint64_t{numeric_limits<int64_t>::min()};
-    //let low = tint64_t{minimum + 1};
-    //let lessLow = tint64_t{minimum + 2};
+    //ttlet zero = tint64_t{0};
+    //ttlet one = tint64_t{1};
+    //ttlet minTwo = tint64_t{-2};
+    //ttlet minOne = tint64_t{-1};
+    //ttlet two = tint64_t{2};
+    //ttlet maximum = tint64_t{numeric_limits<int64_t>::max()};
+    //ttlet high = tint64_t{maximum - 1};
+    //ttlet lessHigh = tint64_t{maximum - 2};
+    ttlet minimum = tint64_t{numeric_limits<int64_t>::min()};
+    //ttlet low = tint64_t{minimum + 1};
+    //ttlet lessLow = tint64_t{minimum + 2};
 
     ASSERT_THROW(r = minimum + minimum, tt::math_error);
 

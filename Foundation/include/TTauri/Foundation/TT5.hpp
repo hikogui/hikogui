@@ -155,12 +155,12 @@ constexpr ssize_t tt5_add_code(T &r, uint16_t code) noexcept
 [[nodiscard]] constexpr bool tt5_want_to_lock(uint64_t ring) noexcept
 {
     ring >>= 10;
-    let next_page = ring & 3;
+    ttlet next_page = ring & 3;
 
     bool r = true;
     for (int i = 0; i != 3; ++i) {
         ring >>= 16;
-        let later_page = ring & 3;
+        ttlet later_page = ring & 3;
         r = r && (later_page == 3 || later_page == next_page);
     }
     return r;
@@ -189,7 +189,7 @@ template<typename T>
     }
 
     while (ring) {
-        let next_page = (ring >> 10) & 3;
+        ttlet next_page = (ring >> 10) & 3;
 
         if (next_page != 3 && next_page != locked_page) {
             if (tt5_want_to_lock(ring)) {

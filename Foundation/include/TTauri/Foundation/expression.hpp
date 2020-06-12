@@ -162,13 +162,13 @@ struct expression_evaluation_context {
         }
 
         if (has_locals()) {
-            let i = locals().find(name);
+            ttlet i = locals().find(name);
             if (i != locals().end()) {
                 return i->second;
             }
         }
 
-        let j = globals.find(name);
+        ttlet j = globals.find(name);
         if (j != globals.end()) {
             return j->second;
         }
@@ -180,13 +180,13 @@ struct expression_evaluation_context {
         ttauri_assert(name.size() > 0);
 
         if (has_locals()) {
-            let i = locals().find(name);
+            ttlet i = locals().find(name);
             if (i != locals().end()) {
                 return i->second;
             }
         }
 
-        let j = globals.find(name);
+        ttlet j = globals.find(name);
         if (j != globals.end()) {
             return j->second;
         }
@@ -237,12 +237,12 @@ struct expression_post_process_context {
             }
         }
 
-        let i = functions.find(name);
+        ttlet i = functions.find(name);
         if (i != functions.end()) {
             return i->second;
         }
 
-        let j = global_functions.find(name);
+        ttlet j = global_functions.find(name);
         if (j != global_functions.end()) {
             return j->second;
         }
@@ -266,7 +266,7 @@ struct expression_post_process_context {
     }
 
     [[nodiscard]] filter_type get_filter(std::string const &name) const noexcept {
-        let i = global_filters.find(name);
+        ttlet i = global_filters.find(name);
         if (i != global_filters.end()) {
             return i->second;
         }
@@ -275,7 +275,7 @@ struct expression_post_process_context {
     }
 
     [[nodiscard]] method_type get_method(std::string const &name) const noexcept {
-        let i = global_methods.find(name);
+        ttlet i = global_methods.find(name);
         if (i != global_methods.end()) {
             return i->second;
         }

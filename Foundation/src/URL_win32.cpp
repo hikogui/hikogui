@@ -53,7 +53,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
         no_default;
     }
 
-    let base_localAppData = URL::urlFromWPath(wchar_localAppData);
+    ttlet base_localAppData = URL::urlFromWPath(wchar_localAppData);
     return base_localAppData / applicationName;
 }
 
@@ -79,7 +79,7 @@ std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path
     std::vector<std::string> filenames;
     WIN32_FIND_DATAW fileData;
 
-    let findHandle = FindFirstFileW(URL::nativeWPathFromPath(searchPath).data(), &fileData);
+    ttlet findHandle = FindFirstFileW(URL::nativeWPathFromPath(searchPath).data(), &fileData);
     if (findHandle == INVALID_HANDLE_VALUE) {
         return filenames;
     }

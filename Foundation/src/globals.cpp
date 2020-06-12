@@ -47,11 +47,11 @@ static void maintenanceThreadProcedure() noexcept
         std::this_thread::sleep_for(100ms);
 
         struct maintenance_tag {};
-        let t1 = trace<maintenance_tag>{};
+        ttlet t1 = trace<maintenance_tag>{};
 
         {
             struct calibrate_tag {};
-            let t2 = trace<calibrate_tag>{};
+            ttlet t2 = trace<calibrate_tag>{};
             sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
             sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
         }
@@ -74,7 +74,7 @@ void addStaticResource(std::string const &key, nonstd::span<std::byte const> val
 
 nonstd::span<std::byte const> getStaticResource(std::string const &key)
 {
-    let i = staticResources.find(key);
+    ttlet i = staticResources.find(key);
     if (i == staticResources.end()) {
         TTAURI_THROW(key_error("Could not find static resource")
             .set<key_tag>(key)
@@ -98,7 +98,7 @@ void foundation_startup()
     // The logger is the first object that will use the timezone database.
     // So we will initialize it here.
 #if USE_OS_TZDB == 0
-    let tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
+    ttlet tzdata_location = URL::urlFromResourceDirectory() / "tzdata";
     date::set_install(tzdata_location.nativePath());
 #endif
     try {

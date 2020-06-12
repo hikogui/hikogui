@@ -124,7 +124,7 @@ static void BidiX1_X8(BidiContext &context) noexcept
     auto validIsolateCount = 0;
 
     auto i = context.characters.begin();
-    for (let &paragraph : context.paragraphs) {
+    for (ttlet &paragraph : context.paragraphs) {
         // X1.
         stack.clear();
         stack.emplace_back(paragraph.embeddingLevel, BidiClass::Unknown, false);
@@ -135,10 +135,10 @@ static void BidiX1_X8(BidiContext &context) noexcept
         for (; i->bidiClass != BidiClass::B; ++i) {
             ttauri_assume(i != context.characters.cend());
 
-            let currentEmbedingLevel = stack.back().embeddingLevel;
-            let currentOverrideStatus = stack.back().overrideStatus;
-            let nextOddEmbedingLevel = nextOdd(currentEmbedingLevel);
-            let nextEvenEmbedingLevel = nextEven(currentEmbedingLevel);
+            ttlet currentEmbedingLevel = stack.back().embeddingLevel;
+            ttlet currentOverrideStatus = stack.back().overrideStatus;
+            ttlet nextOddEmbedingLevel = nextOdd(currentEmbedingLevel);
+            ttlet nextEvenEmbedingLevel = nextEven(currentEmbedingLevel);
 
             switch (i->bidiClass) {
             case BidiClass::RLE: // X2. Explicit embeddings
@@ -283,7 +283,7 @@ static void BidiX10(BidiContext &context) noexcept
     // X10. Find all sequences matching the same embedded level
     {
         auto i = context.characters.begin();
-        for (let &paragraph : context.paragraphs) {
+        for (ttlet &paragraph : context.paragraphs) {
             context.isolateSequences.emplace_back(i);
             auto &firstSequenceOfParagraph = context.isolateSequences.back();
 
@@ -317,14 +317,14 @@ static void BidiX10(BidiContext &context) noexcept
             // level is higher or equal to paragraph-level.
             i->sos = (i->embeddingLevel % 2 == 1) ? BidiClass::R : BidiClass::L;
         } else {
-            let maxEmbeddingLevel = std::max(i->embeddingLevel, (i-1)->embeddingLevel);
+            ttlet maxEmbeddingLevel = std::max(i->embeddingLevel, (i-1)->embeddingLevel);
             i->sos = (maxEmbeddingLevel % 2 == 1) ? BidiClass::R : BidiClass::L;
         }
         if (i->endOfParagraph) {
             // level is higher or equal to paragraph-level.
             i->eos = (i->embeddingLevel % 2 == 1) ? BidiClass::R : BidiClass::L;
         } else {
-            let maxEmbeddingLevel = std::max(i->embeddingLevel, (i+1)->embeddingLevel);
+            ttlet maxEmbeddingLevel = std::max(i->embeddingLevel, (i+1)->embeddingLevel);
             i->eos = (maxEmbeddingLevel % 2 == 1) ? BidiClass::R : BidiClass::L;
         }
     }
@@ -630,7 +630,7 @@ static void BidiL1(BidiContext &context) noexcept
     auto i = context.characters.begin();
     std::optional<decltype(i)> firstWS = {};
 
-    for (let &paragraph : context.paragraphs) {
+    for (ttlet &paragraph : context.paragraphs) {
         for (; i->origBidiClass != BidiClass::B; ++i) {
             switch (i->origBidiClass) {
             case BidiClass::S:

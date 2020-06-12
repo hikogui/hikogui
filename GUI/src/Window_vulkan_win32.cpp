@@ -36,7 +36,7 @@ gsl_suppress3(26489,lifetime.1,type.1)
 static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_NCCREATE && lParam) {
-        let createData = reinterpret_cast<CREATESTRUCT *>(lParam);
+        ttlet createData = reinterpret_cast<CREATESTRUCT *>(lParam);
 
         if (createData->lpCreateParams) {
             win32WindowMap[hwnd] = static_cast<Window_vulkan_win32 *>(createData->lpCreateParams);
@@ -45,7 +45,7 @@ static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
     auto i = win32WindowMap.find(hwnd);
     if (i != win32WindowMap.end()) {
-        let window = i->second;
+        ttlet window = i->second;
 
         LRESULT result = window->windowProc(uMsg, wParam, lParam);
         if (result == -1) {
@@ -238,19 +238,19 @@ void Window_vulkan_win32::openingWindow()
         case CF_TEXT:
         case CF_OEMTEXT:
         case CF_UNICODETEXT: {
-            let cb_data = GetClipboardData(CF_UNICODETEXT);
+            ttlet cb_data = GetClipboardData(CF_UNICODETEXT);
             if (cb_data == nullptr) {
                 LOG_ERROR("Could not get clipboard data: '{}'", getLastErrorMessage());
                 goto done;
             }
 
-            let wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
+            ttlet wstr_c = reinterpret_cast<wchar_t *>(GlobalLock(cb_data));
             if (wstr_c == nullptr) {
                 LOG_ERROR("Could not lock clipboard data: '{}'", getLastErrorMessage());
                 goto done;
             }
 
-            let wstr = std::wstring_view(wstr_c);
+            ttlet wstr = std::wstring_view(wstr_c);
             r = tt::to_string(wstr);
             LOG_DEBUG("getTextFromClipboad '{}'", r);
 
@@ -421,7 +421,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_CREATE: {
-        let createstruct_ptr = to_ptr<CREATESTRUCT>(lParam);
+        ttlet createstruct_ptr = to_ptr<CREATESTRUCT>(lParam);
         RECT rect;
         rect.left = createstruct_ptr->x;
         rect.top = createstruct_ptr->y;
@@ -451,17 +451,17 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_SIZING: {
-        let rect_ptr = to_ptr<RECT>(lParam);
+        ttlet rect_ptr = to_ptr<RECT>(lParam);
         setOSWindowRectangleFromRECT(*rect_ptr);
         } break;
 
     case WM_MOVING: {
-        let rect_ptr = to_ptr<RECT>(lParam);
+        ttlet rect_ptr = to_ptr<RECT>(lParam);
         setOSWindowRectangleFromRECT(*rect_ptr);
         } break;
 
     case WM_WINDOWPOSCHANGED: {
-        let windowpos_ptr = to_ptr<WINDOWPOS>(lParam);
+        ttlet windowpos_ptr = to_ptr<WINDOWPOS>(lParam);
         RECT rect;
         rect.left = windowpos_ptr->x;
         rect.top = windowpos_ptr->y;
@@ -484,7 +484,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_GETMINMAXINFO: {
-        let minmaxinfo = to_ptr<MINMAXINFO>(lParam);
+        ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);
         minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximumWindowExtent.x());
         minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximumWindowExtent.y());
         minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimumWindowExtent.x());
@@ -533,9 +533,9 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
 
         LOG_ERROR("Key 0x{:x} extended={}", key_code, extended);
 
-        let key_state = getKeyboardState();
-        let key_modifiers = getKeyboardModifiers();
-        let virtual_key = to_KeyboardVirtualKey(key_code, extended, key_modifiers);
+        ttlet key_state = getKeyboardState();
+        ttlet key_modifiers = getKeyboardModifiers();
+        ttlet virtual_key = to_KeyboardVirtualKey(key_code, extended, key_modifiers);
         if (virtual_key != KeyboardVirtualKey::Nul) {
             handleKeyboardEvent(key_state, key_modifiers, virtual_key);
         }
@@ -572,12 +572,12 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_NCHITTEST: {
-        let screenPosition = vec{
+        ttlet screenPosition = vec{
             GET_X_LPARAM(lParam),
             0.0 - GET_Y_LPARAM(lParam)
         };
 
-        let insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
+        ttlet insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};
 
         switch (hitBoxTest(insideWindowPosition).type) {
         case HitBox::Type::BottomResizeBorder: currentCursor = Cursor::None; return HTBOTTOM;
@@ -718,7 +718,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_MOUSEMOVE: {
-        let dragging = 
+        ttlet dragging = 
             mouseEvent.down.leftButton ||
             mouseEvent.down.middleButton ||
             mouseEvent.down.rightButton ||

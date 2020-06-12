@@ -12,7 +12,7 @@ using namespace std::literals;
 using namespace tt;
 
 TEST(URLTests, parsing) {
-    let a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
+    ttlet a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");
 
     ASSERT_EQ(a.scheme(), "scheme");
     ASSERT_EQ(a.isAbsolute(), true);
@@ -23,15 +23,15 @@ TEST(URLTests, parsing) {
 }
 
 TEST(URLTests, relativePath) {
-    let a = URL("file:foo/bar.txt");
+    ttlet a = URL("file:foo/bar.txt");
 
     ASSERT_EQ(a.path(), "foo/bar.txt");
 }
 
 TEST(URLTests, glob1) {
-    let executableDirectory = URL::urlFromExecutableDirectory();
+    ttlet executableDirectory = URL::urlFromExecutableDirectory();
     
-    let txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
+    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("*.txt");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "file_view.txt"s); }));
@@ -39,9 +39,9 @@ TEST(URLTests, glob1) {
 }
 
 TEST(URLTests, glob2) {
-    let executableDirectory = URL::urlFromExecutableDirectory();
+    ttlet executableDirectory = URL::urlFromExecutableDirectory();
 
-    let txt_file_glob = executableDirectory.urlByAppendingPath("**/*.hpp");
+    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.hpp");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
     ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "include/TTauri/Foundation/config.hpp"s); }));

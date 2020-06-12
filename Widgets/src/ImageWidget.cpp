@@ -28,7 +28,7 @@ void ImageWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 
 void ImageWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    let drawingBackingImage = backingImage.loadOrDraw(
+    ttlet drawingBackingImage = backingImage.loadOrDraw(
         window,
         image.extent(),
         [this](auto &stagingImage) {
@@ -42,7 +42,7 @@ void ImageWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_poi
     }
 
     if (backingImage.image) {
-        let currentScale = (extent() / vec{backingImage.image->extent}).xy11();
+        ttlet currentScale = (extent() / vec{backingImage.image->extent}).xy11();
 
         auto context = drawContext;
         context.transform = context.transform * mat::S(currentScale);
@@ -54,8 +54,8 @@ void ImageWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_poi
 
 void ImageWidget::drawTrianglesOutward(Path &path, vec position, float radius) noexcept
 {
-    let L = radius * 0.5;
-    let W = radius * 0.3;
+    ttlet L = radius * 0.5;
+    ttlet W = radius * 0.3;
 
     path.moveTo({position.x() - L, position.y() - L});
     path.lineTo({position.x() + W, position.y() - L});
@@ -70,7 +70,7 @@ void ImageWidget::drawTrianglesOutward(Path &path, vec position, float radius) n
 
 void ImageWidget::drawTrianglesInward(Path &path, vec position, float radius) noexcept
 {
-    let L = radius * 0.8;
+    ttlet L = radius * 0.8;
 
     path.moveTo({position.x(), position.y()});
     path.lineTo({position.x() - L, position.y()});
@@ -85,8 +85,8 @@ void ImageWidget::drawTrianglesInward(Path &path, vec position, float radius) no
 
 void ImageWidget::drawCross(Path &path, vec position, float radius) noexcept
 {
-    let W = sqrt(0.5);
-    let L = radius * 0.5;
+    ttlet W = sqrt(0.5);
+    ttlet L = radius * 0.5;
     
     // Left bottom line.
     path.moveTo({position.x() - W, position.y()});
@@ -116,7 +116,7 @@ PixelMap<R16G16B16A16SFloat> ImageWidget::drawApplicationIconImage(PipelineImage
     auto linearMap = PixelMap<R16G16B16A16SFloat>{image.extent};
     fill(linearMap);
 
-    let iconPath = applicationIcon.centerScale(vec{image.extent}, 3.0);
+    ttlet iconPath = applicationIcon.centerScale(vec{image.extent}, 3.0);
     composit(linearMap, iconPath);
 
     if (!window.active) {
@@ -127,15 +127,15 @@ PixelMap<R16G16B16A16SFloat> ImageWidget::drawApplicationIconImage(PipelineImage
 
 PixelMap<R16G16B16A16SFloat> ImageWidget::drawTrafficLightsImage(PipelineImage::Image &image) noexcept
 {
-    let redCenter = vec{
+    ttlet redCenter = vec{
         MARGIN + RADIUS,
         extent().height() / 2.0
     };
-    let yellowCenter = vec{
+    ttlet yellowCenter = vec{
         MARGIN + DIAMETER + SPACING + RADIUS,
         extent().height() / 2.0
     };
-    let greenCenter = vec{
+    ttlet greenCenter = vec{
         MARGIN + DIAMETER + SPACING + DIAMETER + SPACING + RADIUS,
         extent().height() / 2.0
     };
@@ -203,22 +203,22 @@ PipelineImage::Backing::ImagePixelMap ImageWidget::drawImage(std::shared_ptr<Pip
 
 std::tuple<aarect, aarect, aarect, aarect> ImageWidget::getButtonRectangles() const noexcept
 {
-    let sysmenuButtonBox = aarect{
+    ttlet sysmenuButtonBox = aarect{
         vec::point(0.0, 0.0),
         {extent().height(), extent().height()}
     };
 
-    let redButtonBox = aarect{
+    ttlet redButtonBox = aarect{
         vec::point(MARGIN, MARGIN),
         {DIAMETER, DIAMETER}
     };
 
-    let yellowButtonBox = aarect{
+    ttlet yellowButtonBox = aarect{
         vec::point(MARGIN + DIAMETER + SPACING, MARGIN),
         {DIAMETER, DIAMETER}
     };
 
-    let greenButtonBox = aarect{
+    ttlet greenButtonBox = aarect{
         vec::point(MARGIN + DIAMETER * 2.0 + SPACING * 2.0, MARGIN),
         {DIAMETER, DIAMETER}
     };
@@ -234,7 +234,7 @@ void ImageWidget::handleMouseEvent(MouseEvent const &event) noexcept
         return;
 
     } else if constexpr (operatingSystem == OperatingSystem::MacOS) {
-        let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
+        ttlet [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
         if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
             if (pressedRed) {
@@ -272,7 +272,7 @@ void ImageWidget::handleMouseEvent(MouseEvent const &event) noexcept
 
 HitBox ImageWidget::hitBoxTest(vec position) const noexcept
 {
-    let [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
+    ttlet [redButtonRect, yellowButtonRect, greenButtonRect, sysmenuButtonBox] = getButtonRectangles();
 
     auto r = HitBox{};
 

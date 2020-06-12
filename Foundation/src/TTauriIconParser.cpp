@@ -38,7 +38,7 @@ struct little_point_buf_t {
     }
 
     BezierPoint::Type type() const noexcept {
-        let type = (x.flag() ? 1 : 0) | (y.flag() ? 2 : 0);
+        ttlet type = (x.flag() ? 1 : 0) | (y.flag() ? 2 : 0);
         switch (type) {
         case 0b00: return BezierPoint::Type::Anchor;
         case 0b11: return BezierPoint::Type::QuadraticControl;
@@ -97,15 +97,15 @@ struct Layer {
 
 static std::vector<BezierPoint> parseContour(nonstd::span<std::byte const> bytes, ssize_t &offset)
 {
-    let header = make_placement_ptr<contour_buf_t>(bytes, offset);
+    ttlet header = make_placement_ptr<contour_buf_t>(bytes, offset);
 
-    let nr_points = int{header->nr_points.value()};
+    ttlet nr_points = int{header->nr_points.value()};
 
     auto contour = std::vector<BezierPoint>{};
     contour.reserve(nr_points);
 
     for (int i = 0; i < nr_points; i++) {
-        let point = make_placement_ptr<little_point_buf_t>(bytes, offset);
+        ttlet point = make_placement_ptr<little_point_buf_t>(bytes, offset);
 
         contour.push_back(point->value());
     }
@@ -115,7 +115,7 @@ static std::vector<BezierPoint> parseContour(nonstd::span<std::byte const> bytes
 
 static Layer parsePath(nonstd::span<std::byte const> bytes, ssize_t &offset)
 {
-    let header = make_placement_ptr<path_buf_t>(bytes, offset);
+    ttlet header = make_placement_ptr<path_buf_t>(bytes, offset);
 
     auto layer = Layer{};
     layer.fillColor = header->fill_color.value();
@@ -123,7 +123,7 @@ static Layer parsePath(nonstd::span<std::byte const> bytes, ssize_t &offset)
     layer.strokeWidth = header->stroke_width.value();
     layer.lineJoinStyle = header->stroke_width.flag() ? LineJoinStyle::Bevel : LineJoinStyle::Miter;
 
-    let nr_contours = int{header->nr_contours.value()};
+    ttlet nr_contours = int{header->nr_contours.value()};
     for (int i = 0; i < nr_contours; i++) {
         layer.path.addContour(parseContour(bytes, offset));
     }
@@ -135,7 +135,7 @@ Path parseTTauriIcon(nonstd::span<std::byte const> bytes)
 {
     ssize_t offset = 0;
 
-    let header = make_placement_ptr<header_buf_t>(bytes, offset);
+    ttlet header = make_placement_ptr<header_buf_t>(bytes, offset);
 
     if (!(
         header->magic[0] == 'T' &&
@@ -146,11 +146,11 @@ Path parseTTauriIcon(nonstd::span<std::byte const> bytes)
         TTAURI_THROW(parse_error("Expected 'TTIC' magic in header"));
     }
 
-    let nr_paths = int{header->nr_paths.value()};
+    ttlet nr_paths = int{header->nr_paths.value()};
 
     auto drawing = Path{};
     for (int i = 0; i < nr_paths; i++) {
-        let layer = parsePath(bytes, offset);
+        ttlet layer = parsePath(bytes, offset);
 
         if (layer.fillColor.a() > 0.001) {
             drawing.addPath(layer.path, layer.fillColor);

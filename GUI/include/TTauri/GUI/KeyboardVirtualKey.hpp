@@ -42,7 +42,7 @@ enum class KeyboardVirtualKey : uint8_t {
     MediaNextTrack, MediaPrevTrack, MediaStop, MediaPlayPause,
 };
 
-inline let string_to_KeyboardVirtualKey_table = std::unordered_map<std::string,KeyboardVirtualKey>{
+inline ttlet string_to_KeyboardVirtualKey_table = std::unordered_map<std::string,KeyboardVirtualKey>{
     {"0", KeyboardVirtualKey::_0}, 
     {"1", KeyboardVirtualKey::_1}, 
     {"2", KeyboardVirtualKey::_2}, 
@@ -171,8 +171,8 @@ inline let string_to_KeyboardVirtualKey_table = std::unordered_map<std::string,K
 
 inline KeyboardVirtualKey to_KeyboardVirtualKey(std::string_view s)
 {
-    let lower_s = to_lower(s);
-    let i = string_to_KeyboardVirtualKey_table.find(lower_s);
+    ttlet lower_s = to_lower(s);
+    ttlet i = string_to_KeyboardVirtualKey_table.find(lower_s);
     if (i != string_to_KeyboardVirtualKey_table.cend()) {
         return i->second;
     }

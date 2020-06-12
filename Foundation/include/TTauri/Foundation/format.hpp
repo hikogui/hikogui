@@ -10,7 +10,7 @@ constexpr inline bool format_uses_arg_ids(const char *fmt)
     bool start_placeholder = false;
 
     while (true) {
-        let c = *(fmt++);
+        ttlet c = *(fmt++);
         if (c == 0) {
             return false;
         } else if (c == '{') {

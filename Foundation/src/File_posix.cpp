@@ -70,7 +70,7 @@ File::File(URL const &location, AccessMode accessMode) :
 
     int permissions = 0666;
 
-    let fileName = location.nativePath();
+    ttlet fileName = location.nativePath();
     if ((fileHandle = ::open(fileName.data(), openFlags, permissions)) == -1) {
         TTAURI_THROW(io_error("Could not open file")
             .set<error_message_tag>(getLastErrorMessage())
@@ -99,7 +99,7 @@ void File::close()
 
 size_t File::fileSize(URL const &url)
 {
-    let name = url.nativePath();
+    ttlet name = url.nativePath();
 
     struct ::stat statbuf;
 

@@ -49,9 +49,9 @@ struct sRGB {
 
 void png::read_header(nonstd::span<std::byte const> &bytes, ssize_t &offset)
 {
-    let png_header = make_placement_ptr<PNGHeader>(bytes);
+    ttlet png_header = make_placement_ptr<PNGHeader>(bytes);
 
-    let valid_signature =
+    ttlet valid_signature =
         png_header->signature[0] == 137 &&
         png_header->signature[1] == 80 &&
         png_header->signature[2] == 78 &&
@@ -66,8 +66,8 @@ void png::read_header(nonstd::span<std::byte const> &bytes, ssize_t &offset)
 
 void png::generate_sRGB_transfer_function() noexcept
 {
-    let value_range = bit_depth == 8 ? 256 : 65536;
-    let value_range_f = numeric_cast<float>(value_range);
+    ttlet value_range = bit_depth == 8 ? 256 : 65536;
+    ttlet value_range_f = numeric_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = numeric_cast<float>(i) / value_range_f;
         transfer_function.push_back(sRGB_gamma_to_linear(u));
@@ -79,8 +79,8 @@ void png::generate_Rec2100_transfer_function() noexcept
     // SDR brightness is 80 cd/m2. Rec2100/PQ brightness is 10,000 cd/m2.
     constexpr float hdr_multiplier = 10'000.0f / 80.0f;
 
-    let value_range = bit_depth == 8 ? 256 : 65536;
-    let value_range_f = numeric_cast<float>(value_range);
+    ttlet value_range = bit_depth == 8 ? 256 : 65536;
+    ttlet value_range_f = numeric_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = numeric_cast<float>(i) / value_range_f;
         transfer_function.push_back(Rec2100_gamma_to_linear(u) * hdr_multiplier);
@@ -89,8 +89,8 @@ void png::generate_Rec2100_transfer_function() noexcept
 
 void png::generate_gamma_transfer_function(float gamma) noexcept
 {
-    let value_range = bit_depth == 8 ? 256 : 65536;
-    let value_range_f = numeric_cast<float>(value_range);
+    ttlet value_range = bit_depth == 8 ? 256 : 65536;
+    ttlet value_range_f = numeric_cast<float>(value_range);
     for (int i = 0; i != value_range; ++i) {
         auto u = numeric_cast<float>(i) / value_range_f;
         transfer_function.push_back(powf(u, gamma));
@@ -100,7 +100,7 @@ void png::generate_gamma_transfer_function(float gamma) noexcept
 
 void png::read_IHDR(nonstd::span<std::byte const> &bytes)
 {
-    let ihdr = make_placement_ptr<IHDR>(bytes);
+    ttlet ihdr = make_placement_ptr<IHDR>(bytes);
 
     width = ihdr->width.value();
     height = ihdr->height.value();
@@ -141,9 +141,9 @@ void png::read_IHDR(nonstd::span<std::byte const> &bytes)
 
 void png::read_cHRM(nonstd::span<std::byte const> &bytes)
 {
-    let chrm = make_placement_ptr<cHRM>(bytes);
+    ttlet chrm = make_placement_ptr<cHRM>(bytes);
 
-    let color_to_XYZ = mat::RGBtoXYZ(
+    ttlet color_to_XYZ = mat::RGBtoXYZ(
         numeric_cast<float>(chrm->white_point_x.value()) / 100'000.0f,
         numeric_cast<float>(chrm->white_point_y.value()) / 100'000.0f,
         numeric_cast<float>(chrm->red_x.value()) / 100'000.0f,
@@ -159,8 +159,8 @@ void png::read_cHRM(nonstd::span<std::byte const> &bytes)
 
 void png::read_gAMA(nonstd::span<std::byte const> &bytes)
 {
-    let gama = make_placement_ptr<gAMA>(bytes);
-    let gamma = numeric_cast<float>(gama->gamma.value()) / 100'000.0f;
+    ttlet gama = make_placement_ptr<gAMA>(bytes);
+    ttlet gamma = numeric_cast<float>(gama->gamma.value()) / 100'000.0f;
     parse_assert2(gamma != 0.0f, "Gamma value can not be zero");
      
     generate_gamma_transfer_function(1.0f / gamma);
@@ -168,8 +168,8 @@ void png::read_gAMA(nonstd::span<std::byte const> &bytes)
 
 void png::read_sRGB(nonstd::span<std::byte const> &bytes)
 {
-    let srgb = make_placement_ptr<sRGB>(bytes);
-    let rendering_intent = srgb->rendering_intent;
+    ttlet srgb = make_placement_ptr<sRGB>(bytes);
+    ttlet rendering_intent = srgb->rendering_intent;
     parse_assert2(rendering_intent <= 3, "Invalid rendering intent");
 
     color_to_sRGB = mat::I();
@@ -215,8 +215,8 @@ void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
     bool has_IEND = false;
 
     while (!has_IEND) {
-        let header = make_placement_ptr<ChunkHeader>(bytes, offset);
-        let length = numeric_cast<ssize_t>(header->length.value());
+        ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
+        ttlet length = numeric_cast<ssize_t>(header->length.value());
         parse_assert2(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
         parse_assert2(offset + length <= ssize(bytes), "Chuck extents beyond file.");
 
@@ -252,7 +252,7 @@ void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
         default:;
         }
 
-        [[maybe_unused]] let crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
+        [[maybe_unused]] ttlet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
     }
 
     parse_assert2(!IHDR_bytes.empty(), "Missing IHDR chunk.");
@@ -289,16 +289,16 @@ bstring png::decompress_IDATs(ssize_t image_data_size) const {
         return zlib_decompress(idat_chunk_data[0], image_data_size);
     } else {
         // Merge all idat chunks together.
-        let compressed_data_size = std::accumulate(
+        ttlet compressed_data_size = std::accumulate(
             idat_chunk_data.cbegin(), idat_chunk_data.cend(), ssize_t{0},
-            [](let &a, let &b) {
+            [](ttlet &a, ttlet &b) {
             return a + ssize(b);
         }
         );
 
         bstring compressed_data;
         compressed_data.reserve(compressed_data_size);
-        for (let &chunk_data : idat_chunk_data) {
+        for (ttlet &chunk_data : idat_chunk_data) {
             std::copy(chunk_data.cbegin(), chunk_data.cend(), std::back_inserter(compressed_data));
         }
 
@@ -429,11 +429,11 @@ ivec png::extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) co
 
 void png::data_to_image_line(nonstd::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &line) const noexcept
 {
-    let alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
+    ttlet alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
     for (int x = 0; x != width; ++x) {
-        let value = extract_pixel_from_line(bytes, x);
+        ttlet value = extract_pixel_from_line(bytes, x);
 
-        let linear_color = vec::color(
+        ttlet linear_color = vec::color(
             transfer_function[value.x()],
             transfer_function[value.y()],
             transfer_function[value.z()]
@@ -462,7 +462,7 @@ void png::data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) cons
 void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
 {
     // There is a filter selection byte in front of every line.
-    let image_data_size = stride * height;
+    ttlet image_data_size = stride * height;
 
     auto image_data = decompress_IDATs(image_data_size);
     parse_assert2(ssize(image_data) == image_data_size, "Uncompressed image data has incorrect size.");
@@ -475,7 +475,7 @@ void png::decode_image(PixelMap<R16G16B16A16SFloat> &image) const
 
 PixelMap<R16G16B16A16SFloat> png::load(URL const &url)
 {
-    let png_data = png(url);
+    ttlet png_data = png(url);
     auto image = PixelMap<R16G16B16A16SFloat>{png_data.extent()};
     png_data.decode_image(image);
     return image;

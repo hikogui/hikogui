@@ -39,7 +39,7 @@ static bool meetsRequiredLimits(const vk::PhysicalDevice& physicalDevice, const 
 
 static bool hasRequiredFeatures(const vk::PhysicalDevice& physicalDevice, const vk::PhysicalDeviceFeatures& requiredFeatures)
 {
-    let availableFeatures = physicalDevice.getFeatures();
+    ttlet availableFeatures = physicalDevice.getFeatures();
     auto meetsRequirements = true;
 
     meetsRequirements &= (requiredFeatures.robustBufferAccess == VK_TRUE) ? (availableFeatures.robustBufferAccess == VK_TRUE) : true;
@@ -204,10 +204,10 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
 
     uint32_t index = 0;
     for (auto queueFamilyIndexAndCapabilities : queueFamilyIndicesAndCapabilities) {
-        let familyIndex = queueFamilyIndexAndCapabilities.first;
-        let capabilities = queueFamilyIndexAndCapabilities.second;
-        let queue = this->intrinsic.getQueue(familyIndex, index);
-        let commandPool = this->intrinsic.createCommandPool({ vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer, familyIndex });
+        ttlet familyIndex = queueFamilyIndexAndCapabilities.first;
+        ttlet capabilities = queueFamilyIndexAndCapabilities.second;
+        ttlet queue = this->intrinsic.getQueue(familyIndex, index);
+        ttlet commandPool = this->intrinsic.createCommandPool({ vk::CommandPoolCreateFlagBits::eTransient | vk::CommandPoolCreateFlagBits::eResetCommandBuffer, familyIndex });
 
         if (capabilities & QUEUE_CAPABILITY_GRAPHICS) {
             graphicsQueueFamilyIndex = familyIndex;
@@ -273,14 +273,14 @@ void GUIDevice_vulkan::initializeQuadIndexBuffer()
         };
         VmaAllocationCreateInfo allocationCreateInfo = {};
         allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
-        let [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = createBuffer(bufferCreateInfo, allocationCreateInfo);
+        ttlet [stagingVertexIndexBuffer, stagingVertexIndexBufferAllocation] = createBuffer(bufferCreateInfo, allocationCreateInfo);
 
         // Initialize indices.
-        let stagingVertexIndexBufferData = mapMemory<vertex_index_type>(stagingVertexIndexBufferAllocation);
+        ttlet stagingVertexIndexBufferData = mapMemory<vertex_index_type>(stagingVertexIndexBufferAllocation);
         for (size_t i = 0; i < maximum_number_of_indices; i++) {
-            let vertexInRectangle = i % 6;
-            let rectangleNr = i / 6;
-            let rectangleBase = rectangleNr * 4;
+            ttlet vertexInRectangle = i % 6;
+            ttlet rectangleNr = i / 6;
+            ttlet rectangleBase = rectangleNr * 4;
 
             switch (vertexInRectangle) {
             case 0: stagingVertexIndexBufferData[i] = numeric_cast<vertex_index_type>(rectangleBase + 0); break;
@@ -362,7 +362,7 @@ std::vector<std::pair<uint32_t, uint8_t>> GUIDevice_vulkan::findBestQueueFamilyI
     // Iteratively add indices if it completes the totalQueueCapabilities.
     std::vector<std::pair<uint32_t, uint8_t>> queueFamilyIndicesAndQueueCapabilitiess;
     uint8_t totalCapabilities = 0;
-    for (let &[index, capabilities, score] : queueFamilieScores) {
+    for (ttlet &[index, capabilities, score] : queueFamilieScores) {
         if ((totalCapabilities & capabilities) != capabilities) {
             queueFamilyIndicesAndQueueCapabilitiess.emplace_back(
                 index,
@@ -467,7 +467,7 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
 
     LOG_INFO(" - Surface present modes:");
     uint32_t bestSurfacePresentModeScore = 0;
-    for (let &presentMode : presentModes) {
+    for (ttlet &presentMode : presentModes) {
         uint32_t score = 0;
 
         LOG_INFO("    * presentMode={}", vk::to_string(presentMode));
@@ -493,7 +493,7 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
     }
 
     // Give score based on the performance of the device.
-    let properties = physicalIntrinsic.getProperties();
+    ttlet properties = physicalIntrinsic.getProperties();
     LOG_INFO(" - Type of device: {}", vk::to_string(properties.deviceType));
     switch (properties.deviceType) {
     case vk::PhysicalDeviceType::eCpu: totalScore += 1; break;
@@ -508,7 +508,7 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
 
 int GUIDevice_vulkan::score(Window const &window) const {
     auto surface = window.getSurface();
-    let s = score(surface);
+    ttlet s = score(surface);
     guiSystem->destroySurfaceKHR(surface);
     return s;
 }
@@ -520,8 +520,8 @@ std::pair<vk::Buffer, VmaAllocation> GUIDevice_vulkan::createBuffer(const vk::Bu
     VkBuffer buffer;
     VmaAllocation allocation;
 
-    let bufferCreateInfo_ = static_cast<VkBufferCreateInfo>(bufferCreateInfo);
-    let result = static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferCreateInfo_, &allocationCreateInfo, &buffer, &allocation, nullptr));
+    ttlet bufferCreateInfo_ = static_cast<VkBufferCreateInfo>(bufferCreateInfo);
+    ttlet result = static_cast<vk::Result>(vmaCreateBuffer(allocator, &bufferCreateInfo_, &allocationCreateInfo, &buffer, &allocation, nullptr));
 
     std::pair<vk::Buffer, VmaAllocation> const value = {buffer, allocation};
 
@@ -542,8 +542,8 @@ std::pair<vk::Image, VmaAllocation> GUIDevice_vulkan::createImage(const vk::Imag
     VkImage image;
     VmaAllocation allocation;
 
-    let imageCreateInfo_ = static_cast<VkImageCreateInfo>(imageCreateInfo);
-    let result = static_cast<vk::Result>(vmaCreateImage(allocator, &imageCreateInfo_, &allocationCreateInfo, &image, &allocation, nullptr));
+    ttlet imageCreateInfo_ = static_cast<VkImageCreateInfo>(imageCreateInfo);
+    ttlet result = static_cast<vk::Result>(vmaCreateImage(allocator, &imageCreateInfo_, &allocationCreateInfo, &image, &allocation, nullptr));
 
     std::pair<vk::Image, VmaAllocation> const value = {image, allocation};
 
@@ -568,8 +568,8 @@ vk::CommandBuffer GUIDevice_vulkan::beginSingleTimeCommands() const
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    let commandBuffers = intrinsic.allocateCommandBuffers({ graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1 });
-    let commandBuffer = commandBuffers.at(0);
+    ttlet commandBuffers = intrinsic.allocateCommandBuffers({ graphicsCommandPool, vk::CommandBufferLevel::ePrimary, 1 });
+    ttlet commandBuffer = commandBuffers.at(0);
 
     commandBuffer.begin({ vk::CommandBufferUsageFlagBits::eOneTimeSubmit });
     return commandBuffer;
@@ -622,10 +622,10 @@ void GUIDevice_vulkan::transitionLayout(vk::Image image, vk::Format format, vk::
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    let commandBuffer = beginSingleTimeCommands();
+    ttlet commandBuffer = beginSingleTimeCommands();
 
-    let [srcAccessMask, srcStage] = accessAndStageFromLayout(srcLayout);
-    let [dstAccessMask, dstStage] = accessAndStageFromLayout(dstLayout);
+    ttlet [srcAccessMask, srcStage] = accessAndStageFromLayout(srcLayout);
+    ttlet [dstAccessMask, dstStage] = accessAndStageFromLayout(dstLayout);
 
     std::vector<vk::ImageMemoryBarrier> barriers = {{
         srcAccessMask,
@@ -658,7 +658,7 @@ void GUIDevice_vulkan::copyImage(vk::Image srcImage, vk::ImageLayout srcLayout, 
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    let commandBuffer = beginSingleTimeCommands();
+    ttlet commandBuffer = beginSingleTimeCommands();
 
     commandBuffer.copyImage(
         srcImage, srcLayout,
@@ -673,7 +673,7 @@ void GUIDevice_vulkan::clearColorImage(vk::Image image, vk::ImageLayout layout, 
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    let commandBuffer = beginSingleTimeCommands();
+    ttlet commandBuffer = beginSingleTimeCommands();
 
     commandBuffer.clearColorImage(
         image,
@@ -701,10 +701,10 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size)
 vk::ShaderModule GUIDevice_vulkan::loadShader(nonstd::span<std::byte const> shaderObjectBytes) const
 {
     // Make sure the address is aligned to uint32_t;
-    let address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
+    ttlet address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());
     ttauri_assert((address & 2) == 0);
 
-    let shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
+    ttlet shaderObjectBytes32 = reinterpret_cast<uint32_t const *>(shaderObjectBytes.data());
     return loadShader(shaderObjectBytes32, shaderObjectBytes.size());
 }
 

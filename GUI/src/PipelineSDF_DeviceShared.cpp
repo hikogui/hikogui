@@ -131,22 +131,22 @@ void DeviceShared::prepareAtlasForRendering()
 */
 AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
 {
-    let [glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
+    ttlet [glyphPath, glyphBoundingBox] = glyph.getPathAndBoundingBox();
 
-    let drawScale = mat::S(drawFontSize, drawFontSize);
-    let scaledBoundingBox = drawScale * glyphBoundingBox;
+    ttlet drawScale = mat::S(drawFontSize, drawFontSize);
+    ttlet scaledBoundingBox = drawScale * glyphBoundingBox;
 
     // We will draw the font at a fixed size into the texture. And we need a border for the texture to
     // allow proper bi-linear interpolation on the edges.
 
     // Determine the size of the image in the atlas.
     // This is the bounding box sized to the fixed font size and a border
-    let drawOffset = vec{drawBorder, drawBorder} - scaledBoundingBox.offset();
-    let drawExtent = scaledBoundingBox.extent() + 2.0f * vec{drawBorder, drawBorder};
-    let drawTranslate = mat::T(drawOffset);
+    ttlet drawOffset = vec{drawBorder, drawBorder} - scaledBoundingBox.offset();
+    ttlet drawExtent = scaledBoundingBox.extent() + 2.0f * vec{drawBorder, drawBorder};
+    ttlet drawTranslate = mat::T(drawOffset);
 
     // Transform the path to the scale of the fixed font size and drawing the bounding box inside the image.
-    let drawPath = (drawTranslate * drawScale) * glyphPath;
+    ttlet drawPath = (drawTranslate * drawScale) * glyphPath;
 
     // Draw glyphs into staging buffer of the atlas and upload it to the correct position in the atlas.
     prepareStagingPixmapForDrawing();
@@ -160,12 +160,12 @@ AtlasRect DeviceShared::addGlyphToAtlas(FontGlyphIDs glyph) noexcept
 
 std::pair<AtlasRect,bool> DeviceShared::getGlyphFromAtlas(FontGlyphIDs glyph) noexcept
 {
-    let i = glyphs_in_atlas.find(glyph);
+    ttlet i = glyphs_in_atlas.find(glyph);
     if (i != glyphs_in_atlas.cend()) {
         return {i->second, false};
 
     } else {
-        let aarect = addGlyphToAtlas(glyph);
+        ttlet aarect = addGlyphToAtlas(glyph);
         glyphs_in_atlas.emplace(glyph, aarect);
         return {aarect, true};
     }
@@ -178,12 +178,12 @@ aarect DeviceShared::getBoundingBox(FontGlyphIDs const &glyphs) noexcept {
 
 bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, FontGlyphIDs const &glyphs, rect box, vec color, aarect clippingRectangle) noexcept
 {
-    let [atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
+    ttlet [atlas_rect, glyph_was_added] = getGlyphFromAtlas(glyphs);
 
-    let v0 = box.corner<0>();
-    let v1 = box.corner<1>();
-    let v2 = box.corner<2>();
-    let v3 = box.corner<3>();
+    ttlet v0 = box.corner<0>();
+    ttlet v1 = box.corner<1>();
+    ttlet v2 = box.corner<2>();
+    ttlet v3 = box.corner<3>();
 
     // If none of the vertices is inside the clipping rectangle then don't add the
     // quad to the vertex list.
@@ -210,7 +210,7 @@ bool DeviceShared::_placeVertices(vspan<Vertex> &vertices, AttributedGlyph const
     }
 
     // Adjust bounding box by adding a border based on 1EM.
-    let bounding_box = transform * attr_glyph.boundingBox(scaledDrawBorder);
+    ttlet bounding_box = transform * attr_glyph.boundingBox(scaledDrawBorder);
 
     return _placeVertices(vertices, attr_glyph.glyphs, bounding_box, color, clippingRectangle);
 }
@@ -231,8 +231,8 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text
 {
     auto atlas_was_updated = false;
 
-    for (let &attr_glyph: text) {
-        let glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle);
+    for (ttlet &attr_glyph: text) {
+        ttlet glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle);
         atlas_was_updated = atlas_was_updated || glyph_added;
     }
 
@@ -245,8 +245,8 @@ void DeviceShared::placeVertices(vspan<Vertex> &vertices, ShapedText const &text
 {
     auto atlas_was_updated = false;
 
-    for (let &attr_glyph: text) {
-        let glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle, color);
+    for (ttlet &attr_glyph: text) {
+        ttlet glyph_added = _placeVertices(vertices, attr_glyph, transform, clippingRectangle, color);
         atlas_was_updated = atlas_was_updated || glyph_added;
     }
 
@@ -288,7 +288,7 @@ void DeviceShared::teardownShaders(GUIDevice_vulkan * vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    //let currentImageIndex = ssize(atlasTextures);
+    //ttlet currentImageIndex = ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -308,10 +308,10 @@ void DeviceShared::addAtlasImage()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    let [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    ttlet [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
 
-    let clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
-    let clearRange = std::array{
+    ttlet clearValue = vk::ClearColorValue{std::array{-1.0f, -1.0f, -1.0f, -1.0f}};
+    ttlet clearRange = std::array{
         vk::ImageSubresourceRange{
             vk::ImageAspectFlagBits::eColor,
             0,
@@ -322,7 +322,7 @@ void DeviceShared::addAtlasImage()
     };
     device.clearColorImage(atlasImage, vk::ImageLayout::eTransferDstOptimal, clearValue, clearRange);
 
-    let atlasImageView = device.createImageView({
+    ttlet atlasImageView = device.createImageView({
         vk::ImageViewCreateFlags(),
         atlasImage,
         vk::ImageViewType::e2D,
@@ -371,8 +371,8 @@ void DeviceShared::buildAtlas()
     };
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    let data = device.mapMemory<SDF8>(allocation);
+    ttlet [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    ttlet data = device.mapMemory<SDF8>(allocation);
 
     stagingTexture = {
         image,

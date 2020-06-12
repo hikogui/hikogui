@@ -203,7 +203,7 @@ private:
     }
 
     [[nodiscard]] friend bool operator<(Grapheme const& a, Grapheme const& b) noexcept {
-        let length = std::min(ssize(a), ssize(b));
+        ttlet length = std::min(ssize(a), ssize(b));
 
         for (ssize_t i = 0; i != length; ++i) {
             if (a[i] < b[i]) {

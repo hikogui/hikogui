@@ -162,7 +162,7 @@ public:
     ssize_t characterIndexAtPosition(vec position) const noexcept;
 
     void setCursorAtCoordinate(vec coordinate) noexcept {
-        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             selectionIndex = cursorIndex = *newCursorPosition;
             ttauri_assume(selectionIndex >= 0);
             ttauri_assume(selectionIndex <= ssize(text));
@@ -170,7 +170,7 @@ public:
     }
 
     void selectWordAtCoordinate(vec coordinate) noexcept {
-        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(*newCursorPosition);
             ttauri_assume(selectionIndex >= 0);
             ttauri_assume(selectionIndex <= ssize(text));
@@ -180,7 +180,7 @@ public:
     }
 
     void selectParagraphAtCoordinate(vec coordinate) noexcept {
-        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfParagraph(*newCursorPosition);
             ttauri_assume(selectionIndex >= 0);
             ttauri_assume(selectionIndex <= ssize(text));
@@ -190,7 +190,7 @@ public:
     }
 
     void dragCursorAtCoordinate(vec coordinate) noexcept {
-        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
             cursorIndex = *newCursorPosition;
             ttauri_assume(cursorIndex >= 0);
             ttauri_assume(cursorIndex <= ssize(text));
@@ -198,8 +198,8 @@ public:
     }
 
     void dragWordAtCoordinate(vec coordinate) noexcept {
-        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            let [a, b] = _shapedText.indicesOfWord(*newCursorPosition);
+        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            ttlet [a, b] = _shapedText.indicesOfWord(*newCursorPosition);
 
             if (selectionIndex <= cursorIndex) {
                 if (a < selectionIndex) {
@@ -227,8 +227,8 @@ public:
     }
 
     void dragParagraphAtCoordinate(vec coordinate) noexcept {
-        if (let newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
-            let [a, b] = _shapedText.indicesOfParagraph(*newCursorPosition);
+        if (ttlet newCursorPosition = _shapedText.indexOfCharAtCoordinate(coordinate)) {
+            ttlet [a, b] = _shapedText.indicesOfParagraph(*newCursorPosition);
 
             if (selectionIndex <= cursorIndex) {
                 if (a < selectionIndex) {
@@ -320,7 +320,7 @@ public:
 
         auto str_attr = std::vector<AttributedGrapheme>{};
         str_attr.reserve(ssize(gstr));
-        for (let &g: gstr) {
+        for (ttlet &g: gstr) {
             str_attr.emplace_back(g, currentStyle);
         }
 
@@ -363,24 +363,24 @@ public:
         cancelPartialGrapheme();
 
         if (command == "text.cursor.char.left"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 // XXX Change currentStyle based on the grapheme at the new cursor position.
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.cursor.char.right"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.cursor.word.left"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.cursor.word.right"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.cursor.word.right"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.cursor.line.end"_ltag) {
@@ -388,19 +388,19 @@ public:
         } else if (command == "text.cursor.line.begin"_ltag) {
             selectionIndex = cursorIndex = 0;
         } else if (command == "text.select.char.left"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.select.char.right"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.select.word.left"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.select.word.right"_ltag) {
-            if (let newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
+            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
         } else if (command == "text.select.word"_ltag) {

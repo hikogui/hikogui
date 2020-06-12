@@ -144,7 +144,7 @@ int Window_base::layoutChildren(hires_utc_clock::time_point displayTimePoint, bo
     auto total_need = 0;
 
     for (auto i = 0; i != layout_retries; ++i) {
-        let child_need = Widget_needs(*widget, displayTimePoint);
+        ttlet child_need = Widget_needs(*widget, displayTimePoint);
         total_need |= child_need;
 
         if (force || child_need >= 2) {
@@ -266,7 +266,7 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     case MouseEvent::Type::ButtonDown:
     case MouseEvent::Type::Move: {
-        let hitbox = hitBoxTest(event.position);
+        ttlet hitbox = hitBoxTest(event.position);
         updateMouseTarget(hitbox.widget, event.position);
 
         if (event.type == MouseEvent::Type::ButtonDown) {
@@ -278,7 +278,7 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     // Send event to target-widget.
     if (mouseTargetWidget != nullptr) {
-        let windowOffset = Widget_getWindowOffset(*mouseTargetWidget);
+        ttlet windowOffset = Widget_getWindowOffset(*mouseTargetWidget);
         event.position -= windowOffset;
         event.downPosition -= windowOffset;
         Widget_handleMouseEvent(*mouseTargetWidget, event);
@@ -291,7 +291,7 @@ void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
 
     } else if (event.type == KeyboardEvent::Type::Key) {
         // If no widgets have been selected handle the keyboard-focus changes.
-        for (let command : event.getCommands()) {
+        for (ttlet command : event.getCommands()) {
             if (command == "gui.widget.next"_ltag) {
                 updateToNextKeyboardTarget(nullptr);
             } else if (command == "gui.widget.prev"_ltag) {
@@ -320,8 +320,8 @@ HitBox Window_base::hitBoxTest(vec position) const noexcept {
 vec Window_base::suggestWidgetExtent(vec extent) noexcept {
     auto lock = std::scoped_lock(widgetSolverMutex);
 
-    let &width = Widget_getWidth(*widget);
-    let &height = Widget_getHeight(*widget);
+    ttlet &width = Widget_getWidth(*widget);
+    ttlet &height = Widget_getHeight(*widget);
 
     widgetSolver.suggest(width, extent.width());
     widgetSolver.suggest(height, extent.height());

@@ -58,36 +58,36 @@ static GlyphID searchCharacterMapFormat4(nonstd::span<std::byte const> bytes, ch
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat4>(bytes, offset), {});
-    let header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
+    ttlet header = unsafe_make_placement_ptr<CMAPFormat4>(bytes, offset);
 
-    let length = header->length.value();
+    ttlet length = header->length.value();
     assert_or_return(length <= bytes.size(), {});
 
-    let segCount = header->segCountX2.value() / 2;
+    ttlet segCount = header->segCountX2.value() / 2;
 
     assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
-    let endCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet endCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     offset += ssizeof(uint16_t); // reservedPad
 
     assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
-    let startCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet startCode = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, segCount), {});
-    let idDelta = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet idDelta = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     // The glyphIdArray is included inside idRangeOffset.
-    let idRangeOffset_count = (length - offset) / ssizeof(uint16_t);
+    ttlet idRangeOffset_count = (length - offset) / ssizeof(uint16_t);
     assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count), {});
-    let idRangeOffset = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count);
+    ttlet idRangeOffset = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, idRangeOffset_count);
 
     for (uint16_t i = 0; i < segCount; i++) {
-        let endCode_ = endCode[i].value();
+        ttlet endCode_ = endCode[i].value();
         if (c <= endCode_) {
-            let startCode_ = startCode[i].value();
+            ttlet startCode_ = startCode[i].value();
             if (c >= startCode_) {
                 // Found the glyph.
-                let idRangeOffset_ = idRangeOffset[i].value();
+                ttlet idRangeOffset_ = idRangeOffset[i].value();
                 if (idRangeOffset_ == 0) {
                     // Use modulo 65536 arithmetic.
                     uint16_t glyphIndex = idDelta[i].value();
@@ -95,8 +95,8 @@ static GlyphID searchCharacterMapFormat4(nonstd::span<std::byte const> bytes, ch
                     return GlyphID{ glyphIndex };
 
                 } else {
-                    let charOffset = c - startCode_;
-                    let glyphOffset = (idRangeOffset_ / 2) + charOffset + i;
+                    ttlet charOffset = c - startCode_;
+                    ttlet glyphOffset = (idRangeOffset_ / 2) + charOffset + i;
 
                     assert_or_return(glyphOffset < idRangeOffset.size(), {}); 
                     uint16_t glyphIndex = idRangeOffset[glyphOffset].value();
@@ -125,14 +125,14 @@ static GlyphID searchCharacterMapFormat4(nonstd::span<std::byte const> bytes, ch
     UnicodeRanges r;
 
     ssize_t offset = 0;
-    let header = make_placement_ptr<CMAPFormat4>(bytes, offset);
-    let length = header->length.value();
+    ttlet header = make_placement_ptr<CMAPFormat4>(bytes, offset);
+    ttlet length = header->length.value();
     parse_assert(length <= bytes.size());
-    let segCount = header->segCountX2.value() / 2;
+    ttlet segCount = header->segCountX2.value() / 2;
 
-    let endCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet endCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
     offset += ssizeof(uint16_t); // reservedPad
-    let startCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
+    ttlet startCode = make_placement_array<big_uint16_buf_t>(bytes, offset, segCount);
 
     for (int i = 0; i != segCount; ++i) {
         r.add(static_cast<char32_t>(startCode[i].value()), static_cast<char32_t>(endCode[i].value()) + 1);
@@ -154,19 +154,19 @@ static GlyphID searchCharacterMapFormat6(nonstd::span<std::byte const> bytes, ch
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat6>(bytes, offset), {});
-    let header = unsafe_make_placement_ptr<CMAPFormat6>(bytes, offset);
+    ttlet header = unsafe_make_placement_ptr<CMAPFormat6>(bytes, offset);
 
-    let firstCode = static_cast<char32_t>(header->firstCode.value());
-    let entryCount = header->entryCount.value();
+    ttlet firstCode = static_cast<char32_t>(header->firstCode.value());
+    ttlet entryCount = header->entryCount.value();
     if (c < firstCode || c >= static_cast<char32_t>(firstCode + entryCount)) {
         // Character outside of range.
         return {};
     }
 
     assert_or_return(check_placement_array<big_uint16_buf_t>(bytes, offset, entryCount), {});
-    let glyphIndexArray = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, entryCount);
+    ttlet glyphIndexArray = unsafe_make_placement_array<big_uint16_buf_t>(bytes, offset, entryCount);
 
-    let charOffset = c - firstCode;
+    ttlet charOffset = c - firstCode;
     assert_or_return(charOffset < glyphIndexArray.size(), {});
     return GlyphID{glyphIndexArray[charOffset].value()};
 }
@@ -176,9 +176,9 @@ static GlyphID searchCharacterMapFormat6(nonstd::span<std::byte const> bytes, ch
     UnicodeRanges r;
 
     ssize_t offset = 0;
-    let header = make_placement_ptr<CMAPFormat6>(bytes, offset);
-    let firstCode = static_cast<char32_t>(header->firstCode.value());
-    let entryCount = header->entryCount.value();
+    ttlet header = make_placement_ptr<CMAPFormat6>(bytes, offset);
+    ttlet firstCode = static_cast<char32_t>(header->firstCode.value());
+    ttlet entryCount = header->entryCount.value();
 
     r.add(static_cast<char32_t>(firstCode), static_cast<char32_t>(firstCode) + entryCount);
 
@@ -203,20 +203,20 @@ static GlyphID searchCharacterMapFormat12(nonstd::span<std::byte const> bytes, c
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<CMAPFormat12>(bytes, offset), {});
-    let header = unsafe_make_placement_ptr<CMAPFormat12>(bytes, offset);
+    ttlet header = unsafe_make_placement_ptr<CMAPFormat12>(bytes, offset);
 
-    let numGroups = header->numGroups.value();
+    ttlet numGroups = header->numGroups.value();
 
     assert_or_return(check_placement_array<CMAPFormat12Group>(bytes, offset, numGroups), {});
-    let entries = unsafe_make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
+    ttlet entries = unsafe_make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
 
-    let i = std::lower_bound(entries.begin(), entries.end(), c, [](let &element, char32_t value) {
+    ttlet i = std::lower_bound(entries.begin(), entries.end(), c, [](ttlet &element, char32_t value) {
         return element.endCharCode.value() < value;
     });
 
     if (i != entries.end()) {
-        let &entry = *i;
-        let startCharCode = entry.startCharCode.value();
+        ttlet &entry = *i;
+        ttlet startCharCode = entry.startCharCode.value();
         if (c >= startCharCode) {
             c -= startCharCode;
             return GlyphID{entry.startGlyphID.value() + c};
@@ -236,11 +236,11 @@ static GlyphID searchCharacterMapFormat12(nonstd::span<std::byte const> bytes, c
     UnicodeRanges r;
 
     ssize_t offset = 0;
-    let header = make_placement_ptr<CMAPFormat12>(bytes, offset);
-    let numGroups = header->numGroups.value();
+    ttlet header = make_placement_ptr<CMAPFormat12>(bytes, offset);
+    ttlet numGroups = header->numGroups.value();
 
-    let entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
-    for (let &entry: entries) {
+    ttlet entries = make_placement_array<CMAPFormat12Group>(bytes, offset, numGroups);
+    for (ttlet &entry: entries) {
         r.add(static_cast<char32_t>(entry.startCharCode.value()), static_cast<char32_t>(entry.endCharCode.value()) + 1);
     }
     return r;
@@ -248,7 +248,7 @@ static GlyphID searchCharacterMapFormat12(nonstd::span<std::byte const> bytes, c
 
 [[nodiscard]] UnicodeRanges TrueTypeFont::parseCharacterMap()
 {
-    let format = make_placement_ptr<big_uint16_buf_t>(cmapBytes);
+    ttlet format = make_placement_ptr<big_uint16_buf_t>(cmapBytes);
 
     switch (format->value()) {
     case 4: return parseCharacterMapFormat4(cmapBytes);
@@ -262,7 +262,7 @@ static GlyphID searchCharacterMapFormat12(nonstd::span<std::byte const> bytes, c
 [[nodiscard]] GlyphID TrueTypeFont::find_glyph(char32_t c) const noexcept
 {
     assert_or_return(check_placement_ptr<big_uint16_buf_t>(cmapBytes), {});
-    let format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
+    ttlet format = unsafe_make_placement_ptr<big_uint16_buf_t>(cmapBytes);
 
     switch (format->value()) {
     case 4: return searchCharacterMapFormat4(cmapBytes, c);
@@ -287,17 +287,17 @@ static nonstd::span<std::byte const> parseCharacterMapDirectory(nonstd::span<std
 {
     ssize_t offset = 0;
 
-    let header = make_placement_ptr<CMAPHeader>(bytes, offset);
+    ttlet header = make_placement_ptr<CMAPHeader>(bytes, offset);
     parse_assert(header->version.value() == 0);
 
     uint16_t numTables = header->numTables.value();
-    let entries = make_placement_array<CMAPEntry>(bytes, offset, numTables);
+    ttlet entries = make_placement_array<CMAPEntry>(bytes, offset, numTables);
 
     // Entries are ordered by platformID, then platformSpecificID.
     // This allows us to search reasonable quickly for the best entries.
     // The following order is searched: 0.4,0.3,0.2,0.1,3.10,3.1,3.0.
     CMAPEntry const *bestEntry = nullptr;
-    for (let &entry: entries) {
+    for (ttlet &entry: entries) {
         switch (entry.platformID.value()) {
         case 0: {
                 // Unicode.
@@ -338,7 +338,7 @@ static nonstd::span<std::byte const> parseCharacterMapDirectory(nonstd::span<std
     // There must be a bestEntry because a unicode table is required by the true-type standard.
     parse_assert(bestEntry != nullptr);
 
-    let entry_offset = bestEntry->offset.value();
+    ttlet entry_offset = bestEntry->offset.value();
     parse_assert(entry_offset < bytes.size());
 
     return bytes.subspan(entry_offset, bytes.size() - entry_offset);
@@ -367,7 +367,7 @@ struct HHEATable {
 
 void TrueTypeFont::parseHheaTable(nonstd::span<std::byte const> table_bytes)
 {
-    let table = make_placement_ptr<HHEATable>(table_bytes);
+    ttlet table = make_placement_ptr<HHEATable>(table_bytes);
 
     parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0);
     ascender = table->ascender.value(unitsPerEm);
@@ -399,12 +399,12 @@ struct HEADTable {
 
 void TrueTypeFont::parseHeadTable(nonstd::span<std::byte const> table_bytes)
 {
-    let table = make_placement_ptr<HEADTable>(table_bytes);
+    ttlet table = make_placement_ptr<HEADTable>(table_bytes);
 
     parse_assert(table->majorVersion.value() == 1 && table->minorVersion.value() == 0);
     parse_assert(table->magicNumber.value() == 0x5f0f3cf5);
 
-    let indexToLogFormat = table->indexToLocFormat.value();
+    ttlet indexToLogFormat = table->indexToLocFormat.value();
     parse_assert(indexToLogFormat <= 1);
     locaTableIsOffset32 = indexToLogFormat == 1;
 
@@ -436,33 +436,33 @@ static std::optional<std::string> getStringFromNameTable(nonstd::span<std::byte 
         [[fallthrough]];
     case 0: // Unicode, encoded as UTF-16LE or UTF-16BE (BE is default guess).
         if (languageID == 0 || languageID == 0xffff) { // Language independent.
-            let p = reinterpret_cast<char16_t const *>(bytes.data() + offset);
-            let l = lengthInBytes / 2;
+            ttlet p = reinterpret_cast<char16_t const *>(bytes.data() + offset);
+            ttlet l = lengthInBytes / 2;
             parse_error(is_aligned(p));
             parse_error(lengthInBytes % 2 == 0);
 
-            let s_big_endian = std::u16string_view(p, l);
-            let s_native = u16string_big_to_native(s_big_endian);
+            ttlet s_big_endian = std::u16string_view(p, l);
+            ttlet s_native = u16string_big_to_native(s_big_endian);
             return tt::to_string(s_native);
         }
         break;
 
     case 1: // Macintosh
         if (platformSpecificID == 0 && languageID == 0) { // Roman script ASCII, English
-            let p = reinterpret_cast<char const *>(bytes.data() + offset);
+            ttlet p = reinterpret_cast<char const *>(bytes.data() + offset);
             return std::string(p, lengthInBytes);
         }
         break;
 
     case 3: // Windows
         if (platformSpecificID == 1 && languageID == 0x409) { // UTF-16BE, English - United States.
-            let p = reinterpret_cast<char16_t const *>(bytes.data() + offset);
-            let l = lengthInBytes / 2;
+            ttlet p = reinterpret_cast<char16_t const *>(bytes.data() + offset);
+            ttlet l = lengthInBytes / 2;
             parse_error(is_aligned(p));
             parse_error(lengthInBytes % 2 == 0);
 
-            let s_big_endian = std::u16string_view(p, l);
-            let s_native = u16string_big_to_native(s_big_endian);
+            ttlet s_big_endian = std::u16string_view(p, l);
+            ttlet s_native = u16string_big_to_native(s_big_endian);
             return tt::to_string(s_native);
         }
         break;
@@ -477,22 +477,22 @@ void TrueTypeFont::parseNameTable(nonstd::span<std::byte const> table_bytes)
 {
     ssize_t offset = 0;
 
-    let table = make_placement_ptr<NAMETable>(table_bytes, offset);
+    ttlet table = make_placement_ptr<NAMETable>(table_bytes, offset);
     parse_assert(table->format.value() == 0 || table->format.value() == 1);
     size_t storageAreaOffset = table->stringOffset.value();
 
     uint16_t numRecords = table->count.value();
-    let records = make_placement_array<NAMERecord>(table_bytes, offset, numRecords);
+    ttlet records = make_placement_array<NAMERecord>(table_bytes, offset, numRecords);
 
     bool familyIsTypographic = false;
     bool subFamilyIsTypographic = false;
 
-    for (let &record: records) {
-        let languageID = record.languageID.value();
-        let platformID = record.platformID.value();
-        let platformSpecificID = record.platformSpecificID.value();
-        let nameOffset = storageAreaOffset + record.offset.value();
-        let nameLengthInBytes = record.length.value();
+    for (ttlet &record: records) {
+        ttlet languageID = record.languageID.value();
+        ttlet platformID = record.platformID.value();
+        ttlet platformSpecificID = record.platformSpecificID.value();
+        ttlet nameOffset = storageAreaOffset + record.offset.value();
+        ttlet nameLengthInBytes = record.length.value();
 
         switch (record.nameID.value()) {
         case 1: { // Font family.(Only valid when used with only 4 sub-families Regular, Bold, Italic, Bold-Italic).
@@ -624,23 +624,23 @@ struct OS2Table0 {
 
 void TrueTypeFont::parseOS2Table(nonstd::span<std::byte const> table_bytes)
 {
-    let table = make_placement_ptr<OS2Table0>(table_bytes);
-    let version = table->version.value();
+    ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
+    ttlet version = table->version.value();
     parse_assert(version <= 5);
 
-    let weight_value = table->usWeightClass.value();
+    ttlet weight_value = table->usWeightClass.value();
     if (weight_value >= 1 && weight_value <= 1000) {
         description.weight = FontWeight_from_int(weight_value);
     }
 
-    let width_value = table->usWidthClass.value();
+    ttlet width_value = table->usWidthClass.value();
     if (width_value >= 1 && width_value <= 4) {
         description.condensed = true;
     } else if (width_value >= 5 && width_value <= 9) {
         description.condensed = false;
     }
 
-    let serif_value = table->panose.bSerifStyle;
+    ttlet serif_value = table->panose.bSerifStyle;
     if ((serif_value >= 2 && serif_value <= 10) || (serif_value >= 14 && serif_value <= 15)) {
         description.serif = true;
     } else if (serif_value >= 11 && serif_value <= 13) {
@@ -675,7 +675,7 @@ void TrueTypeFont::parseOS2Table(nonstd::span<std::byte const> table_bytes)
     case 9: description.monospace = true; description.condensed = false; break;
     }
 
-    let letterform_value = table->panose.bLetterform;
+    ttlet letterform_value = table->panose.bLetterform;
     if (letterform_value >= 2 && letterform_value <= 8) {
         description.italic = false;
     } else if (letterform_value >= 9 && letterform_value <= 15) {
@@ -688,7 +688,7 @@ void TrueTypeFont::parseOS2Table(nonstd::span<std::byte const> table_bytes)
     description.unicode_ranges.value[3] = table->ulUnicodeRange4.value();
 
     if (version >= 2) {
-        let table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
+        ttlet table_v2 = make_placement_ptr<OS2Table2>(table_bytes);
 
         OS2_xHeight = table_v2->sxHeight.value();
         OS2_HHeight = table_v2->sCapHeight.value();
@@ -721,9 +721,9 @@ struct MAXPTable10 {
 void TrueTypeFont::parseMaxpTable(nonstd::span<std::byte const> table_bytes)
 {
     parse_assert(ssizeof(MAXPTable05) <= ssize(table_bytes));
-    let table = make_placement_ptr<MAXPTable05>(table_bytes);
+    ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
 
-    let version = table->version.value();
+    ttlet version = table->version.value();
     parse_assert(version == 0x00010000 || version == 0x00005000);
 
     numGlyphs = table->numGlyphs.value();
@@ -736,14 +736,14 @@ bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, nonstd::span<std::byte const>
     size_t startOffset = 0;
     size_t endOffset = 0;
     if (locaTableIsOffset32) {
-        let entries = make_placement_array<big_uint32_buf_t>(locaTableBytes);
+        ttlet entries = make_placement_array<big_uint32_buf_t>(locaTableBytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
         startOffset = entries[glyph_id].value();
         endOffset = entries[static_cast<int>(glyph_id) + 1].value();
 
     } else {
-        let entries = make_placement_array<big_uint16_buf_t>(locaTableBytes);
+        ttlet entries = make_placement_array<big_uint16_buf_t>(locaTableBytes);
         assert_or_return(entries.contains(static_cast<int>(glyph_id) + 1), false);
 
         startOffset = entries[glyph_id].value() * 2;
@@ -751,7 +751,7 @@ bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, nonstd::span<std::byte const>
     }
 
     assert_or_return(startOffset <= endOffset, false);
-    let size = endOffset - startOffset;
+    ttlet size = endOffset - startOffset;
 
     assert_or_return(endOffset <= static_cast<size_t>(glyfTableBytes.size()), false);
     glyph_bytes = glyfTableBytes.subspan(startOffset, size);
@@ -798,13 +798,13 @@ static void getKerningFormat0(nonstd::span<std::byte const> const &bytes, uint16
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNFormat0>(bytes, offset),);
-    let formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
-    let nPairs = formatheader->nPairs.value();
+    ttlet formatheader = unsafe_make_placement_ptr<KERNFormat0>(bytes, offset);
+    ttlet nPairs = formatheader->nPairs.value();
 
     assert_or_return(check_placement_array<KERNFormat0_entry>(bytes, offset, nPairs),);
-    let entries = unsafe_make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
+    ttlet entries = unsafe_make_placement_array<KERNFormat0_entry>(bytes, offset, nPairs);
 
-    let i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](let &a, let &b) {
+    ttlet i = std::lower_bound(entries.begin(), entries.end(), std::pair{glyph1_id, glyph2_id}, [](ttlet &a, ttlet &b) {
         if (a.left.value() == b.first) {
             return a.right.value() < b.second;
         } else {
@@ -841,7 +841,7 @@ static void getKerningFormat3(nonstd::span<std::byte const> const &bytes, uint16
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<KERNTable_ver0>(bytes, offset), r);
-    let header_ver0 = unsafe_make_placement_ptr<KERNTable_ver0>(bytes, offset);
+    ttlet header_ver0 = unsafe_make_placement_ptr<KERNTable_ver0>(bytes, offset);
     uint32_t version = header_ver0->version.value();
 
     uint32_t nTables = 0;
@@ -852,25 +852,25 @@ static void getKerningFormat3(nonstd::span<std::byte const> const &bytes, uint16
         // Restart with version 1 table.
         offset = 0;
         assert_or_return(check_placement_ptr<KERNTable_ver1>(bytes, offset), r);
-        let header_ver1 = unsafe_make_placement_ptr<KERNTable_ver1>(bytes, offset);
+        ttlet header_ver1 = unsafe_make_placement_ptr<KERNTable_ver1>(bytes, offset);
         assert_or_return(header_ver1->version.value() == 0x00010000, r);
         nTables = header_ver1->nTables.value();
     }
 
     for (uint32_t subtableIndex = 0; subtableIndex != nTables; ++subtableIndex) {
-        let subtable_offset = offset;
+        ttlet subtable_offset = offset;
 
         uint16_t coverage = 0;
         uint32_t length = 0;
         if (version == 0x0000) {
             assert_or_return(check_placement_ptr<KERNSubtable_ver0>(bytes, offset), r);
-            let subheader = unsafe_make_placement_ptr<KERNSubtable_ver0>(bytes, offset);
+            ttlet subheader = unsafe_make_placement_ptr<KERNSubtable_ver0>(bytes, offset);
             coverage = subheader->coverage.value();
             length = subheader->length.value();
 
         } else {
             assert_or_return(check_placement_ptr<KERNSubtable_ver1>(bytes, offset), r);
-            let subheader = unsafe_make_placement_ptr<KERNSubtable_ver1>(bytes, offset);
+            ttlet subheader = unsafe_make_placement_ptr<KERNSubtable_ver1>(bytes, offset);
             coverage = subheader->coverage.value();
             length = subheader->length.value();
         }
@@ -902,11 +902,11 @@ bool TrueTypeFont::updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, G
     ssize_t offset = 0;
 
     assert_or_return(check_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics), false);
-    let longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics);
+    ttlet longHorizontalMetricTable = unsafe_make_placement_array<HMTXEntry>(hmtxTableBytes, offset, numberOfHMetrics);
 
-    let numberOfLeftSideBearings = numGlyphs - numberOfHMetrics;
+    ttlet numberOfLeftSideBearings = numGlyphs - numberOfHMetrics;
     assert_or_return(check_placement_array<FWord_buf_t>(hmtxTableBytes, offset, numberOfLeftSideBearings), false);
-    let leftSideBearings = unsafe_make_placement_array<FWord_buf_t>(hmtxTableBytes, offset, numberOfLeftSideBearings);
+    ttlet leftSideBearings = unsafe_make_placement_array<FWord_buf_t>(hmtxTableBytes, offset, numberOfLeftSideBearings);
 
     float advanceWidth = 0.0f;
     float leftSideBearing;
@@ -953,23 +953,23 @@ bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Pa
     ssize_t offset = 0;
 
     assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes, offset), false);
-    let entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
+    ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes, offset);
 
-    let numberOfContours = static_cast<size_t>(entry->numberOfContours.value());
+    ttlet numberOfContours = static_cast<size_t>(entry->numberOfContours.value());
 
     // Check includes instructionLength.
     assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours), false);
-    let endPoints = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
+    ttlet endPoints = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, numberOfContours);
 
-    for (let endPoint: endPoints) {
+    for (ttlet endPoint: endPoints) {
         glyph.contourEndPoints.push_back(endPoint.value());
     }
 
-    let numberOfPoints = endPoints[numberOfContours - 1].value() + 1;
+    ttlet numberOfPoints = endPoints[numberOfContours - 1].value() + 1;
 
     // Skip over the instructions.
     assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
-    let instructionLength = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
+    ttlet instructionLength = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
     offset += instructionLength * ssizeof(uint8_t);
 
     // Extract all the flags.
@@ -977,12 +977,12 @@ bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Pa
     flags.reserve(numberOfPoints);
     while (flags.size() < numberOfPoints) {
         assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
-        let flag = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
+        ttlet flag = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
         flags.push_back(flag);
         if (flag & FLAG_REPEAT) {
             assert_or_return(check_placement_ptr<uint8_t>(glyph_bytes, offset), false);
-            let repeat = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
+            ttlet repeat = *unsafe_make_placement_ptr<uint8_t>(glyph_bytes, offset);
 
             for (size_t i = 0; i < repeat; i++) {
                 flags.push_back(flag);
@@ -991,7 +991,7 @@ bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Pa
     }
     assert_or_return(flags.size() == numberOfPoints, false);
 
-    let point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<size_t>(0), [](auto size, auto flag) {
+    ttlet point_table_size = std::accumulate(flags.begin(), flags.end(), static_cast<size_t>(0), [](auto size, auto flag) {
         return size +
             ((flag & FLAG_X_SHORT) > 0 ? 1 : ((flag & FLAG_X_SAME) > 0 ? 0 : 2)) +
             ((flag & FLAG_Y_SHORT) > 0 ? 1 : ((flag & FLAG_Y_SAME) > 0 ? 0 : 2));
@@ -1001,7 +1001,7 @@ bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Pa
     // Get xCoordinates
     std::vector<int16_t> xCoordinates;
     xCoordinates.reserve(numberOfPoints);
-    for (let flag: flags) {
+    for (ttlet flag: flags) {
         if ((flag & FLAG_X_SHORT) > 0) {
             if ((flag & FLAG_X_SAME) > 0) {
                 xCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
@@ -1022,7 +1022,7 @@ bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Pa
     // Get yCoordinates
     std::vector<int16_t> yCoordinates;
     yCoordinates.reserve(numberOfPoints);
-    for (let flag: flags) {
+    for (ttlet flag: flags) {
         if ((flag & FLAG_Y_SHORT) > 0) {
             if ((flag & FLAG_Y_SAME) > 0) {
                 yCoordinates.push_back(static_cast<int16_t>(*make_placement_ptr<uint8_t>(glyph_bytes, offset)));
@@ -1046,11 +1046,11 @@ bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Pa
     size_t pointNr = 0;
     std::vector<BezierPoint> points;
     points.reserve(numberOfPoints);
-    for (let flag : flags) {
+    for (ttlet flag : flags) {
         x += xCoordinates[pointNr];
         y += yCoordinates[pointNr];
 
-        let type = (flag & FLAG_ON_CURVE) > 0 ?
+        ttlet type = (flag & FLAG_ON_CURVE) > 0 ?
             BezierPoint::Type::Anchor :
             BezierPoint::Type::QuadraticControl;
 
@@ -1087,7 +1087,7 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
         flags = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
         assert_or_return(check_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset), false);
-        let subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
+        ttlet subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(glyph_bytes, offset)->value();
 
         Path subGlyph;
         assert_or_return(loadGlyph(GlyphID{subGlyphIndex}, subGlyph), false);
@@ -1096,11 +1096,11 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<FWord_buf_t>(glyph_bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
+                ttlet tmp = unsafe_make_placement_array<FWord_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             } else {
                 assert_or_return(check_placement_array<FByte_buf_t>(glyph_bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
+                ttlet tmp = unsafe_make_placement_array<FByte_buf_t>(glyph_bytes, offset, 2);
                 subGlyphOffset = vec{ tmp[0].value(unitsPerEm), tmp[1].value(unitsPerEm)};
             }
         } else {
@@ -1108,12 +1108,12 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
             size_t pointNr2;
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
                 assert_or_return(check_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
+                ttlet tmp = unsafe_make_placement_array<big_uint16_buf_t>(glyph_bytes, offset, 2);
                 pointNr1 = tmp[0].value();
                 pointNr2 = tmp[1].value();
             } else {
                 assert_or_return(check_placement_array<uint8_t>(glyph_bytes, offset, 2), false);
-                let tmp = unsafe_make_placement_array<uint8_t>(glyph_bytes, offset, 2);
+                ttlet tmp = unsafe_make_placement_array<uint8_t>(glyph_bytes, offset, 2);
                 pointNr1 = tmp[0];
                 pointNr2 = tmp[1];
             }
@@ -1133,7 +1133,7 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
 
         } else if (flags & FLAG_WE_HAVE_AN_X_AND_Y_SCALE) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2), false);
-            let tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
+            ttlet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 2);
             subGlyphScale = mat::S(
                 tmp[0].value(),
                 tmp[1].value()
@@ -1141,7 +1141,7 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
 
         } else if (flags & FLAG_WE_HAVE_A_TWO_BY_TWO) {
             assert_or_return(check_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4), false);
-            let tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
+            ttlet tmp = unsafe_make_placement_array<shortFrac_buf_t>(glyph_bytes, offset, 4);
             not_implemented;
             //subGlyphScale = mat::S(
             //    tmp[0].value(),
@@ -1159,7 +1159,7 @@ bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, 
             metrics_glyph_id = subGlyphIndex;
         }
 
-        let transform = mat::T(subGlyphOffset) * subGlyphScale;
+        ttlet transform = mat::T(subGlyphOffset) * subGlyphScale;
         glyph += transform * subGlyph;
 
     } while (flags & FLAG_MORE_COMPONENTS);
@@ -1179,8 +1179,8 @@ std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) co
 
     if (glyph_bytes.size() > 0) {
         assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), {});
-        let entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
-        let numberOfContours = entry->numberOfContours.value();
+        ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
+        ttlet numberOfContours = entry->numberOfContours.value();
 
         if (numberOfContours > 0) {
             assert_or_return(loadSimpleGlyph(glyph_bytes, glyph), {});
@@ -1207,7 +1207,7 @@ bool TrueTypeFont::loadCompoundGlyphMetrics(nonstd::span<std::byte const> bytes,
         flags = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
 
         assert_or_return(check_placement_ptr<big_uint16_buf_t>(bytes, offset), false);
-        let subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
+        ttlet subGlyphIndex = unsafe_make_placement_ptr<big_uint16_buf_t>(bytes, offset)->value();
 
         if (flags & FLAG_ARGS_ARE_XY_VALUES) {
             if (flags & FLAG_ARG_1_AND_2_ARE_WORDS) {
@@ -1252,11 +1252,11 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
 
     if (glyph_bytes.size() > 0) {
         assert_or_return(check_placement_ptr<GLYFEntry>(glyph_bytes), false);
-        let entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
-        let numberOfContours = entry->numberOfContours.value();
+        ttlet entry = unsafe_make_placement_ptr<GLYFEntry>(glyph_bytes);
+        ttlet numberOfContours = entry->numberOfContours.value();
 
-        let xyMin = vec::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
-        let xyMax = vec::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
+        ttlet xyMin = vec::point( entry->xMin.value(unitsPerEm), entry->yMin.value(unitsPerEm) );
+        ttlet xyMax = vec::point( entry->xMax.value(unitsPerEm), entry->yMax.value(unitsPerEm) );
         metrics.boundingBox = aarect::p0p3(xyMin, xyMax);
 
         if (numberOfContours > 0) {
@@ -1292,19 +1292,19 @@ struct SFNTEntry {
 void TrueTypeFont::parseFontDirectory()
 {
     ssize_t offset = 0;
-    let header = make_placement_ptr<SFNTHeader>(file_bytes, offset);
+    ttlet header = make_placement_ptr<SFNTHeader>(file_bytes, offset);
 
     if (!(header->scalerType.value() == fourcc("true") || header->scalerType.value() == 0x00010000)) {
         TTAURI_THROW(parse_error("sfnt.scalerType is not 'true' or 0x00010000"));
     }
 
-    let entries = make_placement_array<SFNTEntry>(file_bytes, offset, header->numTables.value());
-    for (let &entry: entries) {
+    ttlet entries = make_placement_array<SFNTEntry>(file_bytes, offset, header->numTables.value());
+    for (ttlet &entry: entries) {
         if ((entry.offset.value() + entry.length.value()) > ssize(file_bytes)) {
             TTAURI_THROW(parse_error("sfnt table-entry is out of range"));
         }
 
-        let tableBytes = file_bytes.subspan(entry.offset.value(), entry.length.value());
+        ttlet tableBytes = file_bytes.subspan(entry.offset.value(), entry.length.value());
         switch (entry.tag.value()) {
         case fourcc("cmap"):
             cmapTableBytes = tableBytes;
@@ -1372,7 +1372,7 @@ void TrueTypeFont::parseFontDirectory()
     if (OS2_xHeight > 0) {
         description.xHeight = emScale * OS2_xHeight;
     } else {
-        let glyph_id = find_glyph('x');
+        ttlet glyph_id = find_glyph('x');
         if (glyph_id) {
             GlyphMetrics metrics;
             loadGlyphMetrics(glyph_id, metrics);
@@ -1383,7 +1383,7 @@ void TrueTypeFont::parseFontDirectory()
     if (OS2_HHeight > 0) {
         description.HHeight = emScale * OS2_HHeight;
     } else {
-        let glyph_id = find_glyph('H');
+        ttlet glyph_id = find_glyph('H');
         if (glyph_id) {
             GlyphMetrics metrics;
             loadGlyphMetrics(glyph_id, metrics);

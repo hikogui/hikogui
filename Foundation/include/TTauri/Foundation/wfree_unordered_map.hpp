@@ -71,12 +71,12 @@ public:
     constexpr wfree_unordered_map &operator=(wfree_unordered_map &&) noexcept = delete;
 
     static size_t make_hash(K const &key) noexcept {
-        let hash = std::hash<K>{}(key);
+        ttlet hash = std::hash<K>{}(key);
         return hash >= 3 ? hash : hash + 3;
     }
 
     void insert(K key, V value) noexcept {
-        let hash = make_hash(key);
+        ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -111,7 +111,7 @@ public:
         std::vector<K> r;
         // XXX - with counting items, we could reserve capacity.
 
-        for (let &item: items) {
+        for (ttlet &item: items) {
             if (item.hash >= 3) {
                 r.push_back(item.key);
             }
@@ -120,7 +120,7 @@ public:
     }
 
     V& operator[](K const &key) noexcept {
-        let hash = make_hash(key);
+        ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -157,7 +157,7 @@ public:
     }
 
     std::optional<V> get(K const &key) const noexcept {
-        let hash = make_hash(key);
+        ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {
@@ -180,7 +180,7 @@ public:
     }
 
     V get(K const &key, V const &default_value) const noexcept {
-        if (let optional_value = get(key)) {
+        if (ttlet optional_value = get(key)) {
             return *optional_value;
         } else {
             return default_value;
@@ -188,7 +188,7 @@ public:
     }
 
     std::optional<V> erase(K const &key) noexcept {
-        let hash = make_hash(key);
+        ttlet hash = make_hash(key);
 
         auto index = hash % CAPACITY;
         while (true) {

@@ -53,7 +53,7 @@ std::u32string parseNormalizationTest_column(std::string_view column) {
     std::u32string r;
 
     auto codePointStrings = split(column, " ");
-    for (let codePointString: codePointStrings) {
+    for (ttlet codePointString: codePointStrings) {
         auto codePoint = static_cast<char32_t>(std::stoi(std::string(codePointString), nullptr, 16));
         r += codePoint;
     }
@@ -62,11 +62,11 @@ std::u32string parseNormalizationTest_column(std::string_view column) {
 
 std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view line)
 {
-    let split_line = split(line, "#");
+    ttlet split_line = split(line, "#");
     if (split_line.size() < 2) {
         return {};
     }
-    let columns = split(split_line[0], ";");
+    ttlet columns = split(split_line[0], ";");
     if (columns.size() < 6) {
         return {};
     }
@@ -84,12 +84,12 @@ std::optional<NormalizationTest> parseNormalizationTest_line(std::string_view li
 
 std::vector<NormalizationTest> parseNormalizationTests()
 {
-    let view = FileView(URL("file:NormalizationTest.txt"));
-    let test_data = view.string_view();
+    ttlet view = FileView(URL("file:NormalizationTest.txt"));
+    ttlet test_data = view.string_view();
 
     std::vector<NormalizationTest> r;
-    for (let line: split(test_data, "\n")) {
-        if (let optionalTest = parseNormalizationTest_line(line)) {   
+    for (ttlet line: split(test_data, "\n")) {
+        if (ttlet optionalTest = parseNormalizationTest_line(line)) {   
             r.push_back(*optionalTest);
         }
     }
@@ -107,19 +107,19 @@ std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view l
 {
     GraphemeBreakTest r;
 
-    let split_line = split(line, "\t#");
+    ttlet split_line = split(line, "\t#");
     if (split_line.size() < 2) {
         return {};
     }
     r.comment = fmt::format("{}: {}", lineNr, split_line[1]);
     r.lineNr = lineNr;
 
-    let columns = split(split_line[0], " ");
+    ttlet columns = split(split_line[0], " ");
     if (columns.size() < 2) {
         return {};
     }
 
-    for (let column: columns) {
+    for (ttlet column: columns) {
         if (column == "") {
             // Empty.
         } else if (column == "\xc3\xb7") {
@@ -137,13 +137,13 @@ std::optional<GraphemeBreakTest> parseGraphemeBreakTests_line(std::string_view l
 
 std::vector<GraphemeBreakTest> parseGraphemeBreakTests()
 {
-    let view = FileView(URL("file:GraphemeBreakTest.txt"));
-    let test_data = view.string_view();
+    ttlet view = FileView(URL("file:GraphemeBreakTest.txt"));
+    ttlet test_data = view.string_view();
 
     std::vector<GraphemeBreakTest> r;
     int lineNr = 1;
-    for (let line: split(test_data, "\n")) {
-        if (let optionalTest = parseGraphemeBreakTests_line(line, lineNr)) {   
+    for (ttlet line: split(test_data, "\n")) {
+        if (ttlet optionalTest = parseGraphemeBreakTests_line(line, lineNr)) {   
             r.push_back(*optionalTest);
         }
         lineNr++;
@@ -185,128 +185,128 @@ protected:
 //      X == toNFC(X) == toNFD(X) == toNFKC(X) == toNFKD(X)
 
 TEST_F(UnicodeDataTests, toNFC_c1) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c1), test.c2) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFC_c2) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c2), test.c2) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFC_c3) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c3), test.c2) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFC_c4) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c4), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFC_c5) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFC(test.c5), test.c4) << test.comment;
     }
 }
 #endif
 
 TEST_F(UnicodeDataTests, toNFKC_c1) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c1), test.c4) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFKC_c2) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c2), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKC_c3) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c3), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKC_c4) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c4), test.c4) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKC_c5) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKC(test.c5), test.c4) << test.comment;
     }
 }
 #endif
 
 TEST_F(UnicodeDataTests, toNFD_c1) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c1), test.c3) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFD_c2) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c2), test.c3) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFD_c3) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c3), test.c3) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFD_c4) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c4), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFD_c5) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFD(test.c5), test.c5) << test.comment;
     }
 }
 #endif
 
 TEST_F(UnicodeDataTests, toNFKD_c1) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c1), test.c5) << test.comment;
     }
 }
 
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, toNFKD_c2) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c2), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKD_c3) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c3), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKD_c4) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c4), test.c5) << test.comment;
     }
 }
 
 TEST_F(UnicodeDataTests, toNFKD_c5) {
-    for (let &test: normalizationTests) {
+    for (ttlet &test: normalizationTests) {
         ASSERT_EQ(unicodeData.toNFKD(test.c5), test.c5) << test.comment;
     }
 }
@@ -315,27 +315,27 @@ TEST_F(UnicodeDataTests, toNFKD_c5) {
 #if defined(NDEBUG)
 TEST_F(UnicodeDataTests, Invariant) {
     auto previouslyTestedCodePoints = std::vector<bool>(0x11'0000, false);
-    for (let &test: normalizationTests) {
-        for (let &c: test.c1) {
+    for (ttlet &test: normalizationTests) {
+        for (ttlet &c: test.c1) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let &c: test.c2) {
+        for (ttlet &c: test.c2) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let &c: test.c3) {
+        for (ttlet &c: test.c3) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let &c: test.c4) {
+        for (ttlet &c: test.c4) {
             previouslyTestedCodePoints[c] = true;
         }
-        for (let &c: test.c5) {
+        for (ttlet &c: test.c5) {
             previouslyTestedCodePoints[c] = true;
         }
     }
 
     for (char32_t i = 0; i < previouslyTestedCodePoints.size(); i++) {
         if (!previouslyTestedCodePoints[i]) {
-            let str = std::u32string(1, i);
+            ttlet str = std::u32string(1, i);
 
             ASSERT_EQ(unicodeData.toNFD(str), str);
             ASSERT_EQ(unicodeData.toNFC(str), str);
@@ -349,14 +349,14 @@ TEST_F(UnicodeDataTests, Invariant) {
 TEST_F(UnicodeDataTests, GraphemeBreak) {
     auto tests = parseGraphemeBreakTests();
 
-    for (let &test: tests) {
+    for (ttlet &test: tests) {
         ASSERT_EQ(test.codePoints.size() + 1, test.breakOpertunities.size());
 
         auto state = GraphemeBreakState{};
         
         for (size_t i = 0; i < test.codePoints.size(); i++) {
-            let codePoint = test.codePoints[i];
-            let breakOpertunity = test.breakOpertunities[i];
+            ttlet codePoint = test.codePoints[i];
+            ttlet breakOpertunity = test.breakOpertunities[i];
 
             ASSERT_EQ(unicodeData.checkGraphemeBreak(codePoint, state), breakOpertunity) << test.comment;
         }

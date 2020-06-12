@@ -11,17 +11,17 @@ AtlasRect::AtlasRect(ivec atlasPosition, vec drawExtent) noexcept :
     atlasPosition(atlasPosition),
     atlasExtent(ceil(drawExtent))
 {
-    let atlas_px_rect = rect{
+    ttlet atlas_px_rect = rect{
         vec{atlasPosition.xyz1()},
         drawExtent
     };
 
-    let textureCoordinateScale = mat::S{
+    ttlet textureCoordinateScale = mat::S{
         DeviceShared::atlasTextureCoordinateMultiplier,
         DeviceShared::atlasTextureCoordinateMultiplier
     };
 
-    let atlas_tx_rect = textureCoordinateScale * atlas_px_rect;
+    ttlet atlas_tx_rect = textureCoordinateScale * atlas_px_rect;
 
     std::get<0>(textureCoords) = atlas_tx_rect.corner<0>();
     std::get<1>(textureCoords) = atlas_tx_rect.corner<1>();

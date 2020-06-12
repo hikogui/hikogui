@@ -49,7 +49,7 @@ struct BezierPoint {
         auto previousPoint = *(end - 1);
         auto previousPreviousPoint = *(end - 2);
         for (auto i = begin; i != end; i++) {
-            let point = *i;
+            ttlet point = *i;
 
             switch (point.type) {
             case BezierPoint::Type::Anchor:

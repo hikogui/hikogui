@@ -17,7 +17,7 @@ bstring zlib_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
 {
     ssize_t offset = 0;
 
-    let header = make_placement_ptr<zlib_header>(bytes, offset);
+    ttlet header = make_placement_ptr<zlib_header>(bytes, offset);
     parse_assert2((header->CMF & 0xf) == 8, "zlib compression method must be 8");
     parse_assert2(((header->CMF >> 4) & 0xf) <= 7, "zlib LZ77 window too large");
     parse_assert2((header->FLG & 0x1f) == 0, "zlib must not use a preset dicationary");

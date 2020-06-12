@@ -75,7 +75,7 @@ public:
      * This will also print any error messages that happened during the parsing.
      */
     void print_help() {
-        for (let &error_message: error_messages) {
+        for (ttlet &error_message: error_messages) {
             std::cerr << error_message << "\n";
         }
         if (has_error()) {
@@ -84,8 +84,8 @@ public:
 
         std::cerr << synopsis << "\n";
 
-        for (let &option: options) {
-            let example = fmt::format("--{}=<{}>", option.name, option.type);
+        for (ttlet &option: options) {
+            ttlet example = fmt::format("--{}=<{}>", option.name, option.type);
             std::cerr << fmt::format("  {:20s}    {}\n", example, option.help);
         }
         std::cerr.flush();
@@ -104,16 +104,16 @@ public:
         auto r = datum{datum::map{}};
 
         int argumentCount = 0;
-        for (let &argument: arguments) {
+        for (ttlet &argument: arguments) {
             if (argumentCount++ == 0) {
                 r["executable-path"] = arguments[0];
 
             } else if (starts_with(argument, "--"s)) {
-                let i = argument.find('=');
+                ttlet i = argument.find('=');
                 if (i == argument.npos) {
-                    let option_name = argument.substr(2);
+                    ttlet option_name = argument.substr(2);
 
-                    let &option = std::find_if(options.begin(), options.end(), [&](auto x) {
+                    ttlet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
                         return x.name == option_name;
                         });
 
@@ -128,10 +128,10 @@ public:
                     }
 
                 } else {
-                    let option_name = argument.substr(2, i-2);
-                    let option_value_string = argument.substr(i+1);
+                    ttlet option_name = argument.substr(2, i-2);
+                    ttlet option_value_string = argument.substr(i+1);
 
-                    let &option = std::find_if(options.begin(), options.end(), [&](auto x) {
+                    ttlet &option = std::find_if(options.begin(), options.end(), [&](auto x) {
                         return x.name == option_name;
                         });
 
@@ -154,7 +154,7 @@ public:
 
                         case datum_type_t::Integer:
                             if (option->enum_conversion) {
-                                let option_value_int = option->enum_conversion(option_value_string);
+                                ttlet option_value_int = option->enum_conversion(option_value_string);
                                 if (option_value_int >= 0) {
                                     r[option_name] = option_value_int;
                                 } else {
@@ -165,7 +165,7 @@ public:
 
                             } else {
                                 try {
-                                    let option_value_int = std::stoll(option_value_string);
+                                    ttlet option_value_int = std::stoll(option_value_string);
                                     r[option_name] = option_value_int;
                                 } catch (...) {
                                     error_messages.push_back(

@@ -198,7 +198,7 @@ public:
     }
 
     [[nodiscard]] force_inline friend bool operator==(ivec const &lhs, ivec const &rhs) noexcept {
-        let tmp2 = _mm_movemask_epi8(_mm_cmpeq_epi32(lhs, rhs));
+        ttlet tmp2 = _mm_movemask_epi8(_mm_cmpeq_epi32(lhs, rhs));
         return tmp2 == 0xffff;
     }
 

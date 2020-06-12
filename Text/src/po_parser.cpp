@@ -15,7 +15,7 @@ namespace tt {
 
 [[nodiscard]] Messages po_parser(URL const &url) noexcept
 {
-    let v = ResourceView::loadView(url);
+    ttlet v = ResourceView::loadView(url);
     return po_parser(v->string_view());
 }
 

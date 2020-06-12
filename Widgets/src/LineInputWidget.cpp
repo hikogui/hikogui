@@ -62,7 +62,7 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 
 void LineInputWidget::dragSelect() noexcept
 {
-    let mouseInTextPosition = textInvTranslate * dragSelectPosition;
+    ttlet mouseInTextPosition = textInvTranslate * dragSelectPosition;
     switch (dragClickCount) {
     case 1:
         field.dragCursorAtCoordinate(mouseInTextPosition);
@@ -113,7 +113,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     }
 
     // cap how far we scroll.
-    let maxScrollWidth = std::max(0.0f, shapedText.preferedExtent.width() - textRectangle.width());
+    ttlet maxScrollWidth = std::max(0.0f, shapedText.preferedExtent.width() - textRectangle.width());
     textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
 
     textTranslate = mat::T2(-textScrollX, 0.0f) * shapedText.T(textRectangle);
@@ -122,7 +122,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     context.transform = drawContext.transform * (mat::T(0.0, 0.0, 0.0001f) * textTranslate);
 
     selectionRectangles = field.selectionRectangles();
-    for (let selectionRectangle: selectionRectangles) {
+    for (ttlet selectionRectangle: selectionRectangles) {
         context.fillColor = theme->textSelectColor;
         context.drawFilledQuad(selectionRectangle);
     }
@@ -217,7 +217,7 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
     if (event.type == MouseEvent::Type::ButtonDown && event.cause.leftButton) {
         if (textRectangle.contains(event.position)) {
-            let mouseInTextPosition = textInvTranslate * event.position;
+            ttlet mouseInTextPosition = textInvTranslate * event.position;
 
             switch (event.clickCount) {
             case 1:

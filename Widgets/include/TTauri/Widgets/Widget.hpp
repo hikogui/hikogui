@@ -430,7 +430,7 @@ public:
             break;
 
         case KeyboardEvent::Type::Key:
-            for (let command : event.getCommands()) {
+            for (ttlet command : event.getCommands()) {
                 handleCommand(command);
             }
             break;

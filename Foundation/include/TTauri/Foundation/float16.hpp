@@ -17,24 +17,24 @@ public:
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     float16(T const &rhs) noexcept {
-        let tmp1 = numeric_cast<float>(rhs);
-        let tmp2 = _mm_set_ss(tmp1);
-        let tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
+        ttlet tmp1 = numeric_cast<float>(rhs);
+        ttlet tmp2 = _mm_set_ss(tmp1);
+        ttlet tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si16(&v, tmp3);
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     float16 &operator=(T const &rhs) noexcept {
-        let tmp1 = numeric_cast<float>(rhs);
-        let tmp2 = _mm_set_ss(tmp1);
-        let tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
+        ttlet tmp1 = numeric_cast<float>(rhs);
+        ttlet tmp2 = _mm_set_ss(tmp1);
+        ttlet tmp3 = _mm_cvtps_ph(tmp2, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si16(&v, tmp3);
         return *this;
     }
 
     operator float () const noexcept {
-        let tmp1 = _mm_loadu_si16(&v);
-        let tmp2 = _mm_cvtph_ps(tmp1);
+        ttlet tmp1 = _mm_loadu_si16(&v);
+        ttlet tmp2 = _mm_cvtph_ps(tmp1);
         return _mm_cvtss_f32(tmp2);
     }
 

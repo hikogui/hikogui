@@ -87,7 +87,7 @@ namespace tt {
 
 [[nodiscard]] Catalogue parseCatalogue(URL const &url)
 {
-    let text = ResourceView::loadView(url);
+    ttlet text = ResourceView::loadView(url);
     return parseCatalogue(text->string_view());
 }
 

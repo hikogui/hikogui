@@ -44,7 +44,7 @@ void widgets_startup()
         self.layout(displayTimePoint);
     };
 
-    Widget_draw = [](auto &self, let &drawContext, auto displayTimePoint) {
+    Widget_draw = [](auto &self, ttlet &drawContext, auto displayTimePoint) {
         self.draw(drawContext, displayTimePoint);
     };
 
@@ -52,55 +52,55 @@ void widgets_startup()
         return self.layoutChildren(displayTimePoint, force);
     };
 
-    Widget_getNextKeyboardWidget = [](let &self) {
+    Widget_getNextKeyboardWidget = [](ttlet &self) {
         return self.nextKeyboardWidget;
     };
 
-    Widget_getPreviousKeyboardWidget = [](let &self) {
+    Widget_getPreviousKeyboardWidget = [](ttlet &self) {
         return self.prevKeyboardWidget;
     };
 
-    Widget_acceptsFocus = [](let &self) {
+    Widget_acceptsFocus = [](ttlet &self) {
         return self.acceptsFocus();
     };
 
-    Widget_handleMouseEvent = [](auto &self, let &event) {
+    Widget_handleMouseEvent = [](auto &self, ttlet &event) {
         self.handleMouseEvent(event);
     };
 
-    Widget_handleKeyboardEvent = [](auto &self, let &event) {
+    Widget_handleKeyboardEvent = [](auto &self, ttlet &event) {
         self.handleKeyboardEvent(event);
     };
 
-    Widget_getWindowOffset = [](let &self) {
+    Widget_getWindowOffset = [](ttlet &self) {
         return self.offsetFromWindow();
     };
 
-    Widget_hitBoxTest = [](let &self, auto position) {
+    Widget_hitBoxTest = [](ttlet &self, auto position) {
         return self.hitBoxTest(position);
     };
 
-    Widget_getLeft = [](let &self) -> rhea::variable const & {
+    Widget_getLeft = [](ttlet &self) -> rhea::variable const & {
         return self.left;
     };
 
-    Widget_getBottom = [](let &self) -> rhea::variable const & {
+    Widget_getBottom = [](ttlet &self) -> rhea::variable const & {
         return self.bottom;
     };
 
-    Widget_getWidth = [](let &self) -> rhea::variable const & {
+    Widget_getWidth = [](ttlet &self) -> rhea::variable const & {
         return self.width;
     };
 
-    Widget_getHeight = [](let &self) -> rhea::variable const & {
+    Widget_getHeight = [](ttlet &self) -> rhea::variable const & {
         return self.height;
     };
 
-    Widget_getRight = [](let &self) -> rhea::linear_expression const & {
+    Widget_getRight = [](ttlet &self) -> rhea::linear_expression const & {
         return self.right;
     };
 
-    Widget_getTop = [](let &self) -> rhea::linear_expression const & {
+    Widget_getTop = [](ttlet &self) -> rhea::linear_expression const & {
         return self.right;
     };
 }

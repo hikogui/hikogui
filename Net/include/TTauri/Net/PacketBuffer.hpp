@@ -117,10 +117,10 @@ public:
                 i = 0;
             }
 
-            let c = packets[packetNr][i]
+            ttlet c = packets[packetNr][i]
             if (c == '\n' || c == '\0') {
                 // Found end-of-line
-                let bspan = peek(byteNr + 1);
+                ttlet bspan = peek(byteNr + 1);
                 return {reinterpret_cast<char *>(bspan.data(), byteNr + 1};
             }
             ++i;
@@ -141,7 +141,7 @@ public:
         peekBuffer.clear();
 
         while (nrBytes) {
-            let packet_size = ssize(packets.front());
+            ttlet packet_size = ssize(packets.front());
             if (nrBytes >= packet_size) {
                 packets.pop_front();
             } else {

@@ -70,17 +70,17 @@ File::File(URL const &location, AccessMode accessMode) :
         flagsAndAttributes |= FILE_FLAG_WRITE_THROUGH;
     }
 
-    let fileName = location.nativeWPath();
+    ttlet fileName = location.nativeWPath();
     if ((fileHandle = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) != INVALID_HANDLE_VALUE) {
         return;
     }
 
-    let error = GetLastError();
+    ttlet error = GetLastError();
     if (accessMode >= AccessMode::CreateDirectories && error == ERROR_PATH_NOT_FOUND && (
         creationDisposition == CREATE_ALWAYS || creationDisposition == OPEN_ALWAYS || creationDisposition == CREATE_NEW
     )) {
         // Retry opening the file, by first creating the directory hierarchy.
-        let directory = location.urlByRemovingFilename();
+        ttlet directory = location.urlByRemovingFilename();
         File::createDirectoryHierarchy(directory);
 
         if ((fileHandle = CreateFileW(fileName.data(), desiredAccess, shareMode, NULL, creationDisposition, flagsAndAttributes, NULL)) != INVALID_HANDLE_VALUE) {
@@ -121,7 +121,7 @@ ssize_t File::write(std::byte const *data, ssize_t size)
 
     ssize_t total_written_size = 0;
     while (size) {
-        let write_size = static_cast<DWORD>(std::min(size, static_cast<ssize_t>(std::numeric_limits<DWORD>::max())));
+        ttlet write_size = static_cast<DWORD>(std::min(size, static_cast<ssize_t>(std::numeric_limits<DWORD>::max())));
         DWORD written_size = 0;
 
         if (!WriteFile(fileHandle, data, write_size, &written_size, nullptr)) {
@@ -144,7 +144,7 @@ ssize_t File::write(std::byte const *data, ssize_t size)
 
 size_t File::fileSize(URL const &url)
 {
-    let name = url.nativeWPath();
+    ttlet name = url.nativeWPath();
 
     WIN32_FILE_ATTRIBUTE_DATA attributes;
     if (GetFileAttributesExW(name.data(), GetFileExInfoStandard, &attributes) == 0) {
@@ -163,7 +163,7 @@ void File::createDirectory(URL const &url, bool hierarchy)
         TTAURI_THROW(io_error("Cannot create a root directory."));
     }
 
-    let directory_name = url.nativeWPath();
+    ttlet directory_name = url.nativeWPath();
     if (CreateDirectoryW(directory_name.data(), nullptr)) {
         return;
     }

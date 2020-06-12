@@ -200,7 +200,7 @@ static void inflate_fixed_block(nonstd::span<std::byte const> bytes, ssize_t &bi
 
     auto lengths = std::vector<int>(ssize(symbols), 0);
     for (int i = 0; i != nr_symbols; ++i) {
-        let symbol = symbols[i];
+        ttlet symbol = symbols[i];
         lengths[symbol] = get_bits(bytes, bit_offset, 3);
     }
     return huffman_tree<int16_t>::from_lengths(std::move(lengths));
@@ -257,18 +257,18 @@ void inflate_dynamic_block(nonstd::span<std::byte const> bytes, ssize_t &bit_off
     // - 14 bits lengths
     // -  7 bits rounding up to byte.
     parse_assert2(((bit_offset + 21) >> 3) <= ssize(bytes), "Input buffer overrun");
-    let HLIT = get_bits(bytes, bit_offset, 5);
-    let HDIST = get_bits(bytes, bit_offset, 5);
-    let HCLEN = get_bits(bytes, bit_offset, 4);
+    ttlet HLIT = get_bits(bytes, bit_offset, 5);
+    ttlet HDIST = get_bits(bytes, bit_offset, 5);
+    ttlet HCLEN = get_bits(bytes, bit_offset, 4);
 
-    let code_length_tree = inflate_code_lengths(bytes, bit_offset, HCLEN + 4);
+    ttlet code_length_tree = inflate_code_lengths(bytes, bit_offset, HCLEN + 4);
 
-    let lengths = inflate_lengths(bytes, bit_offset, HLIT + HDIST + 258, code_length_tree);
+    ttlet lengths = inflate_lengths(bytes, bit_offset, HLIT + HDIST + 258, code_length_tree);
     parse_assert2(lengths[256] != 0, "The end-of-block symbol must be in the table");
 
-    let lengths_ptr = lengths.data();
-    let literal_tree = huffman_tree<int16_t>::from_lengths(lengths_ptr, HLIT + 257);
-    let distance_tree = huffman_tree<int16_t>::from_lengths(&lengths_ptr[HLIT + 257], HDIST + 1);
+    ttlet lengths_ptr = lengths.data();
+    ttlet literal_tree = huffman_tree<int16_t>::from_lengths(lengths_ptr, HLIT + 257);
+    ttlet distance_tree = huffman_tree<int16_t>::from_lengths(&lengths_ptr[HLIT + 257], HDIST + 1);
 
     inflate_block(bytes, bit_offset, max_size, literal_tree, distance_tree, r);
 }
@@ -287,7 +287,7 @@ bstring inflate(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t ma
         parse_assert2(((bit_offset + 10) >> 3) <= ssize(bytes), "Input buffer overrun");
 
         BFINAL = get_bits(bytes, bit_offset, 1);
-        let BTYPE = get_bits(bytes, bit_offset, 2);
+        ttlet BTYPE = get_bits(bytes, bit_offset, 2);
 
         switch (BTYPE) {
         case 0:

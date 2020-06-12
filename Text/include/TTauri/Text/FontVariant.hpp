@@ -56,8 +56,8 @@ public:
     */
     constexpr FontVariant alternative(int i) const noexcept {
         ttauri_assume(i >= 0 && i < max());
-        let w = FontWeight_alterative(weight(), i % half());
-        let it = italic() == (i < half());
+        ttlet w = FontWeight_alterative(weight(), i % half());
+        ttlet it = italic() == (i < half());
         return {w, it};
     }
 

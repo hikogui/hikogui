@@ -18,7 +18,7 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     Widget::layout(displayTimePoint);
 
     // The label is located to the right of the toggle.
-    let label_x = Theme::smallWidth + Theme::margin;
+    ttlet label_x = Theme::smallWidth + Theme::margin;
     label_rectangle = aarect{
         label_x, 0.0f,
         rectangle().width() - label_x, rectangle().height()
@@ -38,7 +38,7 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     slider_y = toggle_y + 1.5f;
     slider_width = toggle_height - 3.0f;
     slider_height = toggle_height - 3.0f;
-    let slider_move_width = Theme::smallWidth - (slider_x * 2.0f);
+    ttlet slider_move_width = Theme::smallWidth - (slider_x * 2.0f);
     slider_move = slider_move_width - slider_width;
 
 }
@@ -46,7 +46,7 @@ void ToggleWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     // Prepare animation values.
-    let [animation_progress, curr_value] = value.animation_tick(displayTimePoint);
+    ttlet [animation_progress, curr_value] = value.animation_tick(displayTimePoint);
     if (animation_progress < 1.0) {
         forceRedraw = true;
     }
@@ -57,7 +57,7 @@ void ToggleWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     context.drawBoxIncludeBorder(toggle_rectangle);
 
     // Inside circle
-    let slider_rectangle = aarect{
+    ttlet slider_rectangle = aarect{
         slider_x + slider_move * curr_value, slider_y,
         slider_width, slider_height
     };

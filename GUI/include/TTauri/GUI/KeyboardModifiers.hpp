@@ -35,8 +35,8 @@ constexpr KeyboardModifiers &operator|=(KeyboardModifiers &lhs, KeyboardModifier
 }
 
 [[nodiscard]] constexpr bool operator>=(KeyboardModifiers lhs, KeyboardModifiers rhs) noexcept {
-    let lhs_ = static_cast<uint8_t>(lhs);
-    let rhs_ = static_cast<uint8_t>(rhs);
+    ttlet lhs_ = static_cast<uint8_t>(lhs);
+    ttlet rhs_ = static_cast<uint8_t>(rhs);
     return (lhs_ & rhs_) == rhs_;
 }
 
@@ -50,7 +50,7 @@ inline KeyboardModifiers to_KeyboardModifiers(std::string_view s)
     }
 
     // Remove the canonical trailing '+'.
-    let s_lower = to_lower(
+    ttlet s_lower = to_lower(
         (s.back() == '+') ? s.substr(0, ssize(s) - 1) : s
     );
 

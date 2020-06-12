@@ -12,7 +12,7 @@ Theme::Theme(URL const &url)
 {
     try {
         LOG_INFO("Parsing theme at {}", url);
-        let data = parseJSON(url);
+        ttlet data = parseJSON(url);
         parse(data);
     } catch (error &e) {
         e.set<url_tag>(url);
@@ -26,7 +26,7 @@ Theme::Theme(URL const &url)
     if (!data.contains(object_name)) {
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
-    let object = data[object_name];
+    ttlet object = data[object_name];
     if (!object.is_string()) {
         TTAURI_THROW(parse_error("'{}' attribute must be a string, got {}.", object_name, object.type_name()));
     }
@@ -39,7 +39,7 @@ Theme::Theme(URL const &url)
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
 
-    let object = data[object_name];
+    ttlet object = data[object_name];
     if (!object.is_numeric()) {
         TTAURI_THROW(parse_error("'{}' attribute must be a number, got {}.", object_name, object.type_name()));
     }
@@ -53,7 +53,7 @@ Theme::Theme(URL const &url)
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
 
-    let object = data[object_name];
+    ttlet object = data[object_name];
     if (!object.is_bool()) {
         TTAURI_THROW(parse_error("'{}' attribute must be a boolean, got {}.", object_name, object.type_name()));
     }
@@ -67,10 +67,10 @@ Theme::Theme(URL const &url)
         if (ssize(data) != 3 && ssize(data) != 4) {
             TTAURI_THROW(parse_error("Expect 3 or 4 values for a color, got {}.", data));
         }
-        let r = data[0];
-        let g = data[1];
-        let b = data[2];
-        let a = ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
+        ttlet r = data[0];
+        ttlet g = data[1];
+        ttlet b = data[2];
+        ttlet a = ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
 
         if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
             return vec::colorFromSRGB(
@@ -91,7 +91,7 @@ Theme::Theme(URL const &url)
         }
 
     } else if (data.is_string()) {
-        let color_name = to_lower(static_cast<std::string>(data));
+        ttlet color_name = to_lower(static_cast<std::string>(data));
         if (starts_with(color_name, "#"s)) {
             return vec::colorFromSRGB(color_name);
 
@@ -124,7 +124,7 @@ Theme::Theme(URL const &url)
         TTAURI_THROW(parse_error("Missing color '{}'", object_name));
     }
 
-    let colorObject = data[object_name];
+    ttlet colorObject = data[object_name];
     try {
         return parseColorValue(colorObject);
     } catch (parse_error &e) {
@@ -139,7 +139,7 @@ Theme::Theme(URL const &url)
         TTAURI_THROW(parse_error("Missing color list '{}'", object_name));
     }
 
-    let colorListObject = data[object_name];
+    ttlet colorListObject = data[object_name];
     if (!colorListObject.is_vector()) {
         TTAURI_THROW(parse_error("Expecting color list '{}' to be a list of colors, got {}", object_name, colorListObject.type_name()));
     }
@@ -162,7 +162,7 @@ Theme::Theme(URL const &url)
         TTAURI_THROW(parse_error("Missing '{}'", object_name));
     }
 
-    let object = data[object_name];
+    ttlet object = data[object_name];
     if (object.is_numeric()) {
         return FontWeight_from_int(static_cast<int>(object));
     } else if (object.is_string()) {
@@ -206,7 +206,7 @@ Theme::Theme(URL const &url)
         TTAURI_THROW(parse_error("Missing text-style '{}'", object_name));
     }
 
-    let textStyleObject = data[object_name];
+    ttlet textStyleObject = data[object_name];
     try {
         return parseTextStyleValue(textStyleObject);
     } catch (parse_error &e) {
@@ -220,7 +220,7 @@ void Theme::parse(datum const &data)
 
     this->name = parseString(data, "name");
 
-    let mode_name = to_lower(parseString(data, "mode"));
+    ttlet mode_name = to_lower(parseString(data, "mode"));
     if (mode_name == "light") {
         this->mode = ThemeMode::Light;
     } else if (mode_name == "dark") {

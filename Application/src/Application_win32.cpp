@@ -20,10 +20,10 @@ constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
 {
     std::vector<std::string> arguments;
 
-    let commandLine = GetCommandLineW();
+    ttlet commandLine = GetCommandLineW();
 
     int argc = 0;
-    let argv = CommandLineToArgvW(commandLine, &argc);
+    ttlet argv = CommandLineToArgvW(commandLine, &argc);
     ttauri_assert(argv != nullptr);
 
     for (int i = 0; i < argc; i++) {
@@ -58,7 +58,7 @@ void Application_win32::lastWindowClosed()
 gsl_suppress(r.11)
 void Application_win32::runOnMainThread(std::function<void()> function)
 {
-    let functionP = new std::function<void()>(std::move(function));
+    ttlet functionP = new std::function<void()>(std::move(function));
     ttauri_assert(functionP);
 
     auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
@@ -85,7 +85,7 @@ int Application_win32::loop()
     while (GetMessage(&msg, nullptr, 0, 0)) {
         switch (msg.message) {
         case WM_APP_CALL_FUNCTION: {
-            let functionP = reinterpret_cast<std::function<void()> *>(msg.lParam);
+            ttlet functionP = reinterpret_cast<std::function<void()> *>(msg.lParam);
             (*functionP)();
             delete functionP;
             } break;

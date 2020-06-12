@@ -15,11 +15,11 @@ using namespace std::literals;
 
 /*! Invariant should be the default for variables.
 * C++ does have an invariant but it requires you to enter the 'const' keyword which
-* is easy to forget. Using a single keyword 'let' for an invariant makes it easier to notice
+* is easy to forget. Using a single keyword 'ttlet' for an invariant makes it easier to notice
 * when you have defined a variant.
 */
-#ifndef let
-#define let auto const
+#ifndef ttlet
+#define ttlet auto const
 #endif
 
 /*! Signed size/index into an array.

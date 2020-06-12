@@ -166,12 +166,12 @@ inline T &getResource(URL const &location)
 
     auto lock = std::scoped_lock(mutex);
 
-    let oldResource = resourceCache.find(location);
+    ttlet oldResource = resourceCache.find(location);
     if (oldResource != resourceCache.end()) {
         return *(oldResource->second);
     }
 
-    [[maybe_unused]] let [newResource, dummy] = resourceCache.try_emplace(location, std::move(parseResource<T>(location)));
+    [[maybe_unused]] ttlet [newResource, dummy] = resourceCache.try_emplace(location, std::move(parseResource<T>(location)));
 
     return *(newResource->second);
 }

@@ -8,16 +8,16 @@ namespace tt {
 
 void KeyboardBindings::loadBindings(URL url, bool system_binding)
 {
-    let data = parseJSON(url);
+    ttlet data = parseJSON(url);
 
     try {
         parse_assert2(data.contains("bindings"), "Missing key 'bindings' at top level.");
 
-        let binding_list = data["bindings"];
+        ttlet binding_list = data["bindings"];
         parse_assert2(binding_list.is_vector(), "Expecting array value for key 'bindings' at top level.");
 
         for (auto i = binding_list.vector_begin(); i != binding_list.vector_end(); ++i) {
-            let binding = *i;
+            ttlet binding = *i;
             parse_assert2(binding.is_map(), "Expecting object for a binding, got {}", binding);
 
             parse_assert2(
@@ -25,8 +25,8 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
                 "Expecting required 'key' and 'command' for a binding, got {}", binding
             );
 
-            let key_name = static_cast<std::string>(binding["key"]);
-            let key = KeyboardKey(key_name);
+            ttlet key_name = static_cast<std::string>(binding["key"]);
+            ttlet key = KeyboardKey(key_name);
 
             auto command_name = static_cast<std::string>(binding["command"]);
 

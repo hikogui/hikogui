@@ -55,8 +55,8 @@ struct AttributedGlyph {
     /** Check if this glyph contains the grapheme at index.
      */
     [[nodiscard]] bool containsLogicalIndex(ssize_t index) const noexcept {
-        let first = logicalIndex;
-        let last = first + graphemeCount;
+        ttlet first = logicalIndex;
+        ttlet last = first + graphemeCount;
         return index >= first && index < last;
     }
 
@@ -98,8 +98,8 @@ struct AttributedGlyph {
      * right of the halfway-point return the next logicalIndex.
      */
     [[nodiscard]] ssize_t relativeIndexAtCoordinate(vec coordinate) const noexcept {
-        let relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
-        let relativePositionPerGrapheme = relativePositionInGlyph * numeric_cast<float>(graphemeCount);
+        ttlet relativePositionInGlyph = (coordinate.x() - position.x()) / metrics.advance.x();
+        ttlet relativePositionPerGrapheme = relativePositionInGlyph * numeric_cast<float>(graphemeCount);
         return numeric_cast<ssize_t>(std::round(relativePositionPerGrapheme));
     }
 

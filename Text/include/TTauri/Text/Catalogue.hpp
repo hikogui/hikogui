@@ -32,7 +32,7 @@ public:
         context.set_local("n", n);
 
         if (plural_expression) {
-            let result = plural_expression->evaluate(context);
+            ttlet result = plural_expression->evaluate(context);
             if (result.is_bool()) {
                 return static_cast<bool>(result) ? 1 : 0;
             } else if (result.is_integer()) {
@@ -58,9 +58,9 @@ public:
      * @return The translated message, or the english fallback.
      */
     [[nodiscard]] char const *get(std::string_view msgid, std::string_view msgid_plural, unsigned long long n) const noexcept {
-        let pl = plurality(n);
+        ttlet pl = plurality(n);
 
-        let i = msgstr.find(msgid);
+        ttlet i = msgstr.find(msgid);
         if (i == msgstr.end()) {
             LOG_ERROR("Catalogue '{}': missing translation for msgid '{}'", name, msgid);
             if (i != 1 && ssize(msgid_plural) != 0) {

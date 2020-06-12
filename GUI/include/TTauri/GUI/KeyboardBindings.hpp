@@ -42,7 +42,7 @@ class KeyboardBindings {
         }
 
         void add_system_command(string_ltag cmd) noexcept {
-            let i = std::find(system.cbegin(), system.cend(), cmd);
+            ttlet i = std::find(system.cbegin(), system.cend(), cmd);
             if (i == system.cend()) {
                 system.push_back(cmd);
                 update_cache();
@@ -50,7 +50,7 @@ class KeyboardBindings {
         }
 
         void add_ignored_command(string_ltag cmd) noexcept {
-            let i = std::find(ignored.cbegin(), ignored.cend(), cmd);
+            ttlet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
             if (i == ignored.cend()) {
                 ignored.push_back(cmd);
                 update_cache();
@@ -58,7 +58,7 @@ class KeyboardBindings {
         }
 
         void add_user_command(string_ltag cmd) noexcept {
-            let i = std::find(user.cbegin(), user.cend(), cmd);
+            ttlet i = std::find(user.cbegin(), user.cend(), cmd);
             if (i == user.cend()) {
                 user.push_back(cmd);
                 update_cache();
@@ -68,22 +68,22 @@ class KeyboardBindings {
         void update_cache() noexcept {
             cache.reserve(ssize(system) + ssize(user));
 
-            for (let cmd: system) {
-                let i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (ttlet cmd: system) {
+                ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.push_back(cmd);
                 }
             }
 
-            for (let cmd: ignored) {
-                let i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (ttlet cmd: ignored) {
+                ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i != cache.cend()) {
                     cache.erase(i);
                 }
             }
 
-            for (let cmd: user) {
-                let i = std::find(cache.cbegin(), cache.cend(), cmd);
+            for (ttlet cmd: user) {
+                ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);
                 if (i == cache.cend()) {
                     cache.push_back(cmd);
                 }
@@ -116,7 +116,7 @@ public:
     [[nodiscard]] std::vector<string_ltag> const &translate(KeyboardKey key) const noexcept {
         static std::vector<string_ltag> empty_commands = {};
 
-        let i = bindings.find(key);
+        ttlet i = bindings.find(key);
         if (i != bindings.cend()) {
             return i->second.get_commands();
         } else {

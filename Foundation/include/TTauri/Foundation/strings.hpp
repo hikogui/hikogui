@@ -83,7 +83,7 @@ namespace tt {
     std::string r;
     r.reserve(size(str));
 
-    for (let c: str) {
+    for (ttlet c: str) {
         r += (c >= 'A' && c <= 'Z') ? (c - 'A') + 'a': c;
     }
 
@@ -95,7 +95,7 @@ namespace tt {
     std::string r;
     r.reserve(size(str));
 
-    for (let c: str) {
+    for (ttlet c: str) {
         r += (c >= 'a' && c <= 'z') ? (c - 'a') + 'A': c;
     }
 
@@ -110,7 +110,7 @@ namespace tt {
     r.reserve(size(str));
 
     auto found_cr = false;
-    for (let c: str) {
+    for (ttlet c: str) {
         if (ttauri_unlikely(found_cr)) {
             // This is Microsoft or old-Apple, we replace the previous carriage-return
             // with a line-feed and emit the current character.
@@ -142,7 +142,7 @@ namespace tt {
     r.reserve(size(str));
 
     r += isNameFirst(str.front()) ? str.front() : '_';
-    for (let c: str.substr(1)) {
+    for (ttlet c: str.substr(1)) {
         r += isNameNext(c) ? c : '_';
     }
 
@@ -244,7 +244,7 @@ template<typename Haystack, typename... Needles>
 {
     return std::min(
         {std::pair{haystack.find(needles, offset), split_needle_size(needles)}...},
-        [](let &a, let &b) {
+        [](ttlet &a, ttlet &b) {
             return a.first < b.first;
         }
     );
@@ -277,14 +277,14 @@ template<typename Haystack, typename... Needles>
 
     if (list.size() > 1) {
         size_t final_size = (list.size() - 1) * joiner.size();
-        for (let &item: list) {
+        for (ttlet &item: list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     int64_t i = 0;
-    for (let &item: list) {
+    for (ttlet &item: list) {
         if (i++ > 0) {
             r += joiner;
         }
@@ -299,14 +299,14 @@ template<typename Haystack, typename... Needles>
 
     if (list.size() > 1) {
         size_t final_size = (list.size() - 1) * joiner.size();
-        for (let &item: list) {
+        for (ttlet &item: list) {
             final_size += item.size();
         }
         r.reserve(final_size);
     }
 
     int64_t i = 0;
-    for (let &item: list) {
+    for (ttlet &item: list) {
         if (i++ > 0) {
             r += joiner;
         }

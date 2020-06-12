@@ -54,7 +54,7 @@ public:
 
         state = x * multiplier + increment;
 
-        let count = static_cast<unsigned int>(x >> 59);
+        ttlet count = static_cast<unsigned int>(x >> 59);
 
         x ^= x >> 18;
         return rotr(static_cast<uint32_t>(x >> 27), count);
@@ -85,7 +85,7 @@ public:
             new_state = x * multiplier + increment;
         } while (ttauri_unlikely(!state.compare_exchange_weak(x, new_state, std::memory_order_relaxed)));
 
-        let count = static_cast<unsigned int>(x >> 59);
+        ttlet count = static_cast<unsigned int>(x >> 59);
 
         x ^= x >> 18;
         return rotr(static_cast<uint32_t>(x >> 27), count);

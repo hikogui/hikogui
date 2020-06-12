@@ -42,7 +42,7 @@ std::vector<Page> DeviceShared::allocatePages(int const nrPages) noexcept
 
     auto pages = std::vector<Page>();
     for (int i = 0; i < nrPages; i++) {
-        let page = atlasFreePages.back();
+        ttlet page = atlasFreePages.back();
         pages.push_back(page);
         atlasFreePages.pop_back();
     }
@@ -56,7 +56,7 @@ void DeviceShared::freePages(std::vector<Page> const &pages) noexcept
 
 Image DeviceShared::makeImage(const ivec extent) noexcept
 {
-    let pageExtent = ivec{
+    ttlet pageExtent = ivec{
         (extent.x() + (Page::width - 1)) / Page::width,
         (extent.y() + (Page::height - 1)) / Page::height
     };
@@ -101,23 +101,23 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
     for (int index = 0; index < ssize(image.pages); index++) {
-        let page = image.pages.at(index);
+        ttlet page = image.pages.at(index);
 
         if (page.isFullyTransparent()) {
             // Hole in the image does not need to be rendered.
             continue;
         }
 
-        let imageRect = image.indexToRect(index);
+        ttlet imageRect = image.indexToRect(index);
         // Adjust the position to be inside the stagingImage, excluding its border.
-        let imageRectInStagingImage = imageRect + ivec(Page::border, Page::border);
+        ttlet imageRectInStagingImage = imageRect + ivec(Page::border, Page::border);
 
         // During copying we want to copy extra pixels around each page, this allows for non-nearest-neighbor sampling
         // on the edge of a page.
-        let imageRectToCopy = expand(imageRectInStagingImage, Page::border);
+        ttlet imageRectToCopy = expand(imageRectInStagingImage, Page::border);
 
         // We are copying the border into the atlas as well.
-        let atlasPositionIncludingBorder = getAtlasPositionFromPage(page) - ivec(Page::border, Page::border);
+        ttlet atlasPositionIncludingBorder = getAtlasPositionFromPage(page) - ivec(Page::border, Page::border);
 
         auto &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasPositionIncludingBorder.z());
         regionsToCopy.push_back({
@@ -130,7 +130,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     }
 
     for (int atlasTextureIndex = 0; atlasTextureIndex < ssize(atlasTextures); atlasTextureIndex++) {
-        let &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
+        ttlet &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
         if (regionsToCopy.size() == 0) {
             continue;
         }
@@ -175,7 +175,7 @@ void DeviceShared::teardownShaders(GUIDevice_vulkan *vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    let currentImageIndex = ssize(atlasTextures);
+    ttlet currentImageIndex = ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -195,9 +195,9 @@ void DeviceShared::addAtlasImage()
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    let [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    ttlet [atlasImage, atlasImageAllocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
 
-    let atlasImageView = device.createImageView({
+    ttlet atlasImageView = device.createImageView({
         vk::ImageViewCreateFlags(),
         atlasImage,
         vk::ImageViewType::e2D,
@@ -215,7 +215,7 @@ void DeviceShared::addAtlasImage()
     atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
  
     // Add pages for this image to free list.
-    let pageOffset = currentImageIndex * atlasNrPagesPerImage;
+    ttlet pageOffset = currentImageIndex * atlasNrPagesPerImage;
     for (int i = 0; i < atlasNrPagesPerImage; i++) {
             atlasFreePages.push_back({pageOffset + i});
     }
@@ -251,8 +251,8 @@ void DeviceShared::buildAtlas()
     };
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    let [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
-    let data = device.mapMemory<R16G16B16A16SFloat>(allocation);
+    ttlet [image, allocation] = device.createImage(imageCreateInfo, allocationCreateInfo);
+    ttlet data = device.mapMemory<R16G16B16A16SFloat>(allocation);
 
     stagingTexture = {
         image,

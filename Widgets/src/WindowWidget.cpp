@@ -81,7 +81,7 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
         return r;
     }
 
-    for (let &child : children) {
+    for (ttlet &child : children) {
         r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
     }
 

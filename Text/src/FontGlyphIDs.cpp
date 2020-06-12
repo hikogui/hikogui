@@ -11,9 +11,9 @@ namespace tt {
     Path path;
     auto boundingBox = aarect{};
 
-    let &font = fontBook->get_font(font_id());
+    ttlet &font = fontBook->get_font(font_id());
     for (ssize_t i = 0; i < ssize(*this); i++) {
-        let glyph_id = (*this)[i];
+        ttlet glyph_id = (*this)[i];
 
         Path glyph_path;
         if (!font.loadGlyph(glyph_id, glyph_path)) {
@@ -40,9 +40,9 @@ namespace tt {
     Path path;
     auto boundingBox = aarect{};
 
-    let &font = fontBook->get_font(font_id());
+    ttlet &font = fontBook->get_font(font_id());
     for (ssize_t i = 0; i < ssize(*this); i++) {
-        let glyph_id = (*this)[i];
+        ttlet glyph_id = (*this)[i];
 
         GlyphMetrics glyph_metrics;
         if (!font.loadGlyphMetrics(glyph_id, glyph_metrics)) {

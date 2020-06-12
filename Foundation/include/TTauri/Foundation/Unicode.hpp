@@ -76,17 +76,17 @@ template<typename UnaryOperation>
 
 [[nodiscard]] inline std::u16string u16string_byte_swap(std::u16string_view str) noexcept
 {
-    return u16string_transform(str, [](let &c) { return byte_swap(c); });
+    return u16string_transform(str, [](ttlet &c) { return byte_swap(c); });
 }
 
 [[nodiscard]] inline std::u16string u16string_little_to_native(std::u16string_view str) noexcept
 {
-    return u16string_transform(str, [](let &c) { return little_to_native(c); });
+    return u16string_transform(str, [](ttlet &c) { return little_to_native(c); });
 }
 
 [[nodiscard]] inline std::u16string u16string_big_to_native(std::u16string_view str) noexcept
 {
-    return u16string_transform(str, [](let &c) { return big_to_native(c); });
+    return u16string_transform(str, [](ttlet &c) { return big_to_native(c); });
 }
 
 /** Convert a UTF-32 code unit, to 1 or 2 UTF-16 code units.
@@ -137,8 +137,8 @@ template<typename UnaryOperation>
         }
     } else {
         if (c >= UnicodeLowSurrogatesBegin && c <= UnicodeLowSurrogatesEnd) {
-            let upper10bits = static_cast<char32_t>(state >> 8);
-            let lower10bits = static_cast<char32_t>(c - UnicodeLowSurrogatesBegin);
+            ttlet upper10bits = static_cast<char32_t>(state >> 8);
+            ttlet lower10bits = static_cast<char32_t>(c - UnicodeLowSurrogatesBegin);
             state = 0;
             return (upper10bits | lower10bits) + UnicodePlane1Begin;
         } else {
@@ -216,8 +216,8 @@ struct utf8_to_utf32_state {
         }
 
     } else {
-        let inv_c32 = static_cast<uint32_t>(static_cast<uint8_t>(~c_));
-        let nr_data_bits = bsr(inv_c32);
+        ttlet inv_c32 = static_cast<uint32_t>(static_cast<uint8_t>(~c_));
+        ttlet nr_data_bits = bsr(inv_c32);
 
         state.trailing_bytes = 6 - nr_data_bits;
         if (state.trailing_bytes < 0) {
@@ -227,7 +227,7 @@ struct utf8_to_utf32_state {
 
         } else if (state.trailing_bytes > 0 && state.trailing_bytes <= 3) {
             // 0b110xxxxx, 0b1110xxxx, 0b11110xxx,
-            let data_mask = (1 << nr_data_bits) - 1;
+            ttlet data_mask = (1 << nr_data_bits) - 1;
             state.code = (c_ & data_mask);
             return 0;
 
@@ -316,7 +316,7 @@ struct utf8_to_utf32_state {
     r.reserve(ssize(rhs));
 
     auto state = utf8_to_utf32_state{};
-    for (let u: rhs) {
+    for (ttlet u: rhs) {
         if (auto c = utf8_to_utf32(u, state)) {
             r += utf32_validate(c);
         }
@@ -338,7 +338,7 @@ struct utf8_to_utf32_state {
     }
 
     uint32_t state = 0;
-    for (let u: rhs) {
+    for (ttlet u: rhs) {
         if (auto c = utf16_to_utf32(u, state)) {
             ttauri_assume(c <= UnicodeMax);
             r += utf32_validate(c);
@@ -356,7 +356,7 @@ struct utf8_to_utf32_state {
     r.reserve(ssize(rhs));
 
     uint32_t state = 0;
-    for (let u: rhs) {
+    for (ttlet u: rhs) {
         if (auto c = utf16_to_utf32(static_cast<char16_t>(u), state)) {
             r += utf32_validate(c);
         }
@@ -371,7 +371,7 @@ struct utf8_to_utf32_state {
     auto r = std::u32string{};
     r.reserve(ssize(rhs));
 
-    for (let c: rhs) {
+    for (ttlet c: rhs) {
         r += static_cast<wchar_t>(c);
     }
 

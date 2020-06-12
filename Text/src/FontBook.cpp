@@ -11,9 +11,9 @@ FontBook::FontBook(std::vector<URL> const &font_directories)
 {
     create_family_name_fallback_chain();
 
-    for (let &font_directory: font_directories) {
-        let font_directory_glob = font_directory / "**" / "*.ttf";
-        for (let &font_url: font_directory_glob.urlsByScanningWithGlobPattern()) {
+    for (ttlet &font_directory: font_directories) {
+        ttlet font_directory_glob = font_directory / "**" / "*.ttf";
+        for (ttlet &font_url: font_directory_glob.urlsByScanningWithGlobPattern()) {
             struct font_scan_tag {};
             auto t = trace<font_scan_tag>{};
 
@@ -88,10 +88,10 @@ FontID FontBook::register_font(URL url, bool post_process)
 
     LOG_INFO("Parsed font {}: {}", url, to_string(description));
 
-    let font_id = FontID(ssize(font_entries));
+    ttlet font_id = FontID(ssize(font_entries));
     font_entries.emplace_back(url, description);
 
-    let font_family_id = register_family(description.family_name);
+    ttlet font_family_id = register_family(description.family_name);
     font_variants[font_family_id][description.font_variant()] = font_id;
 
     if (post_process) {
@@ -105,7 +105,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
 {
     // First calculate total_ranges for the current fallback fonts.
     UnicodeRanges total_ranges = entry.description.unicode_ranges;
-    for (let fallback_id: entry.fallbacks) {
+    for (ttlet fallback_id: entry.fallbacks) {
         total_ranges |= font_entries[fallback_id].description.unicode_ranges;
     }
 
@@ -117,7 +117,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
 
         // Find a font that matches the predicate and has the largest improvement.
         for (ssize_t fallback_id = 0; fallback_id != ssize(font_entries); ++fallback_id) {
-            let &fallback_entry = font_entries[fallback_id];
+            ttlet &fallback_entry = font_entries[fallback_id];
 
             if (!predicate(entry.description, fallback_entry.description)) {
                 continue;
@@ -134,7 +134,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
 
         // Add the new best fallback font, or stop.
         if (max_font_id >= 0) {
-            let &fallback_entry = font_entries[max_font_id];
+            ttlet &fallback_entry = font_entries[max_font_id];
             //LOG_DEBUG("   {} - {}", fallback_entry.description.family_name, fallback_entry.description.sub_family_name);
 
             entry.fallbacks.push_back(FontID{max_font_id});
@@ -158,13 +158,13 @@ void FontBook::post_process() noexcept
         entry.fallbacks.clear();
 
         //LOG_DEBUG("Looking for fallback fonts for: {}", to_string(entry.description));
-        calculate_fallback_fonts(entry, [](let &current, let &fallback) {
+        calculate_fallback_fonts(entry, [](ttlet &current, ttlet &fallback) {
             return
                 starts_with(fallback.family_name, current.family_name) &&
                 (current.italic == fallback.italic) &&
                 almost_equal(current.weight, fallback.weight);
         });
-        calculate_fallback_fonts(entry, [](let &current, let &fallback) {
+        calculate_fallback_fonts(entry, [](ttlet &current, ttlet &fallback) {
             return
                 (current.monospace == fallback.monospace) &&
                 (current.serif == fallback.serif) &&
@@ -172,7 +172,7 @@ void FontBook::post_process() noexcept
                 (current.italic == fallback.italic) &&
                 almost_equal(current.weight, fallback.weight);
         });
-        calculate_fallback_fonts(entry, [](let &current, let &fallback) {
+        calculate_fallback_fonts(entry, [](ttlet &current, ttlet &fallback) {
             return true;
         });
     }
@@ -184,7 +184,7 @@ void FontBook::post_process() noexcept
 
     auto i = family_names.find(name);
     if (i == family_names.end()) {
-        let family_id = FontFamilyID(ssize(font_variants));
+        ttlet family_id = FontFamilyID(ssize(font_variants));
         font_variants.emplace_back();
         family_names[name] = family_id;
 
@@ -211,9 +211,9 @@ void FontBook::post_process() noexcept
 
 [[nodiscard]] FontFamilyID FontBook::find_family(std::string_view family_name) const noexcept
 {
-    let original_name = to_lower(family_name);
+    ttlet original_name = to_lower(family_name);
 
-    let i = family_name_cache.find(original_name);
+    ttlet i = family_name_cache.find(original_name);
     if (i != family_name_cache.end()) {
         return i->second;
     }
@@ -222,7 +222,7 @@ void FontBook::post_process() noexcept
     while (true) {
         name = &(find_fallback_family_name(*name));
 
-        let j = family_names.find(*name);
+        ttlet j = family_names.find(*name);
         if (j != family_names.end()) {
             family_name_cache[original_name] = j->second;
             return j->second;
@@ -234,7 +234,7 @@ void FontBook::post_process() noexcept
 {
     ttauri_assert(family_id);
     ttauri_assume(family_id >= 0 && family_id < ssize(font_variants));
-    let &variants = font_variants[family_id];
+    ttlet &variants = font_variants[family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font_id = variants[variant.alternative(i)]) {
             return font_id;
@@ -257,7 +257,7 @@ void FontBook::post_process() noexcept
 [[nodiscard]] Font const &FontBook::get_font(FontID font_id) const noexcept
 {
     ttauri_assume(font_id < ssize(font_entries));
-    let &entry = font_entries[font_id];
+    ttlet &entry = font_entries[font_id];
 
     if (!entry.font) {
         // This font was parsed once before, it must not give an error now.
@@ -270,7 +270,7 @@ void FontBook::post_process() noexcept
 
 [[nodiscard]] FontGlyphIDs FontBook::find_glyph_actual(FontID font_id, Grapheme grapheme) const noexcept
 {
-    let &font = get_font(font_id);
+    ttlet &font = get_font(font_id);
 
     auto glyph_ids = font.find_glyph(grapheme);
     glyph_ids.set_font_id(font_id);
@@ -293,7 +293,7 @@ void FontBook::post_process() noexcept
 
     // Scan fonts which are fallback to this.
     auto g_range = UnicodeRanges(g);
-    for (let fallback_id: font_entries[font_id].fallbacks) {
+    for (ttlet fallback_id: font_entries[font_id].fallbacks) {
         auto &fallback_description = font_entries[fallback_id].description;
         if (fallback_description.unicode_ranges >= g_range) {
             if ((glyph_ids = find_glyph_actual(fallback_id, g))) {

@@ -35,7 +35,7 @@ public:
     small_map(small_map const &other) {
         ttauri_assume(this != &other);
         _end = items.begin();
-        for (let &other_item: other) {
+        for (ttlet &other_item: other) {
             auto &this_item = *(_end++);
             this_item = other_item;
         }
@@ -56,7 +56,7 @@ public:
     small_map &operator=(small_map const &other) {
         if (this != &other) {
             _end = items.begin();
-            for (let &other_item: other) {
+            for (ttlet &other_item: other) {
                 auto &this_item = *(_end++);
                 this_item = other_item;
             }
@@ -67,7 +67,7 @@ public:
     small_map &operator=(small_map &&other) {
         if (this != &other) {
             _end = items.begin();
-            for (let &other_item: other) {
+            for (ttlet &other_item: other) {
                 auto &this_item = *(_end++);
                 this_item = std::move(other_item);
             }
@@ -97,7 +97,7 @@ public:
     }
 
     V get(K const &key, V const &default_value) const noexcept {
-        if (let &value = get(key)) {
+        if (ttlet &value = get(key)) {
             return *value;
         } else {
             return default_value;

@@ -9,9 +9,9 @@ namespace tt {
 ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
     themes(), _themeName(), _themeMode(ThemeMode::Light)
 {
-    for (let &theme_directory: theme_directories) {
-        let theme_directory_glob = theme_directory / "**" / "*.theme.json";
-        for (let &theme_url: theme_directory_glob.urlsByScanningWithGlobPattern()) {
+    for (ttlet &theme_directory: theme_directories) {
+        ttlet theme_directory_glob = theme_directory / "**" / "*.theme.json";
+        for (ttlet &theme_url: theme_directory_glob.urlsByScanningWithGlobPattern()) {
             struct theme_scan_tag {};
             auto t = trace<theme_scan_tag>{};
 
@@ -33,12 +33,12 @@ ThemeBook::ThemeBook(std::vector<URL> const &theme_directories) noexcept :
 [[nodiscard]] std::vector<std::string> ThemeBook::themeNames() const noexcept {
     std::vector<std::string> names;
 
-    for (let &t: themes) {
+    for (ttlet &t: themes) {
         names.push_back(t->name);
     }
 
     std::sort(names.begin(), names.end());
-    let new_end = std::unique(names.begin(), names.end());
+    ttlet new_end = std::unique(names.begin(), names.end());
     names.erase(new_end, names.cend());
     return names;
 }

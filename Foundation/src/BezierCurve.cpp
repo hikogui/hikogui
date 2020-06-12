@@ -18,7 +18,7 @@ static constexpr BezierCurve::Color operator++(BezierCurve::Color &lhs, int) noe
 
 std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_iterator begin, std::vector<BezierPoint>::const_iterator end) noexcept
 {
-    let points = BezierPoint::normalizePoints(begin, end);
+    ttlet points = BezierPoint::normalizePoints(begin, end);
 
     std::vector<BezierCurve> r;
 
@@ -28,7 +28,7 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
     auto C2 = vec{};
 
     auto color = BezierCurve::Color::Yellow;
-    for (let &point: points) {
+    for (ttlet &point: points) {
         switch (point.type) {
         case BezierPoint::Type::Anchor:
             switch (type) {
@@ -97,8 +97,8 @@ std::vector<BezierCurve> makeInverseContour(std::vector<BezierCurve> const &cont
 std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &contour, float offset, LineJoinStyle lineJoinStyle, float tolerance) noexcept
 {
     auto contourAtOffset = std::vector<BezierCurve>{};
-    for (let &curve: contour) {
-        for (let &flatCurve: curve.subdivideUntilFlat(tolerance)) {
+    for (ttlet &curve: contour) {
+        for (ttlet &flatCurve: curve.subdivideUntilFlat(tolerance)) {
             contourAtOffset.push_back(flatCurve.toParrallelLine(offset));
         }
     }
@@ -107,7 +107,7 @@ std::vector<BezierCurve> makeParrallelContour(std::vector<BezierCurve> const &co
     // This needs to be repaired.
     std::optional<vec> intersectPoint;
     auto r = std::vector<BezierCurve>{};
-    for (let &curve: contourAtOffset) {
+    for (ttlet &curve: contourAtOffset) {
         if (r.size() == 0) {
             r.push_back(curve);
 
@@ -147,9 +147,9 @@ static std::vector<float> solveCurvesXByY(std::vector<BezierCurve> const &v, flo
     std::vector<float> r;
     r.reserve(v.size());
 
-    for (let &curve: v) {
-        let xValues = curve.solveXByY(y);
-        for (let x: xValues) {
+    for (ttlet &curve: v) {
+        ttlet xValues = curve.solveXByY(y);
+        for (ttlet x: xValues) {
             r.push_back(x);
         }
     }
@@ -165,7 +165,7 @@ static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::v
     std::sort(xValues.begin(), xValues.end());
 
     // End-to-end connected curves will yield duplicate values.
-    let uniqueEnd = std::unique(xValues.begin(), xValues.end());
+    ttlet uniqueEnd = std::unique(xValues.begin(), xValues.end());
 
     // After removing duplicates, we should end up with pairs of x values.
     size_t const uniqueValueCount = (uniqueEnd - xValues.begin());
@@ -187,7 +187,7 @@ static std::optional<std::vector<std::pair<float,float>>> getFillSpansAtY(std::v
 
 static void fillPartialPixels(PixelRow<uint8_t> row, ssize_t const i, float const startX, float const endX) noexcept
 {
-    let pixelCoverage =
+    ttlet pixelCoverage =
         std::clamp(endX, i + 0.0f, i + 1.0f) -
         std::clamp(startX, i + 0.0f, i + 1.0f);
 
@@ -199,23 +199,23 @@ gsl_suppress2(26489,lifetime.1)
 static void fillFullPixels(PixelRow<uint8_t> row, ssize_t const start, ssize_t const size) noexcept
 {
     if (size < 16) {
-        let end = start + size;
+        ttlet end = start + size;
         for (ssize_t i = start; i < end; i++) {
             row[i] += 0x33;
         }
     } else {
         auto u8p = &row[start];
-        let u8end = u8p + size;
+        ttlet u8end = u8p + size;
 
         // First add 51 to all pixels up to the alignment.
-        let alignedStart = tt::align<uint8_t*>(u8p, sizeof(uint64_t));
+        ttlet alignedStart = tt::align<uint8_t*>(u8p, sizeof(uint64_t));
         while (u8p < alignedStart) {
             *(u8p++) += 0x33;
         }
 
         // add 51 for each pixel, 8 pixels at a time.
         auto u64p = reinterpret_cast<uint64_t*>(u8p);
-        let u64end = tt::align_end<uint64_t*>(u8end, sizeof(uint64_t));
+        ttlet u64end = tt::align_end<uint64_t*>(u8end, sizeof(uint64_t));
         while (u64p < u64end) {
             *(u64p++) += 0x3333333333333333ULL;
         }
@@ -237,12 +237,12 @@ static void fillRowSpan(PixelRow<uint8_t> row, float const startX, float const e
         return;
     }
 
-    let startX_int = numeric_cast<ssize_t>(startX);
-    let endXplusOne = endX + 1.0f;
-    let endX_int = numeric_cast<ssize_t>(endXplusOne);
-    let startColumn = std::max(startX_int, ssize_t{0});
-    let endColumn = std::min(endX_int, row.width);
-    let nrColumns = endColumn - startColumn;
+    ttlet startX_int = numeric_cast<ssize_t>(startX);
+    ttlet endXplusOne = endX + 1.0f;
+    ttlet endX_int = numeric_cast<ssize_t>(endXplusOne);
+    ttlet startColumn = std::max(startX_int, ssize_t{0});
+    ttlet endColumn = std::min(endX_int, row.width);
+    ttlet nrColumns = endColumn - startColumn;
 
     if (nrColumns == 1) {
         fillPartialPixels(row, startColumn, startX, endX);
@@ -264,9 +264,9 @@ static void fillRow(PixelRow<uint8_t> row, int const rowY, std::vector<BezierCur
         }
 
         if (optionalSpans) {
-            let &spans = optionalSpans.value();
+            ttlet &spans = optionalSpans.value();
 
-            for (let &span: spans) {
+            for (ttlet &span: spans) {
                 fillRowSpan(row, span.first, span.second);
             }
         }
@@ -288,8 +288,8 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
     }
 
     float min_distance = std::numeric_limits<float>::max();
-    for (let &curve: curves) {
-        let distance = curve.sdf_distance(point);
+    for (ttlet &curve: curves) {
+        ttlet distance = curve.sdf_distance(point);
 
         if (std::abs(distance) < std::abs(min_distance)) {
             min_distance = distance;
@@ -343,10 +343,10 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
         auto prev_pixel_value = SDF8(-std::numeric_limits<float>::max());
         for (ssize_t column_nr = 0; column_nr != image.width; ++column_nr) {
             auto &pixel = row[column_nr];
-            let pixel_value = static_cast<float>(pixel);
+            ttlet pixel_value = static_cast<float>(pixel);
 
-            let normal_delta = std::abs(prev_pixel_value - pixel_value);
-            let flipped_delta = std::abs(prev_pixel_value - -pixel_value);
+            ttlet normal_delta = std::abs(prev_pixel_value - pixel_value);
+            ttlet flipped_delta = std::abs(prev_pixel_value - -pixel_value);
 
             if ((flipped_delta + 3.0) < normal_delta) {
                 pixel = -pixel_value;
@@ -372,7 +372,7 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
         next_row = image.at(row_nr + 1);
 
         for (int column_nr = 1; column_nr != (image.width - 1); ++column_nr) {
-            let &pixel = row[column_nr];
+            ttlet &pixel = row[column_nr];
 
             auto area = std::array{
                 static_cast<float>(prev_row[column_nr - 1]),
@@ -386,14 +386,14 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
                 static_cast<float>(next_row[column_nr + 1])
             };
 
-            let normal_mean = mean(area.cbegin(), area.cend());
-            let normal_stddev = stddev(area.cbegin(), area.cend(), normal_mean);
+            ttlet normal_mean = mean(area.cbegin(), area.cend());
+            ttlet normal_stddev = stddev(area.cbegin(), area.cend(), normal_mean);
 
             static_assert(ssize(area) % 2 == 1);
             area[ssize(area) / 2] = -area[ssize(area) / 2];
 
-            let flipped_mean = mean(area.cbegin(), area.cend());
-            let flipped_stddev = stddev(area.cbegin(), area.cend(), flipped_mean);
+            ttlet flipped_mean = mean(area.cbegin(), area.cend());
+            ttlet flipped_stddev = stddev(area.cbegin(), area.cend(), flipped_mean);
 
             if ((flipped_stddev + threshold) < normal_stddev) {
                 // Flipped pixels is more homogeneous.
@@ -426,7 +426,7 @@ void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcep
             break;
         }
     
-        for (let &[x, y]: bad_pixel_list) {
+        for (ttlet &[x, y]: bad_pixel_list) {
             image[y][x].repair();
         }
     }

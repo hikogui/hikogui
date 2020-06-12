@@ -41,7 +41,7 @@ std::string getLastErrorMessage()
         NULL
     );
 
-    let message = to_string(std::wstring(c16_message));
+    ttlet message = to_string(std::wstring(c16_message));
     delete [] c16_message;
 
     return message;

@@ -36,12 +36,12 @@ public:
     force_inline operator uint32_t () noexcept { return v; }
 
     force_inline A8B8G8R8SrgbPack32(R16G16B16A16SFloat const &rhs) noexcept {
-        let &rhs_v = rhs.get();
+        ttlet &rhs_v = rhs.get();
 
-        let r = sRGB_linear16_to_gamma8(rhs_v[0].get());
-        let g = sRGB_linear16_to_gamma8(rhs_v[1].get());
-        let b = sRGB_linear16_to_gamma8(rhs_v[2].get());
-        let a = static_cast<uint8_t>(std::clamp(rhs_v[3] * 255.0f, 0.0f, 255.0f));
+        ttlet r = sRGB_linear16_to_gamma8(rhs_v[0].get());
+        ttlet g = sRGB_linear16_to_gamma8(rhs_v[1].get());
+        ttlet b = sRGB_linear16_to_gamma8(rhs_v[2].get());
+        ttlet a = static_cast<uint8_t>(std::clamp(rhs_v[3] * 255.0f, 0.0f, 255.0f));
         v = (static_cast<uint32_t>(a) << 24) |
             (static_cast<uint32_t>(b) << 16) |
             (static_cast<uint32_t>(g) << 8) |
@@ -49,12 +49,12 @@ public:
     }
 
     force_inline A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
-        let &rhs_v = rhs.get();
+        ttlet &rhs_v = rhs.get();
 
-        let r = sRGB_linear16_to_gamma8(rhs_v[0]);
-        let g = sRGB_linear16_to_gamma8(rhs_v[1]);
-        let b = sRGB_linear16_to_gamma8(rhs_v[2]);
-        let a = static_cast<uint8_t>(std::clamp(rhs_v[3] * 255.0f, 0.0f, 255.0f));
+        ttlet r = sRGB_linear16_to_gamma8(rhs_v[0]);
+        ttlet g = sRGB_linear16_to_gamma8(rhs_v[1]);
+        ttlet b = sRGB_linear16_to_gamma8(rhs_v[2]);
+        ttlet a = static_cast<uint8_t>(std::clamp(rhs_v[3] * 255.0f, 0.0f, 255.0f));
         v = (static_cast<uint32_t>(a) << 24) |
             (static_cast<uint32_t>(b) << 16) |
             (static_cast<uint32_t>(g) << 8) |
@@ -82,7 +82,7 @@ inline void fill(PixelMap<A8B8G8R8SrgbPack32>& dst, PixelMap<R16G16B16A16SFloat>
     ttauri_assert(dst.height >= src.height);
 
     for (auto rowNr = 0; rowNr < src.height; rowNr++) {
-        let srcRow = src.at(rowNr);
+        ttlet srcRow = src.at(rowNr);
         auto dstRow = dst.at(rowNr);
         for (auto columnNr = 0; columnNr < src.width; columnNr++) {
             dstRow[columnNr] = srcRow[columnNr];

@@ -16,8 +16,8 @@ GUIDevice *GUISystem_base::findBestDeviceForWindow(Window const &window)
     int bestScore = -1;
     GUIDevice *bestDevice = nullptr;
 
-    for (let &device : devices) {
-        let score = device->score(window);
+    for (ttlet &device : devices) {
+        ttlet score = device->score(window);
         LOG_INFO("GUIDevice has score={}.", score);
 
         if (score >= bestScore) {

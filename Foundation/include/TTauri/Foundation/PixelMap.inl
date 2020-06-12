@@ -17,7 +17,7 @@ inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept
 
     // Start beyond the left pixel. Then lookahead upto
     // the point we can start the kernel.
-    let leftEdgeValue = row[0];
+    ttlet leftEdgeValue = row[0];
     for (; x < 0; x++) {
         values <<= 8;
 
@@ -31,7 +31,7 @@ inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept
 
     // Execute the kernel on all the pixels upto the right edge.
     // The values are still looked up ahead.
-    let lastX = row.width - LOOK_AHEAD_SIZE;
+    ttlet lastX = row.width - LOOK_AHEAD_SIZE;
     for (; x < lastX; x++) {
         values <<= 8;
         values |= row[LOOK_AHEAD_SIZE + x];
@@ -40,7 +40,7 @@ inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept
     }
 
     // Finish up to the right edge.
-    let rightEdgeValue = row[row.width - 1];
+    ttlet rightEdgeValue = row[row.width - 1];
     for (; x < row.width; x++) {
         values <<= 8;
         values |= rightEdgeValue;
@@ -86,8 +86,8 @@ inline void rotate90(PixelMap<T> &dst, PixelMap<T> const &src) noexcept
     assert(dst.height >= src.width);
 
     for (int rowNr = 0; rowNr < src.height; rowNr++) {
-        let row = src.at(rowNr);
-        let dstColumnNr = src.height - rowNr - 1;
+        ttlet row = src.at(rowNr);
+        ttlet dstColumnNr = src.height - rowNr - 1;
         auto dstRowNr = 0;
         for (int columnNr = 0; columnNr < row.width; columnNr++) {
             dst[dstRowNr++][dstColumnNr] = row[columnNr];
@@ -102,8 +102,8 @@ inline void rotate270(PixelMap<T> &dst, PixelMap<T> const &src) noexcept
     assert(dst.height >= src.width);
 
     for (int rowNr = 0; rowNr < src.height; rowNr++) {
-        let row = src.at(rowNr);
-        let dstColumnNr = rowNr;
+        ttlet row = src.at(rowNr);
+        ttlet dstColumnNr = rowNr;
         auto dstRowNr = row.width - 1;
         for (int columnNr = 0; columnNr < row.width; columnNr++) {
             dst[dstRowNr--][dstColumnNr] = row[columnNr];
@@ -115,16 +115,16 @@ template<typename T>
 inline void makeTransparentBorder(PixelMap<T> & pixelMap) noexcept
 {
     auto topBorder = pixelMap.at(0);
-    let topRow = pixelMap.at(1);
-    let bottomRow = pixelMap.at(pixelMap.height - 2);
+    ttlet topRow = pixelMap.at(1);
+    ttlet bottomRow = pixelMap.at(pixelMap.height - 2);
     auto bottomBorder = pixelMap.at(pixelMap.height - 1);
     for (auto x = 1; x < pixelMap.width - 1; x++) {
         topBorder[x] = makeTransparent(topRow[x]);
         bottomBorder[x] = makeTransparent(bottomRow[x]);
     }
 
-    let rightBorderY = pixelMap.width - 1;
-    let rightY = pixelMap.width - 2;
+    ttlet rightBorderY = pixelMap.width - 1;
+    ttlet rightY = pixelMap.width - 2;
     for (auto y = 1; y < pixelMap.height - 1; y++) {
         auto row = pixelMap[y];
         row[0] = makeTransparent(row[1]);

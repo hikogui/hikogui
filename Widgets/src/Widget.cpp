@@ -189,7 +189,7 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 }
 
 Widget &Widget::addWidget(Alignment, std::unique_ptr<Widget> childWidget) noexcept {
-    let widget_ptr = childWidget.get();
+    ttlet widget_ptr = childWidget.get();
     ttauri_assume(widget_ptr);
 
     auto lock = std::scoped_lock(mutex);
@@ -205,7 +205,7 @@ int Widget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool fo
     auto total_need = 0;
 
     for (auto &&child: children) {
-        let child_need = child->needs(displayTimePoint);
+        ttlet child_need = child->needs(displayTimePoint);
         total_need |= child_need;
 
         if (force || child_need >= 2) {
@@ -228,7 +228,7 @@ void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point di
         childContext.transform = child->toWindowTransform;
 
         // The default fill and border colors.
-        let childNestingLevel = child->nestingLevel();
+        ttlet childNestingLevel = child->nestingLevel();
         childContext.color = theme->borderColor(childNestingLevel);
         childContext.fillColor = theme->fillColor(childNestingLevel);
 
@@ -271,7 +271,7 @@ HitBox Widget::hitBoxTest(vec position) const noexcept
         HitBox{this, elevation} :
         HitBox{};
 
-    for (let &child : children) {
+    for (ttlet &child : children) {
         r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
     }
     return r;

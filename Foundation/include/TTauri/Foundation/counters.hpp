@@ -33,7 +33,7 @@ struct counter_functor {
     }
 
     int64_t increment() const noexcept {
-        let value = counter.fetch_add(1, std::memory_order_relaxed);
+        ttlet value = counter.fetch_add(1, std::memory_order_relaxed);
 
         if (ttauri_unlikely(value == 0)) {
             add_to_map();
@@ -68,9 +68,9 @@ inline std::pair<int64_t, int64_t> read_counter(std::type_index tag) noexcept
 {
     auto &item = counter_map[tag];
 
-    let * const count_ptr = item.counter;
-    let count = count_ptr != nullptr ? item.counter->load(std::memory_order_relaxed) : 0;
-    let count_since_last_read = count - item.previous_value;
+    ttlet * const count_ptr = item.counter;
+    ttlet count = count_ptr != nullptr ? item.counter->load(std::memory_order_relaxed) : 0;
+    ttlet count_since_last_read = count - item.previous_value;
     item.previous_value = count;
     return {count, count_since_last_read};
 }

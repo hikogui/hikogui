@@ -59,7 +59,7 @@ inline auto const FontWeight_from_string_table = std::unordered_map<std::string,
 }
 
 [[nodiscard]] inline FontWeight FontWeight_from_string(std::string_view rhs) {
-    let i = FontWeight_from_string_table.find(to_lower(rhs));
+    ttlet i = FontWeight_from_string_table.find(to_lower(rhs));
     if (i == FontWeight_from_string_table.end()) {
         TTAURI_THROW(parse_error("Unknown font-weight {}", rhs));
     }
@@ -87,13 +87,13 @@ inline auto const FontWeight_from_string_table = std::unordered_map<std::string,
 }
 
 [[nodiscard]] inline char to_char(FontWeight const &x) noexcept {
-    let x_ = static_cast<int>(x);
+    ttlet x_ = static_cast<int>(x);
     ttauri_assume(x_ >= 0 && x_ <= 9);
     return static_cast<char>('0' + x_);
 }
 
 [[nodiscard]] constexpr int to_int(FontWeight const &x) noexcept {
-    let x_ = (static_cast<int>(x) + 1) * 100;
+    ttlet x_ = (static_cast<int>(x) + 1) * 100;
     return (x_ == 1000) ? 950 : x_;
 }
 

@@ -19,7 +19,7 @@ namespace tt {
 no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
 {
     do {
-        let should_wait = expected == 2;
+        ttlet should_wait = expected == 2;
 
         // Set to 2 when we are waiting.
         expected = 1;

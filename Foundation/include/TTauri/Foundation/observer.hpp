@@ -64,7 +64,7 @@ protected:
     void notify_owners() const noexcept {
         auto lock = std::scoped_lock(mutex);
 
-        for (let owner: owners) {
+        for (ttlet owner: owners) {
             owner->handle_notification();
         }
     }
@@ -92,7 +92,7 @@ public:
     void remove_owner(obexpr_owner *owner) noexcept {
         auto lock = std::scoped_lock(mutex);
 
-        let new_end = std::remove(owners.begin(), owners.end(), owner);
+        ttlet new_end = std::remove(owners.begin(), owners.end(), owner);
         owners.erase(new_end, owners.cend());
     }
 

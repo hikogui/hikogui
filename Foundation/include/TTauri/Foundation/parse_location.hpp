@@ -137,14 +137,14 @@ public:
     }
 
     parse_location &operator+=(std::string const &s) noexcept {
-        for (let c: s) {
+        for (ttlet c: s) {
             *this += c;
         }
         return *this;
     }
 
     parse_location &operator+=(char const *s) noexcept {
-        while (let c = *s++) {
+        while (ttlet c = *s++) {
             *this += c;
         }
         return *this;

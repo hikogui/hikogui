@@ -20,7 +20,7 @@ void AudioSystem::initialize() noexcept
 }
 
 bool AudioSystem::hasDeviceWithId(std::string id) const noexcept {
-    for (let &device: devices) {
+    for (ttlet &device: devices) {
         if (device->id == id) {
             return true;
         }

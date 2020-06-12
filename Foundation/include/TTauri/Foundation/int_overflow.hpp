@@ -52,9 +52,9 @@ inline bool add_overflow(T lhs, T rhs, T *r)
 
     } else {
         // LEA,XOR,XOR,TEST,JS
-        let lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
-        let rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
-        let r_ = lhs_ + rhs_;
+        ttlet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
+        ttlet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
+        ttlet r_ = lhs_ + rhs_;
         *r = static_cast<T>(r_);
         return ((lhs ^ *r) & (rhs ^ *r)) < 0;
     }
@@ -76,9 +76,9 @@ inline bool sub_overflow(T lhs, T rhs, T *r)
 
     } else {
         // SUB, NOT, XOR, XOR, TEST, JL
-        let lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
-        let rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
-        let r_ = lhs_ - rhs_;
+        ttlet lhs_ = static_cast<std::make_unsigned_t<T>>(lhs);
+        ttlet rhs_ = static_cast<std::make_unsigned_t<T>>(rhs);
+        ttlet r_ = lhs_ - rhs_;
         *r = static_cast<T>(r_);
         return ((lhs ^ rhs) & (~rhs ^ *r)) < 0;
     }
@@ -110,9 +110,9 @@ inline bool mul_overflow(T lhs, T rhs, T *r)
 
     } else if constexpr (sizeof(T) <= (sizeof(make_intmax_t<T>)/2)) {
         // MOVSX, MOVSX, IMUL, MOVSX, CMP, JNE
-        let lhs_ = static_cast<make_intmax_t<T>>(lhs);
-        let rhs_ = static_cast<make_intmax_t<T>>(rhs);
-        let r_ = lhs_ * rhs_;
+        ttlet lhs_ = static_cast<make_intmax_t<T>>(lhs);
+        ttlet rhs_ = static_cast<make_intmax_t<T>>(rhs);
+        ttlet r_ = lhs_ * rhs_;
         *r = static_cast<T>(r_);
         return *r != r_;
 

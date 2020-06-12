@@ -57,7 +57,7 @@ inline pickle_type_t pickle_type(Iter &i, Iter const &end)
         TTAURI_THROW(parse_error("End of stream"));
     }
 
-    switch (let c_ = static_cast<uint8_t>(*i)) {
+    switch (ttlet c_ = static_cast<uint8_t>(*i)) {
     case PICKLE_END_MARK: return pickle_type_t::EndMark;
     case PICKLE_NULL: return pickle_type_t::Null;
     case PICKLE_TRUE: return pickle_type_t::Boolean;
@@ -236,7 +236,7 @@ inline std::string unpickle(Iter &i, Iter const &end)
 
 impl:
     size_t stringLength = 0;
-    let c = static_cast<uint8_t>(*i);
+    ttlet c = static_cast<uint8_t>(*i);
     if (c == PICKLE_STRING || c == PICKLE_URL) {
         i++;
         stringLength = unpickle<size_t>(i, end);
@@ -244,8 +244,8 @@ impl:
         stringLength = c - PICKLE_SMALL_STRING_MIN;
     }
 
-    let beginOfString = i;
-    let endOfString = beginOfString + stringLength;
+    ttlet beginOfString = i;
+    ttlet endOfString = beginOfString + stringLength;
     if (end - i < stringLength) {
         TTAURI_THROW(parse_error("End of stream"));
     }
@@ -485,7 +485,7 @@ inline void pickleAppend(std::string &lhs, std::vector<T> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_VECTOR);
 
-    for (let &item: rhs) {
+    for (ttlet &item: rhs) {
         pickleAppend(lhs, item);
     }
 
@@ -497,7 +497,7 @@ inline void pickleAppend(std::string &lhs, std::map<K,V> const &rhs) noexcept
 {
     lhs.push_back(PICKLE_MAP);
 
-    for (let &item: rhs) {
+    for (ttlet &item: rhs) {
         pickleAppend(lhs, item->first);
         pickleAppend(lhs, item->second);
     }
@@ -510,7 +510,7 @@ inline void pickleAppend(std::string &lhs, std::unordered_map<K,V> const &rhs) n
 {
     lhs.push_back(PICKLE_MAP);
 
-    for (let &item: rhs) {
+    for (ttlet &item: rhs) {
         pickleAppend(lhs, item->first);
         pickleAppend(lhs, item->second);
     }

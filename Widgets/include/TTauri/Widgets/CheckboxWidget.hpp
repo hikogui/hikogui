@@ -56,7 +56,7 @@ public:
         Widget::layout(displayTimePoint);
 
         // The label is located to the right of the toggle.
-        let label_x = Theme::smallWidth + Theme::margin;
+        ttlet label_x = Theme::smallWidth + Theme::margin;
         label_rectangle = aarect{
             label_x, 0.0f,
             rectangle().width() - label_x, rectangle().height()
@@ -74,7 +74,7 @@ public:
 
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
-        let checkFontId = fontBook->find_font("Arial", FontWeight::Regular, false);
+        ttlet checkFontId = fontBook->find_font("Arial", FontWeight::Regular, false);
         checkGlyph = fontBook->find_glyph(checkFontId, Grapheme{check});
         checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.2f);
     }

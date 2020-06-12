@@ -40,8 +40,8 @@ void PipelineBox::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
         &pushConstants
     );
 
-    let numberOfRectangles = vertexBufferData.size() / 4;
-    let numberOfTriangles = numberOfRectangles * 2;
+    ttlet numberOfRectangles = vertexBufferData.size() / 4;
+    ttlet numberOfTriangles = numberOfRectangles * 2;
     commandBuffer.drawIndexed(
         numeric_cast<uint32_t>(numberOfTriangles * 3),
         1,

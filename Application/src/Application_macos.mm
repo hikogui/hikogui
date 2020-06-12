@@ -61,7 +61,7 @@ Application_macos::~Application_macos()
 void Application_macos::runOnMainThread(std::function<void()> function)
 {
 
-    let functionP = new std::function<void()>(std::move(function));
+    ttlet functionP = new std::function<void()>(std::move(function));
     ttauri_assert(functionP);
 
     // XXX post a message to the main thread loop.

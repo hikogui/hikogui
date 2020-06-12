@@ -112,7 +112,7 @@ public:
 
     [[nodiscard]] size_t size() const noexcept {
         ssize_t count = 0;
-        for (let &line: lines) {
+        for (ttlet &line: lines) {
             count += ssize(line);
         }
         return numeric_cast<size_t>(count);

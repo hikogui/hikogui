@@ -155,7 +155,7 @@ public:
      */
     template<typename CounterTag=void>
     index_type write_start() noexcept {
-        let index = head.fetch_add(1, std::memory_order_acquire);
+        ttlet index = head.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the queue was full.
@@ -186,7 +186,7 @@ public:
      */
     template<typename CounterTag=void>
     index_type read_start() noexcept {
-        let index = tail.fetch_add(1, std::memory_order_acquire);
+        ttlet index = tail.fetch_add(1, std::memory_order_acquire);
         auto &message = messages[index % capacity];
 
         // We acquired the index before we knew if the message was ready.

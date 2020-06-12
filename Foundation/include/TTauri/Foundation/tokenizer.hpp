@@ -216,14 +216,14 @@ struct token_t {
     }
 
     explicit operator date::year_month_day () const {
-        let parts = split(value, "-");
+        ttlet parts = split(value, "-");
         if (parts.size() != 3) {
             TTAURI_THROW(parse_error("Expect date to be in the format YYYY-MM-DD"));
         }
 
-        let year = date::year{stoi(parts[0])};
-        let month = date::month{numeric_cast<unsigned int>(stoi(parts[1]))};
-        let day = date::day{numeric_cast<unsigned int>(stoi(parts[2]))};
+        ttlet year = date::year{stoi(parts[0])};
+        ttlet month = date::month{numeric_cast<unsigned int>(stoi(parts[1]))};
+        ttlet day = date::day{numeric_cast<unsigned int>(stoi(parts[2]))};
         return {year, month, day};
     }
 

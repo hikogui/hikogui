@@ -104,12 +104,12 @@ public:
     }
 
     [[nodiscard]] constexpr date::year_month_day first() noexcept {
-        let md = q.first();
+        ttlet md = q.first();
         return date::year_month_day{y, md.month(), md.day()};
     }
 
     [[nodiscard]] constexpr date::year_month_day last() noexcept {
-        let md = q.last();
+        ttlet md = q.last();
         return date::year_month_day{y, md.month(), md.day()};
     }
 

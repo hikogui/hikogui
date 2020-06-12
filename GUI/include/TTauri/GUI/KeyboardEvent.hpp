@@ -28,8 +28,8 @@ constexpr KeyboardState &operator|=(KeyboardState &lhs, KeyboardState rhs) noexc
 }
 
 [[nodiscard]] constexpr bool operator>=(KeyboardState lhs, KeyboardState rhs) noexcept {
-    let lhs_ = static_cast<uint8_t>(lhs);
-    let rhs_ = static_cast<uint8_t>(rhs);
+    ttlet lhs_ = static_cast<uint8_t>(lhs);
+    ttlet rhs_ = static_cast<uint8_t>(rhs);
     return (lhs_ & rhs_) == rhs_;
 }
 

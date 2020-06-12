@@ -40,7 +40,7 @@ void Pipeline_vulkan::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
 void Pipeline_vulkan::buildDescriptorSets()
 {
-    let descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
+    ttlet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
     if (ssize(descriptorSetLayoutBindings) == 0) {
         // Make sure that there is no descriptor set.
@@ -48,14 +48,14 @@ void Pipeline_vulkan::buildDescriptorSets()
         return;
     }
 
-    let descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
+    ttlet descriptorSetLayoutCreateInfo = vk::DescriptorSetLayoutCreateInfo{
         vk::DescriptorSetLayoutCreateFlags(),
         numeric_cast<uint32_t>(descriptorSetLayoutBindings.size()), descriptorSetLayoutBindings.data()
     };
 
     descriptorSetLayout = device().createDescriptorSetLayout(descriptorSetLayoutCreateInfo);
 
-    let descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
+    ttlet descriptorPoolSizes = transform<std::vector<vk::DescriptorPoolSize>>(
         descriptorSetLayoutBindings,
         [](auto x) -> vk::DescriptorPoolSize {
             return {
@@ -71,11 +71,11 @@ void Pipeline_vulkan::buildDescriptorSets()
         numeric_cast<uint32_t>(descriptorPoolSizes.size()), descriptorPoolSizes.data()
     });
 
-    let descriptorSetLayouts = std::array{
+    ttlet descriptorSetLayouts = std::array{
         descriptorSetLayout
     };
     
-    let descriptorSets = device().allocateDescriptorSets({
+    ttlet descriptorSets = device().allocateDescriptorSets({
         descriptorPool,
         numeric_cast<uint32_t>(descriptorSetLayouts.size()), descriptorSetLayouts.data()
     });
@@ -170,9 +170,9 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         }
     };
 
-    let scissor = vk::Rect2D{vk::Offset2D{ 0, 0 }, extent};
+    ttlet scissor = vk::Rect2D{vk::Offset2D{ 0, 0 }, extent};
 
-    let scissors = std::array{ scissor };
+    ttlet scissors = std::array{ scissor };
 
     const vk::PipelineViewportStateCreateInfo pipelineViewportStateCreateInfo = {
         vk::PipelineViewportStateCreateFlags(),
@@ -204,12 +204,12 @@ void Pipeline_vulkan::buildPipeline(vk::RenderPass renderPass, uint32_t renderSu
         VK_FALSE // alphaToOneEnable
     };
 
-    let pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
+    ttlet pipelineDepthStencilStateCreateInfo = getPipelineDepthStencilStateCreateInfo();
     
    
     /* Pre-multiplied alpha blending.
      */
-    let pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
+    ttlet pipelineColorBlendAttachmentStates = getPipelineColorBlendAttachmentStates();
     
     const vk::PipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo =  {
         vk::PipelineColorBlendStateCreateFlags(),

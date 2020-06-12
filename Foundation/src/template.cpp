@@ -23,7 +23,7 @@ struct template_top_node final: template_node {
             children.back()->left_align();
         }
 
-        for (let &child: children) {
+        for (ttlet &child: children) {
             child->post_process(context);
         }
     }
@@ -39,7 +39,7 @@ struct template_top_node final: template_node {
     }
 
     std::string string() const noexcept override {
-        let children_str = transform<std::vector<std::string>>(children, [](auto const &x) { return x->string(); });
+        ttlet children_str = transform<std::vector<std::string>>(children, [](auto const &x) { return x->string(); });
         return fmt::format("<top {}>", join(children_str));
     }
 };
@@ -103,9 +103,9 @@ struct template_placeholder_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let output_size = context.output_size();
+        ttlet output_size = context.output_size();
 
-        let tmp = evaluate_expression(context, *expression, location);
+        ttlet tmp = evaluate_expression(context, *expression, location);
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
@@ -139,7 +139,7 @@ struct template_expression_node final: template_node {
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let tmp = evaluate_expression_without_output(context, *expression, location);
+        ttlet tmp = evaluate_expression_without_output(context, *expression, location);
         if (tmp.is_break()) {
             TTAURI_THROW(invalid_operation_error("Found #break not inside a loop statement.").set_location(location));
 
@@ -198,12 +198,12 @@ struct template_if_node final: template_node {
             post_process_expression(context, *expressions[i], expression_locations[i]);
         }
 
-        for (let &children: children_groups) {
+        for (ttlet &children: children_groups) {
             if (ssize(children) > 0) {
                 children.back()->left_align();
             }
 
-            for (let &child: children) {
+            for (ttlet &child: children) {
                 child->post_process(context);
             }
         }
@@ -264,13 +264,13 @@ struct template_while_node final: template_node {
         }
 
         post_process_expression(context, *expression, location);
-        for (let &child: children) {
+        for (ttlet &child: children) {
             child->post_process(context);
         }
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let output_size = context.output_size();
+        ttlet output_size = context.output_size();
 
         ssize_t loop_count = 0;
         while (evaluate_expression_without_output(context, *expression, location)) {
@@ -335,13 +335,13 @@ struct template_do_node final: template_node {
 
         post_process_expression(context, *expression, location);
 
-        for (let &child: children) {
+        for (ttlet &child: children) {
             child->post_process(context);
         }
     }
 
     datum evaluate(expression_evaluation_context &context) override {
-        let output_size = context.output_size();
+        ttlet output_size = context.output_size();
 
         ssize_t loop_count = 0;
         do {
@@ -413,10 +413,10 @@ struct template_for_node final: template_node {
         post_process_expression(context, *name_expression, location);
         post_process_expression(context, *list_expression, location);
 
-        for (let &child: children) {
+        for (ttlet &child: children) {
             child->post_process(context);
         }
-        for (let &child: else_children) {
+        for (ttlet &child: else_children) {
             child->post_process(context);
         }
     }
@@ -428,12 +428,12 @@ struct template_for_node final: template_node {
             TTAURI_THROW(invalid_operation_error("Expecting expression returns a vector, got {}", list_data).set_location(location));
         }
 
-        let output_size = context.output_size();
+        ttlet output_size = context.output_size();
         if (list_data.size() > 0) {
-            let loop_size = ssize(list_data);
+            ttlet loop_size = ssize(list_data);
             ssize_t loop_count = 0;
             for (auto i = list_data.vector_begin(); i != list_data.vector_end(); ++i) {
-                let &item = *i;
+                ttlet &item = *i;
                 try {
                     name_expression->assign_without_output(context, item);
                 } catch (invalid_operation_error &e) {
@@ -525,7 +525,7 @@ struct template_function_node final: template_node {
         }
 
         context.push_super(super_function);
-        for (let &child: children) {
+        for (ttlet &child: children) {
             child->post_process(context);
         }
         context.pop_super();
@@ -545,7 +545,7 @@ struct template_function_node final: template_node {
             context.set(argument_names[i], arguments[i]);
         }
 
-        let output_size = context.output_size();
+        ttlet output_size = context.output_size();
         auto tmp = evaluate_children(context, children);
         context.pop();
 
@@ -613,7 +613,7 @@ struct template_block_node final: template_node {
         ttauri_assert(function);
 
         context.push_super(super_function);
-        for (let &child: children) {
+        for (ttlet &child: children) {
             child->post_process(context);
         }
         context.pop_super();
@@ -727,7 +727,7 @@ template_parse_context::template_parse_context(URL const &url, const_iterator fi
 }
 
 std::unique_ptr<expression_node> template_parse_context::parse_expression(std::string_view end_text) {
-    let expression_last = find_end_of_expression(index, last, end_text);
+    ttlet expression_last = find_end_of_expression(index, last, end_text);
 
     auto context = expression_parse_context(index, expression_last);
 
@@ -822,13 +822,13 @@ void template_parse_context::include(parse_location _location, std::unique_ptr<e
     expression->post_process(tmp_post_process_context);
 
     auto evaluation_context = expression_evaluation_context();
-    let argument = expression->evaluate(evaluation_context);
+    ttlet argument = expression->evaluate(evaluation_context);
 
-    let current_template_directory = _location.has_file() ?
+    ttlet current_template_directory = _location.has_file() ?
         _location.file().urlByRemovingFilename() :
         URL::urlFromCurrentWorkingDirectory();
 
-    let new_template_path = current_template_directory.urlByAppendingPath(static_cast<std::string>(argument));
+    ttlet new_template_path = current_template_directory.urlByAppendingPath(static_cast<std::string>(argument));
 
     if (ssize(statement_stack) > 0) {
         if (!statement_stack.back()->append(parse_template(new_template_path))) {
@@ -841,7 +841,7 @@ void template_parse_context::include(parse_location _location, std::unique_ptr<e
 
 void parse_template_hash(template_parse_context &context)
 {
-    let &location = context.location;
+    ttlet &location = context.location;
 
     if (context.starts_with("end")) {
         context.advance_over("\n");
@@ -957,7 +957,7 @@ void parse_template_hash(template_parse_context &context)
 
 void parse_template_dollar(template_parse_context &context)
 {
-    let &location = context.location;
+    ttlet &location = context.location;
 
     if (*context == '{') {
         ++context;
@@ -976,7 +976,7 @@ void parse_template_dollar(template_parse_context &context)
 void parse_template_escape(template_parse_context &context)
 {
     for (; !context.atEOF(); ++context) {
-        let c = *context;
+        ttlet c = *context;
 
         switch (c) {
         case '\n': // Skip over line-feed

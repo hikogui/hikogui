@@ -63,14 +63,14 @@ struct DeviceShared final {
      * \return x, y pixel coordinate in an atlasTexture and z the atlasTextureIndex.
      */
     static ivec getAtlasPositionFromPage(Page page) noexcept {
-        let imageIndex = page.nr / atlasNrPagesPerImage;
-        let pageNrInsideImage = page.nr % atlasNrPagesPerImage;
+        ttlet imageIndex = page.nr / atlasNrPagesPerImage;
+        ttlet pageNrInsideImage = page.nr % atlasNrPagesPerImage;
 
-        let pageY = pageNrInsideImage / atlasNrVerticalPages;
-        let pageX = pageNrInsideImage % atlasNrVerticalPages;
+        ttlet pageY = pageNrInsideImage / atlasNrVerticalPages;
+        ttlet pageX = pageNrInsideImage % atlasNrVerticalPages;
 
-        let x = pageX * Page::widthIncludingBorder + Page::border;
-        let y = pageY * Page::heightIncludingBorder + Page::border;
+        ttlet x = pageX * Page::widthIncludingBorder + Page::border;
+        ttlet y = pageY * Page::heightIncludingBorder + Page::border;
 
         return ivec{x, y, imageIndex, 1};
     }

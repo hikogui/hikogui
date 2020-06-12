@@ -11,13 +11,13 @@ using namespace std;
 using namespace tt;
 
 TEST(urlParserTests, parsing) {
-    let parts = parse_url("file:");
+    ttlet parts = parse_url("file:");
     ASSERT_FALSE(parts.absolute);
     ASSERT_EQ(parts.segments.size(), 0);
 }
 
 TEST(urlParserTests, filenameWithDriveLetter) {
-    let parts = parse_url("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
+    ttlet parts = parse_url("file:///C:/Program%20Files/RenderDoc/renderdoc.dll");
     ASSERT_TRUE(parts.absolute);
     ASSERT_EQ(parts.scheme, "file");
     ASSERT_EQ(parts.authority, "");

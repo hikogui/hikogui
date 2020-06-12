@@ -52,7 +52,7 @@ public:
         Widget::layout(displayTimePoint);
 
         // The label is located to the right of the toggle.
-        let label_x = Theme::smallWidth + Theme::margin;
+        ttlet label_x = Theme::smallWidth + Theme::margin;
         label_rectangle = aarect{
             label_x, 0.0f,
             rectangle().width() - label_x, rectangle().height()
@@ -70,10 +70,10 @@ public:
         button_y = (rectangle().height() - Theme::smallHeight) - 0.5f;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
-        let pip_x = (Theme::smallWidth - Theme::smallHeight) + 1.5f;
-        let pip_y = (rectangle().height() - Theme::smallHeight) + 1.5f;
-        let pip_width = Theme::smallHeight - 3.0f;
-        let pip_height = Theme::smallHeight - 3.0f;
+        ttlet pip_x = (Theme::smallWidth - Theme::smallHeight) + 1.5f;
+        ttlet pip_y = (rectangle().height() - Theme::smallHeight) + 1.5f;
+        ttlet pip_width = Theme::smallHeight - 3.0f;
+        ttlet pip_height = Theme::smallHeight - 3.0f;
         pip_rectangle = aarect{pip_x, pip_y, pip_width, pip_height};
     }
 

@@ -172,11 +172,11 @@ public:
 
         ttauri_assume(boxVertices != nullptr);
 
-        let shrink_value = lineWidth * 0.5f;
+        ttlet shrink_value = lineWidth * 0.5f;
 
-        let newBox = shrink(box, shrink_value);
+        ttlet newBox = shrink(box, shrink_value);
 
-        let newCornerShapes = vec{
+        ttlet newCornerShapes = vec{
             std::max(0.0f, cornerShapes.x() - shrink_value),
             std::max(0.0f, cornerShapes.y() - shrink_value),
             std::max(0.0f, cornerShapes.z() - shrink_value),

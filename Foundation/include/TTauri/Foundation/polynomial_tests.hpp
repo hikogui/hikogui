@@ -16,7 +16,7 @@ double maxAbsDiff(tt::results<T,N> const &lhs, tt::results<U,N> const &rhs) {
     double maxDiff = 0.0;
     assert(lhs.count <= lhs.maxCount);
     for (ptrdiff_t i = 0; i < lhs.count; i++) {
-        let diff = std::abs(lhs.value[i] - rhs.value[i]);
+        ttlet diff = std::abs(lhs.value[i] - rhs.value[i]);
         maxDiff = std::max(maxDiff, diff);
     }
     return maxDiff;
@@ -29,7 +29,7 @@ testing::AssertionResult ResultsNearPredFormat(const char* expr1,
     tt::results<T, N> val1,
     tt::results<U, N> val2,
     double abs_error) {
-    let diff = maxAbsDiff(val1, val2);
+    ttlet diff = maxAbsDiff(val1, val2);
     if (diff <= abs_error) return testing::AssertionSuccess();
 
     return testing::AssertionFailure()

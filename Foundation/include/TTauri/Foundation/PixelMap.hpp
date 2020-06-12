@@ -223,7 +223,7 @@ struct PixelMap {
             (rect.y2() <= height)
         );
 
-        let offset = rect.y1() * stride + rect.x1();
+        ttlet offset = rect.y1() * stride + rect.x1();
 
         return { pixels + offset, rect.width(), rect.height(), stride };
     }
@@ -264,7 +264,7 @@ void copy(PixelMap<T> const &src, PixelMap<T> &dst) noexcept {
     ssize_t height = std::min(src.height, dst.height);
 
     for (ssize_t y = 0; y != height; ++y) {
-        let src_row = src[y];
+        ttlet src_row = src[y];
         auto dst_row = dst[y];
         for (ssize_t x = 0; x != width; ++x) {
             dst_row[x] = src_row[x];

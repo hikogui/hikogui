@@ -9,7 +9,7 @@ namespace tt {
 Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     value(0)
 {
-    let codePoints_ = unicodeData->toNFC(codePoints);
+    ttlet codePoints_ = unicodeData->toNFC(codePoints);
 
     switch (codePoints_.size()) {
     case 3:

@@ -11,8 +11,8 @@ using namespace std;
 using namespace tt;
 
 TEST(FileView, ViewFileForRead) {
-    let view = FileView(URL("file:file_view.txt"));
+    ttlet view = FileView(URL("file:file_view.txt"));
 
-    let *test = reinterpret_cast<char const *>(view.bytes().data());
+    ttlet *test = reinterpret_cast<char const *>(view.bytes().data());
     ASSERT_TRUE(strncmp(test, "The quick brown", 15) == 0);
 }

@@ -241,8 +241,8 @@ struct template_node {
 
 
     [[nodiscard]] static datum evaluate_children(expression_evaluation_context &context, statement_vector const &children) {
-        for (let &child: children) {
-            let tmp = child->evaluate(context);
+        for (ttlet &child: children) {
+            ttlet tmp = child->evaluate(context);
             if (!tmp.is_undefined()) {
                 return tmp;
             }
@@ -265,8 +265,8 @@ inline std::unique_ptr<template_node> parse_template(URL url, std::string_view t
 }
 
 inline std::unique_ptr<template_node> parse_template(URL url) {
-    let fv = ResourceView::loadView(url);
-    let sv = fv->string_view();
+    ttlet fv = ResourceView::loadView(url);
+    ttlet sv = fv->string_view();
 
     return parse_template(std::move(url), sv.cbegin(), sv.cend());
 }

@@ -123,7 +123,7 @@ public:
         }
 
         // Sort the table based on the length of the code, followed by symbol
-        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](let &a, let &b) {
+        std::sort(symbol_lengths.begin(), symbol_lengths.end(), [](ttlet &a, ttlet &b) {
             if (a.length == b.length) {
                 return a.symbol < b.symbol;
             } else {

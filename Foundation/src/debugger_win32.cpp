@@ -14,17 +14,17 @@ bool debugger_is_present() noexcept {
 
 void _debugger_log(char const *message) noexcept
 {
-    let messageString = std::string(message) + "\r\n";
-    let messageWString = to_wstring(messageString);
+    ttlet messageString = std::string(message) + "\r\n";
+    ttlet messageWString = to_wstring(messageString);
     OutputDebugStringW(messageWString.data());
 }
 
 void _debugger_dialogue(char const *caption, char const *message)
 {
-    let captionString = std::string(caption);
-    let messageString = std::string(message);
-    let captionWString = to_wstring(captionString);
-    let messageWString = to_wstring(messageString);
+    ttlet captionString = std::string(caption);
+    ttlet messageString = std::string(message);
+    ttlet captionWString = to_wstring(captionString);
+    ttlet messageWString = to_wstring(messageString);
     MessageBoxW(nullptr, messageWString.data(), captionWString.data(), MB_APPLMODAL | MB_OK | MB_ICONERROR);
 }
 

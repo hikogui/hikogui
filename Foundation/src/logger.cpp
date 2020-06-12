@@ -24,7 +24,7 @@ namespace tt {
 using namespace std::literals::chrono_literals;
 
 std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs) {
-    let source_file = filename_from_path(rhs.source_path);
+    ttlet source_file = filename_from_path(rhs.source_path);
 
     lhs << source_file;
     lhs << ":";
@@ -53,8 +53,8 @@ std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs) {
 
 std::string log_message_base::string() const noexcept
 {
-    let utc_timestamp = cpu_utc_clock::convert(timestamp);
-    let local_timestring = format_iso8601(utc_timestamp);
+    ttlet utc_timestamp = cpu_utc_clock::convert(timestamp);
+    ttlet local_timestring = format_iso8601(utc_timestamp);
 
     return fmt::format("{} {:5} {}", local_timestring, to_const_string(level()), message());
 }
@@ -80,10 +80,10 @@ void logger_type::write(std::string const &str) noexcept {
 }
 
 void logger_type::display_counters() noexcept {
-    let keys = counter_map.keys();
+    ttlet keys = counter_map.keys();
     logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:>18} {:>9} {:>10} {:>10}", "total", "delta", "mean", "peak");
-    for (let &tag: keys) {
-        let [count, count_since_last_read] = read_counter(tag);
+    for (ttlet &tag: keys) {
+        ttlet [count, count_since_last_read] = read_counter(tag);
         logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:>18} {:>+9} {:10} {:10} {}",
             count,
             count_since_last_read,
@@ -94,11 +94,11 @@ void logger_type::display_counters() noexcept {
 }
 
 void logger_type::display_trace_statistics() noexcept {
-    let keys = trace_statistics_map.keys();
-    for (let &tag: keys) {
+    ttlet keys = trace_statistics_map.keys();
+    for (ttlet &tag: keys) {
         auto *stat = trace_statistics_map.get(tag, nullptr);
         ttauri_assert(stat != nullptr);
-        let stat_result = stat->read();
+        ttlet stat_result = stat->read();
 
         if (stat_result.last_count <= 0) {
             logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:18n} {:+9n} {:10} {:10} {}",
@@ -110,8 +110,8 @@ void logger_type::display_trace_statistics() noexcept {
 
         } else {
             // XXX not perfect at all.
-            let duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
-            let duration_peak = format_engineering(stat_result.peak_duration);
+            ttlet duration_per_iter = format_engineering(stat_result.last_duration / stat_result.last_count);
+            ttlet duration_peak = format_engineering(stat_result.peak_duration);
             logger.log<log_level::Counter>(cpu_counter_clock::now(), "{:18n} {:+9n} {:>10} {:>10} {}",
                 stat_result.count,
                 stat_result.last_count,
@@ -126,7 +126,7 @@ void logger_type::display_trace_statistics() noexcept {
 void logger_type::gather_tick(bool last) noexcept
 {
     struct gather_tick_tag {};
-    let t = trace<gather_tick_tag>{};
+    ttlet t = trace<gather_tick_tag>{};
 
     constexpr auto gather_interval = 30s;
 
@@ -140,19 +140,19 @@ void logger_type::gather_tick(bool last) noexcept
         display_counters();
         display_trace_statistics();
 
-        let now_rounded_to_interval = hires_utc_clock::now().time_since_epoch() / gather_interval;
+        ttlet now_rounded_to_interval = hires_utc_clock::now().time_since_epoch() / gather_interval;
         next_gather_time = typename hires_utc_clock::time_point(gather_interval * (now_rounded_to_interval + 1));
     }
 }
 
 void logger_type::logger_tick() noexcept {
     struct logger_tick_tag {};
-    let t = trace<logger_tick_tag>{};
+    ttlet t = trace<logger_tick_tag>{};
 
     while (!message_queue.empty()) {
         auto message = message_queue.read();
 
-        let str = (*message)->string();
+        ttlet str = (*message)->string();
         write(str);
     }
 }

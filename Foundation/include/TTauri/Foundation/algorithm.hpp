@@ -49,7 +49,7 @@ template<typename T, typename F>
 inline void erase_if(T &v, F predicate)
 {
     while (true) {
-        let i = std::find_if(v.begin(), v.end(), predicate);
+        ttlet i = std::find_if(v.begin(), v.end(), predicate);
         if (i == v.end()) {
             return;
         }
@@ -92,7 +92,7 @@ constexpr It rfind(It const first, It const last, T const &value)
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 {
-    let cluster_id = predicate(*start);
+    ttlet cluster_id = predicate(*start);
 
     for (auto i = start + 1; i != last; ++i) {
         if (predicate(*i) != cluster_id) {
@@ -111,7 +111,7 @@ constexpr It find_cluster(ConstIt last, It start, UnaryPredicate predicate)
 template<typename ConstIt, typename It, typename UnaryPredicate>
 constexpr It rfind_cluster(ConstIt first, It start, UnaryPredicate predicate)
 {
-    let cluster_id = predicate(*start);
+    ttlet cluster_id = predicate(*start);
 
     if (start == first) {
         return first;
@@ -176,7 +176,7 @@ inline void for_each_cluster(It first, It last, S IsClusterSeperator, F Function
 template<typename InputIt1, typename InputIt2>
 inline bool starts_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
 {
-    let [haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
+    ttlet [haystack_result, needle_result] = std::mismatch(haystack_first, haystack_last, needle_first, needle_last);
     return needle_result == needle_last;
 }
 
@@ -216,7 +216,7 @@ inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, I
 template<typename InputIt1, typename InputIt2>
 inline bool ends_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
 {
-    let [haystack_result, needle_result] = rmismatch(haystack_first, haystack_last, needle_first, needle_last);
+    ttlet [haystack_result, needle_result] = rmismatch(haystack_first, haystack_last, needle_first, needle_last);
     return needle_result == needle_last;
 }
 

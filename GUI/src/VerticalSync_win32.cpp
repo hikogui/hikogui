@@ -144,14 +144,14 @@ void VerticalSync_win32::closeAdapter() noexcept
 
 hires_utc_clock::duration VerticalSync_win32::averageFrameDuration(hires_utc_clock::time_point frameTimestamp) noexcept 
 {
-    let currentDuration = frameDurationDataCounter == 0 ? 16ms : frameTimestamp - previousFrameTimestamp;
+    ttlet currentDuration = frameDurationDataCounter == 0 ? 16ms : frameTimestamp - previousFrameTimestamp;
     previousFrameTimestamp = frameTimestamp;
 
     frameDurationData[frameDurationDataCounter++ % frameDurationData.size()] = currentDuration;
 
-    let number_of_elements = std::min(frameDurationDataCounter, frameDurationData.size());
-    let last_i = frameDurationData.cbegin() + number_of_elements;
-    let sum = std::reduce(frameDurationData.cbegin(), last_i);
+    ttlet number_of_elements = std::min(frameDurationDataCounter, frameDurationData.size());
+    ttlet last_i = frameDurationData.cbegin() + number_of_elements;
+    ttlet sum = std::reduce(frameDurationData.cbegin(), last_i);
     return sum / number_of_elements;
 }
 
@@ -188,7 +188,7 @@ hires_utc_clock::time_point VerticalSync_win32::wait() noexcept
         std::this_thread::sleep_for(16ms);
     }
 
-    let now = cpu_utc_clock::now();
+    ttlet now = cpu_utc_clock::now();
 
     return now + averageFrameDuration(now);
 }
@@ -196,7 +196,7 @@ hires_utc_clock::time_point VerticalSync_win32::wait() noexcept
 void VerticalSync_win32::verticalSyncThread() noexcept
 {
     while (!stop) {
-        let displayTimePoint = wait();
+        ttlet displayTimePoint = wait();
         callback(callbackData, displayTimePoint);
     }
 }

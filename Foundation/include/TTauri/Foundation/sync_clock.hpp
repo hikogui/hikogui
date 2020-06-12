@@ -91,11 +91,11 @@ private:
     static time_point_pair makeCalibrationPoint() noexcept {
         // We are going to read the slow clock twice sandwiched by fast clocks,
         // we expect that it will not be interrupted by a time-slice more than once.
-        let f1 = fast_clock::now();
-        let s1 = slow_clock::now();
-        let f2 = fast_clock::now();
-        let s2 = slow_clock::now();
-        let f3 = fast_clock::now();
+        ttlet f1 = fast_clock::now();
+        ttlet s1 = slow_clock::now();
+        ttlet f2 = fast_clock::now();
+        ttlet s2 = slow_clock::now();
+        ttlet f3 = fast_clock::now();
 
         if ((f2 - f1) < (f3 - f2)) {
             return {s1, f1};
@@ -115,8 +115,8 @@ private:
 
     int64_t getGain() noexcept {
         // Calculate the gain between the current and first calibration.
-        let diff_slow = static_cast<double>((last_pair.slow - first_pair.slow).count());
-        let diff_fast = static_cast<double>((last_pair.fast - first_pair.fast).count());
+        ttlet diff_slow = static_cast<double>((last_pair.slow - first_pair.slow).count());
+        ttlet diff_fast = static_cast<double>((last_pair.fast - first_pair.fast).count());
     
         if (calibration_nr < 2 || diff_fast == 0.0) {
             return static_cast<int64_t>(gainMultiplier);
@@ -139,7 +139,7 @@ private:
         // Remove gain-pre-multiplier.
         tmp >>= gainShift;
 
-        let now_fast_after_gain = typename slow_clock::duration(static_cast<typename slow_clock::rep>(tmp));
+        ttlet now_fast_after_gain = typename slow_clock::duration(static_cast<typename slow_clock::rep>(tmp));
 
         return (last_pair.slow.time_since_epoch() + leapsecond_offset) - now_fast_after_gain;
     }
@@ -147,9 +147,9 @@ private:
     typename slow_clock::duration getLeapAdjustment(int64_t new_gain, typename slow_clock::duration new_bias)
     {
         // Check and update for leap second.
-        let prev_fast_as_slow = convert(last_pair.fast);
-        let next_fast_as_slow = convert(new_gain, new_bias, last_pair.fast);
-        let diff_fast_as_slow = prev_fast_as_slow - next_fast_as_slow;
+        ttlet prev_fast_as_slow = convert(last_pair.fast);
+        ttlet next_fast_as_slow = convert(new_gain, new_bias, last_pair.fast);
+        ttlet diff_fast_as_slow = prev_fast_as_slow - next_fast_as_slow;
 
         return
             (diff_fast_as_slow >= 999ms && diff_fast_as_slow <= 1001ms) ?
@@ -164,24 +164,24 @@ private:
      */
     double getDrift() noexcept {
         // Compare the new calibration point, with the old calibration data.
-        let fast_to_slow_offset = convert(last_pair.fast) - last_pair.slow;
-        let fast_to_slow_offset_ns = static_cast<double>(fast_to_slow_offset / 1ns);
+        ttlet fast_to_slow_offset = convert(last_pair.fast) - last_pair.slow;
+        ttlet fast_to_slow_offset_ns = static_cast<double>(fast_to_slow_offset / 1ns);
 
-        let duration_since_calibration = last_pair.slow - prev_pair.slow;
-        let duration_since_calibration_ns = static_cast<double>(duration_since_calibration / 1ns);
+        ttlet duration_since_calibration = last_pair.slow - prev_pair.slow;
+        ttlet duration_since_calibration_ns = static_cast<double>(duration_since_calibration / 1ns);
         return fast_to_slow_offset_ns / duration_since_calibration_ns;
     }
 
     void calibrate() noexcept {
         addCalibrationPoint();
 
-        let drift = getDrift();
+        ttlet drift = getDrift();
 
-        let do_gain_calibration = calibration_nr <= 5;
+        ttlet do_gain_calibration = calibration_nr <= 5;
 
-        let new_gain = do_gain_calibration ? getGain() : gain.load(std::memory_order_relaxed);
-        let new_bias = getBias(new_gain);
-        let leap_adjustment = getLeapAdjustment(new_gain, new_bias);
+        ttlet new_gain = do_gain_calibration ? getGain() : gain.load(std::memory_order_relaxed);
+        ttlet new_bias = getBias(new_gain);
+        ttlet leap_adjustment = getLeapAdjustment(new_gain, new_bias);
 
         // XXX implement leap second testing.
         if (leap_adjustment != 0ns) {
@@ -206,19 +206,19 @@ private:
     }
 
     typename slow_clock::duration convert(int64_t new_gain, typename fast_clock::duration fast_duration) const noexcept {
-        let _new_gain = static_cast<uint64_t>(new_gain);
-        let _fast_duration = static_cast<uint64_t>(fast_duration.count());
+        ttlet _new_gain = static_cast<uint64_t>(new_gain);
+        ttlet _fast_duration = static_cast<uint64_t>(fast_duration.count());
 
-        let [lo, hi] = wide_multiply(_new_gain, _fast_duration);
+        ttlet [lo, hi] = wide_multiply(_new_gain, _fast_duration);
 
         static_assert(gainShift < 64);
-        let slow_duration = (lo >> gainShift) | (hi << (64 - gainShift));
+        ttlet slow_duration = (lo >> gainShift) | (hi << (64 - gainShift));
 
         return typename slow_clock::duration(static_cast<typename slow_clock::rep>(slow_duration));
     }
 
     typename slow_clock::time_point convert(int64_t new_gain, typename slow_clock::duration new_bias, typename fast_clock::time_point fast_time) const noexcept {
-        let slow_period = convert(new_gain, fast_time.time_since_epoch());
+        ttlet slow_period = convert(new_gain, fast_time.time_since_epoch());
         return typename slow_clock::time_point(slow_period) + new_bias;
     }
 };
