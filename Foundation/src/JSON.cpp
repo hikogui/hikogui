@@ -181,10 +181,9 @@ struct parse_context_t {
     return root;
 }
 
-[[nodiscard]] datum parseJSON(URL const &file)
+[[nodiscard]] datum parseJSON(URL const &url)
 {
-    auto view = ResourceView::loadView(file);
-    return parseJSON(view->string_view());
+    return parseJSON(*url.loadView());
 }
 
 static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)

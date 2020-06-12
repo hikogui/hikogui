@@ -8,6 +8,8 @@
 #include "TTauri/Foundation/url_parser.hpp"
 #include "TTauri/Foundation/glob.hpp"
 #include "TTauri/Foundation/Unicode.hpp"
+#include "TTauri/Foundation/FileView.hpp"
+#include "TTauri/Foundation/StaticResourceView.hpp"
 #include <regex>
 
 namespace tt {
@@ -253,6 +255,33 @@ std::string URL::nativePathFromPath(std::string_view path) noexcept
 std::wstring URL::nativeWPathFromPath(std::string_view path) noexcept
 {
     return to_wstring(nativePathFromPath(path));
+}
+
+std::unique_ptr<ResourceView> URL::loadView() const
+{
+    if (scheme() == "resource") {
+        try {
+            auto view = StaticResourceView::loadView(filename());
+            LOG_INFO("Loaded resource {} from executable.", *this);
+            return view;
+
+        } catch (key_error) {
+            ttlet absoluteLocation = URL::urlFromResourceDirectory() / *this;
+            auto view = FileView::loadView(absoluteLocation);
+            LOG_INFO("Loaded resource {} from filesystem at {}.", *this, absoluteLocation);
+            return view;
+        }
+
+    } else if (scheme() == "file") {
+        auto view = FileView::loadView(*this);
+        LOG_INFO("Loaded resource {} from filesystem.", *this);
+        return view;
+
+    } else {
+        TTAURI_THROW(url_error("Unknown scheme for loading a resource")
+            .set<url_tag>(*this)
+        );
+    }
 }
 
 }

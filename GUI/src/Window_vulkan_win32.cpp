@@ -134,8 +134,8 @@ void Window_vulkan_win32::createWindow(const std::string &_title, vec extent)
     dpi = numeric_cast<float>(_dpi);
 }
 
-Window_vulkan_win32::Window_vulkan_win32(std::shared_ptr<WindowDelegate> const &delegate, Label const &title) :
-    Window_vulkan(delegate, title),
+Window_vulkan_win32::Window_vulkan_win32(std::shared_ptr<WindowDelegate> const &delegate, Label &&title) :
+    Window_vulkan(delegate, std::move(title)),
     trackMouseLeaveEventParameters()
 {
     doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
@@ -147,7 +147,7 @@ Window_vulkan_win32::~Window_vulkan_win32()
     try {
         gsl_suppress(f.6) {
             if (win32Window != nullptr) {
-                LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title);
+                LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title.text());
             }
         }
     } catch (...) {

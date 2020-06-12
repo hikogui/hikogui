@@ -609,7 +609,7 @@ template<>
 std::unique_ptr<tt::UnicodeData> parseResource(URL const &location)
 {
     if (location.extension() == "bin") {
-        auto view = ResourceView::loadView(location);
+        auto view = location.loadView();
 
         try {
             auto unicodeData = std::make_unique<tt::UnicodeData>(std::move(view));

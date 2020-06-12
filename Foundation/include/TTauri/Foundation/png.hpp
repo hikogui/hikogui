@@ -57,7 +57,7 @@ public:
     png(nonstd::span<std::byte const> bytes);
 
     png(URL const &url) :
-        png(*ResourceView::loadView(url)) {}
+        png(*url.loadView()) {}
 
     ivec extent() const noexcept {
         return ivec{width, height};

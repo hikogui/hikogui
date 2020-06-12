@@ -44,7 +44,7 @@ template<>
 std::unique_ptr<tt::Font> parseResource(URL const &location)
 {
     if (location.extension() == "ttf") {
-        auto view = ResourceView::loadView(location);
+        auto view = location.loadView();
 
         try {
             return std::make_unique<tt::TrueTypeFont>(std::move(view));

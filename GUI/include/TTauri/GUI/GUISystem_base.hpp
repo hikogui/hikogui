@@ -50,9 +50,9 @@ public:
     virtual void initialize() noexcept(false) = 0;
 
     template<typename T, typename... Args>
-    T *makeWindow(Args... args)
+    T *makeWindow(Args &&... args)
     {
-        auto window = std::make_unique<T>(args...);
+        auto window = std::make_unique<T>(std::forward<Args>(args)...);
         auto window_ptr = window.get();
         window->initialize();
 

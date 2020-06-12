@@ -50,7 +50,7 @@ set(TTauri_GUI_srcs
     src/ThemeBook.cpp
     src/KeyboardBindings.cpp
     src/KeyboardEvent.cpp
-    #src/Image.cpp
+    src/Image.cpp
 )
 
 if(WIN32)

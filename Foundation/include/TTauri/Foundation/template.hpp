@@ -265,7 +265,7 @@ inline std::unique_ptr<template_node> parse_template(URL url, std::string_view t
 }
 
 inline std::unique_ptr<template_node> parse_template(URL url) {
-    ttlet fv = ResourceView::loadView(url);
+    ttlet fv = url.loadView();
     ttlet sv = fv->string_view();
 
     return parse_template(std::move(url), sv.cbegin(), sv.cend());

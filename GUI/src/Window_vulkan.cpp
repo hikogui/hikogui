@@ -18,8 +18,8 @@ namespace tt {
 
 using namespace std;
 
-Window_vulkan::Window_vulkan(std::shared_ptr<WindowDelegate> const &delegate, Label const &title) :
-    Window_base(delegate, title), nrSwapchainImages(0), swapchainImageFormat()
+Window_vulkan::Window_vulkan(std::shared_ptr<WindowDelegate> const &delegate, Label &&title) :
+    Window_base(delegate, std::move(title)), nrSwapchainImages(0), swapchainImageFormat()
 {
 }
 

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "TTauri/Foundation/URL.hpp"
+#include "TTauri/GUI/Image.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <ostream>
@@ -10,29 +11,18 @@ namespace tt {
 
 class Label {
     std::string _text;
-    URL _iconURL;
+    Image _icon;
 
 public:
-    Label(std::string text, URL iconURL) noexcept :
-        _text(text), _iconURL(iconURL) {}
+    Label(std::string text, Image &&icon = Image{}) noexcept :
+        _text(text), _icon(std::move(icon)) {}
 
-    Label(std::string text) noexcept :
-        _text(text), _iconURL() {}
+    Label(Image &&icon) noexcept :
+        _text(), _icon(std::move(icon)) {}
 
-    Label(URL iconURL) noexcept :
-        _text(), _iconURL(iconURL) {}
-
-    Label(Label const &other) noexcept :
-        _text(other._text), _iconURL(other._iconURL) {}
-
+    Label(Label const &other) noexcept = delete;
     Label(Label &&) noexcept = default;
-
-    Label &operator=(Label const &other) noexcept {
-        _text = other._text;
-        _iconURL = other._iconURL;
-        return *this;
-    }
-
+    Label &operator=(Label const &other) = delete;
     Label &operator=(Label &&) noexcept = default;
 
     /** Get the text translated in the current locale.
@@ -41,9 +31,14 @@ public:
         return _text;
     }
 
+    /** Get the text translated in the current locale.
+    */
+    [[nodiscard]] Image const &icon() const noexcept {
+        return _icon;
+    }
 
     [[nodiscard]] friend std::string to_string(Label const &rhs) noexcept {
-        return fmt::format("label:{}:{}", rhs._text, rhs._iconURL);
+        return fmt::format("label:{}", rhs._text);
     }
 
     friend std::ostream &operator<<(std::ostream &lhs, Label const &rhs) {

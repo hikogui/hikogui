@@ -23,7 +23,6 @@ set(TTauri_Foundation_srcs
     src/hires_utc_clock.cpp
     src/logger.cpp
     src/trace.cpp
-    src/ResourceView.cpp
     src/StaticResourceView.cpp
     src/base93.cpp
     src/tokenizer.cpp

@@ -710,8 +710,7 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(nonstd::span<std::byte const> shad
 
 vk::ShaderModule GUIDevice_vulkan::loadShader(URL const &shaderObjectLocation) const
 {
-    auto shaderObjectView = ResourceView::loadView(shaderObjectLocation);
-    return loadShader(shaderObjectView->bytes());
+    return loadShader(*shaderObjectLocation.loadView());
 }
 
 }

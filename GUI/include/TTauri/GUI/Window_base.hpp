@@ -151,7 +151,7 @@ public:
      */
     Widget *lastKeyboardWidget = nullptr;
 
-    Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label const &title);
+    Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label &&title);
     virtual ~Window_base();
 
     Window_base(Window_base const &) = delete;

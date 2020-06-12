@@ -15,6 +15,7 @@
 
 namespace tt {
 struct url_parts;
+class ResourceView;
 
 /*! Universal Resource Locator.
  *
@@ -57,50 +58,55 @@ public:
     URL &operator=(URL const &other) noexcept { value = other.value; return *this; }
     URL &operator=(URL &&other) noexcept = default;
 
-    size_t hash() const noexcept;
-    std::string string() const noexcept;
+    [[nodiscard]] size_t hash() const noexcept;
+    [[nodiscard]] std::string string() const noexcept;
 
-    std::string_view scheme() const noexcept;
+    [[nodiscard]] std::string_view scheme() const noexcept;
 
-    std::string query() const noexcept;
+    [[nodiscard]] std::string query() const noexcept;
 
-    std::string fragment() const noexcept;
+    [[nodiscard]] std::string fragment() const noexcept;
 
-    std::string filename() const noexcept;
+    [[nodiscard]] std::string filename() const noexcept;
 
-    std::string directory() const noexcept;
+    [[nodiscard]] std::string directory() const noexcept;
 
-    std::string nativeDirectory() const noexcept;
+    [[nodiscard]] std::string nativeDirectory() const noexcept;
 
-    std::string extension() const noexcept;
+    [[nodiscard]] std::string extension() const noexcept;
 
-    std::vector<std::string> pathSegments() const noexcept;
+    [[nodiscard]] std::vector<std::string> pathSegments() const noexcept;
 
-    std::string path() const noexcept;
+    [[nodiscard]] std::string path() const noexcept;
 
-    std::string nativePath() const noexcept;
+    [[nodiscard]] std::string nativePath() const noexcept;
 
-    std::wstring nativeWPath() const noexcept;
+    [[nodiscard]] std::wstring nativeWPath() const noexcept;
 
-    bool isFileScheme() const noexcept {
+    [[nodiscard]] bool isFileScheme() const noexcept {
         return scheme() == "file";
     }
 
-    bool isAbsolute() const noexcept;
-    bool isRelative() const noexcept;
-    bool isRootDirectory() const noexcept;
+    [[nodiscard]] bool isAbsolute() const noexcept;
+    [[nodiscard]] bool isRelative() const noexcept;
+    [[nodiscard]] bool isRootDirectory() const noexcept;
 
-    URL urlByAppendingPath(URL const &other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(URL const &other) const noexcept;
 
-    URL urlByAppendingPath(std::string_view const other) const noexcept;
-    URL urlByAppendingPath(std::string const &other) const noexcept;
-    URL urlByAppendingPath(char const *other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(std::string_view const other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(std::string const &other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(char const *other) const noexcept;
 
-    URL urlByAppendingPath(std::wstring_view const other) const noexcept;
-    URL urlByAppendingPath(std::wstring const &other) const noexcept;
-    URL urlByAppendingPath(wchar_t const *other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(std::wstring_view const other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(std::wstring const &other) const noexcept;
+    [[nodiscard]] URL urlByAppendingPath(wchar_t const *other) const noexcept;
 
-    URL urlByRemovingFilename() const noexcept;
+    [[nodiscard]] URL urlByRemovingFilename() const noexcept;
+
+    /** Load a resource.
+    * @return A pointer to a resource view.
+    */
+    [[nodiscard]] std::unique_ptr<ResourceView> loadView() const;
 
     /*! Return new URLs by finding matching files.
      * Currently only works for file: scheme urls.
@@ -112,31 +118,31 @@ public:
      *  - '[abcd]' Replaced by a single character from the set "abcd".
      *  - '{foo,bar}' Replaced by a string "foo" or "bar".
      */
-    std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
+    [[nodiscard]] std::vector<URL> urlsByScanningWithGlobPattern() const noexcept;
 
-    static URL urlFromPath(std::string_view const path) noexcept;
-    static URL urlFromWPath(std::wstring_view const path) noexcept;
+    [[nodiscard]] static URL urlFromPath(std::string_view const path) noexcept;
+    [[nodiscard]] static URL urlFromWPath(std::wstring_view const path) noexcept;
 
-    static URL urlFromCurrentWorkingDirectory() noexcept;
-    static URL urlFromResourceDirectory() noexcept;
-    static URL urlFromExecutableDirectory() noexcept;
-    static URL urlFromExecutableFile() noexcept;
-    static URL urlFromApplicationDataDirectory() noexcept;
-    static URL urlFromApplicationLogDirectory() noexcept;
-    static URL urlFromSystemFontDirectory() noexcept;
+    [[nodiscard]] static URL urlFromCurrentWorkingDirectory() noexcept;
+    [[nodiscard]] static URL urlFromResourceDirectory() noexcept;
+    [[nodiscard]] static URL urlFromExecutableDirectory() noexcept;
+    [[nodiscard]] static URL urlFromExecutableFile() noexcept;
+    [[nodiscard]] static URL urlFromApplicationDataDirectory() noexcept;
+    [[nodiscard]] static URL urlFromApplicationLogDirectory() noexcept;
+    [[nodiscard]] static URL urlFromSystemFontDirectory() noexcept;
 
     /*! Return file names in the directory pointed by the url.
     * \param path path to the directory to scan.
     * \return A list of filenames or subdirectories (ending in '/') in the directory.
     */
-    static std::vector<std::string> filenamesByScanningDirectory(std::string_view path) noexcept;
+    [[nodiscard]] static std::vector<std::string> filenamesByScanningDirectory(std::string_view path) noexcept;
 
-    static std::string nativePathFromPath(std::string_view path) noexcept;
-    static std::wstring nativeWPathFromPath(std::string_view path) noexcept;
+    [[nodiscard]] static std::string nativePathFromPath(std::string_view path) noexcept;
+    [[nodiscard]] static std::wstring nativeWPathFromPath(std::string_view path) noexcept;
 
 private:
-    friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
-    friend bool operator<(URL const &lhs, URL const &rhs) noexcept;
+    [[nodiscard]] friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
+    [[nodiscard]] friend bool operator<(URL const &lhs, URL const &rhs) noexcept;
 };
 
 inline bool operator==(URL const &lhs, URL const &rhs) noexcept { return lhs.value == rhs.value; }

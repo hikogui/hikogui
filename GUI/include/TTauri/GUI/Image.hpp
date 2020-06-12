@@ -28,9 +28,6 @@ public:
     Image(Image &&) noexcept = default;
     Image &operator=(Image const &) noexcept = default;
     Image &operator=(Image &&) noexcept = default;
-
-
-
 };
 
 

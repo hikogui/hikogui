@@ -9,10 +9,10 @@ namespace tt {
 
 using namespace std;
 
-Window_base::Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label const &title) :
+Window_base::Window_base(std::shared_ptr<WindowDelegate> const &delegate, Label &&title) :
     state(State::Initializing),
     delegate(delegate),
-    title(title)
+    title(std::move(title))
 {
 }
 
@@ -25,9 +25,9 @@ Window_base::~Window_base()
     try {
         gsl_suppress(f.6) {
             if (state != State::NoWindow) {
-                LOG_FATAL("Window '{}' was not properly teardown before destruction.", title);
+                LOG_FATAL("Window '{}' was not properly teardown before destruction.", title.text());
             }
-            LOG_INFO("Window '{}' has been propertly destructed.", title);
+            LOG_INFO("Window '{}' has been propertly destructed.", title.text());
         }
     } catch (...) {
         abort();
@@ -364,7 +364,7 @@ void Window_base::layoutWindow() noexcept {
     suggestWidgetExtent(currentWindowExtent);
 
     LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
-        title,
+        title.text(),
         minimumWindowExtent,
         maximumWindowExtent,
         currentWindowExtent
