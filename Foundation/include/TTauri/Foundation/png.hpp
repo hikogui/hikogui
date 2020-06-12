@@ -52,12 +52,17 @@ class png {
      */
     std::vector<nonstd::span<std::byte const>> idat_chunk_data;
 
+    /** Take ownership of the view.
+     */
+    std::unique_ptr<ResourceView> view;
 public:
 
     png(nonstd::span<std::byte const> bytes);
 
+    png(std::unique_ptr<ResourceView> view);
+
     png(URL const &url) :
-        png(*url.loadView()) {}
+        png(url.loadView()) {}
 
     ivec extent() const noexcept {
         return ivec{width, height};
@@ -68,14 +73,14 @@ public:
     static PixelMap<R16G16B16A16SFloat> load(URL const &url);
 
 private:
-    void read_header(nonstd::span<std::byte const> &bytes, ssize_t &offset);
-    void read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset);
-    void read_IHDR(nonstd::span<std::byte const> &bytes);
-    void read_cHRM(nonstd::span<std::byte const> &bytes);
-    void read_gAMA(nonstd::span<std::byte const> &bytes);
-    void read_iBIT(nonstd::span<std::byte const> &bytes);
-    void read_iCCP(nonstd::span<std::byte const> &bytes);
-    void read_sRGB(nonstd::span<std::byte const> &bytes);
+    void read_header(nonstd::span<std::byte const> bytes, ssize_t &offset);
+    void read_chunks(nonstd::span<std::byte const> bytes, ssize_t &offset);
+    void read_IHDR(nonstd::span<std::byte const> bytes);
+    void read_cHRM(nonstd::span<std::byte const> bytes);
+    void read_gAMA(nonstd::span<std::byte const> bytes);
+    void read_iBIT(nonstd::span<std::byte const> bytes);
+    void read_iCCP(nonstd::span<std::byte const> bytes);
+    void read_sRGB(nonstd::span<std::byte const> bytes);
     void generate_sRGB_transfer_function() noexcept;
     void generate_Rec2100_transfer_function() noexcept;
     void generate_gamma_transfer_function(float gamma) noexcept;

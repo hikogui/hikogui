@@ -47,9 +47,9 @@ struct sRGB {
     uint8_t rendering_intent;
 };
 
-void png::read_header(nonstd::span<std::byte const> &bytes, ssize_t &offset)
+void png::read_header(nonstd::span<std::byte const> bytes, ssize_t &offset)
 {
-    ttlet png_header = make_placement_ptr<PNGHeader>(bytes);
+    ttlet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
 
     ttlet valid_signature =
         png_header->signature[0] == 137 &&
@@ -98,7 +98,7 @@ void png::generate_gamma_transfer_function(float gamma) noexcept
 }
 
 
-void png::read_IHDR(nonstd::span<std::byte const> &bytes)
+void png::read_IHDR(nonstd::span<std::byte const> bytes)
 {
     ttlet ihdr = make_placement_ptr<IHDR>(bytes);
 
@@ -121,7 +121,7 @@ void png::read_IHDR(nonstd::span<std::byte const> &bytes)
     is_color = (color_type & 2) != 0;
     has_alpha = (color_type & 4) != 0;
     parse_assert2((color_type & 0xf8) == 0, "Invalid color type");
-    parse_assert2(is_palletted, "Paletted images are not supported");
+    parse_assert2(!is_palletted, "Paletted images are not supported");
 
     if (is_palletted) {
         samples_per_pixel = 1;
@@ -139,7 +139,7 @@ void png::read_IHDR(nonstd::span<std::byte const> &bytes)
     generate_sRGB_transfer_function();
 }
 
-void png::read_cHRM(nonstd::span<std::byte const> &bytes)
+void png::read_cHRM(nonstd::span<std::byte const> bytes)
 {
     ttlet chrm = make_placement_ptr<cHRM>(bytes);
 
@@ -157,7 +157,7 @@ void png::read_cHRM(nonstd::span<std::byte const> &bytes)
     color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
 }
 
-void png::read_gAMA(nonstd::span<std::byte const> &bytes)
+void png::read_gAMA(nonstd::span<std::byte const> bytes)
 {
     ttlet gama = make_placement_ptr<gAMA>(bytes);
     ttlet gamma = numeric_cast<float>(gama->gamma.value()) / 100'000.0f;
@@ -166,7 +166,7 @@ void png::read_gAMA(nonstd::span<std::byte const> &bytes)
     generate_gamma_transfer_function(1.0f / gamma);
 }
 
-void png::read_sRGB(nonstd::span<std::byte const> &bytes)
+void png::read_sRGB(nonstd::span<std::byte const> bytes)
 {
     ttlet srgb = make_placement_ptr<sRGB>(bytes);
     ttlet rendering_intent = srgb->rendering_intent;
@@ -176,7 +176,7 @@ void png::read_sRGB(nonstd::span<std::byte const> &bytes)
     generate_sRGB_transfer_function();
 }
 
-static std::string read_string(nonstd::span<std::byte const> &bytes)
+static std::string read_string(nonstd::span<std::byte const> bytes)
 {
     std::string r;
 
@@ -191,7 +191,7 @@ static std::string read_string(nonstd::span<std::byte const> &bytes)
     TTAURI_THROW(parse_error("string is not null terminated."));
 }
 
-void png::read_iCCP(nonstd::span<std::byte const> &bytes)
+void png::read_iCCP(nonstd::span<std::byte const> bytes)
 {
     auto profile_name = read_string(bytes);
 
@@ -205,7 +205,7 @@ void png::read_iCCP(nonstd::span<std::byte const> &bytes)
     }
 }
 
-void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
+void png::read_chunks(nonstd::span<std::byte const> bytes, ssize_t &offset)
 {
     auto IHDR_bytes = nonstd::span<std::byte const>{};
     auto cHRM_bytes = nonstd::span<std::byte const>{};
@@ -218,7 +218,7 @@ void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
         ttlet header = make_placement_ptr<ChunkHeader>(bytes, offset);
         ttlet length = numeric_cast<ssize_t>(header->length.value());
         parse_assert2(length < 0x8000'0000, "Chunk length must be smaller than 2GB");
-        parse_assert2(offset + length <= ssize(bytes), "Chuck extents beyond file.");
+        parse_assert2(offset + length + ssizeof(uint32_t) <= ssize(bytes), "Chuck extents beyond file.");
 
         switch (fourcc(header->type)) {
         case fourcc("IDAT"):
@@ -252,6 +252,8 @@ void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
         default:;
         }
 
+        // Skip over the data, and extract the crc32.
+        offset += length;
         [[maybe_unused]] ttlet crc = make_placement_ptr<big_uint32_buf_t>(bytes, offset);
     }
 
@@ -276,10 +278,21 @@ void png::read_chunks(nonstd::span<std::byte const> &bytes, ssize_t &offset)
 
 }
 
-png::png(nonstd::span<std::byte const> bytes)
+png::png(nonstd::span<std::byte const> bytes) :
+    view()
 {
     ssize_t offset = 0;
 
+    read_header(bytes, offset);
+    read_chunks(bytes, offset);
+}
+
+png::png(std::unique_ptr<ResourceView> view) :
+    view(std::move(view))
+{
+    ssize_t offset = 0;
+
+    ttlet bytes = this->view->bytes();
     read_header(bytes, offset);
     read_chunks(bytes, offset);
 }
