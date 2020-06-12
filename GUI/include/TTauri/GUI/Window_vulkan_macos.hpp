@@ -6,11 +6,11 @@
 #include "TTauri/GUI/Window_vulkan.hpp"
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 class Application_macos;
 }
 
-namespace TTauri {
+namespace tt {
 
 class Window_vulkan_macos final : public Window_vulkan {
 public:
@@ -70,7 +70,7 @@ private:
     /*! The application class will function as a main-thread trampoline for this class
      * methods that start with `mainThread`.
      */
-    friend TTauri::Application_macos;
+    friend tt::Application_macos;
 };
 
 }

@@ -15,7 +15,7 @@
 #include <tuple>
 
 
-namespace TTauri {
+namespace tt {
 
 struct expression_evaluation_context {
     using scope = std::unordered_map<std::string, datum>;

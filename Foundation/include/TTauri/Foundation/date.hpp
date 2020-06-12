@@ -8,7 +8,7 @@
 #include <fmt/format.h>
 #include <string>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] std::string to_string(date::year y) noexcept {
     return fmt::format("{}", static_cast<int>(y));

@@ -10,7 +10,7 @@
 #include <memory>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 enum class AudioDevice_state {
     Active,

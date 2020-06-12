@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Pipeline_vulkan.hpp"
 
-namespace TTauri {
+namespace tt {
 
 using Pipeline = Pipeline_vulkan;
 

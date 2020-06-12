@@ -12,7 +12,7 @@
 #include <mutex>
 #include <memory>
 
-namespace TTauri {
+namespace tt {
 
 /** Delegate for GUI related events.
  */

@@ -6,9 +6,9 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 
-namespace TTauri::PipelineBox {
+namespace tt::PipelineBox {
 
-using namespace TTauri;
+using namespace tt;
 using namespace std;
 
 PipelineBox::PipelineBox(Window const &window) :

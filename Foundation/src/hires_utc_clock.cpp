@@ -6,7 +6,7 @@
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::chrono_literals;
 

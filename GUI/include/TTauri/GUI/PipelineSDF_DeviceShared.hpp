@@ -18,18 +18,18 @@
 #include <mutex>
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 template<typename T> struct PixelMap;
 class vec;
 class mat;
 }
 
-namespace TTauri {
+namespace tt {
 class ShapedText;
 struct AttributedGlyph;
 }
 
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 
 struct Image;
 struct Vertex;

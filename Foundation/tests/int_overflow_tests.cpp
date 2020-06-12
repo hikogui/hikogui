@@ -9,7 +9,7 @@
 #include <list>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 template <typename T>
 class SignedIntOverflow : public ::testing::Test {

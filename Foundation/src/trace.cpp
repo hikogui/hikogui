@@ -3,7 +3,7 @@
 
 #include "TTauri/Foundation/trace.hpp"
 
-namespace TTauri {
+namespace tt {
 
 void trace_record() noexcept
 {

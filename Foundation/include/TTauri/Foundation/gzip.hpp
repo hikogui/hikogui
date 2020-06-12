@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include <cstddef>
 
-namespace TTauri {
+namespace tt {
 
 bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size=0x0100'0000);
 

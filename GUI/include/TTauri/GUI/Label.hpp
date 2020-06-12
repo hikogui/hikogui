@@ -6,7 +6,7 @@
 #include <string>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 class Label {
     std::string _text;

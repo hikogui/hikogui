@@ -3,7 +3,7 @@
 #include "TTauri/Application/Application_macos.hpp"
 #import <Cocoa/Cocoa.h>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] static std::vector<std::string> passArguments(int argc, char const * const *argv) noexcept
 {

@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/ResourceView.hpp"
 #include <nonstd/span>
 
-namespace TTauri {
+namespace tt {
 
 /*! Map a file into virtual memory.
  */

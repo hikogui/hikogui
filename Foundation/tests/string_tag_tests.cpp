@@ -8,7 +8,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 //TEST(StringTag, CompileTime) {
 //    ASSERT_EQ(foo_tag, foo_tag);

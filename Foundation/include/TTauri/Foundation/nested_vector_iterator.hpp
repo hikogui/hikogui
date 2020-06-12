@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace TTauri
+namespace tt
 {
 
 

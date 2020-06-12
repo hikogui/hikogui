@@ -7,7 +7,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri {
+namespace tt {
 
 ImageWidget::ImageWidget(Window &window, Widget *parent, PixelMap<R16G16B16A16SFloat> image) noexcept :
     Widget(window, parent, vec{Theme::height, Theme::height}),

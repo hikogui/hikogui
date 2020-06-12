@@ -9,7 +9,7 @@
 #include <memory>
 #include <type_traits>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T>
 constexpr bool should_call_destructor() {

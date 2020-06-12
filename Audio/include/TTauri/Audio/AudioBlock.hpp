@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/hires_utc_clock.hpp"
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 enum class SampleFormat {
     PCM_SignedInteger,

@@ -9,7 +9,7 @@
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/TTauriIcons.ttf.inl"
 
-namespace TTauri {
+namespace tt {
 
 /** Reference counter to determine the amount of startup/shutdowns.
 */

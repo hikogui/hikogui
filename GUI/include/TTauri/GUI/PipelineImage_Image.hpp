@@ -13,13 +13,13 @@
 #include <atomic>
 #include <string>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T> struct PixelMap;
 class R16G16B16A16SFloat;
 };
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
 struct Page;
 struct Vertex;

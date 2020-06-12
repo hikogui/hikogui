@@ -5,7 +5,7 @@
 #include "TTauri/Text/TrueTypeFont.hpp"
 #include "TTauri/Foundation/trace.hpp"
 
-namespace TTauri {
+namespace tt {
 
 FontBook::FontBook(std::vector<URL> const &font_directories)
 {

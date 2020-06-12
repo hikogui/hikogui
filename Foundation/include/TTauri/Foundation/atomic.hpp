@@ -10,7 +10,7 @@
 #include <thread>
 #include <chrono>
 
-namespace TTauri {
+namespace tt {
 
 /** Wait for transition.
  * Wait until state has switched to the new state.

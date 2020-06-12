@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/attributes.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /** Class which represents an axis-aligned rectangle.
  */

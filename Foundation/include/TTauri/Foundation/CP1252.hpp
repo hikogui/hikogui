@@ -5,7 +5,7 @@
 
 #include <cstddef>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] constexpr char32_t CP1252_to_UTF32(char inputCharacter) noexcept
 {

@@ -10,7 +10,7 @@
 #include <cstdint>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 template<typename T>
 void test_single_RoundTrip(std::string const &str)

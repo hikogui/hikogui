@@ -11,7 +11,7 @@
 #include <string_view>
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 
 
 
@@ -80,8 +80,8 @@ public:
 namespace std {
 
 template<>
-struct hash<TTauri::KeyboardKey> {
-    [[nodiscard]] size_t operator() (TTauri::KeyboardKey const &rhs) const noexcept {
+struct hash<tt::KeyboardKey> {
+    [[nodiscard]] size_t operator() (tt::KeyboardKey const &rhs) const noexcept {
         return rhs.hash();
     }
 };

@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-namespace TTauri {
+namespace tt {
 
 bool debugger_is_present() noexcept {
     return IsDebuggerPresent();

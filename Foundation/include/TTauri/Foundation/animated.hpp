@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <optional>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T>
 class animated {

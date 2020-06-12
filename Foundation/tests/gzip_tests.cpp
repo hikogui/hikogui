@@ -5,7 +5,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 
 TEST(GZip, UnzipEmpty) {

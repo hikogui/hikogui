@@ -8,7 +8,7 @@
 #include <variant>
 #include <string>
 
-namespace TTauri {
+namespace tt {
 
 struct UndoElement {
     struct range_type { ssize_t first; ssize_t last; };

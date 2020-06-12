@@ -8,7 +8,7 @@
 #include <array>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 
 #define ASSERT_TOKEN_EQ(nextToken, name, value)\

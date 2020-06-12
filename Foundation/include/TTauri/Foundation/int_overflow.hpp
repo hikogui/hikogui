@@ -18,7 +18,7 @@
 #pragma intrinsic(_mul128)
 #endif
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, typename U>
 inline bool convert_overflow(T x, U *r)

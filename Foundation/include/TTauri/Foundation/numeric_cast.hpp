@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace TTauri {
+namespace tt {
 
 template<typename To, typename From>
 struct is_lossless_cast {

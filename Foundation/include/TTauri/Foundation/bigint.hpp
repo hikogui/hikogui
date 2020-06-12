@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 //template<typename T, int N, bool SIGNED=false>
 //struct bigint;

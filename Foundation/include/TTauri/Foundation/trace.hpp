@@ -19,7 +19,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 constexpr int MAX_NR_TRACES = 1024;
 

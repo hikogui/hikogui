@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 
 
 std::shared_ptr<File> FileMapping::findOrOpenFile(URL const& location, AccessMode accessMode)

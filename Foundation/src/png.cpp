@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/Rec2100.hpp"
 #include "TTauri/Foundation/zlib.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct PNGHeader {
     uint8_t signature[8];

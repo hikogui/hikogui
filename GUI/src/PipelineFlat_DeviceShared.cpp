@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/URL.hpp"
 #include <array>
 
-namespace TTauri::PipelineFlat {
+namespace tt::PipelineFlat {
 
 using namespace std;
 

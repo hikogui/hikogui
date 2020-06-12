@@ -12,7 +12,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <nonstd/span>
 
-namespace TTauri::PipelineBox {
+namespace tt::PipelineBox {
 
 /*! Pipeline for rendering simple box shaded quats.
  */

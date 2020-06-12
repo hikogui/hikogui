@@ -7,7 +7,7 @@
 #include <string>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 enum class ThemeMode {
     Light,

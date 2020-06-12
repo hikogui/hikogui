@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 class EditableText {
     std::vector<AttributedGrapheme> text;

@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <set>
 
-namespace TTauri {
+namespace tt {
 
 template<typename Key, typename Value>
 class range_map {

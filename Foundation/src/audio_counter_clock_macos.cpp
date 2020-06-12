@@ -4,7 +4,7 @@
 #include "TTauri/Foundation/audio_counter_clock.hpp"
 #include <mach/mach_time.h>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::chrono_literals;
 

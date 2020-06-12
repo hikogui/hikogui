@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/endian.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct little_fixed1_14_buf_t {
     little_int16_buf_t v;

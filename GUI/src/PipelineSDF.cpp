@@ -6,9 +6,9 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 
-using namespace TTauri;
+using namespace tt;
 using namespace std;
 
 PipelineSDF::PipelineSDF(Window const &window) :

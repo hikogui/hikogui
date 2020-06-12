@@ -1,7 +1,7 @@
 
 #include "TTauri/Foundation/cpu_id.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct {
 

@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Expression, Literals) {
     std::unique_ptr<expression_node> e;

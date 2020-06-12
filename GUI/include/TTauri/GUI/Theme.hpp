@@ -9,7 +9,7 @@
 #include "TTauri/GUI/ThemeMode.hpp"
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 class Theme {
 private:

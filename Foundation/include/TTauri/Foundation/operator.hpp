@@ -7,7 +7,7 @@
 #include <limits>
 #include <tuple>
 
-namespace TTauri {
+namespace tt {
 
 enum class graphic_character_t {
     none = 0x00,

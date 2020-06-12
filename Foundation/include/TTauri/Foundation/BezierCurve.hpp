@@ -15,7 +15,7 @@
 #include <limits>
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 struct BezierPoint;
 

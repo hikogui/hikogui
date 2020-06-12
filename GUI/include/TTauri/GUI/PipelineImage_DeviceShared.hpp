@@ -12,11 +12,11 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 template<typename T> struct PixelMap;
 }
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
 struct Image;
 
@@ -90,12 +90,12 @@ struct DeviceShared final {
 
     void drawInCommandBuffer(vk::CommandBuffer &commandBuffer);
 
-    TTauri::PixelMap<R16G16B16A16SFloat> getStagingPixelMap();
+    tt::PixelMap<R16G16B16A16SFloat> getStagingPixelMap();
 
     void prepareAtlasForRendering();
 
 private:
-    TTauri::PixelMap<R16G16B16A16SFloat> getStagingPixelMap(ivec extent) {
+    tt::PixelMap<R16G16B16A16SFloat> getStagingPixelMap(ivec extent) {
         return getStagingPixelMap().submap({{0,0}, extent});
     }
 

@@ -7,7 +7,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(SmallMap, Default) {
     small_map<int,int,4> items;

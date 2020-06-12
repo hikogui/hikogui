@@ -9,7 +9,7 @@
 #include <tuple>
 #include <functional>
 
-namespace TTauri {
+namespace tt {
 
 /** A notifier which can be used to call a set of registred callbacks.
  * This class is thread-safe; however you must not use this object

@@ -10,7 +10,7 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <mmdeviceapi.h>
 
-namespace TTauri {
+namespace tt {
 
 static std::string getStringProperty(void *propertyStore, REFPROPERTYKEY key)
 {

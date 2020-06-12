@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/globals.hpp"
 #include <memory>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 
@@ -16,24 +16,24 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 {
     ttauri_assert(delegate);
 
-    TTauri::applicationName = applicationDelegate->applicationName();
-    TTauri::configuration = applicationDelegate->configuration(arguments);
-    TTauri::foundation_startup();
+    tt::applicationName = applicationDelegate->applicationName();
+    tt::configuration = applicationDelegate->configuration(arguments);
+    tt::foundation_startup();
 
 #if defined(BUILD_TTAURI_AUDIO)
-    TTauri::audioDelegate = this;
-    TTauri::audio_startup();
+    tt::audioDelegate = this;
+    tt::audio_startup();
 #endif
 
 #if defined(BUILD_TTAURI_GUI)
-    TTauri::text_startup();
+    tt::text_startup();
 #if OPERATING_SYSTEM == OS_WINDOWS
-    TTauri::hInstance = hInstance;
-    TTauri::nCmdShow = nCmdShow;
+    tt::hInstance = hInstance;
+    tt::nCmdShow = nCmdShow;
 #endif
-    TTauri::guiDelegate = this;
-    TTauri::gui_startup();
-    TTauri::widgets_startup();
+    tt::guiDelegate = this;
+    tt::gui_startup();
+    tt::widgets_startup();
 #endif
     LOG_INFO("Starting application '{}'.", applicationName);
 }
@@ -41,14 +41,14 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 Application_base::~Application_base()
 {
 #if defined(BUILD_TTAURI_GUI)
-    TTauri::widgets_shutdown();
-    TTauri::gui_shutdown();
-    TTauri::text_shutdown();
+    tt::widgets_shutdown();
+    tt::gui_shutdown();
+    tt::text_shutdown();
 #endif
 #if defined(BUILD_TTAURI_AUDIO)
-    TTauri::audio_shutdown();
+    tt::audio_shutdown();
 #endif
-    TTauri::foundation_shutdown();
+    tt::foundation_shutdown();
     LOG_INFO("Stopping application.");
 }
 

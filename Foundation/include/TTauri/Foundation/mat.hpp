@@ -10,7 +10,7 @@
 #include <fmt/ostream.h>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 /** A 4x4 matrix.
  * You can use this to transform vec (which has 4 elements)

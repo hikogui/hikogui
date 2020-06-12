@@ -8,7 +8,7 @@
 #include <cmath>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 inline mat sRGB_to_XYZ = mat{
     0.41239080f, 0.35758434f, 0.18048079f, 0.0f,

@@ -4,7 +4,7 @@
 #include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/GUI/globals.hpp"
 
-namespace TTauri {
+namespace tt {
 
 std::vector<string_ltag> const &KeyboardEvent::getCommands() const noexcept
 {

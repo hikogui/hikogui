@@ -7,7 +7,7 @@
 #include "TTauri/GUI/utils.hpp"
 #include <cmath>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 

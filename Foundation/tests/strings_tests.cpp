@@ -7,7 +7,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(String, Split) {
     let result = split(std::string{"path1/path2"}, '/');

@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 enum class Cursor {
     None,

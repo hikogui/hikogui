@@ -8,7 +8,7 @@
 #include <array>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(BigInt, Construct) {
     ASSERT_EQ(ubig128("1").string(), "1");

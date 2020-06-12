@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 /** A network message or stream buffer.
  */

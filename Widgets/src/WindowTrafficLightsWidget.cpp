@@ -8,7 +8,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri {
+namespace tt {
 
 vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept
 {

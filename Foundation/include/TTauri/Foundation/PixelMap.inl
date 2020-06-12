@@ -5,7 +5,7 @@
 
 #include "PixelMap.hpp"
 
-namespace TTauri {
+namespace tt {
 
 template<int KERNEL_SIZE, typename KERNEL>
 inline void horizontalFilterRow(PixelRow<uint8_t> row, KERNEL kernel) noexcept

@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/required.hpp"
 
-namespace TTauri {
+namespace tt {
 
 enum class VerticalAlignment {
     Top,

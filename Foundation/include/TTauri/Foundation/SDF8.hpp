@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/R8SNorm.hpp"
 #include "TTauri/Foundation/math.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /** A pixel of a single channel signed distance field.
  * https://steamcdn-a.akamaihd.net/apps/valve/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf

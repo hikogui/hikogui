@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <string_view>
 
-namespace TTauri {
+namespace tt {
 class URL;
 
 /** A read-only memory mapping of a resource.

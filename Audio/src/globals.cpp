@@ -6,7 +6,7 @@
 #include "TTauri/Audio/AudioSystem_win32.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /** Reference counter to determine the amount of startup/shutdowns.
 */
@@ -19,7 +19,7 @@ void audio_startup()
         return;
     }
 
-    TTauri::foundation_startup();
+    tt::foundation_startup();
     LOG_INFO("Audio startup");
 
     audioSystem = new AudioSystem_win32(audioDelegate);
@@ -35,7 +35,7 @@ void audio_shutdown()
 
     delete audioSystem;
 
-    TTauri::foundation_shutdown();
+    tt::foundation_shutdown();
 }
 
 

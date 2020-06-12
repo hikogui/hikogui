@@ -13,7 +13,7 @@
 #include <charconv>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 class decimal {
 private:
@@ -467,8 +467,8 @@ private:
 namespace std {
 
 template<>
-struct hash<TTauri::decimal> {
-    inline size_t operator()(TTauri::decimal const& value) const {
+struct hash<tt::decimal> {
+    inline size_t operator()(tt::decimal const& value) const {
         return value.hash();
     }
 };

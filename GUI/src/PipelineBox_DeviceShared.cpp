@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/URL.hpp"
 #include <array>
 
-namespace TTauri::PipelineBox {
+namespace tt::PipelineBox {
 
 using namespace std;
 

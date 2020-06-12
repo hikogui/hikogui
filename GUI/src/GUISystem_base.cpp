@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/logger.hpp"
 #include <chrono>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 

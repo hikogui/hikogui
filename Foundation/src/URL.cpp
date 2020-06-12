@@ -10,7 +10,7 @@
 #include "TTauri/Foundation/Unicode.hpp"
 #include <regex>
 
-namespace TTauri {
+namespace tt {
 
 URL::URL(std::string_view url) :
     value(normalize_url(url))

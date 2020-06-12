@@ -8,7 +8,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(PathTests, getBeziersOfLayer) {
     auto path = Path();

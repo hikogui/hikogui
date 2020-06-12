@@ -9,11 +9,11 @@
 #include <string>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 struct Path;
 }
 
-namespace TTauri {
+namespace tt {
 
 class ImageWidget : public Widget {
 public:

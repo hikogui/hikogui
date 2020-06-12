@@ -12,12 +12,12 @@
 #include <Uxtheme.h>
 
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] ThemeMode readOSThemeMode() noexcept
 {
-    let subkey = TTauri::to_wstring("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
-    let name = TTauri::to_wstring("AppsUseLightTheme");
+    let subkey = tt::to_wstring("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize");
+    let name = tt::to_wstring("AppsUseLightTheme");
     DWORD result;
     DWORD result_length = sizeof(result);
     auto status = RegGetValueW(
@@ -40,7 +40,7 @@ namespace TTauri {
 
     case ERROR_BAD_PATHNAME:
     case ERROR_FILE_NOT_FOUND: {
-        auto reg_path = "HKEY_CURRENT_USER\\" + TTauri::to_string(subkey) + "\\" + TTauri::to_string(name);
+        auto reg_path = "HKEY_CURRENT_USER\\" + tt::to_string(subkey) + "\\" + tt::to_string(name);
 
         LOG_ERROR("Missing {} registry entry: 0x{:08x}", reg_path, status);
         } return ThemeMode::Light;

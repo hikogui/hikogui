@@ -11,7 +11,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, typename Tag, ssize_t Max = std::numeric_limits<T>::max() - 1>
 class tagged_id {
@@ -107,9 +107,9 @@ public:
 
 namespace std {
 
-template<typename T, typename Tag, TTauri::ssize_t Max>
-struct hash<TTauri::tagged_id<T,Tag,Max>> {
-    [[nodiscard]] constexpr size_t operator() (TTauri::tagged_id<T,Tag,Max> const &rhs) const noexcept {
+template<typename T, typename Tag, tt::ssize_t Max>
+struct hash<tt::tagged_id<T,Tag,Max>> {
+    [[nodiscard]] constexpr size_t operator() (tt::tagged_id<T,Tag,Max> const &rhs) const noexcept {
         return rhs.hash();
     }
 };

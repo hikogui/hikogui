@@ -12,7 +12,7 @@
 
 #pragma comment( lib, "dwmapi" )
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 
@@ -251,7 +251,7 @@ void Window_vulkan_win32::openingWindow()
             }
 
             let wstr = std::wstring_view(wstr_c);
-            r = TTauri::to_string(wstr);
+            r = tt::to_string(wstr);
             LOG_DEBUG("getTextFromClipboad '{}'", r);
 
             if (!GlobalUnlock(cb_data) && GetLastError() != ERROR_SUCCESS) {
@@ -288,7 +288,7 @@ void Window_vulkan_win32::setTextOnClipboard(std::string str) noexcept
     }
 
     {
-        auto wstr = TTauri::to_wstring(str);
+        auto wstr = tt::to_wstring(str);
 
         auto wstr_handle = GlobalAlloc(GMEM_MOVEABLE, (ssize(wstr) + 1) * sizeof(wchar_t));
         if (wstr_handle == nullptr) {

@@ -5,7 +5,7 @@
 
 #include "TTauri/Widgets/Widget.hpp"
 
-namespace TTauri {
+namespace tt {
 
 class ContainerWidget : public Widget {
 public:

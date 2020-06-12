@@ -11,7 +11,7 @@
 #include <string_view>
 #include <iostream>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::literals;
 

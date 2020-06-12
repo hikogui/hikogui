@@ -23,7 +23,7 @@
 #include "TTauri/Text/ShapedText.hpp"
 #include <type_traits>
 
-namespace TTauri {
+namespace tt {
 
 /** Draw context for drawing using the TTauri shaders.
  */

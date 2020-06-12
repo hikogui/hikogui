@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <atomic>
 
-namespace TTauri {
+namespace tt {
 
 class fast_mutex {
     std::atomic<int32_t> semaphore = 0;

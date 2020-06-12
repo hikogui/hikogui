@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 /** A row of pixels.
  */

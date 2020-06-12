@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/memory.hpp"
 #include <numeric>
 
-namespace TTauri {
+namespace tt {
 
 static bool is_urlchar_scheme(char c, size_t i)
 {

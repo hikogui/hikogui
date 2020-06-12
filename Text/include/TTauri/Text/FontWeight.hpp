@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 enum class FontWeight {
     Thin,       ///< 100: Thin / Hairline

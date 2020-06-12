@@ -20,7 +20,7 @@
 #include "shaders/PipelineToneMapper.vert.spv.inl"
 #include "shaders/PipelineToneMapper.frag.spv.inl"
 
-namespace TTauri {
+namespace tt {
 
 /** Reference counter to determine the amount of startup/shutdowns.
 */

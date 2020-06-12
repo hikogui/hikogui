@@ -12,7 +12,7 @@
 #include <vma/vk_mem_alloc.h>
 #include <nonstd/span>
 
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 
 /*! Pipeline for rendering backings of widgets.
  * Maintains texture map atlases and sharing for all views.

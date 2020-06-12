@@ -15,7 +15,7 @@
 #include <vector>
 #include <tuple>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] constexpr bool isUpper(char c) noexcept {
     return c >= 'A' && c <= 'Z';

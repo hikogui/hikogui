@@ -14,7 +14,7 @@
 #include <functional>
 #include <limits>
 
-namespace TTauri {
+namespace tt {
 
 static std::unique_ptr<expression_node> parse_expression_1(expression_parse_context& context, std::unique_ptr<expression_node> lhs, uint8_t min_precedence);
 

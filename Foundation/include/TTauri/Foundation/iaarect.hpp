@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/ivec.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /** Class which represents an axis-aligned rectangle.
  */

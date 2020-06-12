@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/byte_string.hpp"
 #include <optional>
 
-namespace TTauri {
+namespace tt {
 
 std::string base93_encode(bstring_view message) noexcept;
 

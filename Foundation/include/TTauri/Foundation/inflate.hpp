@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/byte_string.hpp"
 #include <nonstd/span>
 
-namespace TTauri {
+namespace tt {
 
 /** Inflate compressed data using the deflate algorithm
  * `bytes` should include at least 32 bit of trailer, for the overflow check which

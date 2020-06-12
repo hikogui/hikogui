@@ -5,7 +5,7 @@
 #include "TTauri/GUI/KeyboardModifiers.hpp"
 #include <Windows.h>
 
-namespace TTauri {
+namespace tt {
 
 KeyboardVirtualKey to_KeyboardVirtualKey(int key_code, bool extended, KeyboardModifiers modifiers)
 {

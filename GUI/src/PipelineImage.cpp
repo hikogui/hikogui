@@ -6,9 +6,9 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
-using namespace TTauri;
+using namespace tt;
 using namespace std;
 
 PipelineImage::PipelineImage(Window const &window) :

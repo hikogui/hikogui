@@ -19,7 +19,7 @@
 #include <Windows.h>
 #include <debugapi.h>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::literals::chrono_literals;
 

@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/tagged_id.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct font_family_id_tag {};
 

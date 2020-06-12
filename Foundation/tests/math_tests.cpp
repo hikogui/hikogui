@@ -7,7 +7,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Math, NextPowerOfTwo) {
     ASSERT_EQ(next_power_of_two(15), 16);

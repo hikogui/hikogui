@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T,size_t N>
 class small_vector {

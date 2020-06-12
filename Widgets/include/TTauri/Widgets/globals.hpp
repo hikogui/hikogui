@@ -5,7 +5,7 @@
 
 #include <atomic>
 
-namespace TTauri {
+namespace tt {
 
 /** Startup the Text library.
 */

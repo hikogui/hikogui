@@ -8,7 +8,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace TTauri {
+namespace tt {
 
 constexpr int MAX_NR_COUNTERS = 1024;
 

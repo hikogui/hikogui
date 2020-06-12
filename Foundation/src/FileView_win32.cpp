@@ -10,7 +10,7 @@
 #include <mutex>
 #include <Windows.h>
 
-namespace TTauri {
+namespace tt {
 
 FileView::FileView(std::shared_ptr<FileMapping> const& fileMappingObject, size_t offset, size_t size) :
     fileMappingObject(fileMappingObject),

@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, int M>
 struct fixed {

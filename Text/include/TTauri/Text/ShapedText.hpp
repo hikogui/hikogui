@@ -13,7 +13,7 @@
 #include <string_view>
 #include <optional>
 
-namespace TTauri {
+namespace tt {
 
 
 /** ShapedText represent a piece of text shaped to be displayed.

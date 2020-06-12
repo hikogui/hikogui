@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/debugger.hpp"
 #include  <exception>
 
-namespace TTauri {
+namespace tt {
 
 #if defined(NDEBUG)
 #define no_default ttauri_unreachable();

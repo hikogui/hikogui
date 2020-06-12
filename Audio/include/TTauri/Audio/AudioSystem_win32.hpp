@@ -7,7 +7,7 @@
 #include "TTauri/Audio/AudioSystemDelegate.hpp"
 #include <memory>
 
-namespace TTauri {
+namespace tt {
 
 class AudioSystem_win32: public AudioSystem {
 private:

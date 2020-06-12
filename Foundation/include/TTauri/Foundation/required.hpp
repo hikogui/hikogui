@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <cstdint>
 
-namespace TTauri {
+namespace tt {
 
 
 using namespace std::literals;

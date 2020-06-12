@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 struct gstring {
     std::vector<Grapheme> graphemes;
@@ -61,7 +61,7 @@ struct gstring {
     }
 
     [[nodiscard]] friend std::string to_string(gstring const &rhs) noexcept {
-        return TTauri::to_string(to_u32string(rhs));
+        return tt::to_string(to_u32string(rhs));
     }
 
 
@@ -73,7 +73,7 @@ struct gstring {
 [[nodiscard]] gstring to_gstring(std::u32string_view rhs) noexcept;
 
 [[nodiscard]] inline gstring to_gstring(std::string_view rhs) noexcept {
-    return to_gstring(TTauri::to_u32string(rhs));
+    return to_gstring(tt::to_u32string(rhs));
 }
 
 

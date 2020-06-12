@@ -8,7 +8,7 @@
 #include <memory>
 #include <iostream>
 
-namespace TTauri {
+namespace tt {
 
 /*! Location inside a configuration file.
  */

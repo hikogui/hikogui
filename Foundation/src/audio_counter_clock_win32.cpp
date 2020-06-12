@@ -5,7 +5,7 @@
 #include <Windows.h>
 #include <profileapi.h>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::chrono_literals;
 

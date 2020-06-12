@@ -7,13 +7,13 @@
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 #include "TTauri/GUI/VerticalSync_win32.hpp"
-namespace TTauri {
+namespace tt {
 using VerticalSync = VerticalSync_win32;
 }
 
 #elif OPERATING_SYSTEM == OS_MACOS
 #include "TTauri/GUI/VerticalSync_macos.hpp"
-namespace TTauri {
+namespace tt {
 using VerticalSync = VerticalSync_macos;
 }
 

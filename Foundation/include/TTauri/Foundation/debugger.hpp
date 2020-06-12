@@ -5,7 +5,7 @@
 #include "TTauri/Foundation/os_detect.hpp"
 #include <fmt/format.h>
 
-namespace TTauri {
+namespace tt {
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 void _debugger_break();
@@ -106,6 +106,6 @@ template<typename... Args>
     std::abort();
 }
 
-#define debugger_abort(...) ::TTauri::_debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
+#define debugger_abort(...) ::tt::_debugger_abort(__FILE__, __LINE__, __VA_ARGS__)
 
 }

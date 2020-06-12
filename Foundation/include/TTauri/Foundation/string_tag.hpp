@@ -13,7 +13,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace TTauri {
+namespace tt {
 
 using string_tag = tt5_64;
 using string_ltag = tt5_128;

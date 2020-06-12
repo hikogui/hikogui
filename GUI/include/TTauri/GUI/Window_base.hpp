@@ -27,7 +27,7 @@
 #include <memory>
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.

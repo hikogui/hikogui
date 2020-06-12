@@ -7,7 +7,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 
 TEST(Unicode, UTF8toUTF32) {

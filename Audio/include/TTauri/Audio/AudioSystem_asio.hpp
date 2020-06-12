@@ -5,7 +5,7 @@
 
 #include "TTauri/Audio/AudioSystem.hpp"
 
-namespace TTauri {
+namespace tt {
 
 class AudioSystem_asio: public AudioSystem {
 

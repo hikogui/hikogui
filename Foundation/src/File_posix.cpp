@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace TTauri {
+namespace tt {
 
 File::File(URL const &location, AccessMode accessMode) :
     accessMode(accessMode), location(location)

@@ -9,7 +9,7 @@
 #include "TTauri/GUI/KeyboardModifiers.hpp"
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 
 enum class KeyboardVirtualKey : uint8_t {
     Nul,
@@ -327,8 +327,8 @@ inline std::ostream &operator<<(std::ostream &lhs, KeyboardVirtualKey const &rhs
 namespace std {
 
 template<>
-struct hash<TTauri::KeyboardVirtualKey> {
-    [[nodiscard]] size_t operator() (TTauri::KeyboardVirtualKey rhs) const noexcept {
+struct hash<tt::KeyboardVirtualKey> {
+    [[nodiscard]] size_t operator() (tt::KeyboardVirtualKey rhs) const noexcept {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }
 };

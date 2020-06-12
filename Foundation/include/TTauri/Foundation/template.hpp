@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/algorithm.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct template_node;
 
@@ -61,7 +61,7 @@ struct template_parse_context {
     }
 
     bool starts_with(std::string_view text) const noexcept {
-        return ::TTauri::starts_with(index, last, text.begin(), text.end());
+        return ::tt::starts_with(index, last, text.begin(), text.end());
     }
 
     bool starts_with_and_advance_over(std::string_view text) noexcept {

@@ -10,7 +10,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 constexpr char32_t UnicodeASCIIEnd = 0x7f;
 constexpr char32_t UnicodePlane0End = 0xffff;

@@ -1,7 +1,7 @@
 #include "GUISystem_vulkan_macos.hpp"
 #include "Window.hpp"
 
-namespace TTauri {
+namespace tt {
 
 GUISystem_vulkan_macos::GUISystem_vulkan_macos() :
     GUISystem_vulkan({ VK_MVK_MACOS_SURFACE_EXTENSION_NAME })
@@ -23,7 +23,7 @@ GUISystem_vulkan_macos::~GUISystem_vulkan_macos()
 
 std::shared_ptr<Window> GUISystem_vulkan_win32::createWindow(std::shared_ptr<Window::Delegate> windowDelegate, const std::string &title)
 {
-    std::scoped_lock lock(TTauri::mutex);
+    std::scoped_lock lock(tt::mutex);
 
     auto window = std::make_shared<Window_win32>(windowDelegate, title);
     getShared<GUISystem>()->add(window);
@@ -33,7 +33,7 @@ std::shared_ptr<Window> GUISystem_vulkan_win32::createWindow(std::shared_ptr<Win
 
 CVReturn GUISystem_vulkan_win32::updateAndRenderLoop(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* target)
 {
-    scoped_lock lock(TTauri::mutex);
+    scoped_lock lock(tt::mutex);
 
     auto self = static_cast<GUISystem_vulkan_win32 *>(target);
 

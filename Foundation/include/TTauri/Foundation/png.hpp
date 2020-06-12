@@ -16,7 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace TTauri {
+namespace tt {
 
 class png {
     /** Matrix to convert png color values to sRGB.

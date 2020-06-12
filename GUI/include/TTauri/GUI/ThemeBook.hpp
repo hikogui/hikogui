@@ -10,7 +10,7 @@
 #include <new>
 
 
-namespace TTauri {
+namespace tt {
 
 /** ThemeBook keeps track of multiple themes.
  * The ThemeBook is instantiated during Application startup

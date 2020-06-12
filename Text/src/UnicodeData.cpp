@@ -10,7 +10,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 constexpr char32_t ASCII_MAX = 0x7f;
 constexpr char32_t UNICODE_MASK = 0x1f'ffff;
@@ -603,16 +603,16 @@ bool UnicodeData::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &sta
 
 }
 
-namespace TTauri {
+namespace tt {
 
 template<>
-std::unique_ptr<TTauri::UnicodeData> parseResource(URL const &location)
+std::unique_ptr<tt::UnicodeData> parseResource(URL const &location)
 {
     if (location.extension() == "bin") {
         auto view = ResourceView::loadView(location);
 
         try {
-            auto unicodeData = std::make_unique<TTauri::UnicodeData>(std::move(view));
+            auto unicodeData = std::make_unique<tt::UnicodeData>(std::move(view));
             return unicodeData;
         } catch (error &e) {
             e.set<url_tag>(location);

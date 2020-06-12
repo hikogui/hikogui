@@ -8,7 +8,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(TTauriMath, SolveDepressedCubic) {
     ASSERT_RESULTS(solveDepressedCubic(6.0, -20.0), results3(2.0));

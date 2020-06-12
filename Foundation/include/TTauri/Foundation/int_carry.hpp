@@ -18,7 +18,7 @@
 #include <immintrin.h>
 #endif
 
-namespace TTauri {
+namespace tt {
 
 /*! Shift logical left with carry chain.
  * \param carry_in The bits received from a previous shl().

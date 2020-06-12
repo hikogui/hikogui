@@ -8,7 +8,7 @@
 #include <emmintrin.h>
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 class R32G32B32A32SFloat {
     // Red, Green, Blue, Alpha in binary32 (native endian).

@@ -10,7 +10,7 @@
 #include <memory>
 #include <new>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T>
 class vspan_iterator {

@@ -21,7 +21,7 @@
 #include <immintrin.h>
 #endif
 
-namespace TTauri {
+namespace tt {
 
 constexpr long double pi = 3.141592653589793238462643383279502884L;
 

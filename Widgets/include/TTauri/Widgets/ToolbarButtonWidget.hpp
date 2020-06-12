@@ -13,7 +13,7 @@
 #include <array>
 #include <variant>
 
-namespace TTauri {
+namespace tt {
 
 class ToolbarButtonWidget : public Widget {
 public:

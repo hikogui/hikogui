@@ -7,7 +7,7 @@
 #include <cstdint>
 #include <map>
 
-namespace TTauri {
+namespace tt {
 
 
 enum class AccessMode {

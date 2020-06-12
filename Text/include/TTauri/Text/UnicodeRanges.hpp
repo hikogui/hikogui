@@ -6,7 +6,7 @@
 #include "TTauri/Text/Grapheme.hpp"
 #include <cstdint>
 
-namespace TTauri {
+namespace tt {
 
 /** Unicode Ranges based on the OS/2 table in TrueType fonts.
 */
@@ -70,7 +70,7 @@ struct UnicodeRanges {
     int popcount() const noexcept {
         int r = 0;
         for (int i = 0; i != 4; ++i) {
-            r += ::TTauri::popcount(value[i]);
+            r += ::tt::popcount(value[i]);
         }
         return r;
     }

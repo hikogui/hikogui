@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/endian.hpp"
 #include "TTauri/Foundation/placement.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct zlib_header {
     uint8_t CMF;

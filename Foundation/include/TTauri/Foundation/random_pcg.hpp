@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include <atomic>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T>
 inline bstring get_bytes(T &generator, ssize_t count)
@@ -61,7 +61,7 @@ public:
     }
 
     bstring get_bytes(ssize_t count) {
-        return TTauri::get_bytes(*this, count);
+        return tt::get_bytes(*this, count);
     }
 };
 
@@ -92,7 +92,7 @@ public:
     }
 
     bstring get_bytes(ssize_t count) {
-        return TTauri::get_bytes(*this, count);
+        return tt::get_bytes(*this, count);
     }
 };
 

@@ -9,7 +9,7 @@
 
 using namespace std::literals;
 
-namespace TTauri {
+namespace tt {
 
 
 static uint8_t base93_crc(ubig128 number) noexcept

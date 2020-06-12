@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/FileView.hpp"
 #include <cstddef>
 
-namespace TTauri {
+namespace tt {
 
 bstring zlib_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size=0x0100'0000);
 

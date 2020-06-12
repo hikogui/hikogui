@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 
-namespace TTauri {
+namespace tt {
 
 std::unique_ptr<ResourceView> ResourceView::loadView(URL const &location)
 {

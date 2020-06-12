@@ -16,7 +16,7 @@
 
 using namespace std::literals::chrono_literals;
 
-namespace TTauri {
+namespace tt {
 
 template<typename C1, typename C2>
 class sync_clock_calibration_type {

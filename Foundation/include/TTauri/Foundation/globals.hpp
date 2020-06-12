@@ -11,7 +11,7 @@
 #include <thread>
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 
 /** The system timezone.
  */

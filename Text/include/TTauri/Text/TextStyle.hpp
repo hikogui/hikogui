@@ -10,7 +10,7 @@
 #include <fmt/format.h>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 struct TextStyle {
     static constexpr float default_dpi = 84.0f;
@@ -25,10 +25,10 @@ struct TextStyle {
     TextStyle() noexcept :
         family_id(), variant(), size(0.0), color(), decoration(TextDecoration::None) {}
 
-    TextStyle(TTauri::FontFamilyID family_id, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept :
+    TextStyle(tt::FontFamilyID family_id, tt::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept :
         family_id(family_id), variant(variant), size(size), color(color), decoration(decoration) {}
 
-    TextStyle(std::string_view family_name, TTauri::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept;
+    TextStyle(std::string_view family_name, tt::FontVariant variant, float size, vec color, TextDecoration decoration) noexcept;
 
     TextStyle(TextStyle const &) noexcept = default;
     TextStyle(TextStyle &&) noexcept = default;

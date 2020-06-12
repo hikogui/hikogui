@@ -7,7 +7,7 @@
 #include <cmath>
 #include <typeinfo>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::literals;
 

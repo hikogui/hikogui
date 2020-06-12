@@ -12,7 +12,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri {
+namespace tt {
 
 template<typename ValueType, ValueType ActiveValue>
 class RadioButtonWidget : public Widget {

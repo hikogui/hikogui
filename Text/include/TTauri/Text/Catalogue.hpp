@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 /** A catalogue of messages.
  */

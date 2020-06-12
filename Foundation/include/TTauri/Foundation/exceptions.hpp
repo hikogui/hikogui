@@ -20,7 +20,7 @@
 #include <ostream>
 #include <utility>
 
-namespace TTauri {
+namespace tt {
 
 struct url_tag {};
 struct line_tag {};

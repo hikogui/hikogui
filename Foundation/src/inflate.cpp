@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/placement.hpp"
 #include "TTauri/Foundation/huffman.hpp"
 
-namespace TTauri {
+namespace tt {
 
 static void inflate_copy_block(nonstd::span<std::byte const> bytes, ssize_t &bit_offset, ssize_t max_size, bstring &r)
 {

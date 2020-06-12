@@ -13,7 +13,7 @@
 #include <memory>
 #include <variant>
 
-namespace TTauri {
+namespace tt {
 
 /** @file observer.hpp
  *

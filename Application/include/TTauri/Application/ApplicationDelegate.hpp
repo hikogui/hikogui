@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
     /*! Application Delegate.
      * Can be subclasses by the actual application to be called when certain events happen.

@@ -14,7 +14,7 @@
 #include <smmintrin.h>
 #endif
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, int N>
 struct simd {

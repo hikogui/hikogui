@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include "TTauri/Foundation/aarect.hpp"
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
 /*! Information on the location and orientation of an image on a window.
 */

@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 
 /** A resource that was included in the executable.
  */

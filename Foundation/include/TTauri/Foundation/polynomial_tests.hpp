@@ -8,7 +8,7 @@
 #include <string>
 
 template<typename T, typename U, int N>
-double maxAbsDiff(TTauri::results<T,N> const &lhs, TTauri::results<U,N> const &rhs) {
+double maxAbsDiff(tt::results<T,N> const &lhs, tt::results<U,N> const &rhs) {
     if (lhs.count != rhs.count) {
         return std::numeric_limits<double>::infinity();
     }
@@ -26,8 +26,8 @@ template<typename T, typename U, int N>
 testing::AssertionResult ResultsNearPredFormat(const char* expr1,
     const char* expr2,
     const char* abs_error_expr,
-    TTauri::results<T, N> val1,
-    TTauri::results<U, N> val2,
+    tt::results<T, N> val1,
+    tt::results<U, N> val2,
     double abs_error) {
     let diff = maxAbsDiff(val1, val2);
     if (diff <= abs_error) return testing::AssertionSuccess();
@@ -45,8 +45,8 @@ testing::AssertionResult ResultsNearPredFormat(const char* expr1,
 
 #define ASSERT_RESULTS(val1, val2) ASSERT_RESULTS_NEAR(val1, val2, 0.000001)
 
-namespace TTauri {
-using results1 = TTauri::results<double,1>;
-using results2 = TTauri::results<double,2>;
-using results3 = TTauri::results<double,3>;
+namespace tt {
+using results1 = tt::results<double,1>;
+using results2 = tt::results<double,2>;
+using results3 = tt::results<double,3>;
 }

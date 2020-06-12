@@ -20,7 +20,7 @@
 #include <tuple>
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 
 std::string getLastErrorMessage();
 
@@ -223,16 +223,16 @@ private:
 // The ring buffer of the logger is triviality constructed and can be used before the logger's constructor is stared.
 inline logger_type logger = {}; 
 
-#define TTAURI_LOG(level, ...) ::TTauri::logger.log<level>(::TTauri::cpu_counter_clock::now(), __VA_ARGS__, ::TTauri::source_code_ptr(__FILE__, __LINE__))
+#define TTAURI_LOG(level, ...) ::tt::logger.log<level>(::tt::cpu_counter_clock::now(), __VA_ARGS__, ::tt::source_code_ptr(__FILE__, __LINE__))
 
-#define LOG_DEBUG(...) TTAURI_LOG(::TTauri::log_level::Debug, __VA_ARGS__)
-#define LOG_INFO(...) TTAURI_LOG(::TTauri::log_level::Info, __VA_ARGS__)
-#define LOG_AUDIT(...) TTAURI_LOG(::TTauri::log_level::Audit, __VA_ARGS__)
-#define LOG_EXCEPTION(...) TTAURI_LOG(::TTauri::log_level::Exception, __VA_ARGS__)
-#define LOG_WARNING(...) TTAURI_LOG(::TTauri::log_level::Warning, __VA_ARGS__)
-#define LOG_ERROR(...) TTAURI_LOG(::TTauri::log_level::Error, __VA_ARGS__)
-#define LOG_ASSERT(...) TTAURI_LOG(::TTauri::log_level::Assert, __VA_ARGS__)
-#define LOG_CRITICAL(...) TTAURI_LOG(::TTauri::log_level::Critical, __VA_ARGS__)
-#define LOG_FATAL(...) TTAURI_LOG(::TTauri::log_level::Fatal, __VA_ARGS__); ttauri_unreachable()
+#define LOG_DEBUG(...) TTAURI_LOG(::tt::log_level::Debug, __VA_ARGS__)
+#define LOG_INFO(...) TTAURI_LOG(::tt::log_level::Info, __VA_ARGS__)
+#define LOG_AUDIT(...) TTAURI_LOG(::tt::log_level::Audit, __VA_ARGS__)
+#define LOG_EXCEPTION(...) TTAURI_LOG(::tt::log_level::Exception, __VA_ARGS__)
+#define LOG_WARNING(...) TTAURI_LOG(::tt::log_level::Warning, __VA_ARGS__)
+#define LOG_ERROR(...) TTAURI_LOG(::tt::log_level::Error, __VA_ARGS__)
+#define LOG_ASSERT(...) TTAURI_LOG(::tt::log_level::Assert, __VA_ARGS__)
+#define LOG_CRITICAL(...) TTAURI_LOG(::tt::log_level::Critical, __VA_ARGS__)
+#define LOG_FATAL(...) TTAURI_LOG(::tt::log_level::Fatal, __VA_ARGS__); ttauri_unreachable()
 
 }

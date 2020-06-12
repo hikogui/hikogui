@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 /** Information on when to trigger.
  */

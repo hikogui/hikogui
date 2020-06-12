@@ -10,7 +10,7 @@
 #include "TTauri/Foundation/globals.hpp"
 #include <memory>
 
-namespace TTauri {
+namespace tt {
 
 /** Reference counter to determine the amount of startup/shutdowns.
 */

@@ -8,7 +8,7 @@
 #include <chrono>
 #include <type_traits>
 
-namespace TTauri {
+namespace tt {
 
 /*! Timestamp
  */

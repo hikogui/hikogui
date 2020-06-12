@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 
 std::shared_ptr<FileMapping> FileView::findOrCreateFileMappingObject(URL const& location, AccessMode accessMode, size_t size)
 {

@@ -12,11 +12,11 @@
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 template<typename T> struct PixelMap;
 }
 
-namespace TTauri::PipelineBox {
+namespace tt::PipelineBox {
 
 struct Image;
 struct Vertex;

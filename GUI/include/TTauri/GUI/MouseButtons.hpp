@@ -5,7 +5,7 @@
 
 #include <cstdint>
 
-namespace TTauri {
+namespace tt {
 
 struct MouseButtons {
     uint8_t leftButton:1;

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #endif
 
-namespace TTauri {
+namespace tt {
 
 enum class Endian {
     Little,

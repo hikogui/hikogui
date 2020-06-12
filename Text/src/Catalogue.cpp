@@ -3,7 +3,7 @@
 
 #include "TTauri/Foundation/ResourceView.hpp"
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] static parse_result_t<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
 {

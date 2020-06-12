@@ -5,7 +5,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include <ddraw.h>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 

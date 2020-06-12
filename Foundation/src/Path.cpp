@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/PixelMap.hpp"
 #include "TTauri/Foundation/required.hpp"
 
-namespace TTauri {
+namespace tt {
 
 ssize_t Path::numberOfContours() const noexcept
 {

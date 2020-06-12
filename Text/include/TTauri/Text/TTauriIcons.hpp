@@ -7,7 +7,7 @@
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include "TTauri/Text/FontBook.hpp"
 
-namespace TTauri {
+namespace tt {
 
 inline FontID TTauriIcons_font_id = FontID{};
 

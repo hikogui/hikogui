@@ -5,6 +5,6 @@
 
 #include "TTauri/GUI/GUIDevice_vulkan.hpp"
 
-namespace TTauri {
+namespace tt {
 using GUIDevice = GUIDevice_vulkan;
 }

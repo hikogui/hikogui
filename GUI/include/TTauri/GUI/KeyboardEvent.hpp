@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/assert.hpp"
 #include <utility>
 
-namespace TTauri {
+namespace tt {
 
 enum class KeyboardState : uint8_t {
     Idle = 0x00,

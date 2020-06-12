@@ -70,7 +70,7 @@
 #include <string_view>
 #include <cstdint>
 
-namespace TTauri {
+namespace tt {
 
 /** Create a tt5_code.
 * @return 11:10 page_nr, 9:5 prefix-code, 4:0 data (pre-shifted by 48 bits)

@@ -6,7 +6,7 @@
 #include <exception>
 #include <cstddef>
 
-namespace TTauri {
+namespace tt {
 
 #define OS_WINDOWS 'W'
 #define OS_MACOS 'M'

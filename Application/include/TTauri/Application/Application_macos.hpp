@@ -5,7 +5,7 @@
 
 #include "TTauri/Application/Application_base.hpp"
 
-namespace TTauri {
+namespace tt {
 
 class Application_macos final : public Application_base {
 public:

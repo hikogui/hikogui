@@ -7,7 +7,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 #define ASSERT_TOKEN_EQ2(token, name)\
     do {\

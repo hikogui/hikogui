@@ -10,7 +10,7 @@
 #include <emmintrin.h>
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 class R16G16B16A16SFloat {
     // Red, Green, Blue, Alpha in binary16 (native endian).

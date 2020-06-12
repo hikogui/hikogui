@@ -8,7 +8,7 @@
 #include <string_view>
 #include <cstring>
 
-namespace TTauri {
+namespace tt {
 
 class byte_char_traits {
 public:

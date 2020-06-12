@@ -9,7 +9,7 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace TTauri;
+using namespace tt;
 
 TEST(URLTests, parsing) {
     let a = URL("scheme://user:password@hostname:1234/path1/path2?query#fragment");

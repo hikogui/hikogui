@@ -12,7 +12,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 
 enum class pickle_type_t {
     EndMark,

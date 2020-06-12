@@ -9,7 +9,7 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Datum, IntOperations) {
     let v = datum{42};

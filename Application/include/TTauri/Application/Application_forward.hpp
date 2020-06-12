@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/os_detect.hpp"
 
-namespace TTauri {
+namespace tt {
 
 #if OPERATING_SYSTEM == OS_WINDOWS
 class Application_win32;

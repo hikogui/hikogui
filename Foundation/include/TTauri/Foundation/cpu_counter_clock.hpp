@@ -13,7 +13,7 @@
 #include <x86intrin.h>
 #endif
 
-namespace TTauri {
+namespace tt {
 
 struct cpu_counter_clock {
     using rep = uint64_t;

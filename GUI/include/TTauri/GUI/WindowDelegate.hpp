@@ -5,7 +5,7 @@
 
 #include "TTauri/GUI/Window_forward.hpp"
 
-namespace TTauri {
+namespace tt {
 
 class WindowDelegate {
 public:

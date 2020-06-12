@@ -8,7 +8,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(FileView, ViewFileForRead) {
     let view = FileView(URL("file:file_view.txt"));

@@ -7,7 +7,7 @@
 #include "TTauri/Foundation/memory.hpp"
 #include <optional>
 
-namespace TTauri {
+namespace tt {
 
 static constexpr BezierCurve::Color operator++(BezierCurve::Color &lhs, int) noexcept
 {
@@ -208,14 +208,14 @@ static void fillFullPixels(PixelRow<uint8_t> row, ssize_t const start, ssize_t c
         let u8end = u8p + size;
 
         // First add 51 to all pixels up to the alignment.
-        let alignedStart = TTauri::align<uint8_t*>(u8p, sizeof(uint64_t));
+        let alignedStart = tt::align<uint8_t*>(u8p, sizeof(uint64_t));
         while (u8p < alignedStart) {
             *(u8p++) += 0x33;
         }
 
         // add 51 for each pixel, 8 pixels at a time.
         auto u64p = reinterpret_cast<uint64_t*>(u8p);
-        let u64end = TTauri::align_end<uint64_t*>(u8end, sizeof(uint64_t));
+        let u64end = tt::align_end<uint64_t*>(u8end, sizeof(uint64_t));
         while (u64p < u64end) {
             *(u64p++) += 0x3333333333333333ULL;
         }

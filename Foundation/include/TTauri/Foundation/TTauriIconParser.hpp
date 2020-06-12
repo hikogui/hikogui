@@ -5,11 +5,11 @@
 
 #include <nonstd/span>
 
-namespace TTauri {
+namespace tt {
 class URL;
 }
 
-namespace TTauri {
+namespace tt {
 
 struct Path;
 

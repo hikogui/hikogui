@@ -5,7 +5,7 @@
 
 #include <fmt/format.h>
 
-namespace TTauri {
+namespace tt {
 
 [[noreturn]] void _throw_invalid_operation_error(char const *source_file, int source_line, std::string message);
 [[noreturn]] void _throw_math_error(char const* source_file, int source_line, std::string message);

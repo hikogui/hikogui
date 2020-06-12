@@ -12,7 +12,7 @@
 #include "TTauri/Foundation/ivec.hpp"
 #include "TTauri/Foundation/iaarect.hpp"
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
 Image::Image(Image &&other) noexcept :
     parent(other.parent),

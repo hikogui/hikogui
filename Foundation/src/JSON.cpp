@@ -10,7 +10,7 @@
 #include <vector>
 #include <optional>
 
-namespace TTauri {
+namespace tt {
 
 struct parse_context_t {
     std::string_view::const_iterator text_begin;

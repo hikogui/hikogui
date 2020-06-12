@@ -11,7 +11,7 @@
 #include <utility>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] inline size_t hash_mix_two(size_t hash1, size_t hash2) noexcept
 {

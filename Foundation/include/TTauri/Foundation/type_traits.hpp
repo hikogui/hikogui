@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T> struct is_numeric_integer : std::false_type {}; 
 template<> struct is_numeric_integer<signed char> : std::true_type {};

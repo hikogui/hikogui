@@ -16,7 +16,7 @@
 #include <vector>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 class MyWindowDelegate : public WindowDelegate {
 public:

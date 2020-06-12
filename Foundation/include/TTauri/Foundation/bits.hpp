@@ -7,7 +7,7 @@
 #include <nonstd/span>
 #include <cstddef>
 
-namespace TTauri {
+namespace tt {
 
 /** Read a single bit of span of bytes
  * Bits are ordered LSB first.

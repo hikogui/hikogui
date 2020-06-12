@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 constexpr inline bool format_uses_arg_ids(const char *fmt)
 {

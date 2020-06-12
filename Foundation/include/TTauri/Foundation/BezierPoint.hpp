@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 /*! A point or control-point on contour of bezier curves.
  * The bezier curves can be linear (a line), quadratic or cubic.

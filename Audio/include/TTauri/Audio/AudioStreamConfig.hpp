@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
 
 struct AudioStreamConfig {
     double sampleRate;

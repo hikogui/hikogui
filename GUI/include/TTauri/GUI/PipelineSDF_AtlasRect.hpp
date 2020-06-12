@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/aarect.hpp"
 #include <array>
 
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 
 /* A location inside the atlas where the character is located.
  */

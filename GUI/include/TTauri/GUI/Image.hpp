@@ -9,7 +9,7 @@
 #include "TTauri/Text/FontGlyphIDs.hpp"
 #include <variant>
 
-namespace TTauri {
+namespace tt {
 
 /** An image, in different formats.
  */

@@ -5,7 +5,7 @@
 
 #include "TTauri/Audio/AudioBlock.hpp"
 
-namespace TTauri {
+namespace tt {
 
 class AudioSystemDelegate {
 public:

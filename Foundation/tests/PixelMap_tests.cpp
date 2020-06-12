@@ -9,8 +9,8 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
-using namespace TTauri;
+using namespace tt;
+using namespace tt;
 
 TEST(PixelMapTests, rotate90) {
     auto mask = PixelMap<uint8_t>(2, 2);

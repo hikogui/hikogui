@@ -9,7 +9,7 @@
 #include <emmintrin.h>
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 class A8B8G8R8SrgbPack32 {
     uint32_t v;

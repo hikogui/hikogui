@@ -13,7 +13,7 @@
 #include <ostream>
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 struct url_parts;
 
 /*! Universal Resource Locator.
@@ -181,9 +181,9 @@ inline T &getResource(URL const &location)
 namespace std {
 
 template<>
-class hash<TTauri::URL> {
+class hash<tt::URL> {
 public:
-    size_t operator()(TTauri::URL const& url) const noexcept {
+    size_t operator()(tt::URL const& url) const noexcept {
         return url.hash();
     }
 };

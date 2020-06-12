@@ -9,7 +9,7 @@
 #include <tuple>
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 

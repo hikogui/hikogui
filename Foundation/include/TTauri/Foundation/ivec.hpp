@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 /** A 4D vector.
  *

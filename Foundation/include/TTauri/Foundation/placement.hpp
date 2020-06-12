@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/exceptions.hpp"
 #include <nonstd/span>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T>
 inline bool check_alignment(void const *ptr) {

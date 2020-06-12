@@ -4,7 +4,7 @@
 #include "TTauri/Foundation/StaticResourceView.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
-namespace TTauri {
+namespace tt {
 
 StaticResourceView::StaticResourceView(std::string const &filename) :
     _bytes(getStaticResource(filename))

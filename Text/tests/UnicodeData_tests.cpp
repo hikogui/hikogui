@@ -12,8 +12,8 @@
 #include <fmt/format.h>
 
 using namespace std;
-using namespace TTauri;
-using namespace TTauri;
+using namespace tt;
+using namespace tt;
 
 /*! A test defined in NormalizationTests.txt.
  *

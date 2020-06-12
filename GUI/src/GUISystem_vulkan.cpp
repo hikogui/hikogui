@@ -6,7 +6,7 @@
 #include "TTauri/GUI/GUIDevice.hpp"
 #include <chrono>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std;
 

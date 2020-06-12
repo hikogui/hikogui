@@ -2,7 +2,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/sRGB.hpp"
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] vec vec::colorFromSRGB(float r, float g, float b, float a) noexcept {
     return vec{

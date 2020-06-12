@@ -8,7 +8,7 @@
 #include <cmath>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 inline mat Rec2020_to_XYZ = mat::RGBtoXYZ(
     0.3127f, 0.3290f,

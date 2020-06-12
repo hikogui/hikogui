@@ -9,7 +9,7 @@
 #include <vector>
 #include <functional>
 
-namespace TTauri {
+namespace tt {
 
 constexpr char native_path_seperator = (OperatingSystem::current == OperatingSystem::Windows) ? '\\' : '/';
 

@@ -5,7 +5,7 @@
 #include "TTauri/Text/UnicodeData.hpp"
 #include "TTauri/Text/globals.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct BidiCharacter {
     /** First code-point of a grapheme.

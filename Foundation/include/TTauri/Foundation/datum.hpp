@@ -27,7 +27,7 @@
 #include <cmath>
 
 
-namespace TTauri {
+namespace tt {
 template<bool HasLargeObjects>
 class datum_impl;
 
@@ -36,14 +36,14 @@ class datum_impl;
 namespace std {
 
 template<bool HasLargeObjects>
-class hash<TTauri::datum_impl<HasLargeObjects>> {
+class hash<tt::datum_impl<HasLargeObjects>> {
 public:
-    size_t operator()(TTauri::datum_impl<HasLargeObjects> const &value) const;
+    size_t operator()(tt::datum_impl<HasLargeObjects> const &value) const;
 };
 
 }
 
-namespace TTauri {
+namespace tt {
 
 enum class datum_type_t {
     Null,
@@ -2295,7 +2295,7 @@ using sdatum = datum_impl<false>;
 namespace std {
 
 template<bool HasLargeObjects>
-inline size_t hash<TTauri::datum_impl<HasLargeObjects>>::operator()(TTauri::datum_impl<HasLargeObjects> const &value) const {
+inline size_t hash<tt::datum_impl<HasLargeObjects>>::operator()(tt::datum_impl<HasLargeObjects> const &value) const {
     return value.hash();
 }
 

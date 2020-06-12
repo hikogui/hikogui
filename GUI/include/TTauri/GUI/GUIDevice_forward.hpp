@@ -3,7 +3,7 @@
 
 #pragma once
 
-namespace TTauri {
+namespace tt {
     class GUIDevice_vulkan;
     using GUIDevice = GUIDevice_vulkan;
 }

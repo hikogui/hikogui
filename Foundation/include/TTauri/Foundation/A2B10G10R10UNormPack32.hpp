@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] constexpr uint32_t make_A2B10G10R10UNormPack32_value(vec const &rhs) noexcept
 {

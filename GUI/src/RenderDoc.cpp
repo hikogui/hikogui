@@ -10,7 +10,7 @@
 #endif
 #include <type_traits>
 
-namespace TTauri {
+namespace tt {
 
 RenderDoc::RenderDoc() noexcept {
 #if !defined(NDEBUG)

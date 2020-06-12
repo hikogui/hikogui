@@ -13,11 +13,11 @@
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 
-namespace TTauri {
+namespace tt {
 class URL;
 }
 
-namespace TTauri {
+namespace tt {
 
 class GUIDevice_vulkan final : public GUIDevice_base {
 protected:
@@ -139,7 +139,7 @@ public:
         T *mappingT = reinterpret_cast<T *>(mapping);
         let mappingSpan = nonstd::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
-        return vk::createResultValue(result, mappingSpan, "TTauri::GUIDevice_vulkan::mapMemory");
+        return vk::createResultValue(result, mappingSpan, "tt::GUIDevice_vulkan::mapMemory");
     }
 
     void unmapMemory(const VmaAllocation &allocation) const;

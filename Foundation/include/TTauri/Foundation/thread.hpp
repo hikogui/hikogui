@@ -8,7 +8,7 @@
 #include <string_view>
 #include <functional>
 
-namespace TTauri {
+namespace tt {
 
 void set_thread_name(std::string_view name);
 

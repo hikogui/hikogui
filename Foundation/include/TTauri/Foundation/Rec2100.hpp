@@ -9,7 +9,7 @@
 #include <cmath>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 inline mat Rec2100_to_XYZ = Rec2020_to_XYZ;
 

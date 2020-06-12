@@ -5,7 +5,7 @@
 
 #include <limits>
 
-namespace TTauri {
+namespace tt {
 
 class Widget;
 

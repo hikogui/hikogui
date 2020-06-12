@@ -19,7 +19,7 @@
 #include <ostream>
 #include <chrono>
 
-namespace TTauri {
+namespace tt {
 
 using namespace std::literals::chrono_literals;
 

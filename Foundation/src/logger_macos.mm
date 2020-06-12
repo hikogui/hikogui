@@ -17,7 +17,7 @@
 #include <ostream>
 #include <chrono>
 
-namespace TTauri {
+namespace tt {
 
 std::string getLastErrorMessage()
 {

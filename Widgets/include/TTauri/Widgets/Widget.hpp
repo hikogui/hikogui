@@ -28,24 +28,24 @@
 #include <mutex>
 #include <typeinfo>
 
-namespace TTauri {
+namespace tt {
 class DrawContext;
 }
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 struct Image;
 struct Vertex;
 }
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 struct Vertex;
 }
-namespace TTauri::PipelineFlat {
+namespace tt::PipelineFlat {
 struct Vertex;
 }
-namespace TTauri::PipelineBox {
+namespace tt::PipelineBox {
 struct Vertex;
 }
 
-namespace TTauri {
+namespace tt {
 
 
 /*! View of a widget.
@@ -57,7 +57,7 @@ namespace TTauri {
  *     All method of the widget should lock the mutex, exceptions are:
  *         hitBoxTest(), needs()
  *     All public members should be thread-safe, for example:
- *         std::atomic and TTauri::observer
+ *         std::atomic and tt::observer
  *     The following methods should only be called from the render thread:
  *         needs(), layout(), layoutChildren(), draw(), 
  */

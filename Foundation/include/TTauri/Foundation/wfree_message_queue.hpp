@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <functional>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, size_t Capacity>
 class wfree_message_queue;

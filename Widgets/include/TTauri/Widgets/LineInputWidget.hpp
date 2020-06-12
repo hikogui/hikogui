@@ -11,7 +11,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri {
+namespace tt {
 
 class LineInputWidget : public Widget {
 protected:

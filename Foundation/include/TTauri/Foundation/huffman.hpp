@@ -5,7 +5,7 @@
 #include <nonstd/span>
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T>
 class huffman_tree {

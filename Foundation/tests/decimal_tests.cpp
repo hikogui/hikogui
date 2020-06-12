@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Decimal, StringConstruction) {
     decimal x;

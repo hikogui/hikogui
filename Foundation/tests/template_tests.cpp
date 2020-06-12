@@ -7,7 +7,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(TextTemplate, Text) {
     std::unique_ptr<template_node> t;

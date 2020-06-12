@@ -15,7 +15,7 @@
 #include "TTauri/Foundation/mat.hpp"
 #include <array>
 
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 
 using namespace std;
 
@@ -378,7 +378,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
+        tt::PixelMap<SDF8>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

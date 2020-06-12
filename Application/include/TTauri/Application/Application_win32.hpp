@@ -6,7 +6,7 @@
 #include "TTauri/Application/Application_base.hpp"
 #include <thread>
 
-namespace TTauri {
+namespace tt {
 
 class Application_win32 final : public Application_base {
 public:

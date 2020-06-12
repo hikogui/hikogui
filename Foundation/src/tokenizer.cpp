@@ -3,7 +3,7 @@
 
 #include "TTauri/Foundation/tokenizer.hpp"
 
-namespace TTauri {
+namespace tt {
 
 enum class tokenizer_state_t: uint8_t {
     Initial,

@@ -8,7 +8,7 @@
 #include <typeindex>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, typename... Tags>
 class tagged_map {

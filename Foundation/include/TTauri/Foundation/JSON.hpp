@@ -11,7 +11,7 @@
 #include <optional>
 #include <string_view>
 
-namespace TTauri {
+namespace tt {
 
 /** Parse a JSON string.
  * @param text The text to parse.
@@ -23,7 +23,7 @@ namespace TTauri {
  * @param file URL pointing to the file to parse.
  * @return A datum representing the parsed object.
  */
-[[nodiscard]] datum parseJSON(TTauri::URL const &file);
+[[nodiscard]] datum parseJSON(tt::URL const &file);
 
 /** Dump an datum object into a JSON string.
  * @param root datum-object to serialize

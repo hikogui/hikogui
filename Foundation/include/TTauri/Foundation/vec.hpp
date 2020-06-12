@@ -16,7 +16,7 @@
 #include <array>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 /** A 4D vector.
  *

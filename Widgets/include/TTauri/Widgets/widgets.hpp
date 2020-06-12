@@ -12,7 +12,7 @@
 #include "TTauri/Widgets/WindowWidget.hpp"
 #include "TTauri/GUI/Window.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /** Add a widget to the main widget of the window.
 * The implementation is located here so that widget is a concrete type.

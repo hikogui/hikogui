@@ -16,7 +16,7 @@
 #include <charconv>
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 enum class tokenizer_name_t : uint8_t {
     NotAssigned,
@@ -264,7 +264,7 @@ struct token_t {
 
 };
 
-using token_vector = std::vector<TTauri::token_t>;
+using token_vector = std::vector<tt::token_t>;
 using token_iterator = typename token_vector::iterator;
 
 template<typename T>

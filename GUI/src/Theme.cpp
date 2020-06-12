@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/JSON.hpp"
 #include "TTauri/Foundation/globals.hpp"
 
-namespace TTauri {
+namespace tt {
 
 Theme::Theme(URL const &url)
 {

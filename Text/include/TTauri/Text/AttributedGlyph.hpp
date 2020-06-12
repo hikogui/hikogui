@@ -8,7 +8,7 @@
 #include "TTauri/Text/GlyphMetrics.hpp"
 #include "TTauri/Foundation/mat.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /**
 */

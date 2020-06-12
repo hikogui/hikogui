@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/attributes.hpp"
 #include <array>
 
-namespace TTauri {
+namespace tt {
 
 /** Class which represents an axis-aligned rectangle.
  */

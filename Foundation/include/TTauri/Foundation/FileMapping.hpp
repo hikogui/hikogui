@@ -7,7 +7,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 
 /*! A file mapping.
  * A file mapping maps a region of bytes to a handle.

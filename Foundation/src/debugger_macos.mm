@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 
-namespace TTauri {
+namespace tt {
 
 void _debugger_log(char const *text) noexcept
 {

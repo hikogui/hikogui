@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-namespace TTauri {
+namespace tt {
 
 /*! An system of audio devices.
  * Systems are for example: Window Audio Session API (WASAPI), ASIO, Apple CoreAudio

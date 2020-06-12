@@ -4,7 +4,7 @@
 #include "TTauri/Text/Grapheme.hpp"
 #include "TTauri/Text/globals.hpp"
 
-namespace TTauri {
+namespace tt {
 
 Grapheme::Grapheme(std::u32string_view codePoints) noexcept :
     value(0)

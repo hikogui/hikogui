@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace std::literals;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Exceptions, Default) {
     let current_count = read_counter<key_error::TAG>();

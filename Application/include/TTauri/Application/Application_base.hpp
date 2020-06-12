@@ -25,7 +25,7 @@
 #include <map>
 #include <thread>
 
-namespace TTauri {
+namespace tt {
 
 class Application_base_dummy {};
 

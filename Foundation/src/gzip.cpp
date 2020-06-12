@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/endian.hpp"
 #include "TTauri/Foundation/placement.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct GZIPMemberHeader {
     uint8_t ID1;

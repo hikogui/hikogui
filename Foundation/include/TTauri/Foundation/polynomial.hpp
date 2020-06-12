@@ -5,7 +5,7 @@
 
 #include "TTauri/Foundation/math.hpp"
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, int N>
 struct results {

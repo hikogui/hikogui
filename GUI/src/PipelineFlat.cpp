@@ -6,9 +6,9 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 
-namespace TTauri::PipelineFlat {
+namespace tt::PipelineFlat {
 
-using namespace TTauri;
+using namespace tt;
 using namespace std;
 
 PipelineFlat::PipelineFlat(Window const &window) :

@@ -7,7 +7,7 @@
 #include <immintrin.h>
 #include <type_traits>
 
-namespace TTauri {
+namespace tt {
 
 class float16 {
     uint16_t v;

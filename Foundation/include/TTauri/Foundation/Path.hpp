@@ -15,7 +15,7 @@
 #include "TTauri/Foundation/SDF8.hpp"
 #include <vector>
 
-namespace TTauri {
+namespace tt {
 
 struct BezierCurve;
 template<typename T> struct PixelMap;
@@ -272,7 +272,7 @@ void fill(PixelMap<SDF8> &dst, Path const &path) noexcept;
 
 }
 
-namespace TTauri {
+namespace tt {
 
 template<>
 inline std::unique_ptr<Path> parseResource(URL const &location)

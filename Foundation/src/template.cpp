@@ -3,7 +3,7 @@
 
 #include "TTauri/Foundation/template.hpp"
 
-namespace TTauri {
+namespace tt {
 
 struct template_top_node final: template_node {
     statement_vector children;
@@ -734,7 +734,7 @@ std::unique_ptr<expression_node> template_parse_context::parse_expression(std::s
     std::unique_ptr<expression_node> expression;
 
     try {
-        expression = ::TTauri::parse_expression(context);
+        expression = ::tt::parse_expression(context);
     } catch (error &e) {
         e.merge_location(location);
         throw;

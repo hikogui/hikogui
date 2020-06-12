@@ -6,9 +6,9 @@
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 
-namespace TTauri::PipelineToneMapper {
+namespace tt::PipelineToneMapper {
 
-using namespace TTauri;
+using namespace tt;
 using namespace std;
 
 PipelineToneMapper::PipelineToneMapper(Window const &window) :

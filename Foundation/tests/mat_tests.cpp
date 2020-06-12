@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 #define ASSERT_NEAR_VEC(lhs, rhs, abs_err)\
     ASSERT_TRUE(length(lhs - rhs) < abs_err)

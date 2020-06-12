@@ -12,7 +12,7 @@
 #include <vulkan/vulkan.hpp>
 #include <nonstd/span>
 
-namespace TTauri::PipelineBox {
+namespace tt::PipelineBox {
 
 /*! A vertex defining a rectangle on a window.
 * The vertex shader will convert window pixel-coordinates to normalized projection-coordinates.

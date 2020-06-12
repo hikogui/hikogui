@@ -9,7 +9,7 @@
 #include <array>
 #include <optional>
 
-namespace TTauri {
+namespace tt {
 
 // B(t)=(P_{2}-P_{1})t+P_{1}
 template<typename T>

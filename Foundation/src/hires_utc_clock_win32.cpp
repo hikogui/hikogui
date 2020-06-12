@@ -4,7 +4,7 @@
 #include "TTauri/Foundation/hires_utc_clock.hpp"
 #include <Windows.h>
 
-namespace TTauri {
+namespace tt {
 
 hires_utc_clock::time_point hires_utc_clock::now() noexcept {
     FILETIME ts; 

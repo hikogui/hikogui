@@ -9,7 +9,7 @@
 #include <array>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Base93, Default) {
     pcg32 random_generator;

@@ -13,7 +13,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri {
+namespace tt {
 
 template<typename ValueType, ValueType TrueValue, ValueType FalseValue>
 class CheckboxWidget : public Widget {

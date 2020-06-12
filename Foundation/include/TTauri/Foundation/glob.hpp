@@ -10,7 +10,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace TTauri {
+namespace tt {
 
 enum class glob_token_type_t {
     String,

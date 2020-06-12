@@ -10,11 +10,11 @@
 #include "TTauri/Foundation/aarect.hpp"
 #include <tuple>
 
-namespace TTauri {
+namespace tt {
 struct Path;
 }
 
-namespace TTauri {
+namespace tt {
 
 // "Compatibility mappings are guaranteed to be no longer than 18 characters, although most consist of just a few characters."
 // https://unicode.org/reports/tr44/ (TR44 5.7.3)
@@ -254,8 +254,8 @@ public:
 namespace std {
 
 template<>
-struct hash<TTauri::FontGlyphIDs> {
-    [[nodiscard]] size_t operator()(TTauri::FontGlyphIDs const &rhs) const noexcept {
+struct hash<tt::FontGlyphIDs> {
+    [[nodiscard]] size_t operator()(tt::FontGlyphIDs const &rhs) const noexcept {
         return rhs.hash();
     }
 };

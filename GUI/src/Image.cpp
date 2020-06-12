@@ -4,7 +4,7 @@
 #include "TTauri/GUI/Image.hpp"
 #include "TTauri/Foundation/png.hpp"
 
-namespace TTauri {
+namespace tt {
 
 Image::Image(PixelMap<R16G16B16A16SFloat> &&image) noexcept :
     image(std::move(image)) {}

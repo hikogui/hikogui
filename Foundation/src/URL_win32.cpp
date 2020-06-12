@@ -11,7 +11,7 @@
 #include <Windows.h>
 #include <ShlObj_core.h>
 
-namespace TTauri {
+namespace tt {
 
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {

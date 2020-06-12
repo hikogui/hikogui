@@ -6,7 +6,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include <algorithm>
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] constexpr int8_t make_R8SNorm_value(float rhs) noexcept
 {

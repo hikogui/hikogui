@@ -6,11 +6,11 @@
 #include "TTauri/GUI/Window_vulkan.hpp"
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 class Application_win32;
 }
 
-namespace TTauri {
+namespace tt {
 
 class Window_vulkan_win32 final : public Window_vulkan {
 public:

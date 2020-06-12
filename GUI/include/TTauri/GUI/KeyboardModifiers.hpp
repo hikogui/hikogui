@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/strings.hpp"
 #include <cstdint>
 
-namespace TTauri {
+namespace tt {
 
 /** Key modification keys pressed at the same time as another key.
 *
@@ -101,8 +101,8 @@ inline std::ostream &operator<<(std::ostream &lhs, KeyboardModifiers const &rhs)
 namespace std {
 
 template<>
-struct hash<TTauri::KeyboardModifiers> {
-    [[nodiscard]] size_t operator() (TTauri::KeyboardModifiers const &rhs) const noexcept {
+struct hash<tt::KeyboardModifiers> {
+    [[nodiscard]] size_t operator() (tt::KeyboardModifiers const &rhs) const noexcept {
         return std::hash<uint8_t>{}(static_cast<uint8_t>(rhs));
     }
 };

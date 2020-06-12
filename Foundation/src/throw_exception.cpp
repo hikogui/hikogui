@@ -4,7 +4,7 @@
 #include "TTauri/Foundation/throw_exception.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
 
-namespace TTauri {
+namespace tt {
 
 [[noreturn]] void _throw_invalid_operation_error(char const *source_file, int source_line, std::string message)
 {

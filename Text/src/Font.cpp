@@ -5,7 +5,7 @@
 #include "TTauri/Text/TrueTypeFont.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 
-namespace TTauri {
+namespace tt {
 
 [[nodiscard]] FontGlyphIDs Font::find_glyph(Grapheme g) const noexcept
 {
@@ -38,16 +38,16 @@ namespace TTauri {
 
 }
 
-namespace TTauri {
+namespace tt {
 
 template<>
-std::unique_ptr<TTauri::Font> parseResource(URL const &location)
+std::unique_ptr<tt::Font> parseResource(URL const &location)
 {
     if (location.extension() == "ttf") {
         auto view = ResourceView::loadView(location);
 
         try {
-            return std::make_unique<TTauri::TrueTypeFont>(std::move(view));
+            return std::make_unique<tt::TrueTypeFont>(std::move(view));
         } catch (error &e) {
             e.set<url_tag>(location);
             throw;

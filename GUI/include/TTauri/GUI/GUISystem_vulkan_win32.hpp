@@ -6,7 +6,7 @@
 #include "TTauri/GUI/GUISystem_vulkan.hpp"
 #include <nonstd/span>
 
-namespace TTauri {
+namespace tt {
 
 class GUISystem_vulkan_win32 final: public GUISystem_vulkan {
 public:

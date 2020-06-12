@@ -11,11 +11,11 @@
 #include <rhea/linear_expression.hpp>
 #include <functional>
 
-namespace TTauri {
+namespace tt {
 class Widget;
 }
 
-namespace TTauri {
+namespace tt {
 struct MouseEvent;
 struct KeyboardEvent;
 class DrawContext;

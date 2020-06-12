@@ -11,7 +11,7 @@
 #include <typeinfo>
 #include <typeindex>
 
-namespace TTauri {
+namespace tt {
 
 template<typename K, typename V>
 struct wfree_unordered_map_item {

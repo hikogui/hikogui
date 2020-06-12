@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <limits>
 
-namespace TTauri {
+namespace tt {
 
 enum class on_overflow_t {
     //! On overflow throw an exception.
@@ -237,48 +237,48 @@ using xuint8_t = safe_int<uint8_t,on_overflow_t::Axiom>;
 
 namespace std {
 
-template<> class numeric_limits<TTauri::safe_int<signed long long,TTauri::on_overflow_t::Saturate>>: public numeric_limits<signed long long> {};
-template<> class numeric_limits<TTauri::safe_int<signed long,TTauri::on_overflow_t::Saturate>>: public numeric_limits<signed long> {};
-template<> class numeric_limits<TTauri::safe_int<signed int,TTauri::on_overflow_t::Saturate>>: public numeric_limits<signed int> {};
-template<> class numeric_limits<TTauri::safe_int<signed short,TTauri::on_overflow_t::Saturate>>: public numeric_limits<signed short> {};
-template<> class numeric_limits<TTauri::safe_int<signed char,TTauri::on_overflow_t::Saturate>>: public numeric_limits<signed char> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long long,TTauri::on_overflow_t::Saturate>>: public numeric_limits<unsigned long long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long,TTauri::on_overflow_t::Saturate>>: public numeric_limits<unsigned long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned int,TTauri::on_overflow_t::Saturate>>: public numeric_limits<unsigned int> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned short,TTauri::on_overflow_t::Saturate>>: public numeric_limits<unsigned short> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned char,TTauri::on_overflow_t::Saturate>>: public numeric_limits<unsigned char> {};
+template<> class numeric_limits<tt::safe_int<signed long long,tt::on_overflow_t::Saturate>>: public numeric_limits<signed long long> {};
+template<> class numeric_limits<tt::safe_int<signed long,tt::on_overflow_t::Saturate>>: public numeric_limits<signed long> {};
+template<> class numeric_limits<tt::safe_int<signed int,tt::on_overflow_t::Saturate>>: public numeric_limits<signed int> {};
+template<> class numeric_limits<tt::safe_int<signed short,tt::on_overflow_t::Saturate>>: public numeric_limits<signed short> {};
+template<> class numeric_limits<tt::safe_int<signed char,tt::on_overflow_t::Saturate>>: public numeric_limits<signed char> {};
+template<> class numeric_limits<tt::safe_int<unsigned long long,tt::on_overflow_t::Saturate>>: public numeric_limits<unsigned long long> {};
+template<> class numeric_limits<tt::safe_int<unsigned long,tt::on_overflow_t::Saturate>>: public numeric_limits<unsigned long> {};
+template<> class numeric_limits<tt::safe_int<unsigned int,tt::on_overflow_t::Saturate>>: public numeric_limits<unsigned int> {};
+template<> class numeric_limits<tt::safe_int<unsigned short,tt::on_overflow_t::Saturate>>: public numeric_limits<unsigned short> {};
+template<> class numeric_limits<tt::safe_int<unsigned char,tt::on_overflow_t::Saturate>>: public numeric_limits<unsigned char> {};
 
-template<> class numeric_limits<TTauri::safe_int<signed long long,TTauri::on_overflow_t::Assert>>: public numeric_limits<signed long long> {};
-template<> class numeric_limits<TTauri::safe_int<signed long,TTauri::on_overflow_t::Assert>>: public numeric_limits<signed long> {};
-template<> class numeric_limits<TTauri::safe_int<signed int,TTauri::on_overflow_t::Assert>>: public numeric_limits<signed int> {};
-template<> class numeric_limits<TTauri::safe_int<signed short,TTauri::on_overflow_t::Assert>>: public numeric_limits<signed short> {};
-template<> class numeric_limits<TTauri::safe_int<signed char,TTauri::on_overflow_t::Assert>>: public numeric_limits<signed char> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long long,TTauri::on_overflow_t::Assert>>: public numeric_limits<unsigned long long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long,TTauri::on_overflow_t::Assert>>: public numeric_limits<unsigned long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned int,TTauri::on_overflow_t::Assert>>: public numeric_limits<unsigned int> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned short,TTauri::on_overflow_t::Assert>>: public numeric_limits<unsigned short> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned char,TTauri::on_overflow_t::Assert>>: public numeric_limits<unsigned char> {};
+template<> class numeric_limits<tt::safe_int<signed long long,tt::on_overflow_t::Assert>>: public numeric_limits<signed long long> {};
+template<> class numeric_limits<tt::safe_int<signed long,tt::on_overflow_t::Assert>>: public numeric_limits<signed long> {};
+template<> class numeric_limits<tt::safe_int<signed int,tt::on_overflow_t::Assert>>: public numeric_limits<signed int> {};
+template<> class numeric_limits<tt::safe_int<signed short,tt::on_overflow_t::Assert>>: public numeric_limits<signed short> {};
+template<> class numeric_limits<tt::safe_int<signed char,tt::on_overflow_t::Assert>>: public numeric_limits<signed char> {};
+template<> class numeric_limits<tt::safe_int<unsigned long long,tt::on_overflow_t::Assert>>: public numeric_limits<unsigned long long> {};
+template<> class numeric_limits<tt::safe_int<unsigned long,tt::on_overflow_t::Assert>>: public numeric_limits<unsigned long> {};
+template<> class numeric_limits<tt::safe_int<unsigned int,tt::on_overflow_t::Assert>>: public numeric_limits<unsigned int> {};
+template<> class numeric_limits<tt::safe_int<unsigned short,tt::on_overflow_t::Assert>>: public numeric_limits<unsigned short> {};
+template<> class numeric_limits<tt::safe_int<unsigned char,tt::on_overflow_t::Assert>>: public numeric_limits<unsigned char> {};
 
-template<> class numeric_limits<TTauri::safe_int<signed long long,TTauri::on_overflow_t::Throw>>: public numeric_limits<signed long long> {};
-template<> class numeric_limits<TTauri::safe_int<signed long,TTauri::on_overflow_t::Throw>>: public numeric_limits<signed long> {};
-template<> class numeric_limits<TTauri::safe_int<signed int,TTauri::on_overflow_t::Throw>>: public numeric_limits<signed int> {};
-template<> class numeric_limits<TTauri::safe_int<signed short,TTauri::on_overflow_t::Throw>>: public numeric_limits<signed short> {};
-template<> class numeric_limits<TTauri::safe_int<signed char,TTauri::on_overflow_t::Throw>>: public numeric_limits<signed char> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long long,TTauri::on_overflow_t::Throw>>: public numeric_limits<unsigned long long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long,TTauri::on_overflow_t::Throw>>: public numeric_limits<unsigned long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned int,TTauri::on_overflow_t::Throw>>: public numeric_limits<unsigned int> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned short,TTauri::on_overflow_t::Throw>>: public numeric_limits<unsigned short> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned char,TTauri::on_overflow_t::Throw>>: public numeric_limits<unsigned char> {};
+template<> class numeric_limits<tt::safe_int<signed long long,tt::on_overflow_t::Throw>>: public numeric_limits<signed long long> {};
+template<> class numeric_limits<tt::safe_int<signed long,tt::on_overflow_t::Throw>>: public numeric_limits<signed long> {};
+template<> class numeric_limits<tt::safe_int<signed int,tt::on_overflow_t::Throw>>: public numeric_limits<signed int> {};
+template<> class numeric_limits<tt::safe_int<signed short,tt::on_overflow_t::Throw>>: public numeric_limits<signed short> {};
+template<> class numeric_limits<tt::safe_int<signed char,tt::on_overflow_t::Throw>>: public numeric_limits<signed char> {};
+template<> class numeric_limits<tt::safe_int<unsigned long long,tt::on_overflow_t::Throw>>: public numeric_limits<unsigned long long> {};
+template<> class numeric_limits<tt::safe_int<unsigned long,tt::on_overflow_t::Throw>>: public numeric_limits<unsigned long> {};
+template<> class numeric_limits<tt::safe_int<unsigned int,tt::on_overflow_t::Throw>>: public numeric_limits<unsigned int> {};
+template<> class numeric_limits<tt::safe_int<unsigned short,tt::on_overflow_t::Throw>>: public numeric_limits<unsigned short> {};
+template<> class numeric_limits<tt::safe_int<unsigned char,tt::on_overflow_t::Throw>>: public numeric_limits<unsigned char> {};
 
-template<> class numeric_limits<TTauri::safe_int<signed long long,TTauri::on_overflow_t::Axiom>>: public numeric_limits<signed long long> {};
-template<> class numeric_limits<TTauri::safe_int<signed long,TTauri::on_overflow_t::Axiom>>: public numeric_limits<signed long> {};
-template<> class numeric_limits<TTauri::safe_int<signed int,TTauri::on_overflow_t::Axiom>>: public numeric_limits<signed int> {};
-template<> class numeric_limits<TTauri::safe_int<signed short,TTauri::on_overflow_t::Axiom>>: public numeric_limits<signed short> {};
-template<> class numeric_limits<TTauri::safe_int<signed char,TTauri::on_overflow_t::Axiom>>: public numeric_limits<signed char> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long long,TTauri::on_overflow_t::Axiom>>: public numeric_limits<unsigned long long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned long,TTauri::on_overflow_t::Axiom>>: public numeric_limits<unsigned long> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned int,TTauri::on_overflow_t::Axiom>>: public numeric_limits<unsigned int> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned short,TTauri::on_overflow_t::Axiom>>: public numeric_limits<unsigned short> {};
-template<> class numeric_limits<TTauri::safe_int<unsigned char,TTauri::on_overflow_t::Axiom>>: public numeric_limits<unsigned char> {};
+template<> class numeric_limits<tt::safe_int<signed long long,tt::on_overflow_t::Axiom>>: public numeric_limits<signed long long> {};
+template<> class numeric_limits<tt::safe_int<signed long,tt::on_overflow_t::Axiom>>: public numeric_limits<signed long> {};
+template<> class numeric_limits<tt::safe_int<signed int,tt::on_overflow_t::Axiom>>: public numeric_limits<signed int> {};
+template<> class numeric_limits<tt::safe_int<signed short,tt::on_overflow_t::Axiom>>: public numeric_limits<signed short> {};
+template<> class numeric_limits<tt::safe_int<signed char,tt::on_overflow_t::Axiom>>: public numeric_limits<signed char> {};
+template<> class numeric_limits<tt::safe_int<unsigned long long,tt::on_overflow_t::Axiom>>: public numeric_limits<unsigned long long> {};
+template<> class numeric_limits<tt::safe_int<unsigned long,tt::on_overflow_t::Axiom>>: public numeric_limits<unsigned long> {};
+template<> class numeric_limits<tt::safe_int<unsigned int,tt::on_overflow_t::Axiom>>: public numeric_limits<unsigned int> {};
+template<> class numeric_limits<tt::safe_int<unsigned short,tt::on_overflow_t::Axiom>>: public numeric_limits<unsigned short> {};
+template<> class numeric_limits<tt::safe_int<unsigned char,tt::on_overflow_t::Axiom>>: public numeric_limits<unsigned char> {};
 
 }

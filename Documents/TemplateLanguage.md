@@ -18,8 +18,8 @@ Functions and blocks exist in a special global scope which only contains functio
 definition. By calling `super()` from within a `%function` or `%block` you can call its previous definition.
 
 ## Expressions
-The `TTauri::datum` class is used for holding and operating on all the data while executing
-an expression of the TTauri template language. A `TTauri::datum` class can hold the following types:
+The `tt::datum` class is used for holding and operating on all the data while executing
+an expression of the TTauri template language. A `tt::datum` class can hold the following types:
  * Undefined
  * None
  * Boolean
@@ -291,7 +291,7 @@ Operations available that work on a string:
  - `url >= url -> boolean`
 
 ### Vector
-A list of `TTauri::datum` objects.
+A list of `tt::datum` objects.
 
 Syntax: '[' ( expression ( ',' expression )* ','? )? ']'
 
@@ -314,7 +314,7 @@ Operations available that work on a vector:
 
 
 ### Map
-A unordered map of key / value pairs; both `TTauri::datum` objects.
+A unordered map of key / value pairs; both `tt::datum` objects.
 
 Syntax: '{' ( expression ':' expression ( ',' expression ':' expression )* ','? )? '}'
 

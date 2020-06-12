@@ -12,7 +12,7 @@
 #include <vector>
 #include <Windows.h>
 
-namespace TTauri {
+namespace tt {
 
 constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
 

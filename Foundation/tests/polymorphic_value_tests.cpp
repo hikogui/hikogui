@@ -7,7 +7,7 @@
 #include <string>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 struct A {
     int hello = 10;

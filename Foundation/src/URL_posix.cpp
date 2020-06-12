@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/dir.h>
 
-namespace TTauri {
+namespace tt {
 
 std::vector<std::string> URL::filenamesByScanningDirectory(std::string_view path) noexcept
 {

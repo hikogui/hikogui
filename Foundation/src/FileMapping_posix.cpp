@@ -8,7 +8,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <mutex>
 
-namespace TTauri {
+namespace tt {
 
 FileMapping::FileMapping(std::shared_ptr<File> const& file, size_t size) :
     file(file), size(size > 0 ? size : File::fileSize(file->location))

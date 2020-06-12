@@ -12,7 +12,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include <array>
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
 using namespace std;
 
@@ -64,7 +64,7 @@ Image DeviceShared::makeImage(const ivec extent) noexcept
     return Image{this, extent, pageExtent, allocatePages(pageExtent.x() * pageExtent.y())};
 }
 
-TTauri::PixelMap<R16G16B16A16SFloat> DeviceShared::getStagingPixelMap()
+tt::PixelMap<R16G16B16A16SFloat> DeviceShared::getStagingPixelMap()
 {
     stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eGeneral);
 
@@ -258,7 +258,7 @@ void DeviceShared::buildAtlas()
         image,
         allocation,
         vk::ImageView(),
-        TTauri::PixelMap<R16G16B16A16SFloat>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
+        tt::PixelMap<R16G16B16A16SFloat>{data.data(), ssize_t{imageCreateInfo.extent.width}, ssize_t{imageCreateInfo.extent.height}}
     };
 
     vk::SamplerCreateInfo const samplerCreateInfo = {

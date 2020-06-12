@@ -12,7 +12,7 @@
 #include <optional>
 #include <future>
 
-namespace TTauri {
+namespace tt {
 
 class ToggleWidget : public Widget {
 protected:

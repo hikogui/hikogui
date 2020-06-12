@@ -9,7 +9,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace TTauri {
+namespace tt {
 
 template<typename T, typename U>
 force_inline void memswap(T &dst, U &src) {

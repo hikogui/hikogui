@@ -9,7 +9,7 @@
 #include "TTauri/Foundation/trace.hpp"
 #include "TTauri/Foundation/config.hpp"
 
-namespace TTauri {
+namespace tt {
 
 /** Reference counter to determine the amount of startup/shutdowns.
 */

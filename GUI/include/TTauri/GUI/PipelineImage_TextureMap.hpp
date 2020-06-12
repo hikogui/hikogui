@@ -9,13 +9,13 @@
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::PipelineImage {
+namespace tt::PipelineImage {
 
 struct TextureMap {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    TTauri::PixelMap<R16G16B16A16SFloat> pixelMap;
+    tt::PixelMap<R16G16B16A16SFloat> pixelMap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const GUIDevice &device, vk::Format format, vk::ImageLayout nextLayout);

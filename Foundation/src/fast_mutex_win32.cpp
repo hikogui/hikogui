@@ -6,7 +6,7 @@
 #include <Windows.h>
 #include <Synchapi.h>
 
-namespace TTauri {
+namespace tt {
 
 /*
  * semaphore value:

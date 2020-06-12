@@ -9,13 +9,13 @@
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 
-namespace TTauri::PipelineSDF {
+namespace tt::PipelineSDF {
 
 struct TextureMap {
     vk::Image image;
     VmaAllocation allocation = {};
     vk::ImageView view;
-    TTauri::PixelMap<SDF8> pixelMap;
+    tt::PixelMap<SDF8> pixelMap;
     vk::ImageLayout layout = vk::ImageLayout::eUndefined;
 
     void transitionLayout(const GUIDevice &device, vk::Format format, vk::ImageLayout nextLayout);

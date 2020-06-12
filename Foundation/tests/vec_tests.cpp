@@ -7,7 +7,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace TTauri;
+using namespace tt;
 
 TEST(Vec, Compare) {
     let tmp = vec{2.0f, 3.0f, 4.0f, 5.0f};

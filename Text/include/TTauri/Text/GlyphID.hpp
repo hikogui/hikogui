@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <utility>
 
-namespace TTauri {
+namespace tt {
 
 struct glyph_id_tag {};
 

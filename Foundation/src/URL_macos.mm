@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <mach-o/dyld.h>
 
-namespace TTauri {
+namespace tt {
 
 URL URL::urlFromCurrentWorkingDirectory() noexcept
 {

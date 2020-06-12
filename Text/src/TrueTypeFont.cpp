@@ -10,7 +10,7 @@
 
 #define assert_or_return(x, y) if (ttauri_unlikely(!(x))) { return y; }
 
-namespace TTauri {
+namespace tt {
 
 struct Fixed_buf_t {
     big_uint32_buf_t x;
@@ -443,7 +443,7 @@ static std::optional<std::string> getStringFromNameTable(nonstd::span<std::byte 
 
             let s_big_endian = std::u16string_view(p, l);
             let s_native = u16string_big_to_native(s_big_endian);
-            return TTauri::to_string(s_native);
+            return tt::to_string(s_native);
         }
         break;
 
@@ -463,7 +463,7 @@ static std::optional<std::string> getStringFromNameTable(nonstd::span<std::byte 
 
             let s_big_endian = std::u16string_view(p, l);
             let s_native = u16string_big_to_native(s_big_endian);
-            return TTauri::to_string(s_native);
+            return tt::to_string(s_native);
         }
         break;
 

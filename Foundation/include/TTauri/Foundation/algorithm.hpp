@@ -8,7 +8,7 @@
 #include <tuple>
 #include <cmath>
 
-namespace TTauri {
+namespace tt {
 
 /** Transform an input container to the output container.
  * @param input Input container.

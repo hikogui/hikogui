@@ -7,7 +7,7 @@
 #include <nonstd/span>
 #include <thread>
 
-namespace TTauri {
+namespace tt {
 
 class VerticalSync_macos final : public VerticalSync_base {
 public:
