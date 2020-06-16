@@ -69,11 +69,11 @@ public:
         return v;
     }
 
-    explicit tt_force_inline vec(std:array<float,4> const &rhs) noexcept :
+    explicit tt_force_inline vec(std::array<float,4> const &rhs) noexcept :
         v(_mm_loadu_ps(rhs.data())) {}
 
-    explicit tt_force_inline vec &operator=(std::array<float,4> const &rhs) noexcept {
-        v = _mm_loadu_ps(rhs.ddata());
+    tt_force_inline vec &operator=(std::array<float,4> const &rhs) noexcept {
+        v = _mm_loadu_ps(rhs.data());
         return *this;
     }
 
@@ -84,16 +84,16 @@ public:
     }
 
     explicit tt_force_inline vec(std::array<float16,4> const &rhs) noexcept :
-        v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data())) {}
+        v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data()))) {}
 
-    explicit tt_force_inline vec& operator=(std::array<float16,4> const &rhs) noexcept {
+    tt_force_inline vec& operator=(std::array<float16,4> const &rhs) noexcept {
         v = _mm_cvtph_ps(_mm_loadu_si64(rhs.data()));
         return *this;
     }
 
     explicit tt_force_inline operator std::array<float16,4> () const noexcept {
         std::array<float16,4> r;
-        _mm_storeu_si64(r.data(), _mm_cvtps_ph(v));
+        _mm_storeu_si64(r.data(), _mm_cvtps_ph(v, _MM_FROUND_CUR_DIRECTION));
         return r;
     }
 

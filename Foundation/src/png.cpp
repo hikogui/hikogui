@@ -319,8 +319,6 @@ bstring png::decompress_IDATs(ssize_t image_data_size) const {
     }
 }
 
-
-
 void png::unfilter_line_sub(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
