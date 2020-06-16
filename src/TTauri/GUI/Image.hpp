@@ -24,9 +24,9 @@ public:
     Image(FontGlyphIDs const &glyph) noexcept;
 
     Image() = default;
-    Image(Image const &) noexcept = default;
+    Image(Image const &) noexcept;
     Image(Image &&) noexcept = default;
-    Image &operator=(Image const &) noexcept = default;
+    Image &operator=(Image const &) noexcept;
     Image &operator=(Image &&) noexcept = default;
 };
 

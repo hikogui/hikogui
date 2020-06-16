@@ -85,6 +85,7 @@ elseif(APPLE)
         src/TTauri/Foundation/FileMapping_posix.cpp
         src/TTauri/Foundation/FileView_posix.cpp
         src/TTauri/Foundation/debugger_macos.mm
+        src/TTauri/Foundation/fast_mutex_macos.cpp
     )
 endif()
 

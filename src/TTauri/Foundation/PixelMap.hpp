@@ -179,6 +179,24 @@ struct PixelMap {
      */
     PixelMap(PixelMap const &other) = delete;
 
+    PixelMap copy() const noexcept {
+        if (selfAllocated) {
+            auto r = PixelMap(width, height);
+
+            for (ssize_t y = 0; y != height; ++y) {
+                ttlet src_row = (*this)[y];
+                auto dst_row = r[y];
+                for (ssize_t x = 0; x != width; ++x) {
+                    dst_row[x] = src_row[x];
+                }
+            }
+
+            return r;
+        } else {
+            return submap(0, 0, width, height);
+        }
+    }
+
     PixelMap(PixelMap &&other) noexcept : pixels(other.pixels), width(other.width), height(other.height), stride(other.stride), selfAllocated(other.selfAllocated) {
         tt_assume(this != &other);
         other.selfAllocated = false;

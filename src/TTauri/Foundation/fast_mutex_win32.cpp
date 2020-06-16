@@ -15,6 +15,8 @@ namespace tt {
  *  2 - Locked, zero or more threads are waiting.
  */
 
+fast_mutex::fast_mutex() noexcept {}
+fast_mutex::~fast_mutex() {}
 
 tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
 {
