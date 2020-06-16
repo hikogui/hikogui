@@ -21,13 +21,13 @@ namespace tt::PipelineImage {
 struct Image;
 
 struct DeviceShared final {
-    static constexpr int atlasNrHorizontalPages = 60;
-    static constexpr int atlasNrVerticalPages = 60;
+    static constexpr int atlasNrHorizontalPages = 16;
+    static constexpr int atlasNrVerticalPages = 16;
     static constexpr int atlasImageWidth = atlasNrHorizontalPages * Page::widthIncludingBorder;
     static constexpr int atlasImageHeight = atlasNrVerticalPages * Page::heightIncludingBorder;
     static constexpr int atlasNrPagesPerImage = atlasNrHorizontalPages * atlasNrVerticalPages;
     static constexpr int atlasMaximumNrImages = 16;
-    static constexpr int stagingImageWidth = 2048;
+    static constexpr int stagingImageWidth = 1024;
     static constexpr int stagingImageHeight = 1024;
 
     GUIDevice const &device;
