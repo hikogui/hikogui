@@ -4,6 +4,7 @@
 #include "TTauri/GUI/Window_base.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
+#include "TTauri/Widgets/WindowWidget.hpp"
 
 namespace tt {
 
@@ -38,12 +39,12 @@ void Window_base::initialize()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    widget = WindowWidget_makeUnique(*static_cast<Window *>(this));
+    widget = std::make_unique<WindowWidget>(*static_cast<Window *>(this));
 
     // The width and height of the window will be modified by the user and also for
     // testing the minimum and maximum size of the window.
-    widgetSolver.add_stay(Widget_getWidth(*widget), rhea::strength::medium());
-    widgetSolver.add_stay(Widget_getHeight(*widget), rhea::strength::medium());
+    widgetSolver.add_stay(widget->width, rhea::strength::medium());
+    widgetSolver.add_stay(widget->height, rhea::strength::medium());
 
     openingWindow();
 
@@ -144,15 +145,15 @@ int Window_base::layoutChildren(hires_utc_clock::time_point displayTimePoint, bo
     auto total_need = 0;
 
     for (auto i = 0; i != layout_retries; ++i) {
-        ttlet child_need = Widget_needs(*widget, displayTimePoint);
+        ttlet child_need = widget->needs(displayTimePoint);
         total_need |= child_need;
 
         if (force || child_need >= 2) {
-            Widget_layout(*widget, displayTimePoint);
+            widget->layout(displayTimePoint);
         }
 
         // Grandchildren need to be layed out when the child has changed.
-        total_need |= Widget_layoutChildren(*widget, displayTimePoint, force);
+        total_need |= widget->layoutChildren(displayTimePoint, force);
 
         // Layout may have changed the constraints, in that case recalculate them.
         if (constraintsUpdated) {
@@ -200,10 +201,10 @@ void Window_base::setDevice(GUIDevice *newDevice)
 
 void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept {
     Widget *newTargetWidget =
-        currentTargetWidget != nullptr ? Widget_getNextKeyboardWidget(*currentTargetWidget) : firstKeyboardWidget;
+        currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
 
-    while (newTargetWidget != nullptr && !Widget_acceptsFocus(*newTargetWidget)) {
-        newTargetWidget = Widget_getNextKeyboardWidget(*newTargetWidget);
+    while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+        newTargetWidget = newTargetWidget->nextKeyboardWidget;
     }
 
     updateKeyboardTarget(newTargetWidget);
@@ -211,10 +212,10 @@ void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexce
 
 void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept {
     Widget *newTargetWidget =
-        currentTargetWidget != nullptr ? Widget_getPreviousKeyboardWidget(*currentTargetWidget) : lastKeyboardWidget;
+        currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
 
-    while (newTargetWidget != nullptr && !Widget_acceptsFocus(*newTargetWidget)) {
-        newTargetWidget = Widget_getPreviousKeyboardWidget(*newTargetWidget);
+    while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
+        newTargetWidget = newTargetWidget->prevKeyboardWidget;
     }
 
     updateKeyboardTarget(newTargetWidget);
@@ -233,27 +234,27 @@ void Window_base::windowChangedSize(ivec extent) {
 void Window_base::updateMouseTarget(Widget const *newTargetWidget, vec position) noexcept {
     if (newTargetWidget != mouseTargetWidget) {
         if (mouseTargetWidget != nullptr) {
-            Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::exited());
+            mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
         }
         mouseTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (mouseTargetWidget != nullptr) { 
-            Widget_handleMouseEvent(*mouseTargetWidget, MouseEvent::entered(position));
+            mouseTargetWidget->handleMouseEvent(MouseEvent::entered(position));
         }
     }
 }
 
 void Window_base::updateKeyboardTarget(Widget const *newTargetWidget) noexcept {
-    if (newTargetWidget == nullptr || !Widget_acceptsFocus(*newTargetWidget)) {
+    if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
         newTargetWidget = nullptr;
     }
 
     if (newTargetWidget != keyboardTargetWidget) {
         if (keyboardTargetWidget != nullptr) {
-            Widget_handleKeyboardEvent(*keyboardTargetWidget, KeyboardEvent::exited());
+            keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
         }
         keyboardTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (keyboardTargetWidget != nullptr) {
-            Widget_handleKeyboardEvent(*keyboardTargetWidget, KeyboardEvent::entered());
+            keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
         }
     }
 }
@@ -278,16 +279,16 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     // Send event to target-widget.
     if (mouseTargetWidget != nullptr) {
-        ttlet windowOffset = Widget_getWindowOffset(*mouseTargetWidget);
+        ttlet windowOffset = mouseTargetWidget->offsetFromWindow();
         event.position -= windowOffset;
         event.downPosition -= windowOffset;
-        Widget_handleMouseEvent(*mouseTargetWidget, event);
+        mouseTargetWidget->handleMouseEvent(event);
     }
 }
 
 void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
     if (keyboardTargetWidget != nullptr) {
-        Widget_handleKeyboardEvent(*keyboardTargetWidget, event);
+        keyboardTargetWidget->handleKeyboardEvent(event);
 
     } else if (event.type == KeyboardEvent::Type::Key) {
         // If no widgets have been selected handle the keyboard-focus changes.
@@ -314,14 +315,14 @@ void Window_base::handleKeyboardEvent(char32_t c, bool full) noexcept {
 }
 
 HitBox Window_base::hitBoxTest(vec position) const noexcept {
-    return Widget_hitBoxTest(*widget, position);
+    return widget->hitBoxTest(position);
 }
 
 vec Window_base::suggestWidgetExtent(vec extent) noexcept {
     auto lock = std::scoped_lock(widgetSolverMutex);
 
-    ttlet &width = Widget_getWidth(*widget);
-    ttlet &height = Widget_getHeight(*widget);
+    ttlet &width = widget->width;
+    ttlet &height = widget->height;
 
     widgetSolver.suggest(width, extent.width());
     widgetSolver.suggest(height, extent.height());

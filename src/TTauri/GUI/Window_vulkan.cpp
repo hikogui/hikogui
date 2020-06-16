@@ -11,6 +11,7 @@
 #include "TTauri/GUI/PipelineSDF.hpp"
 #include "TTauri/GUI/PipelineToneMapper.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
+#include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/Foundation/trace.hpp"
 #include <vector>
 
@@ -312,7 +313,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         SDFPipeline->vertexBufferData
     );
     drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
-    Widget_draw(*widget, drawContext, displayTimePoint);
+    widget->draw(drawContext, displayTimePoint);
 
     fillCommandBuffer(frameBuffer);
     submitCommandBuffer();

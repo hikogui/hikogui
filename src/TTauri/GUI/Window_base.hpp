@@ -5,7 +5,6 @@
 
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/WindowDelegate.hpp"
-#include "TTauri/GUI/Widget_forward.hpp"
 #include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "TTauri/GUI/Cursor.hpp"
 #include "TTauri/GUI/HitBox.hpp"
@@ -28,6 +27,7 @@
 #include <mutex>
 
 namespace tt {
+class Widget;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -127,7 +127,7 @@ public:
     }
 
     //! The widget covering the complete window.
-    std::unique_ptr<Widget,WidgetDeleter> widget;
+    std::unique_ptr<Widget> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
