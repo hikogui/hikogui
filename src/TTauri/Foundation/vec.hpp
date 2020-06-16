@@ -83,6 +83,20 @@ public:
         return r;
     }
 
+    explicit tt_force_inline vec(std::array<float,2> const &rhs) noexcept :
+        v(_mm_loadl_pi(_mm_setzero_ps(), reinterpret_cast<__m64 const *>(rhs.data()))) {}
+
+    tt_force_inline vec &operator=(std::array<float,2> const &rhs) noexcept {
+        v = _mm_loadl_pi(_mm_setzero_ps(), reinterpret_cast<__m64 const *>(rhs.data()));
+        return *this;
+    }
+
+    explicit tt_force_inline operator std::array<float,2> () const noexcept {
+        std::array<float,2> r;
+        _mm_storel_pi(reinterpret_cast<__m64 *>(r.data()), v);
+        return r;
+    }
+
     explicit tt_force_inline vec(std::array<float16,4> const &rhs) noexcept :
         v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data()))) {}
 
@@ -122,15 +136,17 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    template<typename T, typename U, typename V=float, typename W=float,
-        std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-    tt_force_inline vec(T x, U y, V z=0.0f, W w=0.0f) noexcept :
-        vec(_mm_set_ps(
-            numeric_cast<float>(w),
-            numeric_cast<float>(z),
-            numeric_cast<float>(y),
-            numeric_cast<float>(x)
-        )) {}
+    tt_force_inline vec(float x, float y, float z=0.0f, float w=0.0f) noexcept :
+        v(_mm_set_ps(w, z, y, x)) {}
+
+    tt_force_inline vec(double x, double y) noexcept :
+        v(_mm_cvtpd_ps(_mm_set_pd(y, x))) {}
+
+    tt_force_inline vec(double x, double y, double z, double w=0.0f) noexcept :
+        v(_mm256_cvtpd_ps(_mm256_set_pd(w, z, y, x))) {}
+
+    tt_force_inline vec(int x, int y, int z=0, int w=0) noexcept :
+        v(_mm_cvtepi32_ps(_mm_set_epi32(w, z, y, x))) {}
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
     tt_force_inline static vec make_x(T x) noexcept {
@@ -161,11 +177,14 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    template<typename T=float, typename U=float, typename V=float, typename W=float,
-    std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V>,int> = 0>
-    [[nodiscard]] tt_force_inline static vec point(T x=0.0f, U y=0.0f, V z=0.0f) noexcept {
+    [[nodiscard]] tt_force_inline static vec point(float x=0.0f, float y=0.0f, float z=0.0f) noexcept {
         return vec{x, y, z, 1.0f};
     }
+
+    [[nodiscard]] tt_force_inline static vec point(int x=0.0f, int y=0.0f, int z=0.0f) noexcept {
+        return vec{x, y, z, 1};
+    }
+
 
     /** Create a point out of 2 to 4 values.
     * This vector is used as a homogeneous coordinate, meaning:
@@ -204,9 +223,7 @@ public:
      *    Values below 0.0 will cause colours outside the sRGB color gamut
      *    for use with high-gamut displays
      */
-    template<typename R, typename G, typename B, typename A=float,
-        std::enable_if_t<std::is_floating_point_v<R> && std::is_floating_point_v<G> && std::is_floating_point_v<B> && std::is_floating_point_v<A>,int> = 0>
-        [[nodiscard]] tt_force_inline static vec color(R r, G g, B b, A a=1.0f) noexcept {
+    [[nodiscard]] tt_force_inline static vec color(float r, float g, float b, float a=1.0f) noexcept {
         return vec{r, g, b, a};
     }
 
@@ -339,15 +356,6 @@ public:
         return max(rhs, -rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator==(vec const &lhs, vec const &rhs) noexcept {
-        ttlet tmp2 = _mm_movemask_ps(_mm_cmpeq_ps(lhs, rhs));
-        return tmp2 == 0b1111;
-    }
-
-    [[nodiscard]] tt_force_inline friend bool operator!=(vec const &lhs, vec const &rhs) noexcept {
-        return !(lhs == rhs);
-    }
-
     /** Equal to.
     * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
     */
@@ -360,6 +368,14 @@ public:
     */
     [[nodiscard]] tt_force_inline friend int ne(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmpneq_ps(lhs, rhs));
+    }
+
+    [[nodiscard]] tt_force_inline friend bool operator==(vec const &lhs, vec const &rhs) noexcept {
+        return !ne(lhs, rhs);
+    }
+
+    [[nodiscard]] tt_force_inline friend bool operator!=(vec const &lhs, vec const &rhs) noexcept {
+        return !(lhs == rhs);
     }
 
     /** Less than.

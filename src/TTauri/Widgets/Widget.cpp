@@ -152,12 +152,12 @@ int Widget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
     auto lock = std::scoped_lock(window.widgetSolverMutex);
     int needs = 0;
 
-    auto newExtent = i32x2_t{width.value(), height.value()};
-    needs |= static_cast<int>(newExtent != i32_extent());
+    auto newExtent = vec{width.value(), height.value()};
+    needs |= static_cast<int>(newExtent != extent());
     setExtent(newExtent);
 
-    auto newOffsetFromWindow = i32x2_t{left.value(), bottom.value()};
-    needs |= static_cast<int>(newOffsetFromWindow != i32_offsetFromWindow());
+    auto newOffsetFromWindow = vec{left.value(), bottom.value()};
+    needs |= static_cast<int>(newOffsetFromWindow != offsetFromWindow());
     setOffsetFromWindow(newOffsetFromWindow);
 
     needs |= static_cast<int>(

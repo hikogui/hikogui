@@ -344,7 +344,7 @@ void Path::addRectangle(aarect r, vec corners) noexcept
     ttlet brc1 = brc + vec{-radii.y(), 0.0f};
     ttlet brc2 = brc + vec{0.0f, radii.y()};
     ttlet tlc1 = tlc + vec{radii.z(), 0.0f};
-    ttlet tlc2 = tlc + vec{0.0, -radii.z()};
+    ttlet tlc2 = tlc + vec{0.0f, -radii.z()};
     ttlet trc1 = trc + vec{0.0f, -radii.w()};
     ttlet trc2 = trc + vec{-radii.w(), 0.0f};
 

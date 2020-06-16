@@ -134,7 +134,7 @@ enum class Processor {
 #define tt_assume(condition) __builtin_assume(static_cast<bool>(condition))
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline inline __attribute__((noinline))
-#define clang_suppress(a) _Pragma(STRINGIFY(clang diagnostic ignored a))
+#define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
 #define msvc_suppress(a)
 #define gsl_suppress(a) [[gsl::suppress(#a)]]
 #define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]

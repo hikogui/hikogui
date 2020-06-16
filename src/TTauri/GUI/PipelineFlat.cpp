@@ -30,7 +30,7 @@ void PipelineFlat::drawInCommandBuffer(vk::CommandBuffer commandBuffer)
 
     commandBuffer.bindVertexBuffers(0, tmpVertexBuffers, tmpOffsets);
 
-    pushConstants.windowExtent = { extent.width , extent.height };
+    pushConstants.windowExtent = { numeric_cast<int>(extent.width) , numeric_cast<int>(extent.height) };
     pushConstants.viewportScale = { 2.0 / extent.width, 2.0 / extent.height };
     commandBuffer.pushConstants(
         pipelineLayout,

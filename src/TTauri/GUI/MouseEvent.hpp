@@ -40,7 +40,7 @@ struct MouseEvent {
     {
     }
 
-    static MouseEvent entered(vec position=vec::point(0.0, 0.0)) noexcept {
+    static MouseEvent entered(vec position=vec::point(0.0f, 0.0f)) noexcept {
         MouseEvent event;
         event.position = position;
         event.type = MouseEvent::Type::Entered;

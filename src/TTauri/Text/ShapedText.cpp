@@ -395,8 +395,8 @@ ShapedText::ShapedText(
     ttlet ligature_position_left = i->position + ligature_advance_left;
     ttlet ligature_position_right = i->position + ligature_advance_right;
 
-    ttlet p0 = ligature_position_left - vec(0.0, line_i->descender);
-    ttlet p3 = ligature_position_right + vec(0.0, line_i->ascender);
+    ttlet p0 = ligature_position_left - vec(0.0f, line_i->descender);
+    ttlet p3 = ligature_position_right + vec(0.0f, line_i->ascender);
     return aarect::p0p3(p0, p3);
 }
 

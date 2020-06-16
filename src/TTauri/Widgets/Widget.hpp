@@ -13,14 +13,14 @@
 #include "TTauri/Foundation/attributes.hpp"
 #include "TTauri/Foundation/Path.hpp"
 #include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
+#include "TTauri/Foundation/R32G32SFloat.hpp"
 #include "TTauri/Foundation/URL.hpp"
-#include <TTauri/Foundation/pickle.hpp>
-#include <TTauri/Foundation/vspan.hpp>
-#include <TTauri/Foundation/utils.hpp>
-#include <TTauri/Foundation/Trigger.hpp>
-#include <TTauri/Foundation/cpu_utc_clock.hpp>
-#include <TTauri/Foundation/observer.hpp>
-#include <TTauri/Foundation/simd.hpp>
+#include "TTauri/Foundation/pickle.hpp"
+#include "TTauri/Foundation/vspan.hpp"
+#include "TTauri/Foundation/utils.hpp"
+#include "TTauri/Foundation/Trigger.hpp"
+#include "TTauri/Foundation/cpu_utc_clock.hpp"
+#include "TTauri/Foundation/observer.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -140,9 +140,9 @@ public:
 
     float elevation;
 
-    std::atomic<i32x2_t> _extent;
-    std::atomic<i32x2_t> _offsetFromParent;
-    std::atomic<i32x2_t> _offsetFromWindow;
+    std::atomic<R32G32SFloat> _extent;
+    std::atomic<R32G32SFloat> _offsetFromParent;
+    std::atomic<R32G32SFloat> _offsetFromWindow;
 
     mutable std::atomic<bool> forceLayout = true;
     mutable std::atomic<bool> forceRedraw = true;
@@ -253,44 +253,29 @@ public:
 
     rhea::constraint placeRight(float margin=theme->margin) const noexcept;
 
-    [[nodiscard]] i32x2_t i32_extent() const noexcept {
-        return _extent.load(std::memory_order::memory_order_relaxed);
-    }
 
     [[nodiscard]] vec extent() const noexcept {
-        return vec{i32_extent()};
-    }
-
-    void setExtent(i32x2_t rhs) noexcept {
-        _extent.store(rhs, std::memory_order::memory_order_relaxed);
+        return static_cast<vec>(_extent.load(std::memory_order::memory_order_relaxed));
     }
 
     void setExtent(vec rhs) noexcept {
-        setExtent(i32x2_t{static_cast<__m128>(rhs)});
+        _extent.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
     }
 
     [[nodiscard]] vec offsetFromParent() const noexcept {
-        return vec{_offsetFromParent.load(std::memory_order::memory_order_relaxed)};
+        return static_cast<vec>(_offsetFromParent.load(std::memory_order::memory_order_relaxed));
     }
 
     void setOffsetFromParent(vec rhs) noexcept {
-        _offsetFromParent.store(static_cast<__m128>(rhs), std::memory_order::memory_order_relaxed);
-    }
-
-    [[nodiscard]] i32x2_t i32_offsetFromWindow() const noexcept {
-        return _offsetFromWindow.load(std::memory_order::memory_order_relaxed);
+        _offsetFromParent.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
     }
 
     [[nodiscard]] vec offsetFromWindow() const noexcept {
-        return vec{i32_offsetFromWindow()};
-    }
-
-    void setOffsetFromWindow(i32x2_t rhs) noexcept {
-        _offsetFromWindow.store(rhs, std::memory_order::memory_order_relaxed);
+        return static_cast<vec>(_offsetFromWindow.load(std::memory_order::memory_order_relaxed));
     }
 
     void setOffsetFromWindow(vec rhs) noexcept {
-        setOffsetFromWindow(i32x2_t{static_cast<__m128>(rhs)});
+        _offsetFromWindow.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
     }
 
     /** Get the rectangle in local coordinates.

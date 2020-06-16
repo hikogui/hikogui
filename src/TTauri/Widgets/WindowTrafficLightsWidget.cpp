@@ -58,17 +58,17 @@ void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePo
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         closeRectangle = aarect{
-            vec::point(MARGIN, extent().height() / 2.0 - RADIUS),
+            vec::point(MARGIN, extent().height() / 2.0f - RADIUS),
             {DIAMETER, DIAMETER}
         };
 
         minimizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING, extent().height() / 2.0 - RADIUS),
+            vec::point(MARGIN + DIAMETER + SPACING, extent().height() / 2.0f - RADIUS),
             {DIAMETER, DIAMETER}
         };
 
         maximizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent().height() / 2.0 - RADIUS),
+            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent().height() / 2.0f - RADIUS),
             {DIAMETER, DIAMETER}
         };
     } else {
@@ -108,43 +108,43 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
     context.cornerShapes = vec{RADIUS, RADIUS, RADIUS, RADIUS};
 
     if (!window.active && !hover) {
-        context.fillColor = vec::color(0.246, 0.246, 0.246);
+        context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedClose) {
-        context.fillColor = vec::color(1.0, 0.242, 0.212);
+        context.fillColor = vec::color(1.0f, 0.242f, 0.212f);
     } else {
-        context.fillColor = vec::color(1.0, 0.1, 0.082);
+        context.fillColor = vec::color(1.0f, 0.1f, 0.082f);
     }
     context.color = context.fillColor;
     context.drawBoxIncludeBorder(closeRectangle);
 
     if (!window.active && !hover) {
-        context.fillColor = vec::color(0.246, 0.246, 0.246);
+        context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedMinimize) {
-        context.fillColor = vec::color(1.0, 0.847, 0.093);
+        context.fillColor = vec::color(1.0f, 0.847f, 0.093f);
     } else {
-        context.fillColor = vec::color(0.784, 0.521, 0.021);
+        context.fillColor = vec::color(0.784f, 0.521f, 0.021f);
     }
     context.color = context.fillColor;
     context.drawBoxIncludeBorder(minimizeRectangle);
 
     if (!window.active && !hover) {
-        context.fillColor = vec::color(0.246, 0.246, 0.246);
+        context.fillColor = vec::color(0.246f, 0.246f, 0.246f);
     } else if (pressedMaximize) {
-        context.fillColor = vec::color(0.223, 0.863, 0.1);
+        context.fillColor = vec::color(0.223f, 0.863f, 0.1f);
     } else {
-        context.fillColor = vec::color(0.082, 0.533, 0.024);
+        context.fillColor = vec::color(0.082f, 0.533f, 0.024f);
     }
     context.color = context.fillColor;
     context.drawBoxIncludeBorder(maximizeRectangle);
 
     if (hover) {
-        context.color = vec::color(0.319, 0.0, 0.0);
+        context.color = vec::color(0.319f, 0.0f, 0.0f);
         context.drawGlyph(closeWindowGlyph, closeWindowGlyphRectangle);
 
-        context.color = vec::color(0.212, 0.1, 0.0);
+        context.color = vec::color(0.212f, 0.1f, 0.0f);
         context.drawGlyph(minimizeWindowGlyph, minimizeWindowGlyphRectangle);
 
-        context.color = vec::color(0.0, 0.133, 0.0);
+        context.color = vec::color(0.0f, 0.133f, 0.0f);
         if (window.size == Window::Size::Maximized) {
             context.drawGlyph(restoreWindowGlyph, restoreWindowGlyphRectangle);
         } else {

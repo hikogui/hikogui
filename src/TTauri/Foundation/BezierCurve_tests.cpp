@@ -10,8 +10,8 @@
 using namespace std;
 using namespace tt;
 TEST(BezierTests, solveXByY) {
-    ASSERT_RESULTS(BezierCurve(vec::point( 1,1 ), vec::point( 1.5,1 ), vec::point( 2,1 )).solveXByY(1.5), tt::results3());
-    ASSERT_RESULTS(BezierCurve(vec::point( 2,1 ), vec::point( 2,1.5 ), vec::point( 2,2 )).solveXByY(1.5), tt::results3(2));
-    ASSERT_RESULTS(BezierCurve(vec::point( 2,2 ), vec::point( 1.5,2 ), vec::point( 1,2 )).solveXByY(1.5), tt::results3());
-    ASSERT_RESULTS(BezierCurve(vec::point( 1,2 ), vec::point( 1,1.5 ), vec::point( 1,1 )).solveXByY(1.5), tt::results3(1));
+    ASSERT_RESULTS(BezierCurve(vec::point( 1.0f,1.0f ), vec::point( 1.5f,1.0f ), vec::point( 2.0f,1.0f )).solveXByY(1.5f), tt::results3());
+    ASSERT_RESULTS(BezierCurve(vec::point( 2.0f,1.0f ), vec::point( 2.0f,1.5f ), vec::point( 2.0f,2.0f )).solveXByY(1.5f), tt::results3(2.0f));
+    ASSERT_RESULTS(BezierCurve(vec::point( 2.0f,2.0f ), vec::point( 1.5f,2.0f ), vec::point( 1.0f,2.0f )).solveXByY(1.5f), tt::results3());
+    ASSERT_RESULTS(BezierCurve(vec::point( 1.0f,2.0f ), vec::point( 1.0f,1.5f ), vec::point( 1.0f,1.0f )).solveXByY(1.5f), tt::results3(1.0f));
 }

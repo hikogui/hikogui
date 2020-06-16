@@ -333,8 +333,8 @@ vec Window_base::suggestWidgetExtent(vec extent) noexcept {
 [[nodiscard]] std::pair<vec,vec> Window_base::getMinimumAndMaximumWidgetExtent() noexcept {
     auto minimumWidgetExtent = suggestWidgetExtent(vec{0.0f, 0.0f});
     auto maximumWidgetExtent = suggestWidgetExtent(vec{
-        std::numeric_limits<uint32_t>::max(),
-        std::numeric_limits<uint32_t>::max()
+        std::numeric_limits<int>::max(),
+        std::numeric_limits<int>::max()
     });
     
     return {minimumWidgetExtent, maximumWidgetExtent};

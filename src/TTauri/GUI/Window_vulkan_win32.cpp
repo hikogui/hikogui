@@ -574,7 +574,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_NCHITTEST: {
         ttlet screenPosition = vec{
             GET_X_LPARAM(lParam),
-            0.0 - GET_Y_LPARAM(lParam)
+            0 - GET_Y_LPARAM(lParam)
         };
 
         ttlet insideWindowPosition = screenPosition - vec{OSWindowRectangle.offset()};

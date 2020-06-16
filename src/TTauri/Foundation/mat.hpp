@@ -188,11 +188,11 @@ public:
 
         explicit T2(vec rhs) noexcept : t(rhs) {
             tt_assume(rhs.is_vector());
-            tt_assume(rhs.z() == 0.0);
+            tt_assume(rhs.z() == 0.0f);
         }
 
         T2(float x, float y) noexcept :
-            t(x, y, 0.0) {}
+            t(x, y, 0.0f) {}
 
         operator mat::T () const noexcept {
             return mat::T{t};
