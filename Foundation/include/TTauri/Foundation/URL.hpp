@@ -140,9 +140,8 @@ public:
     [[nodiscard]] static std::string nativePathFromPath(std::string_view path) noexcept;
     [[nodiscard]] static std::wstring nativeWPathFromPath(std::string_view path) noexcept;
 
-private:
-    [[nodiscard]] friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
-    [[nodiscard]] friend bool operator<(URL const &lhs, URL const &rhs) noexcept;
+    friend bool operator==(URL const &lhs, URL const &rhs) noexcept;
+    friend bool operator<(URL const &lhs, URL const &rhs) noexcept;
 };
 
 inline bool operator==(URL const &lhs, URL const &rhs) noexcept { return lhs.value == rhs.value; }

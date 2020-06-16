@@ -174,7 +174,7 @@ enum class Processor {
 
 #endif
 
-#if TT_BUILT_TYPE == TT_BT_DEBUG
+#if TT_BUILD_TYPE == TT_BT_DEBUG
 #undef tt_assume
 /** In debug mode, replace tt_assume() with an tt_assert().
 */

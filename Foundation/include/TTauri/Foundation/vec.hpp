@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/exceptions.hpp"
+#include "TTauri/Foundation/float16.hpp"
 #include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>
@@ -56,30 +57,46 @@ public:
     tt_force_inline vec(vec &&rhs) noexcept = default;
     tt_force_inline vec &operator=(vec &&rhs) noexcept = default;
 
-    /** Create a vec out of a __m128
-     */
     tt_force_inline vec(__m128 rhs) noexcept :
         v(rhs) {}
 
-    /** Create a vec out of a __m128
-     */
     tt_force_inline vec &operator=(__m128 rhs) noexcept {
         v = rhs;
         return *this;
     }
 
-    /** Convert a vec to a __m128.
-     */
     tt_force_inline operator __m128 () const noexcept {
         return v;
     }
 
+    explicit tt_force_inline vec(std:array<float,4> const &rhs) noexcept :
+        v(_mm_loadu_ps(rhs.data())) {}
+
+    explicit tt_force_inline vec &operator=(std::array<float,4> const &rhs) noexcept {
+        v = _mm_loadu_ps(rhs.ddata());
+        return *this;
+    }
+
     explicit tt_force_inline operator std::array<float,4> () const noexcept {
         std::array<float,4> r;
-        _mm_storeu_ps(r.data(), *this);
+        _mm_storeu_ps(r.data(), v);
         return r;
     }
-        
+
+    explicit tt_force_inline vec(std::array<float16,4> const &rhs) noexcept :
+        v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data())) {}
+
+    explicit tt_force_inline vec& operator=(std::array<float16,4> const &rhs) noexcept {
+        v = _mm_cvtph_ps(_mm_loadu_si64(rhs.data()));
+        return *this;
+    }
+
+    explicit tt_force_inline operator std::array<float16,4> () const noexcept {
+        std::array<float16,4> r;
+        _mm_storeu_si64(r.data(), _mm_cvtps_ph(v));
+        return r;
+    }
+
     /** Initialize a vec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
