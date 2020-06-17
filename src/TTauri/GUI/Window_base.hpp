@@ -11,7 +11,7 @@
 #include "TTauri/GUI/MouseEvent.hpp"
 #include "TTauri/GUI/KeyboardEvent.hpp"
 #include "TTauri/GUI/SubpixelOrientation.hpp"
-#include "TTauri/GUI/Label.hpp"
+#include "TTauri/Cells/Label.hpp"
 #include "TTauri/Text/gstring.hpp"
 #include "TTauri/Foundation/logger.hpp"
 #include "TTauri/Foundation/vec.hpp"

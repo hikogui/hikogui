@@ -415,7 +415,18 @@ set(TTauri_GUI_srcs
     src/TTauri/GUI/ThemeBook.cpp
     src/TTauri/GUI/KeyboardBindings.cpp
     src/TTauri/GUI/KeyboardEvent.cpp
-    src/TTauri/GUI/Image.cpp
+    src/TTauri/Cells/Image.cpp
+    src/TTauri/Cells/PixelMapCell.cpp
+    src/TTauri/Cells/GlyphCell.cpp
+    src/TTauri/Widgets/globals.cpp
+    src/TTauri/Widgets/Widget.cpp
+    src/TTauri/Widgets/WindowWidget.cpp
+    src/TTauri/Widgets/ToolbarWidget.cpp
+    src/TTauri/Widgets/ToolbarButtonWidget.cpp
+    src/TTauri/Widgets/WindowTrafficLightsWidget.cpp
+    src/TTauri/Widgets/ButtonWidget.cpp
+    src/TTauri/Widgets/ToggleWidget.cpp
+    src/TTauri/Widgets/LineInputWidget.cpp
 )
 
 if(WIN32)
@@ -426,6 +437,7 @@ set(TTauri_GUI_srcs
     src/TTauri/GUI/Window_vulkan_win32.cpp
     src/TTauri/GUI/VerticalSync_win32.cpp
     src/TTauri/GUI/KeyboardVirtualKey_win32.cpp
+    src/TTauri/Widgets/SystemMenuWidget.cpp
 )
 elseif(APPLE)
 set(TTauri_GUI_srcs
@@ -437,26 +449,7 @@ set(TTauri_GUI_srcs
 )
 endif()
 
-set(TTauri_Widgets_srcs
-    src/TTauri/Widgets/globals.cpp
-    src/TTauri/Widgets/Widget.cpp
-    src/TTauri/Widgets/WindowWidget.cpp
-    src/TTauri/Widgets/ToolbarWidget.cpp
-    src/TTauri/Widgets/ToolbarButtonWidget.cpp
-    src/TTauri/Widgets/WindowTrafficLightsWidget.cpp
-    src/TTauri/Widgets/ButtonWidget.cpp
-    src/TTauri/Widgets/ToggleWidget.cpp
-    src/TTauri/Widgets/LineInputWidget.cpp
-    #src/TTauri/Widgets/ImageWidget.cpp
-)
-
-if(WIN32)
-    set(TTauri_Widgets_srcs ${TTauri_Widgets_srcs}
-        src/TTauri/Widgets/SystemMenuWidget.cpp
-    )
-endif()
-
-add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs} ${TTauri_Widgets_srcs})
+add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs})
 target_static_resource(TTauri_GUI ${TTauri_GUI_Shader_objs})
 target_link_libraries(TTauri_GUI TTauri_Foundation TTauri_Text ${Vulkan_LIBRARIES} VMA rhea RenderDoc)
 target_include_directories(TTauri_GUI PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

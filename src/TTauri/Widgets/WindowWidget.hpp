@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Widgets/Widget.hpp"
-#include "TTauri/GUI/Label.hpp"
+#include "TTauri/Cells/Label.hpp"
 
 namespace tt {
 

@@ -13,9 +13,9 @@
 namespace tt {
 
 
-SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image icon) noexcept :
+SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept :
     Widget(window, parent, vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight}),
-    icon(std::move(icon)),
+    iconCell(icon.makeCell()),
     systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
 {
     setFixedExtent(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight});
@@ -26,14 +26,14 @@ void SystemMenuWidget::layout(hires_utc_clock::time_point displayTimePoint) noex
 {
     Widget::layout(displayTimePoint);
 
-    icon.prepareForDrawing(window);
+    iconCell->prepareForDrawing(window);
 }
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
     Widget::draw(drawContext, displayTimePoint);
 
-    if (icon.draw(drawContext, rectangle())) {
+    if (iconCell->draw(drawContext, rectangle(), Alignment::MiddleCenter)) {
         forceRedraw = true;
     }
 }

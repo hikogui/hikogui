@@ -2,7 +2,7 @@
 #pragma once
 
 #include "TTauri/Foundation/URL.hpp"
-#include "TTauri/GUI/Image.hpp"
+#include "TTauri/Cells/Image.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <ostream>
