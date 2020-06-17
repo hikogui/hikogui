@@ -5,14 +5,15 @@
 #include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
 #include "TTauri/Widgets/ToolbarWidget.hpp"
 #include "TTauri/Widgets/ContainerWidget.hpp"
+#include "TTauri/Widgets/SystemMenuWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
 namespace tt {
 
 using namespace std;
 
-WindowWidget::WindowWidget(Window &window) noexcept :
-    Widget(window, nullptr, vec{0.0, 0.0})
+WindowWidget::WindowWidget(Window &window, Label title) noexcept :
+    Widget(window, nullptr, vec{0.0, 0.0}), title(std::move(title))
 {
     toolbar = &makeWidgetDirectly<ToolbarWidget>();
     toolbar->placeLeft(0.0f);
@@ -20,6 +21,7 @@ WindowWidget::WindowWidget(Window &window) noexcept :
     toolbar->placeAtTop(0.0f);
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+        toolbar->makeAlignedWidget<SystemMenuWidget>(Alignment::TopLeft, title.icon());
         toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopRight);
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopLeft);

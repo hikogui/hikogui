@@ -9,6 +9,7 @@
 #include "TTauri/Foundation/vec.hpp"
 #include "TTauri/Foundation/aarect.hpp"
 #include "TTauri/Foundation/mat.hpp"
+#include "TTauri/GUI/PipelineImage_Page.hpp"
 #include <nonstd/span>
 #include <atomic>
 #include <string>
@@ -21,7 +22,6 @@ class R16G16B16A16SFloat;
 
 namespace tt::PipelineImage {
 
-struct Page;
 struct Vertex;
 struct ImageLocation;
 struct DeviceShared;

@@ -6,6 +6,7 @@
 #include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/Foundation/Path.hpp"
+#include "TTauri/GUI/Image.hpp"
 #include <memory>
 #include <string>
 #include <array>
@@ -14,13 +15,14 @@
 namespace tt {
 
 class SystemMenuWidget : public Widget {
-    PixelMap<R16G16B16A16SFloat> image;
+    Image icon;
+
     PipelineImage::Image backingImage;
 
     aarect systemMenuRectangle;
 
 public:
-    SystemMenuWidget(Window &window, Widget *parent, PixelMap<R16G16B16A16SFloat> &&image) noexcept;
+    SystemMenuWidget(Window &window, Widget *parent, Image icon) noexcept;
     ~SystemMenuWidget() {}
 
     SystemMenuWidget(const SystemMenuWidget &) = delete;

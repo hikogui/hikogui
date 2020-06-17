@@ -20,9 +20,17 @@ public:
     Label(Image &&icon) noexcept :
         _text(), _icon(std::move(icon)) {}
 
-    Label(Label const &other) noexcept = delete;
+    Label(Label const &other) noexcept:
+        _text(other._text), _icon(other._icon) {}
+
     Label(Label &&) noexcept = default;
-    Label &operator=(Label const &other) = delete;
+
+    Label &operator=(Label const &other) {
+        _text = other._text;
+        _icon = other._icon;
+        return *this;
+    }
+
     Label &operator=(Label &&) noexcept = default;
 
     /** Get the text translated in the current locale.

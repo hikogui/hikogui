@@ -41,12 +41,9 @@ class png {
     bool is_color;
     int samples_per_pixel = 0;
     int bits_per_pixel = 0;
+    int bytes_per_pixel = 0;
     int bytes_per_line = 0;
     int stride = 0;
-
-    /** Bytes per pixel.
-     */
-    int bpp = 0;
 
     /** Spans of compressed data.
      */

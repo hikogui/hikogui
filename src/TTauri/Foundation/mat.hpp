@@ -544,14 +544,23 @@ public:
     }
 
     /** Align a rectangle within another rectangle.
-    * @param outside The outside rectangle
-    * @param inside The inside rectangle; to be aligned.
+    * @param haystack The outside rectangle
+    * @param needle The inside rectangle; to be aligned.
     * @param alignment How the inside rectangle should be aligned.
-    * @return Translation matrix to draw the inside rectangle as if the inside
-    *         rectangle's left-bottom corner is positioned at the origin.
+    * @return Translation matrix to move and align the needle in the haystack
     */
-    [[nodiscard]] static mat::T align(aarect outside, aarect inside, Alignment alignment) noexcept {
-        return mat::T{aarect::_align(outside, inside, alignment).offset()};
+    [[nodiscard]] static mat::T align(aarect haystack, aarect needle, Alignment alignment) noexcept {
+        return mat::T{
+            aarect::_align(haystack, needle, alignment).offset() -
+            needle.offset()
+        };
+    }
+
+    [[nodiscard]] static mat uniform2D_scale_and_translate(aarect haystack, aarect needle, Alignment alignment) noexcept {
+        ttlet scale = S::uniform2D(haystack.extent(), needle.extent());
+        ttlet scaled_needle = scale * needle;
+        ttlet translation = align(haystack, scaled_needle, alignment);
+        return translation * scale;
     }
 
     [[nodiscard]] friend std::string to_string(mat const &rhs) noexcept {

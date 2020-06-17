@@ -39,7 +39,7 @@ void Window_base::initialize()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    widget = std::make_unique<WindowWidget>(*static_cast<Window *>(this));
+    widget = std::make_unique<WindowWidget>(*static_cast<Window *>(this), title);
 
     // The width and height of the window will be modified by the user and also for
     // testing the minimum and maximum size of the window.

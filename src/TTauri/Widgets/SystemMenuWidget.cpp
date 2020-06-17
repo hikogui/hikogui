@@ -13,9 +13,9 @@
 namespace tt {
 
 
-SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, PixelMap<R16G16B16A16SFloat> &&image) noexcept :
+SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image icon) noexcept :
     Widget(window, parent, vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight}),
-    image(std::move(image)),
+    icon(std::move(icon)),
     systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
 {
     setFixedExtent(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight});
@@ -26,24 +26,15 @@ void SystemMenuWidget::layout(hires_utc_clock::time_point displayTimePoint) noex
 {
     Widget::layout(displayTimePoint);
 
-    backingImage = device()->imagePipeline->makeImage(rectangle().extent());
-    backingImage.upload(image);
+    icon.prepareForDrawing(window);
 }
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    switch (backingImage.state) {
-    case PipelineImage::Image::State::Drawing:
+    Widget::draw(drawContext, displayTimePoint);
+
+    if (icon.draw(drawContext, rectangle())) {
         forceRedraw = true;
-        break;
-
-    case PipelineImage::Image::State::Uploaded: {
-        auto context = drawContext;
-        context.transform = context.transform * mat::S::uniform2D(extent(), backingImage.extent);
-        context.drawImage(backingImage);
-        } break;
-
-    default:;
     }
 }
 

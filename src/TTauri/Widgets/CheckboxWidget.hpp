@@ -72,11 +72,12 @@ public:
         button_y = rectangle().height() - button_height;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
 
-        check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
 
         ttlet checkFontId = fontBook->find_font("Arial", FontWeight::Regular, false);
         checkGlyph = fontBook->find_glyph(checkFontId, Grapheme{check});
         checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.2f);
+
+        check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

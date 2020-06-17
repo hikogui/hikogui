@@ -134,7 +134,7 @@ void png::read_IHDR(nonstd::span<std::byte const> bytes)
     bits_per_pixel = samples_per_pixel * bit_depth;
     bytes_per_line = (bits_per_pixel * width + 7) / 8;
     stride = bytes_per_line + 1;
-    bpp = std::max(1, bits_per_pixel / 8);
+    bytes_per_pixel = std::max(1, bits_per_pixel / 8);
 
     generate_sRGB_transfer_function();
 }
@@ -322,7 +322,7 @@ bstring png::decompress_IDATs(ssize_t image_data_size) const {
 void png::unfilter_line_sub(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
-        int j = i - bpp;
+        int j = i - bytes_per_pixel;
 
         uint8_t prev_raw = j >= 0 ? line[j] : 0;
         line[i] += prev_raw;
@@ -339,7 +339,7 @@ void png::unfilter_line_up(nonstd::span<uint8_t> line, nonstd::span<uint8_t cons
 void png::unfilter_line_average(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
-        int j = i - bpp;
+        int j = i - bytes_per_pixel;
 
         uint8_t prev_raw = j >= 0 ? line[j] : 0;
         line[i] += (prev_raw + prev_line[i]) / 2;
@@ -368,11 +368,12 @@ static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept {
 void png::unfilter_line_paeth(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
-        int j = i - bpp;
+        int j = i - bytes_per_pixel;
 
-        uint8_t prev_raw = j >= 0 ? line[j] : 0;
-        uint8_t prev_up = j >= 0 ? prev_line[i] : 0;
-        line[i] += paeth_predictor(prev_raw, prev_line[i], prev_up);
+        uint8_t up = prev_line[i];
+        uint8_t left = j >= 0 ? line[j] : 0;
+        uint8_t left_up = j >= 0 ? prev_line[j] : 0;
+        line[i] += paeth_predictor(left, up, left_up);
     }
 }
 
@@ -421,7 +422,7 @@ ivec png::extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) co
     int b = 0;
     int a = 0;
 
-    ssize_t offset = x * bpp;
+    ssize_t offset = x * bytes_per_pixel;
     if (is_color) {
         r = get_sample(bytes, offset, bit_depth == 16);
         g = get_sample(bytes, offset, bit_depth == 16);

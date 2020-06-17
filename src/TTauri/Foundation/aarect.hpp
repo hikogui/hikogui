@@ -223,21 +223,21 @@ public:
     }
 
     /** Align a rectangle within another rectangle.
-     * @param outside The outside rectangle
-     * @param inside The inside rectangle; to be aligned.
+     * @param haystack The outside rectangle
+     * @param needle The inside rectangle; to be aligned.
      * @param alignment How the inside rectangle should be aligned.
-     * @return The repositioned inside rectangle.
+     * @return The needle rectangle repositioned and aligned inside the haystack.
      */
-    [[nodiscard]] friend aarect align(aarect outside, aarect inside, Alignment alignment) noexcept {
+    [[nodiscard]] friend aarect align(aarect haystack, aarect needle, Alignment alignment) noexcept {
         float x;
         if (alignment == HorizontalAlignment::Left) {
-            x = outside.p0().x();
+            x = haystack.p0().x();
 
         } else if (alignment == HorizontalAlignment::Right) {
-            x = outside.p3().x() - inside.width();
+            x = haystack.p3().x() - needle.width();
 
         } else if (alignment == HorizontalAlignment::Center) {
-            x = (outside.p0().x() + (outside.width() * 0.5f)) - (inside.width() * 0.5f);
+            x = (haystack.p0().x() + (haystack.width() * 0.5f)) - (needle.width() * 0.5f);
 
         } else {
             tt_no_default;
@@ -245,19 +245,19 @@ public:
 
         float y;
         if (alignment == VerticalAlignment::Bottom) {
-            y = outside.p0().y();
+            y = haystack.p0().y();
 
         } else if (alignment == VerticalAlignment::Top) {
-            y = outside.p3().y() - inside.height();
+            y = haystack.p3().y() - needle.height();
 
         } else if (alignment == VerticalAlignment::Middle) {
-            y = (outside.p0().y() + (outside.height() * 0.5f)) - (inside.height() * 0.5f);
+            y = (haystack.p0().y() + (haystack.height() * 0.5f)) - (needle.height() * 0.5f);
 
         } else {
             tt_no_default;
         }
 
-        return {vec::point(x, y), inside.extent()};
+        return {vec::point(x, y), needle.extent()};
     }
 
     /** Need to call the hiden friend function from within another class.

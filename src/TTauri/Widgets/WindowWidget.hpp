@@ -4,16 +4,19 @@
 #pragma once
 
 #include "TTauri/Widgets/Widget.hpp"
+#include "TTauri/GUI/Label.hpp"
 
 namespace tt {
 
 class ToolbarWidget;
 
 class WindowWidget : public Widget {
+    Label title;
+
 public:
     ToolbarWidget *toolbar = nullptr;
 
-    WindowWidget(Window &window) noexcept;
+    WindowWidget(Window &window, Label title) noexcept;
 
     WindowWidget(const WindowWidget&) = delete;
     WindowWidget &operator=(const WindowWidget&) = delete;

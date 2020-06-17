@@ -225,6 +225,10 @@ struct PixelMap {
         return *this;
     }
 
+    ivec extent() const noexcept {
+        return {width, height};
+    }
+
     /** Get a (smaller) view of the map.
      * @param rect offset and extent of the rectangle to return.
      * @return A new pixel-map that point to the same memory as the current pixel-map.
