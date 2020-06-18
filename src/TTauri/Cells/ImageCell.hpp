@@ -8,9 +8,6 @@
 namespace tt {
 
 class ImageCell: public Cell {
-
-
-
 };
 
 }

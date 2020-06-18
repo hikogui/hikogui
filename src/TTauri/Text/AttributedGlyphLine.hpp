@@ -20,12 +20,14 @@ struct AttributedGlyphLine {
     float ascender;
     float descender;
     float lineGap;
+    float capHeight;
+    float xHeight;
     float y;
 
     /** This constructor will move the data from first to last.
     */
     AttributedGlyphLine(iterator first, iterator last) noexcept :
-        line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f)
+        line(), width(0.0f), ascender(0.0f), descender(0.0f), lineGap(0.0f), capHeight(0.0f), xHeight(0.0f)
     {
         tt_assume(std::distance(first, last) > 0);
 
@@ -140,6 +142,8 @@ private:
         ascender = 0.0f;
         descender = 0.0f;
         lineGap = 0.0f;
+        capHeight = 0.0f;
+        xHeight = 0.0f;
 
         auto totalWidth = 0.0f;
         auto validWidth = 0.0f;
@@ -148,12 +152,16 @@ private:
             ascender = std::max(ascender, g.metrics.ascender);
             descender = std::max(descender, g.metrics.descender);
             lineGap = std::max(lineGap, g.metrics.lineGap);
+            capHeight += g.metrics.capHeight;
+            xHeight += g.metrics.xHeight;
 
             if (g.isVisible()) {
                 // Don't include trailing whitespace in the width.
                 validWidth = totalWidth;
             }
         }
+        capHeight /= numeric_cast<float>(ssize(line));
+        xHeight /= numeric_cast<float>(ssize(line));
 
         width = validWidth;
     }

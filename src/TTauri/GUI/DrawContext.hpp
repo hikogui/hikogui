@@ -101,6 +101,12 @@ public:
     DrawContext &operator=(DrawContext &&rhs) noexcept = default;
     ~DrawContext() = default;
 
+    GUIDevice &device() const noexcept {
+        tt_assume(window);
+        tt_assume(window->device);
+        return *(window->device);
+    }
+
     /** Draw a polygon with four corners of one color.
      * This function will draw a polygon between the four given points.
      * This will use the current:
@@ -217,7 +223,7 @@ public:
         tt_assume(window != nullptr);
         tt_assume(sdfVertices != nullptr);
 
-        window->device->SDFPipeline->placeVertices(
+        device().SDFPipeline->placeVertices(
             *sdfVertices,
             text,
             transform,
@@ -236,7 +242,7 @@ public:
         tt_assume(window != nullptr);
         tt_assume(sdfVertices != nullptr);
 
-        window->device->SDFPipeline->placeVertices(
+        device().SDFPipeline->placeVertices(
             *sdfVertices,
             text,
             transform,
@@ -249,7 +255,7 @@ public:
         tt_assume(window != nullptr);
         tt_assume(sdfVertices != nullptr);
 
-        window->device->SDFPipeline->placeVertices(
+        device().SDFPipeline->placeVertices(
             *sdfVertices,
             glyph,
             transform * box,

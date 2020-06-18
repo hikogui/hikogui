@@ -25,8 +25,6 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 void SystemMenuWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
     Widget::layout(displayTimePoint);
-
-    iconCell->prepareForDrawing(window);
 }
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

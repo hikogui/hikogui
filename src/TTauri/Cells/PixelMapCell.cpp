@@ -9,25 +9,22 @@
 namespace tt {
 
 PixelMapCell::PixelMapCell(PixelMap<R16G16B16A16SFloat> &&pixelMap) :
-    pixelMap(std::move(pixelMap)), updated(true) {}
+    pixelMap(std::move(pixelMap)) {}
 
 PixelMapCell::PixelMapCell(PixelMap<R16G16B16A16SFloat> const &pixelMap) :
-    pixelMap(pixelMap.copy()), updated(true) {}
+    pixelMap(pixelMap.copy()) {}
 
 PixelMapCell::PixelMapCell(URL const &url) :
     PixelMapCell(png::load(url)) {}
 
-void PixelMapCell::prepareForDrawing(Window &window) noexcept
+bool PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
 {
-    if (window.device && updated) {
-        backing = window.device->imagePipeline->makeImage(pixelMap.extent());
+    if (modified) {
+        backing = drawContext.device().imagePipeline->makeImage(pixelMap.extent());
         backing.upload(pixelMap);
-        updated = false;
+        modified = false;
     }
-}
 
-bool PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment) noexcept
-{
     ttlet boundingBox = aarect{backing.extent};
 
     auto context = drawContext;

@@ -10,26 +10,41 @@ namespace tt {
 class DrawContext;
 
 class Cell {
+protected:
+    /** Set to true when the data of the cell has been modified.
+     */
+    mutable bool modified;
+
 public:
-    Cell() = default;
+    Cell() : modified(true) {}
     virtual ~Cell() = default;
     Cell(Cell const &) noexcept = delete;
     Cell(Cell &&) noexcept = delete;
     Cell &operator=(Cell const &) noexcept = delete;
     Cell &operator=(Cell &&) noexcept = delete;
 
-    /** Prepare the cell for drawing its contents.
+    /** Return the extent that this cell wants to be drawn as.
      */
-    virtual void prepareForDrawing(Window &device) noexcept = 0;
+    [[nodiscard]] virtual vec preferedExtent() const noexcept { return {}; }
 
-    /** Draw the image.
+    /** Get the height to draw this cell for the given width.
+     */
+    [[nodiscard]] virtual float heightForWidth(float width) const noexcept { return 0.0f; }
+
+    /** Draw the cell.
     *
     * @param drawContext The current draw context.
     * @param rectangle The position and size of the image.
     * @param alignment The alignment within the rectangle.
+    * @param middle The height of the middle of the line of text.
     * @return true when a redraw is needed.
     */
-    [[nodiscard]] virtual bool draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment) noexcept = 0;
+    [[nodiscard]] virtual bool draw(
+        DrawContext const &drawContext,
+        aarect rectangle,
+        Alignment alignment,
+        float middle=std::numeric_limits<float>::max()
+    ) const noexcept = 0;
 };
 
 }

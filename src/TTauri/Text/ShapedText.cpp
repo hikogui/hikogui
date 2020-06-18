@@ -44,37 +44,6 @@ namespace tt {
     return glyphs;
 }
 
-[[nodiscard]] std::pair<float,float> get_cap_and_x_height(std::vector<AttributedGlyph> const &glyphs) noexcept
-{
-    auto capHeightCounts = small_map<float,int,8>{};
-    auto xHeightCounts = small_map<float,int,8>{};
-
-    for (ttlet &g: glyphs) {
-        capHeightCounts.increment(g.metrics.capHeight);
-        xHeightCounts.increment(g.metrics.xHeight);
-    }
-
-    float maxCapHeight = 0.0;
-    int maxCapHeightCount = 0;
-    for (ttlet &[height, count] : capHeightCounts) {
-        if (count > maxCapHeightCount) {
-            maxCapHeightCount = count;
-            maxCapHeight = height;
-        }
-    }
-
-    float maxXHeight = 0.0;
-    int maxXHeightCount = 0;
-    for (ttlet &[height, count] : xHeightCounts) {
-        if (count > maxXHeightCount) {
-            maxXHeightCount = count;
-            maxXHeight = height;
-        }
-    }
-
-    return {maxCapHeight, maxXHeight};
-}
-
 /** Make lines from the glyphs.
  */
 [[nodiscard]] static std::vector<AttributedGlyphLine> make_lines(std::vector<AttributedGlyph> &&glyphs) noexcept
@@ -253,8 +222,6 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
 }
 
 struct shape_text_result {
-    float capHeight;
-    float xHeight;
     vec preferedExtent;
     aarect boundingBox;
     std::vector<AttributedGlyphLine> lines;
@@ -299,8 +266,6 @@ struct shape_text_result {
     // Convert attributed-graphemes into attributes-glyphs using FontBook's find_glyph algorithm.
     auto glyphs = graphemes_to_glyphs(text);
 
-    ttlet [capHeight, xHeight] = get_cap_and_x_height(glyphs);
-
     // Split the text up in lines, based on line-feeds and line-wrapping.
     auto lines = make_lines(std::move(glyphs));
 
@@ -321,8 +286,6 @@ struct shape_text_result {
 
 
     return {
-        capHeight,
-        xHeight,
         prefered_extent,
         bounding_box,
         lines
@@ -336,11 +299,10 @@ ShapedText::ShapedText(
     Alignment alignment,
     bool wrap
 ) noexcept :
-    alignment(alignment)
+    alignment(alignment),
+    width(width)
 {
     auto result = shape_text(text, width, alignment, wrap);
-    capHeight = result.capHeight;
-    xHeight = result.xHeight;
     preferedExtent = result.preferedExtent;
     boundingBox = result.boundingBox;
     lines = std::move(result.lines);
@@ -356,7 +318,7 @@ noexcept :
     ShapedText(makeAttributedGraphemeVector(text, style), width, alignment, wrap) {}
 
 ShapedText::ShapedText(
-    std::string const &text,
+    std::string_view text,
     TextStyle const &style,
     float width,
     Alignment alignment,

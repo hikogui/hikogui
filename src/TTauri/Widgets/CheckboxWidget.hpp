@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Widgets/Widget.hpp"
+#include "TTauri/Cells/TextCell.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Text/FontBook.hpp"
 #include "TTauri/Foundation/observer.hpp"
@@ -20,10 +21,10 @@ class CheckboxWidget : public Widget {
 protected:
     observer<ValueType> value;
 
-    std::string label = "<unknown>";
     char32_t check = 0x2713;
 
-    ShapedText labelShapedText;
+    std::unique_ptr<TextCell> labelCell;
+
     FontGlyphIDs checkGlyph;
     aarect checkBoundingBox;
 
@@ -31,6 +32,7 @@ protected:
     float button_width;
     float button_x;
     float button_y;
+    float button_middle;
     aarect button_rectangle;
 
     aarect label_rectangle;
@@ -42,7 +44,7 @@ public:
     CheckboxWidget(Window &window, Widget *parent, observable<ValueType> &value, std::string const label) noexcept :
         Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
         value(value, [this](auto...){ forceRedraw = true; }),
-        label(std::move(label))
+        labelCell(std::make_unique<TextCell>(label, theme->labelStyle))
     {}
 
     ~CheckboxWidget() {}
@@ -62,15 +64,14 @@ public:
             rectangle().width() - label_x, rectangle().height()
         };
 
-        labelShapedText = ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
-        label_translate = labelShapedText.T(label_rectangle);
-        setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
+        setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
 
         button_height = Theme::smallHeight;
         button_width = Theme::smallHeight;
         button_x = Theme::smallWidth - button_width;
         button_y = rectangle().height() - button_height;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
+        button_middle = button_y + button_height * 0.5f;
 
 
         ttlet checkFontId = fontBook->find_font("Arial", FontWeight::Regular, false);
@@ -101,9 +102,9 @@ public:
             context.drawFilledQuad(shrink(button_rectangle, 3.0f));
         }
         
-        // user defined label.
-        context.transform = drawContext.transform * label_translate * mat::T{0.0, 0.0, 0.001f};
-        context.drawText(labelShapedText);
+        if (labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle)) {
+            forceRedraw = true;
+        }
 
         Widget::draw(drawContext, displayTimePoint);
     }

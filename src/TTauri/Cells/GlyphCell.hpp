@@ -11,7 +11,7 @@ namespace tt {
 
 class GlyphCell : public ImageCell {
     FontGlyphIDs glyph;
-    aarect boundingBox;
+    mutable aarect boundingBox;
 
 public:
     GlyphCell(FontGlyphIDs glyph);
@@ -21,9 +21,7 @@ public:
     GlyphCell &operator=(GlyphCell const &) noexcept = delete;
     GlyphCell &operator=(GlyphCell &&) noexcept = delete;
 
-    void prepareForDrawing(Window &device) noexcept override;
-
-    [[nodiscard]] bool draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment) noexcept override;
+    [[nodiscard]] bool draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept override;
 };
 
 }

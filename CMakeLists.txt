@@ -418,6 +418,7 @@ set(TTauri_GUI_srcs
     src/TTauri/Cells/Image.cpp
     src/TTauri/Cells/PixelMapCell.cpp
     src/TTauri/Cells/GlyphCell.cpp
+    src/TTauri/Cells/TextCell.cpp
     src/TTauri/Widgets/globals.cpp
     src/TTauri/Widgets/Widget.cpp
     src/TTauri/Widgets/WindowWidget.cpp

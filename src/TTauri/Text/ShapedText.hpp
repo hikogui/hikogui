@@ -31,9 +31,8 @@ public:
         AttributedGlyphLine::const_iterator>;
 
     Alignment alignment;
-    float capHeight;
-    float xHeight;
     aarect boundingBox;
+    float width;
     vec preferedExtent;
 
 private:
@@ -41,7 +40,7 @@ private:
 
 public:
     ShapedText() noexcept :
-        alignment(Alignment::MiddleCenter), capHeight(0.0), xHeight(0.0), boundingBox(), preferedExtent(), lines() {}
+        alignment(Alignment::MiddleCenter), boundingBox(), width(0.0f), preferedExtent(), lines() {}
     ShapedText(ShapedText const &other) = default;
     ShapedText(ShapedText &&other) noexcept = default;
     ShapedText &operator=(ShapedText const &other) = default;
@@ -103,7 +102,7 @@ public:
      * @param wrap When fitting the text in the extent wrap lines when needed.
      */
     ShapedText(
-        std::string const &text,
+        std::string_view text,
         TextStyle const &style,
         float width,
         Alignment const alignment=Alignment::MiddleCenter,
@@ -126,13 +125,61 @@ public:
     [[nodiscard]] const_iterator end() const noexcept { return nested_vector_iterator_cend(lines); }
     [[nodiscard]] const_iterator cend() const noexcept { return nested_vector_iterator_cend(lines); }
 
+    float topAccender() const noexcept {
+        return lines.front().ascender;
+    }
+
+    float bottomDescender() const noexcept {
+        return lines.back().descender;
+    }
+
+    float topCapHeight() const noexcept {
+        return lines.front().capHeight;
+    }
+
+    float bottomCapHeight() const noexcept {
+        return lines.back().capHeight;
+    }
+
+    /** Get the capHeight of the middle line(s).
+     */
+    float middleCapHeight() const noexcept {
+        if ((ssize(lines) % 2) == 1) {
+            return lines[ssize(lines) / 2].capHeight;
+        } else {
+            return (lines[ssize(lines) / 2 - 1].capHeight + lines[ssize(lines) / 2].capHeight) * 0.5f;
+        }
+    }
+
+    /** Get the offset of the baseline
+     * The offset of the baseline when the text needs to be rendered inside
+     * a box of the given height.
+     * The offset is depended on the vertical alignment of the shaped text.
+     */
     float baselineOffset(float height) noexcept {
         if (alignment == VerticalAlignment::Top) {
-            return height - lines.front().ascender;
+            return height - topAccender();
         } else if (alignment == VerticalAlignment::Bottom) {
-            return lines.back().descender;
+            return bottomDescender();
         } else if (alignment == VerticalAlignment::Middle) {
-            return height * 0.5f - capHeight * 0.5f;
+            return height * 0.5f - middleCapHeight() * 0.5f;
+        } else {
+            tt_no_default;
+        }
+    }
+
+    /** Get the offset of the middle of a line.
+    * The offset of the baseline when the middle of a line needs to be
+    * at a specific height.
+    * The offset is depended on the vertical alignment of the shaped text.
+    */
+    float middleOffset(float height) const noexcept {
+        if (alignment == VerticalAlignment::Top) {
+            return height - topCapHeight() * 0.5f;
+        } else if (alignment == VerticalAlignment::Bottom) {
+            return height - bottomCapHeight() * 0.5f;
+        } else if (alignment == VerticalAlignment::Middle) {
+            return height - middleCapHeight() * 0.5f;
         } else {
             tt_no_default;
         }
@@ -147,6 +194,17 @@ public:
         return {
             rectangle.x(),
             rectangle.y() + baselineOffset(rectangle.height())
+        };
+    }
+
+    /** Get the translation for where to place the text.
+    * @param position x is the left position,
+    *                 y is where the middle of the line should be.
+    */
+    mat::T2 TMiddle(vec position) noexcept {
+        return {
+            position.x(),
+            middleOffset(position.y())
         };
     }
 

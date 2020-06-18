@@ -11,13 +11,13 @@ namespace tt {
 GlyphCell::GlyphCell(FontGlyphIDs glyph) :
     glyph(std::move(glyph)) {}
 
-void GlyphCell::prepareForDrawing(Window &window) noexcept
+bool GlyphCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
 {
-    boundingBox = PipelineSDF::DeviceShared::getBoundingBox(glyph);
-}
+    if (modified) {
+        boundingBox = PipelineSDF::DeviceShared::getBoundingBox(glyph);
+        modified = false;
+    }
 
-bool GlyphCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment) noexcept
-{
     auto context = drawContext;
     context.transform =
         context.transform *
