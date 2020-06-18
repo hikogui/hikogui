@@ -309,6 +309,7 @@ set(TTauri_Text_srcs
     src/TTauri/Text/TextStyle.cpp
     src/TTauri/Text/FontGlyphIDs.cpp
     src/TTauri/Text/AttributedGlyph.cpp
+    src/TTauri/Text/language_win32.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/tools/UnicodeData_converter.py")
@@ -341,6 +342,9 @@ target_link_libraries(TTauri_Text TTauri_Foundation)
 target_static_resource(TTauri_Text ${TTauri_Text_resources})
 target_include_directories(TTauri_Text PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Text PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+if (WIN32)
+    target_link_libraries(TTauri_Text windowsapp.lib)
+endif()
 
 set(TTauri_Text_tests
     src/TTauri/Text/UnicodeData_tests.cpp
