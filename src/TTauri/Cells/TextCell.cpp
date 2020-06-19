@@ -11,6 +11,9 @@ namespace tt {
 TextCell::TextCell(std::string_view text, TextStyle style) noexcept :
     text(text), style(style), shapedText(text, style, 0.0f, Alignment::TopLeft) {}
 
+TextCell::TextCell(std::string text, TextStyle style) noexcept :
+    text(std::move(text)), style(style), shapedText(this->text, style, 0.0f, Alignment::TopLeft) {}
+
 vec TextCell::preferedExtent() const noexcept
 {
     return shapedText.preferedExtent;

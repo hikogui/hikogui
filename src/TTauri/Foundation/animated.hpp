@@ -57,6 +57,11 @@ public:
         next_value = prev_value;
     }
 
+    template<typename Func>
+    size_t add_callback(Func &&func) {
+        return observed_value.add_callback(std::forward<Func>(func));
+    }
+
     operator value_type () const noexcept {
         return static_cast<value_type>(observed_value);
     }

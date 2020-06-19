@@ -5,6 +5,7 @@
 
 #include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
+#include "TTauri/Text/format10.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>
 #include <string>
@@ -14,31 +15,38 @@
 
 namespace tt {
 
-template<typename ValueType, ValueType ActiveValue>
+template<typename ValueType>
 class RadioButtonWidget : public Widget {
 protected:
-    observer<ValueType> value;
-
-    std::string label = "<unknown>";
-
-    ShapedText labelShapedText;
-
     float button_height;
     float button_width;
     float button_x;
     float button_y;
+    float button_middle;
     aarect button_rectangle;
     aarect pip_rectangle;
     aarect label_rectangle;
     mat::T label_translate;
-public:
+    std::unique_ptr<TextCell> labelCell;
 
-    template<typename Value>
-    RadioButtonWidget(Window &window, Widget *parent, Value &&value, std::string const label) noexcept :
-        Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
-        value(std::forward<Value>(value), [this](auto...){ forceRedraw = true; }),
-        label(std::move(label))
+    ValueType activeValue;
+public:
+    observer<ValueType> value;
+    observer<format10> label;
+
+    template<typename V>
+    RadioButtonWidget(Window &window, Widget *parent, V &&value, ValueType activeValue) noexcept :
+        Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
+        activeValue(std::move(activeValue)),
+        value(std::forward<V>(value)),
+        label()
     {
+        value.add_callback([this](auto...){
+            forceRedraw = true;
+        });
+        label.add_callback([this](auto...){
+            forceLayout = true;
+        });
     }
 
     ~RadioButtonWidget() {}
@@ -58,9 +66,8 @@ public:
             rectangle().width() - label_x, rectangle().height()
         };
 
-        labelShapedText = ShapedText(label, theme->labelStyle, label_rectangle.width(), Alignment::TopLeft);
-        label_translate = labelShapedText.T(label_rectangle);
-        setFixedHeight(std::max(labelShapedText.boundingBox.height(), Theme::smallHeight));
+        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+        setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
 
         // Prepare coordinates.
         // The button is expanded by half a pixel on each side because it is round.
@@ -69,6 +76,7 @@ public:
         button_x = (Theme::smallWidth - Theme::smallHeight) - 0.5f;
         button_y = (rectangle().height() - Theme::smallHeight) - 0.5f;
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
+        button_middle = button_y + button_height * 0.5f;
 
         ttlet pip_x = (Theme::smallWidth - Theme::smallHeight) + 1.5f;
         ttlet pip_y = (rectangle().height() - Theme::smallHeight) + 1.5f;
@@ -84,7 +92,7 @@ public:
         context.drawBoxIncludeBorder(button_rectangle);
 
         // draw pip
-        if (value == ActiveValue) {
+        if (value == activeValue) {
             if (enabled && window.active) {
                 context.color = theme->accentColor;
             }
@@ -93,9 +101,9 @@ public:
             context.drawBoxIncludeBorder(pip_rectangle);
         }
 
-        // user defined label.
-        context.transform = drawContext.transform * (mat::T{0.0, 0.0, 0.001f} * label_translate);
-        context.drawText(labelShapedText);
+        if (labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle)) {
+            forceRedraw = true;
+        }
 
         Widget::draw(drawContext, displayTimePoint);
     }
@@ -120,7 +128,7 @@ public:
         }
 
         if (command == "gui.activate"_ltag) {
-            if (assign_and_compare(value, ActiveValue)) {
+            if (assign_and_compare(value, activeValue)) {
                 forceRedraw = true;
             }
         }

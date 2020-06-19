@@ -4,6 +4,7 @@
 #pragma once
 #include "TTauri/Foundation/type_traits.hpp"
 #include "TTauri/Foundation/notifier.hpp"
+#include "TTauri/Foundation/fast_mutex.hpp"
 #include <functional>
 #include <vector>
 #include <atomic>
@@ -56,7 +57,7 @@ class obexpr_impl: public obexpr_owner {
 public:
 
 private:
-    mutable std::mutex mutex;
+    mutable fast_mutex mutex;
     std::vector<obexpr_owner *> owners;
 
 protected:
@@ -153,7 +154,9 @@ public:
 template<typename T>
 class observable {
 private:
-    std::atomic<T> value;
+    mutable fast_mutex mutex;
+
+    T value;
     notifier<T> _notifier;
 
 public:
@@ -169,32 +172,33 @@ public:
     observable() :
         value() {}
 
-    observable(T v) :
-        value(std::move(v)) {}
-
-    observable(T v, callback_type callback) :
-        value(std::move(v))
-    {
-        _notifier.add_and_call(
-            std::move(callback),
-            value.load(std::memory_order::memory_order_relaxed)
-        );
-    }
+    observable(T value) :
+        value(std::move(value)) {}
 
     T operator=(T const &v) noexcept {
-        value.store(v, std::memory_order::memory_order_relaxed);
+        {
+            auto lock = std::scoped_lock(mutex);
+            value = v;
+        }
         _notifier(v);
         return v;
     }
 
     operator T () const noexcept {
-        return value.load(std::memory_order::memory_order_relaxed);
+        auto lock = std::scoped_lock(mutex);
+        return value;
     }
 
-    [[nodiscard]] size_t add_callback(callback_type callback) noexcept {
+    size_t add_callback(callback_type callback) noexcept {
+        T _value;
+        {
+            auto lock = std::scoped_lock(mutex);
+            _value = value;
+        }
+
         return _notifier.add_and_call(
             std::move(callback),
-            value.load(std::memory_order::memory_order_relaxed)
+            _value
         );
     }
 
@@ -274,10 +278,11 @@ public:
 template<typename T>
 class observer : public obexpr_owner {
 private:
+    mutable fast_mutex mutex;
     notifier<T> _notifier;
 
     std::shared_ptr<obexpr_impl<T>> expr;
-    std::atomic<T> value;
+    T value;
 
 public:
     using value_type = T;
@@ -299,47 +304,58 @@ public:
     observer(T value) :
         value(std::move(value)) {}
 
-    observer(T value, callback_type f) :
-        value(std::move(value))
+    observer(obexpr<T> const &e)
     {
-        _notifier.add_and_call(
-            std::move(f),
-            this->value.load(std::memory_order::memory_order_relaxed)
-        );
-    }
-
-    observer(obexpr<T> const &e, callback_type f)
-    {
-        // Only add, do not call, since the add_owner below will cause
-        // a call down the chain.
-        _notifier.add(std::move(f));
-
         expr = e.expr;
         expr->add_owner(this);
     }
 
-    observer(observable<T> &e, callback_type f) :
-        observer(obexpr<T>{e}, std::move(f)) {}
+    observer(observable<T> &e) :
+        observer(obexpr<T>{e}) {}
+
+    ssize_t add_callback(callback_type f) noexcept {
+        T tmp;
+        {
+            auto lock = std::scoped_lock(mutex);
+            tmp = this->value;
+        }
+        return _notifier.add_and_call(f, tmp);
+    }
+
+    void remove_callback(size_t id) noexcept {
+        _notifier.remove(id);
+    }
 
     T operator=(obexpr<T> const &e) noexcept {
         expr = e.expr;
         expr->add_owner(this);
-        return value.load(std::memory_order::memory_order_relaxed);
+
+        auto lock = std::scoped_lock(mutex);
+        return value;
     }
 
     T operator=(observable<T> &e) noexcept {
         return (*this) = obexpr<T>{e};
     }
 
+    T operator*() const noexcept {
+        auto lock = std::scoped_lock(mutex);
+        return value;
+    }
+
     operator T () const noexcept {
-        return value.load(std::memory_order::memory_order_relaxed);
+        auto lock = std::scoped_lock(mutex);
+        return value;
     }
 
     T operator=(T const &rhs) {
         if (expr) {
             expr->store(rhs);
         } else {
-            value.store(rhs, std::memory_order::memory_order_relaxed);
+            {
+                auto lock = std::scoped_lock(mutex);
+                value = rhs;
+            }
             _notifier(rhs);
         }
         return rhs;
@@ -352,7 +368,10 @@ public:
     void handle_notification() noexcept override {
         tt_assume(expr);
         auto new_value = expr->load();
-        value.store(new_value);
+        {
+            auto lock = std::scoped_lock(mutex);
+            value = new_value;
+        }
         _notifier(new_value);
     }
 };

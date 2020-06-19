@@ -18,7 +18,8 @@ namespace tt {
 * The implementation is located here so that widget is a concrete type.
 */
 template<typename T, typename... Args>
-T &Window_base::makeWidget(Args &&... args) {
+T &Window_base::makeWidget(Args &&... args)
+{
     tt_assume(widget);
     return widget->makeWidget<T>(std::forward<Args>(args)...);
 }

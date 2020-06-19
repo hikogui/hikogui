@@ -7,6 +7,7 @@
 #include "TTauri/Cells/TextCell.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Text/FontBook.hpp"
+#include "TTauri/Text/format10.hpp"
 #include "TTauri/Foundation/observer.hpp"
 #include <memory>
 #include <string>
@@ -16,11 +17,9 @@
 
 namespace tt {
 
-template<typename ValueType, ValueType TrueValue, ValueType FalseValue>
+template<typename ValueType>
 class CheckboxWidget : public Widget {
 protected:
-    observer<ValueType> value;
-
     char32_t check = 0x2713;
 
     std::unique_ptr<TextCell> labelCell;
@@ -39,13 +38,30 @@ protected:
 
     mat::T label_translate;
     aarect check_rectangle;
-public:
 
-    CheckboxWidget(Window &window, Widget *parent, observable<ValueType> &value, std::string const label) noexcept :
-        Widget(window, parent, vec{ssize(label) == 0 ? Theme::smallWidth : Theme::width, Theme::smallHeight}),
-        value(value, [this](auto...){ forceRedraw = true; }),
-        labelCell(std::make_unique<TextCell>(label, theme->labelStyle))
-    {}
+    ValueType trueValue;
+    ValueType falseValue;
+
+public:
+    observer<ValueType> value;
+    observer<format10> label;
+
+    template<typename V>
+    CheckboxWidget(Window &window, Widget *parent, V &&value, ValueType trueValue, ValueType falseValue) noexcept :
+        Widget(window, parent, {Theme::smallWidth, Theme::smallHeight}),
+        trueValue(trueValue),
+        falseValue(falseValue),
+        value(std::forward<V>(value)),
+        label()
+    {
+        value.add_callback([this](auto...){
+            forceRedraw = true;
+        });
+
+        label.add_callback([this](auto...){
+            forceLayout = true;
+        });
+    }
 
     ~CheckboxWidget() {}
 
@@ -64,6 +80,7 @@ public:
             rectangle().width() - label_x, rectangle().height()
         };
 
+        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
         setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
 
         button_height = Theme::smallHeight;
@@ -91,10 +108,10 @@ public:
         }
 
         // Checkmark or tristate.
-        if (value == TrueValue) {
+        if (value == trueValue) {
             context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
             context.drawGlyph(checkGlyph, check_rectangle);
-        } else if (value == FalseValue) {
+        } else if (value == falseValue) {
             ;
         } else {
             std::swap(context.color, context.fillColor);
@@ -129,7 +146,7 @@ public:
         }
 
         if (command == "gui.activate"_ltag) {
-            if (assign_and_compare(value, value == FalseValue ? TrueValue : FalseValue)) {
+            if (assign_and_compare(value, value == falseValue ? trueValue : falseValue)) {
                 forceRedraw = true;
             }
         }

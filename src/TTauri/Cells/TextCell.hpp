@@ -17,6 +17,7 @@ class TextCell: public Cell {
 
 public:
     TextCell(std::string_view text, TextStyle style) noexcept;
+    TextCell(std::string text, TextStyle style) noexcept;
 
     [[nodiscard]] vec preferedExtent() const noexcept override;
 

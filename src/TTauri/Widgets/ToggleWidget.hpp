@@ -41,10 +41,14 @@ public:
     template<typename Value>
     ToggleWidget(Window &window, Widget *parent, Value &&value, std::string const label) noexcept :
         Widget(window, parent, vec{ssize(label) != 0 ? Theme::width : Theme::smallWidth, Theme::smallHeight}),
-        value(150ms, std::forward<Value>(value), [this](auto...){ forceRedraw = true; }),
+        value(150ms, std::forward<Value>(value)),
         label(std::move(label))
     {
+        this->value.add_callback([this](auto...){
+            forceRedraw = true;
+        });
     }
+
     ~ToggleWidget() {}
 
     ToggleWidget(const ToggleWidget &) = delete;
