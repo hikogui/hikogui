@@ -309,8 +309,12 @@ set(TTauri_Text_srcs
     src/TTauri/Text/TextStyle.cpp
     src/TTauri/Text/FontGlyphIDs.cpp
     src/TTauri/Text/AttributedGlyph.cpp
+)
+if (WIN32)
+set(TTauri_Text_srcs ${TTauri_Text_srcs}
     src/TTauri/Text/language_win32.cpp
 )
+endif()
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/tools/UnicodeData_converter.py")
 set(UNICODE_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/UnicodeData.txt")

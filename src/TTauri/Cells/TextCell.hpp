@@ -23,7 +23,7 @@ public:
 
     [[nodiscard]] float heightForWidth(float width) const noexcept override;
 
-    [[nodiscard]] bool draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept override;
+    void draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept override;
 
 };
 

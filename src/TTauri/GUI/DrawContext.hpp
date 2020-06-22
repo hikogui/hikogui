@@ -29,7 +29,7 @@ namespace tt {
  */
 class DrawContext {
 private:
-    Window *window;
+    Window *_window;
     vspan<PipelineFlat::Vertex> *flatVertices;
     vspan<PipelineBox::Vertex> *boxVertices;
     vspan<PipelineImage::Vertex> *imageVertices;
@@ -78,7 +78,7 @@ public:
         vspan<PipelineImage::Vertex> &imageVertices,
         vspan<PipelineSDF::Vertex> &sdfVertices
     ) noexcept :
-        window(&window),
+        _window(&window),
         flatVertices(&flatVertices),
         boxVertices(&boxVertices),
         imageVertices(&imageVertices),
@@ -101,10 +101,15 @@ public:
     DrawContext &operator=(DrawContext &&rhs) noexcept = default;
     ~DrawContext() = default;
 
+    Window &window() const noexcept {
+        tt_assume(_window);
+        return *_window;
+    }
+    
     GUIDevice &device() const noexcept {
-        tt_assume(window);
-        tt_assume(window->device);
-        return *(window->device);
+        auto device = window().device;
+        tt_assume(device);
+        return *device;
     }
 
     /** Draw a polygon with four corners of one color.
@@ -220,7 +225,6 @@ public:
      *  - clippingRectangle
      */
     void drawText(ShapedText const &text) const noexcept {
-        tt_assume(window != nullptr);
         tt_assume(sdfVertices != nullptr);
 
         device().SDFPipeline->placeVertices(
@@ -239,7 +243,6 @@ public:
     *  - clippingRectangle
     */
     void drawTextSingleColor(ShapedText const &text) const noexcept {
-        tt_assume(window != nullptr);
         tt_assume(sdfVertices != nullptr);
 
         device().SDFPipeline->placeVertices(
@@ -252,7 +255,6 @@ public:
     }
 
     void drawGlyph(FontGlyphIDs const &glyph, aarect box) const noexcept {
-        tt_assume(window != nullptr);
         tt_assume(sdfVertices != nullptr);
 
         device().SDFPipeline->placeVertices(

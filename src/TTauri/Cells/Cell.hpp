@@ -37,9 +37,8 @@ public:
     * @param rectangle The position and size of the image.
     * @param alignment The alignment within the rectangle.
     * @param middle The height of the middle of the line of text.
-    * @return true when a redraw is needed.
     */
-    [[nodiscard]] virtual bool draw(
+    virtual void draw(
         DrawContext const &drawContext,
         aarect rectangle,
         Alignment alignment,

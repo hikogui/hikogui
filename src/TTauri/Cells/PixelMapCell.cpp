@@ -17,7 +17,7 @@ PixelMapCell::PixelMapCell(PixelMap<R16G16B16A16SFloat> const &pixelMap) :
 PixelMapCell::PixelMapCell(URL const &url) :
     PixelMapCell(png::load(url)) {}
 
-bool PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
+void PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
 {
     if (modified) {
         backing = drawContext.device().imagePipeline->makeImage(pixelMap.extent());
@@ -34,14 +34,14 @@ bool PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignm
 
     switch (backing.state) {
     case PipelineImage::Image::State::Drawing:
-        return true;
+        drawContext.window().forceRedraw = true;
+        break;
 
     case PipelineImage::Image::State::Uploaded:
         context.drawImage(backing);
-        return false;
+        break;
 
-    default:
-        return false;
+    default:;
     }
 }
 

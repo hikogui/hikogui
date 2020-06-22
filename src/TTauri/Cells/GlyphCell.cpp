@@ -11,7 +11,7 @@ namespace tt {
 GlyphCell::GlyphCell(FontGlyphIDs glyph) :
     glyph(std::move(glyph)) {}
 
-bool GlyphCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
+void GlyphCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
 {
     if (modified) {
         boundingBox = PipelineSDF::DeviceShared::getBoundingBox(glyph);
@@ -24,7 +24,6 @@ bool GlyphCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment
         mat::uniform2D_scale_and_translate(rectangle, boundingBox, alignment);
 
     context.drawGlyph(glyph, boundingBox);
-    return false;
 }
 
 }
