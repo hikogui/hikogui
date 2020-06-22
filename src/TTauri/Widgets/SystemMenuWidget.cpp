@@ -29,11 +29,8 @@ void SystemMenuWidget::layout(hires_utc_clock::time_point displayTimePoint) noex
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    iconCell->draw(drawContext, rectangle(), Alignment::MiddleCenter);
     Widget::draw(drawContext, displayTimePoint);
-
-    if (iconCell->draw(drawContext, rectangle(), Alignment::MiddleCenter)) {
-        forceRedraw = true;
-    }
 }
 
 HitBox SystemMenuWidget::hitBoxTest(vec position) const noexcept

@@ -434,7 +434,6 @@ set(TTauri_GUI_srcs
     src/TTauri/Widgets/ToolbarButtonWidget.cpp
     src/TTauri/Widgets/WindowTrafficLightsWidget.cpp
     src/TTauri/Widgets/ButtonWidget.cpp
-    src/TTauri/Widgets/ToggleWidget.cpp
     src/TTauri/Widgets/LineInputWidget.cpp
 )
 

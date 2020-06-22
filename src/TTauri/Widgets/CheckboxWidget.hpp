@@ -119,10 +119,7 @@ public:
             context.drawFilledQuad(shrink(button_rectangle, 3.0f));
         }
         
-        if (labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle)) {
-            forceRedraw = true;
-        }
-
+        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle);
         Widget::draw(drawContext, displayTimePoint);
     }
 
