@@ -51,7 +51,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     context.transform = drawContext.transform;
     context.drawBoxIncludeBorder(rectangle());
 
-    if (enabled) {
+    if (*enabled) {
         context.color = theme->foregroundColor;
     }
     context.transform = drawContext.transform * (mat::T{0.0f, 0.0f, 0.001f} * textTranslate);
@@ -61,7 +61,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
 }
 
 void ButtonWidget::handleCommand(string_ltag command) noexcept {
-    if (!enabled) {
+    if (!*enabled) {
         return;
     }
 
@@ -76,7 +76,7 @@ void ButtonWidget::handleCommand(string_ltag command) noexcept {
 void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
-    if (enabled) {
+    if (*enabled) {
         if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
             forceRedraw = true;
         }
@@ -94,7 +94,7 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 HitBox ButtonWidget::hitBoxTest(vec position) const noexcept
 {
     if (rectangle().contains(position)) {
-        return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

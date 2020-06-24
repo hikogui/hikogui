@@ -27,7 +27,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
 
         if (pressed) {
             context.fillColor = closeButton ? vec::color(1.0, 0.0, 0.0) : theme->fillColor(nestingLevel() + 1);
-        } else if (hover && enabled) {
+        } else if (hover && *enabled) {
             context.fillColor = closeButton ? vec::color(0.5, 0.0, 0.0) : theme->fillColor(nestingLevel());
         } else {
             context.fillColor = theme->fillColor(nestingLevel() - 1);
@@ -56,7 +56,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
 void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     Widget::handleMouseEvent(event);
 
-    if (enabled) {
+    if (*enabled) {
         if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
             forceRedraw = true;
         }
@@ -74,7 +74,7 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 HitBox ToolbarButtonWidget::hitBoxTest(vec position) const noexcept
 {
     if (rectangle().contains(position)) {
-        return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+        return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

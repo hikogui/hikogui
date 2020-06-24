@@ -154,7 +154,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 void LineInputWidget::handleCommand(string_ltag command) noexcept
 {
     LOG_DEBUG("LineInputWidget: Received command: {}", tt5_decode(command));
-    if (!enabled) {
+    if (!*enabled) {
         return;
     }
 
@@ -181,7 +181,7 @@ void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
 {
     Widget::handleKeyboardEvent(event);
 
-    if (!enabled) {
+    if (!*enabled) {
         return;
     }
 
@@ -211,7 +211,7 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
     dragClickCount = event.clickCount;
     dragSelectPosition = event.position;
 
-    if (!enabled) {
+    if (!*enabled) {
         return;
     }
 
@@ -269,7 +269,7 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
 {
     if (rectangle().contains(position)) {
-        return HitBox{this, elevation, enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
+        return HitBox{this, elevation, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};
     } else {
         return HitBox{};
     }

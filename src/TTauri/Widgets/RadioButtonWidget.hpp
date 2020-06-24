@@ -31,8 +31,8 @@ protected:
 
     ValueType activeValue;
 public:
-    observer<ValueType> value;
-    observer<format10> label;
+    observable<ValueType> value;
+    observable<format10> label;
 
     template<typename V>
     RadioButtonWidget(Window &window, Widget *parent, V &&value, ValueType activeValue) noexcept :
@@ -93,7 +93,7 @@ public:
 
         // draw pip
         if (value == activeValue) {
-            if (enabled && window.active) {
+            if (*enabled && window.active) {
                 context.color = theme->accentColor;
             }
             std::swap(context.color, context.fillColor);
@@ -108,7 +108,7 @@ public:
     void handleMouseEvent(MouseEvent const &event) noexcept override {
         Widget::handleMouseEvent(event);
 
-        if (enabled) {
+        if (*enabled) {
             if (
                 event.type == MouseEvent::Type::ButtonUp &&
                 event.cause.leftButton &&
@@ -120,7 +120,7 @@ public:
     }
 
     void handleCommand(string_ltag command) noexcept override {
-        if (!enabled) {
+        if (!*enabled) {
             return;
         }
 
@@ -134,14 +134,14 @@ public:
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
         if (rectangle().contains(position)) {
-            return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
     }
 
     [[nodiscard]] bool acceptsFocus() const noexcept override {
-        return enabled;
+        return *enabled;
     }
 };
 

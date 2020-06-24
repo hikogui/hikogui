@@ -2,19 +2,15 @@
 // All rights reserved.
 
 #pragma once
-#include "TTauri/Foundation/type_traits.hpp"
-#include "TTauri/Foundation/notifier.hpp"
-#include "TTauri/Foundation/fast_mutex.hpp"
-#include <functional>
-#include <vector>
-#include <atomic>
-#include <mutex>
-#include <algorithm>
-#include <type_traits>
-#include <memory>
-#include <variant>
 
-namespace tt {
+#include "TTauri/Foundation/notifier.hpp"
+#include "TTauri/Foundation/cpu_utc_clock.hpp"
+#include "TTauri/Foundation/fast_mutex.hpp"
+#include "TTauri/Foundation/numeric_cast.hpp"
+#include <memory>
+#include <functional>
+#include <algorithm>
+
 
 /** @file observer.hpp
  *
@@ -43,337 +39,301 @@ namespace tt {
  *  - leaf nodes can forward write or read/modify/write operations to the observable.
  */
 
-class obexpr_owner {
+namespace tt {
+
+template<typename T>
+class observable_base {
 public:
-    /** Handle notifications received from operants.
-    * The mutex of children are locked during notifications.
+    using callback_type = std::function<void(T const &)>;
+    using time_point = typename hires_utc_clock::time_point;
+    using duration = typename hires_utc_clock::duration;
+
+protected:
+    mutable fast_mutex mutex;
+
+private:
+    T _previous_value;
+    time_point _last_modified;
+    notifier<T> notifier;
+
+public:
+    observable_base(observable_base const &) = delete;
+    observable_base(observable_base &&) = delete;
+    observable_base &operator=(observable_base const &) = delete;
+    observable_base &operator=(observable_base &&) = delete;
+    virtual ~observable_base() = default;
+
+    observable_base(T const &initial_value) noexcept :
+        _previous_value(initial_value), _last_modified(), notifier() {}
+
+    /** Get the previous value
     */
-    virtual void handle_notification() noexcept {
+    [[nodiscard]] T previous_value() const noexcept {
+        ttlet lock = std::scoped_lock(mutex);
+        return _previous_value;
+    }
+
+    /** Time when the value was modified last.
+    */
+    [[nodiscard]] time_point time_when_last_modified() const noexcept {
+        ttlet lock = std::scoped_lock(mutex);
+        return _last_modified;
+    }
+
+    /** Duration since the value was last modified.
+    */
+    [[nodiscard]] duration duration_since_last_modified() const noexcept {
+        return cpu_utc_clock::now() - time_when_last_modified();
+    }
+
+    /** The relative time since the start of the animation.
+    * The relative time since the start of the animation according to the duration of the animation.
+    *
+    * @param A relative value between 0.0 and 1.0.
+    */
+    [[nodiscard]] float animation_progress(duration animation_duration) const noexcept {
+        tt_assume(animation_duration.count() != 0);
+
+        return std::clamp(
+            numeric_cast<float>(duration_since_last_modified().count()) / numeric_cast<float>(animation_duration.count()),
+            0.0f,
+            1.0f
+        );
+    }
+
+    /** Get the current value.
+    */
+    [[nodiscard]] virtual T load() const noexcept = 0;
+
+    /** Get the current value animated over the animation_duration.
+    */
+    [[nodiscard]] T load(duration animation_duration) const noexcept {
+        return mix(animation_progress(animation_duration), previous_value(), load());
+    }
+
+    virtual void store(T const &new_value) noexcept = 0;
+
+    void notify(T const &old_value, T const &new_value) noexcept {
+        {
+            ttlet lock = std::scoped_lock(mutex);
+            _previous_value = old_value;
+            _last_modified = cpu_utc_clock::now();
+        }
+        notifier(new_value);
+    }
+
+    [[nodiscard]] size_t add_callback(callback_type callback) noexcept {
+        return notifier.add(callback);
+    }
+
+    void remove_callback(size_t id) noexcept {
+        notifier.remove(id);
     }
 };
 
 template<typename T>
-class obexpr_impl: public obexpr_owner {
-public:
-
+class observable_value final : public observable_base<T> {
 private:
-    mutable fast_mutex mutex;
-    std::vector<obexpr_owner *> owners;
+    T value;
 
-protected:
+public:
+    observable_value() noexcept :
+        observable_base<T>(T{}), value() {}
 
-    void notify_owners() const noexcept {
-        auto lock = std::scoped_lock(mutex);
+    observable_value(T const &value) noexcept :
+        observable_base<T>(value), value(value) {}
 
-        for (ttlet owner: owners) {
-            owner->handle_notification();
+    virtual T load() const noexcept override {
+        ttlet lock = std::scoped_lock(observable_base<T>::mutex);
+        return value;
+    }
+
+    virtual void store(T const &new_value) noexcept override {
+        T old_value;
+        {
+            ttlet lock = std::scoped_lock(observable_base<T>::mutex);
+            old_value = value;
+            value = new_value;
         }
-    }
-
-
-public:
-    virtual ~obexpr_impl() {}
-    obexpr_impl() noexcept {}
-
-    /** Read the value of the expression.
-     */
-    [[nodiscard]] virtual T load() const noexcept = 0;
-    
-    /** Write the value back through the expression.
-    */
-    virtual void store(T const &) noexcept = 0;
-
-    void add_owner(obexpr_owner *owner) noexcept {
-        auto lock = std::scoped_lock(mutex);
-
-        owners.push_back(owner);
-        owner->handle_notification();
-    }
-
-    void remove_owner(obexpr_owner *owner) noexcept {
-        auto lock = std::scoped_lock(mutex);
-
-        ttlet new_end = std::remove(owners.begin(), owners.end(), owner);
-        owners.erase(new_end, owners.cend());
-    }
-
-    /** Handle notifications received from operants.
-    * The mutex of children are locked during notifications.
-    */
-    void handle_notification() noexcept override {
-        notify_owners();
+        notify(old_value, new_value);
     }
 };
 
-template<typename T, typename OP>
-class obexpr_unari : public obexpr_impl<T> {
+template<typename T, typename OT>
+class observable_unari : public observable_base<T> {
+protected:
+    std::shared_ptr<observable_base<OT>> operand;
+    OT operand_cache;
+    size_t operand_cb_id;
+
 public:
-    std::shared_ptr<obexpr_impl<OP>> op;
-
-    ~obexpr_unari() {
-        op->remove_owner(this);
-    }
-
-    obexpr_unari() = delete;
-    obexpr_unari(obexpr_unari const &other) = delete;
-    obexpr_unari(obexpr_unari &&other) = delete;
-    obexpr_unari &operator=(obexpr_unari const &other) = delete;
-    obexpr_unari &operator=(obexpr_unari &&other) = delete;
-
-
-    obexpr_unari(std::shared_ptr<obexpr_impl<OP>> op) :
-        obexpr_impl<T>(), op(std::move(op))
+    observable_unari(T const &initial_value, std::shared_ptr<observable_base<OT>> const &operand) noexcept :
+        observable_base<T>(initial_value),
+        operand(operand),
+        operand_cache(operand->load())
     {
-        this->op->add_owner(this);
+        operand_cb_id = this->operand->add_callback([this](OT const &value) {
+            ttlet old_value = load();
+            {
+                ttlet lock = std::scoped_lock(observable_base<T>::mutex);
+                operand_cache = value;
+            }
+            ttlet new_value = load();
+            notify(old_value, new_value);
+        });
     }
 
-
+    ~observable_unari() {
+        operand->remove_callback(operand_cb_id);
+    }
 };
 
-template<typename OP>
-class obexpr_not : public obexpr_unari<bool,OP> {
+template<typename OT>
+class observable_not final : public observable_unari<bool,OT> {
 public:
-    obexpr_not() = delete;
-    obexpr_not(obexpr_not const &other) = delete;
-    obexpr_not(obexpr_not &&other) = delete;
-    obexpr_not &operator=(obexpr_not const &other) = delete;
-    obexpr_not &operator=(obexpr_not &&other) = delete;
+    observable_not(std::shared_ptr<observable_base<OT>> const &operand) noexcept :
+        observable_unari<bool,OT>(!operand->load(), operand) {}
 
-    obexpr_not(std::shared_ptr<obexpr_impl<OP>> op) :
-        obexpr_unari<bool,OP>(op) {}
-
-    [[nodiscard]] bool load() const noexcept override {
-        return !(this->op->load());
+    virtual bool load() const noexcept override {
+        ttlet lock = std::scoped_lock(observable_unari<bool,OT>::mutex);
+        return !operand_cache;
     }
 
-    void store(bool const &v) noexcept override {
-        this->op->store(!v);
+    virtual void store(bool const &new_value) noexcept override {
+        operand->store(static_cast<OT>(!new_value));
     }
 };
 
 template<typename T>
 class observable {
-private:
-    mutable fast_mutex mutex;
-
-    T value;
-    notifier<T> _notifier;
-
 public:
     using value_type = T;
-    using callback_type = typename notifier<T>::callback_type;
+    using callback_type = std::function<void(value_type const &)>;
+    using time_point = hires_utc_clock::time_point;
+    using duration = hires_utc_clock::duration;
 
-    ~observable() = default;
-    observable(observable const &) = delete;
-    observable(observable &&) = delete;
-    observable &operator=(observable const &) = delete;
-    observable &operator=(observable &&) = delete;
+private:
+    std::shared_ptr<observable_base<value_type>> pimpl;
 
-    observable() :
-        value() {}
+public:
+    observable(observable const &other) noexcept = default;
+    observable(observable &&other) noexcept = default;
+    observable &operator=(observable const &other) noexcept = default;
+    observable &operator=(observable &&other) noexcept = default;
 
-    observable(T value) :
-        value(std::move(value)) {}
+    observable(std::shared_ptr<observable_base<value_type>> const &value) noexcept :
+        pimpl(value) {}
 
-    T operator=(T const &v) noexcept {
-        {
-            auto lock = std::scoped_lock(mutex);
-            value = v;
-        }
-        _notifier(v);
-        return v;
+    observable(std::shared_ptr<observable_base<value_type>> &&value) noexcept :
+        pimpl(std::move(value)) {}
+
+    observable() noexcept :
+        observable(std::make_shared<observable_value<value_type>>()) {}
+
+    observable(value_type const &value) noexcept :
+        observable(std::make_shared<observable_value<value_type>>(value)) {}
+
+    [[nodiscard]] value_type previous_value() const noexcept {
+        tt_assume(pimpl);
+        return pimpl->previous_value();
     }
 
-    operator T () const noexcept {
-        auto lock = std::scoped_lock(mutex);
-        return value;
+    /** Time when the value was modified last.
+    */
+    [[nodiscard]] time_point time_when_last_modified() const noexcept {
+        tt_assume(pimpl);
+        return pimpl->time_when_last_modified();
     }
 
-    size_t add_callback(callback_type callback) noexcept {
-        T _value;
-        {
-            auto lock = std::scoped_lock(mutex);
-            _value = value;
-        }
+    /** Duration since the value was last modified.
+    */
+    [[nodiscard]] duration duration_since_last_modified() const noexcept {
+        tt_assume(pimpl);
+        return pimpl->duration_since_last_modified();
+    }
 
-        return _notifier.add_and_call(
-            std::move(callback),
-            _value
-        );
+    /** The relative time since the start of the animation.
+    * The relative time since the start of the animation according to the duration of the animation.
+    *
+    * @param A relative value between 0.0 and 1.0.
+    */
+    [[nodiscard]] float animation_progress(duration animation_duration) const noexcept {
+        tt_assume(pimpl);
+        return pimpl->animation_progress(animation_duration);
+    }
+
+    [[nodiscard]] bool animating(duration animation_duration) const noexcept {
+        tt_assume(pimpl);
+        return pimpl->animation_progress(animation_duration) < 1.0f;
+    }
+
+    [[nodiscard]] value_type load() const noexcept {
+        tt_assume(pimpl);
+        return pimpl->load();
+    }
+
+    [[nodiscard]] value_type operator*() const noexcept {
+        tt_assume(pimpl);
+        return pimpl->load();
+    }
+
+    [[nodiscard]] value_type load(duration animation_duration) const noexcept {
+        tt_assume(pimpl);
+        return pimpl->load(animation_duration);
+    }
+
+    void store(value_type const &new_value) noexcept {
+        tt_assume(pimpl);
+        return pimpl->store(new_value);
+    }
+
+    observable &operator=(value_type const &value) noexcept {
+        store(value);
+        return *this;
+    }
+
+    [[nodiscard]] size_t add_callback(callback_type callback) noexcept {
+        tt_assume(pimpl);
+        return pimpl->add_callback(callback);
     }
 
     void remove_callback(size_t id) noexcept {
-        _notifier.remove(id);
-    }
-};
-
-
-template<typename T>
-class obexpr_observable : public obexpr_impl<T> {
-protected:
-    observable<T> *object;
-    size_t callback_id;
-
-public:
-    ~obexpr_observable() {
-        tt_assume(object);
-        object->remove_callback(callback_id);
+        tt_assume(pimpl);
+        return pimpl->remove_callback(id);
     }
 
-    obexpr_observable() = delete;
-    obexpr_observable(obexpr_observable const &other) = delete;
-    obexpr_observable(obexpr_observable &&other) = delete;
-    obexpr_observable &operator=(obexpr_observable const &other) = delete;
-    obexpr_observable &operator=(obexpr_observable &&other) = delete;
-
-    obexpr_observable(observable<T> &object) :
-        obexpr_impl<T>(), object(&object)
-    {
-        tt_assume(this->object);
-
-        callback_id = this->object->add_callback([this](auto...) {
-            this->notify_owners();
-        });
+    [[nodiscard]] friend observable<bool> operator!(observable const &rhs) noexcept {
+        return std::make_shared<observable_not<bool>>(rhs.pimpl);
     }
 
-    [[nodiscard]] T load() const noexcept override {
-        tt_assume(object);
-        return *object;
+    [[nodiscard]] friend bool operator==(observable const &lhs, value_type const &rhs) noexcept {
+        return *lhs == rhs;
     }
 
-    void store(T const &v) noexcept override {
-        tt_assume(object);
-        (*object) = v;
-    }
-};
-
-template<typename T>
-class obexpr {
-public:
-    std::shared_ptr<obexpr_impl<T>> expr;
-
-    template<typename E, typename... Args>
-    static obexpr make(Args &&... args) noexcept {
-        return { std::make_shared<E>(std::forward<Args>(args)...) };
+    [[nodiscard]] friend bool operator==(value_type const &lhs, observable const &rhs) noexcept {
+        return lhs == *rhs;
     }
 
-    obexpr() = delete;
-    ~obexpr() = default;
-    obexpr(obexpr const &other) = default;
-    obexpr(obexpr &&other) = default;
-    obexpr &operator=(obexpr const &other) = default;
-    obexpr &operator=(obexpr &&other) = default;
-
-    obexpr(std::shared_ptr<obexpr_impl<T>> other) noexcept :
-        expr(std::move(other)) {}
-
-    obexpr(observable<T> &object) noexcept :
-        expr(std::make_shared<obexpr_observable<T>>(object)) {}
-
-    [[nodiscard]] friend obexpr<bool> operator!(obexpr const &rhs) noexcept {
-        return obexpr::make<obexpr_not<T>>(rhs.expr);
-    }
-};
-
-template<typename T>
-class observer : public obexpr_owner {
-private:
-    mutable fast_mutex mutex;
-    notifier<T> _notifier;
-
-    std::shared_ptr<obexpr_impl<T>> expr;
-    T value;
-
-public:
-    using value_type = T;
-    using callback_type = typename notifier<T>::callback_type;
-
-    ~observer() {
-        if (expr) {
-            expr->remove_owner(this);
-        }
-    }
-    observer(observer const &) = delete;
-    observer(observer &&) = delete;
-    observer &operator=(observer &&) = delete;
-    // The copy-assignment operator will only copy the value, not the expression, see below.
-
-    observer() :
-        value() {}
-
-    observer(T value) :
-        value(std::move(value)) {}
-
-    observer(obexpr<T> const &e)
-    {
-        expr = e.expr;
-        expr->add_owner(this);
+    [[nodiscard]] friend bool operator!=(observable const &lhs, value_type const &rhs) noexcept {
+        return *lhs != rhs;
     }
 
-    observer(observable<T> &e) :
-        observer(obexpr<T>{e}) {}
-
-    ssize_t add_callback(callback_type f) noexcept {
-        T tmp;
-        {
-            auto lock = std::scoped_lock(mutex);
-            tmp = this->value;
-        }
-        return _notifier.add_and_call(f, tmp);
+    [[nodiscard]] friend bool operator!=(value_type const &lhs, observable const &rhs) noexcept {
+        return lhs != *rhs;
     }
 
-    void remove_callback(size_t id) noexcept {
-        _notifier.remove(id);
+    [[nodiscard]] friend float to_float(observable const &rhs) noexcept {
+        return numeric_cast<float>(rhs.load());
     }
 
-    T operator=(obexpr<T> const &e) noexcept {
-        expr = e.expr;
-        expr->add_owner(this);
-
-        auto lock = std::scoped_lock(mutex);
-        return value;
+    [[nodiscard]] friend float to_float(observable const &rhs, duration animation_duration) noexcept {
+        ttlet previous_value = numeric_cast<float>(rhs.previous_value());
+        ttlet current_value = numeric_cast<float>(rhs.load());
+        ttlet animation_progress = rhs.animation_progress(animation_duration);
+        return mix(animation_progress, previous_value, current_value);
     }
 
-    T operator=(observable<T> &e) noexcept {
-        return (*this) = obexpr<T>{e};
-    }
-
-    T operator*() const noexcept {
-        auto lock = std::scoped_lock(mutex);
-        return value;
-    }
-
-    operator T () const noexcept {
-        auto lock = std::scoped_lock(mutex);
-        return value;
-    }
-
-    T operator=(T const &rhs) {
-        if (expr) {
-            expr->store(rhs);
-        } else {
-            {
-                auto lock = std::scoped_lock(mutex);
-                value = rhs;
-            }
-            _notifier(rhs);
-        }
-        return rhs;
-    }
-
-    T operator=(observer const &rhs) noexcept {
-        return (*this) = static_cast<T>(rhs);
-    }
-
-    void handle_notification() noexcept override {
-        tt_assume(expr);
-        auto new_value = expr->load();
-        {
-            auto lock = std::scoped_lock(mutex);
-            value = new_value;
-        }
-        _notifier(new_value);
-    }
 };
 
 }
+

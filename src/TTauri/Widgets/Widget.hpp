@@ -157,7 +157,7 @@ public:
 
     /** The widget is enabled.
      */
-    observer<bool> enabled = true;
+    observable<bool> enabled = true;
 
     
 

@@ -237,6 +237,11 @@ T inverse_smoothstep(T x) {
   return T{0.5} - std::sin(std::asin(T{1.0} - T{2.0} * x) / T{3.0});
 }
 
+/** Mix between two values.
+ * @param mix_value value between 0.0 and 1.0, the relative distance from lhs to rhs.
+ * @param lhs The value when mix_value is 0.0
+ * @param rhs The value when mix_value is 1.0
+ */
 template<typename T, typename MixType, std::enable_if_t<std::is_floating_point_v<MixType>, int> = 0>
 T mix(MixType mix_value, T const &lhs, T const &rhs) noexcept
 {

@@ -41,7 +41,7 @@ public:
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
     [[nodiscard]] bool acceptsFocus() const noexcept override {
-        return enabled;
+        return *enabled;
     }
 
 };

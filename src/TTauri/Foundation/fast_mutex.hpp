@@ -6,6 +6,7 @@
 #include "TTauri/Foundation/required.hpp"
 #include <atomic>
 #include <memory>
+#include <thread>
 
 namespace tt {
 struct unfair_lock_wrap;
@@ -25,6 +26,10 @@ class fast_mutex {
 
 #else
 #error "Not implemented fast_mutex"
+#endif
+
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    std::thread::id locking_thread;
 #endif
 
 public:

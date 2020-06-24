@@ -7,7 +7,6 @@
 #include "TTauri/Cells/TextCell.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Foundation/observer.hpp"
-#include "TTauri/Foundation/animated.hpp"
 #include "TTauri/Text/format10.hpp"
 #include <memory>
 #include <string>
@@ -20,6 +19,8 @@ namespace tt {
 template<typename ValueType=bool>
 class ToggleWidget : public Widget {
 protected:
+    static constexpr hires_utc_clock::duration animation_duration = 150ms;
+
     float toggle_height;
     float toggle_width;
     float toggle_x;
@@ -40,13 +41,13 @@ protected:
     ValueType trueValue;
 
 public:
-    observer<format10> label;
-    animated<observer<ValueType>> value;
+    observable<format10> label;
+    observable<ValueType> value;
 
     template<typename V>
     ToggleWidget(Window &window, Widget *parent, V &&value, ValueType trueValue) noexcept :
         Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
-        value(150ms, std::forward<V>(value)),
+        value(std::forward<V>(value)),
         label()
     {
         this->value.add_callback([this](auto...){
@@ -91,10 +92,12 @@ public:
     
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
         // Prepare animation values.
-        ttlet [animation_progress, curr_value] = value.animation_tick(displayTimePoint);
-        if (animation_progress < 1.0) {
+        ttlet animation_progress = value.animation_progress(animation_duration);
+        if (animation_progress < 1.0f) {
             forceRedraw = true;
         }
+
+        ttlet animated_value = to_float(value, animation_duration);
 
         // Outside oval.
         auto context = drawContext;
@@ -103,16 +106,16 @@ public:
 
         // Inside circle
         ttlet slider_rectangle = aarect{
-            slider_x + slider_move * curr_value, slider_y,
+            slider_x + slider_move * animated_value, slider_y,
             slider_width, slider_height
         };
 
         if (value == trueValue) {
-            if (enabled && window.active) {
+            if (*enabled && window.active) {
                 context.color = theme->accentColor;
             }
         } else {
-            if (enabled && window.active) {
+            if (*enabled && window.active) {
                 context.color = hover ?
                     theme->borderColor(nestingLevel() + 1) :
                     theme->borderColor(nestingLevel());
@@ -129,7 +132,7 @@ public:
     void handleMouseEvent(MouseEvent const &event) noexcept override {
         Widget::handleMouseEvent(event);
 
-        if (enabled) {
+        if (*enabled) {
             if (
                 event.type == MouseEvent::Type::ButtonUp &&
                 event.cause.leftButton &&
@@ -141,12 +144,12 @@ public:
     }
     
     void handleCommand(string_ltag command) noexcept override {
-        if (!enabled) {
+        if (!*enabled) {
             return;
         }
 
         if (command == "gui.activate"_ltag) {
-            if (assign_and_compare(value, !value)) {
+            if (assign_and_compare(value, !*value)) {
                 forceRedraw = true;
             }
         }
@@ -155,14 +158,14 @@ public:
 
     HitBox hitBoxTest(vec position) const noexcept override {
         if (rectangle().contains(position)) {
-            return HitBox{this, elevation, enabled ? HitBox::Type::Button : HitBox::Type::Default};
+            return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {
             return HitBox{};
         }
     }
 
     [[nodiscard]] bool acceptsFocus() const noexcept override {
-        return enabled;
+        return *enabled;
     }
 
 };

@@ -26,6 +26,10 @@ tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
         // Set to 2 when we are waiting.
         expected = 1;
         if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+            tt_assert(locking_thread != std::this_thread::get_id());
+#endif
+
             // Casting first memory of a struct is allowed.
             expected = 2;
             if (!WaitOnAddress(semaphore_ptr(), &expected, sizeof (int32_t), INFINITE)) {
@@ -42,14 +46,17 @@ void fast_mutex::lock() noexcept
 {
     // Switch to 1 means there are no waiters.
     int32_t expected = 0;
-    if (!semaphore.compare_exchange_strong(expected, 1)) {
+    if (tt_unlikely(!semaphore.compare_exchange_strong(expected, 1))) {
         lock_contented(expected);
     }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    locking_thread = std::this_thread::get_id();
+#endif
 }
 
 void fast_mutex::unlock() noexcept
 {
-    if (semaphore.fetch_sub(1) != 1) {
+    if (tt_unlikely(semaphore.fetch_sub(1) != 1)) {
         semaphore.store(0);
 
         WakeByAddressSingle(semaphore_ptr());
