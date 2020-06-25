@@ -11,6 +11,7 @@ find_package(GTest)
 find_package(Python COMPONENTS Interpreter)
 find_package(Vulkan REQUIRED)
 
+#set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
@@ -31,6 +32,29 @@ add_subdirectory(tools)
 configure_file(
     src/TTauri/Foundation/config.hpp.in 
     src/TTauri/Foundation/config.hpp
+)
+
+set(TTauri_Foundation_pch_hdrs
+    src/TTauri/Foundation/required.hpp
+    src/TTauri/Foundation/os_detect.hpp
+    src/TTauri/Foundation/assert.hpp
+    src/TTauri/Foundation/exceptions.hpp
+    src/TTauri/Foundation/counters.hpp
+    src/TTauri/Foundation/logger.hpp
+    src/TTauri/Foundation/trace.hpp
+    src/TTauri/Foundation/debugger.hpp
+    src/TTauri/Foundation/datum.hpp
+    src/TTauri/Foundation/vec.hpp
+    src/TTauri/Foundation/ivec.hpp
+    src/TTauri/Foundation/aarect.hpp
+    src/TTauri/Foundation/rect.hpp
+    src/TTauri/Foundation/mat.hpp
+    src/TTauri/Foundation/strings.hpp
+    src/TTauri/Foundation/URL.hpp
+)
+
+set(TTauri_Foundation_hdrs
+    ${TTauri_Foundation_pch_hdrs}
 )
 
 set(TTauri_Foundation_srcs
@@ -123,7 +147,8 @@ set(TTauri_Foundation_tests
     src/TTauri/Foundation/gzip_tests.cpp
 )
 
-add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs})
+add_library(TTauri_Foundation STATIC ${TTauri_Foundation_srcs} ${TTauri_Foundation_hdrs})
+target_precompile_headers(TTauri_Foundation PRIVATE <Windows.h> ${TTauri_Foundation_pch_hdrs})
 target_link_libraries(TTauri_Foundation PUBLIC fmt tz span)
 if (WIN32)
     target_link_libraries(TTauri_Foundation PUBLIC synchronization)
@@ -238,6 +263,7 @@ set(TTauri_Foundation_test_files
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})
+target_precompile_headers(Foundation_tests PRIVATE <Windows.h> <gtest/gtest.h> ${TTauri_Foundation_pch_hdrs})
 target_include_directories(Foundation_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(Foundation_tests PRIVATE gtest_main TTauri_Foundation)
 gtest_discover_tests(Foundation_tests)
@@ -257,6 +283,7 @@ set(TTauri_Net_srcs
 )
 
 add_library(TTauri_Net STATIC ${TTauri_Net_srcs})
+target_precompile_headers(TTauri_Net REUSE_FROM TTauri_Foundation)
 target_link_libraries(TTauri_Net TTauri_Foundation)
 target_include_directories(TTauri_Net PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif()
@@ -284,6 +311,7 @@ set(TTauri_Audio_srcs
 endif()
 
 add_library(TTauri_Audio STATIC ${TTauri_Audio_srcs})
+target_precompile_headers(TTauri_Audio REUSE_FROM TTauri_Foundation)
 target_link_libraries(TTauri_Audio TTauri_Foundation)
 target_include_directories(TTauri_Audio PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif()
@@ -292,6 +320,13 @@ endif()
 if(BUILD_TTAURI_GUI)
 message("TTauri GUI enabled")
 
+set(TTauri_Text_pch_hdrs
+    src/TTauri/Text/globals.hpp
+)
+
+set(TTauri_Text_hdrs
+    ${TTauri_Text_pch_hdrs}
+)
 #
 # Text
 #
@@ -342,6 +377,7 @@ set(TTauri_Text_resources
 )
 
 add_library(TTauri_Text STATIC ${TTauri_Text_srcs})
+target_precompile_headers(TTauri_Text REUSE_FROM TTauri_Foundation)
 target_link_libraries(TTauri_Text TTauri_Foundation)
 target_static_resource(TTauri_Text ${TTauri_Text_resources})
 target_include_directories(TTauri_Text PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -360,6 +396,7 @@ set(TTauri_Text_test_files
 )
 
 add_executable(Text_tests ${TTauri_Text_tests})
+target_precompile_headers(Text_tests REUSE_FROM TTauri_Foundation)
 target_include_directories(Text_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(Text_tests PRIVATE gtest_main TTauri_Foundation TTauri_Text)
 gtest_discover_tests(Text_tests)
@@ -391,6 +428,16 @@ set(TTauri_GUI_data
 set(TTauri_GUI_theme_data
     ${CMAKE_CURRENT_SOURCE_DIR}/data/themes/ttauri_dark.theme.json
     ${CMAKE_CURRENT_SOURCE_DIR}/data/themes/ttauri_light.theme.json
+)
+
+set(TTauri_GUI_pch_hdrs
+    src/TTauri/GUI/Window.hpp
+    src/TTauri/GUI/GUIDevice.hpp
+    src/TTauri/Widgets/Widget.hpp
+)
+
+set(TTauri_GUI_hdrs
+    ${TTauri_GUI_pch_hdrs}
 )
 
 set(TTauri_GUI_srcs
@@ -457,7 +504,8 @@ set(TTauri_GUI_srcs
 )
 endif()
 
-add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs})
+add_library(TTauri_GUI STATIC ${TTauri_GUI_srcs} ${TTauri_GUI_hdrs})
+target_precompile_headers(TTauri_GUI PRIVATE ${TTauri_Foundation_pch_hdrs} ${TTauri_Text_pch_hdrs} ${TTauri_GUI_pch_hdrs})
 target_static_resource(TTauri_GUI ${TTauri_GUI_Shader_objs})
 target_link_libraries(TTauri_GUI TTauri_Foundation TTauri_Text ${Vulkan_LIBRARIES} VMA rhea RenderDoc)
 target_include_directories(TTauri_GUI PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -519,6 +567,7 @@ set(TTauri_Application_Libraries ${TTauri_Application_Libraries} TTauri_GUI)
 endif()
 
 add_library(TTauri_Application STATIC ${TTauri_Application_srcs})
+target_precompile_headers(TTauri_Application REUSE_FROM TTauri_Foundation)
 target_link_libraries(TTauri_Application PUBLIC ${TTauri_Application_Libraries})
 target_include_directories(TTauri_Application PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
