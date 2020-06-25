@@ -4,8 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/notifier.hpp"
-#include "TTauri/Foundation/cpu_utc_clock.hpp"
-#include "TTauri/Foundation/fast_mutex.hpp"
+#include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
@@ -39,10 +38,14 @@ public:
     observable &operator=(observable &&other) noexcept = default;
 
     observable() noexcept :
-        observable(std::make_shared<detail::observable_value<value_type>>()) {}
+        observable(std::static_pointer_cast<detail::observable_base<value_type>>(
+            std::make_shared<detail::observable_value<value_type>>()
+        )) {}
 
     observable(value_type const &value) noexcept :
-        observable(std::make_shared<detail::observable_value<value_type>>(value)) {}
+        observable(std::static_pointer_cast<detail::observable_base<value_type>>(
+            std::make_shared<detail::observable_value<value_type>>(value)
+        )) {}
 
     [[nodiscard]] value_type previous_value() const noexcept {
         tt_assume(pimpl);
@@ -114,7 +117,9 @@ public:
     }
 
     [[nodiscard]] friend observable<bool> operator!(observable const &rhs) noexcept {
-        return std::make_shared<detail::observable_not<bool>>(rhs.pimpl);
+        return std::static_pointer_cast<detail::observable_base<bool>>(
+            std::make_shared<detail::observable_not<bool>>(rhs.pimpl)
+        );
     }
 
     [[nodiscard]] friend bool operator==(observable const &lhs, value_type const &rhs) noexcept {

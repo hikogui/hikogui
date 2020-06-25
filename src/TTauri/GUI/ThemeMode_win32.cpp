@@ -4,7 +4,6 @@
 #include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/logger.hpp"
-#define WIN32_NO_STATUS 1
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>

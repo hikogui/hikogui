@@ -50,7 +50,7 @@ public:
         }
     }
 
-    virtual std::unique_ptr<format10_base> make_unique_copy() const noexcept {
+    std::unique_ptr<format10_base> make_unique_copy() const noexcept override {
         if constexpr (sizeof...(Args) == 0) {
             return std::make_unique<format10_impl>(fmt);
 

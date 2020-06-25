@@ -11,7 +11,11 @@ find_package(GTest)
 find_package(Python COMPONENTS Interpreter)
 find_package(Vulkan REQUIRED)
 
-#set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
+if(WIN32)
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES Clang)
+        set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
+    endif()
+endif()
 
 set(BUILD_TTAURI_GUI OFF CACHE BOOL "Enable TTAURI GUI") 
 set(BUILD_TTAURI_AUDIO OFF CACHE BOOL "Enable TTAURI Audio") 
@@ -231,11 +235,16 @@ endif()
 
 if (WIN32)
     # Set defines to compile a win32 application.
-	target_compile_options(TTauri_Foundation PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -DNOMINMAX -D_CRT_SECURE_NO_WARNINGS)
+	target_compile_options(TTauri_Foundation PUBLIC -D_WIN64 -DUNICODE -D_UNICODE -D_CRT_SECURE_NO_WARNINGS)
 
     # std::result_of used by fmt.
     target_compile_options(TTauri_Foundation PUBLIC -D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING)
 
+    # winrt will include experimental headers that can not be turned off.
+    target_compile_options(TTauri_Foundation PUBLIC -D_SILENCE_CLANG_COROUTINE_MESSAGE)
+
+    # Make sure that Windows.h doesn't include all kind of weird things.
+    target_compile_options(TTauri_Foundation PUBLIC -DNOMINMAX -DWIN32_NO_STATUS)
 elseif (APPLE)
     target_link_libraries(TTauri_Foundation PUBLIC "-framework Foundation -framework AppKit")
 endif()
@@ -263,7 +272,7 @@ set(TTauri_Foundation_test_files
 )
 
 add_executable(Foundation_tests ${TTauri_Foundation_tests})
-target_precompile_headers(Foundation_tests PRIVATE <Windows.h> <gtest/gtest.h> ${TTauri_Foundation_pch_hdrs})
+target_precompile_headers(Foundation_tests PRIVATE <gtest/gtest.h> ${TTauri_Foundation_pch_hdrs})
 target_include_directories(Foundation_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(Foundation_tests PRIVATE gtest_main TTauri_Foundation)
 gtest_discover_tests(Foundation_tests)

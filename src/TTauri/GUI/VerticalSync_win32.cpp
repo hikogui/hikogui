@@ -4,7 +4,6 @@
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"
 #include "TTauri/Foundation/cpu_utc_clock.hpp"
-#define WIN32_NO_STATUS 1
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>
