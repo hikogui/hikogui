@@ -11,36 +11,24 @@
 #include <functional>
 #include <algorithm>
 
-
-/** @file observer.hpp
- *
- * an observer is an object that observes an obexpr:
- *  - An observer is the (shared) owner of the obexpr tree.
- *  - Notification from the obexpr will:
- *    - Update the cached value.
- *    - Execute callbacks registered with the observer
- *  - The cached value can be read through the conversion operator.
- *  - Any write or read/modify/write operation will be forwarded to the expression.
- *  - Any operation on the observer will return a copy of the cached or computed value.
- *
- * an observable is an object which is observed by the obexpr_observer:
- *  - Any write or read/modify/write operation will cause a notifaction to
- *    be send to any registered obexpr_observer.
- *  - Any operation on the observable will return a copy of the cached or computed value.
- *  - To turn a observable to a obexpr, use the expr() function.
- *  
- * A obexpr is a expression object that forms a tree of other obexpr objects.
- *  - When a leaf value changes, its value is cashed and notification is send
- *    through the tree to the root object.
- *  - When a observer is a (shared) owner of a obexpr it will be notified with
- *    the calculated value of the expression.
- *  - certain obexpr objects can forward write or read/modify/write operation
- *    toward the leaf nodes.
- *  - leaf nodes can forward write or read/modify/write operations to the observable.
- */
-
 namespace tt {
 
+namespace detail {
+
+/** Observable abstract base class.
+ * Objects of the observable_base class will notify listeners through
+ * callbacks of changes of its value.
+ *
+ * This class does not hold the value itself, concrete subclasses will
+ * either hold the value or calculate the value on demand. In many cases
+ * concrete subclasses may be sub-expressions of other observable objects.
+ *
+ * This object will also track the time when the value was last modified
+ * so that the value can be animated. Usefull when displaying the value
+ * as an animated graphic element. For calculating inbetween values
+ * it will keep track of the previous value.
+ *
+ */
 template<typename T>
 class observable_base {
 public:
@@ -63,6 +51,9 @@ public:
     observable_base &operator=(observable_base &&) = delete;
     virtual ~observable_base() = default;
 
+    /** Constructor.
+     * @param initial_value The initial value used as the start position of the first animation.
+     */
     observable_base(T const &initial_value) noexcept :
         _previous_value(initial_value), _last_modified(), notifier() {}
 
@@ -102,7 +93,9 @@ public:
     }
 
     /** Get the current value.
-    */
+     * The value is often calculated directly from the cached values retrieved from
+     * notifications down the chain.
+     */
     [[nodiscard]] virtual T load() const noexcept = 0;
 
     /** Get the current value animated over the animation_duration.
@@ -111,8 +104,36 @@ public:
         return mix(animation_progress(animation_duration), previous_value(), load());
     }
 
+    /** Set the value.
+     * The value is often not directly stored, but instead forwarded up
+     * the chain of observables. And then let the notifications flowing backward
+     * updated the cached values so that loads() will be quick.
+     *
+     * @param new_value The new value
+     */
     virtual void store(T const &new_value) noexcept = 0;
 
+    /** Add a callback as a listener.
+     * @param callback The callback to register, the new value is passed as the first argument.
+     * @return The id of the callback, used to unregister the callback.
+     */
+    [[nodiscard]] size_t add_callback(callback_type callback) noexcept {
+        return notifier.add(callback);
+    }
+
+    /** Remove a callback.
+     * @param id The id of the callback returned by the `add_callback()` method.
+     */
+    void remove_callback(size_t id) noexcept {
+        notifier.remove(id);
+    }
+
+protected:
+
+    /** Notify listeners of a change in value.
+     * This function is used to notify listeners of this observable and also
+     * to keep track of the previous value and start the animation.
+     */
     void notify(T const &old_value, T const &new_value) noexcept {
         {
             ttlet lock = std::scoped_lock(mutex);
@@ -120,14 +141,6 @@ public:
             _last_modified = cpu_utc_clock::now();
         }
         notifier(new_value);
-    }
-
-    [[nodiscard]] size_t add_callback(callback_type callback) noexcept {
-        return notifier.add(callback);
-    }
-
-    void remove_callback(size_t id) noexcept {
-        notifier.remove(id);
     }
 };
 
@@ -155,7 +168,7 @@ public:
             old_value = value;
             value = new_value;
         }
-        notify(old_value, new_value);
+        this->notify(old_value, new_value);
     }
 };
 
@@ -173,12 +186,12 @@ public:
         operand_cache(operand->load())
     {
         operand_cb_id = this->operand->add_callback([this](OT const &value) {
-            ttlet old_value = load();
+            ttlet old_value = this->load();
             {
                 ttlet lock = std::scoped_lock(observable_base<T>::mutex);
                 operand_cache = value;
             }
-            ttlet new_value = load();
+            ttlet new_value = this->load();
             notify(old_value, new_value);
         });
     }
@@ -196,13 +209,15 @@ public:
 
     virtual bool load() const noexcept override {
         ttlet lock = std::scoped_lock(observable_unari<bool,OT>::mutex);
-        return !operand_cache;
+        return !this->operand_cache;
     }
 
     virtual void store(bool const &new_value) noexcept override {
-        operand->store(static_cast<OT>(!new_value));
+        this->operand->store(static_cast<OT>(!new_value));
     }
 };
+
+}
 
 template<typename T>
 class observable {
@@ -213,7 +228,13 @@ public:
     using duration = hires_utc_clock::duration;
 
 private:
-    std::shared_ptr<observable_base<value_type>> pimpl;
+    std::shared_ptr<detail::observable_base<value_type>> pimpl;
+
+    observable(std::shared_ptr<detail::observable_base<value_type>> const &value) noexcept :
+        pimpl(value) {}
+
+    observable(std::shared_ptr<detail::observable_base<value_type>> &&value) noexcept :
+        pimpl(std::move(value)) {}
 
 public:
     observable(observable const &other) noexcept = default;
@@ -221,17 +242,11 @@ public:
     observable &operator=(observable const &other) noexcept = default;
     observable &operator=(observable &&other) noexcept = default;
 
-    observable(std::shared_ptr<observable_base<value_type>> const &value) noexcept :
-        pimpl(value) {}
-
-    observable(std::shared_ptr<observable_base<value_type>> &&value) noexcept :
-        pimpl(std::move(value)) {}
-
     observable() noexcept :
-        observable(std::make_shared<observable_value<value_type>>()) {}
+        observable(std::make_shared<detail::observable_value<value_type>>()) {}
 
     observable(value_type const &value) noexcept :
-        observable(std::make_shared<observable_value<value_type>>(value)) {}
+        observable(std::make_shared<detail::observable_value<value_type>>(value)) {}
 
     [[nodiscard]] value_type previous_value() const noexcept {
         tt_assume(pimpl);
@@ -303,7 +318,7 @@ public:
     }
 
     [[nodiscard]] friend observable<bool> operator!(observable const &rhs) noexcept {
-        return std::make_shared<observable_not<bool>>(rhs.pimpl);
+        return std::make_shared<detail::observable_not<bool>>(rhs.pimpl);
     }
 
     [[nodiscard]] friend bool operator==(observable const &lhs, value_type const &rhs) noexcept {
