@@ -6,7 +6,7 @@
 #include "TTauri/Widgets/Widget.hpp"
 #include "TTauri/Cells/TextCell.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
-#include "TTauri/Foundation/observer.hpp"
+#include "TTauri/Foundation/observable.hpp"
 #include "TTauri/Text/format10.hpp"
 #include <memory>
 #include <string>

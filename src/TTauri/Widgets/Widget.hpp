@@ -20,7 +20,7 @@
 #include "TTauri/Foundation/utils.hpp"
 #include "TTauri/Foundation/Trigger.hpp"
 #include "TTauri/Foundation/cpu_utc_clock.hpp"
-#include "TTauri/Foundation/observer.hpp"
+#include "TTauri/Foundation/observable.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>

@@ -8,7 +8,7 @@
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/Text/FontBook.hpp"
 #include "TTauri/Text/format10.hpp"
-#include "TTauri/Foundation/observer.hpp"
+#include "TTauri/Foundation/observable.hpp"
 #include <memory>
 #include <string>
 #include <array>
