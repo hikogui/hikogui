@@ -8,15 +8,15 @@
 namespace tt::detail {
 
 template<typename T, typename OT>
-class observable_unari : public observable_base<T> {
+class observable_unary : public observable_base<T> {
 protected:
     std::shared_ptr<observable_base<OT>> operand;
     OT operand_cache;
     size_t operand_cb_id;
 
 public:
-    observable_unari(T const &initial_value, std::shared_ptr<observable_base<OT>> const &operand) noexcept :
-        observable_base<T>(initial_value),
+    observable_unary(std::shared_ptr<observable_base<OT>> const &operand) noexcept :
+        observable_base<T>(),
         operand(operand),
         operand_cache(operand->load())
     {
@@ -31,7 +31,7 @@ public:
         });
     }
 
-    ~observable_unari() {
+    ~observable_unary() {
         operand->remove_callback(operand_cb_id);
     }
 };

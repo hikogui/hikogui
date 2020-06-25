@@ -3,18 +3,18 @@
 
 #pragma once
 
-#include "observable_unari.hpp"
+#include "observable_unary.hpp"
 
 namespace tt::detail {
 
 template<typename OT>
-class observable_not final : public observable_unari<bool,OT> {
+class observable_not final : public observable_unary<bool,OT> {
 public:
     observable_not(std::shared_ptr<observable_base<OT>> const &operand) noexcept :
-        observable_unari<bool,OT>(!operand->load(), operand) {}
+        observable_unary<bool,OT>(operand) {}
 
     virtual bool load() const noexcept override {
-        ttlet lock = std::scoped_lock(observable_unari<bool,OT>::mutex);
+        ttlet lock = std::scoped_lock(observable_unary<bool,OT>::mutex);
         return !this->operand_cache;
     }
 

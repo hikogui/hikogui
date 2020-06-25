@@ -14,10 +14,10 @@ private:
 
 public:
     observable_value() noexcept :
-        observable_base<T>(T{}), value() {}
+        observable_base<T>(), value() {}
 
     observable_value(T const &value) noexcept :
-        observable_base<T>(value), value(value) {}
+        observable_base<T>(), value(value) {}
 
     virtual T load() const noexcept override {
         ttlet lock = std::scoped_lock(observable_base<T>::mutex);

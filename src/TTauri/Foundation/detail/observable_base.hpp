@@ -48,10 +48,9 @@ public:
     virtual ~observable_base() = default;
 
     /** Constructor.
-    * @param initial_value The initial value used as the start position of the first animation.
     */
-    observable_base(T const &initial_value) noexcept :
-        _previous_value(initial_value), _last_modified(), notifier() {}
+    observable_base() noexcept :
+        _previous_value(), _last_modified(), notifier() {}
 
     /** Get the previous value
     */
