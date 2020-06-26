@@ -366,6 +366,7 @@ set(TTauri_Text_srcs
     src/TTauri/Text/TextStyle.cpp
     src/TTauri/Text/FontGlyphIDs.cpp
     src/TTauri/Text/AttributedGlyph.cpp
+    src/TTauri/Text/Catalogue.cpp
 )
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/tools/UnicodeData_converter.py")

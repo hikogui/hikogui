@@ -1,28 +1,29 @@
 
 #pragma once
 
+#include "Catalogue.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Foundation/tokenizer.hpp"
 
 namespace tt {
 
 [[nodiscard]] static parse_result_t<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
 {
     std::string name;
-
     if ((*token == tokenizer_name_t::Name)) {
         name = static_cast<std::string>(*token++);
     } else {
         TTAURI_THROW(parse_error("Expecting a name at start of each line").set_location(token->location));
     }
 
-    int index = std::numeric_limits<int>::max();
+    int index = 0;
     if ((*token == tokenizer_name_t::Operator) && (*token == "[")) {
         token++;
 
         if ((*token == tokenizer_name_t::IntegerLiteral)) {
-            name = static_cast<std::string>(*token++);
+            index = static_cast<int>(*token++);
         } else {
-            TTAURI_THROW(parse_error("Expecting an integer literal as in index for {}", name).set_location(token->location));
+            TTAURI_THROW(parse_error("Expecting an integer literal as an index for {}", name).set_location(token->location));
         }
 
 
@@ -34,7 +35,6 @@ namespace tt {
     }
 
     std::string value;
-
     if ((*token == tokenizer_name_t::StringLiteral)) {
         value = static_cast<std::string>(*token++);
     } else {
@@ -45,13 +45,20 @@ namespace tt {
         if ((*token == tokenizer_name_t::StringLiteral)) {
             value += static_cast<std::string>(*token++);
         } else {
-            return {name, index, value};
+            return {std::tuple{name, index, value}, token};
         }
     }
 }
 
-[[nodiscard]] static parse_result_t<> parseEntry(token_iterator token)
+struct translation_t {
+    std::string original;
+    std::vector<std::string> translation;
+};
+
+[[nodiscard]] static parse_result_t<translation_t> parseEntry(token_iterator token)
 {
+    translation_t r;
+
     if (auto result = parseLine(token)) {
         token = result.next_token;
     }
@@ -65,6 +72,8 @@ namespace tt {
             token = result.next_token;
         }
     }
+
+    return {r, token};
 }
 
 [[nodiscard]] Catalogue parseCatalogue(std::string_view text)
@@ -76,9 +85,9 @@ namespace tt {
     Catalogue r;
     auto token = tokens.begin();
     while (*token != tokenizer_name_t::End) {
-        if (auto result = parseEntry(content, token)) {
-            catalogue.msgstr[result.value.msgstr] = result.value.translation;
-            token = resut.next_token;
+        if (auto result = parseEntry(token)) {
+            r.add_translation(result.value->original, result.value->translation);
+            token = result.next_token;
         }
     }
 
@@ -87,7 +96,7 @@ namespace tt {
 
 [[nodiscard]] Catalogue parseCatalogue(URL const &url)
 {
-    ttlet text = ResourceView::loadView(url);
+    ttlet text = url.loadView();
     return parseCatalogue(text->string_view());
 }
 
