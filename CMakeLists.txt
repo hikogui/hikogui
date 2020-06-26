@@ -108,6 +108,7 @@ if(WIN32)
         src/TTauri/Foundation/FileView_win32.cpp
         src/TTauri/Foundation/debugger_win32.cpp
         src/TTauri/Foundation/fast_mutex_win32.cpp
+        src/TTauri/Foundation/language_win32.cpp
     )
 elseif(APPLE)
     set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
@@ -166,8 +167,9 @@ else()
 endif()
 target_link_libraries(TTauri_Foundation PUBLIC fmt tz span)
 if (WIN32)
-    target_link_libraries(TTauri_Foundation PUBLIC synchronization)
+    target_link_libraries(TTauri_Foundation PUBLIC synchronization windowsapp.lib)
 endif()
+
 target_include_directories(TTauri_Foundation PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(TTauri_Foundation PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -365,11 +367,6 @@ set(TTauri_Text_srcs
     src/TTauri/Text/FontGlyphIDs.cpp
     src/TTauri/Text/AttributedGlyph.cpp
 )
-if (WIN32)
-set(TTauri_Text_srcs ${TTauri_Text_srcs}
-    src/TTauri/Text/language_win32.cpp
-)
-endif()
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/tools/UnicodeData_converter.py")
 set(UNICODE_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/UnicodeData.txt")
@@ -402,9 +399,6 @@ target_link_libraries(TTauri_Text TTauri_Foundation)
 target_static_resource(TTauri_Text ${TTauri_Text_resources})
 target_include_directories(TTauri_Text PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(TTauri_Text PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-if (WIN32)
-    target_link_libraries(TTauri_Text windowsapp.lib)
-endif()
 
 set(TTauri_Text_tests
     src/TTauri/Text/UnicodeData_tests.cpp

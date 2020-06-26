@@ -62,8 +62,6 @@ namespace tt {
  *         needs(), layout(), layoutChildren(), draw(), 
  */
 class Widget {
-private:
-
 protected:
     mutable std::recursive_mutex mutex;
 
@@ -147,19 +145,9 @@ public:
     mutable std::atomic<bool> forceLayout = true;
     mutable std::atomic<bool> forceRedraw = true;
 
-    /** The next widget to select when pressing tab.
-    */
-    Widget *nextKeyboardWidget = nullptr;
-
-    /** The previous widget to select when pressing shift-tab.
-     */
-    Widget *prevKeyboardWidget = nullptr;
-
     /** The widget is enabled.
      */
     observable<bool> enabled = true;
-
-    
 
     /*! Constructor for creating sub views.
      */
@@ -395,6 +383,10 @@ public:
         }
     }
 
+    [[nodiscard]] std::vector<Widget *> Widget::childPointers(bool reverse) const noexcept;
+
+    [[nodiscard]] virtual Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
+
     /*! Handle keyboard event.
     * Called by the operating system when editing text, or entering special keys
     *
@@ -425,5 +417,6 @@ public:
     }
 };
 
+inline Widget * const foundWidgetPtr = reinterpret_cast<Widget *>(1);
 
 }

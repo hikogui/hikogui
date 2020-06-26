@@ -7,6 +7,7 @@
 #include "TTauri/Foundation/audio_counter_clock.hpp"
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
 #include "TTauri/Foundation/trace.hpp"
+#include "TTauri/Foundation/language.hpp"
 #include "TTauri/Foundation/config.hpp"
 
 namespace tt {
@@ -43,12 +44,14 @@ static void maintenanceThreadProcedure() noexcept
     set_thread_name("FoundationMaintenance");
     LOG_INFO("Maintenance thread started.");
 
+    size_t count = 0;
     while (!_stopMaintenanceThread) {
         std::this_thread::sleep_for(100ms);
 
         struct maintenance_tag {};
         ttlet t1 = trace<maintenance_tag>{};
 
+        // Calibrate the clocks.
         {
             struct calibrate_tag {};
             ttlet t2 = trace<calibrate_tag>{};
@@ -56,8 +59,17 @@ static void maintenanceThreadProcedure() noexcept
             sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
         }
 
+        // Check if the locale has changed every second.
+        if (count % 10 == 0) {
+            if (language_list.store(read_os_language_list())) {
+                LOG_INFO("Prefered language list changed: {}", join(language_list.load(), ", "));
+            }
+        }
+
         logger.gather_tick(false);
         logger.logger_tick();
+
+        ++count;
     };
     LOG_INFO("Maintenance thread finishing.");
 

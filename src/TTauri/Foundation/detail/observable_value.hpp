@@ -24,14 +24,19 @@ public:
         return value;
     }
 
-    virtual void store(T const &new_value) noexcept override {
-        T old_value;
-        {
-            ttlet lock = std::scoped_lock(observable_base<T>::mutex);
-            old_value = value;
+    virtual bool store(T const &new_value) noexcept override {
+        observable_base<T>::mutex.lock();
+
+        ttlet old_value = value;
+        if (new_value != old_value) {
             value = new_value;
+            observable_base<T>::mutex.unlock();
+            this->notify(old_value, new_value);
+            return true;
+        } else {
+            observable_base<T>::mutex.unlock();
+            return false;
         }
-        this->notify(old_value, new_value);
     }
 };
 

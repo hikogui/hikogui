@@ -18,8 +18,8 @@ public:
         return !this->operand_cache;
     }
 
-    virtual void store(bool const &new_value) noexcept override {
-        this->operand->store(static_cast<OT>(!new_value));
+    virtual bool store(bool const &new_value) noexcept override {
+        return this->operand->store(static_cast<OT>(!new_value));
     }
 };
 

@@ -6,8 +6,10 @@
 #include "TTauri/Foundation/notifier.hpp"
 #include "TTauri/Foundation/hires_utc_clock.hpp"
 #include "TTauri/Foundation/numeric_cast.hpp"
+#include "TTauri/Foundation/notifier.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
+#include "detail/observable_cast.hpp"
 #include <memory>
 #include <functional>
 #include <algorithm>
@@ -23,19 +25,66 @@ public:
     using duration = hires_utc_clock::duration;
 
 private:
+    notifier<value_type> notifier;
+
     std::shared_ptr<detail::observable_base<value_type>> pimpl;
+    size_t pimpl_cbid;
 
     observable(std::shared_ptr<detail::observable_base<value_type>> const &value) noexcept :
-        pimpl(value) {}
+        pimpl(value)
+    {
+        pimpl_cbid = pimpl->add_callback([this](ttlet &tmp) {
+            this->notifier(tmp);
+        });
+    }
 
     observable(std::shared_ptr<detail::observable_base<value_type>> &&value) noexcept :
-        pimpl(std::move(value)) {}
+        pimpl(std::move(value))
+    {
+        pimpl_cbid = pimpl->add_callback([this](ttlet &tmp) {
+            this->notifier(tmp);
+        });
+    }
+
+    observable &operator=(std::shared_ptr<detail::observable_base<value_type>> const &value) noexcept {
+        pimpl->remove_callback(pimpl_cbid);
+
+        pimpl = value;
+
+        pimpl_cbid = pimpl->add_callback([this](ttlet &tmp) {
+            this->notifier(tmp);
+        });
+
+        return *this;
+    }
 
 public:
-    observable(observable const &other) noexcept = default;
-    observable(observable &&other) noexcept = default;
-    observable &operator=(observable const &other) noexcept = default;
-    observable &operator=(observable &&other) noexcept = default;
+    observable(observable const &other) noexcept :
+        pimpl(other.pimpl)
+    {
+        pimpl_cbid = pimpl->add_callback([this](ttlet &tmp) {
+            this->notifier(tmp);
+        });
+    }
+
+    observable &operator=(observable const &other) noexcept
+    {
+        pimpl->remove_callback(pimpl_cbid);
+        pimpl = other.pimpl;
+        pimpl_cbid = pimpl->add_callback([this](ttlet &tmp) {
+            this->notifier(tmp);
+        });
+        return *this;
+    }
+
+    // Use the copy constructor and assignment operator.
+    //observable(observable &&other) noexcept = delete;
+    //observable &operator=(observable &&other) noexcept = delete;
+
+    ~observable() {
+        tt_assume(pimpl);
+        pimpl->remove_callback(pimpl_cbid);
+    }
 
     observable() noexcept :
         observable(std::static_pointer_cast<detail::observable_base<value_type>>(
@@ -46,6 +95,43 @@ public:
         observable(std::static_pointer_cast<detail::observable_base<value_type>>(
             std::make_shared<detail::observable_value<value_type>>(value)
         )) {}
+
+    template<typename Other>
+    observable(observable<Other> const &other) noexcept :
+        observable(std::static_pointer_cast<detail::observable_base<value_type>>(
+            std::make_shared<detail::observable_cast<value_type>>(other.pimpl)
+        )) {}
+
+    template<typename Other>
+    observable(Other const &other) noexcept :
+        observable(
+            std::static_pointer_cast<detail::observable_base<value_type>>(
+                std::make_shared<detail::observable_cast<value_type,Other>>(
+                    std::make_shared<detail::observable_value<Other>>(other)
+                )
+            )
+        ) {}
+
+    observable &operator=(value_type const &value) noexcept {
+        store(value);
+        return *this;
+    }
+
+    template<typename Other>
+    observable &operator=(observable<Other> const &other) noexcept {
+        return *this = std::static_pointer_cast<detail::observable_base<value_type>>(
+            std::make_shared<detail::observable_cast<value_type>>(other.pimpl)
+        );
+    }
+
+    template<typename Other>
+    observable &operator=(Other const &other) noexcept {
+        return *this = std::static_pointer_cast<detail::observable_base<value_type>>(
+            std::make_shared<detail::observable_cast<value_type,Other>>(
+                std::make_shared<detail::observable_value<Other>>(other)
+            )
+        );
+    }
 
     [[nodiscard]] value_type previous_value() const noexcept {
         tt_assume(pimpl);
@@ -96,24 +182,17 @@ public:
         return pimpl->load(animation_duration);
     }
 
-    void store(value_type const &new_value) noexcept {
+    bool store(value_type const &new_value) noexcept {
         tt_assume(pimpl);
         return pimpl->store(new_value);
     }
 
-    observable &operator=(value_type const &value) noexcept {
-        store(value);
-        return *this;
-    }
-
     [[nodiscard]] size_t add_callback(callback_type callback) noexcept {
-        tt_assume(pimpl);
-        return pimpl->add_callback(callback);
+        return notifier.add(callback);
     }
 
     void remove_callback(size_t id) noexcept {
-        tt_assume(pimpl);
-        return pimpl->remove_callback(id);
+        return notifier.remove(id);
     }
 
     [[nodiscard]] friend observable<bool> operator!(observable const &rhs) noexcept {

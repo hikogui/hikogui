@@ -10,6 +10,8 @@
 #include "TTauri/Widgets/RadioButtonWidget.hpp"
 #include "TTauri/Widgets/ToolbarWidget.hpp"
 #include "TTauri/Widgets/WindowWidget.hpp"
+#include "TTauri/Widgets/RowWidget.hpp"
+#include "TTauri/Widgets/ColumnWidget.hpp"
 #include "TTauri/GUI/Window.hpp"
 
 namespace tt {

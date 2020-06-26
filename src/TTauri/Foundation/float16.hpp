@@ -48,6 +48,14 @@ public:
         v = rhs;
         return *this;
     }
+
+    [[nodiscard]] friend bool operator==(float16 const &lhs, float16 const &rhs) noexcept {
+        return lhs.v == rhs.v;
+    }
+
+    [[nodiscard]] friend bool operator!=(float16 const &lhs, float16 const &rhs) noexcept {
+        return lhs.v != rhs.v;
+    }
 };
 
 }

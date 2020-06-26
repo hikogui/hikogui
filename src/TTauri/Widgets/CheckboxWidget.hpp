@@ -44,7 +44,7 @@ protected:
 
 public:
     observable<ValueType> value;
-    observable<format10> label;
+    observable<std::string> label;
 
     template<typename V>
     CheckboxWidget(Window &window, Widget *parent, V &&value, ValueType trueValue, ValueType falseValue) noexcept :
@@ -54,11 +54,11 @@ public:
         value(std::forward<V>(value)),
         label()
     {
-        value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
             forceRedraw = true;
         });
 
-        label.add_callback([this](auto...){
+        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
             forceLayout = true;
         });
     }

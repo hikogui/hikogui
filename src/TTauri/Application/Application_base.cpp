@@ -11,7 +11,12 @@ namespace tt {
 
 using namespace std;
 
-Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance, int nCmdShow) :
+Application_base::Application_base(
+    std::shared_ptr<ApplicationDelegate> applicationDelegate,
+    std::vector<std::string> const &arguments,
+    void *_hInstance,
+    int _nCmdShow
+) :
     delegate(applicationDelegate)
 {
     tt_assert(delegate);
@@ -28,8 +33,8 @@ Application_base::Application_base(std::shared_ptr<ApplicationDelegate> applicat
 #if defined(BUILD_TTAURI_GUI)
     tt::text_startup();
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-    tt::hInstance = hInstance;
-    tt::nCmdShow = nCmdShow;
+    tt::hInstance = _hInstance;
+    tt::nCmdShow = _nCmdShow;
 #endif
     tt::guiDelegate = this;
     tt::gui_startup();

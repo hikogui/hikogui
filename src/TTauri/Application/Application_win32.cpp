@@ -34,8 +34,8 @@ constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
     return arguments;
 }
 
-Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow) :
-    Application_base(std::move(delegate), passArguments(), hInstance, nCmdShow),
+Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *_hInstance, int _nCmdShow) :
+    Application_base(std::move(delegate), passArguments(), _hInstance, _nCmdShow),
     mainThreadID(GetCurrentThreadId())
 {
 }

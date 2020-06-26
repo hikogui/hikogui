@@ -200,25 +200,20 @@ void Window_base::setDevice(GUIDevice *newDevice)
 }
 
 void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept {
-    Widget *newTargetWidget =
-        currentTargetWidget != nullptr ? currentTargetWidget->nextKeyboardWidget : firstKeyboardWidget;
-
-    while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
-        newTargetWidget = newTargetWidget->nextKeyboardWidget;
+    auto tmp = widget->nextKeyboardWidget(currentTargetWidget, false);
+    if (tmp == foundWidgetPtr) {
+        tmp = nullptr;
     }
 
-    updateKeyboardTarget(newTargetWidget);
+    updateKeyboardTarget(tmp);
 }
 
 void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept {
-    Widget *newTargetWidget =
-        currentTargetWidget != nullptr ? currentTargetWidget->prevKeyboardWidget : lastKeyboardWidget;
-
-    while (newTargetWidget != nullptr && !newTargetWidget->acceptsFocus()) {
-        newTargetWidget = newTargetWidget->prevKeyboardWidget;
+    auto tmp = widget->nextKeyboardWidget(currentTargetWidget, true);
+    if (tmp == foundWidgetPtr) {
+        tmp = nullptr;
     }
-
-    updateKeyboardTarget(newTargetWidget);
+    updateKeyboardTarget(tmp);
 }
 
 [[nodiscard]] float Window_base::windowScale() const noexcept {

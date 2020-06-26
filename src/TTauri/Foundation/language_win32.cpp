@@ -14,7 +14,7 @@ using namespace winrt;
 using namespace Windows::Foundation;
 using namespace Windows::System::UserProfile;
 
-std::vector<std::string> readOSPreferedLanguages() noexcept
+std::vector<std::string> read_os_language_list() noexcept
 {
     winrt::init_apartment();
 

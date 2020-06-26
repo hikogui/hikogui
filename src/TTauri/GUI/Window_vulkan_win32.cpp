@@ -5,7 +5,6 @@
 #include "TTauri/GUI/KeyboardVirtualKey.hpp"
 #include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/ThemeBook.hpp"
-#include "TTauri/Text/language.hpp"
 #include "TTauri/Foundation/strings.hpp"
 #include "TTauri/Foundation/thread.hpp"
 #include <windowsx.h>
@@ -481,13 +480,6 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     
     case WM_ACTIVATEAPP:
         LOG_INFO("Activate");
-        {
-            ttlet languages = readOSPreferedLanguages();
-            for (ttlet &language: languages) {
-                LOG_INFO("Found language: {}", language);
-            }
-        }
-
         active = (wParam == TRUE);
         forceLayout = true;
         break;

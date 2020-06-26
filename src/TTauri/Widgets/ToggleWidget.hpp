@@ -41,7 +41,7 @@ protected:
     ValueType trueValue;
 
 public:
-    observable<format10> label;
+    observable<std::string> label;
     observable<ValueType> value;
 
     template<typename V>
@@ -50,12 +50,16 @@ public:
         value(std::forward<V>(value)),
         label()
     {
-        this->value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...){
             forceRedraw = true;
+        });
+        [[maybe_unused]] ttlet label_cbid = this->label.add_callback([this](auto...) {
+            forceLayout = true;
         });
     }
 
-    ~ToggleWidget() {}
+    ~ToggleWidget() {
+    }
 
     ToggleWidget(const ToggleWidget &) = delete;
     ToggleWidget &operator=(const ToggleWidget &) = delete;
@@ -73,6 +77,7 @@ public:
         };
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+        LOG_INFO("toggle widget layout {}", *label);
         setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
 
         toggle_height = Theme::smallHeight;

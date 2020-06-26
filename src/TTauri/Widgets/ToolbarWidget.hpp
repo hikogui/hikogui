@@ -8,9 +8,6 @@
 
 namespace tt {
 
-class ToolbarButtonWidget;
-class WindowTrafficLightsWidget;
-
 class ToolbarWidget : public Widget {
 public:
     ToolbarWidget(Window &window, Widget *parent) noexcept;

@@ -26,6 +26,8 @@ public:
     virtual operator std::string () const noexcept = 0;
 
     virtual std::unique_ptr<format10_base> make_unique_copy() const noexcept = 0;
+
+    [[nodiscard]] virtual bool equal_to9(format10_base &other) const noexcept = 0;
 };
 
 template<typename... Args>
@@ -58,6 +60,11 @@ public:
             return std::apply(std::make_unique<format10_impl>, std::tuple_cat(std::tuple(fmt), args));
         }
     }
+
+    [[nodiscard]] bool equal_to9(format10_base &other) const noexcept override {
+        auto *other_ = dynamic_cast<format10_impl *>(&other);
+        return other_ && this->fmt == other_->fmt && this->args == other_->args;
+    }
 };
 
 class format10 {
@@ -89,8 +96,21 @@ public:
         tt_assume(impl);
         return static_cast<std::string>(*impl);
     }
+
+    [[nodiscard]] friend bool operator==(format10 const &lhs, format10 const &rhs) noexcept {
+        tt_assume(lhs.impl);
+        tt_assume(rhs.impl);
+        return lhs.impl->equal_to9(*rhs.impl);
+    }
+
+    [[nodiscard]] friend bool operator!=(format10 const &lhs, format10 const &rhs) noexcept {
+        return !(lhs == rhs);
+    }
+
 };
 
 
 }
 
+// Add specialization for observable_cast
+#include "detail/observable_cast_format10.hpp"

@@ -30,9 +30,10 @@ protected:
     std::unique_ptr<TextCell> labelCell;
 
     ValueType activeValue;
+
 public:
     observable<ValueType> value;
-    observable<format10> label;
+    observable<std::string> label;
 
     template<typename V>
     RadioButtonWidget(Window &window, Widget *parent, V &&value, ValueType activeValue) noexcept :
@@ -41,15 +42,16 @@ public:
         value(std::forward<V>(value)),
         label()
     {
-        value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
             forceRedraw = true;
         });
-        label.add_callback([this](auto...){
+        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
             forceLayout = true;
         });
     }
 
-    ~RadioButtonWidget() {}
+    ~RadioButtonWidget() {
+    }
 
     RadioButtonWidget(const RadioButtonWidget &) = delete;
     RadioButtonWidget &operator=(const RadioButtonWidget &) = delete;

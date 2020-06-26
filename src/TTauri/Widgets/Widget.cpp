@@ -13,7 +13,7 @@ Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
     enabled(true)
     
 {
-    enabled.add_callback([this](auto...){
+    [[maybe_unused]] ttlet enabled_cbid = enabled.add_callback([this](auto...){
         forceRedraw = true;
     });
 
@@ -280,6 +280,52 @@ HitBox Widget::hitBoxTest(vec position) const noexcept
         r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
     }
     return r;
+}
+
+std::vector<Widget *> Widget::childPointers(bool reverse) const noexcept {
+    std::vector<Widget *> r;
+    r.reserve(ssize(children));
+    for (ttlet &child: children) {
+        r.push_back(child.get());
+    }
+    if (reverse) {
+        std::reverse(r.begin(), r.end());
+    }
+    return r;
+}
+
+Widget *Widget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
+{
+    if (currentKeyboardWidget == nullptr && acceptsFocus()) {
+        // The first widget that accepts focus.
+        return const_cast<Widget *>(this);
+
+    } else {
+        bool found = false;
+
+        for (auto *child: childPointers(reverse)) {
+            if (found) {
+                // Find the first focus accepting widget.
+                if (auto *tmp = child->nextKeyboardWidget(nullptr, reverse)) {
+                    return tmp;
+                }
+
+            } else if (child == currentKeyboardWidget) {
+                found = true;
+
+            } else {
+                auto *tmp = child->nextKeyboardWidget(currentKeyboardWidget, reverse);
+                if (tmp == foundWidgetPtr) {
+                    // The current widget was found, but no next widget available in the child.
+                    found = true;
+
+                } else if (tmp) {
+                    return tmp;
+                }
+            }
+        }
+        return found ? foundWidgetPtr : nullptr;
+    }
 }
 
 }

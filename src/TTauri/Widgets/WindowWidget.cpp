@@ -4,7 +4,7 @@
 #include "TTauri/Widgets/WindowWidget.hpp"
 #include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
 #include "TTauri/Widgets/ToolbarWidget.hpp"
-#include "TTauri/Widgets/ContainerWidget.hpp"
+#include "TTauri/Widgets/ColumnWidget.hpp"
 #include "TTauri/Widgets/SystemMenuWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
@@ -30,12 +30,12 @@ WindowWidget::WindowWidget(Window &window, Label title) noexcept :
     }
 
 
-    content = &makeWidgetDirectly<ContainerWidget>();
+    content = &makeWidgetDirectly<ColumnWidget>();
     content->elevation = elevation;
-    content->placeLeft(0.0f);
-    content->placeRight(0.0f);
-    content->placeAtBottom(0.0f);
-    content->placeBelow(*toolbar, 0.0f);
+    content->placeLeft();
+    content->placeRight();
+    content->placeAtBottom();
+    content->placeBelow(*toolbar);
 
     // Add constraints for the window widget itself.
     window.addConstraint(left == 0);

@@ -105,8 +105,9 @@ public:
     * updated the cached values so that loads() will be quick.
     *
     * @param new_value The new value
+    * @return true if the value was different from before.
     */
-    virtual void store(T const &new_value) noexcept = 0;
+    virtual bool store(T const &new_value) noexcept = 0;
 
     /** Add a callback as a listener.
     * @param callback The callback to register, the new value is passed as the first argument.
