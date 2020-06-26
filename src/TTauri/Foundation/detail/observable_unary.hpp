@@ -27,7 +27,7 @@ public:
                 operand_cache = value;
             }
             ttlet new_value = this->load();
-            notify(old_value, new_value);
+            observable_base<T>::notify(old_value, new_value);
         });
     }
 
