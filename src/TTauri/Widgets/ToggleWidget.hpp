@@ -41,8 +41,8 @@ protected:
     ValueType trueValue;
 
 public:
-    observable<std::string> label;
     observable<ValueType> value;
+    observable<std::string> label;
 
     template<typename V>
     ToggleWidget(Window &window, Widget *parent, V &&value, ValueType trueValue) noexcept :

@@ -29,7 +29,7 @@ public:
 
     virtual std::string load() const noexcept override {
         ttlet lock = std::scoped_lock(observable_unary<std::string,tt::format10>::mutex);
-        return fmt::format("boogly {}", count);
+        return static_cast<std::string>(operand_cache);
     }
 
     virtual bool store(std::string const &new_value) noexcept override {

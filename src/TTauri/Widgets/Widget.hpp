@@ -383,7 +383,7 @@ public:
         }
     }
 
-    [[nodiscard]] std::vector<Widget *> Widget::childPointers(bool reverse) const noexcept;
+    [[nodiscard]] std::vector<Widget *> childPointers(bool reverse) const noexcept;
 
     [[nodiscard]] virtual Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 

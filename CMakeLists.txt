@@ -496,6 +496,8 @@ set(TTauri_GUI_srcs
     src/TTauri/Widgets/WindowTrafficLightsWidget.cpp
     src/TTauri/Widgets/ButtonWidget.cpp
     src/TTauri/Widgets/LineInputWidget.cpp
+    src/TTauri/Widgets/RowWidget.cpp
+    src/TTauri/Widgets/ColumnWidget.cpp
 )
 
 if(WIN32)
