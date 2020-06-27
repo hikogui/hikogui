@@ -5,7 +5,9 @@
 #include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
 #include "TTauri/Widgets/ToolbarWidget.hpp"
 #include "TTauri/Widgets/ColumnWidget.hpp"
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "TTauri/Widgets/SystemMenuWidget.hpp"
+#endif
 #include "TTauri/GUI/utils.hpp"
 
 namespace tt {
@@ -21,7 +23,9 @@ WindowWidget::WindowWidget(Window &window, Label title) noexcept :
     toolbar->placeAtTop(0.0f);
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         toolbar->makeAlignedWidget<SystemMenuWidget>(Alignment::TopLeft, title.icon());
+#endif
         toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopRight);
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopLeft);

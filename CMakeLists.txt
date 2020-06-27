@@ -122,6 +122,7 @@ elseif(APPLE)
         src/TTauri/Foundation/FileView_posix.cpp
         src/TTauri/Foundation/debugger_macos.mm
         src/TTauri/Foundation/fast_mutex_macos.cpp
+        src/TTauri/Foundation/language_macos.mm
     )
 endif()
 
@@ -515,7 +516,7 @@ elseif(APPLE)
 set(TTauri_GUI_srcs
     ${TTauri_GUI_srcs}
     #src/TTauri/GUI/GUISystem_vulkan_macos.mm
-    #src/TTauri/GUI/ThemeMode_macos.cpp
+    src/TTauri/GUI/ThemeMode_macos.mm
     #src/TTauri/GUI/Window_vulkan_macos.cpp
     #src/TTauri/GUI/VerticalSync_macos.cpp
 )

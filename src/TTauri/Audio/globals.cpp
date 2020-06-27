@@ -22,7 +22,11 @@ void audio_startup()
     tt::foundation_startup();
     LOG_INFO("Audio startup");
 
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     audioSystem = new AudioSystem_win32(audioDelegate);
+#else
+    audioSystem = nullptr;
+#endif
 }
 
 void audio_shutdown()

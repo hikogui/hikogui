@@ -71,4 +71,9 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     }
 }
 
+URL URL::urlFromSystemFontDirectory() noexcept
+{
+    return URL("file:/System/Library/Fonts");
+}
+
 }
