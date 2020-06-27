@@ -410,11 +410,10 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
     tt_assert(device);
     surfaceCapabilities = device->getSurfaceCapabilitiesKHR(intrinsic);
 
-    LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {}), osExtent=({})",
+    LOG_INFO("minimumExtent=({}, {}), maximumExtent=({}, {}), currentExtent=({}, {})",
         surfaceCapabilities.minImageExtent.width, surfaceCapabilities.minImageExtent.height,
         surfaceCapabilities.maxImageExtent.width, surfaceCapabilities.maxImageExtent.height,
-        surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height,
-        OSWindowRectangle.extent()
+        surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height
     );
 
     ttlet currentExtentSet =
@@ -422,27 +421,16 @@ std::tuple<uint32_t, vk::Extent2D> Window_vulkan::getImageCountAndExtent()
         (surfaceCapabilities.currentExtent.height != std::numeric_limits<uint32_t>::max());
 
     if (!currentExtentSet) {
-        LOG_WARNING("getSurfaceCapabilitiesKHR() does not supply currentExtent");
+        // XXX On wayland, the window size is based on the size of the swapchain, so I need
+        // to build a way of manual resizing the window outside of the operating system.
+        LOG_FATAL("getSurfaceCapabilitiesKHR() does not supply currentExtent");
     }
 
-    uint32_t const imageCount = surfaceCapabilities.maxImageCount ?
-        std::clamp(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount) :
-        std::max(defaultNumberOfSwapchainImages, surfaceCapabilities.minImageCount);
+    ttlet minImageCount = surfaceCapabilities.minImageCount;
+    ttlet maxImageCount = surfaceCapabilities.maxImageCount ? surfaceCapabilities.maxImageCount : 10;
+    ttlet imageCount = std::clamp(defaultNumberOfSwapchainImages, minImageCount, maxImageCount);
 
-    vk::Extent2D const imageExtent = currentExtentSet ?
-        surfaceCapabilities.currentExtent :
-        (vk::Extent2D{
-            std::clamp(
-                static_cast<uint32_t>(OSWindowRectangle.width()),
-                surfaceCapabilities.minImageExtent.width, surfaceCapabilities.maxImageExtent.width
-            ),
-            std::clamp(
-                static_cast<uint32_t>(OSWindowRectangle.height()),
-                surfaceCapabilities.minImageExtent.height, surfaceCapabilities.maxImageExtent.height
-            )
-        });
-
-    return { imageCount, imageExtent };
+    return { imageCount, surfaceCapabilities.currentExtent };
 }
 
 bool Window_vulkan::readSurfaceExtent()

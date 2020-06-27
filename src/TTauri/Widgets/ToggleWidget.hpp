@@ -77,7 +77,6 @@ public:
         };
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        LOG_INFO("toggle widget layout {}", *label);
         setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
 
         toggle_height = Theme::smallHeight;
