@@ -108,7 +108,6 @@ if(WIN32)
         src/TTauri/Foundation/FileView_win32.cpp
         src/TTauri/Foundation/debugger_win32.cpp
         src/TTauri/Foundation/fast_mutex_win32.cpp
-        src/TTauri/Foundation/language_win32.cpp
     )
 elseif(APPLE)
     set(TTauri_Foundation_srcs ${TTauri_Foundation_srcs}
@@ -122,7 +121,6 @@ elseif(APPLE)
         src/TTauri/Foundation/FileView_posix.cpp
         src/TTauri/Foundation/debugger_macos.mm
         src/TTauri/Foundation/fast_mutex_macos.cpp
-        src/TTauri/Foundation/language_macos.mm
     )
 endif()
 
@@ -369,6 +367,16 @@ set(TTauri_Text_srcs
     src/TTauri/Text/AttributedGlyph.cpp
     src/TTauri/Text/Catalogue.cpp
 )
+
+if(WIN32)
+set(TTauri_Text_srcs ${TTauri_Text_srcs}
+        src/TTauri/Text/language_win32.cpp
+)
+elseif(APPLE)
+set(TTauri_Text_srcs ${TTauri_Text_srcs}
+        src/TTauri/Text/language_macos.mm
+)
+endif()
 
 set(UNICODE_DATA_CONVERTER_PY "${CMAKE_CURRENT_SOURCE_DIR}/tools/UnicodeData_converter.py")
 set(UNICODE_DATA_TXT "${CMAKE_CURRENT_SOURCE_DIR}/data/UnicodeData.txt")

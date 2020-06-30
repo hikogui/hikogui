@@ -7,52 +7,80 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include <unordered_map>
 
 namespace tt {
 
-/** A catalogue of messages.
- */
-class Catalogue {
-    std::string language;
 
-    std::unique_ptr<expression_node> plural_expression;
 
-    // std::map can be searched using a string_view.
-    std::map<std::string,std::vector<std::string>> translations;
+struct Translation {
+    Language &language;
+
+    /** Translation, for each plurality.
+     */
+    std::vector<std::string> translation;
 
 public:
-    void add_translation(std::string original, std::vector<std::string> translation) noexcept {
-        translations[original] = translation;
+    Translation(Language &language, std::vector<std::string> translation) :
+        language(language), translation(std::move(translation)) {}
+
+    /** Get the translation.
+     * @param n The value used for selecting the correct plurality translation.
+     */
+    [[nodiscard]] std::string const &get(long long n) const noexcept {
+        ttlet plurality = std::clamp(language.plurality(n), ssize_t{0}, ssize(translation) - 1);
+        return translation[plurality];
     }
 
-    /** Return the plarity index.
+};
+
+struct Translations {
+    std::vector<Translation> translations;
+
+    /** Get a translation based on the given language order.
+     * @param languages The languages to translate to in the prefered order.
+     * @param n The value used for selecting the correct plurality translation.
+     * @return The translated string, or nullptr if no translation has been found.
      */
-    ssize_t plurality(unsigned long long n) const noexcept {
-        // To protect against overflow make the number smaller,
-        // But preserve trailing digits since language rules check for these.
-        n = (n > 1000000) ? (n % 1000000) : n;
+    [[nodiscard]] std::string const *get(std::vector<Language *> const &languages, long long n) const noexcept {
+        ssize_t best_language = ssize(languages);
+        Translation const *best_translation = nullptr;
 
-        auto context = expression_evaluation_context{};
-        context.set_local("n", n);
-
-        if (plural_expression) {
-            ttlet result = plural_expression->evaluate(context);
-            if (result.is_bool()) {
-                return static_cast<bool>(result) ? 1 : 0;
-            } else if (result.is_integer()) {
-                return static_cast<ssize_t>(result);
-            } else {
-                LOG_ERROR("Catalogue {}: plurality expression with value {} results in non-bool or non-integer type but {}",
-                    language, n, result.type_name()
-                );
-                // Plural expression failure, use english rules.
-                return (n == 1) ? 0 : 1;
+        for (ttlet &translation: translations) {
+            for (ssize_t i = 0; i != best_language; ++i) {
+                if (&translation.language == languages[i]) {
+                    best_language = i;
+                    best_translation = &translation;
+                }
             }
-
-        } else {
-            // No plural expression available, use english rules.
-            return (n == 1) ? 0 : 1;
         }
+        if (best_translation) {
+            return &best_translation->get(n);
+        } else {
+            return nullptr;
+        }
+    }
+};
+
+/** A catalogue of messages.
+ */
+class TranslationCatalogue {
+    std::vector<std::unique_ptr<Language>> languages;
+
+    std::vector<Language *> prefered_language_ptrs;
+
+    // std::map can be searched using a string_view.
+    std::unordered_map<std::string,Translations> translation_by_message;
+
+    size_t language_list_cbid;
+
+public:
+    TranslationCatalogue() noexcept;
+
+    void set_prefered_languages(std::vector<std::string> const &new_language_list) noexcept;
+
+    void add_translation(std::string original, Translations translation) noexcept {
+        translation_by_message[std::move(original)] = std::move(translation);
     }
 
     /** Get a message from the catalogue.
@@ -61,30 +89,28 @@ public:
      * @param n Used for plurality determination. If unused set to 1.
      * @return The translated message, or the english fallback.
      */
-    [[nodiscard]] std::string_view get(std::string const &original, std::string_view original_plural, unsigned long long n) const noexcept {
-        ttlet pl = plurality(n);
-
-        ttlet i = translations.find(original);
-        if (i == translations.end()) {
-            LOG_ERROR("Catalogue '{}': missing translation for msgid '{}'", language, original);
-            if (n != 1 && ssize(original_plural) != 0) {
-                return original_plural;
-            } else {
-                return original;
+    [[nodiscard]] std::string_view get(
+        std::string const &original,
+        std::string_view original_plural,
+        unsigned long long n
+    ) const noexcept
+    {
+        ttlet i = translation_by_message.find(original);
+        if (i != translation_by_message.end()) {
+            if (auto translated = i->second.get(prefered_language_ptrs, n)) {
+                return *translated;
             }
         }
 
-        if (pl >= ssize(i->second)) {
-            LOG_ERROR("Catalogue '{}': missing plurality {} for msgid '{}'", language, pl, original);
-            tt_assume(ssize(i->second) >= 1);
-            return i->second[0];
+        LOG_WARNING("TranslationCatalogue: Missing translation for msgid '{}'", original);
+        if (n != 1 && ssize(original_plural) != 0) {
+            return original_plural;
+        } else {
+            return original;
         }
-
-        return i->second[pl];
     }
-
 };
 
-Catalogue parseCatalogue(URL const &url);
+TranslationCatalogue parseCatalogue(URL const &url);
 
 }
