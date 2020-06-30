@@ -95,6 +95,7 @@ set(TTauri_Foundation_srcs
     src/TTauri/Foundation/png.cpp
     src/TTauri/Foundation/vec.cpp
     src/TTauri/Foundation/zlib.cpp
+    src/TTauri/Foundation/timer.cpp
 )
 
 if(WIN32)

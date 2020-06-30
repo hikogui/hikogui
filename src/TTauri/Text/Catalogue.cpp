@@ -4,7 +4,7 @@
 #include "Catalogue.hpp"
 #include "TTauri/Foundation/ResourceView.hpp"
 #include "TTauri/Foundation/tokenizer.hpp"
-#include "TTauri/Foundation/language.hpp"
+#include "language.hpp"
 
 namespace tt {
 
@@ -133,13 +133,13 @@ struct translation_t {
     return {r, token};
 }
 
-[[nodiscard]] Catalogue parseCatalogue(std::string_view text)
+[[nodiscard]] TranslationCatalogue parseCatalogue(std::string_view text)
 {
     auto tokens = parseTokens(text);
 
     tt_assume(tokens.back() == tokenizer_name_t::End);
 
-    Catalogue r;
+    TranslationCatalogue r;
     auto token = tokens.begin();
     while (*token != tokenizer_name_t::End) {
         if (auto result = parseEntry(token)) {
@@ -151,7 +151,7 @@ struct translation_t {
     return r;
 }
 
-[[nodiscard]] Catalogue parseCatalogue(URL const &url)
+[[nodiscard]] TranslationCatalogue parseCatalogue(URL const &url)
 {
     ttlet text = url.loadView();
     return parseCatalogue(text->string_view());

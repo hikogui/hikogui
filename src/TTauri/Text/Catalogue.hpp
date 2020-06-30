@@ -4,6 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/expression.hpp"
+#include "language.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -11,42 +12,68 @@
 
 namespace tt {
 
-
-
-struct Translation {
-    Language &language;
-
-    /** Translation, for each plurality.
-     */
-    std::vector<std::string> translation;
+class translation {
+    std::vector<std::string> plural_forms;
 
 public:
-    Translation(Language &language, std::vector<std::string> translation) :
-        language(language), translation(std::move(translation)) {}
+    language const &language;
+
+    translation(tt::language const &language, std::vector<std::string> plural_forms) noexcept :
+        language(language), plural_forms(std::move(plural_forms)) {}
 
     /** Get the translation.
      * @param n The value used for selecting the correct plurality translation.
      */
-    [[nodiscard]] std::string const &get(long long n) const noexcept {
-        ttlet plurality = std::clamp(language.plurality(n), ssize_t{0}, ssize(translation) - 1);
-        return translation[plurality];
+    [[nodiscard]] std::string_view get(long long n) const noexcept {
+        ttlet plurality = language.plurality(n, ssize(plural_forms));
+        return plural_forms[plurality];
     }
-
 };
 
-struct Translations {
-    std::vector<Translation> translations;
+class translations {
+    std::vector<translation> intrinsic;
+
+public:
+    translations() noexcept {}
+
+    /** Add a translation.
+    * @param language The language for the translation.
+    * @param plural_forms The translated text in each plural form.
+    */
+    void add(language const &language, std::vector<std::string> const &plurality_forms) noexcept {
+        ttlet i = std::find_if(intrinsic.cbegin(), intrinsic.cend(), [&language](auto translation) {
+            return &translation.language == &language;
+        });
+
+        if (i == intrinsic.cend()) {
+            intrinsic.emplace_back(language, plurality_forms);
+        }
+    }
+
+    /** Add a translation.
+    * @param language_code The language code for the translation. The translation is also
+    *                      added for the short-form language code. i.e. 'en' (short) 'en-US' (long).
+    * @param plural_forms The translated text in each plural form.
+    */
+    void add(std::string language_code, std::vector<std::string> const &plurality_forms) noexcept {
+        ttlet &language = language::find_or_create(language_code);
+        add(language, plurality_forms);
+
+        ttlet short_language_code = split(language_code, "-").front();
+        ttlet &short_language = language::find_or_create(short_language_code);
+        add(short_language, plurality_forms);
+    }
 
     /** Get a translation based on the given language order.
      * @param languages The languages to translate to in the prefered order.
      * @param n The value used for selecting the correct plurality translation.
      * @return The translated string, or nullptr if no translation has been found.
      */
-    [[nodiscard]] std::string const *get(std::vector<Language *> const &languages, long long n) const noexcept {
+    [[nodiscard]] std::string_view get(long long n, std::vector<language *> const &languages) const noexcept {
         ssize_t best_language = ssize(languages);
-        Translation const *best_translation = nullptr;
+        translation const *best_translation = nullptr;
 
-        for (ttlet &translation: translations) {
+        for (ttlet &translation: intrinsic) {
             for (ssize_t i = 0; i != best_language; ++i) {
                 if (&translation.language == languages[i]) {
                     best_language = i;
@@ -55,9 +82,9 @@ struct Translations {
             }
         }
         if (best_translation) {
-            return &best_translation->get(n);
+            return best_translation->get(n);
         } else {
-            return nullptr;
+            return {};
         }
     }
 };
@@ -65,49 +92,54 @@ struct Translations {
 /** A catalogue of messages.
  */
 class TranslationCatalogue {
-    std::vector<std::unique_ptr<Language>> languages;
-
-    std::vector<Language *> prefered_language_ptrs;
-
-    // std::map can be searched using a string_view.
-    std::unordered_map<std::string,Translations> translation_by_message;
+    std::unordered_map<std::string,translations> translation_by_message;
 
     size_t language_list_cbid;
 
 public:
     TranslationCatalogue() noexcept;
 
-    void set_prefered_languages(std::vector<std::string> const &new_language_list) noexcept;
+    ~TranslationCatalogue();
 
-    void add_translation(std::string original, Translations translation) noexcept {
-        translation_by_message[std::move(original)] = std::move(translation);
+    /** Add a translation for a message.
+     * @param msgid A string used as an id in the translation catalogue,
+     *              most often the text in the native language of the develper.
+     * @param language_code The language code for the translation. The translation is also
+     *                      added for the short-form language code. i.e. 'en' (short) 'en-US' (long).
+     * @param plural_forms The translated text in each plural form.
+     */
+    void add(
+        std::string const &msgid,
+        std::string const &language_code,
+        std::vector<std::string> const &plural_forms
+    ) noexcept {
+        auto &translations = translation_by_message[msgid];
+        translations.add(language_code, plural_forms);
     }
 
     /** Get a message from the catalogue.
-     * @param original English message used to search the catalogue. The string may include the context following a '|' character.
-     * @param original_plural Engligh plural message, used as fallback together with the msgid. May be an empty string_view.
-     * @param n Used for plurality determination. If unused set to 1.
-     * @return The translated message, or the english fallback.
+     * @param msgid A string used as an id in the translation catalogue,
+     *              most often the text in the native language of the develper.
+     * @param n Used for plurality determination. If unused set this value to 1.
+     * @param languages A list of languages to search for translations.
+     * @return The translated message, or the msgid as fallback.
      */
     [[nodiscard]] std::string_view get(
-        std::string const &original,
-        std::string_view original_plural,
-        unsigned long long n
+        char const *msgid,
+        unsigned long long n,
+        std::vector<language *> languages
     ) const noexcept
     {
-        ttlet i = translation_by_message.find(original);
+        ttlet i = translation_by_message.find(msgid);
         if (i != translation_by_message.end()) {
-            if (auto translated = i->second.get(prefered_language_ptrs, n)) {
-                return *translated;
+            auto translated = i->second.get(n, languages);
+            if (ssize(translated) != 0) {
+                return translated;
             }
         }
 
-        LOG_WARNING("TranslationCatalogue: Missing translation for msgid '{}'", original);
-        if (n != 1 && ssize(original_plural) != 0) {
-            return original_plural;
-        } else {
-            return original;
-        }
+        LOG_WARNING("TranslationCatalogue: Missing translation for msgid '{}'", msgid);
+        return msgid;
     }
 };
 

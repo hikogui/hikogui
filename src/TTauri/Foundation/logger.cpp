@@ -11,6 +11,7 @@
 #include "TTauri/Foundation/thread.hpp"
 #include "TTauri/Foundation/url_parser.hpp"
 #include "TTauri/Foundation/debugger.hpp"
+#include "timer.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <exception>
@@ -33,7 +34,7 @@ std::ostream &operator<<(std::ostream &lhs, source_code_ptr const &rhs) {
 }
 
 [[noreturn]] void terminateOnFatalError(std::string &&message) noexcept {
-    stopMaintenanceThread();
+    maintenance_timer.stop();
 
     if (debugger_is_present()) {
         debugger_log(message);

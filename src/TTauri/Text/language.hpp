@@ -19,7 +19,12 @@ struct language {
     language(std::string name) noexcept :
         name(std::move(name)), plurality_func() {}
 
-    [[nodiscard]] int plurality(long long n, int max) const noexcept {
+    language(language const &) = delete;
+    language(language &&) = delete;
+    language &operator=(language const &) = delete;
+    language &operator=(language &&) = delete;
+
+    [[nodiscard]] ssize_t plurality(long long n, ssize_t max) const noexcept {
         int r;
         if (plurality_func) {
             r = plurality_func(numeric_cast<int>(n % 1'000'000));
@@ -27,7 +32,7 @@ struct language {
             // Use English as fallback.
             r = static_cast<int>(n != 1);
         }
-        return std::clamp(r, 0, max - 1);
+        return std::clamp(numeric_cast<ssize_t>(r), ssize_t{0}, max - 1);
     }
 
     inline static std::unordered_map<std::string,std::unique_ptr<language>> languages;
@@ -45,7 +50,7 @@ struct language {
         }
     }
 
-    [[nodiscard]] static language *find_or_create(std::string const &name) noexcept {
+    [[nodiscard]] static language &find_or_create(std::string const &name) noexcept {
         ttlet lock = std::scoped_lock(static_mutex);
 
         auto *r = find(name);
@@ -54,7 +59,7 @@ struct language {
             r = tmp.get();
             languages[name] = std::move(tmp);
         }
-        return r;
+        return *r;
     }
 
     /** Add short language names to the list of names.

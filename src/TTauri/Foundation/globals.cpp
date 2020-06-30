@@ -7,8 +7,8 @@
 #include "TTauri/Foundation/audio_counter_clock.hpp"
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
 #include "TTauri/Foundation/trace.hpp"
-#include "TTauri/Foundation/language.hpp"
 #include "TTauri/Foundation/config.hpp"
+#include "TTauri/Foundation/timer.hpp"
 
 namespace tt {
 
@@ -16,68 +16,10 @@ namespace tt {
 */
 static std::atomic<uint64_t> startupCount = 0;
 
-
 std::unordered_map<std::string,nonstd::span<std::byte const>> staticResources;
 
-/** The maintenance thread.
-*/
-std::thread maintenanceThread;
-
-std::recursive_mutex mutex;
-
-/** A flag to stop the maintenance thread.
-*/
-bool _stopMaintenanceThread = false;
-
-void stopMaintenanceThread() noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-
-    _stopMaintenanceThread = true;
-    if (maintenanceThread.joinable()) {
-        maintenanceThread.join();
-    }
-}
-
-static void maintenanceThreadProcedure() noexcept
-{
-    set_thread_name("FoundationMaintenance");
-    LOG_INFO("Maintenance thread started.");
-
-    size_t count = 0;
-    while (!_stopMaintenanceThread) {
-        std::this_thread::sleep_for(100ms);
-
-        struct maintenance_tag {};
-        ttlet t1 = trace<maintenance_tag>{};
-
-        // Calibrate the clocks.
-        {
-            struct calibrate_tag {};
-            ttlet t2 = trace<calibrate_tag>{};
-            sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
-            sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
-        }
-
-        // Check if the locale has changed every second.
-        if (count % 10 == 0) {
-            if (language_list.store(read_os_language_list())) {
-                LOG_INFO("Prefered language list changed: {}", join(language_list.load(), ", "));
-            }
-        }
-
-        logger.gather_tick(false);
-        logger.logger_tick();
-
-        ++count;
-    };
-    LOG_INFO("Maintenance thread finishing.");
-
-    // Before the maintenance thread is terminated, gather all statistics and
-    // make sure all messages are logged.
-    logger.gather_tick(true);
-    logger.logger_tick();
-}
+size_t logger_maintenance_cbid;
+size_t clock_maintenance_cbid;
 
 void addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept
 {
@@ -128,7 +70,21 @@ void foundation_startup()
     sync_clock_calibration<hires_utc_clock,audio_counter_clock> =
         new sync_clock_calibration_type<hires_utc_clock,audio_counter_clock>("audio_utc");
 
-    maintenanceThread = std::thread(maintenanceThreadProcedure);
+    logger_maintenance_cbid = maintenance_timer.add_callback(100ms, [](auto current_time, auto last) {
+        struct logger_maintenance_tag {};
+        ttlet t2 = trace<logger_maintenance_tag>{};
+
+        logger.gather_tick(last);
+        logger.logger_tick();
+    });
+
+    clock_maintenance_cbid = maintenance_timer.add_callback(100ms, [](auto...) {
+        struct clock_maintenance_tag {};
+        ttlet t2 = trace<clock_maintenance_tag>{};
+
+        sync_clock_calibration<hires_utc_clock,audio_counter_clock>->calibrate_tick();
+        sync_clock_calibration<hires_utc_clock,cpu_counter_clock>->calibrate_tick();
+    });
 }
 
 void foundation_shutdown()
@@ -139,7 +95,10 @@ void foundation_shutdown()
     }
     LOG_INFO("TTauri shutdown");
 
-    stopMaintenanceThread();
+    // Force all timers to finish.
+    maintenance_timer.stop();
+    maintenance_timer.remove_callback(clock_maintenance_cbid);
+    maintenance_timer.remove_callback(logger_maintenance_cbid);
 
     delete sync_clock_calibration<hires_utc_clock,audio_counter_clock>;
     delete sync_clock_calibration<hires_utc_clock,cpu_counter_clock>;
