@@ -12,13 +12,13 @@
 
 namespace tt {
 
-class translation {
+class translation_type {
     std::vector<std::string> plural_forms;
 
 public:
-    language const &language;
+    language_type const &language;
 
-    translation(tt::language const &language, std::vector<std::string> plural_forms) noexcept :
+    translation_type(language_type const &language, std::vector<std::string> plural_forms) noexcept :
         language(language), plural_forms(std::move(plural_forms)) {}
 
     /** Get the translation.
@@ -30,17 +30,17 @@ public:
     }
 };
 
-class translations {
-    std::vector<translation> intrinsic;
+class translations_type {
+    std::vector<translation_type> intrinsic;
 
 public:
-    translations() noexcept {}
+    translations_type() noexcept {}
 
     /** Add a translation.
     * @param language The language for the translation.
     * @param plural_forms The translated text in each plural form.
     */
-    void add(language const &language, std::vector<std::string> const &plurality_forms) noexcept {
+    void add(language_type const &language, std::vector<std::string> const &plurality_forms) noexcept {
         ttlet i = std::find_if(intrinsic.cbegin(), intrinsic.cend(), [&language](auto translation) {
             return &translation.language == &language;
         });
@@ -69,7 +69,7 @@ public:
      * @param n The value used for selecting the correct plurality translation.
      * @return The translated string, or nullptr if no translation has been found.
      */
-    [[nodiscard]] std::string_view get(long long n, std::vector<language *> const &languages) const noexcept {
+    [[nodiscard]] std::string_view get(long long n, std::vector<language_type *> const &languages) const noexcept {
         ssize_t best_language = ssize(languages);
         translation const *best_translation = nullptr;
 
@@ -91,15 +91,13 @@ public:
 
 /** A catalogue of messages.
  */
-class TranslationCatalogue {
-    std::unordered_map<std::string,translations> translation_by_message;
-
-    size_t language_list_cbid;
+class translations_catalogue_type {
+    std::unordered_map<std::string,translations_type> translation_by_message;
 
 public:
-    TranslationCatalogue() noexcept;
+    translations_catalogue_type() noexcept;
 
-    ~TranslationCatalogue();
+    ~translations_catalogue_type();
 
     /** Add a translation for a message.
      * @param msgid A string used as an id in the translation catalogue,
@@ -127,9 +125,8 @@ public:
     [[nodiscard]] std::string_view get(
         char const *msgid,
         unsigned long long n,
-        std::vector<language *> languages
-    ) const noexcept
-    {
+        std::vector<language_type *> languages
+    ) const noexcept {
         ttlet i = translation_by_message.find(msgid);
         if (i != translation_by_message.end()) {
             auto translated = i->second.get(n, languages);
@@ -138,11 +135,11 @@ public:
             }
         }
 
-        LOG_WARNING("TranslationCatalogue: Missing translation for msgid '{}'", msgid);
+        LOG_WARNING("Translation catalogue: Missing translation for msgid '{}'", msgid);
         return msgid;
     }
 };
 
-TranslationCatalogue parseCatalogue(URL const &url);
+inline translations_catalogue_type translations;
 
 }

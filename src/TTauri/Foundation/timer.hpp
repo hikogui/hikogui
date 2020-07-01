@@ -56,7 +56,7 @@ private:
      *
      * @return List of triggered callbacks, Time to wakeup to trigger on the next callback.
      */
-    [[nodiscard]] std::pair<std::vector<callback_type>,timer::time_point> timer::find_triggered_callbacks(
+    [[nodiscard]] std::pair<std::vector<callback_type>,timer::time_point> find_triggered_callbacks(
         timer::time_point current_time
     ) noexcept;
 

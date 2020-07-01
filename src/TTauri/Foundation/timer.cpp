@@ -4,6 +4,7 @@
 #include "timer.hpp"
 #include "cpu_utc_clock.hpp"
 #include "thread.hpp"
+#include "logger.hpp"
 #include <algorithm>
 
 namespace tt {
