@@ -268,12 +268,23 @@ using token_vector = std::vector<tt::token_t>;
 using token_iterator = typename token_vector::iterator;
 
 template<typename T>
-struct parse_result_t {
-    std::optional<T> value;
+struct parse_result {
+    bool found;
+    T value;
     token_iterator next_token;
 
+    parse_result() noexcept :
+        found(false), value(), next_token() {}
+
+    parse_result(T const &value, token_iterator next_token) :
+        found(true), value(value), next_token(next_token) {}
+
     operator bool () const noexcept {
-        return static_cast<bool>(value);
+        return found;
+    }
+
+    T const &operator*() const noexcept {
+        return value;
     }
 };
 

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Foundation/detail/observable_cast.hpp"
-#include "TTauri/Foundation/language.hpp"
+#include "language.hpp"
 
 namespace tt::detail {
 

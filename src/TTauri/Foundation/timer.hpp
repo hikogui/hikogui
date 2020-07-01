@@ -64,6 +64,18 @@ private:
      */
     void loop() noexcept;
 
+    /** Start the timer thread.
+    * Normally it is not needed to call this yourself. If there
+    * are no callbacks registered the thread will exit itself.
+    */
+    void start_with_lock_held() noexcept;
+
+    /** Stop the timer thread.
+    * Maybe called to emergency stop the timer thread, this will
+    * cause all callbacks to be called with last=true.
+    */
+    void stop_with_lock_held() noexcept;
+
 public:
     timer(std::string name) noexcept;
     ~timer();

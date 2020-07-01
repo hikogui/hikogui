@@ -4,21 +4,21 @@
 
 namespace tt {
 
-struct po_translation_t {
+struct po_translation {
     std::string msgctxt;
     std::string msgid;
     std::string msgid_plural;
     std::vector<std::string> msgstr;
 };
 
-struct po_translations_t {
+struct po_translations {
     std::string language;
     int nr_plural_forms;
     std::string plural_expression;
-    std::vector<po_translation_t> translations;
+    std::vector<po_translation> translations;
 };
 
-[[nodiscard]] po_translations_t parse_po(URL const &url);
+[[nodiscard]] po_translations parse_po(URL const &url);
 
 }
 

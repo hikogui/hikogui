@@ -17,9 +17,9 @@ struct parse_context_t {
 
 };
 
-[[nodiscard]] static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token);
+[[nodiscard]] static parse_result<datum> parseValue(parse_context_t &context, token_iterator token);
 
-[[nodiscard]] static parse_result_t<datum> parseArray(parse_context_t &context, token_iterator token)
+[[nodiscard]] static parse_result<datum> parseArray(parse_context_t &context, token_iterator token)
 {
     auto array = datum{datum::vector{}};
 
@@ -43,7 +43,7 @@ struct parse_context_t {
                 TTAURI_THROW(parse_error("Missing expected ','").set_location(token->location));
             }
 
-            array.push_back(*result.value);
+            array.push_back(*result);
             token = result.next_token;
 
             if ((*token == tokenizer_name_t::Operator) && (*token == ",")) {
@@ -61,7 +61,7 @@ struct parse_context_t {
     return {std::move(array), token};
 }
 
-[[nodiscard]] static parse_result_t<datum> parseObject(parse_context_t &context, token_iterator token)
+[[nodiscard]] static parse_result<datum> parseObject(parse_context_t &context, token_iterator token)
 {
     auto object = datum{datum::map{}};
 
@@ -94,7 +94,7 @@ struct parse_context_t {
             }
 
             if (auto result = parseValue(context, token)) {
-                object[name] = *result.value;
+                object[name] = *result;
                 token = result.next_token;
 
             } else {
@@ -116,7 +116,7 @@ struct parse_context_t {
     return {std::move(object), token};
 }
 
-[[nodiscard]] static parse_result_t<datum> parseValue(parse_context_t &context, token_iterator token)
+[[nodiscard]] static parse_result<datum> parseValue(parse_context_t &context, token_iterator token)
 {
     switch (token->name) {
     case tokenizer_name_t::StringLiteral: {
@@ -167,7 +167,7 @@ struct parse_context_t {
     auto token = tokens.begin();
 
     if (auto result = parseObject(context, token)) {
-        root = std::move(*result.value);
+        root = std::move(*result);
         token = result.next_token;
 
     } else {

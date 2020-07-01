@@ -100,7 +100,7 @@ struct language {
         prefered_languages.clear();
 
         for (ttlet &name: add_short_names(names)) {
-            prefered_languages.push_back(find_or_create(name));
+            prefered_languages.push_back(&find_or_create(name));
         }
     }
 };

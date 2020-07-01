@@ -1,9 +1,9 @@
 
-#include "Catalogue.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/tokenizer.hpp"
+#include "po_parser.hpp"
 #include "language.hpp"
 #include "translation.hpp"
+#include "TTauri/Foundation/ResourceView.hpp"
+#include "TTauri/Foundation/tokenizer.hpp"
 
 namespace tt {
 
@@ -37,7 +37,7 @@ namespace tt {
 //    }
 //}
 
-[[nodiscard]] static parse_result_t<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
+[[nodiscard]] static parse_result<std::tuple<std::string,int,std::string>> parseLine(token_iterator token)
 {
     std::string name;
     if ((*token == tokenizer_name_t::Name)) {
@@ -80,23 +80,16 @@ namespace tt {
     }
 }
 
-struct translation_t {
-    std::string msgctxt;
-    std::string msgid;
-    std::string msgid_plural;
-    std::vector<std::string> msgstr;
-};
-
-[[nodiscard]] static parse_result_t<translation_t> parse_po_translation(token_iterator token)
+[[nodiscard]] static parse_result<po_translation> parse_po_translation(token_iterator token)
 {
-    translation_t r;
+    po_translation r;
 
     while (true) {
-        if (ssize(r.plural_forms) == 0) {
+        if (ssize(r.msgstr) == 0) {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
 
-                ttlet [name, index, value] = token.value;
+                ttlet [name, index, value] = *result;
                 if (name == "msgctxt") {
                     r.msgctxt = value;
 
@@ -108,12 +101,12 @@ struct translation_t {
 
                 } else if (name == "msgstr") {
                     while (ssize(r.msgstr) <= index) {
-                        r.msgstr.push_back();
+                        r.msgstr.push_back({});
                     }
                     r.msgstr[index] = value;
 
                 } else {
-                    TTAURI_THROW(parse_error("Unexpected line {}", r.name).set_location(token->location));
+                    TTAURI_THROW(parse_error("Unexpected line {}", name).set_location(token->location));
                 }
 
             } else {
@@ -123,10 +116,10 @@ struct translation_t {
         } else if ((*token == tokenizer_name_t::Name) && (*token == "msgstr")) {
             if (auto result = parseLine(token)) {
                 token = result.next_token;
-                ttlet [name, index, value] = token.value;
+                ttlet [name, index, value] = *result;
 
                 while (ssize(r.msgstr) <= index) {
-                    r.msgstr.push_back();
+                    r.msgstr.push_back({});
                 }
                 r.msgstr[index] = value;
 
@@ -135,17 +128,17 @@ struct translation_t {
             }
 
         } else {
-            return {r}
+            return {r, token};
         }
     }
 }
 
-static void parse_po_header(po_translations_t &r, std::string const &header)
+static void parse_po_header(po_translations &r, std::string const &header)
 {
     for (ttlet &line : split(header, "\n")) {
-        auto split_line = split(line, ":", 1);
+        auto split_line = split(line, ":");
         if (ssize(split_line) < 2) {
-            TT_THROW(parse_error("Unknown header '{}'", line));
+            TTAURI_THROW(parse_error("Unknown header '{}'", line));
         }
 
         ttlet name = split_line.front();
@@ -160,9 +153,9 @@ static void parse_po_header(po_translations_t &r, std::string const &header)
     }
 }
 
-[[nodiscard]] static po_translations_t parse_po(std::string_view text)
+[[nodiscard]] static po_translations parse_po(std::string_view text)
 {
-    po_translations_t r;
+    po_translations r;
 
     auto tokens = parseTokens(text);
     tt_assume(tokens.back() == tokenizer_name_t::End);
@@ -179,7 +172,7 @@ static void parse_po_header(po_translations_t &r, std::string const &header)
                 parse_po_header(r, result.value.msgstr.front());
 
             } else {
-                TT_THROW(parse_error("Unknown .po header"));
+                TTAURI_THROW(parse_error("Unknown .po header"));
             }
         }
     }
@@ -187,12 +180,11 @@ static void parse_po_header(po_translations_t &r, std::string const &header)
     return r;
 }
 
-[[nodiscard]] po_translations_t parse_po(URL const &url)
+[[nodiscard]] po_translations parse_po(URL const &url)
 {
     ttlet text = url.loadView();
     return parse_po(text->string_view());
 }
 
-
-
+}
 

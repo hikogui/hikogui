@@ -34,10 +34,8 @@ timer::~timer()
     tt_assert(ssize(callback_list) == 0);
 }
 
-void timer::start() noexcept
+void timer::start_with_lock_held() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
-
     stop_thread = false;
     thread = std::thread([this]() {
         set_thread_name(name);
@@ -45,15 +43,29 @@ void timer::start() noexcept
     });
 }
 
+void timer::stop_with_lock_held() noexcept
+{
+    stop_thread = true;
+    if (thread.joinable()) {
+        auto tmp = std::thread{};
+        std::swap(tmp, thread);
+
+        mutex.unlock();
+        tmp.join();
+        mutex.lock();
+    }
+}
+
+void timer::start() noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+    start_with_lock_held();
+}
+
 void timer::stop() noexcept
 {
     ttlet lock = std::scoped_lock(mutex);
-
-    stop_thread = true;
-    if (thread.joinable()) {
-        thread.join();
-        thread = {};
-    }
+    stop_with_lock_held();
 }
 
 [[nodiscard]] std::pair<std::vector<timer::callback_type>,timer::time_point> timer::find_triggered_callbacks(
@@ -131,7 +143,7 @@ void timer::loop() noexcept
     );
 
     if (ssize(callback_list) == 1) {
-        start();
+        start_with_lock_held();
     }
 
     return callback_id;
@@ -150,7 +162,7 @@ void timer::remove_callback(size_t callback_id) noexcept
     callback_list.erase(i);
 
     if (ssize(callback_list) == 0) {
-        stop();
+        stop_with_lock_held();
     }
 }
 
