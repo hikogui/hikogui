@@ -14,9 +14,9 @@ TextCell::TextCell(std::string_view text, TextStyle style) noexcept :
 TextCell::TextCell(std::string text, TextStyle style) noexcept :
     text(std::move(text)), style(style), shapedText(this->text, style, 0.0f, Alignment::TopLeft) {}
 
-vec TextCell::preferedExtent() const noexcept
+vec TextCell::preferredExtent() const noexcept
 {
-    return shapedText.preferedExtent;
+    return shapedText.preferredExtent;
 }
 
 [[nodiscard]] float TextCell::heightForWidth(float width) const noexcept

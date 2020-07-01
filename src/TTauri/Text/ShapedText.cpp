@@ -222,7 +222,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
 }
 
 struct shape_text_result {
-    vec preferedExtent;
+    vec preferredExtent;
     aarect boundingBox;
     std::vector<AttributedGlyphLine> lines;
 };
@@ -243,7 +243,7 @@ struct shape_text_result {
 * @param text The text to be shaped.
 * @param alignment How the text should be horizontally-aligned inside the maximum_width.
 * @param max_width Maximum width that the text should flow into.
-* @return prefered size of the text, size of the resulting text, shaped text.
+* @return preferred size of the text, size of the resulting text, shaped text.
 */
 [[nodiscard]] static shape_text_result shape_text(
     std::vector<AttributedGrapheme> text,
@@ -270,7 +270,7 @@ struct shape_text_result {
     auto lines = make_lines(std::move(glyphs));
 
     // Calculate actual size of the box, no smaller than the minimum_size.
-    ttlet prefered_extent = calculate_text_size(lines);
+    ttlet preferred_extent = calculate_text_size(lines);
 
     if (wrap) {
         wrap_lines(lines, width);
@@ -286,7 +286,7 @@ struct shape_text_result {
 
 
     return {
-        prefered_extent,
+        preferred_extent,
         bounding_box,
         lines
     };
@@ -303,7 +303,7 @@ ShapedText::ShapedText(
     width(width)
 {
     auto result = shape_text(text, width, alignment, wrap);
-    preferedExtent = result.preferedExtent;
+    preferredExtent = result.preferredExtent;
     boundingBox = result.boundingBox;
     lines = std::move(result.lines);
 }

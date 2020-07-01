@@ -13,11 +13,10 @@
 namespace tt {
 
 struct language {
-    std::string name;
+    std::string tag;
     std::function<int(int)> plurality_func;
 
-    language(std::string name) noexcept :
-        name(std::move(name)), plurality_func() {}
+    language(std::string tag) noexcept;
 
     language(language const &) = delete;
     language(language &&) = delete;
@@ -36,13 +35,13 @@ struct language {
     }
 
     inline static std::unordered_map<std::string,std::unique_ptr<language>> languages;
-    inline static std::vector<language *> prefered_languages;
+    inline static observable<std::vector<language *>> preferred_languages;
     inline static std::recursive_mutex static_mutex;
 
-    [[nodiscard]] static language *find(std::string const &name) noexcept {
+    [[nodiscard]] static language *find(std::string const &tag) noexcept {
         ttlet lock = std::scoped_lock(static_mutex);
 
-        ttlet i = languages.find(name);
+        ttlet i = languages.find(tag);
         if (i != languages.end()) {
             return i->second.get();
         } else {
@@ -50,14 +49,14 @@ struct language {
         }
     }
 
-    [[nodiscard]] static language &find_or_create(std::string const &name) noexcept {
+    [[nodiscard]] static language &find_or_create(std::string const &tag) noexcept {
         ttlet lock = std::scoped_lock(static_mutex);
 
-        auto *r = find(name);
+        auto *r = find(tag);
         if (!r) {
-            auto tmp = std::make_unique<language>(name);
+            auto tmp = std::make_unique<language>(tag);
             r = tmp.get();
-            languages[name] = std::move(tmp);
+            languages[tag] = std::move(tmp);
         }
         return *r;
     }
@@ -65,49 +64,49 @@ struct language {
     /** Add short language names to the list of names.
      * The short names are inserted right after a consecutive group of long names with the same short name.
      */
-    [[nodiscard]] static std::vector<std::string> add_short_names(std::vector<std::string> names) noexcept {
+    [[nodiscard]] static std::vector<std::string> add_short_names(std::vector<std::string> tags) noexcept {
         std::vector<std::string> r;
 
-        std::string prev_short_name;
-        for (ttlet &name: names) {
-            ttlet split_name = split(name, "-");
-            tt_assume(ssize(split_name) != 0);
-            ttlet short_name = split_name.front();
+        std::string prev_short_tag;
+        for (ttlet &tag: tags) {
+            ttlet short_tag = split(tag, "-").front();
 
-            if (ssize(prev_short_name) != 0 && short_name != prev_short_name) {
-                if (std::find(r.cbegin(), r.cend(), prev_short_name) == r.cend()) {
-                    r.push_back(prev_short_name);
+            if (ssize(prev_short_tag) != 0 && short_tag != prev_short_tag) {
+                if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
+                    r.push_back(prev_short_tag);
                 }
             }
 
-            if (std::find(r.cbegin(), r.cend(), name) == r.cend()) {
-                r.push_back(name);
+            if (std::find(r.cbegin(), r.cend(), tag) == r.cend()) {
+                r.push_back(tag);
             }
 
-            prev_short_name = short_name;
+            prev_short_tag = short_tag;
         }
 
-        if (ssize(prev_short_name) != 0) {
-            if (std::find(r.cbegin(), r.cend(), prev_short_name) == r.cend()) {
-                r.push_back(prev_short_name);
+        if (ssize(prev_short_tag) != 0) {
+            if (std::find(r.cbegin(), r.cend(), prev_short_tag) == r.cend()) {
+                r.push_back(prev_short_tag);
             }
         }
         return r;
     }
 
-    static void set_prefered_languages(std::vector<std::string> names) noexcept {
+    static void set_preferred_languages(std::vector<std::string> tags) noexcept {
         ttlet lock = std::scoped_lock(static_mutex);
-        prefered_languages.clear();
 
-        for (ttlet &name: add_short_names(names)) {
-            prefered_languages.push_back(&find_or_create(name));
+        auto tmp = std::vector<language*>{};
+        for (ttlet &tag: add_short_names(tags)) {
+            tmp.push_back(&find_or_create(tag));
         }
+
+        preferred_languages = tmp;
     }
+
+    /** Get the preferred language tags from the operating system.
+     * Language tags are based on IETF BCP-47/RFC-5646
+     */
+    [[nodiscard]] static std::vector<std::string> get_preferred_language_tags() noexcept;
 };
-
-inline observable<std::vector<std::string>> language_list = std::vector<std::string>{"en-US"};
-
-[[nodiscard]] std::vector<std::string> read_os_language_list() noexcept; 
-
 
 }

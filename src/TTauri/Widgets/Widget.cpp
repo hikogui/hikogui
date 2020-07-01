@@ -21,17 +21,17 @@ Widget::Widget(Window &window, Widget *parent, vec defaultExtent) noexcept :
     minimumWidthConstraint = window.addConstraint(width >= minimumExtent.width());
     minimumHeightConstraint = window.addConstraint(height >= minimumExtent.height());
 
-    preferedExtent = defaultExtent;
-    preferedWidthConstraint = window.addConstraint(width >= preferedExtent.width(), rhea::strength::strong());
-    preferedHeightConstraint = window.addConstraint(height >= preferedExtent.height(), rhea::strength::strong());
+    preferredExtent = defaultExtent;
+    preferredWidthConstraint = window.addConstraint(width >= preferredExtent.width(), rhea::strength::strong());
+    preferredHeightConstraint = window.addConstraint(height >= preferredExtent.height(), rhea::strength::strong());
 }
 
 Widget::~Widget()
 {
     window.removeConstraint(minimumWidthConstraint);
     window.removeConstraint(minimumHeightConstraint);
-    window.removeConstraint(preferedWidthConstraint);
-    window.removeConstraint(preferedHeightConstraint);
+    window.removeConstraint(preferredWidthConstraint);
+    window.removeConstraint(preferredHeightConstraint);
 }
 
 GUIDevice *Widget::device() const noexcept
@@ -65,22 +65,22 @@ void Widget::setMinimumExtent(float _width, float _height) noexcept
     setMinimumExtent(vec{_width, _height});
 }
 
-void Widget::setPreferedExtent(vec newPreferedExtent) noexcept
+void Widget::setPreferredExtent(vec newPreferredExtent) noexcept
 {
     auto lock = std::scoped_lock(mutex);
 
-    if (newPreferedExtent != preferedExtent) {
-        preferedExtent = newPreferedExtent;
+    if (newPreferredExtent != preferredExtent) {
+        preferredExtent = newPreferredExtent;
 
-        preferedWidthConstraint = window.replaceConstraint(
-            preferedWidthConstraint,
-            width >= preferedExtent.width(),
+        preferredWidthConstraint = window.replaceConstraint(
+            preferredWidthConstraint,
+            width >= preferredExtent.width(),
             rhea::strength::weak()
         );
 
-        preferedHeightConstraint = window.replaceConstraint(
-            preferedHeightConstraint,
-            height >= preferedExtent.height(),
+        preferredHeightConstraint = window.replaceConstraint(
+            preferredHeightConstraint,
+            height >= preferredExtent.height(),
             rhea::strength::weak()
         );
     }

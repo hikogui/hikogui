@@ -4,7 +4,9 @@
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Text/ElusiveIcons.hpp"
 #include "TTauri/Text/TTauriIcons.hpp"
+#include "TTauri/Text/language.hpp"
 #include "TTauri/Foundation/globals.hpp"
+#include "TTauri/Foundation/timer.hpp"
 #include "data/UnicodeData.bin.inl"
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/TTauriIcons.ttf.inl"
@@ -14,7 +16,7 @@ namespace tt {
 /** Reference counter to determine the amount of startup/shutdowns.
 */
 static std::atomic<uint64_t> startupCount = 0;
-
+static size_t timer_preferred_languages_cbid;
 
 void text_startup()
 {
@@ -37,6 +39,12 @@ void text_startup()
     });
     ElusiveIcons_font_id = fontBook->register_font(URL("resource:elusiveicons-webfont.ttf"));
     TTauriIcons_font_id = fontBook->register_font(URL("resource:TTauriIcons.ttf"));
+
+    language::set_preferred_languages(language::get_preferred_language_tags());
+    timer_preferred_languages_cbid = maintenance_timer.add_callback(1s, [](auto...){
+        language::set_preferred_languages(language::get_preferred_language_tags());
+    });
+
 }
 
 void text_shutdown()
@@ -46,6 +54,8 @@ void text_shutdown()
         return;
     }
     LOG_INFO("Text shutdown");
+
+    maintenance_timer.remove_callback(timer_preferred_languages_cbid);
 
     ElusiveIcons_font_id = FontID{};
     delete fontBook;

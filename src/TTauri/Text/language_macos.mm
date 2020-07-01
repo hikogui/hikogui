@@ -7,7 +7,7 @@
 
 namespace tt {
 
-std::vector<std::string> read_os_language_list() noexcept
+std::vector<std::string> language::get_preferred_language_tags() noexcept
 {
     return std::vector<std::string>{"en-US"};
 }

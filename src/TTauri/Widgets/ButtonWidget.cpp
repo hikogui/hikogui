@@ -35,7 +35,7 @@ void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
 
     setMinimumExtent(vec{Theme::width, labelShapedText.boundingBox.height() + Theme::margin * 2.0f});
 
-    setPreferedExtent(labelShapedText.preferedExtent + Theme::margin2D * 2.0f);
+    setPreferredExtent(labelShapedText.preferredExtent + Theme::margin2D * 2.0f);
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

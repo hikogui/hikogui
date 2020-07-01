@@ -113,7 +113,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
     }
 
     // cap how far we scroll.
-    ttlet maxScrollWidth = std::max(0.0f, shapedText.preferedExtent.width() - textRectangle.width());
+    ttlet maxScrollWidth = std::max(0.0f, shapedText.preferredExtent.width() - textRectangle.width());
     textScrollX = std::clamp(textScrollX, 0.0f, maxScrollWidth);
 
     textTranslate = mat::T2(-textScrollX, 0.0f) * shapedText.T(textRectangle);

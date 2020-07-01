@@ -101,10 +101,10 @@ protected:
     /** The minimum size the widget should be.
     * This value could change based on the content of the widget.
     */
-    vec preferedExtent;
+    vec preferredExtent;
 
-    rhea::constraint preferedWidthConstraint;
-    rhea::constraint preferedHeightConstraint;
+    rhea::constraint preferredWidthConstraint;
+    rhea::constraint preferredHeightConstraint;
 
     /** The fixed size the widget should be.
     * 0.0f in either x or y means that direction is not fixed.
@@ -220,7 +220,7 @@ public:
     void setMinimumExtent(vec newMinimumExtent) noexcept;
     void setMinimumExtent(float width, float height) noexcept;
 
-    void setPreferedExtent(vec newPreferedExtent) noexcept;
+    void setPreferredExtent(vec newPreferredExtent) noexcept;
 
     void setFixedExtent(vec newFixedExtent) noexcept;
     void setFixedHeight(float height) noexcept;

@@ -17,14 +17,14 @@ public:
     observable_cast(std::shared_ptr<observable_base<tt::format10>> const &operand) noexcept :
         observable_unary<std::string,tt::format10>(operand)
     {
-        language_list_cbid = language_list.add_callback([this](auto...) {
+        language_list_cbid = language::preferred_languages.add_callback([this](auto...) {
             ++count;
             notify({}, load());
         });
     }
 
     ~observable_cast() {
-          language_list.remove_callback(language_list_cbid);
+        language::preferred_languages.remove_callback(language_list_cbid);
     }
 
     virtual std::string load() const noexcept override {

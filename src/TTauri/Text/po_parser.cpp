@@ -136,6 +136,11 @@ namespace tt {
 static void parse_po_header(po_translations &r, std::string const &header)
 {
     for (ttlet &line : split(header, "\n")) {
+        if (ssize(line) == 0) {
+            // Skip empty header lines.
+            continue;
+        }
+
         auto split_line = split(line, ":");
         if (ssize(split_line) < 2) {
             TTAURI_THROW(parse_error("Unknown header '{}'", line));

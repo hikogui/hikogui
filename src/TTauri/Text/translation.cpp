@@ -1,6 +1,7 @@
 
 
 #include "translation.hpp"
+#include "po_parser.hpp"
 
 namespace tt {
 
@@ -73,18 +74,23 @@ void add_translation(
 void add_translation(
     std::string_view context,
     std::string_view msgid,
-    std::string const &language_code,
+    std::string const &language_tag,
     std::vector<std::string> const &plural_forms
 ) noexcept {
-
-    ttlet &language = language::find_or_create(language_code);
+    ttlet &language = language::find_or_create(language_tag);
     add_translation(context, msgid, language, plural_forms);
-
-    ttlet short_language_code = split(language_code, "-")[0];
-    ttlet &short_language = language::find_or_create(short_language_code);
-    add_translation(context, msgid, short_language, plural_forms);
 }
 
-
+void add_translation(po_translations const &po_translations, language const &language) noexcept
+{
+    for (ttlet &translation : po_translations.translations) {
+        add_translation(
+            translation.msgctxt,
+            translation.msgid,
+            language,
+            translation.msgstr
+        );
+    }
+}
 
 }

@@ -25,7 +25,7 @@ public:
 
     /** Return the extent that this cell wants to be drawn as.
      */
-    [[nodiscard]] virtual vec preferedExtent() const noexcept { return {}; }
+    [[nodiscard]] virtual vec preferredExtent() const noexcept { return {}; }
 
     /** Get the height to draw this cell for the given width.
      */

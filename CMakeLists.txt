@@ -366,6 +366,7 @@ set(TTauri_Text_srcs
     src/TTauri/Text/TextStyle.cpp
     src/TTauri/Text/FontGlyphIDs.cpp
     src/TTauri/Text/AttributedGlyph.cpp
+    src/TTauri/Text/language.cpp
     src/TTauri/Text/translation.cpp
     src/TTauri/Text/po_parser.cpp
 )

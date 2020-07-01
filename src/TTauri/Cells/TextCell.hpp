@@ -19,7 +19,7 @@ public:
     TextCell(std::string_view text, TextStyle style) noexcept;
     TextCell(std::string text, TextStyle style) noexcept;
 
-    [[nodiscard]] vec preferedExtent() const noexcept override;
+    [[nodiscard]] vec preferredExtent() const noexcept override;
 
     [[nodiscard]] float heightForWidth(float width) const noexcept override;
 

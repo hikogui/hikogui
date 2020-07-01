@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <locale>
+#include "translation.hpp"
 
 namespace tt {
 
@@ -43,10 +44,10 @@ public:
 
     operator std::string () const noexcept override {
         auto locale = std::locale{};
-        auto translated_fmt = fmt;
+        auto translated_fmt = get_translation(fmt);
 
         if constexpr (sizeof...(Args) == 0) {
-            return translated_fmt;
+            return std::string{translated_fmt};
         } else {
             return std::apply(fmt::format, std::tuple_cat(std::tuple(locale, translated_fmt), args));
         }
