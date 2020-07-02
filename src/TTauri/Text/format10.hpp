@@ -29,7 +29,7 @@ public:
 
     virtual std::unique_ptr<format10_base> make_unique_copy() const noexcept = 0;
 
-    [[nodiscard]] virtual bool equal_to9(format10_base &other) const noexcept = 0;
+    [[nodiscard]] virtual bool equal_to(format10_base &other) const noexcept = 0;
 };
 
 /** A c++20 standard conforming std::format() for proper function overload resolution.
@@ -80,7 +80,7 @@ public:
         }
     }
 
-    [[nodiscard]] bool equal_to9(format10_base &other) const noexcept override {
+    [[nodiscard]] bool equal_to(format10_base &other) const noexcept override {
         auto *other_ = dynamic_cast<format10_impl *>(&other);
         return other_ && this->fmt == other_->fmt && this->params == other_->params;
     }
@@ -122,7 +122,7 @@ public:
     [[nodiscard]] friend bool operator==(format10 const &lhs, format10 const &rhs) noexcept {
         tt_assume(lhs.impl);
         tt_assume(rhs.impl);
-        return lhs.impl->equal_to9(*rhs.impl);
+        return lhs.impl->equal_to(*rhs.impl);
     }
 
     [[nodiscard]] friend bool operator!=(format10 const &lhs, format10 const &rhs) noexcept {
