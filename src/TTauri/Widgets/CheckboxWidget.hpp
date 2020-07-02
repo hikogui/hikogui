@@ -80,7 +80,8 @@ public:
             rectangle().width() - label_x, rectangle().height()
         };
 
-        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+        ttlet labelText = *label;
+        labelCell = std::make_unique<TextCell>(labelText, theme->labelStyle);
         setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
 
         button_height = Theme::smallHeight;

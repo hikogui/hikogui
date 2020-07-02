@@ -6,19 +6,18 @@
 namespace tt {
 
 struct translation_key {
-    std::string context;
     std::string msgid;
     language const *language;
 
-    translation_key(std::string_view context, std::string_view msgid, tt::language const *language=nullptr) noexcept :
-        context(context), msgid(msgid), language(language) {}
+    translation_key(std::string_view msgid, tt::language const *language=nullptr) noexcept :
+        msgid(msgid), language(language) {}
 
     [[nodiscard]] size_t hash() const noexcept {
-        return hash_mix(language, context, msgid);
+        return hash_mix(language, msgid);
     }
 
     [[nodiscard]] friend bool operator==(translation_key const &lhs, translation_key const &rhs) noexcept {
-        return lhs.language == rhs.language && lhs.context == rhs.context && lhs.msgid == rhs.msgid;
+        return lhs.language == rhs.language && lhs.msgid == rhs.msgid;
     }
 };
 
@@ -40,13 +39,12 @@ namespace tt {
 std::unordered_map<translation_key,std::vector<std::string>> translations;
 
 [[nodiscard]] std::string_view get_translation(
-    std::string_view context,
     std::string_view msgid,
     long long n,
     std::vector<language*> const &languages
 ) noexcept {
 
-    auto key = translation_key{context, msgid};
+    auto key = translation_key{msgid};
 
     for (ttlet *language : languages) {
         key.language = language;
@@ -62,31 +60,29 @@ std::unordered_map<translation_key,std::vector<std::string>> translations;
 }
 
 void add_translation(
-    std::string_view context,
     std::string_view msgid,
     language const &language,
     std::vector<std::string> const &plural_forms
 ) noexcept {
-    auto key = translation_key{context, msgid, &language};
+    auto key = translation_key{msgid, &language};
     translations[key] = plural_forms;
 }
 
 void add_translation(
-    std::string_view context,
     std::string_view msgid,
     std::string const &language_tag,
     std::vector<std::string> const &plural_forms
 ) noexcept {
     ttlet &language = language::find_or_create(language_tag);
-    add_translation(context, msgid, language, plural_forms);
+    add_translation(msgid, language, plural_forms);
 }
 
 void add_translation(po_translations const &po_translations, language const &language) noexcept
 {
     for (ttlet &translation : po_translations.translations) {
+        auto msgid = ssize(translation.msgctxt) == 0 ? translation.msgid : translation.msgctxt + '|' + translation.msgid;
         add_translation(
-            translation.msgctxt,
-            translation.msgid,
+            msgid,
             language,
             translation.msgstr
         );

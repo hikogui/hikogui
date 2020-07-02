@@ -29,7 +29,7 @@ struct language {
             r = plurality_func(numeric_cast<int>(n % 1'000'000));
         } else {
             // Use English as fallback.
-            r = static_cast<int>(n != 1);
+            r = static_cast<int>(n == 1);
         }
         return std::clamp(numeric_cast<ssize_t>(r), ssize_t{0}, max - 1);
     }

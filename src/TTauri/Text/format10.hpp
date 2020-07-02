@@ -10,6 +10,7 @@
 #include <string>
 #include <locale>
 #include "translation.hpp"
+#include "TTauri/Foundation/type_traits.hpp"
 
 namespace tt {
 
@@ -31,42 +32,62 @@ public:
     [[nodiscard]] virtual bool equal_to9(format10_base &other) const noexcept = 0;
 };
 
+/** A c++20 standard conforming std::format() for proper function overload resolution.
+ */
 template<typename... Args>
+std::string cpp20_format(std::locale const &locale, std::string_view fmt, Args const &... args)
+{
+    return fmt::format(fmt, args...);
+}
+
+
+template<typename... Params>
 class format10_impl : public format10_base
 {
-    std::tuple<Args...> args;
+    std::tuple<Params...> params;
+
+    using format_func_type = std::string(*)(std::locale const &, std::string_view, Params const &...);
+    using make_unique_type = std::unique_ptr<format10_impl>(*)(std::string const &, Params const &...);
 
 public:
-    template<typename Fmt>
+
+    template<typename Fmt, typename... Args>
     format10_impl(Fmt &&fmt, Args &&... args) noexcept :
         format10_base(std::forward<Fmt>(fmt)),
-        args(std::forward<Args>(args)...) {}
+        params(std::forward<Args>(args)...) {}
 
     operator std::string () const noexcept override {
         auto locale = std::locale{};
         auto translated_fmt = get_translation(fmt);
 
-        if constexpr (sizeof...(Args) == 0) {
+        if constexpr (sizeof...(Params) == 0) {
             return std::string{translated_fmt};
         } else {
-            return std::apply(fmt::format, std::tuple_cat(std::tuple(locale, translated_fmt), args));
+            format_func_type format_func = cpp20_format;
+
+            return std::apply(format_func, std::tuple_cat(std::tuple(locale, translated_fmt), params));
         }
     }
 
     std::unique_ptr<format10_base> make_unique_copy() const noexcept override {
-        if constexpr (sizeof...(Args) == 0) {
+        if constexpr (sizeof...(Params) == 0) {
             return std::make_unique<format10_impl>(fmt);
 
         } else {
-            return std::apply(std::make_unique<format10_impl>, std::tuple_cat(std::tuple(fmt), args));
+            make_unique_type unique_constructor = std::make_unique<format10_impl>;
+
+            return std::apply(unique_constructor, std::tuple_cat(std::tuple(fmt), params));
         }
     }
 
     [[nodiscard]] bool equal_to9(format10_base &other) const noexcept override {
         auto *other_ = dynamic_cast<format10_impl *>(&other);
-        return other_ && this->fmt == other_->fmt && this->args == other_->args;
+        return other_ && this->fmt == other_->fmt && this->params == other_->params;
     }
 };
+
+template<typename Fmt, typename... Args>
+format10_impl(Fmt &&fmt, Args &&... args) -> format10_impl<remove_cvref_t<Args>...>;
 
 class format10 {
     std::unique_ptr<format10_base> impl;
@@ -110,6 +131,7 @@ public:
 
 };
 
+using format10p = format10;
 
 }
 
