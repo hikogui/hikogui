@@ -201,12 +201,20 @@ public:
         );
     }
 
+    [[nodiscard]] friend bool operator==(observable const &lhs, observable const &rhs) noexcept {
+        return *lhs == *rhs;
+    }
+
     [[nodiscard]] friend bool operator==(observable const &lhs, value_type const &rhs) noexcept {
         return *lhs == rhs;
     }
 
     [[nodiscard]] friend bool operator==(value_type const &lhs, observable const &rhs) noexcept {
         return lhs == *rhs;
+    }
+
+    [[nodiscard]] friend bool operator!=(observable const &lhs, observable const &rhs) noexcept {
+        return *lhs != *rhs;
     }
 
     [[nodiscard]] friend bool operator!=(observable const &lhs, value_type const &rhs) noexcept {
@@ -226,6 +234,14 @@ public:
         ttlet current_value = numeric_cast<float>(rhs.load());
         ttlet animation_progress = rhs.animation_progress(animation_duration);
         return mix(animation_progress, previous_value, current_value);
+    }
+
+    [[nodiscard]] friend std::string to_string(observable const &rhs) noexcept {
+        return to_string(rhs.load());
+    }
+
+    friend std::ostream &operator<<(std::ostream &lhs, observable const &rhs) noexcept {
+        return lhs << rhs.load();
     }
 
 };

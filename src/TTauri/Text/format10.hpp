@@ -20,8 +20,8 @@ protected:
     std::string fmt;
 
 public:
-    format10_base(std::string fmt) noexcept :
-        fmt(std::move(fmt)) {}
+    format10_base(std::string_view fmt) noexcept :
+        fmt(std::string{fmt}) {}
 
     virtual ~format10_base() = default;
 
@@ -41,53 +41,59 @@ std::string cpp20_format(std::locale const &locale, std::string_view fmt, Args c
 }
 
 
-template<typename... Params>
+template<typename... Args>
 class format10_impl : public format10_base
 {
-    std::tuple<Params...> params;
+    std::tuple<remove_cvref_t<Args>...> args;
 
-    using format_func_type = std::string(*)(std::locale const &, std::string_view, Params const &...);
-    using make_unique_type = std::unique_ptr<format10_impl>(*)(std::string const &, Params const &...);
+    using format_func_type = std::string(*)(std::locale const &, std::string_view, remove_cvref_t<Args> const &...);
+    using make_unique_type = std::unique_ptr<format10_impl>(*)(std::string_view const &, remove_cvref_t<Args> const &...);
 
 public:
-
-    template<typename Fmt, typename... Args>
-    format10_impl(Fmt &&fmt, Args &&... args) noexcept :
-        format10_base(std::forward<Fmt>(fmt)),
-        params(std::forward<Args>(args)...) {}
+    format10_impl(std::string_view fmt, Args const &... args) noexcept :
+        format10_base(fmt),
+        args(args...) {}
 
     operator std::string () const noexcept override {
         auto locale = std::locale{};
         auto translated_fmt = get_translation(fmt);
 
-        if constexpr (sizeof...(Params) == 0) {
-            return std::string{translated_fmt};
-        } else {
-            format_func_type format_func = cpp20_format;
-
-            return std::apply(format_func, std::tuple_cat(std::tuple(locale, translated_fmt), params));
-        }
+        format_func_type format_func = cpp20_format;
+        return std::apply(format_func, std::tuple_cat(std::tuple(locale, translated_fmt), args));
     }
 
     std::unique_ptr<format10_base> make_unique_copy() const noexcept override {
-        if constexpr (sizeof...(Params) == 0) {
-            return std::make_unique<format10_impl>(fmt);
-
-        } else {
-            make_unique_type unique_constructor = std::make_unique<format10_impl>;
-
-            return std::apply(unique_constructor, std::tuple_cat(std::tuple(fmt), params));
-        }
+        make_unique_type unique_constructor = std::make_unique<format10_impl>;
+        return std::apply(unique_constructor, std::tuple_cat(std::tuple(fmt), args));
     }
 
     [[nodiscard]] bool equal_to(format10_base &other) const noexcept override {
         auto *other_ = dynamic_cast<format10_impl *>(&other);
-        return other_ && this->fmt == other_->fmt && this->params == other_->params;
+        return other_ && this->fmt == other_->fmt && this->args == other_->args;
     }
 };
 
-template<typename Fmt, typename... Args>
-format10_impl(Fmt &&fmt, Args &&... args) -> format10_impl<remove_cvref_t<Args>...>;
+template<>
+class format10_impl<> : public format10_base
+{
+public:
+
+    format10_impl(std::string_view fmt) noexcept :
+        format10_base(fmt) {}
+
+    operator std::string () const noexcept override {
+        return std::string{get_translation(fmt)};
+    }
+
+    std::unique_ptr<format10_base> make_unique_copy() const noexcept override {
+        return std::make_unique<format10_impl>(fmt);
+    }
+
+    [[nodiscard]] bool equal_to(format10_base &other) const noexcept override {
+        auto *other_ = dynamic_cast<format10_impl *>(&other);
+        return other_ && this->fmt == other_->fmt;
+    }
+};
 
 class format10 {
     std::unique_ptr<format10_base> impl;
@@ -96,9 +102,9 @@ public:
     format10() noexcept :
         impl(std::make_unique<format10_impl<>>(""s)) {}
 
-    template<typename Fmt, typename... Args>
-    format10(Fmt &&fmt, Args &&... args) noexcept :
-        impl(std::make_unique<format10_impl<Args...>>(std::forward<Fmt>(fmt), std::forward<Args>(args)...)) {}
+    template<typename... Args>
+    format10(std::string_view fmt, Args const &... args) noexcept :
+        impl(std::make_unique<format10_impl<Args...>>(fmt, args...)) {}
 
     format10(format10 &&other) noexcept = default;
     format10 &operator=(format10 &&other) noexcept = default;

@@ -106,10 +106,10 @@ using copy_cv_t = typename copy_cv<To,From>::type;
 
 template<typename T>
 struct remove_cvref {
-    typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
 };
 
-template< class T >
+template<typename T>
 using remove_cvref_t = typename remove_cvref<T>::type;
 
 template <typename T> struct has_value_type 
@@ -122,6 +122,17 @@ template <typename T> struct has_value_type
 
 template<typename T>
 inline constexpr bool has_value_type_v = has_value_type<T>::value;
+
+template <typename T> struct has_add_callback 
+{
+    template <typename C> static std::true_type test(decltype(&C::add_callback) func_ptr);
+    template <typename> static std::false_type test(...);
+
+    static const bool value = std::is_same_v<decltype(test<T>(nullptr)), std::true_type>;
+};
+
+template<typename T>
+inline constexpr bool has_add_callback_v = has_add_callback<T>::value;
 
 template<typename T, typename Enable=void>
 struct make_value_type {};

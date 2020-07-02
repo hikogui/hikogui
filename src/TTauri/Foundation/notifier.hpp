@@ -24,7 +24,7 @@ public:
 
 private:
     mutable std::recursive_mutex mutex;
-    bool executing_callbacks = false;
+    mutable bool executing_callbacks = false;
     size_t counter = 0;
     std::vector<std::pair<size_t,callback_type>> callbacks;
 
@@ -75,7 +75,7 @@ public:
     /** Call the registerd callbacks with the given arguments.
      * @param args The arguments to pass with the invocation of the callback
      */
-    void operator()(Args const &... args) noexcept {
+    void operator()(Args const &... args) const noexcept {
         auto lock = std::scoped_lock(mutex);
         tt_assert(!executing_callbacks);
 
