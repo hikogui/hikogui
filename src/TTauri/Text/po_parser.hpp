@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+#include "TTauri/Foundation/URL.hpp"
+
 namespace tt {
 
 struct po_translation {

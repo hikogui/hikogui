@@ -4,7 +4,7 @@
 namespace tt {
 
 GUISystem_vulkan_macos::GUISystem_vulkan_macos(GUISystemDelegate *delegate) :
-    GUISystem_vulkan(delegate, { VK_MVK_MACOS_SURFACE_EXTENSION_NAME })
+    GUISystem_vulkan(delegate, { VK_EXT_METAL_SURFACE_EXTENSION_NAME })
 {
     hostFrequency = numeric_cast<uint64_t>(CVGetHostClockFrequency());
 

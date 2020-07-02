@@ -526,10 +526,10 @@ set(TTauri_GUI_srcs
 elseif(APPLE)
 set(TTauri_GUI_srcs
     ${TTauri_GUI_srcs}
+    src/TTauri/GUI/VerticalSync_macos.mm
     src/TTauri/GUI/GUISystem_vulkan_macos.mm
     src/TTauri/GUI/ThemeMode_macos.mm
     #src/TTauri/GUI/Window_vulkan_macos.cpp
-    #src/TTauri/GUI/VerticalSync_macos.cpp
 )
 endif()
 
