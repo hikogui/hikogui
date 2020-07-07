@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Application/ApplicationDelegate.hpp"
+#include "ttauri/ApplicationDelegate.hpp"
 #include "ttauri/audio/globals.hpp"
 #include "ttauri/audio/AudioSystemDelegate.hpp"
 #include "ttauri/text/globals.hpp"

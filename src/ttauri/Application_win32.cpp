@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Application/Application_win32.hpp"
+#include "ttauri/Application_win32.hpp"
 #include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "ttauri/strings.hpp"

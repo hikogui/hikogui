@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Application/Application_base.hpp"
+#include "ttauri/Application_base.hpp"
 #include <thread>
 
 namespace tt {

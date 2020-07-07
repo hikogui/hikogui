@@ -4,7 +4,6 @@ add_subdirectory(GUI)
 add_subdirectory(widgets)
 add_subdirectory(cells)
 add_subdirectory(audio)
-add_subdirectory(application)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
@@ -16,6 +15,15 @@ target_sources(ttauri PRIVATE
     A8B8G8R8SrgbPack32.hpp
     aarect.hpp
     algorithm.hpp
+    Application.hpp
+    Application_base.cpp
+    Application_base.hpp
+    Application_forward.hpp
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/Application_macos.hpp>
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/Application_macos.mm>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/Application_win32.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/Application_win32.hpp>
+    ApplicationDelegate.hpp
     assert.hpp
     atomic.hpp
     attributes.hpp

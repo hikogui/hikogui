@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Application/Application.hpp"
+#include "ttauri/Application.hpp"
 #include "ttauri/StaticResourceView.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/globals.hpp"

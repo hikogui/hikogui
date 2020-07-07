@@ -1,6 +1,6 @@
 
 
-#include "TTauri/Application/Application_macos.hpp"
+#include "ttauri/Application_macos.hpp"
 #import <Cocoa/Cocoa.h>
 
 namespace tt {
