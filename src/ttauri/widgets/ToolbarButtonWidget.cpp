@@ -3,7 +3,7 @@
 
 #include "ttauri/widgets/ToolbarButtonWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
-#include "ttauri/foundation/utils.hpp"
+#include "ttauri/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

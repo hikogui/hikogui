@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/hires_utc_clock.hpp"
 #include <functional>
 
 namespace tt {

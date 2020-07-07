@@ -10,7 +10,7 @@
 #include <string>
 #include <locale>
 #include "translation.hpp"
-#include "ttauri/foundation/type_traits.hpp"
+#include "ttauri/type_traits.hpp"
 
 namespace tt {
 

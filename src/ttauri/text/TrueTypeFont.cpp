@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "ttauri/text/TrueTypeFont.hpp"
-#include "ttauri/foundation/placement.hpp"
-#include "ttauri/foundation/strings.hpp"
-#include "ttauri/foundation/endian.hpp"
+#include "ttauri/placement.hpp"
+#include "ttauri/strings.hpp"
+#include "ttauri/endian.hpp"
 #include <cstddef>
 
 

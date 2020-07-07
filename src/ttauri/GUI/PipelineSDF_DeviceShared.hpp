@@ -8,11 +8,11 @@
 #include "TTauri/GUI/PipelineSDF_SpecializationConstants.hpp"
 #include "TTauri/GUI/GUIDevice_forward.hpp"
 #include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/logger.hpp"
-#include "ttauri/foundation/vspan.hpp"
-#include "ttauri/foundation/ivec.hpp"
-#include "ttauri/foundation/rect.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/logger.hpp"
+#include "ttauri/vspan.hpp"
+#include "ttauri/ivec.hpp"
+#include "ttauri/rect.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

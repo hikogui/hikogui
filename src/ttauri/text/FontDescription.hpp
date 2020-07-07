@@ -7,8 +7,8 @@
 #include "ttauri/text/GlyphID.hpp"
 #include "ttauri/text/FontWeight.hpp"
 #include "ttauri/text/FontVariant.hpp"
-#include "ttauri/foundation/exceptions.hpp"
-#include "ttauri/foundation/required.hpp"
+#include "ttauri/exceptions.hpp"
+#include "ttauri/required.hpp"
 
 namespace tt {
 

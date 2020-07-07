@@ -1,0 +1,51 @@
+// Copyright 2019 Pokitec
+// All rights reserved.
+
+#include "ttauri/logger.hpp"
+#include "ttauri/trace.hpp"
+#include "ttauri/cpu_utc_clock.hpp"
+#include "ttauri/globals.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/URL.hpp"
+#include "ttauri/strings.hpp"
+#include "ttauri/thread.hpp"
+#include <fmt/ostream.h>
+#include <fmt/format.h>
+#include <exception>
+#include <memory>
+#include <iostream>
+#include <ostream>
+#include <chrono>
+#include <Windows.h>
+#include <debugapi.h>
+
+namespace tt {
+
+using namespace std::literals::chrono_literals;
+
+
+gsl_suppress(i.11)
+std::string getLastErrorMessage()
+{
+    DWORD const errorCode = GetLastError();
+    size_t const messageSize = 32768;
+    wchar_t* const c16_message = new wchar_t[messageSize];;
+
+    FormatMessageW(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL, // source
+        errorCode,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        c16_message,
+        messageSize,
+        NULL
+    );
+
+    ttlet message = to_string(std::wstring(c16_message));
+    delete [] c16_message;
+
+    return message;
+}
+
+
+}

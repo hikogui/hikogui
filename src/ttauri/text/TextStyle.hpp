@@ -6,7 +6,7 @@
 #include "ttauri/text/FontDescription.hpp"
 #include "ttauri/text/TextDecoration.hpp"
 #include "ttauri/text/FontFamilyID.hpp"
-#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
+#include "ttauri/R16G16B16A16SFloat.hpp"
 #include <fmt/format.h>
 #include <ostream>
 

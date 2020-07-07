@@ -3,8 +3,8 @@
 
 #include "TTauri/GUI/Theme.hpp"
 #include "ttauri/text/globals.hpp"
-#include "ttauri/foundation/JSON.hpp"
-#include "ttauri/foundation/globals.hpp"
+#include "ttauri/JSON.hpp"
+#include "ttauri/globals.hpp"
 
 namespace tt {
 

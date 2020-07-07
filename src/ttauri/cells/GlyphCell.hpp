@@ -5,7 +5,7 @@
 
 #include "ttauri/cells/ImageCell.hpp"
 #include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/foundation/aarect.hpp"
+#include "ttauri/aarect.hpp"
 
 namespace tt {
 

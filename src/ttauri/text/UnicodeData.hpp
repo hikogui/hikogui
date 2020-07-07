@@ -5,10 +5,10 @@
 
 #include "ttauri/text/Grapheme.hpp"
 #include "ttauri/text/UnicodeBidi.hpp"
-#include "ttauri/foundation/ResourceView.hpp"
-#include "ttauri/foundation/math.hpp"
-#include "ttauri/foundation/URL.hpp"
-#include "ttauri/foundation/required.hpp"
+#include "ttauri/ResourceView.hpp"
+#include "ttauri/math.hpp"
+#include "ttauri/URL.hpp"
+#include "ttauri/required.hpp"
 #include <nonstd/span>
 
 namespace tt {

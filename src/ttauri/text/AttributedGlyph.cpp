@@ -4,7 +4,7 @@
 #include "ttauri/text/AttributedGlyph.hpp"
 #include "ttauri/text/FontBook.hpp"
 #include "ttauri/text/globals.hpp"
-#include "ttauri/foundation/Path.hpp"
+#include "ttauri/Path.hpp"
 
 namespace tt {
 

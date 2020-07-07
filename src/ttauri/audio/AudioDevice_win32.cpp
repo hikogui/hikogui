@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "ttauri/audio/AudioDevice_win32.hpp"
-#include "ttauri/foundation/logger.hpp"
-#include "ttauri/foundation/strings.hpp"
-#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/logger.hpp"
+#include "ttauri/strings.hpp"
+#include "ttauri/exceptions.hpp"
 #include <Windows.h>
 #include <propsys.h>
 #include <functiondiscoverykeys_devpkey.h>

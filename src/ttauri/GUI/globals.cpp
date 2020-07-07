@@ -7,7 +7,7 @@
 #include "TTauri/GUI/ThemeBook.hpp"
 #include "TTauri/GUI/RenderDoc.hpp"
 #include "ttauri/text/globals.hpp"
-#include "ttauri/foundation/globals.hpp"
+#include "ttauri/globals.hpp"
 
 #include "TTauri/GUI/PipelineImage.vert.spv.inl"
 #include "TTauri/GUI/PipelineImage.frag.spv.inl"

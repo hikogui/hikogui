@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/foundation/small_map.hpp"
+#include "ttauri/small_map.hpp"
 #include "ttauri/text/ShapedText.hpp"
 #include "ttauri/text/globals.hpp"
 

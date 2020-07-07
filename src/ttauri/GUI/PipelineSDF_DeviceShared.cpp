@@ -5,14 +5,14 @@
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 #include "ttauri/text/ShapedText.hpp"
-#include "ttauri/foundation/PixelMap.hpp"
-#include "ttauri/foundation/URL.hpp"
-#include "ttauri/foundation/memory.hpp"
-#include "ttauri/foundation/numeric_cast.hpp"
-#include "ttauri/foundation/BezierCurve.hpp"
-#include "ttauri/foundation/ivec.hpp"
-#include "ttauri/foundation/iaarect.hpp"
-#include "ttauri/foundation/mat.hpp"
+#include "ttauri/PixelMap.hpp"
+#include "ttauri/URL.hpp"
+#include "ttauri/memory.hpp"
+#include "ttauri/numeric_cast.hpp"
+#include "ttauri/BezierCurve.hpp"
+#include "ttauri/ivec.hpp"
+#include "ttauri/iaarect.hpp"
+#include "ttauri/mat.hpp"
 #include <array>
 
 namespace tt::PipelineSDF {

@@ -5,9 +5,9 @@
 
 #include "ttauri/text/GlyphID.hpp"
 #include "ttauri/text/FontID.hpp"
-#include "ttauri/foundation/hash.hpp"
-#include "ttauri/foundation/tagged_id.hpp"
-#include "ttauri/foundation/aarect.hpp"
+#include "ttauri/hash.hpp"
+#include "ttauri/tagged_id.hpp"
+#include "ttauri/aarect.hpp"
 #include <tuple>
 
 namespace tt {

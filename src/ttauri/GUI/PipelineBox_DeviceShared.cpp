@@ -4,8 +4,8 @@
 #include "TTauri/GUI/PipelineBox.hpp"
 #include "TTauri/GUI/PipelineBox_DeviceShared.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
-#include "ttauri/foundation/PixelMap.hpp"
-#include "ttauri/foundation/URL.hpp"
+#include "ttauri/PixelMap.hpp"
+#include "ttauri/URL.hpp"
 #include <array>
 
 namespace tt::PipelineBox {

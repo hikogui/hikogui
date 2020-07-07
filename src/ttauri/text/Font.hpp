@@ -7,11 +7,11 @@
 #include "ttauri/text/FontGlyphIDs.hpp"
 #include "ttauri/text/gstring.hpp"
 #include "ttauri/text/FontDescription.hpp"
-#include "ttauri/foundation/Path.hpp"
-#include "ttauri/foundation/ResourceView.hpp"
-#include "ttauri/foundation/exceptions.hpp"
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/URL.hpp"
+#include "ttauri/Path.hpp"
+#include "ttauri/ResourceView.hpp"
+#include "ttauri/exceptions.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/URL.hpp"
 #include <nonstd/span>
 #include <vector>
 #include <map>

@@ -3,7 +3,7 @@
 
 #include "ttauri/text/gstring.hpp"
 #include "ttauri/text/globals.hpp"
-#include "ttauri/foundation/strings.hpp"
+#include "ttauri/strings.hpp"
 
 namespace tt {
 

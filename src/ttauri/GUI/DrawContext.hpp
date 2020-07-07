@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "ttauri/foundation/vec.hpp"
-#include "ttauri/foundation/mat.hpp"
-#include "ttauri/foundation/aarect.hpp"
-#include "ttauri/foundation/vspan.hpp"
+#include "ttauri/vec.hpp"
+#include "ttauri/mat.hpp"
+#include "ttauri/aarect.hpp"
+#include "ttauri/vspan.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Theme.hpp"

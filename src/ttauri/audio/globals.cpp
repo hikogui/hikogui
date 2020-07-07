@@ -4,7 +4,7 @@
 #include "ttauri/audio/globals.hpp"
 #include "ttauri/audio/AudioSystem.hpp"
 #include "ttauri/audio/AudioSystem_win32.hpp"
-#include "ttauri/foundation/globals.hpp"
+#include "ttauri/globals.hpp"
 
 namespace tt {
 

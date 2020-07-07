@@ -12,7 +12,7 @@
 #include "TTauri/GUI/PipelineToneMapper.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "ttauri/widgets/Widget.hpp"
-#include "ttauri/foundation/trace.hpp"
+#include "ttauri/trace.hpp"
 #include <vector>
 
 namespace tt {

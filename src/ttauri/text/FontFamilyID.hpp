@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/tagged_id.hpp"
+#include "ttauri/tagged_id.hpp"
 
 namespace tt {
 

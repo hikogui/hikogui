@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/URL.hpp"
+#include "ttauri/URL.hpp"
 #include "ttauri/cells/Image.hpp"
 #include <fmt/format.h>
 #include <string>

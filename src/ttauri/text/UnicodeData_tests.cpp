@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "ttauri/text/UnicodeData.hpp"
-#include "ttauri/foundation/FileView.hpp"
-#include "ttauri/foundation/strings.hpp"
+#include "ttauri/FileView.hpp"
+#include "ttauri/strings.hpp"
 #include "data/UnicodeData.bin.inl"
 #include <gtest/gtest.h>
 #include <iostream>

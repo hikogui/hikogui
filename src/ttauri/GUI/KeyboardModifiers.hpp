@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/exceptions.hpp"
-#include "ttauri/foundation/strings.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/exceptions.hpp"
+#include "ttauri/strings.hpp"
 #include <cstdint>
 
 namespace tt {

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/foundation/vec.hpp"
-#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/vec.hpp"
+#include "ttauri/hires_utc_clock.hpp"
 #include "TTauri/GUI/MouseButtons.hpp"
 
 namespace tt {

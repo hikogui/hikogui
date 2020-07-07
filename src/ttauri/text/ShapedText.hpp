@@ -5,11 +5,11 @@
 
 #include "ttauri/text/AttributedGlyphLine.hpp"
 #include "ttauri/text/gstring.hpp"
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/attributes.hpp"
-#include "ttauri/foundation/Path.hpp"
-#include "ttauri/foundation/vec.hpp"
-#include "ttauri/foundation/nested_vector_iterator.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/attributes.hpp"
+#include "ttauri/Path.hpp"
+#include "ttauri/vec.hpp"
+#include "ttauri/nested_vector_iterator.hpp"
 #include <string_view>
 #include <optional>
 

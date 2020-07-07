@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ttauri/text/Grapheme.hpp"
-#include "ttauri/foundation/strings.hpp"
+#include "ttauri/strings.hpp"
 #include <vector>
 
 namespace tt {

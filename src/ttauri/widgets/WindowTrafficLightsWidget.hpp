@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ttauri/widgets/Widget.hpp"
-#include "ttauri/foundation/Path.hpp"
+#include "ttauri/Path.hpp"
 #include <memory>
 #include <string>
 #include <array>

@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/foundation/required.hpp"
+#include "ttauri/required.hpp"
 
 clang_suppress("-Wunused-variable")
 clang_suppress("-Wreorder")

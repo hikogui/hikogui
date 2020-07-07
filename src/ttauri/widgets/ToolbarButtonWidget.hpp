@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ttauri/widgets/Widget.hpp"
-#include "ttauri/foundation/Path.hpp"
+#include "ttauri/Path.hpp"
 #include "ttauri/text/FontGlyphIDs.hpp"
 #include "ttauri/text/ElusiveIcons.hpp"
 #include "ttauri/text/TTauriIcons.hpp"

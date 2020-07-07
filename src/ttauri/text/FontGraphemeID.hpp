@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/hash.hpp"
+#include "ttauri/hash.hpp"
 #include "ttauri/text/FontID.hpp"
 #include "ttauri/text/Grapheme.hpp"
 

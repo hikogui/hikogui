@@ -2,12 +2,12 @@
 // All rights reserved.
 
 #include "ttauri/text/UnicodeData.hpp"
-#include "ttauri/foundation/placement.hpp"
-#include "ttauri/foundation/endian.hpp"
-#include "ttauri/foundation/algorithm.hpp"
-#include "ttauri/foundation/exceptions.hpp"
-#include "ttauri/foundation/strings.hpp"
-#include "ttauri/foundation/required.hpp"
+#include "ttauri/placement.hpp"
+#include "ttauri/endian.hpp"
+#include "ttauri/algorithm.hpp"
+#include "ttauri/exceptions.hpp"
+#include "ttauri/strings.hpp"
+#include "ttauri/required.hpp"
 #include <algorithm>
 
 namespace tt {

@@ -4,8 +4,8 @@
 #pragma once
 
 #include "ttauri/text/Font.hpp"
-#include "ttauri/foundation/Path.hpp"
-#include "ttauri/foundation/ResourceView.hpp"
+#include "ttauri/Path.hpp"
+#include "ttauri/ResourceView.hpp"
 #include <memory>
 
 namespace tt {

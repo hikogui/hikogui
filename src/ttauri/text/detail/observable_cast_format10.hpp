@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/detail/observable_cast.hpp"
+#include "ttauri/detail/observable_cast.hpp"
 #include "ttauri/text/language.hpp"
 
 namespace tt::detail {

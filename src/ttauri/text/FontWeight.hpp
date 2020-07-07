@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/exceptions.hpp"
 #include <string>
 #include <unordered_map>
 #include <ostream>

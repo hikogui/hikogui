@@ -5,8 +5,8 @@
 
 #include "TTauri/GUI/KeyboardKey.hpp"
 #include "ttauri/text/Grapheme.hpp"
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/assert.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/assert.hpp"
 #include <utility>
 
 namespace tt {

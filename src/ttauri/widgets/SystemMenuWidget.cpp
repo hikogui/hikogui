@@ -4,7 +4,7 @@
 #include "ttauri/widgets/SystemMenuWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
 #include "ttauri/text/TTauriIcons.hpp"
-#include "ttauri/foundation/utils.hpp"
+#include "ttauri/utils.hpp"
 #include <Windows.h>
 #include <WinUser.h>
 #include <cmath>

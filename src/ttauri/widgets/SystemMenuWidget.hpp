@@ -5,7 +5,7 @@
 
 #include "ttauri/widgets/Widget.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "ttauri/foundation/Path.hpp"
+#include "ttauri/Path.hpp"
 #include "ttauri/cells/Image.hpp"
 #include "ttauri/cells/ImageCell.hpp"
 #include <memory>

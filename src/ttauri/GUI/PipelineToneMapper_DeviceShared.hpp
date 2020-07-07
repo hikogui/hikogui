@@ -4,9 +4,9 @@
 #pragma once
 
 #include "TTauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/aarect.hpp"
-#include "ttauri/foundation/vec.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/aarect.hpp"
+#include "ttauri/vec.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

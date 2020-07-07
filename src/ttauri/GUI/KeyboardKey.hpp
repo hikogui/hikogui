@@ -5,9 +5,9 @@
 
 #include "TTauri/GUI/KeyboardModifiers.hpp"
 #include "TTauri/GUI/KeyboardVirtualKey.hpp"
-#include "ttauri/foundation/hash.hpp"
-#include "ttauri/foundation/exceptions.hpp"
-#include "ttauri/foundation/strings.hpp"
+#include "ttauri/hash.hpp"
+#include "ttauri/exceptions.hpp"
+#include "ttauri/strings.hpp"
 #include <string_view>
 #include <unordered_map>
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/vec.hpp"
+#include "ttauri/vec.hpp"
 
 namespace tt {
 

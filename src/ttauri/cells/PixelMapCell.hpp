@@ -5,9 +5,9 @@
 
 #include "ttauri/cells/ImageCell.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "ttauri/foundation/PixelMap.hpp"
-#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
-#include "ttauri/foundation/URL.hpp"
+#include "ttauri/PixelMap.hpp"
+#include "ttauri/R16G16B16A16SFloat.hpp"
+#include "ttauri/URL.hpp"
 
 namespace tt {
 

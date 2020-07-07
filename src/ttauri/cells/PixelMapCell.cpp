@@ -4,7 +4,7 @@
 #include "ttauri/cells/PixelMapCell.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
-#include "ttauri/foundation/png.hpp"
+#include "ttauri/png.hpp"
 
 namespace tt {
 

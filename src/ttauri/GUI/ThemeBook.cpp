@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/ThemeBook.hpp"
-#include "ttauri/foundation/trace.hpp"
+#include "ttauri/trace.hpp"
 
 namespace tt {
 

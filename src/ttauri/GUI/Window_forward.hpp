@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/os_detect.hpp"
+#include "ttauri/os_detect.hpp"
 
 namespace tt {
 

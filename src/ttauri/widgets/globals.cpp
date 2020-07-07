@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Window.hpp"
 #include "ttauri/widgets/Widget.hpp"
 #include "TTauri/GUI/globals.hpp"
-#include "ttauri/foundation/globals.hpp"
+#include "ttauri/globals.hpp"
 #include <memory>
 
 namespace tt {

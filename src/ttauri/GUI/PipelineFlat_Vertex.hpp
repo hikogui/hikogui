@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ttauri/foundation/vspan.hpp"
-#include "ttauri/foundation/vec.hpp"
-#include "ttauri/foundation/aarect.hpp"
-#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
-#include "ttauri/foundation/R32G32B32A32SFloat.hpp"
-#include "ttauri/foundation/R32G32B32SFloat.hpp"
+#include "ttauri/vspan.hpp"
+#include "ttauri/vec.hpp"
+#include "ttauri/aarect.hpp"
+#include "ttauri/R16G16B16A16SFloat.hpp"
+#include "ttauri/R32G32B32A32SFloat.hpp"
+#include "ttauri/R32G32B32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 #include <nonstd/span>
 

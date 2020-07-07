@@ -3,7 +3,7 @@
 
 #include "ttauri/text/Font.hpp"
 #include "ttauri/text/TrueTypeFont.hpp"
-#include "ttauri/foundation/ResourceView.hpp"
+#include "ttauri/ResourceView.hpp"
 
 namespace tt {
 

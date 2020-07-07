@@ -6,7 +6,7 @@
 #include "ttauri/text/FontGlyphIDs.hpp"
 #include "ttauri/text/AttributedGrapheme.hpp"
 #include "ttauri/text/GlyphMetrics.hpp"
-#include "ttauri/foundation/mat.hpp"
+#include "ttauri/mat.hpp"
 
 namespace tt {
 

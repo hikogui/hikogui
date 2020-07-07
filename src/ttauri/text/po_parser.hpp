@@ -4,7 +4,7 @@
 
 #include <string>
 #include <vector>
-#include "ttauri/foundation/URL.hpp"
+#include "ttauri/URL.hpp"
 
 namespace tt {
 

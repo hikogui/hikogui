@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/foundation/required.hpp"
+#include "ttauri/required.hpp"
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 

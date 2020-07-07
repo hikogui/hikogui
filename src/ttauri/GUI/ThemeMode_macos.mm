@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "TTauri/GUI/ThemeMode.hpp"
-#include "ttauri/foundation/strings.hpp"
-#include "ttauri/foundation/logger.hpp"
+#include "ttauri/strings.hpp"
+#include "ttauri/logger.hpp"
 
 namespace tt {
 

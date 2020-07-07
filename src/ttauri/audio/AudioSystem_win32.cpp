@@ -3,9 +3,9 @@
 
 #include "ttauri/audio/AudioSystem_win32.hpp"
 #include "ttauri/audio/AudioDevice_win32.hpp"
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/logger.hpp"
-#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/logger.hpp"
+#include "ttauri/exceptions.hpp"
 #include <Windows.h>
 #include <mmdeviceapi.h>
 

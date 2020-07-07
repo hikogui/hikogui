@@ -10,8 +10,8 @@
 #include "ttauri/text/FontID.hpp"
 #include "ttauri/text/FontGraphemeID.hpp"
 #include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/foundation/URL.hpp"
-#include "ttauri/foundation/attributes.hpp"
+#include "ttauri/URL.hpp"
+#include "ttauri/attributes.hpp"
 #include <limits>
 #include <array>
 #include <new>

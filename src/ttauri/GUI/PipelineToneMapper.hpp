@@ -6,7 +6,7 @@
 #include "TTauri/GUI/Pipeline_vulkan.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/foundation/vspan.hpp"
+#include "ttauri/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <nonstd/span>
 

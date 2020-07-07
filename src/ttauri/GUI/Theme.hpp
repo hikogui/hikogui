@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/foundation/required.hpp"
-#include "ttauri/foundation/mat.hpp"
+#include "ttauri/required.hpp"
+#include "ttauri/mat.hpp"
 #include "ttauri/text/TextStyle.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
 #include <array>
