@@ -41,8 +41,8 @@ TEST(URLTests, glob1) {
 TEST(URLTests, glob2) {
     ttlet executableDirectory = URL::urlFromExecutableDirectory();
 
-    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.hpp");
+    ttlet txt_file_glob = executableDirectory.urlByAppendingPath("**/*.inl");
     auto txt_files = txt_file_glob.urlsByScanningWithGlobPattern();
 
-    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "TTauri/Foundation/config.hpp"s); }));
+    ASSERT_TRUE(std::any_of(txt_files.begin(), txt_files.end(), [](auto x) { return ends_with(x.path(), "TTauri/data/UnicodeData.bin.inl"s); }));
 }

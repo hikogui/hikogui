@@ -2,10 +2,8 @@
 // All rights reserved.
 
 #include "TTauri/Application/Application_win32.hpp"
-#if defined(BUILD_TTAURI_GUI)
 #include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/Window.hpp"
-#endif
 #include "TTauri/Foundation/strings.hpp"
 #include <thread>
 #include <string>
@@ -40,7 +38,6 @@ Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delega
 {
 }
 
-#if defined(BUILD_TTAURI_GUI)
 void Application_win32::lastWindowClosed()
 {
     runOnMainThread([&]() {
@@ -53,7 +50,6 @@ void Application_win32::lastWindowClosed()
         }
     });
 }
-#endif
 
 gsl_suppress(r.11)
 void Application_win32::runOnMainThread(std::function<void()> function)

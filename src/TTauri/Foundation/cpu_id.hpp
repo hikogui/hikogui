@@ -1,5 +1,6 @@
 
-#include "TTauri/Foundation/cpu_id.hpp"
+#pragma once
+
 #include "TTauri/Foundation/os_detect.hpp"
 #include <array>
 

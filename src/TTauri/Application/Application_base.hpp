@@ -3,18 +3,13 @@
 
 #pragma once
 
-#include "TTauri/Foundation/config.hpp"
 #include "TTauri/Application/ApplicationDelegate.hpp"
-#if defined(BUILD_TTAURI_AUDIO)
 #include "TTauri/Audio/globals.hpp"
 #include "TTauri/Audio/AudioSystemDelegate.hpp"
-#endif
-#if defined(BUILD_TTAURI_GUI)
 #include "TTauri/Text/globals.hpp"
 #include "TTauri/Widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/GUISystemDelegate.hpp"
-#endif
 #include "TTauri/Foundation/globals.hpp"
 #include "TTauri/Foundation/required.hpp"
 #include "TTauri/Foundation/URL.hpp"
@@ -37,12 +32,8 @@ class Application_base_dummy {};
  *
  */
 class Application_base : public Application_base_dummy
-#if defined(BUILD_TTAURI_GUI)
     , GUISystemDelegate
-#endif
-#if defined(BUILD_TTAURI_AUDIO)
     , AudioSystemDelegate
-#endif
 {
 public:
     /*! Application delegate
@@ -69,12 +60,10 @@ public:
      */
     virtual int loop() = 0;
 
-#if defined(BUILD_TTAURI_AUDIO)
     /*! Called when the device list has changed.
     * This can happen when external devices are connected or disconnected.
     */
     void audioDeviceListChanged() override;
-#endif
 
 protected:
     /*! Called right before a loop is started.

@@ -20,9 +20,7 @@ public:
     Application_win32(Application_win32 &&) = delete;
     Application_win32 &operator=(Application_win32 &&) = delete;
 
-#if defined(BUILD_TTAURI_GUI)
     void lastWindowClosed() override;
-#endif
 
     void runOnMainThread(std::function<void()> function) override;
 

@@ -1,9 +1,0 @@
-// Copyright 2019 Pokitec
-// All rights reserved.
-
-#pragma once
-
-#cmakedefine BUILD_TTAURI_NET
-#cmakedefine BUILD_TTAURI_AUDIO
-#cmakedefine BUILD_TTAURI_GUI
-

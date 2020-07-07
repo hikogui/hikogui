@@ -7,7 +7,6 @@
 #include "TTauri/Foundation/audio_counter_clock.hpp"
 #include "TTauri/Foundation/cpu_counter_clock.hpp"
 #include "TTauri/Foundation/trace.hpp"
-#include "TTauri/Foundation/config.hpp"
 #include "TTauri/Foundation/timer.hpp"
 
 namespace tt {

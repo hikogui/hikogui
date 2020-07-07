@@ -25,12 +25,9 @@ Application_base::Application_base(
     tt::configuration = applicationDelegate->configuration(arguments);
     tt::foundation_startup();
 
-#if defined(BUILD_TTAURI_AUDIO)
     tt::audioDelegate = this;
     tt::audio_startup();
-#endif
 
-#if defined(BUILD_TTAURI_GUI)
     tt::text_startup();
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     tt::hInstance = _hInstance;
@@ -39,20 +36,18 @@ Application_base::Application_base(
     tt::guiDelegate = this;
     tt::gui_startup();
     tt::widgets_startup();
-#endif
+
     LOG_INFO("Starting application '{}'.", applicationName);
 }
 
 Application_base::~Application_base()
 {
-#if defined(BUILD_TTAURI_GUI)
     tt::widgets_shutdown();
     tt::gui_shutdown();
     tt::text_shutdown();
-#endif
-#if defined(BUILD_TTAURI_AUDIO)
+
     tt::audio_shutdown();
-#endif
+
     tt::foundation_shutdown();
     LOG_INFO("Stopping application.");
 }
@@ -66,11 +61,9 @@ bool Application_base::startingLoop()
     }
 }
 
-#if defined(BUILD_TTAURI_AUDIO)
 void Application_base::audioDeviceListChanged()
 {
     delegate->audioDeviceListChanged();
 }
-#endif
 
 }
