@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ttauri/widgets/Widget.hpp"
-#include "TTauri/GUI/DrawContext.hpp"
+#include "ttauri/GUI/DrawContext.hpp"
 #include "ttauri/text/format10.hpp"
 #include "ttauri/observable.hpp"
 #include <memory>

@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/Window_vulkan_win32.hpp"
-#include "TTauri/GUI/KeyboardVirtualKey.hpp"
-#include "TTauri/GUI/GUISystem.hpp"
-#include "TTauri/GUI/ThemeBook.hpp"
+#include "ttauri/GUI/Window_vulkan_win32.hpp"
+#include "ttauri/GUI/KeyboardVirtualKey.hpp"
+#include "ttauri/GUI/GUISystem.hpp"
+#include "ttauri/GUI/ThemeBook.hpp"
 #include "ttauri/strings.hpp"
 #include "ttauri/thread.hpp"
 #include <windowsx.h>

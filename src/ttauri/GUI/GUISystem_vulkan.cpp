@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/GUISystem_vulkan.hpp"
-#include "TTauri/GUI/GUISystem.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/GUISystem_vulkan.hpp"
+#include "ttauri/GUI/GUISystem.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
 #include <chrono>
 
 namespace tt {

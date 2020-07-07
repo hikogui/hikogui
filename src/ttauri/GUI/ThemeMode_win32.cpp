@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/ThemeMode.hpp"
+#include "ttauri/GUI/ThemeMode.hpp"
 #include "ttauri/strings.hpp"
 #include "ttauri/logger.hpp"
 #include <Windows.h>

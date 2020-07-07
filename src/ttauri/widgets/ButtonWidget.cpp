@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/widgets/ButtonWidget.hpp"
-#include "TTauri/GUI/utils.hpp"
+#include "ttauri/GUI/utils.hpp"
 #include "ttauri/utils.hpp"
 #include <cmath>
 #include <typeinfo>

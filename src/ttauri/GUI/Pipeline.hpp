@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/Pipeline_vulkan.hpp"
+#include "ttauri/GUI/Pipeline_vulkan.hpp"
 
 namespace tt {
 

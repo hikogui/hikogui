@@ -4,7 +4,7 @@
 #include "ttauri/widgets/ToolbarWidget.hpp"
 #include "ttauri/widgets/WindowTrafficLightsWidget.hpp"
 #include "ttauri/widgets/ToolbarButtonWidget.hpp"
-#include "TTauri/GUI/utils.hpp"
+#include "ttauri/GUI/utils.hpp"
 #include <cmath>
 
 namespace tt {

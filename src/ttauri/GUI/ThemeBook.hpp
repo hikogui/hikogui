@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/GUI/ThemeMode.hpp"
-#include "TTauri/GUI/Theme.hpp"
+#include "ttauri/GUI/ThemeMode.hpp"
+#include "ttauri/GUI/Theme.hpp"
 #include <limits>
 #include <vector>
 #include <new>

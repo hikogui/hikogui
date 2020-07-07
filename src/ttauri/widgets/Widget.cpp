@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/widgets/Widget.hpp"
-#include "TTauri/GUI/utils.hpp"
+#include "ttauri/GUI/utils.hpp"
 
 namespace tt {
 

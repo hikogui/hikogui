@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "TTauri/GUI/Window_forward.hpp"
-#include "TTauri/GUI/GUIDevice_forward.hpp"
-#include "TTauri/GUI/MouseEvent.hpp"
-#include "TTauri/GUI/HitBox.hpp"
-#include "TTauri/GUI/KeyboardEvent.hpp"
-#include "TTauri/GUI/Theme.hpp"
+#include "ttauri/GUI/Window_forward.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/MouseEvent.hpp"
+#include "ttauri/GUI/HitBox.hpp"
+#include "ttauri/GUI/KeyboardEvent.hpp"
+#include "ttauri/GUI/Theme.hpp"
 #include "ttauri/text/ShapedText.hpp"
 #include "ttauri/attributes.hpp"
 #include "ttauri/Path.hpp"

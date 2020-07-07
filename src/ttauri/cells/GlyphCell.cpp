@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "ttauri/cells/GlyphCell.hpp"
-#include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/DrawContext.hpp"
-#include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "ttauri/GUI/Window.hpp"
+#include "ttauri/GUI/DrawContext.hpp"
+#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
 
 namespace tt {
 

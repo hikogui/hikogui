@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/GUISystem_base.hpp"
+#include "ttauri/GUI/GUISystem_base.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt {

@@ -5,7 +5,7 @@
 
 #include "ttauri/vec.hpp"
 #include "ttauri/hires_utc_clock.hpp"
-#include "TTauri/GUI/MouseButtons.hpp"
+#include "ttauri/GUI/MouseButtons.hpp"
 
 namespace tt {
 

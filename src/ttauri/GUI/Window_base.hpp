@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/WindowDelegate.hpp"
-#include "TTauri/GUI/GUIDevice_forward.hpp"
-#include "TTauri/GUI/Cursor.hpp"
-#include "TTauri/GUI/HitBox.hpp"
-#include "TTauri/GUI/MouseEvent.hpp"
-#include "TTauri/GUI/KeyboardEvent.hpp"
-#include "TTauri/GUI/SubpixelOrientation.hpp"
+#include "ttauri/GUI/globals.hpp"
+#include "ttauri/GUI/WindowDelegate.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/Cursor.hpp"
+#include "ttauri/GUI/HitBox.hpp"
+#include "ttauri/GUI/MouseEvent.hpp"
+#include "ttauri/GUI/KeyboardEvent.hpp"
+#include "ttauri/GUI/SubpixelOrientation.hpp"
 #include "ttauri/cells/Label.hpp"
 #include "ttauri/text/gstring.hpp"
 #include "ttauri/logger.hpp"

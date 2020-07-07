@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "ttauri/widgets/SystemMenuWidget.hpp"
-#include "TTauri/GUI/utils.hpp"
+#include "ttauri/GUI/utils.hpp"
 #include "ttauri/text/TTauriIcons.hpp"
 #include "ttauri/utils.hpp"
 #include <Windows.h>

@@ -3,7 +3,7 @@
 
 #include "ttauri/logger.hpp"
 #include "ttauri/URL.hpp"
-#include "TTauri/GUI/RenderDoc.hpp"
+#include "ttauri/GUI/RenderDoc.hpp"
 #include <renderdoc/renderdoc_app.h>
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>

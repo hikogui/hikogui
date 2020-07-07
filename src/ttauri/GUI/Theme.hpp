@@ -6,7 +6,7 @@
 #include "ttauri/required.hpp"
 #include "ttauri/mat.hpp"
 #include "ttauri/text/TextStyle.hpp"
-#include "TTauri/GUI/ThemeMode.hpp"
+#include "ttauri/GUI/ThemeMode.hpp"
 #include <array>
 
 namespace tt {

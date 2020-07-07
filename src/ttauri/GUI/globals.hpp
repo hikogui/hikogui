@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/GUI/GUISystem_forward.hpp"
-#include "TTauri/GUI/GUISystemDelegate.hpp"
-#include "TTauri/GUI/KeyboardBindings.hpp"
-#include "TTauri/GUI/ThemeMode.hpp"
+#include "ttauri/GUI/GUISystem_forward.hpp"
+#include "ttauri/GUI/GUISystemDelegate.hpp"
+#include "ttauri/GUI/KeyboardBindings.hpp"
+#include "ttauri/GUI/ThemeMode.hpp"
 #include "ttauri/required.hpp"
 #include <cstdint>
 #include <mutex>

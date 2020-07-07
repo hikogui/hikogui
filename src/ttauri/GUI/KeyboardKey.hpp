@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/GUI/KeyboardModifiers.hpp"
-#include "TTauri/GUI/KeyboardVirtualKey.hpp"
+#include "ttauri/GUI/KeyboardModifiers.hpp"
+#include "ttauri/GUI/KeyboardVirtualKey.hpp"
 #include "ttauri/hash.hpp"
 #include "ttauri/exceptions.hpp"
 #include "ttauri/strings.hpp"

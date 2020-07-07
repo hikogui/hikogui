@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/GUISystem_base.hpp"
+#include "ttauri/GUI/GUISystem_base.hpp"
 #include "ttauri/logger.hpp"
 #include <chrono>
 

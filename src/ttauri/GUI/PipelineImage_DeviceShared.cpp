@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineImage.hpp"
-#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/PipelineImage.hpp"
+#include "ttauri/GUI/PipelineImage_DeviceShared.hpp"
+#include "ttauri/GUI/PipelineImage_Image.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
 #include "ttauri/PixelMap.hpp"
 #include "ttauri/PixelMap.inl"
 #include "ttauri/URL.hpp"

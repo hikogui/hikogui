@@ -1,7 +1,7 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/Theme.hpp"
+#include "ttauri/GUI/Theme.hpp"
 #include "ttauri/text/globals.hpp"
 #include "ttauri/JSON.hpp"
 #include "ttauri/globals.hpp"

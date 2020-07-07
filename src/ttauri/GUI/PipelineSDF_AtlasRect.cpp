@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
-#include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "ttauri/GUI/PipelineSDF_AtlasRect.hpp"
+#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
 #include "ttauri/mat.hpp"
 
 namespace tt::PipelineSDF {

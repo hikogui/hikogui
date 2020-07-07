@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "TTauri/GUI/GUIDevice_base.hpp"
-#include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineBox_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
-#include "TTauri/GUI/PipelineToneMapper_DeviceShared.hpp"
-#include "TTauri/GUI/globals.hpp"
+#include "ttauri/GUI/GUIDevice_base.hpp"
+#include "ttauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "ttauri/GUI/PipelineImage_DeviceShared.hpp"
+#include "ttauri/GUI/PipelineBox_DeviceShared.hpp"
+#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "ttauri/GUI/PipelineToneMapper_DeviceShared.hpp"
+#include "ttauri/GUI/globals.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 

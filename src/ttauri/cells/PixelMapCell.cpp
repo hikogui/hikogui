@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "ttauri/cells/PixelMapCell.hpp"
-#include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/DrawContext.hpp"
+#include "ttauri/GUI/Window.hpp"
+#include "ttauri/GUI/DrawContext.hpp"
 #include "ttauri/png.hpp"
 
 namespace tt {

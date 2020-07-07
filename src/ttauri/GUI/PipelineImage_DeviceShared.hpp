@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/GUI/PipelineImage_TextureMap.hpp"
-#include "TTauri/GUI/PipelineImage_Page.hpp"
-#include "TTauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/PipelineImage_TextureMap.hpp"
+#include "ttauri/GUI/PipelineImage_Page.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
 #include "ttauri/required.hpp"
 #include "ttauri/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>

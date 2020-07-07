@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
+#include "ttauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "ttauri/vec.hpp"
 #include "ttauri/aarect.hpp"
 #include "ttauri/R32G32B32SFloat.hpp"

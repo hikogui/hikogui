@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/KeyboardBindings.hpp"
+#include "ttauri/GUI/KeyboardBindings.hpp"
 #include "ttauri/JSON.hpp"
 
 namespace tt {

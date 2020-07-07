@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineFlat.hpp"
-#include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/PipelineFlat.hpp"
+#include "ttauri/GUI/PipelineFlat_DeviceShared.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
 #include "ttauri/PixelMap.hpp"
 #include "ttauri/URL.hpp"
 #include <array>

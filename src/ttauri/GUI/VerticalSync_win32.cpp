@@ -1,5 +1,5 @@
 
-#include "TTauri/GUI/VerticalSync_win32.hpp"
+#include "ttauri/GUI/VerticalSync_win32.hpp"
 #include "ttauri/logger.hpp"
 #include "ttauri/strings.hpp"
 #include "ttauri/thread.hpp"

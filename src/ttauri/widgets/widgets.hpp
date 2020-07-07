@@ -12,7 +12,7 @@
 #include "ttauri/widgets/WindowWidget.hpp"
 #include "ttauri/widgets/RowWidget.hpp"
 #include "ttauri/widgets/ColumnWidget.hpp"
-#include "TTauri/GUI/Window.hpp"
+#include "ttauri/GUI/Window.hpp"
 
 namespace tt {
 

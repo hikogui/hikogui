@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/globals.hpp"
+#include "ttauri/GUI/Window.hpp"
+#include "ttauri/GUI/globals.hpp"
 #include "ttauri/exceptions.hpp"
 #include "ttauri/numeric_cast.hpp"
 #include "ttauri/bigint.hpp"

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/VerticalSync_base.hpp"
+#include "ttauri/GUI/VerticalSync_base.hpp"
 #include <nonstd/span>
 #include <thread>
 

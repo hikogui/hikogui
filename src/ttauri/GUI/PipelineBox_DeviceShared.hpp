@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
 #include "ttauri/required.hpp"
 #include "ttauri/vec.hpp"
 #include "ttauri/rect.hpp"

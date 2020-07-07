@@ -3,9 +3,9 @@
 
 #include "ttauri/widgets/globals.hpp"
 #include "ttauri/widgets/WindowWidget.hpp"
-#include "TTauri/GUI/Window.hpp"
+#include "ttauri/GUI/Window.hpp"
 #include "ttauri/widgets/Widget.hpp"
-#include "TTauri/GUI/globals.hpp"
+#include "ttauri/GUI/globals.hpp"
 #include "ttauri/globals.hpp"
 #include <memory>
 

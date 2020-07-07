@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/KeyboardKey.hpp"
+#include "ttauri/GUI/KeyboardKey.hpp"
 #include "ttauri/string_tag.hpp"
 #include "ttauri/URL.hpp"
 #include "ttauri/os_detect.hpp"

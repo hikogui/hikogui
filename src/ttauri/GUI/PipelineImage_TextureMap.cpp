@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineImage_TextureMap.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/PipelineImage_TextureMap.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
 
 namespace tt::PipelineImage {
 

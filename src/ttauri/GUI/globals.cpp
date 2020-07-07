@@ -1,24 +1,24 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/GUISystem.hpp"
-#include "TTauri/GUI/ThemeMode.hpp"
-#include "TTauri/GUI/ThemeBook.hpp"
-#include "TTauri/GUI/RenderDoc.hpp"
+#include "ttauri/GUI/globals.hpp"
+#include "ttauri/GUI/GUISystem.hpp"
+#include "ttauri/GUI/ThemeMode.hpp"
+#include "ttauri/GUI/ThemeBook.hpp"
+#include "ttauri/GUI/RenderDoc.hpp"
 #include "ttauri/text/globals.hpp"
 #include "ttauri/globals.hpp"
 
-#include "TTauri/GUI/PipelineImage.vert.spv.inl"
-#include "TTauri/GUI/PipelineImage.frag.spv.inl"
-#include "TTauri/GUI/PipelineFlat.vert.spv.inl"
-#include "TTauri/GUI/PipelineFlat.frag.spv.inl"
-#include "TTauri/GUI/PipelineBox.vert.spv.inl"
-#include "TTauri/GUI/PipelineBox.frag.spv.inl"
-#include "TTauri/GUI/PipelineSDF.vert.spv.inl"
-#include "TTauri/GUI/PipelineSDF.frag.spv.inl"
-#include "TTauri/GUI/PipelineToneMapper.vert.spv.inl"
-#include "TTauri/GUI/PipelineToneMapper.frag.spv.inl"
+#include "ttauri/GUI/PipelineImage.vert.spv.inl"
+#include "ttauri/GUI/PipelineImage.frag.spv.inl"
+#include "ttauri/GUI/PipelineFlat.vert.spv.inl"
+#include "ttauri/GUI/PipelineFlat.frag.spv.inl"
+#include "ttauri/GUI/PipelineBox.vert.spv.inl"
+#include "ttauri/GUI/PipelineBox.frag.spv.inl"
+#include "ttauri/GUI/PipelineSDF.vert.spv.inl"
+#include "ttauri/GUI/PipelineSDF.frag.spv.inl"
+#include "ttauri/GUI/PipelineToneMapper.vert.spv.inl"
+#include "ttauri/GUI/PipelineToneMapper.frag.spv.inl"
 
 namespace tt {
 

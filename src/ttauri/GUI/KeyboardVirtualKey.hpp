@@ -6,7 +6,7 @@
 #include "ttauri/required.hpp"
 #include "ttauri/exceptions.hpp"
 #include "ttauri/strings.hpp"
-#include "TTauri/GUI/KeyboardModifiers.hpp"
+#include "ttauri/GUI/KeyboardModifiers.hpp"
 #include <unordered_map>
 
 namespace tt {

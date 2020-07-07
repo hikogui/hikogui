@@ -9,7 +9,7 @@
 #include "ttauri/vec.hpp"
 #include "ttauri/aarect.hpp"
 #include "ttauri/mat.hpp"
-#include "TTauri/GUI/PipelineImage_Page.hpp"
+#include "ttauri/GUI/PipelineImage_Page.hpp"
 #include <nonstd/span>
 #include <atomic>
 #include <string>

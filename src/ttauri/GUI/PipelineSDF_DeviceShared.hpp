@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/GUI/PipelineSDF_TextureMap.hpp"
-#include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
-#include "TTauri/GUI/PipelineSDF_SpecializationConstants.hpp"
-#include "TTauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/PipelineSDF_TextureMap.hpp"
+#include "ttauri/GUI/PipelineSDF_AtlasRect.hpp"
+#include "ttauri/GUI/PipelineSDF_SpecializationConstants.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
 #include "ttauri/text/FontGlyphIDs.hpp"
 #include "ttauri/required.hpp"
 #include "ttauri/logger.hpp"

@@ -5,8 +5,8 @@
 #include "ttauri/cells/PixelMapCell.hpp"
 #include "ttauri/cells/GlyphCell.hpp"
 #include "ttauri/png.hpp"
-#include "TTauri/GUI/DrawContext.hpp"
-#include "TTauri/GUI/Window.hpp"
+#include "ttauri/GUI/DrawContext.hpp"
+#include "ttauri/GUI/Window.hpp"
 
 namespace tt {
 

@@ -8,7 +8,7 @@
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include "ttauri/widgets/SystemMenuWidget.hpp"
 #endif
-#include "TTauri/GUI/utils.hpp"
+#include "ttauri/GUI/utils.hpp"
 
 namespace tt {
 

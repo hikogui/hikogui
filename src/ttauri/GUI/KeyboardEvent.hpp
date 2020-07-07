@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/KeyboardKey.hpp"
+#include "ttauri/GUI/KeyboardKey.hpp"
 #include "ttauri/text/Grapheme.hpp"
 #include "ttauri/required.hpp"
 #include "ttauri/assert.hpp"

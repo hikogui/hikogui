@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/GUI/Pipeline_vulkan.hpp"
-#include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/Pipeline_vulkan.hpp"
+#include "ttauri/GUI/globals.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
 #include "ttauri/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <nonstd/span>

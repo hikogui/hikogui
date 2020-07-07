@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineToneMapper.hpp"
-#include "TTauri/GUI/PipelineToneMapper_DeviceShared.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/PipelineToneMapper.hpp"
+#include "ttauri/GUI/PipelineToneMapper_DeviceShared.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
 #include "ttauri/PixelMap.hpp"
 #include "ttauri/URL.hpp"
 #include <array>

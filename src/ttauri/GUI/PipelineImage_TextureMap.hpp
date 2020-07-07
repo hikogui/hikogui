@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/GUI/GUIDevice_forward.hpp"
+#include "ttauri/GUI/GUIDevice_forward.hpp"
 #include "ttauri/PixelMap.hpp"
 #include "ttauri/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>

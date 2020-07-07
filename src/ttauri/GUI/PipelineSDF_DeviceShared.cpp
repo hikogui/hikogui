@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/GUI/PipelineSDF.hpp"
-#include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/PipelineSDF.hpp"
+#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
 #include "ttauri/text/ShapedText.hpp"
 #include "ttauri/PixelMap.hpp"
 #include "ttauri/URL.hpp"

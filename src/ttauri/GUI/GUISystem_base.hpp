@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "TTauri/GUI/globals.hpp"
-#include "TTauri/GUI/GUIDevice.hpp"
-#include "TTauri/GUI/Window.hpp"
-#include "TTauri/GUI/VerticalSync.hpp"
-#include "TTauri/GUI/GUISystemDelegate.hpp"
+#include "ttauri/GUI/globals.hpp"
+#include "ttauri/GUI/GUIDevice.hpp"
+#include "ttauri/GUI/Window.hpp"
+#include "ttauri/GUI/VerticalSync.hpp"
+#include "ttauri/GUI/GUISystemDelegate.hpp"
 #include <nonstd/span>
 #include <memory>
 #include <mutex>

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ttauri/widgets/Widget.hpp"
-#include "TTauri/GUI/Theme.hpp"
+#include "ttauri/GUI/Theme.hpp"
 #include <memory>
 
 namespace tt {
