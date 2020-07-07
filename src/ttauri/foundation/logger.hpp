@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "TTauri/Foundation/counters.hpp"
-#include "TTauri/Foundation/cpu_counter_clock.hpp"
-#include "TTauri/Foundation/hires_utc_clock.hpp"
-#include "TTauri/Foundation/polymorphic_value.hpp"
-#include "TTauri/Foundation/wfree_message_queue.hpp"
-#include "TTauri/Foundation/atomic.hpp"
-#include "TTauri/Foundation/meta.hpp"
-#include "TTauri/Foundation/format.hpp"
-#include "TTauri/Foundation/os_detect.hpp"
+#include "ttauri/foundation/counters.hpp"
+#include "ttauri/foundation/cpu_counter_clock.hpp"
+#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/foundation/polymorphic_value.hpp"
+#include "ttauri/foundation/wfree_message_queue.hpp"
+#include "ttauri/foundation/atomic.hpp"
+#include "ttauri/foundation/meta.hpp"
+#include "ttauri/foundation/format.hpp"
+#include "ttauri/foundation/os_detect.hpp"
 #include <date/tz.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>

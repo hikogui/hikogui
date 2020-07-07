@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/polynomial.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/foundation/polynomial.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/mat.hpp"
 #include <array>
 #include <optional>
 

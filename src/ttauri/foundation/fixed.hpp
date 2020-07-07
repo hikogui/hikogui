@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/string_tag.hpp"
-#include "TTauri/Foundation/safe_int.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/string_tag.hpp"
+#include "ttauri/foundation/safe_int.hpp"
 #include <type_traits>
 #include <limits>
 

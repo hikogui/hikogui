@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/aarect.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/ivec.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/aarect.hpp"
 #include <array>
 
 namespace tt::PipelineSDF {

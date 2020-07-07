@@ -4,9 +4,9 @@
 #pragma once
 
 #include "TTauri/GUI/KeyboardKey.hpp"
-#include "TTauri/Text/Grapheme.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/assert.hpp"
+#include "ttauri/text/Grapheme.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/assert.hpp"
 #include <utility>
 
 namespace tt {

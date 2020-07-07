@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Widgets/Widget.hpp"
-#include "TTauri/Cells/TextCell.hpp"
+#include "ttauri/widgets/Widget.hpp"
+#include "ttauri/cells/TextCell.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
-#include "TTauri/Foundation/observable.hpp"
-#include "TTauri/Text/format10.hpp"
+#include "ttauri/foundation/observable.hpp"
+#include "ttauri/text/format10.hpp"
 #include <memory>
 #include <string>
 #include <array>

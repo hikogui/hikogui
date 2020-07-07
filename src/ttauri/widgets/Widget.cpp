@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/Widget.hpp"
+#include "ttauri/widgets/Widget.hpp"
 #include "TTauri/GUI/utils.hpp"
 
 namespace tt {

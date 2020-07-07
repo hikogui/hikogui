@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
-#include "TTauri/Foundation/sRGB.hpp"
+#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
+#include "ttauri/foundation/sRGB.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>

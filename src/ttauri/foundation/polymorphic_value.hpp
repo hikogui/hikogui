@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/os_detect.hpp"
-#include "TTauri/Foundation/assert.hpp"
+#include "ttauri/foundation/os_detect.hpp"
+#include "ttauri/foundation/assert.hpp"
 #include <array>
 #include <memory>
 #include <type_traits>

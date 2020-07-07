@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "TTauri/Application/Application.hpp"
-#include "TTauri/Foundation/StaticResourceView.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "ttauri/foundation/StaticResourceView.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/globals.hpp"
 #include <memory>
 
 namespace tt {

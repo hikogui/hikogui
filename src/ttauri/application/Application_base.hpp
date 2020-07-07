@@ -4,15 +4,15 @@
 #pragma once
 
 #include "TTauri/Application/ApplicationDelegate.hpp"
-#include "TTauri/Audio/globals.hpp"
-#include "TTauri/Audio/AudioSystemDelegate.hpp"
-#include "TTauri/Text/globals.hpp"
-#include "TTauri/Widgets/globals.hpp"
+#include "ttauri/audio/globals.hpp"
+#include "ttauri/audio/AudioSystemDelegate.hpp"
+#include "ttauri/text/globals.hpp"
+#include "ttauri/widgets/globals.hpp"
 #include "TTauri/GUI/globals.hpp"
 #include "TTauri/GUI/GUISystemDelegate.hpp"
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/URL.hpp"
+#include "ttauri/foundation/globals.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/URL.hpp"
 #include <nonstd/span>
 #include <memory>
 #include <string>

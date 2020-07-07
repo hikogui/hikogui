@@ -1,11 +1,11 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/PixelMap.inl"
-#include "TTauri/Foundation/BezierCurve.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/Path.hpp"
+#include "ttauri/foundation/PixelMap.inl"
+#include "ttauri/foundation/BezierCurve.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/required.hpp"
 
 namespace tt {
 

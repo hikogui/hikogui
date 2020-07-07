@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/JSON.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/JSON.hpp"
+#include "ttauri/foundation/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

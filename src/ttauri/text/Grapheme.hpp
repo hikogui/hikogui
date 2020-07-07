@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
-#include "TTauri/Foundation/hash.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
+#include "ttauri/foundation/hash.hpp"
 #include <array>
 
 namespace tt {

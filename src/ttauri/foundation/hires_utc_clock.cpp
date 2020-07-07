@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/hires_utc_clock.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/foundation/globals.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 

@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/template.hpp"
+#include "ttauri/foundation/template.hpp"
 
 namespace tt {
 

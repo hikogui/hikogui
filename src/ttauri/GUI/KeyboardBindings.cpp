@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/KeyboardBindings.hpp"
-#include "TTauri/Foundation/JSON.hpp"
+#include "ttauri/foundation/JSON.hpp"
 
 namespace tt {
 

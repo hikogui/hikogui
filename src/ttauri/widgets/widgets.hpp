@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "TTauri/Widgets/ButtonWidget.hpp"
-#include "TTauri/Widgets/LineInputWidget.hpp"
-#include "TTauri/Widgets/ToggleWidget.hpp"
-#include "TTauri/Widgets/CheckboxWidget.hpp"
-#include "TTauri/Widgets/RadioButtonWidget.hpp"
-#include "TTauri/Widgets/ToolbarWidget.hpp"
-#include "TTauri/Widgets/WindowWidget.hpp"
-#include "TTauri/Widgets/RowWidget.hpp"
-#include "TTauri/Widgets/ColumnWidget.hpp"
+#include "ttauri/widgets/ButtonWidget.hpp"
+#include "ttauri/widgets/LineInputWidget.hpp"
+#include "ttauri/widgets/ToggleWidget.hpp"
+#include "ttauri/widgets/CheckboxWidget.hpp"
+#include "ttauri/widgets/RadioButtonWidget.hpp"
+#include "ttauri/widgets/ToolbarWidget.hpp"
+#include "ttauri/widgets/WindowWidget.hpp"
+#include "ttauri/widgets/RowWidget.hpp"
+#include "ttauri/widgets/ColumnWidget.hpp"
 #include "TTauri/GUI/Window.hpp"
 
 namespace tt {

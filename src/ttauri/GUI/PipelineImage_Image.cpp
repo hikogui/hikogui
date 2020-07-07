@@ -5,12 +5,12 @@
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineImage_ImageLocation.hpp"
 #include "TTauri/GUI/PipelineImage_Vertex.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
-#include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/iaarect.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
+#include "ttauri/foundation/mat.hpp"
+#include "ttauri/foundation/ivec.hpp"
+#include "ttauri/foundation/iaarect.hpp"
 
 namespace tt::PipelineImage {
 

@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Text/UnicodeData.hpp"
-#include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Foundation/strings.hpp"
+#include "ttauri/text/UnicodeData.hpp"
+#include "ttauri/foundation/FileView.hpp"
+#include "ttauri/foundation/strings.hpp"
 #include "data/UnicodeData.bin.inl"
 #include <gtest/gtest.h>
 #include <iostream>

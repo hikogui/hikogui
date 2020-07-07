@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Cells/ImageCell.hpp"
+#include "ttauri/cells/ImageCell.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
-#include "TTauri/Foundation/URL.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
+#include "ttauri/foundation/URL.hpp"
 
 namespace tt {
 

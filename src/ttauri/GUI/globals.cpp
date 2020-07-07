@@ -6,8 +6,8 @@
 #include "TTauri/GUI/ThemeMode.hpp"
 #include "TTauri/GUI/ThemeBook.hpp"
 #include "TTauri/GUI/RenderDoc.hpp"
-#include "TTauri/Text/globals.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "ttauri/text/globals.hpp"
+#include "ttauri/foundation/globals.hpp"
 
 #include "TTauri/GUI/PipelineImage.vert.spv.inl"
 #include "TTauri/GUI/PipelineImage.frag.spv.inl"

@@ -1,7 +1,7 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Cells/GlyphCell.hpp"
+#include "ttauri/cells/GlyphCell.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"

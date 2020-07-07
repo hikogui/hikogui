@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/algorithm.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/algorithm.hpp"
 #include <vector>
 #include <string>
 #include <string_view>

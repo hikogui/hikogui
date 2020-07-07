@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/polymorphic_value.hpp"
+#include "ttauri/foundation/polymorphic_value.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

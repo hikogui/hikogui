@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/File.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/strings.hpp"
+#include "ttauri/foundation/File.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/foundation/strings.hpp"
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>

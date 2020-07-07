@@ -1,10 +1,10 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Text/TrueTypeFont.hpp"
-#include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/endian.hpp"
+#include "ttauri/text/TrueTypeFont.hpp"
+#include "ttauri/foundation/placement.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/endian.hpp"
 #include <cstddef>
 
 

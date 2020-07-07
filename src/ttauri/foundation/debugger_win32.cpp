@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/debugger.hpp"
-#include "TTauri/Foundation/strings.hpp"
+#include "ttauri/foundation/debugger.hpp"
+#include "ttauri/foundation/strings.hpp"
 #include <Windows.h>
 #include <debugapi.h>
 

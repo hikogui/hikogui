@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/os_detect.hpp"
+#include "ttauri/foundation/os_detect.hpp"
 #include <fmt/format.h>
 
 namespace tt {

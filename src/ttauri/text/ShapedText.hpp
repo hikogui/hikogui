@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "TTauri/Text/AttributedGlyphLine.hpp"
-#include "TTauri/Text/gstring.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/attributes.hpp"
-#include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/nested_vector_iterator.hpp"
+#include "ttauri/text/AttributedGlyphLine.hpp"
+#include "ttauri/text/gstring.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/attributes.hpp"
+#include "ttauri/foundation/Path.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/nested_vector_iterator.hpp"
 #include <string_view>
 #include <optional>
 

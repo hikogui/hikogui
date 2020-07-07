@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Audio/AudioSystem_win32.hpp"
-#include "TTauri/Audio/AudioDevice_win32.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
+#include "ttauri/audio/AudioSystem_win32.hpp"
+#include "ttauri/audio/AudioDevice_win32.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/exceptions.hpp"
 #include <Windows.h>
 #include <mmdeviceapi.h>
 

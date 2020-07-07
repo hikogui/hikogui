@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "TTauri/Foundation/vspan.hpp"
-#include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/iaarect.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/aarect.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/foundation/vspan.hpp"
+#include "ttauri/foundation/ivec.hpp"
+#include "ttauri/foundation/iaarect.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/aarect.hpp"
+#include "ttauri/foundation/mat.hpp"
 #include "TTauri/GUI/PipelineImage_Page.hpp"
 #include <nonstd/span>
 #include <atomic>

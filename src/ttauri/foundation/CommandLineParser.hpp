@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/datum.hpp"
+#include "ttauri/foundation/datum.hpp"
 #include <string>
 #include <vector>
 #include <map>

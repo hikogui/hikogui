@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "TTauri/Foundation/BezierPoint.hpp"
-#include "TTauri/Foundation/attributes.hpp"
-#include "TTauri/Foundation/TTauriIconParser.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/aarect.hpp"
-#include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
-#include "TTauri/Foundation/SDF8.hpp"
+#include "ttauri/foundation/BezierPoint.hpp"
+#include "ttauri/foundation/attributes.hpp"
+#include "ttauri/foundation/TTauriIconParser.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
+#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/aarect.hpp"
+#include "ttauri/foundation/mat.hpp"
+#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
+#include "ttauri/foundation/SDF8.hpp"
 #include <vector>
 
 namespace tt {

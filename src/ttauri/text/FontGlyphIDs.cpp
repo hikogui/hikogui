@@ -1,9 +1,9 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Text/AttributedGlyph.hpp"
-#include "TTauri/Text/globals.hpp"
-#include "TTauri/Foundation/Path.hpp"
+#include "ttauri/text/AttributedGlyph.hpp"
+#include "ttauri/text/globals.hpp"
+#include "ttauri/foundation/Path.hpp"
 
 namespace tt {
 

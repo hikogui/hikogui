@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Widgets/Widget.hpp"
+#include "ttauri/widgets/Widget.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
-#include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Cells/Image.hpp"
-#include "TTauri/Cells/ImageCell.hpp"
+#include "ttauri/foundation/Path.hpp"
+#include "ttauri/cells/Image.hpp"
+#include "ttauri/cells/ImageCell.hpp"
 #include <memory>
 #include <string>
 #include <array>

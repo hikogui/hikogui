@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Text/Grapheme.hpp"
-#include "TTauri/Text/TextStyle.hpp"
-#include "TTauri/Text/UnicodeData.hpp"
+#include "ttauri/text/Grapheme.hpp"
+#include "ttauri/text/TextStyle.hpp"
+#include "ttauri/text/UnicodeData.hpp"
 
 namespace tt {
 

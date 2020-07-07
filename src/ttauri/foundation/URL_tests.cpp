@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/algorithm.hpp"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/algorithm.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

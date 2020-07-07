@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TTauri/GUI/GUISystem_base.hpp"
-#include "TTauri/Foundation/logger.hpp"
+#include "ttauri/foundation/logger.hpp"
 #include <chrono>
 
 namespace tt {

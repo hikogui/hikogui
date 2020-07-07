@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/Rec2020.hpp"
-#include "TTauri/Foundation/float16.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/foundation/Rec2020.hpp"
+#include "ttauri/foundation/float16.hpp"
+#include "ttauri/foundation/mat.hpp"
 #include <cmath>
 #include <array>
 

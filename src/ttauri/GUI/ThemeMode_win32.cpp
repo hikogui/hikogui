@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "TTauri/GUI/ThemeMode.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/logger.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/logger.hpp"
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/math.hpp"
-#include "TTauri/Foundation/int_carry.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/math.hpp"
+#include "ttauri/foundation/int_carry.hpp"
 #include <fmt/format.h>
 #include <type_traits>
 #include <ostream>

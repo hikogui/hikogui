@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/assert.hpp"
+#include "ttauri/foundation/assert.hpp"
 #include <date/date.h>
 #include <fmt/format.h>
 #include <string>

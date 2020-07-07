@@ -1,11 +1,11 @@
 
-#include "TTauri/Foundation/TTauriIconParser.hpp"
-#include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/endian.hpp"
+#include "ttauri/foundation/TTauriIconParser.hpp"
+#include "ttauri/foundation/Path.hpp"
+#include "ttauri/foundation/FileView.hpp"
+#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/foundation/placement.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/endian.hpp"
 
 namespace tt {
 

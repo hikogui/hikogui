@@ -1,16 +1,16 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/trace.hpp"
-#include "TTauri/Foundation/cpu_utc_clock.hpp"
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/thread.hpp"
-#include "TTauri/Foundation/url_parser.hpp"
-#include "TTauri/Foundation/debugger.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/trace.hpp"
+#include "ttauri/foundation/cpu_utc_clock.hpp"
+#include "ttauri/foundation/globals.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/thread.hpp"
+#include "ttauri/foundation/url_parser.hpp"
+#include "ttauri/foundation/debugger.hpp"
 #include "timer.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>

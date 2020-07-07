@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/os_detect.hpp"
+#include "ttauri/foundation/os_detect.hpp"
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #include <sys/types.h>

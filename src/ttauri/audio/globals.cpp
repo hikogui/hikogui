@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Audio/globals.hpp"
-#include "TTauri/Audio/AudioSystem.hpp"
-#include "TTauri/Audio/AudioSystem_win32.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "ttauri/audio/globals.hpp"
+#include "ttauri/audio/AudioSystem.hpp"
+#include "ttauri/audio/AudioSystem_win32.hpp"
+#include "ttauri/foundation/globals.hpp"
 
 namespace tt {
 

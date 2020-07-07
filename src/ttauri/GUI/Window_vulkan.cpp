@@ -11,8 +11,8 @@
 #include "TTauri/GUI/PipelineSDF.hpp"
 #include "TTauri/GUI/PipelineToneMapper.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
-#include "TTauri/Widgets/Widget.hpp"
-#include "TTauri/Foundation/trace.hpp"
+#include "ttauri/widgets/Widget.hpp"
+#include "ttauri/foundation/trace.hpp"
 #include <vector>
 
 namespace tt {

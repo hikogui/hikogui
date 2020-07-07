@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/safe_int.hpp"
+#include "ttauri/foundation/safe_int.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/hires_utc_clock.hpp"
-#include "TTauri/Foundation/cpu_counter_clock.hpp"
-#include "TTauri/Foundation/sync_clock.hpp"
+#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/foundation/cpu_counter_clock.hpp"
+#include "ttauri/foundation/sync_clock.hpp"
 
 namespace tt {
 

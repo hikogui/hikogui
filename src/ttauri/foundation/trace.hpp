@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/counters.hpp"
-#include "TTauri/Foundation/datum.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/cpu_utc_clock.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/tagged_map.hpp"
-#include "TTauri/Foundation/wfree_message_queue.hpp"
+#include "ttauri/foundation/counters.hpp"
+#include "ttauri/foundation/datum.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/cpu_utc_clock.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/tagged_map.hpp"
+#include "ttauri/foundation/wfree_message_queue.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <atomic>

@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/counters.hpp"
-#include "TTauri/Foundation/datum.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/string_tag.hpp"
-#include "TTauri/Foundation/tagged_map.hpp"
-#include "TTauri/Foundation/parse_location.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/counters.hpp"
+#include "ttauri/foundation/datum.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/string_tag.hpp"
+#include "ttauri/foundation/tagged_map.hpp"
+#include "ttauri/foundation/parse_location.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>

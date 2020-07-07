@@ -2,8 +2,8 @@
 #include "po_parser.hpp"
 #include "language.hpp"
 #include "translation.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/tokenizer.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
+#include "ttauri/foundation/tokenizer.hpp"
 
 namespace tt {
 

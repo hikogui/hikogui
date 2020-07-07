@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/gzip.hpp"
-#include "TTauri/Foundation/inflate.hpp"
-#include "TTauri/Foundation/endian.hpp"
-#include "TTauri/Foundation/placement.hpp"
+#include "ttauri/foundation/gzip.hpp"
+#include "ttauri/foundation/inflate.hpp"
+#include "ttauri/foundation/endian.hpp"
+#include "ttauri/foundation/placement.hpp"
 
 namespace tt {
 

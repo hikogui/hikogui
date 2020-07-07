@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/TT5.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
+#include "ttauri/foundation/TT5.hpp"
+#include "ttauri/foundation/exceptions.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

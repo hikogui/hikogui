@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/BezierCurve.hpp"
-#include "TTauri/Foundation/polynomial_tests.hpp"
+#include "ttauri/foundation/BezierCurve.hpp"
+#include "ttauri/foundation/polynomial_tests.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

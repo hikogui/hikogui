@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/assert.hpp"
-#include "TTauri/Foundation/TT5.hpp"
-#include "TTauri/Foundation/strings.hpp"
+#include "ttauri/foundation/assert.hpp"
+#include "ttauri/foundation/TT5.hpp"
+#include "ttauri/foundation/strings.hpp"
 #include <string>
 #include <string_view>
 #include <exception>

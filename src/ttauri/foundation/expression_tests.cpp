@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/expression.hpp"
+#include "ttauri/foundation/expression.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

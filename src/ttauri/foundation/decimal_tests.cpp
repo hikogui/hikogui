@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/decimal.hpp"
+#include "ttauri/foundation/decimal.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

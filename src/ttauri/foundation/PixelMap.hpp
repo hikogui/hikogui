@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/iaarect.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/iaarect.hpp"
 #include <nonstd/span>
 #include <string>
 #include <algorithm>

@@ -7,7 +7,7 @@
 #include "TTauri/GUI/GUISystemDelegate.hpp"
 #include "TTauri/GUI/KeyboardBindings.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/required.hpp"
 #include <cstdint>
 #include <mutex>
 #include <memory>

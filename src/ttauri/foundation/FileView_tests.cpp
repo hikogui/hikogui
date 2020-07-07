@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/FileView.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/FileView.hpp"
+#include "ttauri/foundation/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

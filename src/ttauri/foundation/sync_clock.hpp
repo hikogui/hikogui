@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/thread.hpp"
-#include "TTauri/Foundation/bigint.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/thread.hpp"
+#include "ttauri/foundation/bigint.hpp"
 #include <fmt/format.h>
 #include <chrono>
 #include <algorithm>

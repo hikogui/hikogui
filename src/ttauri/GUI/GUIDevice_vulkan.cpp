@@ -6,7 +6,7 @@
 #include "TTauri/GUI/PipelineImage.hpp"
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
 #include <nonstd/span>
 
 namespace tt {

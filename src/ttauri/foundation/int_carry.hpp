@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>

@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
-#include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/ivec.hpp"
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/byte_string.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
+#include "ttauri/foundation/mat.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/ivec.hpp"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
+#include "ttauri/foundation/byte_string.hpp"
 #include <nonstd/span>
 #include <vector>
 #include <cstddef>

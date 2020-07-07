@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/vec.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/vec.hpp"
 #include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>

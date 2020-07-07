@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Text/AttributedGlyph.hpp"
+#include "ttauri/text/AttributedGlyph.hpp"
 #include <vector>
 #include <optional>
 

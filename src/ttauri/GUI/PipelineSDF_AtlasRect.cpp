@@ -3,7 +3,7 @@
 
 #include "TTauri/GUI/PipelineSDF_AtlasRect.hpp"
 #include "TTauri/GUI/PipelineSDF_DeviceShared.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/foundation/mat.hpp"
 
 namespace tt::PipelineSDF {
 

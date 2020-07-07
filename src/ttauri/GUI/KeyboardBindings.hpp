@@ -4,9 +4,9 @@
 #pragma once
 
 #include "TTauri/GUI/KeyboardKey.hpp"
-#include "TTauri/Foundation/string_tag.hpp"
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/os_detect.hpp"
+#include "ttauri/foundation/string_tag.hpp"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/os_detect.hpp"
 #include <unordered_map>
 #include <tuple>
 

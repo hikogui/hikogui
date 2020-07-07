@@ -1,7 +1,7 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/Unicode.hpp"
+#include "ttauri/foundation/Unicode.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

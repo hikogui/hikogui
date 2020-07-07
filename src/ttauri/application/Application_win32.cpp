@@ -4,7 +4,7 @@
 #include "TTauri/Application/Application_win32.hpp"
 #include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/Foundation/strings.hpp"
+#include "ttauri/foundation/strings.hpp"
 #include <thread>
 #include <string>
 #include <vector>

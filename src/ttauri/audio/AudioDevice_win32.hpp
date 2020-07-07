@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Audio/AudioDevice.hpp"
+#include "ttauri/audio/AudioDevice.hpp"
 
 namespace tt {
 

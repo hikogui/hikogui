@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Widgets/Widget.hpp"
+#include "ttauri/widgets/Widget.hpp"
 #include <memory>
 
 namespace tt {

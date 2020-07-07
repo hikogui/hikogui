@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Text/AttributedGrapheme.hpp"
-#include "TTauri/Text/ShapedText.hpp"
-#include "TTauri/Text/Font.hpp"
+#include "ttauri/text/AttributedGrapheme.hpp"
+#include "ttauri/text/ShapedText.hpp"
+#include "ttauri/text/Font.hpp"
 #include <string>
 #include <vector>
 

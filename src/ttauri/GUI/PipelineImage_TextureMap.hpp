@@ -4,8 +4,8 @@
 #pragma once
 
 #include "TTauri/GUI/GUIDevice_forward.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/R16G16B16A16SFloat.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 

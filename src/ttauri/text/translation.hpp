@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/expression.hpp"
-#include "TTauri/Foundation/hash.hpp"
+#include "ttauri/foundation/expression.hpp"
+#include "ttauri/foundation/hash.hpp"
 #include "language.hpp"
 #include <string>
 #include <string_view>

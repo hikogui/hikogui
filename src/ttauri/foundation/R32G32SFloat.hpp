@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/vec.hpp"
+#include "ttauri/foundation/vec.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>

@@ -2,9 +2,9 @@
 // All rights reserved.
 
 #include "TTauri/GUI/Theme.hpp"
-#include "TTauri/Text/globals.hpp"
-#include "TTauri/Foundation/JSON.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "ttauri/text/globals.hpp"
+#include "ttauri/foundation/JSON.hpp"
+#include "ttauri/foundation/globals.hpp"
 
 namespace tt {
 

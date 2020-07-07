@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/FileMapping.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/memory.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/FileMapping.hpp"
+#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/memory.hpp"
+#include "ttauri/foundation/required.hpp"
 #include <mutex>
 
 namespace tt {

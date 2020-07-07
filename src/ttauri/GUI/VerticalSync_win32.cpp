@@ -1,9 +1,9 @@
 
 #include "TTauri/GUI/VerticalSync_win32.hpp"
-#include "TTauri/Foundation/logger.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/thread.hpp"
-#include "TTauri/Foundation/cpu_utc_clock.hpp"
+#include "ttauri/foundation/logger.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/thread.hpp"
+#include "ttauri/foundation/cpu_utc_clock.hpp"
 #include <Windows.h>
 #undef WIN32_NO_STATUS
 #include <ntstatus.h>

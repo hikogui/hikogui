@@ -4,8 +4,8 @@
 #include "TTauri/GUI/PipelineFlat.hpp"
 #include "TTauri/GUI/PipelineFlat_DeviceShared.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/URL.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/URL.hpp"
 #include <array>
 
 namespace tt::PipelineFlat {

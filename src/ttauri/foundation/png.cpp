@@ -1,10 +1,10 @@
 
-#include "TTauri/Foundation/png.hpp"
-#include "TTauri/Foundation/endian.hpp"
-#include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/sRGB.hpp"
-#include "TTauri/Foundation/Rec2100.hpp"
-#include "TTauri/Foundation/zlib.hpp"
+#include "ttauri/foundation/png.hpp"
+#include "ttauri/foundation/endian.hpp"
+#include "ttauri/foundation/placement.hpp"
+#include "ttauri/foundation/sRGB.hpp"
+#include "ttauri/foundation/Rec2100.hpp"
+#include "ttauri/foundation/zlib.hpp"
 
 namespace tt {
 

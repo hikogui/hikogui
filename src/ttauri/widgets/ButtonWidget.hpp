@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Widgets/Widget.hpp"
+#include "ttauri/widgets/Widget.hpp"
 #include <rhea/constraint.hpp>
 #include <memory>
 #include <string>

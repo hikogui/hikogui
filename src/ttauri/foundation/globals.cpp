@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Foundation/sync_clock.hpp"
-#include "TTauri/Foundation/hires_utc_clock.hpp"
-#include "TTauri/Foundation/audio_counter_clock.hpp"
-#include "TTauri/Foundation/cpu_counter_clock.hpp"
-#include "TTauri/Foundation/trace.hpp"
-#include "TTauri/Foundation/timer.hpp"
+#include "ttauri/foundation/globals.hpp"
+#include "ttauri/foundation/sync_clock.hpp"
+#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/foundation/audio_counter_clock.hpp"
+#include "ttauri/foundation/cpu_counter_clock.hpp"
+#include "ttauri/foundation/trace.hpp"
+#include "ttauri/foundation/timer.hpp"
 
 namespace tt {
 

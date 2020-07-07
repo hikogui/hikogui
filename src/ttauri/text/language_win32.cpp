@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/logger.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/logger.hpp"
 #include "language.hpp"
 #include <Windows.h>
 #include <winrt/Windows.Foundation.Collections.h>

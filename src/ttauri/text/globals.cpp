@@ -1,12 +1,12 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Text/globals.hpp"
-#include "TTauri/Text/ElusiveIcons.hpp"
-#include "TTauri/Text/TTauriIcons.hpp"
-#include "TTauri/Text/language.hpp"
-#include "TTauri/Foundation/globals.hpp"
-#include "TTauri/Foundation/timer.hpp"
+#include "ttauri/text/globals.hpp"
+#include "ttauri/text/ElusiveIcons.hpp"
+#include "ttauri/text/TTauriIcons.hpp"
+#include "ttauri/text/language.hpp"
+#include "ttauri/foundation/globals.hpp"
+#include "ttauri/foundation/timer.hpp"
 #include "data/UnicodeData.bin.inl"
 #include "data/elusiveicons-webfont.ttf.inl"
 #include "data/TTauriIcons.ttf.inl"

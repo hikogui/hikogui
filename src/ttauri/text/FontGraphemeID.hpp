@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/hash.hpp"
-#include "TTauri/Text/FontID.hpp"
-#include "TTauri/Text/Grapheme.hpp"
+#include "ttauri/foundation/hash.hpp"
+#include "ttauri/text/FontID.hpp"
+#include "ttauri/text/Grapheme.hpp"
 
 namespace tt {
 

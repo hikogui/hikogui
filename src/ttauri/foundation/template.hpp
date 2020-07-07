@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/expression.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/algorithm.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
+#include "ttauri/foundation/expression.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/algorithm.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
 
 namespace tt {
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/numeric_cast.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
 #include <algorithm>
 
 namespace tt {

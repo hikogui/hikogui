@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Audio/AudioSystemDelegate.hpp"
-#include "TTauri/Audio/AudioDevice.hpp"
+#include "ttauri/audio/AudioSystemDelegate.hpp"
+#include "ttauri/audio/AudioDevice.hpp"
 #include <vector>
 #include <memory>
 

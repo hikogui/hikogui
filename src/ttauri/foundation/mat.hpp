@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/aarect.hpp"
-#include "TTauri/Foundation/rect.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/aarect.hpp"
+#include "ttauri/foundation/rect.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <ostream>

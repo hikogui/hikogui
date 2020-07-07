@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/url_parser.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/url_parser.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

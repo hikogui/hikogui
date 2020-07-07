@@ -5,11 +5,11 @@
 #include "TTauri/GUI/PipelineImage_DeviceShared.hpp"
 #include "TTauri/GUI/PipelineImage_Image.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/PixelMap.inl"
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/memory.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/PixelMap.inl"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/memory.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
 #include <array>
 
 namespace tt::PipelineImage {

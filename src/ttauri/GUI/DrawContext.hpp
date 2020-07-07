@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Foundation/aarect.hpp"
-#include "TTauri/Foundation/vspan.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/mat.hpp"
+#include "ttauri/foundation/aarect.hpp"
+#include "ttauri/foundation/vspan.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/Theme.hpp"
@@ -20,7 +20,7 @@
 #include "TTauri/GUI/PipelineBox_Vertex.hpp"
 #include "TTauri/GUI/PipelineImage_Vertex.hpp"
 #include "TTauri/GUI/PipelineSDF_Vertex.hpp"
-#include "TTauri/Text/ShapedText.hpp"
+#include "ttauri/text/ShapedText.hpp"
 #include <type_traits>
 
 namespace tt {

@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/math.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/math.hpp"
+#include "ttauri/foundation/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

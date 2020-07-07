@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/inflate.hpp"
-#include "TTauri/Foundation/bits.hpp"
-#include "TTauri/Foundation/placement.hpp"
-#include "TTauri/Foundation/huffman.hpp"
+#include "ttauri/foundation/inflate.hpp"
+#include "ttauri/foundation/bits.hpp"
+#include "ttauri/foundation/placement.hpp"
+#include "ttauri/foundation/huffman.hpp"
 
 namespace tt {
 

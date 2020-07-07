@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Cells/Image.hpp"
-#include "TTauri/Cells/PixelMapCell.hpp"
-#include "TTauri/Cells/GlyphCell.hpp"
-#include "TTauri/Foundation/png.hpp"
+#include "ttauri/cells/Image.hpp"
+#include "ttauri/cells/PixelMapCell.hpp"
+#include "ttauri/cells/GlyphCell.hpp"
+#include "ttauri/foundation/png.hpp"
 #include "TTauri/GUI/DrawContext.hpp"
 #include "TTauri/GUI/Window.hpp"
 

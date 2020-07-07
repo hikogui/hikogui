@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "TTauri/Text/GlyphID.hpp"
-#include "TTauri/Text/FontID.hpp"
-#include "TTauri/Foundation/hash.hpp"
-#include "TTauri/Foundation/tagged_id.hpp"
-#include "TTauri/Foundation/aarect.hpp"
+#include "ttauri/text/GlyphID.hpp"
+#include "ttauri/text/FontID.hpp"
+#include "ttauri/foundation/hash.hpp"
+#include "ttauri/foundation/tagged_id.hpp"
+#include "ttauri/foundation/aarect.hpp"
 #include <tuple>
 
 namespace tt {

@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/datum.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
+#include "ttauri/foundation/datum.hpp"
+#include "ttauri/foundation/exceptions.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

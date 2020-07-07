@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
+#include "ttauri/widgets/WindowTrafficLightsWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
-#include "TTauri/Text/TTauriIcons.hpp"
-#include "TTauri/Foundation/utils.hpp"
+#include "ttauri/text/TTauriIcons.hpp"
+#include "ttauri/foundation/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/tokenizer.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/datum.hpp"
+#include "ttauri/foundation/tokenizer.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/datum.hpp"
 #include <string>
 #include <optional>
 #include <string_view>

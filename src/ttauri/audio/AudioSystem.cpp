@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Audio/AudioSystem.hpp"
+#include "ttauri/audio/AudioSystem.hpp"
 
 namespace tt {
 

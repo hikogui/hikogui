@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/notifier.hpp"
-#include "TTauri/Foundation/hires_utc_clock.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
-#include "TTauri/Foundation/notifier.hpp"
+#include "ttauri/foundation/notifier.hpp"
+#include "ttauri/foundation/hires_utc_clock.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
+#include "ttauri/foundation/notifier.hpp"
 #include "detail/observable_value.hpp"
 #include "detail/observable_not.hpp"
 #include "detail/observable_cast.hpp"

@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/base93.hpp"
-#include "TTauri/Foundation/random_pcg.hpp"
+#include "ttauri/foundation/base93.hpp"
+#include "ttauri/foundation/random_pcg.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

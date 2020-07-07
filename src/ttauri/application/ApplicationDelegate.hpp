@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/Application/Application_forward.hpp"
-#include "TTauri/Foundation/datum.hpp"
+#include "ttauri/foundation/datum.hpp"
 #include <string>
 #include <vector>
 

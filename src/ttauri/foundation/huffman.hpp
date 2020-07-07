@@ -1,7 +1,7 @@
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/bits.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/bits.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
 #include <nonstd/span>
 #include <vector>
 

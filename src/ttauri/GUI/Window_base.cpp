@@ -4,7 +4,7 @@
 #include "TTauri/GUI/Window_base.hpp"
 #include "TTauri/GUI/Window.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
-#include "TTauri/Widgets/WindowWidget.hpp"
+#include "ttauri/widgets/WindowWidget.hpp"
 
 namespace tt {
 

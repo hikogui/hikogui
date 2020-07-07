@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/mat.hpp"
 #include <vector>
 
 namespace tt {

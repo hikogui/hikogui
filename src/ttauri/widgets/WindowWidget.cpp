@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/WindowWidget.hpp"
-#include "TTauri/Widgets/WindowTrafficLightsWidget.hpp"
-#include "TTauri/Widgets/ToolbarWidget.hpp"
-#include "TTauri/Widgets/ColumnWidget.hpp"
+#include "ttauri/widgets/WindowWidget.hpp"
+#include "ttauri/widgets/WindowTrafficLightsWidget.hpp"
+#include "ttauri/widgets/ToolbarWidget.hpp"
+#include "ttauri/widgets/ColumnWidget.hpp"
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-#include "TTauri/Widgets/SystemMenuWidget.hpp"
+#include "ttauri/widgets/SystemMenuWidget.hpp"
 #endif
 #include "TTauri/GUI/utils.hpp"
 

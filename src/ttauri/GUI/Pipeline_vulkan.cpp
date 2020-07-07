@@ -4,7 +4,7 @@
 #include "TTauri/GUI/Pipeline_vulkan.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/Foundation/trace.hpp"
+#include "ttauri/foundation/trace.hpp"
 #include <array>
 #include <vector>
 

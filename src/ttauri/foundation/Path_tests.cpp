@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/Path.hpp"
-#include "TTauri/Foundation/BezierCurve.hpp"
+#include "ttauri/foundation/Path.hpp"
+#include "ttauri/foundation/BezierCurve.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/observable.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
+#include "ttauri/foundation/observable.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
 #include <string>
 #include <vector>
 #include <functional>

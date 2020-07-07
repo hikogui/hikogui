@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/pickle.hpp"
-#include "TTauri/Foundation/required.hpp"
+#include "ttauri/foundation/pickle.hpp"
+#include "ttauri/foundation/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

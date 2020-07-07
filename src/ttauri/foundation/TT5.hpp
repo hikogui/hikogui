@@ -63,9 +63,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/throw_exception.hpp"
-#include "TTauri/Foundation/bigint.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/throw_exception.hpp"
+#include "ttauri/foundation/bigint.hpp"
 #include <string>
 #include <string_view>
 #include <cstdint>

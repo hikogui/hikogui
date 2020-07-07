@@ -2,7 +2,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/polynomial.hpp"
+#include "ttauri/foundation/polynomial.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

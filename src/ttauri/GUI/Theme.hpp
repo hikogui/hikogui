@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/mat.hpp"
-#include "TTauri/Text/TextStyle.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/mat.hpp"
+#include "ttauri/text/TextStyle.hpp"
 #include "TTauri/GUI/ThemeMode.hpp"
 #include <array>
 

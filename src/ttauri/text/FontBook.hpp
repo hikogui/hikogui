@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "TTauri/Text/FontDescription.hpp"
-#include "TTauri/Text/Grapheme.hpp"
-#include "TTauri/Text/Font.hpp"
-#include "TTauri/Text/FontFamilyID.hpp"
-#include "TTauri/Text/FontID.hpp"
-#include "TTauri/Text/FontGraphemeID.hpp"
-#include "TTauri/Text/FontGlyphIDs.hpp"
-#include "TTauri/Foundation/URL.hpp"
-#include "TTauri/Foundation/attributes.hpp"
+#include "ttauri/text/FontDescription.hpp"
+#include "ttauri/text/Grapheme.hpp"
+#include "ttauri/text/Font.hpp"
+#include "ttauri/text/FontFamilyID.hpp"
+#include "ttauri/text/FontID.hpp"
+#include "ttauri/text/FontGraphemeID.hpp"
+#include "ttauri/text/FontGlyphIDs.hpp"
+#include "ttauri/foundation/URL.hpp"
+#include "ttauri/foundation/attributes.hpp"
 #include <limits>
 #include <array>
 #include <new>

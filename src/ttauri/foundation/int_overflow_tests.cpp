@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/int_overflow.hpp"
+#include "ttauri/foundation/int_overflow.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>

@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/audio_counter_clock.hpp"
+#include "ttauri/foundation/audio_counter_clock.hpp"
 #include <mach/mach_time.h>
 
 namespace tt {

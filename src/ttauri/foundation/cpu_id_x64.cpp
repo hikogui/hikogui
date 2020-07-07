@@ -1,5 +1,5 @@
 
-#include "TTauri/Foundation/cpu_id.hpp"
+#include "ttauri/foundation/cpu_id.hpp"
 
 namespace tt {
 

@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/ToolbarButtonWidget.hpp"
+#include "ttauri/widgets/ToolbarButtonWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
-#include "TTauri/Foundation/utils.hpp"
+#include "ttauri/foundation/utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

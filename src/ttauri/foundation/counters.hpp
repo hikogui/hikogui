@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/wfree_unordered_map.hpp"
+#include "ttauri/foundation/wfree_unordered_map.hpp"
 #include <nonstd/span>
 #include <typeinfo>
 #include <typeindex>

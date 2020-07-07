@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/datum.hpp"
-#include "TTauri/Foundation/parse_location.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/tokenizer.hpp"
+#include "ttauri/foundation/datum.hpp"
+#include "ttauri/foundation/parse_location.hpp"
+#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/foundation/tokenizer.hpp"
 #include <vector>
 #include <string>
 #include <string_view>

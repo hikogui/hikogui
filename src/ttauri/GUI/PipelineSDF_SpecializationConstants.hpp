@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/R32G32SFloat.hpp"
+#include "ttauri/foundation/R32G32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::PipelineSDF {

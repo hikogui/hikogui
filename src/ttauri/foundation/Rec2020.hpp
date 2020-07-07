@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/float16.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/foundation/float16.hpp"
+#include "ttauri/foundation/mat.hpp"
 #include <cmath>
 #include <array>
 

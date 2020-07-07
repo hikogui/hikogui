@@ -4,7 +4,7 @@
 #pragma once
 
 #include "TTauri/GUI/Window_forward.hpp"
-#include "TTauri/Foundation/aarect.hpp"
+#include "ttauri/foundation/aarect.hpp"
 
 namespace tt {
 class DrawContext;

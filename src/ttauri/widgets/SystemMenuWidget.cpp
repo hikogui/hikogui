@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/SystemMenuWidget.hpp"
+#include "ttauri/widgets/SystemMenuWidget.hpp"
 #include "TTauri/GUI/utils.hpp"
-#include "TTauri/Text/TTauriIcons.hpp"
-#include "TTauri/Foundation/utils.hpp"
+#include "ttauri/text/TTauriIcons.hpp"
+#include "ttauri/foundation/utils.hpp"
 #include <Windows.h>
 #include <WinUser.h>
 #include <cmath>

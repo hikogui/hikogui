@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/byte_string.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/byte_string.hpp"
 #include <optional>
 
 namespace tt {

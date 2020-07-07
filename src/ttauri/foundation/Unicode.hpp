@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/endian.hpp"
-#include "TTauri/Foundation/CP1252.hpp"
-#include "TTauri/Foundation/math.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/endian.hpp"
+#include "ttauri/foundation/CP1252.hpp"
+#include "ttauri/foundation/math.hpp"
 #include <string_view>
 #include <cstdint>
 

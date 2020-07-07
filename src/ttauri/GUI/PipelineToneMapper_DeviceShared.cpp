@@ -4,8 +4,8 @@
 #include "TTauri/GUI/PipelineToneMapper.hpp"
 #include "TTauri/GUI/PipelineToneMapper_DeviceShared.hpp"
 #include "TTauri/GUI/GUIDevice.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
-#include "TTauri/Foundation/URL.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
+#include "ttauri/foundation/URL.hpp"
 #include <array>
 
 namespace tt::PipelineToneMapper {

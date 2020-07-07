@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Widgets/globals.hpp"
-#include "TTauri/Widgets/WindowWidget.hpp"
+#include "ttauri/widgets/globals.hpp"
+#include "ttauri/widgets/WindowWidget.hpp"
 #include "TTauri/GUI/Window.hpp"
-#include "TTauri/Widgets/Widget.hpp"
+#include "ttauri/widgets/Widget.hpp"
 #include "TTauri/GUI/globals.hpp"
-#include "TTauri/Foundation/globals.hpp"
+#include "ttauri/foundation/globals.hpp"
 #include <memory>
 
 namespace tt {

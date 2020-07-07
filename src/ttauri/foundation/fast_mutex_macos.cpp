@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/fast_mutex.hpp"
+#include "ttauri/foundation/fast_mutex.hpp"
 #include <os/lock.h>
 
 namespace tt {

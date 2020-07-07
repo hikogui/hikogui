@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Foundation/string_tag.hpp"
+#include "ttauri/foundation/string_tag.hpp"
 #include <vector>
 #include <variant>
 #include <string>

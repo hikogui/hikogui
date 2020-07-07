@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/url_parser.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/memory.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/url_parser.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/memory.hpp"
 #include <numeric>
 
 namespace tt {

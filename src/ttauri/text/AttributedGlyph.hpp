@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Text/FontGlyphIDs.hpp"
-#include "TTauri/Text/AttributedGrapheme.hpp"
-#include "TTauri/Text/GlyphMetrics.hpp"
-#include "TTauri/Foundation/mat.hpp"
+#include "ttauri/text/FontGlyphIDs.hpp"
+#include "ttauri/text/AttributedGrapheme.hpp"
+#include "ttauri/text/GlyphMetrics.hpp"
+#include "ttauri/foundation/mat.hpp"
 
 namespace tt {
 

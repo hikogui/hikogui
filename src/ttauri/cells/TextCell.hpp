@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Cells/Cell.hpp"
-#include "TTauri/Text/ShapedText.hpp"
-#include "TTauri/Text/TextStyle.hpp"
+#include "ttauri/cells/Cell.hpp"
+#include "ttauri/text/ShapedText.hpp"
+#include "ttauri/text/TextStyle.hpp"
 #include <string_view>
 
 namespace tt {

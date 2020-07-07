@@ -5,8 +5,8 @@
 #include "TTauri/GUI/KeyboardVirtualKey.hpp"
 #include "TTauri/GUI/GUISystem.hpp"
 #include "TTauri/GUI/ThemeBook.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/thread.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/thread.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 

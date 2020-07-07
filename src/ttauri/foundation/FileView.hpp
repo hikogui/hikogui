@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "TTauri/Foundation/FileMapping.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
+#include "ttauri/foundation/FileMapping.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
 #include <nonstd/span>
 
 namespace tt {

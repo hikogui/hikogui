@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/tokenizer.hpp"
-#include "TTauri/Foundation/strings.hpp"
-#include "TTauri/Foundation/datum.hpp"
-#include "TTauri/Foundation/exceptions.hpp"
-#include "TTauri/Foundation/ResourceView.hpp"
-#include "TTauri/Foundation/JSON.hpp"
+#include "ttauri/foundation/tokenizer.hpp"
+#include "ttauri/foundation/strings.hpp"
+#include "ttauri/foundation/datum.hpp"
+#include "ttauri/foundation/exceptions.hpp"
+#include "ttauri/foundation/ResourceView.hpp"
+#include "ttauri/foundation/JSON.hpp"
 #include <vector>
 #include <optional>
 

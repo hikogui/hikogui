@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/float16.hpp"
-#include "TTauri/Foundation/PixelMap.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/float16.hpp"
+#include "ttauri/foundation/PixelMap.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>

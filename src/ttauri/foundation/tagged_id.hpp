@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/string_tag.hpp"
-#include "TTauri/Foundation/numeric_cast.hpp"
-#include "TTauri/Foundation/math.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/string_tag.hpp"
+#include "ttauri/foundation/numeric_cast.hpp"
+#include "ttauri/foundation/math.hpp"
 #include <limits>
 #include <typeinfo>
 #include <typeindex>

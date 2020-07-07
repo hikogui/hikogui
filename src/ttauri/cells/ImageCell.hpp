@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "TTauri/Cells/Cell.hpp"
+#include "ttauri/cells/Cell.hpp"
 
 namespace tt {
 

@@ -4,10 +4,10 @@
 #pragma once
 
 #include "TTauri/GUI/GUIDevice_forward.hpp"
-#include "TTauri/Foundation/required.hpp"
-#include "TTauri/Foundation/vec.hpp"
-#include "TTauri/Foundation/rect.hpp"
-#include "TTauri/Foundation/vspan.hpp"
+#include "ttauri/foundation/required.hpp"
+#include "ttauri/foundation/vec.hpp"
+#include "ttauri/foundation/rect.hpp"
+#include "ttauri/foundation/vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "TTauri/Foundation/BezierCurve.hpp"
-#include "TTauri/Foundation/BezierPoint.hpp"
-#include "TTauri/Foundation/PixelMap.inl"
-#include "TTauri/Foundation/memory.hpp"
+#include "ttauri/foundation/BezierCurve.hpp"
+#include "ttauri/foundation/BezierPoint.hpp"
+#include "ttauri/foundation/PixelMap.inl"
+#include "ttauri/foundation/memory.hpp"
 #include <optional>
 
 namespace tt {
