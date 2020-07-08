@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/GUI/Pipeline_base.hpp"
+#include "Pipeline_base.hpp"
 #include <vulkan/vulkan.hpp>
 #include <string>
 #include <vector>

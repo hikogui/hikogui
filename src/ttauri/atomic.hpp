@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/counters.hpp"
-#include "ttauri/string_tag.hpp"
-#include "ttauri/os_detect.hpp"
+#include "counters.hpp"
+#include "string_tag.hpp"
+#include "os_detect.hpp"
 #include <atomic>
 #include <thread>
 #include <chrono>

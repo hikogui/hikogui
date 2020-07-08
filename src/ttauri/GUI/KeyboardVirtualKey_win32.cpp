@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/KeyboardVirtualKey.hpp"
-#include "ttauri/GUI/KeyboardModifiers.hpp"
+#include "KeyboardVirtualKey.hpp"
+#include "KeyboardModifiers.hpp"
 #include <Windows.h>
 
 namespace tt {

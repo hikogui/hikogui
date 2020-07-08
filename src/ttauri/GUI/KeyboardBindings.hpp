@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/GUI/KeyboardKey.hpp"
-#include "ttauri/string_tag.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/os_detect.hpp"
+#include "KeyboardKey.hpp"
+#include "../string_tag.hpp"
+#include "../URL.hpp"
+#include "../os_detect.hpp"
 #include <unordered_map>
 #include <tuple>
 

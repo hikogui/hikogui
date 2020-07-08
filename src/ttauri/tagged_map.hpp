@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/string_tag.hpp"
+#include "string_tag.hpp"
 #include <typeinfo>
 #include <typeindex>
 #include <array>

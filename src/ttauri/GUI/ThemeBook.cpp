@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/ThemeBook.hpp"
-#include "ttauri/trace.hpp"
+#include "ThemeBook.hpp"
+#include "../trace.hpp"
 
 namespace tt {
 

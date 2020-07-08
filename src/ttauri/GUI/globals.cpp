@@ -1,14 +1,15 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/globals.hpp"
-#include "ttauri/GUI/GUISystem.hpp"
-#include "ttauri/GUI/ThemeMode.hpp"
-#include "ttauri/GUI/ThemeBook.hpp"
-#include "ttauri/GUI/RenderDoc.hpp"
-#include "ttauri/text/globals.hpp"
-#include "ttauri/globals.hpp"
+#include "globals.hpp"
+#include "GUISystem.hpp"
+#include "ThemeMode.hpp"
+#include "ThemeBook.hpp"
+#include "RenderDoc.hpp"
+#include "../text/globals.hpp"
+#include "../globals.hpp"
 
+// These files are in the build directory which is why absolute paths are required.
 #include "ttauri/GUI/PipelineImage.vert.spv.inl"
 #include "ttauri/GUI/PipelineImage.frag.spv.inl"
 #include "ttauri/GUI/PipelineFlat.vert.spv.inl"

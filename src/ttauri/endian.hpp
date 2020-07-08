@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/os_detect.hpp"
-#include "ttauri/memory.hpp"
+#include "os_detect.hpp"
+#include "memory.hpp"
 
 #if TT_COMPILER == TT_CC_MSVC
 #include <stdlib.h>

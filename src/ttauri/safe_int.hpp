@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/int_overflow.hpp"
-#include "ttauri/type_traits.hpp"
-#include "ttauri/exceptions.hpp"
+#include "int_overflow.hpp"
+#include "type_traits.hpp"
+#include "exceptions.hpp"
 #include <system_error>
 #include <type_traits>
 #include <limits>

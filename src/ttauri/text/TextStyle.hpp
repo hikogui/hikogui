@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/text/FontDescription.hpp"
-#include "ttauri/text/TextDecoration.hpp"
-#include "ttauri/text/FontFamilyID.hpp"
-#include "ttauri/R16G16B16A16SFloat.hpp"
+#include "FontDescription.hpp"
+#include "TextDecoration.hpp"
+#include "FontFamilyID.hpp"
+#include "../vec.hpp"
 #include <fmt/format.h>
 #include <ostream>
 

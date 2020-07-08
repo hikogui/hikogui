@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include "../required.hpp"
 #include <limits>
-#include "ttauri/required.hpp"
 
 namespace tt::PipelineImage {
 

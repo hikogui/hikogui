@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/base93.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/bigint.hpp"
-#include "ttauri/numeric_cast.hpp"
+#include "base93.hpp"
+#include "exceptions.hpp"
+#include "bigint.hpp"
+#include "numeric_cast.hpp"
 #include <algorithm>
 
 using namespace std::literals;

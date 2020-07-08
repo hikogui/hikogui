@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/ivec.hpp"
+#include "ivec.hpp"
 
 namespace tt {
 

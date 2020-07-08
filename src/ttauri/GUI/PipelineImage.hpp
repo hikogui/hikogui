@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ttauri/GUI/Pipeline_vulkan.hpp"
-#include "ttauri/GUI/PipelineImage_PushConstants.hpp"
-#include "ttauri/GUI/PipelineImage_Vertex.hpp"
-#include "ttauri/GUI/globals.hpp"
-#include "ttauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/vspan.hpp"
+#include "Pipeline_vulkan.hpp"
+#include "PipelineImage_PushConstants.hpp"
+#include "PipelineImage_Vertex.hpp"
+#include "globals.hpp"
+#include "GUIDevice_forward.hpp"
+#include "../vspan.hpp"
 #include <vma/vk_mem_alloc.h>
 
 namespace tt::PipelineImage {

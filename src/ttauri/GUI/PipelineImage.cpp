@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/PipelineImage.hpp"
-#include "ttauri/GUI/PipelineImage_DeviceShared.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
+#include "PipelineImage.hpp"
+#include "PipelineImage_DeviceShared.hpp"
+#include "Window.hpp"
+#include "GUIDevice.hpp"
 
 namespace tt::PipelineImage {
 

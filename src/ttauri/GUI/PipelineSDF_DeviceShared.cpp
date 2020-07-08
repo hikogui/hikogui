@@ -1,18 +1,18 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/PipelineSDF.hpp"
-#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
-#include "ttauri/text/ShapedText.hpp"
-#include "ttauri/PixelMap.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/memory.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/BezierCurve.hpp"
-#include "ttauri/ivec.hpp"
-#include "ttauri/iaarect.hpp"
-#include "ttauri/mat.hpp"
+#include "PipelineSDF.hpp"
+#include "PipelineSDF_DeviceShared.hpp"
+#include "GUIDevice.hpp"
+#include "../text/ShapedText.hpp"
+#include "../PixelMap.hpp"
+#include "../URL.hpp"
+#include "../memory.hpp"
+#include "../numeric_cast.hpp"
+#include "../BezierCurve.hpp"
+#include "../ivec.hpp"
+#include "../iaarect.hpp"
+#include "../mat.hpp"
 #include <array>
 
 namespace tt::PipelineSDF {

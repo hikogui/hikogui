@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/vec.hpp"
-#include "ttauri/hires_utc_clock.hpp"
-#include "ttauri/GUI/MouseButtons.hpp"
+#include "MouseButtons.hpp"
+#include "../vec.hpp"
+#include "../hires_utc_clock.hpp"
 
 namespace tt {
 

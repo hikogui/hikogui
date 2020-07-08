@@ -1,8 +1,6 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/required.hpp"
-
 clang_suppress("-Wunused-variable")
 clang_suppress("-Wreorder")
 clang_suppress("-Wunused-private-field")

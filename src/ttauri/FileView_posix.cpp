@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/FileView.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/memory.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/required.hpp"
+#include "FileView.hpp"
+#include "exceptions.hpp"
+#include "logger.hpp"
+#include "memory.hpp"
+#include "URL.hpp"
+#include "required.hpp"
 #include <mutex>
 #include <sys/mman.h>
 

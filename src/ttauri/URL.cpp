@@ -1,15 +1,15 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/URL.hpp"
-#include "ttauri/globals.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/url_parser.hpp"
-#include "ttauri/glob.hpp"
-#include "ttauri/Unicode.hpp"
-#include "ttauri/FileView.hpp"
-#include "ttauri/StaticResourceView.hpp"
+#include "URL.hpp"
+#include "globals.hpp"
+#include "strings.hpp"
+#include "required.hpp"
+#include "url_parser.hpp"
+#include "glob.hpp"
+#include "Unicode.hpp"
+#include "FileView.hpp"
+#include "StaticResourceView.hpp"
 #include <regex>
 
 namespace tt {

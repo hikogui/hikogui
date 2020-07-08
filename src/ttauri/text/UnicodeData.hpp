@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ttauri/text/Grapheme.hpp"
-#include "ttauri/text/UnicodeBidi.hpp"
-#include "ttauri/ResourceView.hpp"
-#include "ttauri/math.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/required.hpp"
+#include "Grapheme.hpp"
+#include "UnicodeBidi.hpp"
+#include "../ResourceView.hpp"
+#include "../math.hpp"
+#include "../URL.hpp"
+#include "../required.hpp"
 #include <nonstd/span>
 
 namespace tt {

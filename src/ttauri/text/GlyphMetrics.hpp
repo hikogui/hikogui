@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/vec.hpp"
-#include "ttauri/mat.hpp"
-#include "ttauri/aarect.hpp"
+#include "../required.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
+#include "../aarect.hpp"
 
 namespace tt {
 

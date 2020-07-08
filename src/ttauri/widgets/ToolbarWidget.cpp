@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/widgets/ToolbarWidget.hpp"
-#include "ttauri/widgets/WindowTrafficLightsWidget.hpp"
-#include "ttauri/widgets/ToolbarButtonWidget.hpp"
-#include "ttauri/GUI/utils.hpp"
+#include "ToolbarWidget.hpp"
+#include "WindowTrafficLightsWidget.hpp"
+#include "ToolbarButtonWidget.hpp"
+#include "../GUI/utils.hpp"
 #include <cmath>
 
 namespace tt {

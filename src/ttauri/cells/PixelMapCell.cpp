@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/cells/PixelMapCell.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/DrawContext.hpp"
-#include "ttauri/png.hpp"
+#include "PixelMapCell.hpp"
+#include "../GUI/Window.hpp"
+#include "../GUI/DrawContext.hpp"
+#include "../png.hpp"
 
 namespace tt {
 

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/GUI/Window_forward.hpp"
-#include "ttauri/aarect.hpp"
+#include "../GUI/Window_forward.hpp"
+#include "../aarect.hpp"
 
 namespace tt {
 class DrawContext;

@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/decimal.hpp"
-#include "ttauri/memory.hpp"
-#include "ttauri/type_traits.hpp"
-#include "ttauri/throw_exception.hpp"
-#include "ttauri/math.hpp"
-#include "ttauri/algorithm.hpp"
+#include "required.hpp"
+#include "URL.hpp"
+#include "decimal.hpp"
+#include "memory.hpp"
+#include "type_traits.hpp"
+#include "throw_exception.hpp"
+#include "math.hpp"
+#include "algorithm.hpp"
 #include <date/date.h>
 #include <vector>
 #include <unordered_map>

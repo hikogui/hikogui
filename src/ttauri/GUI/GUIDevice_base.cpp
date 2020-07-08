@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/GUIDevice_base.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
-#include "ttauri/GUI/GUISystem.hpp"
-#include "ttauri/GUI/Window.hpp"
+#include "GUIDevice_base.hpp"
+#include "GUIDevice.hpp"
+#include "GUISystem.hpp"
+#include "Window.hpp"
 #include <fmt/format.h>
 #include <tuple>
 #include <vector>

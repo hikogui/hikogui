@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/os_detect.hpp"
-#include "ttauri/debugger.hpp"
+#include "os_detect.hpp"
+#include "debugger.hpp"
 #include  <exception>
 
 namespace tt {

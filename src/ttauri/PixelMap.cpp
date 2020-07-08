@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/PixelMap.inl"
-#include "ttauri/endian.hpp"
+#include "PixelMap.inl"
+#include "endian.hpp"
 #include <algorithm>
 
 namespace tt {

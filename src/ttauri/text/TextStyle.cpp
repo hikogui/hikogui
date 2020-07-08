@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/TextStyle.hpp"
-#include "ttauri/text/globals.hpp"
+#include "TextStyle.hpp"
+#include "globals.hpp"
 
 namespace tt {
 

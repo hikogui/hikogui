@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/type_traits.hpp"
+#include "required.hpp"
+#include "numeric_cast.hpp"
+#include "type_traits.hpp"
 #include <complex>
 #include <cmath>
 #include <limits>

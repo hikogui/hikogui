@@ -1,7 +1,7 @@
 
-#include "ttauri/required.hpp"
-#include "ttauri/bits.hpp"
-#include "ttauri/numeric_cast.hpp"
+#include "required.hpp"
+#include "bits.hpp"
+#include "numeric_cast.hpp"
 #include <nonstd/span>
 #include <vector>
 

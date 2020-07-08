@@ -1,9 +1,9 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/required.hpp"
-#include "ttauri/logger.hpp"
 #include "language.hpp"
+#include "../required.hpp"
+#include "../logger.hpp"
 
 namespace tt {
 

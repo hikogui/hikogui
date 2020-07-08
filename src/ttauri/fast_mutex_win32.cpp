@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/fast_mutex.hpp"
-#include "ttauri/logger.hpp"
+#include "fast_mutex.hpp"
+#include "logger.hpp"
 #include <Windows.h>
 #include <Synchapi.h>
 

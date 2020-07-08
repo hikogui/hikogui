@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/vec.hpp"
-#include "ttauri/attributes.hpp"
+#include "vec.hpp"
+#include "attributes.hpp"
 
 namespace tt {
 

@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/GUI/PipelineImage_TextureMap.hpp"
-#include "ttauri/GUI/PipelineImage_Page.hpp"
-#include "ttauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/R16G16B16A16SFloat.hpp"
+#include "PipelineImage_TextureMap.hpp"
+#include "PipelineImage_Page.hpp"
+#include "GUIDevice_forward.hpp"
+#include "../required.hpp"
+#include "../R16G16B16A16SFloat.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

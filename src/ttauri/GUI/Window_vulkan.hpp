@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/GUI/Window_base.hpp"
+#include "Window_base.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 #include <optional>

@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/GUI/KeyboardModifiers.hpp"
+#include "KeyboardModifiers.hpp"
+#include "../required.hpp"
+#include "../exceptions.hpp"
+#include "../strings.hpp"
 #include <unordered_map>
 
 namespace tt {

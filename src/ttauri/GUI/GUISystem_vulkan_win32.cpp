@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/GUISystem_vulkan_win32.hpp"
-#include "ttauri/GUI/Window.hpp"
+#include "GUISystem_vulkan_win32.hpp"
+#include "Window.hpp"
 #include <ddraw.h>
 
 namespace tt {

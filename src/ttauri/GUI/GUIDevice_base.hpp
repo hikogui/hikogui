@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/globals.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/bigint.hpp"
+#include "Window.hpp"
+#include "globals.hpp"
+#include "../exceptions.hpp"
+#include "../numeric_cast.hpp"
+#include "../bigint.hpp"
 #include <unordered_set>
 #include <mutex>
 #include <tuple>

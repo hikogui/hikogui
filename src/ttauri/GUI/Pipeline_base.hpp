@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/GUI/Window_forward.hpp"
-#include "ttauri/required.hpp"
+#include "GUIDevice_forward.hpp"
+#include "Window_forward.hpp"
+#include "../required.hpp"
 #include <memory>
 
 namespace tt {

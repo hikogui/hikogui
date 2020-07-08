@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "ttauri/text/GlyphMetrics.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/text/gstring.hpp"
-#include "ttauri/text/FontDescription.hpp"
-#include "ttauri/Path.hpp"
-#include "ttauri/ResourceView.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/URL.hpp"
+#include "GlyphMetrics.hpp"
+#include "FontGlyphIDs.hpp"
+#include "gstring.hpp"
+#include "FontDescription.hpp"
+#include "../Path.hpp"
+#include "../ResourceView.hpp"
+#include "../exceptions.hpp"
+#include "../required.hpp"
+#include "../URL.hpp"
 #include <nonstd/span>
 #include <vector>
 #include <map>

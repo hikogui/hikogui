@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/required.hpp"
-#include "ttauri/endian.hpp"
-#include "ttauri/CP1252.hpp"
-#include "ttauri/math.hpp"
+#include "required.hpp"
+#include "endian.hpp"
+#include "CP1252.hpp"
+#include "math.hpp"
 #include <string_view>
 #include <cstdint>
 

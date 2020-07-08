@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/thread.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/globals.hpp"
+#include "thread.hpp"
+#include "strings.hpp"
+#include "globals.hpp"
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>

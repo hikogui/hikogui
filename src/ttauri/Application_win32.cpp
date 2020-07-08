@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/Application_win32.hpp"
-#include "ttauri/GUI/GUISystem.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/strings.hpp"
+#include "Application_win32.hpp"
+#include "GUI/GUISystem.hpp"
+#include "GUI/Window.hpp"
+#include "strings.hpp"
 #include <thread>
 #include <string>
 #include <vector>

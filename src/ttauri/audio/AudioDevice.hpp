@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/bigint.hpp"
-#include "ttauri/audio/AudioDeviceDelegate.hpp"
-#include "ttauri/audio/AudioStreamConfig.hpp"
+#include "../bigint.hpp"
+#include "AudioDeviceDelegate.hpp"
+#include "AudioStreamConfig.hpp"
 #include <string>
 #include <memory>
 #include <ostream>

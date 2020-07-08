@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/text/Font.hpp"
-#include "ttauri/Path.hpp"
-#include "ttauri/ResourceView.hpp"
+#include "Font.hpp"
+#include "../Path.hpp"
+#include "../ResourceView.hpp"
 #include <memory>
 
 namespace tt {

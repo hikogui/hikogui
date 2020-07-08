@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/PipelineSDF_TextureMap.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
+#include "PipelineSDF_TextureMap.hpp"
+#include "GUIDevice.hpp"
 
 namespace tt::PipelineSDF {
 

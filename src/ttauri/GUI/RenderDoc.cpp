@@ -1,9 +1,9 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/logger.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/GUI/RenderDoc.hpp"
+#include "RenderDoc.hpp"
+#include "../logger.hpp"
+#include "../URL.hpp"
 #include <renderdoc/renderdoc_app.h>
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>

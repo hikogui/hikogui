@@ -1,9 +1,9 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/UnicodeBidi.hpp"
-#include "ttauri/text/UnicodeData.hpp"
-#include "ttauri/text/globals.hpp"
+#include "UnicodeBidi.hpp"
+#include "UnicodeData.hpp"
+#include "globals.hpp"
 
 namespace tt {
 

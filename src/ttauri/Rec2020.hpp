@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include "ttauri/float16.hpp"
-#include "ttauri/mat.hpp"
+#include "mat.hpp"
 #include <cmath>
 #include <array>
 

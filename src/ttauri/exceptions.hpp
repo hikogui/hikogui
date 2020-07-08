@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "ttauri/logger.hpp"
-#include "ttauri/counters.hpp"
-#include "ttauri/datum.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/string_tag.hpp"
-#include "ttauri/tagged_map.hpp"
-#include "ttauri/parse_location.hpp"
+#include "logger.hpp"
+#include "counters.hpp"
+#include "datum.hpp"
+#include "required.hpp"
+#include "string_tag.hpp"
+#include "tagged_map.hpp"
+#include "parse_location.hpp"
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <exception>

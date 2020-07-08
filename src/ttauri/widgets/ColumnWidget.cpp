@@ -1,6 +1,6 @@
 
 #include "ColumnWidget.hpp"
-#include "ttauri/GUI/Window.hpp"
+#include "../GUI/Window.hpp"
 
 namespace tt {
 

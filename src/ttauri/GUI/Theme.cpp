@@ -1,10 +1,10 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/Theme.hpp"
-#include "ttauri/text/globals.hpp"
-#include "ttauri/JSON.hpp"
-#include "ttauri/globals.hpp"
+#include "Theme.hpp"
+#include "../text/globals.hpp"
+#include "../JSON.hpp"
+#include "../globals.hpp"
 
 namespace tt {
 

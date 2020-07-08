@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/GUI/Window_forward.hpp"
+#include "Window_forward.hpp"
 
 namespace tt {
 

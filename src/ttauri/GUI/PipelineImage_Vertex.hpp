@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/GUI/PipelineImage_ImageLocation.hpp"
-#include "ttauri/vec.hpp"
-#include "ttauri/aarect.hpp"
-#include "ttauri/R32G32B32SFloat.hpp"
-#include "ttauri/R32G32B32A32SFloat.hpp"
+#include "PipelineImage_ImageLocation.hpp"
+#include "../vec.hpp"
+#include "../aarect.hpp"
+#include "../R32G32B32SFloat.hpp"
+#include "../R32G32B32A32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
 
 namespace tt::PipelineImage {

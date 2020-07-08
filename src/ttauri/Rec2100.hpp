@@ -3,9 +3,8 @@
 
 #pragma once
 
-#include "ttauri/Rec2020.hpp"
-#include "ttauri/float16.hpp"
-#include "ttauri/mat.hpp"
+#include "Rec2020.hpp"
+#include "mat.hpp"
 #include <cmath>
 #include <array>
 

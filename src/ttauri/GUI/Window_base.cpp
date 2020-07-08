@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/Window_base.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
-#include "ttauri/widgets/WindowWidget.hpp"
+#include "Window_base.hpp"
+#include "Window.hpp"
+#include "GUIDevice.hpp"
+#include "../widgets/WindowWidget.hpp"
 
 namespace tt {
 

@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "ttauri/URL.hpp"
-#include "ttauri/cells/Image.hpp"
+#include "../URL.hpp"
+#include "Image.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <ostream>

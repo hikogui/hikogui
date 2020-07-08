@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/text/Grapheme.hpp"
-#include "ttauri/strings.hpp"
+#include "Grapheme.hpp"
+#include "../strings.hpp"
 #include <vector>
 
 namespace tt {

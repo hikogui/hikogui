@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/throw_exception.hpp"
-#include "ttauri/int_overflow.hpp"
-#include "ttauri/math.hpp"
+#include "throw_exception.hpp"
+#include "int_overflow.hpp"
+#include "math.hpp"
 #include <fmt/ostream.h>
 #include <limits>
 #include <string_view>

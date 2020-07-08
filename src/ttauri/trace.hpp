@@ -1,13 +1,13 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/counters.hpp"
-#include "ttauri/datum.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/cpu_utc_clock.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/tagged_map.hpp"
-#include "ttauri/wfree_message_queue.hpp"
+#include "counters.hpp"
+#include "datum.hpp"
+#include "logger.hpp"
+#include "cpu_utc_clock.hpp"
+#include "required.hpp"
+#include "tagged_map.hpp"
+#include "wfree_message_queue.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 #include <atomic>

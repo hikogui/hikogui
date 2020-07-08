@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/widgets/Widget.hpp"
-#include "ttauri/Path.hpp"
+#include "Widget.hpp"
+#include "../Path.hpp"
 #include <memory>
 #include <string>
 #include <array>

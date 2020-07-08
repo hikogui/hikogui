@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/widgets/Widget.hpp"
-#include "ttauri/cells/Label.hpp"
+#include "Widget.hpp"
+#include "../cells/Label.hpp"
 
 namespace tt {
 

@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/cells/GlyphCell.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/DrawContext.hpp"
-#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
+#include "GlyphCell.hpp"
+#include "../GUI/Window.hpp"
+#include "../GUI/DrawContext.hpp"
+#include "../GUI/PipelineSDF_DeviceShared.hpp"
 
 namespace tt {
 

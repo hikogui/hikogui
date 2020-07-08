@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/aarect.hpp"
-#include "ttauri/vec.hpp"
+#include "GUIDevice_forward.hpp"
+#include "../required.hpp"
+#include "../aarect.hpp"
+#include "../vec.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/URL.hpp"
-#include "ttauri/byte_string.hpp"
-#include "ttauri/FileView.hpp"
+#include "URL.hpp"
+#include "byte_string.hpp"
+#include "FileView.hpp"
 #include <cstddef>
 
 namespace tt {

@@ -63,9 +63,9 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/throw_exception.hpp"
-#include "ttauri/bigint.hpp"
+#include "required.hpp"
+#include "throw_exception.hpp"
+#include "bigint.hpp"
 #include <string>
 #include <string_view>
 #include <cstdint>

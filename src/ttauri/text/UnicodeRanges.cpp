@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/UnicodeRanges.hpp"
+#include "UnicodeRanges.hpp"
 
 namespace tt {
 

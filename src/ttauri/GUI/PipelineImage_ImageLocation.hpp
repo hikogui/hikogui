@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/vec.hpp"
-#include "ttauri/mat.hpp"
-#include "ttauri/aarect.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
+#include "../aarect.hpp"
 
 namespace tt::PipelineImage {
 

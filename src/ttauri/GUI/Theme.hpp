@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/mat.hpp"
-#include "ttauri/text/TextStyle.hpp"
-#include "ttauri/GUI/ThemeMode.hpp"
+#include "ThemeMode.hpp"
+#include "../required.hpp"
+#include "../mat.hpp"
+#include "../text/TextStyle.hpp"
 #include <array>
 
 namespace tt {

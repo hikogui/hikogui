@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/ResourceView.hpp"
-#include "ttauri/required.hpp"
+#include "ResourceView.hpp"
+#include "required.hpp"
 #include <nonstd/span>
 #include <cstddef>
 #include <unordered_map>

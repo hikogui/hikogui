@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/globals.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/url_parser.hpp"
+#include "globals.hpp"
+#include "URL.hpp"
+#include "strings.hpp"
+#include "required.hpp"
+#include "url_parser.hpp"
 #include <regex>
 
 #import <Foundation/Foundation.h>

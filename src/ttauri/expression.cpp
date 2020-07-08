@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/expression.hpp"
-#include "ttauri/operator.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/url_parser.hpp"
+#include "expression.hpp"
+#include "operator.hpp"
+#include "strings.hpp"
+#include "url_parser.hpp"
 #include <fmt/format.h>
 #include <string>
 #include <string_view>

@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "ttauri/GUI/PipelineSDF_TextureMap.hpp"
-#include "ttauri/GUI/PipelineSDF_AtlasRect.hpp"
-#include "ttauri/GUI/PipelineSDF_SpecializationConstants.hpp"
-#include "ttauri/GUI/GUIDevice_forward.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/vspan.hpp"
-#include "ttauri/ivec.hpp"
-#include "ttauri/rect.hpp"
+#include "PipelineSDF_TextureMap.hpp"
+#include "PipelineSDF_AtlasRect.hpp"
+#include "PipelineSDF_SpecializationConstants.hpp"
+#include "GUIDevice_forward.hpp"
+#include "../text/FontGlyphIDs.hpp"
+#include "../required.hpp"
+#include "../logger.hpp"
+#include "../vspan.hpp"
+#include "../ivec.hpp"
+#include "../rect.hpp"
 #include <vma/vk_mem_alloc.h>
 #include <vulkan/vulkan.hpp>
 #include <mutex>

@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "ttauri/text/AttributedGlyphLine.hpp"
-#include "ttauri/text/gstring.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/attributes.hpp"
-#include "ttauri/Path.hpp"
-#include "ttauri/vec.hpp"
-#include "ttauri/nested_vector_iterator.hpp"
+#include "AttributedGlyphLine.hpp"
+#include "gstring.hpp"
+#include "../required.hpp"
+#include "../attributes.hpp"
+#include "../Path.hpp"
+#include "../vec.hpp"
+#include "../nested_vector_iterator.hpp"
 #include <string_view>
 #include <optional>
 

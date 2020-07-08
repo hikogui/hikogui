@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/Application_forward.hpp"
-#include "ttauri/datum.hpp"
+#include "Application_forward.hpp"
+#include "datum.hpp"
 #include <string>
 #include <vector>
 

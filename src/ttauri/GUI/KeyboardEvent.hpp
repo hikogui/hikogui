@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/GUI/KeyboardKey.hpp"
-#include "ttauri/text/Grapheme.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/assert.hpp"
+#include "KeyboardKey.hpp"
+#include "../text/Grapheme.hpp"
+#include "../required.hpp"
+#include "../assert.hpp"
 #include <utility>
 
 namespace tt {

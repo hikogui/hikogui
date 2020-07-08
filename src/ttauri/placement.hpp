@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/type_traits.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/exceptions.hpp"
+#include "required.hpp"
+#include "type_traits.hpp"
+#include "numeric_cast.hpp"
+#include "exceptions.hpp"
 #include <nonstd/span>
 
 namespace tt {

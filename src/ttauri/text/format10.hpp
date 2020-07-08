@@ -3,14 +3,14 @@
 
 #pragma once
 
+#include "translation.hpp"
+#include "../type_traits.hpp"
 #include <fmt/format.h>
 #include <utility>
 #include <tuple>
 #include <memory>
 #include <string>
 #include <locale>
-#include "translation.hpp"
-#include "ttauri/type_traits.hpp"
 
 namespace tt {
 

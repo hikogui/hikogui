@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/GUI/KeyboardModifiers.hpp"
-#include "ttauri/GUI/KeyboardVirtualKey.hpp"
-#include "ttauri/hash.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/strings.hpp"
+#include "KeyboardModifiers.hpp"
+#include "KeyboardVirtualKey.hpp"
+#include "../hash.hpp"
+#include "../exceptions.hpp"
+#include "../strings.hpp"
 #include <string_view>
 #include <unordered_map>
 

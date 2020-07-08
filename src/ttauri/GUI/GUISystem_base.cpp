@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/GUISystem_base.hpp"
-#include "ttauri/logger.hpp"
+#include "GUISystem_base.hpp"
+#include "../logger.hpp"
 #include <chrono>
 
 namespace tt {

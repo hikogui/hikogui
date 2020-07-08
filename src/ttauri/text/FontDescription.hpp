@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ttauri/text/UnicodeRanges.hpp"
-#include "ttauri/text/GlyphID.hpp"
-#include "ttauri/text/FontWeight.hpp"
-#include "ttauri/text/FontVariant.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/required.hpp"
+#include "UnicodeRanges.hpp"
+#include "GlyphID.hpp"
+#include "FontWeight.hpp"
+#include "FontVariant.hpp"
+#include "../exceptions.hpp"
+#include "../required.hpp"
 
 namespace tt {
 

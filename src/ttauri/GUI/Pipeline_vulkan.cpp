@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/Pipeline_vulkan.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/trace.hpp"
+#include "Pipeline_vulkan.hpp"
+#include "GUIDevice.hpp"
+#include "Window.hpp"
+#include "../trace.hpp"
 #include <array>
 #include <vector>
 

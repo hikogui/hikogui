@@ -1,10 +1,10 @@
 
-#include "ttauri/png.hpp"
-#include "ttauri/endian.hpp"
-#include "ttauri/placement.hpp"
-#include "ttauri/sRGB.hpp"
-#include "ttauri/Rec2100.hpp"
-#include "ttauri/zlib.hpp"
+#include "png.hpp"
+#include "endian.hpp"
+#include "placement.hpp"
+#include "sRGB.hpp"
+#include "Rec2100.hpp"
+#include "zlib.hpp"
 
 namespace tt {
 

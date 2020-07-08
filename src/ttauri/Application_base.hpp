@@ -3,16 +3,16 @@
 
 #pragma once
 
-#include "ttauri/ApplicationDelegate.hpp"
-#include "ttauri/audio/globals.hpp"
-#include "ttauri/audio/AudioSystemDelegate.hpp"
-#include "ttauri/text/globals.hpp"
-#include "ttauri/widgets/globals.hpp"
-#include "ttauri/GUI/globals.hpp"
-#include "ttauri/GUI/GUISystemDelegate.hpp"
-#include "ttauri/globals.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/URL.hpp"
+#include "ApplicationDelegate.hpp"
+#include "audio/globals.hpp"
+#include "audio/AudioSystemDelegate.hpp"
+#include "text/globals.hpp"
+#include "widgets/globals.hpp"
+#include "GUI/globals.hpp"
+#include "GUI/GUISystemDelegate.hpp"
+#include "globals.hpp"
+#include "required.hpp"
+#include "URL.hpp"
 #include <nonstd/span>
 #include <memory>
 #include <string>

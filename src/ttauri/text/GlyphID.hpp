@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/text/Grapheme.hpp"
-#include "ttauri/tagged_id.hpp"
+#include "Grapheme.hpp"
+#include "../tagged_id.hpp"
 #include <algorithm>
 #include <utility>
 

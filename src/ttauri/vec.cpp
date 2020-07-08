@@ -1,6 +1,6 @@
 
-#include "ttauri/vec.hpp"
-#include "ttauri/sRGB.hpp"
+#include "vec.hpp"
+#include "sRGB.hpp"
 
 namespace tt {
 

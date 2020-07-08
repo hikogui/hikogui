@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/GUI/GUIDevice_vulkan.hpp"
+#include "GUIDevice_vulkan.hpp"
 
 namespace tt {
 using GUIDevice = GUIDevice_vulkan;

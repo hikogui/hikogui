@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/os_detect.hpp"
+#include "os_detect.hpp"
 #include <chrono>
 #if TT_COMPILER == TT_CC_MSVC
 #include <intrin.h>

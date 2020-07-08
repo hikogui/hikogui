@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/File.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/strings.hpp"
+#include "File.hpp"
+#include "logger.hpp"
+#include "exceptions.hpp"
+#include "strings.hpp"
 #include <Windows.h>
 
 namespace tt {

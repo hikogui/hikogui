@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "ttauri/exceptions.hpp"
-#include "ttauri/URL.hpp"
-#include "ttauri/memory.hpp"
-#include "ttauri/vec.hpp"
+#include "exceptions.hpp"
+#include "URL.hpp"
+#include "memory.hpp"
+#include "vec.hpp"
 #include <string>
 #include <vector>
 #include <map>

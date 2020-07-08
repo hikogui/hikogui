@@ -1,9 +1,9 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/gstring.hpp"
-#include "ttauri/text/globals.hpp"
-#include "ttauri/strings.hpp"
+#include "gstring.hpp"
+#include "globals.hpp"
+#include "../strings.hpp"
 
 namespace tt {
 

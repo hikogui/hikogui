@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/audio/AudioDevice_win32.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/exceptions.hpp"
+#include "AudioDevice_win32.hpp"
+#include "../logger.hpp"
+#include "../strings.hpp"
+#include "../exceptions.hpp"
 #include <Windows.h>
 #include <propsys.h>
 #include <functiondiscoverykeys_devpkey.h>

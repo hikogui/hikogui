@@ -1,12 +1,12 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/cells/Image.hpp"
-#include "ttauri/cells/PixelMapCell.hpp"
-#include "ttauri/cells/GlyphCell.hpp"
-#include "ttauri/png.hpp"
-#include "ttauri/GUI/DrawContext.hpp"
-#include "ttauri/GUI/Window.hpp"
+#include "Image.hpp"
+#include "PixelMapCell.hpp"
+#include "GlyphCell.hpp"
+#include "../png.hpp"
+#include "../GUI/DrawContext.hpp"
+#include "../GUI/Window.hpp"
 
 namespace tt {
 

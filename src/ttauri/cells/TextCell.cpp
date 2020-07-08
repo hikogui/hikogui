@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/cells/TextCell.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/DrawContext.hpp"
-#include "ttauri/png.hpp"
+#include "TextCell.hpp"
+#include "../GUI/Window.hpp"
+#include "../GUI/DrawContext.hpp"
+#include "../png.hpp"
 
 namespace tt {
 

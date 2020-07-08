@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/R16G16B16A16SFloat.hpp"
-#include "ttauri/sRGB.hpp"
+#include "R16G16B16A16SFloat.hpp"
+#include "sRGB.hpp"
 #include <immintrin.h>
 #include <emmintrin.h>
 #include <algorithm>

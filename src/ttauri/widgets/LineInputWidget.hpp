@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/widgets/Widget.hpp"
-#include "ttauri/text/EditableText.hpp"
+#include "Widget.hpp"
+#include "../text/EditableText.hpp"
 #include <memory>
 #include <string>
 #include <array>

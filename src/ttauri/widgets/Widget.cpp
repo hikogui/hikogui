@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/widgets/Widget.hpp"
-#include "ttauri/GUI/utils.hpp"
+#include "Widget.hpp"
+#include "../GUI/utils.hpp"
 
 namespace tt {
 

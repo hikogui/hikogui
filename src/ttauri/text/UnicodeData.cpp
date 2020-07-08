@@ -1,13 +1,13 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/UnicodeData.hpp"
-#include "ttauri/placement.hpp"
-#include "ttauri/endian.hpp"
-#include "ttauri/algorithm.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/required.hpp"
+#include "UnicodeData.hpp"
+#include "../placement.hpp"
+#include "../endian.hpp"
+#include "../algorithm.hpp"
+#include "../exceptions.hpp"
+#include "../strings.hpp"
+#include "../required.hpp"
 #include <algorithm>
 
 namespace tt {

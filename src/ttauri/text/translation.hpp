@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/expression.hpp"
-#include "ttauri/hash.hpp"
 #include "language.hpp"
+#include "../expression.hpp"
+#include "../hash.hpp"
 #include <string>
 #include <string_view>
 #include <vector>

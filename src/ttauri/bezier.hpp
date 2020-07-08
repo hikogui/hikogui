@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/polynomial.hpp"
-#include "ttauri/vec.hpp"
-#include "ttauri/mat.hpp"
+#include "polynomial.hpp"
+#include "vec.hpp"
+#include "mat.hpp"
 #include <array>
 #include <optional>
 

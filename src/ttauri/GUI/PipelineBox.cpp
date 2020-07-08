@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/PipelineBox.hpp"
-#include "ttauri/GUI/PipelineBox_DeviceShared.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
+#include "PipelineBox.hpp"
+#include "PipelineBox_DeviceShared.hpp"
+#include "Window.hpp"
+#include "GUIDevice.hpp"
 
 namespace tt::PipelineBox {
 

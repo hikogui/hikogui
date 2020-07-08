@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/text/FontWeight.hpp"
+#include "FontWeight.hpp"
 
 namespace tt {
 

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/hires_utc_clock.hpp"
+#include "../hires_utc_clock.hpp"
 #include <vector>
 
 namespace tt {

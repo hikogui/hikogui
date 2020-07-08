@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/zlib.hpp"
-#include "ttauri/inflate.hpp"
-#include "ttauri/endian.hpp"
-#include "ttauri/placement.hpp"
+#include "zlib.hpp"
+#include "inflate.hpp"
+#include "endian.hpp"
+#include "placement.hpp"
 
 namespace tt {
 

@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/float16.hpp"
+#include "required.hpp"
+#include "numeric_cast.hpp"
+#include "strings.hpp"
+#include "exceptions.hpp"
+#include "float16.hpp"
 #include <fmt/format.h>
 #include <xmmintrin.h>
 #include <immintrin.h>

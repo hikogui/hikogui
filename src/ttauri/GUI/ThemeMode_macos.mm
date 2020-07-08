@@ -1,9 +1,9 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/ThemeMode.hpp"
-#include "ttauri/strings.hpp"
-#include "ttauri/logger.hpp"
+#include "ThemeMode.hpp"
+#include "../strings.hpp"
+#include "../logger.hpp"
 
 namespace tt {
 

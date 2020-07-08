@@ -1,10 +1,10 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/inflate.hpp"
-#include "ttauri/bits.hpp"
-#include "ttauri/placement.hpp"
-#include "ttauri/huffman.hpp"
+#include "inflate.hpp"
+#include "bits.hpp"
+#include "placement.hpp"
+#include "huffman.hpp"
 
 namespace tt {
 

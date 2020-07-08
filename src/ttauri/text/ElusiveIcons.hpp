@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/text/FontID.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/text/FontBook.hpp"
+#include "FontID.hpp"
+#include "FontGlyphIDs.hpp"
+#include "FontBook.hpp"
 
 namespace tt {
 

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/assert.hpp"
-#include "ttauri/required.hpp"
+#include "assert.hpp"
+#include "required.hpp"
 #include <vector>
 #include <memory>
 #include <algorithm>

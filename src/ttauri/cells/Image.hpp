@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/URL.hpp"
-#include "ttauri/PixelMap.hpp"
-#include "ttauri/R16G16B16A16SFloat.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/cells/ImageCell.hpp"
+#include "ImageCell.hpp"
+#include "../URL.hpp"
+#include "../PixelMap.hpp"
+#include "../R16G16B16A16SFloat.hpp"
+#include "../text/FontGlyphIDs.hpp"
 #include <variant>
 
 namespace tt {

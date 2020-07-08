@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/Grapheme.hpp"
-#include "ttauri/text/globals.hpp"
+#include "Grapheme.hpp"
+#include "globals.hpp"
 
 namespace tt {
 

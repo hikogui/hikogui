@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "ttauri/vspan.hpp"
-#include "ttauri/ivec.hpp"
-#include "ttauri/iaarect.hpp"
-#include "ttauri/vec.hpp"
-#include "ttauri/aarect.hpp"
-#include "ttauri/mat.hpp"
-#include "ttauri/GUI/PipelineImage_Page.hpp"
+#include "PipelineImage_Page.hpp"
+#include "../vspan.hpp"
+#include "../ivec.hpp"
+#include "../iaarect.hpp"
+#include "../vec.hpp"
+#include "../aarect.hpp"
+#include "../mat.hpp"
 #include <nonstd/span>
 #include <atomic>
 #include <string>

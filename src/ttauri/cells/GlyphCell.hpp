@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/cells/ImageCell.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/aarect.hpp"
+#include "ImageCell.hpp"
+#include "../text/FontGlyphIDs.hpp"
+#include "../aarect.hpp"
 
 namespace tt {
 

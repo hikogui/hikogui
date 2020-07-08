@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/StaticResourceView.hpp"
-#include "ttauri/globals.hpp"
+#include "StaticResourceView.hpp"
+#include "globals.hpp"
 
 namespace tt {
 

@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/FileMapping.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/memory.hpp"
-#include "ttauri/required.hpp"
+#include "FileMapping.hpp"
+#include "exceptions.hpp"
+#include "logger.hpp"
+#include "memory.hpp"
+#include "required.hpp"
 #include <mutex>
 #include <Windows.h>
 

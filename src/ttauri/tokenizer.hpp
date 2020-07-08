@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ttauri/strings.hpp"
-#include "ttauri/small_vector.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/decimal.hpp"
-#include "ttauri/exceptions.hpp"
-#include "ttauri/parse_location.hpp"
+#include "strings.hpp"
+#include "small_vector.hpp"
+#include "required.hpp"
+#include "decimal.hpp"
+#include "exceptions.hpp"
+#include "parse_location.hpp"
 #include <date/date.h>
 #include <memory>
 #include <string>

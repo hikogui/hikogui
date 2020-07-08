@@ -1,8 +1,8 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/KeyboardEvent.hpp"
-#include "ttauri/GUI/globals.hpp"
+#include "KeyboardEvent.hpp"
+#include "globals.hpp"
 
 namespace tt {
 

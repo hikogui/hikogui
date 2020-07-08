@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/GUI/Window_vulkan.hpp"
+#include "Window_vulkan.hpp"
 #include <unordered_map>
 
 namespace tt {

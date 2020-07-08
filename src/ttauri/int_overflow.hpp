@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/os_detect.hpp"
-#include "ttauri/type_traits.hpp"
+#include "required.hpp"
+#include "os_detect.hpp"
+#include "type_traits.hpp"
 #include <type_traits>
 #include <cmath>
 

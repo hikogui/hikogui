@@ -1,9 +1,9 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/widgets/LineInputWidget.hpp"
-#include "ttauri/GUI/utils.hpp"
-#include "ttauri/utils.hpp"
+#include "LineInputWidget.hpp"
+#include "../GUI/utils.hpp"
+#include "../utils.hpp"
 #include <cmath>
 #include <typeinfo>
 

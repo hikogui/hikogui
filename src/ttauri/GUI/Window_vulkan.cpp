@@ -1,18 +1,18 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/Window_vulkan.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/GUISystem.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
-#include "ttauri/GUI/PipelineFlat.hpp"
-#include "ttauri/GUI/PipelineBox.hpp"
-#include "ttauri/GUI/PipelineImage.hpp"
-#include "ttauri/GUI/PipelineSDF.hpp"
-#include "ttauri/GUI/PipelineToneMapper.hpp"
-#include "ttauri/GUI/DrawContext.hpp"
-#include "ttauri/widgets/Widget.hpp"
-#include "ttauri/trace.hpp"
+#include "Window_vulkan.hpp"
+#include "Window.hpp"
+#include "GUISystem.hpp"
+#include "GUIDevice.hpp"
+#include "PipelineFlat.hpp"
+#include "PipelineBox.hpp"
+#include "PipelineImage.hpp"
+#include "PipelineSDF.hpp"
+#include "PipelineToneMapper.hpp"
+#include "DrawContext.hpp"
+#include "../widgets/Widget.hpp"
+#include "../trace.hpp"
 #include <vector>
 
 namespace tt {

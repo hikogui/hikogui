@@ -1,16 +1,16 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/PipelineImage_Image.hpp"
-#include "ttauri/GUI/PipelineImage_DeviceShared.hpp"
-#include "ttauri/GUI/PipelineImage_ImageLocation.hpp"
-#include "ttauri/GUI/PipelineImage_Vertex.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/mat.hpp"
-#include "ttauri/ivec.hpp"
-#include "ttauri/iaarect.hpp"
+#include "PipelineImage_Image.hpp"
+#include "PipelineImage_DeviceShared.hpp"
+#include "PipelineImage_ImageLocation.hpp"
+#include "PipelineImage_Vertex.hpp"
+#include "../logger.hpp"
+#include "../required.hpp"
+#include "../numeric_cast.hpp"
+#include "../mat.hpp"
+#include "../ivec.hpp"
+#include "../iaarect.hpp"
 
 namespace tt::PipelineImage {
 

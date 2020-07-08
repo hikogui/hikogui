@@ -1,9 +1,9 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/GUISystem_vulkan.hpp"
-#include "ttauri/GUI/GUISystem.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
+#include "GUISystem_vulkan.hpp"
+#include "GUISystem.hpp"
+#include "GUIDevice.hpp"
 #include <chrono>
 
 namespace tt {
@@ -36,7 +36,7 @@ GUISystem_vulkan::GUISystem_vulkan(GUISystemDelegate *delegate, const std::vecto
 
     // VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2 extension is needed to retrieve unique identifiers for
     // each GPU in the system, so that we can select the same one on each startup and so that the
-    // user can select a different one.
+    // user could select a different one.
     requiredExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     // VK_KHR_SURFACE extension is needed to draw in a window.

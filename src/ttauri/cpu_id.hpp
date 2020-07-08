@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "ttauri/os_detect.hpp"
+#include "os_detect.hpp"
 #include <array>
 
 #if TT_COMPILER == TT_CC_MSVC

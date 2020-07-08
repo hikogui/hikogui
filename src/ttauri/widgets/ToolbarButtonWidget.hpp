@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "ttauri/widgets/Widget.hpp"
-#include "ttauri/Path.hpp"
-#include "ttauri/text/FontGlyphIDs.hpp"
-#include "ttauri/text/ElusiveIcons.hpp"
-#include "ttauri/text/TTauriIcons.hpp"
+#include "Widget.hpp"
+#include "../Path.hpp"
+#include "../text/FontGlyphIDs.hpp"
+#include "../text/ElusiveIcons.hpp"
+#include "../text/TTauriIcons.hpp"
 #include <memory>
 #include <string>
 #include <array>

@@ -3,14 +3,14 @@
 
 #pragma once
 
-#include "ttauri/SDF8.hpp"
-#include "ttauri/PixelMap.hpp"
-#include "ttauri/attributes.hpp"
-#include "ttauri/math.hpp"
-#include "ttauri/bezier.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/vec.hpp"
-#include "ttauri/mat.hpp"
+#include "SDF8.hpp"
+#include "PixelMap.hpp"
+#include "attributes.hpp"
+#include "math.hpp"
+#include "bezier.hpp"
+#include "required.hpp"
+#include "vec.hpp"
+#include "mat.hpp"
 #include <tuple>
 #include <limits>
 #include <algorithm>

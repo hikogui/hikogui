@@ -4,10 +4,10 @@
 #pragma once
 
 #include <functional>
-#include "ttauri/cpu_utc_clock.hpp"
-#include "ttauri/fast_mutex.hpp"
-#include "ttauri/notifier.hpp"
-#include "ttauri/required.hpp"
+#include "../cpu_utc_clock.hpp"
+#include "../fast_mutex.hpp"
+#include "../notifier.hpp"
+#include "../required.hpp"
 
 namespace tt::detail {
 

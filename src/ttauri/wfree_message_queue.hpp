@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/required.hpp"
-#include "ttauri/atomic.hpp"
+#include "required.hpp"
+#include "atomic.hpp"
 #include <array>
 #include <atomic>
 #include <memory>

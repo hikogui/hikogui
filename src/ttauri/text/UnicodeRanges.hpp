@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ttauri/text/Grapheme.hpp"
+#include "Grapheme.hpp"
 #include <cstdint>
 
 namespace tt {

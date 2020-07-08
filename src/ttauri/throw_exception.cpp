@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/throw_exception.hpp"
-#include "ttauri/exceptions.hpp"
+#include "throw_exception.hpp"
+#include "exceptions.hpp"
 
 namespace tt {
 

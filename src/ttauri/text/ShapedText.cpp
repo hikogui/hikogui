@@ -1,9 +1,9 @@
 // Copyright 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/small_map.hpp"
-#include "ttauri/text/ShapedText.hpp"
-#include "ttauri/text/globals.hpp"
+#include "ShapedText.hpp"
+#include "globals.hpp"
+#include "../small_map.hpp"
 
 namespace tt {
 

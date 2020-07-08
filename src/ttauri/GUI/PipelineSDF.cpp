@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/PipelineSDF.hpp"
-#include "ttauri/GUI/PipelineSDF_DeviceShared.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/GUI/GUIDevice.hpp"
+#include "PipelineSDF.hpp"
+#include "PipelineSDF_DeviceShared.hpp"
+#include "Window.hpp"
+#include "GUIDevice.hpp"
 
 namespace tt::PipelineSDF {
 

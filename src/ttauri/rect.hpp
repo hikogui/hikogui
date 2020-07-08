@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ttauri/vec.hpp"
-#include "ttauri/aarect.hpp"
-#include "ttauri/attributes.hpp"
+#include "vec.hpp"
+#include "aarect.hpp"
+#include "attributes.hpp"
 #include <array>
 
 namespace tt {

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ttauri/R8SNorm.hpp"
-#include "ttauri/math.hpp"
+#include "R8SNorm.hpp"
+#include "math.hpp"
 
 namespace tt {
 

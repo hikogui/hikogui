@@ -1,8 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/glob.hpp"
-#include "ttauri/required.hpp"
+#include "glob.hpp"
+#include "required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

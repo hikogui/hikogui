@@ -4,8 +4,8 @@
 #pragma once
 
 
-#include "ttauri/required.hpp"
-#include "ttauri/type_traits.hpp"
+#include "required.hpp"
+#include "type_traits.hpp"
 #include <emmintrin.h>
 #include <wmmintrin.h>
 #include <utility>

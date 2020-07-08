@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include "ttauri/text/UnicodeData.hpp"
-#include "ttauri/text/FontBook.hpp"
-//#include "ttauri/text/Catalogue.hpp"
-#include "ttauri/required.hpp"
+#include "UnicodeData.hpp"
+#include "FontBook.hpp"
+#include "../required.hpp"
 #include <cstdint>
 #include <string>
 #include <mutex>

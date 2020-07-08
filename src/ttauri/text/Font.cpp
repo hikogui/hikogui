@@ -1,9 +1,9 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/text/Font.hpp"
-#include "ttauri/text/TrueTypeFont.hpp"
-#include "ttauri/ResourceView.hpp"
+#include "Font.hpp"
+#include "TrueTypeFont.hpp"
+#include "../ResourceView.hpp"
 
 namespace tt {
 

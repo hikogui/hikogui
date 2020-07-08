@@ -1,11 +1,11 @@
 // Copyright 2019, 2020 Pokitec
 // All rights reserved.
 
-#include "ttauri/Path.hpp"
-#include "ttauri/PixelMap.inl"
-#include "ttauri/BezierCurve.hpp"
-#include "ttauri/PixelMap.hpp"
-#include "ttauri/required.hpp"
+#include "Path.hpp"
+#include "PixelMap.inl"
+#include "BezierCurve.hpp"
+#include "PixelMap.hpp"
+#include "required.hpp"
 
 namespace tt {
 

@@ -1,12 +1,12 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/GUI/GUIDevice_vulkan.hpp"
-#include "ttauri/GUI/GUISystem.hpp"
-#include "ttauri/GUI/PipelineImage.hpp"
-#include "ttauri/GUI/PipelineImage_DeviceShared.hpp"
-#include "ttauri/GUI/Window.hpp"
-#include "ttauri/ResourceView.hpp"
+#include "GUIDevice_vulkan.hpp"
+#include "GUISystem.hpp"
+#include "PipelineImage.hpp"
+#include "PipelineImage_DeviceShared.hpp"
+#include "Window.hpp"
+#include "../ResourceView.hpp"
 #include <nonstd/span>
 
 namespace tt {

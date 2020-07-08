@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/hires_utc_clock.hpp"
+#include "hires_utc_clock.hpp"
 #include <Windows.h>
 
 namespace tt {

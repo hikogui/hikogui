@@ -1,10 +1,10 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/Application.hpp"
-#include "ttauri/StaticResourceView.hpp"
-#include "ttauri/logger.hpp"
-#include "ttauri/globals.hpp"
+#include "Application.hpp"
+#include "StaticResourceView.hpp"
+#include "logger.hpp"
+#include "globals.hpp"
 #include <memory>
 
 namespace tt {

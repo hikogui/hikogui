@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "ttauri/algorithm.hpp"
-#include "ttauri/numeric_cast.hpp"
-#include "ttauri/required.hpp"
-#include "ttauri/assert.hpp"
-#include "ttauri/os_detect.hpp"
-#include "ttauri/Unicode.hpp"
+#include "algorithm.hpp"
+#include "numeric_cast.hpp"
+#include "required.hpp"
+#include "assert.hpp"
+#include "os_detect.hpp"
+#include "Unicode.hpp"
 #include <string>
 #include <string_view>
 #include <iterator>
