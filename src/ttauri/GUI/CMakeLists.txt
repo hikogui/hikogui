@@ -16,8 +16,8 @@ target_sources(ttauri PRIVATE
     GUISystem_forward.hpp
     GUISystem_vulkan.cpp
     GUISystem_vulkan.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.hpp>
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.mm>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.hpp>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/GUISystem_vulkan_win32.hpp>
     GUISystemDelegate.hpp
@@ -99,8 +99,8 @@ target_sources(ttauri PRIVATE
     utils.hpp
     VerticalSync.hpp
     VerticalSync_base.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_macos.hpp>
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_macos.mm>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_macos.hpp>
+    #$<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_macos.mm>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/VerticalSync_win32.hpp>
     VulkanMemoryAllocator.cpp

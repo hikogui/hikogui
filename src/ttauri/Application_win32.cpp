@@ -2,8 +2,8 @@
 // All rights reserved.
 
 #include "ttauri/Application_win32.hpp"
-#include "TTauri/GUI/GUISystem.hpp"
-#include "TTauri/GUI/Window.hpp"
+#include "ttauri/GUI/GUISystem.hpp"
+#include "ttauri/GUI/Window.hpp"
 #include "ttauri/strings.hpp"
 #include <thread>
 #include <string>
