@@ -6,6 +6,7 @@
 #include "PipelineImage.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "Window.hpp"
+#include "../Application.hpp"
 #include "../ResourceView.hpp"
 #include <nonstd/span>
 
@@ -105,7 +106,10 @@ GUIDevice_vulkan::GUIDevice_vulkan(vk::PhysicalDevice physicalDevice) :
     GUIDevice_base(),
     physicalIntrinsic(std::move(physicalDevice))
 {
-    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(guiSystem->loader());
+    auto result = physicalIntrinsic.getProperties2KHR<vk::PhysicalDeviceProperties2, vk::PhysicalDeviceIDProperties>(
+        application->gui->loader()
+    );
+
     auto resultDeviceProperties2 = result.get<vk::PhysicalDeviceProperties2>();
     auto resultDeviceIDProperties = result.get<vk::PhysicalDeviceIDProperties>();
 
@@ -182,13 +186,13 @@ void GUIDevice_vulkan::initializeDevice(Window const &window)
         numeric_cast<uint32_t>(deviceQueueCreateInfos.size()), deviceQueueCreateInfos.data(),
         0, nullptr,
         numeric_cast<uint32_t>(requiredExtensions.size()), requiredExtensions.data(),
-        &(guiSystem->requiredFeatures)
+        &(application->gui->requiredFeatures)
     });
 
     VmaAllocatorCreateInfo allocatorCreateInfo = {};
     allocatorCreateInfo.physicalDevice = physicalIntrinsic;
     allocatorCreateInfo.device = intrinsic;
-    allocatorCreateInfo.instance = guiSystem->intrinsic;
+    allocatorCreateInfo.instance = application->gui->intrinsic;
     vmaCreateAllocator(&allocatorCreateInfo, &allocator);
 
     VmaAllocationCreateInfo lazyAllocationInfo = {};
@@ -384,12 +388,12 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
     queueFamilyIndicesAndCapabilities = findBestQueueFamilyIndices(surface);
 
     LOG_INFO("Scoring device: {}", string());
-    if (!hasRequiredFeatures(physicalIntrinsic, guiSystem->requiredFeatures)) {
+    if (!hasRequiredFeatures(physicalIntrinsic, application->gui->requiredFeatures)) {
         LOG_INFO(" - Does not have the required features.");
         return -1;
     }
 
-    if (!meetsRequiredLimits(physicalIntrinsic, guiSystem->requiredLimits)) {
+    if (!meetsRequiredLimits(physicalIntrinsic, application->gui->requiredLimits)) {
         LOG_INFO(" - Does not meet the required limits.");
         return -1;
     }
@@ -509,7 +513,7 @@ int GUIDevice_vulkan::score(vk::SurfaceKHR surface) const
 int GUIDevice_vulkan::score(Window const &window) const {
     auto surface = window.getSurface();
     ttlet s = score(surface);
-    guiSystem->destroySurfaceKHR(surface);
+    application->gui->destroySurfaceKHR(surface);
     return s;
 }
 

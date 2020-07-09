@@ -18,6 +18,9 @@ using Application = Application_macos;
 #else
 #error "No implementation for forward Application."
 #endif
+
+inline Application *application = nullptr;
+
 }
 
 

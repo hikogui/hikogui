@@ -7,6 +7,7 @@
 #include "ThemeBook.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
+#include "../Application.hpp"
 #include <windowsx.h>
 #include <dwmapi.h>
 
@@ -71,7 +72,7 @@ static void createWindowClass()
         std::memset(&win32WindowClass, 0, sizeof(WNDCLASSW));
         win32WindowClass.style = CS_DBLCLKS;
         win32WindowClass.lpfnWndProc = _WindowProc;
-        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(hInstance);
+        win32WindowClass.hInstance = reinterpret_cast<HINSTANCE>(application->hInstance);
         win32WindowClass.lpszClassName = win32WindowClassName;
         win32WindowClass.hCursor = nullptr;
         RegisterClassW(&win32WindowClass);
@@ -100,7 +101,7 @@ void Window_vulkan_win32::createWindow(const std::string &_title, vec extent)
 
         NULL, // Parent window
         NULL, // Menu
-        reinterpret_cast<HINSTANCE>(hInstance), // Instance handle
+        reinterpret_cast<HINSTANCE>(application->hInstance), // Instance handle
         this
     );
 
@@ -116,7 +117,7 @@ void Window_vulkan_win32::createWindow(const std::string &_title, vec extent)
     }
 
     if (!firstWindowHasBeenOpened) {
-        ShowWindow(reinterpret_cast<HWND>(win32Window), nCmdShow);
+        ShowWindow(reinterpret_cast<HWND>(win32Window), application->nCmdShow);
         firstWindowHasBeenOpened = true;
     }
 
@@ -326,9 +327,9 @@ done:
 
 vk::SurfaceKHR Window_vulkan_win32::getSurface() const
 {
-    return guiSystem->createWin32SurfaceKHR({
+    return application->gui->createWin32SurfaceKHR({
         vk::Win32SurfaceCreateFlagsKHR(),
-        reinterpret_cast<HINSTANCE>(hInstance),
+        reinterpret_cast<HINSTANCE>(application->hInstance),
         reinterpret_cast<HWND>(win32Window)
     });
 }
@@ -606,7 +607,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         doubleClickMaximumDuration = GetDoubleClickTime() * 1ms;
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
-        themeBook->setThemeMode(readOSThemeMode());
+        application->themes->setThemeMode(readOSThemeMode());
         forceLayout = true;
         break;
 

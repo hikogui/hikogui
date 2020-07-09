@@ -1,6 +1,8 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
+#include "../os_detect.hpp"
+
 clang_suppress("-Wunused-variable")
 clang_suppress("-Wreorder")
 clang_suppress("-Wunused-private-field")

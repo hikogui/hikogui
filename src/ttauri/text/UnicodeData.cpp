@@ -164,6 +164,10 @@ UnicodeData::UnicodeData(std::unique_ptr<ResourceView> view) :
     initialize();
 }
 
+UnicodeData::UnicodeData(URL const &url) :
+    UnicodeData(url.loadView()) {}
+
+
 void UnicodeData::initialize()
 {
     ssize_t offset = 0;
@@ -603,31 +607,6 @@ static bool checkGraphemeBreak_unitType(GraphemeUnitType type, GraphemeBreakStat
 bool UnicodeData::checkGraphemeBreak(char32_t codePoint, GraphemeBreakState &state) const noexcept
 {
     return checkGraphemeBreak_unitType(getGraphemeUnitType(codePoint), state);
-}
-
-}
-
-namespace tt {
-
-template<>
-std::unique_ptr<tt::UnicodeData> parseResource(URL const &location)
-{
-    if (location.extension() == "bin") {
-        auto view = location.loadView();
-
-        try {
-            auto unicodeData = std::make_unique<tt::UnicodeData>(std::move(view));
-            return unicodeData;
-        } catch (error &e) {
-            e.set<url_tag>(location);
-            throw;
-        }
-
-    } else {
-        TTAURI_THROW(url_error("Unknown extension")
-            .set<url_tag>(location)
-        );
-    }
 }
 
 }

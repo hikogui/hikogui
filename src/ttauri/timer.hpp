@@ -76,6 +76,8 @@ private:
     */
     void stop_with_lock_held() noexcept;
 
+    [[nodiscard]] static time_point calculate_next_wakeup(time_point current_time, duration interval) noexcept;
+
 public:
     timer(std::string name) noexcept;
     ~timer();
@@ -102,7 +104,27 @@ public:
      * @param interval The interval to execute the callback at.
      * @return An identifier for the callback to be able to remove it.
      */
-    [[nodiscard]] size_t add_callback(duration interval, callback_type callback) noexcept;
+    template<typename Callback>
+    [[nodiscard]] size_t add_callback(duration interval, Callback callback) noexcept
+    {
+        ttlet lock = std::scoped_lock(mutex);
+
+        ttlet callback_id = ++callback_count;
+        ttlet current_time = hires_utc_clock::now();
+
+        callback_list.emplace_back(
+            callback_id,
+            interval,
+            calculate_next_wakeup(current_time, interval),
+            callback
+        );
+
+        if (ssize(callback_list) == 1) {
+            start_with_lock_held();
+        }
+
+        return callback_id;
+    }
 
     /** Remove the callback function.
      */

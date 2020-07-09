@@ -162,25 +162,6 @@ inline std::unique_ptr<T> parseResource(URL const &location)
     tt_not_implemented;
 }
 
-template <typename T>
-gsl_suppress2(26489,lifetime.1)
-inline T &getResource(URL const &location)
-{
-    static std::unordered_map<URL,std::unique_ptr<T>> resourceCache = {};
-    static std::mutex mutex;
-
-    auto lock = std::scoped_lock(mutex);
-
-    ttlet oldResource = resourceCache.find(location);
-    if (oldResource != resourceCache.end()) {
-        return *(oldResource->second);
-    }
-
-    [[maybe_unused]] ttlet [newResource, dummy] = resourceCache.try_emplace(location, std::move(parseResource<T>(location)));
-
-    return *(newResource->second);
-}
-
 }
 
 namespace std {

@@ -166,6 +166,4 @@ private:
 
 };
 
-inline FontBook *fontBook;
-
 }

@@ -13,6 +13,7 @@
 #include "DrawContext.hpp"
 #include "../widgets/Widget.hpp"
 #include "../trace.hpp"
+#include "../Application.hpp"
 #include <vector>
 
 namespace tt {
@@ -921,7 +922,7 @@ void Window_vulkan::teardownSurface()
 {
     auto lock = std::scoped_lock(guiMutex);
 
-    guiSystem->destroySurfaceKHR(intrinsic);
+    application->gui->destroySurfaceKHR(intrinsic);
 }
 
 void Window_vulkan::teardownDevice()

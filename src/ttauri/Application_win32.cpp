@@ -33,9 +33,10 @@ constexpr UINT WM_APP_CALL_FUNCTION = WM_APP + 1;
     return arguments;
 }
 
-Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *_hInstance, int _nCmdShow) :
-    Application_base(std::move(delegate), passArguments(), _hInstance, _nCmdShow),
-    mainThreadID(GetCurrentThreadId())
+Application_win32::Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow) :
+    Application_base(std::move(delegate), passArguments()),
+    OSMainThreadID(GetCurrentThreadId()),
+    hInstance(hInstance), nCmdShow(nCmdShow)
 {
 }
 
@@ -45,7 +46,7 @@ void Application_win32::lastWindowClosed()
         // Let the application have a chance to open new windows from the main thread.
         delegate->lastWindowClosed();
 
-        if (guiSystem->getNumberOfWindows() == 0) {
+        if (gui->getNumberOfWindows() == 0) {
             LOG_INFO("Application quiting due to all windows having been closed.");
             PostQuitMessage(0);
         }
@@ -60,18 +61,18 @@ void Application_win32::runOnMainThread(std::function<void()> function)
     ttlet functionP = new std::function<void()>(std::move(function));
     tt_assert(functionP);
 
-    auto r = PostThreadMessageW(mainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
+    auto r = PostThreadMessageW(OSMainThreadID, WM_APP_CALL_FUNCTION, 0, reinterpret_cast<LPARAM>(functionP));
     tt_assert(r != 0);
 }
 
-bool Application_win32::startingLoop()
+bool Application_win32::initializeApplication()
 {
-    return Application_base::startingLoop();
+    return Application_base::initializeApplication();
 }
 
 int Application_win32::loop()
 {
-    if (!startingLoop()) {
+    if (!initializeApplication()) {
         return 0;
     }
 
@@ -99,7 +100,7 @@ int Application_win32::loop()
 void Application_win32::audioStart()
 {
     Application_base::audioStart();
-    audioSystem = new AudioSystem_win32(this);
+    audio = std::make_unique<AudioSystem_win32>(this);
 }
 
 }

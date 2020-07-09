@@ -17,6 +17,4 @@ public:
 
 };
 
-inline RenderDoc *renderDoc;
-
 }

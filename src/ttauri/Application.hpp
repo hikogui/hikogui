@@ -4,6 +4,7 @@
 #pragma once
 
 #include "required.hpp"
+#include "Application_forward.hpp"
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 

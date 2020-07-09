@@ -30,10 +30,12 @@ public:
      */
     virtual datum configuration(std::vector<std::string> arguments) const noexcept = 0;
 
-    /*! Called right before the application loop is started.
-     * \return true to start the loop, false to exit the application.
+    /** Initialize the application.
+     * Called right before the application loop is started.
+     *
+     * @return true to start the loop, false to exit the application.
      */
-    virtual bool startingLoop() = 0;
+    virtual bool initializeApplication() = 0;
 
     /*! Called right after the last window is closed
      */

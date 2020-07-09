@@ -6,6 +6,7 @@
 #include "FontID.hpp"
 #include "FontGlyphIDs.hpp"
 #include "FontBook.hpp"
+#include "../Application.hpp"
 
 namespace tt {
 
@@ -22,9 +23,9 @@ enum class TTauriIcon : char32_t {
 
 inline FontGlyphIDs to_FontGlyphIDs(TTauriIcon rhs) noexcept {
     tt_assume(TTauriIcons_font_id);
-    tt_assume(fontBook);
+    tt_assume(application->fonts);
 
-    return fontBook->find_glyph(TTauriIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
+    return application->fonts->find_glyph(TTauriIcons_font_id, Grapheme{static_cast<char32_t>(rhs)});
 }
 
 

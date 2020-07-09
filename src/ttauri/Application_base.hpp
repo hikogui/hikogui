@@ -6,6 +6,7 @@
 #include "ApplicationDelegate.hpp"
 #include "audio/AudioSystemDelegate.hpp"
 #include "GUI/GUISystemDelegate.hpp"
+#include "GUI/GUISystem_forward.hpp"
 #include "required.hpp"
 #include "URL.hpp"
 #include <nonstd/span>
@@ -16,12 +17,11 @@
 #include <thread>
 
 namespace tt {
-
-
-
-/** The global configuration.
-*/
-inline datum configuration;
+class AudioSystem;
+class FontBook;
+class ThemeBook;
+class RenderDoc;
+class UnicodeData;
 
 /*! A singleton that represents the application.
  * An Application should be instantiated in a local variable in main.
@@ -41,6 +41,10 @@ public:
      */
     std::vector<std::string> arguments;
 
+    /** The global configuration.
+    */
+    datum configuration;
+
     /** The system timezone.
     */
     date::time_zone const *timeZone = nullptr;
@@ -51,7 +55,18 @@ public:
 
     std::atomic<bool> inLoop;
 
-    Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance = nullptr, int nCmdShow = 0);
+    std::unique_ptr<GUISystem> gui;
+    std::unique_ptr<AudioSystem> audio;
+    std::unique_ptr<FontBook> fonts;
+    std::unique_ptr<ThemeBook> themes;
+    std::unique_ptr<RenderDoc> renderDoc;
+    std::unique_ptr<UnicodeData> unicodeData;
+
+    Application_base(
+        std::shared_ptr<ApplicationDelegate> applicationDelegate,
+        std::vector<std::string> const &arguments
+    );
+
     virtual ~Application_base();
     Application_base(const Application_base &) = delete;
     Application_base &operator=(const Application_base &) = delete;
@@ -95,7 +110,7 @@ protected:
 
     /*! Called right before a loop is started.
     */
-    virtual bool startingLoop();
+    virtual bool initializeApplication();
 
     virtual void foundationStart();
     virtual void foundationStop();
@@ -112,7 +127,5 @@ private:
     size_t clock_maintenance_cbid;
 
 };
-
-inline Application_base *application = nullptr;
 
 }

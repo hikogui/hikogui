@@ -3,6 +3,7 @@
 
 #include "Theme.hpp"
 #include "../text/FontBook.hpp"
+#include "../Application.hpp"
 #include "../JSON.hpp"
 
 namespace tt {
@@ -179,7 +180,7 @@ Theme::Theme(URL const &url)
 
     TextStyle r;
 
-    r.family_id = fontBook->find_family(parseString(data, "family"));
+    r.family_id = application->fonts->find_family(parseString(data, "family"));
     r.size = parseFloat(data, "size");
 
     if (data.contains("weight")) {

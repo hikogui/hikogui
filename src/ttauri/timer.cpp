@@ -9,7 +9,7 @@
 
 namespace tt {
 
-[[nodiscard]] static timer::time_point calculate_next_wakeup(timer::time_point current_time, timer::duration interval) noexcept
+[[nodiscard]] timer::time_point timer::calculate_next_wakeup(timer::time_point current_time, timer::duration interval) noexcept
 {
     ttlet current_time_ = numeric_cast<int64_t>(current_time.time_since_epoch().count());
     ttlet interval_ = numeric_cast<int64_t>(interval.count());
@@ -126,29 +126,6 @@ void timer::loop() noexcept
     }
     LOG_INFO("Timer {}: finished", name);
 }
-
-
-[[nodiscard]] size_t timer::add_callback(duration interval, callback_type callback) noexcept
-{
-    ttlet lock = std::scoped_lock(mutex);
-
-    ttlet callback_id = ++callback_count;
-    ttlet current_time = hires_utc_clock::now();
-
-    callback_list.emplace_back(
-        callback_id,
-        interval,
-        calculate_next_wakeup(current_time, interval),
-        callback
-    );
-
-    if (ssize(callback_list) == 1) {
-        start_with_lock_held();
-    }
-
-    return callback_id;
-}
-
 
 void timer::remove_callback(size_t callback_id) noexcept
 {

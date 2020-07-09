@@ -21,14 +21,3 @@ using Window = Window_vulkan_macos;
 #error "Window not implemented for this os."
 #endif
 
-namespace tt {
-
-/** Windows GUI-application instance handle.
-*/
-inline void *hInstance = nullptr;
-
-/** Windows GUI-application startup command.
-*/
-inline int nCmdShow = 0;
-
-}

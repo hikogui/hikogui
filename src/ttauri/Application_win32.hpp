@@ -10,7 +10,15 @@ namespace tt {
 
 class Application_win32 final : public Application_base {
 public:
-    uint32_t mainThreadID = 0;
+    uint32_t OSMainThreadID = 0;
+
+    /** Windows GUI-application instance handle.
+    */
+    void *hInstance = nullptr;
+
+    /** Windows GUI-application startup command.
+    */
+    int nCmdShow = 0;
 
     Application_win32(std::shared_ptr<ApplicationDelegate> delegate, void *hInstance, int nCmdShow);
     ~Application_win32() = default;
@@ -27,7 +35,7 @@ public:
     int loop() override;
 
 protected:
-    bool startingLoop() override;
+    bool initializeApplication() override;
 
     void audioStart() override;
 

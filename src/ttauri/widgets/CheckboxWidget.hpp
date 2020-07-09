@@ -92,8 +92,8 @@ public:
         button_middle = button_y + button_height * 0.5f;
 
 
-        ttlet checkFontId = fontBook->find_font("Arial", FontWeight::Regular, false);
-        checkGlyph = fontBook->find_glyph(checkFontId, Grapheme{check});
+        ttlet checkFontId = application->fonts->find_font("Arial", FontWeight::Regular, false);
+        checkGlyph = application->fonts->find_glyph(checkFontId, Grapheme{check});
         checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.2f);
 
         check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);

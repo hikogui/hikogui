@@ -7,10 +7,12 @@
 #include "timer.hpp"
 #include "os_detect.hpp"
 #include "version.hpp"
+#include "trace.hpp"
 #include "text/ElusiveIcons.hpp"
 #include "text/TTauriIcons.hpp"
 #include "text/language.hpp"
 #include "text/FontBook.hpp"
+#include "text/UnicodeData.hpp"
 #include "GUI/RenderDoc.hpp"
 #include "GUI/ThemeBook.hpp"
 #include "GUI/KeyboardBindings.hpp"
@@ -38,22 +40,17 @@ using namespace std;
 
 Application_base::Application_base(
     std::shared_ptr<ApplicationDelegate> applicationDelegate,
-    std::vector<std::string> const &arguments,
-    void *_hInstance,
-    int _nCmdShow
-) :
+    std::vector<std::string> const &arguments) :
     delegate(applicationDelegate)
 {
     // Application_base is a singleton.
     tt_assert(application == nullptr);
-    application = this;
+    application = reinterpret_cast<Application *>(this);
 
     tt_assert(delegate);
 
-    tt::hInstance = _hInstance;
-    tt::nCmdShow = _nCmdShow;
     application_version.name = applicationDelegate->applicationName();
-    tt::configuration = applicationDelegate->configuration(arguments);
+    configuration = applicationDelegate->configuration(arguments);
 
     LOG_INFO("Starting application '{}'.", application_version.name);
 
@@ -133,13 +130,13 @@ void Application_base::textStart()
     addStaticResource(elusiveicons_webfont_ttf_filename, elusiveicons_webfont_ttf_bytes);
     addStaticResource(TTauriIcons_ttf_filename, TTauriIcons_ttf_bytes);
 
-    unicodeData = parseResource<UnicodeData>(URL("resource:UnicodeData.bin"));
+    unicodeData = std::make_unique<UnicodeData>(URL("resource:UnicodeData.bin"));
 
-    fontBook = new FontBook(std::vector<URL>{
+    application->fonts = std::make_unique<FontBook>(std::vector<URL>{
         URL::urlFromSystemFontDirectory()
     });
-    ElusiveIcons_font_id = fontBook->register_font(URL("resource:elusiveicons-webfont.ttf"));
-    TTauriIcons_font_id = fontBook->register_font(URL("resource:TTauriIcons.ttf"));
+    ElusiveIcons_font_id = application->fonts->register_font(URL("resource:elusiveicons-webfont.ttf"));
+    TTauriIcons_font_id = application->fonts->register_font(URL("resource:TTauriIcons.ttf"));
 
     language::set_preferred_languages(language::get_preferred_language_tags());
     timer_preferred_languages_cbid = maintenance_timer.add_callback(1s, [](auto...){
@@ -152,30 +149,29 @@ void Application_base::textStop()
     maintenance_timer.remove_callback(timer_preferred_languages_cbid);
 
     ElusiveIcons_font_id = FontID{};
-    delete fontBook;
-    unicodeData.release();
+    application->fonts = {};
+    unicodeData = {};
 }
 
 void Application_base::audioStart()
 {
-    audioSystem = nullptr;
 }
 
 void Application_base::audioStop()
 {
-    delete audioSystem;
+    audio = {};
 }
 
 void Application_base::GUIStart()
 {
     tt::guiDelegate = this;
-    renderDoc = new RenderDoc();
+    renderDoc = std::make_unique<RenderDoc>();
 
-    themeBook = new ThemeBook(std::vector<URL>{
+    themes = std::make_unique<ThemeBook>(std::vector<URL>{
         URL::urlFromResourceDirectory() / "themes"
     });
 
-    themeBook->setThemeMode(readOSThemeMode());
+    themes->setThemeMode(readOSThemeMode());
 
     addStaticResource(PipelineImage_vert_spv_filename, PipelineImage_vert_spv_bytes);
     addStaticResource(PipelineImage_frag_spv_filename, PipelineImage_frag_spv_bytes);
@@ -194,23 +190,23 @@ void Application_base::GUIStart()
         LOG_FATAL("Could not load keyboard bindings {}", to_string(e));
     }
 
-    guiSystem = new GUISystem(guiDelegate);
+    gui = std::make_unique<GUISystem>(guiDelegate);
 }
 
 void Application_base::GUIStop()
 {
-    delete guiSystem;
-    delete themeBook;
-    delete renderDoc;
+    gui = {};
+    themes = {};
+    renderDoc = {};
 }
 
 
-bool Application_base::startingLoop()
+bool Application_base::initializeApplication()
 {
     try {
-        return delegate->startingLoop();
+        return delegate->initializeApplication();
     } catch (error &e) {
-        LOG_FATAL("Exception during startingLoop {}", to_string(e));
+        LOG_FATAL("Exception during initializeApplication {}", to_string(e));
     }
 }
 

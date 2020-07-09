@@ -8,6 +8,7 @@
 #include "glob.hpp"
 #include "Unicode.hpp"
 #include "FileView.hpp"
+#include "exceptions.hpp"
 #include "StaticResourceView.hpp"
 #include <regex>
 

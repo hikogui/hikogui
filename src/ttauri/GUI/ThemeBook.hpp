@@ -39,9 +39,4 @@ public:
     void updateTheme() noexcept;
 };
 
-/** Global Theme Book.
- * set in globals.cpp
- */
-inline ThemeBook *themeBook;
-
 }

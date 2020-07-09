@@ -126,7 +126,7 @@ class UnicodeData {
 private:
     nonstd::span<std::byte const> bytes;
 
-    /** A view to the binary UnicodeData.
+    /** A view to the binary application->unicodeData.
      */
     std::unique_ptr<ResourceView> view;
 
@@ -144,6 +144,8 @@ public:
     /** Load binary unicode data from a resource.
      */
     UnicodeData(std::unique_ptr<ResourceView> view);
+
+    UnicodeData(URL const &url);
 
     UnicodeData() = delete;
     UnicodeData(UnicodeData const &other) = delete;
@@ -250,14 +252,4 @@ private:
     void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 };
 
-inline std::unique_ptr<UnicodeData> unicodeData;
-
 }
-
-namespace tt {
-
-template<>
-std::unique_ptr<tt::UnicodeData> parseResource(URL const &location);
-
-}
-
