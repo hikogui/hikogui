@@ -10,17 +10,6 @@
 #include <unordered_map>
 #include <tuple>
 
-namespace std {
-
-template<>
-struct hash<std::pair<tt::string_tag,tt::KeyboardKey>> {
-    [[nodiscard]] size_t operator() (std::pair<tt::string_tag,tt::KeyboardKey> const &rhs) const noexcept {
-        return tt::hash_mix(rhs.first, rhs.second);
-    }
-};
-
-}
-
 namespace tt {
 
 class KeyboardBindings {

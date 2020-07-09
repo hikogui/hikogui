@@ -4,7 +4,6 @@
 #pragma once
 
 #include "required.hpp"
-#include "string_tag.hpp"
 #include "numeric_cast.hpp"
 #include "math.hpp"
 #include <limits>

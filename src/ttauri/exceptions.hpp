@@ -3,11 +3,11 @@
 
 #pragma once
 
+#include "tag.hpp"
 #include "logger.hpp"
 #include "counters.hpp"
 #include "datum.hpp"
 #include "required.hpp"
-#include "string_tag.hpp"
 #include "tagged_map.hpp"
 #include "parse_location.hpp"
 #include <fmt/format.h>

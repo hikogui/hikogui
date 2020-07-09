@@ -4,7 +4,6 @@
 #pragma once
 
 #include "assert.hpp"
-#include "TT5.hpp"
 #include "strings.hpp"
 #include <string>
 #include <string_view>
@@ -14,23 +13,6 @@
 #include <typeindex>
 
 namespace tt {
-
-using string_tag = tt5_64;
-using string_ltag = tt5_128;
-
-/*! _tag literal
-*/
-constexpr string_tag operator""_tag(char const *str, size_t) noexcept
-{
-    return tt5_encode<string_tag>(str);
-}
-
-/*! _tag literal
-*/
-constexpr string_ltag operator""_ltag(char const *str, size_t) noexcept
-{
-    return tt5_encode<string_ltag>(str);
-}
 
 inline std::string tag_name(std::type_index tag) noexcept
 {

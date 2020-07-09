@@ -4,7 +4,6 @@
 #pragma once
 
 #include "counters.hpp"
-#include "string_tag.hpp"
 #include "os_detect.hpp"
 #include <atomic>
 #include <thread>
@@ -65,12 +64,12 @@ tt_force_inline void wait_for_transition(std::atomic<T> const &state, T to, std:
  * @param to The value to set once state has the value `from` .
  * @param order Memory order to use for this state variable.
  */
-template<string_tag BlockCounterTag=0,typename T>
+template<typename BlockCounterTag=void,typename T>
 tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     using namespace std::literals::chrono_literals;
 
-    if constexpr (BlockCounterTag != 0) {
+    if constexpr (BlockCounterTag != void) {
         increment_counter<BlockCounterTag>();
     }
 
@@ -97,7 +96,7 @@ tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std:
  * @param to The value to set once state has the value `from` .
  * @param order Memory order to use for this state variable.
  */
-template<string_tag BlockCounterTag=0,typename T>
+template<typename BlockCounterTag=void,typename T>
 tt_force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     auto expect = from;

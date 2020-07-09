@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "string_tag.hpp"
 #include <typeinfo>
 #include <typeindex>
 #include <array>

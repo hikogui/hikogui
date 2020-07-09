@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "string_tag.hpp"
+#include "command.hpp"
 #include <vector>
 #include <variant>
 #include <string>
@@ -14,13 +14,13 @@ struct UndoElement {
     struct range_type { ssize_t first; ssize_t last; };
     struct text_type { ssize_t first; std::string text; };
 
-    string_ltag command;
+    command command;
     std::variant<range_type,text_type> argument;
 
-    UndoElement(string_ltag command, ssize_t first, ssize_t last) noexcept :
+    UndoElement(command command, ssize_t first, ssize_t last) noexcept :
         command(command), argument(range_type{first, last}) {}
 
-    UndoElement(string_ltag command, ssize_t first, std::string text) noexcept :
+    UndoElement(command command, ssize_t first, std::string text) noexcept :
         command(command), argument(text_type{first, std::move(text)}) {}
 };
 

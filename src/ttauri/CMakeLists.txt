@@ -136,9 +136,9 @@ target_sources(ttauri PRIVATE
     sRGB.hpp
     StaticResourceView.cpp
     StaticResourceView.hpp
-    string_tag.hpp
     strings.hpp
     sync_clock.hpp
+    tag.hpp
     tagged_id.hpp
     tagged_map.hpp
     template.cpp
@@ -154,7 +154,6 @@ target_sources(ttauri PRIVATE
     trace.cpp
     trace.hpp
     Trigger.hpp
-    TT5.hpp
     TTauriIconParser.cpp
     TTauriIconParser.hpp
     type_traits.hpp
@@ -199,7 +198,6 @@ target_precompile_headers(ttauri PRIVATE
 
 target_sources(ttauri_tests PRIVATE
     polymorphic_value_tests.cpp
-    string_tag_tests.cpp
     strings_tests.cpp
     url_parser_tests.cpp
     URL_tests.cpp
@@ -224,7 +222,6 @@ target_sources(ttauri_tests PRIVATE
     decimal_tests.cpp
     template_tests.cpp
     math_tests.cpp
-    TT5_tests.cpp
     vec_tests.cpp
     mat_tests.cpp
     Unicode_tests.cpp
