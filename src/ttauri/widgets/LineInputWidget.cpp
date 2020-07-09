@@ -151,9 +151,9 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 }
 
 
-void LineInputWidget::handleCommand(string_ltag command) noexcept
+void LineInputWidget::handleCommand(command command) noexcept
 {
-    LOG_DEBUG("LineInputWidget: Received command: {}", tt5_decode(command));
+    LOG_DEBUG("LineInputWidget: Received command: {}", command);
     if (!*enabled) {
         return;
     }
@@ -161,13 +161,17 @@ void LineInputWidget::handleCommand(string_ltag command) noexcept
     // This lock is held during rendering, only update the field when holding this lock.
     auto lock = std::scoped_lock(guiMutex);
 
-    if (command == "text.edit.paste"_ltag) {
+    switch (command) {
+    case command::text_edit_paste:
         field.handlePaste(window.getTextFromClipboard());
-    } else if (command == "text.edit.copy"_ltag) {
+        break;
+    case command::text_edit_copy:
         window.setTextOnClipboard(field.handleCopy());
-    } else if (command == "text.edit.cut"_ltag) {
+        break;
+    case command::text_edit_cut:
         window.setTextOnClipboard(field.handleCut());
-    } else {
+        break;
+    default:
         field.handleCommand(command);
     }
 

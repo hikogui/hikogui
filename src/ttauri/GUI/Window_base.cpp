@@ -288,10 +288,14 @@ void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
     } else if (event.type == KeyboardEvent::Type::Key) {
         // If no widgets have been selected handle the keyboard-focus changes.
         for (ttlet command : event.getCommands()) {
-            if (command == "gui.widget.next"_ltag) {
+            switch (command) {
+            case command::gui_widget_next:
                 updateToNextKeyboardTarget(nullptr);
-            } else if (command == "gui.widget.prev"_ltag) {
+                break;
+            case command::gui_widget_prev:
                 updateToPrevKeyboardTarget(nullptr);
+                break;
+            default:;
             }
         }
     }

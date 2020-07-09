@@ -37,7 +37,7 @@ public:
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;
-    void handleCommand(string_ltag command) noexcept override;
+    void handleCommand(command command) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
     [[nodiscard]] bool acceptsFocus() const noexcept override {

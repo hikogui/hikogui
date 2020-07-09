@@ -3,6 +3,7 @@
 
 #include "KeyboardBindings.hpp"
 #include "../JSON.hpp"
+#include "../command.hpp"
 
 namespace tt {
 
@@ -37,19 +38,17 @@ void KeyboardBindings::loadBindings(URL url, bool system_binding)
                 command_name = command_name.substr(1);
             }
 
-            auto command_tag = string_ltag{};
-            try {
-                command_tag = tt5_encode<string_ltag>(command_name);
-            } catch (parse_error &e) {
-                TTAURI_THROW(parse_error("Could not parse command '{}'", command_name).caused_by(e));
+            auto command = to_command(command_name);
+            if (command == command::unknown) {
+                TTAURI_THROW(parse_error("Could not parse command '{}'", command_name));
             }
 
             if (ignored_binding) {
-                addIgnoredBinding(key, command_tag);
+                addIgnoredBinding(key, command);
             } else if (system_binding) {
-                addSystemBinding(key, command_tag);
+                addSystemBinding(key, command);
             } else {
-                addUserBinding(key, command_tag);
+                addUserBinding(key, command);
             }
         }
 

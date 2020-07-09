@@ -60,12 +60,12 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     Widget::draw(drawContext, displayTimePoint);
 }
 
-void ButtonWidget::handleCommand(string_ltag command) noexcept {
+void ButtonWidget::handleCommand(command command) noexcept {
     if (!*enabled) {
         return;
     }
 
-    if (command == "gui.activate"_ltag) {
+    if (command == command::gui_activate) {
         if (assign_and_compare(value, !value)) {
             forceRedraw = true;
         }
@@ -86,7 +86,7 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
             event.cause.leftButton &&
             rectangle().contains(event.position)
         ) {
-            handleCommand("gui.activate"_ltag);
+            handleCommand(command::gui_activate);
         }
     }
 }

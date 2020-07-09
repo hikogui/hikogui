@@ -64,7 +64,7 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
-    void handleCommand(string_ltag command) noexcept override;
+    void handleCommand(command command) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override;

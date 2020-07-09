@@ -1,66 +1,65 @@
 {"bindings": [
     // General GUI
-    {"key": "space",            "command": "gui.activate"}, //
-    {"key": "enter",            "command": "gui.activate"}, //
-    {"key": "tab",              "command": "gui.widget.next"}, //
-    {"key": "shift+tab",        "command": "gui.widget.prev"}, //
+    {"key": "space",            "command": "gui.activate"},
+    {"key": "enter",            "command": "gui.activate"},
+    {"key": "tab",              "command": "gui.widget.next"},
+    {"key": "shift+tab",        "command": "gui.widget.prev"},
 
     // General text editing
-    {"key": "ctrl+x",           "command": "text.edit.cut"}, //
-    {"key": "shift+delete",     "command": "text.edit.cut"}, //
-    {"key": "ctrl+c",           "command": "text.edit.copy"}, //
-    {"key": "ctrl+insert",      "command": "text.edit.copy"}, //
-    {"key": "ctrl+v",           "command": "text.edit.paste"}, //
-    {"key": "shift+insert",     "command": "text.edit.paste"}, //
+    {"key": "ctrl+x",           "command": "text.edit.cut"},
+    {"key": "shift+delete",     "command": "text.edit.cut"},
+    {"key": "ctrl+c",           "command": "text.edit.copy"},
+    {"key": "ctrl+insert",      "command": "text.edit.copy"},
+    {"key": "ctrl+v",           "command": "text.edit.paste"},
+    {"key": "shift+insert",     "command": "text.edit.paste"},
     {"key": "ctrl+z",           "command": "text.undo"},
     {"key": "alt+backspace",    "command": "text.undo"},
     {"key": "ctrl+y",           "command": "text.redo"},
     {"key": "ctrl+shift+z",     "command": "text.redo"},
 
     // Text navigation
-    {"key": "left",             "command": "text.cursor.char.left"}, //
-    {"key": "right",            "command": "text.cursor.char.right"}, //
-    {"key": "down",             "command": "text.cursor.char.down"},
-    {"key": "up",               "command": "text.cursor.char.up"},
-    {"key": "pageup",           "command": "text.cursor.page.up"},
-    {"key": "pagedown",         "command": "text.cursor.page.down"},
-    {"key": "end",              "command": "text.cursor.line.end"}, //
-    {"key": "home",             "command": "text.cursor.line.begin"}, //
-    {"key": "ctrl+down",        "command": "text.scroll.line.down"},
-    {"key": "ctrl+up",          "command": "text.scroll.line.up"},
-    {"key": "ctrl+left",        "command": "text.cursor.word.left"}, //
-    {"key": "ctrl+right",       "command": "text.cursor.word.right"}, //
-    {"key": "ctrl+]",           "command": "text.cursor.bracket.match"}, // don't implement.
+    {"key": "left",             "command": "text.cursor.char.left"},
+    {"key": "right",            "command": "text.cursor.char.right"},
+    //{"key": "down",             "command": "text.cursor.char.down"},
+    //{"key": "up",               "command": "text.cursor.char.up"},
+    //{"key": "pageup",           "command": "text.cursor.page.up"},
+    //{"key": "pagedown",         "command": "text.cursor.page.down"},
+    {"key": "end",              "command": "text.cursor.line.end"},
+    {"key": "home",             "command": "text.cursor.line.begin"},
+    //{"key": "ctrl+down",        "command": "text.scroll.line.down"},
+    //{"key": "ctrl+up",          "command": "text.scroll.line.up"},
+    {"key": "ctrl+left",        "command": "text.cursor.word.left"},
+    {"key": "ctrl+right",       "command": "text.cursor.word.right"},
+    //{"key": "ctrl+]",           "command": "text.cursor.bracket.match"},
 
     // Text manipulation
-    {"key": "enter",            "command": "text.insert.enter"},
-    {"key": "ctrl+enter",       "command": "text.insert.line.up"},
-    {"key": "ctrl+shift+enter", "command": "text.insert.line.down"},
-    {"key": "delete",           "command": "text.delete.char.next"}, //
-    {"key": "ctrl+delete",      "command": "text.delete.word.next"},
-    {"key": "insert",           "command": "text.mode.insert"}, //
-    {"key": "tab",              "command": "text.insert.tab"},
-    {"key": "backspace",        "command": "text.delete.char.prev"}, //
-    {"key": "ctrl+backspace",   "command": "text.delete.line.prev"},
-    {"key": "ctrl+t",           "command": "text.swap.chars"}, // don't implement
-    {"key": "shift+enter",      "command": "text.swap.chars"}, // don't implement
-    {"key": "ctrl+u",           "command": "text.case.lower"}, // don't implement
-    {"key": "ctrl+shift+u",     "command": "text.case.upper"}, // don't implement
+    //{"key": "enter",            "command": "text.insert.enter"},
+    //{"key": "ctrl+enter",       "command": "text.insert.line.up"},
+    //{"key": "ctrl+shift+enter", "command": "text.insert.line.down"},
+    {"key": "delete",           "command": "text.delete.char.next"},
+    //{"key": "ctrl+delete",      "command": "text.delete.word.next"},
+    {"key": "insert",           "command": "text.mode.insert"},
+    //{"key": "tab",              "command": "text.insert.tab"},
+    {"key": "backspace",        "command": "text.delete.char.prev"},
+    //{"key": "ctrl+backspace",   "command": "text.delete.line.prev"},
+    //{"key": "ctrl+t",           "command": "text.swap.chars"},
+    //{"key": "shift+enter",      "command": "text.swap.chars"},
+    //{"key": "ctrl+u",           "command": "text.case.lower"},
+    //{"key": "ctrl+shift+u",     "command": "text.case.upper"},
 
     // Text selection
-    {"key": "shift+left",       "command": "text.select.char.left"}, //
-    {"key": "shift+right",      "command": "text.select.char.right"}, //
-    {"key": "shift+up",         "command": "text.select.char.up"},
-    {"key": "shift+down",       "command": "text.select.char.down"},
-    {"key": "shift+ctrl+left",  "command": "text.select.word.left"}, //
-    {"key": "shift+ctrl+right", "command": "text.select.word.right"}, //
-    {"key": "shift+end",        "command": "text.select.line.end"}, //
-    {"key": "shift+home",       "command": "text.select.line.begin"}, //
-    {"key": "shift+ctrl+end",   "command": "text.select.document.end"},
-    {"key": "shift+ctrl+home",  "command": "text.select.document.up"},
-    {"key": "shift+ctrl+]",     "command": "text.select.bracket.match"}, // don't implement
-    {"key": "shift+pageup",     "command": "text.select.page.up"},
-    {"key": "shift+pagedown",   "command": "text.select.page.down"},
-    {"key": "ctrl+a",           "command": "text.select.document"} //
-    //{"key": "ctrl+w",           "command": "text.select.word"} //
+    {"key": "shift+left",       "command": "text.select.char.left"},
+    {"key": "shift+right",      "command": "text.select.char.right"},
+    //{"key": "shift+up",         "command": "text.select.char.up"},
+    //{"key": "shift+down",       "command": "text.select.char.down"},
+    {"key": "shift+ctrl+left",  "command": "text.select.word.left"},
+    {"key": "shift+ctrl+right", "command": "text.select.word.right"},
+    {"key": "shift+end",        "command": "text.select.line.end"},
+    {"key": "shift+home",       "command": "text.select.line.begin"},
+    //{"key": "shift+ctrl+end",   "command": "text.select.document.end"},
+    //{"key": "shift+ctrl+home",  "command": "text.select.document.up"},
+    //{"key": "shift+ctrl+]",     "command": "text.select.bracket.match"},
+    //{"key": "shift+pageup",     "command": "text.select.page.up"},
+    //{"key": "shift+pagedown",   "command": "text.select.page.down"},
+    {"key": "ctrl+a",           "command": "text.select.document"}
 ]}

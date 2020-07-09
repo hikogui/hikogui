@@ -258,13 +258,17 @@ void Widget::draw(DrawContext const &drawContext, hires_utc_clock::time_point di
     }
 }
 
-void Widget::handleCommand(string_ltag command) noexcept {
+void Widget::handleCommand(command command) noexcept {
     auto lock = std::scoped_lock(mutex);
 
-    if (command == "gui.widget.next"_ltag) {
+    switch (command) {
+    case command::gui_widget_next:
         window.updateToNextKeyboardTarget(this);
-    } else if (command == "gui.widget.prev"_ltag) {
+        break;
+    case command::gui_widget_prev:
         window.updateToPrevKeyboardTarget(this);
+        break;
+    default:;
     }
 }
 

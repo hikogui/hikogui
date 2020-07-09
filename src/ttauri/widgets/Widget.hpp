@@ -21,6 +21,7 @@
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../observable.hpp"
+#include "../command.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -362,7 +363,7 @@ public:
      *
      * Thread safety: locks
      */
-    virtual void handleCommand(string_ltag command) noexcept;
+    virtual void handleCommand(command command) noexcept;
 
     /*! Handle mouse event.
     * Called by the operating system to show the position and button state of the mouse.

@@ -300,7 +300,7 @@ public:
         deleteSelection();
 
         if (!insertMode) {
-            handleCommand("text.delete.char.next"_ltag);
+            handleCommand(command::text_delete_char_next);
         }
         text.emplace(cit(cursorIndex), character, currentStyle);
         selectionIndex = ++cursorIndex;
@@ -358,63 +358,75 @@ public:
         return r;
     }
 
-    void handleCommand(string_ltag command) noexcept {
+    void handleCommand(command command) noexcept {
         tt_assume(cursorIndex <= ssize(text));
         cancelPartialGrapheme();
 
-        if (command == "text.cursor.char.left"_ltag) {
+        switch (command) {
+        case command::text_cursor_char_left:
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 // XXX Change currentStyle based on the grapheme at the new cursor position.
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.cursor.char.right"_ltag) {
+            break;
+        case command::text_cursor_char_right:
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.cursor.word.left"_ltag) {
+            break;
+        case command::text_cursor_word_left:
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.cursor.word.right"_ltag) {
+            break;
+        case command::text_cursor_word_right:
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 selectionIndex = cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.cursor.word.right"_ltag) {
-            if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
-                selectionIndex = cursorIndex = *newCursorPosition;
-            }
-        } else if (command == "text.cursor.line.end"_ltag) {
+            break;
+        case command::text_cursor_line_end:
             selectionIndex = cursorIndex = size() - 1;
-        } else if (command == "text.cursor.line.begin"_ltag) {
+            break;
+        case command::text_cursor_line_begin:
             selectionIndex = cursorIndex = 0;
-        } else if (command == "text.select.char.left"_ltag) {
+            break;
+        case command::text_select_char_left:
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.select.char.right"_ltag) {
+            break;
+        case command::text_select_char_right:
             if (ttlet newCursorPosition = _shapedText.indexOfCharOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.select.word.left"_ltag) {
+            break;
+        case command::text_select_word_left:
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheLeft(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.select.word.right"_ltag) {
+            break;
+        case command::text_select_word_right:
             if (ttlet newCursorPosition = _shapedText.indexOfWordOnTheRight(cursorIndex)) {
                 cursorIndex = *newCursorPosition;
             }
-        } else if (command == "text.select.word"_ltag) {
+            break;
+        case command::text_select_word:
             std::tie(selectionIndex, cursorIndex) = _shapedText.indicesOfWord(cursorIndex);
-        } else if (command == "text.select.line.end"_ltag) {
+            break;
+        case command::text_select_line_end:
             cursorIndex = size() - 1;
-        } else if (command == "text.select.line.begin"_ltag) {
+            break;
+        case command::text_select_line_begin:
             cursorIndex = 0;
-        } else if (command == "text.select.document"_ltag) {
+            break;
+        case command::text_select_document:
             selectionIndex = 0;
             cursorIndex = size() - 1; // Upto end-of-paragraph marker.
-        } else if (command == "text.mode.insert"_ltag) {
+            break;
+        case command::text_mode_insert:
             insertMode = !insertMode;
-        } else if (command == "text.delete.char.prev"_ltag) {
+            break;
+        case command::text_delete_char_prev:
             if (cursorIndex != selectionIndex) {
                 deleteSelection();
 
@@ -423,7 +435,8 @@ public:
                 text.erase(cit(cursorIndex));
                 updateShapedText();
             }
-        } else if (command == "text.delete.char.next"_ltag) {
+            break;
+        case command::text_delete_char_next:
             if (cursorIndex != selectionIndex) {
                 deleteSelection();
 
@@ -432,6 +445,7 @@ public:
                 text.erase(cit(cursorIndex));
                 updateShapedText();
             }
+        default:;
         }
 
         tt_assume(selectionIndex >= 0);

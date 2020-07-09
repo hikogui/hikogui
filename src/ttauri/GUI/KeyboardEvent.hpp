@@ -7,6 +7,7 @@
 #include "../text/Grapheme.hpp"
 #include "../required.hpp"
 #include "../assert.hpp"
+#include "../command.hpp"
 #include <utility>
 
 namespace tt {
@@ -69,7 +70,7 @@ struct KeyboardEvent {
         return KeyboardEvent(Type::Exited);
     }
 
-    [[nodiscard]] std::vector<string_ltag> const &getCommands() const noexcept;
+    [[nodiscard]] std::vector<command> const &getCommands() const noexcept;
 
     [[nodiscard]] friend std::string to_string(KeyboardEvent const &rhs) noexcept {
         auto r = std::string{"<KeyboardEvent "};

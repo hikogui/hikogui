@@ -133,17 +133,17 @@ public:
                 event.cause.leftButton &&
                 rectangle().contains(event.position)
             ) {
-                handleCommand("gui.activate"_ltag);
+                handleCommand(command::gui_activate);
             }
         }
     }
 
-    void handleCommand(string_ltag command) noexcept override {
+    void handleCommand(command command) noexcept override {
         if (!*enabled) {
             return;
         }
 
-        if (command == "gui.activate"_ltag) {
+        if (command == command::gui_activate) {
             if (assign_and_compare(value, value == falseValue ? trueValue : falseValue)) {
                 forceRedraw = true;
             }

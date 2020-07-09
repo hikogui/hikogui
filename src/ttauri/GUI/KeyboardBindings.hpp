@@ -4,9 +4,9 @@
 #pragma once
 
 #include "KeyboardKey.hpp"
-#include "../string_tag.hpp"
 #include "../URL.hpp"
 #include "../os_detect.hpp"
+#include "../command.hpp"
 #include <unordered_map>
 #include <tuple>
 
@@ -26,22 +26,22 @@ namespace tt {
 class KeyboardBindings {
     struct commands_t {
         /** Loading bindings from system-binding-file. */
-        std::vector<string_ltag> system = {};
+        std::vector<command> system = {};
 
         /** Ignored system bindings loaded from user-binding-file. */
-        std::vector<string_ltag> ignored = {};
+        std::vector<command> ignored = {};
 
         /** Added bindings loaded from user-binding-file. */
-        std::vector<string_ltag> user = {};
+        std::vector<command> user = {};
 
         /** Combined system-/ignored-/added-commands. */
-        std::vector<string_ltag> cache = {};
+        std::vector<command> cache = {};
 
-        [[nodiscard]] std::vector<string_ltag> const &get_commands() const noexcept {
+        [[nodiscard]] std::vector<command> const &get_commands() const noexcept {
             return cache;
         }
 
-        void add_system_command(string_ltag cmd) noexcept {
+        void add_system_command(command cmd) noexcept {
             ttlet i = std::find(system.cbegin(), system.cend(), cmd);
             if (i == system.cend()) {
                 system.push_back(cmd);
@@ -49,7 +49,7 @@ class KeyboardBindings {
             }
         }
 
-        void add_ignored_command(string_ltag cmd) noexcept {
+        void add_ignored_command(command cmd) noexcept {
             ttlet i = std::find(ignored.cbegin(), ignored.cend(), cmd);
             if (i == ignored.cend()) {
                 ignored.push_back(cmd);
@@ -57,7 +57,7 @@ class KeyboardBindings {
             }
         }
 
-        void add_user_command(string_ltag cmd) noexcept {
+        void add_user_command(command cmd) noexcept {
             ttlet i = std::find(user.cbegin(), user.cend(), cmd);
             if (i == user.cend()) {
                 user.push_back(cmd);
@@ -99,22 +99,22 @@ public:
     KeyboardBindings() noexcept :
         bindings() {}
 
-    void addSystemBinding(KeyboardKey key, string_ltag command) noexcept {
+    void addSystemBinding(KeyboardKey key, command command) noexcept {
         bindings[key].add_system_command(command);
     }
 
-    void addIgnoredBinding(KeyboardKey key, string_ltag command) noexcept {
+    void addIgnoredBinding(KeyboardKey key, command command) noexcept {
         bindings[key].add_ignored_command(command);
     }
 
-    void addUserBinding(KeyboardKey key, string_ltag command) noexcept {
+    void addUserBinding(KeyboardKey key, command command) noexcept {
         bindings[key].add_user_command(command);
     }
 
     /** translate a key press in the empty-context to a command.
     */
-    [[nodiscard]] std::vector<string_ltag> const &translate(KeyboardKey key) const noexcept {
-        static std::vector<string_ltag> empty_commands = {};
+    [[nodiscard]] std::vector<command> const &translate(KeyboardKey key) const noexcept {
+        static std::vector<command> empty_commands = {};
 
         ttlet i = bindings.find(key);
         if (i != bindings.cend()) {
