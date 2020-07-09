@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "AttributedGlyph.hpp"
-#include "globals.hpp"
+#include "FontBook.hpp"
 #include "../Path.hpp"
 
 namespace tt {

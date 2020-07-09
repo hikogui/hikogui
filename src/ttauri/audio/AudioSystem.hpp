@@ -39,4 +39,6 @@ public:
     bool hasDeviceWithId(std::string id) const noexcept;
 };
 
+inline AudioSystem *audioSystem = nullptr;
+
 }

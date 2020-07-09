@@ -2,8 +2,6 @@
 target_sources(ttauri PRIVATE
     Cursor.hpp
     DrawContext.hpp
-    globals.cpp
-    globals.hpp
     GUIDevice.hpp
     GUIDevice_base.cpp
     GUIDevice_base.hpp

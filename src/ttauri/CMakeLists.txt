@@ -75,8 +75,6 @@ target_sources(ttauri PRIVATE
     float16.hpp
     format.hpp
     glob.hpp
-    globals.cpp
-    globals.hpp
     gzip.cpp
     gzip.hpp
     hash.hpp

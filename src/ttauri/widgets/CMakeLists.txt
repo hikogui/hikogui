@@ -6,8 +6,6 @@ target_sources(ttauri PRIVATE
     ColumnWidget.cpp
     ColumnWidget.hpp
     ContainerWidget.hpp
-    globals.cpp
-    globals.hpp
     LineInputWidget.cpp
     LineInputWidget.hpp
     RadioButtonWidget.hpp

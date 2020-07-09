@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "URL.hpp"
-#include "globals.hpp"
 #include "strings.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"

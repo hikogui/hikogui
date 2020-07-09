@@ -4,13 +4,8 @@
 #pragma once
 
 #include "ApplicationDelegate.hpp"
-#include "audio/globals.hpp"
 #include "audio/AudioSystemDelegate.hpp"
-#include "text/globals.hpp"
-#include "widgets/globals.hpp"
-#include "GUI/globals.hpp"
 #include "GUI/GUISystemDelegate.hpp"
-#include "globals.hpp"
 #include "required.hpp"
 #include "URL.hpp"
 #include <nonstd/span>
@@ -22,7 +17,11 @@
 
 namespace tt {
 
-class Application_base_dummy {};
+
+
+/** The global configuration.
+*/
+inline datum configuration;
 
 /*! A singleton that represents the application.
  * An Application should be instantiated in a local variable in main.
@@ -31,9 +30,7 @@ class Application_base_dummy {};
  * are destructed.
  *
  */
-class Application_base : public Application_base_dummy
-    , GUISystemDelegate
-    , AudioSystemDelegate
+class Application_base : public GUISystemDelegate, public AudioSystemDelegate
 {
 public:
     /*! Application delegate
@@ -43,6 +40,16 @@ public:
     /*! Command line arguments.
      */
     std::vector<std::string> arguments;
+
+    /** The system timezone.
+    */
+    date::time_zone const *timeZone = nullptr;
+
+    /** Thread id of the main thread.
+    */
+    std::thread::id mainThreadID;
+
+    std::atomic<bool> inLoop;
 
     Application_base(std::shared_ptr<ApplicationDelegate> applicationDelegate, std::vector<std::string> const &arguments, void *hInstance = nullptr, int nCmdShow = 0);
     virtual ~Application_base();
@@ -65,12 +72,47 @@ public:
     */
     void audioDeviceListChanged() override;
 
+    /** Get the data of a static resource.
+     * These are resources that where linked into the exectuable.
+     *
+     * @param key Name of the resource.
+     * @return A span to the constant byte array.
+     * @exception key_error Thrown when static resource could not be found.
+     */
+    nonstd::span<std::byte const> getStaticResource(std::string const &key);
+
 protected:
+    std::unordered_map<std::string,nonstd::span<std::byte const>> staticResources;
+
+    /** Add static resource.
+     * This function should only be called on resources that are linked into the executable
+     * and therefor only be called by the Application class.
+     *
+     * @param key Name of the resource.
+     * @param value A span to the constant byte array
+     */
+    void addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept;
+
     /*! Called right before a loop is started.
     */
     virtual bool startingLoop();
+
+    virtual void foundationStart();
+    virtual void foundationStop();
+    virtual void audioStart();
+    virtual void audioStop();
+    virtual void textStart();
+    virtual void textStop();
+    virtual void GUIStart();
+    virtual void GUIStop();
+
+private:
+    size_t timer_preferred_languages_cbid;
+    size_t logger_maintenance_cbid;
+    size_t clock_maintenance_cbid;
+
 };
 
-inline Application_base *_application = nullptr;
+inline Application_base *application = nullptr;
 
 }

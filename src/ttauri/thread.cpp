@@ -3,7 +3,7 @@
 
 #include "thread.hpp"
 #include "strings.hpp"
-#include "globals.hpp"
+#include "Application.hpp"
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
 #include <Windows.h>
@@ -27,7 +27,8 @@ void set_thread_name(std::string_view name)
 
 bool is_main_thread()
 {
-    return std::this_thread::get_id() == mainThreadID;
+    tt_assume(application);
+    return std::this_thread::get_id() == application->mainThreadID;
 }
 
 void run_on_main_thread(std::function<void()> f)
@@ -35,12 +36,9 @@ void run_on_main_thread(std::function<void()> f)
     if (is_main_thread()) {
         return f();
 
-    } else if (mainThreadRunner) {
-        mainThreadRunner(f);
-
     } else {
-        // We could not run the thread on the main thread.
-        tt_no_default;
+        tt_assume(application);
+        application->runOnMainThread(f);
     }
 }
 

@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "hires_utc_clock.hpp"
-#include "globals.hpp"
+#include "Application.hpp"
 #include <fmt/ostream.h>
 #include <fmt/format.h>
 
@@ -46,7 +46,8 @@ std::string format_iso8601_utc(hires_utc_clock::time_point utc_timestamp)
 std::string format_iso8601(hires_utc_clock::time_point utc_timestamp, date::time_zone const *time_zone)
 {
     if (time_zone == nullptr) {
-        time_zone = timeZone;
+        tt_assume(application);
+        time_zone = application->timeZone;
     }
 
     if (time_zone == nullptr) {

@@ -28,6 +28,9 @@ public:
 
 protected:
     bool startingLoop() override;
+
+    void audioStart() override;
+
 };
 
 }

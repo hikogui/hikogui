@@ -3,7 +3,6 @@
 
 #include "AttributedGlyph.hpp"
 #include "FontBook.hpp"
-#include "globals.hpp"
 #include "../Path.hpp"
 
 namespace tt {

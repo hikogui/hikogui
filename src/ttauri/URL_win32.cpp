@@ -1,11 +1,11 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "globals.hpp"
 #include "URL.hpp"
 #include "strings.hpp"
 #include "required.hpp"
 #include "url_parser.hpp"
+#include "version.hpp"
 #include <regex>
 
 #include <Windows.h>
@@ -54,7 +54,7 @@ URL URL::urlFromApplicationDataDirectory() noexcept
     }
 
     ttlet base_localAppData = URL::urlFromWPath(wchar_localAppData);
-    return base_localAppData / applicationName;
+    return base_localAppData / application_version.name;
 }
 
 URL URL::urlFromSystemFontDirectory() noexcept

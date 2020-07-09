@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "gstring.hpp"
-#include "globals.hpp"
 #include "../strings.hpp"
 
 namespace tt {

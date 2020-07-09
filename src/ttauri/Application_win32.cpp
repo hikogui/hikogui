@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "Application_win32.hpp"
+#include "audio/AudioSystem_win32.hpp"
 #include "GUI/GUISystem.hpp"
 #include "GUI/Window.hpp"
 #include "strings.hpp"
@@ -54,6 +55,8 @@ void Application_win32::lastWindowClosed()
 gsl_suppress(r.11)
 void Application_win32::runOnMainThread(std::function<void()> function)
 {
+    tt_assert(inLoop);
+
     ttlet functionP = new std::function<void()>(std::move(function));
     tt_assert(functionP);
 
@@ -72,9 +75,7 @@ int Application_win32::loop()
         return 0;
     }
 
-    mainThreadRunner = [=](std::function<void()> f) {
-        return this->runOnMainThread(f);
-    };
+    inLoop = true;
 
     // Run the message loop.
     MSG msg = {};
@@ -91,8 +92,14 @@ int Application_win32::loop()
         DispatchMessage(&msg);
     }
 
-    mainThreadRunner = {};
+    inLoop = false;
     return 0;
+}
+
+void Application_win32::audioStart()
+{
+    Application_base::audioStart();
+    audioSystem = new AudioSystem_win32(this);
 }
 
 }

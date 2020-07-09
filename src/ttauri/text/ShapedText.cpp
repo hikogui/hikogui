@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "ShapedText.hpp"
-#include "globals.hpp"
 #include "../small_map.hpp"
 
 namespace tt {

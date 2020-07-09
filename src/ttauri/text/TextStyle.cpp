@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "TextStyle.hpp"
-#include "globals.hpp"
+#include "FontBook.hpp"
 
 namespace tt {
 

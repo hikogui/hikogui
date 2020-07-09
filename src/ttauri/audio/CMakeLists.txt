@@ -14,6 +14,4 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioSystem_win32.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/AudioSystem_win32.hpp>
     AudioSystemDelegate.hpp
-    globals.cpp
-    globals.hpp
 )

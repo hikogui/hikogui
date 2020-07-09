@@ -2,9 +2,8 @@
 // All rights reserved.
 
 #include "Theme.hpp"
-#include "../text/globals.hpp"
+#include "../text/FontBook.hpp"
 #include "../JSON.hpp"
-#include "../globals.hpp"
 
 namespace tt {
 

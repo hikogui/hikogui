@@ -4,7 +4,6 @@
 #include "logger.hpp"
 #include "trace.hpp"
 #include "cpu_utc_clock.hpp"
-#include "globals.hpp"
 #include "required.hpp"
 #include "URL.hpp"
 #include "strings.hpp"

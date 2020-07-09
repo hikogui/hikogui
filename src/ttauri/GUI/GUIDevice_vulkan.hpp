@@ -4,12 +4,12 @@
 #pragma once
 
 #include "GUIDevice_base.hpp"
+#include "GUISystem_forward.hpp"
 #include "PipelineFlat_DeviceShared.hpp"
 #include "PipelineImage_DeviceShared.hpp"
 #include "PipelineBox_DeviceShared.hpp"
 #include "PipelineSDF_DeviceShared.hpp"
 #include "PipelineToneMapper_DeviceShared.hpp"
-#include "globals.hpp"
 #include <vulkan/vulkan.hpp>
 #include <vma/vk_mem_alloc.h>
 

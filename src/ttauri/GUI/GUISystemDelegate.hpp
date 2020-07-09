@@ -10,4 +10,8 @@ public:
     virtual void lastWindowClosed() = 0;
 };
 
+/** Delegate for GUI related events.
+*/
+inline GUISystemDelegate *guiDelegate = nullptr;
+
 }

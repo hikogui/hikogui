@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "globals.hpp"
 #include "WindowDelegate.hpp"
 #include "GUIDevice_forward.hpp"
 #include "Cursor.hpp"

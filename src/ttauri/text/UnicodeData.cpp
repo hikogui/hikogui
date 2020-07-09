@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "UnicodeData.hpp"
+#include "FontBook.hpp"
 #include "../placement.hpp"
 #include "../endian.hpp"
 #include "../algorithm.hpp"
@@ -9,6 +10,9 @@
 #include "../strings.hpp"
 #include "../required.hpp"
 #include <algorithm>
+#include <cstdint>
+#include <string>
+#include <mutex>
 
 namespace tt {
 

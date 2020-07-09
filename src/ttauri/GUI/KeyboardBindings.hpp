@@ -159,5 +159,8 @@ public:
     void saveUserBindings(URL url);
 };
 
+/** Global keyboard bindings.
+*/
+inline KeyboardBindings keyboardBindings;
 
 }

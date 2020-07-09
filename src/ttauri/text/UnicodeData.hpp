@@ -32,8 +32,6 @@ enum class GraphemeUnitType : uint8_t {
     Extended_Pictographic = 14
 };
 
-
-
 struct GraphemeBreakState {
     GraphemeUnitType previous = GraphemeUnitType::Other;
     int RICount = 0;
@@ -251,6 +249,8 @@ private:
      */
     void compose(std::u32string &text, bool composeCRLF=false) const noexcept;
 };
+
+inline std::unique_ptr<UnicodeData> unicodeData;
 
 }
 

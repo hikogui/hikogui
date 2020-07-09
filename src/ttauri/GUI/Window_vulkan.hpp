@@ -32,6 +32,8 @@ public:
 
     vk::SwapchainKHR swapchain;
 
+    static constexpr uint32_t defaultNumberOfSwapchainImages = 2;
+
     int nrSwapchainImages;
     vk::Extent2D swapchainImageExtent;
     vk::SurfaceFormatKHR swapchainImageFormat;

@@ -2,7 +2,6 @@
 // All rights reserved.
 
 #include "Grapheme.hpp"
-#include "globals.hpp"
 
 namespace tt {
 

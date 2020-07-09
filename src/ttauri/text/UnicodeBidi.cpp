@@ -3,7 +3,6 @@
 
 #include "UnicodeBidi.hpp"
 #include "UnicodeData.hpp"
-#include "globals.hpp"
 
 namespace tt {
 

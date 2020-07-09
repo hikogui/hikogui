@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "globals.hpp"
 #include "GUIDevice.hpp"
 #include "Window.hpp"
 #include "VerticalSync.hpp"

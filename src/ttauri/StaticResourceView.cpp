@@ -2,12 +2,12 @@
 // All rights reserved.
 
 #include "StaticResourceView.hpp"
-#include "globals.hpp"
+#include "Application.hpp"
 
 namespace tt {
 
 StaticResourceView::StaticResourceView(std::string const &filename) :
-    _bytes(getStaticResource(filename))
+    _bytes(application->getStaticResource(filename))
 {
 }
 

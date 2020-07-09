@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "GUISystem_forward.hpp"
 #include "../os_detect.hpp"
 
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
