@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "ttauri/JSON.hpp"
+#include "ttauri/encoding/JSON.hpp"
 #include "ttauri/required.hpp"
 #include <gtest/gtest.h>
 #include <iostream>

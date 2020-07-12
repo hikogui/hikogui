@@ -4,7 +4,7 @@
 #include "Image.hpp"
 #include "PixelMapCell.hpp"
 #include "GlyphCell.hpp"
-#include "../png.hpp"
+#include "../encoding/png.hpp"
 #include "../GUI/DrawContext.hpp"
 #include "../GUI/Window.hpp"
 

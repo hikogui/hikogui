@@ -66,7 +66,7 @@ struct template_parse_context {
 
     bool starts_with_and_advance_over(std::string_view text) noexcept {
         if (starts_with(text)) {
-            *this += ssize(text);
+            *this += nonstd::ssize(text);
             return true;
         } else {
             return false;
@@ -85,7 +85,7 @@ struct template_parse_context {
 
     bool advance_over(std::string_view text) noexcept {
         if (advance_to(text)) {
-            *this += ssize(text);
+            *this += nonstd::ssize(text);
             return true;
         } else {
             return false;
@@ -206,7 +206,7 @@ struct template_node {
     }
 
     static void append_child(statement_vector &children, std::unique_ptr<template_node> new_child) {
-        if (ssize(children) > 0 && new_child->should_left_align()) {
+        if (nonstd::ssize(children) > 0 && new_child->should_left_align()) {
             children.back()->left_align();
         }
         children.push_back(std::move(new_child));

@@ -720,7 +720,7 @@ struct MAXPTable10 {
 
 void TrueTypeFont::parseMaxpTable(nonstd::span<std::byte const> table_bytes)
 {
-    parse_assert(ssizeof(MAXPTable05) <= ssize(table_bytes));
+    parse_assert(ssizeof(MAXPTable05) <= nonstd::ssize(table_bytes));
     ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
 
     ttlet version = table->version.value();
@@ -1300,7 +1300,7 @@ void TrueTypeFont::parseFontDirectory()
 
     ttlet entries = make_placement_array<SFNTEntry>(file_bytes, offset, header->numTables.value());
     for (ttlet &entry: entries) {
-        if ((entry.offset.value() + entry.length.value()) > ssize(file_bytes)) {
+        if ((entry.offset.value() + entry.length.value()) > nonstd::ssize(file_bytes)) {
             TTAURI_THROW(parse_error("sfnt table-entry is out of range"));
         }
 
@@ -1345,23 +1345,23 @@ void TrueTypeFont::parseFontDirectory()
         }
     }
 
-    if (ssize(headTableBytes) > 0) {
+    if (nonstd::ssize(headTableBytes) > 0) {
         parseHeadTable(headTableBytes);
     }
 
-    if (ssize(maxpTableBytes) > 0) {
+    if (nonstd::ssize(maxpTableBytes) > 0) {
         parseMaxpTable(maxpTableBytes);
     }
 
-    if (ssize(hheaTableBytes) > 0) {
+    if (nonstd::ssize(hheaTableBytes) > 0) {
         parseHheaTable(hheaTableBytes);
     }
 
-    if (ssize(os2TableBytes) > 0) {
+    if (nonstd::ssize(os2TableBytes) > 0) {
         parseOS2Table(os2TableBytes);
     }
 
-    if (ssize(nameTableBytes) > 0) {
+    if (nonstd::ssize(nameTableBytes) > 0) {
         parseNameTable(nameTableBytes);
     }
 

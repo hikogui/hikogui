@@ -100,7 +100,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
     stagingTexture.transitionLayout(device, vk::Format::eR16G16B16A16Sfloat, vk::ImageLayout::eTransferSrcOptimal);
 
     array<vector<vk::ImageCopy>, atlasMaximumNrImages> regionsToCopyPerAtlasTexture; 
-    for (int index = 0; index < ssize(image.pages); index++) {
+    for (int index = 0; index < nonstd::ssize(image.pages); index++) {
         ttlet page = image.pages.at(index);
 
         if (page.isFullyTransparent()) {
@@ -129,7 +129,7 @@ void DeviceShared::updateAtlasWithStagingPixelMap(const Image &image)
         });
     }
 
-    for (int atlasTextureIndex = 0; atlasTextureIndex < ssize(atlasTextures); atlasTextureIndex++) {
+    for (int atlasTextureIndex = 0; atlasTextureIndex < nonstd::ssize(atlasTextures); atlasTextureIndex++) {
         ttlet &regionsToCopy = regionsToCopyPerAtlasTexture.at(atlasTextureIndex);
         if (regionsToCopy.size() == 0) {
             continue;
@@ -175,7 +175,7 @@ void DeviceShared::teardownShaders(GUIDevice_vulkan *vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    ttlet currentImageIndex = ssize(atlasTextures);
+    ttlet currentImageIndex = nonstd::ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -221,7 +221,7 @@ void DeviceShared::addAtlasImage()
     }
 
     // Build image descriptor info.
-    for (int i = 0; i < ssize(atlasDescriptorImageInfos); i++) {
+    for (int i = 0; i < nonstd::ssize(atlasDescriptorImageInfos); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {

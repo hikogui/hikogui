@@ -25,7 +25,7 @@ struct UnicodeRanges {
     }
 
     UnicodeRanges(Grapheme g) noexcept : UnicodeRanges() {
-        for (ssize_t i = 0; i != ssize(g); ++i) {
+        for (ssize_t i = 0; i != nonstd::ssize(g); ++i) {
             add(g[i]);
         }
     }
@@ -49,7 +49,7 @@ struct UnicodeRanges {
     [[nodiscard]] bool contains(char32_t c) const noexcept;
 
     [[nodiscard]] bool contains(Grapheme g) const noexcept {
-        for (ssize_t i = 0; i != ssize(g); ++i) {
+        for (ssize_t i = 0; i != nonstd::ssize(g); ++i) {
             if (!contains(g[i])) {
                 return false;
             }

@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "URL.hpp"
-#include "byte_string.hpp"
-#include "ResourceView.hpp"
+#include "../URL.hpp"
+#include "../byte_string.hpp"
+#include "../ResourceView.hpp"
 #include <cstddef>
 
 namespace tt {

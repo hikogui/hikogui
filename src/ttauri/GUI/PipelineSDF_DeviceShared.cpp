@@ -288,7 +288,7 @@ void DeviceShared::teardownShaders(GUIDevice_vulkan * vulkanDevice)
 
 void DeviceShared::addAtlasImage()
 {
-    //ttlet currentImageIndex = ssize(atlasTextures);
+    //ttlet currentImageIndex = nonstd::ssize(atlasTextures);
 
     // Create atlas image
     vk::ImageCreateInfo const imageCreateInfo = {
@@ -340,7 +340,7 @@ void DeviceShared::addAtlasImage()
     atlasTextures.push_back({ atlasImage, atlasImageAllocation, atlasImageView });
 
     // Build image descriptor info.
-    for (int i = 0; i < ssize(atlasDescriptorImageInfos); i++) {
+    for (int i = 0; i < nonstd::ssize(atlasDescriptorImageInfos); i++) {
         // Point the descriptors to each imageView,
         // repeat the first imageView if there are not enough.
         atlasDescriptorImageInfos.at(i) = {

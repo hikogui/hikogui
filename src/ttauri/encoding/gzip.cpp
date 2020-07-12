@@ -3,8 +3,8 @@
 
 #include "gzip.hpp"
 #include "inflate.hpp"
-#include "endian.hpp"
-#include "placement.hpp"
+#include "../endian.hpp"
+#include "../placement.hpp"
 
 namespace tt {
 
@@ -41,7 +41,7 @@ static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize
     if (FNAME) {
         std::byte c;
         do {
-            parse_assert(offset < ssize(bytes));
+            parse_assert(offset < nonstd::ssize(bytes));
             c = bytes[offset++];
         } while (c != std::byte{0});
     }
@@ -49,7 +49,7 @@ static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize
     if (FCOMMENT) {
         std::byte c;
         do {
-            parse_assert(offset < ssize(bytes));
+            parse_assert(offset < nonstd::ssize(bytes));
             c = bytes[offset++];
         } while (c != std::byte{0});
     }
@@ -72,9 +72,9 @@ bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
     auto r = bstring{};
 
     ssize_t offset = 0;
-    while (offset < ssize(bytes)) {
+    while (offset < nonstd::ssize(bytes)) {
         auto member = gzip_decompress_member(bytes, offset, max_size);
-        max_size -= ssize(member);
+        max_size -= nonstd::ssize(member);
         r.append(member);
     }
 

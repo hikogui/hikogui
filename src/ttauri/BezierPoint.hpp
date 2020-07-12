@@ -90,7 +90,7 @@ struct BezierPoint {
             previousPoint = point;
         }
 
-        for (ssize_t i = 0; i < ssize(r); i++) {
+        for (ssize_t i = 0; i < nonstd::ssize(r); i++) {
             if (r[i].type == BezierPoint::Type::Anchor) {
                 std::rotate(r.begin(), r.begin() + i, r.end());
                 r.push_back(r.front());

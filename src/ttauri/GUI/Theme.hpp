@@ -112,8 +112,8 @@ public:
     */
     [[nodiscard]] vec fillColor(ssize_t nestingLevel) const noexcept {
         tt_assume(nestingLevel >= 0);
-        tt_assume(ssize(fillShades) > 0);
-        return fillShades[nestingLevel % ssize(fillShades)];
+        tt_assume(nonstd::ssize(fillShades) > 0);
+        return fillShades[nestingLevel % nonstd::ssize(fillShades)];
     }
 
     /** Get border color of elements of widgets and child widgets.
@@ -121,8 +121,8 @@ public:
     */
     [[nodiscard]] vec borderColor(ssize_t nestingLevel) const noexcept {
         tt_assume(nestingLevel >= 0);
-        tt_assume(ssize(borderShades) > 0);
-        return borderShades[nestingLevel % ssize(borderShades)];
+        tt_assume(nonstd::ssize(borderShades) > 0);
+        return borderShades[nestingLevel % nonstd::ssize(borderShades)];
     }
 
 
@@ -133,10 +133,10 @@ public:
     */
     [[nodiscard]] vec gray(ssize_t level) const noexcept {
         if (level < 0) {
-            level = ssize(grayShades) + level;
+            level = nonstd::ssize(grayShades) + level;
         }
 
-        level = std::clamp(level, ssize_t{0}, ssize(grayShades) - 1);
+        level = std::clamp(level, ssize_t{0}, nonstd::ssize(grayShades) - 1);
         return grayShades[level];
     }
 

@@ -45,13 +45,13 @@ constexpr KeyboardModifiers &operator|=(KeyboardModifiers &lhs, KeyboardModifier
  */
 inline KeyboardModifiers to_KeyboardModifiers(std::string_view s)
 {
-    if (ssize(s) == 0) {
+    if (nonstd::ssize(s) == 0) {
         TTAURI_THROW(parse_error("Empty keyboard modifier"));       
     }
 
     // Remove the canonical trailing '+'.
     ttlet s_lower = to_lower(
-        (s.back() == '+') ? s.substr(0, ssize(s) - 1) : s
+        (s.back() == '+') ? s.substr(0, nonstd::ssize(s) - 1) : s
     );
 
     if (s_lower == "shift") {

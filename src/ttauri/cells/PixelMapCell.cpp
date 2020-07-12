@@ -4,7 +4,7 @@
 #include "PixelMapCell.hpp"
 #include "../GUI/Window.hpp"
 #include "../GUI/DrawContext.hpp"
-#include "../png.hpp"
+#include "../encoding/png.hpp"
 
 namespace tt {
 

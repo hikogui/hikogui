@@ -6,7 +6,7 @@ namespace tt {
 
 Widget &ColumnWidget::addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept
 {
-    auto *previous_widget = ssize(children) != 0 ? children.back().get() : nullptr;
+    auto *previous_widget = nonstd::ssize(children) != 0 ? children.back().get() : nullptr;
     if (previous_widget) {
         window.removeConstraint(bottomConstraint);
     }

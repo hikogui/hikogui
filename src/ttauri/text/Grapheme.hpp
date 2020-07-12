@@ -111,7 +111,7 @@ public:
 
     [[nodiscard]] size_t hash() const noexcept {
         size_t r = 0;
-        for (ssize_t i = 0; i != ssize(*this); ++i) {
+        for (ssize_t i = 0; i != nonstd::ssize(*this); ++i) {
             r = hash_mix_two(r, std::hash<char32_t>{}((*this)[i]));
         }
         return r;
@@ -153,8 +153,8 @@ public:
 
     [[nodiscard]] std::u32string NFC() const noexcept {
         std::u32string r;
-        r.reserve(ssize(*this));
-        for (ssize_t i = 0; i != ssize(*this); ++i) {
+        r.reserve(nonstd::ssize(*this));
+        for (ssize_t i = 0; i != nonstd::ssize(*this); ++i) {
             r += (*this)[i];
         }
         return r;
@@ -203,14 +203,14 @@ private:
     }
 
     [[nodiscard]] friend bool operator<(Grapheme const& a, Grapheme const& b) noexcept {
-        ttlet length = std::min(ssize(a), ssize(b));
+        ttlet length = std::min(nonstd::ssize(a), nonstd::ssize(b));
 
         for (ssize_t i = 0; i != length; ++i) {
             if (a[i] < b[i]) {
                 return true;
             }
         }
-        return ssize(a) < ssize(b);
+        return nonstd::ssize(a) < nonstd::ssize(b);
     }
 
     [[nodiscard]] friend bool operator==(Grapheme const& a, Grapheme const& b) noexcept {
@@ -218,11 +218,11 @@ private:
             return true;
         }
 
-        if (ssize(a) != ssize(b)) {
+        if (nonstd::ssize(a) != nonstd::ssize(b)) {
             return false;
         }
 
-        for (ssize_t i = 0; i != ssize(a); ++i) {
+        for (ssize_t i = 0; i != nonstd::ssize(a); ++i) {
             if (a[i] != b[i]) {
                 return false;
             }
@@ -231,7 +231,7 @@ private:
     }
 
     [[nodiscard]] friend bool operator==(Grapheme const &lhs, char32_t const &rhs) noexcept {
-        return (ssize(lhs) == 1) && (lhs[0] == rhs);
+        return (nonstd::ssize(lhs) == 1) && (lhs[0] == rhs);
     }
 
     [[nodiscard]] friend bool operator!=(Grapheme const &lhs, char32_t const &rhs) noexcept {

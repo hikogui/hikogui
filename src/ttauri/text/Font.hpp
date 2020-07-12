@@ -65,10 +65,3 @@ public:
 };
 
 }
-
-namespace tt {
-
-template<>
-std::unique_ptr<tt::Font> parseResource(URL const &location);
-
-}

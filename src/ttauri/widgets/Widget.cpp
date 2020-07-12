@@ -288,7 +288,7 @@ HitBox Widget::hitBoxTest(vec position) const noexcept
 
 std::vector<Widget *> Widget::childPointers(bool reverse) const noexcept {
     std::vector<Widget *> r;
-    r.reserve(ssize(children));
+    r.reserve(nonstd::ssize(children));
     for (ttlet &child: children) {
         r.push_back(child.get());
     }

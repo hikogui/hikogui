@@ -10,14 +10,14 @@ namespace tt {
 [[nodiscard]] static std::vector<AttributedGrapheme> makeAttributedGraphemeVector(gstring const &text, TextStyle const &style) noexcept
 {
     std::vector<AttributedGrapheme> r;
-    r.reserve(ssize(text));
+    r.reserve(nonstd::ssize(text));
 
     int index = 0;
     for (ttlet &grapheme: text) {
         r.emplace_back(grapheme, style, index++);
     }
 
-    if (ssize(text) == 0 || text.back() != '\n') {
+    if (nonstd::ssize(text) == 0 || text.back() != '\n') {
         r.emplace_back(Grapheme{'\n'}, style, index++);
     }
 
@@ -27,7 +27,7 @@ namespace tt {
 [[nodiscard]] static std::vector<AttributedGlyph> graphemes_to_glyphs(std::vector<AttributedGrapheme> const &text) noexcept
 {
     // The end-of-paragraph (linefeed) must end text.
-    tt_assume(ssize(text) >= 1 && text.back().grapheme == '\n');
+    tt_assume(nonstd::ssize(text) >= 1 && text.back().grapheme == '\n');
 
     std::vector<AttributedGlyph> glyphs;
     glyphs.reserve(size(text));
@@ -82,7 +82,7 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
 {
     auto size = vec{0.0f, 0.0f};
 
-    if (ssize(lines) == 0) {
+    if (nonstd::ssize(lines) == 0) {
         return size;
     }
 
@@ -92,7 +92,7 @@ static void wrap_lines(std::vector<AttributedGlyphLine> &lines, float width) noe
         lines.front().lineGap + lines.front().ascender
     };
 
-    auto nr_lines = ssize(lines);
+    auto nr_lines = nonstd::ssize(lines);
     for (ssize_t i = 1; i != nr_lines; ++i) {
         size = vec{
             std::max(size.width(), lines[i].width),
@@ -136,19 +136,19 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
     ssize_t start_line_downward;
     float start_y_upward = 0.0f;
     float start_y_downward = 0.0f;
-    if (alignment == VerticalAlignment::Top || ssize(lines) == 1) {
+    if (alignment == VerticalAlignment::Top || nonstd::ssize(lines) == 1) {
         start_line_upward = -1; // Don't go upward
         start_line_downward = 0;
 
     } else if (alignment == VerticalAlignment::Bottom) {
-        start_line_upward = ssize(lines) - 1;
-        start_line_downward = ssize(lines); // Don't go downward.
+        start_line_upward = nonstd::ssize(lines) - 1;
+        start_line_downward = nonstd::ssize(lines); // Don't go downward.
 
     } else if (alignment == VerticalAlignment::Middle) {
-        start_line_upward = (ssize(lines) / 2) - 1;
-        start_line_downward = ssize(lines) / 2; // The middle line (odd number of lines).
+        start_line_upward = (nonstd::ssize(lines) / 2) - 1;
+        start_line_downward = nonstd::ssize(lines) / 2; // The middle line (odd number of lines).
 
-        if (ssize(lines) % 2 == 0) {
+        if (nonstd::ssize(lines) % 2 == 0) {
             // For even number of lines, the middle is at the gap between the two middle lines.
             ttlet &upward_line = lines[start_line_upward];
             ttlet &downward_line = lines[start_line_downward];
@@ -174,7 +174,7 @@ static void position_glyphs(std::vector<AttributedGlyphLine> &lines, Alignment a
         // Draw lines downwards.
         float y = start_y_downward;
         bool first_line = true;
-        for (ssize_t i = start_line_downward; i != ssize(lines); ++i) {
+        for (ssize_t i = start_line_downward; i != nonstd::ssize(lines); ++i) {
             auto &line = lines[i];
 
             if (!first_line) {
@@ -380,7 +380,7 @@ ShapedText::ShapedText(
 
     for (ssize_t i = first; i != last; ++i) {
         auto newRect = rectangleOfGrapheme(i);
-        if (ssize(r) > 0 && overlaps(r.back(), newRect)) {
+        if (nonstd::ssize(r) > 0 && overlaps(r.back(), newRect)) {
             r.back() |= newRect;
         } else {
             r.push_back(newRect);
@@ -550,7 +550,7 @@ ShapedText::ShapedText(
 {
     Path r;
 
-    if (ssize(*this) == 0) {
+    if (nonstd::ssize(*this) == 0) {
         return r;
     }
 

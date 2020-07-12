@@ -101,7 +101,7 @@ vector<vk::WriteDescriptorSet> PipelineImage::createWriteDescriptorSet() const
 
 ssize_t PipelineImage::getDescriptorSetVersion() const
 {
-    return ssize(device().imagePipeline->atlasTextures);
+    return nonstd::ssize(device().imagePipeline->atlasTextures);
 }
 
 std::vector<vk::PushConstantRange> PipelineImage::createPushConstantRanges() const

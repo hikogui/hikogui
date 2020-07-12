@@ -36,14 +36,14 @@ class FontGlyphIDs_long {
 
     tt_force_inline FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
         tt_assume(nr_glyphs >= 0);
-        tt_assume(nr_glyphs < ssize(glyph_ids));
+        tt_assume(nr_glyphs < nonstd::ssize(glyph_ids));
         glyph_ids[nr_glyphs++] = rhs;
         return *this;
     }
 
     [[nodiscard]] size_t hash() const noexcept {
         tt_assume(nr_glyphs > 3);
-        tt_assume(nr_glyphs < ssize(glyph_ids));
+        tt_assume(nr_glyphs < nonstd::ssize(glyph_ids));
 
         uint64_t r = 0;
         for (int8_t i = 0; i != nr_glyphs; ++i) {
@@ -56,8 +56,8 @@ class FontGlyphIDs_long {
     [[nodiscard]] friend bool operator==(FontGlyphIDs_long const &lhs, FontGlyphIDs_long const &rhs) noexcept {
         tt_assume(lhs.nr_glyphs > 3);
         tt_assume(rhs.nr_glyphs > 3);
-        tt_assume(lhs.nr_glyphs < ssize(lhs.glyph_ids));
-        tt_assume(rhs.nr_glyphs < ssize(rhs.glyph_ids));
+        tt_assume(lhs.nr_glyphs < nonstd::ssize(lhs.glyph_ids));
+        tt_assume(rhs.nr_glyphs < nonstd::ssize(rhs.glyph_ids));
 
         if (lhs.nr_glyphs == rhs.nr_glyphs) {
             for (int8_t i = 0; i != lhs.nr_glyphs; ++i) {

@@ -28,10 +28,10 @@ namespace tt {
     if (starts_with(tmp, "#"s)) {
         tmp = tmp.substr(1);
     }
-    if (ssize(tmp) != 6 || ssize(tmp) != 8) {
+    if (nonstd::ssize(tmp) != 6 || nonstd::ssize(tmp) != 8) {
         TTAURI_THROW(parse_error("Expecting 6 or 8 hex-digit sRGB color string, got {}.", str));
     }
-    if (ssize(tmp) == 6) {
+    if (nonstd::ssize(tmp) == 6) {
         tmp += "ff";
     }
 

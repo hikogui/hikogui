@@ -4,7 +4,7 @@
 #include "Theme.hpp"
 #include "../text/FontBook.hpp"
 #include "../Application.hpp"
-#include "../JSON.hpp"
+#include "../encoding/JSON.hpp"
 
 namespace tt {
 
@@ -64,13 +64,13 @@ Theme::Theme(URL const &url)
 [[nodiscard]] vec Theme::parseColorValue(datum const &data)
 {
     if (data.is_vector()) {
-        if (ssize(data) != 3 && ssize(data) != 4) {
+        if (nonstd::ssize(data) != 3 && nonstd::ssize(data) != 4) {
             TTAURI_THROW(parse_error("Expect 3 or 4 values for a color, got {}.", data));
         }
         ttlet r = data[0];
         ttlet g = data[1];
         ttlet b = data[2];
-        ttlet a = ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
+        ttlet a = nonstd::ssize(data) == 4 ? data[3] : (r.is_integer() ? datum{255} : datum{1.0});
 
         if (r.is_integer() && g.is_integer() && b.is_integer() && a.is_integer()) {
             return vec::colorFromSRGB(

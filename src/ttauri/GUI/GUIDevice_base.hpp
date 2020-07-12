@@ -59,7 +59,7 @@ public:
     virtual void initializeDevice(Window const &window);
 
     ssize_t getNumberOfWindows() const noexcept {
-        return ssize(windows);
+        return nonstd::ssize(windows);
     }
 
     void add(std::unique_ptr<Window> window);

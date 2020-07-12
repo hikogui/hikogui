@@ -4,6 +4,7 @@ add_subdirectory(GUI)
 add_subdirectory(widgets)
 add_subdirectory(cells)
 add_subdirectory(audio)
+add_subdirectory(encoding)
 
 target_sources(ttauri PRIVATE
     detail/observable_base.hpp
@@ -31,8 +32,6 @@ target_sources(ttauri PRIVATE
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_macos.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/audio_counter_clock_win32.cpp>
     audio_utc_clock.hpp
-    base93.cpp
-    base93.hpp
     bezier.hpp
     BezierCurve.cpp
     BezierCurve.hpp
@@ -75,8 +74,6 @@ target_sources(ttauri PRIVATE
     float16.hpp
     format.hpp
     glob.hpp
-    gzip.cpp
-    gzip.hpp
     hash.hpp
     hires_utc_clock.cpp
     hires_utc_clock.hpp
@@ -84,13 +81,9 @@ target_sources(ttauri PRIVATE
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/hires_utc_clock_win32.cpp>
     huffman.hpp
     iaarect.hpp
-    inflate.cpp
-    inflate.hpp
     int_carry.hpp
     int_overflow.hpp
     ivec.hpp
-    JSON.cpp
-    JSON.hpp
     logger.cpp
     logger.hpp
     $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/logger_macos.mm>
@@ -108,13 +101,10 @@ target_sources(ttauri PRIVATE
     parse_location.hpp
     Path.cpp
     Path.hpp
-    pickle.hpp
     PixelMap.cpp
     PixelMap.hpp
     PixelMap.inl
     placement.hpp
-    png.cpp
-    png.hpp
     polymorphic_value.hpp
     polynomial.hpp
     R16G16B16A16SFloat.hpp
@@ -154,8 +144,6 @@ target_sources(ttauri PRIVATE
     trace.cpp
     trace.hpp
     Trigger.hpp
-    TTauriIconParser.cpp
-    TTauriIconParser.hpp
     type_traits.hpp
     UndoStack.hpp
     Unicode.hpp
@@ -173,8 +161,6 @@ target_sources(ttauri PRIVATE
     vspan.hpp
     wfree_message_queue.hpp
     wfree_unordered_map.hpp
-    zlib.cpp
-    zlib.hpp
 )
 
 target_precompile_headers(ttauri PRIVATE
@@ -208,24 +194,20 @@ target_sources(ttauri_tests PRIVATE
     exceptions_tests.cpp
     expression_tests.cpp
     FileView_tests.cpp
-    pickle_tests.cpp
     polynomial_tests.cpp
     small_map_tests.cpp
-    base93_tests.cpp
     safe_int_tests.cpp
     BezierCurve_tests.cpp
     Path_tests.cpp
     PixelMap_tests.cpp
     tokenizer_tests.cpp
     glob_tests.cpp
-    JSON_tests.cpp
     decimal_tests.cpp
     template_tests.cpp
     math_tests.cpp
     vec_tests.cpp
     mat_tests.cpp
     Unicode_tests.cpp
-    gzip_tests.cpp
 )
 
 target_precompile_headers(ttauri_tests PRIVATE

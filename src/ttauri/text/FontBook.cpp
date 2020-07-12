@@ -83,12 +83,12 @@ void FontBook::create_family_name_fallback_chain() noexcept
 
 FontID FontBook::register_font(URL url, bool post_process)
 {
-    auto font = parseResource<Font>(url);
+    auto font = std::make_unique<TrueTypeFont>(url);
     auto &description = font->description;
 
     LOG_INFO("Parsed font {}: {}", url, to_string(description));
 
-    ttlet font_id = FontID(ssize(font_entries));
+    ttlet font_id = FontID(nonstd::ssize(font_entries));
     font_entries.emplace_back(url, description);
 
     ttlet font_family_id = register_family(description.family_name);
@@ -116,7 +116,7 @@ void FontBook::calculate_fallback_fonts(FontEntry &entry, std::function<bool(Fon
         int max_popcount = total_ranges.popcount();
 
         // Find a font that matches the predicate and has the largest improvement.
-        for (ssize_t fallback_id = 0; fallback_id != ssize(font_entries); ++fallback_id) {
+        for (ssize_t fallback_id = 0; fallback_id != nonstd::ssize(font_entries); ++fallback_id) {
             ttlet &fallback_entry = font_entries[fallback_id];
 
             if (!predicate(entry.description, fallback_entry.description)) {
@@ -153,7 +153,7 @@ void FontBook::post_process() noexcept
     family_name_cache = family_names;
 
     // For each font, find fallback list.
-    for (ssize_t i = 0; i != ssize(font_entries); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(font_entries); ++i) {
         auto &entry = font_entries[i];
         entry.fallbacks.clear();
 
@@ -184,7 +184,7 @@ void FontBook::post_process() noexcept
 
     auto i = family_names.find(name);
     if (i == family_names.end()) {
-        ttlet family_id = FontFamilyID(ssize(font_variants));
+        ttlet family_id = FontFamilyID(nonstd::ssize(font_variants));
         font_variants.emplace_back();
         family_names[name] = family_id;
 
@@ -233,7 +233,7 @@ void FontBook::post_process() noexcept
 [[nodiscard]] FontID FontBook::find_font(FontFamilyID family_id, FontVariant variant) const noexcept
 {
     tt_assert(family_id);
-    tt_assume(family_id >= 0 && family_id < ssize(font_variants));
+    tt_assume(family_id >= 0 && family_id < nonstd::ssize(font_variants));
     ttlet &variants = font_variants[family_id];
     for (auto i = 0; i < 16; i++) {
         if (auto font_id = variants[variant.alternative(i)]) {
@@ -256,12 +256,12 @@ void FontBook::post_process() noexcept
 
 [[nodiscard]] Font const &FontBook::get_font(FontID font_id) const noexcept
 {
-    tt_assume(font_id < ssize(font_entries));
+    tt_assume(font_id < nonstd::ssize(font_entries));
     ttlet &entry = font_entries[font_id];
 
     if (!entry.font) {
         // This font was parsed once before, it must not give an error now.
-        entry.font = parseResource<Font>(entry.url);
+        entry.font = std::make_unique<TrueTypeFont>(entry.url);
         tt_assert(entry.font);
     }
 

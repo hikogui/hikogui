@@ -119,7 +119,7 @@ public:
             callback
         );
 
-        if (ssize(callback_list) == 1) {
+        if (nonstd::ssize(callback_list) == 1) {
             start_with_lock_held();
         }
 

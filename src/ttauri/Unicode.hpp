@@ -68,7 +68,7 @@ template<typename UnaryOperation>
 [[nodiscard]] inline std::u16string u16string_transform(std::u16string_view str, UnaryOperation unary_op) noexcept
 {
     auto r = std::u16string{};
-    r.reserve(ssize(str));
+    r.reserve(nonstd::ssize(str));
 
     std::transform(str.cbegin(), str.cend(), std::back_inserter(r), unary_op);
     return r;
@@ -244,7 +244,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::string to_string(std::u32string_view rhs) noexcept {
     auto r = std::string{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     for (auto c: rhs) {
         c = utf32_validate(c);
@@ -262,7 +262,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::u16string to_u16string(std::u32string_view rhs) noexcept {
     auto r = std::u16string{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     for (auto c: rhs) {
         c = utf32_validate(c);
@@ -281,7 +281,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::wstring to_wstring(std::u32string_view rhs) noexcept {
     auto r = std::wstring{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     for (auto c: rhs) {
         c = utf32_validate(c);
@@ -299,7 +299,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::wstring to_wstring(std::u32string_view rhs) noexcept {
     auto r = std::wstring{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     for (auto c: rhs) {
         r += static_cast<wchar_t>(c);
@@ -313,7 +313,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::u32string to_u32string(std::string_view rhs) noexcept {
     auto r = std::u32string{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     auto state = utf8_to_utf32_state{};
     for (ttlet u: rhs) {
@@ -329,10 +329,10 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::u32string to_u32string(std::u16string_view rhs) noexcept {
     auto r = std::u32string{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     auto swapped_str = std::u16string{};
-    if (ssize(rhs) != 0 && rhs.front() == UnicodeReverseBOM) {
+    if (nonstd::ssize(rhs) != 0 && rhs.front() == UnicodeReverseBOM) {
         swapped_str = u16string_byte_swap(rhs);
         rhs = std::u16string_view{swapped_str};
     }
@@ -353,7 +353,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::u32string to_u32string(std::wstring_view rhs) noexcept {
     auto r = std::u32string{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     uint32_t state = 0;
     for (ttlet u: rhs) {
@@ -369,7 +369,7 @@ struct utf8_to_utf32_state {
  */
 [[nodiscard]] inline std::u32string to_u32string(std::wstring_view rhs) noexcept {
     auto r = std::u32string{};
-    r.reserve(ssize(rhs));
+    r.reserve(nonstd::ssize(rhs));
 
     for (ttlet c: rhs) {
         r += static_cast<wchar_t>(c);

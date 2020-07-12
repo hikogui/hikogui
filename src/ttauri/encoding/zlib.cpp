@@ -3,8 +3,8 @@
 
 #include "zlib.hpp"
 #include "inflate.hpp"
-#include "endian.hpp"
-#include "placement.hpp"
+#include "../endian.hpp"
+#include "../placement.hpp"
 
 namespace tt {
 

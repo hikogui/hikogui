@@ -73,7 +73,7 @@ std::vector<BezierCurve> makeContourFromPoints(std::vector<BezierPoint>::const_i
     }
 
     // If there is only a single curve, water-drop-shaped, it should be marked white.
-    if (ssize(r) == 1) {
+    if (nonstd::ssize(r) == 1) {
         r.front().color = BezierCurve::Color::White;
     }
 
@@ -283,7 +283,7 @@ void fill(PixelMap<uint8_t> &image, std::vector<BezierCurve> const &curves) noex
 
  [[nodiscard]] static float generate_SDF8_pixel(vec point, std::vector<BezierCurve> const &curves) noexcept
 {
-    if (ssize(curves) == 0) {
+    if (nonstd::ssize(curves) == 0) {
         return -std::numeric_limits<float>::max();
     }
 
@@ -389,8 +389,8 @@ static void bad_pixels_horizontally(PixelMap<SDF8> &image) noexcept
             ttlet normal_mean = mean(area.cbegin(), area.cend());
             ttlet normal_stddev = stddev(area.cbegin(), area.cend(), normal_mean);
 
-            static_assert(ssize(area) % 2 == 1);
-            area[ssize(area) / 2] = -area[ssize(area) / 2];
+            static_assert(nonstd::ssize(area) % 2 == 1);
+            area[nonstd::ssize(area) / 2] = -area[nonstd::ssize(area) / 2];
 
             ttlet flipped_mean = mean(area.cbegin(), area.cend());
             ttlet flipped_stddev = stddev(area.cbegin(), area.cend(), flipped_mean);
@@ -422,7 +422,7 @@ void fill(PixelMap<SDF8> &image, std::vector<BezierCurve> const &curves) noexcep
     std::vector<std::pair<int,int>> bad_pixel_list;
     for (int i = 0; i < 10; i++) {
         bad_pixel_list = bad_pixels_homogenious(image);
-        if (ssize(bad_pixel_list) == 0) {
+        if (nonstd::ssize(bad_pixel_list) == 0) {
             break;
         }
     

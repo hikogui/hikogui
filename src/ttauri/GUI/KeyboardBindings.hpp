@@ -55,7 +55,7 @@ class KeyboardBindings {
         }
 
         void update_cache() noexcept {
-            cache.reserve(ssize(system) + ssize(user));
+            cache.reserve(nonstd::ssize(system) + nonstd::ssize(user));
 
             for (ttlet cmd: system) {
                 ttlet i = std::find(cache.cbegin(), cache.cend(), cmd);

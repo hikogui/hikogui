@@ -15,7 +15,6 @@
 #include "../R16G16B16A16SFloat.hpp"
 #include "../R32G32SFloat.hpp"
 #include "../URL.hpp"
-#include "../pickle.hpp"
 #include "../vspan.hpp"
 #include "../utils.hpp"
 #include "../Trigger.hpp"

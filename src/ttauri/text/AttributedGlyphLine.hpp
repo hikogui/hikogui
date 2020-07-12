@@ -37,10 +37,10 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] bool shouldWrap(float maximum_width) noexcept {
-        tt_assume(ssize(line) >= 1);
+        tt_assume(nonstd::ssize(line) >= 1);
         return
             width > maximum_width &&
-            ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
+            nonstd::ssize(line) >= (line.back().isParagraphSeparator() ? 3 : 2);
     }
 
     [[nodiscard]] AttributedGlyphLine wrap(float maximum_width) noexcept {
@@ -79,7 +79,7 @@ struct AttributedGlyphLine {
     }
 
     [[nodiscard]] aarect boundingBox() const noexcept {
-        tt_assume(ssize(line) >= 1);
+        tt_assume(nonstd::ssize(line) >= 1);
 
         ttlet p0 = vec::point(
             line.front().position.x(),
@@ -160,8 +160,8 @@ private:
                 validWidth = totalWidth;
             }
         }
-        capHeight /= numeric_cast<float>(ssize(line));
-        xHeight /= numeric_cast<float>(ssize(line));
+        capHeight /= numeric_cast<float>(nonstd::ssize(line));
+        xHeight /= numeric_cast<float>(nonstd::ssize(line));
 
         width = validWidth;
     }

@@ -47,7 +47,7 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
 
     field.setStyleOfAll(theme->labelStyle);
 
-    if (ssize(field) == 0) {
+    if (nonstd::ssize(field) == 0) {
         shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::TopLeft);
     } else {
         field.setWidth(textRectangle.width());

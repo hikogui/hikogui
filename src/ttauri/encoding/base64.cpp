@@ -95,10 +95,10 @@ static char base64_encode(int value) noexcept
 std::string base64_encode(nonstd::span<std::byte const> src) noexcept
 {
     auto dst = std::string{};
-    ttlet nr_groups = (ssize(binary_data) + 2) / 3;
+    ttlet nr_groups = (nonstd::ssize(binary_data) + 2) / 3;
     dst.reserve(nr_groups * 4);
 
-    ttlet nr_full_groups = (ssize(binary_data) / 3;
+    ttlet nr_full_groups = (nonstd::ssize(binary_data) / 3;
     ttlet full_group_end = src.begin() + nr_full_groups * 3;
     auto i = src.begin();
     while (i != full_group_end) {

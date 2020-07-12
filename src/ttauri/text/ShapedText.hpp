@@ -112,7 +112,7 @@ public:
     [[nodiscard]] size_t size() const noexcept {
         ssize_t count = 0;
         for (ttlet &line: lines) {
-            count += ssize(line);
+            count += nonstd::ssize(line);
         }
         return numeric_cast<size_t>(count);
     }
@@ -144,10 +144,10 @@ public:
     /** Get the capHeight of the middle line(s).
      */
     float middleCapHeight() const noexcept {
-        if ((ssize(lines) % 2) == 1) {
-            return lines[ssize(lines) / 2].capHeight;
+        if ((nonstd::ssize(lines) % 2) == 1) {
+            return lines[nonstd::ssize(lines) / 2].capHeight;
         } else {
-            return (lines[ssize(lines) / 2 - 1].capHeight + lines[ssize(lines) / 2].capHeight) * 0.5f;
+            return (lines[nonstd::ssize(lines) / 2 - 1].capHeight + lines[nonstd::ssize(lines) / 2].capHeight) * 0.5f;
         }
     }
 

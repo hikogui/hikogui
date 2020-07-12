@@ -1,4 +1,4 @@
-#include "ttauri/gzip.hpp"
+#include "ttauri/encoding/gzip.hpp"
 #include "ttauri/FileView.hpp"
 #include "ttauri/required.hpp"
 #include <gtest/gtest.h>
@@ -14,9 +14,9 @@ TEST(GZip, UnzipEmpty) {
     ttlet original = FileView(URL("file:gzip_test1.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -27,9 +27,9 @@ TEST(GZip, UnzipSingleA) {
     ttlet original = FileView(URL("file:gzip_test2.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -40,9 +40,9 @@ TEST(GZip, UnzipText) {
     ttlet original = FileView(URL("file:gzip_test3.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -55,9 +55,9 @@ TEST(GZip, UnzipCpHTML) {
     ttlet original = FileView(URL("file:gzip_test4.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -68,9 +68,9 @@ TEST(GZip, UnzipFieldsC) {
     ttlet original = FileView(URL("file:gzip_test5.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -81,9 +81,9 @@ TEST(GZip, UnzipGrammarLSP) {
     ttlet original = FileView(URL("file:gzip_test6.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -94,9 +94,9 @@ TEST(GZip, UnzipSum) {
     ttlet original = FileView(URL("file:gzip_test7.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }
@@ -107,9 +107,9 @@ TEST(GZip, UnzipXargs1) {
     ttlet original = FileView(URL("file:gzip_test8.bin"));
     ttlet original_bytes = original.bytes();
 
-    ASSERT_EQ(ssize(decompressed), ssize(original_bytes));
+    ASSERT_EQ(nonstd::ssize(decompressed), nonstd::ssize(original_bytes));
 
-    for (ssize_t i = 0; i != ssize(decompressed); ++i) {
+    for (ssize_t i = 0; i != nonstd::ssize(decompressed); ++i) {
         ASSERT_EQ(decompressed[i], original_bytes[i]);
     }
 }

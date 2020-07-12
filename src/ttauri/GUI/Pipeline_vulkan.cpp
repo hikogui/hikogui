@@ -42,7 +42,7 @@ void Pipeline_vulkan::buildDescriptorSets()
 {
     ttlet descriptorSetLayoutBindings = createDescriptorSetLayoutBindings();
 
-    if (ssize(descriptorSetLayoutBindings) == 0) {
+    if (nonstd::ssize(descriptorSetLayoutBindings) == 0) {
         // Make sure that there is no descriptor set.
         descriptorSet = nullptr;
         return;

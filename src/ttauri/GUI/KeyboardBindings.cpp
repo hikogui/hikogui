@@ -2,7 +2,7 @@
 // All rights reserved.
 
 #include "KeyboardBindings.hpp"
-#include "../JSON.hpp"
+#include "../encoding/JSON.hpp"
 #include "../command.hpp"
 
 namespace tt {

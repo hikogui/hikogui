@@ -8,6 +8,24 @@
 #include <type_traits>
 #include <cstdint>
 
+
+namespace nonstd {
+
+template <class C>
+constexpr auto ssize(const C& c) -> std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>> 
+{
+    using R = std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
+    return static_cast<R>(c.size());
+}
+
+template <class T, size_t N>
+constexpr ptrdiff_t ssize(const T (&array)[N]) noexcept
+{
+    return N;
+}
+
+}
+
 namespace tt {
 
 
@@ -41,18 +59,6 @@ struct nr_items {
 template<typename C>
 constexpr auto nr_items_v = nr_items<C>::value;
 
-template <class C>
-constexpr auto ssize(const C& c) -> std::common_type_t<ssize_t, std::make_signed_t<decltype(c.size())>> 
-{
-    using R = std::common_type_t<ssize_t, std::make_signed_t<decltype(c.size())>>;
-    return static_cast<R>(c.size());
-}
-
-template <class T, ssize_t N>
-constexpr ssize_t ssize(const T (&array)[N]) noexcept
-{
-    return N;
-}
 
 template <class C>
 constexpr auto usize(const C& c) -> std::common_type_t<size_t, std::make_unsigned_t<decltype(c.size())>> 

@@ -18,10 +18,10 @@ inline std::string tag_name(std::type_index tag) noexcept
 {
     ttlet long_name = std::string{tag.name()};
     ttlet split_name = split(long_name, "::"s);
-    if (ssize(split_name) != 0) {
+    if (nonstd::ssize(split_name) != 0) {
         ttlet &last_name = split_name.back();
         if (ends_with(last_name, "_tag"s)) {
-            return last_name.substr(0, ssize(last_name) - 4);
+            return last_name.substr(0, nonstd::ssize(last_name) - 4);
         } else {
             return last_name;
         }

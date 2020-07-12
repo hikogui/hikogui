@@ -42,7 +42,6 @@ else(APPLE)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake")
-include(AddIcon)
 include(AddStaticResource)
 include(AddShader)
 include(AddStaticResource)
@@ -59,7 +58,7 @@ target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set_property(TARGET ttauri PROPERTY CXX_STANDARD 17)
+target_compile_features(ttauri PUBLIC cxx_std_17)
 
 add_custom_command(
   TARGET ttauri POST_BUILD

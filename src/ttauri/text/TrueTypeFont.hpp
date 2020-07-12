@@ -71,14 +71,28 @@ public:
      * remain available.
      */
     TrueTypeFont(nonstd::span<std::byte const> bytes) :
-        file_bytes(bytes) {
+        file_bytes(bytes)
+    {
         parseFontDirectory();
     }
 
     TrueTypeFont(std::unique_ptr<ResourceView> view) :
-        view(std::move(view)) {
+        view(std::move(view))
+    {
         file_bytes = this->view->bytes();
         parseFontDirectory();
+    }
+
+    TrueTypeFont(URL const &url) :
+        view(url.loadView())
+    {
+        file_bytes = this->view->bytes();
+        try {
+            parseFontDirectory();
+        } catch (error &e) {
+            e.set<url_tag>(url);
+            throw;
+        }
     }
 
     TrueTypeFont() = delete;

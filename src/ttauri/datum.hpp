@@ -1162,11 +1162,11 @@ public:
             auto &v = *get_pointer<datum_impl::vector>();
 
             if (index < 0) {
-                index = ssize(v) + index;
+                index = nonstd::ssize(v) + index;
             }
 
-            if (index < 0 || index >= ssize(v)) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, ssize(v));
+            if (index < 0 || index >= nonstd::ssize(v)) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, nonstd::ssize(v));
             } else {
                 return v[index];
             }
@@ -1188,7 +1188,7 @@ public:
             ttlet &m = *get_pointer<datum_impl::map>();
             ttlet i = m.find(rhs);
             if (i == m.cend()) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Could not find key {} in map of size {}", rhs.repr(), ssize(m));
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Could not find key {} in map of size {}", rhs.repr(), nonstd::ssize(m));
             }
             return i->second;
 
@@ -1197,11 +1197,11 @@ public:
             ttlet &v = *get_pointer<datum_impl::vector>();
 
             if (index < 0) {
-                index = ssize(v) + index;
+                index = nonstd::ssize(v) + index;
             }
 
-            if (index < 0 || index >= ssize(v)) {
-                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, ssize(v));
+            if (index < 0 || index >= nonstd::ssize(v)) {
+                TTAURI_THROW_INVALID_OPERATION_ERROR("Index {} out of range to access value in vector of size {}", index, nonstd::ssize(v));
             } else {
                 return v[index];
             }
@@ -1230,10 +1230,10 @@ public:
             ttlet &v = *get_pointer<datum_impl::vector>();
 
             if (index < 0) {
-                index = ssize(v) + index;
+                index = nonstd::ssize(v) + index;
             }
 
-            return index >= 0 && index < ssize(v);
+            return index >= 0 && index < nonstd::ssize(v);
 
         } else {
             return false;

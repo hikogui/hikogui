@@ -28,11 +28,11 @@ void ToolbarWidget::disjoinLeftAndRightChildren() noexcept
 
 void ToolbarWidget::joinLeftAndRightChildren() noexcept
 {
-    if (ssize(leftChildren) != 0 && ssize(rightChildren) != 0) {
+    if (nonstd::ssize(leftChildren) != 0 && nonstd::ssize(rightChildren) != 0) {
         leftRightJoinConstraint = window.addConstraint(leftChildren.back()->right <= rightChildren.back()->left);
-    } else if (ssize(leftChildren) != 0) {
+    } else if (nonstd::ssize(leftChildren) != 0) {
         leftRightJoinConstraint = window.addConstraint(leftChildren.back()->right <= right);
-    } else if (ssize(rightChildren) != 0) {
+    } else if (nonstd::ssize(rightChildren) != 0) {
         leftRightJoinConstraint = window.addConstraint(left <= rightChildren.back()->left);
     }
 }
@@ -44,7 +44,7 @@ Widget &ToolbarWidget::addWidget(Alignment alignment, std::unique_ptr<Widget> ch
     disjoinLeftAndRightChildren();
 
     if (alignment == HorizontalAlignment::Right) {
-        auto previousWidget = ssize(rightChildren) != 0 ? rightChildren.back() : nullptr;
+        auto previousWidget = nonstd::ssize(rightChildren) != 0 ? rightChildren.back() : nullptr;
         rightChildren.push_back(&tmp);
 
         if (previousWidget == nullptr) {
@@ -54,7 +54,7 @@ Widget &ToolbarWidget::addWidget(Alignment alignment, std::unique_ptr<Widget> ch
         }
 
     } else {
-        auto previousWidget = ssize(leftChildren) != 0 ? leftChildren.back() : nullptr;
+        auto previousWidget = nonstd::ssize(leftChildren) != 0 ? leftChildren.back() : nullptr;
         leftChildren.push_back(&tmp);
 
         if (previousWidget == nullptr) {

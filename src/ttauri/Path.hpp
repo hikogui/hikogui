@@ -5,7 +5,6 @@
 
 #include "BezierPoint.hpp"
 #include "attributes.hpp"
-#include "TTauriIconParser.hpp"
 #include "ResourceView.hpp"
 #include "exceptions.hpp"
 #include "vec.hpp"
@@ -269,29 +268,5 @@ void composit(PixelMap<R16G16B16A16SFloat>& dst, Path const &mask) noexcept;
 * @param path A path.
 */
 void fill(PixelMap<SDF8> &dst, Path const &path) noexcept;
-
-}
-
-namespace tt {
-
-template<>
-inline std::unique_ptr<Path> parseResource(URL const &location)
-{
-    if (location.extension() == "tticon") {
-        ttlet view = location.loadView();
-
-        try {
-            return std::make_unique<Path>(parseTTauriIcon(*view));
-        } catch (error &e) {
-            e.set<url_tag>(location);
-            throw;
-        }
-
-    } else {
-        TTAURI_THROW(url_error("Unknown extension")
-            .set<url_tag>(location)
-        );
-    }
-}
 
 }
