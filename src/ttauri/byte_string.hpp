@@ -78,4 +78,9 @@ public:
 using bstring = std::basic_string<std::byte, byte_char_traits>;
 using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 
+
+inline bstring to_bstring(std::string src) noexcept {
+    return bstring{reinterpret_cast<std::byte *>(src.data()), src.size()};
+}
+
 }
