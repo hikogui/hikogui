@@ -1,50 +1,65 @@
 
-#include "sha512.hpp"
+#include "sha2.hpp"
 
 namespace tt {
 
-constexpr uint64_t Ch(uint64_t x, uint64_t y, uint64_t z) noexcept
-{
+template<typename T>
+constexpr T Ch(T x, T y, T z) noexcept {
     return (x & y) ^ (~x & z);
 }
 
-constexpr uint64_t Maj(uint64_t x, uint64_t y, uint64_t z) noexcept
-{
+template<typename T>
+constexpr T Maj(T x, T y, T z) noexcept {
     return (x & y) ^ (x & z) ^ (y & z);
 }
 
-template<int N>
-constexpr uint64_t S(uint64_t x) noexcept
-{
-    return (x >> N) | (x << (64 - N));
+template<typename T, int N>
+constexpr T rotr(T x) noexcept {
+    return x >> N | x << (sizeof(T)*CHAR_BIT - N);
 }
 
-template<int N>
-constexpr uint64_t R(uint64_t x) noexcept
-{
-    return x >> N;
+template<typename T, int A, int B, int C>
+constexpr T S(T x) noexcept {
+    return rotr<A>(x) ^ rotr<B>(x) ^ rotr<C>(x);
 }
 
-constexpr uint64_t E0(uint64_t x) noexcept
-{
-    return S<28>(x) ^ S<34>(x) ^ S<39>(x);
+template<typename T, int A, int B, int C>
+constexpr T s(T x) noexcept {
+    return rotr<A>(x) ^ rotr<B>(x) ^ x >> C;
 }
 
-constexpr uint64_t E1(uint64_t x) noexcept
-{
-    return S<14>(x) ^ S<18>(x) ^ S<41>(x);
-}
+template<typename T> constexpr T S0(T x) noexcept;
+template<> constexpr uint32_t S0(uint32_t x) { return S<2,13,22>(x); }
+template<> constexpr uint64_t S0(uint64_t x) { return S<28,34,39>(x); }
 
-constexpr uint64_t o0(uint64_t x) noexcept
-{
-    return S<1>(x) ^ S<8>(x) ^ R<7>(x);
-}
+template<typename T> constexpr T S1(T x) noexcept;
+template<> constexpr uint32_t S1(uint32_t x) { return S<6,11,25>(x); }
+template<> constexpr uint64_t S1(uint64_t x) { return S<14,18,41>(x); }
 
-constexpr uint64_t o1(uint64_t x) noexcept
-{
-    return S<10>(x) ^ S<61>(x) ^ R<6>(x);
-}
+template<typename T> constexpr T s0(T x) noexcept;
+template<> constexpr uint32_t s0(uint32_t x) { return s<7,18,3>(x); }
+template<> constexpr uint64_t s0(uint64_t x) { return s<1,61,6>(x); }
 
+template<typename T> constexpr T s1(T x) noexcept;
+template<> constexpr uint32_t s1(uint32_t x) { return s<17,19,10>(x); }
+template<> constexpr uint64_t s1(uint64_t x) { return s<19,61,6>(x); }
+
+template<typename T>
+constexpr std::array<T,80> K;
+
+template<>
+constexpr std::array<uint32_t,80> K = {
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+};
+
+template<>
 constexpr std::array<uint64_t,80> K = {
     0x428a2f98d728ae22, 0x7137449123ef65cd, 0xb5c0fbcfec4d3b2f, 0xe9b5dba58189dbbc, 0x3956c25bf348b538, 
     0x59f111f1b605d019, 0x923f82a4af194f9b, 0xab1c5ed5da6d8118, 0xd807aa98a3030242, 0x12835b0145706fbe, 
@@ -61,82 +76,66 @@ constexpr std::array<uint64_t,80> K = {
     0x90befffa23631e28, 0xa4506cebde82bde9, 0xbef9a3f7b2c67915, 0xc67178f2e372532b, 0xca273eceea26619c, 
     0xd186b8c721c0c207, 0xeada7dd6cde0eb1e, 0xf57d4f7fee6ed178, 0x06f067aa72176fba, 0x0a637dc5a2c898a6, 
     0x113f9804bef90dae, 0x1b710b35131c471b, 0x28db77f523047d84, 0x32caab7b40c72493, 0x3c9ebe0a15c9bebc, 
-    0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a47581
+    0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817
 };
 
-[[nodiscard]] static uint64_t const &a(sha512::state_type const &state) noexcept { return state[0]; }
-[[nodiscard]] static uint64_t const &b(sha512::state_type const &state) noexcept { return state[1]; }
-[[nodiscard]] static uint64_t const &c(sha512::state_type const &state) noexcept { return state[2]; }
-[[nodiscard]] static uint64_t const &d(sha512::state_type const &state) noexcept { return state[3]; }
-[[nodiscard]] static uint64_t const &e(sha512::state_type const &state) noexcept { return state[4]; }
-[[nodiscard]] static uint64_t const &f(sha512::state_type const &state) noexcept { return state[5]; }
-[[nodiscard]] static uint64_t const &g(sha512::state_type const &state) noexcept { return state[6]; }
-[[nodiscard]] static uint64_t const &h(sha512::state_type const &state) noexcept { return state[7]; }
-
-[[nodiscard]] static uint64_t &a(sha512::state_type &state) noexcept { return state[0]; }
-[[nodiscard]] static uint64_t &b(sha512::state_type &state) noexcept { return state[1]; }
-[[nodiscard]] static uint64_t &c(sha512::state_type &state) noexcept { return state[2]; }
-[[nodiscard]] static uint64_t &d(sha512::state_type &state) noexcept { return state[3]; }
-[[nodiscard]] static uint64_t &e(sha512::state_type &state) noexcept { return state[4]; }
-[[nodiscard]] static uint64_t &f(sha512::state_type &state) noexcept { return state[5]; }
-[[nodiscard]] static uint64_t &g(sha512::state_type &state) noexcept { return state[6]; }
-[[nodiscard]] static uint64_t &h(sha512::state_type &state) noexcept { return state[7]; }
-
 template<int N>
-[[nodiscard]] std::array<std::byte,N> sha512_output(sha512::state_type const &state) noexcept
+[[nodiscard]] std::array<std::byte,N> sha2_output(sha2::state_type const &state) noexcept
 {
     std::array<std::byte,N> r;
 
     for (int i = 0; i != N; ++i) {
-        r[i] = state[i/8] >> (56 - (i%8)*8);
+        r[i] = state[i / 8] >> (56 - (i % 8) * 8);
     }
 
     return r;
 }
 
-static void sha512_round(sha512::state_type &state, uint64_t K, uint64_t W) noexcept
+template<typename T>
+constexpr void sha2_round(std::array<T,8> &state, T K, T W) noexcept
 {
     ttlet T1 =
-        h(state) +
-        E1(e(state)) +
-        Ch(e(state), f(state), g(state)) +
+        state[7] +
+        S1(state[4]) +
+        Ch(state[4], state[5], state[6]) +
         K +
         W;
 
     ttlet T2 =
-        E0(a(state)) +
-        Maj(a(state), b(state), c(state));
+        S0(state[0]) +
+        Maj(state[0], state[1], state[2]);
 
-    h(state) = g(state);
-    g(state) = f(state);
-    f(state) = e(state);
-    e(state) = d(state) + T1;
-    d(state) = c(state);
-    c(state) = b(state);
-    b(state) = a(state);
-    a(state) = T1 + T2;
+    state[7] = state[6];
+    state[6] = state[5];
+    state[5] = state[4];
+    state[4] = state[3] + T1;
+    state[3] = state[2];
+    state[2] = state[1];
+    state[1] = state[0];
+    state[0] = T1 + T2;
 }
 
-static void sha512_block(sha512::state_type &state, sha512::block_t const &block) noexcept
+template<typename T>
+constexpr void sha2_block(std::array<T,8> &state, std::array<T,16> const &block) noexcept
 {
-    std::array<uint64_t,16> W;
+    std::array<T,16> W;
 
     ttlet tmp_state = state;
     for (auto j = 0; j != 16; ++j) {
-        sha512_round(
+        sha2_round(
             tmp_state,
             K[j],
             W[j] = block[j]
         );
     }
     for (auto j = 16; j != 80; ++j) {
-        sha512_round(
+        sha2_round(
             tmp_state,
-            K[j], 
+            K<T>[j], 
             W[j & 0xf] =
-                o1(W[(j- 2) & 0xf]) +
+                s1(W[(j- 2) & 0xf]) +
                    W[(j- 7) & 0xf] +
-                o0(W[(j-15) & 0xf]) +
+                s0(W[(j-15) & 0xf]) +
                    W[(j-16) & 0xf]
         );
     }
@@ -144,9 +143,9 @@ static void sha512_block(sha512::state_type &state, sha512::block_t const &block
 }
 
 template<typename N>
-std::array<std::byte,N> sha512(byte_string data)
+std::array<std::byte,N> sha2(byte_string data)
 {
-    sha512::state_type state;
+    sha2::state_type state;
     if constexpr (N == 64) {
         state[0] = 0x6a09e667f3bcc908;
         state[1] = 0xbb67ae8584caa73b;
@@ -169,7 +168,7 @@ std::array<std::byte,N> sha512(byte_string data)
         tt_no_default;
     }
 
-    return sha512_output<N>(state);
+    return sha2_output<N>(state);
 }
 
 }
