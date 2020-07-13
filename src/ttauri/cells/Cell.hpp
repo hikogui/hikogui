@@ -37,12 +37,14 @@ public:
     * @param rectangle The position and size of the image.
     * @param alignment The alignment within the rectangle.
     * @param middle The height of the middle of the line of text.
+    * @param useContextColor True to use the colors in the context, False to use the colors in the cell itself.
     */
     virtual void draw(
         DrawContext const &drawContext,
         aarect rectangle,
         Alignment alignment,
-        float middle=std::numeric_limits<float>::max()
+        float middle=std::numeric_limits<float>::max(),
+        bool useContextColor=false
     ) const noexcept = 0;
 };
 

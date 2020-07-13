@@ -44,10 +44,9 @@ public:
     observable<ValueType> value;
     observable<std::string> label;
 
-    template<typename V>
-    ToggleWidget(Window &window, Widget *parent, V &&value, ValueType trueValue) noexcept :
+    ToggleWidget(Window &window, Widget *parent, ValueType trueValue) noexcept :
         Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
-        value(std::forward<V>(value)),
+        value(),
         label()
     {
         [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...){
@@ -129,7 +128,8 @@ public:
         context.cornerShapes = vec{slider_rectangle.height() * 0.5f};
         context.drawBoxIncludeBorder(slider_rectangle);
 
-        labelCell->draw(context, label_rectangle, Alignment::TopLeft, toggle_middle);
+        context.color = *enabled ? theme->labelStyle.color : drawContext.color;
+        labelCell->draw(context, label_rectangle, Alignment::TopLeft, toggle_middle, true);
         Widget::draw(drawContext, displayTimePoint);
     }
 

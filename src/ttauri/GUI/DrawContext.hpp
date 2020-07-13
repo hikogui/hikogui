@@ -223,35 +223,29 @@ public:
      * This will use the current:
      *  - transform, to transform the shaped-text's bounding box
      *  - clippingRectangle
+     *
+     * @param text The shaped text to draw.
+     * @param useContextColor When true display the text in the context's color, if false use text style color
      */
-    void drawText(ShapedText const &text) const noexcept {
+    void drawText(ShapedText const &text, bool useContextColor=false) const noexcept {
         tt_assume(sdfVertices != nullptr);
 
-        device().SDFPipeline->placeVertices(
-            *sdfVertices,
-            text,
-            transform,
-            clippingRectangle
-        );
-    }
-
-    /** Draw shaped text.
-    * This function will draw the shaped text.
-    * The SDF-image-atlas needs to be prepared ahead of time.
-    * This will use the current:
-    *  - transform, to transform the shaped-text's bounding box
-    *  - clippingRectangle
-    */
-    void drawTextSingleColor(ShapedText const &text) const noexcept {
-        tt_assume(sdfVertices != nullptr);
-
-        device().SDFPipeline->placeVertices(
-            *sdfVertices,
-            text,
-            transform,
-            clippingRectangle,
-            color
-        );
+        if (useContextColor) {
+            device().SDFPipeline->placeVertices(
+                *sdfVertices,
+                text,
+                transform,
+                clippingRectangle,
+                color
+            );
+        } else {
+            device().SDFPipeline->placeVertices(
+                *sdfVertices,
+                text,
+                transform,
+                clippingRectangle
+            );
+        }
     }
 
     void drawGlyph(FontGlyphIDs const &glyph, aarect box) const noexcept {

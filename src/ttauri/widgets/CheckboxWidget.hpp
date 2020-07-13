@@ -25,7 +25,7 @@ protected:
     std::unique_ptr<TextCell> labelCell;
 
     FontGlyphIDs checkGlyph;
-    aarect checkBoundingBox;
+    aarect checkRectangle;
 
     float button_height;
     float button_width;
@@ -37,7 +37,6 @@ protected:
     aarect label_rectangle;
 
     mat::T label_translate;
-    aarect check_rectangle;
 
     ValueType trueValue;
     ValueType falseValue;
@@ -46,12 +45,11 @@ public:
     observable<ValueType> value;
     observable<std::string> label;
 
-    template<typename V>
-    CheckboxWidget(Window &window, Widget *parent, V &&value, ValueType trueValue, ValueType falseValue) noexcept :
+    CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
         Widget(window, parent, {Theme::smallWidth, Theme::smallHeight}),
         trueValue(trueValue),
         falseValue(falseValue),
-        value(std::forward<V>(value)),
+        value(),
         label()
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
@@ -91,12 +89,9 @@ public:
         button_rectangle = aarect{button_x, button_y, button_width, button_height};
         button_middle = button_y + button_height * 0.5f;
 
-
-        ttlet checkFontId = application->fonts->find_font("Arial", FontWeight::Regular, false);
-        checkGlyph = application->fonts->find_glyph(checkFontId, Grapheme{check});
-        checkBoundingBox = scale(checkGlyph.getBoundingBox(), button_height * 1.2f);
-
-        check_rectangle = align(button_rectangle, checkBoundingBox, Alignment::MiddleCenter);
+        checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
+        ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);
+        checkRectangle = align(button_rectangle, scale(checkGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
@@ -111,7 +106,7 @@ public:
         // Checkmark or tristate.
         if (value == trueValue) {
             context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-            context.drawGlyph(checkGlyph, check_rectangle);
+            context.drawGlyph(checkGlyph, checkRectangle);
         } else if (value == falseValue) {
             ;
         } else {
@@ -120,7 +115,8 @@ public:
             context.drawFilledQuad(shrink(button_rectangle, 3.0f));
         }
         
-        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle);
+        context.color = *enabled ? theme->labelStyle.color : drawContext.color;
+        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle, true);
         Widget::draw(drawContext, displayTimePoint);
     }
 

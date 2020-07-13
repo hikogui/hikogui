@@ -21,7 +21,7 @@ public:
     GlyphCell &operator=(GlyphCell const &) noexcept = delete;
     GlyphCell &operator=(GlyphCell &&) noexcept = delete;
 
-    void draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept override;
+    void draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle, bool useContextColor=false) const noexcept override;
 };
 
 }

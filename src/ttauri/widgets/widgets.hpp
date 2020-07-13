@@ -7,6 +7,7 @@
 #include "LineInputWidget.hpp"
 #include "ToggleWidget.hpp"
 #include "CheckboxWidget.hpp"
+#include "SelectionWidget.hpp"
 #include "RadioButtonWidget.hpp"
 #include "ToolbarWidget.hpp"
 #include "WindowWidget.hpp"

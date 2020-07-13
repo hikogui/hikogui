@@ -23,7 +23,13 @@ public:
 
     [[nodiscard]] float heightForWidth(float width) const noexcept override;
 
-    void draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept override;
+    void draw(
+        DrawContext const &drawContext,
+        aarect rectangle,
+        Alignment alignment,
+        float middle=std::numeric_limits<float>::max(),
+        bool useContextColor=false
+    ) const noexcept override;
 
 };
 

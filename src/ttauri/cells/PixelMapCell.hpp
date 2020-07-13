@@ -21,7 +21,7 @@ public:
     PixelMapCell(PixelMap<R16G16B16A16SFloat> const &pixelMap);
     PixelMapCell(URL const &url);
 
-    void draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept override;
+    void draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle, bool useContextColor=false) const noexcept override;
 };
 
 }

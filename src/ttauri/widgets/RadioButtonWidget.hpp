@@ -35,11 +35,10 @@ public:
     observable<ValueType> value;
     observable<std::string> label;
 
-    template<typename V>
-    RadioButtonWidget(Window &window, Widget *parent, V &&value, ValueType activeValue) noexcept :
+    RadioButtonWidget(Window &window, Widget *parent, ValueType activeValue) noexcept :
         Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
         activeValue(std::move(activeValue)),
-        value(std::forward<V>(value)),
+        value(),
         label()
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
@@ -103,7 +102,8 @@ public:
             context.drawBoxIncludeBorder(pip_rectangle);
         }
 
-        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle);
+        context.color = *enabled ? theme->labelStyle.color : drawContext.color;
+        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle, true);
         Widget::draw(drawContext, displayTimePoint);
     }
 

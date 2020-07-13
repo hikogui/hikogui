@@ -11,6 +11,7 @@ target_sources(ttauri PRIVATE
     RadioButtonWidget.hpp
     RowWidget.cpp
     RowWidget.hpp
+    SelectionWidget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.hpp>
     ToggleWidget.hpp

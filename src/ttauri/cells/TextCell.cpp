@@ -27,7 +27,7 @@ vec TextCell::preferredExtent() const noexcept
     return shapedText.boundingBox.height();
 }
 
-void TextCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
+void TextCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle, bool useContextColor) const noexcept
 {
     if (modified || rectangle.width() != shapedText.width || alignment != shapedText.alignment) {
         shapedText = ShapedText(text, style, rectangle.width(), alignment);
@@ -45,7 +45,7 @@ void TextCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment 
             shapedText.TMiddle(vec{rectangle.x(), middle});
     }
 
-    context.drawText(shapedText);
+    context.drawText(shapedText, useContextColor);
 }
 
 }

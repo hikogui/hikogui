@@ -17,7 +17,7 @@ PixelMapCell::PixelMapCell(PixelMap<R16G16B16A16SFloat> const &pixelMap) :
 PixelMapCell::PixelMapCell(URL const &url) :
     PixelMapCell(png::load(url)) {}
 
-void PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle) const noexcept
+void PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle, bool useContextColor) const noexcept
 {
     if (modified) {
         backing = drawContext.device().imagePipeline->makeImage(pixelMap.extent());

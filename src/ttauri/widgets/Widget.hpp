@@ -246,6 +246,14 @@ public:
         return static_cast<vec>(_extent.load(std::memory_order::memory_order_relaxed));
     }
 
+    [[nodiscard]] vec contentExtent() const noexcept {
+        if (content) {
+            return content->extent();
+        } else {
+            return extent();
+        }
+    }
+
     void setExtent(vec rhs) noexcept {
         _extent.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
     }

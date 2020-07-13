@@ -58,14 +58,16 @@ void timer::stop_with_lock_held() noexcept
 
 void timer::start() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    mutex.lock();
     start_with_lock_held();
+    mutex.unlock();
 }
 
 void timer::stop() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    mutex.lock();
     stop_with_lock_held();
+    mutex.unlock();
 }
 
 [[nodiscard]] std::pair<std::vector<timer::callback_type>,timer::time_point> timer::find_triggered_callbacks(
@@ -129,7 +131,7 @@ void timer::loop() noexcept
 
 void timer::remove_callback(size_t callback_id) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    mutex.lock();
 
     ttlet i = std::find_if(callback_list.cbegin(), callback_list.cend(), [callback_id](ttlet &item) {
         return item.id == callback_id;
@@ -141,6 +143,8 @@ void timer::remove_callback(size_t callback_id) noexcept
     if (nonstd::ssize(callback_list) == 0) {
         stop_with_lock_held();
     }
+
+    mutex.unlock();
 }
 
 }
