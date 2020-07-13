@@ -71,29 +71,31 @@ public:
             Theme::smallWidth, rectangle().height()
         };
 
-        // The label is located to the right of the selection box icon.
-        ttlet label_x = Theme::smallWidth + Theme::margin;
-        valueRectangle = aarect{
-            label_x, 0.0f,
-            rectangle().width() - label_x, rectangle().height()
-        };
-
         optionCells.clear();
         for (ttlet &[tag, labelText]: *options) {
             optionCells.emplace_back(tag, std::make_unique<TextCell>(labelText, theme->labelStyle));
         }
 
         // Find the selected option and determine the height of the widget.
+        ttlet valueX = Theme::smallWidth + Theme::margin;
+        ttlet valueWidth = rectangle().width() - valueX;
+
         auto i = std::find_if(optionCells.cbegin(), optionCells.cend(), [this](ttlet &item) {
             return item.first == value;
         });
-        ttlet selectedOptionHeight = i != optionCells.cend() ? i->second->heightForWidth(valueRectangle.width()) : 0.0f;
 
-        setFixedHeight(std::max(selectedOptionHeight, Theme::smallHeight) + Theme::margin * 2.0f);
+        ttlet valueHeight = i != optionCells.cend() ? i->second->heightForWidth(valueWidth) : Theme::smallHeight;
+        setFixedHeight(valueHeight + Theme::margin * 2.0f);
 
-        // The selection icon rectangle is aligned to top like a small widget.
+        // The label is located to the right of the selection box icon.
+        valueRectangle = aarect{
+            valueX, rectangle().height() - valueHeight - Theme::margin,
+            valueWidth, valueHeight
+        };
+
+        // The selection icon rectangle is aligned in the middle
         selectionIconRectangle = aarect{
-            Theme::smallWidth * 0.5f, rectangle().height() - Theme::smallHeight - Theme::margin,
+            Theme::smallWidth * 0.5f, rectangle().height() * 0.5f - Theme::smallHeight * 0.5f,
             Theme::smallWidth * 0.5f, Theme::smallHeight
         };
         selectionIconMiddle = selectionIconRectangle.y() + Theme::smallHeight * 0.5f;
@@ -105,17 +107,20 @@ public:
         ttlet maximumOverlayHeight = window.widget->contentExtent().height();
 
         // Calculate the height of the option, and the location of the current selected option.
-        auto optionsHeight = Theme::margin;
+        auto optionsHeight = 0.0f;
         auto currentSelectedOptionY = optionsHeight;
         for (ttlet &[tag, optionCell]: optionCells) {
-            optionsHeight += optionCell->heightForWidth(valueRectangle.width());
-            optionsHeight += Theme::margin;
+            optionsHeight -= Theme::margin;
+            optionsHeight -= optionCell->heightForWidth(valueRectangle.width());
             if (tag == *value) {
                 currentSelectedOptionY = optionsHeight;
             }
         }
-        // Adjust for having the list top-to-bottom, but coordinates bottom to top.
-        currentSelectedOptionY = optionsHeight - currentSelectedOptionY;
+        optionsHeight -= Theme::margin;
+        optionsHeight = -optionsHeight;
+
+        // Get the coordinate to the selected option, from the bottom of the options-list.
+        currentSelectedOptionY = optionsHeight + currentSelectedOptionY;
 
         // Calculate overlay dimensions and position.
         ttlet windowRectangle_ = windowRectangle();
@@ -123,7 +128,7 @@ public:
         ttlet overlayWindowX = windowRectangle().x() + Theme::smallWidth * 0.5f;
         ttlet overlayHeight = std::min(optionsHeight, maximumOverlayHeight);
         ttlet overlayWindowY = std::clamp(
-            windowRectangle_.y() - currentSelectedOptionY,
+            (windowRectangle_.y() + Theme::margin) - currentSelectedOptionY,
             0.0f,
             maximumOverlayHeight - overlayHeight
         );
@@ -155,26 +160,30 @@ public:
         auto y = overlayRectangle.p3().y();
         for (ttlet &[tag, optionCell] : optionCells) {
             y -= Theme::margin;
+            ttlet topY = y;
+
+            ttlet optionHeight = optionCell->heightForWidth(valueRectangle.width());
+
+            y -= optionHeight;
+            ttlet bottomY = y;
 
             ttlet checkboxRectangle = aarect{
                 overlayRectangle.x(),
-                y - Theme::smallHeight,
+                bottomY + optionHeight * 0.5f - Theme::smallHeight * 0.5f,
                 Theme::smallWidth * 0.5f,
                 Theme::smallHeight
             };
             ttlet checkboxMiddle = checkboxRectangle.y() + Theme::smallHeight * 0.5f;
 
-            ttlet optionHeight = optionCell->heightForWidth(valueRectangle.width());
-            y -= optionHeight;
             ttlet optionRectangle = aarect {
                 overlayRectangle.x() + Theme::smallWidth * 0.5f + Theme::margin,
-                y,
+                bottomY,
                 valueRectangle.width(),
                 optionHeight
             };
 
             context.color = theme->labelStyle.color;
-            optionCell->draw(context, optionRectangle, Alignment::TopLeft, checkboxMiddle, true);
+            optionCell->draw(context, optionRectangle, Alignment::MiddleLeft, checkboxMiddle, true);
         }
     }
 
@@ -206,7 +215,7 @@ public:
         if (i != optionCells.cend()) {
             context.color = *enabled ? theme->labelStyle.color : drawContext.color;
             context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-            i->second->draw(context, valueRectangle, Alignment::TopLeft, selectionIconMiddle, true);
+            i->second->draw(context, valueRectangle, Alignment::MiddleLeft, selectionIconMiddle, true);
         }
 
         if (selecting) {
