@@ -37,6 +37,11 @@ enum class command {
     gui_widget_next,
     gui_widget_prev,
     gui_activate,
+    gui_escape,
+    gui_down,
+    gui_up,
+    gui_left,
+    gui_right
 };
 
 constexpr char const *to_const_string(command rhs) noexcept
@@ -68,6 +73,11 @@ constexpr char const *to_const_string(command rhs) noexcept
     case command::gui_widget_next: return "gui.widget.next";
     case command::gui_widget_prev: return "gui.widget.prev";
     case command::gui_activate: return "gui.activate";
+    case command::gui_escape: return "gui.escape";
+    case command::gui_up: return "gui.up";
+    case command::gui_down: return "gui.down";
+    case command::gui_left: return "gui.left";
+    case command::gui_right: return "gui.right";
     default:
         tt_no_default;
     }
@@ -133,6 +143,16 @@ constexpr command to_command(std::string_view name) noexcept
         return command::gui_widget_prev;
     } else if (name == "gui.activate") {
         return command::gui_activate;
+    } else if (name == "gui.escape") {
+        return command::gui_escape;
+    } else if (name == "gui.up") {
+        return command::gui_up;
+    } else if (name == "gui.down") {
+        return command::gui_down;
+    } else if (name == "gui.left") {
+        return command::gui_left;
+    } else if (name == "gui.right") {
+        return command::gui_right;
     } else {
         return command::unknown;
     }

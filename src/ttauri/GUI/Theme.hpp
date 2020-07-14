@@ -42,15 +42,9 @@ public:
      */
     static constexpr float roundingRadius = 5.0f;
 
-    /** The height of smaller widget like labels, toggles, checkboxes and radio buttons.
+    /** The size of small square widgets.
      */
-    static constexpr float smallHeight = 15.0f;
-
-    /** The width of smaller widget like labels, toggles, checkboxes and radio buttons.
-     * Small widgets which include labels should be right aligned to the `smallWidth`
-     * with a `margin` between the widget and the included label.
-     */
-    static constexpr float smallWidth = smallHeight * 2.0f;
+    static constexpr float smallSize = 15.0f;
 
     /** The height of the larger widgets like buttons, text-input and drop-down-lists.
      */

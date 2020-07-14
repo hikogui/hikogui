@@ -19,40 +19,43 @@ namespace tt {
 template<typename ValueType=bool>
 class ToggleWidget : public Widget {
 protected:
-    static constexpr hires_utc_clock::duration animation_duration = 150ms;
+    static constexpr hires_utc_clock::duration animationDuration = 150ms;
 
-    float toggle_height;
-    float toggle_width;
-    float toggle_x;
-    float toggle_y;
-    float toggle_middle;
-    aarect toggle_rectangle;
+    aarect toggleRectangle;
 
-    float slider_x;
-    float slider_y;
-    float slider_move;
-    float slider_width;
-    float slider_height;
+    aarect sliderRectangle;
+    float sliderMoveRange;
 
-    aarect label_rectangle;
-    mat::T label_translate;
-    std::unique_ptr<TextCell> labelCell;
+    aarect labelRectangle;
 
-    ValueType trueValue;
+    std::unique_ptr<TextCell> onLabelCell;
+    std::unique_ptr<TextCell> offLabelCell;
+    std::unique_ptr<TextCell> otherLabelCell;
+
+    ValueType onValue;
+    ValueType offValue;
 
 public:
     observable<ValueType> value;
-    observable<std::string> label;
+    observable<std::string> onLabel;
+    observable<std::string> offLabel;
+    observable<std::string> otherLabel;
 
-    ToggleWidget(Window &window, Widget *parent, ValueType trueValue) noexcept :
-        Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
-        value(),
-        label()
+    ToggleWidget(Window &window, Widget *parent, ValueType onValue, ValueType offValue) noexcept :
+        Widget(window, parent, vec{Theme::smallSize * 2.0f, Theme::smallSize}),
+        onValue(onValue),
+        offValue(offValue)
     {
         [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...){
             forceRedraw = true;
         });
-        [[maybe_unused]] ttlet label_cbid = this->label.add_callback([this](auto...) {
+        [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
+            forceLayout = true;
+        });
+        [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
+            forceLayout = true;
+        });
+        [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
             forceLayout = true;
         });
     }
@@ -68,68 +71,92 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 
-        // The label is located to the right of the toggle.
-        ttlet label_x = Theme::smallWidth + Theme::margin;
-        label_rectangle = aarect{
-            label_x, 0.0f,
-            rectangle().width() - label_x, rectangle().height()
+        toggleRectangle = aarect{
+            -0.5f, // Expand horizontally due to rounded shape
+            rectangle().height() - Theme::smallSize,
+            Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
+            Theme::smallSize
         };
 
-        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
+        ttlet labelX = Theme::smallSize * 2.0f + Theme::margin;
+        labelRectangle = aarect{
+            labelX,
+            0.0f,
+            rectangle().width() - labelX,
+            rectangle().height()
+        };
 
-        toggle_height = Theme::smallHeight;
-        toggle_width = Theme::smallWidth + 1.0f; // Expand horizontally due to rounded shape
-        toggle_x = -0.5f;  // Expand horizontally due to rounded shape
-        toggle_y = rectangle().height() - toggle_height;
-        toggle_rectangle = aarect{toggle_x, toggle_y, toggle_width, toggle_height};
-        toggle_middle = toggle_y + toggle_height * 0.5f;
+        onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
+        offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
+        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
+        ttlet labelHeight = std::max({
+            onLabelCell->heightForWidth(labelRectangle.width()),
+            offLabelCell->heightForWidth(labelRectangle.width()),
+            otherLabelCell->heightForWidth(labelRectangle.width())
+        });
 
-        slider_x = 1.5f;
-        slider_y = toggle_y + 1.5f;
-        slider_width = toggle_height - 3.0f;
-        slider_height = toggle_height - 3.0f;
-        ttlet slider_move_width = Theme::smallWidth - (slider_x * 2.0f);
-        slider_move = slider_move_width - slider_width;
+        setFixedHeight(std::max(labelHeight, Theme::smallSize));
+
+        sliderRectangle = shrink(aarect{
+            0.0f,
+            toggleRectangle.y(),
+            toggleRectangle.height(),
+            toggleRectangle.height()
+        }, 1.5f);
+        
+        ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
+        sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
     }
     
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+    void drawToggle(DrawContext drawContext) noexcept {
+        drawContext.cornerShapes = vec{toggleRectangle.height() * 0.5f};
+        drawContext.drawBoxIncludeBorder(toggleRectangle);
+    }
+
+    void drawSlider(DrawContext drawContext) noexcept {
         // Prepare animation values.
-        ttlet animation_progress = value.animation_progress(animation_duration);
-        if (animation_progress < 1.0f) {
+        ttlet animationProgress = value.animation_progress(animationDuration);
+        if (animationProgress < 1.0f) {
             forceRedraw = true;
         }
 
-        ttlet animated_value = to_float(value, animation_duration);
+        ttlet animatedValue = to_float(value, animationDuration);
 
-        // Outside oval.
-        auto context = drawContext;
-        context.cornerShapes = vec{toggle_rectangle.height() * 0.5f};
-        context.drawBoxIncludeBorder(toggle_rectangle);
+        ttlet positionedSliderRectangle = mat::T2(sliderMoveRange * animatedValue, 0.0f) * sliderRectangle;
 
-        // Inside circle
-        ttlet slider_rectangle = aarect{
-            slider_x + slider_move * animated_value, slider_y,
-            slider_width, slider_height
-        };
-
-        if (value == trueValue) {
+        if (value == onValue) {
             if (*enabled && window.active) {
-                context.color = theme->accentColor;
+                drawContext.color = theme->accentColor;
             }
         } else {
             if (*enabled && window.active) {
-                context.color = hover ?
+                drawContext.color = hover ?
                     theme->borderColor(nestingLevel() + 1) :
                     theme->borderColor(nestingLevel());
             }
         }
-        std::swap(context.color, context.fillColor);
-        context.cornerShapes = vec{slider_rectangle.height() * 0.5f};
-        context.drawBoxIncludeBorder(slider_rectangle);
+        std::swap(drawContext.color, drawContext.fillColor);
+        drawContext.cornerShapes = vec{positionedSliderRectangle.height() * 0.5f};
+        drawContext.drawBoxIncludeBorder(positionedSliderRectangle);
+    }
 
-        context.color = *enabled ? theme->labelStyle.color : drawContext.color;
-        labelCell->draw(context, label_rectangle, Alignment::TopLeft, toggle_middle, true);
+    void drawLabel(DrawContext drawContext) noexcept {
+        if (*enabled) {
+            drawContext.color = theme->labelStyle.color;
+        }
+
+        ttlet &labelCell =
+            value == onValue ? onLabelCell :
+            value == offValue ? offLabelCell :
+            otherLabelCell;
+
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, center(toggleRectangle).y(), true);
+    }
+
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+        drawToggle(drawContext);
+        drawSlider(drawContext);
+        drawLabel(drawContext);
         Widget::draw(drawContext, displayTimePoint);
     }
 
@@ -153,7 +180,7 @@ public:
         }
 
         if (command == command::gui_activate) {
-            if (assign_and_compare(value, !*value)) {
+            if (assign_and_compare(value, value == offValue ? onValue : offValue)) {
                 forceRedraw = true;
             }
         }

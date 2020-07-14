@@ -126,7 +126,9 @@ elseif (MSVC)
         # Enable Security Development Lifecycle checks.
         # This includes run-time checks, don't include this in the Release type
         # Do include it with ReleaseWithDebug.
-        target_compile_options(ttauri PUBLIC -sdl)
+
+        # -sdl forces deprecated warnings as errors so also not useful during development.
+        #target_compile_options(ttauri PUBLIC -sdl)
     endif()
 endif()
 

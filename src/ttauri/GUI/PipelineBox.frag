@@ -99,6 +99,10 @@ void main() {
     float distance = shapeAdjustedDistance(distance2D);
     
     float background = clamp(distance - inBorderEnd + 0.5, 0.0, 1.0);
+    if (background == 1.0 && inBackgroundColor.a == 0.0) {
+        discard;
+    }
+
     float border = clamp(distance - inBorderStart + 0.5, 0.0, 1.0);
 
     vec4 borderColor = inBorderColor * border;

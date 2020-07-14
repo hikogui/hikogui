@@ -2,6 +2,11 @@
     // General GUI
     {"key": "space",            "command": "gui.activate"},
     {"key": "enter",            "command": "gui.activate"},
+    {"key": "escape",           "command": "gui.escape"},
+    {"key": "down",             "command": "gui.down"},
+    {"key": "up",               "command": "gui.up"},
+    {"key": "left",             "command": "gui.left"},
+    {"key": "right",            "command": "gui.right"},
     {"key": "tab",              "command": "gui.widget.next"},
     {"key": "shift+tab",        "command": "gui.widget.prev"},
 

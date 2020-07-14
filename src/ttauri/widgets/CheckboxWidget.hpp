@@ -20,43 +20,44 @@ namespace tt {
 template<typename ValueType>
 class CheckboxWidget : public Widget {
 protected:
-    char32_t check = 0x2713;
-
-    std::unique_ptr<TextCell> labelCell;
+    std::unique_ptr<TextCell> trueLabelCell;
+    std::unique_ptr<TextCell> falseLabelCell;
+    std::unique_ptr<TextCell> otherLabelCell;
 
     FontGlyphIDs checkGlyph;
     aarect checkRectangle;
 
-    float button_height;
-    float button_width;
-    float button_x;
-    float button_y;
-    float button_middle;
-    aarect button_rectangle;
+    FontGlyphIDs minusGlyph;
+    aarect minusRectangle;
 
-    aarect label_rectangle;
+    aarect checkboxRectangle;
 
-    mat::T label_translate;
+    aarect labelRectangle;
 
     ValueType trueValue;
     ValueType falseValue;
 
 public:
     observable<ValueType> value;
-    observable<std::string> label;
+    observable<std::string> trueLabel;
+    observable<std::string> falseLabel;
+    observable<std::string> otherLabel;
 
     CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
-        Widget(window, parent, {Theme::smallWidth, Theme::smallHeight}),
+        Widget(window, parent, {Theme::smallSize, Theme::smallSize}),
         trueValue(trueValue),
-        falseValue(falseValue),
-        value(),
-        label()
+        falseValue(falseValue)
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
             forceRedraw = true;
         });
-
-        [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
+        [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...){
+            forceLayout = true;
+        });
+        [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...){
+            forceLayout = true;
+        });
+        [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
             forceLayout = true;
         });
     }
@@ -71,52 +72,79 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 
-        // The label is located to the right of the toggle.
-        ttlet label_x = Theme::smallWidth + Theme::margin;
-        label_rectangle = aarect{
-            label_x, 0.0f,
-            rectangle().width() - label_x, rectangle().height()
+        checkboxRectangle = aarect{
+            0.0f,
+            rectangle().height() - Theme::smallSize,
+            Theme::smallSize,
+            Theme::smallSize
         };
 
-        ttlet labelText = *label;
-        labelCell = std::make_unique<TextCell>(labelText, theme->labelStyle);
-        setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
+        ttlet labelX = checkboxRectangle.p3().x() + Theme::margin;
+        labelRectangle = aarect{
+            labelX,
+            0.0f,
+            rectangle().width() - labelX,
+            rectangle().height()
+        };
 
-        button_height = Theme::smallHeight;
-        button_width = Theme::smallHeight;
-        button_x = Theme::smallWidth - button_width;
-        button_y = rectangle().height() - button_height;
-        button_rectangle = aarect{button_x, button_y, button_width, button_height};
-        button_middle = button_y + button_height * 0.5f;
+        trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
+        falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
+        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
+        ttlet labelHeight = std::max({
+            trueLabelCell->heightForWidth(labelRectangle.width()),
+            falseLabelCell->heightForWidth(labelRectangle.width()),
+            otherLabelCell->heightForWidth(labelRectangle.width())
+        });
+
+        setFixedHeight(std::max(labelHeight, Theme::smallSize));
 
         checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
         ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);
-        checkRectangle = align(button_rectangle, scale(checkGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+        checkRectangle = align(checkboxRectangle, scale(checkGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+
+        minusGlyph = to_FontGlyphIDs(ElusiveIcon::Minus);
+        ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
+        minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
-        // button.
-        auto context = drawContext;
-        context.drawBoxIncludeBorder(button_rectangle);
+    void drawCheckBox(DrawContext const &drawContext) noexcept {
+        drawContext.drawBoxIncludeBorder(checkboxRectangle);
+    }
+
+    void drawCheckMark(DrawContext drawContext) noexcept {
+        drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
 
         if (*enabled && window.active) {
-            context.color = theme->accentColor;
+            drawContext.color = theme->accentColor;
         }
 
         // Checkmark or tristate.
         if (value == trueValue) {
-            context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-            context.drawGlyph(checkGlyph, checkRectangle);
+            drawContext.drawGlyph(checkGlyph, checkRectangle);
         } else if (value == falseValue) {
             ;
         } else {
-            std::swap(context.color, context.fillColor);
-            context.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
-            context.drawFilledQuad(shrink(button_rectangle, 3.0f));
+            drawContext.drawGlyph(minusGlyph, minusRectangle);
         }
-        
-        context.color = *enabled ? theme->labelStyle.color : drawContext.color;
-        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle, true);
+    }
+
+    void drawLabel(DrawContext drawContext) noexcept {
+        if (*enabled) {
+            drawContext.color = theme->labelStyle.color;
+        }
+
+        ttlet &labelCell =
+            value == trueValue ? trueLabelCell :
+            value == falseValue ? falseLabelCell :
+            otherLabelCell;
+
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, center(checkboxRectangle).y(), true);
+    }
+
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+        drawCheckBox(drawContext);
+        drawCheckMark(drawContext);
+        drawLabel(drawContext);
         Widget::draw(drawContext, displayTimePoint);
     }
 

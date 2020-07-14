@@ -306,6 +306,12 @@ public:
         return aarect::p0p3(lhs.v * vec{rhs});
     }
 
+    /** Get the center of the rectangle.
+     */
+    [[nodiscard]] friend vec center(aarect const &rhs) noexcept {
+        return (rhs.p0() + rhs.p3()) * 0.5f;
+    }
+
     /** Expand the rectangle for the same amount in all directions.
     * @param lhs The original rectangle.
     * @param rhs How much the width and height should be scaled by.

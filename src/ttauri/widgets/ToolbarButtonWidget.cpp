@@ -12,7 +12,7 @@ namespace tt {
 using namespace std::literals;
 
 ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_type icon, std::function<void()> delegate) noexcept :
-    Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
+    Widget(window, parent, vec{Theme::smallSize, Theme::smallSize}),
     icon(std::move(icon)),
     delegate(delegate)
 {

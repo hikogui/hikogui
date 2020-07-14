@@ -18,15 +18,10 @@ namespace tt {
 template<typename ValueType>
 class RadioButtonWidget : public Widget {
 protected:
-    float button_height;
-    float button_width;
-    float button_x;
-    float button_y;
-    float button_middle;
-    aarect button_rectangle;
-    aarect pip_rectangle;
-    aarect label_rectangle;
-    mat::T label_translate;
+    aarect radioButtonRectangle;
+    aarect pipRectangle;
+    aarect labelRectangle;
+
     std::unique_ptr<TextCell> labelCell;
 
     ValueType activeValue;
@@ -36,7 +31,7 @@ public:
     observable<std::string> label;
 
     RadioButtonWidget(Window &window, Widget *parent, ValueType activeValue) noexcept :
-        Widget(window, parent, vec{Theme::smallWidth, Theme::smallHeight}),
+        Widget(window, parent, vec{Theme::smallSize, Theme::smallSize}),
         activeValue(std::move(activeValue)),
         value(),
         label()
@@ -60,50 +55,56 @@ public:
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 
-        // The label is located to the right of the toggle.
-        ttlet label_x = Theme::smallWidth + Theme::margin;
-        label_rectangle = aarect{
-            label_x, 0.0f,
-            rectangle().width() - label_x, rectangle().height()
+        radioButtonRectangle = aarect{
+            0.0f,
+            rectangle().height() - Theme::smallSize,
+            Theme::smallSize,
+            Theme::smallSize
+        };
+
+        ttlet labelX = radioButtonRectangle.p3().x() + Theme::margin;
+        labelRectangle = aarect{
+            labelX,
+            0.0f,
+            rectangle().width() - labelX,
+            rectangle().height()
         };
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        setFixedHeight(std::max(labelCell->heightForWidth(label_rectangle.width()), Theme::smallHeight));
+        setFixedHeight(std::max(labelCell->heightForWidth(labelRectangle.width()), Theme::smallSize));
 
-        // Prepare coordinates.
-        // The button is expanded by half a pixel on each side because it is round.
-        button_height = Theme::smallHeight + 1.0f;
-        button_width = Theme::smallHeight + 1.0f;
-        button_x = (Theme::smallWidth - Theme::smallHeight) - 0.5f;
-        button_y = (rectangle().height() - Theme::smallHeight) - 0.5f;
-        button_rectangle = aarect{button_x, button_y, button_width, button_height};
-        button_middle = button_y + button_height * 0.5f;
-
-        ttlet pip_x = (Theme::smallWidth - Theme::smallHeight) + 1.5f;
-        ttlet pip_y = (rectangle().height() - Theme::smallHeight) + 1.5f;
-        ttlet pip_width = Theme::smallHeight - 3.0f;
-        ttlet pip_height = Theme::smallHeight - 3.0f;
-        pip_rectangle = aarect{pip_x, pip_y, pip_width, pip_height};
+        pipRectangle = shrink(radioButtonRectangle, 1.5f);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override{
-        // button.
-        auto context = drawContext;
-        context.cornerShapes = vec{button_rectangle.height() * 0.5f};
-        context.drawBoxIncludeBorder(button_rectangle);
+    void drawRadioButton(DrawContext drawContext) noexcept {
+        drawContext.cornerShapes = vec{radioButtonRectangle.height() * 0.5f};
+        drawContext.drawBoxIncludeBorder(radioButtonRectangle);
+    }
 
+    void drawPip(DrawContext drawContext) noexcept {
         // draw pip
         if (value == activeValue) {
             if (*enabled && window.active) {
-                context.color = theme->accentColor;
+                drawContext.color = theme->accentColor;
             }
-            std::swap(context.color, context.fillColor);
-            context.cornerShapes = vec{pip_rectangle.height() * 0.5f};
-            context.drawBoxIncludeBorder(pip_rectangle);
+            std::swap(drawContext.color, drawContext.fillColor);
+            drawContext.cornerShapes = vec{pipRectangle.height() * 0.5f};
+            drawContext.drawBoxIncludeBorder(pipRectangle);
+        }
+    }
+
+    void drawLabel(DrawContext drawContext) noexcept {
+        if (*enabled) {
+            drawContext.color = theme->labelStyle.color;
         }
 
-        context.color = *enabled ? theme->labelStyle.color : drawContext.color;
-        labelCell->draw(context, label_rectangle, Alignment::TopLeft, button_middle, true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, center(radioButtonRectangle).y(), true);
+    }
+
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+        drawRadioButton(drawContext);
+        drawPip(drawContext);
+        drawLabel(drawContext);
         Widget::draw(drawContext, displayTimePoint);
     }
 
