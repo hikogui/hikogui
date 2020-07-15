@@ -259,6 +259,15 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 
+    void handleKeyboardEvent(KeyboardEvent const &event) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+        Widget::handleKeyboardEvent(event);
+
+        if (event.type == KeyboardEvent::Type::Exited) {
+            handleCommand(command::gui_escape);
+        }
+    }
+
     void handleMouseEvent(MouseEvent const &event) noexcept override {
         ttlet lock = std::scoped_lock(mutex);
         Widget::handleMouseEvent(event);
