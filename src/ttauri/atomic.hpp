@@ -69,7 +69,7 @@ tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std:
 {
     using namespace std::literals::chrono_literals;
 
-    if constexpr (BlockCounterTag != void) {
+    if constexpr (!std::is_same_v<BlockCounterTag,void>) {
         increment_counter<BlockCounterTag>();
     }
 
