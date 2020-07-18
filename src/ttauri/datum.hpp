@@ -11,6 +11,8 @@
 #include "throw_exception.hpp"
 #include "math.hpp"
 #include "algorithm.hpp"
+#include "byte_string.hpp"
+#include "encoding/base64.hpp"
 #include <date/date.h>
 #include <vector>
 #include <unordered_map>
@@ -59,6 +61,7 @@ enum class datum_type_t {
     Map,
     Vector,
     YearMonthDay,
+    Bytes,
 };
 
 inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
@@ -77,6 +80,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
     case datum_type_t::Map: lhs << "Map"; break;
     case datum_type_t::Vector: lhs << "Vector"; break;
     case datum_type_t::YearMonthDay: lhs << "YearMonthDay"; break;
+    case datum_type_t::Bytes: lhs << "Bytes"; break;
     default: tt_no_default;
     }
     return lhs;
@@ -95,6 +99,7 @@ inline std::ostream &operator<<(std::ostream &lhs, datum_type_t rhs)
  *  - Vector of datum
  *  - Unordered map of datum:datum.
  *  - YearMonthDay.
+ *  - Bytes.
  *
  * Due to the recursive nature of the datum type (through vector and map)
  * you can serialize your own types by adding conversion constructor and
@@ -203,8 +208,8 @@ private:
     static constexpr uint16_t phy_vector_ptr_id    = make_id(0b11011);
     static constexpr uint16_t phy_map_ptr_id       = make_id(0b11100);
     static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b11101);
-    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11110);
-    static constexpr uint16_t phy_reserved_ptr_id1 = make_id(0b11111);
+    static constexpr uint16_t phy_bytes_ptr_id     = make_id(0b11110);
+    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11111);
 
     static constexpr uint64_t small_mask = id_to_mask(phy_small_id);
     static constexpr uint64_t undefined_mask = small_mask | small_undefined;
@@ -224,6 +229,7 @@ private:
     static constexpr uint64_t vector_ptr_mask = id_to_mask(phy_vector_ptr_id);
     static constexpr uint64_t map_ptr_mask = id_to_mask(phy_map_ptr_id);
     static constexpr uint64_t decimal_ptr_mask = id_to_mask(phy_decimal_ptr_id);
+    static constexpr uint64_t bytes_ptr_mask = id_to_mask(phy_bytes_ptr_id);
 
     union {
         double f64;
@@ -298,6 +304,10 @@ private:
         return HasLargeObjects && type_id() == phy_decimal_ptr_id;
     }
 
+    tt_force_inline bool is_phy_bytes_ptr() const noexcept {
+        return HasLargeObjects && type_id() == phy_bytes_ptr_id;
+    }
+
     /** Extract the 48 bit unsigned integer from datum's storage.
      */
     tt_force_inline uint64_t get_unsigned_integer() const noexcept {
@@ -331,6 +341,7 @@ private:
             case phy_vector_ptr_id: delete get_pointer<datum_impl::vector>(); break;
             case phy_map_ptr_id: delete get_pointer<datum_impl::map>(); break;
             case phy_decimal_ptr_id: delete get_pointer<decimal>(); break;
+            case phy_bytes_ptr_id: delete get_pointer<bstring>(); break;
             default: tt_no_default;
             }
         }
@@ -372,6 +383,11 @@ private:
             case phy_decimal_ptr_id: {
                 auto* const p = new decimal(*other.get_pointer<decimal>());
                 u64 = make_pointer(decimal_ptr_mask, p);
+            } break;
+
+            case phy_bytes_ptr_id: {
+                auto* const p = new bstring(*other.get_pointer<bstring>());
+                u64 = make_pointer(bytes_ptr_mask, p);
             } break;
 
             default:
@@ -969,6 +985,7 @@ public:
         case phy_vector_ptr_id: return this->size() > 0;
         case phy_map_ptr_id: return this->size() > 0;
         case phy_decimal_ptr_id: return static_cast<decimal>(*this) != 0;
+        case phy_bytes_ptr_id: return this->size() > 0;
         default:
             if (tt_likely(is_phy_float())) {
                 return static_cast<double>(*this) != 0.0;
@@ -985,6 +1002,18 @@ public:
             return get_pointer<std::string>()->at(0);
         } else {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a char", this->repr(), this->type_name());
+        }
+    }
+
+    explicit operator bstring() const {
+        if (is_bytes()) {
+            if constexpr (HasLargeObjects) {
+                return *get_pointer<bstring>();
+            } else {
+                tt_no_default;
+            }
+        } else {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to bytes", this->repr(), this->type_name());
         }
     }
 
@@ -1091,6 +1120,13 @@ public:
                 }
                 r += "}";
                 return r;
+            } else {
+                tt_no_default;
+            }
+
+        case phy_bytes_ptr_id:
+            if constexpr (HasLargeObjects) {
+                return base64_encode(*get_pointer<bstring>());
             } else {
                 tt_no_default;
             }
@@ -1416,6 +1452,7 @@ public:
         case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
         case phy_vector_ptr_id: return static_cast<std::string>(*this);
         case phy_map_ptr_id: return static_cast<std::string>(*this);
+        case phy_bytes_ptr_id: return static_cast<std::string>(*this);
         default:
             if (tt_likely(is_phy_float())) {
                 return static_cast<std::string>(*this);
@@ -1480,6 +1517,7 @@ public:
     tt_force_inline bool is_ymd() const noexcept { return is_phy_ymd(); }
     tt_force_inline bool is_float() const noexcept { return is_phy_float(); }
     tt_force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
+    tt_force_inline bool is_bytes() const noexcept { return is_phy_bytes_ptr(); }
 
     tt_force_inline bool is_bool() const noexcept {
         if (is_phy_small()) {
@@ -1546,6 +1584,7 @@ public:
         case phy_url_ptr_id: return datum_type_t::URL;
         case phy_vector_ptr_id: return datum_type_t::Vector;
         case phy_map_ptr_id: return datum_type_t::Map;
+        case phy_bytes_ptr_id: return datum_type_t::Bytes;
         default:
             if (tt_likely(is_phy_float())) {
                 return datum_type_t::Float;
@@ -1591,6 +1630,7 @@ public:
         case phy_url_ptr_id: return "URL";
         case phy_vector_ptr_id: return "Vector";
         case phy_map_ptr_id: return "Map";
+        case phy_bytes_ptr_id: return "Bytes";
         default:
             if (tt_likely(is_phy_float())) {
                 return "Float";
@@ -1612,6 +1652,7 @@ public:
         case phy_string_ptr_id: return get_pointer<std::string>()->size();
         case phy_vector_ptr_id: return get_pointer<datum_impl::vector>()->size();
         case phy_map_ptr_id: return get_pointer<datum_impl::map>()->size();
+        case phy_bytes_ptr_id: return get_pointer<bstring>()->size();
         default: TTAURI_THROW_INVALID_OPERATION_ERROR("Can't get size of value {} of type {}.", this->repr(), this->type_name());
         }
     }
@@ -1671,6 +1712,8 @@ public:
                     });
             case phy_decimal_ptr_id:
                 return std::hash<decimal>{}(*get_pointer<decimal>());
+            case phy_bytes_ptr_id:
+                return std::hash<bstring>{}(*get_pointer<bstring>());
             default: tt_no_default;
             }
         } else {
@@ -1834,6 +1877,9 @@ public:
             return rhs.is_vector() && *lhs.get_pointer<datum_impl::vector>() == *rhs.get_pointer<datum_impl::vector>();
         case datum_impl::phy_map_ptr_id:
             return rhs.is_map() && *lhs.get_pointer<datum_impl::map>() == *rhs.get_pointer<datum_impl::map>();
+        case datum_impl::phy_bytes_ptr_id:
+            return
+                (rhs.is_bytes() && static_cast<bstring>(lhs) == static_cast<bstring>(rhs));
         default:
             if (lhs.is_phy_float()) {
                 return rhs.is_numeric() && static_cast<double>(lhs) == static_cast<double>(rhs);
@@ -1916,6 +1962,12 @@ public:
         case datum_impl::phy_map_ptr_id:
             if (rhs.is_map()) {
                 return *lhs.get_pointer<datum_impl::map>() < *rhs.get_pointer<datum_impl::map>();
+            } else {
+                return lhs.type_order() < rhs.type_order();
+            }
+        case datum_impl::phy_bytes_ptr_id:
+            if (rhs.is_bytes()) {
+                return static_cast<bstring>(lhs) < static_cast<bstring>(rhs);
             } else {
                 return lhs.type_order() < rhs.type_order();
             }

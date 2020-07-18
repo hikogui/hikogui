@@ -53,9 +53,9 @@ bstring base64_decode(std::string_view src)
         }
 
         if (group_size == 4) {
-            dst.push_back(std::byte{group >> 16});
-            dst.push_back(std::byte{group >> 8 & 0xff});
-            dst.push_back(std::byte{group & 0xff});
+            dst.push_back(static_cast<std::byte>(group >> 16));
+            dst.push_back(static_cast<std::byte>(group >> 8 & 0xff));
+            dst.push_back(static_cast<std::byte>(group & 0xff));
             group = 0;
             group_size = 0;
         }
@@ -68,12 +68,12 @@ bstring base64_decode(std::string_view src)
         TTAURI_THROW(parse_error("Unexpected number of characters"));
     case 2:
         group <<= 12;
-        dst.push_back(std::byte{group >> 16});
+        dst.push_back(static_cast<std::byte>(group >> 16));
         return dst;
     case 3:
         group <<= 6;
-        dst.push_back(std::byte{group >> 16});
-        dst.push_back(std::byte{group >> 8 & 0xff});
+        dst.push_back(static_cast<std::byte>(group >> 16));
+        dst.push_back(static_cast<std::byte>(group >> 8 & 0xff));
         return dst;
     default:
         tt_no_default;
