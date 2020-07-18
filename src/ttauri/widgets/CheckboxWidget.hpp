@@ -44,7 +44,7 @@ public:
     observable<std::string> otherLabel;
 
     CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
-        Widget(window, parent, {Theme::smallSize, Theme::smallSize}),
+        Widget(window, parent, Theme::smallSize, Theme::smallSize),
         trueValue(trueValue),
         falseValue(falseValue)
     {
@@ -90,13 +90,32 @@ public:
         trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
         falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
-        ttlet labelHeight = std::max({
-            trueLabelCell->heightForWidth(labelRectangle.width()),
-            falseLabelCell->heightForWidth(labelRectangle.width()),
-            otherLabelCell->heightForWidth(labelRectangle.width())
+
+        ttlet preferredHeight = std::max({
+            trueLabelCell->preferredExtent().height(),
+            falseLabelCell->preferredExtent().height(),
+            otherLabelCell->preferredExtent().height(),
+            Theme::smallSize
         });
 
-        setFixedHeight(std::max(labelHeight, Theme::smallSize));
+        ttlet preferredWidth = std::max({
+            trueLabelCell->preferredExtent().width(),
+            falseLabelCell->preferredExtent().width(),
+            otherLabelCell->preferredExtent().width(),
+        }) + Theme::smallSize + Theme::margin * 2.0f;
+
+        ttlet minimumHeight = std::max({
+            trueLabelCell->heightForWidth(labelRectangle.width()),
+            falseLabelCell->heightForWidth(labelRectangle.width()),
+            otherLabelCell->heightForWidth(labelRectangle.width()),
+            Theme::smallSize
+        });
+
+        setMaximumWidth(preferredWidth);
+        setMaximumHeight(preferredHeight);
+        setPreferredWidth(preferredWidth);
+        setPreferredHeight(preferredHeight);
+        setMinimumHeight(minimumHeight);
 
         checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
         ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);

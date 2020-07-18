@@ -32,7 +32,6 @@ vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept
 WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
     Widget(window, parent, calculateExtent(window))
 {
-    setFixedExtent(calculateExtent(window));
 }
 
 

@@ -219,7 +219,7 @@ void Window_vulkan_win32::openingWindow()
 
         // Delegate has been called, layout of widgets has been calculated for the
         // minimum and maximum size of the window.
-        createWindow(title.text(), minimumWindowExtent);
+        createWindow(title.text(), currentWindowExtent);
     });
 }
 

@@ -12,7 +12,7 @@ namespace tt {
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent, vec{Theme::width, Theme::height}),
+    Widget(window, parent, Theme::smallSize, Theme::smallSize),
     label(std::move(label))
 {
 }

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "../byte_string.hpp"
-#include <span>
+#include <nonstd/span>
 #include <string>
 #include <string_view>
 

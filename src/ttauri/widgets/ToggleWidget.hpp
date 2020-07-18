@@ -89,13 +89,32 @@ public:
         onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
         offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
-        ttlet labelHeight = std::max({
-            onLabelCell->heightForWidth(labelRectangle.width()),
-            offLabelCell->heightForWidth(labelRectangle.width()),
-            otherLabelCell->heightForWidth(labelRectangle.width())
+        
+        ttlet preferredHeight = std::max({
+            onLabelCell->preferredExtent().height(),
+            offLabelCell->preferredExtent().height(),
+            otherLabelCell->preferredExtent().height(),
+            Theme::smallSize
         });
 
-        setFixedHeight(std::max(labelHeight, Theme::smallSize));
+        ttlet preferredWidth = std::max({
+            onLabelCell->preferredExtent().width(),
+            offLabelCell->preferredExtent().width(),
+            otherLabelCell->preferredExtent().width(),
+        }) + Theme::smallSize + Theme::margin * 2.0f;
+
+        ttlet minimumHeight = std::max({
+            onLabelCell->heightForWidth(labelRectangle.width()),
+            offLabelCell->heightForWidth(labelRectangle.width()),
+            otherLabelCell->heightForWidth(labelRectangle.width()),
+            Theme::smallSize
+        });
+
+        setMaximumWidth(preferredWidth);
+        setMaximumHeight(preferredHeight);
+        setPreferredWidth(preferredWidth);
+        setPreferredHeight(preferredHeight);
+        setMinimumHeight(minimumHeight);
 
         sliderRectangle = shrink(aarect{
             0.0f,

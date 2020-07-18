@@ -71,7 +71,24 @@ public:
         };
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        setFixedHeight(std::max(labelCell->heightForWidth(labelRectangle.width()), Theme::smallSize));
+
+        ttlet preferredHeight = std::max(
+            labelCell->preferredExtent().height(),
+            Theme::smallSize
+        );
+
+        ttlet preferredWidth = labelCell->preferredExtent().width() + Theme::smallSize + Theme::margin * 2.0f;
+
+        ttlet minimumHeight = std::max(
+            labelCell->heightForWidth(labelRectangle.width()),
+            Theme::smallSize
+        );
+
+        setMaximumWidth(preferredWidth);
+        setMaximumHeight(preferredHeight);
+        setPreferredWidth(preferredWidth);
+        setPreferredHeight(preferredHeight);
+        setMinimumHeight(minimumHeight);
 
         pipRectangle = shrink(radioButtonRectangle, 1.5f);
     }

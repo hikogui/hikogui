@@ -62,6 +62,21 @@ namespace tt {
  *         needs(), layout(), layoutChildren(), draw(), 
  */
 class Widget {
+private:
+    float _minimumWidth;
+    float _minimumHeight;
+    float _preferredWidth;
+    float _preferredHeight;
+    float _maximumWidth;
+    float _maximumHeight;
+
+    rhea::constraint minimumWidthConstraint;
+    rhea::constraint minimumHeightConstraint;
+    rhea::constraint preferredWidthConstraint;
+    rhea::constraint preferredHeightConstraint;
+    rhea::constraint maximumWidthConstraint;
+    rhea::constraint maximumHeightConstraint;
+
 protected:
     mutable std::recursive_mutex mutex;
 
@@ -90,29 +105,7 @@ protected:
     */
     mat toWindowTransform;
 
-    /** The minimum size the widget should be.
-    * This value could change based on the content of the widget.
-    */
-    vec minimumExtent;
-
-    rhea::constraint minimumWidthConstraint;
-    rhea::constraint minimumHeightConstraint;
-
-    /** The minimum size the widget should be.
-    * This value could change based on the content of the widget.
-    */
-    vec preferredExtent;
-
-    rhea::constraint preferredWidthConstraint;
-    rhea::constraint preferredHeightConstraint;
-
-    /** The fixed size the widget should be.
-    * 0.0f in either x or y means that direction is not fixed.
-    */
-    vec fixedExtent;
-
-    rhea::constraint fixedWidthConstraint;
-    rhea::constraint fixedHeightConstraint;
+    
 
     /** Mouse cursor is hovering over the widget.
     */
@@ -151,7 +144,10 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    Widget(Window &window, Widget *parent, vec defaultExtent) noexcept;
+    Widget(Window &window, Widget *parent, float width, float height) noexcept;
+    Widget(Window &window, Widget *parent, vec extent) noexcept :
+        Widget(window, parent, extent.width(), extent.height()) {}
+
     virtual ~Widget();
 
     Widget(const Widget &) = delete;
@@ -217,14 +213,20 @@ public:
      */
     aarect makeWindowRectangle() const noexcept;
 
-    void setMinimumExtent(vec newMinimumExtent) noexcept;
+    void setMinimumWidth(float width) noexcept;
+    void setMinimumHeight(float height) noexcept;
     void setMinimumExtent(float width, float height) noexcept;
+    void setMinimumExtent(vec newMinimumExtent) noexcept;
 
-    void setPreferredExtent(vec newPreferredExtent) noexcept;
+    void setPreferredWidth(float width) noexcept;
+    void setPreferredHeight(float height) noexcept;
+    void setPreferredExtent(float width, float height) noexcept;
+    void setPreferredExtent(vec newMinimumExtent) noexcept;
 
-    void setFixedExtent(vec newFixedExtent) noexcept;
-    void setFixedHeight(float height) noexcept;
-    void setFixedWidth(float width) noexcept;
+    void setMaximumWidth(float width) noexcept;
+    void setMaximumHeight(float height) noexcept;
+    void setMaximumExtent(float width, float height) noexcept;
+    void setMaximumExtent(vec newMinimumExtent) noexcept;
 
     rhea::constraint placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
     rhea::constraint placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;
