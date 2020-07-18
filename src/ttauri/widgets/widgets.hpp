@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ButtonWidget.hpp"
+#include "LabelWidget.hpp"
 #include "LineInputWidget.hpp"
 #include "ToggleWidget.hpp"
 #include "CheckboxWidget.hpp"

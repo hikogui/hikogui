@@ -270,7 +270,7 @@ struct shape_text_result {
     auto lines = make_lines(std::move(glyphs));
 
     // Calculate actual size of the box, no smaller than the minimum_size.
-    ttlet preferred_extent = calculate_text_size(lines);
+    ttlet preferred_extent = ceil(calculate_text_size(lines));
 
     if (wrap) {
         wrap_lines(lines, width);

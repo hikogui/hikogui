@@ -3,6 +3,7 @@
 
 #include "ttauri/encoding/base64.hpp"
 #include "ttauri/required.hpp"
+#include "ttauri/exceptions.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
 

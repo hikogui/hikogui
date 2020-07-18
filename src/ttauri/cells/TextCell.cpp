@@ -24,7 +24,7 @@ vec TextCell::preferredExtent() const noexcept
     if (width != shapedText.width) {
         shapedText = ShapedText(text, style, width, shapedText.alignment);
     }
-    return shapedText.boundingBox.height();
+    return std::ceil(shapedText.boundingBox.height());
 }
 
 void TextCell::draw(DrawContext const &drawContext, aarect rectangle, Alignment alignment, float middle, bool useContextColor) const noexcept

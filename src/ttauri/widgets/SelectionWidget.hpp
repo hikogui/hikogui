@@ -91,18 +91,26 @@ public:
         // the optionHeight based on the option which is the tallest.
         optionList.clear();
         auto optionHeight = 0.0f;
+        auto preferredWidth = 0.0f;
+        auto preferredHeight = 0.0f;
         for (ttlet &[tag, labelText]: *options) {
             auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
             optionHeight = std::max(optionHeight, cell->heightForWidth(optionWidth));
+            preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
+            preferredHeight = std::max(preferredWidth, cell->preferredExtent().height());
             optionList.emplace_back(tag, std::move(cell));
         }
 
         // Set the widget height to the tallest option, fallback to a small size widget.
-        if (optionHeight != 0.0f) {
-            setFixedHeight(optionHeight + Theme::margin * 2.0f);
-        } else {
-            setFixedHeight(Theme::smallSize + Theme::margin * 2.0f);
+        if (optionHeight == 0.0f) {
+            optionHeight = Theme::smallSize;
         }
+
+        setMaximumWidth(preferredWidth + Theme::smallSize + Theme::margin * 2.0f);
+        setMaximumHeight(preferredHeight + Theme::margin * 2.0f);
+        setPreferredWidth(preferredWidth + Theme::smallSize + Theme::margin * 2.0f);
+        setPreferredHeight(preferredHeight + Theme::margin * 2.0f);
+        setMinimumHeight(optionHeight + Theme::margin * 2.0f);
 
         // Calculate the rectangles for each cell in the optionList
         optionListHeight = (optionHeight + Theme::margin * 2.0f) * nonstd::ssize(optionList);

@@ -90,6 +90,7 @@ rhea::constraint Window_base::addConstraint(
 void Window_base::removeConstraint(rhea::constraint const& constraint) noexcept {
     auto lock = std::scoped_lock(widgetSolverMutex);
 
+    tt_assume(!constraint.is_nil());
     widgetSolver.remove_constraint(constraint);
     constraintsUpdated = true;
 }
@@ -100,8 +101,12 @@ rhea::constraint Window_base::replaceConstraint(
 ) noexcept {
     auto lock = std::scoped_lock(widgetSolverMutex);
 
-    widgetSolver.remove_constraint(oldConstraint);
-    widgetSolver.add_constraint(newConstraint);
+    if (!oldConstraint.is_nil()) {
+        widgetSolver.remove_constraint(oldConstraint);
+    }
+    if (!newConstraint.is_nil()) {
+        widgetSolver.add_constraint(newConstraint);
+    }
     constraintsUpdated = true;
     return newConstraint;
 }
@@ -171,6 +176,11 @@ void Window_base::openingWindow() {
     Window *thisWindow = dynamic_cast<Window *>(this);
     assert(thisWindow);
     delegate->openingWindow(*thisWindow);
+
+    // Start of with a large window size, so that widgets have room to layout.
+    // for the first time. Otherwise the minimum height is determined based on
+    // the tiny width of 0 by 0 window.
+    currentWindowExtent = ivec{500, 500};
 
     // Execute a layout to determine initial window size.
     layout(cpu_utc_clock::now());
@@ -335,7 +345,7 @@ vec Window_base::suggestWidgetExtent(vec extent) noexcept {
         std::numeric_limits<int>::max(),
         std::numeric_limits<int>::max()
     });
-    
+
     return {minimumWidgetExtent, maximumWidgetExtent};
 }
 
@@ -363,7 +373,7 @@ void Window_base::layoutWindow() noexcept {
     // Set to actual window size.
     suggestWidgetExtent(currentWindowExtent);
 
-    LOG_INFO("Window '{}' minimumExtent={} maximumExtent={} currentExtent={}",
+    LOG_INFO("Window constraints '{}' minimumExtent={} maximumExtent={} currentExtent={}",
         title.text(),
         minimumWindowExtent,
         maximumWindowExtent,

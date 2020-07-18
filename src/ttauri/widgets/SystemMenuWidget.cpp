@@ -18,7 +18,6 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     iconCell(icon.makeCell()),
     systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
 {
-    setFixedExtent(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight});
 }
 
 

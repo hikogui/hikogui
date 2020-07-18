@@ -109,10 +109,12 @@ std::string base64_encode(nonstd::span<std::byte const> src) noexcept
     ttlet full_group_end = src.begin() + nr_full_groups * 3;
     auto i = src.begin();
     while (i != full_group_end) {
-        ttlet group =
-            static_cast<int>(*(i++)) << 16 |
-            static_cast<int>(*(i++)) << 8 |
-            static_cast<int>(*(i++));
+        auto group = 0;
+        group |= static_cast<int>(*(i++));
+        group <<= 8;
+        group |= static_cast<int>(*(i++));
+        group <<= 8;
+        group |= static_cast<int>(*(i++));
 
         dst.push_back(base64_encode(group >> 18));
         dst.push_back(base64_encode(group >> 12 & 0x3f));

@@ -15,7 +15,7 @@ protected:
 
 public:
     ColumnWidget(Window &window, Widget *parent) noexcept :
-        Widget(window, parent, vec{0.0f, 0.0f}) {}
+        Widget(window, parent, 0.0f, 0.0f) {}
 
     Widget &addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept override;
 };

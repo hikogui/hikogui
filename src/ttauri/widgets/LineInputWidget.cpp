@@ -12,7 +12,7 @@ namespace tt {
 using namespace std::literals;
 
 LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent, vec{Theme::width, Theme::height}),
+    Widget(window, parent, Theme::smallSize, Theme::smallSize),
     label(std::move(label)),
     field(theme->labelStyle),
     shapedText()
@@ -54,7 +54,13 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
         shapedText = field.shapedText();
     }
 
-    setFixedHeight(shapedText.boundingBox.height() + Theme::margin * 2.0f);
+    ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
+
+    setMaximumWidth(500.0f);
+    setMaximumHeight(maximumHeight);
+    setPreferredHeight(maximumHeight);
+    setMinimumHeight(maximumHeight);
+
 
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
