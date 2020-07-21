@@ -55,11 +55,6 @@ public:
 
     ~LineInputWidget();
 
-    LineInputWidget(const LineInputWidget &) = delete;
-    LineInputWidget &operator=(const LineInputWidget &) = delete;
-    LineInputWidget(LineInputWidget&&) = delete;
-    LineInputWidget &operator=(LineInputWidget &&) = delete;
-
     [[nodiscard]] int needs(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;

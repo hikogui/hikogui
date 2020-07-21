@@ -87,11 +87,13 @@ rhea::constraint Window_base::addConstraint(
     return addConstraint(rhea::constraint(equation, strength, weight));
 }
 
-void Window_base::removeConstraint(rhea::constraint const& constraint) noexcept {
+void Window_base::removeConstraint(rhea::constraint &constraint) noexcept {
     auto lock = std::scoped_lock(widgetSolverMutex);
 
-    tt_assume(!constraint.is_nil());
-    widgetSolver.remove_constraint(constraint);
+    if (!constraint.is_nil()) {
+        widgetSolver.remove_constraint(constraint);
+        constraint = {};
+    }
     constraintsUpdated = true;
 }
 

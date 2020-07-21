@@ -26,7 +26,7 @@
 #include <mutex>
 
 namespace tt {
-class Widget;
+class WindowWidget;
 
 /*! A Window.
  * This Window is backed by a native operating system window with a Vulkan surface.
@@ -126,7 +126,7 @@ public:
     }
 
     //! The widget covering the complete window.
-    std::unique_ptr<Widget> widget;
+    std::unique_ptr<WindowWidget> widget;
 
     /** Target of the mouse
      * Since any mouse event will change the target this is used
@@ -186,8 +186,16 @@ public:
     /** Add a widget to main widget of the window.
      * The implementation is in Widget.hpp
      */
-    template<typename T, typename... Args>
+    template<typename T, int x=-1, int y=-1, int z=-1, int w=-1,typename... Args>
     T &makeWidget(Args &&... args);
+
+    void stopConstraintSolver() noexcept {
+        widgetSolver.set_autosolve(false);
+    }
+
+    void startConstraintSolver() noexcept {
+        widgetSolver.set_autosolve(true);
+    }
 
     rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept;
 
@@ -203,7 +211,7 @@ public:
         double weight = 1.0
     ) noexcept;
 
-    void removeConstraint(rhea::constraint const& constraint) noexcept;
+    void removeConstraint(rhea::constraint &constraint) noexcept;
 
     rhea::constraint replaceConstraint(
         rhea::constraint const &oldConstraint,

@@ -14,6 +14,7 @@
 #include "WindowWidget.hpp"
 #include "RowWidget.hpp"
 #include "ColumnWidget.hpp"
+//#include "GridWidget.hpp"
 #include "../GUI/Window.hpp"
 
 namespace tt {
@@ -21,11 +22,11 @@ namespace tt {
 /** Add a widget to the main widget of the window.
 * The implementation is located here so that widget is a concrete type.
 */
-template<typename T, typename... Args>
+template<typename T, int x, int y, int z, int w, typename... Args>
 T &Window_base::makeWidget(Args &&... args)
 {
     tt_assume(widget);
-    return widget->makeWidget<T>(std::forward<Args>(args)...);
+    return widget->content->makeWidget<T>(std::forward<Args>(args)...);
 }
 
 }

@@ -63,11 +63,6 @@ public:
     ~ToggleWidget() {
     }
 
-    ToggleWidget(const ToggleWidget &) = delete;
-    ToggleWidget &operator=(const ToggleWidget &) = delete;
-    ToggleWidget(ToggleWidget&&) = delete;
-    ToggleWidget &operator=(ToggleWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 

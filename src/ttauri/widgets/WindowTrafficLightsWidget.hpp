@@ -48,11 +48,6 @@ public:
     WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
-    WindowTrafficLightsWidget(const WindowTrafficLightsWidget &) = delete;
-    WindowTrafficLightsWidget &operator=(const WindowTrafficLightsWidget &) = delete;
-    WindowTrafficLightsWidget(WindowTrafficLightsWidget &&) = delete;
-    WindowTrafficLightsWidget &operator=(WindowTrafficLightsWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

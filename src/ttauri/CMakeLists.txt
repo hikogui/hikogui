@@ -39,6 +39,8 @@ target_sources(ttauri PRIVATE
     bigint.hpp
     bits.hpp
     byte_string.hpp
+    cell_position.hpp
+    command.hpp
     CommandLineParser.hpp
     counters.hpp
     CP1252.hpp

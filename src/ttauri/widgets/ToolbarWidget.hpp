@@ -3,22 +3,17 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "ContainerWidget.hpp"
 #include <memory>
 
 namespace tt {
 
-class ToolbarWidget : public Widget {
+class ToolbarWidget : public ContainerWidget {
 public:
     ToolbarWidget(Window &window, Widget *parent) noexcept;
     ~ToolbarWidget() {}
 
-    ToolbarWidget(const ToolbarWidget &) = delete;
-    ToolbarWidget &operator=(const ToolbarWidget &) = delete;
-    ToolbarWidget(ToolbarWidget &&) = delete;
-    ToolbarWidget &operator=(ToolbarWidget &&) = delete;
-
-    Widget &addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept override;
+    Widget &addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

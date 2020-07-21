@@ -5,7 +5,10 @@ target_sources(ttauri PRIVATE
     CheckboxWidget.hpp
     ColumnWidget.cpp
     ColumnWidget.hpp
+    ContainerWidget.cpp
     ContainerWidget.hpp
+    GridWidget.cpp
+    GridWidget.hpp
     LabelWidget.hpp
     LineInputWidget.cpp
     LineInputWidget.hpp

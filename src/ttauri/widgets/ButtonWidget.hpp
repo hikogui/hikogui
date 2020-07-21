@@ -27,11 +27,6 @@ public:
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
     ~ButtonWidget();
 
-    ButtonWidget(const ButtonWidget &) = delete;
-    ButtonWidget &operator=(const ButtonWidget &) = delete;
-    ButtonWidget(ButtonWidget&&) = delete;
-    ButtonWidget &operator=(ButtonWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;

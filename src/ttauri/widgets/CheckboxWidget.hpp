@@ -64,11 +64,6 @@ public:
 
     ~CheckboxWidget() {}
 
-    CheckboxWidget(const CheckboxWidget &) = delete;
-    CheckboxWidget &operator=(const CheckboxWidget &) = delete;
-    CheckboxWidget(CheckboxWidget&&) = delete;
-    CheckboxWidget &operator=(CheckboxWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 

@@ -24,11 +24,6 @@ public:
     SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept;
     ~SystemMenuWidget() {}
 
-    SystemMenuWidget(const SystemMenuWidget &) = delete;
-    SystemMenuWidget &operator=(const SystemMenuWidget &) = delete;
-    SystemMenuWidget(SystemMenuWidget &&) = delete;
-    SystemMenuWidget &operator=(SystemMenuWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

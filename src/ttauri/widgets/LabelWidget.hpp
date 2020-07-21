@@ -37,11 +37,6 @@ public:
     ~LabelWidget() {
     }
 
-    LabelWidget(const LabelWidget &) = delete;
-    LabelWidget &operator=(const LabelWidget &) = delete;
-    LabelWidget(LabelWidget&&) = delete;
-    LabelWidget &operator=(LabelWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 

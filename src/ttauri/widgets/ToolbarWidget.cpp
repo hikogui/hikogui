@@ -12,10 +12,9 @@ namespace tt {
 using namespace std;
 
 ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
-    Widget(window, parent, vec{Theme::width, Theme::toolbarHeight})
+    ContainerWidget(window, parent)
 {
-    // Keep the toolbar thin.
-    window.addConstraint(height <= Theme::toolbarHeight, rhea::strength::strong());
+    setMaximumHeight(Theme::toolbarHeight);
 }
 
 void ToolbarWidget::disjoinLeftAndRightChildren() noexcept
@@ -37,13 +36,13 @@ void ToolbarWidget::joinLeftAndRightChildren() noexcept
     }
 }
 
-Widget &ToolbarWidget::addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept
+Widget &ToolbarWidget::addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept
 {
-    auto &tmp = Widget::addWidget(alignment, std::move(childWidget));
+    auto &tmp = ContainerWidget::addWidget(position, std::move(childWidget));
 
     disjoinLeftAndRightChildren();
 
-    if (alignment == HorizontalAlignment::Right) {
+    if (position.cellAlignment == HorizontalAlignment::Right) {
         auto previousWidget = nonstd::ssize(rightChildren) != 0 ? rightChildren.back() : nullptr;
         rightChildren.push_back(&tmp);
 
@@ -76,7 +75,7 @@ void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_p
 
     context.drawFilledQuad(rectangle());
 
-    Widget::draw(drawContext, displayTimePoint);
+    ContainerWidget::draw(drawContext, displayTimePoint);
 }
 
 HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept

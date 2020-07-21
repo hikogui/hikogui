@@ -69,11 +69,6 @@ public:
 
     ~SelectionWidget() {}
 
-    SelectionWidget(const SelectionWidget &) = delete;
-    SelectionWidget &operator=(const SelectionWidget &) = delete;
-    SelectionWidget(SelectionWidget&&) = delete;
-    SelectionWidget &operator=(SelectionWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         ttlet lock = std::scoped_lock(mutex);
 
@@ -130,7 +125,7 @@ public:
         }
 
         // The window height, excluding the top window decoration.
-        ttlet windowHeight = window.widget->contentExtent().height();
+        ttlet windowHeight = window.widget->extent().height() - Theme::toolbarHeight;
 
         // Calculate overlay dimensions and position.
         ttlet overlayWidth = optionListWidth;

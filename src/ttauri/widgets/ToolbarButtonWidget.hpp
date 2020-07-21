@@ -36,11 +36,6 @@ public:
 
     ~ToolbarButtonWidget() {}
 
-    ToolbarButtonWidget(const ToolbarButtonWidget &) = delete;
-    ToolbarButtonWidget &operator=(const ToolbarButtonWidget &) = delete;
-    ToolbarButtonWidget(ToolbarButtonWidget &&) = delete;
-    ToolbarButtonWidget &operator=(ToolbarButtonWidget &&) = delete;
-
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;

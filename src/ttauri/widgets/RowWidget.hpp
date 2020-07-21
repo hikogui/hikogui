@@ -3,21 +3,21 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "ContainerWidget.hpp"
 #include "../GUI/Theme.hpp"
 #include <memory>
 
 namespace tt {
 
-class RowWidget : public Widget {
+class RowWidget : public ContainerWidget {
 protected:
     rhea::constraint rightConstraint;
 
 public:
     RowWidget(Window &window, Widget *parent) noexcept :
-        Widget(window, parent, 0.0f, 0.0f) {}
+        ContainerWidget(window, parent) {}
 
-    Widget &addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept override;
+    Widget &addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept override;
 };
 
 }

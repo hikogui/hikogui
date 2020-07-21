@@ -3,25 +3,21 @@
 
 #pragma once
 
-#include "Widget.hpp"
+#include "ContainerWidget.hpp"
 #include "../cells/Label.hpp"
 
 namespace tt {
 
 class ToolbarWidget;
 
-class WindowWidget : public Widget {
+class WindowWidget : public ContainerWidget {
     Label title;
 
 public:
+    ContainerWidget *content = nullptr;
     ToolbarWidget *toolbar = nullptr;
 
     WindowWidget(Window &window, Label title) noexcept;
-
-    WindowWidget(const WindowWidget&) = delete;
-    WindowWidget &operator=(const WindowWidget&) = delete;
-    WindowWidget(WindowWidget&&) = delete;
-    WindowWidget &operator=(WindowWidget&&) = delete;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
 };

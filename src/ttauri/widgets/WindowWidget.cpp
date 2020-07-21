@@ -15,26 +15,26 @@ namespace tt {
 using namespace std;
 
 WindowWidget::WindowWidget(Window &window, Label title) noexcept :
-    Widget(window, nullptr, vec{0.0, 0.0}), title(std::move(title))
+    ContainerWidget(window, nullptr), title(std::move(title))
 {
-    toolbar = &makeWidgetDirectly<ToolbarWidget>();
+    toolbar = &makeWidget<ToolbarWidget>();
     toolbar->placeLeft(0.0f);
     toolbar->placeRight(0.0f);
     toolbar->placeAtTop(0.0f);
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-        toolbar->makeAlignedWidget<SystemMenuWidget>(Alignment::TopLeft, title.icon());
+        toolbar->makeWidget<SystemMenuWidget>(title.icon());
 #endif
-        toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopRight);
+        toolbar->makeWidget<WindowTrafficLightsWidget>();
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        toolbar->makeAlignedWidget<WindowTrafficLightsWidget>(Alignment::TopLeft);
+        toolbar->makeWidget<WindowTrafficLightsWidget>();
     } else {
         tt_no_default;
     }
 
 
-    content = &makeWidgetDirectly<ColumnWidget>();
+    content = &makeWidget<ColumnWidget>();
     content->elevation = elevation;
     content->placeLeft();
     content->placeRight();

@@ -4,14 +4,14 @@
 
 namespace tt {
 
-Widget &RowWidget::addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept
+Widget &RowWidget::addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept
 {
     auto *previous_widget = nonstd::ssize(children) != 0 ? children.back().get() : nullptr;
     if (previous_widget) {
         window.removeConstraint(rightConstraint);
     }
 
-    auto &widget = Widget::addWidget(alignment, std::move(childWidget));
+    auto &widget = ContainerWidget::addWidget(position, std::move(childWidget));
     if (previous_widget) {
         widget.placeRightOf(*previous_widget);
     } else {

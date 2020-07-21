@@ -89,13 +89,7 @@ protected:
     */
     Widget *parent;
 
-    std::vector<std::unique_ptr<Widget>> children;
-
-    /** The content area of this widget.
-    * This is a widget that contains the widgets that are added
-    * by the user, as opposed to the child widgets that controls this widget.
-    */
-    Widget *content = nullptr;
+public:
 
     /** Transformation matrix from window coords to local coords.
     */
@@ -105,8 +99,6 @@ protected:
     */
     mat toWindowTransform;
 
-    
-
     /** Mouse cursor is hovering over the widget.
     */
     bool hover = false;
@@ -115,7 +107,6 @@ protected:
     */
     bool focus = false;
 
-public:
     /** Location of the frame compared to the window.
      * Thread-safety: the box is not modified by the class.
      */
@@ -155,59 +146,6 @@ public:
     Widget(Widget &&) = delete;
     Widget &operator=(Widget &&) = delete;
 
-    /** Add a widget directly to this widget.
-     * Thread safety: locks.
-     */
-    virtual Widget &addWidget(Alignment alignment, std::unique_ptr<Widget> childWidget) noexcept;
-
-    /** Add a widget directly to this widget.
-     *
-     * Thread safety: calls _addWidget
-     */
-    template<typename T, typename... Args>
-    T &makeWidgetDirectly(Args &&... args) {
-        return static_cast<T &>(
-            addWidget(Alignment::TopLeft, std::make_unique<T>(window, this, std::forward<Args>(args)...))
-        );
-    }
-
-    /** Add a widget directly to this widget.
-    *
-    * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
-    */
-    template<typename T, typename... Args>
-    T &makeWidget(Args &&... args) {
-        if (content != nullptr) {
-            return content->makeWidget<T>(std::forward<Args>(args)...);
-        } else {
-            return makeWidgetDirectly<T>(std::forward<Args>(args)...);
-        }
-    }
-
-    /** Add a widget directly to this widget.
-    *
-    * Thread safety: calls _addWidget
-    */
-    template<typename T, typename... Args>
-    T &makeAlignedWidgetDirectly(Alignment alignement, Args &&... args) {
-        return static_cast<T &>(
-            addWidget(alignement, std::make_unique<T>(window, this, std::forward<Args>(args)...))
-        );
-    }
-
-    /** Add a widget directly to this widget.
-    *
-    * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
-    */
-    template<typename T, typename... Args>
-    T &makeAlignedWidget(Alignment alignment, Args &&... args) {
-        if (content != nullptr) {
-            return content->makeAlignedWidget<T>(alignment, std::forward<Args>(args)...);
-        } else {
-            return makeAlignedWidgetDirectly<T>(alignment, std::forward<Args>(args)...);
-        }
-    }
-
     /** Create a window rectangle from left, bottom, width and height
      * Thread-safety: locks window.widgetSolverMutex
      */
@@ -246,14 +184,6 @@ public:
 
     [[nodiscard]] vec extent() const noexcept {
         return static_cast<vec>(_extent.load(std::memory_order::memory_order_relaxed));
-    }
-
-    [[nodiscard]] vec contentExtent() const noexcept {
-        if (content) {
-            return content->extent();
-        } else {
-            return extent();
-        }
     }
 
     void setExtent(vec rhs) noexcept {
@@ -309,7 +239,7 @@ public:
      *
      * Thread safety: locks.
      */
-    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept;
+    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept { return {}; }
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -348,14 +278,6 @@ public:
      */
     virtual void layout(hires_utc_clock::time_point displayTimePoint) noexcept;
 
-    /** Layout children of this widget.
-    *
-    * Thread safety: locks, must be called from render-thread
-    *
-    * @param force Force the layout of the widget.
-    */
-    [[nodiscard]] int layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept;
-
     /** Draw widget.
     *
     * The overriding function should call the base class's draw(), the place
@@ -366,7 +288,7 @@ public:
     *
     * Thread safety: locks, must be called from render-thread
     */
-    virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept;
+    virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept {}
 
     /** Handle command.
      *
@@ -393,7 +315,6 @@ public:
         }
     }
 
-    [[nodiscard]] std::vector<Widget *> childPointers(bool reverse) const noexcept;
 
     [[nodiscard]] virtual Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 

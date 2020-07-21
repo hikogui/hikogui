@@ -47,11 +47,6 @@ public:
     ~RadioButtonWidget() {
     }
 
-    RadioButtonWidget(const RadioButtonWidget &) = delete;
-    RadioButtonWidget &operator=(const RadioButtonWidget &) = delete;
-    RadioButtonWidget(RadioButtonWidget&&) = delete;
-    RadioButtonWidget &operator=(RadioButtonWidget &&) = delete;
-
     void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
         Widget::layout(displayTimePoint);
 
