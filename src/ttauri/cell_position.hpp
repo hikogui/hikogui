@@ -6,27 +6,30 @@
 namespace tt {
 
 /** A position and size of a cell.
- * [63] Absolute row
- * [62] Absolute column
- * [61] Negative row
- * [60] Negative column
- * [47:40] rowspan (0 == copy or 1)
- * [39:32] colspan (0 == copy or 1)
- * [31:16] row
- * [15:0] column
+ * 
+ *  Bits    | Type    | Description
+ * :--------|:--------|:------------
+ *  [63]    | bool    | Absolute row
+ *  [62]    | bool    | Absolute column
+ *  [61]    | bool    | Opposite row (true=top, false=bottom)
+ *  [60]    | bool    | Opposite column (true=right, false=left)
+ *  [47:40] | uint8_t | rowspan - 1
+ *  [39:32] | uint8_t | colspan - 1
+ *  [31:16] | int16_t | row (must be natural for absolute row)
+ *  [15: 0] | int16_t | column (must be natural for absolute column)
  */
 enum class cell_position : uint64_t {};
 
 namespace detail {
 constexpr int cell_position_absolute_shift = 62;
-constexpr int cell_position_negative_shift = 61;
+constexpr int cell_position_opposite_shift = 60;
 constexpr int cell_position_span_shift = 32;
 }
 
 template<bool IsRow>
 [[nodiscard]] constexpr bool is_absolute(cell_position const &position) noexcept
 {
-    constexpr auto shift = cell_position_absolute_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_position_absolute_shift + static_cast<int>(IsRow);
 
     return static_cast<bool>(
         static_cast<uint64_t>(position) >> shift & uint64_t{1}
@@ -34,18 +37,26 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_absolute(cell_position &position, bool value) noexcept
+[[nodiscard]] constexpr bool is_relative(cell_position const &position) noexcept
 {
-    constexpr auto shift = cell_position_absolute_shift + static_cast<int>(IsRow);
-
-    position &= ~(uint64_t{1} << shift);
-    position |= static_cast<uint64_t>(value) << shift;
+    return !is_absolute<IsRow>(position);
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr bool is_negative(cell_position const &position) noexcept
+[[nodiscard]] constexpr void set_absolute(cell_position &position, bool value) noexcept
 {
-    constexpr auto shift = cell_position_negative_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_position_absolute_shift + static_cast<int>(IsRow);
+
+    auto position_ = static_cast<uint64_t>(position);
+    position_ &= ~(uint64_t{1} << shift);
+    position_ |= static_cast<uint64_t>(value) << shift;
+    position = static_cast<cell_position>(position_);
+}
+
+template<bool IsRow>
+[[nodiscard]] constexpr bool is_opposite(cell_position const &position) noexcept
+{
+    constexpr auto shift = detail::cell_position_opposite_shift + static_cast<int>(IsRow);
 
     return static_cast<bool>(
         static_cast<uint64_t>(position) >> shift & uint64_t{1}
@@ -53,93 +64,111 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr bool is_positive(cell_position const &position) noexcept
+[[nodiscard]] constexpr void set_opposite(cell_position &position, bool value) noexcept
 {
-    return !is_negative<IsRow>(position);
+    constexpr auto shift = detail::cell_position_opposite_shift + static_cast<int>(IsRow);
+
+    auto position_ = static_cast<uint64_t>(position);
+    position_ &= ~(uint64_t{1} << shift);
+    position_ |= static_cast<uint64_t>(value) << shift;
+    position = static_cast<cell_position>(position_);
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_absolute(cell_position &position, bool value) noexcept
+[[nodiscard]] constexpr uint8_t get_span(cell_position const &position) noexcept
 {
-    constexpr auto shift = cell_position_negative_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_position_span_shift + static_cast<int>(IsRow) * 8;
 
-    position &= ~(uint64_t{1} << shift);
-    position |= static_cast<uint64_t>(value) << shift;
+    return static_cast<uint8_t>(static_cast<uint64_t>(position) >> shift) + 1;
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr int get_span(cell_position const &position) noexcept
+[[nodiscard]] constexpr void set_span(cell_position &position, uint8_t value) noexcept
 {
-    constexpr auto shift = cell_position_span_shift + static_cast<int>(IsRow) * 8;
+    tt_assume(value >= 1);
+    constexpr auto shift = detail::cell_position_span_shift + static_cast<int>(IsRow) * 8;
 
-    return static_cast<int>(
-        static_cast<uint64_t>(position) >> shift & uint64_t{0xff}
+    auto position_ = static_cast<uint64_t>(position);
+    position_ &= ~(uint64_t{0xff} << shift);
+    position_ |= static_cast<uint64_t>(value - 1) << shift;
+    position = static_cast<cell_position>(position_);
+}
+
+template<bool IsRow>
+[[nodiscard]] constexpr int16_t get_coord(cell_position const &position) noexcept
+{
+    constexpr auto shift = static_cast<int>(IsRow) * 16;
+
+    return static_cast<int16_t>(
+        static_cast<uint16_t>(static_cast<uint64_t>(position) >> shift)
     );
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_span(cell_position &position, int value) noexcept
-{
-    tt_assume(value >= 0);
-    constexpr auto shift = cell_position_span_shift + static_cast<int>(IsRow) * 8;
-    position &= ~(uint64_t{0xff} << shift);
-    position |= static_cast<uint64_t>(value) << shift;
-}
-
-template<bool IsRow>
-[[nodiscard]] constexpr int get_coord(cell_position const &position) noexcept
+[[nodiscard]] constexpr void set_coord(cell_position &position, int16_t value) noexcept
 {
     constexpr auto shift = static_cast<int>(IsRow) * 16;
 
-    return static_cast<int>(
-        static_cast<uint64_t>(position) >> shift & uint64_t{0xffff}
-    );
-}
-
-template<bool IsRow>
-[[nodiscard]] constexpr void set_coord(cell_position &position, int value) noexcept
-{
-    tt_assume(value >= 0);
-    constexpr auto shift = static_cast<int>(IsRow) * 16;
-
-    position &= ~(uint64_t{0xffff} << shift);
-    position |= static_cast<uint64_t>(value) << shift;
+    auto position_ = static_cast<uint64_t>(position);
+    position_ &= ~(uint64_t{0xffff} << shift);
+    position_ |= static_cast<uint64_t>(static_cast<uint16_t>(value)) << shift;
+    position = static_cast<cell_position>(position_);
 }
 
 /** Parse a cell position
  *
- * cell_position := row | col | rowspan | colspan;
- * row := 'r' (relative | absolute);
- * col := 'c' (relative | absolute);
- * rowspan := 'rs' number
- * colspan := 'cs' number
- * relative := '+' number | '-' number
- * absolute := '<'? number | '>' number
+ * cell_position := position*;
+ * position := axis ([+-]? number)? (':' number)?;
+ * axis := [BbTtLlRr]
  * number := [0-9]+
  */
 [[nodiscard]] constexpr cell_position parse_cell_position(char const *str) noexcept
 {
-    enum class state_t { Idle, Start, Number };
+    enum class state_t { Idle, Coord, Number };
     
-    bool is_row;
-    bool is_span;
-    bool is_absolute;
-    bool is_negative;
-    uint64_t value;
+    char axis = 0;
+    bool is_span = false;
+    bool is_absolute = false;
+    bool is_positive = true;
+    int value = 0;
 
     auto state = state_t::Idle;
     auto position = static_cast<cell_position>(0);
-    char c;
+    char c = 0;
     do {
         c = *str;
         auto consume = true;
 
         switch (state) {
         case state_t::Idle:
+            value = 0;
+            is_positive = true;
+            is_span = false;
+            is_absolute = true;
+
             switch (c) {
-            case 'r': state = state_t::Start; is_row = true; break;
-            case 'c': state = state_t::Start; is_row = false; break;
-            case ' ': break;
+            case 'L':
+            case 'l':
+                state = state_t::Coord;
+                axis = 'L';
+                break;
+            case 'R':
+            case 'r':
+                state = state_t::Coord;
+                axis = 'R';
+                break;
+            case 'B':
+            case 'b':
+                state = state_t::Coord;
+                axis = 'B';
+                break;
+            case 'T':
+            case 't':
+                state = state_t::Coord;
+                axis = 'T';
+                break;
+            case ' ':
+                break;
             case 0:
                 // End of the string. Don't consume the nul.
                 consume = false;
@@ -148,57 +177,81 @@ template<bool IsRow>
             }
             break;
         
-        case state_t::Start:
-            is_span = false;
-            is_absolute = false;
-            is_negative = false;
-            value = false;
-            state = state_t::Number;
+        case state_t::Coord:
             switch (c) {
-            case 's': is_absolute = true; is_span = true; break;
-            case '+': break;
-            case '-': is_negative = true; break;
-            case '<': is_absolute = true; break;
-            case '>': is_absolute = true; is_negative = true; break;
-            case ' ': state = state_t::Start; break;
+            case '+':
+                state = state_t::Number;
+                is_absolute = false;
+                is_positive = true;
+                break;
+            case '-':
+                state = state_t::Number;
+                is_absolute = false;
+                is_positive = false;
+                break;
+            case ':':
+                state = state_t::Number;
+                is_span = true;
+                break;
+            case ' ':
+                break;
             default:
                 // This is already the first digit, switch to the next state
                 // without consuming this character.
-                is_absolute = true;
+                state = state_t::Number;
                 consume = false;
             }
             break;
 
         case state_t::Number:
-            value *= 10;
             if (c >= '0' && c <= '9') {
-                value += static_cast<uint64_t>(c - '0');
+                value *= 10;
+                value += static_cast<int>(c - '0');
 
             } else {
+                if (!is_positive) {
+                    value = -value;
+                }
+
                 // The first non-digit character (including '\0') is the new
                 // command or the end of the string. Switch the Idle and
                 // don't consume the character.
+                ttlet is_row = axis == 'B' || axis == 'T';
+                ttlet is_opposite = axis == 'R' || axis == 'T';
                 if (is_span) {
                     if (is_row) {
-                        set_span<true>(position, value);
+                        set_span<true>(position, numeric_cast<uint8_t>(value));
+                        set_opposite<true>(position, is_opposite);
                     } else {
-                        set_span<false>(position, value);
+                        set_span<false>(position, numeric_cast<uint8_t>(value));
+                        set_opposite<false>(position, is_opposite);
                     }
                     
                 } else {
                     if (is_row) {
-                        set_coord<true>(position, value);
-                        set_negative<true>(is_negative);
-                        set_absolute<true>(is_absolute);
+                        set_coord<true>(position, numeric_cast<int16_t>(value));
+                        set_opposite<true>(position, is_opposite);
+                        set_absolute<true>(position, is_absolute);
                     } else {
-                        set_coord<false>(position, value);
-                        set_negative<false>(is_negative);
-                        set_absolute<false>(is_negative);
+                        set_coord<false>(position, numeric_cast<int16_t>(value));
+                        set_opposite<false>(position, is_opposite);
+                        set_absolute<false>(position, is_absolute);
                     }
                 }
 
-                consume = false;
-                state = state_t::Idle;
+                if (is_span == false && c == ':') {
+                    // A ':' after a number means a span, parse the next number.
+                    value = 0;
+                    is_span = true;
+                    is_positive = true;
+                    state = state_t::Number;
+
+                } else {
+                    // Any other character means we start over, do not consume this
+                    // character.
+                    consume = false;
+                    state = state_t::Idle;
+                }
             }
             break;
 
@@ -215,38 +268,62 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
+[[nodiscard]] std::string to_string_half(cell_position const &rhs) noexcept
+{
+    auto r = std::string{};
+
+    auto axis = IsRow ?
+        (is_opposite<IsRow>(rhs) ? 'T' : 'B') :
+        (is_opposite<IsRow>(rhs) ? 'R' : 'L');
+
+    if (is_relative<IsRow>(rhs)) {
+        if (auto coord = get_coord<IsRow>(rhs); coord != 0) {
+            r += fmt::format("{}{:+}", axis, coord);
+        }
+    } else {
+        auto coord = get_coord<IsRow>(rhs);
+        r += fmt::format("{}{}", axis, coord);
+    }
+
+    if (auto span = get_span<IsRow>(rhs); span != 1) {
+        if (nonstd::ssize(r) == 0) {
+            r += axis;
+        }
+        r += fmt::format(":{}", span);
+    }
+
+    return r;
+}
+
+[[nodiscard]] std::string to_string(cell_position const &rhs) noexcept
+{
+    return to_string_half<false>(rhs) + to_string_half<true>(rhs);
+}
+
+std::ostream &operator<<(std::ostream &lhs, cell_position const &rhs)
+{
+    return lhs << to_string(rhs);
+}
+
+template<bool IsRow>
 constexpr void transform_half(cell_position &r, cell_position const &lhs, cell_position const &rhs) noexcept
 {
-    if (get_span<IsRow>(lhs) != 0) {
-        set_span<IsRow>(r, get_span<IsRow>(lhs));
-    } else {
-        set_span<IsRow>(r, get_span<IsRow>(rhs));
-    }
+    set_span<IsRow>(r, get_span<IsRow>(lhs));
 
     if (is_absolute<IsRow>(lhs)) {
         set_absolute<IsRow>(r, true);
-        set_negative<IsRow>(r, is_negative<IsRow>(lhs));
+        set_opposite<IsRow>(r, is_opposite<IsRow>(lhs));
         set_coord<IsRow>(r, get_coord<IsRow>(lhs));
 
     } else if (is_absolute<IsRow>(rhs)) {
         set_absolute<IsRow>(r, true);
-        set_negative<IsRow>(r, is_negative<IsRow>(rhs));
-        if (get_coord<IsRow>(lhs) == 0) {
-            set_coord<IsRow>(r, get_coord<IsRow>(rhs));
-
-        } else if (is_negative<IsRow>(lhs)) {
-            set_coord<IsRow>(r, get_coord<IsRow>(rhs) - get_coord<IsRow>(lhs));
-        } else {
-            set_coord<IsRow>(r, get_coord<IsRow>(rhs) + get_coord<IsRow>(lhs));
-        }
+        set_opposite<IsRow>(r, is_opposite<IsRow>(rhs));
+        set_coord<IsRow>(r, get_coord<IsRow>(rhs) + get_coord<IsRow>(lhs));
 
     } else {
-        ttlet lhs_coord = is_negative<IsRow>(lhs) ? -get_coord<IsRow>(lhs) : get_coord<IsRow>(lhs);
-        ttlet rhs_coord = is_negative<IsRow>(rhs) ? -get_coord<IsRow>(rhs) : get_coord<IsRow>(rhs);
-        ttlet r_coord = rhs_coord + lhs_coord;
         set_absolute<IsRow>(r, false);
-        set_negative<IsRow>(r, r_coord < 0);
-        set_coord<IsRow>(r, std::abs(r_coord));
+        set_opposite<IsRow>(r, is_opposite<IsRow>(lhs));
+        set_coord<IsRow>(r, get_coord<IsRow>(rhs) + get_coord<IsRow>(lhs));
     }
 }
 
@@ -323,5 +400,10 @@ template<typename It>
 
     return {max_from_left, max_from_right, max_from_bottom, max_from_top};
 }
+
+constexpr cell_position operator "" _cp(char const *str, size_t str_len) noexcept {
+    return parse_cell_position(str);
+}
+
 
 }
