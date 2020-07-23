@@ -4,33 +4,16 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "../cell_address.hpp"
 
 namespace tt {
 
-struct WidgetPosition {
-    int col;
-    int row;
-    int colspan;
-    int rowspan;
-    Alignment cellAlignment;
 
-    [[nodiscard]] int firstColumn(int width) noexcept {
-        return col >= 0 ? col : width + col;
-    }
-    [[nodiscard]] int lastColumn(int width) noexcept {
-        return firstColumn(width) + colspan - 1;
-    }
-    [[nodiscard]] int firstRow(int height) noexcept {
-        return row >= 0 ? row : height + row;
-    }
-    [[nodiscard]] int lastRow(int height) noexcept {
-        return firstRow(height) + rowspan - 1;
-    }
-};
 
 class ContainerWidget : public Widget {
 protected:
     std::vector<std::unique_ptr<Widget>> children;
+    cell_address current_address = "L0T0"_ca;
 
 public:
     ContainerWidget(Window &window, Widget *parent) noexcept:
@@ -55,18 +38,16 @@ public:
     /** Add a widget directly to this widget.
     * Thread safety: locks.
     */
-    virtual Widget &addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept;
-
-    virtual WidgetPosition nextPosition() noexcept { return {}; }
+    virtual Widget &addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept;
 
     /** Add a widget directly to this widget.
     *
     * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
     */
     template<typename T, typename... Args>
-    T &makeWidgetAtPosition(WidgetPosition position, Args &&... args) {
+    T &makeWidgetAtAddress(cell_address address, Args &&... args) {
         return static_cast<T &>(
-            addWidget(position, std::make_unique<T>(window, this, std::forward<Args>(args)...))
+            addWidget(address, std::make_unique<T>(window, this, std::forward<Args>(args)...))
         );
     }
 
@@ -74,9 +55,9 @@ public:
     *
     * Thread safety: modifies atomic. calls addWidget() and addWidgetDirectly()
     */
-    template<typename T, typename... Args>
+    template<typename T, cell_address CellAddress, typename... Args>
     T &makeWidget(Args &&... args) {
-        return makeWidgetAtPosition<T>(nextPosition(), std::forward<Args>(args)...);
+        return makeWidgetAtAddress<T>(CellAddress, std::forward<Args>(args)...);
     }
 
 private:

@@ -4,7 +4,9 @@
 
 namespace tt {
 
-Widget &ContainerWidget::addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept {
+Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept {
+    current_address *= address;
+
     ttlet widget_ptr = childWidget.get();
     tt_assume(widget_ptr);
 

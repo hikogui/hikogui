@@ -39,7 +39,7 @@ target_sources(ttauri PRIVATE
     bigint.hpp
     bits.hpp
     byte_string.hpp
-    cell_position.hpp
+    cell_address.hpp
     command.hpp
     CommandLineParser.hpp
     counters.hpp
@@ -191,7 +191,7 @@ target_sources(ttauri_tests PRIVATE
     URL_tests.cpp
     bigint_tests.cpp
     int_overflow_tests.cpp
-    cell_position_tests.cpp
+    cell_address_tests.cpp
     counters_tests.cpp
     datum_tests.cpp
     exceptions_tests.cpp

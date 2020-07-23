@@ -20,6 +20,7 @@
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
 #include "../fast_mutex.hpp"
+#include "../cell_address.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
 #include <memory>
@@ -186,7 +187,7 @@ public:
     /** Add a widget to main widget of the window.
      * The implementation is in Widget.hpp
      */
-    template<typename T, int x=-1, int y=-1, int z=-1, int w=-1,typename... Args>
+    template<typename T, cell_address CellAddress,typename... Args>
     T &makeWidget(Args &&... args);
 
     void stopConstraintSolver() noexcept {

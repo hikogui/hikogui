@@ -36,13 +36,13 @@ void ToolbarWidget::joinLeftAndRightChildren() noexcept
     }
 }
 
-Widget &ToolbarWidget::addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept
+Widget &ToolbarWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
 {
-    auto &tmp = ContainerWidget::addWidget(position, std::move(childWidget));
+    auto &tmp = ContainerWidget::addWidget(address, std::move(childWidget));
 
     disjoinLeftAndRightChildren();
 
-    if (position.cellAlignment == HorizontalAlignment::Right) {
+    if (is_opposite<false>(current_address)) {
         auto previousWidget = nonstd::ssize(rightChildren) != 0 ? rightChildren.back() : nullptr;
         rightChildren.push_back(&tmp);
 

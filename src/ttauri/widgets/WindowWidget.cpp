@@ -17,7 +17,7 @@ using namespace std;
 WindowWidget::WindowWidget(Window &window, Label title) noexcept :
     ContainerWidget(window, nullptr), title(std::move(title))
 {
-    toolbar = &makeWidget<ToolbarWidget>();
+    toolbar = &makeWidget<ToolbarWidget,""_ca>();
     toolbar->placeLeft(0.0f);
     toolbar->placeRight(0.0f);
     toolbar->placeAtTop(0.0f);
@@ -26,7 +26,7 @@ WindowWidget::WindowWidget(Window &window, Label title) noexcept :
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
         toolbar->makeWidget<SystemMenuWidget>(title.icon());
 #endif
-        toolbar->makeWidget<WindowTrafficLightsWidget>();
+        toolbar->makeWidget<WindowTrafficLightsWidget,"R0T0"_ca>();
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         toolbar->makeWidget<WindowTrafficLightsWidget>();
     } else {
@@ -34,7 +34,7 @@ WindowWidget::WindowWidget(Window &window, Label title) noexcept :
     }
 
 
-    content = &makeWidget<ColumnWidget>();
+    content = &makeWidget<ColumnWidget,""_ca>();
     content->elevation = elevation;
     content->placeLeft();
     content->placeRight();

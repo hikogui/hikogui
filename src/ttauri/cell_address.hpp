@@ -3,6 +3,8 @@
 
 #include "required.hpp"
 
+#pragma once
+
 namespace tt {
 
 /** A position and size of a cell.
@@ -18,18 +20,18 @@ namespace tt {
  *  [31:16] | int16_t | row (must be natural for absolute row)
  *  [15: 0] | int16_t | column (must be natural for absolute column)
  */
-enum class cell_position : uint64_t {};
+enum class cell_address : uint64_t {};
 
 namespace detail {
-constexpr int cell_position_absolute_shift = 62;
-constexpr int cell_position_opposite_shift = 60;
-constexpr int cell_position_span_shift = 32;
+constexpr int cell_address_absolute_shift = 62;
+constexpr int cell_address_opposite_shift = 60;
+constexpr int cell_address_span_shift = 32;
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr bool is_absolute(cell_position const &position) noexcept
+[[nodiscard]] constexpr bool is_absolute(cell_address const &position) noexcept
 {
-    constexpr auto shift = detail::cell_position_absolute_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_address_absolute_shift + static_cast<int>(IsRow);
 
     return static_cast<bool>(
         static_cast<uint64_t>(position) >> shift & uint64_t{1}
@@ -37,26 +39,26 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr bool is_relative(cell_position const &position) noexcept
+[[nodiscard]] constexpr bool is_relative(cell_address const &position) noexcept
 {
     return !is_absolute<IsRow>(position);
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_absolute(cell_position &position, bool value) noexcept
+[[nodiscard]] constexpr void set_absolute(cell_address &position, bool value) noexcept
 {
-    constexpr auto shift = detail::cell_position_absolute_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_address_absolute_shift + static_cast<int>(IsRow);
 
     auto position_ = static_cast<uint64_t>(position);
     position_ &= ~(uint64_t{1} << shift);
     position_ |= static_cast<uint64_t>(value) << shift;
-    position = static_cast<cell_position>(position_);
+    position = static_cast<cell_address>(position_);
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr bool is_opposite(cell_position const &position) noexcept
+[[nodiscard]] constexpr bool is_opposite(cell_address const &position) noexcept
 {
-    constexpr auto shift = detail::cell_position_opposite_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_address_opposite_shift + static_cast<int>(IsRow);
 
     return static_cast<bool>(
         static_cast<uint64_t>(position) >> shift & uint64_t{1}
@@ -64,38 +66,40 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_opposite(cell_position &position, bool value) noexcept
+[[nodiscard]] constexpr void set_opposite(cell_address &position, bool value) noexcept
 {
-    constexpr auto shift = detail::cell_position_opposite_shift + static_cast<int>(IsRow);
+    constexpr auto shift = detail::cell_address_opposite_shift + static_cast<int>(IsRow);
 
     auto position_ = static_cast<uint64_t>(position);
     position_ &= ~(uint64_t{1} << shift);
     position_ |= static_cast<uint64_t>(value) << shift;
-    position = static_cast<cell_position>(position_);
+    position = static_cast<cell_address>(position_);
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr uint8_t get_span(cell_position const &position) noexcept
+[[nodiscard]] constexpr int get_span(cell_address const &position) noexcept
 {
-    constexpr auto shift = detail::cell_position_span_shift + static_cast<int>(IsRow) * 8;
+    constexpr auto shift = detail::cell_address_span_shift + static_cast<int>(IsRow) * 8;
 
     return static_cast<uint8_t>(static_cast<uint64_t>(position) >> shift) + 1;
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_span(cell_position &position, uint8_t value) noexcept
+[[nodiscard]] constexpr void set_span(cell_address &position, int value) noexcept
 {
+    ttlet value_ = numeric_cast<uint8_t>(value);
+
     tt_assume(value >= 1);
-    constexpr auto shift = detail::cell_position_span_shift + static_cast<int>(IsRow) * 8;
+    constexpr auto shift = detail::cell_address_span_shift + static_cast<int>(IsRow) * 8;
 
     auto position_ = static_cast<uint64_t>(position);
     position_ &= ~(uint64_t{0xff} << shift);
-    position_ |= static_cast<uint64_t>(value - 1) << shift;
-    position = static_cast<cell_position>(position_);
+    position_ |= static_cast<uint64_t>(value_ - 1) << shift;
+    position = static_cast<cell_address>(position_);
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr int16_t get_coord(cell_position const &position) noexcept
+[[nodiscard]] constexpr int get_coord(cell_address const &position) noexcept
 {
     constexpr auto shift = static_cast<int>(IsRow) * 16;
 
@@ -105,24 +109,26 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_coord(cell_position &position, int16_t value) noexcept
+[[nodiscard]] constexpr void set_coord(cell_address &position, int value) noexcept
 {
+    ttlet value_ = numeric_cast<uint8_t>(value);
+
     constexpr auto shift = static_cast<int>(IsRow) * 16;
 
     auto position_ = static_cast<uint64_t>(position);
     position_ &= ~(uint64_t{0xffff} << shift);
-    position_ |= static_cast<uint64_t>(static_cast<uint16_t>(value)) << shift;
-    position = static_cast<cell_position>(position_);
+    position_ |= static_cast<uint64_t>(static_cast<uint16_t>(value_)) << shift;
+    position = static_cast<cell_address>(position_);
 }
 
 /** Parse a cell position
  *
- * cell_position := position*;
+ * cell_address := position*;
  * position := axis ([+-]? number)? (':' number)?;
  * axis := [BbTtLlRr]
  * number := [0-9]+
  */
-[[nodiscard]] constexpr cell_position parse_cell_position(char const *str) noexcept
+[[nodiscard]] constexpr cell_address parse_cell_address(char const *str) noexcept
 {
     enum class state_t { Idle, Coord, Number };
     
@@ -133,7 +139,7 @@ template<bool IsRow>
     int value = 0;
 
     auto state = state_t::Idle;
-    auto position = static_cast<cell_position>(0);
+    auto position = static_cast<cell_address>(0);
     char c = 0;
     do {
         c = *str;
@@ -268,7 +274,7 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] std::string to_string_half(cell_position const &rhs) noexcept
+[[nodiscard]] std::string to_string_half(cell_address const &rhs) noexcept
 {
     auto r = std::string{};
 
@@ -295,18 +301,18 @@ template<bool IsRow>
     return r;
 }
 
-[[nodiscard]] std::string to_string(cell_position const &rhs) noexcept
+[[nodiscard]] inline std::string to_string(cell_address const &rhs) noexcept
 {
     return to_string_half<false>(rhs) + to_string_half<true>(rhs);
 }
 
-std::ostream &operator<<(std::ostream &lhs, cell_position const &rhs)
+inline std::ostream &operator<<(std::ostream &lhs, cell_address const &rhs)
 {
     return lhs << to_string(rhs);
 }
 
 template<bool IsRow>
-constexpr void transform_half(cell_position &r, cell_position const &lhs, cell_position const &rhs) noexcept
+constexpr void transform_half(cell_address &r, cell_address const &lhs, cell_address const &rhs) noexcept
 {
     set_span<IsRow>(r, get_span<IsRow>(lhs));
 
@@ -315,26 +321,33 @@ constexpr void transform_half(cell_position &r, cell_position const &lhs, cell_p
         set_opposite<IsRow>(r, is_opposite<IsRow>(lhs));
         set_coord<IsRow>(r, get_coord<IsRow>(lhs));
 
-    } else if (is_absolute<IsRow>(rhs)) {
-        set_absolute<IsRow>(r, true);
-        set_opposite<IsRow>(r, is_opposite<IsRow>(rhs));
-        set_coord<IsRow>(r, get_coord<IsRow>(rhs) + get_coord<IsRow>(lhs));
-
     } else {
-        set_absolute<IsRow>(r, false);
-        set_opposite<IsRow>(r, is_opposite<IsRow>(lhs));
-        set_coord<IsRow>(r, get_coord<IsRow>(rhs) + get_coord<IsRow>(lhs));
+        set_absolute<IsRow>(r, is_absolute<IsRow>(rhs));
+        set_opposite<IsRow>(r, is_opposite<IsRow>(rhs));
+        if (is_opposite<IsRow>(lhs) == is_opposite<IsRow>(rhs)) {
+            set_coord<IsRow>(r, get_coord<IsRow>(rhs) + get_coord<IsRow>(lhs));
+        } else {
+            set_coord<IsRow>(r, get_coord<IsRow>(rhs) - get_coord<IsRow>(lhs));
+        }
     }
 }
 
 /** Transform rhs by lhs.
  */
-[[nodiscard]] constexpr cell_position operator*(cell_position const &lhs, cell_position const &rhs) noexcept
+[[nodiscard]] constexpr cell_address operator*(cell_address const &lhs, cell_address const &rhs) noexcept
 {
-    auto r = static_cast<cell_position>(0);
+    auto r = static_cast<cell_address>(0);
     transform_half<true>(r, lhs, rhs);
     transform_half<false>(r, lhs, rhs);
     return r;
+}
+
+/** Transform lhs/this by rhs.
+ */
+constexpr cell_address &operator*=(cell_address &lhs, cell_address const &rhs) noexcept
+{
+    lhs = rhs * lhs;
+    return lhs;
 }
 
 /** Find the begin of the cell.
@@ -346,9 +359,9 @@ constexpr void transform_half(cell_position &r, cell_position const &lhs, cell_p
 *         side of the table.
 */
 template<bool IsRow>
-[[nodiscard]] int begin(cell_position const &rhs, int size=0) noexcept
+[[nodiscard]] int begin(cell_address const &rhs, int size=0) noexcept
 {
-    if (size == 0 || is_positive<IsRow>(rhs)) {
+    if (size == 0 || !is_opposite<IsRow>(rhs)) {
         return get_coord<IsRow>(rhs);
 
     } else {
@@ -365,9 +378,9 @@ template<bool IsRow>
 *         side of the table.
 */
 template<bool IsRow>
-[[nodiscard]] int end(cell_position const &rhs, int size=0) noexcept
+[[nodiscard]] int end(cell_address const &rhs, int size=0) noexcept
 {
-    if (size == 0 || is_positive<IsRow>(rhs)) {
+    if (size == 0 || !is_opposite<IsRow>(rhs)) {
         return get_coord<IsRow>(rhs) + std::max(1, get_span<IsRow>(rhs));
 
     } else {
@@ -376,7 +389,7 @@ template<bool IsRow>
 }
 
 template<typename It>
-[[nodiscard]] constexpr std::tuple<int,int,int,int> cell_position_max(It const &first, It const &last) noexcept
+[[nodiscard]] constexpr std::tuple<int,int,int,int> cell_address_max(It const &first, It const &last) noexcept
 {
     auto max_from_left = 0;
     auto max_from_right = 0;
@@ -386,23 +399,23 @@ template<typename It>
         tt_assume(is_absolute<false>(*i));
         tt_assume(is_absolute<true>(*i));
 
-        if (is_negative<false>(*i)) {
+        if (is_opposite<false>(*i)) {
             max_from_right = std::max(max_from_right, end<false>(*i));
         } else {
             max_from_left = std::max(max_from_left, end<false>(*i));
         }
-        if (is_negative<true>(*i)) {
-            max_from_right = std::max(max_from_top, end<true>(*i));
+        if (is_opposite<true>(*i)) {
+            max_from_top = std::max(max_from_top, end<true>(*i));
         } else {
-            max_from_left = std::max(max_from_bottom, end<true>(*i));
+            max_from_bottom = std::max(max_from_bottom, end<true>(*i));
         }
     }
 
     return {max_from_left, max_from_right, max_from_bottom, max_from_top};
 }
 
-constexpr cell_position operator "" _cp(char const *str, size_t str_len) noexcept {
-    return parse_cell_position(str);
+constexpr cell_address operator "" _ca(char const *str, size_t str_len) noexcept {
+    return parse_cell_address(str);
 }
 
 

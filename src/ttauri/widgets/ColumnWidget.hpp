@@ -10,14 +10,10 @@
 namespace tt {
 
 class ColumnWidget : public GridWidget {
-protected:
-    rhea::constraint bottomConstraint;
-
 public:
     ColumnWidget(Window &window, Widget *parent) noexcept :
         GridWidget(window, parent) {}
 
-    WidgetPosition nextPosition() noexcept override;
 };
 
 }

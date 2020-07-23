@@ -57,7 +57,7 @@ void Widget::setMinimumWidth(float _width) noexcept
         minimumWidthConstraint = window.replaceConstraint(
             minimumWidthConstraint,
             width >= _minimumWidth,
-            rhea::strength::strong()
+            rhea::strength::required()
         );
     }
 }
@@ -71,7 +71,7 @@ void Widget::setMinimumHeight(float _height) noexcept
         minimumHeightConstraint = window.replaceConstraint(
             minimumHeightConstraint,
             height >= _minimumHeight,
-            rhea::strength::strong()
+            rhea::strength::required()
         );
     }
 }

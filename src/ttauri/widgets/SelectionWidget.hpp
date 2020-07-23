@@ -92,7 +92,7 @@ public:
             auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
             optionHeight = std::max(optionHeight, cell->heightForWidth(optionWidth));
             preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
-            preferredHeight = std::max(preferredWidth, cell->preferredExtent().height());
+            preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
             optionList.emplace_back(tag, std::move(cell));
         }
 

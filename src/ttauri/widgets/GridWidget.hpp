@@ -11,38 +11,39 @@
 namespace tt {
 
 struct GridWidgetCell {
-    WidgetPosition position;
+    cell_address address;
     Widget *widget;
-    rhea::constraint left_constraint;
-    rhea::constraint right_constraint;
-    rhea::constraint top_constraint;
-    rhea::constraint bottom_constraint;
+    rhea::constraint column_begin_constraint;
+    rhea::constraint column_preferred_constraint;
+    rhea::constraint column_max_constraint;
+    rhea::constraint row_begin_constraint;
+    rhea::constraint row_preferred_constraint;
+    rhea::constraint row_max_constraint;
 
-    GridWidgetCell(WidgetPosition position, Widget *widget) noexcept :
-        position(position), widget(widget) {}
-
-    [[nodiscard]] int firstColumn(int width) noexcept {
-        return position.firstColumn(width);
-    }
-    [[nodiscard]] int lastColumn(int width) noexcept {
-        return position.lastColumn(width);
-    }
-    [[nodiscard]] int firstRow(int height) noexcept {
-        return position.firstRow(height);
-    }
-    [[nodiscard]] int lastRow(int height) noexcept {
-        return position.lastRow(height);
-    }
+    GridWidgetCell(cell_address address, Widget *widget) noexcept :
+        address(address), widget(widget) {}
 };
 
 class GridWidget : public ContainerWidget {
 protected:
-    std::vector<rhea::variable> colGridLines;
-    std::vector<rhea::variable> rowGridLines;
+    std::vector<rhea::variable> leftGridLines;
+    std::vector<rhea::variable> rightGridLines;
+    std::vector<rhea::variable> bottomGridLines;
+    std::vector<rhea::variable> topGridLines;
+    std::vector<rhea::constraint> leftGridConstraints;
+    std::vector<rhea::constraint> rightGridConstraints;
+    std::vector<rhea::constraint> bottomGridConstraints;
+    std::vector<rhea::constraint> topGridConstraints;
+
     std::vector<GridWidgetCell> cells;
 
-    int nrColumns;
-    int nrRows;
+    rhea::constraint leftConstraint;
+    rhea::constraint rightConstraint;
+    rhea::constraint bottomConstraint;
+    rhea::constraint topConstraint;
+    rhea::constraint rowSplitConstraint;
+    rhea::constraint columnSplitConstraint;
+
     int nrLeftColumns;
     int nrRightColumns;
     int nrTopRows;
@@ -60,9 +61,7 @@ public:
         addAllConstraints();
     }
 
-    WidgetPosition nextPosition() noexcept override;
-
-    Widget &addWidget(WidgetPosition position, std::unique_ptr<Widget> childWidget) noexcept override;
+    Widget &addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept override;
 };
 
 }
