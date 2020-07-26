@@ -10,8 +10,7 @@ target_sources(ttauri PRIVATE
     JSON.hpp
     png.cpp
     png.hpp
-    #sha512.cpp
-    #sha512.hpp
+    SHA2.hpp
     zlib.cpp
     zlib.hpp
 )
@@ -20,4 +19,5 @@ target_sources(ttauri_tests PRIVATE
     JSON_tests.cpp
     gzip_tests.cpp
     base64_tests.cpp
+    SHA2_tests.cpp
 )
