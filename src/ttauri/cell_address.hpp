@@ -7,7 +7,20 @@
 
 namespace tt {
 
-/** A position and size of a cell.
+namespace detail {
+constexpr int cell_address_absolute_shift = 62;
+constexpr int cell_address_opposite_shift = 60;
+constexpr int cell_address_span_shift = 32;
+}
+
+/** The absolute or relative position and size of a cell.
+ * There are four quadrants where cells can be located, using
+ * the opposite flag you can select the opposite quadrant for
+ * the row or column.
+ *
+ * The address can be absolute, or relative compared to another address.
+ *
+ * The address also contains a row- and colspan.
  * 
  *  Bits    | Type    | Description
  * :--------|:--------|:------------
@@ -21,12 +34,6 @@ namespace tt {
  *  [15: 0] | int16_t | column (must be natural for absolute column)
  */
 enum class cell_address : uint64_t {};
-
-namespace detail {
-constexpr int cell_address_absolute_shift = 62;
-constexpr int cell_address_opposite_shift = 60;
-constexpr int cell_address_span_shift = 32;
-}
 
 template<bool IsRow>
 [[nodiscard]] constexpr bool is_absolute(cell_address const &position) noexcept

@@ -30,15 +30,15 @@ The following is a table of how each type is encoded.
  +---------+----------------------+----------------  +---------------
  | 00 - 7f |                      | Character        |
  | 80 - af |                      | Integer 0 - 47   | `Value + 0x80`
- | b0 - ba |                      | Integer -1 - -11 | `abs(Value) - 1 + 0xb0`
+ | b0 - ba |                      | Integer -1 - -11 | `-Value - 1 + 0xb0`
  | bb      |                      | False            |
  | bc      |                      | True             |
  | bd      |                      | Null             |
  | be      |                      | eoc              |
  | bf      |                      | eot              |
- | c0 - df | Byte                 | Character        |
- | e0 - ef | Byte{2}              | Character        |
- | f0 - f7 | Byte{3}              | Character        |
+ | c0 - df | UTF8Continue         | Character        |
+ | e0 - ef | UTF8Continue{2}      | Character        |
+ | f0 - f7 | UTF8Continue{3}      | Character        |
  | f8      | Byte                 | int8             | signed integer
  | f9      | Byte{2}              | int16            | big endian signed integer
  | fa      | Byte{4}              | int32            | big endian signed integer
