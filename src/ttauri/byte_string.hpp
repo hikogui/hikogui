@@ -10,6 +10,9 @@
 
 namespace tt {
 
+using byteptr = std::byte *;
+using cbyteptr = std::byte const *;
+
 class byte_char_traits {
 public:
     using char_type = std::byte;

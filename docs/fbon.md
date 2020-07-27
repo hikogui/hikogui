@@ -73,8 +73,11 @@ eot := 0xbf;
 utf8_2 := 0xc0-0xdf utf8cont;
 utf8_3 := 0xe0-0xef utf8cont utf8cont;
 utf8_4 := 0xf0-0xf7 utf8cont utf8cont utf8cont;
-int8 := 0xf8 byte;
-int16 := 0xf9 byte byte;
+int_2 := 0xc0-0xdf int_cont;
+int_3 := 0xe0-0xef int_cont byte;
+int_4 := 0xf0-0xf7 int_cont byte byte;
+int8 := 0xf8;
+int16 := 0xf9;
 int32 := 0xfa byte byte byte byte;
 int64 := 0xfb byte byte byte byte byte byte byte byte;
 binary32 := 0xfc byte byte byte byte;
@@ -84,6 +87,9 @@ object := 0xff key_value* eoc;
 
 byte := 0x00-0xff;
 utf8cont := 0x80-0xbf;
+int_pos_cont := 0x00-0x7f;
+int_neg_cont := 0xc0-0xff
+int_cont := int_pos_cont | int_neg_cont;
 ```
 
 ## Extra rules
