@@ -2,6 +2,7 @@
 // All rights reserved.
 
 #include "required.hpp"
+#include "numeric_cast.hpp"
 
 #pragma once
 
@@ -52,7 +53,7 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_absolute(cell_address &position, bool value) noexcept
+constexpr void set_absolute(cell_address &position, bool value) noexcept
 {
     constexpr auto shift = detail::cell_address_absolute_shift + static_cast<int>(IsRow);
 
@@ -73,7 +74,7 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_opposite(cell_address &position, bool value) noexcept
+constexpr void set_opposite(cell_address &position, bool value) noexcept
 {
     constexpr auto shift = detail::cell_address_opposite_shift + static_cast<int>(IsRow);
 
@@ -92,7 +93,7 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_span(cell_address &position, int value) noexcept
+constexpr void set_span(cell_address &position, int value) noexcept
 {
     ttlet value_ = numeric_cast<uint8_t>(value);
 
@@ -116,9 +117,9 @@ template<bool IsRow>
 }
 
 template<bool IsRow>
-[[nodiscard]] constexpr void set_coord(cell_address &position, int value) noexcept
+constexpr void set_coord(cell_address &position, int value) noexcept
 {
-    ttlet value_ = numeric_cast<uint8_t>(value);
+    ttlet value_ = static_cast<uint16_t>(value);
 
     constexpr auto shift = static_cast<int>(IsRow) * 16;
 

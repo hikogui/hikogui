@@ -7,6 +7,7 @@
 #include <string>
 #include <string_view>
 #include <cstring>
+#include "encoding/base16.hpp"
 
 namespace tt {
 
@@ -82,8 +83,27 @@ using bstring = std::basic_string<std::byte, byte_char_traits>;
 using bstring_view = std::basic_string_view<std::byte, byte_char_traits>;
 
 
-inline bstring to_bstring(std::string src) noexcept {
+[[nodiscard]] inline bstring to_bstring(std::string src) noexcept {
     return bstring{reinterpret_cast<std::byte *>(src.data()), src.size()};
+}
+
+[[nodiscard]] inline std::string encode_base16(bstring const &str) noexcept
+{
+    ttlet first = str.data();
+    ttlet last = first + str.size();
+    return encode_base16(first, last);
+}
+
+[[nodiscard]] inline std::string encode_base16(bstring_view str) noexcept
+{
+    ttlet first = str.data();
+    ttlet last = first + str.size();
+    return encode_base16(first, last);
+}
+
+[[nodiscard]] inline std::string to_pretty_string(bstring const &src) noexcept
+{
+    return encode_base16(src);
 }
 
 }

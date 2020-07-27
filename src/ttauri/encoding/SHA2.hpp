@@ -5,6 +5,8 @@
 
 #include <array>
 #include <cstdint>
+#include "../byte_string.hpp"
+#include "../required.hpp"
 
 namespace tt {
 namespace detail::SHA2 {
@@ -197,7 +199,7 @@ class SHA2 {
         if constexpr (std::is_same_v<T,uint32_t>) {
             return s<7,18,3>(x);
         } else {
-            return s<1,61,6>(x);
+            return s<1,8,7>(x);
         }
     }
 
@@ -280,8 +282,9 @@ class SHA2 {
             *(overflow_it++) = std::byte{0x00};
         }
 
+        size_t nr_of_bits = size * 8;
         for (int i = pad_length_of_length - 1; i >= 0; --i) {
-            *(overflow_it++) = i < sizeof(size) ? static_cast<std::byte>(size >> i * 8) : std::byte{0x00};
+            *(overflow_it++) = i < sizeof(nr_of_bits) ? static_cast<std::byte>(nr_of_bits >> i * 8) : std::byte{0x00};
         }
 
         auto b = block_type{overflow.data()};
@@ -295,7 +298,7 @@ public:
         overflow_it(overflow.begin()),
         size(0) {}
 
-    constexpr void add(std::byte const *ptr, std::byte const *last, bool finish=true) noexcept {
+    constexpr SHA2 &add(std::byte const *ptr, std::byte const *last, bool finish=true) noexcept {
         size += last - ptr;
 
         if (overflow_it != overflow.begin()) {
@@ -305,11 +308,11 @@ public:
                 add(block_type{overflow.data()});
                 overflow_it = overflow.begin();
 
-            } else if (finish) {
-                pad();
-
             } else {
-                return;
+                if (finish) {
+                    pad();
+                }
+                return *this;
             }
         }
 
@@ -323,30 +326,31 @@ public:
         if (finish) {
             pad();
         }
+        return *this;
     }
 
-    constexpr void add(bstring const &str, bool finish=true) noexcept {
+    constexpr SHA2 &add(bstring const &str, bool finish=true) noexcept {
         ttlet first = str.data();
         ttlet last = first + str.size();
-        add(first, last, finish);
+        return add(first, last, finish);
     }
 
-    constexpr void add(bstring_view str, bool finish=true) noexcept {
+    constexpr SHA2 &add(bstring_view str, bool finish=true) noexcept {
         ttlet first = str.data();
         ttlet last = first + str.size();
-        add(first, last, finish);
+        return add(first, last, finish);
     }
 
-    constexpr void add(std::string const &str, bool finish=true) noexcept {
+    constexpr SHA2 &add(std::string const &str, bool finish=true) noexcept {
         ttlet first = reinterpret_cast<std::byte const *>(str.data());
         ttlet last = first + str.size();
-        add(first, last, finish);
+        return add(first, last, finish);
     }
 
-    constexpr void add(std::string_view str, bool finish=true) noexcept {
+    constexpr SHA2 &add(std::string_view str, bool finish=true) noexcept {
         ttlet first = reinterpret_cast<std::byte const *>(str.data());
         ttlet last = first + str.size();
-        add(first, last, finish);
+        return add(first, last, finish);
     }
 
     constexpr void add(nonstd::span<std::byte const> str, bool finish=true) noexcept {
@@ -356,7 +360,7 @@ public:
     }
 
     [[nodiscard]] bstring get_bytes() const noexcept {
-        return state.get_bytes<Bits / 8>();
+        return state.template get_bytes<Bits / 8>();
     }
 };
 

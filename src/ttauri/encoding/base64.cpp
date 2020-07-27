@@ -7,7 +7,7 @@
 
 namespace tt {
 
-static int base64_decode(char value) noexcept
+static int decode_base64(char value) noexcept
 {
     if (value >= 'A' && value <= 'Z') {
         return value - 'A';
@@ -34,14 +34,14 @@ static int base64_decode(char value) noexcept
     }
 }
 
-bstring base64_decode(std::string_view src)
+bstring decode_base64(std::string_view src)
 {
     auto dst = bstring{};
 
     auto group_size = 0;
     auto group = 0;
     for (ttlet c : src) {
-        switch (auto value = base64_decode(c)) {
+        switch (auto value = decode_base64(c)) {
         case -2:
             TTAURI_THROW(parse_error("Unexpected character"));
         case -1:
@@ -82,7 +82,7 @@ bstring base64_decode(std::string_view src)
     tt_unreachable();
 }
 
-static char base64_encode(int value) noexcept
+static char encode_base64(int value) noexcept
 {
     auto value_ = static_cast<char>(value);
 
@@ -99,7 +99,7 @@ static char base64_encode(int value) noexcept
     }
 }
 
-std::string base64_encode(nonstd::span<std::byte const> src) noexcept
+std::string encode_base64(nonstd::span<std::byte const> src) noexcept
 {
     auto dst = std::string{};
     ttlet nr_groups = (nonstd::ssize(src) + 2) / 3;
@@ -116,10 +116,10 @@ std::string base64_encode(nonstd::span<std::byte const> src) noexcept
         group <<= 8;
         group |= static_cast<int>(*(i++));
 
-        dst.push_back(base64_encode(group >> 18));
-        dst.push_back(base64_encode(group >> 12 & 0x3f));
-        dst.push_back(base64_encode(group >> 6 & 0x3f));
-        dst.push_back(base64_encode(group & 0x3f));
+        dst.push_back(encode_base64(group >> 18));
+        dst.push_back(encode_base64(group >> 12 & 0x3f));
+        dst.push_back(encode_base64(group >> 6 & 0x3f));
+        dst.push_back(encode_base64(group & 0x3f));
     }
 
     if (i == src.end()) {
@@ -128,17 +128,17 @@ std::string base64_encode(nonstd::span<std::byte const> src) noexcept
 
     auto group = static_cast<uint32_t>(*(i++)) << 16;
     if (i == src.end()) {
-        dst.push_back(base64_encode(group >> 18));
-        dst.push_back(base64_encode(group >> 12 & 0x3f));
+        dst.push_back(encode_base64(group >> 18));
+        dst.push_back(encode_base64(group >> 12 & 0x3f));
         dst.push_back('=');
         dst.push_back('=');
         return dst;
     }
     
     group |= static_cast<uint32_t>(*i) << 8;
-    dst.push_back(base64_encode(group >> 18));
-    dst.push_back(base64_encode(group >> 12 & 0x3f));
-    dst.push_back(base64_encode(group >> 6 & 0x3f));
+    dst.push_back(encode_base64(group >> 18));
+    dst.push_back(encode_base64(group >> 12 & 0x3f));
+    dst.push_back(encode_base64(group >> 6 & 0x3f));
     dst.push_back('=');
     return dst;
 }
