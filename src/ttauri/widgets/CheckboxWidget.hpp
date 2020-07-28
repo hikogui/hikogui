@@ -60,6 +60,8 @@ public:
         [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
             requestLayout = true;
         });
+
+        baseConstraint = window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
     }
 
     ~CheckboxWidget() {}
@@ -73,7 +75,7 @@ public:
 
         checkboxRectangle = aarect{
             0.0f,
-            rectangle().height() - Theme::smallSize,
+            baseHeight() - Theme::smallSize * 0.5f,
             Theme::smallSize,
             Theme::smallSize
         };
@@ -158,7 +160,7 @@ public:
             value == falseValue ? falseLabelCell :
             otherLabelCell;
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, center(checkboxRectangle).y(), true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

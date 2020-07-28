@@ -55,7 +55,7 @@ public:
             drawContext.color = theme->labelStyle.color;
         }
 
-        labelCell->draw(drawContext, rectangle(), alignment, center(rectangle()).y(), true);
+        labelCell->draw(drawContext, rectangle(), alignment, baseHeight(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

@@ -19,6 +19,7 @@ struct GridWidgetCell {
     rhea::constraint row_begin_constraint;
     rhea::constraint row_preferred_constraint;
     rhea::constraint row_max_constraint;
+    rhea::constraint base_constraint;
 
     GridWidgetCell(cell_address address, Widget *widget) noexcept :
         address(address), widget(widget) {}
@@ -30,6 +31,8 @@ protected:
     std::vector<rhea::variable> rightGridLines;
     std::vector<rhea::variable> bottomGridLines;
     std::vector<rhea::variable> topGridLines;
+    std::vector<rhea::variable> bottomBaseLines;
+    std::vector<rhea::variable> topBaseLines;
     std::vector<rhea::constraint> leftGridConstraints;
     std::vector<rhea::constraint> rightGridConstraints;
     std::vector<rhea::constraint> bottomGridConstraints;
@@ -52,6 +55,15 @@ protected:
     void calculateGridSize() noexcept;
     void removeAllConstraints() noexcept;
     void addAllConstraints() noexcept;
+
+    virtual void reconstrain() noexcept override {
+        window.stopConstraintSolver();
+        ContainerWidget::reconstrain();
+        removeAllConstraints();
+        calculateGridSize();
+        addAllConstraints();
+        window.startConstraintSolver();
+    }
 
 public:
     GridWidget(Window &window, Widget *parent) noexcept :

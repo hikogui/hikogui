@@ -58,6 +58,8 @@ public:
         [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
             requestLayout = true;
         });
+
+        baseConstraint = window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
     }
 
     ~ToggleWidget() {
@@ -72,7 +74,7 @@ public:
 
         toggleRectangle = aarect{
             -0.5f, // Expand horizontally due to rounded shape
-            rectangle().height() - Theme::smallSize,
+            baseHeight() - Theme::smallSize * 0.5f,
             Theme::smallSize * 2.0f + 1.0f, // Expand horizontally due to rounded shape
             Theme::smallSize
         };
@@ -170,7 +172,7 @@ public:
             value == offValue ? offLabelCell :
             otherLabelCell;
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, center(toggleRectangle).y(), true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

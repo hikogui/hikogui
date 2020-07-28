@@ -103,12 +103,17 @@ rhea::constraint Window_base::replaceConstraint(
 ) noexcept {
     auto lock = std::scoped_lock(widgetSolverMutex);
 
+    widgetSolver.set_autosolve(false);
+
     if (!oldConstraint.is_nil()) {
         widgetSolver.remove_constraint(oldConstraint);
     }
     if (!newConstraint.is_nil()) {
         widgetSolver.add_constraint(newConstraint);
     }
+
+    widgetSolver.set_autosolve(true);
+
     constraintsUpdated = true;
     return newConstraint;
 }

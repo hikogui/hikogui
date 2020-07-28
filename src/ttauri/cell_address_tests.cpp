@@ -62,7 +62,14 @@ TEST(cell_address, complex_literals) {
     ASSERT_EQ(to_string("L:45R23"_ca),  "R23:45");
     ASSERT_EQ(to_string("L45R:23"_ca),  "R45:23");
 
-    ASSERT_EQ(to_string("L23:89T45:67"_ca),   "L23:89T45:67");
+    ASSERT_EQ(to_string("L23:15T45:26"_ca),   "L23:15T45:26");
+
+    ASSERT_EQ(to_string("L23:45:5"_ca),   "L23:45:5");
+    ASSERT_EQ(to_string("L23T:45:3"_ca),  "L23T:45:3");
+    ASSERT_EQ(to_string("L:45:6R23"_ca),  "R23:45:6");
+    ASSERT_EQ(to_string("L45R:23:9"_ca),  "R45:23:9");
+
+    ASSERT_EQ(to_string("L23:15:4T45:26:3"_ca),   "L23:15:4T45:26:3");
 }
 
 TEST(cell_address, transform) {
@@ -88,4 +95,21 @@ TEST(cell_address, transform) {
     ASSERT_EQ("T+1"_ca * "L+4B-5"_ca, "L+4B-6"_ca);
     ASSERT_EQ("B+1"_ca * "L+4B-5"_ca, "L+4B-4"_ca);
 
+    ASSERT_EQ("L:2"_ca * "L4B5"_ca, "L4:2B5"_ca);
+    ASSERT_EQ("R:2"_ca * "L4B5"_ca, "L4:2B5"_ca);
+    ASSERT_EQ("T:2"_ca * "L4B5"_ca, "L4B5:2"_ca);
+    ASSERT_EQ("B:2"_ca * "L4B5"_ca, "L4B5:2"_ca);
+    ASSERT_EQ("L:3:2"_ca * "L4B5"_ca, "L4:3:2B5"_ca);
+    ASSERT_EQ("R:3:2"_ca * "L4B5"_ca, "L4:3:2B5"_ca);
+    ASSERT_EQ("T:3:2"_ca * "L4B5"_ca, "L4B5:3:2"_ca);
+    ASSERT_EQ("B:3:2"_ca * "L4B5"_ca, "L4B5:3:2"_ca);
+
+    ASSERT_EQ("L+1:2"_ca * "L4B5"_ca, "L5:2B5"_ca);
+    ASSERT_EQ("R+1:2"_ca * "L4B5"_ca, "L3:2B5"_ca);
+    ASSERT_EQ("T+1:2"_ca * "L4B5"_ca, "L4B4:2"_ca);
+    ASSERT_EQ("B+1:2"_ca * "L4B5"_ca, "L4B6:2"_ca);
+    ASSERT_EQ("L+1:3:2"_ca * "L4B5"_ca, "L5:3:2B5"_ca);
+    ASSERT_EQ("R+1:3:2"_ca * "L4B5"_ca, "L3:3:2B5"_ca);
+    ASSERT_EQ("T+1:3:2"_ca * "L4B5"_ca, "L4B4:3:2"_ca);
+    ASSERT_EQ("B+1:3:2"_ca * "L4B5"_ca, "L4B6:3:2"_ca);
 }

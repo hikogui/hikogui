@@ -65,6 +65,8 @@ public:
         [[maybe_unused]] ttlet options_cbid = options.add_callback([this](auto...){
             requestLayout = true;
         });
+
+        baseConstraint = window.replaceConstraint(baseConstraint, base == middle);
     }
 
     ~SelectionWidget() {}
@@ -245,7 +247,7 @@ public:
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
         drawContext.color = *enabled ? theme->labelStyle.color : drawContext.color;
-        i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, center(chevronsRectangle).y(), true);
+        i->cell->draw(drawContext, optionRectangle, Alignment::MiddleLeft, baseHeight(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

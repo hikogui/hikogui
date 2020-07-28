@@ -15,6 +15,7 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
     Widget(window, parent, Theme::smallSize, Theme::smallSize),
     label(std::move(label))
 {
+    baseConstraint = window.replaceConstraint(baseConstraint, base == middle);
 }
 
 ButtonWidget::~ButtonWidget() {

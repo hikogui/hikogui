@@ -186,10 +186,12 @@ public:
     T &makeWidget(Args &&... args);
 
     void stopConstraintSolver() noexcept {
+        ttlet lock = std::scoped_lock(widgetSolverMutex);
         widgetSolver.set_autosolve(false);
     }
 
     void startConstraintSolver() noexcept {
+        ttlet lock = std::scoped_lock(widgetSolverMutex);
         widgetSolver.set_autosolve(true);
     }
 

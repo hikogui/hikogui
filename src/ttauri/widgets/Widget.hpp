@@ -89,6 +89,8 @@ protected:
     */
     Widget *parent;
 
+    rhea::constraint baseConstraint;
+
 public:
 
     /** Transformation matrix from window coords to local coords.
@@ -114,6 +116,7 @@ public:
     rhea::variable const bottom;
     rhea::variable const width;
     rhea::variable const height;
+    rhea::variable const base;
 
     rhea::linear_expression const right = left + width;
     rhea::linear_expression const centre = left + width * 0.5;
@@ -223,6 +226,8 @@ public:
             vec{extent()}
         };
     }
+
+    [[nodiscard]] float baseHeight() const noexcept;
 
     /** Get the clipping-rectangle in window coordinates.
     *

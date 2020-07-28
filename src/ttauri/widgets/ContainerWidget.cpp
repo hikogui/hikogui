@@ -5,13 +5,15 @@
 namespace tt {
 
 Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept {
+    ttlet lock = std::scoped_lock(mutex);
+
     current_address *= address;
 
     ttlet widget_ptr = childWidget.get();
     tt_assume(widget_ptr);
 
-    auto lock = std::scoped_lock(mutex);
     children.push_back(std::move(childWidget));
+    requestReconstrain = true;
     window.requestLayout = true;
     return *widget_ptr;
 }
@@ -20,7 +22,12 @@ bool ContainerWidget::layout(hires_utc_clock::time_point displayTimePoint, bool 
 {
     auto has_laid_out = Widget::layout(displayTimePoint, forceLayout);
 
-    auto lock = std::scoped_lock(mutex);
+    if (requestReconstrain.exchange(false)) {
+        reconstrain();
+        forceLayout = true;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
 
     for (auto &&child: children) {
         has_laid_out |= child->layout(displayTimePoint, forceLayout);

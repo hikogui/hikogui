@@ -42,6 +42,8 @@ public:
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
             requestLayout = true;
         });
+
+        baseConstraint = window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
     }
 
     ~RadioButtonWidget() {
@@ -56,7 +58,7 @@ public:
 
         radioButtonRectangle = aarect{
             0.0f,
-            rectangle().height() - Theme::smallSize,
+            baseHeight() - Theme::smallSize * 0.5f,
             Theme::smallSize,
             Theme::smallSize
         };
@@ -115,7 +117,7 @@ public:
             drawContext.color = theme->labelStyle.color;
         }
 
-        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, center(radioButtonRectangle).y(), true);
+        labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {

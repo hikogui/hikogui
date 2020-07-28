@@ -12,6 +12,7 @@ namespace detail {
 constexpr int cell_address_absolute_shift = 62;
 constexpr int cell_address_opposite_shift = 60;
 constexpr int cell_address_span_shift = 32;
+constexpr int cell_address_alignment_shift = 44;
 }
 
 /** The absolute or relative position and size of a cell.
@@ -29,8 +30,10 @@ constexpr int cell_address_span_shift = 32;
  *  [62]    | bool    | Absolute column
  *  [61]    | bool    | Opposite row (true=top, false=bottom)
  *  [60]    | bool    | Opposite column (true=right, false=left)
- *  [47:40] | uint8_t | rowspan - 1
- *  [39:32] | uint8_t | colspan - 1
+ *  [55:50] | uint6_t | Row alignment offset
+ *  [49:44] | uint6_t | Column alignment offset
+ *  [43:38] | uint6_t | rowspan - 1
+ *  [37:32] | uint6_t | colspan - 1
  *  [31:16] | int16_t | row (must be natural for absolute row)
  *  [15: 0] | int16_t | column (must be natural for absolute column)
  */
@@ -85,24 +88,46 @@ constexpr void set_opposite(cell_address &position, bool value) noexcept
 }
 
 template<bool IsRow>
+[[nodiscard]] constexpr int get_alignment(cell_address const &position) noexcept
+{
+    constexpr auto shift = detail::cell_address_alignment_shift + static_cast<int>(IsRow) * 6;
+
+    return static_cast<int>(static_cast<uint64_t>(position) >> shift & 0x3f);
+}
+
+template<bool IsRow>
+constexpr void set_alignment(cell_address &position, int value) noexcept
+{
+    tt_assume(value >= 0 && value < 64);
+    ttlet value_ = static_cast<uint64_t>(value);
+
+    constexpr auto shift = detail::cell_address_alignment_shift + static_cast<int>(IsRow) * 6;
+
+    auto position_ = static_cast<uint64_t>(position);
+    position_ &= ~(uint64_t{0x3f} << shift);
+    position_ |= value_ << shift;
+    position = static_cast<cell_address>(position_);
+}
+
+template<bool IsRow>
 [[nodiscard]] constexpr int get_span(cell_address const &position) noexcept
 {
-    constexpr auto shift = detail::cell_address_span_shift + static_cast<int>(IsRow) * 8;
+    constexpr auto shift = detail::cell_address_span_shift + static_cast<int>(IsRow) * 6;
 
-    return static_cast<uint8_t>(static_cast<uint64_t>(position) >> shift) + 1;
+    return static_cast<int>((static_cast<uint64_t>(position) >> shift & 0x3f) + 1);
 }
 
 template<bool IsRow>
 constexpr void set_span(cell_address &position, int value) noexcept
 {
-    ttlet value_ = numeric_cast<uint8_t>(value);
+    tt_assume(value >= 1 && value < 65);
+    ttlet value_ = static_cast<uint64_t>(value - 1);
 
-    tt_assume(value >= 1);
-    constexpr auto shift = detail::cell_address_span_shift + static_cast<int>(IsRow) * 8;
+    constexpr auto shift = detail::cell_address_span_shift + static_cast<int>(IsRow) * 6;
 
     auto position_ = static_cast<uint64_t>(position);
-    position_ &= ~(uint64_t{0xff} << shift);
-    position_ |= static_cast<uint64_t>(value_ - 1) << shift;
+    position_ &= ~(uint64_t{0x3f} << shift);
+    position_ |= value_ << shift;
     position = static_cast<cell_address>(position_);
 }
 
@@ -132,16 +157,17 @@ constexpr void set_coord(cell_address &position, int value) noexcept
 /** Parse a cell position
  *
  * cell_address := position*;
- * position := axis ([+-]? number)? (':' number)?;
+ * position := axis ([+-]? number)? (':' number (':' number)?)?;
  * axis := [BbTtLlRr]
  * number := [0-9]+
  */
-[[nodiscard]] constexpr cell_address parse_cell_address(char const *str) noexcept
+[[nodiscard]] constexpr cell_address parse_cell_address(char const *str)
 {
     enum class state_t { Idle, Coord, Number };
-    
+    enum class part_t { Coord, Span, Alignment };
+
     char axis = 0;
-    bool is_span = false;
+    part_t part = part_t::Coord;
     bool is_absolute = false;
     bool is_positive = true;
     int value = 0;
@@ -157,7 +183,7 @@ constexpr void set_coord(cell_address &position, int value) noexcept
         case state_t::Idle:
             value = 0;
             is_positive = true;
-            is_span = false;
+            part = part_t::Coord;
             is_absolute = true;
 
             switch (c) {
@@ -187,7 +213,8 @@ constexpr void set_coord(cell_address &position, int value) noexcept
                 // End of the string. Don't consume the nul.
                 consume = false;
                 break;
-            default: tt_no_default;
+            default:
+                TTAURI_THROW(parse_error("Unexpected character"));
             }
             break;
         
@@ -205,7 +232,7 @@ constexpr void set_coord(cell_address &position, int value) noexcept
                 break;
             case ':':
                 state = state_t::Number;
-                is_span = true;
+                part = part_t::Span;
                 break;
             case ' ':
                 break;
@@ -232,37 +259,68 @@ constexpr void set_coord(cell_address &position, int value) noexcept
                 // don't consume the character.
                 ttlet is_row = axis == 'B' || axis == 'T';
                 ttlet is_opposite = axis == 'R' || axis == 'T';
-                if (is_span) {
+                switch (part) {
+                case part_t::Coord:
                     if (is_row) {
-                        set_span<true>(position, numeric_cast<uint8_t>(value));
-                        set_opposite<true>(position, is_opposite);
-                    } else {
-                        set_span<false>(position, numeric_cast<uint8_t>(value));
-                        set_opposite<false>(position, is_opposite);
-                    }
-                    
-                } else {
-                    if (is_row) {
-                        set_coord<true>(position, numeric_cast<int16_t>(value));
+                        set_coord<true>(position, value);
                         set_opposite<true>(position, is_opposite);
                         set_absolute<true>(position, is_absolute);
                     } else {
-                        set_coord<false>(position, numeric_cast<int16_t>(value));
+                        set_coord<false>(position, value);
                         set_opposite<false>(position, is_opposite);
                         set_absolute<false>(position, is_absolute);
                     }
+                    break;
+
+                case part_t::Span:
+                    if (is_row) {
+                        set_span<true>(position, value);
+                        set_opposite<true>(position, is_opposite);
+                    } else {
+                        set_span<false>(position, value);
+                        set_opposite<false>(position, is_opposite);
+                    }
+                    break;
+
+                case part_t::Alignment:
+                    if (is_row) {
+                        set_alignment<true>(position, value);
+                    } else {
+                        set_alignment<false>(position, value);
+                    }
+                    break;
+
+                default:
+                    tt_no_default;
                 }
 
-                if (is_span == false && c == ':') {
-                    // A ':' after a number means a span, parse the next number.
-                    value = 0;
-                    is_span = true;
-                    is_positive = true;
-                    state = state_t::Number;
+                if (c == ':') {
+                    switch (part) {
+                    case part_t::Coord:
+                        // A ':' after a coord means a span, parse the next number.
+                        value = 0;
+                        part = part_t::Span;
+                        is_positive = true;
+                        state = state_t::Number;
+                        break;
+
+                    case part_t::Span:
+                        // A ':' after a span means an alignment, parse the next number.
+                        value = 0;
+                        part = part_t::Alignment;
+                        is_positive = true;
+                        state = state_t::Number;
+                        break;
+
+                    case part_t::Alignment:
+                        TTAURI_THROW(parse_error("Unexpected third ':'"));
+
+                    default:
+                        tt_no_default;
+                    }
 
                 } else {
-                    // Any other character means we start over, do not consume this
-                    // character.
+                    // Any other character means we start over, do not consume this character.
                     consume = false;
                     state = state_t::Idle;
                 }
@@ -304,6 +362,10 @@ template<bool IsRow>
             r += axis;
         }
         r += fmt::format(":{}", span);
+
+        if (auto alignment = get_alignment<IsRow>(rhs); alignment != 0) {
+            r += fmt::format(":{}", alignment);
+        }
     }
 
     return r;
@@ -323,6 +385,7 @@ template<bool IsRow>
 constexpr void transform_half(cell_address &r, cell_address const &lhs, cell_address const &rhs) noexcept
 {
     set_span<IsRow>(r, get_span<IsRow>(lhs));
+    set_alignment<IsRow>(r, get_alignment<IsRow>(lhs));
 
     if (is_absolute<IsRow>(lhs)) {
         set_absolute<IsRow>(r, true);

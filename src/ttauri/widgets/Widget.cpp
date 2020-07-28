@@ -29,6 +29,7 @@ Widget::Widget(Window &_window, Widget *_parent, float _width, float _height) no
     preferredHeightConstraint = window.addConstraint(height >= _preferredHeight, rhea::strength::medium());
     maximumWidthConstraint = window.addConstraint(width <= _maximumWidth, rhea::strength::weak());
     maximumHeightConstraint = window.addConstraint(height <= _maximumHeight, rhea::strength::weak());
+    baseConstraint =  window.addConstraint(base == middle, rhea::strength::weak());
 }
 
 Widget::~Widget()
@@ -46,6 +47,11 @@ GUIDevice *Widget::device() const noexcept
     auto device = window.device;
     tt_assert(device);
     return device;
+}
+
+[[nodiscard]] float Widget::baseHeight() const noexcept {
+    ttlet lock = std::scoped_lock(window.widgetSolverMutex);
+    return numeric_cast<float>(base.value() - bottom.value());
 }
 
 void Widget::setMinimumWidth(float _width) noexcept
