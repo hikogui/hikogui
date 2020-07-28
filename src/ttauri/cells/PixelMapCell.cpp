@@ -34,7 +34,7 @@ void PixelMapCell::draw(DrawContext const &drawContext, aarect rectangle, Alignm
 
     switch (backing.state) {
     case PipelineImage::Image::State::Drawing:
-        drawContext.window().forceRedraw = true;
+        drawContext.window().requestRedraw = true;
         break;
 
     case PipelineImage::Image::State::Uploaded:

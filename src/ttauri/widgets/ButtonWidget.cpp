@@ -20,9 +20,13 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 ButtonWidget::~ButtonWidget() {
 }
 
-void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept 
+bool ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
 {
-    Widget::layout(displayTimePoint);
+    if (!Widget::layout(displayTimePoint, forceLayout)) {
+        return false;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
 
     ttlet label_x = Theme::margin;
     ttlet label_y = 0.0;
@@ -36,6 +40,7 @@ void ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     setMinimumExtent(vec{Theme::width, labelShapedText.boundingBox.height() + Theme::margin * 2.0f});
 
     setPreferredExtent(labelShapedText.preferredExtent + Theme::margin2D * 2.0f);
+    return true;
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -67,7 +72,7 @@ void ButtonWidget::handleCommand(command command) noexcept {
 
     if (command == command::gui_activate) {
         if (assign_and_compare(value, !value)) {
-            forceRedraw = true;
+            window.requestRedraw = true;
         }
     }
     Widget::handleCommand(command);
@@ -78,7 +83,7 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
     if (*enabled) {
         if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
-            forceRedraw = true;
+            window.requestRedraw = true;
         }
 
         if (

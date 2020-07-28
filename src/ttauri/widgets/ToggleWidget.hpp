@@ -47,24 +47,28 @@ public:
         offValue(offValue)
     {
         [[maybe_unused]] ttlet value_cbid = this->value.add_callback([this](auto...){
-            forceRedraw = true;
+            this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
-            forceLayout = true;
+            requestLayout = true;
         });
         [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
-            forceLayout = true;
+            requestLayout = true;
         });
         [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
-            forceLayout = true;
+            requestLayout = true;
         });
     }
 
     ~ToggleWidget() {
     }
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
-        Widget::layout(displayTimePoint);
+    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::layout(displayTimePoint, forceLayout)) {
+            return false;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
 
         toggleRectangle = aarect{
             -0.5f, // Expand horizontally due to rounded shape
@@ -120,6 +124,8 @@ public:
         
         ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
         sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
+
+        return true;
     }
     
     void drawToggle(DrawContext drawContext) noexcept {
@@ -131,7 +137,7 @@ public:
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(animationDuration);
         if (animationProgress < 1.0f) {
-            forceRedraw = true;
+            window.requestRedraw = true;
         }
 
         ttlet animatedValue = to_float(value, animationDuration);
@@ -195,7 +201,7 @@ public:
 
         if (command == command::gui_activate) {
             if (assign_and_compare(value, value == offValue ? onValue : offValue)) {
-                forceRedraw = true;
+                window.requestRedraw = true;
             }
         }
         Widget::handleCommand(command);

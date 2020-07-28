@@ -49,23 +49,27 @@ public:
         falseValue(falseValue)
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
-            forceRedraw = true;
+            this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...){
-            forceLayout = true;
+            requestLayout = true;
         });
         [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...){
-            forceLayout = true;
+            requestLayout = true;
         });
         [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
-            forceLayout = true;
+            requestLayout = true;
         });
     }
 
     ~CheckboxWidget() {}
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
-        Widget::layout(displayTimePoint);
+    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::layout(displayTimePoint, forceLayout)) {
+            return false;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
 
         checkboxRectangle = aarect{
             0.0f,
@@ -119,6 +123,8 @@ public:
         minusGlyph = to_FontGlyphIDs(ElusiveIcon::Minus);
         ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
         minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+
+        return true;
     }
 
     void drawCheckBox(DrawContext const &drawContext) noexcept {
@@ -183,7 +189,7 @@ public:
 
         if (command == command::gui_activate) {
             if (assign_and_compare(value, value == falseValue ? trueValue : falseValue)) {
-                forceRedraw = true;
+                window.requestRedraw = true;
             }
         }
         Widget::handleCommand(command);

@@ -346,7 +346,7 @@ void Window_vulkan_win32::setOSWindowRectangleFromRECT(RECT rect) noexcept
 
     // Force a redraw, so that the swapchain is used and causes out-of-date results on window resize,
     // which in turn will cause a forceLayout.
-    forceRedraw = true;
+    requestRedraw = true;
 }
 
 void Window_vulkan_win32::setCursor(Cursor cursor) noexcept {
@@ -435,7 +435,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         } break;
 
     case WM_PAINT:
-        forceLayout = true;
+        requestLayout = true;
         break;
 
     case WM_SIZE:
@@ -485,7 +485,7 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
     case WM_ACTIVATEAPP:
         LOG_INFO("Activate");
         active = (wParam == TRUE);
-        forceLayout = true;
+        requestLayout = true;
         break;
 
     case WM_GETMINMAXINFO: {
@@ -608,13 +608,13 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         LOG_INFO("Double click duration {} ms", doubleClickMaximumDuration / 1ms);
 
         application->themes->setThemeMode(readOSThemeMode());
-        forceLayout = true;
+        requestLayout = true;
         break;
 
     case WM_DPICHANGED:
         // x-axis dpi value.
         dpi = numeric_cast<float>(LOWORD(wParam));
-        forceLayout = true;
+        requestLayout = true;
         break;
 
     default:

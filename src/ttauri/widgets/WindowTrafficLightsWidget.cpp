@@ -35,9 +35,13 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 }
 
 
-void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
+bool WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    Widget::layout(displayTimePoint);
+    if (!Widget::layout(displayTimePoint, forceLayout)) {
+        return false;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
 
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
         closeRectangle = aarect{
@@ -99,6 +103,7 @@ void WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePo
     minimizeWindowGlyphRectangle = align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     maximizeWindowGlyphRectangle = align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
+    return true;
 }
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -252,7 +257,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 
 
     if (stateHasChanged) {
-        forceRedraw = true;
+        window.requestRedraw = true;
     }
 
 }

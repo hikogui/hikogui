@@ -27,7 +27,7 @@ public:
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
     ~ButtonWidget();
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
+    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

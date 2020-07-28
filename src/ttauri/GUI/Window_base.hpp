@@ -68,11 +68,11 @@ public:
 
     /** When set to true the widgets will be layed out.
      */
-    std::atomic<bool> forceLayout = true;
+    std::atomic<bool> requestLayout = true;
 
     /** When set to true the widgets will be redrawn.
     */
-    std::atomic<bool> forceRedraw = true;
+    std::atomic<bool> requestRedraw = true;
 
     /*! The window is currently being resized by the user.
      * We can disable expensive redraws during rendering until this
@@ -171,11 +171,6 @@ public:
     void unsetDevice() { setDevice({}); }
 
     void layout(hires_utc_clock::time_point displayTimePoint);
-
-    /** Layout the widgets in the window.
-     * @return bit 0: Request redraw, bit 1: Request layout.
-     */
-    int layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force);
 
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.

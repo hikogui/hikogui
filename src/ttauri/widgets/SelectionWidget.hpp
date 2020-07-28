@@ -59,20 +59,22 @@ public:
         defaultValue(defaultValue)
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
-            forceRedraw = true;
+            this->window.requestRedraw = true;
         });
 
         [[maybe_unused]] ttlet options_cbid = options.add_callback([this](auto...){
-            forceLayout = true;
+            requestLayout = true;
         });
     }
 
     ~SelectionWidget() {}
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::layout(displayTimePoint, forceLayout)) {
+            return false;
+        }
 
-        Widget::layout(displayTimePoint);
+        ttlet lock = std::scoped_lock(mutex);
 
         leftBoxRectangle = aarect{
             0.0f, 0.0f,
@@ -165,6 +167,8 @@ public:
         chevronsGlyph = to_FontGlyphIDs(ElusiveIcon::ChevronUp);
         ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
         chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
+
+        return true;
     }
 
     void drawOptionHighlight(DrawContext drawContext, OptionListEntry const &option) noexcept {
@@ -283,7 +287,7 @@ public:
                     for (ttlet &option : optionList) {
                         if (option.backgroundRectangle.contains(mouseInListPosition)) {
                             if (hoverOption != option.tag) {
-                                forceRedraw = true;
+                                window.requestRedraw = true;
                                 hoverOption = option.tag;
                             }
                         }
@@ -291,14 +295,14 @@ public:
 
                 } else {
                     if (hoverOption.has_value()) {
-                        forceRedraw = true;
+                        window.requestRedraw = true;
                         hoverOption = {};
                     }
                 }
 
                 if (event.type == MouseEvent::Type::ButtonDown && event.cause.leftButton) {
                     clickedOption = hoverOption;
-                    forceRedraw = true;
+                    window.requestRedraw = true;
                 }
                 if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
                     if (clickedOption.has_value() && clickedOption == hoverOption) {
@@ -306,7 +310,7 @@ public:
                         handleCommand(command::gui_activate);
                     }
                     clickedOption = {};
-                    forceRedraw = true;
+                    window.requestRedraw = true;
                 }
 
             } else {
@@ -380,7 +384,7 @@ public:
         default:;
         }
 
-        forceLayout = true;
+        requestLayout = true;
         Widget::handleCommand(command);
     }
 

@@ -30,19 +30,24 @@ public:
         alignment(alignment)
     {
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            forceLayout = true;
+            requestLayout = true;
         });
     }
 
     ~LabelWidget() {
     }
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
-        Widget::layout(displayTimePoint);
+    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::layout(displayTimePoint, forceLayout)) {
+            return false;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
         setMinimumHeight(labelCell->heightForWidth(rectangle().width()));
         setPreferredExtent(vec{labelCell->preferredExtent().width(), labelCell->heightForWidth(rectangle().width())});
+        return true;
     }
 
     void drawLabel(DrawContext drawContext) noexcept {

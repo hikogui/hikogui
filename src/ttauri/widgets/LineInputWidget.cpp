@@ -23,21 +23,22 @@ LineInputWidget::~LineInputWidget()
 {
 }
 
-int LineInputWidget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
+bool LineInputWidget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto need = Widget::needs(displayTimePoint);
+    if (focus && displayTimePoint > nextRedrawTimePoint) {
+        window.requestRedraw = true;
+    }
 
-    bool redraw = focus;
-    redraw &= displayTimePoint > nextRedrawTimePoint;
-
-    need |= static_cast<int>(redraw);
-
-    return need;
+    return Widget::needLayout(displayTimePoint);
 }
 
-void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexcept 
+bool LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
 {
-    Widget::layout(displayTimePoint);
+    if (!Widget::layout(displayTimePoint, forceLayout)) {
+        return false;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
 
     textRectangle = shrink(rectangle(), Theme::margin);
 
@@ -61,9 +62,10 @@ void LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint) noexc
     setPreferredHeight(maximumHeight);
     setMinimumHeight(maximumHeight);
 
-
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
+
+    return true;
 }
 
 void LineInputWidget::dragSelect() noexcept
@@ -100,7 +102,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
         dragSelect();
 
         // Once we are scrolling, don't stop.
-        forceRedraw = true;
+        window.requestRedraw = true;
 
     } else if (dragClickCount == 0) {
         // The following is for scrolling based on keyboard input, ignore mouse drags.
@@ -181,7 +183,7 @@ void LineInputWidget::handleCommand(command command) noexcept
         field.handleCommand(command);
     }
 
-    forceLayout = true;
+    requestLayout = true;
 
     // Make sure changing keyboard focus is handled.
     Widget::handleCommand(command);
@@ -210,7 +212,7 @@ void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
     default:;
     }
 
-    forceLayout = true;
+    requestLayout = true;
 }
 
 void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
@@ -250,7 +252,7 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
         // Record the last time the cursor is moved, so that the carret remains lit.
         lastUpdateTimePoint = event.timePoint;
 
-        forceRedraw = true;
+        window.requestRedraw = true;
 
     } else if (event.type == MouseEvent::Type::Drag && event.cause.leftButton) {
         // When the mouse is dragged beyond the line input,
@@ -272,7 +274,7 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
         dragSelect();
 
-        forceRedraw = true;
+        window.requestRedraw = true;
     }
 }
 

@@ -37,18 +37,22 @@ public:
         label()
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
-            forceRedraw = true;
+            this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            forceLayout = true;
+            requestLayout = true;
         });
     }
 
     ~RadioButtonWidget() {
     }
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override {
-        Widget::layout(displayTimePoint);
+    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::layout(displayTimePoint, forceLayout)) {
+            return false;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
 
         radioButtonRectangle = aarect{
             0.0f,
@@ -86,6 +90,7 @@ public:
         setMinimumHeight(minimumHeight);
 
         pipRectangle = shrink(radioButtonRectangle, 1.5f);
+        return true;
     }
 
     void drawRadioButton(DrawContext drawContext) noexcept {
@@ -141,7 +146,7 @@ public:
 
         if (command == command::gui_activate) {
             if (assign_and_compare(value, activeValue)) {
-                forceRedraw = true;
+                window.requestRedraw = true;
             }
         }
         Widget::handleCommand(command);

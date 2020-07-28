@@ -139,36 +139,21 @@ rhea::constraint Window_base::replaceConstraint(
 
 void Window_base::layout(hires_utc_clock::time_point displayTimePoint)
 {
-    auto force = forceLayout.exchange(false);
-    auto need = layoutChildren(displayTimePoint, force);
-    if (force || need >= 1) {
-        forceRedraw = true;
-    }
-}
+    auto forceLayout = requestLayout.exchange(false);
 
-int Window_base::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) {
-    constexpr int layout_retries = 10;
-
-    auto total_need = 0;
-
-    for (auto i = 0; i != layout_retries; ++i) {
-        ttlet child_need = widget->needs(displayTimePoint);
-        total_need |= child_need;
-
-        if (force || child_need >= 2) {
-            widget->layout(displayTimePoint);
+    for (auto retry = 0; retry != 10; ++retry) {
+        if (widget->layout(displayTimePoint, forceLayout)) {
+            requestRedraw = true;
         }
-
-        // Grandchildren need to be layed out when the child has changed.
-        total_need |= widget->layoutChildren(displayTimePoint, force);
 
         // Layout may have changed the constraints, in that case recalculate them.
         if (constraintsUpdated) {
             constraintsUpdated = false;
             layoutWindow();
+            forceLayout = true;
 
         } else {
-            return total_need;
+            return;
         }
     }
     LOG_FATAL("Unable to layout child widgets");
@@ -235,7 +220,7 @@ void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexce
 void Window_base::windowChangedSize(ivec extent) {
     currentWindowExtent = extent;
     suggestWidgetExtent(currentWindowExtent);
-    forceLayout = true;
+    requestLayout = true;
 }
 
 void Window_base::updateMouseTarget(Widget const *newTargetWidget, vec position) noexcept {

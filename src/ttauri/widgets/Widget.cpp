@@ -20,7 +20,7 @@ Widget::Widget(Window &_window, Widget *_parent, float _width, float _height) no
     
 {
     [[maybe_unused]] ttlet enabled_cbid = enabled.add_callback([this](auto...){
-        forceRedraw = true;
+        window.requestRedraw = true;
     });
 
     minimumWidthConstraint = window.addConstraint(width >= _minimumWidth, rhea::strength::strong());
@@ -191,33 +191,31 @@ rhea::constraint Widget::placeRight(float margin) const noexcept {
     return window.addConstraint(this->right + margin == parent->right);
 }
 
-int Widget::needs(hires_utc_clock::time_point displayTimePoint) noexcept
+bool Widget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto lock = std::scoped_lock(window.widgetSolverMutex);
-    int needs = 0;
+    //
+    // Thread safety: All reads and stores are done on atomic variables.
+    //
+
+    auto needLayout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
 
     auto newExtent = round(vec{width.value(), height.value()});
-    needs |= static_cast<int>(newExtent != extent());
+    needLayout |= newExtent != extent();
     setExtent(newExtent);
 
     auto newOffsetFromWindow = round(vec{left.value(), bottom.value()});
-    needs |= static_cast<int>(newOffsetFromWindow != offsetFromWindow());
+    needLayout |= newOffsetFromWindow != offsetFromWindow();
     setOffsetFromWindow(newOffsetFromWindow);
 
-    needs |= static_cast<int>(
-        forceLayout.exchange(false, std::memory_order::memory_order_relaxed)
-    );
-
-    needs = (needs << 1) | needs;    
-    needs |= static_cast<int>(
-        forceRedraw.exchange(false, std::memory_order::memory_order_relaxed)
-    );
-
-    return needs;
+    return needLayout;
 }
 
-void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
+bool Widget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
+    if (!(needLayout(displayTimePoint) || forceLayout)) {
+        return false;
+    }
+
     auto lock = std::scoped_lock(mutex);
 
     setOffsetFromParent(
@@ -229,7 +227,7 @@ void Widget::layout(hires_utc_clock::time_point displayTimePoint) noexcept
     fromWindowTransform = mat::T(-offsetFromWindow().x(), -offsetFromWindow().y(), -z());
     toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
 
-    forceRedraw = true;
+    return true;
 }
 
 void Widget::handleCommand(command command) noexcept {
@@ -246,6 +244,41 @@ void Widget::handleCommand(command command) noexcept {
     }
 }
 
+void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
+    auto lock = std::scoped_lock(mutex);
+
+    if (event.type == MouseEvent::Type::Entered) {
+        hover = true;
+        window.requestRedraw = true;
+    } else if (event.type == MouseEvent::Type::Exited) {
+        hover = false;
+        window.requestRedraw = true;
+    }
+}
+
+void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+    auto lock = std::scoped_lock(mutex);
+
+    switch (event.type) {
+    case KeyboardEvent::Type::Entered:
+        focus = true;
+        window.requestRedraw = true;
+        break;
+
+    case KeyboardEvent::Type::Exited:
+        focus = false;
+        window.requestRedraw = true;
+        break;
+
+    case KeyboardEvent::Type::Key:
+        for (ttlet command : event.getCommands()) {
+            handleCommand(command);
+        }
+        break;
+
+    default:;
+    }
+}
 
 Widget *Widget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {

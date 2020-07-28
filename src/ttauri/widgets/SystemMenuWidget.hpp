@@ -24,7 +24,6 @@ public:
     SystemMenuWidget(Window &window, Widget *parent, Image const &icon) noexcept;
     ~SystemMenuWidget() {}
 
-    void layout(hires_utc_clock::time_point displayTimePoint) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;

@@ -55,11 +55,11 @@ namespace tt {
  *
  * Thread-safety:
  *     All method of the widget should lock the mutex, exceptions are:
- *         hitBoxTest(), needs()
+ *         hitBoxTest(), needLayout()
  *     All public members should be thread-safe, for example:
  *         std::atomic and tt::observer
  *     The following methods should only be called from the render thread:
- *         needs(), layout(), layoutChildren(), draw(), 
+ *         needLayout(), layout(), layoutChildren(), draw(), 
  */
 class Widget {
 private:
@@ -126,8 +126,7 @@ public:
     std::atomic<R32G32SFloat> _offsetFromParent;
     std::atomic<R32G32SFloat> _offsetFromWindow;
 
-    mutable std::atomic<bool> forceLayout = true;
-    mutable std::atomic<bool> forceRedraw = true;
+    mutable std::atomic<bool> requestLayout = true;
 
     /** The widget is enabled.
      */
@@ -261,22 +260,21 @@ public:
         return elevation * 0.01f;
     }
 
-    /** Request the needs of the widget.
-     * This function will be called for each widget on each frame.
-     * Therefor it is important to optimize this function.
-     *
-     * Thread safety: reads atomics, must be called from render-thread.
-     *
-     * @return If the widgets needs to be redrawn or layed out on this frame.
-     */
-    [[nodiscard]] virtual int needs(hires_utc_clock::time_point displayTimePoint) noexcept;
+    
 
     /** Layout the widget.
      * super::layout() should be called at start of the overriden function.
      *
+     * This function will call needLayout().
+     *
      * Thread safety: locks, must be called from render-thread
+     *
+     * @param displayTimePoint The time point when the widget will be shown on the screen.
+     * @param forceLayout Force the layout of this widget and its children
+     * @return True if this widget or its children have been laid out.
+     *         In the overriden function use this value to determine if it should lay out.
      */
-    virtual void layout(hires_utc_clock::time_point displayTimePoint) noexcept;
+    virtual bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
 
     /** Draw widget.
     *
@@ -303,18 +301,7 @@ public:
     *
     * Thread safety: locks
     */
-    virtual void handleMouseEvent(MouseEvent const &event) noexcept {
-        auto lock = std::scoped_lock(mutex);
-
-        if (event.type == MouseEvent::Type::Entered) {
-            hover = true;
-            forceRedraw = true;
-        } else if (event.type == MouseEvent::Type::Exited) {
-            hover = false;
-            forceRedraw = true;
-        }
-    }
-
+    virtual void handleMouseEvent(MouseEvent const &event) noexcept;
 
     [[nodiscard]] virtual Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 
@@ -323,29 +310,18 @@ public:
     *
     * Thread safety: locks
     */
-    virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-        auto lock = std::scoped_lock(mutex);
+    virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
-        switch (event.type) {
-        case KeyboardEvent::Type::Entered:
-            focus = true;
-            forceRedraw = true;
-            break;
-
-        case KeyboardEvent::Type::Exited:
-            focus = false;
-            forceRedraw = true;
-            break;
-
-        case KeyboardEvent::Type::Key:
-            for (ttlet command : event.getCommands()) {
-                handleCommand(command);
-            }
-            break;
-
-        default:;
-        }
-    }
+protected:
+    /** Request if the widget needs to be layed out.
+    * This function will be called for each widget on each frame.
+    * Therefor it is important to optimize this function.
+    *
+    * Thread safety: reads atomics, must be called from render-thread.
+    *
+    * @return True if the widget needs a layout
+    */
+    [[nodiscard]] virtual bool needLayout(hires_utc_clock::time_point displayTimePoint) noexcept;
 };
 
 inline Widget * const foundWidgetPtr = reinterpret_cast<Widget *>(1);

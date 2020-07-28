@@ -58,7 +58,7 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
     if (*enabled) {
         if (assign_and_compare(pressed, static_cast<bool>(event.down.leftButton))) {
-            forceRedraw = true;
+            window.requestRedraw = true;
         }
 
         if (

@@ -12,33 +12,22 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
     auto lock = std::scoped_lock(mutex);
     children.push_back(std::move(childWidget));
-    window.forceLayout = true;
+    window.requestLayout = true;
     return *widget_ptr;
 }
 
-int ContainerWidget::layoutChildren(hires_utc_clock::time_point displayTimePoint, bool force) noexcept
+bool ContainerWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
+    auto has_laid_out = Widget::layout(displayTimePoint, forceLayout);
+
     auto lock = std::scoped_lock(mutex);
 
-    auto total_need = 0;
-
     for (auto &&child: children) {
-        ttlet child_need = child->needs(displayTimePoint);
-        total_need |= child_need;
-
-        if (force || child_need >= 2) {
-            child->layout(displayTimePoint);
-        }
-
-        if (auto *container_child = dynamic_cast<ContainerWidget *>(child.get())) {
-            total_need |= container_child->layoutChildren(displayTimePoint, force);
-        }
+        has_laid_out |= child->layout(displayTimePoint, forceLayout);
     }
 
-    return total_need;
+    return has_laid_out;
 }
-
-
 
 void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {

@@ -278,7 +278,7 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
     Window_base::layout(displayTimePoint);
 
     // If the widgets haven't requested a redraw, bail out.
-    if (!forceRedraw.exchange(false)) {
+    if (!requestRedraw.exchange(false)) {
         return;
     }
 
