@@ -73,6 +73,8 @@ public:
         addAllConstraints();
     }
 
+    /* Add a widget to the grid.
+     */
     Widget &addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept override;
 };
 

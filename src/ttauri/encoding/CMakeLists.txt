@@ -14,6 +14,8 @@ target_sources(ttauri PRIVATE
     SHA2.hpp
     zlib.cpp
     zlib.hpp
+    BON8.hpp
+    BON8.cpp
 )
 
 target_sources(ttauri_tests PRIVATE

@@ -15,15 +15,13 @@ Here are some other object-notation formats looked at:
  * UBJSON (more data overhead)
 
 ## Encodig
-The code-unit 0x80-0xbf and 0xf8-0xff are outside the valid range
-of valid UTF-8 start-code-units. These codes can be used as start
-codes for other types of values.
+The idea of this encoding is that strings are encoded as UTF-8.
+UTF-8 has a lot of codes that fall within the invalid range which
+can be used to encode different kinds of data.
 
 All of these invalid UTF-8 start-code-units have been assigned below
 to reduce the ability to extent the format, and to improve compression
 of the data.
-
-
 
 ```
 message := value;
@@ -47,66 +45,43 @@ array := empty_array | start_array value* eoc;
 object := empty_object | start_object (string value)* eoc
 ```
 
-  Code Sequence                                | # | Type                        | Bits |      Min |       Max
- :----------------------------------------     | -:|:-------------------------   | ----:| --------:| ----------:
-  0x00 - 0x7f                                  | 1 | UTF-8 One byte sequence     |    7 |   U+0000 |    U+007f
-  0xc2-0xdf 0x80-0xbf                          | 2 | UTF-8 Two byte sequence     |   11 |   U+0080 |    U+07ff      
-  0xe0-0xef 0x80-0xbf 0x80-0xbf                | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
-  0xf0-0xf7 0x80-0xbf 0x80-0xbf 0x80-0xbf      | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
-  0x80 - 0xaf                                  | 1 | Positive Integer            |      |        0 |        47
-  0xb0 - 0xb9                                  | 1 | Negative Integer            |      |       -1 |       -10
-  0xba                                         | 1 | Floating point -1.0         |      |          |
-  0xbb                                         | 1 | Floating point 0.0          |      |          |
-  0xbc                                         | 1 | Floating point 1.0          |      |          |
-  0xbd                                         | 1 | Empty Array                 |      |          |
-  0xbe                                         | 1 | Empty Object                |      |          |
-  0xbf                                         | 1 | Null                        |      |          |
-  0xc0                                         | 1 | False                       |      |          |
-  0xc1                                         | 1 | True                        |      |          |
-  0xc2-0xdf 0x00-0x7f                          | 2 | Positive Integer (30 * 128) |      |        0 |      3839
-  0xe0-0xef 0x00-0x7f byte                     | 3 | Positive Integer            |   19 |        0 |    524287
-  0xf0-0xf7 0x00-0x7f byte byte                | 4 | Positive Integer            |   26 |        0 |  67108863
-  0xc2-0xdf 0xc0-0xff                          | 2 | Negative Integer (30 * 64)  |      |       -1 |     -1920
-  0xe0-0xef 0xc0-0xff byte                     | 3 | Negative Integer            |   18 |       -1 |   -262144
-  0xf0-0xf7 0xc0-0xff byte byte                | 4 | Negative Integer            |   25 |       -1 | -33554432
-  0xf8 byte byte byte byte                     | 5 | Signed integer              |   32 |    -2^31 |  2^31 - 1
-  0xf9 byte byte byte byte byte byte byte byte | 9 | Signed integer              |   64 |    -2^63 |  2^63 - 1
-  0xfa byte byte byte byte                     | 5 | Floating point              |   32 |          | 
-  0xfb byte byte byte byte byte byte byte byte | 9 | Floating point              |   64 |          | 
-  0xfd                                         | 1 | Start Array                 |      |          |
-  0xff                                         | 1 | Start Object                |      |          |
-  0xfe                                         | 1 | End Of Container (eoc)      |      |          |
-  0xff                                         | 1 | End Of Text (eot)           |      |          |
-                                               |   |                             |      |          |
-  0xe0-0xef 0x80-0xbf 0x00-0x7f                | 3 | Invalid                     |   18 |          |
-  0xe0-0xef 0x80-0xbf 0xc0-0xff                | 3 | Invalid                     |   17 |          |
-  0xf0-0xf7 0x80-0xbf 0x00-0x7f byte           | 4 | Invalid                     |      |          |
-  0xf0-0xf7 0x80-0xbf 0x80-0xbf 0x00-0x7f      | 4 | Invalid                     |      |          |
-  0xf0-0xf7 0x80-0xbf 0x80-0xbf 0xc0-0xff      | 4 | Invalid                     |      |          |
-  0xf0-0xf7 0x80-0xbf 0xc0-0xff byte           | 4 | Invalid                     |      |          |
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Code Sequence           | # | Type                        | Bits |      Min |       Max
+ :----------------------- | -:|:-------------------------   | ----:| --------:| ----------:
+  00-7f                   | 1 | UTF-8 One byte sequence     |    7 |   U+0000 |    U+007f
+  c2-df 80-bf             | 2 | UTF-8 Two byte sequence     |   11 |   U+0080 |    U+07ff      
+  e0-ef 80-bf 80-bf       | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
+  f0-f7 80-bf 80-bf 80-bf | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
+  80-af                   | 1 | Positive Integer            |      |        0 |        47
+  b0-b9                   | 1 | Negative Integer            |      |       -1 |       -10
+  ba                      | 1 | Floating point -1.0         |      |          |
+  bb                      | 1 | Floating point 0.0          |      |          |
+  bc                      | 1 | Floating point 1.0          |      |          |
+  bd                      | 1 | Empty Array                 |      |          |
+  be                      | 1 | Empty Object                |      |          |
+  bf                      | 1 | Null                        |      |          |
+  c0                      | 1 | False                       |      |          |
+  c1                      | 1 | True                        |      |          |
+  c2-df 00-7f             | 2 | Positive Integer (30 * 128) |      |        0 |      3839
+  e0-ef 00-7f byte*1      | 3 | Positive Integer            |   19 |        0 |    524287
+  f0-f7 00-7f byte*2      | 4 | Positive Integer            |   26 |        0 |  67108863
+  c2-df c0-ff             | 2 | Negative Integer (30 * 64)  |      |       -1 |     -1920
+  e0-ef c0-ff byte*1      | 3 | Negative Integer            |   18 |       -1 |   -262144
+  f0-f7 c0-ff byte*2      | 4 | Negative Integer            |   25 |       -1 | -33554432
+  f8 byte*4               | 5 | Signed integer              |   32 |    -2^31 |  2^31 - 1
+  f9 byte*8               | 9 | Signed integer              |   64 |    -2^63 |  2^63 - 1
+  fa byte*4               | 5 | Floating point              |   32 |          | 
+  fb byte*8               | 9 | Floating point              |   64 |          | 
+  fc                      | 1 | Start Array                 |      |          |
+  fd                      | 1 | Start Object                |      |          |
+  fe                      | 1 | End Of Container (eoc)      |      |          |
+  ff                      | 1 | End Of Text (eot)           |      |          |
+                          |   |                             |      |          |
+  e0-ef 80-bf 00-7f       | 3 | Invalid                     |   18 |          |
+  e0-ef 80-bf c0-ff       | 3 | Invalid                     |   17 |          |
+  f0-f7 80-bf 00-7f 00-ff | 4 | Invalid                     |      |          |
+  f0-f7 80-bf 80-bf 00-7f | 4 | Invalid                     |      |          |
+  f0-f7 80-bf 80-bf c0-ff | 4 | Invalid                     |      |          |
+  f0-f7 80-bf c0-ff 00-ff | 4 | Invalid                     |      |          |
 
 ## Extra rules
 The rules below ensures minimum message size and allows for cryptographically
@@ -118,9 +93,9 @@ rules.
    - When another string is directly following this string,
    - If the full message is this string.
  * Integers MUST be encoded in the least amount of bytes.
- * Floating point numbers MUST be encoded in the least amount of bytes.
+ * Floating point numbers MUST be encoded in the least amount of bytes
    while preserving precision. In other words: a binary64 number needs to be converted to
    binary32 and back to determine if it can be encoded as binary32 while preserving precision.
- * Object keys MUST be lexically ordered based on encoded bytes.
+ * Object keys MUST be lexically ordered based on UTF-8 code units.
 
 
