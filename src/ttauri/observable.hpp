@@ -55,6 +55,7 @@ private:
             this->notifier(tmp);
         });
 
+        this->notifier(this->load());
         return *this;
     }
 
@@ -74,6 +75,7 @@ public:
         pimpl_cbid = pimpl->add_callback([this](ttlet &tmp) {
             this->notifier(tmp);
         });
+        this->notifier(this->load());
         return *this;
     }
 

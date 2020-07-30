@@ -55,7 +55,7 @@ public:
     observable<std::vector<std::pair<ValueType,std::string>>> options;
 
     SelectionWidget(Window &window, Widget *parent, ValueType defaultValue) noexcept :
-        Widget(window, parent, {Theme::smallSize, Theme::smallSize}),
+        Widget(window, parent),
         defaultValue(defaultValue)
     {
         [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
@@ -63,13 +63,37 @@ public:
         });
 
         [[maybe_unused]] ttlet options_cbid = options.add_callback([this](auto...){
-            requestLayout = true;
+            updateConstraints();
         });
 
-        baseConstraint = window.replaceConstraint(baseConstraint, base == middle);
+        updateConstraints();
     }
 
     ~SelectionWidget() {}
+
+    void updateConstraints() noexcept override {
+        // Create a list of cells, one for each option and calculate
+        // the optionHeight based on the option which is the tallest.
+        optionList.clear();
+        auto preferredWidth = 0.0f;
+        auto preferredHeight = 0.0f;
+        for (ttlet &[tag, labelText]: *options) {
+            auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
+            preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
+            preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
+            optionList.emplace_back(tag, std::move(cell));
+        }
+
+        // Set the widget height to the tallest option, fallback to a small size widget.
+        if (preferredHeight == 0.0f) {
+            preferredHeight = Theme::smallSize;
+        }
+
+        window.replaceConstraint(minimumWidthConstraint, width >= preferredWidth + Theme::smallSize + Theme::margin * 2.0f);
+        window.replaceConstraint(minimumHeightConstraint, height >= preferredHeight + Theme::margin * 2.0f);
+
+        window.replaceConstraint(baseConstraint, base == middle);
+    }
 
     bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
         if (!Widget::layout(displayTimePoint, forceLayout)) {
@@ -85,31 +109,7 @@ public:
 
         ttlet optionX = leftBoxRectangle.p3().x() + Theme::margin;
         ttlet optionWidth = rectangle().width() - optionX - Theme::margin;
-
-        // Create a list of cells, one for each option and calculate
-        // the optionHeight based on the option which is the tallest.
-        optionList.clear();
-        auto optionHeight = 0.0f;
-        auto preferredWidth = 0.0f;
-        auto preferredHeight = 0.0f;
-        for (ttlet &[tag, labelText]: *options) {
-            auto cell = std::make_unique<TextCell>(labelText, theme->labelStyle);
-            optionHeight = std::max(optionHeight, cell->heightForWidth(optionWidth));
-            preferredWidth = std::max(preferredWidth, cell->preferredExtent().width());
-            preferredHeight = std::max(preferredHeight, cell->preferredExtent().height());
-            optionList.emplace_back(tag, std::move(cell));
-        }
-
-        // Set the widget height to the tallest option, fallback to a small size widget.
-        if (optionHeight == 0.0f) {
-            optionHeight = Theme::smallSize;
-        }
-
-        setMaximumWidth(preferredWidth + Theme::smallSize + Theme::margin * 2.0f);
-        setMaximumHeight(preferredHeight + Theme::margin * 2.0f);
-        setPreferredWidth(preferredWidth + Theme::smallSize + Theme::margin * 2.0f);
-        setPreferredHeight(preferredHeight + Theme::margin * 2.0f);
-        setMinimumHeight(optionHeight + Theme::margin * 2.0f);
+        ttlet optionHeight = rectangle().height() - Theme::margin * 2.0f;
 
         // Calculate the rectangles for each cell in the optionList
         optionListHeight = (optionHeight + Theme::margin * 2.0f) * nonstd::ssize(optionList);

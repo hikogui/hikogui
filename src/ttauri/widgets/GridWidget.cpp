@@ -120,23 +120,23 @@ void GridWidget::addAllConstraints() noexcept
 
         if (is_opposite<false>(cell.address)) {
             cell.column_begin_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f == rightGridLines[xbegin]);
-            cell.column_preferred_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f == rightGridLines[xend], rhea::strength::strong());
+            cell.column_preferred_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f == rightGridLines[xend], rhea::strength::medium());
             cell.column_max_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f >= rightGridLines[xend]);
         } else {
             cell.column_begin_constraint = window.addConstraint(cell.widget->left - Theme::margin * 0.5f == leftGridLines[xbegin]);
-            cell.column_preferred_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f == leftGridLines[xend], rhea::strength::strong());
+            cell.column_preferred_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f == leftGridLines[xend], rhea::strength::medium());
             cell.column_max_constraint = window.addConstraint(cell.widget->right + Theme::margin * 0.5f <= leftGridLines[xend]);
         }
 
         if (is_opposite<true>(cell.address)) {
             cell.row_begin_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f == topGridLines[ybegin]);
-            cell.row_preferred_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f == topGridLines[yend], rhea::strength::strong());
+            cell.row_preferred_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f == topGridLines[yend], rhea::strength::medium());
             cell.row_max_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f >= topGridLines[yend]);
 
             cell.base_constraint = window.addConstraint(cell.widget->base == topBaseLines[ybase]);
         } else {
             cell.row_begin_constraint = window.addConstraint(cell.widget->bottom - Theme::margin * 0.5f == bottomGridLines[ybegin]);
-            cell.row_preferred_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f == bottomGridLines[yend], rhea::strength::strong());
+            cell.row_preferred_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f == bottomGridLines[yend], rhea::strength::medium());
             cell.row_max_constraint = window.addConstraint(cell.widget->top + Theme::margin * 0.5f <= bottomGridLines[yend]);
 
             cell.base_constraint = window.addConstraint(cell.widget->base == bottomBaseLines[ybase]);

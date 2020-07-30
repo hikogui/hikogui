@@ -42,7 +42,7 @@ public:
     observable<std::string> otherLabel;
 
     ToggleWidget(Window &window, Widget *parent, ValueType onValue, ValueType offValue) noexcept :
-        Widget(window, parent, vec{Theme::smallSize * 2.0f, Theme::smallSize}),
+        Widget(window, parent),
         onValue(onValue),
         offValue(offValue)
     {
@@ -50,19 +50,44 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
-            requestLayout = true;
+            updateConstraints();
         });
         [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
-            requestLayout = true;
+            updateConstraints();
         });
         [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
-            requestLayout = true;
+            updateConstraints();
         });
 
-        baseConstraint = window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
+        updateConstraints();
     }
 
     ~ToggleWidget() {
+    }
+
+    void updateConstraints() noexcept override {
+        onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
+        offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
+        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
+
+        ttlet minimumHeight = std::max({
+            onLabelCell->preferredExtent().height(),
+            offLabelCell->preferredExtent().height(),
+            otherLabelCell->preferredExtent().height(),
+            Theme::smallSize
+            });
+
+        ttlet minimumWidth = std::max({
+            onLabelCell->preferredExtent().width(),
+            offLabelCell->preferredExtent().width(),
+            otherLabelCell->preferredExtent().width(),
+            }) + Theme::smallSize * 2.0f + Theme::margin * 2.0f;
+
+        window.stopConstraintSolver();
+        window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
+        window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
+        window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
+        window.startConstraintSolver();
     }
 
     bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
@@ -86,36 +111,6 @@ public:
             rectangle().width() - labelX,
             rectangle().height()
         };
-
-        onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
-        offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
-        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
-        
-        ttlet preferredHeight = std::max({
-            onLabelCell->preferredExtent().height(),
-            offLabelCell->preferredExtent().height(),
-            otherLabelCell->preferredExtent().height(),
-            Theme::smallSize
-        });
-
-        ttlet preferredWidth = std::max({
-            onLabelCell->preferredExtent().width(),
-            offLabelCell->preferredExtent().width(),
-            otherLabelCell->preferredExtent().width(),
-        }) + Theme::smallSize + Theme::margin * 2.0f;
-
-        ttlet minimumHeight = std::max({
-            onLabelCell->heightForWidth(labelRectangle.width()),
-            offLabelCell->heightForWidth(labelRectangle.width()),
-            otherLabelCell->heightForWidth(labelRectangle.width()),
-            Theme::smallSize
-        });
-
-        setMaximumWidth(preferredWidth);
-        setMaximumHeight(preferredHeight);
-        setPreferredWidth(preferredWidth);
-        setPreferredHeight(preferredHeight);
-        setMinimumHeight(minimumHeight);
 
         sliderRectangle = shrink(aarect{
             0.0f,

@@ -6,13 +6,7 @@
 
 namespace tt {
 
-Widget::Widget(Window &_window, Widget *_parent, float _width, float _height) noexcept :
-    _minimumWidth(_width),
-    _preferredWidth(_width),
-    _maximumWidth(_width),
-    _minimumHeight(_height),
-    _preferredHeight(_height),
-    _maximumHeight(_height),
+Widget::Widget(Window &_window, Widget *_parent) noexcept :
     window(_window),
     parent(_parent),
     elevation(_parent ? _parent->elevation + 1.0f : 0.0f),
@@ -22,24 +16,15 @@ Widget::Widget(Window &_window, Widget *_parent, float _width, float _height) no
     [[maybe_unused]] ttlet enabled_cbid = enabled.add_callback([this](auto...){
         window.requestRedraw = true;
     });
-
-    minimumWidthConstraint = window.addConstraint(width >= _minimumWidth, rhea::strength::strong());
-    minimumHeightConstraint = window.addConstraint(height >= _minimumHeight, rhea::strength::strong());
-    preferredWidthConstraint = window.addConstraint(width >= _preferredWidth, rhea::strength::medium());
-    preferredHeightConstraint = window.addConstraint(height >= _preferredHeight, rhea::strength::medium());
-    maximumWidthConstraint = window.addConstraint(width <= _maximumWidth, rhea::strength::weak());
-    maximumHeightConstraint = window.addConstraint(height <= _maximumHeight, rhea::strength::weak());
-    baseConstraint =  window.addConstraint(base == middle, rhea::strength::weak());
 }
 
 Widget::~Widget()
 {
     window.removeConstraint(minimumWidthConstraint);
     window.removeConstraint(minimumHeightConstraint);
-    window.removeConstraint(preferredWidthConstraint);
-    window.removeConstraint(preferredHeightConstraint);
     window.removeConstraint(maximumWidthConstraint);
     window.removeConstraint(maximumHeightConstraint);
+    window.removeConstraint(baseConstraint);
 }
 
 GUIDevice *Widget::device() const noexcept
@@ -52,117 +37,6 @@ GUIDevice *Widget::device() const noexcept
 [[nodiscard]] float Widget::baseHeight() const noexcept {
     ttlet lock = std::scoped_lock(window.widgetSolverMutex);
     return numeric_cast<float>(base.value() - bottom.value());
-}
-
-void Widget::setMinimumWidth(float _width) noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-    if (_width != _minimumWidth) {
-        _minimumWidth = _width;
-
-        minimumWidthConstraint = window.replaceConstraint(
-            minimumWidthConstraint,
-            width >= _minimumWidth,
-            rhea::strength::required()
-        );
-    }
-}
-
-void Widget::setMinimumHeight(float _height) noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-    if (_height != _minimumHeight) {
-        _minimumHeight = _height;
-
-        minimumHeightConstraint = window.replaceConstraint(
-            minimumHeightConstraint,
-            height >= _minimumHeight,
-            rhea::strength::required()
-        );
-    }
-}
-
-void Widget::setMinimumExtent(float _width, float _height) noexcept {
-    setMinimumWidth(_width);
-    setMinimumHeight(_height);
-}
-
-void Widget::setMinimumExtent(vec extent) noexcept {
-    setMinimumExtent(extent.width(), extent.height());
-}
-
-void Widget::setPreferredWidth(float _width) noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-    if (_width != _preferredWidth) {
-        _preferredWidth = _width;
-
-        preferredWidthConstraint = window.replaceConstraint(
-            preferredWidthConstraint,
-            width >= _preferredWidth,
-            rhea::strength::medium()
-        );
-    }
-}
-
-void Widget::setPreferredHeight(float _height) noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-    if (_height != _preferredHeight) {
-        _preferredHeight = _height;
-
-        preferredHeightConstraint = window.replaceConstraint(
-            preferredHeightConstraint,
-            height >= _preferredHeight,
-            rhea::strength::medium()
-        );
-    }
-}
-
-void Widget::setPreferredExtent(float _width, float _height) noexcept {
-    setPreferredWidth(_width);
-    setPreferredHeight(_height);
-}
-
-void Widget::setPreferredExtent(vec extent) noexcept {
-    setPreferredExtent(extent.width(), extent.height());
-}
-
-void Widget::setMaximumWidth(float _width) noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-    if (_width != _maximumWidth) {
-        _maximumWidth = _width;
-
-        maximumWidthConstraint = window.replaceConstraint(
-            maximumWidthConstraint,
-            width >= _maximumWidth,
-            rhea::strength::weak()
-        );
-    }
-}
-
-void Widget::setMaximumHeight(float _height) noexcept
-{
-    auto lock = std::scoped_lock(mutex);
-    if (_height != _maximumHeight) {
-        _maximumHeight = _height;
-
-        maximumHeightConstraint = window.replaceConstraint(
-            maximumHeightConstraint,
-            height >= _maximumHeight,
-            rhea::strength::weak()
-        );
-    }
-}
-
-void Widget::setMaximumExtent(float _width, float _height) noexcept {
-    setMaximumWidth(_width);
-    setMaximumHeight(_height);
-}
-
-void Widget::setMaximumExtent(vec extent) noexcept {
-    setMaximumExtent(extent.width(), extent.height());
 }
 
 rhea::constraint Widget::placeBelow(Widget const &rhs, float margin) const noexcept {

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Widget.hpp"
+#include "../cells/TextCell.hpp"
 #include <rhea/constraint.hpp>
 #include <memory>
 #include <string>
@@ -20,14 +21,14 @@ protected:
 
     std::string label = "<unknown>";
 
-    ShapedText labelShapedText;
+    std::unique_ptr<TextCell> labelCell;
     mat::T textTranslate;
 public:
 
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
     ~ButtonWidget();
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    virtual void updateConstraints() noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

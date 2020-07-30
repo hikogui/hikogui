@@ -44,7 +44,7 @@ public:
     observable<std::string> otherLabel;
 
     CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
-        Widget(window, parent, Theme::smallSize, Theme::smallSize),
+        Widget(window, parent),
         trueValue(trueValue),
         falseValue(falseValue)
     {
@@ -52,19 +52,44 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...){
-            requestLayout = true;
+            updateConstraints();
         });
         [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...){
-            requestLayout = true;
+            updateConstraints();
         });
         [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
-            requestLayout = true;
+            updateConstraints();
         });
 
-        baseConstraint = window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
+        updateConstraints();
     }
 
     ~CheckboxWidget() {}
+
+    void updateConstraints() noexcept override {
+        trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
+        falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
+        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
+
+        ttlet minimumHeight = std::max({
+            trueLabelCell->preferredExtent().height(),
+            falseLabelCell->preferredExtent().height(),
+            otherLabelCell->preferredExtent().height(),
+            Theme::smallSize
+        });
+
+        ttlet minimumWidth = std::max({
+            trueLabelCell->preferredExtent().width(),
+            falseLabelCell->preferredExtent().width(),
+            otherLabelCell->preferredExtent().width(),
+        }) + Theme::smallSize + Theme::margin * 2.0f;
+
+        window.stopConstraintSolver();
+        window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
+        window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
+        window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
+        window.startConstraintSolver();
+    }
 
     bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
         if (!Widget::layout(displayTimePoint, forceLayout)) {
@@ -87,36 +112,6 @@ public:
             rectangle().width() - labelX,
             rectangle().height()
         };
-
-        trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
-        falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
-        otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
-
-        ttlet preferredHeight = std::max({
-            trueLabelCell->preferredExtent().height(),
-            falseLabelCell->preferredExtent().height(),
-            otherLabelCell->preferredExtent().height(),
-            Theme::smallSize
-        });
-
-        ttlet preferredWidth = std::max({
-            trueLabelCell->preferredExtent().width(),
-            falseLabelCell->preferredExtent().width(),
-            otherLabelCell->preferredExtent().width(),
-        }) + Theme::smallSize + Theme::margin * 2.0f;
-
-        ttlet minimumHeight = std::max({
-            trueLabelCell->heightForWidth(labelRectangle.width()),
-            falseLabelCell->heightForWidth(labelRectangle.width()),
-            otherLabelCell->heightForWidth(labelRectangle.width()),
-            Theme::smallSize
-        });
-
-        setMaximumWidth(preferredWidth);
-        setMaximumHeight(preferredHeight);
-        setPreferredWidth(preferredWidth);
-        setPreferredHeight(preferredHeight);
-        setMinimumHeight(minimumHeight);
 
         checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
         ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);

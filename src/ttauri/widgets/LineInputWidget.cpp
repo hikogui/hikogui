@@ -12,15 +12,28 @@ namespace tt {
 using namespace std::literals;
 
 LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent, Theme::smallSize, Theme::smallSize),
+    Widget(window, parent),
     label(std::move(label)),
     field(theme->labelStyle),
     shapedText()
 {
+    updateConstraints();
 }
 
 LineInputWidget::~LineInputWidget()
 {
+}
+
+void LineInputWidget::updateConstraints() noexcept
+{
+    ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
+
+    window.replaceConstraint(minimumWidthConstraint, width >= 100.0f);
+    window.replaceConstraint(maximumWidthConstraint, width <= 500.0f);
+    window.replaceConstraint(minimumHeightConstraint, height >= (Theme::smallSize + Theme::margin * 2.0f));
+    window.replaceConstraint(maximumHeightConstraint, height <= (Theme::smallSize + Theme::margin * 2.0f), rhea::strength::weak());
+
+    window.replaceConstraint(baseConstraint, base == middle);
 }
 
 bool LineInputWidget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
@@ -49,18 +62,11 @@ bool LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint, bool 
     field.setStyleOfAll(theme->labelStyle);
 
     if (nonstd::ssize(field) == 0) {
-        shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::TopLeft);
+        shapedText = ShapedText(label, theme->placeholderLabelStyle, textRectangle.width(), Alignment::MiddleLeft);
     } else {
         field.setWidth(textRectangle.width());
         shapedText = field.shapedText();
     }
-
-    ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
-
-    setMaximumWidth(500.0f);
-    setMaximumHeight(maximumHeight);
-    setPreferredHeight(maximumHeight);
-    setMinimumHeight(maximumHeight);
 
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;

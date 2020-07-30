@@ -1,6 +1,8 @@
 
 #include "../byte_string.hpp"
 #include "../required.hpp"
+#include "../datum.hpp"
+#include "../exceptions.hpp"
 #include <cstddef>
 
 #pragma once
@@ -28,8 +30,13 @@ class BON8_encoder {
     bool open_string;
     bstring output;
 
+public:
     BON8_encoder() noexcept :
         open_string(false), output() {}
+
+    bstring const &get() const noexcept {
+        return output;
+    }
 
     void add(signed long long value) noexcept {
         open_string = false;
@@ -37,13 +44,13 @@ class BON8_encoder {
         if (value < std::numeric_limits<int32_t>::min()) {
             output += BON8_code_int64;
             for (int i = 0; i != 8; ++i) {
-                output += static_cast<std::byte>(value >> 56 - i*8);
+                output += static_cast<std::byte>(value >> (56 - i*8));
             }
 
         } else if (value < -33554432) {
             output += BON8_code_int32;
             for (int i = 0; i != 4; ++i) {
-                output += static_cast<std::byte>(value >> 24 - i*8);
+                output += static_cast<std::byte>(value >> (24 - i*8));
             }
 
         } else if (value < -262144) {
@@ -89,13 +96,13 @@ class BON8_encoder {
         } else if (value <= std::numeric_limits<int32_t>::max()) {
             output += BON8_code_int32;
             for (int i = 0; i != 4; ++i) {
-                output += static_cast<std::byte>(value >> 24 - i*8);
+                output += static_cast<std::byte>(value >> (24 - i*8));
             }
 
         } else {
             output += BON8_code_int64;
             for (int i = 0; i != 8; ++i) {
-                output += static_cast<std::byte>(value >> 56 - i*8);
+                output += static_cast<std::byte>(value >> (56 - i*8));
             }
         }
     }
@@ -157,7 +164,7 @@ class BON8_encoder {
 
             output += BON8_code_binary32;
             for (int i = 0; i != 4; ++i) {
-                output += static_cast<std::byte>(u32 >> 24 - i*8);
+                output += static_cast<std::byte>(u32 >> (24 - i*8));
             }
 
         } else {
@@ -166,7 +173,7 @@ class BON8_encoder {
 
             output += BON8_code_binary64;
             for (int i = 0; i != 8; ++i) {
-                output += static_cast<std::byte>(u64 >> 56 - i*8);
+                output += static_cast<std::byte>(u64 >> (56 - i*8));
             }
         }
     }
@@ -227,8 +234,79 @@ class BON8_encoder {
         }
     }
 
+    void add(std::string const &value) noexcept {
+        return add(std::string_view{value});
+    }
+
+    void add(char *value) noexcept {
+        return add(std::string_view{value});
+    }
+
+    void add(datum const &value);
+
+    template<typename T>
+    void add(std::vector<T> const &items) {
+        open_string = false;
+        if (nonstd::ssize(items) == 0) {
+            output += BON8_code_array_empty;
+        } else {
+            output += BON8_code_array;
+
+            for (ttlet &item: items) {
+                add(item);
+            }
+
+            output += BON8_code_eoc;
+        }
+        open_string = false;
+    }
+
+    template<typename Key, typename Value>
+    void add(std::map<Key,Value> const &items) {
+        using item_type = std::map<Key,Value>::value_type;
+
+        open_string = false;
+        if (nonstd::ssize(value) == 0) {
+            output += BON8_code_object_empty;
+        } else {
+            // Keys must be ordered lexically.
+            auto sorted_items = std::vector<std::reference_wrapper<item_type>>{items.begin(), items.end()};
+            std::sort(sorted_items.begin(), sorted_value.end(), [](item_type const &a, item_type const &b) {
+                return
+                    static_cast<std::string_view>(a.first) <
+                    static_cast<std::string_view>(b.first);
+            });
+
+            output += BON8_code_object;
+            for (item_type const &item: sorted_value) {
+                add(static_cast<std::string_view>(item.first));
+                add(item.second);
+            }
+            output += BON8_code_eoc;
+        }
+        open_string = false;
+    }
 };
 
+void BON8_encoder::add(datum const &value) {
+    if (value.is_string() || value.is_url()) {
+        add(static_cast<std::string>(value));
+    } else if (value.is_bool()) {
+        add(static_cast<bool>(value));
+    } else if (value.is_null()) {
+        add(nullptr);
+    } else if (value.is_integer()) {
+        add(static_cast<signed long long>(value));
+    } else if (value.is_float()) {
+        add(static_cast<double>(value));
+    } else if (value.is_vector()) {
+        add(static_cast<datum::vector>(value));
+    } else if (value.is_map()) {
+        add(static_cast<datum::map>(value));
+    } else {
+        TTAURI_THROW(invalid_operation_error("Datum value can not be encoded to BON8"));
+    }
+}
 
 
 }

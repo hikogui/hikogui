@@ -31,7 +31,7 @@ public:
     observable<std::string> label;
 
     RadioButtonWidget(Window &window, Widget *parent, ValueType activeValue) noexcept :
-        Widget(window, parent, vec{Theme::smallSize, Theme::smallSize}),
+        Widget(window, parent),
         activeValue(std::move(activeValue)),
         value(),
         label()
@@ -40,13 +40,26 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            requestLayout = true;
+            updateConstraints();
         });
 
-        baseConstraint = window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
+        updateConstraints();
     }
 
     ~RadioButtonWidget() {
+    }
+
+    void updateConstraints() noexcept override {
+        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+
+        ttlet minimumHeight = std::max(labelCell->preferredExtent().height(), Theme::smallSize);
+        ttlet minimumWidth = labelCell->preferredExtent().width() + Theme::smallSize + Theme::margin * 2.0f;
+
+        window.stopConstraintSolver();
+        window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
+        window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
+        window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
+        window.startConstraintSolver();
     }
 
     bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
@@ -70,26 +83,6 @@ public:
             rectangle().width() - labelX,
             rectangle().height()
         };
-
-        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-
-        ttlet preferredHeight = std::max(
-            labelCell->preferredExtent().height(),
-            Theme::smallSize
-        );
-
-        ttlet preferredWidth = labelCell->preferredExtent().width() + Theme::smallSize + Theme::margin * 2.0f;
-
-        ttlet minimumHeight = std::max(
-            labelCell->heightForWidth(labelRectangle.width()),
-            Theme::smallSize
-        );
-
-        setMaximumWidth(preferredWidth);
-        setMaximumHeight(preferredHeight);
-        setPreferredWidth(preferredWidth);
-        setPreferredHeight(preferredHeight);
-        setMinimumHeight(minimumHeight);
 
         pipRectangle = shrink(radioButtonRectangle, 1.5f);
         return true;
