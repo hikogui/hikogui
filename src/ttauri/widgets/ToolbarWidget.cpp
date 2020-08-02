@@ -14,7 +14,12 @@ using namespace std;
 ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
     ContainerWidget(window, parent)
 {
-    setMaximumHeight(Theme::toolbarHeight);
+    updateConstraints();
+}
+
+void ToolbarWidget::updateConstraints() noexcept
+{
+    window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
 }
 
 void ToolbarWidget::disjoinLeftAndRightChildren() noexcept

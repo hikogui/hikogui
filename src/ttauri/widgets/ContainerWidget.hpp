@@ -17,14 +17,9 @@ protected:
 
     std::atomic<bool> requestReconstrain;
 
-    /** Reconstrain the children in the widget.
-    * This function is called from layout when requestRecontrain is true.
-    */
-    virtual void reconstrain() noexcept {}
-
 public:
     ContainerWidget(Window &window, Widget *parent) noexcept:
-        Widget(window, parent, 0.0f, 0.0f) {}
+        Widget(window, parent) {}
 
     ~ContainerWidget() {}
 

@@ -97,6 +97,9 @@ public:
     //! The minimum window extent as calculated by laying out all the widgets.
     ivec minimumWindowExtent;
 
+    //! The preferred window extent as calculated by laying out all the widgets.
+    ivec preferredWindowExtent;
+
     //! The maximum window extent as calculated by laying out all the widgets.
     ivec maximumWindowExtent;
 
@@ -185,14 +188,21 @@ public:
     template<typename T, cell_address CellAddress,typename... Args>
     T &makeWidget(Args &&... args);
 
+    int64_t stopConstraintSolverDepth = 0;
     void stopConstraintSolver() noexcept {
         ttlet lock = std::scoped_lock(widgetSolverMutex);
-        widgetSolver.set_autosolve(false);
+        tt_assume(stopConstraintSolverDepth >= 0);
+        if (++stopConstraintSolverDepth == 1) {
+            widgetSolver.set_autosolve(false);
+        }
     }
 
     void startConstraintSolver() noexcept {
         ttlet lock = std::scoped_lock(widgetSolverMutex);
-        widgetSolver.set_autosolve(true);
+        tt_assume(stopConstraintSolverDepth > 0);
+        if (--stopConstraintSolverDepth == 0) {
+            widgetSolver.set_autosolve(true);
+        }
     }
 
     rhea::constraint addConstraint(rhea::constraint const& constraint) noexcept;
@@ -211,20 +221,20 @@ public:
 
     void removeConstraint(rhea::constraint &constraint) noexcept;
 
-    rhea::constraint replaceConstraint(
-        rhea::constraint const &oldConstraint,
+    void replaceConstraint(
+        rhea::constraint &oldConstraint,
         rhea::constraint const &newConstraint
     ) noexcept;
 
-    rhea::constraint replaceConstraint(
-        rhea::constraint const &oldConstraint,
+    void replaceConstraint(
+        rhea::constraint &oldConstraint,
         rhea::linear_equation const &newEquation,
         rhea::strength const &strength = rhea::strength::required(),
         double weight = 1.0
     ) noexcept;
 
-    rhea::constraint replaceConstraint(
-        rhea::constraint const &oldConstraint,
+    void replaceConstraint(
+        rhea::constraint &oldConstraint,
         rhea::linear_inequality const &newEquation,
         rhea::strength const &strength = rhea::strength::required(),
         double weight = 1.0
@@ -313,30 +323,34 @@ private:
     //! This solver determines size and position of all widgets in this window.
     rhea::simplex_solver widgetSolver;
 
-
     /** Constraints have been updated.
     */
     bool constraintsUpdated = false;
-
-    //! Stay constraint for the currentWindowExtent width.
-    rhea::constraint currentWindowExtentWidthConstraint;
-
-    //! Stay constraint for the currentWindowExtent height.
-    rhea::constraint currentWindowExtentHeightConstraint;
 
     /** Suggest an extent for the window-widget.
      * The suggested extent is tried, but constraints may limit the
      * actual extent.
      *
      * @param extent The extent to set the window-widget to
+     * @param strength With how much strength this extent is suggested.
      * @return The extent the widget has used after the suggestion.
      */
-    vec suggestWidgetExtent(vec extent) noexcept;
+    [[nodiscard]] vec suggestWidgetExtent(vec extent, rhea::strength const &strength) noexcept;
+
+    /** Suggest an extent for the window-widget.
+    * The suggested extent is tried, but constraints may limit the
+    * actual extent.
+    *
+    * @param extent The extent to set the window-widget to
+    */
+    void setWidgetExtent(vec extent) noexcept;
+    rhea::constraint widgetWidthConstraint;
+    rhea::constraint widgetHeightConstraint;
 
     /** Experiment with window-widget extent and get the minimum and maximum
-     * @return minimum-extent, maximum-extent
+     * @return minimum-, preferred-, maximum-extent
      */
-    [[nodiscard]] std::pair<vec,vec> getMinimumAndMaximumWidgetExtent() noexcept;
+    [[nodiscard]] std::tuple<vec,vec,vec> getMinMaxAndPreferredWidgetExtent() noexcept;
 
     /** layout and constrain the window based on the window-widget's extent.
      */

@@ -56,9 +56,8 @@ protected:
     void removeAllConstraints() noexcept;
     void addAllConstraints() noexcept;
 
-    virtual void reconstrain() noexcept override {
+    void updateConstraints() noexcept override {
         window.stopConstraintSolver();
-        ContainerWidget::reconstrain();
         removeAllConstraints();
         calculateGridSize();
         addAllConstraints();

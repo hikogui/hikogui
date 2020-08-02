@@ -12,36 +12,25 @@ namespace tt {
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent, Theme::smallSize, Theme::smallSize),
-    label(std::move(label))
+    Widget(window, parent),
+    label(label)
 {
-    baseConstraint = window.replaceConstraint(baseConstraint, base == middle);
+    updateConstraints();
 }
 
 ButtonWidget::~ButtonWidget() {
 }
 
-bool ButtonWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
+void ButtonWidget::updateConstraints() noexcept
 {
-    if (!Widget::layout(displayTimePoint, forceLayout)) {
-        return false;
-    }
+    labelCell = std::make_unique<TextCell>(label, theme->warningLabelStyle);
 
-    ttlet lock = std::scoped_lock(mutex);
+    window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width() + Theme::margin * 2.0f);
+    window.replaceConstraint(maximumWidthConstraint, width <= labelCell->preferredExtent().width() + Theme::margin * 2.0f, rhea::strength::weak());
+    window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height() + Theme::margin * 2.0f);
+    window.replaceConstraint(maximumHeightConstraint, height <= labelCell->preferredExtent().height() + Theme::margin * 2.0f, rhea::strength::weak());
 
-    ttlet label_x = Theme::margin;
-    ttlet label_y = 0.0;
-    ttlet label_width = rectangle().width() - Theme::margin * 2.0f;
-    ttlet label_height = rectangle().height();
-    ttlet label_rectangle = aarect{label_x, label_y, label_width, label_height};
-
-    labelShapedText = ShapedText(label, theme->warningLabelStyle, label_width + 1.0f, Alignment::MiddleCenter);
-    textTranslate = labelShapedText.T(label_rectangle);
-
-    setMinimumExtent(vec{Theme::width, labelShapedText.boundingBox.height() + Theme::margin * 2.0f});
-
-    setPreferredExtent(labelShapedText.preferredExtent + Theme::margin2D * 2.0f);
-    return true;
+    window.replaceConstraint(baseConstraint, base == middle);
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
@@ -61,7 +50,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
         context.color = theme->foregroundColor;
     }
     context.transform = drawContext.transform * (mat::T{0.0f, 0.0f, 0.001f} * textTranslate);
-    context.drawText(labelShapedText, true);
+    labelCell->draw(context, rectangle(), Alignment::MiddleCenter, baseHeight(), true);
 
     Widget::draw(drawContext, displayTimePoint);
 }

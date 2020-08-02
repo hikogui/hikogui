@@ -63,19 +63,6 @@ namespace tt {
  */
 class Widget {
 private:
-    float _minimumWidth;
-    float _minimumHeight;
-    float _preferredWidth;
-    float _preferredHeight;
-    float _maximumWidth;
-    float _maximumHeight;
-
-    rhea::constraint minimumWidthConstraint;
-    rhea::constraint minimumHeightConstraint;
-    rhea::constraint preferredWidthConstraint;
-    rhea::constraint preferredHeightConstraint;
-    rhea::constraint maximumWidthConstraint;
-    rhea::constraint maximumHeightConstraint;
 
 protected:
     mutable std::recursive_mutex mutex;
@@ -89,6 +76,10 @@ protected:
     */
     Widget *parent;
 
+    rhea::constraint minimumWidthConstraint;
+    rhea::constraint minimumHeightConstraint;
+    rhea::constraint maximumWidthConstraint;
+    rhea::constraint maximumHeightConstraint;
     rhea::constraint baseConstraint;
 
 public:
@@ -137,9 +128,7 @@ public:
 
     /*! Constructor for creating sub views.
      */
-    Widget(Window &window, Widget *parent, float width, float height) noexcept;
-    Widget(Window &window, Widget *parent, vec extent) noexcept :
-        Widget(window, parent, extent.width(), extent.height()) {}
+    Widget(Window &window, Widget *parent) noexcept;
 
     virtual ~Widget();
 
@@ -152,21 +141,6 @@ public:
      * Thread-safety: locks window.widgetSolverMutex
      */
     aarect makeWindowRectangle() const noexcept;
-
-    void setMinimumWidth(float width) noexcept;
-    void setMinimumHeight(float height) noexcept;
-    void setMinimumExtent(float width, float height) noexcept;
-    void setMinimumExtent(vec newMinimumExtent) noexcept;
-
-    void setPreferredWidth(float width) noexcept;
-    void setPreferredHeight(float height) noexcept;
-    void setPreferredExtent(float width, float height) noexcept;
-    void setPreferredExtent(vec newMinimumExtent) noexcept;
-
-    void setMaximumWidth(float width) noexcept;
-    void setMaximumHeight(float height) noexcept;
-    void setMaximumExtent(float width, float height) noexcept;
-    void setMaximumExtent(vec newMinimumExtent) noexcept;
 
     rhea::constraint placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
     rhea::constraint placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;
@@ -265,7 +239,11 @@ public:
         return elevation * 0.01f;
     }
 
-    
+    /** Update the constraints of the widget.
+    * This function should be called by the widget whenever the data changes
+    * which will require new constraints, such as changing the text of a label.
+    */
+    virtual void updateConstraints() noexcept {}
 
     /** Layout the widget.
      * super::layout() should be called at start of the overriden function.

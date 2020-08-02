@@ -23,7 +23,7 @@ bool ContainerWidget::layout(hires_utc_clock::time_point displayTimePoint, bool 
     auto has_laid_out = Widget::layout(displayTimePoint, forceLayout);
 
     if (requestReconstrain.exchange(false)) {
-        reconstrain();
+        updateConstraints();
         forceLayout = true;
     }
 

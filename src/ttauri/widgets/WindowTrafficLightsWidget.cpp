@@ -10,30 +10,32 @@
 
 namespace tt {
 
-vec WindowTrafficLightsWidget::calculateExtent(Window &window) noexcept
+WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
+    Widget(window, parent)
+{
+    updateConstraints();
+}
+
+void WindowTrafficLightsWidget::updateConstraints() noexcept
 {
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
-        return {
-            Theme::toolbarDecorationButtonWidth * 3.0f,
-            Theme::toolbarHeight
-        };
+        window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth * 3.0f);
+        window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth * 3.0f, rhea::strength::weak());
+
+        window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
+        window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
-        return {
-            DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING,
-            DIAMETER + 2.0 * MARGIN
-        };
+        window.replaceConstraint(minimumWidthConstraint, width >= DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING);
+        window.replaceConstraint(maximumWidthConstraint, width <= DIAMETER * 3.0 + 2.0 * MARGIN + 2 * SPACING, rhea::strength::weak());
+
+        window.replaceConstraint(minimumHeightConstraint, height >= DIAMETER + 2.0 * MARGIN);
+        window.replaceConstraint(maximumHeightConstraint, height <= DIAMETER + 2.0 * MARGIN, rhea::strength::weak());
 
     } else {
         tt_no_default;
     }
 }
-
-WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
-    Widget(window, parent, calculateExtent(window))
-{
-}
-
 
 bool WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {

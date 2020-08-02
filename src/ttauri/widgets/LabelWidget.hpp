@@ -26,28 +26,26 @@ public:
     observable<std::string> label;
 
     LabelWidget(Window &window, Widget *parent, Alignment alignment) noexcept :
-        Widget(window, parent, Theme::smallSize, Theme::smallSize),
+        Widget(window, parent),
         alignment(alignment)
     {
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            requestLayout = true;
+            updateConstraints();
         });
+
+        updateConstraints();
     }
 
     ~LabelWidget() {
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
-            return false;
-        }
-
-        ttlet lock = std::scoped_lock(mutex);
-
+    void updateConstraints() noexcept override {
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
-        setMinimumHeight(labelCell->heightForWidth(rectangle().width()));
-        setPreferredExtent(vec{labelCell->preferredExtent().width(), labelCell->heightForWidth(rectangle().width())});
-        return true;
+
+        window.stopConstraintSolver();
+        window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width());
+        window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height());
+        window.startConstraintSolver();
     }
 
     void drawLabel(DrawContext drawContext) noexcept {
