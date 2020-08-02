@@ -49,8 +49,8 @@ object := empty_object | start_object (string value)* eoc
  :----------------------- | -:|:-------------------------   | ----:| --------:| ----------:
   00-7f                   | 1 | UTF-8 One byte sequence     |    7 |   U+0000 |    U+007f
   c2-df 80-bf             | 2 | UTF-8 Two byte sequence     |   11 |   U+0080 |    U+07ff      
-  e0-ef 80-bf 80-bf       | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
-  f0-f7 80-bf 80-bf 80-bf | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
+  e0-ef 80-bf byte*1      | 3 | UTF-8 Three byte sequence   |   16 |   U+0800 |    U+ffff
+  f0-f7 80-bf byte*2      | 4 | UTF-8 Four byte sequence    |   21 | U+100000 |  U+10ffff
   80-af                   | 1 | Positive Integer            |      |        0 |        47
   b0-b9                   | 1 | Negative Integer            |      |       -1 |       -10
   ba                      | 1 | Floating point -1.0         |      |          |
@@ -75,13 +75,6 @@ object := empty_object | start_object (string value)* eoc
   fd                      | 1 | Start Object                |      |          |
   fe                      | 1 | End Of Container (eoc)      |      |          |
   ff                      | 1 | End Of Text (eot)           |      |          |
-                          |   |                             |      |          |
-  e0-ef 80-bf 00-7f       | 3 | Invalid                     |   18 |          |
-  e0-ef 80-bf c0-ff       | 3 | Invalid                     |   17 |          |
-  f0-f7 80-bf 00-7f 00-ff | 4 | Invalid                     |      |          |
-  f0-f7 80-bf 80-bf 00-7f | 4 | Invalid                     |      |          |
-  f0-f7 80-bf 80-bf c0-ff | 4 | Invalid                     |      |          |
-  f0-f7 80-bf c0-ff 00-ff | 4 | Invalid                     |      |          |
 
 ## Extra rules
 The rules below ensures minimum message size and allows for cryptographically
