@@ -63,15 +63,19 @@ public:
         });
 
         [[maybe_unused]] ttlet options_cbid = options.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~SelectionWidget() {}
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] bool updateConstraints() noexcept override {
+        if (!Widget::updateConstraints()) {
+            return false;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
+
         // Create a list of cells, one for each option and calculate
         // the optionHeight based on the option which is the tallest.
         optionList.clear();
@@ -93,10 +97,11 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= preferredHeight + Theme::margin * 2.0f);
 
         window.replaceConstraint(baseConstraint, base == middle);
+        return true;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
             return false;
         }
 

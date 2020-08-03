@@ -274,11 +274,17 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
-    // Make sure the widget's layout is updated before draw, but after window resize.
-    Window_base::layout(displayTimePoint);
+    auto needLayout = widget->updateConstraints();
+    needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
+    if (needLayout) {
+        layoutWindow();
+    }
 
-    // If the widgets haven't requested a redraw, bail out.
-    if (!requestRedraw.exchange(false)) {
+    // Make sure the widget's layout is updated before draw, but after window resize.
+    auto needRedraw = widget->updateLayout(displayTimePoint, needLayout);
+    needRedraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
+
+    if (!needRedraw) {
         return;
     }
 

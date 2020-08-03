@@ -40,16 +40,19 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~RadioButtonWidget() {
     }
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] bool updateConstraints() noexcept override {
+        if (!Widget::updateConstraints()) {
+            return false;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
         ttlet minimumHeight = std::max(labelCell->preferredExtent().height(), Theme::smallSize);
@@ -60,10 +63,11 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
+        return true;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
             return false;
         }
 

@@ -30,22 +30,26 @@ public:
         alignment(alignment)
     {
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~LabelWidget() {
     }
 
-    void updateConstraints() noexcept override {
-        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
+    [[nodiscard]] bool updateConstraints() noexcept override {
+        if (!Widget::updateConstraints()) {
+            return false;
+        }
 
+        ttlet lock = std::scoped_lock(mutex);
+
+        labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
         window.stopConstraintSolver();
         window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width());
         window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height());
         window.startConstraintSolver();
+        return true;
     }
 
     void drawLabel(DrawContext drawContext) noexcept {

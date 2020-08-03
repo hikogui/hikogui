@@ -50,22 +50,24 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~ToggleWidget() {
     }
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] bool updateConstraints() noexcept override {
+        if (!Widget::updateConstraints()) {
+            return false;
+        }
+
         onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
         offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
@@ -88,10 +90,11 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
+        return true;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
             return false;
         }
 

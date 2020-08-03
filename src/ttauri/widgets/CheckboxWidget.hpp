@@ -52,21 +52,23 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~CheckboxWidget() {}
 
-    void updateConstraints() noexcept override {
+    bool updateConstraints() noexcept override {
+        if (!Widget::updateConstraints()) {
+            return false;
+        }
+
         trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
         falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
@@ -89,10 +91,11 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
+        return true;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
+    bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
             return false;
         }
 

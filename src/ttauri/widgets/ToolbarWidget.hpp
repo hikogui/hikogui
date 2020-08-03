@@ -24,7 +24,7 @@ public:
         return ContainerWidget::makeWidget<T,CellAddress>(std::forward<Args>(args)...);
     }
 
-    void updateConstraints() noexcept override;
+    [[nodiscard]] bool updateConstraints() noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 

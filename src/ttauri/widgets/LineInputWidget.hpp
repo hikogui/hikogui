@@ -55,9 +55,8 @@ public:
 
     ~LineInputWidget();
 
-    void updateConstraints() noexcept override;
-    [[nodiscard]] bool needLayout(hires_utc_clock::time_point displayTimePoint) noexcept override;
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] bool updateConstraints() noexcept override;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleCommand(command command) noexcept override;

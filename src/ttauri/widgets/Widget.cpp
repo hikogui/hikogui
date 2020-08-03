@@ -71,13 +71,16 @@ rhea::constraint Widget::placeRight(float margin) const noexcept {
     return window.addConstraint(this->right + margin == parent->right);
 }
 
-bool Widget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
+bool Widget::updateConstraints() noexcept
 {
-    //
-    // Thread safety: All reads and stores are done on atomic variables.
-    //
+    return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed);
+}
 
-    auto needLayout = requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
+bool Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+{
+    auto needLayout = forceLayout;
+
+    needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
 
     auto newExtent = round(vec{width.value(), height.value()});
     needLayout |= newExtent != extent();
@@ -86,28 +89,21 @@ bool Widget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
     auto newOffsetFromWindow = round(vec{left.value(), bottom.value()});
     needLayout |= newOffsetFromWindow != offsetFromWindow();
     setOffsetFromWindow(newOffsetFromWindow);
+    
+    if (needLayout) {
+        auto lock = std::scoped_lock(mutex);
 
-    return needLayout;
-}
-
-bool Widget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
-{
-    if (!(needLayout(displayTimePoint) || forceLayout)) {
-        return false;
+        setOffsetFromParent(
+            parent ?
+                offsetFromWindow() - parent->offsetFromWindow():
+                offsetFromWindow()
+        );
+        
+        fromWindowTransform = mat::T(-offsetFromWindow().x(), -offsetFromWindow().y(), -z());
+        toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
     }
 
-    auto lock = std::scoped_lock(mutex);
-
-    setOffsetFromParent(
-        parent ?
-            offsetFromWindow() - parent->offsetFromWindow():
-            offsetFromWindow()
-    );
-        
-    fromWindowTransform = mat::T(-offsetFromWindow().x(), -offsetFromWindow().y(), -z());
-    toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
-
-    return true;
+    return needLayout;
 }
 
 void Widget::handleCommand(command command) noexcept {

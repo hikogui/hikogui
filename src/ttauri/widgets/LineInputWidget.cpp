@@ -17,41 +17,37 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     field(theme->labelStyle),
     shapedText()
 {
-    updateConstraints();
 }
 
 LineInputWidget::~LineInputWidget()
 {
 }
 
-void LineInputWidget::updateConstraints() noexcept
+bool LineInputWidget::updateConstraints() noexcept
 {
+    if (!Widget::updateConstraints()) {
+        return false;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
+
     ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
 
     window.replaceConstraint(minimumWidthConstraint, width >= 100.0f);
     window.replaceConstraint(maximumWidthConstraint, width <= 500.0f);
     window.replaceConstraint(minimumHeightConstraint, height >= (Theme::smallSize + Theme::margin * 2.0f));
     window.replaceConstraint(maximumHeightConstraint, height <= (Theme::smallSize + Theme::margin * 2.0f), rhea::strength::weak());
-
     window.replaceConstraint(baseConstraint, base == middle);
+    return true;
 }
 
-bool LineInputWidget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
+bool LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
 {
-    if (focus && displayTimePoint > nextRedrawTimePoint) {
-        window.requestRedraw = true;
-    }
-
-    return Widget::needLayout(displayTimePoint);
-}
-
-bool LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
-{
-    if (!Widget::layout(displayTimePoint, forceLayout)) {
-        return false;
-    }
-
     ttlet lock = std::scoped_lock(mutex);
+
+    if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
+        return focus && displayTimePoint >= nextRedrawTimePoint;
+    }
 
     textRectangle = shrink(rectangle(), Theme::margin);
 

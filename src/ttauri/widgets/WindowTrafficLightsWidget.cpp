@@ -13,11 +13,15 @@ namespace tt {
 WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
     Widget(window, parent)
 {
-    updateConstraints();
 }
 
-void WindowTrafficLightsWidget::updateConstraints() noexcept
+[[nodiscard]] bool WindowTrafficLightsWidget::updateConstraints() noexcept
 {
+    if (!Widget::updateConstraints()) {
+        return false;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
         window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth * 3.0f);
         window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth * 3.0f, rhea::strength::weak());
@@ -35,11 +39,12 @@ void WindowTrafficLightsWidget::updateConstraints() noexcept
     } else {
         tt_no_default;
     }
+    return true;
 }
 
-bool WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] bool WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    if (!Widget::layout(displayTimePoint, forceLayout)) {
+    if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
         return false;
     }
 

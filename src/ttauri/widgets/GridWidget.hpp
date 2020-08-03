@@ -56,12 +56,16 @@ protected:
     void removeAllConstraints() noexcept;
     void addAllConstraints() noexcept;
 
-    void updateConstraints() noexcept override {
+    bool updateConstraints() noexcept override {
+        if (!ContainerWidget::updateConstraints()) {
+            return false;
+        }
         window.stopConstraintSolver();
         removeAllConstraints();
         calculateGridSize();
         addAllConstraints();
         window.startConstraintSolver();
+        return true;
     }
 
 public:

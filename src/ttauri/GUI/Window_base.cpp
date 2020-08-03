@@ -143,27 +143,6 @@ void Window_base::replaceConstraint(
     return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
 }
 
-void Window_base::layout(hires_utc_clock::time_point displayTimePoint)
-{
-    auto forceLayout = requestLayout.exchange(false);
-
-    for (auto retry = 0; retry != 10; ++retry) {
-        if (widget->layout(displayTimePoint, forceLayout)) {
-            requestRedraw = true;
-        }
-
-        // Layout may have changed the constraints, in that case recalculate them.
-        if (constraintsUpdated) {
-            constraintsUpdated = false;
-            layoutWindow();
-            forceLayout = true;
-
-        } else {
-            return;
-        }
-    }
-    LOG_FATAL("Unable to layout child widgets");
-}
 
 void Window_base::openingWindow() {
     Window *thisWindow = dynamic_cast<Window *>(this);
@@ -176,7 +155,10 @@ void Window_base::openingWindow() {
     currentWindowExtent = ivec{500, 500};
 
     // Execute a layout to determine initial window size.
-    layout(cpu_utc_clock::now());
+    if (widget->updateConstraints()) {
+        requestLayout = true;
+        layoutWindow();
+    }
 
     updateToNextKeyboardTarget(nullptr);
 }

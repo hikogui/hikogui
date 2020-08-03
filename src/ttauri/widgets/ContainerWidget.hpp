@@ -23,14 +23,8 @@ public:
 
     ~ContainerWidget() {}
 
-    /** Layout children of this widget.
-    *
-    * Thread safety: locks, must be called from render-thread
-    *
-    * @param force Force the layout of the widget.
-    * @return True if a child was laid out.
-    */
-    [[nodiscard]] bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] bool updateConstraints() noexcept override;
+    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
