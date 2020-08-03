@@ -64,9 +64,9 @@ public:
 
     ~CheckboxWidget() {}
 
-    bool updateConstraints() noexcept override {
-        if (!Widget::updateConstraints()) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
@@ -91,12 +91,12 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
-    bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -124,7 +124,7 @@ public:
         ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
         minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
 
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
     void drawCheckBox(DrawContext const &drawContext) noexcept {

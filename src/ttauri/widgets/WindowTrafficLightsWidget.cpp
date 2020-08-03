@@ -15,10 +15,10 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 {
 }
 
-[[nodiscard]] bool WindowTrafficLightsWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateConstraints() noexcept
 {
-    if (!Widget::updateConstraints()) {
-        return false;
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -39,13 +39,13 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     } else {
         tt_no_default;
     }
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
-[[nodiscard]] bool WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
-        return false;
+    if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+        return result;
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -110,7 +110,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
     minimizeWindowGlyphRectangle = align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     maximizeWindowGlyphRectangle = align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

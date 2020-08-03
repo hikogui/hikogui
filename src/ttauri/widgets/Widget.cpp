@@ -71,12 +71,14 @@ rhea::constraint Widget::placeRight(float margin) const noexcept {
     return window.addConstraint(this->right + margin == parent->right);
 }
 
-bool Widget::updateConstraints() noexcept
+WidgetUpdateResult Widget::updateConstraints() noexcept
 {
-    return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed);
+    return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed) ?
+        WidgetUpdateResult::Self :
+        WidgetUpdateResult::Nothing;
 }
 
-bool Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
     auto needLayout = forceLayout;
 
@@ -103,7 +105,7 @@ bool Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool for
         toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
     }
 
-    return needLayout;
+    return needLayout ? WidgetUpdateResult::Self : WidgetUpdateResult::Nothing;
 }
 
 void Widget::handleCommand(command command) noexcept {
@@ -121,8 +123,6 @@ void Widget::handleCommand(command command) noexcept {
 }
 
 void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
-    auto lock = std::scoped_lock(mutex);
-
     if (event.type == MouseEvent::Type::Entered) {
         hover = true;
         window.requestRedraw = true;
@@ -133,8 +133,6 @@ void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
 }
 
 void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-    auto lock = std::scoped_lock(mutex);
-
     switch (event.type) {
     case KeyboardEvent::Type::Entered:
         focus = true;

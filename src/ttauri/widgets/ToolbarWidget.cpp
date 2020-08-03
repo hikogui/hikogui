@@ -16,13 +16,14 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
 {
 }
 
-[[nodiscard]] bool ToolbarWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult ToolbarWidget::updateConstraints() noexcept
 {
-    if (!ContainerWidget::updateConstraints()) {
-        return false;
+    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
     }
+
     window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void ToolbarWidget::disjoinLeftAndRightChildren() noexcept

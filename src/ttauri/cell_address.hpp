@@ -3,6 +3,7 @@
 
 #include "required.hpp"
 #include "numeric_cast.hpp"
+#include "exceptions.hpp"
 
 #pragma once
 

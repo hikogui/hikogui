@@ -20,10 +20,10 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
 ButtonWidget::~ButtonWidget() {
 }
 
-[[nodiscard]] bool ButtonWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult ButtonWidget::updateConstraints() noexcept
 {
-    if (!Widget::updateConstraints()) {
-        return false;
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -36,7 +36,7 @@ ButtonWidget::~ButtonWidget() {
     window.replaceConstraint(maximumHeightConstraint, height <= labelCell->preferredExtent().height() + Theme::margin * 2.0f, rhea::strength::weak());
 
     window.replaceConstraint(baseConstraint, base == middle);
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

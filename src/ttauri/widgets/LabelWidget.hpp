@@ -37,9 +37,9 @@ public:
     ~LabelWidget() {
     }
 
-    [[nodiscard]] bool updateConstraints() noexcept override {
-        if (!Widget::updateConstraints()) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -49,7 +49,7 @@ public:
         window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width());
         window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height());
         window.startConstraintSolver();
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
     void drawLabel(DrawContext drawContext) noexcept {

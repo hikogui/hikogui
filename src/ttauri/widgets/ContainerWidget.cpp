@@ -18,27 +18,27 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
     return *widget_ptr;
 }
 
-[[nodiscard]] bool ContainerWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult ContainerWidget::updateConstraints() noexcept
 {
     auto has_constrainted = Widget::updateConstraints();
 
     ttlet lock = std::scoped_lock(mutex);
 
     for (auto &&child: children) {
-        has_constrainted |= child->updateConstraints();
+        has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
     }
 
     return has_constrainted;
 }
 
-bool ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] WidgetUpdateResult ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
     auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
 
     ttlet lock = std::scoped_lock(mutex);
 
     for (auto &&child: children) {
-        has_laid_out |= child->updateLayout(displayTimePoint, forceLayout);
+        has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
     }
 
     return has_laid_out;

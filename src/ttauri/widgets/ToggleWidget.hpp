@@ -63,9 +63,9 @@ public:
     ~ToggleWidget() {
     }
 
-    [[nodiscard]] bool updateConstraints() noexcept override {
-        if (!Widget::updateConstraints()) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
@@ -90,12 +90,12 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
-    [[nodiscard]] bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -125,7 +125,7 @@ public:
         ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
         sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
 
-        return true;
+        return WidgetUpdateResult::Self;
     }
     
     void drawToggle(DrawContext drawContext) noexcept {

@@ -144,4 +144,17 @@ void GridWidget::addAllConstraints() noexcept
     }
 }
 
+WidgetUpdateResult GridWidget::updateConstraints() noexcept {
+    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
+    }
+
+    window.stopConstraintSolver();
+    removeAllConstraints();
+    calculateGridSize();
+    addAllConstraints();
+    window.startConstraintSolver();
+    return WidgetUpdateResult::Self;
+}
+
 }

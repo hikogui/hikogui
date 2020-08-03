@@ -122,6 +122,7 @@ target_sources(ttauri PRIVATE
     required.hpp
     ResourceView.hpp
     safe_int.hpp
+    scoped_lock.hpp
     SDF8.hpp
     small_map.hpp
     small_vector.hpp

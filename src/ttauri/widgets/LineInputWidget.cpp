@@ -23,10 +23,10 @@ LineInputWidget::~LineInputWidget()
 {
 }
 
-bool LineInputWidget::updateConstraints() noexcept
+WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
 {
-    if (!Widget::updateConstraints()) {
-        return false;
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -38,16 +38,22 @@ bool LineInputWidget::updateConstraints() noexcept
     window.replaceConstraint(minimumHeightConstraint, height >= (Theme::smallSize + Theme::margin * 2.0f));
     window.replaceConstraint(maximumHeightConstraint, height <= (Theme::smallSize + Theme::margin * 2.0f), rhea::strength::weak());
     window.replaceConstraint(baseConstraint, base == middle);
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
-bool LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
+WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
 {
-    ttlet lock = std::scoped_lock(mutex);
+    if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+        ttlet lock = std::scoped_lock(mutex);
 
-    if (!Widget::updateLayout(displayTimePoint, forceLayout)) {
-        return focus && displayTimePoint >= nextRedrawTimePoint;
+        if (focus && displayTimePoint >= nextRedrawTimePoint) {
+            return WidgetUpdateResult::Children;
+        } else {
+            return result;
+        }
     }
+
+    ttlet lock = std::scoped_lock(mutex);
 
     textRectangle = shrink(rectangle(), Theme::margin);
 
@@ -67,7 +73,7 @@ bool LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint,
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
 
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void LineInputWidget::dragSelect() noexcept

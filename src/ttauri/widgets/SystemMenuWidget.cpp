@@ -20,10 +20,10 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 {
 }
 
-[[nodiscard]] bool SystemMenuWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult SystemMenuWidget::updateConstraints() noexcept
 {
-    if (!Widget::updateConstraints()) {
-        return false;
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -31,7 +31,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth, rhea::strength::weak());
     window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
     window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

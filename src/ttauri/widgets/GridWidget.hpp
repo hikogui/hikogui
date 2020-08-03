@@ -56,18 +56,6 @@ protected:
     void removeAllConstraints() noexcept;
     void addAllConstraints() noexcept;
 
-    bool updateConstraints() noexcept override {
-        if (!ContainerWidget::updateConstraints()) {
-            return false;
-        }
-        window.stopConstraintSolver();
-        removeAllConstraints();
-        calculateGridSize();
-        addAllConstraints();
-        window.startConstraintSolver();
-        return true;
-    }
-
 public:
     GridWidget(Window &window, Widget *parent) noexcept :
         ContainerWidget(window, parent)
@@ -75,6 +63,8 @@ public:
         calculateGridSize();
         addAllConstraints();
     }
+
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
 
     /* Add a widget to the grid.
      */

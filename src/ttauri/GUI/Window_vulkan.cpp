@@ -274,14 +274,14 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
-    auto needLayout = widget->updateConstraints();
+    auto needLayout = widget->updateConstraints() >= WidgetUpdateResult::Children;
     needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
     if (needLayout) {
         layoutWindow();
     }
 
     // Make sure the widget's layout is updated before draw, but after window resize.
-    auto needRedraw = widget->updateLayout(displayTimePoint, needLayout);
+    auto needRedraw = widget->updateLayout(displayTimePoint, needLayout) >= WidgetUpdateResult::Children;
     needRedraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
     if (!needRedraw) {

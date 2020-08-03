@@ -21,6 +21,8 @@
 #include "../cpu_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
+#include "../fast_mutex.hpp"
+#include "../scoped_lock.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -47,6 +49,31 @@ struct Vertex;
 
 namespace tt {
 
+/** Result of `Widget::updateConstraints()` and `Widget::updateLayout()`.
+ */
+enum class WidgetUpdateResult {
+    Nothing,
+    Children,
+    Self
+};
+
+[[nodiscard]] constexpr WidgetUpdateResult operator|(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept {
+    return std::max(lhs, rhs);
+}
+
+[[nodiscard]] constexpr WidgetUpdateResult operator&(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept {
+    return std::min(lhs, rhs);
+}
+
+constexpr WidgetUpdateResult &operator|=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept {
+    lhs = lhs | rhs;
+    return lhs;
+}
+
+constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept {
+    lhs = lhs & rhs;
+    return lhs;
+}
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
@@ -92,7 +119,7 @@ namespace tt {
  */
 class Widget {
 protected:
-    mutable std::recursive_mutex mutex;
+    mutable fast_mutex mutex;
 
     /** Convenient reference to the Window.
     */
@@ -121,11 +148,11 @@ public:
 
     /** Mouse cursor is hovering over the widget.
     */
-    bool hover = false;
+    std::atomic<bool> hover = false;
 
     /** The widget has keyboard focus.
     */
-    bool focus = false;
+    std::atomic<bool> focus = false;
 
     /** Location of the frame compared to the window.
      * Thread-safety: the box is not modified by the class.
@@ -279,7 +306,7 @@ public:
     *         This value should be used by the overriding function to determine if
     *         it should update the constraints.
     */
-    [[nodiscard]] virtual bool updateConstraints() noexcept;
+    [[nodiscard]] virtual WidgetUpdateResult updateConstraints() noexcept;
 
     /** Update the internal layout of the widget.
     * This function is called by the window on every frame. It should recursively
@@ -295,7 +322,7 @@ public:
     *         This value should be used by the overriding function to determine if
     *         it should update the internal layout.
     */
-    [[nodiscard]] virtual bool updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
+    [[nodiscard]] virtual WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.

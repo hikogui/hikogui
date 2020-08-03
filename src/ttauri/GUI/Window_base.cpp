@@ -155,7 +155,7 @@ void Window_base::openingWindow() {
     currentWindowExtent = ivec{500, 500};
 
     // Execute a layout to determine initial window size.
-    if (widget->updateConstraints()) {
+    if (widget->updateConstraints() >= WidgetUpdateResult::Children) {
         requestLayout = true;
         layoutWindow();
     }
