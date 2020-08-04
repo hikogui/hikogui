@@ -26,6 +26,11 @@ constexpr auto BON8_code_object        = std::byte{0xfd};
 constexpr auto BON8_code_eoc           = std::byte{0xfe};
 constexpr auto BON8_code_eot           = std::byte{0xff};
 
+/** Decode BON8 message from buffer.
+ * @param ptr [in,out] Pointer to start of byte-buffer. After the call
+ *            ptr will point one beyond the message.
+ * @param last 
+ */
 [[nodiscardd]] datum decode_BON8(cbyteptr &ptr, cbyteptr last);
 
 [[nodiscardd]] datum decode_BON8(nonstd::span<const std::byte> buffer)
