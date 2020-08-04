@@ -284,7 +284,7 @@ public:
     void handleMouseEvent(MouseEvent const &event) noexcept override {
         Widget::handleMouseEvent(event);
 
-        auto lock = scoped_lock(mutex);
+        auto lock = std::scoped_lock(mutex);
         if (*enabled) {
             if (selecting) {
                 auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * event.position;
@@ -313,7 +313,6 @@ public:
                 if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
                     if (clickedOption.has_value() && clickedOption == hoverOption) {
                         chosenOption = *clickedOption;
-                        ttlet unlock = scoped_unlock(lock);
                         handleCommand(command::gui_activate);
                     }
                     clickedOption = {};
@@ -326,7 +325,6 @@ public:
                     event.cause.leftButton &&
                     rectangle().contains(event.position)
                 ) {
-                    ttlet unlock = scoped_unlock(lock);
                     handleCommand(command::gui_activate);
                 }
             }

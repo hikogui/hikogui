@@ -117,6 +117,7 @@ enum class Processor {
 #define tt_unlikely(condition) condition
 #define tt_unreachable() __assume(0)
 #define tt_assume(condition) __assume(condition)
+#define tt_assume2(condition, msg) __assume(condition)
 #define tt_force_inline __forceinline
 #define tt_no_inline inline __declspec(noinline)
 #define clang_suppress(a)
@@ -132,6 +133,7 @@ enum class Processor {
 #define tt_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
 #define tt_unreachable() __builtin_unreachable()
 #define tt_assume(condition) __builtin_assume(static_cast<bool>(condition))
+#define tt_assume2(condition, msg) __builtin_assume(static_cast<bool>(condition))
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline inline __attribute__((noinline))
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
@@ -147,6 +149,7 @@ enum class Processor {
 #define tt_unlikely(condition) __builtin_expect(static_cast<bool>(condition), 0)
 #define tt_unreachable() __builtin_unreachable()
 #define tt_assume(condition) do { if (!(condition)) tt_unreachable(); } while (false)
+#define tt_assume2(condition, msg) do { if (!(condition)) tt_unreachable(); } while (false)
 #define tt_force_inline inline __attribute__((always_inline))
 #define tt_no_inline inline __attribute__((noinline))
 #define clang_suppress(a)
@@ -162,6 +165,7 @@ enum class Processor {
 #define tt_unlikely(condition) condition
 #define tt_unreachable() std::terminate()
 #define tt_assume(condition) static_assert(sizeof(condition) == 1)
+#define tt_assume2(condition, msg) static_assert(sizeof(condition) == 1, msg)
 #define tt_force_inline inline
 #define tt_no_inline
 #define clang_suppress(a)
@@ -176,9 +180,11 @@ enum class Processor {
 
 #if TT_BUILD_TYPE == TT_BT_DEBUG
 #undef tt_assume
+#undef tt_assume2
 /** In debug mode, replace tt_assume() with an tt_assert().
 */
 #define tt_assume(expression) tt_assert(expression)
+#define tt_assume2(expression, msg) tt_assert2(expression, msg)
 #endif
 
 constexpr size_t cache_line_size =

@@ -119,10 +119,10 @@ target_sources(ttauri PRIVATE
     Rec2020.hpp
     Rec2100.hpp
     rect.hpp
+    recursive_fast_mutex.hpp
     required.hpp
     ResourceView.hpp
     safe_int.hpp
-    scoped_lock.hpp
     SDF8.hpp
     small_map.hpp
     small_vector.hpp

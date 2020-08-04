@@ -21,8 +21,7 @@
 #include "../cpu_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
-#include "../fast_mutex.hpp"
-#include "../scoped_lock.hpp"
+#include "../recursive_fast_mutex.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -119,7 +118,7 @@ constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateRe
  */
 class Widget {
 protected:
-    mutable fast_mutex mutex;
+    mutable recursive_fast_mutex mutex;
 
     /** Convenient reference to the Window.
     */
