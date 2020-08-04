@@ -33,10 +33,22 @@ class fast_mutex {
 #endif
 
 public:
+    fast_mutex(fast_mutex const &) = delete;
+    fast_mutex &operator=(fast_mutex const &) = delete;
+
     fast_mutex() noexcept;
     ~fast_mutex();
 
     void lock() noexcept;
+
+    /**
+     * When try_lock() is called from a thread that already owns the lock it will
+     * return false.
+     *
+     * Calling try_lock() in a loop will bypass the operating system's wait system,
+     * meaning that no priority inversion will take place.
+     */
+    bool try_lock() noexcept;
 
     void unlock() noexcept;
 };

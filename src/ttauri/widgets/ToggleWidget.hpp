@@ -50,22 +50,24 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet on_label_cbid = this->onLabel.add_callback([this](auto...) {
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet off_label_cbid = this->offLabel.add_callback([this](auto...) {
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet other_label_cbid = this->otherLabel.add_callback([this](auto...) {
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~ToggleWidget() {
     }
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
+        }
+
         onLabelCell = std::make_unique<TextCell>(*onLabel, theme->labelStyle);
         offLabelCell = std::make_unique<TextCell>(*offLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
@@ -88,11 +90,12 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
+        return WidgetUpdateResult::Self;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -122,7 +125,7 @@ public:
         ttlet sliderMoveWidth = Theme::smallSize * 2.0f - (sliderRectangle.x() * 2.0f);
         sliderMoveRange = sliderMoveWidth - sliderRectangle.width();
 
-        return true;
+        return WidgetUpdateResult::Self;
     }
     
     void drawToggle(DrawContext drawContext) noexcept {

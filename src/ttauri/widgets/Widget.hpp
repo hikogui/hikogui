@@ -21,6 +21,7 @@
 #include "../cpu_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
+#include "../recursive_fast_mutex.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -47,25 +48,77 @@ struct Vertex;
 
 namespace tt {
 
+/** Result of `Widget::updateConstraints()` and `Widget::updateLayout()`.
+ */
+enum class WidgetUpdateResult {
+    Nothing,
+    Children,
+    Self
+};
+
+[[nodiscard]] constexpr WidgetUpdateResult operator|(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept {
+    return std::max(lhs, rhs);
+}
+
+[[nodiscard]] constexpr WidgetUpdateResult operator&(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept {
+    return std::min(lhs, rhs);
+}
+
+constexpr WidgetUpdateResult &operator|=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept {
+    lhs = lhs | rhs;
+    return lhs;
+}
+
+constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept {
+    lhs = lhs & rhs;
+    return lhs;
+}
 
 /*! View of a widget.
  * A view contains the dynamic data for a Widget. It is often accompanied with a Backing
  * which contains that static data of an Widget and the drawing code. Backings are shared
  * between Views.
  *
- * Thread-safety:
- *     All method of the widget should lock the mutex, exceptions are:
- *         hitBoxTest(), needLayout()
- *     All public members should be thread-safe, for example:
- *         std::atomic and tt::observer
- *     The following methods should only be called from the render thread:
- *         needLayout(), layout(), layoutChildren(), draw(), 
+ * All methods should lock the mutex, unless they use only the atomic data.
+ *
+ * Rendering is done in three distinct phases:
+ *  1. Updating Constraints
+ *  2. Updating Layout
+ *  3. Drawing (optional phase)
+ *
+ * Each of these phases is executed to completion for all widget belonging to a
+ * window before the next phases is executed.
+ *
+ * ## Updating Constraints
+ * In this phases the widget will update the constraints to determine the position
+ * and size of the widget inside the window.
+ *
+ * The `updateConstraints()` function will be called on each widget recursively.
+ * You should minimize the cost of this function as much as possible.
+ *
+ * Since this function is called on each frame, the widget should first check
+ * if constraint changes are needed.
+ *
+ * A widget should return true if any of the constraints has changed.
+ * 
+ * ## Updating Layout
+ * A widget may update its internal (expensive) layout calculations from the
+ * `updateLayout()` function.
+ *
+ * Since this function is called on each frame, the widget should first check
+ * if layout calculations are needed. If a constraint has changed (the window size
+ * is also a constraint) then the `forceLayout` flag is set.
+ *
+ * A widget should return true if a widget has changed its layout.
+ *
+ * ## Drawing (optional)
+ * A widget can draw itself when the `draw()` function is called. This phase is only
+ * entered when one of the widget's layout was changed. But if this phase is entered
+ * then all the widget's `draw()` functions are called.
  */
 class Widget {
-private:
-
 protected:
-    mutable std::recursive_mutex mutex;
+    mutable recursive_fast_mutex mutex;
 
     /** Convenient reference to the Window.
     */
@@ -94,11 +147,11 @@ public:
 
     /** Mouse cursor is hovering over the widget.
     */
-    bool hover = false;
+    std::atomic<bool> hover = false;
 
     /** The widget has keyboard focus.
     */
-    bool focus = false;
+    std::atomic<bool> focus = false;
 
     /** Location of the frame compared to the window.
      * Thread-safety: the box is not modified by the class.
@@ -120,6 +173,7 @@ public:
     std::atomic<R32G32SFloat> _offsetFromParent;
     std::atomic<R32G32SFloat> _offsetFromWindow;
 
+    mutable std::atomic<bool> requestConstraint = true;
     mutable std::atomic<bool> requestLayout = true;
 
     /** The widget is enabled.
@@ -240,35 +294,49 @@ public:
     }
 
     /** Update the constraints of the widget.
-    * This function should be called by the widget whenever the data changes
-    * which will require new constraints, such as changing the text of a label.
+    * This function is called by the window on every frame. It should recursively
+    * call this function on every visible child.
+    *
+    * This function should update the constraints whenever the data changes,
+    * such as changing the text of a label, or when adding or removing child widgets.
+    *
+    * @return If true then the constraints have been updated by this widget, or
+    *         any of its children.
+    *         This value should be used by the overriding function to determine if
+    *         it should update the constraints.
     */
-    virtual void updateConstraints() noexcept {}
+    [[nodiscard]] virtual WidgetUpdateResult updateConstraints() noexcept;
 
-    /** Layout the widget.
-     * super::layout() should be called at start of the overriden function.
+    /** Update the internal layout of the widget.
+    * This function is called by the window on every frame. It should recursively
+    * call this function on every visible child.
+    *
+    * This function should update the internal layout whenever data changes or during
+    * an animation.
+    *
+    * @param displayTimePoint The time point when the widget will be shown on the screen.
+    * @param forceLayout Force the layout of this widget and its children
+    * @return If true then the internal layout has been updated by this widget, or
+    *         any of its children.
+    *         This value should be used by the overriding function to determine if
+    *         it should update the internal layout.
+    */
+    [[nodiscard]] virtual WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
+
+    /** Draw the widget.
+     * This function is called by the window (optionally) on every frame.
+     * It should recursively call this function on every visible child.
+     * This function is only called when `updateLayout()` has returned true.
      *
-     * This function will call needLayout().
+     * The overriding function should call the base class's `draw()`, the place
+     * where the call this function will determine the order of the vertices into
+     * each buffer. This is important when needing to do the painters algorithm
+     * for alpha-compositing. However the pipelines are always drawn in the same
+     * order.
      *
-     * Thread safety: locks, must be called from render-thread
-     *
+     * @param drawContext The context to where the widget will draw.
      * @param displayTimePoint The time point when the widget will be shown on the screen.
-     * @param forceLayout Force the layout of this widget and its children
-     * @return True if this widget or its children have been laid out.
-     *         In the overriden function use this value to determine if it should lay out.
      */
-    virtual bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
-
-    /** Draw widget.
-    *
-    * The overriding function should call the base class's draw(), the place
-    * where the call this function will determine the order of the vertices into
-    * each buffer. This is important when needing to do the painters algorithm
-    * for alpha-compositing. However the pipelines are always drawn in the same
-    * order.
-    *
-    * Thread safety: locks, must be called from render-thread
-    */
     virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept {}
 
     /** Handle command.
@@ -296,15 +364,6 @@ public:
     virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
 protected:
-    /** Request if the widget needs to be layed out.
-    * This function will be called for each widget on each frame.
-    * Therefor it is important to optimize this function.
-    *
-    * Thread safety: reads atomics, must be called from render-thread.
-    *
-    * @return True if the widget needs a layout
-    */
-    [[nodiscard]] virtual bool needLayout(hires_utc_clock::time_point displayTimePoint) noexcept;
 };
 
 inline Widget * const foundWidgetPtr = reinterpret_cast<Widget *>(1);

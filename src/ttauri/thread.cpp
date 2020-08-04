@@ -15,6 +15,8 @@ namespace tt {
 
 void set_thread_name(std::string_view name)
 {
+    current_thread_id = thread_id_count.fetch_add(1, std::memory_order::memory_order_relaxed) + 1;
+
 #if  TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     ttlet wname = to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.data());

@@ -26,6 +26,7 @@ tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
         // Set to 2 when we are waiting.
         expected = 1;
         if (should_wait || semaphore.compare_exchange_strong(expected, 2)) {
+
 #if TT_BUILD_TYPE == TT_BT_DEBUG
             tt_assert(locking_thread != std::this_thread::get_id());
 #endif
@@ -40,6 +41,19 @@ tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
         // Set to 2 when aquiring the lock, so that during unlock we wake other waiting threads.
         expected = 0;
     } while (!semaphore.compare_exchange_strong(expected, 2));
+}
+
+bool fast_mutex::try_lock() noexcept
+{
+    // Switch to 1 means there are no waiters.
+    int32_t expected = 0;
+    if (tt_unlikely(!semaphore.compare_exchange_strong(expected, 1))) {
+        return false;
+    }
+#if TT_BUILD_TYPE == TT_BT_DEBUG
+    locking_thread = std::this_thread::get_id();
+#endif
+    return true;
 }
 
 void fast_mutex::lock() noexcept

@@ -52,21 +52,23 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
         [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~CheckboxWidget() {}
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
+        }
+
         trueLabelCell = std::make_unique<TextCell>(*trueLabel, theme->labelStyle);
         falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
@@ -89,11 +91,12 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
+        return WidgetUpdateResult::Self;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -121,7 +124,7 @@ public:
         ttlet minusGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(minusGlyph);
         minusRectangle = align(checkboxRectangle, scale(minusGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
 
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
     void drawCheckBox(DrawContext const &drawContext) noexcept {

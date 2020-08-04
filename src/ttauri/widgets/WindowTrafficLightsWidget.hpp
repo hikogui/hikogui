@@ -48,8 +48,8 @@ public:
     WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept;
     ~WindowTrafficLightsWidget() {}
 
-    void updateConstraints() noexcept override;
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override;
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override;
 
     void handleMouseEvent(MouseEvent const &event) noexcept override;

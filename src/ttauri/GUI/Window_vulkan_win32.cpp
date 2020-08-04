@@ -498,7 +498,6 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximumWindowExtent.y());
         } break;
 
-
     case WM_UNICHAR: {
         auto c = numeric_cast<char32_t>(wParam);
         if (c == UNICODE_NOCHAR) {

@@ -8,6 +8,7 @@
 #include "os_detect.hpp"
 #include "version.hpp"
 #include "trace.hpp"
+#include "thread.hpp"
 #include "text/ElusiveIcons.hpp"
 #include "text/TTauriIcons.hpp"
 #include "text/language.hpp"
@@ -43,6 +44,8 @@ Application_base::Application_base(
     std::vector<std::string> const &arguments) :
     delegate(applicationDelegate)
 {
+    set_thread_name("Main Thread");
+
     // Application_base is a singleton.
     tt_assert(application == nullptr);
     application = reinterpret_cast<Application *>(this);

@@ -63,15 +63,19 @@ public:
         });
 
         [[maybe_unused]] ttlet options_cbid = options.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~SelectionWidget() {}
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
+
         // Create a list of cells, one for each option and calculate
         // the optionHeight based on the option which is the tallest.
         optionList.clear();
@@ -93,11 +97,12 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= preferredHeight + Theme::margin * 2.0f);
 
         window.replaceConstraint(baseConstraint, base == middle);
+        return WidgetUpdateResult::Self;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -170,7 +175,7 @@ public:
         ttlet chevronsGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(chevronsGlyph);
         chevronsRectangle = align(leftBoxRectangle, scale(chevronsGlyphBB, Theme::iconSize), Alignment::MiddleCenter);
 
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
     void drawOptionHighlight(DrawContext drawContext, OptionListEntry const &option) noexcept {
@@ -269,7 +274,6 @@ public:
     }
 
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
         Widget::handleKeyboardEvent(event);
 
         if (event.type == KeyboardEvent::Type::Exited) {
@@ -278,9 +282,9 @@ public:
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
         Widget::handleMouseEvent(event);
 
+        auto lock = std::scoped_lock(mutex);
         if (*enabled) {
             if (selecting) {
                 auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * event.position;
@@ -328,65 +332,67 @@ public:
     }
 
     void handleCommand(command command) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        {
+            ttlet lock = std::scoped_lock(mutex);
 
-        if (!*enabled) {
-            return;
-        }
+            if (!*enabled) {
+                return;
+            }
 
-        switch (command) {
-        case command::gui_up: {
-            std::optional<ValueType> prev_tag;
-            for (ttlet &option : optionList) {
-                if (option.tag == chosenOption && prev_tag.has_value()) {
-                    chosenOption = *prev_tag;
-                    break;
+            switch (command) {
+            case command::gui_up: {
+                std::optional<ValueType> prev_tag;
+                for (ttlet &option : optionList) {
+                    if (option.tag == chosenOption && prev_tag.has_value()) {
+                        chosenOption = *prev_tag;
+                        break;
+                    }
+                    prev_tag = option.tag;
                 }
-                prev_tag = option.tag;
-            }
-            } break;
+                } break;
 
-        case command::gui_down: {
-            bool found = false;
-            for (ttlet &option : optionList) {
-                if (found) {
-                    chosenOption = option.tag;
-                    break;
-                } else if (option.tag == chosenOption) {
-                    found = true;
+            case command::gui_down: {
+                bool found = false;
+                for (ttlet &option : optionList) {
+                    if (found) {
+                        chosenOption = option.tag;
+                        break;
+                    } else if (option.tag == chosenOption) {
+                        found = true;
+                    }
                 }
+                } break;
+
+            case command::gui_activate:
+                if (selecting) {
+                    selecting = false;
+                    value.store(chosenOption);
+
+                } else {
+                    selecting = true;
+                    chosenOption = value.load();
+                }
+                break;
+
+            case command::gui_widget_next:
+            case command::gui_widget_prev:
+                if (selecting) {
+                    selecting = false;
+                    value.store(chosenOption);
+                }
+                break;
+
+            case command::gui_escape:
+                if (selecting) {
+                    selecting = false;
+                }
+                break;
+
+            default:;
             }
-            } break;
 
-        case command::gui_activate:
-            if (selecting) {
-                selecting = false;
-                value.store(chosenOption);
-
-            } else {
-                selecting = true;
-                chosenOption = value.load();
-            }
-            break;
-
-        case command::gui_widget_next:
-        case command::gui_widget_prev:
-            if (selecting) {
-                selecting = false;
-                value.store(chosenOption);
-            }
-            break;
-
-        case command::gui_escape:
-            if (selecting) {
-                selecting = false;
-            }
-            break;
-
-        default:;
+            requestLayout = true;
         }
-
-        requestLayout = true;
         Widget::handleCommand(command);
     }
 

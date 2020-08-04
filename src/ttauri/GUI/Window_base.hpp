@@ -173,8 +173,6 @@ public:
      */
     void unsetDevice() { setDevice({}); }
 
-    void layout(hires_utc_clock::time_point displayTimePoint);
-
     /*! Update window.
      * This will update animations and redraw all widgets managed by this window.
      */
@@ -272,6 +270,10 @@ protected:
     */
     [[nodiscard]] float windowScale() const noexcept;
 
+    /** layout and constrain the window based on the window-widget's extent.
+    */
+    void layoutWindow() noexcept;
+
     /*! Called when the GPU library has changed the window size.
      */
     virtual void windowChangedSize(ivec extent);
@@ -351,11 +353,6 @@ private:
      * @return minimum-, preferred-, maximum-extent
      */
     [[nodiscard]] std::tuple<vec,vec,vec> getMinMaxAndPreferredWidgetExtent() noexcept;
-
-    /** layout and constrain the window based on the window-widget's extent.
-     */
-    void layoutWindow() noexcept;
-
 
 };
 

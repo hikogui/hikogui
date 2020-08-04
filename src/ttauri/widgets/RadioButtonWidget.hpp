@@ -40,16 +40,19 @@ public:
             this->window.requestRedraw = true;
         });
         [[maybe_unused]] ttlet label_cbid = label.add_callback([this](auto...){
-            updateConstraints();
+            requestConstraint = true;
         });
-
-        updateConstraints();
     }
 
     ~RadioButtonWidget() {
     }
 
-    void updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+            return result;
+        }
+
+        ttlet lock = std::scoped_lock(mutex);
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
 
         ttlet minimumHeight = std::max(labelCell->preferredExtent().height(), Theme::smallSize);
@@ -60,11 +63,12 @@ public:
         window.replaceConstraint(minimumHeightConstraint, height >= minimumHeight);
         window.replaceConstraint(baseConstraint, base == top - Theme::smallSize * 0.5f);
         window.startConstraintSolver();
+        return WidgetUpdateResult::Self;
     }
 
-    bool layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        if (!Widget::layout(displayTimePoint, forceLayout)) {
-            return false;
+    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+            return result;
         }
 
         ttlet lock = std::scoped_lock(mutex);
@@ -85,7 +89,7 @@ public:
         };
 
         pipRectangle = shrink(radioButtonRectangle, 1.5f);
-        return true;
+        return WidgetUpdateResult::Self;
     }
 
     void drawRadioButton(DrawContext drawContext) noexcept {

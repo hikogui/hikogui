@@ -17,38 +17,40 @@ LineInputWidget::LineInputWidget(Window &window, Widget *parent, std::string con
     field(theme->labelStyle),
     shapedText()
 {
-    updateConstraints();
 }
 
 LineInputWidget::~LineInputWidget()
 {
 }
 
-void LineInputWidget::updateConstraints() noexcept
+WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
 {
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
+
     ttlet maximumHeight = shapedText.boundingBox.height() + Theme::margin * 2.0f;
 
     window.replaceConstraint(minimumWidthConstraint, width >= 100.0f);
     window.replaceConstraint(maximumWidthConstraint, width <= 500.0f);
     window.replaceConstraint(minimumHeightConstraint, height >= (Theme::smallSize + Theme::margin * 2.0f));
     window.replaceConstraint(maximumHeightConstraint, height <= (Theme::smallSize + Theme::margin * 2.0f), rhea::strength::weak());
-
     window.replaceConstraint(baseConstraint, base == middle);
+    return WidgetUpdateResult::Self;
 }
 
-bool LineInputWidget::needLayout(hires_utc_clock::time_point displayTimePoint) noexcept
+WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
 {
-    if (focus && displayTimePoint > nextRedrawTimePoint) {
-        window.requestRedraw = true;
-    }
+    if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+        ttlet lock = std::scoped_lock(mutex);
 
-    return Widget::needLayout(displayTimePoint);
-}
-
-bool LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
-{
-    if (!Widget::layout(displayTimePoint, forceLayout)) {
-        return false;
+        if (focus && displayTimePoint >= nextRedrawTimePoint) {
+            return WidgetUpdateResult::Children;
+        } else {
+            return result;
+        }
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -71,7 +73,7 @@ bool LineInputWidget::layout(hires_utc_clock::time_point displayTimePoint, bool 
     // Record the last time the text is modified, so that the carret remains lit.
     lastUpdateTimePoint = displayTimePoint;
 
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void LineInputWidget::dragSelect() noexcept

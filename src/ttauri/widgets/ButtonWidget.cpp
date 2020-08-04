@@ -15,14 +15,19 @@ ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const lab
     Widget(window, parent),
     label(label)
 {
-    updateConstraints();
 }
 
 ButtonWidget::~ButtonWidget() {
 }
 
-void ButtonWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult ButtonWidget::updateConstraints() noexcept
 {
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
+
     labelCell = std::make_unique<TextCell>(label, theme->warningLabelStyle);
 
     window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width() + Theme::margin * 2.0f);
@@ -31,6 +36,7 @@ void ButtonWidget::updateConstraints() noexcept
     window.replaceConstraint(maximumHeightConstraint, height <= labelCell->preferredExtent().height() + Theme::margin * 2.0f, rhea::strength::weak());
 
     window.replaceConstraint(baseConstraint, base == middle);
+    return WidgetUpdateResult::Self;
 }
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

@@ -13,11 +13,15 @@ namespace tt {
 WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *parent) noexcept :
     Widget(window, parent)
 {
-    updateConstraints();
 }
 
-void WindowTrafficLightsWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateConstraints() noexcept
 {
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
         window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth * 3.0f);
         window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth * 3.0f, rhea::strength::weak());
@@ -35,12 +39,13 @@ void WindowTrafficLightsWidget::updateConstraints() noexcept
     } else {
         tt_no_default;
     }
+    return WidgetUpdateResult::Self;
 }
 
-bool WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    if (!Widget::layout(displayTimePoint, forceLayout)) {
-        return false;
+    if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
+        return result;
     }
 
     ttlet lock = std::scoped_lock(mutex);
@@ -105,7 +110,7 @@ bool WindowTrafficLightsWidget::layout(hires_utc_clock::time_point displayTimePo
     minimizeWindowGlyphRectangle = align(minimizeRectangle, scale(minimizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     maximizeWindowGlyphRectangle = align(maximizeRectangle, scale(maximizeWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
     restoreWindowGlyphRectangle = align(maximizeRectangle, scale(restoreWindowGlyphBB, glyph_size), Alignment::MiddleCenter);
-    return true;
+    return WidgetUpdateResult::Self;
 }
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

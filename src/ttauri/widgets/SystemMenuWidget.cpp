@@ -18,15 +18,20 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
     iconCell(icon.makeCell()),
     systemMenuRectangle(vec{Theme::toolbarDecorationButtonWidth, Theme::toolbarHeight})
 {
-    updateConstraints();
 }
 
-void SystemMenuWidget::updateConstraints() noexcept
+[[nodiscard]] WidgetUpdateResult SystemMenuWidget::updateConstraints() noexcept
 {
+    if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
+        return result;
+    }
+
+    ttlet lock = std::scoped_lock(mutex);
     window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth);
     window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth, rhea::strength::weak());
     window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
     window.replaceConstraint(maximumHeightConstraint, height <= Theme::toolbarHeight, rhea::strength::weak());
+    return WidgetUpdateResult::Self;
 }
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept

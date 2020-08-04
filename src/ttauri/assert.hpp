@@ -21,11 +21,16 @@ namespace tt {
 /** Assert if expression is true.
  * Independent of built type this macro will always check and abort on fail.
  */
-#define tt_assert(expression)\
+#define tt_assert2(expression, msg)\
     do {\
         if (tt_unlikely(!(expression))) {\
-            debugger_abort(# expression);\
+            debugger_abort(msg);\
         }\
     } while (false)
+
+ /** Assert if expression is true.
+ * Independent of built type this macro will always check and abort on fail.
+ */
+#define tt_assert(expression) tt_assert2(expression, # expression)
 
 }

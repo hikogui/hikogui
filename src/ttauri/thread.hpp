@@ -7,6 +7,7 @@
 #include <thread>
 #include <string_view>
 #include <functional>
+#include <atomic>
 
 namespace tt {
 
@@ -16,6 +17,9 @@ bool is_main_thread();
 
 void run_on_main_thread(std::function<void()> f);
 
+inline std::atomic<uint32_t> thread_id_count = 0;
+
+inline thread_local uint32_t current_thread_id = 0;
 
 }
 
