@@ -12,41 +12,43 @@ namespace tt {
 class recursive_fast_mutex {
     fast_mutex mutex;
 
-    std::atomic<uint64_t> recurse_info = 0;
+    std::atomic<uint32_t> owner = 0;
+    uint32_t count;
 
-    [[nodiscard]] static constexpr bool recurse_info_equal_thread(uint64_t const &info, uint32_t thread_id) noexcept {
-        return
-            static_cast<uint32_t>(info) != 0 &&
-            static_cast<uint32_t>(info >> 32) == thread_id;
+    void set_owner(uint32_t thread_id) noexcept {
+        // Since we have the lock, no other thread can modify the thread_id or count.
+        tt_assume(count == 0);
+        count = 1;
+        tt_assume(owner == 0);
+        owner.store(thread_id, std::memory_order::memory_order_release);
     }
 
-    [[nodiscard]] static constexpr bool recurse_info_is_zero(uint64_t const &info) noexcept {
-        return static_cast<uint32_t>(info) == 0;
+    tt_no_inline void contented_lock(uint32_t thread_id) noexcept {
+        mutex.lock();
+        set_owner(thread_id);
     }
 
-    /*
-    * @return True when recursing lock on the same thread.
-    */
-    [[nodiscard]] bool lock_recurse(uint32_t tid) noexcept {
-        auto expected = recurse_info.load(std::memory_order::memory_order_relaxed);
-        uint64_t desired;
-        do {
-            if (!recurse_info_equal_thread(expected, tid)) {
-                return false;
-            }
+    /**
+     * When `try_lock()` is called on a thread that already holds the lock true is returned.
+     */
+    [[nodiscard]] bool try_lock(uint32_t thread_id) noexcept {
+        tt_assume2(thread_id != 0, "current_thread_id is not initialized, make sure tt::set_thread_name() has been called");
 
-            desired = expected + 1;
-        } while (!recurse_info.compare_exchange_weak(expected, desired, std::memory_order::memory_order_relaxed));
+        if (mutex.try_lock()) {
+            set_owner(thread_id);
+            return true;
+        }
 
-        return true;
-    }
+        // At this point there is recursion, or this is a second thread.
+        if (owner.load(std::memory_order::memory_order_seq_cst) == thread_id) {
+            // If we are here then this is recursion by the owning thread.
+            tt_assume(count != 0);
+            ++count;
+            return true;
+        }
 
-    /*
-    * @return True when last recursion is completed.
-    */
-    [[nodiscard]] bool unlock_recurse() noexcept {
-        ttlet result = recurse_info.fetch_sub(1, std::memory_order_relaxed) - 1;
-        return recurse_info_is_zero(result);
+        // For a second thread the owner was either empty or not equal to thread_id.
+        return false;
     }
 
 public:
@@ -60,24 +62,28 @@ public:
      * When `try_lock()` is called on a thread that already holds the lock true is returned.
      */
     [[nodiscard]] bool try_lock() noexcept {
-        ttlet tid = current_thread_id;
-        tt_assume2(tid != 0, "current_thread_id is not initialized, make sure tt::set_thread_name() has been called");
-
-        if (mutex.try_lock()) {
-            recurse_info.store(static_cast<uint64_t>(tid) << 32 | 1, std::memory_order::memory_order_relaxed);
-            return true;
-        }
-        return lock_recurse(tid);
+        return try_lock(current_thread_id);
     }
 
     void lock() noexcept {
-        if (tt_unlikely(!try_lock())) {
-            mutex.lock();
+        ttlet thread_id = current_thread_id;
+
+        if (tt_unlikely(!try_lock(thread_id))) {
+            // This is a second thread, block on the mutex.
+            // Once this thread gets the lock then it should set the owner.
+            contented_lock(thread_id);
         }
     }
 
     void unlock() noexcept {
-        if (unlock_recurse()) {
+        tt_assume2(owner == current_thread_id, "Unlock must be called on the thread that locked the mutex");
+
+        // This can only be called by the owning thread, decrement the count and
+        // when zero empty the thread_id.
+        if (--count == 0) {
+            // A second thread may be in try_lock() reading the owner value.
+            // Before or after the next write try_lock() will fail.
+            owner.store(0, std::memory_order::memory_order_seq_cst);
             mutex.unlock();
         }
     }

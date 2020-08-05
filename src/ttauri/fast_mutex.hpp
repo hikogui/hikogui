@@ -19,7 +19,7 @@ class fast_mutex {
         return reinterpret_cast<int32_t *>(&semaphore);
     }
 
-    void lock_contented(int32_t first) noexcept;
+    tt_no_inline void lock_contented(int32_t first) noexcept;
 
 #elif TT_OPERATING_SYSTEM == TT_OS_MACOS
     std::unique_ptr<unfair_lock_wrap> mutex;
