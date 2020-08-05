@@ -47,7 +47,7 @@ bool fast_mutex::try_lock() noexcept
 {
     // Switch to 1 means there are no waiters.
     int32_t expected = 0;
-    if (tt_unlikely(!semaphore.compare_exchange_strong(expected, 1))) {
+    if (tt_unlikely(!semaphore.compare_exchange_strong(expected, 1, std::memory_order::memory_order_acquire))) {
         return false;
     }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
@@ -60,7 +60,7 @@ void fast_mutex::lock() noexcept
 {
     // Switch to 1 means there are no waiters.
     int32_t expected = 0;
-    if (tt_unlikely(!semaphore.compare_exchange_strong(expected, 1))) {
+    if (tt_unlikely(!semaphore.compare_exchange_strong(expected, 1, std::memory_order::memory_order_acquire))) {
         lock_contented(expected);
     }
 #if TT_BUILD_TYPE == TT_BT_DEBUG
@@ -70,10 +70,12 @@ void fast_mutex::lock() noexcept
 
 void fast_mutex::unlock() noexcept
 {
-    if (tt_unlikely(semaphore.fetch_sub(1) != 1)) {
-        semaphore.store(0);
+    if (tt_unlikely(semaphore.fetch_sub(1, std::memory_order::memory_order_relaxed) != 1)) {
+        semaphore.store(0, std::memory_order::memory_order_release);
 
         WakeByAddressSingle(semaphore_ptr());
+    } else {
+        atomic_thread_fence(std::memory_order::memory_order_release);
     }
 }
 
