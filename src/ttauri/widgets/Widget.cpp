@@ -101,8 +101,8 @@ WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimeP
             offsetFromWindow - parent->offsetFromWindow:
             offsetFromWindow;
         
-        fromWindowTransform = mat::T(-offsetFromWindow.x(), -offsetFromWindow.y(), -z());
         toWindowTransform = mat::T(offsetFromWindow.x(), offsetFromWindow.y(), z());
+        fromWindowTransform = ~toWindowTransform;
     }
 
     return needLayout ? WidgetUpdateResult::Self : WidgetUpdateResult::Nothing;

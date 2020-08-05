@@ -136,14 +136,6 @@ protected:
 public:
     mutable recursive_fast_mutex mutex;
 
-    /** Transformation matrix from window coords to local coords.
-    */
-    mat fromWindowTransform;
-
-    /** Transformation matrix from local coords to window coords.
-    */
-    mat toWindowTransform;
-
     /** Mouse cursor is hovering over the widget.
     */
     bool hover = false;
@@ -171,6 +163,14 @@ public:
     vec extent;
     vec offsetFromParent;
     vec offsetFromWindow;
+
+    /** Transformation matrix from window coords to local coords.
+    */
+    mat::T fromWindowTransform;
+
+    /** Transformation matrix from local coords to window coords.
+    */
+    mat::T toWindowTransform;
 
     mutable std::atomic<bool> requestConstraint = true;
     mutable std::atomic<bool> requestLayout = true;
