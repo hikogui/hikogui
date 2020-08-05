@@ -52,6 +52,8 @@ WindowWidget::WindowWidget(Window &window, Label title) noexcept :
 
 HitBox WindowWidget::hitBoxTest(vec position) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     constexpr float BORDER_WIDTH = 5.0;
 
     auto r = HitBox{this, elevation};
@@ -88,7 +90,8 @@ HitBox WindowWidget::hitBoxTest(vec position) const noexcept
     }
 
     for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
     }
 
     return r;

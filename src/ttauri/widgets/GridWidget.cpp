@@ -9,6 +9,8 @@ namespace tt {
 
 Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     auto &widget = ContainerWidget::addWidget(address, std::move(childWidget));
     cells.emplace_back(current_address, &widget);
     return widget;
@@ -145,6 +147,8 @@ void GridWidget::addAllConstraints() noexcept
 }
 
 WidgetUpdateResult GridWidget::updateConstraints() noexcept {
+    auto lock = std::scoped_lock(mutex);
+
     if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }

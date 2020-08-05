@@ -65,6 +65,8 @@ public:
     ~CheckboxWidget() {}
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
         }
@@ -95,11 +97,11 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
         }
-
-        ttlet lock = std::scoped_lock(mutex);
 
         checkboxRectangle = aarect{
             0.0f,
@@ -128,10 +130,14 @@ public:
     }
 
     void drawCheckBox(DrawContext const &drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.drawBoxIncludeBorder(checkboxRectangle);
     }
 
     void drawCheckMark(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
 
         if (*enabled && window.active) {
@@ -149,6 +155,8 @@ public:
     }
 
     void drawLabel(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;
         }
@@ -162,6 +170,8 @@ public:
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         drawCheckBox(drawContext);
         drawCheckMark(drawContext);
         drawLabel(drawContext);
@@ -169,6 +179,8 @@ public:
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
@@ -183,6 +195,8 @@ public:
     }
 
     void handleCommand(command command) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (!*enabled) {
             return;
         }
@@ -196,6 +210,8 @@ public:
     }
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (rectangle().contains(position)) {
             return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {

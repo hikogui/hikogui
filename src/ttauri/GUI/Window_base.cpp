@@ -259,7 +259,7 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     // Send event to target-widget.
     if (mouseTargetWidget != nullptr) {
-        ttlet windowOffset = mouseTargetWidget->offsetFromWindow();
+        ttlet windowOffset = mouseTargetWidget->offsetFromWindow;
         event.position -= windowOffset;
         event.downPosition -= windowOffset;
         mouseTargetWidget->handleMouseEvent(event);

@@ -22,11 +22,11 @@ ButtonWidget::~ButtonWidget() {
 
 [[nodiscard]] WidgetUpdateResult ButtonWidget::updateConstraints() noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }
-
-    ttlet lock = std::scoped_lock(mutex);
 
     labelCell = std::make_unique<TextCell>(label, theme->warningLabelStyle);
 
@@ -41,6 +41,8 @@ ButtonWidget::~ButtonWidget() {
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto context = drawContext;
 
     context.cornerShapes = vec{Theme::roundingRadius};
@@ -61,7 +63,10 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
     Widget::draw(drawContext, displayTimePoint);
 }
 
-void ButtonWidget::handleCommand(command command) noexcept {
+void ButtonWidget::handleCommand(command command) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+
     if (!*enabled) {
         return;
     }
@@ -74,7 +79,10 @@ void ButtonWidget::handleCommand(command command) noexcept {
     Widget::handleCommand(command);
 }
 
-void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
+void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+
     Widget::handleMouseEvent(event);
 
     if (*enabled) {
@@ -94,6 +102,8 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
 HitBox ButtonWidget::hitBoxTest(vec position) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (rectangle().contains(position)) {
         return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {

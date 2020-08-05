@@ -22,11 +22,12 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 [[nodiscard]] WidgetUpdateResult SystemMenuWidget::updateConstraints() noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }
 
-    ttlet lock = std::scoped_lock(mutex);
     window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth);
     window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth, rhea::strength::weak());
     window.replaceConstraint(minimumHeightConstraint, height >= Theme::toolbarHeight);
@@ -36,12 +37,16 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     iconCell->draw(drawContext, rectangle(), Alignment::MiddleCenter);
     Widget::draw(drawContext, displayTimePoint);
 }
 
 HitBox SystemMenuWidget::hitBoxTest(vec position) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (systemMenuRectangle.contains(position)) {
         // Only the top-left square should return ApplicationIcon, leave
         // the reset to the toolbar implementation.

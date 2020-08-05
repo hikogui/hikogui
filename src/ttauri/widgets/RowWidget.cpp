@@ -6,6 +6,8 @@ namespace tt {
 
 Widget &RowWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto *previous_widget = nonstd::ssize(children) != 0 ? children.back().get() : nullptr;
     if (previous_widget) {
         window.removeConstraint(rightConstraint);

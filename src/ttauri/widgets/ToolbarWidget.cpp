@@ -18,6 +18,8 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
 
 [[nodiscard]] WidgetUpdateResult ToolbarWidget::updateConstraints() noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }
@@ -47,6 +49,8 @@ void ToolbarWidget::joinLeftAndRightChildren() noexcept
 
 Widget &ToolbarWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto &tmp = ContainerWidget::addWidget(address, std::move(childWidget));
 
     disjoinLeftAndRightChildren();
@@ -80,21 +84,24 @@ Widget &ToolbarWidget::addWidget(cell_address address, std::unique_ptr<Widget> c
 
 void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto context = drawContext;
-
     context.drawFilledQuad(rectangle());
-
     ContainerWidget::draw(drawContext, displayTimePoint);
 }
 
 HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto r = rectangle().contains(position) ?
         HitBox{this, elevation, HitBox::Type::MoveArea} :
         HitBox{};
 
     for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
     }
     return r;
 }

@@ -25,49 +25,6 @@ class recursive_fast_mutex {
     // FIRST=write, OWNER=increment, FIRST|OWNER=decrement
     uint32_t count = 0;
 
-    void set_owner(uint32_t thread_id) noexcept {
-        // FIRST
-        tt_assume(count == 0);
-        count = 1;
-
-        // Only OTHER can execute in `try_lock(uint32_t)`, where it will either see the thread_id of zero or FIRST.
-        // In both cases the OTHER thread is detected correctly.
-        tt_assume(owner == 0);
-        owner.store(thread_id, std::memory_order::memory_order_release);
-    }
-
-    tt_no_inline void contented_lock(uint32_t thread_id) noexcept {
-        // OTHER
-        mutex.lock();
-        // FIRST
-        set_owner(thread_id);
-    }
-
-    /**
-     * When `try_lock()` is called on a thread that already holds the lock true is returned.
-     */
-    [[nodiscard]] bool try_lock(uint32_t thread_id) noexcept {
-        tt_assume2(thread_id != 0, "current_thread_id is not initialized, make sure tt::set_thread_name() has been called");
-
-        // ANY
-        if (mutex.try_lock()) {
-            // FIRST
-            set_owner(thread_id);
-            return true;
-        }
-
-        // OWNER | OTHER
-        if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
-            // OWNER
-            tt_assume(count != 0);
-            ++count;
-            return true;
-        }
-
-        // OTHER
-        return false;
-    }
-
 public:
     recursive_fast_mutex(recursive_fast_mutex const &) = delete;
     recursive_fast_mutex &operator=(recursive_fast_mutex const &) = delete;
@@ -75,34 +32,84 @@ public:
     recursive_fast_mutex() = default;
     ~recursive_fast_mutex() = default;
 
+    [[nodiscard]] bool is_locked_by_current_thread() const noexcept {
+        // The following load() is:
+        // - valid-and-equal to thread_id when the OWNER has the lock.
+        // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
+        //
+        // This only works for comparing the owner with the current thread, it would
+        // not work to check the owner with a thread_id of another thread.
+        return owner.load(std::memory_order::memory_order_relaxed) == current_thread_id;
+    }
+
     /**
      * When `try_lock()` is called on a thread that already holds the lock true is returned.
      */
     [[nodiscard]] bool try_lock() noexcept {
-        // ANY
-        return try_lock(current_thread_id);
+        // FIRST | OWNER | OTHER
+        ttlet thread_id = current_thread_id;
+
+        // The following load() is:
+        // - valid-and-equal to thread_id when the OWNER has the lock.
+        // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
+        if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
+            // FIRST | OWNER
+            tt_assume(count != 0);
+            ++count;
+
+            // OWNER
+            return true;
+
+        } else if (mutex.try_lock()) { // OTHER (inside the if expression)
+            // FIRST
+            tt_assume(count == 0);
+            count = 1;
+            tt_assume(owner == 0);
+            owner.store(thread_id, std::memory_order::memory_order_release);
+
+            return true;
+
+        } else {
+            // OTHER
+            return false;
+        }
     }
 
     void lock() noexcept {
-        // ANY
+        // FIRST | OWNER | OTHER
         ttlet thread_id = current_thread_id;
 
-        if (tt_unlikely(!try_lock(thread_id))) {
+        // The following load() is:
+        // - valid-and-equal to thread_id when the OWNER has the lock.
+        // - zero or valid-and-not-equal to thread_id when this is an OTHER thread.
+        if (owner.load(std::memory_order::memory_order_acquire) == thread_id) {
+            // FIRST | OWNER
+            tt_assume(count != 0);
+            ++count;
+
+            // OWNER
+
+        } else {
             // OTHER
-            contented_lock(thread_id);
+            mutex.lock();
+
             // FIRST
+            tt_assume(count == 0);
+            count = 1;
+            tt_assume(owner == 0);
+            owner.store(thread_id, std::memory_order::memory_order_release);
         }
-        // FIRST | OWNER
     }
 
     void unlock() noexcept {
         // FIRST | OWNER
-        tt_assume2(owner == current_thread_id, "Unlock must be called on the thread that locked the mutex");
+        tt_assume2(is_locked_by_current_thread(), "Unlock must be called on the thread that locked the mutex");
 
         if (--count == 0) {
             // FIRST
 
-            // Only OTHER can execute in `try_lock(uint32_t)`, where it will either see the thread_id of FIRST or zero.
+            // Only OTHER can execute in `lock()` or `try_lock()`,
+            // where it will either see the thread_id of FIRST or zero.
             // In both cases the OTHER thread is detected correctly.
             owner.store(0, std::memory_order::memory_order_release);
 

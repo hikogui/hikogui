@@ -73,6 +73,8 @@ rhea::constraint Widget::placeRight(float margin) const noexcept {
 
 WidgetUpdateResult Widget::updateConstraints() noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed) ?
         WidgetUpdateResult::Self :
         WidgetUpdateResult::Nothing;
@@ -80,29 +82,27 @@ WidgetUpdateResult Widget::updateConstraints() noexcept
 
 WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     auto needLayout = forceLayout;
 
     needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
 
     auto newExtent = round(vec{width.value(), height.value()});
-    needLayout |= newExtent != extent();
-    setExtent(newExtent);
+    needLayout |= newExtent != extent;
+    extent = newExtent;
 
     auto newOffsetFromWindow = round(vec{left.value(), bottom.value()});
-    needLayout |= newOffsetFromWindow != offsetFromWindow();
-    setOffsetFromWindow(newOffsetFromWindow);
+    needLayout |= newOffsetFromWindow != offsetFromWindow;
+    offsetFromWindow = newOffsetFromWindow;
     
     if (needLayout) {
-        auto lock = std::scoped_lock(mutex);
-
-        setOffsetFromParent(
-            parent ?
-                offsetFromWindow() - parent->offsetFromWindow():
-                offsetFromWindow()
-        );
+        offsetFromParent = parent ?
+            offsetFromWindow - parent->offsetFromWindow:
+            offsetFromWindow;
         
-        fromWindowTransform = mat::T(-offsetFromWindow().x(), -offsetFromWindow().y(), -z());
-        toWindowTransform = mat::T(offsetFromWindow().x(), offsetFromWindow().y(), z());
+        fromWindowTransform = mat::T(-offsetFromWindow.x(), -offsetFromWindow.y(), -z());
+        toWindowTransform = mat::T(offsetFromWindow.x(), offsetFromWindow.y(), z());
     }
 
     return needLayout ? WidgetUpdateResult::Self : WidgetUpdateResult::Nothing;
@@ -123,6 +123,8 @@ void Widget::handleCommand(command command) noexcept {
 }
 
 void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (event.type == MouseEvent::Type::Entered) {
         hover = true;
         window.requestRedraw = true;
@@ -133,6 +135,8 @@ void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
 }
 
 void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
+    ttlet lock = std::scoped_lock(mutex);
+
     switch (event.type) {
     case KeyboardEvent::Type::Entered:
         focus = true;
@@ -156,6 +160,8 @@ void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
 
 Widget *Widget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (currentKeyboardWidget == nullptr && acceptsFocus()) {
         // The first widget that accepts focus.
         return const_cast<Widget *>(this);

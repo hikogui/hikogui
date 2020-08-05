@@ -118,8 +118,6 @@ constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateRe
  */
 class Widget {
 protected:
-    mutable recursive_fast_mutex mutex;
-
     /** Convenient reference to the Window.
     */
     Window &window;
@@ -136,6 +134,7 @@ protected:
     rhea::constraint baseConstraint;
 
 public:
+    mutable recursive_fast_mutex mutex;
 
     /** Transformation matrix from window coords to local coords.
     */
@@ -147,11 +146,11 @@ public:
 
     /** Mouse cursor is hovering over the widget.
     */
-    std::atomic<bool> hover = false;
+    bool hover = false;
 
     /** The widget has keyboard focus.
     */
-    std::atomic<bool> focus = false;
+    bool focus = false;
 
     /** Location of the frame compared to the window.
      * Thread-safety: the box is not modified by the class.
@@ -169,9 +168,9 @@ public:
 
     float elevation;
 
-    std::atomic<R32G32SFloat> _extent;
-    std::atomic<R32G32SFloat> _offsetFromParent;
-    std::atomic<R32G32SFloat> _offsetFromWindow;
+    vec extent;
+    vec offsetFromParent;
+    vec offsetFromWindow;
 
     mutable std::atomic<bool> requestConstraint = true;
     mutable std::atomic<bool> requestLayout = true;
@@ -211,48 +210,20 @@ public:
 
     rhea::constraint placeRight(float margin=theme->margin) const noexcept;
 
-
-    [[nodiscard]] vec extent() const noexcept {
-        return static_cast<vec>(_extent.load(std::memory_order::memory_order_relaxed));
-    }
-
-    void setExtent(vec rhs) noexcept {
-        _extent.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
-    }
-
-    [[nodiscard]] vec offsetFromParent() const noexcept {
-        return static_cast<vec>(_offsetFromParent.load(std::memory_order::memory_order_relaxed));
-    }
-
-    void setOffsetFromParent(vec rhs) noexcept {
-        _offsetFromParent.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
-    }
-
-    [[nodiscard]] vec offsetFromWindow() const noexcept {
-        return static_cast<vec>(_offsetFromWindow.load(std::memory_order::memory_order_relaxed));
-    }
-
-    void setOffsetFromWindow(vec rhs) noexcept {
-        _offsetFromWindow.store(R32G32SFloat{rhs}, std::memory_order::memory_order_relaxed);
-    }
-
     /** Get the rectangle in local coordinates.
-     *
-     * Thread safety: reads atomics.
      */
     [[nodiscard]] aarect rectangle() const noexcept {
-        return aarect{extent()};      
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        return aarect{extent};      
     }
 
     /** Get the rectangle in window coordinates.
-    *
-    * Thread safety: reads atomics.
     */
     [[nodiscard]] aarect windowRectangle() const noexcept {
-        return {
-            vec::origin() + offsetFromWindow(),
-            vec{extent()}
-        };
+        tt_assume(mutex.is_locked_by_current_thread());
+
+        return {vec::origin() + offsetFromWindow, vec{extent}};
     }
 
     [[nodiscard]] float baseHeight() const noexcept;
@@ -271,7 +242,9 @@ public:
      *
      * Thread safety: locks.
      */
-    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept { return {}; }
+    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept {
+        return {};
+    }
 
     /** Check if the widget will accept keyboard focus.
      *
@@ -284,12 +257,16 @@ public:
     /** Get nesting level used for selecting colors for the widget.
     */
     [[nodiscard]] ssize_t nestingLevel() noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         return numeric_cast<ssize_t>(elevation);
     }
 
     /** Get z value for compositing order.
     */
     [[nodiscard]] float z() noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         return elevation * 0.01f;
     }
 

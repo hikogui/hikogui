@@ -4,7 +4,8 @@
 
 namespace tt {
 
-Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept {
+Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget> childWidget) noexcept
+{
     ttlet lock = std::scoped_lock(mutex);
 
     current_address *= address;
@@ -20,9 +21,9 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
 [[nodiscard]] WidgetUpdateResult ContainerWidget::updateConstraints() noexcept
 {
-    auto has_constrainted = Widget::updateConstraints();
-
     ttlet lock = std::scoped_lock(mutex);
+
+    auto has_constrainted = Widget::updateConstraints();
 
     for (auto &&child: children) {
         has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
@@ -33,9 +34,9 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
 [[nodiscard]] WidgetUpdateResult ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
-
     ttlet lock = std::scoped_lock(mutex);
+
+    auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
 
     for (auto &&child: children) {
         has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
@@ -50,6 +51,8 @@ void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
     auto childContext = drawContext;
     for (auto &child : children) {
+        ttlet child_lock = std::scoped_lock(child->mutex);
+
         childContext.clippingRectangle = child->clippingRectangle();
         childContext.transform = child->toWindowTransform;
 
@@ -90,12 +93,16 @@ HitBox ContainerWidget::hitBoxTest(vec position) const noexcept
         HitBox{};
 
     for (ttlet &child : children) {
-        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent()));
+        ttlet child_lock = std::scoped_lock(child->mutex);
+        r = std::max(r, child->hitBoxTest(position - child->offsetFromParent));
     }
     return r;
 }
 
-std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcept {
+std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcept
+{
+    auto lock = std::scoped_lock(mutex);
+
     std::vector<Widget *> r;
     r.reserve(nonstd::ssize(children));
     for (ttlet &child: children) {
@@ -109,6 +116,8 @@ std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcep
 
 Widget *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
+    auto lock = std::scoped_lock(mutex);
+
     if (currentKeyboardWidget == nullptr && acceptsFocus()) {
         // The first widget that accepts focus.
         return const_cast<ContainerWidget *>(this);

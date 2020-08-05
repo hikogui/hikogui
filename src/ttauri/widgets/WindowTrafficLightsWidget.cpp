@@ -17,11 +17,12 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
 [[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateConstraints() noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
     }
 
-    ttlet lock = std::scoped_lock(mutex);
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
         window.replaceConstraint(minimumWidthConstraint, width >= Theme::toolbarDecorationButtonWidth * 3.0f);
         window.replaceConstraint(maximumWidthConstraint, width <= Theme::toolbarDecorationButtonWidth * 3.0f, rhea::strength::weak());
@@ -44,41 +45,41 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
 [[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
         return result;
     }
 
-    ttlet lock = std::scoped_lock(mutex);
-
     if constexpr (Theme::operatingSystem == OperatingSystem::Windows) {
         closeRectangle = aarect{
-            vec::point(extent().width() * 2.0f/3.0f, 0.0f),
-            vec{extent().width() * 1.0f/3.0f, extent().height()}
+            vec::point(extent.width() * 2.0f/3.0f, 0.0f),
+            vec{extent.width() * 1.0f/3.0f, extent.height()}
         };
 
         maximizeRectangle = aarect{
-            vec::point(extent().width() * 1.0f/3.0f, 0.0f),
-            vec{extent().width() * 1.0f/3.0f, extent().height()}
+            vec::point(extent.width() * 1.0f/3.0f, 0.0f),
+            vec{extent.width() * 1.0f/3.0f, extent.height()}
         };
 
         minimizeRectangle = aarect{
             vec::point(0.0f, 0.0f),
-            vec{extent().width() * 1.0f/3.0f, extent().height()}
+            vec{extent.width() * 1.0f/3.0f, extent.height()}
         };
 
     } else if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         closeRectangle = aarect{
-            vec::point(MARGIN, extent().height() / 2.0f - RADIUS),
+            vec::point(MARGIN, extent.height() / 2.0f - RADIUS),
             {DIAMETER, DIAMETER}
         };
 
         minimizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING, extent().height() / 2.0f - RADIUS),
+            vec::point(MARGIN + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
             {DIAMETER, DIAMETER}
         };
 
         maximizeRectangle = aarect{
-            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent().height() / 2.0f - RADIUS),
+            vec::point(MARGIN + DIAMETER + SPACING + DIAMETER + SPACING, extent.height() / 2.0f - RADIUS),
             {DIAMETER, DIAMETER}
         };
     } else {
@@ -115,6 +116,8 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
 void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    tt_assume(mutex.is_locked_by_current_thread());
+
     auto context = drawContext;
     context.cornerShapes = vec{RADIUS, RADIUS, RADIUS, RADIUS};
 
@@ -166,6 +169,8 @@ void WindowTrafficLightsWidget::drawMacOS(DrawContext const &drawContext, hires_
 
 void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    tt_assume(mutex.is_locked_by_current_thread());
+
     auto context = drawContext;
 
     if (pressedClose) {
@@ -211,6 +216,8 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
 
 void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         drawMacOS(drawContext, displayTimePoint);
 
@@ -226,9 +233,9 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_c
 
 void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     Widget::handleMouseEvent(event);
-
-
 
     if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton) {
         if (pressedClose) {
@@ -271,6 +278,8 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (closeRectangle.contains(position) ||
         minimizeRectangle.contains(position) ||
         maximizeRectangle.contains(position)

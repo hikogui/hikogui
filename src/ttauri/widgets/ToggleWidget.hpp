@@ -64,6 +64,8 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
         }
@@ -94,11 +96,11 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
         }
-
-        ttlet lock = std::scoped_lock(mutex);
 
         toggleRectangle = aarect{
             -0.5f, // Expand horizontally due to rounded shape
@@ -129,11 +131,15 @@ public:
     }
     
     void drawToggle(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.cornerShapes = vec{toggleRectangle.height() * 0.5f};
         drawContext.drawBoxIncludeBorder(toggleRectangle);
     }
 
     void drawSlider(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         // Prepare animation values.
         ttlet animationProgress = value.animation_progress(animationDuration);
         if (animationProgress < 1.0f) {
@@ -161,6 +167,8 @@ public:
     }
 
     void drawLabel(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;
         }
@@ -174,6 +182,7 @@ public:
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
         drawToggle(drawContext);
         drawSlider(drawContext);
         drawLabel(drawContext);
@@ -181,6 +190,7 @@ public:
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
@@ -188,13 +198,15 @@ public:
                 event.type == MouseEvent::Type::ButtonUp &&
                 event.cause.leftButton &&
                 rectangle().contains(event.position)
-                ) {
+            ) {
                 handleCommand(command::gui_activate);
             }
         }
     }
     
     void handleCommand(command command) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (!*enabled) {
             return;
         }
@@ -208,6 +220,8 @@ public:
     }
 
     HitBox hitBoxTest(vec position) const noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (rectangle().contains(position)) {
             return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
         } else {

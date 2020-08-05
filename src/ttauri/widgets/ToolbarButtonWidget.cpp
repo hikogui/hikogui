@@ -21,6 +21,8 @@ ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_ty
 
 void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     // Draw background of button.
     {
         auto context = drawContext;
@@ -39,7 +41,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
         auto context = drawContext;
         context.color = theme->foregroundColor;
 
-        ttlet buttonBox = shrink(aarect{extent()}, Theme::margin);
+        ttlet buttonBox = shrink(aarect{extent}, Theme::margin);
 
         ttlet glyphBoundingBox = PipelineSDF::DeviceShared::getBoundingBox(*icon_glyph);
 
@@ -54,6 +56,8 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
 }
 
 void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
+    ttlet lock = std::scoped_lock(mutex);
+
     Widget::handleMouseEvent(event);
 
     if (*enabled) {
@@ -73,6 +77,8 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
 HitBox ToolbarButtonWidget::hitBoxTest(vec position) const noexcept
 {
+    ttlet lock = std::scoped_lock(mutex);
+
     if (rectangle().contains(position)) {
         return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
     } else {

@@ -70,11 +70,11 @@ public:
     ~SelectionWidget() {}
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
         }
-
-        ttlet lock = std::scoped_lock(mutex);
 
         // Create a list of cells, one for each option and calculate
         // the optionHeight based on the option which is the tallest.
@@ -101,11 +101,11 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
         }
-
-        ttlet lock = std::scoped_lock(mutex);
 
         leftBoxRectangle = aarect{
             0.0f, 0.0f,
@@ -134,7 +134,7 @@ public:
         }
 
         // The window height, excluding the top window decoration.
-        ttlet windowHeight = window.widget->extent().height() - Theme::toolbarHeight;
+        ttlet windowHeight = window.widget->extent.height() - Theme::toolbarHeight;
 
         // Calculate overlay dimensions and position.
         ttlet overlayWidth = optionListWidth;
@@ -179,6 +179,8 @@ public:
     }
 
     void drawOptionHighlight(DrawContext drawContext, OptionListEntry const &option) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
 
         if (option.tag == chosenOption && !clickedOption.has_value()) {
@@ -194,23 +196,31 @@ public:
     }
 
     void drawOptionLabel(DrawContext drawContext, OptionListEntry const &option) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.003f};
         drawContext.color = theme->labelStyle.color;
         option.cell->draw(drawContext, option.cellRectangle, Alignment::MiddleLeft, center(option.cellRectangle).y(), true);
     }
 
     void drawOption(DrawContext drawContext, OptionListEntry const &option) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawOptionHighlight(drawContext, option);
         drawOptionLabel(drawContext, option);
     }
 
     void drawOverlayOutline(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.010f};
         drawContext.fillColor = drawContext.fillColor.a(0.0f);
         drawContext.drawBoxIncludeBorder(overlayRectangle);
     }
 
     void drawOverlay(DrawContext const &drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawOverlayOutline(drawContext);
 
         auto optionListContext = drawContext;
@@ -221,11 +231,15 @@ public:
     }
 
     void drawOutline(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.cornerShapes = Theme::roundingRadius;
         drawContext.drawBoxIncludeBorder(rectangle());
     }
 
     void drawLeftBox(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
         //if (*enabled && window.active) {
         //    drawContext.color = theme->accentColor;
@@ -236,12 +250,16 @@ public:
     }
 
     void drawChevrons(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.002f};
         drawContext.color = *enabled ? theme->foregroundColor : drawContext.fillColor;
         drawContext.drawGlyph(chevronsGlyph, chevronsRectangle);
     }
 
     void drawValue(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         auto i = std::find_if(optionList.cbegin(), optionList.cend(), [this](ttlet &item) {
             return item.tag == value;
         });
@@ -274,6 +292,8 @@ public:
     }
 
     void handleKeyboardEvent(KeyboardEvent const &event) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         Widget::handleKeyboardEvent(event);
 
         if (event.type == KeyboardEvent::Type::Exited) {
@@ -282,9 +302,10 @@ public:
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override {
+        ttlet lock = std::scoped_lock(mutex);
+
         Widget::handleMouseEvent(event);
 
-        auto lock = std::scoped_lock(mutex);
         if (*enabled) {
             if (selecting) {
                 auto mouseInListPosition = mat::T{-overlayRectangle.x(), -overlayRectangle.y()} * event.position;
@@ -332,67 +353,65 @@ public:
     }
 
     void handleCommand(command command) noexcept override {
-        {
-            ttlet lock = std::scoped_lock(mutex);
+        ttlet lock = std::scoped_lock(mutex);
 
-            if (!*enabled) {
-                return;
-            }
-
-            switch (command) {
-            case command::gui_up: {
-                std::optional<ValueType> prev_tag;
-                for (ttlet &option : optionList) {
-                    if (option.tag == chosenOption && prev_tag.has_value()) {
-                        chosenOption = *prev_tag;
-                        break;
-                    }
-                    prev_tag = option.tag;
-                }
-                } break;
-
-            case command::gui_down: {
-                bool found = false;
-                for (ttlet &option : optionList) {
-                    if (found) {
-                        chosenOption = option.tag;
-                        break;
-                    } else if (option.tag == chosenOption) {
-                        found = true;
-                    }
-                }
-                } break;
-
-            case command::gui_activate:
-                if (selecting) {
-                    selecting = false;
-                    value.store(chosenOption);
-
-                } else {
-                    selecting = true;
-                    chosenOption = value.load();
-                }
-                break;
-
-            case command::gui_widget_next:
-            case command::gui_widget_prev:
-                if (selecting) {
-                    selecting = false;
-                    value.store(chosenOption);
-                }
-                break;
-
-            case command::gui_escape:
-                if (selecting) {
-                    selecting = false;
-                }
-                break;
-
-            default:;
-            }
-
-            requestLayout = true;
+        if (!*enabled) {
+            return;
         }
+
+        switch (command) {
+        case command::gui_up: {
+            std::optional<ValueType> prev_tag;
+            for (ttlet &option : optionList) {
+                if (option.tag == chosenOption && prev_tag.has_value()) {
+                    chosenOption = *prev_tag;
+                    break;
+                }
+                prev_tag = option.tag;
+            }
+            } break;
+
+        case command::gui_down: {
+            bool found = false;
+            for (ttlet &option : optionList) {
+                if (found) {
+                    chosenOption = option.tag;
+                    break;
+                } else if (option.tag == chosenOption) {
+                    found = true;
+                }
+            }
+            } break;
+
+        case command::gui_activate:
+            if (selecting) {
+                selecting = false;
+                value.store(chosenOption);
+
+            } else {
+                selecting = true;
+                chosenOption = value.load();
+            }
+            break;
+
+        case command::gui_widget_next:
+        case command::gui_widget_prev:
+            if (selecting) {
+                selecting = false;
+                value.store(chosenOption);
+            }
+            break;
+
+        case command::gui_escape:
+            if (selecting) {
+                selecting = false;
+            }
+            break;
+
+        default:;
+        }
+
+        requestLayout = true;
         Widget::handleCommand(command);
     }
 

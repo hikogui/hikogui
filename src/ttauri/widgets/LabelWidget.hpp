@@ -38,11 +38,11 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+        auto lock = std::scoped_lock(mutex);
+
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
         }
-
-        ttlet lock = std::scoped_lock(mutex);
 
         labelCell = std::make_unique<TextCell>(*label, theme->labelStyle);
         window.stopConstraintSolver();
@@ -53,6 +53,8 @@ public:
     }
 
     void drawLabel(DrawContext drawContext) noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;
         }
@@ -61,6 +63,8 @@ public:
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+        auto lock = std::scoped_lock(mutex);
+
         drawLabel(drawContext);
         Widget::draw(drawContext, displayTimePoint);
     }
