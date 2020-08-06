@@ -132,7 +132,8 @@ target_sources(ttauri PRIVATE
     tagged_map.hpp
     template.cpp
     template.hpp
-    thread.cpp
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/thread_macos.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/thread_win32.cpp>
     thread.hpp
     throw_exception.cpp
     throw_exception.hpp
@@ -146,8 +147,8 @@ target_sources(ttauri PRIVATE
     type_traits.hpp
     UndoStack.hpp
     unfair_mutex.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/unfair_mutex_macos.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/unfair_mutex_win32.cpp>
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/unfair_mutex_macos_impl.hpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/unfair_mutex_win32_impl.hpp>
     unfair_recursive_mutex.hpp
     Unicode.hpp
     URL.cpp

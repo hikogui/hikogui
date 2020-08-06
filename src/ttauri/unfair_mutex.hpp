@@ -11,15 +11,26 @@
 namespace tt {
 struct unfair_lock_wrap;
 
+/** An unfair mutex
+ * This is a fast implementation of a mutex which does not fairly arbitrate
+ * between multiple blocking threads. Due to the unfairness it is possible
+ * that blocking threads will be completely starved.
+ * 
+ * This mutex however does block on a operating system's futex/unfair_mutex
+ * primitives and therefor thread priority are properly handled.
+ * 
+ * On windows and Linux the compiler generally emits the following sequence
+ * of instructions:
+ *  + non-contented:
+ *     - lock(): MOV r,1; XOR r,r; LOCK CMPXCHG; JNE (skip)
+ *     - unlock(): LOCK XADD [],-1; CMP; JE
+ * 
+ */
 class unfair_mutex {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
-    std::atomic<int32_t> semaphore = 0;
+    std::atomic<uint32_t> semaphore = 0;
 
-    int32_t *semaphore_ptr() noexcept {
-        return reinterpret_cast<int32_t *>(&semaphore);
-    }
-
-    tt_no_inline void lock_contented(int32_t first) noexcept;
+    tt_no_inline void lock_contented(uint32_t first) noexcept;
 
 #elif TT_OPERATING_SYSTEM == TT_OS_MACOS
     std::unique_ptr<unfair_lock_wrap> mutex;
@@ -53,5 +64,12 @@ public:
     void unlock() noexcept;
 };
 
+}
 
-};
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#include "unfair_mutex_win32_impl.hpp"
+#elif TT_OPERATING_SYSTEM == TT_OS_MACOS
+#include "unfair_mutex_macos_impl.hpp"
+#else
+#error "unfair_mutex not implemented for this operating system."
+#endif

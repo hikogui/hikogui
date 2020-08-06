@@ -5,6 +5,7 @@
 #include "KeyboardVirtualKey.hpp"
 #include "GUISystem.hpp"
 #include "ThemeBook.hpp"
+#include "../widgets/WindowWidget.hpp"
 #include "../strings.hpp"
 #include "../thread.hpp"
 #include "../Application.hpp"
@@ -489,13 +490,15 @@ int Window_vulkan_win32::windowProc(unsigned int uMsg, uint64_t wParam, int64_t 
         break;
 
     case WM_GETMINMAXINFO: {
+        tt_assume(widget);
+        ttlet widget_lock = std::scoped_lock(widget->mutex);
         ttlet minmaxinfo = to_ptr<MINMAXINFO>(lParam);
-        minmaxinfo->ptMaxSize.x = numeric_cast<long>(maximumWindowExtent.x());
-        minmaxinfo->ptMaxSize.y = numeric_cast<long>(maximumWindowExtent.y());
-        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(minimumWindowExtent.x());
-        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(minimumWindowExtent.y());
-        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(maximumWindowExtent.x());
-        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(maximumWindowExtent.y());
+        minmaxinfo->ptMaxSize.x = numeric_cast<long>(widget->maximumExtent().width());
+        minmaxinfo->ptMaxSize.y = numeric_cast<long>(widget->maximumExtent().height());
+        minmaxinfo->ptMinTrackSize.x = numeric_cast<long>(widget->minimumExtent().width());
+        minmaxinfo->ptMinTrackSize.y = numeric_cast<long>(widget->minimumExtent().height());
+        minmaxinfo->ptMaxTrackSize.x = numeric_cast<long>(widget->maximumExtent().width());
+        minmaxinfo->ptMaxTrackSize.y = numeric_cast<long>(widget->maximumExtent().height());
         } break;
 
     case WM_UNICHAR: {

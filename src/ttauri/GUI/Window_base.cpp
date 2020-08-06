@@ -112,6 +112,7 @@ void Window_base::replaceConstraint(
         }
         if (!newConstraint.is_nil()) {
             widgetSolver.add_constraint(newConstraint);
+            oldConstraint = newConstraint;
         }
     }
 
@@ -143,6 +144,42 @@ void Window_base::replaceConstraint(
     return replaceConstraint(oldConstraint, rhea::constraint(newEquation, strength, weight));
 }
 
+void Window_base::layoutWindow() noexcept {
+    tt_assume(widget);
+    ttlet lock = std::scoped_lock(guiMutex, widget->mutex);
+
+    if (state != Window_base::State::Initializing) {
+        if (
+            (currentWindowExtent.width() < widget->minimumExtent().width()) ||
+            (currentWindowExtent.height() < widget->minimumExtent().height())
+            ) {
+            setWindowSize(widget->minimumExtent());
+        }
+
+        if (
+            (currentWindowExtent.width() > widget->maximumExtent().width()) ||
+            (currentWindowExtent.height() > widget->maximumExtent().height())
+            ) {
+            setWindowSize(widget->maximumExtent());
+        }
+
+    } else {
+        currentWindowExtent = widget->preferredExtent();
+    }
+
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
+
+    // Set to actual window size.
+    widget->setWindowExtent(currentWindowExtent);
+
+    LOG_INFO("Window constraints '{}' minimumExtent={} preferredExtent={} maximumExtent={} currentExtent={}",
+        title.text(),
+        widget->minimumExtent(),
+        widget->preferredExtent(),
+        widget->maximumExtent(),
+        widget->windowExtent()
+    );
+}
 
 void Window_base::openingWindow() {
     Window *thisWindow = dynamic_cast<Window *>(this);
@@ -207,7 +244,10 @@ void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexce
 
 void Window_base::windowChangedSize(ivec extent) {
     currentWindowExtent = extent;
-    setWidgetExtent(currentWindowExtent);
+    tt_assume(widget);
+
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
+    widget->setWindowExtent(currentWindowExtent);
     requestLayout = true;
 }
 
@@ -302,93 +342,6 @@ HitBox Window_base::hitBoxTest(vec position) const noexcept {
     return widget->hitBoxTest(position);
 }
 
-vec Window_base::suggestWidgetExtent(vec extent, rhea::strength const &strength) noexcept {
-    auto lock = std::scoped_lock(widgetSolverMutex);
 
-    ttlet &width = widget->width;
-    ttlet &height = widget->height;
-
-    if (!widgetWidthConstraint.is_nil()) {
-        widgetSolver.remove_constraint(widgetWidthConstraint);
-        widgetWidthConstraint = {};
-    }
-    if (!widgetHeightConstraint.is_nil()) {
-        widgetSolver.remove_constraint(widgetHeightConstraint);
-        widgetHeightConstraint = {};
-    }
-
-    widgetWidthConstraint = rhea::constraint(widget->width == extent.width(), rhea::strength::strong());
-    widgetHeightConstraint = rhea::constraint(widget->height == extent.height(), rhea::strength::strong());
-    widgetSolver.add_constraint(widgetWidthConstraint);
-    widgetSolver.add_constraint(widgetHeightConstraint);
-
-    return vec{width.value(), height.value()};
-}
-
-void Window_base::setWidgetExtent(vec extent) noexcept {
-    auto lock = std::scoped_lock(widgetSolverMutex);
-
-    if (!widgetWidthConstraint.is_nil()) {
-        widgetSolver.remove_constraint(widgetWidthConstraint);
-    }
-    if (!widgetHeightConstraint.is_nil()) {
-        widgetSolver.remove_constraint(widgetHeightConstraint);
-    }
-    
-    widgetWidthConstraint = rhea::constraint(widget->width == extent.width(), rhea::strength::strong());
-    widgetHeightConstraint = rhea::constraint(widget->height == extent.height(), rhea::strength::strong());
-    widgetSolver.add_constraint(widgetWidthConstraint);
-    widgetSolver.add_constraint(widgetHeightConstraint);
-}
-
-[[nodiscard]] std::tuple<vec,vec,vec> Window_base::getMinMaxAndPreferredWidgetExtent() noexcept {
-    auto minimumWidgetExtent = suggestWidgetExtent(vec{0.0f, 0.0f}, rhea::strength::strong());
-    auto preferredWidgetExtent = suggestWidgetExtent(vec{0.0f, 0.0f}, rhea::strength::weak());
-    auto maximumWidgetExtent = suggestWidgetExtent(vec{
-        std::numeric_limits<int>::max(),
-        std::numeric_limits<int>::max()
-    }, rhea::strength::strong());
-
-    return {minimumWidgetExtent, preferredWidgetExtent, maximumWidgetExtent};
-}
-
-void Window_base::layoutWindow() noexcept {
-    ttlet lock = std::scoped_lock(guiMutex);
-
-    tt_assume(widget);
-
-    std::tie(minimumWindowExtent, preferredWindowExtent, maximumWindowExtent) = getMinMaxAndPreferredWidgetExtent();
-
-    if (state != Window_base::State::Initializing) {
-        if (
-            (currentWindowExtent.x() < minimumWindowExtent.x()) ||
-            (currentWindowExtent.y() < minimumWindowExtent.y())
-        ) {
-            setWindowSize(minimumWindowExtent);
-        }
-
-        if (
-            (currentWindowExtent.x() > maximumWindowExtent.x()) ||
-            (currentWindowExtent.y() > maximumWindowExtent.y())
-        ) {
-            setWindowSize(maximumWindowExtent);
-        }
-
-    } else {
-        currentWindowExtent = preferredWindowExtent;
-    }
-
-    // Set to actual window size.
-    setWidgetExtent(currentWindowExtent);
-
-    LOG_INFO("Window constraints '{}' minimumExtent={} preferredExtent={} maximumExtent={} currentExtent={}",
-        title.text(),
-        minimumWindowExtent,
-        preferredWindowExtent,
-        maximumWindowExtent,
-        currentWindowExtent
-    );
-
-}
 
 }

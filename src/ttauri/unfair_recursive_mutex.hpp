@@ -9,6 +9,25 @@
 
 namespace tt {
 
+/** An unfair recursive-mutex
+ * This is a fast implementation of a recursive-mutex which does not fairly
+ * arbitrate between multiple blocking threads. Due to the unfairness it is
+ * possible that blocking threads will be completely starved.
+ * 
+ * This recursive-mutex however does block on a operating system's
+ * futex/unfair_mutex primitives and therefor thread priority are properly
+ * handled.
+ * 
+ * On windows and Linux the compiler generally emits the following sequence
+ * of instructions:
+ *  + non-recursive:
+ *     - lock(): 4*MOV r,[]; MOV r,1; CMP; JNE; unfair_mutex.lock(); 2*MOV [],r
+ *     - unlock(): ADD [],-1; JNE (skip); XOR r,r; MOV [],r; unfair_mutex.unlock()
+ *  + recursive:
+ *     - lock(): 4*MOV r,[]; MOV r,1; CMP; JNE (skip); LEA, INC []
+ *     - unlock(): ADD [],-1; JNE
+ * 
+ */
 class unfair_recursive_mutex {
     /* Thread annotation syntax.
      * 

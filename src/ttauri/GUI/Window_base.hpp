@@ -94,15 +94,6 @@ public:
     */
     unfair_mutex widgetSolverMutex;
 
-    //! The minimum window extent as calculated by laying out all the widgets.
-    ivec minimumWindowExtent;
-
-    //! The preferred window extent as calculated by laying out all the widgets.
-    ivec preferredWindowExtent;
-
-    //! The maximum window extent as calculated by laying out all the widgets.
-    ivec maximumWindowExtent;
-
     //! The current window extent as set by the GPU library.
     ivec currentWindowExtent;
 
@@ -329,30 +320,7 @@ private:
     */
     bool constraintsUpdated = false;
 
-    /** Suggest an extent for the window-widget.
-     * The suggested extent is tried, but constraints may limit the
-     * actual extent.
-     *
-     * @param extent The extent to set the window-widget to
-     * @param strength With how much strength this extent is suggested.
-     * @return The extent the widget has used after the suggestion.
-     */
-    [[nodiscard]] vec suggestWidgetExtent(vec extent, rhea::strength const &strength) noexcept;
-
-    /** Suggest an extent for the window-widget.
-    * The suggested extent is tried, but constraints may limit the
-    * actual extent.
-    *
-    * @param extent The extent to set the window-widget to
-    */
-    void setWidgetExtent(vec extent) noexcept;
-    rhea::constraint widgetWidthConstraint;
-    rhea::constraint widgetHeightConstraint;
-
-    /** Experiment with window-widget extent and get the minimum and maximum
-     * @return minimum-, preferred-, maximum-extent
-     */
-    [[nodiscard]] std::tuple<vec,vec,vec> getMinMaxAndPreferredWidgetExtent() noexcept;
+    
 
 };
 

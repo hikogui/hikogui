@@ -42,12 +42,57 @@ WindowWidget::WindowWidget(Window &window, Label title) noexcept :
     content->placeBelow(*toolbar);
 
     // Add constraints for the window widget itself.
-    window.addConstraint(left == 0);
-    window.addConstraint(bottom == 0);
+    leftConstraint = window.addConstraint(left == 0);
+    bottomConstraint = window.addConstraint(bottom == 0);
     // A upper bound constraint is needed to allow the suggest(width, limit::max()) and suggest(height, limit::max()) to
     // fallback on a upper bound, otherwise it will select the lower bounds instead.
-    window.addConstraint(width <= std::numeric_limits<uint16_t>::max());
-    window.addConstraint(height <= std::numeric_limits<uint16_t>::max());
+    maximumWidthConstraint = window.addConstraint(width <= std::numeric_limits<uint16_t>::max());
+    minimumHeightConstraint = window.addConstraint(height <= std::numeric_limits<uint16_t>::max());
+}
+
+WindowWidget::~WindowWidget()
+{
+    window.removeConstraint(leftConstraint);
+    window.removeConstraint(bottomConstraint);
+    window.removeConstraint(maximumWidthConstraint);
+    window.removeConstraint(maximumHeightConstraint);
+    window.removeConstraint(widthConstraint);
+    window.removeConstraint(heightConstraint);
+}
+
+[[nodiscard]] WidgetUpdateResult WindowWidget::updateConstraints() noexcept
+{
+    ttlet lock = std::scoped_lock(mutex);
+
+    if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Children) {
+        return result;
+    }
+    
+    window.stopConstraintSolver();
+    window.replaceConstraint(widthConstraint, width == 0.0, rhea::strength::strong());
+    window.replaceConstraint(heightConstraint, height == 0.0, rhea::strength::strong());
+    window.startConstraintSolver();
+    _minimumExtent = vec{width.value(), height.value()};
+
+    window.stopConstraintSolver();
+    window.replaceConstraint(widthConstraint, width == 0.0, rhea::strength::weak());
+    window.replaceConstraint(heightConstraint, height == 0.0, rhea::strength::weak());
+    window.startConstraintSolver();
+    _preferredExtent = vec{width.value(), height.value()};
+
+    window.stopConstraintSolver();
+    window.replaceConstraint(widthConstraint, width == std::numeric_limits<float>::max(), rhea::strength::strong());
+    window.replaceConstraint(heightConstraint, height == std::numeric_limits<float>::max(), rhea::strength::strong());
+    window.startConstraintSolver();
+    _maximumExtent = vec{width.value(), height.value()};
+
+    window.stopConstraintSolver();
+    window.replaceConstraint(widthConstraint, width == _windowExtent.width(), rhea::strength::strong());
+    window.replaceConstraint(heightConstraint, height == _windowExtent.height(), rhea::strength::strong());
+    window.startConstraintSolver();
+    _windowExtent = vec{width.value(), height.value()};
+
+    return WidgetUpdateResult::Self;
 }
 
 HitBox WindowWidget::hitBoxTest(vec position) const noexcept
