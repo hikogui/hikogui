@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "fast_mutex.hpp"
+#include "unfair_mutex.hpp"
 #include "logger.hpp"
 #include <Windows.h>
 #include <Synchapi.h>
@@ -15,10 +15,10 @@ namespace tt {
  *  2 - Locked, zero or more threads are waiting.
  */
 
-fast_mutex::fast_mutex() noexcept {}
-fast_mutex::~fast_mutex() {}
+unfair_mutex::unfair_mutex() noexcept {}
+unfair_mutex::~unfair_mutex() {}
 
-tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
+tt_no_inline void unfair_mutex::lock_contented(int32_t expected) noexcept
 {
     do {
         ttlet should_wait = expected == 2;
@@ -43,7 +43,7 @@ tt_no_inline void fast_mutex::lock_contented(int32_t expected) noexcept
     } while (!semaphore.compare_exchange_strong(expected, 2));
 }
 
-bool fast_mutex::try_lock() noexcept
+bool unfair_mutex::try_lock() noexcept
 {
     // Switch to 1 means there are no waiters.
     int32_t expected = 0;
@@ -56,7 +56,7 @@ bool fast_mutex::try_lock() noexcept
     return true;
 }
 
-void fast_mutex::lock() noexcept
+void unfair_mutex::lock() noexcept
 {
     // Switch to 1 means there are no waiters.
     int32_t expected = 0;
@@ -68,7 +68,7 @@ void fast_mutex::lock() noexcept
 #endif
 }
 
-void fast_mutex::unlock() noexcept
+void unfair_mutex::unlock() noexcept
 {
     if (tt_unlikely(semaphore.fetch_sub(1, std::memory_order::memory_order_relaxed) != 1)) {
         semaphore.store(0, std::memory_order::memory_order_release);

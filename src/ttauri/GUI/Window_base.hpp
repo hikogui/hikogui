@@ -19,7 +19,7 @@
 #include "../iaarect.hpp"
 #include "../Trigger.hpp"
 #include "../cpu_utc_clock.hpp"
-#include "../fast_mutex.hpp"
+#include "../unfair_mutex.hpp"
 #include "../cell_address.hpp"
 #include <rhea/simplex_solver.hpp>
 #include <unordered_set>
@@ -92,7 +92,7 @@ public:
     /** Mutex for access to rhea objects registered with the widgetSolver.
     * Widgets will need to lock this mutex when reading variables or equations.
     */
-    fast_mutex widgetSolverMutex;
+    unfair_mutex widgetSolverMutex;
 
     //! The minimum window extent as calculated by laying out all the widgets.
     ivec minimumWindowExtent;

@@ -11,7 +11,7 @@
 namespace tt {
 struct unfair_lock_wrap;
 
-class fast_mutex {
+class unfair_mutex {
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
     std::atomic<int32_t> semaphore = 0;
 
@@ -33,11 +33,11 @@ class fast_mutex {
 #endif
 
 public:
-    fast_mutex(fast_mutex const &) = delete;
-    fast_mutex &operator=(fast_mutex const &) = delete;
+    unfair_mutex(unfair_mutex const &) = delete;
+    unfair_mutex &operator=(unfair_mutex const &) = delete;
 
-    fast_mutex() noexcept;
-    ~fast_mutex();
+    unfair_mutex() noexcept;
+    ~unfair_mutex();
 
     void lock() noexcept;
 

@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "fast_mutex.hpp"
+#include "unfair_mutex.hpp"
 #include "thread.hpp"
 #include <thread>
 
 namespace tt {
 
-class recursive_fast_mutex {
+class unfair_recursive_mutex {
     /* Thread annotation syntax.
      * 
      * FIRST - The thread that acquires/acquired the mutex
@@ -17,7 +17,7 @@ class recursive_fast_mutex {
      * OTHER - Another thread while the mutex is held.
      */
 
-    fast_mutex mutex;
+    unfair_mutex mutex;
 
     // FIRST=write, OWNER|OTHER=read
     std::atomic<uint32_t> owner = 0;
@@ -26,11 +26,11 @@ class recursive_fast_mutex {
     uint32_t count = 0;
 
 public:
-    recursive_fast_mutex(recursive_fast_mutex const &) = delete;
-    recursive_fast_mutex &operator=(recursive_fast_mutex const &) = delete;
+    unfair_recursive_mutex(unfair_recursive_mutex const &) = delete;
+    unfair_recursive_mutex &operator=(unfair_recursive_mutex const &) = delete;
 
-    recursive_fast_mutex() = default;
-    ~recursive_fast_mutex() = default;
+    unfair_recursive_mutex() = default;
+    ~unfair_recursive_mutex() = default;
 
     [[nodiscard]] bool is_locked_by_current_thread() const noexcept {
         // The following load() is:

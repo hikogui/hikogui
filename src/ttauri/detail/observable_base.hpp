@@ -5,7 +5,7 @@
 
 #include <functional>
 #include "../cpu_utc_clock.hpp"
-#include "../fast_mutex.hpp"
+#include "../unfair_mutex.hpp"
 #include "../notifier.hpp"
 #include "../required.hpp"
 
@@ -33,7 +33,7 @@ public:
     using duration = typename hires_utc_clock::duration;
 
 protected:
-    mutable fast_mutex mutex;
+    mutable unfair_mutex mutex;
 
 private:
     T _previous_value;

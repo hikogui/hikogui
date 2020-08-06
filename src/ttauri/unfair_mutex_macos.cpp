@@ -1,7 +1,7 @@
 // Copyright 2019 Pokitec
 // All rights reserved.
 
-#include "fast_mutex.hpp"
+#include "unfair_mutex.hpp"
 #include <os/lock.h>
 
 namespace tt {
@@ -18,18 +18,18 @@ struct unfair_lock_wrap {
     }
 };
 
-fast_mutex::fast_mutex() noexcept :
+unfair_mutex::unfair_mutex() noexcept :
     mutex(std::make_unique<unfair_lock_wrap>()) {}
 
-fast_mutex::~fast_mutex() {}
+unfair_mutex::~unfair_mutex() {}
 
 
-void fast_mutex::lock() noexcept
+void unfair_mutex::lock() noexcept
 {
     mutex->lock();
 }
 
-void fast_mutex::unlock() noexcept
+void unfair_mutex::unlock() noexcept
 {
     mutex->unlock();
 }

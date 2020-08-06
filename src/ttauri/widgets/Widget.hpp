@@ -21,7 +21,7 @@
 #include "../cpu_utc_clock.hpp"
 #include "../observable.hpp"
 #include "../command.hpp"
-#include "../recursive_fast_mutex.hpp"
+#include "../unfair_recursive_mutex.hpp"
 #include <rhea/constraint.hpp>
 #include <limits>
 #include <memory>
@@ -134,7 +134,7 @@ protected:
     rhea::constraint baseConstraint;
 
 public:
-    mutable recursive_fast_mutex mutex;
+    mutable unfair_recursive_mutex mutex;
 
     /** Mouse cursor is hovering over the widget.
     */

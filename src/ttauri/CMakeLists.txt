@@ -58,9 +58,6 @@ target_sources(ttauri PRIVATE
     exceptions.hpp
     expression.cpp
     expression.hpp
-    fast_mutex.hpp
-    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/fast_mutex_macos.cpp>
-    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/fast_mutex_win32.cpp>
     File.hpp
     $<${TT_POSIX}:${CMAKE_CURRENT_SOURCE_DIR}/File_posix.cpp>
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/File_win32.cpp>
@@ -119,7 +116,6 @@ target_sources(ttauri PRIVATE
     Rec2020.hpp
     Rec2100.hpp
     rect.hpp
-    recursive_fast_mutex.hpp
     required.hpp
     ResourceView.hpp
     safe_int.hpp
@@ -149,6 +145,10 @@ target_sources(ttauri PRIVATE
     Trigger.hpp
     type_traits.hpp
     UndoStack.hpp
+    unfair_mutex.hpp
+    $<${TT_MACOS}:${CMAKE_CURRENT_SOURCE_DIR}/unfair_mutex_macos.cpp>
+    $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/unfair_mutex_win32.cpp>
+    unfair_recursive_mutex.hpp
     Unicode.hpp
     URL.cpp
     URL.hpp
