@@ -8,7 +8,7 @@
 #pragma once
 
 namespace tt {
-
+namespace detail {
 constexpr auto BON8_code_float_min_one = uint8_t{0xba};
 constexpr auto BON8_code_float_zero    = uint8_t{0xbb};
 constexpr auto BON8_code_float_one     = uint8_t{0xbc};
@@ -29,30 +29,10 @@ constexpr auto BON8_code_eot           = uint8_t{0xff};
 /** Decode BON8 message from buffer.
  * @param ptr [in,out] Pointer to start of byte-buffer. After the call
  *            ptr will point one beyond the message.
- * @param last 
+ * @param last Pointer one beyond the end of the message.
+ * @return The decoded message.
  */
 [[nodiscard]] datum decode_BON8(cbyteptr &ptr, cbyteptr last);
-
-[[nodiscard]] datum decode_BON8(nonstd::span<const std::byte> buffer)
-{
-    auto *ptr = buffer.data();
-    auto *last = ptr + buffer.size();
-    return decode_BON8(ptr, last);
-}
-
-[[nodiscard]] datum decode_BON8(bstring const &buffer)
-{
-    auto *ptr = buffer.data();
-    auto *last = ptr + buffer.size();
-    return decode_BON8(ptr, last);
-}
-
-[[nodiscard]] datum decode_BON8(bstring_view buffer)
-{
-    auto *ptr = buffer.data();
-    auto *last = ptr + buffer.size();
-    return decode_BON8(ptr, last);
-}
 
 [[nodiscard]] bstring encode_BON8(datum const &value);
 
@@ -338,13 +318,6 @@ void BON8_encoder::add(datum const &value) {
     }
 }
 
-[[nodiscard]] bstring encode_BON8(datum const &value)
-{
-    BON8_encoder encoder;
-    encoder.add(value);
-    return encoder.get();
-}
-
 /** Count the number of UTF8 code units
  * This does not really decode the character, just calculate the size.
  * @return number of bytes in the UTF-8 character, or zero if it is a multibyte integer
@@ -590,6 +563,51 @@ void BON8_encoder::add(datum const &value) {
         }
     }
     TTAURI_THROW(parse_error("Unexpected end-of-buffer"));
+}
+} // namespace detail
+
+/** Decode BON8 message from buffer.
+ * @param buffer A buffer to a BON8 encoded message.
+ * @return The decoded message.
+ */
+[[nodiscard]] datum decode_BON8(nonstd::span<const std::byte> buffer)
+{
+    auto *ptr = buffer.data();
+    auto *last = ptr + buffer.size();
+    return detail::decode_BON8(ptr, last);
+}
+
+/** Decode BON8 message from buffer.
+ * @param buffer A buffer to a BON8 encoded message.
+ * @return The decoded message.
+ */
+[[nodiscard]] datum decode_BON8(bstring const &buffer)
+{
+    auto *ptr = buffer.data();
+    auto *last = ptr + buffer.size();
+    return detail::decode_BON8(ptr, last);
+}
+
+/** Decode BON8 message from buffer.
+ * @param buffer A buffer to a BON8 encoded message.
+ * @return The decoded message.
+ */
+[[nodiscard]] datum decode_BON8(bstring_view buffer)
+{
+    auto *ptr = buffer.data();
+    auto *last = ptr + buffer.size();
+    return detail::decode_BON8(ptr, last);
+}
+
+/** Encode a value to a BON8 message.
+ * @param value The data to encode
+ * @return The encoded message as a byte_string.
+ */
+[[nodiscard]] bstring encode_BON8(datum const &value)
+{
+    auto encoder = detail::BON8_encoder{};
+    encoder.add(value);
+    return encoder.get();
 }
 
 }
