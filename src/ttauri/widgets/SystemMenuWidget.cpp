@@ -22,7 +22,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 [[nodiscard]] WidgetUpdateResult SystemMenuWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
@@ -37,7 +37,7 @@ SystemMenuWidget::SystemMenuWidget(Window &window, Widget *parent, Image const &
 
 void SystemMenuWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     iconCell->draw(drawContext, rectangle(), Alignment::MiddleCenter);
     Widget::draw(drawContext, displayTimePoint);

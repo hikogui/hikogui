@@ -274,18 +274,21 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         return;
     }
 
-    auto needLayout = widget->updateConstraints() >= WidgetUpdateResult::Children;
-    needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
-    if (needLayout) {
-        layoutWindow();
-    }
+    {
+        ttlet widget_lock = std::scoped_lock(widget->mutex);
+        auto needLayout = widget->updateConstraints() >= WidgetUpdateResult::Children;
+        needLayout |= requestLayout.exchange(false, std::memory_order::memory_order_relaxed);
+        if (needLayout) {
+            layoutWindow();
+        }
 
-    // Make sure the widget's layout is updated before draw, but after window resize.
-    auto needRedraw = widget->updateLayout(displayTimePoint, needLayout) >= WidgetUpdateResult::Children;
-    needRedraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
+        // Make sure the widget's layout is updated before draw, but after window resize.
+        auto needRedraw = widget->updateLayout(displayTimePoint, needLayout) >= WidgetUpdateResult::Children;
+        needRedraw |= requestRedraw.exchange(false, std::memory_order::memory_order_relaxed);
 
-    if (!needRedraw) {
-        return;
+        if (!needRedraw) {
+            return;
+        }
     }
 
     struct window_render_tag {};
@@ -320,7 +323,11 @@ void Window_vulkan::render(hires_utc_clock::time_point displayTimePoint)
         SDFPipeline->vertexBufferData
     );
     drawContext.transform = drawContext.transform * mat::T{0.5, 0.5};
-    widget->draw(drawContext, displayTimePoint);
+
+    {
+        ttlet widget_lock = std::scoped_lock(widget->mutex);
+        widget->draw(drawContext, displayTimePoint);
+    }
 
     fillCommandBuffer(frameBuffer);
     submitCommandBuffer();
@@ -553,6 +560,7 @@ Window_base::State Window_vulkan::buildSwapchain()
             .set<vk_result_tag>(to_string(result))
         );
     }
+
 
     LOG_INFO("Finished building swap chain");
     LOG_INFO(" - extent=({}, {})", swapchainCreateInfo.imageExtent.width, swapchainCreateInfo.imageExtent.height);

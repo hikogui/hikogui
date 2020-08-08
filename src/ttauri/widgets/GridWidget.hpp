@@ -60,6 +60,7 @@ public:
     GridWidget(Window &window, Widget *parent) noexcept :
         ContainerWidget(window, parent)
     {
+        ttlet lock = std::scoped_lock(mutex);
         calculateGridSize();
         addAllConstraints();
     }

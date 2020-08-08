@@ -18,7 +18,7 @@ Widget &GridWidget::addWidget(cell_address address, std::unique_ptr<Widget> chil
 
 void GridWidget::removeAllConstraints() noexcept
 {
-    [[maybe_unused]] ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     for (auto &&cell: cells) {
         window.removeConstraint(cell.column_begin_constraint);
@@ -63,7 +63,7 @@ void GridWidget::removeAllConstraints() noexcept
 
 void GridWidget::calculateGridSize() noexcept
 {
-    [[maybe_unused]] ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto addresses = transform<std::vector<cell_address>>(cells, [](auto &item) { return item.address; });
 
@@ -72,7 +72,7 @@ void GridWidget::calculateGridSize() noexcept
 
 void GridWidget::addAllConstraints() noexcept
 {
-    [[maybe_unused]] ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     while (nonstd::ssize(leftGridLines) < nrLeftColumns + 1) {
         leftGridLines.emplace_back();
@@ -147,7 +147,7 @@ void GridWidget::addAllConstraints() noexcept
 }
 
 WidgetUpdateResult GridWidget::updateConstraints() noexcept {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;

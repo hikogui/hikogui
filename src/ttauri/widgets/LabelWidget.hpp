@@ -38,7 +38,7 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
-        auto lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
@@ -63,7 +63,7 @@ public:
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
-        auto lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
         drawLabel(drawContext);
         Widget::draw(drawContext, displayTimePoint);

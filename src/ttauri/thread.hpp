@@ -6,6 +6,9 @@
 #include "required.hpp"
 #include "os_detect.hpp"
 #include "hires_utc_clock.hpp"
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+#include <intrin.h>
+#endif
 #include <thread>
 #include <string_view>
 #include <functional>
@@ -19,8 +22,6 @@ namespace tt {
  * by the operating system and debugger.
  *
  * Every thread should call this function exactly once.
- *
- * This function will also initialize the `current_thread_id`
  */
 void set_thread_name(std::string_view name);
 
@@ -28,13 +29,28 @@ bool is_main_thread();
 
 void run_on_main_thread(std::function<void()> f);
 
-/** The current_thread_id of a thread.
- * This thread_id may not equal to the operating system's thread id.
- * The current_thread_id should never be zero.
- *
- * The current_thread_id is initialized when calling `set_thread_name()`.
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+using thread_id = uint32_t;
+#else
+using thread_id = uint64_t;
+/** A dummy variable to use as an address inside the TLS, used as a thread_id.
  */
-inline thread_local uint32_t current_thread_id = 0;
+inline thread_local thread_id current_thread_id_dummy = 0;
+#endif
+
+
+
+[[nodiscard]] inline thread_id current_thread_id() noexcept
+{
+#if TT_OPERATING_SYSTEM == TT_OS_WINDOWS
+    // Thread IDs on Win32 are guaranteed to be not zero.
+    constexpr uint64_t NT_TIB_CurrentThreadID = 0x48;
+    return __readgsdword(NT_TIB_CurrentThreadID);
+#else
+    // Addresses can not be zero.
+    return reinterpret_cast<uint64_t>(&current_thread_id_dummy);
+#endif
+}
 
 #if TT_OPERATING_SYSTEM == TT_OS_WINDOWS || TT_OPERATING_SYSTEM == TT_OS_LINUX
 

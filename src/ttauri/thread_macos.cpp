@@ -13,11 +13,6 @@ static std::atomic<uint32_t> thread_id_count = 0;
 
 void set_thread_name(std::string_view name)
 {
-    tt_assert2(current_thread_id == 0, "set_thread_name() should be called exactly once per thread");
-
-    current_thread_id = thread_id_count.fetch_add(1, std::memory_order::memory_order_relaxed) + 1;
-    tt_assert2(current_thread_id != 0, "32 bit current_thread_id wrapped around");
-
     pthread_setname_np(name.data());
 }
 

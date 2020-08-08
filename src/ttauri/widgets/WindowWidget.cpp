@@ -62,7 +62,7 @@ WindowWidget::~WindowWidget()
 
 [[nodiscard]] WidgetUpdateResult WindowWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Children) {
         return result;

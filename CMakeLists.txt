@@ -27,7 +27,7 @@ else()
 project(TTauri LANGUAGES CXX)
 endif()
 
-#find_package(Doxygen)
+find_package(Doxygen)
 find_package(GTest)
 find_package(Python COMPONENTS Interpreter)
 find_package(Vulkan REQUIRED)
@@ -217,9 +217,9 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-#doxygen_add_docs(TTauri_Doxygen
-#    Foundation/include/
-#)
+doxygen_add_docs(ttauri_doxygen src)
+add_dependencies(ttauri ttauri_doxygen)
+
 
 #set(TTauri_do_not_analyze
 #    ${TTauriTests_srcs}

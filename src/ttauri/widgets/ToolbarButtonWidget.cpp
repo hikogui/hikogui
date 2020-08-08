@@ -21,7 +21,7 @@ ToolbarButtonWidget::ToolbarButtonWidget(Window &window, Widget *parent, icon_ty
 
 void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     // Draw background of button.
     {

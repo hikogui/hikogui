@@ -17,7 +17,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
 [[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
@@ -45,7 +45,7 @@ WindowTrafficLightsWidget::WindowTrafficLightsWidget(Window &window, Widget *par
 
 [[nodiscard]] WidgetUpdateResult WindowTrafficLightsWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
         return result;
@@ -216,7 +216,7 @@ void WindowTrafficLightsWidget::drawWindows(DrawContext const &drawContext, hire
 
 void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if constexpr (Theme::operatingSystem == OperatingSystem::MacOS) {
         drawMacOS(drawContext, displayTimePoint);

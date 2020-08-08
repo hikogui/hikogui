@@ -21,11 +21,12 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
 [[nodiscard]] WidgetUpdateResult ContainerWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto has_constrainted = Widget::updateConstraints();
 
     for (auto &&child: children) {
+        ttlet child_lock = std::scoped_lock(child->mutex);
         has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
     }
 
@@ -34,11 +35,12 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
 [[nodiscard]] WidgetUpdateResult ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
 
     for (auto &&child: children) {
+        ttlet child_lock = std::scoped_lock(child->mutex);
         has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
     }
 
@@ -47,7 +49,7 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
 void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto childContext = drawContext;
     for (auto &child : children) {

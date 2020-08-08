@@ -73,7 +73,7 @@ rhea::constraint Widget::placeRight(float margin) const noexcept {
 
 WidgetUpdateResult Widget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     return requestConstraint.exchange(false, std::memory_order::memory_order_relaxed) ?
         WidgetUpdateResult::Self :
@@ -82,7 +82,7 @@ WidgetUpdateResult Widget::updateConstraints() noexcept
 
 WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto needLayout = forceLayout;
 

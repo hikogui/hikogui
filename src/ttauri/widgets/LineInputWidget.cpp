@@ -25,7 +25,7 @@ LineInputWidget::~LineInputWidget()
 
 WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
@@ -43,7 +43,7 @@ WidgetUpdateResult LineInputWidget::updateConstraints() noexcept
 
 WidgetUpdateResult LineInputWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept 
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
         if (focus && displayTimePoint >= nextRedrawTimePoint) {
@@ -95,7 +95,7 @@ void LineInputWidget::dragSelect() noexcept
 
 void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     nextRedrawTimePoint = displayTimePoint + blinkInterval;
 

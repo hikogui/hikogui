@@ -192,6 +192,7 @@ void Window_base::openingWindow() {
     currentWindowExtent = ivec{500, 500};
 
     // Execute a layout to determine initial window size.
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
     if (widget->updateConstraints() >= WidgetUpdateResult::Children) {
         requestLayout = true;
         layoutWindow();

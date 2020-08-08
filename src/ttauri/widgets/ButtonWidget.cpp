@@ -22,7 +22,7 @@ ButtonWidget::~ButtonWidget() {
 
 [[nodiscard]] WidgetUpdateResult ButtonWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
@@ -41,7 +41,7 @@ ButtonWidget::~ButtonWidget() {
 
 void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto context = drawContext;
 

@@ -18,7 +18,7 @@ ToolbarWidget::ToolbarWidget(Window &window, Widget *parent) noexcept :
 
 [[nodiscard]] WidgetUpdateResult ToolbarWidget::updateConstraints() noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (ttlet result = ContainerWidget::updateConstraints(); result < WidgetUpdateResult::Self) {
         return result;
@@ -84,7 +84,7 @@ Widget &ToolbarWidget::addWidget(cell_address address, std::unique_ptr<Widget> c
 
 void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto context = drawContext;
     context.drawFilledQuad(rectangle());

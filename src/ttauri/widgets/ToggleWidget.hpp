@@ -64,7 +64,7 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
             return result;
@@ -96,7 +96,7 @@ public:
     }
 
     [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
@@ -182,7 +182,7 @@ public:
     }
 
     void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
         drawToggle(drawContext);
         drawSlider(drawContext);
         drawLabel(drawContext);

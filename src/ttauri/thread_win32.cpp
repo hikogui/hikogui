@@ -13,11 +13,6 @@ namespace tt {
 
 void set_thread_name(std::string_view name)
 {
-    tt_assert2(current_thread_id == 0, "set_thread_name() should be called exactly once per thread");
-
-    current_thread_id = GetCurrentThreadId();
-    tt_assert2(current_thread_id != 0, "Microsoft's GetCurrentThreadId() guaranties a non-zero result");
-
     ttlet wname = to_wstring(name);
     SetThreadDescription(GetCurrentThread(), wname.data());
 }

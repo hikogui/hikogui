@@ -21,12 +21,12 @@ namespace tt {
  * On windows and Linux the compiler generally emits the following sequence
  * of instructions:
  *  + non-recursive:
- *     - lock(): 4*MOV r,[]; MOV r,1; CMP; JNE; unfair_mutex.lock(); 2*MOV [],r
+ *     - lock(): LEA, 2*MOV r,[]; CMP; JNE; MOV r,#; unfair_mutex.lock(); 2*MOV [],r
  *     - unlock(): ADD [],-1; JNE (skip); XOR r,r; MOV [],r; unfair_mutex.unlock()
  *  + recursive:
- *     - lock(): 4*MOV r,[]; MOV r,1; CMP; JNE (skip); LEA, INC []
+ *     - lock(): LEA, 2*MOV r,[]; CMP; JNE (skip); LEA, INC [], JMP
  *     - unlock(): ADD [],-1; JNE
- * 
+ *
  */
 class unfair_recursive_mutex {
     /* Thread annotation syntax.
@@ -39,7 +39,7 @@ class unfair_recursive_mutex {
     unfair_mutex mutex;
 
     // FIRST=write, OWNER|OTHER=read
-    std::atomic<uint32_t> owner = 0;
+    std::atomic<thread_id> owner = 0;
 
     // FIRST=write, OWNER=increment, FIRST|OWNER=decrement
     uint32_t count = 0;
@@ -58,7 +58,7 @@ public:
         //
         // This only works for comparing the owner with the current thread, it would
         // not work to check the owner with a thread_id of another thread.
-        return owner.load(std::memory_order::memory_order_relaxed) == current_thread_id;
+        return owner.load(std::memory_order::memory_order_relaxed) == current_thread_id();
     }
 
     /**
@@ -66,7 +66,7 @@ public:
      */
     [[nodiscard]] bool try_lock() noexcept {
         // FIRST | OWNER | OTHER
-        ttlet thread_id = current_thread_id;
+        ttlet thread_id = current_thread_id();
 
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
@@ -94,9 +94,25 @@ public:
         }
     }
 
+    /**
+    * 
+    *                lea  rbx,[rcx+98h]  
+    *                mov  esi,dword ptr gs:[48h]  
+    *                mov  eax,dword ptr [rbx+4]  
+    *                cmp  eax,esi  
+    *                jne  non_recursive  
+    *                lea  r15,[rbx+8]  
+    *                inc  dword ptr [r15]  
+    *                jmp  locked
+    * non_recursive: call unfair_mutex.lock()
+    *                lea  r15,[r14+0A0h]  
+    *                mov  dword ptr [r15],r13d  
+    *                mov  dword ptr [rbx+4],esi
+    * locked:
+    */
     void lock() noexcept {
         // FIRST | OWNER | OTHER
-        ttlet thread_id = current_thread_id;
+        ttlet thread_id = current_thread_id();
 
         // The following load() is:
         // - valid-and-equal to thread_id when the OWNER has the lock.
