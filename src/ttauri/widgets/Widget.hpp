@@ -211,6 +211,7 @@ public:
     rhea::constraint placeRight(float margin=theme->margin) const noexcept;
 
     /** Get the rectangle in local coordinates.
+     * Thread safety: requires external lock on `mutex`.
      */
     [[nodiscard]] aarect rectangle() const noexcept {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -219,6 +220,7 @@ public:
     }
 
     /** Get the rectangle in window coordinates.
+     * Thread safety: requires external lock on `mutex`.
     */
     [[nodiscard]] aarect windowRectangle() const noexcept {
         tt_assume(mutex.is_locked_by_current_thread());
@@ -229,10 +231,12 @@ public:
     [[nodiscard]] float baseHeight() const noexcept;
 
     /** Get the clipping-rectangle in window coordinates.
-    *
-    * Thread safety: calls windowRectangle()
-    */
+     *
+     * Thread safety: requires external lock on `mutex`.
+     */
     [[nodiscard]] aarect clippingRectangle() const noexcept {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         return expand(windowRectangle(), Theme::margin);
     }
 
@@ -248,7 +252,7 @@ public:
 
     /** Check if the widget will accept keyboard focus.
      *
-     * Thread safety: reads atomics.
+     * Thread safety: requires external lock on `mutex`.
      */
     [[nodiscard]] virtual bool acceptsFocus() const noexcept {
         return false;
