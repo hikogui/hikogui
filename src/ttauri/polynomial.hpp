@@ -104,12 +104,14 @@ inline std::ostream& operator<<(std::ostream& os, results<T,N> const &r)
 /*! Solve line function.
 * ax+b=0
 *
-* x=
-* \begin{cases}
-*  \frac{-b}{a}, & \text{if } a\ne0\\
-*  \in\mathbb{R}, & \text{if } a=0,b=0\\
-*  \o & \text{if } a=0,b\ne0
-* \end{cases}
+* \f[
+*  x=
+*  \begin{cases}
+*   \frac{-b}{a}, & \text{if } a\ne0\\
+*   \in\mathbb{R}, & \text{if } a=0,b=0\\
+*   \o & \text{if } a=0,b\ne0
+*  \end{cases}
+* \f]
 */
 template<typename T>
 inline results<T,1> solvePolynomial(T const &a, T const &b) noexcept {
@@ -125,15 +127,17 @@ inline results<T,1> solvePolynomial(T const &a, T const &b) noexcept {
 }
 
 /*! Solve quadratic function.
-* ax^{2}+bx+c=0
+* \f[ax^{2}+bx+c=0\f]
 *
-* D=b^{2}-4ac\\
-* x=
-* \begin{cases}
-* \frac{-b}{2a}, & \text{if } D=0\\
-* \frac{-b -\sqrt{D}}{2a}, \frac{-b +\sqrt{D}}{2a} & \text{if } D>0\\
-* \o & \text{if } D<0
-* \end{cases}
+* \f[D=b^{2}-4ac\f]
+* \f[
+*  x=
+*   \begin{cases}
+*    \frac{-b}{2a}, & \text{if } D=0\\
+*    \frac{-b -\sqrt{D}}{2a}, \frac{-b +\sqrt{D}}{2a} & \text{if } D>0\\
+*    \o & \text{if } D<0
+*   \end{cases}
+* \f]
 */
 template<typename T>
 inline results<T,2> solvePolynomial(T const &a, T const &b, T const &c) noexcept {
@@ -182,18 +186,20 @@ inline results<T,3> solveDepressedCubicCardano(T const &p, T const &q, T const &
 }
 
 /*! Solve cubic function in the form.
-* t^{3}+pt+q=0
+* \f[t^{3}+pt+q=0\f]
 *
-* D=\frac{1}{4}q^{2}+\frac{1}{27}p^{3}\\
-* U=\frac{1}{3}\arccos(\frac{3q}{2p})\sqrt{-\frac{3}{p}}\\
-* V=2\sqrt{-\frac{1}{3}p}\\
-* x=
-* \begin{cases}
-* 0 & \text{if } p=0 \text{ and }q=0\\
-* \frac{3q}{p}, -\frac{3q}{2p} & \text{if } D=0\\
-* \sqrt[3]{-\frac{1}{2}+\sqrt{D}} + \sqrt[3]{-\frac{1}{2}-\sqrt{D}} & \text{if } D>0\\
-* V\cdot \cos(U), V\cdot\cos(U-\frac{2}{3}\pi),V\cdot\cos(U-\frac{4}{3}\pi) & \text{if } D<0
-* \end{cases}
+* \f[D=\frac{1}{4}q^{2}+\frac{1}{27}p^{3}\f]
+* \f[U=\frac{1}{3}\arccos(\frac{3q}{2p})\sqrt{-\frac{3}{p}}\f]
+* \f[V=2\sqrt{-\frac{1}{3}p}\f]
+* \f[
+*  x=
+*   \begin{cases}
+*    0 & \text{if } p=0 \text{ and }q=0\\
+*    \frac{3q}{p}, -\frac{3q}{2p} & \text{if } D=0\\
+*    \sqrt[3]{-\frac{1}{2}+\sqrt{D}} + \sqrt[3]{-\frac{1}{2}-\sqrt{D}} & \text{if } D>0\\
+*    V\cdot \cos(U), V\cdot\cos(U-\frac{2}{3}\pi),V\cdot\cos(U-\frac{4}{3}\pi) & \text{if } D<0
+*   \end{cases}
+* \f]
 */
 template<typename T>
 inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
@@ -224,12 +230,12 @@ inline results<T,3> solveDepressedCubic(T const &p, T const &q) noexcept {
 }
 
 /*! Solve cubic function.
-* ax^{3}+bx^{2}+cx+d=0
+* \f[ax^{3}+bx^{2}+cx+d=0\f]
 *
-* p=\frac{3ac-b^{2}}{3a^{2}},
-* q=\frac{2b^{3}-9abc+27a^{2}d}{27a^{3}}\\
-* \\
-* x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}
+* \f[p=\frac{3ac-b^{2}}{3a^{2}}\f],
+* \f[q=\frac{2b^{3}-9abc+27a^{2}d}{27a^{3}}\f]
+* 
+* \f[x=\text{solveDepressedCube}(p,q)-\frac{b}{3a}\f]
 */
 template<typename T>
 inline results<T,3> solvePolynomial(T const &a, T const &b, T const &c, T const &d) noexcept {

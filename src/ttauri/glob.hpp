@@ -80,18 +80,18 @@ inline std::ostream &operator<<(std::ostream &lhs, glob_token_t const &rhs) {
  *  - '*' matches zero or more characters within a filename or directory name.
  *  - '**' matches zero or more characters in a path, including path separators.
  *  - '?' matches one character.
- *  - '[<range>]' matches one character inside the range.
- *  - '[^<range>]' matches one character that is not within the range, the path separator '/'
+ *  - '[\<range\>]' matches one character inside the range.
+ *  - '[^\<range\>]' matches one character that is not within the range, the path separator '/'
  *    is implicitly included in <range>.
- *  - '{<list>}' matches one string in the list. The list is a comma ',' separated list
+ *  - '{\<list\>}' matches one string in the list. The list is a comma ',' separated list
  *    of strings.
  *
- * The following patterns can be part of a <range>:
- *  - '-' A dash as the first or last character in <range> matches the '-' character.
- *  - ']' A close bracket as the first character in <range> matches the ']' character.
- *  - '<code-unit>-<code-unit>' A dash between two UTF-8 code-units matches all UTF-8 code units
+ * The following patterns can be part of a \<range\>:
+ *  - '-' A dash as the first or last character in \<range\> matches the '-' character.
+ *  - ']' A close bracket as the first character in \<range\> matches the ']' character.
+ *  - '\<code-unit\>-\<code-unit\>' A dash between two UTF-8 code-units matches all UTF-8 code units
  *    between and including the two given code-units.
- *  - '<code-unit>' Matches the UTF-8 code unit itself.
+ *  - '\<code-unit\>' Matches the UTF-8 code unit itself.
  */
 inline glob_token_list_t parseGlob(std::string_view glob)
 {

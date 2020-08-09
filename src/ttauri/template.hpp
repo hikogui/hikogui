@@ -112,7 +112,7 @@ struct template_parse_context {
         }
     }
 
-    /** Handle #end statement.
+    /** Handle \#end statement.
      * This will pop the current statement of the stack and append it
      * to the statement that is now at the top of the stack.
      */
@@ -165,8 +165,8 @@ struct template_node {
      * @param context Data used by expressions inside the template statements. .output_text will
      *        contain textual data from the template.
      * @return datum::undefined when the template_node generated textual data into context.output_text.
-     *         datum::break when a #break statement was encountered. datum::continue when a #continue statement
-     *         was encountered. Otherwise data returned from a #return statement.
+     *         datum::break when a \#break statement was encountered. datum::continue when a \#continue statement
+     *         was encountered. Otherwise data returned from a \#return statement.
      */
     [[nodiscard]] virtual datum evaluate(expression_evaluation_context &context) {
         tt_no_default;

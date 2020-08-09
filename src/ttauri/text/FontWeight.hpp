@@ -97,7 +97,7 @@ inline ttlet FontWeight_from_string_table = std::unordered_map<std::string,FontW
     return (x_ == 1000) ? 950 : x_;
 }
 
-inline std::ostream &operator<<(std::ostream &lhs, FontWeight const &rhs) {
+inline std::ostream& operator<<(std::ostream& lhs, FontWeight const& rhs) {
     return lhs << to_string(rhs);
 }
 

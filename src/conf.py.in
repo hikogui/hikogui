@@ -54,7 +54,7 @@ exhale_args = {
     # TIP: if using the sphinx-bootstrap-theme, you need
     # "treeViewIsBootstrap": True,
     "exhaleExecutesDoxygen": False,
-    "exhaleDoxygenStdin":    "INPUT = @SPHINX_XML_INPUT@"
+    #"exhaleDoxygenStdin":    "INPUT = @SPHINX_XML_INPUT@"
 }
 
 primary_domain = "cpp"
