@@ -35,7 +35,7 @@ class DrawContext;
 namespace tt::PipelineImage {
 struct Image;
 struct Vertex;
-}
+} // namespace tt::PipelineImage
 namespace tt::PipelineSDF {
 struct Vertex;
 }
@@ -50,26 +50,26 @@ namespace tt {
 
 /** Result of `Widget::updateConstraints()` and `Widget::updateLayout()`.
  */
-enum class WidgetUpdateResult {
-    Nothing,
-    Children,
-    Self
-};
+enum class WidgetUpdateResult { Nothing, Children, Self };
 
-[[nodiscard]] constexpr WidgetUpdateResult operator|(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept {
+[[nodiscard]] constexpr WidgetUpdateResult operator|(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept
+{
     return std::max(lhs, rhs);
 }
 
-[[nodiscard]] constexpr WidgetUpdateResult operator&(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept {
+[[nodiscard]] constexpr WidgetUpdateResult operator&(WidgetUpdateResult const &lhs, WidgetUpdateResult const &rhs) noexcept
+{
     return std::min(lhs, rhs);
 }
 
-constexpr WidgetUpdateResult &operator|=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept {
+constexpr WidgetUpdateResult &operator|=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept
+{
     lhs = lhs | rhs;
     return lhs;
 }
 
-constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept {
+constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateResult const &rhs) noexcept
+{
     lhs = lhs & rhs;
     return lhs;
 }
@@ -100,7 +100,7 @@ constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateRe
  * if constraint changes are needed.
  *
  * A widget should return true if any of the constraints has changed.
- * 
+ *
  * ## Updating Layout
  * A widget may update its internal (expensive) layout calculations from the
  * `updateLayout()` function.
@@ -119,12 +119,12 @@ constexpr WidgetUpdateResult &operator&=(WidgetUpdateResult &lhs, WidgetUpdateRe
 class Widget {
 protected:
     /** Convenient reference to the Window.
-    */
+     */
     Window &window;
 
     /** Pointer to the parent widget.
-    * May be a nullptr only when this is the top level widget.
-    */
+     * May be a nullptr only when this is the top level widget.
+     */
     Widget *parent;
 
     rhea::constraint minimumWidthConstraint;
@@ -137,11 +137,11 @@ public:
     mutable unfair_recursive_mutex mutex;
 
     /** Mouse cursor is hovering over the widget.
-    */
+     */
     bool hover = false;
 
     /** The widget has keyboard focus.
-    */
+     */
     bool focus = false;
 
     /** Location of the frame compared to the window.
@@ -165,11 +165,11 @@ public:
     vec offsetFromWindow;
 
     /** Transformation matrix from window coords to local coords.
-    */
+     */
     mat::T fromWindowTransform;
 
     /** Transformation matrix from local coords to window coords.
-    */
+     */
     mat::T toWindowTransform;
 
     mutable std::atomic<bool> requestConstraint = true;
@@ -195,34 +195,36 @@ public:
      */
     aarect makeWindowRectangle() const noexcept;
 
-    rhea::constraint placeBelow(Widget const &rhs, float margin=theme->margin) const noexcept;
-    rhea::constraint placeAbove(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeBelow(Widget const &rhs, float margin = theme->margin) const noexcept;
+    rhea::constraint placeAbove(Widget const &rhs, float margin = theme->margin) const noexcept;
 
-    rhea::constraint placeLeftOf(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeLeftOf(Widget const &rhs, float margin = theme->margin) const noexcept;
 
-    rhea::constraint placeRightOf(Widget const &rhs, float margin=theme->margin) const noexcept;
+    rhea::constraint placeRightOf(Widget const &rhs, float margin = theme->margin) const noexcept;
 
-    rhea::constraint placeAtTop(float margin=theme->margin) const noexcept;
+    rhea::constraint placeAtTop(float margin = theme->margin) const noexcept;
 
-    rhea::constraint placeAtBottom(float margin=theme->margin) const noexcept;
+    rhea::constraint placeAtBottom(float margin = theme->margin) const noexcept;
 
-    rhea::constraint placeLeft(float margin=theme->margin) const noexcept;
+    rhea::constraint placeLeft(float margin = theme->margin) const noexcept;
 
-    rhea::constraint placeRight(float margin=theme->margin) const noexcept;
+    rhea::constraint placeRight(float margin = theme->margin) const noexcept;
 
     /** Get the rectangle in local coordinates.
      * Thread safety: requires external lock on `mutex`.
      */
-    [[nodiscard]] aarect rectangle() const noexcept {
+    [[nodiscard]] aarect rectangle() const noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
-        return aarect{extent};      
+        return aarect{extent};
     }
 
     /** Get the rectangle in window coordinates.
      * Thread safety: requires external lock on `mutex`.
-    */
-    [[nodiscard]] aarect windowRectangle() const noexcept {
+     */
+    [[nodiscard]] aarect windowRectangle() const noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         return {vec::origin() + offsetFromWindow, vec{extent}};
@@ -234,7 +236,8 @@ public:
      *
      * Thread safety: requires external lock on `mutex`.
      */
-    [[nodiscard]] aarect clippingRectangle() const noexcept {
+    [[nodiscard]] aarect clippingRectangle() const noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         return expand(windowRectangle(), Theme::margin);
@@ -246,7 +249,8 @@ public:
      *
      * Thread safety: locks.
      */
-    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept {
+    [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept
+    {
         return {};
     }
 
@@ -254,55 +258,59 @@ public:
      *
      * Thread safety: requires external lock on `mutex`.
      */
-    [[nodiscard]] virtual bool acceptsFocus() const noexcept {
+    [[nodiscard]] virtual bool acceptsFocus() const noexcept
+    {
         return false;
     }
 
     /** Get nesting level used for selecting colors for the widget.
-    */
-    [[nodiscard]] ssize_t nestingLevel() noexcept {
+     */
+    [[nodiscard]] ssize_t nestingLevel() noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         return numeric_cast<ssize_t>(elevation);
     }
 
     /** Get z value for compositing order.
-    */
-    [[nodiscard]] float z() noexcept {
+     */
+    [[nodiscard]] float z() noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         return elevation * 0.01f;
     }
 
     /** Update the constraints of the widget.
-    * This function is called by the window on every frame. It should recursively
-    * call this function on every visible child.
-    *
-    * This function should update the constraints whenever the data changes,
-    * such as changing the text of a label, or when adding or removing child widgets.
-    *
-    * @return If true then the constraints have been updated by this widget, or
-    *         any of its children.
-    *         This value should be used by the overriding function to determine if
-    *         it should update the constraints.
-    */
+     * This function is called by the window on every frame. It should recursively
+     * call this function on every visible child.
+     *
+     * This function should update the constraints whenever the data changes,
+     * such as changing the text of a label, or when adding or removing child widgets.
+     *
+     * @return If true then the constraints have been updated by this widget, or
+     *         any of its children.
+     *         This value should be used by the overriding function to determine if
+     *         it should update the constraints.
+     */
     [[nodiscard]] virtual WidgetUpdateResult updateConstraints() noexcept;
 
     /** Update the internal layout of the widget.
-    * This function is called by the window on every frame. It should recursively
-    * call this function on every visible child.
-    *
-    * This function should update the internal layout whenever data changes or during
-    * an animation.
-    *
-    * @param displayTimePoint The time point when the widget will be shown on the screen.
-    * @param forceLayout Force the layout of this widget and its children
-    * @return If true then the internal layout has been updated by this widget, or
-    *         any of its children.
-    *         This value should be used by the overriding function to determine if
-    *         it should update the internal layout.
-    */
-    [[nodiscard]] virtual WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
+     * This function is called by the window on every frame. It should recursively
+     * call this function on every visible child.
+     *
+     * This function should update the internal layout whenever data changes or during
+     * an animation.
+     *
+     * @param displayTimePoint The time point when the widget will be shown on the screen.
+     * @param forceLayout Force the layout of this widget and its children
+     * @return If true then the internal layout has been updated by this widget, or
+     *         any of its children.
+     *         This value should be used by the overriding function to determine if
+     *         it should update the internal layout.
+     */
+    [[nodiscard]] virtual WidgetUpdateResult
+    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept;
 
     /** Draw the widget.
      * This function is called by the window (optionally) on every frame.
@@ -327,26 +335,26 @@ public:
     virtual void handleCommand(command command) noexcept;
 
     /*! Handle mouse event.
-    * Called by the operating system to show the position and button state of the mouse.
-    * This is called very often so it must be made efficient.
-    * This function is also used to determine the mouse cursor.
-    *
-    * Thread safety: locks
-    */
+     * Called by the operating system to show the position and button state of the mouse.
+     * This is called very often so it must be made efficient.
+     * This function is also used to determine the mouse cursor.
+     *
+     * Thread safety: locks
+     */
     virtual void handleMouseEvent(MouseEvent const &event) noexcept;
 
     [[nodiscard]] virtual Widget *nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept;
 
     /*! Handle keyboard event.
-    * Called by the operating system when editing text, or entering special keys
-    *
-    * Thread safety: locks
-    */
+     * Called by the operating system when editing text, or entering special keys
+     *
+     * Thread safety: locks
+     */
     virtual void handleKeyboardEvent(KeyboardEvent const &event) noexcept;
 
 protected:
 };
 
-inline Widget * const foundWidgetPtr = reinterpret_cast<Widget *>(1);
+inline Widget *const foundWidgetPtr = reinterpret_cast<Widget *>(1);
 
-}
+} // namespace tt

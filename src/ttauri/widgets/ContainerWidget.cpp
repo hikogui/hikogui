@@ -25,7 +25,7 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
 
     auto has_constrainted = Widget::updateConstraints();
 
-    for (auto &&child: children) {
+    for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
         has_constrainted |= (child->updateConstraints() & WidgetUpdateResult::Children);
     }
@@ -33,13 +33,14 @@ Widget &ContainerWidget::addWidget(cell_address address, std::unique_ptr<Widget>
     return has_constrainted;
 }
 
-[[nodiscard]] WidgetUpdateResult ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
+[[nodiscard]] WidgetUpdateResult
+ContainerWidget::updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept
 {
     tt_assume(mutex.is_locked_by_current_thread());
 
     auto has_laid_out = Widget::updateLayout(displayTimePoint, forceLayout);
 
-    for (auto &&child: children) {
+    for (auto &&child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
         has_laid_out |= (child->updateLayout(displayTimePoint, forceLayout) & WidgetUpdateResult::Children);
     }
@@ -90,9 +91,7 @@ HitBox ContainerWidget::hitBoxTest(vec position) const noexcept
 {
     auto lock = std::scoped_lock(mutex);
 
-    auto r = rectangle().contains(position) ?
-        HitBox{this, elevation} :
-        HitBox{};
+    auto r = rectangle().contains(position) ? HitBox{this, elevation} : HitBox{};
 
     for (ttlet &child : children) {
         ttlet child_lock = std::scoped_lock(child->mutex);
@@ -107,7 +106,7 @@ std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcep
 
     std::vector<Widget *> r;
     r.reserve(nonstd::ssize(children));
-    for (ttlet &child: children) {
+    for (ttlet &child : children) {
         r.push_back(child.get());
     }
     if (reverse) {
@@ -127,7 +126,7 @@ Widget *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget,
     } else {
         bool found = false;
 
-        for (auto *child: childPointers(reverse)) {
+        for (auto *child : childPointers(reverse)) {
             if (found) {
                 // Find the first focus accepting widget.
                 if (auto *tmp = child->nextKeyboardWidget(nullptr, reverse)) {
@@ -152,4 +151,4 @@ Widget *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget,
     }
 }
 
-}
+} // namespace tt

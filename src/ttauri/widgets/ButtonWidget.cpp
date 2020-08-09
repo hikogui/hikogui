@@ -12,13 +12,11 @@ namespace tt {
 using namespace std::literals;
 
 ButtonWidget::ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept :
-    Widget(window, parent),
-    label(label)
+    Widget(window, parent), label(label)
 {
 }
 
-ButtonWidget::~ButtonWidget() {
-}
+ButtonWidget::~ButtonWidget() {}
 
 [[nodiscard]] WidgetUpdateResult ButtonWidget::updateConstraints() noexcept
 {
@@ -31,9 +29,11 @@ ButtonWidget::~ButtonWidget() {
     labelCell = std::make_unique<TextCell>(label, theme->warningLabelStyle);
 
     window.replaceConstraint(minimumWidthConstraint, width >= labelCell->preferredExtent().width() + Theme::margin * 2.0f);
-    window.replaceConstraint(maximumWidthConstraint, width <= labelCell->preferredExtent().width() + Theme::margin * 2.0f, rhea::strength::weak());
+    window.replaceConstraint(
+        maximumWidthConstraint, width <= labelCell->preferredExtent().width() + Theme::margin * 2.0f, rhea::strength::weak());
     window.replaceConstraint(minimumHeightConstraint, height >= labelCell->preferredExtent().height() + Theme::margin * 2.0f);
-    window.replaceConstraint(maximumHeightConstraint, height <= labelCell->preferredExtent().height() + Theme::margin * 2.0f, rhea::strength::weak());
+    window.replaceConstraint(
+        maximumHeightConstraint, height <= labelCell->preferredExtent().height() + Theme::margin * 2.0f, rhea::strength::weak());
 
     window.replaceConstraint(baseConstraint, base == middle);
     return WidgetUpdateResult::Self;
@@ -90,11 +90,7 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
             window.requestRedraw = true;
         }
 
-        if (
-            event.type == MouseEvent::Type::ButtonUp &&
-            event.cause.leftButton &&
-            rectangle().contains(event.position)
-        ) {
+        if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
             handleCommand(command::gui_activate);
         }
     }
@@ -111,4 +107,4 @@ HitBox ButtonWidget::hitBoxTest(vec position) const noexcept
     }
 }
 
-}
+} // namespace tt

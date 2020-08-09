@@ -23,8 +23,8 @@ protected:
 
     std::unique_ptr<TextCell> labelCell;
     mat::T textTranslate;
-public:
 
+public:
     ButtonWidget(Window &window, Widget *parent, std::string const label) noexcept;
     ~ButtonWidget();
 
@@ -36,10 +36,10 @@ public:
     void handleCommand(command command) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
-    [[nodiscard]] bool acceptsFocus() const noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
         return *enabled;
     }
-
 };
 
-}
+} // namespace tt

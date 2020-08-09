@@ -44,27 +44,26 @@ public:
     observable<std::string> otherLabel;
 
     CheckboxWidget(Window &window, Widget *parent, ValueType trueValue, ValueType falseValue) noexcept :
-        Widget(window, parent),
-        trueValue(trueValue),
-        falseValue(falseValue)
+        Widget(window, parent), trueValue(trueValue), falseValue(falseValue)
     {
-        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...){
+        [[maybe_unused]] ttlet value_cbid = value.add_callback([this](auto...) {
             this->window.requestRedraw = true;
         });
-        [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...){
+        [[maybe_unused]] ttlet true_label_cbid = trueLabel.add_callback([this](auto...) {
             requestConstraint = true;
         });
-        [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...){
+        [[maybe_unused]] ttlet false_label_cbid = falseLabel.add_callback([this](auto...) {
             requestConstraint = true;
         });
-        [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...){
+        [[maybe_unused]] ttlet other_label_cbid = otherLabel.add_callback([this](auto...) {
             requestConstraint = true;
         });
     }
 
     ~CheckboxWidget() {}
 
-    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override {
+    [[nodiscard]] WidgetUpdateResult updateConstraints() noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateConstraints(); result < WidgetUpdateResult::Self) {
@@ -75,18 +74,17 @@ public:
         falseLabelCell = std::make_unique<TextCell>(*falseLabel, theme->labelStyle);
         otherLabelCell = std::make_unique<TextCell>(*otherLabel, theme->labelStyle);
 
-        ttlet minimumHeight = std::max({
-            trueLabelCell->preferredExtent().height(),
-            falseLabelCell->preferredExtent().height(),
-            otherLabelCell->preferredExtent().height(),
-            Theme::smallSize
-        });
+        ttlet minimumHeight = std::max(
+            {trueLabelCell->preferredExtent().height(),
+             falseLabelCell->preferredExtent().height(),
+             otherLabelCell->preferredExtent().height(),
+             Theme::smallSize});
 
-        ttlet minimumWidth = std::max({
-            trueLabelCell->preferredExtent().width(),
-            falseLabelCell->preferredExtent().width(),
-            otherLabelCell->preferredExtent().width(),
-        }) + Theme::smallSize + Theme::margin * 2.0f;
+        ttlet minimumWidthOfLabels = std::max(
+            {trueLabelCell->preferredExtent().width(),
+             falseLabelCell->preferredExtent().width(),
+             otherLabelCell->preferredExtent().width()});
+        ttlet minimumWidth = minimumWidthOfLabels + Theme::smallSize + Theme::margin * 2.0f;
 
         window.stopConstraintSolver();
         window.replaceConstraint(minimumWidthConstraint, width >= minimumWidth);
@@ -96,27 +94,19 @@ public:
         return WidgetUpdateResult::Self;
     }
 
-    [[nodiscard]] WidgetUpdateResult updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override {
+    [[nodiscard]] WidgetUpdateResult
+    updateLayout(hires_utc_clock::time_point displayTimePoint, bool forceLayout) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (ttlet result = Widget::updateLayout(displayTimePoint, forceLayout); result < WidgetUpdateResult::Self) {
             return result;
         }
 
-        checkboxRectangle = aarect{
-            0.0f,
-            baseHeight() - Theme::smallSize * 0.5f,
-            Theme::smallSize,
-            Theme::smallSize
-        };
+        checkboxRectangle = aarect{0.0f, baseHeight() - Theme::smallSize * 0.5f, Theme::smallSize, Theme::smallSize};
 
         ttlet labelX = checkboxRectangle.p3().x() + Theme::margin;
-        labelRectangle = aarect{
-            labelX,
-            0.0f,
-            rectangle().width() - labelX,
-            rectangle().height()
-        };
+        labelRectangle = aarect{labelX, 0.0f, rectangle().width() - labelX, rectangle().height()};
 
         checkGlyph = to_FontGlyphIDs(ElusiveIcon::Ok);
         ttlet checkGlyphBB = PipelineSDF::DeviceShared::getBoundingBox(checkGlyph);
@@ -129,13 +119,15 @@ public:
         return WidgetUpdateResult::Self;
     }
 
-    void drawCheckBox(DrawContext const &drawContext) noexcept {
+    void drawCheckBox(DrawContext const &drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.drawBoxIncludeBorder(checkboxRectangle);
     }
 
-    void drawCheckMark(DrawContext drawContext) noexcept {
+    void drawCheckMark(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawContext.transform = drawContext.transform * mat::T{0.0, 0.0, 0.001f};
@@ -154,22 +146,21 @@ public:
         }
     }
 
-    void drawLabel(DrawContext drawContext) noexcept {
+    void drawLabel(DrawContext drawContext) noexcept
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         if (*enabled) {
             drawContext.color = theme->labelStyle.color;
         }
 
-        ttlet &labelCell =
-            value == trueValue ? trueLabelCell :
-            value == falseValue ? falseLabelCell :
-            otherLabelCell;
+        ttlet &labelCell = value == trueValue ? trueLabelCell : value == falseValue ? falseLabelCell : otherLabelCell;
 
         labelCell->draw(drawContext, labelRectangle, Alignment::TopLeft, baseHeight(), true);
     }
 
-    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override {
+    void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept override
+    {
         tt_assume(mutex.is_locked_by_current_thread());
 
         drawCheckBox(drawContext);
@@ -178,23 +169,21 @@ public:
         Widget::draw(drawContext, displayTimePoint);
     }
 
-    void handleMouseEvent(MouseEvent const &event) noexcept override {
+    void handleMouseEvent(MouseEvent const &event) noexcept override
+    {
         ttlet lock = std::scoped_lock(mutex);
 
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
-            if (
-                event.type == MouseEvent::Type::ButtonUp &&
-                event.cause.leftButton &&
-                rectangle().contains(event.position)
-            ) {
+            if (event.type == MouseEvent::Type::ButtonUp && event.cause.leftButton && rectangle().contains(event.position)) {
                 handleCommand(command::gui_activate);
             }
         }
     }
 
-    void handleCommand(command command) noexcept override {
+    void handleCommand(command command) noexcept override
+    {
         ttlet lock = std::scoped_lock(mutex);
 
         if (!*enabled) {
@@ -209,7 +198,8 @@ public:
         Widget::handleCommand(command);
     }
 
-    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override {
+    [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override
+    {
         ttlet lock = std::scoped_lock(mutex);
 
         if (rectangle().contains(position)) {
@@ -219,10 +209,10 @@ public:
         }
     }
 
-    [[nodiscard]] bool acceptsFocus() const noexcept override {
+    [[nodiscard]] bool acceptsFocus() const noexcept override
+    {
         return *enabled;
     }
 };
 
-
-}
+} // namespace tt
