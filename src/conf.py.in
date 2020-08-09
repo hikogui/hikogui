@@ -32,14 +32,32 @@ release = '1.0'
 # ones.
 extensions = [
     "sphinx_rtd_theme",
-    "breathe"
+    "breathe",
+    "exhale"
 ]
 
 breathe_projects = {
-    "TTauri": "@TTAURI_XML_OUTPUT@"
+    "TTauri": "@SPHINX_XML_INPUT@"
 }
 
 breathe_default_project = "TTauri"
+
+exhale_args = {
+    "containmentFolder":     "./api",
+    "rootFileName":          "ttauri_api.rst",
+    "rootFileTitle":         "TTuari API",
+    "doxygenStripFromPath":  "..",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": False,
+    "exhaleDoxygenStdin":    "INPUT = @SPHINX_XML_INPUT@"
+}
+
+primary_domain = "cpp"
+
+highlight_language = "cpp"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
