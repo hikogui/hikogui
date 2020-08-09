@@ -107,12 +107,12 @@ struct expression_evaluation_context {
         return local_stack.size() > 0;
     }
 
-    tt_force_inline scope const& locals() const {
+    scope const& locals() const {
         tt_assume(has_locals());
         return local_stack.back();
     }
 
-    tt_force_inline scope& locals() {
+    scope& locals() {
         tt_assume(has_locals());
         return local_stack.back();
     }

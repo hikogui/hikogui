@@ -12,21 +12,8 @@
 
 namespace tt {
 
-enum class Endian {
-    Little,
-    Big,
-    Native,
-};
-
-#if TT_PROCESSOR == TT_CPU_X64 || TT_PROCESSOR == TT_CPU_ARM
-constexpr Endian endian = Endian::Little;
-#else
-#error "Endian not configured for this processor."
-#endif
-
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,T> 
-byte_swap(T x) noexcept
+template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
+[[nodiscard]] T byte_swap(T x) noexcept
 {
 #if TT_COMPILER == TT_CC_CLANG || TT_COMPILER == TT_CC_GCC
         if constexpr (sizeof(T) == sizeof(uint64_t)) {
@@ -53,16 +40,14 @@ byte_swap(T x) noexcept
 #endif
 }
 
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>,T> 
-byte_swap(T x) noexcept
+template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_signed_v<T>,int> = 0>
+[[nodiscard]] T byte_swap(T x) noexcept
 {
     return static_cast<T>(byte_swap(static_cast<std::make_unsigned_t<T>>(x)));
 }
 
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_floating_point_v<T>,T> 
-byte_swap(T x) noexcept
+template<typename T, std::enable_if_t<std::is_floating_point_v<T>,T> = 0>
+[[nodiscard]] T byte_swap(T x) noexcept
 {
     if constexpr (std::is_same_v<T, float>) {
         auto utmp = bit_cast<uint32_t>(x);
@@ -77,44 +62,40 @@ byte_swap(T x) noexcept
     }
 }
 
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_integral_v<T>,T> 
-little_to_native(T x)
+template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+[[nodiscard]] T little_to_native(T x)
 {
-    if constexpr (endian == Endian::Little) {
+    if constexpr (Endian::Native == Endian::Little) {
         return x;
     } else {
         return byte_swap(x);
     }
 }
 
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_integral_v<T>,T> 
-big_to_native(T x)
+template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+[[nodiscard]] T big_to_native(T x)
 {
-    if constexpr (endian == Endian::Big) {
+    if constexpr (Endian::Native == Endian::Big) {
         return x;
     } else {
         return byte_swap(x);
     }
 }
 
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_integral_v<T>,T> 
-native_to_little(T x)
+template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+[[nodiscard]] T native_to_little(T x)
 {
-    if constexpr (endian == Endian::Little) {
+    if constexpr (Endian::Native == Endian::Little) {
         return x;
     } else {
         return byte_swap(x);
     }
 }
 
-template<typename T>
-[[nodiscard]] tt_force_inline std::enable_if_t<std::is_integral_v<T>,T> 
-native_to_big(T x)
+template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
+[[nodiscard]] T native_to_big(T x)
 {
-    if constexpr (endian == Endian::Big) {
+    if constexpr (Endian::Native == Endian::Big) {
         return x;
     } else {
         return byte_swap(x);
@@ -125,20 +106,20 @@ template<typename T,Endian E,size_t A=alignof(T)>
 struct endian_buf_t {
     alignas(A) std::byte _value[sizeof(T)];
 
-    [[nodiscard]] tt_force_inline T value() const noexcept {
+    [[nodiscard]] T value() const noexcept {
         T aligned_value;
         std::memcpy(&aligned_value, &_value[0], sizeof(T));
 
-        if constexpr (E == endian || E == Endian::Native) {
+        if constexpr (E == Endian::Native) {
             return aligned_value;
         } else {
             return byte_swap(aligned_value);
         }
     }
 
-    tt_force_inline endian_buf_t &operator=(T x) noexcept {
+    endian_buf_t &operator=(T x) noexcept {
         T aligned_value;
-        if constexpr (E == endian || E == Endian::Native) {
+        if constexpr (E == Endian::Native) {
             aligned_value = x;
         } else {
             aligned_value = byte_swap(x);

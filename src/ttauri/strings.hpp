@@ -149,7 +149,6 @@ namespace tt {
     return r;
 }
 
-gsl_suppress3(f.23,bounds.1,bounds.3)
 [[nodiscard]] constexpr uint32_t fourcc(char const txt[5]) noexcept
 {
     return (
@@ -170,7 +169,6 @@ gsl_suppress3(f.23,bounds.1,bounds.3)
         );
 }
 
-gsl_suppress(bounds.3)
 [[nodiscard]] inline std::string fourcc_to_string(uint32_t x) noexcept
 {
     char c_str[5];

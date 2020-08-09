@@ -12,7 +12,7 @@
 namespace tt {
 
 template<typename T, typename U>
-tt_force_inline void memswap(T &dst, U &src) {
+void memswap(T &dst, U &src) {
     static_assert(sizeof(T) == sizeof(U), "memswap requires both objects of equal size");
     std::byte tmp[sizeof(T)];
     memcpy(tmp, &src, sizeof(T));
@@ -21,13 +21,12 @@ tt_force_inline void memswap(T &dst, U &src) {
 }
 
 template<typename T>
-tt_force_inline bool is_aligned(T* p){
+bool is_aligned(T* p){
     return (reinterpret_cast<ptrdiff_t>(p) % std::alignment_of<T>::value) == 0;
 }
 
 template<typename R, typename T>
-gsl_suppress3(type.1,26487,lifetime.4)
-    inline R align(T ptr, size_t alignment) noexcept
+inline R align(T ptr, size_t alignment) noexcept
 {
     ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
     ttlet alignedByteOffset = ((byteOffset + alignment - 1) / alignment) * alignment;
@@ -39,8 +38,7 @@ gsl_suppress3(type.1,26487,lifetime.4)
 * This lowers the end interator so that it the last read is can be done fully.
 */
 template<typename R, typename T>
-gsl_suppress5(f.23,bounds.3,type.1,26487,lifetime.4)
-    inline R align_end(T ptr, size_t alignment) noexcept
+inline R align_end(T ptr, size_t alignment) noexcept
 {
     ttlet byteOffset = reinterpret_cast<ptrdiff_t>(ptr);
     ttlet alignedByteOffset = (byteOffset / alignment) * alignment;

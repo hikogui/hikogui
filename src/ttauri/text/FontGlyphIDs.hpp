@@ -28,13 +28,13 @@ class FontGlyphIDs_long {
     FontGlyphIDs_long &operator=(FontGlyphIDs_long const &rhs) noexcept = default;
     FontGlyphIDs_long &operator=(FontGlyphIDs_long &&rhs) noexcept = default;
 
-    tt_force_inline FontGlyphIDs_long(GlyphID g1, GlyphID g2, GlyphID g3) noexcept {
+    FontGlyphIDs_long(GlyphID g1, GlyphID g2, GlyphID g3) noexcept {
         (*this) += g1;
         (*this) += g2;
         (*this) += g3;
     }
 
-    tt_force_inline FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
+    FontGlyphIDs_long operator+=(GlyphID rhs) noexcept {
         tt_assume(nr_glyphs >= 0);
         tt_assume(nr_glyphs < nonstd::ssize(glyph_ids));
         glyph_ids[nr_glyphs++] = rhs;
@@ -93,7 +93,7 @@ class FontGlyphIDs {
     uint64_t value;
 
 public:
-    tt_force_inline FontGlyphIDs() noexcept : value(empty) {}
+    FontGlyphIDs() noexcept : value(empty) {}
 
     FontGlyphIDs(FontGlyphIDs const &rhs) noexcept : value(rhs.value) {
         if (rhs.has_pointer()) {
@@ -101,7 +101,7 @@ public:
         }
     }
 
-    tt_force_inline FontGlyphIDs(FontGlyphIDs &&rhs) noexcept : value(rhs.value) {
+    FontGlyphIDs(FontGlyphIDs &&rhs) noexcept : value(rhs.value) {
         rhs.value = empty;
     }
 
@@ -116,7 +116,7 @@ public:
         return *this;
     }
 
-    tt_force_inline FontGlyphIDs &operator=(FontGlyphIDs &&rhs) noexcept {
+    FontGlyphIDs &operator=(FontGlyphIDs &&rhs) noexcept {
         if (this != &rhs) {
             using std::swap;
             swap(value, rhs.value);
@@ -133,15 +133,15 @@ public:
         value = empty;
     }
 
-    tt_force_inline operator bool () const noexcept {
+    operator bool () const noexcept {
         return size() > 0;
     }
 
-    [[nodiscard]] tt_force_inline FontID font_id() const noexcept {
+    [[nodiscard]] FontID font_id() const noexcept {
         return FontID{value & FontID::mask};
     }
 
-    tt_force_inline void set_font_id(FontID font_id) noexcept {
+    void set_font_id(FontID font_id) noexcept {
         value = (value & ~static_cast<uint64_t>(FontID::mask)) | static_cast<uint64_t>(font_id);
     }
 
@@ -159,7 +159,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] tt_force_inline GlyphID front() const noexcept {
+    [[nodiscard]] GlyphID front() const noexcept {
         if (size() == 0) {
             return GlyphID{};
         } else {
@@ -167,7 +167,7 @@ public:
         }
     }
 
-    [[nodiscard]] tt_force_inline GlyphID operator[](size_t index) const noexcept {
+    [[nodiscard]] GlyphID operator[](size_t index) const noexcept {
         if (has_pointer()) {
             tt_assume(index < 18);
             return get_pointer()->glyph_ids[index];
@@ -181,7 +181,7 @@ public:
         }
     }
 
-    [[nodiscard]] tt_force_inline size_t size() const noexcept {
+    [[nodiscard]] size_t size() const noexcept {
         if (has_pointer()) {
             return get_pointer()->nr_glyphs;
         } else if (!(*this)[0]) {
@@ -207,16 +207,16 @@ public:
     [[nodiscard]] aarect getBoundingBox() const noexcept;
 
 private:
-    [[nodiscard]] tt_force_inline bool has_pointer() const noexcept {
+    [[nodiscard]] bool has_pointer() const noexcept {
         return (value & 0x8000) == 0;
     }
 
-    [[nodiscard]] tt_force_inline FontGlyphIDs_long const *get_pointer() const noexcept {
+    [[nodiscard]] FontGlyphIDs_long const *get_pointer() const noexcept {
         tt_assume(has_pointer());
         return std::launder(reinterpret_cast<FontGlyphIDs_long const *>(static_cast<ptrdiff_t>(value) >> 16));
     }
 
-    [[nodiscard]] tt_force_inline FontGlyphIDs_long *get_pointer() noexcept {
+    [[nodiscard]] FontGlyphIDs_long *get_pointer() noexcept {
         tt_assume(has_pointer());
         return std::launder(reinterpret_cast<FontGlyphIDs_long *>(static_cast<ptrdiff_t>(value) >> 16));
     }

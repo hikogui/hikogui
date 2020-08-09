@@ -242,7 +242,7 @@ public:
         data.parent_id = stack->push();
     }
 
-    tt_force_inline ~trace() {
+    ~trace() {
         ttlet end_timestamp = cpu_counter_clock::now();
 
         if(tt_unlikely(trace_statistics<Tag>.write(end_timestamp - data.timestamp))) {

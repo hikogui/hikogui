@@ -18,11 +18,11 @@ class iaarect {
     ivec v;
 
 public:
-    tt_force_inline iaarect() noexcept : v() {}
-    tt_force_inline iaarect(iaarect const &rhs) noexcept = default;
-    tt_force_inline iaarect &operator=(iaarect const &rhs) noexcept = default;
-    tt_force_inline iaarect(iaarect &&rhs) noexcept = default;
-    tt_force_inline iaarect &operator=(iaarect &&rhs) noexcept = default;
+    iaarect() noexcept : v() {}
+    iaarect(iaarect const &rhs) noexcept = default;
+    iaarect &operator=(iaarect const &rhs) noexcept = default;
+    iaarect(iaarect &&rhs) noexcept = default;
+    iaarect &operator=(iaarect &&rhs) noexcept = default;
 
     iaarect(__m128i rhs) noexcept :
         v(rhs) {}
@@ -44,7 +44,7 @@ public:
      * @param height The height of the box.
      */
     template<typename T, std::enable_if_t<std::is_integral_v<T>,int> = 0>
-    tt_force_inline iaarect(T x, T y, T width, T height) noexcept :
+    iaarect(T x, T y, T width, T height) noexcept :
         iaarect(ivec(x, y, x + width, y + height)) {}
 
     /** Create a box from the position and size.
@@ -52,10 +52,10 @@ public:
      * @param offset The position of the left-bottom corner of the box
      * @param extent The size of the box (z and w must be zero).
      */
-    tt_force_inline iaarect(ivec const &offset, ivec const &extent) noexcept :
+    iaarect(ivec const &offset, ivec const &extent) noexcept :
         iaarect(offset.xyxy() + extent.zwxy()) {}
 
-    [[nodiscard]] tt_force_inline static iaarect p0p3(ivec const &p1, ivec const &p2) noexcept {
+    [[nodiscard]] static iaarect p0p3(ivec const &p1, ivec const &p2) noexcept {
         return _mm_blend_epi16(p1, p2.xyxy(), 0b11'11'00'00);
     }
 
@@ -90,7 +90,7 @@ public:
     * @return The homogenious coordinate of the corner.
     */
     template<size_t I>
-    [[nodiscard]] tt_force_inline ivec corner() const noexcept {
+    [[nodiscard]] ivec corner() const noexcept {
         static_assert(I <= 3);
         if constexpr (I == 0) {
             return v.xy01();
@@ -107,7 +107,7 @@ public:
     *
     * @return The homogenious coordinate of the bottom-left corner.
     */
-    [[nodiscard]] tt_force_inline ivec offset() const noexcept { return corner<0>(); }
+    [[nodiscard]] ivec offset() const noexcept { return corner<0>(); }
 
     
     /** Get size of the rectangle
@@ -118,12 +118,12 @@ public:
         return corner<3>() - corner<0>();
     }
 
-    [[nodiscard]] tt_force_inline int x1() const noexcept { return v.x(); } 
-    [[nodiscard]] tt_force_inline int y1() const noexcept { return v.y(); } 
-    [[nodiscard]] tt_force_inline int x2() const noexcept { return v.z(); } 
-    [[nodiscard]] tt_force_inline int y2() const noexcept { return v.w(); } 
-    [[nodiscard]] tt_force_inline int width() const noexcept { return extent().x(); }
-    [[nodiscard]] tt_force_inline int height() const noexcept { return extent().y(); }
+    [[nodiscard]] int x1() const noexcept { return v.x(); } 
+    [[nodiscard]] int y1() const noexcept { return v.y(); } 
+    [[nodiscard]] int x2() const noexcept { return v.z(); } 
+    [[nodiscard]] int y2() const noexcept { return v.w(); } 
+    [[nodiscard]] int width() const noexcept { return extent().x(); }
+    [[nodiscard]] int height() const noexcept { return extent().y(); }
 
     /** Check if a 2D coordinate is inside the rectangle.
      *

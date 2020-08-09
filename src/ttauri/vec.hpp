@@ -51,61 +51,61 @@ class vec {
 public:
     /* Create a zeroed out vec.
      */
-    tt_force_inline vec() noexcept : vec(_mm_setzero_ps()) {}
-    tt_force_inline vec(vec const &rhs) noexcept = default;
-    tt_force_inline vec &operator=(vec const &rhs) noexcept = default;
-    tt_force_inline vec(vec &&rhs) noexcept = default;
-    tt_force_inline vec &operator=(vec &&rhs) noexcept = default;
+    vec() noexcept : vec(_mm_setzero_ps()) {}
+    vec(vec const &rhs) noexcept = default;
+    vec &operator=(vec const &rhs) noexcept = default;
+    vec(vec &&rhs) noexcept = default;
+    vec &operator=(vec &&rhs) noexcept = default;
 
-    tt_force_inline vec(__m128 rhs) noexcept :
+    vec(__m128 rhs) noexcept :
         v(rhs) {}
 
-    tt_force_inline vec &operator=(__m128 rhs) noexcept {
+    vec &operator=(__m128 rhs) noexcept {
         v = rhs;
         return *this;
     }
 
-    tt_force_inline operator __m128 () const noexcept {
+    operator __m128 () const noexcept {
         return v;
     }
 
-    explicit tt_force_inline vec(std::array<float,4> const &rhs) noexcept :
+    explicit vec(std::array<float,4> const &rhs) noexcept :
         v(_mm_loadu_ps(rhs.data())) {}
 
-    tt_force_inline vec &operator=(std::array<float,4> const &rhs) noexcept {
+    vec &operator=(std::array<float,4> const &rhs) noexcept {
         v = _mm_loadu_ps(rhs.data());
         return *this;
     }
 
-    explicit tt_force_inline operator std::array<float,4> () const noexcept {
+    explicit operator std::array<float,4> () const noexcept {
         std::array<float,4> r;
         _mm_storeu_ps(r.data(), v);
         return r;
     }
 
-    explicit tt_force_inline vec(std::array<float,2> const &rhs) noexcept :
+    explicit vec(std::array<float,2> const &rhs) noexcept :
         v(_mm_loadl_pi(_mm_setzero_ps(), reinterpret_cast<__m64 const *>(rhs.data()))) {}
 
-    tt_force_inline vec &operator=(std::array<float,2> const &rhs) noexcept {
+    vec &operator=(std::array<float,2> const &rhs) noexcept {
         v = _mm_loadl_pi(_mm_setzero_ps(), reinterpret_cast<__m64 const *>(rhs.data()));
         return *this;
     }
 
-    explicit tt_force_inline operator std::array<float,2> () const noexcept {
+    explicit operator std::array<float,2> () const noexcept {
         std::array<float,2> r;
         _mm_storel_pi(reinterpret_cast<__m64 *>(r.data()), v);
         return r;
     }
 
-    explicit tt_force_inline vec(std::array<float16,4> const &rhs) noexcept :
+    explicit vec(std::array<float16,4> const &rhs) noexcept :
         v(_mm_cvtph_ps(_mm_loadu_si64(rhs.data()))) {}
 
-    tt_force_inline vec& operator=(std::array<float16,4> const &rhs) noexcept {
+    vec& operator=(std::array<float16,4> const &rhs) noexcept {
         v = _mm_cvtph_ps(_mm_loadu_si64(rhs.data()));
         return *this;
     }
 
-    explicit tt_force_inline operator std::array<float16,4> () const noexcept {
+    explicit operator std::array<float16,4> () const noexcept {
         std::array<float16,4> r;
         _mm_storeu_si64(r.data(), _mm_cvtps_ph(v, _MM_FROUND_CUR_DIRECTION));
         return r;
@@ -116,14 +116,14 @@ public:
      * arithmatic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    explicit tt_force_inline vec(T rhs) noexcept:
+    explicit vec(T rhs) noexcept:
         vec(_mm_set_ps1(numeric_cast<float>(rhs))) {}
 
     /** Initialize a vec with all elements set to a value.
      * Useful as a scalar converter, when combined with an
      * arithmatic operator.
      */
-    tt_force_inline vec &operator=(float rhs) noexcept {
+    vec &operator=(float rhs) noexcept {
         return *this = _mm_set_ps1(rhs);
     }
 
@@ -136,35 +136,35 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    tt_force_inline vec(float x, float y, float z=0.0f, float w=0.0f) noexcept :
+    vec(float x, float y, float z=0.0f, float w=0.0f) noexcept :
         v(_mm_set_ps(w, z, y, x)) {}
 
-    tt_force_inline vec(double x, double y) noexcept :
+    vec(double x, double y) noexcept :
         v(_mm_cvtpd_ps(_mm_set_pd(y, x))) {}
 
-    tt_force_inline vec(double x, double y, double z, double w=0.0f) noexcept :
+    vec(double x, double y, double z, double w=0.0f) noexcept :
         v(_mm256_cvtpd_ps(_mm256_set_pd(w, z, y, x))) {}
 
-    tt_force_inline vec(int x, int y, int z=0, int w=0) noexcept :
+    vec(int x, int y, int z=0, int w=0) noexcept :
         v(_mm_cvtepi32_ps(_mm_set_epi32(w, z, y, x))) {}
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline static vec make_x(T x) noexcept {
+    static vec make_x(T x) noexcept {
         return vec{_mm_set_ss(numeric_cast<float>(x))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline static vec make_y(T y) noexcept {
+    static vec make_y(T y) noexcept {
         return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(y)), _MM_SHUFFLE(1,1,0,1))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline static vec make_z(T z) noexcept {
+    static vec make_z(T z) noexcept {
         return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(z)), _MM_SHUFFLE(1,0,1,1))};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline static vec make_w(T w) noexcept {
+    static vec make_w(T w) noexcept {
         return vec{_mm_permute_ps(_mm_set_ss(numeric_cast<float>(w)), _MM_SHUFFLE(0,1,1,1))};
     }
 
@@ -177,11 +177,11 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    [[nodiscard]] tt_force_inline static vec point(float x=0.0f, float y=0.0f, float z=0.0f) noexcept {
+    [[nodiscard]] static vec point(float x=0.0f, float y=0.0f, float z=0.0f) noexcept {
         return vec{x, y, z, 1.0f};
     }
 
-    [[nodiscard]] tt_force_inline static vec point(int x=0.0f, int y=0.0f, int z=0.0f) noexcept {
+    [[nodiscard]] static vec point(int x=0.0f, int y=0.0f, int z=0.0f) noexcept {
         return vec{x, y, z, 1};
     }
 
@@ -195,7 +195,7 @@ public:
     *  - x=Red, y=Green, z=Blue, w=Alpha
     *
     */
-    [[nodiscard]] tt_force_inline static vec point(vec rhs) noexcept {
+    [[nodiscard]] static vec point(vec rhs) noexcept {
         return rhs.xyz1();
     }
 
@@ -206,7 +206,7 @@ public:
      * baseline and left-side-bearing. Paths have a specific location of the
      * origin.
      */
-    [[nodiscard]] tt_force_inline static vec origin() noexcept {
+    [[nodiscard]] static vec origin() noexcept {
         return vec{_mm_permute_ps(_mm_set_ss(1.0f), 0b00'01'10'11)};
     }
 
@@ -223,7 +223,7 @@ public:
      *    Values below 0.0 will cause colours outside the sRGB color gamut
      *    for use with high-gamut displays
      */
-    [[nodiscard]] tt_force_inline static vec color(float r, float g, float b, float a=1.0f) noexcept {
+    [[nodiscard]] static vec color(float r, float g, float b, float a=1.0f) noexcept {
         return vec{r, g, b, a};
     }
 
@@ -234,32 +234,32 @@ public:
     [[nodiscard]] static vec colorFromSRGB(std::string_view str);
 
     template<size_t I>
-    tt_force_inline vec &set(float rhs) noexcept {
+    vec &set(float rhs) noexcept {
         static_assert(I <= 3);
         ttlet tmp = _mm_set_ss(rhs);
         return *this = _mm_insert_ps(*this, tmp, I << 4);
     }
 
     template<size_t I>
-    tt_force_inline float get() const noexcept {
+    float get() const noexcept {
         static_assert(I <= 3);
         ttlet tmp = _mm_permute_ps(*this, I);
         return _mm_cvtss_f32(tmp);
     }
 
-    tt_force_inline bool is_point() const noexcept {
+    bool is_point() const noexcept {
         return w() == 1.0f;
     }
 
-    tt_force_inline bool is_vector() const noexcept {
+    bool is_vector() const noexcept {
         return w() == 0.0f;
     }
 
-    tt_force_inline bool is_opaque() const noexcept {
+    bool is_opaque() const noexcept {
         return a() == 1.0f;
     }
 
-    tt_force_inline bool is_transparent() const noexcept {
+    bool is_transparent() const noexcept {
         return a() == 0.0f;
     }
 
@@ -267,161 +267,161 @@ public:
         return 4;
     }
 
-    tt_force_inline float operator[](size_t i) const noexcept {
+    float operator[](size_t i) const noexcept {
         tt_assume(i <= 3);
         ttlet i_ = _mm_set1_epi32(static_cast<uint32_t>(i));
         ttlet tmp = _mm_permutevar_ps(*this, i_);
         return _mm_cvtss_f32(tmp);
     }
 
-    tt_force_inline vec &x(float rhs) noexcept { return set<0>(rhs); }
-    tt_force_inline vec &y(float rhs) noexcept { return set<1>(rhs); }
-    tt_force_inline vec &z(float rhs) noexcept { return set<2>(rhs); }
-    tt_force_inline vec &w(float rhs) noexcept { return set<3>(rhs); }
-    tt_force_inline vec &r(float rhs) noexcept { return set<0>(rhs); }
-    tt_force_inline vec &g(float rhs) noexcept { return set<1>(rhs); }
-    tt_force_inline vec &b(float rhs) noexcept { return set<2>(rhs); }
-    tt_force_inline vec &a(float rhs) noexcept { return set<3>(rhs); }
-    tt_force_inline vec &width(float rhs) noexcept { return set<0>(rhs); }
-    tt_force_inline vec &height(float rhs) noexcept { return set<1>(rhs); }
-    tt_force_inline vec &depth(float rhs) noexcept { return set<2>(rhs); }
-    tt_force_inline float x() const noexcept { return get<0>(); }
-    tt_force_inline float y() const noexcept { return get<1>(); }
-    tt_force_inline float z() const noexcept { return get<2>(); }
-    tt_force_inline float w() const noexcept { return get<3>(); }
-    tt_force_inline float r() const noexcept { return get<0>(); }
-    tt_force_inline float g() const noexcept { return get<1>(); }
-    tt_force_inline float b() const noexcept { return get<2>(); }
-    tt_force_inline float a() const noexcept { return get<3>(); }
-    tt_force_inline float width() const noexcept { return get<0>(); }
-    tt_force_inline float height() const noexcept { return get<1>(); }
-    tt_force_inline float depth() const noexcept { return get<2>(); }
+    vec &x(float rhs) noexcept { return set<0>(rhs); }
+    vec &y(float rhs) noexcept { return set<1>(rhs); }
+    vec &z(float rhs) noexcept { return set<2>(rhs); }
+    vec &w(float rhs) noexcept { return set<3>(rhs); }
+    vec &r(float rhs) noexcept { return set<0>(rhs); }
+    vec &g(float rhs) noexcept { return set<1>(rhs); }
+    vec &b(float rhs) noexcept { return set<2>(rhs); }
+    vec &a(float rhs) noexcept { return set<3>(rhs); }
+    vec &width(float rhs) noexcept { return set<0>(rhs); }
+    vec &height(float rhs) noexcept { return set<1>(rhs); }
+    vec &depth(float rhs) noexcept { return set<2>(rhs); }
+    float x() const noexcept { return get<0>(); }
+    float y() const noexcept { return get<1>(); }
+    float z() const noexcept { return get<2>(); }
+    float w() const noexcept { return get<3>(); }
+    float r() const noexcept { return get<0>(); }
+    float g() const noexcept { return get<1>(); }
+    float b() const noexcept { return get<2>(); }
+    float a() const noexcept { return get<3>(); }
+    float width() const noexcept { return get<0>(); }
+    float height() const noexcept { return get<1>(); }
+    float depth() const noexcept { return get<2>(); }
 
 
-    tt_force_inline vec &operator+=(vec const &rhs) noexcept {
+    vec &operator+=(vec const &rhs) noexcept {
         return *this = _mm_add_ps(*this, rhs);
     }
 
-    tt_force_inline vec &operator-=(vec const &rhs) noexcept {
+    vec &operator-=(vec const &rhs) noexcept {
         return *this = _mm_sub_ps(*this, rhs);
     }
 
-    tt_force_inline vec &operator*=(vec const &rhs) noexcept {
+    vec &operator*=(vec const &rhs) noexcept {
         return *this = _mm_mul_ps(*this, rhs);
     }
 
-    tt_force_inline vec &operator/=(vec const &rhs) noexcept {
+    vec &operator/=(vec const &rhs) noexcept {
         return *this = _mm_div_ps(*this, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec operator-(vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator-(vec const &rhs) noexcept {
         return _mm_sub_ps(_mm_setzero_ps(), rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec operator+(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator+(vec const &lhs, vec const &rhs) noexcept {
         return _mm_add_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec operator-(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator-(vec const &lhs, vec const &rhs) noexcept {
         return _mm_sub_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec operator*(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator*(vec const &lhs, vec const &rhs) noexcept {
         return _mm_mul_ps(lhs, rhs);
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    [[nodiscard]] tt_force_inline friend vec operator*(vec const &lhs, T const &rhs) noexcept {
+    [[nodiscard]] friend vec operator*(vec const &lhs, T const &rhs) noexcept {
         return lhs * vec{rhs};
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    [[nodiscard]] tt_force_inline friend vec operator*(T const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator*(T const &lhs, vec const &rhs) noexcept {
         return vec{lhs} * rhs;
     }
 
-    [[nodiscard]] tt_force_inline friend vec operator/(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator/(vec const &lhs, vec const &rhs) noexcept {
         return _mm_div_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec max(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec max(vec const &lhs, vec const &rhs) noexcept {
         return _mm_max_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec min(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec min(vec const &lhs, vec const &rhs) noexcept {
         return _mm_min_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec abs(vec const &rhs) noexcept {
+    [[nodiscard]] friend vec abs(vec const &rhs) noexcept {
         return max(rhs, -rhs);
     }
 
     /** Equal to.
     * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
     */
-    [[nodiscard]] tt_force_inline friend int eq(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend int eq(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmpeq_ps(lhs, rhs));
     }
 
     /** Not equal to.
     * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
     */
-    [[nodiscard]] tt_force_inline friend int ne(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend int ne(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmpneq_ps(lhs, rhs));
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator==(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(vec const &lhs, vec const &rhs) noexcept {
         return !ne(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator!=(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(vec const &lhs, vec const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
     /** Less than.
      * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
      */
-    [[nodiscard]] tt_force_inline friend int operator<(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend int operator<(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmplt_ps(lhs, rhs));
     }
 
     /** Less than or equal.
     * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
     */
-    [[nodiscard]] tt_force_inline friend int operator<=(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend int operator<=(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmple_ps(lhs, rhs));
     }
 
     /** Greater than.
     * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
     */
-    [[nodiscard]] tt_force_inline friend int operator>(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend int operator>(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmpgt_ps(lhs, rhs));
     }
 
     /** Greater than or equal.
     * @return boolean bit field, bit 0=x, 1=y, 2=z, 3=w.
     */
-    [[nodiscard]] tt_force_inline friend int operator>=(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend int operator>=(vec const &lhs, vec const &rhs) noexcept {
         return _mm_movemask_ps(_mm_cmpge_ps(lhs, rhs));
     }
 
-    [[nodiscard]] tt_force_inline friend __m128 _length_squared(vec const &rhs) noexcept {
+    [[nodiscard]] friend __m128 _length_squared(vec const &rhs) noexcept {
         ttlet tmp1 = _mm_mul_ps(rhs, rhs);
         ttlet tmp2 = _mm_hadd_ps(tmp1, tmp1);
         return _mm_hadd_ps(tmp2, tmp2);
     }
 
-    [[nodiscard]] tt_force_inline friend float length_squared(vec const &rhs) noexcept {
+    [[nodiscard]] friend float length_squared(vec const &rhs) noexcept {
         return _mm_cvtss_f32(_length_squared(rhs));
     }
 
-    [[nodiscard]] tt_force_inline friend float length(vec const &rhs) noexcept {
+    [[nodiscard]] friend float length(vec const &rhs) noexcept {
         ttlet tmp = _mm_sqrt_ps(_length_squared(rhs));
         return _mm_cvtss_f32(tmp);
     }
 
-    [[nodiscard]] tt_force_inline friend vec normalize(vec const &rhs) noexcept {
+    [[nodiscard]] friend vec normalize(vec const &rhs) noexcept {
         auto ___l = _length_squared(rhs);
         auto llll = _mm_permute_ps(___l, _MM_SHUFFLE(0,0,0,0));
         auto iiii = _mm_rsqrt_ps(llll);
@@ -438,35 +438,35 @@ public:
         return *this * ratio;
     }
 
-    [[nodiscard]] tt_force_inline friend vec homogeneous_divide(vec const &rhs) noexcept {
+    [[nodiscard]] friend vec homogeneous_divide(vec const &rhs) noexcept {
         auto wwww = _mm_permute_ps(rhs, _MM_SHUFFLE(3,3,3,3));
         auto rcp_wwww = _mm_rcp_ps(wwww);
         return _mm_mul_ps(rhs, rcp_wwww);
     }
 
-    [[nodiscard]] tt_force_inline friend float dot(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend float dot(vec const &lhs, vec const &rhs) noexcept {
         ttlet tmp1 = _mm_mul_ps(lhs, rhs);
         ttlet tmp2 = _mm_hadd_ps(tmp1, tmp1);
         ttlet tmp3 = _mm_hadd_ps(tmp2, tmp2);
         return _mm_cvtss_f32(tmp3);
     }
 
-    [[nodiscard]] tt_force_inline friend vec reciprocal(vec const &rhs) noexcept {
+    [[nodiscard]] friend vec reciprocal(vec const &rhs) noexcept {
         return _mm_rcp_ps(rhs);
     }
 
     template<bool nx, bool ny, bool nz, bool nw>
     friend vec neg(vec const &rhs) noexcept;
 
-    [[nodiscard]] tt_force_inline friend vec hadd(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec hadd(vec const &lhs, vec const &rhs) noexcept {
         return _mm_hadd_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend vec hsub(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec hsub(vec const &lhs, vec const &rhs) noexcept {
         return _mm_hsub_ps(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend float viktor_cross(vec const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend float viktor_cross(vec const &lhs, vec const &rhs) noexcept {
         // a.x * b.y - a.y * b.x
         ttlet tmp1 = _mm_permute_ps(rhs, _MM_SHUFFLE(2,3,0,1));
         ttlet tmp2 = _mm_mul_ps(lhs, tmp1);
@@ -491,7 +491,7 @@ public:
 
     /** Calculate the 2D normal on a 2D vector.
      */
-    [[nodiscard]] tt_force_inline friend vec normal(vec const &rhs) noexcept {
+    [[nodiscard]] friend vec normal(vec const &rhs) noexcept {
         tt_assume(rhs.z() == 0.0f && rhs.w() == 0.0f);
         return normalize(vec{-rhs.y(), rhs.x()});
     }
@@ -566,7 +566,7 @@ public:
     }
 
     template<std::size_t I>
-    [[nodiscard]] tt_force_inline friend float get(vec const &rhs) noexcept {
+    [[nodiscard]] friend float get(vec const &rhs) noexcept {
         return rhs.get<I>();
     }
 
@@ -629,7 +629,7 @@ public:
     }
 
     template<char a, char b, char c, char d>
-    [[nodiscard]] tt_force_inline vec swizzle() const noexcept {
+    [[nodiscard]] vec swizzle() const noexcept {
         constexpr int permute_mask = vec::swizzle_permute_mask<a,b,c,d>();
         constexpr int zero_mask = vec::swizzle_zero_mask<a,b,c,d>();
         constexpr int number_mask = vec::swizzle_number_mask<a,b,c,d>();

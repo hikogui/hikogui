@@ -45,7 +45,7 @@ using namespace std::literals;
 using ssize_t = std::ptrdiff_t;
 
 template<typename T>
-tt_force_inline std::remove_reference_t<T> rvalue_cast(T value)
+std::remove_reference_t<T> rvalue_cast(T value)
 {
     return value;
 }

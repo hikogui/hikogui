@@ -129,7 +129,6 @@ struct PixelMap {
      * @param width The width of the image.
      * @param height The height of the image.
      */
-    gsl_suppress(r.11)
     PixelMap(ssize_t width, ssize_t height) noexcept : pixels(new T[width * height]), width(width), height(height), stride(width), selfAllocated(true) {
         if (pixels) {
             tt_assert(stride >= width);
@@ -168,7 +167,6 @@ struct PixelMap {
      */
     PixelMap(T *pixels, ivec extent, ssize_t stride) noexcept : PixelMap(pixels, extent.x(), extent.y(), stride) {}
 
-    gsl_suppress2(r.11,i.11)
     ~PixelMap() {
         if (selfAllocated) {
             delete[] pixels;
@@ -210,7 +208,6 @@ struct PixelMap {
      */
     PixelMap &operator=(PixelMap const &other) = delete;
 
-    gsl_suppress2(r.11,i.11)
     PixelMap &operator=(PixelMap &&other) noexcept {
         // Compatible with self-move.
         if (selfAllocated) {

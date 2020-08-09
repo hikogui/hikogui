@@ -18,19 +18,16 @@ struct results {
 
     results() noexcept : count(0), value() {}
 
-    gsl_suppress(bounds.4)
     results(T a) noexcept : count(1), value() {
         value[0] = a;
     }
 
-    gsl_suppress(bounds.4)
     results(T a, T b) noexcept : count(2), value() {
         value[0] = a;
         value[1] = b;
         sort();
     }
 
-    gsl_suppress(bounds.4)
     results(T a, T b, T c) noexcept : count(3), value() {
         value[0] = a;
         value[1] = b;
@@ -39,7 +36,6 @@ struct results {
     }
 
     template<int O, typename std::enable_if_t<std::less<int>{}(O,N), int> = 0>
-    gsl_suppress2(bounds.2,bounds.4)
     results(results<T,O> const &other) noexcept : count(other.count), value() {
         if constexpr (O > 0) {
             for (int i = 0; i < other.maxCount; i++) {
@@ -64,7 +60,6 @@ struct results {
         return value.begin() + size();
     }
 
-    
     void sort() noexcept {
         std::sort(value.begin(), value.begin() + size());
     }
@@ -76,7 +71,6 @@ struct results {
 };
 
 template<typename T, int N, typename U>
-gsl_suppress2(bounds.2,bounds.4)
 inline results<T, N> operator-(results<T, N> lhs, U const &rhs) noexcept
 {
     for (int i = 0; i < lhs.maxCount; i++) {

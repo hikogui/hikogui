@@ -62,19 +62,19 @@ static bool isHangulLVPart(char32_t codePoint)
 struct UnicodeData_Composition {
     little_uint64_buf_t data;
 
-    tt_force_inline char32_t startCharacter() const noexcept {
+    char32_t startCharacter() const noexcept {
         return data.value() >> 43;
     }
 
-    tt_force_inline char32_t composingCharacter() const noexcept {
+    char32_t composingCharacter() const noexcept {
         return (data.value() >> 22) & UNICODE_MASK;
     }
 
-    tt_force_inline char32_t composedCharacter() const noexcept {
+    char32_t composedCharacter() const noexcept {
         return data.value() & UNICODE_MASK;
     }
 
-    tt_force_inline uint64_t searchValue() const noexcept {
+    uint64_t searchValue() const noexcept {
         return data.value() >> 22;
     }
 };
@@ -82,35 +82,35 @@ struct UnicodeData_Composition {
 struct UnicodeData_Description {
     little_uint64_buf_t data;
 
-    tt_force_inline char32_t codePoint() const noexcept {
+    char32_t codePoint() const noexcept {
         return data.value() >> 43;
     }
 
-    tt_force_inline uint8_t decompositionOrder() const noexcept {
+    uint8_t decompositionOrder() const noexcept {
         return (data.value() >> 26) & 0xff;
     }
 
-    tt_force_inline bool decompositionIsCanonical() const noexcept {
+    bool decompositionIsCanonical() const noexcept {
         return ((data.value() >> 34) & 1) > 0;
     }
 
-    tt_force_inline GraphemeUnitType graphemeUnitType() const noexcept {
+    GraphemeUnitType graphemeUnitType() const noexcept {
         return static_cast<GraphemeUnitType>((data.value() >> 35) & 0xf);
     }
 
-    tt_force_inline uint8_t decompositionLength() const noexcept {
+    uint8_t decompositionLength() const noexcept {
         return (data.value() >> 21) & 0x1f;
     }
 
-    tt_force_inline size_t decompositionOffset() const noexcept {
+    size_t decompositionOffset() const noexcept {
         return (data.value() & UNICODE_MASK) * sizeof(uint64_t);
     }
 
-    tt_force_inline char32_t decompositionCodePoint() const noexcept {
+    char32_t decompositionCodePoint() const noexcept {
         return static_cast<char32_t>(data.value() & UNICODE_MASK);
     }
 
-    tt_force_inline BidiClass bidiClass() const noexcept {
+    BidiClass bidiClass() const noexcept {
         switch (codePoint()) {
         case 0x00'202a: return BidiClass::LRE;
         case 0x00'202d: return BidiClass::LRO;

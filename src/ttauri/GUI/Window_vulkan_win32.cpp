@@ -33,8 +33,6 @@ static bool win32WindowClassIsRegistered = false;
 static std::unordered_map<HWND, Window_vulkan_win32 *> win32WindowMap = {};
 static bool firstWindowHasBeenOpened = false;
 
-
-gsl_suppress3(26489,lifetime.1,type.1)
 static LRESULT CALLBACK _WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_NCCREATE && lParam) {
@@ -147,10 +145,8 @@ Window_vulkan_win32::Window_vulkan_win32(std::shared_ptr<WindowDelegate> const &
 Window_vulkan_win32::~Window_vulkan_win32()
 {
     try {
-        gsl_suppress(f.6) {
-            if (win32Window != nullptr) {
-                LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title.text());
-            }
+        if (win32Window != nullptr) {
+            LOG_FATAL("win32Window was not destroyed before Window '{}' was destructed.", title.text());
         }
     } catch (...) {
         abort();

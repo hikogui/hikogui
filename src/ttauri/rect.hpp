@@ -18,11 +18,11 @@ class rect {
     std::array<vec,4> corners;
 
 public:
-    tt_force_inline rect() noexcept : corners({vec{}, vec{}, vec{}, vec{}}) {}
-    tt_force_inline rect(rect const &rhs) noexcept = default;
-    tt_force_inline rect &operator=(rect const &rhs) noexcept = default;
-    tt_force_inline rect(rect &&rhs) noexcept = default;
-    tt_force_inline rect &operator=(rect &&rhs) noexcept = default;
+    rect() noexcept : corners({vec{}, vec{}, vec{}, vec{}}) {}
+    rect(rect const &rhs) noexcept = default;
+    rect &operator=(rect const &rhs) noexcept = default;
+    rect(rect &&rhs) noexcept = default;
+    rect &operator=(rect &&rhs) noexcept = default;
 
     rect(vec corner0, vec corner1, vec corner2, vec corner3) noexcept :
         corners({corner0, corner1, corner2, corner3}) {}
@@ -81,7 +81,7 @@ public:
     * @return The homogeneous coordinate of the corner.
     */
     template<size_t I>
-    [[nodiscard]] tt_force_inline vec corner() const noexcept {
+    [[nodiscard]] vec corner() const noexcept {
         static_assert(I <= 3);
         return std::get<I>(corners);
     }

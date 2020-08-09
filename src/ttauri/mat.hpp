@@ -24,15 +24,15 @@ class mat {
 public:
     /** Create an identity matrix.
      */
-    tt_force_inline mat() noexcept {}
-    tt_force_inline mat(mat const &rhs) noexcept = default;
-    tt_force_inline mat &operator=(mat const &rhs) noexcept = default;
-    tt_force_inline mat(mat &&rhs) noexcept = default;
-    tt_force_inline mat &operator=(mat &&rhs) noexcept = default;
+    mat() noexcept {}
+    mat(mat const &rhs) noexcept = default;
+    mat &operator=(mat const &rhs) noexcept = default;
+    mat(mat &&rhs) noexcept = default;
+    mat &operator=(mat &&rhs) noexcept = default;
 
     /** Create a matrix for 4 vector-columns
      */
-    tt_force_inline mat(vec col0, vec col1, vec col2, vec col3=vec{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
+    mat(vec col0, vec col1, vec col2, vec col3=vec{0.0f, 0.0f, 0.0f, 1.0f}) noexcept :
         col0(col0), col1(col1), col2(col2), col3(col3) {}
 
     /** Construct a matrix from the individual values.
@@ -40,7 +40,7 @@ public:
      * construct the matrix visually in the same way as common
      * mathamatics papers.
      */
-    tt_force_inline mat(
+    mat(
         float i00, float i10, float i20, float i30,
         float i01, float i11, float i21, float i31,
         float i02, float i12, float i22, float i32,
@@ -94,7 +94,7 @@ public:
         /** Matrix/Vector multiplication.
         * Used for transforming vectors.
         */
-        [[nodiscard]] tt_force_inline friend aarect operator*(S const &lhs, aarect const &rhs) noexcept {
+        [[nodiscard]] friend aarect operator*(S const &lhs, aarect const &rhs) noexcept {
             return aarect::p0p3(lhs.s * rhs.p0(), lhs.s * rhs.p3());
         }
 
@@ -154,7 +154,7 @@ public:
 
         /** Matrix/aarect multiplication.
         */
-        [[nodiscard]] tt_force_inline friend rect operator*(T const &lhs, aarect const &rhs) noexcept {
+        [[nodiscard]] friend rect operator*(T const &lhs, aarect const &rhs) noexcept {
             return rect{
                 lhs.t + rhs.corner<0>(),
                 lhs.t + rhs.corner<1>(),
@@ -252,7 +252,7 @@ public:
     constexpr size_t size() noexcept { return 4; }
 
     template<size_t I>
-    [[nodiscard]] tt_force_inline vec &get() noexcept {
+    [[nodiscard]] vec &get() noexcept {
         static_assert(I <= 3);
         if constexpr (I == 0) {
             return col0;
@@ -266,7 +266,7 @@ public:
     }
 
     template<size_t I>
-    [[nodiscard]] tt_force_inline vec get() const noexcept {
+    [[nodiscard]] vec get() const noexcept {
         static_assert(I <= 3);
         if constexpr (I == 0) {
             return col0;
@@ -290,7 +290,7 @@ public:
     /** Matrix/Vector multiplication.
      * Used for transforming vectors.
      */
-    [[nodiscard]] tt_force_inline friend vec operator*(mat const &lhs, vec const &rhs) noexcept {
+    [[nodiscard]] friend vec operator*(mat const &lhs, vec const &rhs) noexcept {
         return
             (lhs.col0 * rhs.xxxx() + lhs.col1 * rhs.yyyy()) +
             (lhs.col2 * rhs.zzzz() + lhs.col3 * rhs.wwww());
@@ -298,7 +298,7 @@ public:
 
     /** Matrix/aarect multiplication.
     */
-    [[nodiscard]] tt_force_inline friend rect operator*(mat const &lhs, aarect const &rhs) noexcept {
+    [[nodiscard]] friend rect operator*(mat const &lhs, aarect const &rhs) noexcept {
         return rect{
             lhs * rhs.corner<0>(),
             lhs * rhs.corner<1>(),
@@ -309,7 +309,7 @@ public:
 
     /** Matrix/rect multiplication.
     */
-    [[nodiscard]] tt_force_inline friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
+    [[nodiscard]] friend rect operator*(mat const &lhs, rect const &rhs) noexcept {
         return rect{
             lhs * rhs.corner<0>(),
             lhs * rhs.corner<1>(),

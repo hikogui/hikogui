@@ -22,11 +22,11 @@ private:
     vec v;
 
 public:
-    tt_force_inline aarect() noexcept : v() {}
-    tt_force_inline aarect(aarect const &rhs) noexcept = default;
-    tt_force_inline aarect &operator=(aarect const &rhs) noexcept = default;
-    tt_force_inline aarect(aarect &&rhs) noexcept = default;
-    tt_force_inline aarect &operator=(aarect &&rhs) noexcept = default;
+    aarect() noexcept : v() {}
+    aarect(aarect const &rhs) noexcept = default;
+    aarect &operator=(aarect const &rhs) noexcept = default;
+    aarect(aarect &&rhs) noexcept = default;
+    aarect &operator=(aarect &&rhs) noexcept = default;
 
     
     /** Create a box from the position and size.
@@ -38,7 +38,7 @@ public:
      */
     template<typename X, typename Y, typename W=float, typename H=float,
         std::enable_if_t<std::is_arithmetic_v<X> && std::is_arithmetic_v<Y> && std::is_arithmetic_v<W> && std::is_arithmetic_v<H>,int> = 0>
-    tt_force_inline aarect(X x, Y y, W width, H height) noexcept :
+    aarect(X x, Y y, W width, H height) noexcept :
         v(vec(
             numeric_cast<float>(x),
             numeric_cast<float>(y),
@@ -51,7 +51,7 @@ public:
      * @param position The position of the left-bottom corner of the box
      * @param extent The size of the box.
      */
-    tt_force_inline aarect(vec const &position, vec const &extent) noexcept :
+    aarect(vec const &position, vec const &extent) noexcept :
         v(position.xyxy() + extent._00xy()) {
         tt_assume(position.is_point());
         tt_assume(position.z() == 0.0);
@@ -63,7 +63,7 @@ public:
     * The rectangle's left bottom corner is at the origin.
     * @param extent The size of the box.
     */
-    tt_force_inline aarect(vec const &extent) noexcept :
+    aarect(vec const &extent) noexcept :
         v(extent._00xy()) {
         tt_assume(extent.is_vector());
         tt_assume(extent.z() == 0.0);
@@ -72,13 +72,13 @@ public:
     /** Create aarect from packed p0p3 coordinates.
      * @param v p0 = (x, y), p3 = (z, w)
      */
-    [[nodiscard]] tt_force_inline static aarect p0p3(vec const &v) noexcept {
+    [[nodiscard]] static aarect p0p3(vec const &v) noexcept {
         aarect r;
         r.v = v;
         return r;
     }
 
-    [[nodiscard]] tt_force_inline static aarect p0p3(vec const &p0, vec const &p3) noexcept {
+    [[nodiscard]] static aarect p0p3(vec const &p0, vec const &p3) noexcept {
         tt_assume(p0.is_point());
         tt_assume(p3.is_point());
         return aarect::p0p3(p0.xy00() + p3._00xy());
@@ -137,7 +137,7 @@ public:
     * @return The homogeneous coordinate of the corner.
     */
     template<size_t I>
-    [[nodiscard]] tt_force_inline vec corner() const noexcept {
+    [[nodiscard]] vec corner() const noexcept {
         static_assert(I <= 3);
         if constexpr (I == 0) {
             return v.xy01();
@@ -157,15 +157,15 @@ public:
     * @return The homogeneous coordinate of the corner.
     */
     //template<size_t I, typename Z, std::enable_if_t<std::is_arithmetic_v<Z>,int> = 0>
-    //[[nodiscard]] tt_force_inline vec corner(Z z) const noexcept {
+    //[[nodiscard]] vec corner(Z z) const noexcept {
     //    return corner<I>().z(numeric_cast<float>(z));
     //}
 
-    [[nodiscard]] tt_force_inline vec p0() const noexcept {
+    [[nodiscard]] vec p0() const noexcept {
         return corner<0>();
     }
 
-    [[nodiscard]] tt_force_inline vec p3() const noexcept {
+    [[nodiscard]] vec p3() const noexcept {
         return corner<3>();
     }
 
@@ -174,7 +174,7 @@ public:
     *
     * @return The homogeneous coordinate of the bottom-left corner.
     */
-    [[nodiscard]] tt_force_inline vec offset() const noexcept {
+    [[nodiscard]] vec offset() const noexcept {
         return v.xy00();
     }
 
@@ -186,30 +186,30 @@ public:
         return (v.zwzw() - v).xy00();
     }
 
-    [[nodiscard]] tt_force_inline float x() const noexcept {
+    [[nodiscard]] float x() const noexcept {
         return v.x();
     }
 
-    [[nodiscard]] tt_force_inline float y() const noexcept {
+    [[nodiscard]] float y() const noexcept {
         return v.y();
     }
 
-    [[nodiscard]] tt_force_inline float width() const noexcept {
+    [[nodiscard]] float width() const noexcept {
         return (v.zwzw() - v).x();
     }
 
-    [[nodiscard]] tt_force_inline float height() const noexcept {
+    [[nodiscard]] float height() const noexcept {
         return (v.zwzw() - v).y();
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline aarect &width(T newWidth) noexcept {
+    aarect &width(T newWidth) noexcept {
         v = v.xyxw() + vec::make_z(newWidth);
         return *this;
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline aarect &height(T newHeight) noexcept {
+    aarect &height(T newHeight) noexcept {
         v = v.xyzy() + vec::make_w(newHeight);
         return *this;
     }

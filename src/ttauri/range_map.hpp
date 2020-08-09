@@ -94,7 +94,7 @@ public:
     /** Optimize range_map for improved lookup performance and reduced memory footprint.
      */
     void optimize() noexcept {
-        std::set<std::shared_ptr<values>,[](ttlet &lhs, ttlet &rhs) { return *lhs < *rhs; }}> values_set;
+        std::set<std::shared_ptr<values>,[](ttlet &lhs, ttlet &rhs) { return *lhs < *rhs; }> values_set;
 
         auto p = items.begin();
         values_set.insert(p->values);

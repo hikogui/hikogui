@@ -49,7 +49,7 @@ tt_no_inline void contended_wait_for_transition(std::atomic<T> const &state, T t
  * @param to The value the state needs to be before this function returns.
  */
 template<typename CounterTag, typename T>
-tt_force_inline void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
+void wait_for_transition(std::atomic<T> const &state, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     if (tt_unlikely(state.load(order) != to)) {
         contended_wait_for_transition<CounterTag>(state, to, order);
@@ -97,7 +97,7 @@ tt_no_inline void contended_transition(std::atomic<T> &state, T from, T to, std:
  * @param order Memory order to use for this state variable.
  */
 template<typename BlockCounterTag=void,typename T>
-tt_force_inline void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
+void transition(std::atomic<T> &state, T from, T to, std::memory_order order=std::memory_order_seq_cst)
 {
     auto expect = from;
     if (tt_likely(state.compare_exchange_strong(expect, to, order))) {

@@ -28,7 +28,7 @@ struct Vertex {
     R16G16B16A16SFloat color;
 
 
-    tt_force_inline Vertex(vec position, aarect clippingRectangle, vec color) noexcept :
+    Vertex(vec position, aarect clippingRectangle, vec color) noexcept :
         position(position),
         clippingRectangle(clippingRectangle),
         color(color) {}

@@ -24,12 +24,10 @@ Window_base::~Window_base()
     widget.release();
 
     try {
-        gsl_suppress(f.6) {
-            if (state != State::NoWindow) {
-                LOG_FATAL("Window '{}' was not properly teardown before destruction.", title.text());
-            }
-            LOG_INFO("Window '{}' has been propertly destructed.", title.text());
+        if (state != State::NoWindow) {
+            LOG_FATAL("Window '{}' was not properly teardown before destruction.", title.text());
         }
+        LOG_INFO("Window '{}' has been propertly destructed.", title.text());
     } catch (...) {
         abort();
     }

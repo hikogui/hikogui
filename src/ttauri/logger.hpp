@@ -183,7 +183,7 @@ public:
     void gather_tick(bool last) noexcept;
 
     template<log_level Level, typename... Args>
-    tt_force_inline void log(typename cpu_counter_clock::time_point timestamp, char const *format, Args &&... args) noexcept {
+    void log(typename cpu_counter_clock::time_point timestamp, char const *format, Args &&... args) noexcept {
         if (Level >= minimum_log_level) {
             // Add messages in the queue, block when full.
             // * This reduces amount of instructions needed to be executed during logging.

@@ -242,23 +242,23 @@ struct token_t {
         return lhs << rhs.repr();
     }
 
-    [[nodiscard]] friend tt_force_inline bool operator==(token_t const &lhs, token_t const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(token_t const &lhs, token_t const &rhs) noexcept {
         return (lhs.name == rhs.name) && (lhs.value == rhs.value);
     }
 
-    [[nodiscard]] friend tt_force_inline bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
         return lhs.name == rhs;
     }
 
-    [[nodiscard]] friend tt_force_inline bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(token_t const &lhs, tokenizer_name_t const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] friend tt_force_inline bool operator==(token_t const &lhs, const char *rhs) noexcept {
+    [[nodiscard]] friend bool operator==(token_t const &lhs, const char *rhs) noexcept {
         return lhs.value == rhs;
     }
 
-    [[nodiscard]] friend tt_force_inline bool operator!=(token_t const &lhs, const char *rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(token_t const &lhs, const char *rhs) noexcept {
         return !(lhs == rhs);
     }
 

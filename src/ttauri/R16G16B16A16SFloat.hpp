@@ -17,27 +17,27 @@ class R16G16B16A16SFloat {
     std::array<float16,4> v;
 
 public:
-    tt_force_inline R16G16B16A16SFloat() noexcept {
+    R16G16B16A16SFloat() noexcept {
         std::memset(v.data(), 0, sizeof(v));
     }
 
-    tt_force_inline R16G16B16A16SFloat(R16G16B16A16SFloat const &rhs) noexcept = default;
-    tt_force_inline R16G16B16A16SFloat(R16G16B16A16SFloat &&rhs) noexcept = default;
-    tt_force_inline R16G16B16A16SFloat &operator=(R16G16B16A16SFloat const &rhs) noexcept = default;
-    tt_force_inline R16G16B16A16SFloat &operator=(R16G16B16A16SFloat &&rhs) noexcept = default;
+    R16G16B16A16SFloat(R16G16B16A16SFloat const &rhs) noexcept = default;
+    R16G16B16A16SFloat(R16G16B16A16SFloat &&rhs) noexcept = default;
+    R16G16B16A16SFloat &operator=(R16G16B16A16SFloat const &rhs) noexcept = default;
+    R16G16B16A16SFloat &operator=(R16G16B16A16SFloat &&rhs) noexcept = default;
 
-    tt_force_inline R16G16B16A16SFloat(vec const &rhs) noexcept {
+    R16G16B16A16SFloat(vec const &rhs) noexcept {
         ttlet rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
     }
 
-    tt_force_inline R16G16B16A16SFloat &operator=(vec const &rhs) noexcept {
+    R16G16B16A16SFloat &operator=(vec const &rhs) noexcept {
         ttlet rhs_fp16 = _mm_cvtps_ph(rhs, _MM_FROUND_CUR_DIRECTION);
         _mm_storeu_si64(v.data(), rhs_fp16);
         return *this;
     }
 
-    tt_force_inline operator vec () const noexcept {
+    operator vec () const noexcept {
         ttlet rhs_fp16 = _mm_loadu_si64(v.data());
         return _mm_cvtph_ps(rhs_fp16);
     }
@@ -50,14 +50,14 @@ public:
         return v;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator==(R16G16B16A16SFloat const &lhs, R16G16B16A16SFloat const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(R16G16B16A16SFloat const &lhs, R16G16B16A16SFloat const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] tt_force_inline friend bool operator!=(R16G16B16A16SFloat const &lhs, R16G16B16A16SFloat const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(R16G16B16A16SFloat const &lhs, R16G16B16A16SFloat const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend R16G16B16A16SFloat makeTransparent(R16G16B16A16SFloat const &rhs) noexcept {
+    [[nodiscard]] friend R16G16B16A16SFloat makeTransparent(R16G16B16A16SFloat const &rhs) noexcept {
         R16G16B16A16SFloat r;
         r.v = rhs.v;
         std::get<3>(r.v) = 0x0000; // 0.0f

@@ -110,6 +110,22 @@ enum class Processor {
     current = TT_PROCESSOR
 };
 
+#define TT_ENDIAN_BIG 'b'
+#define TT_ENDIAN_LITTLE 'l'
+
+#if TT_PROCESSOR == TT_CPU_X64 || TT_PROCESSOR == TT_CPU_ARM
+#define TT_ENDIAN TT_ENDIAN_LITTLE
+#else
+#error "Do not know endianess of this CPU"
+#endif
+
+enum class Endian {
+    Big = TT_ENDIAN_BIG,
+    Little = TT_ENDIAN_LITTLE,
+    Native = TT_ENDIAN
+};
+
+
 #define tt_stringify(a) #a
 
 #if TT_COMPILER == TT_CC_MSVC
@@ -122,11 +138,6 @@ enum class Processor {
 #define tt_no_inline inline __declspec(noinline)
 #define clang_suppress(a)
 #define msvc_suppress(a) _Pragma(tt_stringify(warning(disable:a)))
-#define gsl_suppress(a) [[gsl::suppress(a)]]
-#define gsl_suppress2(a,b) [[gsl::suppress(a)]] [[gsl::suppress(b)]]
-#define gsl_suppress3(a,b,c) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]]
-#define gsl_suppress4(a,b,c,d) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]] [[gsl::suppress(d)]]
-#define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(a)]] [[gsl::suppress(b)]] [[gsl::suppress(c)]] [[gsl::suppress(d)]] [[gsl::suppress(e)]]
 
 #elif TT_COMPILER == TT_CC_CLANG
 #define tt_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
@@ -138,11 +149,6 @@ enum class Processor {
 #define tt_no_inline inline __attribute__((noinline))
 #define clang_suppress(a) _Pragma(tt_stringify(clang diagnostic ignored a))
 #define msvc_suppress(a)
-#define gsl_suppress(a) [[gsl::suppress(#a)]]
-#define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
-#define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
-#define gsl_suppress4(a,b,c,d) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]]
-#define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]] [[gsl::suppress(#e)]]
 
 #elif TT_COMPILER == TT_CC_GCC
 #define tt_likely(condition) __builtin_expect(static_cast<bool>(condition), 1)
@@ -154,11 +160,6 @@ enum class Processor {
 #define tt_no_inline inline __attribute__((noinline))
 #define clang_suppress(a)
 #define msvc_suppress(a)
-#define gsl_suppress(a) [[gsl::suppress(#a)]]
-#define gsl_suppress2(a,b) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]]
-#define gsl_suppress3(a,b,c) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]]
-#define gsl_suppress4(a,b,c,d) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]]
-#define gsl_suppress5(a,b,c,d,e) [[gsl::suppress(#a)]] [[gsl::suppress(#b)]] [[gsl::suppress(#c)]] [[gsl::suppress(#d)]] [[gsl::suppress(#e)]]
 
 #else
 #define tt_likely(condition) condition
@@ -170,11 +171,6 @@ enum class Processor {
 #define tt_no_inline
 #define clang_suppress(a)
 #define msvc_suppress(a)
-#define gsl_suppress(a)
-#define gsl_suppress2(a,b)
-#define gsl_suppress3(a,b,c)
-#define gsl_suppress4(a,b,c,d)
-#define gsl_suppress5(a,b,c,d,e)
 
 #endif
 

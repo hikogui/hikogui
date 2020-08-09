@@ -47,42 +47,42 @@ class ivec {
 public:
     /* Create a zeroed out vec.
      */
-    tt_force_inline ivec() noexcept : ivec(_mm_setzero_si128()) {}
-    tt_force_inline ivec(ivec const &rhs) = default;
-    tt_force_inline ivec &operator=(ivec const &rhs) = default;
-    tt_force_inline ivec(ivec &&rhs) = default;
-    tt_force_inline ivec &operator=(ivec &&rhs) = default;
+    ivec() noexcept : ivec(_mm_setzero_si128()) {}
+    ivec(ivec const &rhs) = default;
+    ivec &operator=(ivec const &rhs) = default;
+    ivec(ivec &&rhs) = default;
+    ivec &operator=(ivec &&rhs) = default;
 
     /** Create a ivec out of a __m128i
      */
-    tt_force_inline ivec(__m128i rhs) noexcept :
+    ivec(__m128i rhs) noexcept :
         v(rhs) {}
 
     /** Create a ivec out of a __m128i
      */
-    tt_force_inline ivec &operator=(__m128i rhs) noexcept {
+    ivec &operator=(__m128i rhs) noexcept {
         v = rhs;
         return *this;
     }
 
     /** Convert a ivec to a __m128i.
      */
-    tt_force_inline operator __m128i () const noexcept {
+    operator __m128i () const noexcept {
         return v;
     }
 
-    tt_force_inline ivec(vec const &rhs) noexcept :
+    ivec(vec const &rhs) noexcept :
        ivec(_mm_cvtps_epi32(rhs)) {}
 
-    tt_force_inline ivec &operator=(vec const &rhs) noexcept {
+    ivec &operator=(vec const &rhs) noexcept {
         return *this = _mm_cvtps_epi32(rhs);
     }
 
-    tt_force_inline operator vec () const noexcept {
+    operator vec () const noexcept {
         return _mm_cvtepi32_ps(*this);
     }
 
-    explicit tt_force_inline operator std::array<int32_t,4> () const noexcept {
+    explicit operator std::array<int32_t,4> () const noexcept {
         std::array<int32_t,4> r;
         _mm_storeu_si128(reinterpret_cast<__m128i*>(r.data()), *this);
         return r;
@@ -93,7 +93,7 @@ public:
      * arithmetic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    explicit tt_force_inline ivec(T rhs) noexcept:
+    explicit ivec(T rhs) noexcept:
         ivec(_mm_set1_epi32(numeric_cast<int32_t>(rhs))) {}
 
     /** Initialize a ivec with all elements set to a value.
@@ -101,7 +101,7 @@ public:
      * arithmetic operator.
      */
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline ivec &operator=(T rhs) noexcept {
+    ivec &operator=(T rhs) noexcept {
         return *this = _mm_set1_epi32(numeric_cast<int32_t>(rhs));
     }
 
@@ -112,7 +112,7 @@ public:
     */
     template<typename T, typename U, typename V=int, typename W=int,
         std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-    tt_force_inline ivec(T x, U y, V z=0, W w=0) noexcept :
+    ivec(T x, U y, V z=0, W w=0) noexcept :
         ivec(_mm_set_epi32(
             numeric_cast<int32_t>(w),
             numeric_cast<int32_t>(z),
@@ -127,18 +127,18 @@ public:
     */
     template<typename T, typename U, typename V=int, typename W=int,
     std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> && std::is_arithmetic_v<V> && std::is_arithmetic_v<W>,int> = 0>
-    [[nodiscard]] tt_force_inline static ivec point(T x, U y, V z=0, W w=1) noexcept {
+    [[nodiscard]] static ivec point(T x, U y, V z=0, W w=1) noexcept {
         return ivec(x, y, z, w);
     }
 
     template<size_t I, typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline ivec &set(T rhs) noexcept {
+    ivec &set(T rhs) noexcept {
         static_assert(I <= 3);
         return *this = _mm_insert_epi32(*this, numeric_cast<int32_t>(rhs), I);
     }
 
     template<size_t I>
-    tt_force_inline int get() const noexcept {
+    int get() const noexcept {
         static_assert(I <= 3);
         return _mm_extract_epi32(*this, I);
     }
@@ -146,92 +146,92 @@ public:
     constexpr size_t size() const noexcept { return 4; }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline ivec &x(T rhs) noexcept { return set<0>(rhs); }
+    ivec &x(T rhs) noexcept { return set<0>(rhs); }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline ivec &y(T rhs) noexcept { return set<1>(rhs); }
+    ivec &y(T rhs) noexcept { return set<1>(rhs); }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline ivec &z(T rhs) noexcept { return set<2>(rhs); }
+    ivec &z(T rhs) noexcept { return set<2>(rhs); }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>,int> = 0>
-    tt_force_inline ivec &w(T rhs) noexcept { return set<3>(rhs); }
+    ivec &w(T rhs) noexcept { return set<3>(rhs); }
 
-    tt_force_inline int x() const noexcept { return get<0>(); }
-    tt_force_inline int y() const noexcept { return get<1>(); }
-    tt_force_inline int z() const noexcept { return get<2>(); }
-    tt_force_inline int w() const noexcept { return get<3>(); }
-    tt_force_inline int width() const noexcept { return get<0>(); }
-    tt_force_inline int height() const noexcept { return get<1>(); }
+    int x() const noexcept { return get<0>(); }
+    int y() const noexcept { return get<1>(); }
+    int z() const noexcept { return get<2>(); }
+    int w() const noexcept { return get<3>(); }
+    int width() const noexcept { return get<0>(); }
+    int height() const noexcept { return get<1>(); }
 
-    tt_force_inline ivec &operator+=(ivec const &rhs) noexcept {
+    ivec &operator+=(ivec const &rhs) noexcept {
         return *this = _mm_add_epi32(*this, rhs);
     }
 
-    tt_force_inline ivec &operator-=(ivec const &rhs) noexcept {
+    ivec &operator-=(ivec const &rhs) noexcept {
         return *this = _mm_sub_epi32(*this, rhs);
     }
 
-    tt_force_inline ivec &operator*=(ivec const &rhs) noexcept {
+    ivec &operator*=(ivec const &rhs) noexcept {
         return *this = _mm_mullo_epi32(*this, rhs);
     }
 
 
-    [[nodiscard]] tt_force_inline friend ivec operator+(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend ivec operator+(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_add_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend ivec operator-(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend ivec operator-(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_sub_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend ivec operator*(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend ivec operator*(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_mullo_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend ivec max(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend ivec max(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_max_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend ivec min(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend ivec min(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_min_epi32(lhs, rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator==(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(ivec const &lhs, ivec const &rhs) noexcept {
         ttlet tmp2 = _mm_movemask_epi8(_mm_cmpeq_epi32(lhs, rhs));
         return tmp2 == 0xffff;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator!=(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(ivec const &lhs, ivec const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
     /** Equal to.
     * @return boolean nibble field, bit [3:0]=x, [7:4]=y, [11:8]=z, [15:12]=w.
     */
-    [[nodiscard]] tt_force_inline friend int eq(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int eq(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmpeq_epi32(lhs, rhs));
     }
 
     /** Less than.
     * @return boolean nibble field, bit [3:0]=x, [7:4]=y, [11:8]=z, [15:12]=w.
     */
-    [[nodiscard]] tt_force_inline friend int operator<(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator<(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmplt_epi32(lhs, rhs));
     }
 
     /** Greater than.
     * @return boolean nibble field, bit [3:0]=x, [7:4]=y, [11:8]=z, [15:12]=w.
     */
-    [[nodiscard]] tt_force_inline friend int operator>(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator>(ivec const &lhs, ivec const &rhs) noexcept {
         return _mm_movemask_epi8(_mm_cmpgt_epi32(lhs, rhs));
     }
 
-    [[nodiscard]] tt_force_inline friend int operator<=(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator<=(ivec const &lhs, ivec const &rhs) noexcept {
         return (~(lhs > rhs)) & 0xffff;
     }
 
-    [[nodiscard]] tt_force_inline friend int operator>=(ivec const &lhs, ivec const &rhs) noexcept {
+    [[nodiscard]] friend int operator>=(ivec const &lhs, ivec const &rhs) noexcept {
         return (~(lhs < rhs)) & 0xffff;
     }
 
@@ -244,7 +244,7 @@ public:
     }
 
     template<std::size_t I>
-    [[nodiscard]] tt_force_inline friend int get(ivec const &rhs) noexcept {
+    [[nodiscard]] friend int get(ivec const &rhs) noexcept {
         return rhs.get<I>();
     }
 
@@ -287,7 +287,7 @@ public:
     }
 
     template<char a, char b, char c, char d>
-    [[nodiscard]] tt_force_inline ivec swizzle() const noexcept {
+    [[nodiscard]] ivec swizzle() const noexcept {
         constexpr int permute_mask = vec::swizzle_permute_mask<a,b,c,d>();
 
         __m128i swizzled;

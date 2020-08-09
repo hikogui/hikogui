@@ -16,7 +16,7 @@ namespace tt {
 //struct bigint;
 
 //template<typename T, int N, int O>
-//tt_force_inline bigint<T,N> bigint_reciprocal(bigint<T,O> const &divider);
+//bigint<T,N> bigint_reciprocal(bigint<T,O> const &divider);
 
 //template<typename T, int N, typename U>
 //constexpr bigint<T,N> bigint_reciprocal(U const &divider);
@@ -39,15 +39,15 @@ struct bigint {
     */
     std::array<digit_type,nr_digits> digits;
 
-    tt_force_inline bigint() noexcept = default;
-    tt_force_inline ~bigint() = default;
-    tt_force_inline bigint(bigint const &) noexcept = default;
-    tt_force_inline bigint &operator=(bigint const &) noexcept = default;
-    tt_force_inline bigint(bigint &&) noexcept = default;
-    tt_force_inline bigint &operator=(bigint &&) noexcept = default;
+    bigint() noexcept = default;
+    ~bigint() = default;
+    bigint(bigint const &) noexcept = default;
+    bigint &operator=(bigint const &) noexcept = default;
+    bigint(bigint &&) noexcept = default;
+    bigint &operator=(bigint &&) noexcept = default;
 
     template<int R, std::enable_if_t<R < N, int> = 0>
-    tt_force_inline bigint(bigint<T,R> const &rhs) noexcept {
+    bigint(bigint<T,R> const &rhs) noexcept {
         int i = 0;
         for (; i != R; ++i) {
             digits[i] = rhs.digits[i];
@@ -58,7 +58,7 @@ struct bigint {
     }
 
     template<int R, std::enable_if_t<R < N, int> = 0>
-    tt_force_inline bigint &operator=(bigint<T,R> const &rhs) noexcept {
+    bigint &operator=(bigint<T,R> const &rhs) noexcept {
         int i = 0;
         for (; i != R; ++i) {
             digits[i] = rhs.digits[i];
@@ -70,7 +70,7 @@ struct bigint {
     }
 
     template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    tt_force_inline bigint(R value) noexcept {
+    bigint(R value) noexcept {
         digits[0] = static_cast<digit_type>(value);
         for (auto i = 1; i < nr_digits; i++) {
             digits[i] = 0;
@@ -78,7 +78,7 @@ struct bigint {
     }
 
     template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    tt_force_inline bigint &operator=(R value) noexcept {
+    bigint &operator=(R value) noexcept {
         digits[0] = value;
         for (auto i = 1; i < nr_digits; i++) {
             digits[i] = 0;
@@ -86,7 +86,7 @@ struct bigint {
         return *this;
     }
 
-    tt_force_inline explicit bigint(std::string_view str, int base=10) noexcept :
+    explicit bigint(std::string_view str, int base=10) noexcept :
         bigint(0)
     {
         for (auto i = 0; i < str.size(); i++) {
@@ -96,19 +96,19 @@ struct bigint {
         }
     }
 
-    tt_force_inline explicit operator unsigned long long () const noexcept { return static_cast<unsigned long long>(digits[0]); }
-    tt_force_inline explicit operator signed long long () const noexcept { return static_cast<signed long long>(digits[0]); }
-    tt_force_inline explicit operator unsigned long () const noexcept { return static_cast<unsigned long>(digits[0]); }
-    tt_force_inline explicit operator signed long () const noexcept { return static_cast<signed long>(digits[0]); }
-    tt_force_inline explicit operator unsigned int () const noexcept { return static_cast<unsigned int>(digits[0]); }
-    tt_force_inline explicit operator signed int () const noexcept { return static_cast<signed int>(digits[0]); }
-    tt_force_inline explicit operator unsigned short () const noexcept { return static_cast<unsigned short>(digits[0]); }
-    tt_force_inline explicit operator signed short () const noexcept { return static_cast<signed short>(digits[0]); }
-    tt_force_inline explicit operator unsigned char () const noexcept { return static_cast<unsigned char>(digits[0]); }
-    tt_force_inline explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
-    tt_force_inline explicit operator char () const noexcept { return static_cast<char>(digits[0]); }
+    explicit operator unsigned long long () const noexcept { return static_cast<unsigned long long>(digits[0]); }
+    explicit operator signed long long () const noexcept { return static_cast<signed long long>(digits[0]); }
+    explicit operator unsigned long () const noexcept { return static_cast<unsigned long>(digits[0]); }
+    explicit operator signed long () const noexcept { return static_cast<signed long>(digits[0]); }
+    explicit operator unsigned int () const noexcept { return static_cast<unsigned int>(digits[0]); }
+    explicit operator signed int () const noexcept { return static_cast<signed int>(digits[0]); }
+    explicit operator unsigned short () const noexcept { return static_cast<unsigned short>(digits[0]); }
+    explicit operator signed short () const noexcept { return static_cast<signed short>(digits[0]); }
+    explicit operator unsigned char () const noexcept { return static_cast<unsigned char>(digits[0]); }
+    explicit operator signed char () const noexcept { return static_cast<signed char>(digits[0]); }
+    explicit operator char () const noexcept { return static_cast<char>(digits[0]); }
 
-    tt_force_inline explicit operator bool () const noexcept {
+    explicit operator bool () const noexcept {
         for (ssize_t i = 0; i != N; ++i) {
             if (digits[i] != 0) {
                 return true;
@@ -118,7 +118,7 @@ struct bigint {
     }
 
     template<int O>
-    tt_force_inline explicit operator bigint<T,O> () const noexcept {
+    explicit operator bigint<T,O> () const noexcept {
         bigint<T,O> r;
 
         for (auto i = 0; i < O; i++) {
@@ -159,14 +159,14 @@ struct bigint {
         );
     }
 
-    tt_force_inline digit_type get_bit(unsigned int count) const noexcept {
+    digit_type get_bit(unsigned int count) const noexcept {
         ttlet digit_count = count / bits_per_digit;
         ttlet bit_count = count % bits_per_digit;
 
         return (digits[digit_count] >> bit_count) & 1;
     }
 
-    tt_force_inline void set_bit(unsigned int count, digit_type value = 1) noexcept {
+    void set_bit(unsigned int count, digit_type value = 1) noexcept {
         ttlet digit_count = count / bits_per_digit;
         ttlet bit_count = count % bits_per_digit;
 
@@ -174,54 +174,54 @@ struct bigint {
     }
 
     template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    tt_force_inline bigint &operator<<=(R rhs) noexcept {
+    bigint &operator<<=(R rhs) noexcept {
         bigint_shift_left(*this, *this, static_cast<int>(rhs));
         return *this;
     }
 
     template<typename R, std::enable_if_t<std::is_integral_v<R>, int> = 0>
-    tt_force_inline constexpr bigint &operator>>=(R rhs) noexcept {
+    constexpr bigint &operator>>=(R rhs) noexcept {
         bigint_shift_right(*this, *this, static_cast<int>(rhs));
         return *this;
     }
 
-    tt_force_inline bigint &operator*=(bigint const &rhs) noexcept {
+    bigint &operator*=(bigint const &rhs) noexcept {
         auto r = bigint<T,N>{0};
         bigint_multiply(r, *this, rhs);
         *this = r;
         return *this;
     }
 
-    tt_force_inline bigint &operator+=(bigint const &rhs) noexcept {
+    bigint &operator+=(bigint const &rhs) noexcept {
         bigint_add(*this, *this, rhs);
         return *this;
     }
 
-    tt_force_inline bigint &operator-=(bigint const &rhs) noexcept {
+    bigint &operator-=(bigint const &rhs) noexcept {
         bigint_subtract(*this, *this, rhs);
         return *this;
     }
 
-    tt_force_inline bigint &operator&=(bigint const &rhs) noexcept {
+    bigint &operator&=(bigint const &rhs) noexcept {
         bigint_and(*this, *this, rhs);
         return *this;
     }
 
-    tt_force_inline bigint &operator|=(bigint const &rhs) noexcept {
+    bigint &operator|=(bigint const &rhs) noexcept {
         bigint_or(*this, *this, rhs);
         return *this;
     }
 
-    tt_force_inline bigint &operator^=(bigint const &rhs) noexcept {
+    bigint &operator^=(bigint const &rhs) noexcept {
         bigint_xor(*this, *this, rhs);
         return *this;
     }
 
-    tt_force_inline bigint crc(bigint const &rhs) noexcept {
+    bigint crc(bigint const &rhs) noexcept {
         return bigint_crc(*this, rhs);
     }
 
-    static tt_force_inline bigint fromBigEndian(uint8_t const *data) noexcept {
+    static bigint fromBigEndian(uint8_t const *data) noexcept {
         auto r = bigint{};
         for (int i = N - 1; i >= 0; i--) {
             digit_type d = 0;
@@ -233,7 +233,7 @@ struct bigint {
         }
         return r;
     }
-    static tt_force_inline bigint fromLittleEndian(uint8_t const *data) noexcept {
+    static bigint fromLittleEndian(uint8_t const *data) noexcept {
         auto r = bigint{};
         for (int i = 0; i < N; i++) {
             digit_type d = 0;
@@ -245,15 +245,15 @@ struct bigint {
         return r;
     }
 
-    static tt_force_inline bigint fromBigEndian(void const *data) noexcept {
+    static bigint fromBigEndian(void const *data) noexcept {
         return fromBigEndian(static_cast<uint8_t const *>(data));
     }
 
-    static tt_force_inline bigint fromLittleEndian(void const *data) noexcept {
+    static bigint fromLittleEndian(void const *data) noexcept {
         return fromLittleEndian(static_cast<uint8_t const *>(data));
     }
 
-    [[nodiscard]] tt_force_inline friend int bigint_compare(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend int bigint_compare(bigint const &lhs, bigint const &rhs) noexcept
     {
         for (int i = N - 1; i >= 0; --i) {
             auto lhs_digit = lhs.digits[i];
@@ -265,21 +265,21 @@ struct bigint {
         return 0;
     }
 
-    tt_force_inline friend void bigint_invert(bigint &o, bigint const &rhs) noexcept
+    friend void bigint_invert(bigint &o, bigint const &rhs) noexcept
     {
         for (auto i = 0; i < N; i++) {
             o.digits[i] = ~rhs.digits[i];
         }
     }
 
-    tt_force_inline friend void bigint_add(bigint &o, bigint const &lhs, bigint const &rhs, T carry=0) noexcept
+    friend void bigint_add(bigint &o, bigint const &lhs, bigint const &rhs, T carry=0) noexcept
     {
         for (auto i = 0; i < N; i++) {
             std::tie(o.digits[i], carry) = add_carry(lhs.digits[i], rhs.digits[i], carry);
         }
     }
 
-    tt_force_inline friend void bigint_multiply(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
+    friend void bigint_multiply(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
     {
         for (auto rhs_index = 0; rhs_index < N; rhs_index++) {
             ttlet rhs_digit = rhs.digits[rhs_index];
@@ -296,7 +296,7 @@ struct bigint {
         }
     }
 
-    tt_force_inline friend void bigint_div(bigint &quotient, bigint &remainder, bigint const &lhs, bigint const &rhs) noexcept
+    friend void bigint_div(bigint &quotient, bigint &remainder, bigint const &lhs, bigint const &rhs) noexcept
     {
         for (auto i = nr_bits - 1; i >= 0; i--) {
             remainder <<= 1;
@@ -308,7 +308,7 @@ struct bigint {
         }
     }
 
-    tt_force_inline friend void bigint_div(bigint &r_quotient, bigint &r_remainder, bigint const &lhs, bigint const &rhs, bigint<T,2*N> const &rhs_reciprocal) noexcept
+    friend void bigint_div(bigint &r_quotient, bigint &r_remainder, bigint const &lhs, bigint const &rhs, bigint<T,2*N> const &rhs_reciprocal) noexcept
     {
         auto quotient = bigint<T,3*N>{0};
         bigint_multiply(quotient, lhs, rhs_reciprocal);
@@ -338,7 +338,7 @@ struct bigint {
     /*! Bit scan reverse.
     * \return index of leading one, or -1 when rhs is zero.
     */
-    [[nodiscard]] tt_force_inline friend int bigint_bsr(bigint const &rhs) noexcept
+    [[nodiscard]] friend int bigint_bsr(bigint const &rhs) noexcept
     {
         for (auto i = N - 1; i >= 0; i--) {
             auto tmp = bsr(rhs.digits[i]);
@@ -354,7 +354,7 @@ struct bigint {
     * \param lhs The number to check.
     * \param rhs Polynomial.
     */
-    [[nodiscard]] tt_force_inline friend bigint bigint_crc(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bigint bigint_crc(bigint const &lhs, bigint const &rhs) noexcept
     {
         ttlet polynomialOrder = bigint_bsr(rhs);
         tt_assert(polynomialOrder >= 0);
@@ -380,42 +380,42 @@ struct bigint {
     * \param divider The divider of 1.
     * \return (1 << (K*sizeof(T)*8)) / divider
     */
-    [[nodiscard]] tt_force_inline friend bigint bigint_reciprocal(bigint const &rhs) {
+    [[nodiscard]] friend bigint bigint_reciprocal(bigint const &rhs) {
         auto r = bigint<T,N+1>(0);
         r.digits[N] = 1;
         return static_cast<bigint>(r / rhs);
     }
 
 
-    tt_force_inline friend void bigint_and(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
+    friend void bigint_and(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
     {
         for (auto i = 0; i != N; ++i) {
             o.digits[i] = lhs.digits[i] & rhs.digits[i];
         }
     }
 
-    tt_force_inline friend void bigint_or(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
+    friend void bigint_or(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
     {
         for (auto i = 0; i != N; ++i) {
             o.digits[i] = lhs.digits[i] | rhs.digits[i];
         }
     }
 
-    tt_force_inline friend void bigint_xor(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
+    friend void bigint_xor(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
     {
         for (auto i = 0; i != N; ++i) {
             o.digits[i] = lhs.digits[i] ^ rhs.digits[i];
         }
     }
 
-    tt_force_inline friend void bigint_subtract(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
+    friend void bigint_subtract(bigint &o, bigint const &lhs, bigint const &rhs) noexcept
     {
         bigint rhs_;
         bigint_invert(rhs_, rhs);
         bigint_add(o, lhs, rhs_, T{1});
     }
 
-    tt_force_inline friend void bigint_shift_left(bigint &o, bigint const &lhs, int count) noexcept
+    friend void bigint_shift_left(bigint &o, bigint const &lhs, int count) noexcept
     {
         ttlet digit_count = count / bits_per_digit;
         ttlet bit_count = count % bits_per_digit;
@@ -437,7 +437,7 @@ struct bigint {
         }
     }
 
-    tt_force_inline friend void bigint_shift_right(bigint &o, bigint const &lhs, int count) noexcept
+    friend void bigint_shift_right(bigint &o, bigint const &lhs, int count) noexcept
     {
         ttlet digit_count = count / bits_per_digit;
         ttlet bit_count = count % bits_per_digit;
@@ -460,100 +460,100 @@ struct bigint {
         }
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator==(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bool operator==(bigint const &lhs, bigint const &rhs) noexcept
     {
         return bigint_compare(lhs, rhs) == 0;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator<(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bool operator<(bigint const &lhs, bigint const &rhs) noexcept
     {
         return bigint_compare(lhs, rhs) < 0;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator>(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bool operator>(bigint const &lhs, bigint const &rhs) noexcept
     {
         return bigint_compare(lhs, rhs) > 0;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator!=(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bool operator!=(bigint const &lhs, bigint const &rhs) noexcept
     {
         return bigint_compare(lhs, rhs) != 0;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator>=(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bool operator>=(bigint const &lhs, bigint const &rhs) noexcept
     {
         return bigint_compare(lhs, rhs) >= 0;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator<=(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend bool operator<=(bigint const &lhs, bigint const &rhs) noexcept
     {
         return bigint_compare(lhs, rhs) <= 0;
     }
 
     template<typename R, std::enable_if_t<std::is_integral_v<R>,int> = 0>
-    [[nodiscard]] tt_force_inline friend auto operator<<(bigint const &lhs, R const &rhs) noexcept {
+    [[nodiscard]] friend auto operator<<(bigint const &lhs, R const &rhs) noexcept {
         bigint o;
         bigint_shift_left(o, lhs, static_cast<int>(rhs));
         return o;
     }
 
     template<typename R, std::enable_if_t<std::is_integral_v<R>,int> = 0>
-    [[nodiscard]] tt_force_inline friend auto operator>>(bigint const &lhs, R const &rhs) noexcept {
+    [[nodiscard]] friend auto operator>>(bigint const &lhs, R const &rhs) noexcept {
         bigint o;
         bigint_shift_right(o, lhs, static_cast<int>(rhs));
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator*(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator*(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto o = bigint{0};
         bigint_multiply(o, lhs, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator+(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator+(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto o = bigint{0};
         bigint_add(o, lhs, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator-(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator-(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto o = bigint{0};
         bigint_subtract(o, lhs, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator~(bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator~(bigint const &rhs) noexcept
     {
         bigint o;
         bigint_invert(o, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator|(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator|(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto o = bigint{0};
         bigint_or(o, lhs, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator&(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator&(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto o = bigint{0};
         bigint_and(o, lhs, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator^(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator^(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto o = bigint{0};
         bigint_xor(o, lhs, rhs);
         return o;
     }
 
-    [[nodiscard]] tt_force_inline friend auto div(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto div(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto quotient = bigint{0};
         auto remainder = bigint{0};
@@ -562,7 +562,7 @@ struct bigint {
         return std::pair{ quotient, remainder };
     }
 
-    [[nodiscard]] tt_force_inline friend auto div(bigint const &lhs, bigint const &rhs, bigint<T,2*N> const &rhs_reciprocal) noexcept
+    [[nodiscard]] friend auto div(bigint const &lhs, bigint const &rhs, bigint<T,2*N> const &rhs_reciprocal) noexcept
     {
         auto quotient = bigint{0};
         auto remainder = bigint{0};
@@ -572,7 +572,7 @@ struct bigint {
     }
 
 
-    [[nodiscard]] tt_force_inline friend auto operator/(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator/(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto quotient = bigint{0};
         auto remainder = bigint{0};
@@ -581,7 +581,7 @@ struct bigint {
         return quotient;
     }
 
-    [[nodiscard]] tt_force_inline friend auto operator%(bigint const &lhs, bigint const &rhs) noexcept
+    [[nodiscard]] friend auto operator%(bigint const &lhs, bigint const &rhs) noexcept
     {
         auto quotient = bigint{0};
         auto remainder = bigint{0};

@@ -243,79 +243,79 @@ private:
      *
      * @return The type_id of the stored object.
      */
-    tt_force_inline uint16_t type_id() const noexcept {
+    uint16_t type_id() const noexcept {
         uint64_t data;
         std::memcpy(&data, this, sizeof(data));
         return static_cast<uint16_t>(data >> 48);
     }
 
-    tt_force_inline bool is_phy_float() const noexcept {
+    bool is_phy_float() const noexcept {
         ttlet id = type_id();
         return (id & 0x7ff0) != 0x7ff0 || (id & 0x000f) == 0;
     }
 
-    tt_force_inline bool is_phy_integer() const noexcept {
+    bool is_phy_integer() const noexcept {
         return (type_id() & 0xfff8) == 0x7ff8;
     }
 
-    tt_force_inline bool is_phy_string() const noexcept {
+    bool is_phy_string() const noexcept {
         ttlet id = type_id();
         return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
     }
 
-    tt_force_inline bool is_phy_decimal() const noexcept {
+    bool is_phy_decimal() const noexcept {
         return type_id() == phy_decimal_id;
     }
 
-    tt_force_inline bool is_phy_ymd() const noexcept {
+    bool is_phy_ymd() const noexcept {
         return type_id() == phy_ymd_id;
     }
 
-    tt_force_inline bool is_phy_small() const noexcept {
+    bool is_phy_small() const noexcept {
         return type_id() == phy_small_id;
     }
 
-    tt_force_inline bool is_phy_pointer() const noexcept {
+    bool is_phy_pointer() const noexcept {
         return HasLargeObjects && (type_id() & 0xfff8) == 0xfff8;
     }
 
-    tt_force_inline bool is_phy_string_ptr() const noexcept {
+    bool is_phy_string_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_string_ptr_id;
     }
 
-    tt_force_inline bool is_phy_url_ptr() const noexcept {
+    bool is_phy_url_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_url_ptr_id;
     }
 
-    tt_force_inline bool is_phy_integer_ptr() const noexcept {
+    bool is_phy_integer_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_integer_ptr_id;
     }
 
-    tt_force_inline bool is_phy_vector_ptr() const noexcept {
+    bool is_phy_vector_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_vector_ptr_id;
     }
 
-    tt_force_inline bool is_phy_map_ptr() const noexcept {
+    bool is_phy_map_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_map_ptr_id;
     }
 
-    tt_force_inline bool is_phy_decimal_ptr() const noexcept {
+    bool is_phy_decimal_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_decimal_ptr_id;
     }
 
-    tt_force_inline bool is_phy_bytes_ptr() const noexcept {
+    bool is_phy_bytes_ptr() const noexcept {
         return HasLargeObjects && type_id() == phy_bytes_ptr_id;
     }
 
     /** Extract the 48 bit unsigned integer from datum's storage.
      */
-    tt_force_inline uint64_t get_unsigned_integer() const noexcept {
+    uint64_t get_unsigned_integer() const noexcept {
         return (u64 << 16) >> 16;
     }
 
     /** Extract the 48 bit signed integer from datum's storage and sign extent to 64 bit.
      */
-    tt_force_inline int64_t get_signed_integer() const noexcept {
+    int64_t get_signed_integer() const noexcept {
         return static_cast<int64_t>(u64 << 16) >> 16;
     }
 
@@ -324,7 +324,7 @@ private:
      * Since the pointer is stored as a 48 bit integer, this function will launder it.
      */
     template<typename O>
-    tt_force_inline O *get_pointer() const {
+    O *get_pointer() const {
         return std::launder(reinterpret_cast<O *>(get_signed_integer()));
     }
 
@@ -1511,14 +1511,14 @@ public:
         }
     }
 
-    tt_force_inline bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
-    tt_force_inline bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
-    tt_force_inline bool is_ymd() const noexcept { return is_phy_ymd(); }
-    tt_force_inline bool is_float() const noexcept { return is_phy_float(); }
-    tt_force_inline bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
-    tt_force_inline bool is_bytes() const noexcept { return is_phy_bytes_ptr(); }
+    bool is_integer() const noexcept { return is_phy_integer() || is_phy_integer_ptr(); }
+    bool is_decimal() const noexcept { return is_phy_decimal() || is_phy_decimal_ptr(); }
+    bool is_ymd() const noexcept { return is_phy_ymd(); }
+    bool is_float() const noexcept { return is_phy_float(); }
+    bool is_string() const noexcept { return is_phy_string() || is_phy_string_ptr(); }
+    bool is_bytes() const noexcept { return is_phy_bytes_ptr(); }
 
-    tt_force_inline bool is_bool() const noexcept {
+    bool is_bool() const noexcept {
         if (is_phy_small()) {
             ttlet tmp = get_unsigned_integer();
             return tmp == small_true || tmp == small_false;
@@ -1527,25 +1527,25 @@ public:
         }
     }
 
-    tt_force_inline bool is_null() const noexcept {
+    bool is_null() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_null;
     }
 
-    tt_force_inline bool is_undefined() const noexcept {
+    bool is_undefined() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_undefined;
     }
 
-    tt_force_inline bool is_break() const noexcept {
+    bool is_break() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_break;
     }
 
-    tt_force_inline bool is_continue() const noexcept {
+    bool is_continue() const noexcept {
         return is_phy_small() && get_unsigned_integer() == small_continue;
     }    bool is_url() const noexcept { return is_phy_url_ptr(); }
 
-    tt_force_inline bool is_vector() const noexcept { return is_phy_vector_ptr(); }
-    tt_force_inline bool is_map() const noexcept { return is_phy_map_ptr(); }
-    tt_force_inline bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
+    bool is_vector() const noexcept { return is_phy_vector_ptr(); }
+    bool is_map() const noexcept { return is_phy_map_ptr(); }
+    bool is_numeric() const noexcept { return is_integer() || is_decimal() ||  is_float(); }
 
     datum_type_t type() const noexcept {
         switch (type_id()) {

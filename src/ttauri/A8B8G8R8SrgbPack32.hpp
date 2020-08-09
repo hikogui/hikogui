@@ -15,27 +15,27 @@ class A8B8G8R8SrgbPack32 {
     uint32_t v;
 
 public:
-    tt_force_inline A8B8G8R8SrgbPack32() = default;
-    tt_force_inline A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
-    tt_force_inline A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
-    tt_force_inline A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
-    tt_force_inline A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
+    A8B8G8R8SrgbPack32() = default;
+    A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
+    A8B8G8R8SrgbPack32(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
+    A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 const &rhs) noexcept = default;
+    A8B8G8R8SrgbPack32 &operator=(A8B8G8R8SrgbPack32 &&rhs) noexcept = default;
 
-    //tt_force_inline A8B8G8R8SrgbPack32(vec const &rhs) noexcept {
+    //A8B8G8R8SrgbPack32(vec const &rhs) noexcept {
     //}
 
-    //tt_force_inline A8B8G8R8SrgbPack32 &operator=(vec const &rhs) noexcept {
+    //A8B8G8R8SrgbPack32 &operator=(vec const &rhs) noexcept {
     //    return *this;
     //}
 
     //operator vec () const noexcept {
     //}
 
-    tt_force_inline A8B8G8R8SrgbPack32(uint32_t const &rhs) noexcept : v(rhs) {}
-    tt_force_inline A8B8G8R8SrgbPack32 &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
-    tt_force_inline operator uint32_t () noexcept { return v; }
+    A8B8G8R8SrgbPack32(uint32_t const &rhs) noexcept : v(rhs) {}
+    A8B8G8R8SrgbPack32 &operator=(uint32_t const &rhs) noexcept { v = rhs; return *this; }
+    operator uint32_t () noexcept { return v; }
 
-    tt_force_inline A8B8G8R8SrgbPack32(R16G16B16A16SFloat const &rhs) noexcept {
+    A8B8G8R8SrgbPack32(R16G16B16A16SFloat const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0].get());
@@ -48,7 +48,7 @@ public:
             static_cast<uint32_t>(r);
     }
 
-    tt_force_inline A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
+    A8B8G8R8SrgbPack32 &operator=(R16G16B16A16SFloat const &rhs) noexcept {
         ttlet &rhs_v = rhs.get();
 
         ttlet r = sRGB_linear16_to_gamma8(rhs_v[0]);
@@ -62,14 +62,14 @@ public:
         return *this;
     }
 
-    [[nodiscard]] tt_force_inline friend bool operator==(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator==(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
         return lhs.v == rhs.v;
     }
-    [[nodiscard]] tt_force_inline friend bool operator!=(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] friend bool operator!=(A8B8G8R8SrgbPack32 const &lhs, A8B8G8R8SrgbPack32 const &rhs) noexcept {
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] tt_force_inline friend A8B8G8R8SrgbPack32 makeTransparent(A8B8G8R8SrgbPack32 const &rhs) noexcept {
+    [[nodiscard]] friend A8B8G8R8SrgbPack32 makeTransparent(A8B8G8R8SrgbPack32 const &rhs) noexcept {
         return {rhs.v & 0x00ffffff};
     }
 };

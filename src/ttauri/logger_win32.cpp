@@ -22,8 +22,6 @@ namespace tt {
 
 using namespace std::literals::chrono_literals;
 
-
-gsl_suppress(i.11)
 std::string getLastErrorMessage()
 {
     DWORD const errorCode = GetLastError();

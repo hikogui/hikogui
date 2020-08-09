@@ -42,8 +42,10 @@ breathe_projects = {
 
 breathe_default_project = "TTauri"
 
+import os.path
+
 exhale_args = {
-    "containmentFolder":     "./api",
+    "containmentFolder":     os.path.normpath("@CMAKE_CURRENT_SOURCE_DIR@/api"),
     "rootFileName":          "ttauri_api.rst",
     "rootFileTitle":         "TTuari API",
     "doxygenStripFromPath":  "..",

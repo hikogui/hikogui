@@ -129,40 +129,38 @@ GUIDevice_vulkan::GUIDevice_vulkan(vk::PhysicalDevice physicalDevice) :
 GUIDevice_vulkan::~GUIDevice_vulkan()
 {
     try {
-        gsl_suppress(f.6) {
-            toneMapperPipeline->destroy(this);
-            toneMapperPipeline = nullptr;
-            SDFPipeline->destroy(this);
-            SDFPipeline = nullptr;
-            imagePipeline->destroy(this);
-            imagePipeline = nullptr;
-            boxPipeline->destroy(this);
-            boxPipeline = nullptr;
-            flatPipeline->destroy(this);
-            flatPipeline = nullptr;
+        toneMapperPipeline->destroy(this);
+        toneMapperPipeline = nullptr;
+        SDFPipeline->destroy(this);
+        SDFPipeline = nullptr;
+        imagePipeline->destroy(this);
+        imagePipeline = nullptr;
+        boxPipeline->destroy(this);
+        boxPipeline = nullptr;
+        flatPipeline->destroy(this);
+        flatPipeline = nullptr;
 
-            destroyQuadIndexBuffer();
+        destroyQuadIndexBuffer();
 
-            vmaDestroyAllocator(allocator);
+        vmaDestroyAllocator(allocator);
 
-            for (uint32_t index = 0; index < 3; index++) {
-                // Destroy one command pool for each queue index.
-                if (graphicsQueueIndex == index) {
-                    this->intrinsic.destroy(graphicsCommandPool);
-                    continue;
-                }
-                if (presentQueueIndex == index) {
-                    this->intrinsic.destroy(presentCommandPool);
-                    continue;
-                }
-                if (computeQueueIndex == index) {
-                    this->intrinsic.destroy(computeCommandPool);
-                    continue;
-                }
+        for (uint32_t index = 0; index < 3; index++) {
+            // Destroy one command pool for each queue index.
+            if (graphicsQueueIndex == index) {
+                this->intrinsic.destroy(graphicsCommandPool);
+                continue;
             }
-
-            intrinsic.destroy();
+            if (presentQueueIndex == index) {
+                this->intrinsic.destroy(presentCommandPool);
+                continue;
+            }
+            if (computeQueueIndex == index) {
+                this->intrinsic.destroy(computeCommandPool);
+                continue;
+            }
         }
+
+        intrinsic.destroy();
 
     } catch (...) {
         abort();

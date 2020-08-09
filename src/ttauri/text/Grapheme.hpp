@@ -37,20 +37,20 @@ class Grapheme {
     uint64_t value;
 
 public:
-    tt_force_inline Grapheme() noexcept : value(1) {}
+    Grapheme() noexcept : value(1) {}
 
-    tt_force_inline ~Grapheme() {
+    ~Grapheme() {
         delete_pointer();
     }
 
-    tt_force_inline Grapheme(const Grapheme& other) noexcept {
+    Grapheme(const Grapheme& other) noexcept {
         value = other.value;
         if (other.has_pointer()) {
             value = create_pointer(other.get_pointer()->data(), other.size());
         }
     }
 
-    tt_force_inline Grapheme& operator=(const Grapheme& other) noexcept {
+    Grapheme& operator=(const Grapheme& other) noexcept {
         if (this != &other) {
             delete_pointer();
             value = other.value;
@@ -61,12 +61,12 @@ public:
         return *this;
     }
 
-    tt_force_inline Grapheme(Grapheme&& other) noexcept {
+    Grapheme(Grapheme&& other) noexcept {
         value = other.value;
         other.value = 1;
     }
 
-    tt_force_inline Grapheme& operator=(Grapheme&& other) noexcept {
+    Grapheme& operator=(Grapheme&& other) noexcept {
         delete_pointer();
         value = other.value;
         other.value = 1;
@@ -75,7 +75,7 @@ public:
 
     explicit Grapheme(std::u32string_view codePoints) noexcept;
 
-    tt_force_inline explicit Grapheme(char32_t codePoint) noexcept :
+    explicit Grapheme(char32_t codePoint) noexcept :
         Grapheme(std::u32string_view{&codePoint, 1}) {}
 
     Grapheme& operator=(std::u32string_view codePoints) noexcept {
@@ -117,7 +117,7 @@ public:
         return r;
     }
 
-    [[nodiscard]] tt_force_inline size_t size() const noexcept {
+    [[nodiscard]] size_t size() const noexcept {
         if (has_pointer()) {
             return value >> 48;
         } else {
@@ -175,7 +175,7 @@ public:
     }
 
 private:
-    [[nodiscard]] tt_force_inline bool has_pointer() const noexcept {
+    [[nodiscard]] bool has_pointer() const noexcept {
         return (value & 1) == 0;
     }
 
@@ -190,13 +190,13 @@ private:
         return (size << 48) | uptr;
     }
 
-    [[nodiscard]] tt_force_inline long_Grapheme *get_pointer() const noexcept {
+    [[nodiscard]] long_Grapheme *get_pointer() const noexcept {
         auto uptr = (value << 16);
         auto iptr = static_cast<ptrdiff_t>(uptr) >> 16;
         return std::launder(reinterpret_cast<long_Grapheme *>(iptr));
     }
 
-    tt_force_inline void delete_pointer() noexcept {
+    void delete_pointer() noexcept {
         if (has_pointer()) {
             delete get_pointer();
         }
