@@ -164,7 +164,7 @@ struct Path {
      *
      * Using method in:
      *     "Approximation of a cubic bezier curve by circular arcs and vice versa"
-     *     -- Aleksas Riškus (chapter 3, formulas 8 and 9, there are a few typos in the formulas)
+     *     -- Aleksas Riskus (chapter 3, formulas 8 and 9, there are a few typos in the formulas)
      *
      * \param radius positive radius means positive arc, negative radius is a negative arc.
      * \param position end position of the arc.

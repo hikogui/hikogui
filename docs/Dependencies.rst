@@ -19,3 +19,14 @@ Download at: https://python.org/
 
 ### Windows install
 Make sure to install it for all users and add Python to the path.
+
+## Doxygen
+
+## Sphynx
+### Windows
+Sphinx must be installed as Administrator otherwise the sphinx-build executable
+is not installed.
+
+pip install sphinx
+pip install sphinx_rtd_theme
+pip install breathe

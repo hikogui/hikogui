@@ -48,6 +48,7 @@ include(AddStaticResource)
 
 add_subdirectory(external)
 add_subdirectory(tools)
+add_subdirectory(docs)
 
 add_library(ttauri STATIC)
 add_executable(ttauri_tests)
@@ -217,9 +218,12 @@ add_custom_command(
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+set(DOXYGEN_EXCLUDE_PATTERNS *.cpp)
+set(DOXYGEN_GENERATE_HTML NO)
+set(DOXYGEN_GENERATE_XML YES)
 doxygen_add_docs(ttauri_doxygen src)
-add_dependencies(ttauri ttauri_doxygen)
 
+add_dependencies(ttauri ttauri_sphinx)
 
 #set(TTauri_do_not_analyze
 #    ${TTauriTests_srcs}
