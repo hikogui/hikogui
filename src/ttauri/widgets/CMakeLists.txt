@@ -3,7 +3,6 @@ target_sources(ttauri PRIVATE
     ButtonWidget.cpp
     ButtonWidget.hpp
     CheckboxWidget.hpp
-    ColumnWidget.cpp
     ColumnWidget.hpp
     ContainerWidget.cpp
     ContainerWidget.hpp
@@ -13,7 +12,6 @@ target_sources(ttauri PRIVATE
     LineInputWidget.cpp
     LineInputWidget.hpp
     RadioButtonWidget.hpp
-    RowWidget.cpp
     RowWidget.hpp
     SelectionWidget.hpp
     $<${TT_WIN32}:${CMAKE_CURRENT_SOURCE_DIR}/SystemMenuWidget.cpp>

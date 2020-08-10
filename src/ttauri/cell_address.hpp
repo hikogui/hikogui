@@ -383,6 +383,29 @@ inline std::ostream &operator<<(std::ostream &lhs, cell_address const &rhs)
 }
 
 template<bool IsRow>
+constexpr void initialize_half(cell_address &r, cell_address const &rhs) noexcept
+{
+    set_span<IsRow>(r, get_span<IsRow>(rhs));
+    set_alignment<IsRow>(r, get_alignment<IsRow>(rhs));
+    set_absolute<IsRow>(r, true);
+    set_opposite<IsRow>(r, is_opposite<IsRow>(rhs));
+
+    if (is_relative<IsRow>(rhs)) {
+        set_coord<IsRow>(r, 0);
+    } else {
+        set_coord<IsRow>(r, get_coord<IsRow>(rhs));
+    }
+}
+
+[[nodiscard]] constexpr cell_address initialize(cell_address const &rhs) noexcept
+{
+    auto r = cell_address{};
+    initialize_half<false>(r, rhs);
+    initialize_half<true>(r, rhs);
+    return r;
+}
+
+template<bool IsRow>
 constexpr void transform_half(cell_address &r, cell_address const &lhs, cell_address const &rhs) noexcept
 {
     set_span<IsRow>(r, get_span<IsRow>(lhs));

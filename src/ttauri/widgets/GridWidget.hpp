@@ -52,6 +52,9 @@ protected:
     int nrTopRows;
     int nrBottomRows;
 
+    bool joinColumns = true;
+    bool joinRows = true;
+
     void calculateGridSize() noexcept;
     void removeAllConstraints() noexcept;
     void addAllConstraints() noexcept;

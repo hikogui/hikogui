@@ -110,8 +110,18 @@ void GridWidget::addAllConstraints() noexcept
     rightConstraint = window.addConstraint(rightGridLines.front() == right + Theme::margin * 0.5f);
     bottomConstraint = window.addConstraint(bottomGridLines.front() == bottom - Theme::margin * 0.5f);
     topConstraint = window.addConstraint(topGridLines.front() == top + Theme::margin * 0.5f);
-    columnSplitConstraint = window.addConstraint(leftGridLines.back() <= rightGridLines.back());
-    rowSplitConstraint = window.addConstraint(bottomGridLines.back() <= topGridLines.back());
+
+    if (joinColumns && nonstd::ssize(leftGridLines) + nonstd::ssize(rightGridLines) > 2) {
+        columnSplitConstraint = window.addConstraint(leftGridLines.back() == rightGridLines.back());
+    } else {
+        columnSplitConstraint = window.addConstraint(leftGridLines.back() <= rightGridLines.back());
+    }
+
+    if (joinRows && nonstd::ssize(bottomGridLines) + nonstd::ssize(topGridLines) > 2) {
+        rowSplitConstraint = window.addConstraint(bottomGridLines.back() == topGridLines.back());
+    } else {
+        rowSplitConstraint = window.addConstraint(bottomGridLines.back() <= topGridLines.back());
+    }
 
     for (auto &&cell: cells) {
         ttlet xbegin = begin<false>(cell.address);
