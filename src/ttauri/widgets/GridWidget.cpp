@@ -111,13 +111,13 @@ void GridWidget::addAllConstraints() noexcept
     bottomConstraint = window.addConstraint(bottomGridLines.front() == bottom - Theme::margin * 0.5f);
     topConstraint = window.addConstraint(topGridLines.front() == top + Theme::margin * 0.5f);
 
-    if (joinColumns && nonstd::ssize(leftGridLines) + nonstd::ssize(rightGridLines) > 2) {
+    if (joinColumns && nrLeftColumns + nrRightColumns != 0) {
         columnSplitConstraint = window.addConstraint(leftGridLines.back() == rightGridLines.back());
     } else {
         columnSplitConstraint = window.addConstraint(leftGridLines.back() <= rightGridLines.back());
     }
 
-    if (joinRows && nonstd::ssize(bottomGridLines) + nonstd::ssize(topGridLines) > 2) {
+    if (joinRows && nrBottomRows + nrTopRows != 0) {
         rowSplitConstraint = window.addConstraint(bottomGridLines.back() == topGridLines.back());
     } else {
         rowSplitConstraint = window.addConstraint(bottomGridLines.back() <= topGridLines.back());
