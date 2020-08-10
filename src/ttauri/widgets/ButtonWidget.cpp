@@ -65,7 +65,7 @@ void ButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_po
 
 void ButtonWidget::handleCommand(command command) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (!*enabled) {
         return;
@@ -81,7 +81,7 @@ void ButtonWidget::handleCommand(command command) noexcept
 
 void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     Widget::handleMouseEvent(event);
 
@@ -98,7 +98,7 @@ void ButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept
 
 HitBox ButtonWidget::hitBoxTest(vec position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (rectangle().contains(position)) {
         return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};

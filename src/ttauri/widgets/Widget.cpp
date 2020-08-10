@@ -29,6 +29,8 @@ Widget::~Widget()
 
 GUIDevice *Widget::device() const noexcept
 {
+    tt_assume(mutex.is_locked_by_current_thread());
+
     auto device = window.device;
     tt_assert(device);
     return device;
@@ -109,7 +111,7 @@ WidgetUpdateResult Widget::updateLayout(hires_utc_clock::time_point displayTimeP
 }
 
 void Widget::handleCommand(command command) noexcept {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     switch (command) {
     case command::gui_widget_next:
@@ -123,7 +125,7 @@ void Widget::handleCommand(command command) noexcept {
 }
 
 void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (event.type == MouseEvent::Type::Entered) {
         hover = true;
@@ -135,7 +137,7 @@ void Widget::handleMouseEvent(MouseEvent const &event) noexcept {
 }
 
 void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     switch (event.type) {
     case KeyboardEvent::Type::Entered:
@@ -160,7 +162,7 @@ void Widget::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
 
 Widget *Widget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (currentKeyboardWidget == nullptr && acceptsFocus()) {
         // The first widget that accepts focus.

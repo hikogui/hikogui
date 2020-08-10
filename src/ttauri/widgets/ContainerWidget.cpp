@@ -89,7 +89,7 @@ void ContainerWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
 HitBox ContainerWidget::hitBoxTest(vec position) const noexcept
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto r = rectangle().contains(position) ? HitBox{this, elevation} : HitBox{};
 
@@ -102,7 +102,7 @@ HitBox ContainerWidget::hitBoxTest(vec position) const noexcept
 
 std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcept
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     std::vector<Widget *> r;
     r.reserve(nonstd::ssize(children));
@@ -117,7 +117,7 @@ std::vector<Widget *> ContainerWidget::childPointers(bool reverse) const noexcep
 
 Widget *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget, bool reverse) const noexcept
 {
-    auto lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (currentKeyboardWidget == nullptr && acceptsFocus()) {
         // The first widget that accepts focus.
@@ -127,6 +127,8 @@ Widget *ContainerWidget::nextKeyboardWidget(Widget const *currentKeyboardWidget,
         bool found = false;
 
         for (auto *child : childPointers(reverse)) {
+            ttlet child_lock = std::scoped_lock(child->mutex);
+
             if (found) {
                 // Find the first focus accepting widget.
                 if (auto *tmp = child->nextKeyboardWidget(nullptr, reverse)) {

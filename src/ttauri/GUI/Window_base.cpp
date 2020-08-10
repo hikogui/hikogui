@@ -41,8 +41,9 @@ void Window_base::initialize()
 
     // The width and height of the window will be modified by the user and also for
     // testing the minimum and maximum size of the window.
-    widgetSolver.add_stay(widget->width, rhea::strength::medium());
-    widgetSolver.add_stay(widget->height, rhea::strength::medium());
+    // XXX
+    //widgetSolver.add_stay(widget->width, rhea::strength::medium());
+    //widgetSolver.add_stay(widget->height, rhea::strength::medium());
 
     openingWindow();
 
@@ -165,8 +166,6 @@ void Window_base::layoutWindow() noexcept {
         currentWindowExtent = widget->preferredExtent();
     }
 
-    ttlet widget_lock = std::scoped_lock(widget->mutex);
-
     // Set to actual window size.
     widget->setWindowExtent(currentWindowExtent);
 
@@ -221,6 +220,8 @@ void Window_base::setDevice(GUIDevice *newDevice)
 }
 
 void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexcept {
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
+
     auto tmp = widget->nextKeyboardWidget(currentTargetWidget, false);
     if (tmp == foundWidgetPtr) {
         tmp = nullptr;
@@ -230,6 +231,8 @@ void Window_base::updateToNextKeyboardTarget(Widget *currentTargetWidget) noexce
 }
 
 void Window_base::updateToPrevKeyboardTarget(Widget *currentTargetWidget) noexcept {
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
+
     auto tmp = widget->nextKeyboardWidget(currentTargetWidget, true);
     if (tmp == foundWidgetPtr) {
         tmp = nullptr;
@@ -253,26 +256,33 @@ void Window_base::windowChangedSize(ivec extent) {
 void Window_base::updateMouseTarget(Widget const *newTargetWidget, vec position) noexcept {
     if (newTargetWidget != mouseTargetWidget) {
         if (mouseTargetWidget != nullptr) {
+            ttlet widget_lock = std::scoped_lock(mouseTargetWidget->mutex);
             mouseTargetWidget->handleMouseEvent(MouseEvent::exited());
         }
         mouseTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (mouseTargetWidget != nullptr) { 
+            ttlet widget_lock = std::scoped_lock(mouseTargetWidget->mutex);
             mouseTargetWidget->handleMouseEvent(MouseEvent::entered(position));
         }
     }
 }
 
 void Window_base::updateKeyboardTarget(Widget const *newTargetWidget) noexcept {
-    if (newTargetWidget == nullptr || !newTargetWidget->acceptsFocus()) {
-        newTargetWidget = nullptr;
+    if (newTargetWidget) {
+        ttlet widget_lock = std::scoped_lock(newTargetWidget->mutex);
+        if (!newTargetWidget->acceptsFocus()) {
+            newTargetWidget = nullptr;
+        }
     }
 
     if (newTargetWidget != keyboardTargetWidget) {
         if (keyboardTargetWidget != nullptr) {
+            ttlet widget_lock = std::scoped_lock(keyboardTargetWidget->mutex);
             keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::exited());
         }
         keyboardTargetWidget = const_cast<Widget *>(newTargetWidget);
         if (keyboardTargetWidget != nullptr) {
+            ttlet widget_lock = std::scoped_lock(keyboardTargetWidget->mutex);
             keyboardTargetWidget->handleKeyboardEvent(KeyboardEvent::entered());
         }
     }
@@ -298,6 +308,8 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
     // Send event to target-widget.
     if (mouseTargetWidget != nullptr) {
+        ttlet widget_lock = std::scoped_lock(mouseTargetWidget->mutex);
+
         ttlet windowOffset = mouseTargetWidget->offsetFromWindow;
         event.position -= windowOffset;
         event.downPosition -= windowOffset;
@@ -307,6 +319,7 @@ void Window_base::handleMouseEvent(MouseEvent event) noexcept {
 
 void Window_base::handleKeyboardEvent(KeyboardEvent const &event) noexcept {
     if (keyboardTargetWidget != nullptr) {
+        ttlet widget_lock = std::scoped_lock(keyboardTargetWidget->mutex);
         keyboardTargetWidget->handleKeyboardEvent(event);
 
     } else if (event.type == KeyboardEvent::Type::Key) {
@@ -338,6 +351,7 @@ void Window_base::handleKeyboardEvent(char32_t c, bool full) noexcept {
 }
 
 HitBox Window_base::hitBoxTest(vec position) const noexcept {
+    ttlet widget_lock = std::scoped_lock(widget->mutex);
     return widget->hitBoxTest(position);
 }
 

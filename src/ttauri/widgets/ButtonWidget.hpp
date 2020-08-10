@@ -36,8 +36,11 @@ public:
     void handleCommand(command command) noexcept override;
 
     [[nodiscard]] HitBox hitBoxTest(vec position) const noexcept override;
+
     [[nodiscard]] bool acceptsFocus() const noexcept override
     {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         return *enabled;
     }
 };

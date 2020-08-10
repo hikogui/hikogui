@@ -56,7 +56,7 @@ void ToolbarButtonWidget::draw(DrawContext const &drawContext, hires_utc_clock::
 }
 
 void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     Widget::handleMouseEvent(event);
 
@@ -77,7 +77,7 @@ void ToolbarButtonWidget::handleMouseEvent(MouseEvent const &event) noexcept {
 
 HitBox ToolbarButtonWidget::hitBoxTest(vec position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (rectangle().contains(position)) {
         return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};

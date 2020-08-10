@@ -190,7 +190,8 @@ public:
     }
 
     void handleMouseEvent(MouseEvent const &event) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
+
         Widget::handleMouseEvent(event);
 
         if (*enabled) {
@@ -205,7 +206,7 @@ public:
     }
     
     void handleCommand(command command) noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
         if (!*enabled) {
             return;
@@ -220,7 +221,7 @@ public:
     }
 
     HitBox hitBoxTest(vec position) const noexcept override {
-        ttlet lock = std::scoped_lock(mutex);
+        tt_assume(mutex.is_locked_by_current_thread());
 
         if (rectangle().contains(position)) {
             return HitBox{this, elevation, *enabled ? HitBox::Type::Button : HitBox::Type::Default};
@@ -230,6 +231,8 @@ public:
     }
 
     [[nodiscard]] bool acceptsFocus() const noexcept override {
+        tt_assume(mutex.is_locked_by_current_thread());
+
         return *enabled;
     }
 

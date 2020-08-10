@@ -251,6 +251,7 @@ public:
      */
     [[nodiscard]] virtual HitBox hitBoxTest(vec position) const noexcept
     {
+        tt_assume(mutex.is_locked_by_current_thread());
         return {};
     }
 
@@ -260,6 +261,7 @@ public:
      */
     [[nodiscard]] virtual bool acceptsFocus() const noexcept
     {
+        tt_assume(mutex.is_locked_by_current_thread());
         return false;
     }
 
@@ -268,7 +270,6 @@ public:
     [[nodiscard]] ssize_t nestingLevel() noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
         return numeric_cast<ssize_t>(elevation);
     }
 
@@ -277,7 +278,6 @@ public:
     [[nodiscard]] float z() noexcept
     {
         tt_assume(mutex.is_locked_by_current_thread());
-
         return elevation * 0.01f;
     }
 
@@ -326,7 +326,10 @@ public:
      * @param drawContext The context to where the widget will draw.
      * @param displayTimePoint The time point when the widget will be shown on the screen.
      */
-    virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept {}
+    virtual void draw(DrawContext const &drawContext, hires_utc_clock::time_point displayTimePoint) noexcept
+    {
+        tt_assume(mutex.is_locked_by_current_thread());
+    }
 
     /** Handle command.
      *

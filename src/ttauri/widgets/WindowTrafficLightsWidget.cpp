@@ -233,7 +233,7 @@ void WindowTrafficLightsWidget::draw(DrawContext const &drawContext, hires_utc_c
 
 void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     Widget::handleMouseEvent(event);
 
@@ -278,7 +278,7 @@ void WindowTrafficLightsWidget::handleMouseEvent(MouseEvent const &event) noexce
 
 HitBox WindowTrafficLightsWidget::hitBoxTest(vec position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (closeRectangle.contains(position) ||
         minimizeRectangle.contains(position) ||

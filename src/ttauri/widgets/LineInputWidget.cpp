@@ -171,7 +171,7 @@ void LineInputWidget::draw(DrawContext const &drawContext, hires_utc_clock::time
 
 void LineInputWidget::handleCommand(command command) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     LOG_DEBUG("LineInputWidget: Received command: {}", command);
     if (!*enabled) {
@@ -200,7 +200,7 @@ void LineInputWidget::handleCommand(command command) noexcept
 
 void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     Widget::handleKeyboardEvent(event);
 
@@ -225,7 +225,7 @@ void LineInputWidget::handleKeyboardEvent(KeyboardEvent const &event) noexcept
 
 void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     Widget::handleMouseEvent(event);
 
@@ -291,7 +291,7 @@ void LineInputWidget::handleMouseEvent(MouseEvent const &event) noexcept
 
 HitBox LineInputWidget::hitBoxTest(vec position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     if (rectangle().contains(position)) {
         return HitBox{this, elevation, *enabled ? HitBox::Type::TextEdit : HitBox::Type::Default};

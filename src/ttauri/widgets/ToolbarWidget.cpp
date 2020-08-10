@@ -93,7 +93,7 @@ void ToolbarWidget::draw(DrawContext const &drawContext, hires_utc_clock::time_p
 
 HitBox ToolbarWidget::hitBoxTest(vec position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     auto r = rectangle().contains(position) ?
         HitBox{this, elevation, HitBox::Type::MoveArea} :

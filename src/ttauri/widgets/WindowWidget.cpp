@@ -97,7 +97,7 @@ WindowWidget::~WindowWidget()
 
 HitBox WindowWidget::hitBoxTest(vec position) const noexcept
 {
-    ttlet lock = std::scoped_lock(mutex);
+    tt_assume(mutex.is_locked_by_current_thread());
 
     constexpr float BORDER_WIDTH = 5.0;
 
