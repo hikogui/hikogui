@@ -52,7 +52,7 @@ add_library(ttauri STATIC)
 add_executable(ttauri_tests)
 add_subdirectory(src)
 
-target_link_libraries(ttauri PUBLIC fmt date span ${Vulkan_LIBRARIES} VMA rhea RenderDoc)
+target_link_libraries(ttauri PUBLIC fmt date date-tz span ${Vulkan_LIBRARIES} VMA rhea RenderDoc)
 target_include_directories(ttauri PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(ttauri PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(ttauri PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -103,6 +103,8 @@ elseif (MSVC)
     # By default MSVC reports a incorrect version in __cplusplus
     # This option will make it work correctly.
     target_compile_options(ttauri PUBLIC -Zc:__cplusplus)
+
+    target_compile_options(ttauri PUBLIC -await)
 
     # Ignore unknown pragmas.
     target_compile_options(ttauri PUBLIC -wd4068)

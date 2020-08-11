@@ -51,6 +51,7 @@ target_sources(ttauri PRIVATE
     UnicodeRanges.hpp
 )
 
+
 target_sources(ttauri_tests PRIVATE
     UnicodeData_tests.cpp
 )
