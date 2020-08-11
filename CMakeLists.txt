@@ -104,6 +104,8 @@ elseif (MSVC)
     # This option will make it work correctly.
     target_compile_options(ttauri PUBLIC -Zc:__cplusplus)
 
+    # language_win32 requires RT and RT needs specifically the non-c++20
+    # experimental-and-incompatible coroutine support.
     target_compile_options(ttauri PUBLIC -await)
 
     # Ignore unknown pragmas.

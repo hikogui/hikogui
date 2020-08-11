@@ -12,6 +12,7 @@
 
 namespace tt {
 
+
 constexpr char32_t UnicodeASCIIEnd = 0x7f;
 constexpr char32_t UnicodePlane0End = 0xffff;
 constexpr char32_t UnicodePlane1Begin = 0x010000;
@@ -155,32 +156,32 @@ template<typename UnaryOperation>
  *              Returns 0 when all UTF-8 code units have been returned.
  * @return A UTF-8 code unit.
  */
-[[nodiscard]] constexpr char utf32_to_utf8(char32_t c, int &state) noexcept
+[[nodiscard]] constexpr char8_t utf32_to_utf8(char32_t c, int &state) noexcept
 {
     if (state < 0) {
         if (c <= 0x7f) {
             state = 0;
-            return static_cast<char>(c);
+            return static_cast<char8_t>(c);
         } else if (c <= 0x07ff) {
             state = 6;
-            return static_cast<char>((c >> state) | 0xc0);
+            return static_cast<char8_t>((c >> state) | 0xc0);
         } else if (c <= 0xffff) {
             state = 12;
-            return static_cast<char>((c >> state) | 0xe0);
+            return static_cast<char8_t>((c >> state) | 0xe0);
         } else {
             state = 18;
-            return static_cast<char>((c >> state) | 0xf0);
+            return static_cast<char8_t>((c >> state) | 0xf0);
         }
 
     } else {
         state -= 6;
-        return static_cast<char>(((c >> state) & 0x3f) | 0x80);
+        return static_cast<char8_t>(((c >> state) & 0x3f) | 0x80);
     }
 }
 
-[[nodiscard]] tt_no_inline char32_t utf8_to_utf32_fallback(char c) noexcept
+[[nodiscard]] tt_no_inline char32_t utf8_to_utf32_fallback(char8_t c) noexcept
 {
-    return CP1252_to_UTF32(c);
+    return CP1252_to_UTF32(static_cast<char>(c));
 }
 
 struct utf8_to_utf32_state {
@@ -199,7 +200,7 @@ struct utf8_to_utf32_state {
  *              of string conversion.
  * @return Zero, or A UTF-32 code unit.
  */
-[[nodiscard]] constexpr char32_t utf8_to_utf32(char c, utf8_to_utf32_state &state) noexcept
+[[nodiscard]] constexpr char32_t utf8_to_utf32(char8_t c, utf8_to_utf32_state &state) noexcept
 {
     auto c_ = static_cast<uint8_t>(c);
 
@@ -240,10 +241,30 @@ struct utf8_to_utf32_state {
     }   
 }
 
+[[nodiscard]] inline std::string to_string(std::u8string_view rhs) noexcept {
+    auto r = std::string{};
+    r.reserve(nonstd::ssize(rhs));
+
+    for (auto c: rhs) {
+        r += static_cast<char>(c);
+    }
+    return r;
+}
+
+[[nodiscard]] inline std::u8string to_u8string(std::string_view rhs) noexcept {
+    auto r = std::u8string{};
+    r.reserve(nonstd::ssize(rhs));
+
+    for (auto c: rhs) {
+        r += static_cast<char8_t>(c);
+    }
+    return r;
+}
+
 /** Convert a UTF-32 string to a UTF-8 string.
  */
-[[nodiscard]] inline std::string to_string(std::u32string_view rhs) noexcept {
-    auto r = std::string{};
+[[nodiscard]] inline std::u8string to_u8string(std::u32string_view rhs) noexcept {
+    auto r = std::u8string{};
     r.reserve(nonstd::ssize(rhs));
 
     for (auto c: rhs) {
@@ -256,6 +277,12 @@ struct utf8_to_utf32_state {
     }
 
     return r;
+}
+
+/** Convert a UTF-32 string to a UTF-8 string.
+*/
+[[nodiscard]] inline std::string to_string(std::u32string_view rhs) noexcept {
+    return tt::to_string(to_u8string(rhs));
 }
 
 /** Convert a UTF-32 string to a UTF-16 string.
@@ -276,17 +303,6 @@ struct utf8_to_utf32_state {
     return r;
 }
 
-#if TT_CPP_VERSION == TT_CPPVER_20
-[[nodiscard]] inline std::string to_string(std::u8string_view rhs) noexcept {
-    auto r = std::string{};
-    r.reserve(nonstd::ssize(rhs));
-
-    for (auto c: rhs) {
-        r += static_cast<char>(c);
-    }
-    return r;
-}
-#endif
 
 
 #if WCHAR_MAX < 65536
@@ -324,7 +340,7 @@ struct utf8_to_utf32_state {
 
 /** Convert a UTF-8 string to a UTF-32 string.
  */
-[[nodiscard]] inline std::u32string to_u32string(std::string_view rhs) noexcept {
+[[nodiscard]] inline std::u32string to_u32string(std::u8string_view rhs) noexcept {
     auto r = std::u32string{};
     r.reserve(nonstd::ssize(rhs));
 
@@ -338,11 +354,9 @@ struct utf8_to_utf32_state {
     return r;
 }
 
-#if TT_CPP_VERSION == TT_CPPVER_20
-[[nodiscard]] inline std::u32string to_u32string(std::u8string_view rhs) noexcept {
-    return to_u32string(to_string(rhs));
+[[nodiscard]] inline std::u32string to_u32string(std::string_view rhs) noexcept {
+    return to_u32string(to_u8string(rhs));
 }
-#endif
 
 /** Convert a UTF-16 string to a UTF-32 string.
  */
@@ -399,13 +413,25 @@ struct utf8_to_utf32_state {
 #endif
 
 /** Convert a UTF-16 string to a UTF-8 string.
- */
+*/
+[[nodiscard]] inline std::u8string to_u8string(std::u16string_view rhs) noexcept {
+    return tt::to_u8string(to_u32string(rhs));
+}
+
+/** Convert a UTF-16 string to a string.
+*/
 [[nodiscard]] inline std::string to_string(std::u16string_view rhs) noexcept {
     return tt::to_string(to_u32string(rhs));
 }
 
 /** Convert a MS-Windows wide string to a UTF-8 string.
- */
+*/
+[[nodiscard]] inline std::u8string to_u8string(std::wstring_view rhs) noexcept {
+    return tt::to_u8string(to_u32string(rhs));
+}
+
+/** Convert a MS-Windows wide string to a string.
+*/
 [[nodiscard]] inline std::string to_string(std::wstring_view rhs) noexcept {
     return tt::to_string(to_u32string(rhs));
 }
@@ -423,7 +449,6 @@ struct utf8_to_utf32_state {
     return to_wstring(to_u32string(rhs));
 }
 
-#if TT_CPP_VERSION == TT_CPPVER_20
 /** Convert a UTF-8 string to a UTF-16 string.
 */
 [[nodiscard]] inline std::u16string to_u16string(std::u8string_view rhs) noexcept {
@@ -435,8 +460,6 @@ struct utf8_to_utf32_state {
 [[nodiscard]] inline std::wstring to_wstring(std::u8string_view rhs) noexcept {
     return to_wstring(to_u32string(rhs));
 }
-
-#endif
 
 }
 
