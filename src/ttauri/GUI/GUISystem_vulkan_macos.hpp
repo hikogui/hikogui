@@ -4,7 +4,7 @@
 #pragma once
 
 #include "GUISystem_vulkan.hpp"
-#include <nonstd/span>
+#include <span>
 
 namespace tt {
 

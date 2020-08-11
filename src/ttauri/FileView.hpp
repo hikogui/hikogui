@@ -5,7 +5,7 @@
 
 #include "FileMapping.hpp"
 #include "ResourceView.hpp"
-#include <nonstd/span>
+#include <span>
 
 namespace tt {
 
@@ -21,7 +21,7 @@ private:
      * The shared_ptr to _bytes allows the FileView to be copied while pointing
      * to the same memory map. This shared_ptr will use the private unmap().
      */
-    std::shared_ptr<nonstd::span<std::byte>> _bytes;
+    std::shared_ptr<std::span<std::byte>> _bytes;
 
     /*! The offset into the file which is mapped to memory.
      */
@@ -64,11 +64,11 @@ public:
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] nonstd::span<std::byte> bytes() noexcept { return *_bytes; }
+    [[nodiscard]] std::span<std::byte> bytes() noexcept { return *_bytes; }
 
     /*! Span to the mapping into memory.
      */
-    [[nodiscard]] nonstd::span<std::byte const> bytes() const noexcept override { return *_bytes; }
+    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override { return *_bytes; }
 
     /*! String view to the mapping into memory.
      */
@@ -102,7 +102,7 @@ private:
      *
      * \param bytes The bytes to unmap.
      */
-    static void unmap(nonstd::span<std::byte> *bytes) noexcept;
+    static void unmap(std::span<std::byte> *bytes) noexcept;
 
     /*! Open a file mapping object.
      * File mapping objects are cached and will be shared by FileViews.

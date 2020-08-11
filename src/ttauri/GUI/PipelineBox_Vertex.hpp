@@ -10,7 +10,7 @@
 #include "../R32G32B32A32SFloat.hpp"
 #include "../R32G32B32SFloat.hpp"
 #include <vulkan/vulkan.hpp>
-#include <nonstd/span>
+#include <span>
 
 namespace tt::PipelineBox {
 

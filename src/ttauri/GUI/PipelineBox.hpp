@@ -9,7 +9,7 @@
 #include "GUIDevice_forward.hpp"
 #include "../vspan.hpp"
 #include <vma/vk_mem_alloc.h>
-#include <nonstd/span>
+#include <span>
 
 namespace tt::PipelineBox {
 

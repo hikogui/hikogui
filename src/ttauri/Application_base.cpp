@@ -218,12 +218,12 @@ void Application_base::audioDeviceListChanged()
     delegate->audioDeviceListChanged();
 }
 
-void Application_base::addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept
+void Application_base::addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept
 {
     staticResources.try_emplace(key, value);
 }
 
-nonstd::span<std::byte const> Application_base::getStaticResource(std::string const &key)
+std::span<std::byte const> Application_base::getStaticResource(std::string const &key)
 {
     ttlet i = staticResources.find(key);
     if (i == staticResources.end()) {

@@ -5,7 +5,7 @@
 
 #include "required.hpp"
 #include "assert.hpp"
-#include <nonstd/span>
+#include <span>
 #include <iterator>
 #include <memory>
 #include <new>
@@ -90,7 +90,7 @@ public:
         tt_assume(nr_elements >= 0);
     }
 
-    vspan(nonstd::span<value_type> span) noexcept :
+    vspan(std::span<value_type> span) noexcept :
         _begin(span.data()), _end(span.data()), _max(span.data() + span.size()) {}
 
     vspan(vspan const &other) = default;

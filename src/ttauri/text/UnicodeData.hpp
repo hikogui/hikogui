@@ -9,7 +9,7 @@
 #include "../math.hpp"
 #include "../URL.hpp"
 #include "../required.hpp"
-#include <nonstd/span>
+#include <span>
 
 namespace tt {
 struct UnicodeData_Description;
@@ -124,7 +124,7 @@ enum GeneralCharacterClass {
  */
 class UnicodeData {
 private:
-    nonstd::span<std::byte const> bytes;
+    std::span<std::byte const> bytes;
 
     /** A view to the binary application->unicodeData.
      */
@@ -139,7 +139,7 @@ public:
     /** Load binary unicode data.
      * The bytes passed into this constructor will need to remain available.
      */
-    UnicodeData(nonstd::span<std::byte const> bytes);
+    UnicodeData(std::span<std::byte const> bytes);
 
     /** Load binary unicode data from a resource.
      */

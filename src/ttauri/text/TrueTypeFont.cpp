@@ -48,7 +48,7 @@ struct CMAPFormat4 {
 };
 
 
-static GlyphID searchCharacterMapFormat4(nonstd::span<std::byte const> bytes, char32_t c) noexcept
+static GlyphID searchCharacterMapFormat4(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     if (c > 0xffff) {
         // character value too high.
@@ -120,7 +120,7 @@ static GlyphID searchCharacterMapFormat4(nonstd::span<std::byte const> bytes, ch
     return {};
 }
 
-[[nodiscard]] static UnicodeRanges parseCharacterMapFormat4(nonstd::span<std::byte const> bytes)
+[[nodiscard]] static UnicodeRanges parseCharacterMapFormat4(std::span<std::byte const> bytes)
 {
     UnicodeRanges r;
 
@@ -149,7 +149,7 @@ struct CMAPFormat6 {
     big_uint16_buf_t entryCount;
 };
 
-static GlyphID searchCharacterMapFormat6(nonstd::span<std::byte const> bytes, char32_t c) noexcept
+static GlyphID searchCharacterMapFormat6(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     ssize_t offset = 0;
 
@@ -171,7 +171,7 @@ static GlyphID searchCharacterMapFormat6(nonstd::span<std::byte const> bytes, ch
     return GlyphID{glyphIndexArray[charOffset].value()};
 }
 
-[[nodiscard]] static UnicodeRanges parseCharacterMapFormat6(nonstd::span<std::byte const> bytes)
+[[nodiscard]] static UnicodeRanges parseCharacterMapFormat6(std::span<std::byte const> bytes)
 {
     UnicodeRanges r;
 
@@ -198,7 +198,7 @@ struct CMAPFormat12Group {
     big_uint32_buf_t startGlyphID;
 };
 
-static GlyphID searchCharacterMapFormat12(nonstd::span<std::byte const> bytes, char32_t c) noexcept
+static GlyphID searchCharacterMapFormat12(std::span<std::byte const> bytes, char32_t c) noexcept
 {
     ssize_t offset = 0;
 
@@ -231,7 +231,7 @@ static GlyphID searchCharacterMapFormat12(nonstd::span<std::byte const> bytes, c
     }
 }
 
-[[nodiscard]] static UnicodeRanges parseCharacterMapFormat12(nonstd::span<std::byte const> bytes)
+[[nodiscard]] static UnicodeRanges parseCharacterMapFormat12(std::span<std::byte const> bytes)
 {
     UnicodeRanges r;
 
@@ -283,7 +283,7 @@ struct CMAPEntry {
     big_uint32_buf_t offset;
 };
 
-static nonstd::span<std::byte const> parseCharacterMapDirectory(nonstd::span<std::byte const> bytes)
+static std::span<std::byte const> parseCharacterMapDirectory(std::span<std::byte const> bytes)
 {
     ssize_t offset = 0;
 
@@ -365,7 +365,7 @@ struct HHEATable {
     big_uint16_buf_t numberOfHMetrics;
 };
 
-void TrueTypeFont::parseHheaTable(nonstd::span<std::byte const> table_bytes)
+void TrueTypeFont::parseHheaTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HHEATable>(table_bytes);
 
@@ -397,7 +397,7 @@ struct HEADTable {
     big_int16_buf_t glyphDataFormat;
 };
 
-void TrueTypeFont::parseHeadTable(nonstd::span<std::byte const> table_bytes)
+void TrueTypeFont::parseHeadTable(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<HEADTable>(table_bytes);
 
@@ -427,9 +427,9 @@ struct NAMERecord {
     big_uint16_buf_t offset;
 };
 
-static std::optional<std::string> getStringFromNameTable(nonstd::span<std::byte const> bytes, size_t offset, size_t lengthInBytes, uint16_t platformID, uint16_t platformSpecificID, uint16_t languageID)
+static std::optional<std::string> getStringFromNameTable(std::span<std::byte const> bytes, size_t offset, size_t lengthInBytes, uint16_t platformID, uint16_t platformSpecificID, uint16_t languageID)
 {
-    parse_assert(offset + lengthInBytes <= usize(bytes));
+    parse_assert(offset + lengthInBytes <= std::size(bytes));
 
     switch (platformID) {
     case 2: // Deprecated, but compatible with unicode.
@@ -473,7 +473,7 @@ static std::optional<std::string> getStringFromNameTable(nonstd::span<std::byte 
     return {};
 }
 
-void TrueTypeFont::parseNameTable(nonstd::span<std::byte const> table_bytes)
+void TrueTypeFont::parseNameTable(std::span<std::byte const> table_bytes)
 {
     ssize_t offset = 0;
 
@@ -622,7 +622,7 @@ struct OS2Table0 {
     //big_uint16_buf_t usWinDescent;
 };
 
-void TrueTypeFont::parseOS2Table(nonstd::span<std::byte const> table_bytes)
+void TrueTypeFont::parseOS2Table(std::span<std::byte const> table_bytes)
 {
     ttlet table = make_placement_ptr<OS2Table0>(table_bytes);
     ttlet version = table->version.value();
@@ -718,7 +718,7 @@ struct MAXPTable10 {
     big_uint16_buf_t maxComponentDepth;
 };
 
-void TrueTypeFont::parseMaxpTable(nonstd::span<std::byte const> table_bytes)
+void TrueTypeFont::parseMaxpTable(std::span<std::byte const> table_bytes)
 {
     parse_assert(ssizeof(MAXPTable05) <= std::ssize(table_bytes));
     ttlet table = make_placement_ptr<MAXPTable05>(table_bytes);
@@ -729,7 +729,7 @@ void TrueTypeFont::parseMaxpTable(nonstd::span<std::byte const> table_bytes)
     numGlyphs = table->numGlyphs.value();
 }
 
-bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, nonstd::span<std::byte const> &glyph_bytes) const noexcept
+bool TrueTypeFont::getGlyphBytes(GlyphID glyph_id, std::span<std::byte const> &glyph_bytes) const noexcept
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
@@ -793,7 +793,7 @@ struct KERNFormat0_entry {
     FWord_buf_t value;
 };
 
-static void getKerningFormat0(nonstd::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
+static void getKerningFormat0(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
 {
     ssize_t offset = 0;
 
@@ -830,12 +830,12 @@ static void getKerningFormat0(nonstd::span<std::byte const> const &bytes, uint16
     }
 }
 
-static void getKerningFormat3(nonstd::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
+static void getKerningFormat3(std::span<std::byte const> const &bytes, uint16_t coverage, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id, vec &r) noexcept
 {
     tt_not_implemented;
 }
 
-[[nodiscard]] static vec getKerning(nonstd::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
+[[nodiscard]] static vec getKerning(std::span<std::byte const> const &bytes, float unitsPerEm, GlyphID glyph1_id, GlyphID glyph2_id) noexcept
 {
     auto r = vec(0.0f, 0.0f);
     ssize_t offset = 0;
@@ -948,7 +948,7 @@ constexpr uint8_t FLAG_Y_SHORT = 0x04;
 constexpr uint8_t FLAG_REPEAT = 0x08;
 constexpr uint8_t FLAG_X_SAME = 0x10;
 constexpr uint8_t FLAG_Y_SAME = 0x20;
-bool TrueTypeFont::loadSimpleGlyph(nonstd::span<std::byte const> glyph_bytes, Path &glyph) const noexcept
+bool TrueTypeFont::loadSimpleGlyph(std::span<std::byte const> glyph_bytes, Path &glyph) const noexcept
 {
     ssize_t offset = 0;
 
@@ -1077,7 +1077,7 @@ constexpr uint16_t FLAG_USE_MY_METRICS = 0x0200;
 [[maybe_unused]] constexpr uint16_t FLAG_OVERLAP_COMPOUND = 0x0400;
 constexpr uint16_t FLAG_SCALED_COMPONENT_OFFSET = 0x0800;
 [[maybe_unused]]constexpr uint16_t FLAG_UNSCALED_COMPONENT_OFFSET = 0x1000;
-bool TrueTypeFont::loadCompoundGlyph(nonstd::span<std::byte const> glyph_bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept
+bool TrueTypeFont::loadCompoundGlyph(std::span<std::byte const> glyph_bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept
 {
     ssize_t offset = ssizeof(GLYFEntry);
 
@@ -1172,7 +1172,7 @@ std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) co
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, {});
 
-    nonstd::span<std::byte const> glyph_bytes;
+    std::span<std::byte const> glyph_bytes;
     assert_or_return(getGlyphBytes(glyph_id, glyph_bytes), {});
 
     auto metrics_glyph_id = glyph_id;
@@ -1197,7 +1197,7 @@ std::optional<GlyphID> TrueTypeFont::loadGlyph(GlyphID glyph_id, Path &glyph) co
     return metrics_glyph_id;
 }
 
-bool TrueTypeFont::loadCompoundGlyphMetrics(nonstd::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept
+bool TrueTypeFont::loadCompoundGlyphMetrics(std::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept
 {
     ssize_t offset = ssizeof(GLYFEntry);
 
@@ -1245,7 +1245,7 @@ bool TrueTypeFont::loadGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, Gly
 {
     assert_or_return(glyph_id >= 0 && glyph_id < numGlyphs, false);
 
-    nonstd::span<std::byte const> glyph_bytes;
+    std::span<std::byte const> glyph_bytes;
     assert_or_return(getGlyphBytes(glyph_id, glyph_bytes), false);
 
     auto metricsGlyphIndex = glyph_id;

@@ -7,7 +7,7 @@
 #include "Window.hpp"
 #include "VerticalSync.hpp"
 #include "GUISystemDelegate.hpp"
-#include <nonstd/span>
+#include <span>
 #include <memory>
 #include <mutex>
 #include <thread>

@@ -353,7 +353,7 @@ public:
         return add(first, last, finish);
     }
 
-    constexpr void add(nonstd::span<std::byte const> str, bool finish=true) noexcept {
+    constexpr void add(std::span<std::byte const> str, bool finish=true) noexcept {
         ttlet first = reinterpret_cast<std::byte const *>(str.data());
         ttlet last = first + str.size();
         add(first, last, finish);

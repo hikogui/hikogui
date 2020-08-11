@@ -19,5 +19,4 @@ add_subdirectory(rhea)
 add_subdirectory(fmt)
 add_subdirectory(date)
 add_subdirectory(RenderDoc)
-add_subdirectory(span)
 

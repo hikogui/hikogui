@@ -8,7 +8,7 @@
 #include <complex>
 #include <cmath>
 #include <limits>
-#include <nonstd/span>
+#include <span>
 #include <tuple>
 
 #if TT_COMPILER == TT_CC_MSVC

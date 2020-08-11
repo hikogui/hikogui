@@ -570,7 +570,7 @@ void BON8_encoder::add(datum const &value) {
  * @param buffer A buffer to a BON8 encoded message.
  * @return The decoded message.
  */
-[[nodiscard]] datum decode_BON8(nonstd::span<const std::byte> buffer)
+[[nodiscard]] datum decode_BON8(std::span<const std::byte> buffer)
 {
     auto *ptr = buffer.data();
     auto *last = ptr + buffer.size();

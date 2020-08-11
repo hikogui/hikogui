@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <nonstd/span>
+#include <span>
 #include <variant>
 #include <functional>
 #include <cstddef>
@@ -30,14 +30,14 @@ public:
 
     /** Get a span to the memory mapping.
      */
-    [[nodiscard]] virtual nonstd::span<std::byte const> bytes() const noexcept = 0;
+    [[nodiscard]] virtual std::span<std::byte const> bytes() const noexcept = 0;
 
     /** Get a span to the memory mapping.
     */
     [[nodiscard]] virtual std::string_view string_view() const noexcept = 0;
 
-    operator std::string_view () const noexcept {
-        return string_view();
+    operator std::span<std::byte const> () const noexcept {
+        return bytes();
     }
 
     /** Size of the memory mapping.

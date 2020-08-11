@@ -183,7 +183,7 @@ struct parse_context_t {
 
 [[nodiscard]] datum parseJSON(URL const &url)
 {
-    return parseJSON(*url.loadView());
+    return parseJSON(url.loadView()->string_view());
 }
 
 static void dumpJSON_impl(datum const &value, std::string &result, int indent=0)

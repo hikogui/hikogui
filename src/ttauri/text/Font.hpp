@@ -12,7 +12,7 @@
 #include "../exceptions.hpp"
 #include "../required.hpp"
 #include "../URL.hpp"
-#include <nonstd/span>
+#include <span>
 #include <vector>
 #include <map>
 

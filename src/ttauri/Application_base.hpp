@@ -9,7 +9,7 @@
 #include "GUI/GUISystem_forward.hpp"
 #include "required.hpp"
 #include "URL.hpp"
-#include <nonstd/span>
+#include <span>
 #include <memory>
 #include <string>
 #include <any>
@@ -94,10 +94,10 @@ public:
      * @return A span to the constant byte array.
      * @exception key_error Thrown when static resource could not be found.
      */
-    nonstd::span<std::byte const> getStaticResource(std::string const &key);
+    std::span<std::byte const> getStaticResource(std::string const &key);
 
 protected:
-    std::unordered_map<std::string,nonstd::span<std::byte const>> staticResources;
+    std::unordered_map<std::string,std::span<std::byte const>> staticResources;
 
     /** Add static resource.
      * This function should only be called on resources that are linked into the executable
@@ -106,7 +106,7 @@ protected:
      * @param key Name of the resource.
      * @param value A span to the constant byte array
      */
-    void addStaticResource(std::string const &key, nonstd::span<std::byte const> value) noexcept;
+    void addStaticResource(std::string const &key, std::span<std::byte const> value) noexcept;
 
     /*! Called right before a loop is started.
     */

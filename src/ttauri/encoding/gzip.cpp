@@ -18,7 +18,7 @@ struct GZIPMemberHeader {
     uint8_t OS;
 };
 
-static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
+static bstring gzip_decompress_member(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size)
 {
     ttlet header = make_placement_ptr<GZIPMemberHeader>(bytes, offset);
 
@@ -67,7 +67,7 @@ static bstring gzip_decompress_member(nonstd::span<std::byte const> bytes, ssize
     return r;
 }
 
-bstring gzip_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
+bstring gzip_decompress(std::span<std::byte const> bytes, ssize_t max_size)
 {
     auto r = bstring{};
 

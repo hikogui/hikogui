@@ -3,7 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <nonstd/span>
+#include <span>
 #include "../required.hpp"
 
 #pragma once
@@ -35,7 +35,7 @@ namespace tt {
     return r;
 }
 
-[[nodiscard]] inline std::string encode_base16(nonstd::span<std::byte const> str) noexcept
+[[nodiscard]] inline std::string encode_base16(std::span<std::byte const> str) noexcept
 {
     ttlet first = str.data();
     ttlet last = first + str.size();

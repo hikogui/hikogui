@@ -7,7 +7,7 @@
 #include "type_traits.hpp"
 #include "numeric_cast.hpp"
 #include "exceptions.hpp"
-#include <nonstd/span>
+#include <span>
 
 namespace tt {
 
@@ -33,7 +33,7 @@ class placement_ptr {
     value_type *ptr;
     
 public:
-    placement_ptr(nonstd::span<Byte> bytes, ssize_t &offset) {
+    placement_ptr(std::span<Byte> bytes, ssize_t &offset) {
         Byte *_ptr = bytes.data() + offset;
         offset += ssizeof(T);
         ptr = new(const_cast<std::remove_cv_t<Byte> *>(_ptr)) T;
@@ -53,33 +53,33 @@ public:
 };
 
 template<typename T,typename Byte>
-placement_ptr<T,Byte> unsafe_make_placement_ptr(nonstd::span<Byte> bytes, ssize_t &offset)
+placement_ptr<T,Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, ssize_t &offset)
 {
     return placement_ptr<T,Byte>(bytes, offset);
 }
 
 template<typename T,typename Byte>
-placement_ptr<T,Byte> unsafe_make_placement_ptr(nonstd::span<Byte> bytes, ssize_t &&offset = 0)
+placement_ptr<T,Byte> unsafe_make_placement_ptr(std::span<Byte> bytes, ssize_t &&offset = 0)
 {
     ssize_t _offset = offset;
     return unsafe_make_placement_ptr<T>(bytes, _offset);
 }
 
 template<typename T,typename Byte>
-bool check_placement_ptr(nonstd::span<Byte> bytes, ssize_t offset = 0)
+bool check_placement_ptr(std::span<Byte> bytes, ssize_t offset = 0)
 {
-    return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= usize(bytes));
+    return check_alignment<T>(bytes.data()) && (offset + sizeof(T) <= std::size(bytes));
 }
 
 template<typename T,typename Byte>
-placement_ptr<T,Byte> make_placement_ptr(nonstd::span<Byte> bytes, ssize_t &offset)
+placement_ptr<T,Byte> make_placement_ptr(std::span<Byte> bytes, ssize_t &offset)
 {
     parse_assert(check_placement_ptr<T>(bytes, offset));
     return placement_ptr<T,Byte>(bytes, offset);
 }
 
 template<typename T,typename Byte>
-placement_ptr<T,Byte> make_placement_ptr(nonstd::span<Byte> bytes, ssize_t &&offset = 0)
+placement_ptr<T,Byte> make_placement_ptr(std::span<Byte> bytes, ssize_t &&offset = 0)
 {
     ssize_t _offset = offset;
     return make_placement_ptr<T>(bytes, _offset);
@@ -103,7 +103,7 @@ class placement_array {
     Byte *_end;
 
 public:
-    placement_array(nonstd::span<Byte> bytes, ssize_t &offset, ssize_t n) {
+    placement_array(std::span<Byte> bytes, ssize_t &offset, ssize_t n) {
         ttlet bytes_ = bytes.data();
 
         _begin = bytes_ + offset,
@@ -146,67 +146,67 @@ public:
 };
 
 template<typename T,typename Byte>
-placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset, ssize_t n)
+placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize_t &offset, ssize_t n)
 {
     return placement_array<T,Byte>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<Byte> bytes, ssize_t &&offset, ssize_t n)
+placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize_t &&offset, ssize_t n)
 {
     ssize_t _offset = offset;
     return unsafe_make_placement_array<T>(bytes, _offset, n);
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset)
+placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize_t &offset)
 {
-    ttlet n = usize(bytes) / sizeof(T);
+    ttlet n = std::size(bytes) / sizeof(T);
     return unsafe_make_placement_array<T>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> unsafe_make_placement_array(nonstd::span<Byte> bytes, ssize_t &&offset = 0)
+placement_array<T,Byte> unsafe_make_placement_array(std::span<Byte> bytes, ssize_t &&offset = 0)
 {
     size_t _offset = offset;
     return unsafe_make_placement_array<T>(bytes, _offset);
 }
 
 template<typename T,typename Byte>
-bool check_placement_array(nonstd::span<Byte> bytes, ssize_t offset, ssize_t n)
+bool check_placement_array(std::span<Byte> bytes, ssize_t offset, ssize_t n)
 {
     return check_alignment<T>(bytes.data()) && (offset + (n * ssizeof(T)) <= std::ssize(bytes));
 }
 
 template<typename T,typename Byte>
-bool check_placement_array(nonstd::span<Byte> bytes, ssize_t offset)
+bool check_placement_array(std::span<Byte> bytes, ssize_t offset)
 {
     return check_alignment<T>(bytes.data());
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset, ssize_t n)
+placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &offset, ssize_t n)
 {
     parse_assert(check_placement_array<T>(bytes, offset, n));
     return placement_array<T,Byte>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &&offset, ssize_t n)
+placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &&offset, ssize_t n)
 {
     ssize_t _offset = offset;
     return make_placement_array<T>(bytes, _offset, n);
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &offset)
+placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &offset)
 {
     ttlet n = std::ssize(bytes) / ssizeof(T);
     return make_placement_array<T>(bytes, offset, n);
 }
 
 template<typename T,typename Byte>
-placement_array<T,Byte> make_placement_array(nonstd::span<Byte> bytes, ssize_t &&offset = 0)
+placement_array<T,Byte> make_placement_array(std::span<Byte> bytes, ssize_t &&offset = 0)
 {
     ssize_t _offset = offset;
     return make_placement_array<T>(bytes, _offset);

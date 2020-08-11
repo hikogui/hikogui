@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
-#include <nonstd/span>
+#include <span>
 #include <fmt/format.h>
 
 using namespace std;

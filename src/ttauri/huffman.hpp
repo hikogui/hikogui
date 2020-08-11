@@ -2,7 +2,7 @@
 #include "required.hpp"
 #include "bits.hpp"
 #include "numeric_cast.hpp"
-#include <nonstd/span>
+#include <span>
 #include <vector>
 
 namespace tt {
@@ -95,7 +95,7 @@ public:
         return value - 1;
     }
 
-    [[nodiscard]] int get_symbol(nonstd::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept {
+    [[nodiscard]] int get_symbol(std::span<std::byte const> bytes, ssize_t &bit_offset) const noexcept {
         auto state = start();
         while (true) {
             int symbol;

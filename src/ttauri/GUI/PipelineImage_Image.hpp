@@ -10,7 +10,7 @@
 #include "../vec.hpp"
 #include "../aarect.hpp"
 #include "../mat.hpp"
-#include <nonstd/span>
+#include <span>
 #include <atomic>
 #include <string>
 

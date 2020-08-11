@@ -5,7 +5,7 @@
 
 #include "../required.hpp"
 #include "../byte_string.hpp"
-#include <nonstd/span>
+#include <span>
 
 namespace tt {
 
@@ -21,7 +21,7 @@ namespace tt {
  *   in the byte array passed to inflate anyway.
  * - png IDAT chunks include the full zlib-format, including the 32 bit check value.
  */
-bstring inflate(nonstd::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size=0x0100'0000);
+bstring inflate(std::span<std::byte const> bytes, ssize_t &offset, ssize_t max_size=0x0100'0000);
 
 }
 

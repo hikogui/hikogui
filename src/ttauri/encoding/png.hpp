@@ -11,7 +11,7 @@
 #include "../URL.hpp"
 #include "../ResourceView.hpp"
 #include "../byte_string.hpp"
-#include <nonstd/span>
+#include <span>
 #include <vector>
 #include <cstddef>
 #include <cstdint>
@@ -47,14 +47,14 @@ class png {
 
     /** Spans of compressed data.
      */
-    std::vector<nonstd::span<std::byte const>> idat_chunk_data;
+    std::vector<std::span<std::byte const>> idat_chunk_data;
 
     /** Take ownership of the view.
      */
     std::unique_ptr<ResourceView> view;
 public:
 
-    png(nonstd::span<std::byte const> bytes);
+    png(std::span<std::byte const> bytes);
 
     png(std::unique_ptr<ResourceView> view);
 
@@ -70,27 +70,27 @@ public:
     static PixelMap<R16G16B16A16SFloat> load(URL const &url);
 
 private:
-    void read_header(nonstd::span<std::byte const> bytes, ssize_t &offset);
-    void read_chunks(nonstd::span<std::byte const> bytes, ssize_t &offset);
-    void read_IHDR(nonstd::span<std::byte const> bytes);
-    void read_cHRM(nonstd::span<std::byte const> bytes);
-    void read_gAMA(nonstd::span<std::byte const> bytes);
-    void read_iBIT(nonstd::span<std::byte const> bytes);
-    void read_iCCP(nonstd::span<std::byte const> bytes);
-    void read_sRGB(nonstd::span<std::byte const> bytes);
+    void read_header(std::span<std::byte const> bytes, ssize_t &offset);
+    void read_chunks(std::span<std::byte const> bytes, ssize_t &offset);
+    void read_IHDR(std::span<std::byte const> bytes);
+    void read_cHRM(std::span<std::byte const> bytes);
+    void read_gAMA(std::span<std::byte const> bytes);
+    void read_iBIT(std::span<std::byte const> bytes);
+    void read_iCCP(std::span<std::byte const> bytes);
+    void read_sRGB(std::span<std::byte const> bytes);
     void generate_sRGB_transfer_function() noexcept;
     void generate_Rec2100_transfer_function() noexcept;
     void generate_gamma_transfer_function(float gamma) noexcept;
     bstring decompress_IDATs(ssize_t image_data_size) const;
     void unfilter_lines(bstring &image_data) const;
-    void unfilter_line(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const;
-    void unfilter_line_sub(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept;
-    void unfilter_line_up(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept;
-    void unfilter_line_average(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept;
-    void unfilter_line_paeth(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept;
+    void unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const;
+    void unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
+    void unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
+    void unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
+    void unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept;
     void data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) const noexcept;
-    void data_to_image_line(nonstd::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &row) const noexcept;
-    ivec extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) const noexcept;
+    void data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &row) const noexcept;
+    ivec extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept;
 
 };
 

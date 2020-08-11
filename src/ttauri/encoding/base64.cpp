@@ -99,7 +99,7 @@ static char encode_base64(int value) noexcept
     }
 }
 
-std::string encode_base64(nonstd::span<std::byte const> src) noexcept
+std::string encode_base64(std::span<std::byte const> src) noexcept
 {
     auto dst = std::string{};
     ttlet nr_groups = (std::ssize(src) + 2) / 3;

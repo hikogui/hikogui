@@ -4,7 +4,7 @@
 #pragma once
 
 #include "exceptions.hpp"
-#include <nonstd/span>
+#include <span>
 #include <cstddef>
 
 namespace tt {
@@ -14,7 +14,7 @@ namespace tt {
  *
  * @param index The index of the bit in the byte span.
  */
-[[nodiscard]] inline bool get_bit(nonstd::span<std::byte const> buffer, ssize_t &index) noexcept
+[[nodiscard]] inline bool get_bit(std::span<std::byte const> buffer, ssize_t &index) noexcept
 {
     auto byte_index = index >> 3;
     auto bit_index = static_cast<uint8_t>(index & 7);
@@ -43,7 +43,7 @@ namespace tt {
  * @param index The index of the bit in the byte span.
  * @param length the number of bits to return.
  */
-[[nodiscard]] inline int get_bits(nonstd::span<std::byte const> buffer, ssize_t &index, int length) noexcept
+[[nodiscard]] inline int get_bits(std::span<std::byte const> buffer, ssize_t &index, int length) noexcept
 {
     auto value = 0;
 

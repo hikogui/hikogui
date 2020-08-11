@@ -4,7 +4,7 @@
 #pragma once
 
 #include "wfree_unordered_map.hpp"
-#include <nonstd/span>
+#include <span>
 #include <typeinfo>
 #include <typeindex>
 

@@ -14,55 +14,55 @@ class TrueTypeFont final: public Font {
 private:
     std::unique_ptr<ResourceView> view;
 
-    nonstd::span<std::byte const> file_bytes;
+    std::span<std::byte const> file_bytes;
 
     uint16_t OS2_xHeight = 0;
     uint16_t OS2_HHeight = 0;
 
 
     //! 'cmap' character to glyph mapping
-    nonstd::span<std::byte const> cmapTableBytes;
+    std::span<std::byte const> cmapTableBytes;
 
     //! The bytes of a Unicode character map.
-    nonstd::span<std::byte const> cmapBytes;
+    std::span<std::byte const> cmapBytes;
 
     //! 'glyf' glyph data
-    nonstd::span<std::byte const> glyfTableBytes;
+    std::span<std::byte const> glyfTableBytes;
 
     //! 'head' font header
-    nonstd::span<std::byte const> headTableBytes;
+    std::span<std::byte const> headTableBytes;
     float unitsPerEm;
     float emScale;
     bool locaTableIsOffset32;
 
     //! 'hhea' horizontal header
-    nonstd::span<std::byte const> hheaTableBytes;
+    std::span<std::byte const> hheaTableBytes;
     float ascender;
     float descender;
     float lineGap;
     uint16_t numberOfHMetrics;
 
     //! 'hmtx' horizontal metrics
-    nonstd::span<std::byte const> hmtxTableBytes;
+    std::span<std::byte const> hmtxTableBytes;
 
     //! 'loca' index to location
-    nonstd::span<std::byte const> locaTableBytes;
+    std::span<std::byte const> locaTableBytes;
 
     //! 'maxp' maximum profile
-    nonstd::span<std::byte const> maxpTableBytes;
+    std::span<std::byte const> maxpTableBytes;
     int numGlyphs;
 
     //! 'name' naming (not needed)
-    nonstd::span<std::byte const> nameTableBytes;
+    std::span<std::byte const> nameTableBytes;
 
     //! 'post' PostScript (not needed)
-    nonstd::span<std::byte const> postTableBytes;
+    std::span<std::byte const> postTableBytes;
 
     //! 'OS/2' OS/2 (not needed)
-    nonstd::span<std::byte const> os2TableBytes;
+    std::span<std::byte const> os2TableBytes;
 
     //! 'kern' Kerning tables (optional)
-    nonstd::span<std::byte const> kernTableBytes;
+    std::span<std::byte const> kernTableBytes;
 
 public:
     /*! Load a true type font.
@@ -70,7 +70,7 @@ public:
      * This also means that the bytes passed into this constructor will need to
      * remain available.
      */
-    TrueTypeFont(nonstd::span<std::byte const> bytes) :
+    TrueTypeFont(std::span<std::byte const> bytes) :
         file_bytes(bytes)
     {
         parseFontDirectory();
@@ -136,13 +136,13 @@ private:
     /*! Parses the head table of the font file.
      * This function is called by parseFontDirectory().
      */
-    void parseHeadTable(nonstd::span<std::byte const> headTableBytes);
+    void parseHeadTable(std::span<std::byte const> headTableBytes);
 
-    void parseHheaTable(nonstd::span<std::byte const> bytes);
+    void parseHheaTable(std::span<std::byte const> bytes);
 
-    void parseNameTable(nonstd::span<std::byte const> bytes);
+    void parseNameTable(std::span<std::byte const> bytes);
 
-    void parseOS2Table(nonstd::span<std::byte const> bytes);
+    void parseOS2Table(std::span<std::byte const> bytes);
 
     /** Parse the character map to create unicode_ranges.
      */
@@ -152,19 +152,19 @@ private:
     /*! Parses the maxp table of the font file.
     * This function is called by parseFontDirectory().
     */
-    void parseMaxpTable(nonstd::span<std::byte const> bytes);
+    void parseMaxpTable(std::span<std::byte const> bytes);
 
     /*! Find the glyph in the loca table.
      * called by loadGlyph()
      */
-    bool getGlyphBytes(GlyphID glyph_id, nonstd::span<std::byte const> &bytes) const noexcept;
+    bool getGlyphBytes(GlyphID glyph_id, std::span<std::byte const> &bytes) const noexcept;
 
     /*! Update the glyph metrics from the font tables.
      * called by loadGlyph()
      */
     bool updateGlyphMetrics(GlyphID glyph_id, GlyphMetrics &metrics, GlyphID kern_glyph1_id=GlyphID{}, GlyphID kern_glyph2_id=GlyphID{}) const noexcept;
 
-    bool loadSimpleGlyph(nonstd::span<std::byte const> bytes, Path &glyph) const noexcept;
+    bool loadSimpleGlyph(std::span<std::byte const> bytes, Path &glyph) const noexcept;
 
     /*! Load a compound glyph.
      * This will call loadGlyph() recursively.
@@ -174,7 +174,7 @@ private:
      * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
      *                          this value is only updated when the USE_MY_METRICS flag was set.
      */
-    bool loadCompoundGlyph(nonstd::span<std::byte const> bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept;
+    bool loadCompoundGlyph(std::span<std::byte const> bytes, Path &glyph, GlyphID &metrics_glyph_id) const noexcept;
 
     /*! Load a compound glyph.
     * This will call loadGlyph() recursively.
@@ -183,7 +183,7 @@ private:
     * \param metricsGlyphIndex The glyph index of the glyph to use for the metrics.
     *                          this value is only updated when the USE_MY_METRICS flag was set.
     */
-    bool loadCompoundGlyphMetrics(nonstd::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept;
+    bool loadCompoundGlyphMetrics(std::span<std::byte const> bytes, GlyphID &metrics_glyph_id) const noexcept;
 
 
 };

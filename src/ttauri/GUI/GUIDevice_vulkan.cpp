@@ -8,7 +8,7 @@
 #include "Window.hpp"
 #include "../Application.hpp"
 #include "../ResourceView.hpp"
-#include <nonstd/span>
+#include <span>
 
 namespace tt {
 
@@ -700,7 +700,7 @@ vk::ShaderModule GUIDevice_vulkan::loadShader(uint32_t const *data, size_t size)
     return intrinsic.createShaderModule({vk::ShaderModuleCreateFlags(), size, data});
 }
 
-vk::ShaderModule GUIDevice_vulkan::loadShader(nonstd::span<std::byte const> shaderObjectBytes) const
+vk::ShaderModule GUIDevice_vulkan::loadShader(std::span<std::byte const> shaderObjectBytes) const
 {
     // Make sure the address is aligned to uint32_t;
     ttlet address = reinterpret_cast<uintptr_t>(shaderObjectBytes.data());

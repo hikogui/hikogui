@@ -4,7 +4,7 @@
 #pragma once
 
 #include "VerticalSync_base.hpp"
-#include <nonstd/span>
+#include <span>
 #include <thread>
 
 typedef struct __CVDisplayLink CVDisplayLinkRef;

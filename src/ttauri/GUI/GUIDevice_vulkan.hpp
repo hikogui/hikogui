@@ -126,7 +126,7 @@ public:
     void clearColorImage(vk::Image image, vk::ImageLayout layout, vk::ClearColorValue const &color, vk::ArrayProxy<const vk::ImageSubresourceRange> ranges) const;
 
     template <typename T>
-    nonstd::span<T> mapMemory(const VmaAllocation &allocation) const {
+    std::span<T> mapMemory(const VmaAllocation &allocation) const {
         auto lock = std::scoped_lock(guiMutex);
 
         void *mapping;
@@ -137,7 +137,7 @@ public:
 
         // Should we launder the pointer? The GPU has created the objects, not the C++ application.
         T *mappingT = reinterpret_cast<T *>(mapping);
-        ttlet mappingSpan = nonstd::span<T>(mappingT, allocationInfo.size / sizeof (T));
+        ttlet mappingSpan = std::span<T>(mappingT, allocationInfo.size / sizeof (T));
 
         return vk::createResultValue(result, mappingSpan, "tt::GUIDevice_vulkan::mapMemory");
     }
@@ -158,7 +158,7 @@ public:
 
     vk::ShaderModule loadShader(uint32_t const *data, size_t size) const;
 
-    vk::ShaderModule loadShader(nonstd::span<std::byte const> shaderObjectBytes) const;
+    vk::ShaderModule loadShader(std::span<std::byte const> shaderObjectBytes) const;
 
     vk::ShaderModule loadShader(URL const &shaderObjectLocation) const;
 

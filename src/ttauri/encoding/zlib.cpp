@@ -13,7 +13,7 @@ struct zlib_header {
     uint8_t FLG;
 };
 
-bstring zlib_decompress(nonstd::span<std::byte const> bytes, ssize_t max_size)
+bstring zlib_decompress(std::span<std::byte const> bytes, ssize_t max_size)
 {
     ssize_t offset = 0;
 

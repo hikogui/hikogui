@@ -47,7 +47,7 @@ struct sRGB {
     uint8_t rendering_intent;
 };
 
-void png::read_header(nonstd::span<std::byte const> bytes, ssize_t &offset)
+void png::read_header(std::span<std::byte const> bytes, ssize_t &offset)
 {
     ttlet png_header = make_placement_ptr<PNGHeader>(bytes, offset);
 
@@ -98,7 +98,7 @@ void png::generate_gamma_transfer_function(float gamma) noexcept
 }
 
 
-void png::read_IHDR(nonstd::span<std::byte const> bytes)
+void png::read_IHDR(std::span<std::byte const> bytes)
 {
     ttlet ihdr = make_placement_ptr<IHDR>(bytes);
 
@@ -139,7 +139,7 @@ void png::read_IHDR(nonstd::span<std::byte const> bytes)
     generate_sRGB_transfer_function();
 }
 
-void png::read_cHRM(nonstd::span<std::byte const> bytes)
+void png::read_cHRM(std::span<std::byte const> bytes)
 {
     ttlet chrm = make_placement_ptr<cHRM>(bytes);
 
@@ -157,7 +157,7 @@ void png::read_cHRM(nonstd::span<std::byte const> bytes)
     color_to_sRGB = XYZ_to_sRGB * color_to_XYZ;
 }
 
-void png::read_gAMA(nonstd::span<std::byte const> bytes)
+void png::read_gAMA(std::span<std::byte const> bytes)
 {
     ttlet gama = make_placement_ptr<gAMA>(bytes);
     ttlet gamma = numeric_cast<float>(gama->gamma.value()) / 100'000.0f;
@@ -166,7 +166,7 @@ void png::read_gAMA(nonstd::span<std::byte const> bytes)
     generate_gamma_transfer_function(1.0f / gamma);
 }
 
-void png::read_sRGB(nonstd::span<std::byte const> bytes)
+void png::read_sRGB(std::span<std::byte const> bytes)
 {
     ttlet srgb = make_placement_ptr<sRGB>(bytes);
     ttlet rendering_intent = srgb->rendering_intent;
@@ -176,7 +176,7 @@ void png::read_sRGB(nonstd::span<std::byte const> bytes)
     generate_sRGB_transfer_function();
 }
 
-static std::string read_string(nonstd::span<std::byte const> bytes)
+static std::string read_string(std::span<std::byte const> bytes)
 {
     std::string r;
 
@@ -191,7 +191,7 @@ static std::string read_string(nonstd::span<std::byte const> bytes)
     TTAURI_THROW(parse_error("string is not null terminated."));
 }
 
-void png::read_iCCP(nonstd::span<std::byte const> bytes)
+void png::read_iCCP(std::span<std::byte const> bytes)
 {
     auto profile_name = read_string(bytes);
 
@@ -205,13 +205,13 @@ void png::read_iCCP(nonstd::span<std::byte const> bytes)
     }
 }
 
-void png::read_chunks(nonstd::span<std::byte const> bytes, ssize_t &offset)
+void png::read_chunks(std::span<std::byte const> bytes, ssize_t &offset)
 {
-    auto IHDR_bytes = nonstd::span<std::byte const>{};
-    auto cHRM_bytes = nonstd::span<std::byte const>{};
-    auto gAMA_bytes = nonstd::span<std::byte const>{};
-    auto iCCP_bytes = nonstd::span<std::byte const>{};
-    auto sRGB_bytes = nonstd::span<std::byte const>{};
+    auto IHDR_bytes = std::span<std::byte const>{};
+    auto cHRM_bytes = std::span<std::byte const>{};
+    auto gAMA_bytes = std::span<std::byte const>{};
+    auto iCCP_bytes = std::span<std::byte const>{};
+    auto sRGB_bytes = std::span<std::byte const>{};
     bool has_IEND = false;
 
     while (!has_IEND) {
@@ -278,7 +278,7 @@ void png::read_chunks(nonstd::span<std::byte const> bytes, ssize_t &offset)
 
 }
 
-png::png(nonstd::span<std::byte const> bytes) :
+png::png(std::span<std::byte const> bytes) :
     view()
 {
     ssize_t offset = 0;
@@ -312,14 +312,14 @@ bstring png::decompress_IDATs(ssize_t image_data_size) const {
         bstring compressed_data;
         compressed_data.reserve(compressed_data_size);
         for (ttlet &chunk_data : idat_chunk_data) {
-            std::copy(chunk_data.cbegin(), chunk_data.cend(), std::back_inserter(compressed_data));
+            std::copy(chunk_data.begin(), chunk_data.end(), std::back_inserter(compressed_data));
         }
 
         return zlib_decompress(compressed_data, image_data_size);
     }
 }
 
-void png::unfilter_line_sub(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+void png::unfilter_line_sub(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
         int j = i - bytes_per_pixel;
@@ -329,14 +329,14 @@ void png::unfilter_line_sub(nonstd::span<uint8_t> line, nonstd::span<uint8_t con
     }
 }
 
-void png::unfilter_line_up(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+void png::unfilter_line_up(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
         line[i] += prev_line[i];
     }
 }
 
-void png::unfilter_line_average(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+void png::unfilter_line_average(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
         int j = i - bytes_per_pixel;
@@ -365,7 +365,7 @@ static uint8_t paeth_predictor(uint8_t _a, uint8_t _b, uint8_t _c) noexcept {
     }
 }
 
-void png::unfilter_line_paeth(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const noexcept
+void png::unfilter_line_paeth(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const noexcept
 {
     for (int i = 0; i != bytes_per_line; ++i) {
         int j = i - bytes_per_pixel;
@@ -377,7 +377,7 @@ void png::unfilter_line_paeth(nonstd::span<uint8_t> line, nonstd::span<uint8_t c
     }
 }
 
-void png::unfilter_line(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> prev_line) const
+void png::unfilter_line(std::span<uint8_t> line, std::span<uint8_t const> prev_line) const
 {
     switch (line[0]) {
     case 0: return;
@@ -392,10 +392,10 @@ void png::unfilter_line(nonstd::span<uint8_t> line, nonstd::span<uint8_t const> 
 
 void png::unfilter_lines(bstring &image_data) const
 {
-    auto image_bytes = nonstd::span(reinterpret_cast<uint8_t *>(image_data.data()), std::ssize(image_data));
+    auto image_bytes = std::span(reinterpret_cast<uint8_t *>(image_data.data()), std::ssize(image_data));
     auto zero_line = bstring(bytes_per_line, std::byte{0});
 
-    auto prev_line = nonstd::span(reinterpret_cast<uint8_t *>(zero_line.data()), std::ssize(zero_line));
+    auto prev_line = std::span(reinterpret_cast<uint8_t *>(zero_line.data()), std::ssize(zero_line));
     for (int y = 0; y != height; ++y) {
         auto line = image_bytes.subspan(y * stride, stride);
         unfilter_line(line, prev_line);
@@ -403,7 +403,7 @@ void png::unfilter_lines(bstring &image_data) const
     }
 }
 
-static int get_sample(nonstd::span<std::byte const> bytes, ssize_t &offset, bool two_bytes)
+static int get_sample(std::span<std::byte const> bytes, ssize_t &offset, bool two_bytes)
 {
     int value = static_cast<uint8_t>(bytes[offset++]);
     if (two_bytes) {
@@ -412,7 +412,7 @@ static int get_sample(nonstd::span<std::byte const> bytes, ssize_t &offset, bool
     return value;
 }
 
-ivec png::extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) const noexcept
+ivec png::extract_pixel_from_line(std::span<std::byte const> bytes, int x) const noexcept
 {
     tt_assume(bit_depth == 8 || bit_depth == 16);
     tt_assume(!is_palletted);
@@ -439,7 +439,7 @@ ivec png::extract_pixel_from_line(nonstd::span<std::byte const> bytes, int x) co
     return {r, g, b, a};
 }
 
-void png::data_to_image_line(nonstd::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &line) const noexcept
+void png::data_to_image_line(std::span<std::byte const> bytes, PixelRow<R16G16B16A16SFloat> &line) const noexcept
 {
     ttlet alpha_mul = bit_depth == 16 ? 1.0f/65535.0f : 1.0f/255.0f;
     for (int x = 0; x != width; ++x) {
@@ -460,7 +460,7 @@ void png::data_to_image_line(nonstd::span<std::byte const> bytes, PixelRow<R16G1
 
 void png::data_to_image(bstring bytes, PixelMap<R16G16B16A16SFloat> &image) const noexcept
 {
-    auto bytes_span = nonstd::span(bytes);
+    auto bytes_span = std::span(bytes);
 
     for (int y = 0; y != height; ++y) {
         int inv_y = height - y - 1;

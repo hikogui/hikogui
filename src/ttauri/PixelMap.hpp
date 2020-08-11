@@ -5,7 +5,7 @@
 
 #include "required.hpp"
 #include "iaarect.hpp"
-#include <nonstd/span>
+#include <span>
 #include <string>
 #include <algorithm>
 #include <vector>

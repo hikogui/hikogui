@@ -5,7 +5,7 @@
 
 #include "ResourceView.hpp"
 #include "required.hpp"
-#include <nonstd/span>
+#include <span>
 #include <cstddef>
 #include <unordered_map>
 
@@ -16,7 +16,7 @@ namespace tt {
 class StaticResourceView : public ResourceView {
 private:
     // Borrowed reference from a byte array inside StaticResources.
-    nonstd::span<std::byte const> _bytes;
+    std::span<std::byte const> _bytes;
 
 public:
     StaticResourceView(std::string const &filename);
@@ -34,7 +34,7 @@ public:
 
     [[nodiscard]] std::byte const *data() const noexcept override { return _bytes.data(); }
 
-    [[nodiscard]] nonstd::span<std::byte const> bytes() const noexcept override { return _bytes; }
+    [[nodiscard]] std::span<std::byte const> bytes() const noexcept override { return _bytes; }
 
     [[nodiscard]] std::string_view string_view() const noexcept override { return {reinterpret_cast<char const*>(data()), size()}; }
 
