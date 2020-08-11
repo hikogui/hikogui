@@ -6,6 +6,7 @@
 #include "VerticalSync_base.hpp"
 #include <span>
 #include <thread>
+#include <array>
 
 namespace tt {
 

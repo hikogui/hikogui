@@ -7,6 +7,7 @@
 #include "ttauri/math.hpp"
 #include <gtest/gtest.h>
 #include <iostream>
+#include <numbers>
 
 using namespace std;
 using namespace tt;
@@ -73,15 +74,15 @@ TEST(Mat, Rotate) {
     ASSERT_EQ(M1 * tmp, vec(2.0, 3.0, 4.0, 1.0));
 
     // 90 degrees counter clock-wise.
-    ttlet M2 = mat::R(pi * 0.5f);
+    ttlet M2 = mat::R(std::numbers::pi_v<float> * 0.5f);
     ASSERT_NEAR_VEC(M2 * tmp, vec(-3.0, 2.0, 4.0, 1.0), 0.001);
 
     // 180 degrees counter clock-wise.
-    ttlet M3 = mat::R(pi);
+    ttlet M3 = mat::R(std::numbers::pi_v<float>);
     ASSERT_NEAR_VEC(M3 * tmp, vec(-2.0, -3.0, 4.0, 1.0), 0.001);
 
     // 270 degrees counter clock-wise.
-    ttlet M4 = mat::R(pi * 1.5f);
+    ttlet M4 = mat::R(std::numbers::pi_v<float> * 1.5f);
     ASSERT_NEAR_VEC(M4 * tmp, vec(3.0, -2.0, 4.0, 1.0), 0.001);
 }
 

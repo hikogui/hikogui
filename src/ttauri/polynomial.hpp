@@ -4,6 +4,8 @@
 #pragma once
 
 #include "math.hpp"
+#include <numbers>
+#include <array>
 
 namespace tt {
 
@@ -11,10 +13,11 @@ template<typename T, int N>
 struct results {
     static constexpr int maxCount = N;
     using element_type = T;
-    using const_iterator = typename std::array<T,N>::const_iterator;
+    using array_type = std::array<T,N>;
+    using const_iterator = typename array_type::const_iterator;
 
     int count;
-    std::array<T,N> value;
+    array_type value;
 
     results() noexcept : count(0), value() {}
 
@@ -164,8 +167,8 @@ inline results<T,2> solvePolynomial(T const &a, T const &b, T const &c) noexcept
 template<typename T>
 inline results<T,3> solveDepressedCubicTrig(T const &p, T const &q) noexcept {
     constexpr T oneThird = static_cast<T>(1) / static_cast<T>(3);
-    constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * static_cast<T>(pi);
-    constexpr T pi4_3 = (static_cast<T>(4) / static_cast<T>(3)) * static_cast<T>(pi);
+    constexpr T pi2_3 = (static_cast<T>(2) / static_cast<T>(3)) * std::numbers::pi_v<T>;
+    constexpr T pi4_3 = (static_cast<T>(4) / static_cast<T>(3)) * std::numbers::pi_v<T>;
 
     ttlet U = oneThird * acos(((static_cast<T>(3)*q) / (static_cast<T>(2)*p)) * sqrt(static_cast<T>(-3)/p));
     ttlet V = static_cast<T>(2) * sqrt(-oneThird * p);

@@ -24,8 +24,6 @@
 
 namespace tt {
 
-constexpr long double pi = 3.141592653589793238462643383279502884L;
-
 constexpr long long pow10_table[20] {
                             1LL,
                            10LL,
