@@ -117,7 +117,7 @@ private:
     static constexpr uint64_t make_string(std::string_view str) {
         ttlet len = str.size();
 
-        if (len > 6) {
+        if (len > 5) {
             return 0;
         }
 
@@ -126,7 +126,7 @@ private:
             x <<= 8;
             x |= str[i];
         }
-        return (string_mask + (len << 48)) | x;
+        return (string_mask + (len << 40)) | x;
     }
 
     /** Encode a pointer into a uint64_t.
@@ -161,9 +161,9 @@ private:
     }
 
     /// Lowest integer that can be encoded into datum's storage.
-    static constexpr int64_t minimum_int = 0xfffc'0000'0000'0000LL;
+    static constexpr int64_t minimum_int = 0xffff'8000'0000'0000LL;
     /// Highest integer that can be encoded into datum's storage.
-    static constexpr int64_t maximum_int = 0x0003'ffff'ffff'ffffLL;
+    static constexpr int64_t maximum_int = 0x0000'7fff'ffff'ffffLL;
 
     static constexpr int64_t minimum_mantissa = 0xffff'ff80'0000'0000LL;
     static constexpr int64_t maximum_mantissa = 0x0000'007f'ffff'ffffLL;
@@ -181,34 +181,34 @@ private:
     static constexpr uint16_t phy_small_id         = make_id(0b00001);
     static constexpr uint16_t phy_decimal_id       = make_id(0b00010);
     static constexpr uint16_t phy_ymd_id           = make_id(0b00011);
-    static constexpr uint16_t phy_reserved_id0     = make_id(0b00100);
-    static constexpr uint16_t phy_reserved_id1     = make_id(0b00101);
-    static constexpr uint16_t phy_reserved_id2     = make_id(0b00110);
-    static constexpr uint16_t phy_reserved_id3     = make_id(0b00111);
-    static constexpr uint16_t phy_integer_id0      = make_id(0b01000);
-    static constexpr uint16_t phy_integer_id1      = make_id(0b01001);
-    static constexpr uint16_t phy_integer_id2      = make_id(0b01010);
-    static constexpr uint16_t phy_integer_id3      = make_id(0b01011);
-    static constexpr uint16_t phy_integer_id4      = make_id(0b01100);
-    static constexpr uint16_t phy_integer_id5      = make_id(0b01101);
-    static constexpr uint16_t phy_integer_id6      = make_id(0b01110);
-    static constexpr uint16_t phy_integer_id7      = make_id(0b01111);
+    static constexpr uint16_t phy_integer_id       = make_id(0b00100);
+    static constexpr uint16_t phy_string_id        = make_id(0b00101);
+    static constexpr uint16_t phy_reserved_id1     = make_id(0b00110);
+    static constexpr uint16_t phy_reserved_id2     = make_id(0b00111);
+    static constexpr uint16_t phy_reserved_id3     = make_id(0b01000);
+    static constexpr uint16_t phy_reserved_id4     = make_id(0b01001);
+    static constexpr uint16_t phy_reserved_id5     = make_id(0b01010);
+    static constexpr uint16_t phy_reserved_id6     = make_id(0b01011);
+    static constexpr uint16_t phy_reserved_id7     = make_id(0b01100);
+    static constexpr uint16_t phy_reserved_id8     = make_id(0b01101);
+    static constexpr uint16_t phy_reserved_id9     = make_id(0b01110);
+    static constexpr uint16_t phy_reserved_id10    = make_id(0b01111);
 
-    static constexpr uint16_t phy_string_id0       = make_id(0b10001);
-    static constexpr uint16_t phy_string_id1       = make_id(0b10010);
-    static constexpr uint16_t phy_string_id2       = make_id(0b10011);
-    static constexpr uint16_t phy_string_id3       = make_id(0b10100);
-    static constexpr uint16_t phy_string_id4       = make_id(0b10101);
-    static constexpr uint16_t phy_string_id5       = make_id(0b10110);
-    static constexpr uint16_t phy_string_id6       = make_id(0b10111);
-    static constexpr uint16_t phy_string_ptr_id    = make_id(0b11000);
-    static constexpr uint16_t phy_url_ptr_id       = make_id(0b11001);
-    static constexpr uint16_t phy_integer_ptr_id   = make_id(0b11010);
-    static constexpr uint16_t phy_vector_ptr_id    = make_id(0b11011);
-    static constexpr uint16_t phy_map_ptr_id       = make_id(0b11100);
-    static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b11101);
-    static constexpr uint16_t phy_bytes_ptr_id     = make_id(0b11110);
-    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11111);
+    static constexpr uint16_t phy_string_ptr_id    = make_id(0b10001);
+    static constexpr uint16_t phy_url_ptr_id       = make_id(0b10010);
+    static constexpr uint16_t phy_integer_ptr_id   = make_id(0b10011);
+    static constexpr uint16_t phy_vector_ptr_id    = make_id(0b10100);
+    static constexpr uint16_t phy_map_ptr_id       = make_id(0b10101);
+    static constexpr uint16_t phy_decimal_ptr_id   = make_id(0b10110);
+    static constexpr uint16_t phy_bytes_ptr_id     = make_id(0b10111);
+    static constexpr uint16_t phy_reserved_ptr_id0 = make_id(0b11000);
+    static constexpr uint16_t phy_reserved_ptr_id1 = make_id(0b11001);
+    static constexpr uint16_t phy_reserved_ptr_id2 = make_id(0b11010);
+    static constexpr uint16_t phy_reserved_ptr_id3 = make_id(0b11011);
+    static constexpr uint16_t phy_reserved_ptr_id4 = make_id(0b11100);
+    static constexpr uint16_t phy_reserved_ptr_id5 = make_id(0b11101);
+    static constexpr uint16_t phy_reserved_ptr_id6 = make_id(0b11110);
+    static constexpr uint16_t phy_reserved_ptr_id7 = make_id(0b11111);
 
     static constexpr uint64_t small_mask = id_to_mask(phy_small_id);
     static constexpr uint64_t undefined_mask = small_mask | small_undefined;
@@ -217,9 +217,8 @@ private:
     static constexpr uint64_t false_mask = small_mask | small_false;
     static constexpr uint64_t break_mask = small_mask | small_break;
     static constexpr uint64_t continue_mask = small_mask | small_continue;
-    static constexpr uint64_t string_mask = id_to_mask(phy_string_id0);
-    static constexpr uint64_t character_mask = id_to_mask(phy_string_id1);
-    static constexpr uint64_t integer_mask = id_to_mask(phy_integer_id0);
+    static constexpr uint64_t string_mask = id_to_mask(phy_string_id);
+    static constexpr uint64_t integer_mask = id_to_mask(phy_integer_id);
     static constexpr uint64_t decimal_mask = id_to_mask(phy_decimal_id);
     static constexpr uint64_t ymd_mask = id_to_mask(phy_ymd_id);
     static constexpr uint64_t string_ptr_mask = id_to_mask(phy_string_ptr_id);
@@ -255,12 +254,11 @@ private:
     }
 
     bool is_phy_integer() const noexcept {
-        return (type_id() & 0xfff8) == 0x7ff8;
+        return type_id() == phy_integer_id;
     }
 
     bool is_phy_string() const noexcept {
-        ttlet id = type_id();
-        return (id & 0xfff8) == 0xfff0 && (id & 0x0007) > 0;
+        return type_id() == phy_string_id;
     }
 
     bool is_phy_decimal() const noexcept {
@@ -276,7 +274,7 @@ private:
     }
 
     bool is_phy_pointer() const noexcept {
-        return HasLargeObjects && (type_id() & 0xfff8) == 0xfff8;
+        return HasLargeObjects && (type_id() & 0xfff0) == 0xfff0;
     }
 
     bool is_phy_string_ptr() const noexcept {
@@ -508,7 +506,7 @@ public:
     datum_impl(unsigned char value) noexcept : datum_impl(static_cast<unsigned long long>(value)) {}
 
     datum_impl(signed long long value) noexcept :
-        u64(integer_mask | (static_cast<uint64_t>(value) & 0x0007ffff'ffffffff))
+        u64(integer_mask | (static_cast<uint64_t>(value) & 0x0000ffff'ffffffff))
     {
         if (tt_unlikely(value < minimum_int || value > maximum_int)) {
             if constexpr (HasLargeObjects) {
@@ -525,10 +523,12 @@ public:
     datum_impl(signed char value) noexcept : datum_impl(static_cast<signed long long>(value)) {}
 
     datum_impl(bool value) noexcept : u64(value ? true_mask : false_mask) {}
-    datum_impl(char value) noexcept : u64(character_mask | value) {}
+    datum_impl(char value) noexcept : u64(string_mask | (1 << 40) | value) {}
 
-    datum_impl(std::string_view value) noexcept : u64(make_string(value)) {
-        if (value.size() > 6) {
+    datum_impl(std::string_view value) noexcept :
+        u64(make_string(value))
+    {
+        if (u64 == 0) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new std::string(value);
                 u64 = make_pointer(string_ptr_mask, p);
@@ -687,7 +687,7 @@ public:
             delete_pointer();
         }
 
-        u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0007ffff'ffffffff);
+        u64 = integer_mask | (static_cast<uint64_t>(rhs) & 0x0000ffff'ffffffff);
         if (tt_unlikely(rhs < minimum_int || rhs > maximum_int)) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new int64_t(rhs);
@@ -716,7 +716,7 @@ public:
         if (tt_unlikely(is_phy_pointer())) {
             delete_pointer();
         }
-        u64 = character_mask | static_cast<uint64_t>(rhs);
+        u64 = string_mask | (1 << 40) | static_cast<uint64_t>(rhs);
         return *this;
     }
 
@@ -726,7 +726,7 @@ public:
         }
 
         u64 = make_string(rhs);
-        if (rhs.size() > 6) {
+        if (u64 == 0) {
             if constexpr (HasLargeObjects) {
                 auto * const p = new std::string(rhs);
                 u64 = make_pointer(string_ptr_mask, p);
@@ -923,12 +923,15 @@ public:
 
     explicit operator unsigned long long () const {
         ttlet v = static_cast<signed long long>(*this);
+        if (v < 0) {
+            TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned long long", this->repr(), this->type_name());
+        }
         return static_cast<unsigned long long>(v);
     }
 
     explicit operator unsigned long () const {
         ttlet v = static_cast<unsigned long long>(*this);
-        if ( v > std::numeric_limits<unsigned long>::max()) {
+        if (v > std::numeric_limits<unsigned long>::max()) {
             TTAURI_THROW_INVALID_OPERATION_ERROR("Value {} of type {} can not be converted to a unsigned long", this->repr(), this->type_name());
         }
         return static_cast<unsigned long>(v);
@@ -961,24 +964,11 @@ public:
     explicit operator bool() const noexcept {
         switch (type_id()) {
         case phy_small_id: return get_unsigned_integer() == small_true;
-        case phy_integer_id0:
-        case phy_integer_id1:
-        case phy_integer_id2:
-        case phy_integer_id3:
-        case phy_integer_id4:
-        case phy_integer_id5:
-        case phy_integer_id6:
-        case phy_integer_id7: return static_cast<int64_t>(*this) != 0;
+        case phy_integer_id: return static_cast<int64_t>(*this) != 0;
         case phy_decimal_id: return static_cast<decimal>(*this) != 0;
         case phy_ymd_id: return true;
         case phy_integer_ptr_id: return *get_pointer<int64_t>() != 0;
-        case phy_string_id0:
-        case phy_string_id1:
-        case phy_string_id2:
-        case phy_string_id3:
-        case phy_string_id4:
-        case phy_string_id5:
-        case phy_string_id6:
+        case phy_string_id:
         case phy_string_ptr_id: return this->size() > 0;
         case phy_url_ptr_id: return true;
         case phy_vector_ptr_id: return this->size() > 0;
@@ -1029,14 +1019,7 @@ public:
             default: tt_no_default;
             }
 
-        case phy_integer_id0:
-        case phy_integer_id1:
-        case phy_integer_id2:
-        case phy_integer_id3:
-        case phy_integer_id4:
-        case phy_integer_id5:
-        case phy_integer_id6:
-        case phy_integer_id7: return fmt::format("{}", static_cast<int64_t>(*this));
+        case phy_integer_id: return fmt::format("{}", static_cast<int64_t>(*this));
         case phy_decimal_id: return fmt::format("{}", static_cast<decimal>(*this));
         case phy_ymd_id: return fmt::format("{}", static_cast<date::year_month_day>(*this));
         case phy_integer_ptr_id:
@@ -1046,15 +1029,9 @@ public:
                 tt_no_default;
             }
 
-        case phy_string_id0:
-        case phy_string_id1:
-        case phy_string_id2:
-        case phy_string_id3:
-        case phy_string_id4:
-        case phy_string_id5:
-        case phy_string_id6: {
+        case phy_string_id: {
                 ttlet length = size();
-                char buffer[6];
+                char buffer[5];
                 for (int i = 0; i < length; i++) {
                     buffer[i] = (u64 >> ((length - i - 1) * 8)) & 0xff;
                 }
@@ -1428,25 +1405,12 @@ public:
             case small_continue: return "continue";
             default: tt_no_default;
             }
-        case phy_integer_id0:
-        case phy_integer_id1:
-        case phy_integer_id2:
-        case phy_integer_id3:
-        case phy_integer_id4:
-        case phy_integer_id5:
-        case phy_integer_id6:
-        case phy_integer_id7:
+        case phy_integer_id:
         case phy_integer_ptr_id: return static_cast<std::string>(*this);
         case phy_decimal_id:
         case phy_decimal_ptr_id: return static_cast<std::string>(*this);
         case phy_ymd_id: return static_cast<std::string>(*this);
-        case phy_string_id0:
-        case phy_string_id1:
-        case phy_string_id2:
-        case phy_string_id3:
-        case phy_string_id4:
-        case phy_string_id5:
-        case phy_string_id6:
+        case phy_string_id:
         case phy_string_ptr_id: return fmt::format("\"{}\"", static_cast<std::string>(*this));
         case phy_url_ptr_id: return fmt::format("<URL {}>", static_cast<std::string>(*this));
         case phy_vector_ptr_id: return static_cast<std::string>(*this);
@@ -1467,7 +1431,7 @@ public:
     int type_order() const noexcept {
         if (is_numeric()) {
             // Fold all numeric values into the same group (literal integers).
-            return phy_integer_id0;
+            return phy_integer_id;
         } else {
             return type_id();
         }
@@ -1560,25 +1524,12 @@ public:
             default: tt_no_default;
             }
       
-        case phy_integer_id0:
-        case phy_integer_id1:
-        case phy_integer_id2:
-        case phy_integer_id3:
-        case phy_integer_id4:
-        case phy_integer_id5:
-        case phy_integer_id6:
-        case phy_integer_id7:
+        case phy_integer_id:
         case phy_integer_ptr_id: return datum_type_t::Integer;
         case phy_decimal_id:
         case phy_decimal_ptr_id: return datum_type_t::Decimal;
         case phy_ymd_id: return datum_type_t::YearMonthDay;
-        case phy_string_id0:
-        case phy_string_id1:
-        case phy_string_id2:
-        case phy_string_id3:
-        case phy_string_id4:
-        case phy_string_id5:
-        case phy_string_id6:
+        case phy_string_id:
         case phy_string_ptr_id: return datum_type_t::String;
         case phy_url_ptr_id: return datum_type_t::URL;
         case phy_vector_ptr_id: return datum_type_t::Vector;
@@ -1606,25 +1557,12 @@ public:
             default: tt_no_default;
             }
 
-        case phy_integer_id0:
-        case phy_integer_id1:
-        case phy_integer_id2:
-        case phy_integer_id3:
-        case phy_integer_id4:
-        case phy_integer_id5:
-        case phy_integer_id6:
-        case phy_integer_id7:
+        case phy_integer_id:
         case phy_integer_ptr_id: return "Integer";
         case phy_decimal_id:
         case phy_decimal_ptr_id: return "Decimal";
         case phy_ymd_id: return "YearMonthDay";
-        case phy_string_id0:
-        case phy_string_id1:
-        case phy_string_id2:
-        case phy_string_id3:
-        case phy_string_id4:
-        case phy_string_id5:
-        case phy_string_id6:
+        case phy_string_id:
         case phy_string_ptr_id: return "String";
         case phy_url_ptr_id: return "URL";
         case phy_vector_ptr_id: return "Vector";
@@ -1641,13 +1579,7 @@ public:
 
     size_t size() const{
         switch (type_id()) {
-        case phy_string_id0:
-        case phy_string_id1:
-        case phy_string_id2:
-        case phy_string_id3:
-        case phy_string_id4:
-        case phy_string_id5:
-        case phy_string_id6: return ((u64 & 0xffff'0000'0000'0000ULL) - string_mask) >> 48;
+        case phy_string_id: return (u64 >> 40) & 0xff;
         case phy_string_ptr_id: return get_pointer<std::string>()->size();
         case phy_vector_ptr_id: return get_pointer<datum_impl::vector>()->size();
         case phy_map_ptr_id: return get_pointer<datum_impl::map>()->size();
@@ -1835,14 +1767,7 @@ public:
         switch (lhs.type_id()) {
         case datum_impl::phy_small_id:
             return rhs.is_phy_small() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
-        case datum_impl::phy_integer_id0:
-        case datum_impl::phy_integer_id1:
-        case datum_impl::phy_integer_id2:
-        case datum_impl::phy_integer_id3:
-        case datum_impl::phy_integer_id4:
-        case datum_impl::phy_integer_id5:
-        case datum_impl::phy_integer_id6:
-        case datum_impl::phy_integer_id7:
+        case datum_impl::phy_integer_id:
         case datum_impl::phy_integer_ptr_id:
             return (
                 (rhs.is_float() && static_cast<double>(lhs) == static_cast<double>(rhs)) ||
@@ -1858,13 +1783,7 @@ public:
             );
         case datum_impl::phy_ymd_id:
             return rhs.is_ymd() && lhs.get_unsigned_integer() == rhs.get_unsigned_integer();
-        case datum_impl::phy_string_id0:
-        case datum_impl::phy_string_id1:
-        case datum_impl::phy_string_id2:
-        case datum_impl::phy_string_id3:
-        case datum_impl::phy_string_id4:
-        case datum_impl::phy_string_id5:
-        case datum_impl::phy_string_id6:
+        case datum_impl::phy_string_id:
         case datum_impl::phy_string_ptr_id:
             return (
                 (rhs.is_string() && static_cast<std::string>(lhs) == static_cast<std::string>(rhs)) ||
@@ -1896,14 +1815,7 @@ public:
             } else {
                 return lhs.get_unsigned_integer() < rhs.get_unsigned_integer();
             }
-        case datum_impl::phy_integer_id0:
-        case datum_impl::phy_integer_id1:
-        case datum_impl::phy_integer_id2:
-        case datum_impl::phy_integer_id3:
-        case datum_impl::phy_integer_id4:
-        case datum_impl::phy_integer_id5:
-        case datum_impl::phy_integer_id6:
-        case datum_impl::phy_integer_id7:
+        case datum_impl::phy_integer_id:
         case datum_impl::phy_integer_ptr_id:
             if (rhs.is_float()) {
                 return static_cast<double>(lhs) < static_cast<double>(rhs);
@@ -1931,13 +1843,7 @@ public:
             } else {
                 return lhs.type_order() < rhs.type_order();
             }
-        case datum_impl::phy_string_id0:
-        case datum_impl::phy_string_id1:
-        case datum_impl::phy_string_id2:
-        case datum_impl::phy_string_id3:
-        case datum_impl::phy_string_id4:
-        case datum_impl::phy_string_id5:
-        case datum_impl::phy_string_id6:
+        case datum_impl::phy_string_id:
         case datum_impl::phy_string_ptr_id:
             if (rhs.is_string()) {
                 return static_cast<std::string>(lhs) < static_cast<std::string>(rhs);
