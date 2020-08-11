@@ -339,14 +339,14 @@ inline glob_match_result_t matchGlob(glob_token_const_iterator index, glob_token
 
     switch (index->type) {
     case glob_token_type_t::String:
-        if (starts_with(str, index->value)) {
+        if (str.starts_with(index->value)) {
             MATCH_GLOB_RECURSE(result, next_index, end, str.substr(index->value.size()));
         }
         return result;
 
     case glob_token_type_t::StringList:
         for (ttlet &value: index->values) {
-            if (starts_with(str, value)) {
+            if (str.starts_with(value)) {
                 MATCH_GLOB_RECURSE(result, next_index, end, str.substr(value.size()));
             }
         }

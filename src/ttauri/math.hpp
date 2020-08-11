@@ -53,6 +53,9 @@ constexpr long long pow10ll(int x) noexcept {
     return pow10_table[x];
 }
 
+/** Find the position of the left-most '1' bit.
+ * @return Bit position of the left-most '1' bit, or -1 if there is no '1' bit.
+ */
 template<typename T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>,int> = 0>
 constexpr int bsr(T x) noexcept
 {

@@ -20,7 +20,7 @@ inline std::string tag_name(std::type_index tag) noexcept
     ttlet split_name = split(long_name, "::"s);
     if (std::ssize(split_name) != 0) {
         ttlet &last_name = split_name.back();
-        if (ends_with(last_name, "_tag"s)) {
+        if (last_name.ends_with("_tag"s)) {
             return last_name.substr(0, std::ssize(last_name) - 4);
         } else {
             return last_name;

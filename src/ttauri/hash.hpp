@@ -5,11 +5,11 @@
 
 
 #include "required.hpp"
-#include "type_traits.hpp"
 #include <emmintrin.h>
 #include <wmmintrin.h>
 #include <utility>
 #include <array>
+#include <type_traits>
 
 namespace tt {
 
@@ -30,12 +30,12 @@ template<typename First, typename Second, typename... Args>
 [[nodiscard]] size_t hash_mix(First &&first, Second &&second, Args &&... args) noexcept {
     if constexpr (sizeof...(args) == 0) {
         return hash_mix_two(
-            std::hash<remove_cvref_t<First>>{}(std::forward<First>(first)),
-            std::hash<remove_cvref_t<Second>>{}(std::forward<Second>(second))
+            std::hash<std::remove_cvref_t<First>>{}(std::forward<First>(first)),
+            std::hash<std::remove_cvref_t<Second>>{}(std::forward<Second>(second))
         );
     } else {
         return hash_mix_two(
-            std::hash<remove_cvref_t<First>>{}(std::forward<First>(first)),
+            std::hash<std::remove_cvref_t<First>>{}(std::forward<First>(first)),
             hash_mix(std::forward<Second>(second), std::forward<Args>(args)...)
         );
     }

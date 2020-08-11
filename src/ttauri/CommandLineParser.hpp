@@ -108,7 +108,7 @@ public:
             if (argumentCount++ == 0) {
                 r["executable-path"] = arguments[0];
 
-            } else if (starts_with(argument, "--"s)) {
+            } else if (argument.starts_with("--"s)) {
                 ttlet i = argument.find('=');
                 if (i == argument.npos) {
                     ttlet option_name = argument.substr(2);

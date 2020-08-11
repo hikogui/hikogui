@@ -92,7 +92,7 @@ Theme::Theme(URL const &url)
 
     } else if (data.is_string()) {
         ttlet color_name = to_lower(static_cast<std::string>(data));
-        if (starts_with(color_name, "#"s)) {
+        if (color_name.starts_with("#"s)) {
             return vec::colorFromSRGB(color_name);
 
         } else if (color_name == "blue") { return blue;

@@ -160,7 +160,7 @@ void FontBook::post_process() noexcept
         //LOG_DEBUG("Looking for fallback fonts for: {}", to_string(entry.description));
         calculate_fallback_fonts(entry, [](ttlet &current, ttlet &fallback) {
             return
-                starts_with(fallback.family_name, current.family_name) &&
+                fallback.family_name.starts_with(current.family_name) &&
                 (current.italic == fallback.italic) &&
                 almost_equal(current.weight, fallback.weight);
         });

@@ -4,13 +4,13 @@
 #pragma once
 
 #include "translation.hpp"
-#include "../type_traits.hpp"
 #include <fmt/format.h>
 #include <utility>
 #include <tuple>
 #include <memory>
 #include <string>
 #include <locale>
+#include <type_traits>
 
 namespace tt {
 
@@ -44,10 +44,10 @@ std::string cpp20_format(std::locale const &locale, std::string_view fmt, Args c
 template<typename... Args>
 class format10_impl : public format10_base
 {
-    std::tuple<remove_cvref_t<Args>...> args;
+    std::tuple<std::remove_cvref_t<Args>...> args;
 
-    using format_func_type = std::string(*)(std::locale const &, std::string_view, remove_cvref_t<Args> const &...);
-    using make_unique_type = std::unique_ptr<format10_impl>(*)(std::string_view const &, remove_cvref_t<Args> const &...);
+    using format_func_type = std::string(*)(std::locale const &, std::string_view, std::remove_cvref_t<Args> const &...);
+    using make_unique_type = std::unique_ptr<format10_impl>(*)(std::string_view const &, std::remove_cvref_t<Args> const &...);
 
 public:
     format10_impl(std::string_view fmt, Args const &... args) noexcept :

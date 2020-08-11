@@ -14,6 +14,7 @@
 #include <iterator>
 #include <vector>
 #include <tuple>
+#include <type_traits>
 
 namespace tt {
 
@@ -251,7 +252,7 @@ template<typename Haystack, typename... Needles>
 template<typename Haystack, typename... Needles>
 [[nodiscard]] auto split(Haystack const &haystack, Needles const &... needles) noexcept
 {
-    std::vector<remove_cvref_t<Haystack>> r;
+    std::vector<std::remove_cvref_t<Haystack>> r;
 
     size_t offset = 0;
     size_t needle_pos;

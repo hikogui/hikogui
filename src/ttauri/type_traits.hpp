@@ -104,13 +104,13 @@ struct copy_cv<To,From,std::enable_if_t<std::is_const_v<From> && std::is_volatil
 template<typename To, typename From>
 using copy_cv_t = typename copy_cv<To,From>::type;
 
-template<typename T>
-struct remove_cvref {
-    using type = std::remove_cv_t<std::remove_reference_t<T>>;
-};
-
-template<typename T>
-using remove_cvref_t = typename remove_cvref<T>::type;
+//template<typename T>
+//struct remove_cvref {
+//    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+//};
+//
+//template<typename T>
+//using remove_cvref_t = typename remove_cvref<T>::type;
 
 template <typename T> struct has_value_type 
 {

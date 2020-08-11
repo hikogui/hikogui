@@ -25,7 +25,7 @@ namespace tt {
 [[nodiscard]] vec vec::colorFromSRGB(std::string_view str) {
     auto tmp = std::string{str};
 
-    if (starts_with(tmp, "#"s)) {
+    if (tmp.starts_with("#"s)) {
         tmp = tmp.substr(1);
     }
     if (std::ssize(tmp) != 6 || std::ssize(tmp) != 8) {

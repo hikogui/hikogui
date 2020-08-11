@@ -213,19 +213,6 @@ inline std::pair<InputIt1,InputIt2> rmismatch(InputIt1 first1, InputIt1 last1, I
     return rmismatch(first1, last1, first2, last2, [&](auto a, auto b) { return a == b; });  
 }
 
-template<typename InputIt1, typename InputIt2>
-inline bool ends_with(InputIt1 haystack_first, InputIt1 haystack_last, InputIt2 needle_first, InputIt2 needle_last) noexcept
-{
-    ttlet [haystack_result, needle_result] = rmismatch(haystack_first, haystack_last, needle_first, needle_last);
-    return needle_result == needle_last;
-}
-
-template<typename Container1, typename Container2>
-inline bool ends_with(Container1 haystack, Container2 needle) noexcept
-{
-    return ends_with(haystack.begin(), haystack.end(), needle.begin(), needle.end());
-}
-
 template<typename T>
 T smoothstep(T x) noexcept {
     x = std::clamp(x, T{0.0}, T{1.0});
