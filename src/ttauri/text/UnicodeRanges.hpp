@@ -5,6 +5,7 @@
 
 #include "Grapheme.hpp"
 #include <cstdint>
+#include <bit>
 
 namespace tt {
 
@@ -70,7 +71,7 @@ struct UnicodeRanges {
     int popcount() const noexcept {
         int r = 0;
         for (int i = 0; i != 4; ++i) {
-            r += ::tt::popcount(value[i]);
+            r += std::popcount(value[i]);
         }
         return r;
     }

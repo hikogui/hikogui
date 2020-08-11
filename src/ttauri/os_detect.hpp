@@ -127,22 +127,6 @@ enum class Processor {
     current = TT_PROCESSOR
 };
 
-#define TT_ENDIAN_BIG 'b'
-#define TT_ENDIAN_LITTLE 'l'
-
-#if TT_PROCESSOR == TT_CPU_X64 || TT_PROCESSOR == TT_CPU_ARM
-#define TT_ENDIAN TT_ENDIAN_LITTLE
-#else
-#error "Do not know endianess of this CPU"
-#endif
-
-enum class Endian {
-    Big = TT_ENDIAN_BIG,
-    Little = TT_ENDIAN_LITTLE,
-    Native = TT_ENDIAN
-};
-
-
 #define tt_stringify(a) #a
 
 #if TT_COMPILER == TT_CC_MSVC

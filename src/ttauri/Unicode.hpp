@@ -7,6 +7,7 @@
 #include "math.hpp"
 #include <string_view>
 #include <cstdint>
+#include <bit>
 
 #pragma once
 
@@ -217,10 +218,9 @@ struct utf8_to_utf32_state {
         }
 
     } else {
-        ttlet inv_c32 = static_cast<uint32_t>(static_cast<uint8_t>(~c_));
-        ttlet nr_data_bits = bsr(inv_c32);
+        state.trailing_bytes = std::countl_one(c_) - 1;
+        ttlet nr_data_bits = 7 - std::countl_one(c_);
 
-        state.trailing_bytes = 6 - nr_data_bits;
         if (state.trailing_bytes < 0) {
             // 0b0xxxxxxx
             state.trailing_bytes = 0;

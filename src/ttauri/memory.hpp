@@ -46,15 +46,6 @@ inline R align_end(T ptr, size_t alignment) noexcept
     return reinterpret_cast<R>(alignedByteOffset);
 }
 
-// this implementation requires that To is trivially default constructible
-template<typename To, typename From>
-std::enable_if_t<(sizeof(To) == sizeof(From)) && std::is_trivially_copyable_v<From> && std::is_trivial_v<To>,To>
-bit_cast(From const &src) noexcept
-{
-    To dst;
-    std::memcpy(&dst, &src, sizeof(To));
-    return dst;
-}
 
 template<typename T>
 inline void cleanupWeakPointers(std::vector<std::weak_ptr<T>> &v) noexcept

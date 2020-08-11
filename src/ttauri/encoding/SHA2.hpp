@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include <array>
-#include <cstdint>
 #include "../byte_string.hpp"
 #include "../required.hpp"
+#include <bit>
+#include <array>
+#include <cstdint>
 
 namespace tt {
 namespace detail::SHA2 {
@@ -164,19 +165,14 @@ class SHA2 {
         return (x & y) ^ (~x & z);
     }
 
-    template<int N>
-    [[nodiscard]] static constexpr T rotr(T x) noexcept {
-        return x >> N | x << (sizeof(T)*CHAR_BIT - N);
-    }
-
     template<int A, int B, int C>
     [[nodiscard]] static constexpr T S(T x) noexcept {
-        return rotr<A>(x) ^ rotr<B>(x) ^ rotr<C>(x);
+        return std::rotr(x, A) ^ std::rotr(x, B) ^ std::rotr(x, C);
     }
 
     template<int A, int B, int C>
     [[nodiscard]] static constexpr T s(T x) noexcept {
-        return rotr<A>(x) ^ rotr<B>(x) ^ x >> C;
+        return std::rotr(x, A) ^ std::rotr(x, B) ^ x >> C;
     }
 
     [[nodiscard]] static constexpr T S0(T x) noexcept {
