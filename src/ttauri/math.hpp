@@ -67,7 +67,8 @@ constexpr int bsr(T x) noexcept
 template<typename T>
 constexpr T make_mask(T x)
 {
-    ttlet p2 = std::bit_ceil(static_cast<T>(x + 1));
+    ttlet x_ = static_cast<unsigned long long>(x) + 1;
+    ttlet p2 = std::bit_ceil(x_);
     return static_cast<T>(p2 - 1);
 }
 
